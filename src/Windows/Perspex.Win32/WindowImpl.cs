@@ -126,6 +126,47 @@ namespace Perspex.Win32
             }
         }
 
+        public WindowState WindowState
+        {
+            get
+            {
+                var placement = default(UnmanagedMethods.WINDOWPLACEMENT);
+                UnmanagedMethods.GetWindowPlacement(_hwnd, ref placement);
+                
+                switch (placement.ShowCmd)
+                {
+                    case UnmanagedMethods.ShowWindowCommand.Maximize:
+                        return WindowState.Maximized;
+                    case UnmanagedMethods.ShowWindowCommand.Minimize:
+                        return WindowState.Minimized;
+                    default:
+                        return WindowState.Normal;
+                }
+            }
+
+            set
+            {
+                UnmanagedMethods.ShowWindowCommand command;
+
+                switch (value)
+                {
+                    case WindowState.Minimized:
+                        command = UnmanagedMethods.ShowWindowCommand.Minimize;
+                        break;
+                    case WindowState.Maximized:
+                        command = UnmanagedMethods.ShowWindowCommand.Maximize;
+                        break;
+                    case WindowState.Normal:
+                        command = UnmanagedMethods.ShowWindowCommand.Restore;
+                        break;
+                    default:
+                        throw new ArgumentException("Invalid WindowState.");
+                }
+
+                UnmanagedMethods.ShowWindow(_hwnd, command);
+            }
+        }
+
         public void Activate()
         {
             UnmanagedMethods.SetActiveWindow(_hwnd);

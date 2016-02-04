@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using Perspex.Controls;
 
 namespace Perspex.Platform
 {
@@ -14,6 +15,11 @@ namespace Perspex.Platform
         /// Gets the maximum size of a window on the system.
         /// </summary>
         Size MaxClientSize { get; }
+
+        /// <summary>
+        /// Gets or sets the minimized/maximized state of the window.
+        /// </summary>
+        WindowState WindowState { get; set; }
 
         /// <summary>
         /// Sets the title of the window.

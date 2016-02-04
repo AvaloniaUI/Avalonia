@@ -74,6 +74,11 @@ namespace Perspex.iOS
 
         public IPlatformHandle Handle => PerspexPlatformHandle;
 
+        public WindowState WindowState
+        {
+            get { return WindowState.Normal; }
+            set { }
+        }
 
         public override void LayoutSubviews() => Resized?.Invoke(ClientSize);
 

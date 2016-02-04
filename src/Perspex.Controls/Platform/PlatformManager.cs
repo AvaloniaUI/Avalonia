@@ -135,8 +135,6 @@ namespace Perspex.Controls.Platform
             public Action<Rect> Paint { get; set; }
             public Action<Size> Resized { get; set; }
 
-
-
             public Action Activated
             {
                 get { return _tl.Activated; }
@@ -155,6 +153,12 @@ namespace Perspex.Controls.Platform
                 set { _tl.Deactivated = value; }
             }
 
+            public WindowState WindowState
+            {
+                get { return _window.WindowState; }
+                set { _window.WindowState = value; }
+            }
+
             public void Dispose() => _tl.Dispose();
 
             public IPlatformHandle Handle => _tl.Handle;
@@ -162,9 +166,6 @@ namespace Perspex.Controls.Platform
             public void SetInputRoot(IInputRoot inputRoot) => _tl.SetInputRoot(inputRoot);
             
             public void SetCursor(IPlatformHandle cursor) => _tl.SetCursor(cursor);
-
-
-
 
             public void SetTitle(string title) => _window.SetTitle(title);
 

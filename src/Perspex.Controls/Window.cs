@@ -133,6 +133,15 @@ namespace Perspex.Controls
             set { SetValue(HasSystemDecorationsProperty, value); }
         }
 
+        /// <summary>
+        /// Gets or sets the minimized/maximized state of the window.
+        /// </summary>
+        public WindowState WindowState
+        {
+            get { return this.PlatformImpl.WindowState; }
+            set { this.PlatformImpl.WindowState = value; }
+        }
+
         /// <inheritdoc/>
         Size ILayoutRoot.MaxClientSize => _maxPlatformClientSize;
 

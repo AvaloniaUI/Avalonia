@@ -1,5 +1,6 @@
 using Android.Views;
 using Perspex.Android.Platform.Specific;
+using Perspex.Controls;
 using Perspex.Input;
 using Perspex.Platform;
 
@@ -11,6 +12,12 @@ namespace Perspex.Android.Platform.SkiaPlatform
     {
         public MainWindowImpl()
         {
+        }
+
+        public WindowState WindowState
+        {
+            get { return WindowState.Normal; }
+            set { }
         }
 
         protected override void Init()
