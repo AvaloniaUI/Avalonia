@@ -89,12 +89,13 @@
                     _popup = new Popup()
                     {
                         PlacementTarget = control,
-                        Child = new ContentControl(),
+                        StaysOpen = false                                         
                     };
                 }
                  
                 ((ISetLogicalParent)_popup).SetParent(control);
-                
+                _popup.Child = control.ContextMenu;
+
                 _popup.Open();
 
                 control.ContextMenu._isOpen = true;

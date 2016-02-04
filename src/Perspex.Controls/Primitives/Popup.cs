@@ -172,13 +172,16 @@ namespace Perspex.Controls.Primitives
 
             _popupRoot.Position = GetPosition();
 
-            if (_topLevel == null)
+            if (_topLevel == null && PlacementTarget != null)
             {
                 _topLevel = PlacementTarget.GetSelfAndLogicalAncestors().First(x => x is TopLevel) as TopLevel;
             }
 
-            _topLevel.Deactivated += TopLevelDeactivated;
-            _topLevel.AddHandler(PointerPressedEvent, PointerPressedOutside, RoutingStrategies.Tunnel);            
+            if (_topLevel != null)
+            {
+                _topLevel.Deactivated += TopLevelDeactivated;
+                _topLevel.AddHandler(PointerPressedEvent, PointerPressedOutside, RoutingStrategies.Tunnel);
+            }
 
             PopupRootCreated?.Invoke(this, EventArgs.Empty);
 
