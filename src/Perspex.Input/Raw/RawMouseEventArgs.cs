@@ -22,11 +22,11 @@ namespace Perspex.Input.Raw
     {
         public RawMouseEventArgs(
             IInputDevice device,
-            IInputRoot root,
             uint timestamp,
+            IInputRoot root,
             RawMouseEventType type,
             Point position, InputModifiers inputModifiers)
-            : base(device, root, timestamp)
+            : base(device, timestamp)
         {
             Contract.Requires<ArgumentNullException>(device != null);
             Contract.Requires<ArgumentNullException>(root != null);
