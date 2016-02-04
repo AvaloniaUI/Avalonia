@@ -13,11 +13,10 @@ namespace Perspex.Input.Raw
     {
         public RawKeyEventArgs(
             IKeyboardDevice device,
-            IInputRoot root,
             uint timestamp,
             RawKeyEventType type,
             Key key, InputModifiers modifiers)
-            : base(device, root, timestamp)
+            : base(device, timestamp)
         {
             Key = key;
             Type = type;

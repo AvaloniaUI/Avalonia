@@ -264,8 +264,8 @@ namespace Perspex.Gtk
 
             var e = new RawMouseEventArgs(
                 GtkMouseDevice.Instance,
-                _inputRoot,
                 evnt.Time,
+                _inputRoot,
                 evnt.Button == 1
                     ? RawMouseEventType.LeftButtonDown
                     : evnt.Button == 3 ? RawMouseEventType.RightButtonDown : RawMouseEventType.MiddleButtonDown,
@@ -286,7 +286,7 @@ namespace Perspex.Gtk
                 delta = new Vector(-step, 0);
             if (evnt.Direction == ScrollDirection.Left)
                 delta = new Vector(step, 0);
-            var e = new RawMouseWheelEventArgs(GtkMouseDevice.Instance, _inputRoot, evnt.Time, new Point(evnt.X, evnt.Y), delta, GetModifierKeys(evnt.State));
+            var e = new RawMouseWheelEventArgs(GtkMouseDevice.Instance, evnt.Time, _inputRoot, new Point(evnt.X, evnt.Y), delta, GetModifierKeys(evnt.State));
             Input(e);
             return base.OnScrollEvent(evnt);
         }
@@ -295,8 +295,8 @@ namespace Perspex.Gtk
         {
             var e = new RawMouseEventArgs(
                 GtkMouseDevice.Instance,
-                _inputRoot,
                 evnt.Time,
+                _inputRoot,
                 evnt.Button == 1
                     ? RawMouseEventType.LeftButtonUp
                     : evnt.Button == 3 ? RawMouseEventType.RightButtonUp : RawMouseEventType.MiddleButtonUp,
@@ -329,7 +329,6 @@ namespace Perspex.Gtk
                 return true;
             var e = new RawKeyEventArgs(
                 GtkKeyboardDevice.Instance,
-                _inputRoot,
                 evnt.Time,
                 evnt.Type == EventType.KeyPress ? RawKeyEventType.KeyDown : RawKeyEventType.KeyUp,
                 GtkKeyboardDevice.ConvertKey(evnt.Key), GetModifierKeys(evnt.State));
@@ -343,7 +342,7 @@ namespace Perspex.Gtk
 
         private void ImContext_Commit(object o, Gtk.CommitArgs args)
         {
-            Input(new RawTextInputEventArgs(GtkKeyboardDevice.Instance, _inputRoot, _lastKeyEventTimestamp, args.Str));
+            Input(new RawTextInputEventArgs(GtkKeyboardDevice.Instance, _lastKeyEventTimestamp, args.Str));
         }
 
         protected override bool OnExposeEvent(EventExpose evnt)
@@ -365,8 +364,8 @@ namespace Perspex.Gtk
 
             var e = new RawMouseEventArgs(
                 GtkMouseDevice.Instance,
-                _inputRoot,
                 evnt.Time,
+                _inputRoot,
                 RawMouseEventType.Move,
                 position, GetModifierKeys(evnt.State));
             Input(e);
