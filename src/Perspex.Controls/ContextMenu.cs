@@ -12,51 +12,18 @@
         private bool _isOpen;
 
         /// <summary>
-        /// Defines the ContextMenu.Menu attached property.
-        /// </summary>
-        //public static readonly AttachedProperty<object> ContextMenuProperty =
-        //    PerspexProperty.RegisterAttached<ContextMenu, Control, object>("Menu");
-
-        /// <summary>
         /// The popup window used to display the active context menu.
         /// </summary>
         private static PopupRoot s_popup;
 
         /// <summary>
-        /// The control that the currently visible context menu is attached to.
-        /// </summary>
-        private static Control s_current;
-
-        /// <summary>
-        /// Initializes static members of the <see cref="ToolTip"/> class.
+        /// Initializes static members of the <see cref="ContextMenu"/> class.
         /// </summary>
         static ContextMenu()
         {
             ContextMenuProperty.Changed.Subscribe(ContextMenuChanged);
 
             MenuItem.ClickEvent.AddClassHandler<ContextMenu>(x => x.OnContextMenuClick);
-        }
-
-        /// <summary>
-        /// Gets the value of the ToolTip.Tip attached property.
-        /// </summary>
-        /// <param name="element">The control to get the property from.</param>
-        /// <returns>
-        /// The content to be displayed in the control's tooltip.
-        /// </returns>
-        public static object GetContextMenu(Control element)
-        {
-            return element.GetValue(ContextMenuProperty);
-        }
-
-        /// <summary>
-        /// Sets the value of the ToolTip.Tip attached property.
-        /// </summary>
-        /// <param name="element">The control to get the property from.</param>
-        /// <param name="value">The content to be displayed in the control's tooltip.</param>
-        public static void SetContextMenu(Control element, object value)
-        {
-            element.SetValue(ContextMenuProperty, value);
         }
 
         /// <summary>
@@ -110,7 +77,7 @@
         }
 
         /// <summary>
-        /// Shows a tooltip for the specified control.
+        /// Shows a context menu for the specified control.
         /// </summary>
         /// <param name="control">The control.</param>
         private static void Show(Control control)
@@ -121,7 +88,7 @@
                 {
                     s_popup = new PopupRoot
                     {
-                        Content = new ToolTip(),
+                        Content = new ContentControl(),
                     };
 
                     ((ISetLogicalParent)s_popup).SetParent(control);
@@ -130,11 +97,9 @@
                 var cp = MouseDevice.Instance?.GetPosition(control);
                 var position = control.PointToScreen(cp ?? new Point(0, 0));
 
-                ((ToolTip)s_popup.Content).Content = GetContextMenu(control);
+                ((ContentControl)s_popup.Content).Content = control.ContextMenu;
                 s_popup.Position = position;
                 s_popup.Show();
-
-                s_current = control;
 
                 control.ContextMenu._isOpen = true;
             }
