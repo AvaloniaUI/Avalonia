@@ -66,6 +66,13 @@ namespace Perspex.Controls
             PerspexProperty.Register<Control, ITemplatedControl>(nameof(TemplatedParent), inherits: true);
 
         /// <summary>
+        /// Defines the <see cref="ContextMenu"/> property.
+        /// </summary>
+        public static readonly StyledProperty<ContextMenu> ContextMenuProperty =
+            PerspexProperty.Register<Control, ContextMenu>(nameof(ContextMenu));        
+
+
+        /// <summary>
         /// Event raised when an element wishes to be scrolled into view.
         /// </summary>
         public static readonly RoutedEvent<RequestBringIntoViewEventArgs> RequestBringIntoViewEvent =
@@ -203,6 +210,15 @@ namespace Perspex.Controls
         /// Gets the control's logical parent.
         /// </summary>
         public IControl Parent => _parent;
+
+        /// <summary>
+        /// Gets or sets a context menu to the control.
+        /// </summary>
+        public ContextMenu ContextMenu
+        {
+            get { return GetValue(ContextMenuProperty); }
+            set { SetValue(ContextMenuProperty, value); }
+        }
 
         /// <summary>
         /// Gets or sets a user-defined object attached to the control.

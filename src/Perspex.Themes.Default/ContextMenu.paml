@@ -5,8 +5,8 @@
               BorderBrush="{TemplateBinding BorderBrush}"
               BorderThickness="{TemplateBinding BorderThickness}"
               Padding="{TemplateBinding Padding}">
-        <ItemsPresenter Name="PART_ItemsPresenter" 
-                        Items="{TemplateBinding Items}" 
+        <ItemsPresenter Name="PART_ItemsPresenter"
+                        Items="{TemplateBinding Items}"
                         ItemsPanel="{TemplateBinding ItemsPanel}"
                         KeyboardNavigation.TabNavigation="Continue"/>
       </Border>
