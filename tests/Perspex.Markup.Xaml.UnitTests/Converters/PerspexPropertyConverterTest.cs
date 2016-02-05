@@ -56,11 +56,11 @@ namespace Perspex.Markup.Xaml.UnitTests.Converters
             Assert.Equal(AttachedOwner.AttachedProperty, result);
         }
 
-        private IXamlTypeConverterContext CreateContext(Style style = null)
+        private ITypeConverterContext CreateContext(Style style = null)
         {
-            var context = new Mock<IXamlTypeConverterContext>();
+            var context = new Mock<ITypeConverterContext>();
             var topDownValueContext = new Mock<ITopDownValueContext>();
-            var typeRepository = new Mock<IXamlTypeRepository>();
+            var typeRepository = new Mock<ITypeRepository>();
             var featureProvider = new Mock<ITypeFeatureProvider>();
             var class1XamlType = new XamlType(typeof(Class1), typeRepository.Object, null, featureProvider.Object);
             var attachedOwnerXamlType = new XamlType(typeof(AttachedOwner), typeRepository.Object, null, featureProvider.Object);
