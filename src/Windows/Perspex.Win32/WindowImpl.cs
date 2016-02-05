@@ -242,6 +242,13 @@ namespace Perspex.Win32
             UnmanagedMethods.InvalidateRect(_hwnd, ref r, false);
         }
 
+        public Point PointToClient(Point point)
+        {
+            var p = new UnmanagedMethods.POINT { X = (int)point.X, Y = (int)point.Y };
+            UnmanagedMethods.ScreenToClient(_hwnd, ref p);
+            return new Point(p.X, p.Y);
+        }
+
         public Point PointToScreen(Point point)
         {
             var p = new UnmanagedMethods.POINT { X = (int)point.X, Y = (int)point.Y };

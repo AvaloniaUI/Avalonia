@@ -16,10 +16,17 @@ namespace Perspex.Rendering
         IRenderQueueManager RenderQueueManager { get; }
 
         /// <summary>
-        /// Translates a point to screen co-ordinates.
+        /// Converts a point from screen to client coordinates.
         /// </summary>
-        /// <param name="p">The point.</param>
-        /// <returns>The point in screen co-ordinates.</returns>
-        Point TranslatePointToScreen(Point p);
+        /// <param name="point">The point in screen coordinates.</param>
+        /// <returns>The point in client coordinates.</returns>
+        Point PointToClient(Point point);
+
+        /// <summary>
+        /// Converts a point from client to screen coordinates.
+        /// </summary>
+        /// <param name="point">The point in client coordinates.</param>
+        /// <returns>The point in screen coordinates.</returns>
+        Point PointToScreen(Point point);
     }
 }

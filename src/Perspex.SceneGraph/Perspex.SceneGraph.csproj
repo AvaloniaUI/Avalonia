@@ -127,6 +127,7 @@
     <Compile Include="Size.cs" />
     <Compile Include="Thickness.cs" />
     <Compile Include="Vector.cs" />
+    <Compile Include="VisualExtensions.cs" />
     <Compile Include="Visual.cs" />
     <Compile Include="VisualTreeAttachmentEventArgs.cs" />
     <Compile Include="VisualTree\IHostedVisualTreeRoot.cs" />

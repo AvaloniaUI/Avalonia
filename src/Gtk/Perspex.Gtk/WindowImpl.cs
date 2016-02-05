@@ -172,6 +172,14 @@ namespace Perspex.Gtk
                     new Rectangle((int) rect.X, (int) rect.Y, (int) rect.Width, (int) rect.Height), true);
         }
 
+        public Point PointToClient(Point point)
+        {
+            int x, y;
+            GdkWindow.GetDeskrelativeOrigin(out x, out y);
+
+            return new Point(point.X - x, point.Y - y);
+        }
+
         public Point PointToScreen(Point point)
         {
             int x, y;

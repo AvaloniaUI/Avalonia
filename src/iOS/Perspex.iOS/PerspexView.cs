@@ -101,6 +101,8 @@ namespace Perspex.iOS
 
         public void SetInputRoot(IInputRoot inputRoot) => _inputRoot = inputRoot;
 
+        public Point PointToClient(Point point) => point;
+
         public Point PointToScreen(Point point) => point;
 
         public void SetCursor(IPlatformHandle cursor)

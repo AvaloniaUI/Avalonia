@@ -292,17 +292,6 @@ namespace Perspex
         }
 
         /// <summary>
-        /// Converts a point from control coordinates to screen coordinates.
-        /// </summary>
-        /// <param name="point">The point to convert.</param>
-        /// <returns>The point in screen coordinates.</returns>
-        public Point PointToScreen(Point point)
-        {
-            var p = GetOffsetFromRoot(this);
-            return p.Item1.TranslatePointToScreen(point + p.Item2);
-        }
-
-        /// <summary>
         /// Returns a transform that transforms the visual's coordinates into the coordinates
         /// of the specified <paramref name="visual"/>.
         /// </summary>
@@ -410,29 +399,6 @@ namespace Perspex
             }
 
             return result;
-        }
-
-        /// <summary>
-        /// Gets the root of the controls visual tree and the distance from the root.
-        /// </summary>
-        /// <param name="v">The visual.</param>
-        /// <returns>A tuple containing the root and the distance from the root</returns>
-        private static Tuple<IRenderRoot, Vector> GetOffsetFromRoot(IVisual v)
-        {
-            var result = new Vector();
-
-            while (!(v is IRenderRoot))
-            {
-                result = new Vector(result.X + v.Bounds.X, result.Y + v.Bounds.Y);
-                v = v.VisualParent;
-
-                if (v == null)
-                {
-                    throw new InvalidOperationException("Control is not attached to visual tree.");
-                }
-            }
-
-            return Tuple.Create((IRenderRoot)v, result);
         }
 
         /// <summary>

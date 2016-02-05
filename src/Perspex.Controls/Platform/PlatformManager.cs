@@ -111,11 +111,15 @@ namespace Perspex.Controls.Platform
                 Input?.Invoke(obj);
             }
 
-            public Point PointToScreen(Point point)
+            public Point PointToClient(Point point)
             {
-                return _tl.PointToScreen(point*ScalingFactor)/ScalingFactor;
+                return _tl.PointToClient(point / ScalingFactor) * ScalingFactor;
             }
 
+            public Point PointToScreen(Point point)
+            {
+                return _tl.PointToScreen(point * ScalingFactor) / ScalingFactor;
+            }
 
             public void Invalidate(Rect rc)
             {

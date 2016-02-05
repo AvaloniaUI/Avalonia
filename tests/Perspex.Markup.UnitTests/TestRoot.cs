@@ -39,7 +39,12 @@ namespace Perspex.Markup.UnitTests
             get { throw new NotImplementedException(); }
         }
 
-        public Point TranslatePointToScreen(Point p)
+        public Point PointToClient(Point p)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Point PointToScreen(Point p)
         {
             throw new NotImplementedException();
         }

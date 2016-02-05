@@ -212,12 +212,14 @@ namespace Perspex.Controls
             private set;
         }
 
-        /// <summary>
-        /// Translates a point from window coordinates into screen coordinates.
-        /// </summary>
-        /// <param name="p">The point.</param>
-        /// <returns>The point in screen coordinates.</returns>
-        Point IRenderRoot.TranslatePointToScreen(Point p)
+        /// <inheritdoc/>
+        Point IRenderRoot.PointToClient(Point p)
+        {
+            return PlatformImpl.PointToClient(p);
+        }
+
+        /// <inheritdoc/>
+        Point IRenderRoot.PointToScreen(Point p)
         {
             return PlatformImpl.PointToScreen(p);
         }

@@ -25,7 +25,12 @@ namespace Perspex.Controls.UnitTests
 
         public IRenderQueueManager RenderQueueManager => null;
 
-        public Point TranslatePointToScreen(Point p)
+        public Point PointToClient(Point p)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Point PointToScreen(Point p)
         {
             return new Point();
         }
