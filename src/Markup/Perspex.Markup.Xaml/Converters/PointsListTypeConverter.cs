@@ -10,17 +10,17 @@ namespace Perspex.Markup.Xaml.Converters
 {
     public class PointsListTypeConverter : ITypeConverter
     {
-        public bool CanConvertFrom(IXamlTypeConverterContext context, Type sourceType)
+        public bool CanConvertFrom(ITypeConverterContext context, Type sourceType)
         {
             return sourceType == typeof(string);
         }
 
-        public bool CanConvertTo(IXamlTypeConverterContext context, Type destinationType)
+        public bool CanConvertTo(ITypeConverterContext context, Type destinationType)
         {
             return false;
         }
 
-        public object ConvertFrom(IXamlTypeConverterContext context, CultureInfo culture, object value)
+        public object ConvertFrom(ITypeConverterContext context, CultureInfo culture, object value)
         {
             string strValue = (string)value;
             string[] pointStrs = strValue.Split(new[] { ' ', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
@@ -32,7 +32,7 @@ namespace Perspex.Markup.Xaml.Converters
             return result;
         }
 
-        public object ConvertTo(IXamlTypeConverterContext context, CultureInfo culture, object value, Type destinationType)
+        public object ConvertTo(ITypeConverterContext context, CultureInfo culture, object value, Type destinationType)
         {
             throw new NotImplementedException();
         }

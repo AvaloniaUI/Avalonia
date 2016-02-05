@@ -12,17 +12,17 @@ namespace Perspex.Markup.Xaml.Converters
 {
     public class PerspexPropertyTypeConverter : ITypeConverter
     {
-        public bool CanConvertFrom(IXamlTypeConverterContext context, Type sourceType)
+        public bool CanConvertFrom(ITypeConverterContext context, Type sourceType)
         {
             return sourceType == typeof(string);
         }
 
-        public bool CanConvertTo(IXamlTypeConverterContext context, Type destinationType)
+        public bool CanConvertTo(ITypeConverterContext context, Type destinationType)
         {
             return false;
         }
 
-        public object ConvertFrom(IXamlTypeConverterContext context, CultureInfo culture, object value)
+        public object ConvertFrom(ITypeConverterContext context, CultureInfo culture, object value)
         {
             var s = (string)value;
 
@@ -34,13 +34,13 @@ namespace Perspex.Markup.Xaml.Converters
 
             if (typeName == null)
             {
-                var styleType = context.TypeRepository.GetXamlType(typeof(Style));
+                var styleType = context.TypeRepository.GetByType(typeof(Style));
                 var style = (Style)context.TopDownValueContext.GetLastInstance(styleType);
                 type = style.Selector.TargetType;
 
                 if (type == null)
                 {
-                    throw new XamlParseException(
+                    throw new ParseException(
                         "Could not determine the target type. Please fully qualify the property name.");
                 }
             }
@@ -50,7 +50,7 @@ namespace Perspex.Markup.Xaml.Converters
 
                 if (type == null)
                 {
-                    throw new XamlParseException($"Could not find type '{typeName}'.");
+                    throw new ParseException($"Could not find type '{typeName}'.");
                 }
             }
 
@@ -61,14 +61,14 @@ namespace Perspex.Markup.Xaml.Converters
 
             if (property == null)
             {
-                throw new XamlParseException(
+                throw new ParseException(
                     $"Could not find PerspexProperty '{type.Name}.{propertyName}'.");
             }
 
             return property;
         }
 
-        public object ConvertTo(IXamlTypeConverterContext context, CultureInfo culture, object value, Type destinationType)
+        public object ConvertTo(ITypeConverterContext context, CultureInfo culture, object value, Type destinationType)
         {
             throw new NotImplementedException();
         }
@@ -89,7 +89,7 @@ namespace Perspex.Markup.Xaml.Converters
             }
             else
             {
-                throw new XamlParseException($"Invalid property name: '{s}'.");
+                throw new ParseException($"Invalid property name: '{s}'.");
             }
         }
     }

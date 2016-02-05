@@ -8,19 +8,19 @@ using System.Reflection;
 
 namespace Perspex.Markup.Xaml.Context
 {
-    public class PerspexAttachableXamlMember : AttachableXamlMember
+    public class PerspexAttachableXamlMember : AttachableMember
     {
         public PerspexAttachableXamlMember(string name,
             XamlType owner,
             MethodInfo getter,
             MethodInfo setter,
-            IXamlTypeRepository xamlTypeRepository,
+            ITypeRepository xamlTypeRepository,
             ITypeFeatureProvider featureProvider)
             : base(name, getter, setter, xamlTypeRepository, featureProvider)
         {
         }
 
-        protected override IXamlMemberValuePlugin LookupXamlMemberValueConnector()
+        protected override IMemberValuePlugin LookupXamlMemberValueConnector()
         {
             return new PerspexXamlMemberValuePlugin(this);
         }

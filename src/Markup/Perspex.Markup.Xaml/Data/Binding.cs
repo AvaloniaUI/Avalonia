@@ -1,16 +1,17 @@
 ﻿// Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using System;
-using System.Reactive;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
-using Perspex.Controls;
-using Perspex.Data;
-using Perspex.Markup.Data;
-
 namespace Perspex.Markup.Xaml.Data
 {
+
+    using System;
+    using System.Reactive;
+    using System.Reactive.Linq;
+    using System.Reactive.Subjects;
+    using Controls;
+    using Perspex.Data;
+    using Markup.Data;
+
     /// <summary>
     /// A XAML binding.
     /// </summary>

@@ -25,7 +25,7 @@ namespace Perspex.Markup.Xaml.MarkupExtensions
 
         public string TypeName { get; set; }
 
-        private Type ResolveFromString(string type, IXamlTypeRepository typeRepository)
+        private Type ResolveFromString(string type, ITypeRepository typeRepository)
         {
             Guard.ThrowIfNull(type, nameof(type));
 

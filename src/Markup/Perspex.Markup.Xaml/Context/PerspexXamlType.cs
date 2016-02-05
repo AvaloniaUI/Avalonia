@@ -12,7 +12,7 @@ namespace Perspex.Markup.Xaml.Context
     public class PerspexXamlType : XamlType
     {
         public PerspexXamlType(Type type,
-            IXamlTypeRepository typeRepository,
+            ITypeRepository typeRepository,
             ITypeFactory typeFactory,
             ITypeFeatureProvider featureProvider) : base(type, typeRepository, typeFactory, featureProvider)
         {
@@ -40,12 +40,12 @@ namespace Perspex.Markup.Xaml.Context
             return result;
         }
 
-        protected override XamlMember LookupMember(string name)
+        protected override Member LookupMember(string name)
         {
             return new PerspexXamlMember(name, this, TypeRepository, FeatureProvider);
         }
 
-        protected override AttachableXamlMember LookupAttachableMember(string name)
+        protected override AttachableMember LookupAttachableMember(string name)
         {
             // OmniXAML seems to require a getter and setter even though we don't use them.
             var getter = UnderlyingType.GetTypeInfo().GetDeclaredMethod("Get" + name);

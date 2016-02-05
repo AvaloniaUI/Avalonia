@@ -18,9 +18,9 @@ namespace Perspex.Markup.Xaml.Context
 {
     public class PerspexXamlMemberValuePlugin : MemberValuePlugin
     {
-        private readonly MutableXamlMember _xamlMember;
+        private readonly MutableMember _xamlMember;
 
-        public PerspexXamlMemberValuePlugin(MutableXamlMember xamlMember) 
+        public PerspexXamlMemberValuePlugin(MutableMember xamlMember) 
             : base(xamlMember)
         {
             _xamlMember = xamlMember;
@@ -54,7 +54,7 @@ namespace Perspex.Markup.Xaml.Context
                 var setter = (Setter)instance;
                 var targetType = setter.Property.PropertyType;
                 var valuePipeline = new ValuePipeline(_xamlMember.TypeRepository, null);
-                var xamlType = _xamlMember.TypeRepository.GetXamlType(targetType);
+                var xamlType = _xamlMember.TypeRepository.GetByType(targetType);
                 base.SetValue(instance, valuePipeline.ConvertValueIfNecessary(value, xamlType));
             }
             else

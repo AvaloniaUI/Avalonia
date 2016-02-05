@@ -9,11 +9,14 @@ using Perspex.Markup.Xaml.Templates;
 
 namespace Perspex.Markup.Xaml.Context
 {
+    using OmniXaml.ObjectAssembler.Commands;
+
     public class PerspexObjectAssembler : IObjectAssembler
     {
-        private readonly TemplateHostingObjectAssembler _objectAssembler;
+        private readonly TemplateHostingObjectAssembler objectAssembler;
+        private readonly ObjectAssembler assembler;
 
-        public PerspexObjectAssembler(IWiringContext wiringContext, ObjectAssemblerSettings objectAssemblerSettings = null)
+        public PerspexObjectAssembler(IRuntimeTypeSource runtimeTypeSource, Settings objectAssemblerSettings = null)
         {
             var mapping = new DeferredLoaderMapping();
             mapping.Map<ControlTemplate>(x => x.Content, new TemplateLoader());
@@ -22,27 +25,32 @@ namespace Perspex.Markup.Xaml.Context
             mapping.Map<TreeDataTemplate>(x => x.Content, new TemplateLoader());
             mapping.Map<ItemsPanelTemplate>(x => x.Content, new TemplateLoader());
 
-            var assembler = new ObjectAssembler(wiringContext, new TopDownValueContext(), objectAssemblerSettings);
-            _objectAssembler = new TemplateHostingObjectAssembler(assembler, mapping);
+            assembler = new ObjectAssembler(runtimeTypeSource, new TopDownValueContext(), objectAssemblerSettings);
+            objectAssembler = new TemplateHostingObjectAssembler(assembler, mapping);
         }
 
 
-        public object Result => _objectAssembler.Result;
-
-        public InstanceLifeCycleHandler InstanceLifeCycleHandler { get; set; } = new InstanceLifeCycleHandler();
+        public object Result => objectAssembler.Result;
 
         public EventHandler<XamlSetValueEventArgs> XamlSetValueHandler { get; set; }
 
-        public IWiringContext WiringContext => _objectAssembler.WiringContext;
+        public IRuntimeTypeSource TypeSource => assembler.TypeSource;
 
-        public void Process(XamlInstruction node)
+        public ITopDownValueContext TopDownValueContext => assembler.TopDownValueContext;
+
+        public IInstanceLifeCycleListener LifecycleListener
         {
-            _objectAssembler.Process(node);
+            get { throw new NotImplementedException(); }
+        }
+
+        public void Process(Instruction node)
+        {
+            objectAssembler.Process(node);
         }
 
         public void OverrideInstance(object instance)
         {
-            _objectAssembler.OverrideInstance(instance);
+            objectAssembler.OverrideInstance(instance);
         }
     }
 }

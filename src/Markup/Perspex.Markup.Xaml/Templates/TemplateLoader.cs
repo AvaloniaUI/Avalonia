@@ -8,9 +8,9 @@ namespace Perspex.Markup.Xaml.Templates
 {
     public class TemplateLoader : IDeferredLoader
     {
-        public object Load(IEnumerable<XamlInstruction> nodes, IWiringContext context)
+        public object Load(IEnumerable<Instruction> nodes, IRuntimeTypeSource runtimeTypeSource)
         {
-            return new TemplateContent(nodes, context);
+            return new TemplateContent(nodes, runtimeTypeSource);
         }
     }
 }

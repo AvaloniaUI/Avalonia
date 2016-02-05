@@ -7,17 +7,17 @@ using OmniXaml.Typing;
 
 namespace Perspex.Markup.Xaml.Context
 {
-    public class PerspexXamlMember : XamlMember
+    public class PerspexXamlMember : Member
     {
         public PerspexXamlMember(string name,
             XamlType owner,
-            IXamlTypeRepository xamlTypeRepository,
+            ITypeRepository xamlTypeRepository,
             ITypeFeatureProvider featureProvider)
             : base(name, owner, xamlTypeRepository, featureProvider)
         {
         }
 
-        protected override IXamlMemberValuePlugin LookupXamlMemberValueConnector()
+        protected override IMemberValuePlugin LookupXamlMemberValueConnector()
         {
             return new PerspexXamlMemberValuePlugin(this);
         }

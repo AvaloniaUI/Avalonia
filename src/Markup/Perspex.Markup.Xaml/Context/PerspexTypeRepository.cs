@@ -9,18 +9,18 @@ using Perspex.Markup.Xaml.Data;
 
 namespace Perspex.Markup.Xaml.Context
 {
-    public class PerspexTypeRepository : XamlTypeRepository
+    public class PerspexTypeRepository : TypeRepository
     {
         private readonly ITypeFactory _typeFactory;
 
-        public PerspexTypeRepository(IXamlNamespaceRegistry xamlNamespaceRegistry,
+        public PerspexTypeRepository(INamespaceRegistry xamlNamespaceRegistry,
             ITypeFactory typeFactory,
             ITypeFeatureProvider featureProvider) : base(xamlNamespaceRegistry, typeFactory, featureProvider)
         {
             _typeFactory = typeFactory;
         }
 
-        public override XamlType GetXamlType(Type type)
+        public override XamlType GetByType(Type type)
         {
             Guard.ThrowIfNull(type, nameof(type));
             return new PerspexXamlType(type, this, _typeFactory, FeatureProvider);

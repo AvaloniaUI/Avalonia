@@ -10,20 +10,20 @@ namespace Perspex.Markup.Xaml.Templates
 {
     public class TemplateContent
     {
-        private readonly IEnumerable<XamlInstruction> _nodes;
-        private readonly IWiringContext _context;
+        private readonly IEnumerable<Instruction> nodes;
+        private readonly IRuntimeTypeSource runtimeTypeSource;
 
-        public TemplateContent(IEnumerable<XamlInstruction> nodes, IWiringContext context)
+        public TemplateContent(IEnumerable<Instruction> nodes, IRuntimeTypeSource runtimeTypeSource)
         {
-            _nodes = nodes;
-            _context = context;
+            this.nodes = nodes;
+            this.runtimeTypeSource = runtimeTypeSource;
         }
 
         public Control Load()
         {
-            var assembler = new PerspexObjectAssembler(_context);
+            var assembler = new PerspexObjectAssembler(runtimeTypeSource);
 
-            foreach (var xamlNode in _nodes)
+            foreach (var xamlNode in nodes)
             {
                 assembler.Process(xamlNode);
             }

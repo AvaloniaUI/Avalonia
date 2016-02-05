@@ -15,6 +15,8 @@ using Perspex.Themes.Default;
 
 namespace Perspex.DesignerSupport
 {
+    using OmniXaml.ObjectAssembler;
+
     class DesignerAssist
     {
         class DesignerApp : Application
@@ -63,7 +65,7 @@ namespace Perspex.DesignerSupport
             Control original;
             using (PlatformManager.DesignerMode())
             {
-                original =(Control)((XamlXmlLoader)new PerspexXamlLoader()).Load(new MemoryStream(Encoding.UTF8.GetBytes(xaml)));
+                original =(Control)((XmlLoader)new PerspexXamlLoader()).Load(new MemoryStream(Encoding.UTF8.GetBytes(xaml)), new Settings());
                 window = original as Window;
                 if (window == null)
                 {

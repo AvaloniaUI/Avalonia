@@ -7,15 +7,17 @@ using System.IO;
 using System.Reflection;
 using System.Text;
 using OmniXaml;
-using Perspex.Markup.Xaml.Context;
 using Perspex.Platform;
 
 namespace Perspex.Markup.Xaml
 {
+    using Context;
+    using OmniXaml.ObjectAssembler;
+
     /// <summary>
     /// Loads XAML for a perspex application.
     /// </summary>
-    public class PerspexXamlLoader : XamlXmlLoader
+    public class PerspexXamlLoader : XmlLoader
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="PerspexXamlLoader"/> class.
@@ -29,7 +31,7 @@ namespace Perspex.Markup.Xaml
         /// Initializes a new instance of the <see cref="PerspexXamlLoader"/> class.
         /// </summary>
         /// <param name="xamlParserFactory">The parser factory to use.</param>
-        public PerspexXamlLoader(IXamlParserFactory xamlParserFactory)
+        public PerspexXamlLoader(IParserFactory xamlParserFactory)
             : base(xamlParserFactory)
         {
         }
@@ -73,7 +75,7 @@ namespace Perspex.Markup.Xaml
                 {
                     using (var stream = assetLocator.Open(uri))
                     {
-                        return Load(stream, rootInstance);
+                        return Load(stream, new Settings { RootInstance = rootInstance });
                     }
                 }
             }
@@ -102,7 +104,7 @@ namespace Perspex.Markup.Xaml
 
             using (var stream = assetLocator.Open(uri))
             {
-                return Load(stream, rootInstance);
+                return Load(stream, new Settings { RootInstance = rootInstance });
             }
         }
 
@@ -120,7 +122,7 @@ namespace Perspex.Markup.Xaml
 
             using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(xaml)))
             {
-                return Load(stream, rootInstance);
+                return Load(stream, new Settings { RootInstance = rootInstance });
             }
         }
 

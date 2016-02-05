@@ -4,13 +4,14 @@
 using OmniXaml;
 using OmniXaml.ObjectAssembler;
 using OmniXaml.Parsers.ProtoParser;
-using OmniXaml.Parsers.XamlInstructions;
 
 namespace Perspex.Markup.Xaml.Context
 {
-    public class PerspexParserFactory : IXamlParserFactory
+    using OmniXaml.Parsers.Parser;
+
+    public class PerspexParserFactory : IParserFactory
     {
-        private readonly IWiringContext _wiringContext;
+        private readonly IRuntimeTypeSource runtimeTypeSource;
 
         public PerspexParserFactory()
             : this(new TypeFactory())
@@ -19,43 +20,20 @@ namespace Perspex.Markup.Xaml.Context
 
         public PerspexParserFactory(ITypeFactory typeFactory)
         {
-            _wiringContext = new PerspexWiringContext(typeFactory);
-        }
+            runtimeTypeSource = new PerspexRuntimeTypeSource(typeFactory);
+        }      
 
-        public IXamlParser CreateForReadingFree()
+        public IParser Create(Settings settings)
         {
-            var objectAssemblerForUndefinedRoot = GetObjectAssemblerForUndefinedRoot();
+            var xamlInstructionParser = new OrderAwareInstructionParser(new InstructionParser(runtimeTypeSource));
 
-            return CreateParser(objectAssemblerForUndefinedRoot);
-        }
-
-        private IXamlParser CreateParser(IObjectAssembler objectAssemblerForUndefinedRoot)
-        {
-            var xamlInstructionParser = new OrderAwareXamlInstructionParser(new XamlInstructionParser(_wiringContext));
-
+            IObjectAssembler objectAssembler = new PerspexObjectAssembler(runtimeTypeSource, settings);
             var phaseParserKit = new PhaseParserKit(
-                new XamlProtoInstructionParser(_wiringContext),
+                new ProtoInstructionParser(runtimeTypeSource),
                 xamlInstructionParser,
-                objectAssemblerForUndefinedRoot);
+                objectAssembler);
 
-            return new XamlXmlParser(phaseParserKit);
-        }
-
-        private IObjectAssembler GetObjectAssemblerForUndefinedRoot()
-        {
-            return new PerspexObjectAssembler(_wiringContext);
-        }
-
-        public IXamlParser CreateForReadingSpecificInstance(object rootInstance)
-        {
-            var objectAssemblerForUndefinedRoot = GetObjectAssemblerForSpecificRoot(rootInstance);
-
-            return CreateParser(objectAssemblerForUndefinedRoot);
-        }
-
-        private IObjectAssembler GetObjectAssemblerForSpecificRoot(object rootInstance)
-        {
-            return new PerspexObjectAssembler(_wiringContext, new ObjectAssemblerSettings { RootInstance = rootInstance });
+            return new XmlParser(phaseParserKit);
         }
     }
 }
