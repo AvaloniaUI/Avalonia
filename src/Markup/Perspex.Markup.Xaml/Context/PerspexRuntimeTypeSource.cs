@@ -25,6 +25,16 @@ namespace Perspex.Markup.Xaml.Context
 
     public class PerspexRuntimeTypeSource : IRuntimeTypeSource
     {
+        private static readonly IEnumerable<Assembly> ForcedAssemblies = new[]
+        {
+            typeof(PerspexObject).GetTypeInfo().Assembly,
+            typeof(Control).GetTypeInfo().Assembly,
+            typeof(Style).GetTypeInfo().Assembly,
+            typeof(DataTemplate).GetTypeInfo().Assembly,
+            typeof(SolidColorBrush).GetTypeInfo().Assembly,
+            typeof(IValueConverter).GetTypeInfo().Assembly,
+        };
+
         private const string PerspexNs = "https://github.com/perspex";
         private readonly RuntimeTypeSource inner;
 
@@ -37,6 +47,23 @@ namespace Perspex.Markup.Xaml.Context
             var typeRepository = new PerspexTypeRepository(namespaceRegistry, typeFactory, featureProvider);
 
             inner = new RuntimeTypeSource(typeRepository, namespaceRegistry);
+        }
+
+        private static IEnumerable<Assembly> ScannedAssemblies
+        {
+            get
+            {
+                var platform = PerspexLocator.Current.GetService<IPclPlatformWrapper>();
+
+                if (platform != null)
+                {
+                    return ForcedAssemblies.Concat(platform.GetLoadedAssemblies()).Distinct();
+                }
+                else
+                {
+                    return ForcedAssemblies;
+                }
+            }
         }
 
         private void LoadFeatureProvider(ITypeFeatureProvider featureProvider)
@@ -70,17 +97,8 @@ namespace Perspex.Markup.Xaml.Context
         {
             var xamlNamespaceRegistry = new NamespaceRegistry();
 
-            var forcedAssemblies = new[]
-            {
-                typeof(Binding),
-                typeof(Control),
-                typeof(IValueConverter),
-                typeof(Style),
-            }.Select(t => t.GetTypeInfo().Assembly);
-
             foreach (var nsa in
-                forcedAssemblies
-                    .Concat(PerspexLocator.Current.GetService<IPclPlatformWrapper>().GetLoadedAssemblies())
+                ScannedAssemblies
                     .Distinct()
                     .SelectMany(asm
                         => asm.GetCustomAttributes<XmlnsDefinitionAttribute>().Select(attr => new { asm, attr }))
@@ -130,15 +148,6 @@ namespace Perspex.Markup.Xaml.Context
             typeConverterProvider.AddAll(converters);
             return typeConverterProvider;
         }
-
-        private static IEnumerable<Assembly> ScannedAssemblies => new List<Assembly>
-        {
-            typeof(PerspexObject).GetTypeInfo().Assembly,
-            typeof(Control).GetTypeInfo().Assembly,
-            typeof(Style).GetTypeInfo().Assembly,
-            typeof(DataTemplate).GetTypeInfo().Assembly,
-            typeof(SolidColorBrush).GetTypeInfo().Assembly,
-        }.Distinct();
 
         public Namespace GetNamespace(string name)
         {
