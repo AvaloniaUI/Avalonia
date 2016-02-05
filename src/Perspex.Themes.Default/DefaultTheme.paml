@@ -11,6 +11,7 @@
   <StyleInclude Source="resm:Perspex.Themes.Default.ListBox.paml?assembly=Perspex.Themes.Default"/>
   <StyleInclude Source="resm:Perspex.Themes.Default.ListBoxItem.paml?assembly=Perspex.Themes.Default"/>
   <StyleInclude Source="resm:Perspex.Themes.Default.Menu.paml?assembly=Perspex.Themes.Default"/>
+  <StyleInclude Source="resm:Perspex.Themes.Default.ContextMenu.paml?assembly=Perspex.Themes.Default"/>
   <StyleInclude Source="resm:Perspex.Themes.Default.MenuItem.paml?assembly=Perspex.Themes.Default"/>
   <StyleInclude Source="resm:Perspex.Themes.Default.PopupRoot.paml?assembly=Perspex.Themes.Default"/>
   <StyleInclude Source="resm:Perspex.Themes.Default.ProgressBar.paml?assembly=Perspex.Themes.Default"/>

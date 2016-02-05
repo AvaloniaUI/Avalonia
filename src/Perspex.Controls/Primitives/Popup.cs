@@ -7,6 +7,8 @@ using Perspex.Interactivity;
 using Perspex.Metadata;
 using Perspex.Rendering;
 using Perspex.VisualTree;
+using Perspex.LogicalTree;
+using System.Linq;
 
 namespace Perspex.Controls.Primitives
 {
@@ -170,6 +172,11 @@ namespace Perspex.Controls.Primitives
 
             _popupRoot.Position = GetPosition();
 
+            if (_topLevel == null && PlacementTarget != null)
+            {
+                _topLevel = PlacementTarget.GetSelfAndLogicalAncestors().First(x => x is TopLevel) as TopLevel;
+            }
+
             if (_topLevel != null)
             {
                 _topLevel.Deactivated += TopLevelDeactivated;
@@ -190,8 +197,12 @@ namespace Perspex.Controls.Primitives
         {
             if (_popupRoot != null)
             {
-                _topLevel.RemoveHandler(PointerPressedEvent, PointerPressedOutside);
-                _topLevel.Deactivated -= TopLevelDeactivated;
+                if (_topLevel != null)
+                {
+                    _topLevel.RemoveHandler(PointerPressedEvent, PointerPressedOutside);
+                    _topLevel.Deactivated -= TopLevelDeactivated;
+                }
+
                 _popupRoot.Hide();
             }
 
@@ -210,16 +221,15 @@ namespace Perspex.Controls.Primitives
         }
 
         /// <inheritdoc/>
-        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
-            base.OnAttachedToVisualTree(e);
+            base.OnAttachedToLogicalTree(e);
             _topLevel = e.Root as TopLevel;
         }
 
         /// <inheritdoc/>
-        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
-            base.OnDetachedFromVisualTree(e);
             _topLevel = null;
         }
 

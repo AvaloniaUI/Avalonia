@@ -38,7 +38,21 @@
           </TabItem>
           <TabItem Header="Text">
               <StackPanel Margin="10" Gap="4">
-                  <TextBlock Text="TextBlock" FontWeight="Medium" FontSize="20" Foreground="#212121" />
+                  <TextBlock Text="TextBlock with ContextMenu" FontWeight="Medium" FontSize="20" Foreground="#212121">
+                    <ContextMenu.ContextMenu>
+                      <ContextMenu>
+                        <MenuItem Header="Testing 1" />
+                        <MenuItem Header="Testing 2" />
+                        <MenuItem Header="Testing 3" />
+                        <MenuItem Header="Testing 4">
+                          <MenuItem Header="SubItem 1" />
+                          <MenuItem Header="SubItem 2" />
+                          <MenuItem Header="SubItem 3" />
+                          <MenuItem Header="SubItem 4" />
+                        </MenuItem>
+                      </ContextMenu>
+                    </ContextMenu.ContextMenu>
+                  </TextBlock>
                   <TextBlock Text="A control for displaying text."
                               FontSize="13"
                               Foreground="#727272"

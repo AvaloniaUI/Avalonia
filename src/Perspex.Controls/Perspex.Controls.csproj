@@ -43,6 +43,7 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="Classes.cs" />
+    <Compile Include="ContextMenu.cs" />
     <Compile Include="DockPanel.cs" />
     <Compile Include="Expander.cs" />
     <Compile Include="Generators\ItemContainer.cs" />
