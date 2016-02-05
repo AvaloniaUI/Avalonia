@@ -283,11 +283,30 @@ namespace Perspex.Controls
                     IsSubMenuOpen = true;
                 }
             }
-            else if (HasSubMenu && !IsSubMenuOpen)
+            else
             {
-                _submenuTimer = DispatcherTimer.Run(
-                    () => IsSubMenuOpen = true,
-                    TimeSpan.FromMilliseconds(400));
+                var parentItem = Parent as MenuItem;
+                if (parentItem != null)
+                {
+                    foreach (var child in Parent.LogicalChildren.OfType<MenuItem>())
+                    {
+                        if (child != this && child.IsSubMenuOpen)
+                        {
+                            child.IsSubMenuOpen = false;
+                            child.IsSelected = child.AlwaysSelected;
+                        }
+                    }
+                }
+
+                if (HasSubMenu)
+                {
+                    if (!IsSubMenuOpen)
+                    {
+                        _submenuTimer = DispatcherTimer.Run(
+                            () => IsSubMenuOpen = true,
+                            TimeSpan.FromMilliseconds(400));
+                    }
+                }
             }
         }
 

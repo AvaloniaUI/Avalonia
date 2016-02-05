@@ -17,6 +17,25 @@
           <Separator/>
           <MenuItem Header="_World"/>
         </MenuItem>
+        <MenuItem Header="_Edit">
+          <MenuItem Header="_Command">
+            <MenuItem Header="_And">
+              <MenuItem Header="C_onquer"/>
+            </MenuItem>
+          </MenuItem>
+          <MenuItem Header="Beware">
+            <MenuItem Header="the alien">
+               <MenuItem Header="_Sectoid"/>
+               <MenuItem Header="_Muton"/>
+               <MenuItem Header="_Xenomorph"/>
+            </MenuItem>  
+            <MenuItem Header="the mutant"/>
+            <MenuItem Header="the heretic"/>
+          </MenuItem>       
+          <MenuItem Header="Cut"/>
+          <Separator/>
+          <MenuItem Header="Paste"/>
+        </MenuItem>
       </Menu>
       <TabControl Grid.Row="1" Grid.ColumnSpan="2" Padding="5">
           <TabControl.Transition>
