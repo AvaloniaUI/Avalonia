@@ -85,6 +85,7 @@
                 {
                     _popup = new Popup()
                     {
+                        PlacementMode = PlacementMode.Pointer,
                         PlacementTarget = control,
                         StaysOpen = false                                         
                     };
@@ -113,6 +114,7 @@
                 }
 
                 contextMenu._isOpen = false;
+                contextMenu.SelectedIndex = -1;
             }
         }
 

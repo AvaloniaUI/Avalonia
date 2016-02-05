@@ -11,6 +11,11 @@ namespace Perspex.Controls
     public enum PlacementMode
     {
         /// <summary>
+        /// The popup is placed at the pointer position.
+        /// </summary>
+        Pointer,
+
+        /// <summary>
         /// The popup is placed at the bottom left of its target.
         /// </summary>
         Bottom,
