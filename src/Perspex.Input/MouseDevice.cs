@@ -12,16 +12,19 @@ using Perspex.VisualTree;
 
 namespace Perspex.Input
 {
+    /// <summary>
+    /// Represents a mouse device.
+    /// </summary>
     public class MouseDevice : IMouseDevice
     {
         private int _clickCount;
-
         private Rect _lastClickRect;
-
         private uint _lastClickTime;
-
         private readonly List<IInputElement> _pointerOvers = new List<IInputElement>();
 
+        /// <summary>
+        /// Intializes a new instance of <see cref="MouseDevice"/>.
+        /// </summary>
         public MouseDevice()
         {
             InputManager.RawEventReceived
@@ -30,46 +33,79 @@ namespace Perspex.Input
                 .Subscribe(ProcessRawEvent);
         }
 
+        /// <summary>
+        /// Gets the current mouse device instance.
+        /// </summary>
         public static IMouseDevice Instance => PerspexLocator.Current.GetService<IMouseDevice>();
 
+        /// <summary>
+        /// Gets the control that is currently capturing by the mouse, if any.
+        /// </summary>
+        /// <remarks>
+        /// When an element captures the mouse, it recieves mouse input whether the cursor is 
+        /// within the control's bounds or not. To set the mouse capture, call the 
+        /// <see cref="Capture"/> method.
+        /// </remarks>
         public IInputElement Captured
         {
             get;
             protected set;
         }
 
+        /// <summary>
+        /// Gets the application's input manager.
+        /// </summary>
         public IInputManager InputManager => PerspexLocator.Current.GetService<IInputManager>();
 
+        /// <summary>
+        /// Gets the mouse position, in screen coordinates.
+        /// </summary>
         public Point Position
         {
             get;
             protected set;
         }
 
+        /// <summary>
+        /// Captures mouse input to the specified control.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <remarks>
+        /// When an element captures the mouse, it recieves mouse input whether the cursor is 
+        /// within the control's bounds or not. The current mouse capture control is exposed
+        /// by the <see cref="Captured"/> property.
+        /// </remarks>
         public virtual void Capture(IInputElement control)
         {
             Captured = control;
         }
 
+        /// <summary>
+        /// Gets the mouse position relative to a control.
+        /// </summary>
+        /// <param name="relativeTo">The control.</param>
+        /// <returns>The mouse position in the control's coordinates.</returns>
         public Point GetPosition(IVisual relativeTo)
         {
             Point p = Position;
             IVisual v = relativeTo;
+            IVisual root = null;
 
             while (v != null)
             {
                 p -= v.Bounds.Position;
+                root = v;
                 v = v.VisualParent;
             }
 
-            return p;
+            return root.PointToClient(p);
         }
 
         private void ProcessRawEvent(RawMouseEventArgs e)
         {
             var mouse = (IMouseDevice)e.Device;
 
-            Position = e.Position;
+            Position = e.Root.PointToScreen(e.Position);
 
             switch (e.Type)
             {
