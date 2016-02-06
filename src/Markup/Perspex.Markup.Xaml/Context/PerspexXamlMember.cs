@@ -4,6 +4,7 @@
 using Perspex.Markup.Xaml.Data;
 using OmniXaml;
 using OmniXaml.Typing;
+using System;
 
 namespace Perspex.Markup.Xaml.Context
 {
@@ -17,9 +18,9 @@ namespace Perspex.Markup.Xaml.Context
         {
         }
 
-        protected override IMemberValuePlugin LookupXamlMemberValueConnector()
+        public override void SetValue(object instance, object value)
         {
-            return new PerspexXamlMemberValuePlugin(this);
+            PropertyAccessor.SetValue(instance, this, value);
         }
 
         public override string ToString()
