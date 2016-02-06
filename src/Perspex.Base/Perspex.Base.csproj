@@ -55,6 +55,7 @@
     <Compile Include="DirectProperty.cs" />
     <Compile Include="IPerspexObject.cs" />
     <Compile Include="IStyledPropertyMetadata.cs" />
+    <Compile Include="Metadata\DependsOnAttribute.cs" />
     <Compile Include="Metadata\ContentAttribute.cs" />
     <Compile Include="PerspexDisposable.cs" />
     <Compile Include="PerspexLocator.cs" />

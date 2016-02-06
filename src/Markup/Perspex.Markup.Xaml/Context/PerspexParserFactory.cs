@@ -3,12 +3,11 @@
 
 using OmniXaml;
 using OmniXaml.ObjectAssembler;
+using OmniXaml.Parsers.Parser;
 using OmniXaml.Parsers.ProtoParser;
 
 namespace Perspex.Markup.Xaml.Context
 {
-    using OmniXaml.Parsers.Parser;
-
     public class PerspexParserFactory : IParserFactory
     {
         private readonly IRuntimeTypeSource runtimeTypeSource;

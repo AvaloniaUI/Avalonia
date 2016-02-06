@@ -25,102 +25,15 @@ namespace Perspex.Markup.Xaml.Context
 
     public class PerspexRuntimeTypeSource : IRuntimeTypeSource
     {
-        private static readonly IEnumerable<Assembly> ForcedAssemblies = new[]
-        {
-            typeof(PerspexObject).GetTypeInfo().Assembly,
-            typeof(Control).GetTypeInfo().Assembly,
-            typeof(Style).GetTypeInfo().Assembly,
-            typeof(DataTemplate).GetTypeInfo().Assembly,
-            typeof(SolidColorBrush).GetTypeInfo().Assembly,
-            typeof(IValueConverter).GetTypeInfo().Assembly,
-        };
-       
         private readonly RuntimeTypeSource inner;
 
         public PerspexRuntimeTypeSource(ITypeFactory typeFactory)
         {
             var namespaceRegistry = new PerspexNamespaceRegistry();
-            var featureProvider = new TypeFeatureProvider(GetConverterProvider());
-            LoadFeatureProvider(featureProvider);
+            var featureProvider = new PerspexTypeFeatureProvider();
             var typeRepository = new PerspexTypeRepository(namespaceRegistry, typeFactory, featureProvider);
 
             inner = new RuntimeTypeSource(typeRepository, namespaceRegistry);
-        }
-
-        private static IEnumerable<Assembly> ScannedAssemblies
-        {
-            get
-            {
-                var platform = PerspexLocator.Current.GetService<IPclPlatformWrapper>();
-
-                if (platform != null)
-                {
-                    return ForcedAssemblies.Concat(platform.GetLoadedAssemblies()).Distinct();
-                }
-                else
-                {
-                    return ForcedAssemblies;
-                }
-            }
-        }
-
-        private void LoadFeatureProvider(ITypeFeatureProvider featureProvider)
-        {
-            featureProvider.RegisterMetadata(new GenericMetadata<Visual>().WithRuntimeNameProperty(d => d.Name));
-            featureProvider.RegisterMetadata(new GenericMetadata<Setter>().WithMemberDependency(x => x.Value, x => x.Property));
-            featureProvider.RegisterMetadata(
-                new GenericMetadata<SelectingItemsControl>()
-                .WithMemberDependency(x => x.SelectedIndex, x => x.Items)
-                .WithMemberDependency(x => x.SelectedItem, x => x.Items));
-
-            RegisteContentProperties(featureProvider);
-        }
-
-        private static void RegisteContentProperties(ITypeFeatureProvider featureProvider)
-        {
-            var typeAndAttribute = from type in ScannedAssemblies.AllExportedTypes()
-                                   let properties = type.GetTypeInfo().DeclaredProperties
-                                   from property in properties
-                                   let attr = property.GetCustomAttribute<ContentAttribute>()
-                                   where attr != null
-                                   select new { Type = type, Property = property, ContentAttribute = attr };
-
-            foreach (var t in typeAndAttribute)
-            {
-                featureProvider.RegisterMetadata(t.Type, new Metadata {ContentProperty = t.Property.Name});
-            }
-        }
-
-        private static ITypeConverterProvider GetConverterProvider()
-        {
-            var typeConverterProvider = new TypeConverterProvider();
-            var converters = new[]
-            {
-                new TypeConverterRegistration(typeof(IBitmap), new BitmapTypeConverter()),
-                new TypeConverterRegistration(typeof(Brush), new BrushTypeConverter()),
-                new TypeConverterRegistration(typeof(Color), new ColorTypeConverter()),
-                new TypeConverterRegistration(typeof(Classes), new ClassesTypeConverter()),
-                new TypeConverterRegistration(typeof(ColumnDefinitions), new ColumnDefinitionsTypeConverter()),
-                new TypeConverterRegistration(typeof(Geometry), new GeometryTypeConverter()),
-                new TypeConverterRegistration(typeof(GridLength), new GridLengthTypeConverter()),
-                new TypeConverterRegistration(typeof(KeyGesture), new KeyGestureConverter()),
-                new TypeConverterRegistration(typeof(PerspexList<double>), new PerspexListTypeConverter<double>()),
-                new TypeConverterRegistration(typeof(IMemberSelector), new MemberSelectorTypeConverter()),
-                new TypeConverterRegistration(typeof(Point), new PointTypeConverter()),
-                new TypeConverterRegistration(typeof(IList<Point>), new PointsListTypeConverter()),
-                new TypeConverterRegistration(typeof(PerspexProperty), new PerspexPropertyTypeConverter()),
-                new TypeConverterRegistration(typeof(RelativePoint), new RelativePointTypeConverter()),
-                new TypeConverterRegistration(typeof(RelativeRect), new RelativeRectTypeConverter()),
-                new TypeConverterRegistration(typeof(RowDefinitions), new RowDefinitionsTypeConverter()),
-                new TypeConverterRegistration(typeof(Selector), new SelectorTypeConverter()),
-                new TypeConverterRegistration(typeof(Thickness), new ThicknessTypeConverter()),
-                new TypeConverterRegistration(typeof(TimeSpan), new TimeSpanTypeConverter()),
-                new TypeConverterRegistration(typeof(Uri), new UriTypeConverter()),
-                new TypeConverterRegistration(typeof(Cursor), new CursorTypeConverter())
-            };
-
-            typeConverterProvider.AddAll(converters);
-            return typeConverterProvider;
         }
 
         public Namespace GetNamespace(string name)
@@ -144,7 +57,6 @@ namespace Perspex.Markup.Xaml.Context
         }
 
         public IEnumerable<PrefixRegistration> RegisteredPrefixes => inner.RegisteredPrefixes;
-
 
         public XamlType GetByType(Type type)
         {
