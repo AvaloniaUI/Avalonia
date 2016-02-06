@@ -11,6 +11,7 @@ using Perspex.Controls.Generators;
 using Perspex.Data;
 using Perspex.Input;
 using Perspex.Interactivity;
+using Perspex.Metadata;
 using Perspex.Styling;
 using Perspex.VisualTree;
 
@@ -125,6 +126,7 @@ namespace Perspex.Controls.Primitives
         /// <summary>
         /// Gets or sets the index of the selected item.
         /// </summary>
+        [DependsOn(nameof(Items))]
         public int SelectedIndex
         {
             get
@@ -149,6 +151,7 @@ namespace Perspex.Controls.Primitives
         /// <summary>
         /// Gets or sets the selected item.
         /// </summary>
+        [DependsOn(nameof(Items))]
         public object SelectedItem
         {
             get

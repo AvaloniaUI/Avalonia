@@ -50,6 +50,7 @@ namespace Perspex.Styling
         /// </summary>
         [Content]
         [AssignBinding]
+        [DependsOn(nameof(Property))]
         public object Value
         {
             get;
