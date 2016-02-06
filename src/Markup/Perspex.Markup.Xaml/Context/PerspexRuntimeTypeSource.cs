@@ -34,14 +34,12 @@ namespace Perspex.Markup.Xaml.Context
             typeof(SolidColorBrush).GetTypeInfo().Assembly,
             typeof(IValueConverter).GetTypeInfo().Assembly,
         };
-
-        private const string PerspexNs = "https://github.com/perspex";
+       
         private readonly RuntimeTypeSource inner;
 
         public PerspexRuntimeTypeSource(ITypeFactory typeFactory)
         {
-            var namespaceRegistry = CreateNamespaceRegistry();
-
+            var namespaceRegistry = new PerspexNamespaceRegistry();
             var featureProvider = new TypeFeatureProvider(GetConverterProvider());
             LoadFeatureProvider(featureProvider);
             var typeRepository = new PerspexTypeRepository(namespaceRegistry, typeFactory, featureProvider);
@@ -91,30 +89,6 @@ namespace Perspex.Markup.Xaml.Context
             {
                 featureProvider.RegisterMetadata(t.Type, new Metadata {ContentProperty = t.Property.Name});
             }
-        }
-
-        private static INamespaceRegistry CreateNamespaceRegistry()
-        {
-            var xamlNamespaceRegistry = new NamespaceRegistry();
-
-            foreach (var nsa in
-                ScannedAssemblies
-                    .Distinct()
-                    .SelectMany(asm
-                        => asm.GetCustomAttributes<XmlnsDefinitionAttribute>().Select(attr => new { asm, attr }))
-                    .GroupBy(entry => entry.attr.XmlNamespace))
-            {
-                var def = XamlNamespace.Map(nsa.Key)
-                    .With(nsa.GroupBy(x => x.asm).Select(
-                        a => Route.Assembly(a.Key)
-                            .WithNamespaces(a.Select(entry => entry.attr.ClrNamespace).ToList())
-                        ));
-                xamlNamespaceRegistry.AddNamespace(def);
-            }
-
-            xamlNamespaceRegistry.RegisterPrefix(new PrefixRegistration(string.Empty, PerspexNs));
-
-            return xamlNamespaceRegistry;
         }
 
         private static ITypeConverterProvider GetConverterProvider()

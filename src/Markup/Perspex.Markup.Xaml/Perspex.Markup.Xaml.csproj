@@ -42,6 +42,7 @@
     </Compile>
     <Compile Include="Context\NameScopeWrapper.cs" />
     <Compile Include="Context\PerspexAttachableXamlMember.cs" />
+    <Compile Include="Context\PerspexNamespaceRegistry.cs" />
     <Compile Include="Context\PerspexObjectAssembler.cs" />
     <Compile Include="Context\PerspexParserFactory.cs" />
     <Compile Include="Context\PerspexRuntimeTypeSource.cs" />
