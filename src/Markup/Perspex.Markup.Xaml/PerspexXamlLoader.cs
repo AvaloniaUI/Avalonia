@@ -19,11 +19,13 @@ namespace Perspex.Markup.Xaml
     /// </summary>
     public class PerspexXamlLoader : XmlLoader
     {
+        private static PerspexParserFactory s_parserFactory;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="PerspexXamlLoader"/> class.
         /// </summary>
         public PerspexXamlLoader()
-            : this(new PerspexParserFactory())
+            : this(GetParserFactory())
         {
         }
 
@@ -124,6 +126,16 @@ namespace Perspex.Markup.Xaml
             {
                 return Load(stream, new Settings { RootInstance = rootInstance });
             }
+        }
+
+        private static PerspexParserFactory GetParserFactory()
+        {
+            if (s_parserFactory == null)
+            {
+                s_parserFactory = new PerspexParserFactory();
+            }
+
+            return s_parserFactory;
         }
 
         /// <summary>
