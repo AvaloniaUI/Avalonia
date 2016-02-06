@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Glass;
 using OmniXaml.Builder;
 using OmniXaml.Typing;
 using Perspex.Controls;
@@ -18,6 +19,7 @@ namespace Perspex.Markup.Xaml.Context
 {
     public class PerspexNamespaceRegistry : INamespaceRegistry
     {
+        private const string ClrNamespace = "clr-namespace:";
         private const string PerspexNs = "https://github.com/perspex";
 
         private static readonly IEnumerable<Assembly> ForcedAssemblies = new[]
@@ -30,6 +32,7 @@ namespace Perspex.Markup.Xaml.Context
             typeof(IValueConverter).GetTypeInfo().Assembly,
         };
 
+        private List<ClrNamespace> _clrNamespaces = new List<ClrNamespace>();
         private List<XamlNamespace> _namespaces = new List<XamlNamespace>();
         private List<PrefixRegistration> _prefixes = new List<PrefixRegistration>();
         private List<Assembly> _scanned = new List<Assembly>();
@@ -50,12 +53,28 @@ namespace Perspex.Markup.Xaml.Context
 
         public Namespace GetNamespace(string name)
         {
-            var result = _namespaces.FirstOrDefault(x => x.Name == name);
+            Namespace result;
 
-            if (result == null)
+            if (!IsClrNamespace(name))
             {
-                ScanNewAssemblies();
                 result = _namespaces.FirstOrDefault(x => x.Name == name);
+
+                if (result == null)
+                {
+                    ScanNewAssemblies();
+                    result = _namespaces.FirstOrDefault(x => x.Name == name);
+                }
+            }
+            else
+            {
+                result = _clrNamespaces.FirstOrDefault(x => x.Name == name);
+
+                if (result == null)
+                {
+                    var clr = CreateClrNamespace(name);
+                    _clrNamespaces.Add(clr);
+                    result = clr;
+                }
             }
 
             return result;
@@ -70,6 +89,37 @@ namespace Perspex.Markup.Xaml.Context
         public void RegisterPrefix(PrefixRegistration prefixRegistration)
         {
             _prefixes.Add(prefixRegistration);
+        }
+        private static bool IsClrNamespace(string ns)
+        {
+            return ns.StartsWith(ClrNamespace);
+        }
+
+        private static ClrNamespace CreateClrNamespace(string formattedClrString)
+        {
+            var startOfNamespace = formattedClrString.IndexOf(":", StringComparison.Ordinal) + 1;
+            var endOfNamespace = formattedClrString.IndexOf(";", startOfNamespace, StringComparison.Ordinal);
+
+            if (endOfNamespace < 0)
+            {
+                endOfNamespace = formattedClrString.Length - startOfNamespace;
+            }
+
+            var ns = formattedClrString.Substring(startOfNamespace, endOfNamespace - startOfNamespace);
+
+            var remainingPartStart = startOfNamespace + ns.Length + 1;
+            var remainingPartLenght = formattedClrString.Length - remainingPartStart;
+            var assemblyPart = formattedClrString.Substring(remainingPartStart, remainingPartLenght);
+
+            var assembly = GetAssembly(assemblyPart);
+
+            return new ClrNamespace(assembly, ns);
+        }
+
+        private static Assembly GetAssembly(string assemblyPart)
+        {
+            var dicotomize = assemblyPart.Dicotomize('=');
+            return Assembly.Load(new AssemblyName(dicotomize.Item2));
         }
 
         private void ScanAssemblies(IEnumerable<Assembly> assemblies)
