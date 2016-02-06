@@ -17,6 +17,9 @@ namespace XamlTestApplication
     {
         private static void Main()
         {
+            var sw = new Stopwatch();
+            sw.Start();
+
             var foo = Dispatcher.CurrentDispatcher;
 
             App application = new App
@@ -26,6 +29,10 @@ namespace XamlTestApplication
 
             var window = new MainWindow();
             window.Show();
+
+            sw.Stop();
+            Debug.WriteLine($"Startup: {sw.ElapsedMilliseconds}ms");
+
             Application.Current.Run(window);
         }
     }
