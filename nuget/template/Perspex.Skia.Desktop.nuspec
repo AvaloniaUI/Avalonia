@@ -13,7 +13,7 @@
     <copyright>Copyright 2015</copyright>
     <tags>Perspex</tags>
     <dependencies>
-	  <dependency id="Perspex" version="#VERSION#" />
+      <dependency id="Perspex" version="#VERSION#" />
     </dependencies>
   </metadata>
 </package>
