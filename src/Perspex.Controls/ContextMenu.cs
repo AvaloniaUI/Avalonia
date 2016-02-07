@@ -92,7 +92,8 @@
 
                     _popup.Closed += PopupClosed;
                 }
-                 
+
+                ((ISetLogicalParent)_popup).SetParent(null);
                 ((ISetLogicalParent)_popup).SetParent(control);
                 _popup.Child = control.ContextMenu;
 
@@ -132,6 +133,7 @@
         private static void ControlPointerReleased(object sender, PointerReleasedEventArgs e)
         {
             var control = (Control)sender;
+            var contextMenu = control.ContextMenu;
 
             if (e.MouseButton == MouseButton.Right)
             {
@@ -141,10 +143,12 @@
                 }
 
                 Show(control);
+                e.Handled = true;
             }
-            else
+            else if (contextMenu._isOpen)
             {
                 control.ContextMenu.Hide();
+                e.Handled = true;
             }
         }
     }
