@@ -49,7 +49,6 @@
     <Compile Include="Context\PerspexRuntimeTypeSource.cs" />
     <Compile Include="Context\PerspexTypeRepository.cs" />
     <Compile Include="Context\PerspexXamlMember.cs" />
-    <Compile Include="Context\PerspexXamlMemberValuePlugin.cs" />
     <Compile Include="Context\PerspexXamlType.cs" />
     <Compile Include="Context\PropertyAccessor.cs" />
     <Compile Include="Converters\BitmapTypeConverter.cs" />
@@ -275,7 +274,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <None Include="ClassDiagram1.cd" />
     <None Include="OmniXAML\Source\Glass\ChangeTracking\packages.config" />
     <None Include="packages.config" />
   </ItemGroup>
