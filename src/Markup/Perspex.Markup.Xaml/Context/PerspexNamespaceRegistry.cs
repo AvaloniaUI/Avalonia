@@ -34,7 +34,7 @@ namespace Perspex.Markup.Xaml.Context
 
         private List<ClrNamespace> _clrNamespaces = new List<ClrNamespace>();
         private List<XamlNamespace> _namespaces = new List<XamlNamespace>();
-        private List<PrefixRegistration> _prefixes = new List<PrefixRegistration>();
+        private Dictionary<string, string> _prefixes = new Dictionary<string, string>();
         private List<Assembly> _scanned = new List<Assembly>();
 
         public PerspexNamespaceRegistry()
@@ -44,7 +44,8 @@ namespace Perspex.Markup.Xaml.Context
             RegisterPrefix(new PrefixRegistration(string.Empty, PerspexNs));
         }
 
-        public IEnumerable<PrefixRegistration> RegisteredPrefixes => _prefixes;
+        public IEnumerable<PrefixRegistration> RegisteredPrefixes => 
+            _prefixes.Select(x => new PrefixRegistration(x.Key, x.Value));
 
         public void AddNamespace(XamlNamespace xamlNamespace)
         {
@@ -82,14 +83,21 @@ namespace Perspex.Markup.Xaml.Context
 
         public Namespace GetNamespaceByPrefix(string prefix)
         {
-            var ns = _prefixes.FirstOrDefault(x => x.Prefix == prefix)?.Ns;
-            return (ns != null) ? GetNamespace(ns) : null;
+            string uri;
+
+            if (_prefixes.TryGetValue(prefix, out uri))
+            {
+                return GetNamespace(uri);
+            }
+
+            return null;
         }
 
         public void RegisterPrefix(PrefixRegistration prefixRegistration)
         {
-            _prefixes.Add(prefixRegistration);
+            _prefixes[prefixRegistration.Prefix] = prefixRegistration.Ns;
         }
+
         private static bool IsClrNamespace(string ns)
         {
             return ns.StartsWith(ClrNamespace);
