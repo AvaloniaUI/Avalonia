@@ -6,7 +6,7 @@
     using Primitives;
     using System;
     using System.Reactive.Linq;
-
+    using System.Linq;
     public class ContextMenu : SelectingItemsControl
     {
         private bool _isOpen;
@@ -109,7 +109,7 @@
 
             if (contextMenu != null)
             {
-                foreach (MenuItem i in contextMenu.GetLogicalChildren())
+                foreach (var i in contextMenu.GetLogicalChildren().OfType<MenuItem>())
                 {
                     i.IsSubMenuOpen = false;
                 }
