@@ -48,6 +48,12 @@ namespace Perspex
             PerspexProperty.Register<Visual, bool>(nameof(IsVisible), true);
 
         /// <summary>
+        /// Defines the <see cref="Name"/> property.
+        /// </summary>
+        public static readonly DirectProperty<Visual, string> NameProperty =
+            PerspexProperty.RegisterDirect<Visual, string>(nameof(Name), o => o.Name, (o, v) => o.Name = v);
+
+        /// <summary>
         /// Defines the <see cref="Opacity"/> property.
         /// </summary>
         public static readonly StyledProperty<double> OpacityProperty =
