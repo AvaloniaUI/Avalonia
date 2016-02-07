@@ -14,4 +14,10 @@
     <Setter Property="Height" Value="1"/>
   </Style>
 
+  <Style Selector="ContextMenu > Separator">
+    <Setter Property="Background" Value="#ffd7d7d7"/>
+    <Setter Property="Margin" Value="29,1,0,1"/>
+    <Setter Property="Height" Value="1"/>
+  </Style>
+
 </Styles>
