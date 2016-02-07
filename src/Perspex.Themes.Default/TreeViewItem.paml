@@ -17,6 +17,7 @@
                                 Margin="{TemplateBinding Padding}"/>
             </Border>
             <Rectangle Name="focus"
+                       IsHitTestVisible="False"
                        IsVisible="{TemplateBinding IsFocused}"
                        Stroke="Black"
                        StrokeThickness="1"
