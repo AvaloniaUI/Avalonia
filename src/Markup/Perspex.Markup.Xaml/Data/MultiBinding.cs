@@ -30,6 +30,11 @@ namespace Perspex.Markup.Xaml.Data
         public IMultiValueConverter Converter { get; set; }
 
         /// <summary>
+        /// Gets or sets the value to use when the binding is unable to produce a value.
+        /// </summary>
+        public object FallbackValue { get; set; }
+
+        /// <summary>
         /// Gets or sets the binding mode.
         /// </summary>
         public BindingMode Mode { get; set; } = BindingMode.OneWay;
@@ -75,8 +80,7 @@ namespace Perspex.Markup.Xaml.Data
             var targetType = targetProperty?.PropertyType ?? typeof(object);
             var result = new BehaviorSubject<object>(PerspexProperty.UnsetValue);
             var children = Bindings.Select(x => x.CreateSubject(target, null));
-            var input = children.CombineLatest().Select(x =>
-                Converter.Convert(x, targetType, null, CultureInfo.CurrentUICulture));
+            var input = children.CombineLatest().Select(x => ConvertValue(x, targetType));
             input.Subscribe(result);
             return result;
         }
@@ -110,6 +114,18 @@ namespace Perspex.Markup.Xaml.Data
                     target.GetObservable(property).Subscribe(subject);
                     break;
             }
+        }
+
+        private object ConvertValue(IList<object> values, Type targetType)
+        {
+            var converted = Converter.Convert(values, targetType, null, CultureInfo.CurrentUICulture);
+
+            if (converted == PerspexProperty.UnsetValue && FallbackValue != null)
+            {
+                converted = FallbackValue;
+            }
+
+            return converted;
         }
     }
 }

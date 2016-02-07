@@ -39,11 +39,41 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
             Assert.Equal("1,2,3", result);
         }
 
+        [Fact]
+        public void Should_Return_FallbackValue_When_Converter_Returns_UnsetValue()
+        {
+            var target = new TextBlock();
+            var source = new { A = 1, B = 2, C = 3 };
+            var binding = new MultiBinding
+            {
+                Converter = new UnsetValueConverter(),
+                Bindings = new[]
+                {
+                    new Binding { Path = "A" },
+                    new Binding { Path = "B" },
+                    new Binding { Path = "C" },
+                },
+                FallbackValue = "fallback",
+            };
+
+            target.Bind(TextBlock.TextProperty, binding);
+
+            Assert.Equal("fallback", target.Text);
+        }
+
         private class ConcatConverter : IMultiValueConverter
         {
             public object Convert(IList<object> values, Type targetType, object parameter, CultureInfo culture)
             {
                 return string.Join(",", values);
+            }
+        }
+
+        private class UnsetValueConverter : IMultiValueConverter
+        {
+            public object Convert(IList<object> values, Type targetType, object parameter, CultureInfo culture)
+            {
+                return PerspexProperty.UnsetValue;
             }
         }
     }
