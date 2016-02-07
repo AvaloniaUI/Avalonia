@@ -15,19 +15,6 @@ namespace Perspex.Controls.UnitTests
 {
     public class DropDownTests
     {
-        [Fact(Skip = "Need to decide if this is right")]
-        public void Logical_Children_Should_Be_Children_Of_Container()
-        {
-            var target = new DropDown();
-
-            target.Template = GetTemplate();
-            target.ApplyTemplate();
-
-            var childIds = ((ILogical)target).LogicalChildren.Cast<Control>().Select(x => x.Name);
-
-            Assert.Equal(new[] { "contentControl", "toggle", "popup" }, childIds);
-        }
-
         private FuncControlTemplate GetTemplate()
         {
             return new FuncControlTemplate<DropDown>(parent =>
