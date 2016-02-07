@@ -13,15 +13,15 @@
     <copyright>Copyright 2015</copyright>
     <tags>Perspex</tags>
     <dependencies>
-      <dependency id="Serilog" version="1.5.9" />
+      <dependency id="Serilog" version="1.5.14" />
       <dependency id="Splat" version="1.6.2" />
-      <dependency id="Sprache" version="2.0.0.47" />
+      <dependency id="Sprache" version="2.0.0.50" />
       <dependency id="Rx-Core" version="2.2.5" />
       <dependency id="Rx-Interfaces" version="2.2.5" />
       <dependency id="Rx-Linq" version="2.2.5" />
       <dependency id="Rx-Main" version="2.2.5" />
       <dependency id="Rx-PlatformServices" version="2.2.5" />
-	  <dependency id="Perspex" version="#VERSION#" />
+      <dependency id="Perspex" version="#VERSION#" />
     </dependencies>
   </metadata>
 </package>
