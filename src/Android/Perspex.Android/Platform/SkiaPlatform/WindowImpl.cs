@@ -108,6 +108,11 @@ namespace Perspex.Android.Platform.SkiaPlatform
             if (Holder?.Surface?.IsValid == true) base.Invalidate();
         }
 
+        public Point PointToClient(Point point)
+        {
+            return point;
+        }
+
         public Point PointToScreen(Point point)
         {
             return point;
