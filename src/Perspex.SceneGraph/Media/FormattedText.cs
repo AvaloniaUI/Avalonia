@@ -42,6 +42,11 @@ namespace Perspex.Media
 
             var platform = PerspexLocator.Current.GetService<IPlatformRenderInterface>();
 
+            if (platform == null)
+            {
+                throw new Exception("Could not create FormattedText: IPlatformRenderInterface not registered.");
+            }
+
             PlatformImpl = platform.CreateFormattedText(
                 text,
                 fontFamilyName,

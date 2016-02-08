@@ -181,6 +181,12 @@ namespace Perspex.Threading
             if (!IsEnabled)
             {
                 IPlatformThreadingInterface threading = PerspexLocator.Current.GetService<IPlatformThreadingInterface>();
+
+                if (threading == null)
+                {
+                    throw new Exception("Could not start timer: IPlatformThreadingInterface is not registered.");
+                }
+
                 _timer = threading.StartTimer(Interval, InternalTick);
             }
         }
@@ -192,7 +198,6 @@ namespace Perspex.Threading
         {
             if (IsEnabled)
             {
-                IPlatformThreadingInterface threading = PerspexLocator.Current.GetService<IPlatformThreadingInterface>();
                 _timer.Dispose();
                 _timer = null;
             }

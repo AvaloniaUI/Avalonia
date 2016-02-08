@@ -59,12 +59,7 @@ namespace Perspex
                 throw new InvalidOperationException("Cannot create more than one Application instance.");
             }
 
-            Current = this;
-        }
-
-        public static void RegisterPlatformCallback(Action cb)
-        {
-            _platformInitializationCallback = cb;
+            PerspexLocator.CurrentMutable.BindToSelf(this);
         }
 
         /// <summary>
@@ -75,8 +70,7 @@ namespace Perspex
         /// </value>
         public static Application Current
         {
-            get;
-            private set;
+            get { return PerspexLocator.Current.GetService<Application>(); }
         }
 
         /// <summary>
@@ -139,6 +133,11 @@ namespace Perspex
         /// Gets the styling parent of the application, which is null.
         /// </summary>
         IStyleHost IStyleHost.StylingParent => null;
+
+        public static void RegisterPlatformCallback(Action cb)
+        {
+            _platformInitializationCallback = cb;
+        }
 
         /// <summary>
         /// Runs the application's main loop until the <see cref="ICloseable"/> is closed.
