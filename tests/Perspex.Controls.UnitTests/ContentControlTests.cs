@@ -1,18 +1,14 @@
 ﻿// Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using System;
 using System.Collections.Specialized;
 using System.Linq;
 using Moq;
 using Perspex.Controls.Presenters;
 using Perspex.Controls.Templates;
 using Perspex.LogicalTree;
-using Perspex.Platform;
 using Perspex.Styling;
 using Perspex.VisualTree;
-using Ploeh.AutoFixture;
-using Ploeh.AutoFixture.AutoMoq;
 using Xunit;
 
 namespace Perspex.Controls.UnitTests
@@ -22,44 +18,38 @@ namespace Perspex.Controls.UnitTests
         [Fact]
         public void Template_Should_Be_Instantiated()
         {
-            using (var ctx = RegisterServices())
-            {
-                var target = new ContentControl();
-                target.Content = "Foo";
-                target.Template = GetTemplate();
-                target.ApplyTemplate();
-                ((ContentPresenter)target.Presenter).UpdateChild();
+            var target = new ContentControl();
+            target.Content = "Foo";
+            target.Template = GetTemplate();
+            target.ApplyTemplate();
+            ((ContentPresenter)target.Presenter).UpdateChild();
 
-                var child = ((IVisual)target).VisualChildren.Single();
-                Assert.IsType<Border>(child);
-                child = child.VisualChildren.Single();
-                Assert.IsType<ContentPresenter>(child);
-                child = child.VisualChildren.Single();
-                Assert.IsType<TextBlock>(child);
-            }
+            var child = ((IVisual)target).VisualChildren.Single();
+            Assert.IsType<Border>(child);
+            child = child.VisualChildren.Single();
+            Assert.IsType<ContentPresenter>(child);
+            child = child.VisualChildren.Single();
+            Assert.IsType<TextBlock>(child);
         }
 
         [Fact]
         public void Templated_Children_Should_Be_Styled()
         {
-            using (var ctx = RegisterServices())
-            {
-                var root = new TestRoot();
-                var target = new ContentControl();
-                var styler = new Mock<IStyler>();
+            var root = new TestRoot();
+            var target = new ContentControl();
+            var styler = new Mock<IStyler>();
 
-                PerspexLocator.CurrentMutable.Bind<IStyler>().ToConstant(styler.Object);
-                target.Content = "Foo";
-                target.Template = GetTemplate();
-                root.Child = target;
+            PerspexLocator.CurrentMutable.Bind<IStyler>().ToConstant(styler.Object);
+            target.Content = "Foo";
+            target.Template = GetTemplate();
+            root.Child = target;
 
-                target.ApplyTemplate();
+            target.ApplyTemplate();
 
-                styler.Verify(x => x.ApplyStyles(It.IsAny<ContentControl>()), Times.Once());
-                styler.Verify(x => x.ApplyStyles(It.IsAny<Border>()), Times.Once());
-                styler.Verify(x => x.ApplyStyles(It.IsAny<ContentPresenter>()), Times.Once());
-                styler.Verify(x => x.ApplyStyles(It.IsAny<TextBlock>()), Times.Once());
-            }
+            styler.Verify(x => x.ApplyStyles(It.IsAny<ContentControl>()), Times.Once());
+            styler.Verify(x => x.ApplyStyles(It.IsAny<Border>()), Times.Once());
+            styler.Verify(x => x.ApplyStyles(It.IsAny<ContentPresenter>()), Times.Once());
+            styler.Verify(x => x.ApplyStyles(It.IsAny<TextBlock>()), Times.Once());
         }
 
         [Fact]
@@ -260,16 +250,6 @@ namespace Perspex.Controls.UnitTests
                     }
                 };
             });
-        }
-
-        private IDisposable RegisterServices()
-        {
-            var result = PerspexLocator.EnterScope();
-            var fixture = new Fixture().Customize(new AutoMoqCustomization());
-            var renderInterface = fixture.Create<IPlatformRenderInterface>();
-            PerspexLocator.CurrentMutable
-                .Bind<IPlatformRenderInterface>().ToConstant(renderInterface);
-            return result;
         }
     }
 }

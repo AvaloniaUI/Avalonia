@@ -13,6 +13,7 @@ using Perspex.Layout;
 using Perspex.Platform;
 using Perspex.Rendering;
 using Perspex.Styling;
+using Perspex.UnitTests;
 using Ploeh.AutoFixture;
 using Ploeh.AutoFixture.AutoMoq;
 using Xunit;
@@ -24,10 +25,8 @@ namespace Perspex.Controls.UnitTests
         [Fact]
         public void ClientSize_Should_Be_Set_On_Construction()
         {
-            using (PerspexLocator.EnterScope())
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                RegisterServices();
-
                 var impl = new Mock<ITopLevelImpl>();
                 impl.Setup(x => x.ClientSize).Returns(new Size(123, 456));
 
@@ -40,10 +39,8 @@ namespace Perspex.Controls.UnitTests
         [Fact]
         public void Width_Should_Not_Be_Set_On_Construction()
         {
-            using (PerspexLocator.EnterScope())
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                RegisterServices();
-
                 var impl = new Mock<ITopLevelImpl>();
                 impl.Setup(x => x.ClientSize).Returns(new Size(123, 456));
 
@@ -56,10 +53,8 @@ namespace Perspex.Controls.UnitTests
         [Fact]
         public void Height_Should_Not_Be_Set_On_Construction()
         {
-            using (PerspexLocator.EnterScope())
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                RegisterServices();
-
                 var impl = new Mock<ITopLevelImpl>();
                 impl.Setup(x => x.ClientSize).Returns(new Size(123, 456));
 
@@ -72,10 +67,10 @@ namespace Perspex.Controls.UnitTests
         [Fact]
         public void Layout_Pass_Should_Not_Be_Automatically_Scheduled()
         {
-            using (PerspexLocator.EnterScope())
-            {
-                RegisterServices();
+            var services = TestServices.StyledWindow.With(layoutManager: Mock.Of<ILayoutManager>());
 
+            using (UnitTestApplication.Start(services))
+            {
                 var impl = new Mock<ITopLevelImpl>();
                 var target = new TestTopLevel(impl.Object);
 
@@ -88,11 +83,8 @@ namespace Perspex.Controls.UnitTests
         [Fact]
         public void Bounds_Should_Be_Set_After_Layout_Pass()
         {
-            using (PerspexLocator.EnterScope())
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                RegisterServices();
-                PerspexLocator.CurrentMutable.Bind<ILayoutManager>().ToConstant(new LayoutManager());
-
                 var impl = new Mock<ITopLevelImpl>();
                 impl.SetupProperty(x => x.ClientSize);
                 impl.SetupProperty(x => x.Resized);
@@ -116,11 +108,8 @@ namespace Perspex.Controls.UnitTests
         [Fact]
         public void Impl_ClientSize_Should_Be_Set_After_Layout_Pass()
         {
-            using (PerspexLocator.EnterScope())
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                RegisterServices();
-                PerspexLocator.CurrentMutable.Bind<ILayoutManager>().ToConstant(new LayoutManager());
-
                 var impl = new Mock<ITopLevelImpl>();
 
                 var target = new TestTopLevel(impl.Object)
@@ -142,10 +131,8 @@ namespace Perspex.Controls.UnitTests
         [Fact]
         public void Width_And_Height_Should_Not_Be_Set_After_Layout_Pass()
         {
-            using (PerspexLocator.EnterScope())
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                RegisterServices();
-
                 var impl = new Mock<ITopLevelImpl>();
                 impl.Setup(x => x.ClientSize).Returns(new Size(123, 456));
 
@@ -160,10 +147,8 @@ namespace Perspex.Controls.UnitTests
         [Fact]
         public void Width_And_Height_Should_Be_Set_After_Window_Resize_Notification()
         {
-            using (PerspexLocator.EnterScope())
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                RegisterServices();
-
                 var impl = new Mock<ITopLevelImpl>();
                 impl.SetupAllProperties();
                 impl.Setup(x => x.ClientSize).Returns(new Size(123, 456));
@@ -180,10 +165,8 @@ namespace Perspex.Controls.UnitTests
         [Fact]
         public void Activate_Should_Call_Impl_Activate()
         {
-            using (PerspexLocator.EnterScope())
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                RegisterServices();
-
                 var impl = new Mock<ITopLevelImpl>();
                 var target = new TestTopLevel(impl.Object);
 
@@ -196,10 +179,8 @@ namespace Perspex.Controls.UnitTests
         [Fact]
         public void Impl_Activate_Should_Call_Raise_Activated_Event()
         {
-            using (PerspexLocator.EnterScope())
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                RegisterServices();
-
                 var impl = new Mock<ITopLevelImpl>();
                 impl.SetupAllProperties();
 
@@ -216,10 +197,8 @@ namespace Perspex.Controls.UnitTests
         [Fact]
         public void Impl_Close_Should_Call_Raise_Closed_Event()
         {
-            using (PerspexLocator.EnterScope())
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                RegisterServices();
-
                 var impl = new Mock<ITopLevelImpl>();
                 impl.SetupAllProperties();
 
@@ -236,10 +215,8 @@ namespace Perspex.Controls.UnitTests
         [Fact]
         public void Impl_Deactivate_Should_Call_Raise_Activated_Event()
         {
-            using (PerspexLocator.EnterScope())
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                RegisterServices();
-
                 var impl = new Mock<ITopLevelImpl>();
                 impl.SetupAllProperties();
 
@@ -256,12 +233,14 @@ namespace Perspex.Controls.UnitTests
         [Fact]
         public void Impl_Input_Should_Pass_Input_To_InputManager()
         {
-            using (PerspexLocator.EnterScope())
-            {
-                RegisterServices();
+            var inputManagerMock = new Mock<IInputManager>();
+            var services = TestServices.StyledWindow.With(inputManager: inputManagerMock.Object);
 
+            using (UnitTestApplication.Start(services))
+            {
                 var impl = new Mock<ITopLevelImpl>();
                 impl.SetupAllProperties();
+
                 var target = new TestTopLevel(impl.Object);
 
                 var input = new RawKeyEventArgs(
@@ -271,7 +250,6 @@ namespace Perspex.Controls.UnitTests
                     Key.A, InputModifiers.None);
                 impl.Object.Input(input);
 
-                var inputManagerMock = Mock.Get(InputManager.Instance);
                 inputManagerMock.Verify(x => x.Process(input));
             }
         }
@@ -279,10 +257,8 @@ namespace Perspex.Controls.UnitTests
         [Fact]
         public void Adding_Top_Level_As_Child_Should_Throw_Exception()
         {
-            using (PerspexLocator.EnterScope())
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                RegisterServices();
-
                 var impl = new Mock<ITopLevelImpl>();
                 impl.SetupAllProperties();
                 var target = new TestTopLevel(impl.Object);

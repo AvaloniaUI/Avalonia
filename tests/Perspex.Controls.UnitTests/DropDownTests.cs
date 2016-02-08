@@ -41,15 +41,5 @@ namespace Perspex.Controls.UnitTests
                 };
             });
         }
-
-        private IDisposable RegisterServices()
-        {
-            var result = PerspexLocator.EnterScope();
-            var fixture = new Fixture().Customize(new AutoMoqCustomization());
-            var renderInterface = fixture.Create<IPlatformRenderInterface>();
-            PerspexLocator.CurrentMutable.Bind<IPlatformRenderInterface>().ToConstant(renderInterface);
-
-            return result;
-        }
     }
 }

@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using Perspex.Input;
 using Perspex.Layout;
 using Perspex.Platform;
 using Perspex.Styling;
@@ -12,10 +13,12 @@ namespace Perspex.UnitTests
     {
         public UnitTestApplication(TestServices services)
         {
-            Services = services;
+            Services = services ?? new TestServices();
             RegisterServices();
-            Styles = services.Theme();
+            Styles = Services.Theme?.Invoke();
         }
+
+        public static new UnitTestApplication Current => (UnitTestApplication)Application.Current;
 
         public TestServices Services { get; }
 
@@ -31,6 +34,7 @@ namespace Perspex.UnitTests
             PerspexLocator.CurrentMutable
                 .Bind<IAssetLoader>().ToConstant(Services.AssetLoader)
                 .BindToSelf<IGlobalStyles>(this)
+                .Bind<IInputManager>().ToConstant(Services.InputManager)
                 .Bind<ILayoutManager>().ToConstant(Services.LayoutManager)
                 .Bind<IPclPlatformWrapper>().ToConstant(Services.PlatformWrapper)
                 .Bind<IPlatformRenderInterface>().ToConstant(Services.RenderInterface)
