@@ -3,13 +3,14 @@
 
 using System;
 using Perspex.Controls;
+using Perspex.Layout;
 using Perspex.Platform;
 using Perspex.Rendering;
 using Perspex.Styling;
 
-namespace Perspex.Markup.Xaml.UnitTests
+namespace Perspex.UnitTests
 {
-    public class TestRoot : Decorator, IRenderRoot, INameScope, IStyleRoot
+    public class TestRoot : Decorator, ILayoutRoot, INameScope, IRenderRoot, IStyleRoot
     {
         private readonly NameScope _nameScope = new NameScope();
 
@@ -29,37 +30,31 @@ namespace Perspex.Markup.Xaml.UnitTests
 
         public int NameScopeUnregisteredSubscribers { get; private set; }
 
-        public IRenderTarget RenderTarget
-        {
-            get { throw new NotImplementedException(); }
-        }
+        public Size ClientSize => new Size(100, 100);
 
-        public IRenderQueueManager RenderQueueManager
-        {
-            get { throw new NotImplementedException(); }
-        }
+        public Size MaxClientSize => Size.Infinity;
 
-        public Point PointToClient(Point p)
-        {
-            throw new NotImplementedException();
-        }
+        public ILayoutManager LayoutManager => PerspexLocator.Current.GetService<ILayoutManager>();
 
-        public Point PointToScreen(Point p)
-        {
-            throw new NotImplementedException();
-        }
+        public IRenderTarget RenderTarget => null;
 
-        public void Register(string name, object element)
+        public IRenderQueueManager RenderQueueManager => null;
+
+        public Point PointToClient(Point p) => p;
+
+        public Point PointToScreen(Point p) => p;
+
+        void INameScope.Register(string name, object element)
         {
             _nameScope.Register(name, element);
         }
 
-        public object Find(string name)
+        object INameScope.Find(string name)
         {
             return _nameScope.Find(name);
         }
 
-        public void Unregister(string name)
+        void INameScope.Unregister(string name)
         {
             _nameScope.Unregister(name);
         }

@@ -104,7 +104,6 @@
     <Compile Include="TestControlBase.cs" />
     <Compile Include="TestObservable.cs" />
     <Compile Include="TestObserver.cs" />
-    <Compile Include="TestRoot.cs" />
     <Compile Include="TestSelectors.cs" />
     <Compile Include="TestSubject.cs" />
     <Compile Include="TestTemplatedControl.cs" />
@@ -141,6 +140,10 @@
     <ProjectReference Include="..\..\src\Perspex.Styling\Perspex.Styling.csproj">
       <Project>{F1BAA01A-F176-4C6A-B39D-5B40BB1B148F}</Project>
       <Name>Perspex.Styling</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Perspex.UnitTests\Perspex.UnitTests.csproj">
+      <Project>{88060192-33d5-4932-b0f9-8bd2763e857d}</Project>
+      <Name>Perspex.UnitTests</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

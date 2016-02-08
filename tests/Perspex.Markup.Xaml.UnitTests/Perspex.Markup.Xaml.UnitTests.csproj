@@ -129,6 +129,10 @@
       <Project>{D211E587-D8BC-45B9-95A4-F297C8FA5200}</Project>
       <Name>Perspex.Animation</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\src\Perspex.Application\Perspex.Application.csproj">
+      <Project>{799a7bb5-3c2c-48b6-85a7-406a12c420da}</Project>
+      <Name>Perspex.Application</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\Perspex.Base\Perspex.Base.csproj">
       <Project>{B09B78D8-9B26-48B0-9149-D64A2F120F3F}</Project>
       <Name>Perspex.Base</Name>
@@ -164,6 +168,10 @@
     <ProjectReference Include="..\..\src\Perspex.Themes.Default\Perspex.Themes.Default.csproj">
       <Project>{3E10A5FA-E8DA-48B1-AD44-6A5B6CB7750F}</Project>
       <Name>Perspex.Themes.Default</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Perspex.UnitTests\Perspex.UnitTests.csproj">
+      <Project>{88060192-33d5-4932-b0f9-8bd2763e857d}</Project>
+      <Name>Perspex.UnitTests</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

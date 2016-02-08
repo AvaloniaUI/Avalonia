@@ -8,6 +8,7 @@ using Perspex.Controls.Presenters;
 using Perspex.Controls.Templates;
 using Perspex.LogicalTree;
 using Perspex.Styling;
+using Perspex.UnitTests;
 using Perspex.VisualTree;
 using Xunit;
 

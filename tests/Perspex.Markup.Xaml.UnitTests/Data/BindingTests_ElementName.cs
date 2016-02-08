@@ -3,6 +3,7 @@
 
 using Perspex.Controls;
 using Perspex.Markup.Xaml.Data;
+using Perspex.UnitTests;
 using Xunit;
 
 namespace Perspex.Markup.Xaml.UnitTests.Data

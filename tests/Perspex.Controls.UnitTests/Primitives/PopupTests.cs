@@ -12,6 +12,7 @@ using Perspex.Layout;
 using Perspex.LogicalTree;
 using Perspex.Platform;
 using Perspex.Styling;
+using Perspex.UnitTests;
 using Perspex.VisualTree;
 using Xunit;
 

@@ -6,6 +6,7 @@ using Moq;
 using Perspex.Controls.Presenters;
 using Perspex.Controls.Primitives;
 using Perspex.Controls.Templates;
+using Perspex.UnitTests;
 using Perspex.VisualTree;
 using Xunit;
 

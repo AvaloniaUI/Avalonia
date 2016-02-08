@@ -8,6 +8,7 @@ using Perspex.Controls.Presenters;
 using Perspex.Controls.Templates;
 using Perspex.Input;
 using Perspex.LogicalTree;
+using Perspex.UnitTests;
 using Xunit;
 
 namespace Perspex.Controls.UnitTests
