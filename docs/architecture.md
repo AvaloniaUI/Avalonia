@@ -31,7 +31,7 @@ The assemblies are as follows, from lowest to highest level:
 
 The main classes in this assembly are `PerspexObject` and `PerspexProperty`.
 
-These are Perspex's versions of XAML's `DependencyObject` and `DepenendencyProperty`. It also 
+These are Perspex's versions of XAML's `DependencyObject` and `DependencyProperty`. It also 
 defines a `PerspexDispatcher` which is - surprise - our version of XAML's `Dispatcher`.
 
 ### Perspex.Animation
