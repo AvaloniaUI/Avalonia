@@ -70,6 +70,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="TestTemplatedRoot.cs" />
     <Compile Include="TestRoot.cs" />
     <Compile Include="TestServices.cs" />
     <Compile Include="UnitTestApplication.cs" />
