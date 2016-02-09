@@ -83,6 +83,7 @@ namespace Perspex.Input
             if (element != null)
             {
                 var keyInput = e as RawKeyEventArgs;
+
                 if (keyInput != null)
                 {
                     switch (keyInput.Type)
@@ -117,19 +118,25 @@ namespace Perspex.Input
                             }
 
                             element.RaiseEvent(ev);
+                            e.Handled = ev.Handled;
                             break;
                     }
                 }
+
                 var text = e as RawTextInputEventArgs;
+
                 if (text != null)
                 {
-                    element.RaiseEvent(new TextInputEventArgs()
+                    var ev = new TextInputEventArgs()
                     {
                         Device = this,
                         Text = text.Text,
                         Source = element,
                         RoutedEvent = InputElement.TextInputEvent
-                    });
+                    };
+
+                    element.RaiseEvent(ev);
+                    e.Handled = ev.Handled;
                 }
             }
         }

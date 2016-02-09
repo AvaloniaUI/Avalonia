@@ -115,7 +115,7 @@ namespace Perspex.Input
                 case RawMouseEventType.LeftButtonDown:
                 case RawMouseEventType.RightButtonDown:
                 case RawMouseEventType.MiddleButtonDown:
-                    MouseDown(mouse, e.Timestamp, e.Root, e.Position,
+                    e.Handled = MouseDown(mouse, e.Timestamp, e.Root, e.Position,
                          e.Type == RawMouseEventType.LeftButtonDown
                             ? MouseButton.Left
                             : e.Type == RawMouseEventType.RightButtonDown ? MouseButton.Right : MouseButton.Middle,
@@ -124,17 +124,17 @@ namespace Perspex.Input
                 case RawMouseEventType.LeftButtonUp:
                 case RawMouseEventType.RightButtonUp:
                 case RawMouseEventType.MiddleButtonUp:
-                    MouseUp(mouse, e.Root, e.Position,
+                    e.Handled = MouseUp(mouse, e.Root, e.Position,
                         e.Type == RawMouseEventType.LeftButtonUp
                             ? MouseButton.Left
                             : e.Type == RawMouseEventType.RightButtonUp ? MouseButton.Right : MouseButton.Middle,
                         e.InputModifiers);
                     break;
                 case RawMouseEventType.Move:
-                    MouseMove(mouse, e.Root, e.Position, e.InputModifiers);
+                    e.Handled = MouseMove(mouse, e.Root, e.Position, e.InputModifiers);
                     break;
                 case RawMouseEventType.Wheel:
-                    MouseWheel(mouse, e.Root, e.Position, ((RawMouseWheelEventArgs)e).Delta, e.InputModifiers);
+                    e.Handled = MouseWheel(mouse, e.Root, e.Position, ((RawMouseWheelEventArgs)e).Delta, e.InputModifiers);
                     break;
             }
         }
@@ -144,7 +144,7 @@ namespace Perspex.Input
             ClearPointerOver(this, root);
         }
 
-        private void MouseDown(IMouseDevice device, uint timestamp, IInputElement root, Point p, MouseButton button, InputModifiers inputModifiers)
+        private bool MouseDown(IMouseDevice device, uint timestamp, IInputElement root, Point p, MouseButton button, InputModifiers inputModifiers)
         {
             var hit = HitTest(root, p);
 
@@ -178,11 +178,14 @@ namespace Perspex.Input
                     };
 
                     source.RaiseEvent(e);
+                    return e.Handled;
                 }
             }
+
+            return false;
         }
 
-        private void MouseMove(IMouseDevice device, IInputRoot root, Point p, InputModifiers inputModifiers)
+        private bool MouseMove(IMouseDevice device, IInputRoot root, Point p, InputModifiers inputModifiers)
         {
             IInputElement source;
 
@@ -197,51 +200,62 @@ namespace Perspex.Input
                 source = Captured;
             }
 
-            source.RaiseEvent(new PointerEventArgs
+            var e = new PointerEventArgs
             {
                 Device = this,
                 RoutedEvent = InputElement.PointerMovedEvent,
                 Source = source,
                 InputModifiers = inputModifiers
-            });
+            };
+
+            source.RaiseEvent(e);
+            return e.Handled;
         }
 
-        private void MouseUp(IMouseDevice device, IInputRoot root, Point p, MouseButton button, InputModifiers inputModifiers)
+        private bool MouseUp(IMouseDevice device, IInputRoot root, Point p, MouseButton button, InputModifiers inputModifiers)
         {
             var hit = HitTest(root, p);
 
             if (hit != null)
             {
-                IInteractive source = GetSource(hit);
-
-                source?.RaiseEvent(new PointerReleasedEventArgs
+                var source = GetSource(hit);
+                var e = new PointerReleasedEventArgs
                 {
                     Device = this,
                     RoutedEvent = InputElement.PointerReleasedEvent,
                     Source = source,
                     MouseButton = button,
                     InputModifiers = inputModifiers
-                });
+                };
+
+                source?.RaiseEvent(e);
+                return e.Handled;
             }
+
+            return false;
         }
 
-        private void MouseWheel(IMouseDevice device, IInputRoot root, Point p, Vector delta, InputModifiers inputModifiers)
+        private bool MouseWheel(IMouseDevice device, IInputRoot root, Point p, Vector delta, InputModifiers inputModifiers)
         {
             var hit = HitTest(root, p);
 
             if (hit != null)
             {
-                IInteractive source = GetSource(hit);
-
-                source?.RaiseEvent(new PointerWheelEventArgs
+                var source = GetSource(hit);
+                var e = new PointerWheelEventArgs
                 {
                     Device = this,
                     RoutedEvent = InputElement.PointerWheelChangedEvent,
                     Source = source,
                     Delta = delta,
                     InputModifiers = inputModifiers
-                });
+                };
+
+                source?.RaiseEvent(e);
+                return e.Handled;
             }
+
+            return false;
         }
 
         private IInteractive GetSource(IVisual hit)

@@ -553,10 +553,10 @@ namespace Perspex.Win32
             {
                 Input(e);
 
-                if (msg >= 161 && msg <= 173)
-                    return UnmanagedMethods.DefWindowProc(hWnd, msg, wParam, lParam);
-
-                return IntPtr.Zero;
+                if (e.Handled)
+                {
+                    return IntPtr.Zero;
+                }
             }
 
             return UnmanagedMethods.DefWindowProc(hWnd, msg, wParam, lParam);
