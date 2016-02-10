@@ -69,8 +69,7 @@ namespace Perspex.Controls
         /// Defines the <see cref="ContextMenu"/> property.
         /// </summary>
         public static readonly StyledProperty<ContextMenu> ContextMenuProperty =
-            PerspexProperty.Register<Control, ContextMenu>(nameof(ContextMenu));        
-
+            PerspexProperty.Register<Control, ContextMenu>(nameof(ContextMenu));
 
         /// <summary>
         /// Event raised when an element wishes to be scrolled into view.
@@ -394,6 +393,15 @@ namespace Perspex.Controls
         }
 
         /// <summary>
+        /// Gets the element that recieves the focus adorner.
+        /// </summary>
+        /// <returns>The control that recieves the focus adorner.</returns>
+        protected virtual IControl GetTemplateFocusTarget()
+        {
+            return this;
+        }
+
+        /// <summary>
         /// Called when the control is added to a logical tree.
         /// </summary>
         /// <param name="e">The event args.</param>
@@ -488,8 +496,13 @@ namespace Perspex.Controls
 
                     if (_focusAdorner != null)
                     {
-                        AdornerLayer.SetAdornedElement((Visual)_focusAdorner, this);
-                        adornerLayer.Children.Add(_focusAdorner);
+                        var target = (Visual)GetTemplateFocusTarget();
+
+                        if (target != null)
+                        {
+                            AdornerLayer.SetAdornedElement((Visual)_focusAdorner, target);
+                            adornerLayer.Children.Add(_focusAdorner);
+                        }
                     }
                 }
             }
