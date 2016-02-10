@@ -448,13 +448,6 @@ namespace Perspex.Controls
             public static readonly DependencyResolver Instance = new DependencyResolver();
 
             /// <summary>
-            /// Disposes of all managed resources.
-            /// </summary>
-            public void Dispose()
-            {
-            }
-
-            /// <summary>
             /// Gets a service of the specified type.
             /// </summary>
             /// <param name="serviceType">The service type.</param>

@@ -119,17 +119,6 @@
             }
         }
 
-        private void PopupOpened(object sender, EventArgs e)
-        {
-            var selectedIndex = SelectedIndex;
-
-            if (selectedIndex != -1)
-            {
-                var container = ItemContainerGenerator.ContainerFromIndex(selectedIndex);
-                container?.Focus();
-            }
-        }
-
         private static void ControlPointerReleased(object sender, PointerReleasedEventArgs e)
         {
             var control = (Control)sender;

@@ -118,13 +118,6 @@ namespace Perspex.Controls.Mixins
             });
         }
 
-        private static event EventHandler<TemplateAppliedEventArgs> TemplateApplied;
-
-        private static void OnTemplateApplied(object sender, RoutedEventArgs e)
-        {
-            TemplateApplied?.Invoke(sender, (TemplateAppliedEventArgs)e);
-        }
-
         private static void UpdateLogicalChild(
             IControl control,
             IPerspexList<ILogical> logicalChildren,

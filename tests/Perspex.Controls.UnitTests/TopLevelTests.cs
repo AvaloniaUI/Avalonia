@@ -281,31 +281,6 @@ namespace Perspex.Controls.UnitTests
                 });
         }
 
-        private void RegisterServices()
-        {
-            var fixture = new Fixture().Customize(new AutoMoqCustomization());
-            var l = PerspexLocator.CurrentMutable;
-
-            var formattedText = fixture.Create<IFormattedTextImpl>();
-            var globalStyles = new Mock<IGlobalStyles>();
-            var layoutManager = fixture.Create<ILayoutManager>();
-            var renderInterface = fixture.Create<IPlatformRenderInterface>();
-            var renderManager = fixture.Create<IRenderQueueManager>();
-            var windowImpl = new Mock<IWindowImpl>();
-            var theme = new Styles();
-
-            globalStyles.Setup(x => x.Styles).Returns(theme);
-
-            PerspexLocator.CurrentMutable
-                .Bind<IInputManager>().ToConstant(new Mock<IInputManager>().Object)
-                .Bind<IFocusManager>().ToConstant(new Mock<IFocusManager>().Object)
-                .Bind<IGlobalStyles>().ToConstant(globalStyles.Object)
-                .Bind<ILayoutManager>().ToConstant(layoutManager)
-                .Bind<IPlatformRenderInterface>().ToConstant(renderInterface)
-                .Bind<IRenderQueueManager>().ToConstant(renderManager)
-                .Bind<IStyler>().ToConstant(new Styler());
-        }
-
         private class TestTopLevel : TopLevel
         {
             public TestTopLevel(ITopLevelImpl impl)

@@ -53,18 +53,6 @@ namespace Perspex.Styling.UnitTests
             Assert.NotNull(source.Error);
         }
 
-        private class Class1 : PerspexObject
-        {
-            public static readonly StyledProperty<string> FooProperty =
-                PerspexProperty.Register<Class1, string>("Foo", "foodefault");
-
-            public string Foo
-            {
-                get { return GetValue(FooProperty); }
-                set { SetValue(FooProperty, value); }
-            }
-        }
-
         private class TestSubject : ISubject<object>
         {
             private IObserver<object> _observer;

@@ -679,16 +679,6 @@ namespace Perspex
         }
 
         /// <summary>
-        /// Gets a description of a property that van be used in observables.
-        /// </summary>
-        /// <param name="property">The property</param>
-        /// <returns>The description.</returns>
-        private string GetDescription(PerspexProperty property)
-        {
-            return $"{GetType().Name}.{property.Name}";
-        }
-
-        /// <summary>
         /// Gets a description of an observable that van be used in logs.
         /// </summary>
         /// <param name="o">The observable.</param>

@@ -236,15 +236,5 @@ namespace Perspex.Controls.UnitTests
             // Now the ItemsPresenter should be reigstered, so apply its template.
             target.Presenter.ApplyTemplate();
         }
-
-        private class Item
-        {
-            public Item(string value)
-            {
-                Value = value;
-            }
-
-            public string Value { get; }
-        }
     }
 }

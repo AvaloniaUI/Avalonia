@@ -117,10 +117,5 @@ namespace Perspex.Controls.UnitTests
             Assert.Equal(new Control[0], panel.Children);
             Assert.Equal(new ILogical[0], panel.GetLogicalChildren());
         }
-
-        private class TestReparent : Panel
-        {
-            public new IPerspexList<ILogical> LogicalChildren => base.LogicalChildren;
-        }
     }
 }

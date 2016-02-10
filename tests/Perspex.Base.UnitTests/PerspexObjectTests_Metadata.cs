@@ -51,24 +51,12 @@ namespace Perspex.Base.UnitTests
         {
             public static readonly StyledProperty<string> FooProperty =
                 PerspexProperty.Register<Class1, string>("Foo");
-
-            public static readonly StyledProperty<string> BazProperty =
-                PerspexProperty.Register<Class1, string>("Baz");
-
-            public static readonly StyledProperty<int> QuxProperty =
-                PerspexProperty.Register<Class1, int>("Qux");
         }
 
         private class Class2 : Class1
         {
             public static readonly StyledProperty<string> BarProperty =
                 PerspexProperty.Register<Class2, string>("Bar");
-
-            public static readonly StyledProperty<double> FlobProperty =
-                PerspexProperty.Register<Class2, double>("Flob");
-
-            public static readonly StyledProperty<double?> FredProperty =
-                PerspexProperty.Register<Class2, double?>("Fred");
         }
 
         private class AttachedOwner

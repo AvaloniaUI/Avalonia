@@ -379,10 +379,5 @@ namespace Perspex.Gtk
             Input(e);
             return true;
         }
-
-        private IPlatformHandle GetHandle(Gdk.Window window)
-        {
-            return new PlatformHandle(window.Handle, "GdkWindow");
-        }
     }
 }

@@ -215,8 +215,6 @@ namespace Perspex.Cairo.Media
 			}
         }
 
-        private static Random Random = new Random();
-
         /// <summary>
         /// Pushes a clip rectange.
         /// </summary>

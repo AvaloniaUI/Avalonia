@@ -165,18 +165,5 @@ namespace Perspex.Styling.UnitTests
 
             Assert.True(completed);
         }
-
-        private Recorded<Notification<bool>>[] OnNextValues(params bool[] values)
-        {
-            var result = new List<Recorded<Notification<bool>>>();
-            var time = 1;
-
-            foreach (var value in values)
-            {
-                result.Add(new Recorded<Notification<bool>>(time, Notification.CreateOnNext<bool>(value)));
-            }
-
-            return result.ToArray();
-        }
     }
 }
