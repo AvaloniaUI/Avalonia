@@ -26,7 +26,7 @@ namespace Perspex.Input
         Middle
     }
 
-    public class PointerPressEventArgs : PointerEventArgs
+    public class PointerPressedEventArgs : PointerEventArgs
     {
         public int ClickCount { get; set; }
         public MouseButton MouseButton { get; set; }

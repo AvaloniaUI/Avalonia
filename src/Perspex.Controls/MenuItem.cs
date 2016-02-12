@@ -310,7 +310,7 @@ namespace Perspex.Controls
         /// Called when the pointer is pressed over the <see cref="MenuItem"/>.
         /// </summary>
         /// <param name="e">The event args.</param>
-        protected override void OnPointerPressed(PointerPressEventArgs e)
+        protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
             base.OnPointerPressed(e);
 

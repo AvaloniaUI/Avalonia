@@ -288,7 +288,7 @@ namespace Perspex.Controls.Primitives
             }
         }
 
-        private void PointerPressedOutside(object sender, PointerPressEventArgs e)
+        private void PointerPressedOutside(object sender, PointerPressedEventArgs e)
         {
             if (!StaysOpen)
             {

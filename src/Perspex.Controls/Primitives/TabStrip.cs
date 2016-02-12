@@ -35,7 +35,7 @@ namespace Perspex.Controls.Primitives
         }
 
         /// <inheritdoc/>
-        protected override void OnPointerPressed(PointerPressEventArgs e)
+        protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
             base.OnPointerPressed(e);
 

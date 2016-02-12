@@ -167,7 +167,7 @@ namespace Perspex.Input
                     _lastClickRect = new Rect(p, new Size())
                         .Inflate(new Thickness(settings.DoubleClickSize.Width / 2, settings.DoubleClickSize.Height / 2));
 
-                    var e = new PointerPressEventArgs
+                    var e = new PointerPressedEventArgs
                     {
                         Device = this,
                         RoutedEvent = InputElement.PointerPressedEvent,

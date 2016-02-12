@@ -65,7 +65,7 @@ namespace Perspex.Controls.UnitTests
 
             ApplyTemplate(target);
 
-            target.Presenter.Panel.Children[0].RaiseEvent(new PointerPressEventArgs
+            target.Presenter.Panel.Children[0].RaiseEvent(new PointerPressedEventArgs
             {
                 RoutedEvent = InputElement.PointerPressedEvent,
                 MouseButton = MouseButton.Left,
@@ -86,7 +86,7 @@ namespace Perspex.Controls.UnitTests
             ApplyTemplate(target);
             target.SelectedIndex = 0;
 
-            target.Presenter.Panel.Children[0].RaiseEvent(new PointerPressEventArgs
+            target.Presenter.Panel.Children[0].RaiseEvent(new PointerPressedEventArgs
             {
                 RoutedEvent = InputElement.PointerPressedEvent,
                 MouseButton = MouseButton.Left,
@@ -107,7 +107,7 @@ namespace Perspex.Controls.UnitTests
 
             ApplyTemplate(target);
 
-            target.Presenter.Panel.Children[0].RaiseEvent(new PointerPressEventArgs
+            target.Presenter.Panel.Children[0].RaiseEvent(new PointerPressedEventArgs
             {
                 RoutedEvent = InputElement.PointerPressedEvent,
                 MouseButton = MouseButton.Left,
@@ -129,7 +129,7 @@ namespace Perspex.Controls.UnitTests
             ApplyTemplate(target);
             target.SelectedIndex = 0;
 
-            target.Presenter.Panel.Children[0].RaiseEvent(new PointerPressEventArgs
+            target.Presenter.Panel.Children[0].RaiseEvent(new PointerPressedEventArgs
             {
                 RoutedEvent = InputElement.PointerPressedEvent,
                 MouseButton = MouseButton.Left,
@@ -151,7 +151,7 @@ namespace Perspex.Controls.UnitTests
             ApplyTemplate(target);
             target.SelectedIndex = 0;
 
-            target.Presenter.Panel.Children[0].RaiseEvent(new PointerPressEventArgs
+            target.Presenter.Panel.Children[0].RaiseEvent(new PointerPressedEventArgs
             {
                 RoutedEvent = InputElement.PointerPressedEvent,
                 MouseButton = MouseButton.Left,
@@ -173,7 +173,7 @@ namespace Perspex.Controls.UnitTests
             ApplyTemplate(target);
             target.SelectedIndex = 1;
 
-            target.Presenter.Panel.Children[0].RaiseEvent(new PointerPressEventArgs
+            target.Presenter.Panel.Children[0].RaiseEvent(new PointerPressedEventArgs
             {
                 RoutedEvent = InputElement.PointerPressedEvent,
                 MouseButton = MouseButton.Left,

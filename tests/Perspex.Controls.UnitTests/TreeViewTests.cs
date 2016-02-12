@@ -98,7 +98,7 @@ namespace Perspex.Controls.UnitTests
 
             Assert.NotNull(container);
 
-            container.RaiseEvent(new PointerPressEventArgs
+            container.RaiseEvent(new PointerPressedEventArgs
             {
                 RoutedEvent = InputElement.PointerPressedEvent,
                 MouseButton = MouseButton.Left,

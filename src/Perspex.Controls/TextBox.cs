@@ -355,7 +355,7 @@ namespace Perspex.Controls
             }
         }
 
-        protected override void OnPointerPressed(PointerPressEventArgs e)
+        protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
             if (e.Source == _presenter)
             {

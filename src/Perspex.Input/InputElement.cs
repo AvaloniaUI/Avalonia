@@ -116,8 +116,8 @@ namespace Perspex.Input
         /// <summary>
         /// Defines the <see cref="PointerPressed"/> event.
         /// </summary>
-        public static readonly RoutedEvent<PointerPressEventArgs> PointerPressedEvent =
-            RoutedEvent.Register<InputElement, PointerPressEventArgs>(
+        public static readonly RoutedEvent<PointerPressedEventArgs> PointerPressedEvent =
+            RoutedEvent.Register<InputElement, PointerPressedEventArgs>(
                 "PointerPressed",
                 RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
 
@@ -235,7 +235,7 @@ namespace Perspex.Input
         /// <summary>
         /// Occurs when the pointer is pressed over the control.
         /// </summary>
-        public event EventHandler<PointerPressEventArgs> PointerPressed
+        public event EventHandler<PointerPressedEventArgs> PointerPressed
         {
             add { AddHandler(PointerPressedEvent, value); }
             remove { RemoveHandler(PointerPressedEvent, value); }
@@ -437,7 +437,7 @@ namespace Perspex.Input
         /// Called before the <see cref="PointerPressed"/> event occurs.
         /// </summary>
         /// <param name="e">The event args.</param>
-        protected virtual void OnPointerPressed(PointerPressEventArgs e)
+        protected virtual void OnPointerPressed(PointerPressedEventArgs e)
         {
         }
 

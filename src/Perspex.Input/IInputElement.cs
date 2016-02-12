@@ -51,7 +51,7 @@ namespace Perspex.Input
         /// <summary>
         /// Occurs when the pointer is pressed over the control.
         /// </summary>
-        event EventHandler<PointerPressEventArgs> PointerPressed;
+        event EventHandler<PointerPressedEventArgs> PointerPressed;
 
         /// <summary>
         /// Occurs when the pointer moves over the control.
