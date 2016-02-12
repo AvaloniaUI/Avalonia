@@ -175,7 +175,7 @@ namespace Perspex.Interactivity
         {
             Contract.Requires<ArgumentNullException>(e != null);
 
-            e.RoutedEvent.InvokeClassHandlers(this, e);
+            e.RoutedEvent.InvokeRaised(this, e);
 
             List<EventSubscription> subscriptions;
 
