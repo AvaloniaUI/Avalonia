@@ -270,7 +270,7 @@ namespace Perspex.Controls.Primitives
         /// Gets the position for the popup based on the placement properties.
         /// </summary>
         /// <returns>The popup's position in screen coordinates.</returns>
-        private Point GetPosition()
+        protected virtual Point GetPosition()
         {
             var zero = default(Point);
             var target = PlacementTarget ?? this.GetVisualParent<Control>();
@@ -283,6 +283,17 @@ namespace Perspex.Controls.Primitives
                     return target?.PointToScreen(new Point(0, target.Bounds.Height)) ?? zero;
                 case PlacementMode.Right:
                     return target?.PointToScreen(new Point(target.Bounds.Width, 0)) ?? zero;
+                case PlacementMode.Center:
+                    if ((target == null) || (Child == null))
+                    {
+                        return zero;
+                    }
+                    else
+                    {
+                        Child.Measure(target.Bounds.Size);
+
+                        return target.PointToScreen(new Point((target.Bounds.Width - Child.DesiredSize.Width) / 2, (target.Bounds.Height - Child.DesiredSize.Height) / 2));
+                    }
                 default:
                     throw new InvalidOperationException("Invalid value for Popup.PlacementMode");
             }
