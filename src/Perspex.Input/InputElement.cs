@@ -137,6 +137,16 @@ namespace Perspex.Input
                 "PointerWheelChanged",
                 RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
 
+        /// <summary>
+        /// Defines the <see cref="Tapped"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<RoutedEventArgs> TappedEvent = Gestures.TappedEvent;
+
+        /// <summary>
+        /// Defines the <see cref="DoubleTapped"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<RoutedEventArgs> DoubleTappedEvent = Gestures.DoubleTappedEvent;
+
         private bool _isFocused;
         private bool _isPointerOver;
 
@@ -257,6 +267,24 @@ namespace Perspex.Input
         {
             add { AddHandler(PointerWheelChangedEvent, value); }
             remove { RemoveHandler(PointerWheelChangedEvent, value); }
+        }
+
+        /// <summary>
+        /// Occurs when a tap gesture occurs on the control.
+        /// </summary>
+        public event EventHandler<RoutedEventArgs> Tapped
+        {
+            add { AddHandler(TappedEvent, value); }
+            remove { RemoveHandler(TappedEvent, value); }
+        }
+
+        /// <summary>
+        /// Occurs when a double-tap gesture occurs on the control.
+        /// </summary>
+        public event EventHandler<RoutedEventArgs> DoubleTapped
+        {
+            add { AddHandler(DoubleTappedEvent, value); }
+            remove { RemoveHandler(DoubleTappedEvent, value); }
         }
 
         /// <summary>
