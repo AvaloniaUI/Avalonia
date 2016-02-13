@@ -1,0 +1,55 @@
+{
+  "metadata": [
+    {
+      "src": [
+        {
+          "files": [
+            "/src/Gtk/Perspex.Cairo/Perspex.Cairo.csproj",
+            "/src/Gtk/Perspex.Gtk/Perspex.Gtk.csproj",
+            "/src/Markup/Perspex.Markup/Perspex.Markup.csproj",
+            "/src/Markup/Perspex.Markup.Xaml/Perspex.Markup.Xaml.csproj",
+            "/src/Perspex.Animation/Perspex.Animation.csproj",
+            "/src/Perspex.Application/Perspex.Application.csproj",
+            "/src/Perspex.Base/Perspex.Base.csproj",
+            "/src/Perspex.Controls/Perspex.Controls.csproj",
+            "/src/Perspex.Diagnostics/Perspex.Diagnostics.csproj",
+            "/src/Perspex.HtmlRenderer/Perspex.HtmlRenderer.csproj",
+            "/src/Perspex.Input/Perspex.Input.csproj",
+            "/src/Perspex.Interactivity/Perspex.Interactivity.csproj",
+            "/src/Perspex.Layout/Perspex.Layout.csproj",
+            "/src/Perspex.ReactiveUI/Perspex.ReactiveUI.csproj",
+            "/src/Perspex.SceneGraph/Perspex.SceneGraph.csproj",
+            "/src/Perspex.Styling/Perspex.Styling.csproj",
+            "/src/Perspex.Themes.Default/Perspex.Themes.Default.csproj",
+            "/src/Skia/Perspex.Skia.Desktop/Perspex.Skia.Desktop.csproj",
+            "/src/Windows/Perspex.Designer/Perspex.Designer.csproj",
+            "/src/Windows/Perspex.Direct2D1/Perspex.Direct2D1.csproj",
+            "/src/Windows/Perspex.Win32/Perspex.Win32.csproj",
+          ],
+          "exclude": [ "**/bin/**", "**/obj/**" ], 
+          "cwd": ".."
+        }
+      ],
+      "dest": "api"
+    },
+  ],
+  "build": {
+    "content":
+      [
+        {
+          "files": ["**/*.yml", "index.md", "tutorial/*.md", "guidelines/*.md", "spec/*.md"],
+        }
+      ],
+    "resource": [
+        {
+          "files": ["images/**", "tutorial/images/**", "guidelines/images/**", "spec/images/**"]
+        }
+    ],
+    "overwrite": "apidoc/*.md",
+    "globalMetadata": {
+      "_appTitle": "Perspex Website"
+    },
+    "dest": "_site",
+    "template": "default"
+  }
+}
