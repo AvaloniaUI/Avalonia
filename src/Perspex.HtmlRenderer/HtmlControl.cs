@@ -549,7 +549,11 @@ namespace Perspex.Controls.Html
                     htmlContainer.SetHtml((string) e.NewValue, control._baseCssData);
                     control.InvalidateMeasure();
                     control.InvalidateVisual();
-                    control.InvokeMouseMove();
+
+                    if (control.VisualRoot != null)
+                    {
+                        control.InvokeMouseMove();
+                    }
                 }
             }
         }
