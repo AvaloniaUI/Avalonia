@@ -54,7 +54,7 @@ Contributions are always welcome!
 
 ## Building and Using
 
-See the [build instructions here](https://github.com/grokys/Perspex/blob/master/docs/guidelines/build.md)
+See the [build instructions here](docs/guidelines/build.md)
 
 ## Contributing ##
 
