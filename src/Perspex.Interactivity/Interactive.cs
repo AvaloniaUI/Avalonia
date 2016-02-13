@@ -122,16 +122,19 @@ namespace Perspex.Interactivity
             {
                 e.Route = RoutingStrategies.Direct;
                 RaiseEventImpl(e);
+                e.RoutedEvent.InvokeRouteFinished(e);
             }
 
             if ((e.RoutedEvent.RoutingStrategies & RoutingStrategies.Tunnel) != 0)
             {
                 TunnelEvent(e);
+                e.RoutedEvent.InvokeRouteFinished(e);
             }
 
             if ((e.RoutedEvent.RoutingStrategies & RoutingStrategies.Bubble) != 0)
             {
                 BubbleEvent(e);
+                e.RoutedEvent.InvokeRouteFinished(e);
             }
         }
 

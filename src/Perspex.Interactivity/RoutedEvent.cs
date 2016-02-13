@@ -19,6 +19,7 @@ namespace Perspex.Interactivity
     public class RoutedEvent
     {
         private Subject<Tuple<object, RoutedEventArgs>> _raised = new Subject<Tuple<object, RoutedEventArgs>>();
+        private Subject<RoutedEventArgs> _routeFinished = new Subject<RoutedEventArgs>();
 
         public RoutedEvent(
             string name,
@@ -62,6 +63,7 @@ namespace Perspex.Interactivity
         }
 
         public IObservable<Tuple<object, RoutedEventArgs>> Raised => _raised;
+        public IObservable<RoutedEventArgs> RouteFinished => _routeFinished;
 
         public static RoutedEvent<TEventArgs> Register<TOwner, TEventArgs>(
             string name,
@@ -115,6 +117,11 @@ namespace Perspex.Interactivity
         internal void InvokeRaised(object sender, RoutedEventArgs e)
         {
             _raised.OnNext(Tuple.Create(sender, e));
+        }
+
+        internal void InvokeRouteFinished(RoutedEventArgs e)
+        {
+            _routeFinished.OnNext(e);
         }
     }
 
