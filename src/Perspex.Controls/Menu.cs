@@ -211,7 +211,7 @@ namespace Perspex.Controls
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The event args.</param>
-        private void TopLevelPreviewPointerPress(object sender, PointerPressEventArgs e)
+        private void TopLevelPreviewPointerPress(object sender, PointerPressedEventArgs e)
         {
             if (IsOpen)
             {

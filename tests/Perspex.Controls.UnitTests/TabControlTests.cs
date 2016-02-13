@@ -9,6 +9,7 @@ using Perspex.Controls.Primitives;
 using Perspex.Controls.Templates;
 using Perspex.LogicalTree;
 using Perspex.Styling;
+using Perspex.UnitTests;
 using Xunit;
 
 namespace Perspex.Controls.UnitTests
@@ -130,10 +131,8 @@ namespace Perspex.Controls.UnitTests
 
             var template = new FuncControlTemplate<TabItem>(x => new Decorator());
 
-            using (PerspexLocator.EnterScope())
+            using (UnitTestApplication.Start(TestServices.RealStyler))
             {
-                PerspexLocator.CurrentMutable.Bind<IStyler>().ToConstant(new Styler());
-
                 var root = new TestRoot
                 {
                     Styles = new Styles

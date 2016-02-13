@@ -256,13 +256,5 @@ namespace Perspex.Controls.Presenters
             Extent = scrollable.Extent;
             Offset = scrollable.Offset;
         }
-
-        private static Vector ValidateOffset(ScrollContentPresenter o, Vector value)
-        {
-            return ScrollViewer.CoerceOffset(
-                o.GetValue(ExtentProperty),
-                o.GetValue(ViewportProperty),
-                value);
-        }
     }
 }

@@ -192,8 +192,14 @@ namespace Perspex.Controls.Platform
         public static IWindowImpl CreateWindow()
         {
             var platform = PerspexLocator.Current.GetService<IWindowingPlatform>();
-            return
-                new WindowDecorator(s_designerMode ? platform.CreateEmbeddableWindow() : platform.CreateWindow());
+            
+            if (platform == null)
+            {
+                throw new Exception("Could not CreateWindow(): IWindowingPlatform is not registered.");
+            }
+
+            var window = s_designerMode ? platform.CreateEmbeddableWindow() : platform.CreateWindow();
+            return new WindowDecorator(window);
         }
 
         public static IPopupImpl CreatePopup()

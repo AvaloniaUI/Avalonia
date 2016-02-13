@@ -876,14 +876,6 @@ namespace Perspex.Controls
                 Stars = 0;
                 Type = type;
             }
-
-            public void Init(double offeredSize, double min, double max, GridUnitType type)
-            {
-                OfferedSize = offeredSize;
-                Min = min;
-                Max = max;
-                Type = type;
-            }
         }
 
         private struct GridNode

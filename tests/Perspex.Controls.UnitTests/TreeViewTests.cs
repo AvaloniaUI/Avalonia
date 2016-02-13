@@ -8,6 +8,7 @@ using Perspex.Controls.Presenters;
 using Perspex.Controls.Templates;
 using Perspex.Input;
 using Perspex.LogicalTree;
+using Perspex.UnitTests;
 using Xunit;
 
 namespace Perspex.Controls.UnitTests
@@ -97,7 +98,7 @@ namespace Perspex.Controls.UnitTests
 
             Assert.NotNull(container);
 
-            container.RaiseEvent(new PointerPressEventArgs
+            container.RaiseEvent(new PointerPressedEventArgs
             {
                 RoutedEvent = InputElement.PointerPressedEvent,
                 MouseButton = MouseButton.Left,

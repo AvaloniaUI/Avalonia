@@ -262,9 +262,6 @@ namespace Perspex.Base.UnitTests
             public static readonly StyledProperty<string> FooProperty =
                 PerspexProperty.Register<Class1, string>("Foo", "foodefault");
 
-            public static readonly StyledProperty<string> BazProperty =
-                PerspexProperty.Register<Class1, string>("Baz", "bazdefault", true);
-
             public static readonly StyledProperty<double> QuxProperty =
                 PerspexProperty.Register<Class1, double>("Qux", 5.6);
         }

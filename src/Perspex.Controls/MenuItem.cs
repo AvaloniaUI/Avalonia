@@ -310,7 +310,7 @@ namespace Perspex.Controls
         /// Called when the pointer is pressed over the <see cref="MenuItem"/>.
         /// </summary>
         /// <param name="e">The event args.</param>
-        protected override void OnPointerPressed(PointerPressEventArgs e)
+        protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
             base.OnPointerPressed(e);
 
@@ -446,13 +446,6 @@ namespace Perspex.Controls
             /// Gets the default instance of <see cref="DependencyResolver"/>.
             /// </summary>
             public static readonly DependencyResolver Instance = new DependencyResolver();
-
-            /// <summary>
-            /// Disposes of all managed resources.
-            /// </summary>
-            public void Dispose()
-            {
-            }
 
             /// <summary>
             /// Gets a service of the specified type.

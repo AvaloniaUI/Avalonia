@@ -39,6 +39,14 @@ namespace Perspex.Controls.Primitives
     public class SelectingItemsControl : ItemsControl
     {
         /// <summary>
+        /// Defines the <see cref="AutoScrollToSelectedItem"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> AutoScrollToSelectedItemProperty =
+            PerspexProperty.Register<SelectingItemsControl, bool>(
+                nameof(AutoScrollToSelectedItem),
+                defaultValue: true);
+
+        /// <summary>
         /// Defines the <see cref="SelectedIndex"/> property.
         /// </summary>
         public static readonly DirectProperty<SelectingItemsControl, int> SelectedIndexProperty =
@@ -121,6 +129,15 @@ namespace Perspex.Controls.Primitives
         {
             add { AddHandler(SelectionChangedEvent, value); }
             remove { RemoveHandler(SelectionChangedEvent, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to automatically scroll to newly selected items.
+        /// </summary>
+        public bool AutoScrollToSelectedItem
+        {
+            get { return GetValue(AutoScrollToSelectedItemProperty); }
+            set { SetValue(AutoScrollToSelectedItemProperty, value); }
         }
 
         /// <summary>

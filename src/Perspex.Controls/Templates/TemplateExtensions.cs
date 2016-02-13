@@ -12,21 +12,30 @@ namespace Perspex.Controls.Templates
 {
     public static class TemplateExtensions
     {
-        public static IEnumerable<Control> GetTemplateChildren(this ITemplatedControl control)
+        public static IEnumerable<IControl> GetTemplateChildren(this ITemplatedControl control)
         {
-            var visual = control as IVisual;
-
-            if (visual != null)
+            foreach (IControl child in GetTemplateChildren((IControl)control, control))
             {
-                // TODO: This searches the whole descendent tree - it can stop when it exits the
-                // template.
-                return visual.GetVisualDescendents()
-                    .OfType<Control>()
-                    .Where(x => x.TemplatedParent == control);
+                yield return child;
             }
-            else
+        }
+
+        private static IEnumerable<IControl> GetTemplateChildren(IControl control, ITemplatedControl templatedParent)
+        {
+            foreach (IControl child in control.GetVisualChildren())
             {
-                return Enumerable.Empty<Control>();
+                if (child.TemplatedParent == templatedParent)
+                {
+                    yield return child;
+                }
+
+                if (child.TemplatedParent != null)
+                {
+                    foreach (var descendent in GetTemplateChildren(child, templatedParent))
+                    {
+                        yield return descendent;
+                    }
+                }
             }
         }
     }

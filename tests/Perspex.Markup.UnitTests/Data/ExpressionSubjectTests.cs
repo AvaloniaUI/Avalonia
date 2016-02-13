@@ -176,11 +176,6 @@ namespace Perspex.Markup.UnitTests.Data
             public string StringValue { get; set; }
 
             public double DoubleValue { get; set; }
-
-            public void RaisePropertyChanged(string propertyName)
-            {
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-            }
         }
     }
 }

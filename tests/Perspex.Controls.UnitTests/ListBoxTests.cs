@@ -115,7 +115,7 @@ namespace Perspex.Controls.UnitTests
 
             ApplyTemplate(target);
 
-            target.Presenter.Panel.Children[1].RaiseEvent(new PointerPressEventArgs
+            target.Presenter.Panel.Children[1].RaiseEvent(new PointerPressedEventArgs
             {
                 RoutedEvent = InputElement.PointerPressedEvent,
                 MouseButton = MouseButton.Left,

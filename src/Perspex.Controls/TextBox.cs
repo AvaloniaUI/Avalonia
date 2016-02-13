@@ -51,6 +51,9 @@ namespace Perspex.Controls
         public static readonly StyledProperty<bool> UseFloatingWatermarkProperty =
             PerspexProperty.Register<TextBox, bool>("UseFloatingWatermark");
 
+        public static readonly StyledProperty<bool> IsReadOnlyProperty =
+            PerspexProperty.Register<TextBox, bool>(nameof(IsReadOnly));
+
         struct UndoRedoState : IEquatable<UndoRedoState>
         {
             public string Text { get; }
@@ -154,6 +157,12 @@ namespace Perspex.Controls
             set { SetValue(UseFloatingWatermarkProperty, value); }
         }
 
+        public bool IsReadOnly
+        {
+            get { return GetValue(IsReadOnlyProperty); }
+            set { SetValue(IsReadOnlyProperty, value); }
+        }
+
         public TextWrapping TextWrapping
         {
             get { return GetValue(TextWrappingProperty); }
@@ -187,17 +196,20 @@ namespace Perspex.Controls
 
         private void HandleTextInput(string input)
         {
-            string text = Text ?? string.Empty;
-            int caretIndex = CaretIndex;
-            if (!string.IsNullOrEmpty(input))
+            if (!IsReadOnly)
             {
-                DeleteSelection();
-                caretIndex = CaretIndex;
-                text = Text ?? string.Empty;
-                Text = text.Substring(0, caretIndex) + input + text.Substring(caretIndex);
-                CaretIndex += input.Length;
-                SelectionStart = SelectionEnd = CaretIndex;
-                _undoRedoHelper.DiscardRedo();
+                string text = Text ?? string.Empty;
+                int caretIndex = CaretIndex;
+                if (!string.IsNullOrEmpty(input))
+                {
+                    DeleteSelection();
+                    caretIndex = CaretIndex;
+                    text = Text ?? string.Empty;
+                    Text = text.Substring(0, caretIndex) + input + text.Substring(caretIndex);
+                    CaretIndex += input.Length;
+                    SelectionStart = SelectionEnd = CaretIndex;
+                    _undoRedoHelper.DiscardRedo();
+                }
             }
         }
 
@@ -343,7 +355,7 @@ namespace Perspex.Controls
             }
         }
 
-        protected override void OnPointerPressed(PointerPressEventArgs e)
+        protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
             if (e.Source == _presenter)
             {
@@ -510,21 +522,28 @@ namespace Perspex.Controls
 
         private bool DeleteSelection()
         {
-            var selectionStart = SelectionStart;
-            var selectionEnd = SelectionEnd;
-
-            if (selectionStart != selectionEnd)
+            if (!IsReadOnly)
             {
-                var start = Math.Min(selectionStart, selectionEnd);
-                var end = Math.Max(selectionStart, selectionEnd);
-                var text = Text;
-                Text = text.Substring(0, start) + text.Substring(end);
-                SelectionStart = SelectionEnd = CaretIndex = start;
-                return true;
+                var selectionStart = SelectionStart;
+                var selectionEnd = SelectionEnd;
+
+                if (selectionStart != selectionEnd)
+                {
+                    var start = Math.Min(selectionStart, selectionEnd);
+                    var end = Math.Max(selectionStart, selectionEnd);
+                    var text = Text;
+                    Text = text.Substring(0, start) + text.Substring(end);
+                    SelectionStart = SelectionEnd = CaretIndex = start;
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
             }
             else
             {
-                return false;
+                return true;
             }
         }
 

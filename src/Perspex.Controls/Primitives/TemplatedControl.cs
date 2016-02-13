@@ -75,6 +75,12 @@ namespace Perspex.Controls.Primitives
             PerspexProperty.Register<TemplatedControl, IControlTemplate>("Template");
 
         /// <summary>
+        /// Defines the IsTemplateFocusTarget attached property.
+        /// </summary>
+        public static readonly AttachedProperty<bool> IsTemplateFocusTargetProperty =
+            PerspexProperty.RegisterAttached<TemplatedControl, Control, bool>("IsTemplateFocusTarget");
+
+        /// <summary>
         /// Defines the <see cref="TemplateApplied"/> routed event.
         /// </summary>
         public static readonly RoutedEvent<TemplateAppliedEventArgs> TemplateAppliedEvent =
@@ -198,6 +204,33 @@ namespace Perspex.Controls.Primitives
             set { SetValue(TemplateProperty, value); }
         }
 
+        /// <summary>
+        /// Gets the value of the IsTemplateFocusTargetProperty attached property on a control.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <returns>The property value.</returns>
+        /// <see cref="SetIsTemplateFocusTarget(Control, bool)"/>
+        public bool GetIsTemplateFocusTarget(Control control)
+        {
+            return control.GetValue(IsTemplateFocusTargetProperty);
+        }
+
+        /// <summary>
+        /// Sets the value of the IsTemplateFocusTargetProperty attached property on a control.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="value">The property value.</param>
+        /// <remarks>
+        /// When a control is navigated to using the keyboard, a focus adorner is shown - usually
+        /// around the control itself. However if the TemplatedControl.IsTemplateFocusTarget 
+        /// attached property is set to true on an element in the control template, then the focus
+        /// adorner will be shown around that control instead.
+        /// </remarks>
+        public void SetIsTemplateFocusTarget(Control control, bool value)
+        {
+            control.SetValue(IsTemplateFocusTargetProperty, value);
+        }
+
         /// <inheritdoc/>
         public sealed override void ApplyTemplate()
         {
@@ -224,6 +257,7 @@ namespace Perspex.Controls.Primitives
             }
         }
 
+        /// <inheritdoc/>
         protected sealed override IndexerDescriptor CreateBindingDescriptor(IndexerDescriptor source)
         {
             var result = base.CreateBindingDescriptor(source);
@@ -238,6 +272,20 @@ namespace Perspex.Controls.Primitives
             }
 
             return result;
+        }
+
+        /// <inheritdoc/>
+        protected override IControl GetTemplateFocusTarget()
+        {
+            foreach (Control child in this.GetTemplateChildren())
+            {
+                if (GetIsTemplateFocusTarget(child))
+                {
+                    return child;
+                }
+            }
+
+            return this;
         }
 
         /// <summary>

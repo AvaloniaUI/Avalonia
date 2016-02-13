@@ -16,7 +16,7 @@ namespace Perspex.Input.Raw
         }
 
         public IInputDevice Device { get; private set; }
-
+        public bool Handled { get; set; }
         public uint Timestamp { get; private set; }
     }
 }

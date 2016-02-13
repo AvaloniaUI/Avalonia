@@ -401,7 +401,7 @@ namespace Perspex.Controls.Html
         /// <summary>
         /// Handle mouse down to handle selection. 
         /// </summary>
-        protected override void OnPointerPressed(PointerPressEventArgs e)
+        protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
             base.OnPointerPressed(e);
             LeftMouseButton = true;

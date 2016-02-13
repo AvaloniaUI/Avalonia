@@ -5,10 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Reactive.Linq;
 using Moq;
-using Perspex.Layout;
-using Perspex.Platform;
-using Perspex.Rendering;
 using Perspex.Styling;
+using Perspex.UnitTests;
 using Xunit;
 
 namespace Perspex.Controls.UnitTests
@@ -144,44 +142,6 @@ namespace Perspex.Controls.UnitTests
                 styler.Verify(x => x.ApplyStyles(parent), Times.Once());
                 styler.Verify(x => x.ApplyStyles(child), Times.Once());
                 styler.Verify(x => x.ApplyStyles(grandchild), Times.Once());
-            }
-        }
-
-        private class TestRoot : Decorator, ILayoutRoot, IRenderRoot, IStyleRoot
-        {
-            public Size ClientSize
-            {
-                get { throw new NotImplementedException(); }
-            }
-
-            public Size MaxClientSize
-            {
-                get { throw new NotImplementedException(); }
-            }
-
-            public ILayoutManager LayoutManager
-            {
-                get { throw new NotImplementedException(); }
-            }
-
-            public IRenderTarget RenderTarget
-            {
-                get { throw new NotImplementedException(); }
-            }
-
-            public IRenderQueueManager RenderQueueManager
-            {
-                get { throw new NotImplementedException(); }
-            }
-
-            public Point PointToClient(Point p)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Point PointToScreen(Point p)
-            {
-                throw new NotImplementedException();
             }
         }
 

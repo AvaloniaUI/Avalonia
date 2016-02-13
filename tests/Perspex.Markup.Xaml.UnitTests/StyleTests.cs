@@ -3,13 +3,11 @@
 
 using System.Linq;
 using System.Reactive.Linq;
-using Moq;
 using Perspex.Controls;
-using Perspex.Controls.Primitives;
 using Perspex.Data;
 using Perspex.Markup.Xaml.Data;
-using Perspex.Platform;
 using Perspex.Styling;
+using Perspex.UnitTests;
 using Xunit;
 
 namespace Perspex.Markup.Xaml.UnitTests
@@ -19,12 +17,8 @@ namespace Perspex.Markup.Xaml.UnitTests
         [Fact]
         public void Binding_Should_Be_Assigned_To_Setter_Value_Instead_Of_Bound()
         {
-            using (PerspexLocator.EnterScope())
+            using (UnitTestApplication.Start(TestServices.MockPlatformWrapper))
             {
-                PerspexLocator.CurrentMutable
-                    .Bind<IPclPlatformWrapper>()
-                    .ToConstant(Mock.Of<IPclPlatformWrapper>());
-
                 var xaml = "<Style xmlns='https://github.com/perspex'><Setter Value='{Binding}'/></Style>";
                 var loader = new PerspexXamlLoader();
                 var style = (Style)loader.Load(xaml);
@@ -37,13 +31,8 @@ namespace Perspex.Markup.Xaml.UnitTests
         [Fact]
         public void Setter_With_TwoWay_Binding_Should_Update_Source()
         {
-            using (PerspexLocator.EnterScope())
+            using (UnitTestApplication.Start(TestServices.MockThreadingInterface))
             {
-                PerspexLocator.CurrentMutable
-                    .Bind<IPlatformThreadingInterface>()
-                    .ToConstant(Mock.Of<IPlatformThreadingInterface>(x => 
-                        x.CurrentThreadIsLoopThread == true));
-
                 var data = new Data
                 {
                     Foo = "foo",
@@ -75,13 +64,8 @@ namespace Perspex.Markup.Xaml.UnitTests
         [Fact]
         public void Setter_With_TwoWay_Binding_And_Activator_Should_Update_Source()
         {
-            using (PerspexLocator.EnterScope())
+            using (UnitTestApplication.Start(TestServices.MockThreadingInterface))
             {
-                PerspexLocator.CurrentMutable
-                    .Bind<IPlatformThreadingInterface>()
-                    .ToConstant(Mock.Of<IPlatformThreadingInterface>(x =>
-                        x.CurrentThreadIsLoopThread == true));
-
                 var data = new Data
                 {
                     Foo = "foo",

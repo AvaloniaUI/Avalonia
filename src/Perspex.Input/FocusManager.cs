@@ -175,7 +175,7 @@ namespace Perspex.Input
         {
             if (sender == e.Source)
             {
-                var ev = (PointerPressEventArgs)e;
+                var ev = (PointerPressedEventArgs)e;
                 var element = (ev.Device.Captured as IInputElement) ?? (e.Source as IInputElement);
 
                 if (element == null || !CanFocus(element))

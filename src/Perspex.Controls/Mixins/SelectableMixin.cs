@@ -50,11 +50,14 @@ namespace Perspex.Controls.Mixins
 
                 if (sender != null)
                 {
+                    var itemsControl = sender.Parent as SelectingItemsControl;
+
                     if ((bool)x.NewValue)
                     {
                         ((IPseudoClasses)sender.Classes).Add(":selected");
 
-                        if (((IVisual)sender).IsAttachedToVisualTree)
+                        if (((IVisual)sender).IsAttachedToVisualTree && 
+                            itemsControl?.AutoScrollToSelectedItem == true)
                         {
                             sender.BringIntoView();
                         }

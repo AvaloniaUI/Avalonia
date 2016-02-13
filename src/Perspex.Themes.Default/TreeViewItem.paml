@@ -11,18 +11,12 @@
                     Background="{TemplateBinding Background}"
                     BorderBrush="{TemplateBinding BorderBrush}"
                     BorderThickness="{TemplateBinding BorderThickness}"
+                    TemplatedControl.IsTemplateFocusTarget="True"
                     Grid.Column="1">
               <ContentPresenter Name="PART_HeaderPresenter"
                                 Content="{TemplateBinding Header}"
                                 Margin="{TemplateBinding Padding}"/>
             </Border>
-            <Rectangle Name="focus"
-                       IsHitTestVisible="False"
-                       IsVisible="{TemplateBinding IsFocused}"
-                       Stroke="Black"
-                       StrokeThickness="1"
-                       StrokeDashArray="1,2"
-                       Grid.Column="1"/>
           </Grid>
           <ItemsPresenter Name="PART_ItemsPresenter"
                           IsVisible="{TemplateBinding IsExpanded}"

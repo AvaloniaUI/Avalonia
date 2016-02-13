@@ -56,12 +56,22 @@ namespace Perspex.Input
         }
 
         public Cursor(StandardCursorType cursorType)
-            : this(
-                ((IStandardCursorFactory)PerspexLocator.Current.GetService(typeof(IStandardCursorFactory))).GetCursor(
-                    cursorType))
+            : this(GetCursor(cursorType))
         {
         }
 
         public IPlatformHandle PlatformCursor { get; }
+
+        private static IPlatformHandle GetCursor(StandardCursorType type)
+        {
+            var platform = PerspexLocator.Current.GetService<IStandardCursorFactory>();
+
+            if (platform == null)
+            {
+                throw new Exception("Could not create Cursor: IStandardCursorFactory not registered.");
+            }
+
+            return platform.GetCursor(type);
+        }
     }
 }

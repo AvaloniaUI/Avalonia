@@ -99,7 +99,6 @@
     <Compile Include="Data\NotifyingBase.cs" />
     <Compile Include="DefaultValueConverterTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TestRoot.cs" />
     <Compile Include="UnitTestSynchronizationContext.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -141,6 +140,10 @@
     <ProjectReference Include="..\..\src\Perspex.Styling\Perspex.Styling.csproj">
       <Project>{f1baa01a-f176-4c6a-b39d-5b40bb1b148f}</Project>
       <Name>Perspex.Styling</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Perspex.UnitTests\Perspex.UnitTests.csproj">
+      <Project>{88060192-33d5-4932-b0f9-8bd2763e857d}</Project>
+      <Name>Perspex.UnitTests</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

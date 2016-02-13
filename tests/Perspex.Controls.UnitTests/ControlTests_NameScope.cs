@@ -6,6 +6,7 @@ using Perspex.Controls.Presenters;
 using Perspex.Controls.Templates;
 using Perspex.Rendering;
 using Perspex.Styling;
+using Perspex.UnitTests;
 using Xunit;
 
 namespace Perspex.Controls.UnitTests
@@ -17,7 +18,7 @@ namespace Perspex.Controls.UnitTests
         {
             var root = new TestRoot
             {
-                Content = new Border
+                Child = new Border
                 {
                     Name = "foo",
                     Child = new Border
@@ -28,10 +29,9 @@ namespace Perspex.Controls.UnitTests
             };
 
             root.ApplyTemplate();
-            ((ContentPresenter)root.Presenter).UpdateChild();
 
-            Assert.Same(root.Find("foo"), root.Content);
-            Assert.Same(root.Find("bar"), ((Border)root.Content).Child);
+            Assert.Same(root.FindControl<Border>("foo"), root.Child);
+            Assert.Same(root.FindControl<Border>("bar"), ((Border)root.Child).Child);
         }
 
         [Fact]
@@ -39,7 +39,7 @@ namespace Perspex.Controls.UnitTests
         {
             var root = new TestRoot
             {
-                Content = new Border
+                Child = new Border
                 {
                     Name = "foo",
                     Child = new Border
@@ -49,18 +49,16 @@ namespace Perspex.Controls.UnitTests
                 }
             };
 
-            root.ApplyTemplate();
-            root.Content = null;
-            root.Presenter.ApplyTemplate();
+            root.Child = null;
 
-            Assert.Null(root.Find("foo"));
-            Assert.Null(root.Find("bar"));
+            Assert.Null(root.FindControl<Border>("foo"));
+            Assert.Null(root.FindControl<Border>("bar"));
         }
 
         [Fact]
         public void Control_Should_Not_Register_With_Template_NameScope()
         {
-            var root = new TestRoot
+            var root = new TestTemplatedRoot
             {
                 Content = new Border
                 {
@@ -71,62 +69,6 @@ namespace Perspex.Controls.UnitTests
             root.ApplyTemplate();
 
             Assert.Null(NameScope.GetNameScope((Control)root.Presenter).Find("foo"));
-        }
-
-        private class TestRoot : ContentControl, IRenderRoot, INameScope, IStyleRoot
-        {
-            private readonly NameScope _nameScope = new NameScope();
-
-            public TestRoot()
-            {
-                Template = new FuncControlTemplate<TestRoot>(x => new ContentPresenter
-                {
-                    Name = "PART_ContentPresenter",
-                    [!ContentPresenter.ContentProperty] = x[!ContentControl.ContentProperty],
-                });
-            }
-
-            public event EventHandler<NameScopeEventArgs> Registered
-            {
-                add { _nameScope.Registered += value; }
-                remove { _nameScope.Registered -= value; }
-            }
-
-            public event EventHandler<NameScopeEventArgs> Unregistered
-            {
-                add { _nameScope.Unregistered += value; }
-                remove { _nameScope.Unregistered -= value; }
-            }
-
-            public IRenderQueueManager RenderQueueManager
-            {
-                get { throw new NotImplementedException(); }
-            }
-
-            public Point PointToClient(Point p)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Point PointToScreen(Point p)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void Register(string name, object element)
-            {
-                _nameScope.Register(name, element);
-            }
-
-            public object Find(string name)
-            {
-                return _nameScope.Find(name);
-            }
-
-            public void Unregister(string name)
-            {
-                _nameScope.Unregister(name);
-            }
         }
     }
 }

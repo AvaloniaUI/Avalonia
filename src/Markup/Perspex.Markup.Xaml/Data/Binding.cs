@@ -226,21 +226,6 @@ namespace Perspex.Markup.Xaml.Data
             return result;
         }
 
-        private IControl LookupNamedControl(IControl target)
-        {
-            Contract.Requires<ArgumentNullException>(target != null);
-
-            var nameScope = target.FindNameScope();
-
-            if (nameScope == null)
-            {
-                throw new InvalidOperationException(
-                    "Could not find name scope for ElementName binding.");
-            }
-
-            return nameScope.Find<IControl>(ElementName);
-        }
-
         private class PathInfo
         {
             public string Path { get; set; }

@@ -55,11 +55,6 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
                 BindingPriority.TemplatedParent));
         }
 
-        private Mock<IPerspexObject> CreateTarget(ITemplatedControl templatedParent)
-        {
-            return CreateTarget(templatedParent: templatedParent);
-        }
-
         private Mock<IControl> CreateTarget(
             ITemplatedControl templatedParent = null,
             string text = null)

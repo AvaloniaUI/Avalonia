@@ -3,7 +3,7 @@
 using Perspex.Controls.Primitives;
 using Perspex.Input;
 using Perspex.Platform;
-
+using Perspex.UnitTests;
 using Xunit;
 
 namespace Perspex.Controls.UnitTests

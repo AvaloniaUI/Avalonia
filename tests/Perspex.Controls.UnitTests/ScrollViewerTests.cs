@@ -84,17 +84,5 @@ namespace Perspex.Controls.UnitTests
                 },
             };
         }
-
-        private Control CreateNestedTemplate(ContentControl control)
-        {
-            return new ScrollViewer
-            {
-                Template = new FuncControlTemplate<ScrollViewer>(CreateTemplate),
-                Content = new ContentPresenter
-                {
-                    Name = "PART_ContentPresenter",
-                }
-            };
-        }
     }
 }

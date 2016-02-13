@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Reactive.Subjects;
 using Perspex.Controls;
+using Perspex.UnitTests;
 using Xunit;
 
 namespace Perspex.Styling.UnitTests

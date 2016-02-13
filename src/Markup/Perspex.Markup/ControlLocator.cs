@@ -22,15 +22,15 @@ namespace Perspex.Markup
         /// <param name="name">The name of the control to find.</param>
         public static IObservable<IControl> Track(IControl relativeTo, string name)
         {
-            var attached = Observable.FromEventPattern<VisualTreeAttachmentEventArgs>(
-                x => relativeTo.AttachedToVisualTree += x,
-                x => relativeTo.DetachedFromVisualTree += x)
+            var attached = Observable.FromEventPattern<LogicalTreeAttachmentEventArgs>(
+                x => relativeTo.AttachedToLogicalTree += x,
+                x => relativeTo.DetachedFromLogicalTree += x)
                 .Select(x => ((IControl)x.Sender).FindNameScope())
                 .StartWith(relativeTo.FindNameScope());
 
-            var detached = Observable.FromEventPattern<VisualTreeAttachmentEventArgs>(
-                x => relativeTo.DetachedFromVisualTree += x,
-                x => relativeTo.DetachedFromVisualTree += x)
+            var detached = Observable.FromEventPattern<LogicalTreeAttachmentEventArgs>(
+                x => relativeTo.DetachedFromLogicalTree += x,
+                x => relativeTo.DetachedFromLogicalTree += x)
                 .Select(x => (INameScope)null);
 
             return attached.Merge(detached).Select(nameScope =>

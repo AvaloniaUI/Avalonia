@@ -100,10 +100,5 @@ namespace Perspex.Controls.UnitTests.Primitives
                 SelectionModeProperty.OverrideDefaultValue<TestSelector>(SelectionMode.AlwaysSelected);
             }
         }
-
-        private class Item : Control, ISelectable
-        {
-            public bool IsSelected { get; set; }
-        }
     }
 }

@@ -10,6 +10,7 @@ using Perspex.Controls.Primitives;
 using Perspex.Controls.Templates;
 using Perspex.LogicalTree;
 using Perspex.Styling;
+using Perspex.UnitTests;
 using Perspex.VisualTree;
 using Xunit;
 
@@ -176,12 +177,8 @@ namespace Perspex.Controls.UnitTests.Primitives
         [Fact]
         public void Templated_Children_Should_Be_Styled()
         {
-            using (PerspexLocator.EnterScope())
+            using (UnitTestApplication.Start(TestServices.MockStyler))
             {
-                var styler = new Mock<IStyler>();
-
-                PerspexLocator.CurrentMutable.Bind<IStyler>().ToConstant(styler.Object);
-
                 TestTemplatedControl target;
 
                 var root = new TestRoot
@@ -205,6 +202,7 @@ namespace Perspex.Controls.UnitTests.Primitives
 
                 target.ApplyTemplate();
 
+                var styler = Mock.Get(UnitTestApplication.Current.Services.Styler);
                 styler.Verify(x => x.ApplyStyles(It.IsAny<TestTemplatedControl>()), Times.Once());
                 styler.Verify(x => x.ApplyStyles(It.IsAny<StackPanel>()), Times.Once());
                 styler.Verify(x => x.ApplyStyles(It.IsAny<TextBlock>()), Times.Once());
@@ -330,23 +328,6 @@ namespace Perspex.Controls.UnitTests.Primitives
             };
         }
 
-        private static IControl ItemsControlTemplate(ItemsControl control)
-        {
-            return new Border
-            {
-                Child = new ScrollViewer
-                {
-                    Template = new FuncControlTemplate<ScrollViewer>(ScrollViewerTemplate),
-                    Content = new ItemsPresenter
-                    {
-                        Name = "PART_ItemsPresenter",
-                        [!ItemsPresenter.ItemsProperty] = control[!ItemsControl.ItemsProperty],
-                        [!ItemsPresenter.ItemsPanelProperty] = control[!ItemsControl.ItemsPanelProperty],
-                    }
-                }
-            };
-        }
-
         private static Control ScrollViewerTemplate(ScrollViewer control)
         {
             var result = new ScrollContentPresenter
@@ -356,17 +337,6 @@ namespace Perspex.Controls.UnitTests.Primitives
             };
 
             return result;
-        }
-
-        private class ApplyTemplateTracker : Control
-        {
-            public List<Tuple<IVisual, ILogical>> Invocations { get; } = new List<Tuple<IVisual, ILogical>>();
-
-            public override void ApplyTemplate()
-            {
-                base.ApplyTemplate();
-                Invocations.Add(Tuple.Create(this.GetVisualParent(), this.GetLogicalParent()));
-            }
         }
     }
 }

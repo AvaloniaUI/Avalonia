@@ -22,9 +22,7 @@ namespace Perspex.Controls
         /// Defines the <see cref="AutoScrollToSelectedItem"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> AutoScrollToSelectedItemProperty =
-            PerspexProperty.Register<TreeView, bool>(
-                nameof(AutoScrollToSelectedItem),
-                defaultValue: true);
+            SelectingItemsControl.AutoScrollToSelectedItemProperty.AddOwner<TreeView>();
 
         /// <summary>
         /// Defines the <see cref="SelectedItem"/> property.
@@ -118,7 +116,7 @@ namespace Perspex.Controls
         }
 
         /// <inheritdoc/>
-        protected override void OnPointerPressed(PointerPressEventArgs e)
+        protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
             base.OnPointerPressed(e);
 
