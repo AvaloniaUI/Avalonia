@@ -10,10 +10,10 @@ using Perspex.Controls;
 using Perspex.Controls.Platform;
 using Perspex.Platform;
 using Perspex.Win32.Interop;
-using Microsoft.WindowsAPICodePack.Dialogs;
 
 namespace Perspex.Win32
 {
+
     class SystemDialogImpl : ISystemDialogImpl
     {
         public unsafe Task<string[]> ShowFileDialogAsync(FileDialog dialog, IWindowImpl parent)
@@ -45,16 +45,15 @@ namespace Perspex.Win32
                 dialog.InitialFileName?.CopyTo(0, fileBuffer, 0, dialog.InitialFileName.Length);
 
                 string userSelectedExt = null;
-
+                
                 fixed (char* pFileBuffer = fileBuffer)
                 fixed (char* pFilterBuffer = filterBuffer)
                 fixed (char* pDefExt = defExt)
                 fixed (char* pInitDir = dialog.InitialDirectory)
                 fixed (char* pTitle = dialog.Title)
                 {
-
                     var ofn = new UnmanagedMethods.OpenFileName()
-                    {
+                    {                       
                         hwndOwner = hWnd,
                         hInstance = IntPtr.Zero,
                         lCustData = IntPtr.Zero,
@@ -134,27 +133,56 @@ namespace Perspex.Win32
         {                                
             return Task.Factory.StartNew(() =>
             {
-                var dlg = new CommonOpenFileDialog();
-                dlg.Title = dialog.Title;
-                dlg.IsFolderPicker = true;
-                dlg.InitialDirectory = dialog.InitialDirectory;
-
-                dlg.AddToMostRecentlyUsedList = false;
-                dlg.AllowNonFileSystemItems = false;
-                
-                dlg.EnsureFileExists = true;
-                dlg.EnsurePathExists = true;
-                dlg.EnsureReadOnly = false;
-                dlg.EnsureValidNames = true;
-                dlg.Multiselect = false;
-                dlg.ShowPlacesList = true;
-                dlg.DefaultFileName = "";
-
                 string result = string.Empty;
 
-                if (dlg.ShowDialog() == CommonFileDialogResult.Ok)
+                var hWnd = parent?.Handle?.Handle ?? IntPtr.Zero;
+                var frm = (UnmanagedMethods.IFileDialog)(new UnmanagedMethods.FileOpenDialogRCW());
+                uint options;
+                frm.GetOptions(out options);
+                options |= UnmanagedMethods.FOS_PICKFOLDERS | UnmanagedMethods.FOS_FORCEFILESYSTEM | UnmanagedMethods.FOS_NOVALIDATE | UnmanagedMethods.FOS_NOTESTFILECREATE | UnmanagedMethods.FOS_DONTADDTORECENT;
+                frm.SetOptions(options);
+
+                if (dialog.InitialDirectory != null)
                 {
-                    result = dlg.FileName;                    
+                    UnmanagedMethods.IShellItem directoryShellItem;
+                    var riid = new Guid("43826D1E-E718-42EE-BC55-A1E261C37BFE"); //IShellItem
+                    if (UnmanagedMethods.SHCreateItemFromParsingName(dialog.InitialDirectory, IntPtr.Zero, ref riid, out directoryShellItem) == UnmanagedMethods.S_OK)
+                    {
+                        frm.SetFolder(directoryShellItem);
+                    }
+                }
+
+                if (dialog.DefaultDirectory != null)
+                {
+                    UnmanagedMethods.IShellItem directoryShellItem;
+                    var riid = new Guid("43826D1E-E718-42EE-BC55-A1E261C37BFE"); //IShellItem
+                    if (UnmanagedMethods.SHCreateItemFromParsingName(dialog.DefaultDirectory, IntPtr.Zero, ref riid, out directoryShellItem) == UnmanagedMethods.S_OK)
+                    {
+                        frm.SetDefaultFolder(directoryShellItem);
+                    }
+                }
+
+                if (frm.Show(hWnd) == UnmanagedMethods.S_OK)
+                {
+                    UnmanagedMethods.IShellItem shellItem;
+                    if (frm.GetResult(out shellItem) == UnmanagedMethods.S_OK)
+                    {
+                        IntPtr pszString;
+                        if (shellItem.GetDisplayName(UnmanagedMethods.SIGDN_FILESYSPATH, out pszString) == UnmanagedMethods.S_OK)
+                        {
+                            if (pszString != IntPtr.Zero)
+                            {
+                                try
+                                {
+                                    result = Marshal.PtrToStringAuto(pszString);                                    
+                                }
+                                finally
+                                {
+                                    Marshal.FreeCoTaskMem(pszString);
+                                }
+                            }
+                        }
+                    }
                 }
 
                 return result;

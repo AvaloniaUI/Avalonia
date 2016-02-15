@@ -36,6 +36,8 @@ namespace Perspex.Controls
 
     public class OpenFolderDialog : FileSystemDialog
     {
+        public string DefaultDirectory { get; set; }
+
         public Task<string> ShowAsync(Window window = null)
                => PerspexLocator.Current.GetService<ISystemDialogImpl>().ShowFolderDialogAsync(this, window?.PlatformImpl);
     }
