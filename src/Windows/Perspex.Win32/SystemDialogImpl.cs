@@ -10,6 +10,7 @@ using Perspex.Controls;
 using Perspex.Controls.Platform;
 using Perspex.Platform;
 using Perspex.Win32.Interop;
+using Ookii.Dialogs.Wpf;
 
 namespace Perspex.Win32
 {
@@ -126,6 +127,18 @@ namespace Perspex.Win32
                 }
 
                 return files.Select(f => Path.Combine(dir, f)).ToArray();
+            });
+        }
+
+        public Task<string> ShowFolderDialogAsync(OpenFolderDialog dialog, IWindowImpl parent)
+        {
+            VistaFolderBrowserDialog fbd = new VistaFolderBrowserDialog();
+
+            return Task.Factory.StartNew(() =>
+            {
+                fbd.ShowDialog();
+
+                return fbd.SelectedPath;
             });
         }
     }

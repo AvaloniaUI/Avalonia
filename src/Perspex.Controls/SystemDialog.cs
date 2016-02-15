@@ -12,10 +12,9 @@ namespace Perspex.Controls
         public string InitialDirectory { get; set; }
     }
 
-
     public class SaveFileDialog : FileDialog
     {
-        public string DefaultExtension { get; set; }
+        public string DefaultExtension { get; set; }        
 
         public async Task<string> ShowAsync(Window window = null)
             =>
@@ -29,6 +28,12 @@ namespace Perspex.Controls
 
         public Task<string[]> ShowAsync(Window window = null)
             => PerspexLocator.Current.GetService<ISystemDialogImpl>().ShowFileDialogAsync(this, window?.PlatformImpl);
+    }
+
+    public class OpenFolderDialog : SystemDialog
+    {
+        public Task<string> ShowAsync(Window window = null)
+               => PerspexLocator.Current.GetService<ISystemDialogImpl>().ShowFolderDialogAsync(this, window?.PlatformImpl);
     }
 
     public abstract class SystemDialog
