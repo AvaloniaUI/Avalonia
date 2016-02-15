@@ -5,19 +5,21 @@
     <Setter Property="Template">
       <ControlTemplate>
         <Grid ColumnDefinitions="Auto,*">
-          <Border BorderBrush="{TemplateBinding BorderBrush}"
+          <Border Name="border"
+                  BorderBrush="{TemplateBinding BorderBrush}"
                   BorderThickness="{TemplateBinding BorderThickness}"
                   Width="18"
                   Height="18"
-                  VerticalAlignment="Center"/>
-          <Path Name="checkMark"
-                Fill="#ff333333"
-                Width="11"
-                Height="10"
-                Stretch="Uniform"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                Data="M 1145.607177734375,430 C1145.607177734375,430 1141.449951171875,435.0772705078125 1141.449951171875,435.0772705078125 1141.449951171875,435.0772705078125 1139.232177734375,433.0999755859375 1139.232177734375,433.0999755859375 1139.232177734375,433.0999755859375 1138,434.5538330078125 1138,434.5538330078125 1138,434.5538330078125 1141.482177734375,438 1141.482177734375,438 1141.482177734375,438 1141.96875,437.9375 1141.96875,437.9375 1141.96875,437.9375 1147,431.34619140625 1147,431.34619140625 1147,431.34619140625 1145.607177734375,430 1145.607177734375,430 z"/>
+                  VerticalAlignment="Center">
+            <Path Name="checkMark"
+                  Fill="#ff333333"
+                  Width="11"
+                  Height="10"
+                  Stretch="Uniform"
+                  HorizontalAlignment="Center"
+                  VerticalAlignment="Center"
+                  Data="M 1145.607177734375,430 C1145.607177734375,430 1141.449951171875,435.0772705078125 1141.449951171875,435.0772705078125 1141.449951171875,435.0772705078125 1139.232177734375,433.0999755859375 1139.232177734375,433.0999755859375 1139.232177734375,433.0999755859375 1138,434.5538330078125 1138,434.5538330078125 1138,434.5538330078125 1141.482177734375,438 1141.482177734375,438 1141.482177734375,438 1141.96875,437.9375 1141.96875,437.9375 1141.96875,437.9375 1147,431.34619140625 1147,431.34619140625 1147,431.34619140625 1145.607177734375,430 1145.607177734375,430 z"/>
+          </Border>
           <ContentPresenter Name="PART_ContentPresenter"
                             Content="{TemplateBinding Content}"
                             Margin="4,0,0,0"
@@ -32,5 +34,8 @@
   </Style>
   <Style Selector="CheckBox:checked /template/ Path#checkMark">
     <Setter Property="IsVisible" Value="True"/>
+  </Style>
+  <Style Selector="CheckBox:disabled /template/ Border#border">
+    <Setter Property="Opacity" Value="0.5"/>
   </Style>
 </Styles>
