@@ -186,7 +186,7 @@ namespace Perspex.Controls.Primitives
         /// <summary>
         /// Gets or sets the font weight used to draw the control's text.
         /// </summary>
-        public FontWeight FontWeihght
+        public FontWeight FontWeight
         {
             get { return GetValue(FontWeightProperty); }
             set { SetValue(FontWeightProperty, value); }
