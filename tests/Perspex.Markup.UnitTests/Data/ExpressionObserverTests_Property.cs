@@ -101,7 +101,10 @@ namespace Perspex.Markup.UnitTests.Data
             var sub = target.Subscribe(x => result.Add(x));
             data.Foo = "bar";
 
-            Assert.Equal(new[] { "foo", "bar" }, result);
+            data.RaisePropertyChanged(string.Empty);
+            data.RaisePropertyChanged(null);
+
+            Assert.Equal(new[] { "foo", "bar", "bar", "bar" }, result);
 
             sub.Dispose();
 
@@ -332,6 +335,11 @@ namespace Perspex.Markup.UnitTests.Data
                     _next = value;
                     RaisePropertyChanged(nameof(Next));
                 }
+            }
+
+            public void RaisePropertyChanged(string propertyName)
+            {
+                base.RaisePropertyChanged(propertyName);
             }
         }
 
