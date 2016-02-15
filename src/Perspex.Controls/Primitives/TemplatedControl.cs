@@ -57,6 +57,12 @@ namespace Perspex.Controls.Primitives
             TextBlock.FontStyleProperty.AddOwner<TemplatedControl>();
 
         /// <summary>
+        /// Defines the <see cref="FontWeight"/> property.
+        /// </summary>
+        public static readonly StyledProperty<FontWeight> FontWeightProperty =
+            TextBlock.FontWeightProperty.AddOwner<TemplatedControl>();
+
+        /// <summary>
         /// Defines the <see cref="Foreground"/> property.
         /// </summary>
         public static readonly StyledProperty<Brush> ForegroundProperty =
@@ -175,6 +181,15 @@ namespace Perspex.Controls.Primitives
         {
             get { return GetValue(FontStyleProperty); }
             set { SetValue(FontStyleProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the font weight used to draw the control's text.
+        /// </summary>
+        public FontWeight FontWeihght
+        {
+            get { return GetValue(FontWeightProperty); }
+            set { SetValue(FontWeightProperty, value); }
         }
 
         /// <summary>
