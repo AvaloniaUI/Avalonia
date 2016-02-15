@@ -10,7 +10,7 @@ using Perspex.Controls;
 using Perspex.Controls.Platform;
 using Perspex.Platform;
 using Perspex.Win32.Interop;
-using Ookii.Dialogs.Wpf;
+using Microsoft.WindowsAPICodePack.Dialogs;
 
 namespace Perspex.Win32
 {
@@ -131,14 +131,33 @@ namespace Perspex.Win32
         }
 
         public Task<string> ShowFolderDialogAsync(OpenFolderDialog dialog, IWindowImpl parent)
-        {
-            VistaFolderBrowserDialog fbd = new VistaFolderBrowserDialog();
-
+        {                                
             return Task.Factory.StartNew(() =>
             {
-                fbd.ShowDialog();
+                var dlg = new CommonOpenFileDialog();
+                dlg.Title = dialog.Title;
+                dlg.IsFolderPicker = true;
+                dlg.InitialDirectory = dialog.InitialDirectory;
 
-                return fbd.SelectedPath;
+                dlg.AddToMostRecentlyUsedList = false;
+                dlg.AllowNonFileSystemItems = false;
+                
+                dlg.EnsureFileExists = true;
+                dlg.EnsurePathExists = true;
+                dlg.EnsureReadOnly = false;
+                dlg.EnsureValidNames = true;
+                dlg.Multiselect = false;
+                dlg.ShowPlacesList = true;
+                dlg.DefaultFileName = "";
+
+                string result = string.Empty;
+
+                if (dlg.ShowDialog() == CommonFileDialogResult.Ok)
+                {
+                    result = dlg.FileName;                    
+                }
+
+                return result;
             });
         }
     }
