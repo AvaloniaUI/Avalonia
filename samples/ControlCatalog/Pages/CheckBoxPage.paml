@@ -1,0 +1,15 @@
+﻿<UserControl xmlns="https://github.com/perspex">
+  <StackPanel Orientation="Vertical" Gap="4">
+    <TextBlock Classes="h1">CheckBox</TextBlock>
+    <TextBlock Classes="h2">A check box control</TextBlock>
+
+    <StackPanel Orientation="Vertical"
+                Margin="0,16,0,0"
+                HorizontalAlignment="Center"
+                Gap="16">
+      <CheckBox>Unchecked</CheckBox>
+      <CheckBox IsChecked="True">Checked</CheckBox>
+      <CheckBox IsEnabled="False">Disabled</CheckBox>
+    </StackPanel>    
+  </StackPanel>
+</UserControl>

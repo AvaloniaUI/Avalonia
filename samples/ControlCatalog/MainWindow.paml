@@ -9,6 +9,7 @@
     <TabItem Header="Button"><pages:ButtonPage/></TabItem>
     <TabItem Header="Canvas"><pages:CanvasPage/></TabItem>
     <TabItem Header="Carousel"><pages:CarouselPage/></TabItem>
+    <TabItem Header="CheckBox"><pages:CheckBoxPage/></TabItem>
     <TabItem Header="DropDown"><pages:DropDownPage/></TabItem>
   </TabControl>
 </Window>
