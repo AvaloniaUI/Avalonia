@@ -105,7 +105,7 @@ namespace Perspex.Markup.Data.Plugins
 
             private void PropertyChanged(object sender, PropertyChangedEventArgs e)
             {
-                if (e.PropertyName == _property.Name)
+                if (e.PropertyName == _property.Name || string.IsNullOrEmpty(e.PropertyName))
                 {
                     _changed(Value);
                 }
