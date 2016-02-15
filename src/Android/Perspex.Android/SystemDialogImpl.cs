@@ -12,5 +12,10 @@ namespace Perspex.Android
         {
             throw new NotImplementedException();
         }
+
+        public Task<string> ShowFolderDialogAsync(OpenFolderDialog dialog, IWindowImpl parent)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
