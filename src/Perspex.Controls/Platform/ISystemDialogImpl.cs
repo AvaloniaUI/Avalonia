@@ -18,5 +18,7 @@ namespace Perspex.Controls.Platform
         /// <param name="parent">The parent window.</param>
         /// <returns>A task returning the selected filenames.</returns>
         Task<string[]> ShowFileDialogAsync(FileDialog dialog, IWindowImpl parent);
+
+        Task<string> ShowFolderDialogAsync(OpenFolderDialog dialog, IWindowImpl parent);   
     }
 }

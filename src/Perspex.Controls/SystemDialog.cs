@@ -5,17 +5,20 @@ using Perspex.Controls.Platform;
 
 namespace Perspex.Controls
 {
-    public abstract class FileDialog : SystemDialog
+    public abstract class FileDialog : FileSystemDialog
     {
         public List<FileDialogFilter> Filters { get; set; } = new List<FileDialogFilter>();
-        public string InitialFileName { get; set; }
+        public string InitialFileName { get; set; }        
+    }
+
+    public abstract class FileSystemDialog : SystemDialog
+    {
         public string InitialDirectory { get; set; }
     }
 
-
     public class SaveFileDialog : FileDialog
     {
-        public string DefaultExtension { get; set; }
+        public string DefaultExtension { get; set; }        
 
         public async Task<string> ShowAsync(Window window = null)
             =>
@@ -29,6 +32,14 @@ namespace Perspex.Controls
 
         public Task<string[]> ShowAsync(Window window = null)
             => PerspexLocator.Current.GetService<ISystemDialogImpl>().ShowFileDialogAsync(this, window?.PlatformImpl);
+    }
+
+    public class OpenFolderDialog : FileSystemDialog
+    {
+        public string DefaultDirectory { get; set; }
+
+        public Task<string> ShowAsync(Window window = null)
+               => PerspexLocator.Current.GetService<ISystemDialogImpl>().ShowFolderDialogAsync(this, window?.PlatformImpl);
     }
 
     public abstract class SystemDialog

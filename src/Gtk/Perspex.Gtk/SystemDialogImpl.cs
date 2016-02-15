@@ -53,5 +53,10 @@ namespace Perspex.Gtk
             dlg.Show();
             return tcs.Task;
         }
+
+        public Task<string> ShowFolderDialogAsync(OpenFolderDialog dialog, IWindowImpl parent)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
