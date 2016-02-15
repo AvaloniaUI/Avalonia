@@ -109,6 +109,34 @@ namespace Perspex.Markup.UnitTests.Data
         }
 
         [Fact]
+        public void Should_Trigger_PropertyChanged_On_Null_Or_Empty_String()
+        {
+            var data = new Class1 { Bar = "foo" };
+            var target = new ExpressionObserver(data, "Bar");
+            var result = new List<object>();
+
+            var sub = target.Subscribe(x => result.Add(x));            
+
+            Assert.Equal(new[] { "foo" }, result);
+
+            data.Bar = "bar";
+
+            Assert.Equal(new[] { "foo" }, result);
+
+            data.RaisePropertyChanged(string.Empty);
+
+            Assert.Equal(new[] { "foo", "bar" }, result);
+
+            data.RaisePropertyChanged(null);
+
+            Assert.Equal(new[] { "foo", "bar", "bar" }, result);
+
+            sub.Dispose();
+
+            Assert.Equal(0, data.SubscriptionCount);
+        }
+
+        [Fact]
         public void Should_Track_End_Of_Property_Chain_Changing()
         {
             var data = new Class1 { Next = new Class2 { Bar = "bar" } };
@@ -324,6 +352,13 @@ namespace Perspex.Markup.UnitTests.Data
                 }
             }
 
+            private string _bar;
+            public string Bar
+            {
+                get { return _bar; }
+                set { _bar = value; }
+            }
+
             public INext Next
             {
                 get { return _next; }
@@ -332,6 +367,11 @@ namespace Perspex.Markup.UnitTests.Data
                     _next = value;
                     RaisePropertyChanged(nameof(Next));
                 }
+            }
+
+            public void RaisePropertyChanged(string propertyName)
+            {
+                base.RaisePropertyChanged(propertyName);
             }
         }
 
