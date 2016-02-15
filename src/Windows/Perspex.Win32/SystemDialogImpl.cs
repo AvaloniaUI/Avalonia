@@ -136,17 +136,17 @@ namespace Perspex.Win32
                 string result = string.Empty;
 
                 var hWnd = parent?.Handle?.Handle ?? IntPtr.Zero;
-                var frm = (UnmanagedMethods.IFileDialog)(new UnmanagedMethods.FileOpenDialogRCW());
+                var frm = (IFileDialog)(new UnmanagedMethods.FileOpenDialogRCW());
                 uint options;
                 frm.GetOptions(out options);
-                options |= UnmanagedMethods.FOS_PICKFOLDERS | UnmanagedMethods.FOS_FORCEFILESYSTEM | UnmanagedMethods.FOS_NOVALIDATE | UnmanagedMethods.FOS_NOTESTFILECREATE | UnmanagedMethods.FOS_DONTADDTORECENT;
+                options |= (uint)(UnmanagedMethods.FOS.FOS_PICKFOLDERS | UnmanagedMethods.FOS.FOS_FORCEFILESYSTEM | UnmanagedMethods.FOS.FOS_NOVALIDATE | UnmanagedMethods.FOS.FOS_NOTESTFILECREATE | UnmanagedMethods.FOS.FOS_DONTADDTORECENT);
                 frm.SetOptions(options);
 
                 if (dialog.InitialDirectory != null)
                 {
-                    UnmanagedMethods.IShellItem directoryShellItem;
+                    IShellItem directoryShellItem;
                     var riid = new Guid("43826D1E-E718-42EE-BC55-A1E261C37BFE"); //IShellItem
-                    if (UnmanagedMethods.SHCreateItemFromParsingName(dialog.InitialDirectory, IntPtr.Zero, ref riid, out directoryShellItem) == UnmanagedMethods.S_OK)
+                    if (UnmanagedMethods.SHCreateItemFromParsingName(dialog.InitialDirectory, IntPtr.Zero, ref riid, out directoryShellItem) == (uint)UnmanagedMethods.HRESULT.S_OK)
                     {
                         frm.SetFolder(directoryShellItem);
                     }
@@ -154,21 +154,21 @@ namespace Perspex.Win32
 
                 if (dialog.DefaultDirectory != null)
                 {
-                    UnmanagedMethods.IShellItem directoryShellItem;
+                    IShellItem directoryShellItem;
                     var riid = new Guid("43826D1E-E718-42EE-BC55-A1E261C37BFE"); //IShellItem
-                    if (UnmanagedMethods.SHCreateItemFromParsingName(dialog.DefaultDirectory, IntPtr.Zero, ref riid, out directoryShellItem) == UnmanagedMethods.S_OK)
+                    if (UnmanagedMethods.SHCreateItemFromParsingName(dialog.DefaultDirectory, IntPtr.Zero, ref riid, out directoryShellItem) == (uint)UnmanagedMethods.HRESULT.S_OK)
                     {
                         frm.SetDefaultFolder(directoryShellItem);
                     }
                 }
 
-                if (frm.Show(hWnd) == UnmanagedMethods.S_OK)
+                if (frm.Show(hWnd) == (uint)UnmanagedMethods.HRESULT.S_OK)
                 {
-                    UnmanagedMethods.IShellItem shellItem;
-                    if (frm.GetResult(out shellItem) == UnmanagedMethods.S_OK)
+                    IShellItem shellItem;
+                    if (frm.GetResult(out shellItem) == (uint)UnmanagedMethods.HRESULT.S_OK)
                     {
                         IntPtr pszString;
-                        if (shellItem.GetDisplayName(UnmanagedMethods.SIGDN_FILESYSPATH, out pszString) == UnmanagedMethods.S_OK)
+                        if (shellItem.GetDisplayName(UnmanagedMethods.SIGDN_FILESYSPATH, out pszString) == (uint)UnmanagedMethods.HRESULT.S_OK)
                         {
                             if (pszString != IntPtr.Zero)
                             {
