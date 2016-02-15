@@ -87,6 +87,22 @@ namespace Perspex.Base.UnitTests
         }
 
         [Fact]
+        public void FindRegistered_Doesnt_Finds_Unqualified_Attached_Property()
+        {
+            var result = PerspexPropertyRegistry.Instance.FindRegistered(typeof(Class2), "Attached");
+
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public void FindRegistered_Finds_Unqualified_Attached_Property_On_Registering_Type()
+        {
+            var result = PerspexPropertyRegistry.Instance.FindRegistered(typeof(AttachedOwner), "Attached");
+
+            Assert.True(AttachedOwner.AttachedProperty == result);
+        }
+
+        [Fact]
         public void FindRegistered_Finds_AddOwnered_Untyped_Attached_Property()
         {
             var result = PerspexPropertyRegistry.Instance.FindRegistered(typeof(Class3), "Attached");
@@ -168,7 +184,7 @@ namespace Perspex.Base.UnitTests
         {
         }
 
-        private class AttachedOwner
+        private class AttachedOwner : Class1
         {
             public static readonly AttachedProperty<string> AttachedProperty =
                 PerspexProperty.RegisterAttached<AttachedOwner, Class1, string>("Attached");
