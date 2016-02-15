@@ -101,10 +101,35 @@ namespace Perspex.Markup.UnitTests.Data
             var sub = target.Subscribe(x => result.Add(x));
             data.Foo = "bar";
 
+            Assert.Equal(new[] { "foo", "bar" }, result);
+
+            sub.Dispose();
+
+            Assert.Equal(0, data.SubscriptionCount);
+        }
+
+        [Fact]
+        public void Should_Trigger_PropertyChanged_On_Null_Or_Empty_String()
+        {
+            var data = new Class1 { Bar = "foo" };
+            var target = new ExpressionObserver(data, "Bar");
+            var result = new List<object>();
+
+            var sub = target.Subscribe(x => result.Add(x));            
+
+            Assert.Equal(new[] { "foo" }, result);
+
+            data.Bar = "bar";
+
+            Assert.Equal(new[] { "foo" }, result);
+
             data.RaisePropertyChanged(string.Empty);
+
+            Assert.Equal(new[] { "foo", "bar" }, result);
+
             data.RaisePropertyChanged(null);
 
-            Assert.Equal(new[] { "foo", "bar", "bar", "bar" }, result);
+            Assert.Equal(new[] { "foo", "bar", "bar" }, result);
 
             sub.Dispose();
 
@@ -325,6 +350,13 @@ namespace Perspex.Markup.UnitTests.Data
                     _foo = value;
                     RaisePropertyChanged(nameof(Foo));
                 }
+            }
+
+            private string _bar;
+            public string Bar
+            {
+                get { return _bar; }
+                set { _bar = value; }
             }
 
             public INext Next
