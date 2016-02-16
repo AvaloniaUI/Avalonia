@@ -16,22 +16,30 @@ namespace Perspex.Media
         /// <summary>
         /// Gets or sets the Alpha component of the color.
         /// </summary>
-        public byte A { get; set; }
+        public byte A { get; }
 
         /// <summary>
         /// Gets or sets the Red component of the color.
         /// </summary>
-        public byte R { get; set; }
+        public byte R { get; }
 
         /// <summary>
         /// Gets or sets the Green component of the color.
         /// </summary>
-        public byte G { get; set; }
+        public byte G { get; }
 
         /// <summary>
         /// Gets or sets the Blue component of the color.
         /// </summary>
-        public byte B { get; set; }
+        public byte B { get; }
+
+        public Color(byte a, byte r, byte g, byte b)
+        {
+            A = a;
+            R = r;
+            G = g;
+            B = b;
+        }
 
         /// <summary>
         /// Creates a <see cref="Color"/> from alpha, red, green and blue components.
@@ -43,13 +51,7 @@ namespace Perspex.Media
         /// <returns>The color.</returns>
         public static Color FromArgb(byte a, byte r, byte g, byte b)
         {
-            return new Color
-            {
-                A = a,
-                R = r,
-                G = g,
-                B = b,
-            };
+            return new Color(a, r, g, b);
         }
 
         /// <summary>
@@ -61,13 +63,7 @@ namespace Perspex.Media
         /// <returns>The color.</returns>
         public static Color FromRgb(byte r, byte g, byte b)
         {
-            return new Color
-            {
-                A = 0xff,
-                R = r,
-                G = g,
-                B = b,
-            };
+            return new Color(0xff, r, g, b);
         }
 
         /// <summary>
@@ -77,13 +73,12 @@ namespace Perspex.Media
         /// <returns>The color.</returns>
         public static Color FromUInt32(uint value)
         {
-            return new Color
-            {
-                A = (byte)((value >> 24) & 0xff),
-                R = (byte)((value >> 16) & 0xff),
-                G = (byte)((value >> 8) & 0xff),
-                B = (byte)(value & 0xff),
-            };
+            return new Color(
+                (byte)((value >> 24) & 0xff),
+                (byte)((value >> 16) & 0xff),
+                (byte)((value >> 8) & 0xff),
+                (byte)(value & 0xff)
+            );
         }
 
         /// <summary>
