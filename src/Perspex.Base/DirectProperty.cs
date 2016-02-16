@@ -24,11 +24,13 @@ namespace Perspex
         /// <param name="name">The name of the property.</param>
         /// <param name="getter">Gets the current value of the property.</param>
         /// <param name="setter">Sets the value of the property. May be null.</param>
+        /// <param name="metadata">The property metadata.</param>
         public DirectProperty(
             string name,
             Func<TOwner, TValue> getter,
-            Action<TOwner, TValue> setter = null)
-            : base(name, typeof(TOwner), new PropertyMetadata())
+            Action<TOwner, TValue> setter,
+            PropertyMetadata metadata)
+            : base(name, typeof(TOwner), metadata)
         {
             Contract.Requires<ArgumentNullException>(getter != null);
 
