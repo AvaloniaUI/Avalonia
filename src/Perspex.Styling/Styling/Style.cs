@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reactive.Linq;
 using Perspex.Metadata;
 
@@ -15,12 +14,14 @@ namespace Perspex.Styling
     public class Style : IStyle
     {
         private static readonly IObservable<bool> True = Observable.Never<bool>().StartWith(true);
+        private Lazy<Dictionary<string, object>> _resources;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Style"/> class.
         /// </summary>
         public Style()
         {
+            _resources = new Lazy<Dictionary<string, object>>(() => new Dictionary<string, object>());
         }
 
         /// <summary>
@@ -31,6 +32,11 @@ namespace Perspex.Styling
         {
             Selector = selector(new Selector());
         }
+
+        /// <summary>
+        /// Gets a dictionary of style resources.
+        /// </summary>
+        public IDictionary<string, object> Resources => _resources.Value;
 
         /// <summary>
         /// Gets or sets style's selector.
