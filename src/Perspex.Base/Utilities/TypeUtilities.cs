@@ -119,6 +119,12 @@ namespace Perspex.Utilities
                 return true;
             }
 
+            if (to == typeof(string))
+            {
+                result = Convert.ToString(value);
+                return true;
+            }
+
             if (to.GetTypeInfo().IsEnum && from == typeof(string))
             {
                 if (Enum.IsDefined(to, (string)value))
@@ -131,9 +137,7 @@ namespace Perspex.Utilities
             bool containsFrom = Conversions.ContainsKey(from);
             bool containsTo = Conversions.ContainsKey(to);
 
-            if ((containsFrom && containsTo) ||
-                (from == typeof(string) && containsTo) ||
-                (to == typeof(string) && containsFrom))
+            if ((containsFrom && containsTo) || (from == typeof(string) && containsTo))
             {
                 try
                 {
