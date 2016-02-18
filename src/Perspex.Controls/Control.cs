@@ -154,7 +154,7 @@ namespace Perspex.Controls
                     throw new InvalidOperationException("Cannot set Name to empty string.");
                 }
 
-                if (VisualRoot != null)
+                if (_isAttachedToLogicalTree)
                 {
                     throw new InvalidOperationException("Cannot set Name : control already added to tree.");
                 }
