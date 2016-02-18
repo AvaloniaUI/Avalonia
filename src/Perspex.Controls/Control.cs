@@ -31,7 +31,7 @@ namespace Perspex.Controls
     /// - Implements <see cref="IStyleable"/> to allow styling to work on the control.
     /// - Implements <see cref="ILogical"/> to form part of a logical tree.
     /// </remarks>
-    public class Control : InputElement, IControl, ISetLogicalParent
+    public class Control : InputElement, IControl, INamed, ISetLogicalParent
     {
         /// <summary>
         /// Defines the <see cref="DataContext"/> property.
@@ -47,6 +47,12 @@ namespace Perspex.Controls
         /// </summary>
         public static readonly StyledProperty<ITemplate<IControl>> FocusAdornerProperty =
             PerspexProperty.Register<Control, ITemplate<IControl>>(nameof(FocusAdorner));
+
+        /// <summary>
+        /// Defines the <see cref="Name"/> property.
+        /// </summary>
+        public static readonly DirectProperty<Control, string> NameProperty =
+            PerspexProperty.RegisterDirect<Control, string>(nameof(Name), o => o.Name, (o, v) => o.Name = v);
 
         /// <summary>
         /// Defines the <see cref="Parent"/> property.
@@ -78,6 +84,7 @@ namespace Perspex.Controls
         public static readonly RoutedEvent<RequestBringIntoViewEventArgs> RequestBringIntoViewEvent =
             RoutedEvent.Register<Control, RequestBringIntoViewEventArgs>("RequestBringIntoView", RoutingStrategies.Bubble);
 
+        private string _name;
         private IControl _parent;
         private readonly Classes _classes = new Classes();
         private DataTemplates _dataTemplates;
@@ -125,6 +132,36 @@ namespace Perspex.Controls
         /// all subscribers to that change have been notified.
         /// </remarks>
         public event EventHandler DataContextChanged;
+
+        /// <summary>
+        /// Gets or sets the name of the control.
+        /// </summary>
+        /// <remarks>
+        /// An element's name is used to uniquely identify a control within the control's name
+        /// scope. Once the element is added to a logical tree, its name cannot be changed.
+        /// </remarks>
+        public string Name
+        {
+            get
+            {
+                return _name;
+            }
+
+            set
+            {
+                if (value.Trim() == string.Empty)
+                {
+                    throw new InvalidOperationException("Cannot set Name to empty string.");
+                }
+
+                if (VisualRoot != null)
+                {
+                    throw new InvalidOperationException("Cannot set Name : control already added to tree.");
+                }
+
+                _name = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the control's classes.
