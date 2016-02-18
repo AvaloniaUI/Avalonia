@@ -86,6 +86,12 @@ namespace Perspex.Controls.Generators
         }
 
         /// <inheritdoc/>
+        public virtual void InsertSpace(int index, int count)
+        {
+            _containers.InsertRange(index, Enumerable.Repeat<ItemContainer>(null, count));
+        }
+
+        /// <inheritdoc/>
         public virtual IEnumerable<ItemContainer> RemoveRange(int startingIndex, int count)
         {
             var result = _containers.GetRange(startingIndex, count);

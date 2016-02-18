@@ -30,7 +30,11 @@ namespace Perspex.Base.UnitTests
         [Fact]
         public void IsDirect_Property_Returns_True()
         {
-            var target = new DirectProperty<Class1, string>("test", o => null);
+            var target = new DirectProperty<Class1, string>(
+                "test", 
+                o => null, 
+                null, 
+                new PropertyMetadata());
 
             Assert.True(target.IsDirect);
         }

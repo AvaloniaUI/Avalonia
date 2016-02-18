@@ -20,7 +20,7 @@ namespace Perspex.Controls
         /// Defines the <see cref="IsExpanded"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> IsExpandedProperty =
-            PerspexProperty.Register<TreeViewItem, bool>("IsExpanded");
+            PerspexProperty.Register<TreeViewItem, bool>("IsExpanded", default(bool), false, Data.BindingMode.TwoWay);
 
         /// <summary>
         /// Defines the <see cref="IsSelected"/> property.
@@ -30,7 +30,7 @@ namespace Perspex.Controls
 
         private static readonly ITemplate<IPanel> DefaultPanel =
             new FuncTemplate<IPanel>(() => new StackPanel
-            {
+            {                
                 [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Continue,
             });
 
@@ -40,7 +40,7 @@ namespace Perspex.Controls
         /// Initializes static members of the <see cref="TreeViewItem"/> class.
         /// </summary>
         static TreeViewItem()
-        {
+        {            
             SelectableMixin.Attach<TreeViewItem>(IsSelectedProperty);
             FocusableProperty.OverrideDefaultValue<TreeViewItem>(true);
             ItemsPanelProperty.OverrideDefaultValue<TreeViewItem>(DefaultPanel);

@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using Perspex.Controls.Generators;
 using Perspex.Controls.Templates;
+using Perspex.Controls.Utils;
 using Perspex.Input;
 using Perspex.Styling;
 
@@ -237,6 +238,11 @@ namespace Perspex.Controls.Presenters
                 switch (e.Action)
                 {
                     case NotifyCollectionChangedAction.Add:
+                        if (e.NewStartingIndex + e.NewItems.Count < this.Items.Count())
+                        {
+                            generator.InsertSpace(e.NewStartingIndex, e.NewItems.Count);
+                        }
+
                         AddContainers(generator.Materialize(e.NewStartingIndex, e.NewItems, MemberSelector));
                         break;
 
@@ -281,7 +287,17 @@ namespace Perspex.Controls.Presenters
             {
                 if (i.ContainerControl != null)
                 {
-                    this.Panel.Children.Add(i.ContainerControl);
+                    if (i.Index < this.Panel.Children.Count)
+                    {
+                        // HACK: This will insert at the wrong place when there are null items,
+                        // but all of this will need to be rewritten when we implement 
+                        // virtualization so hope no-one notices until then :)
+                        this.Panel.Children.Insert(i.Index, i.ContainerControl);
+                    }
+                    else
+                    {
+                        this.Panel.Children.Add(i.ContainerControl);
+                    }
                 }
             }
         }

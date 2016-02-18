@@ -68,6 +68,7 @@ namespace Perspex.Controls.Generators
             }
             else if (container != null)
             {
+                Index.Add(item, container);
                 return container;
             }
             else

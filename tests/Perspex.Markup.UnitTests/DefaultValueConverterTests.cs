@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System.Globalization;
+using Perspex.Controls;
 using Xunit;
 
 namespace Perspex.Markup.UnitTests
@@ -45,6 +46,18 @@ namespace Perspex.Markup.UnitTests
         }
 
         [Fact]
+        public void Can_Convert_Int_To_Enum()
+        {
+            var result = DefaultValueConverter.Instance.Convert(
+                1,
+                typeof(TestEnum),
+                null,
+                CultureInfo.InvariantCulture);
+
+            Assert.Equal(TestEnum.Bar, result);
+        }
+
+        [Fact]
         public void Can_Convert_Double_To_String()
         {
             var result = DefaultValueConverter.Instance.Convert(
@@ -57,15 +70,27 @@ namespace Perspex.Markup.UnitTests
         }
 
         [Fact]
-        public void Can_Convert_Double_To_Int()
+        public void Can_Convert_Enum_To_Int()
         {
             var result = DefaultValueConverter.Instance.Convert(
-                5.0,
+                TestEnum.Bar,
                 typeof(int),
                 null,
                 CultureInfo.InvariantCulture);
 
-            Assert.Equal(5, result);
+            Assert.Equal(1, result);
+        }
+
+        [Fact]
+        public void Can_Convert_Enum_To_String()
+        {
+            var result = DefaultValueConverter.Instance.Convert(
+                TestEnum.Bar,
+                typeof(string),
+                null,
+                CultureInfo.InvariantCulture);
+
+            Assert.Equal("Bar", result);
         }
 
         [Fact]
@@ -78,6 +103,18 @@ namespace Perspex.Markup.UnitTests
                 CultureInfo.InvariantCulture);
 
             Assert.Equal(5.0, result);
+        }
+
+        [Fact]
+        public void Cannot_Convert_Between_Different_Enum_Types()
+        {
+            var result = DefaultValueConverter.Instance.Convert(
+                TestEnum.Foo,
+                typeof(Orientation),
+                null,
+                CultureInfo.InvariantCulture);
+
+            Assert.Equal(PerspexProperty.UnsetValue, result);
         }
 
         private enum TestEnum

@@ -53,6 +53,13 @@ namespace Perspex.Controls.Generators
         IEnumerable<ItemContainer> Dematerialize(int startingIndex, int count);
 
         /// <summary>
+        /// Inserts space for newly inserted containers in the index.
+        /// </summary>
+        /// <param name="index">The index at which space should be inserted.</param>
+        /// <param name="count">The number of blank spaces to create.</param>
+        void InsertSpace(int index, int count);
+
+        /// <summary>
         /// Removes a set of created containers and updates the index of later containers to fill
         /// the gap.
         /// </summary>

@@ -11,7 +11,7 @@ namespace Perspex.Markup.Data
     {
         public override bool SetValue(object value)
         {
-            throw new NotSupportedException("Cannot set a negated binding.");
+            return false;
         }
 
         public override IDisposable Subscribe(IObserver<object> observer)

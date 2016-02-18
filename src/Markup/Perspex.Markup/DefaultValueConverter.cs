@@ -3,6 +3,8 @@
 
 using System;
 using System.Globalization;
+using System.Linq;
+using System.Reflection;
 using Perspex.Utilities;
 
 namespace Perspex.Markup
@@ -30,7 +32,9 @@ namespace Perspex.Markup
         {
             object result;
 
-            if (value != null && TypeUtilities.TryConvert(targetType, value, culture, out result))
+            if (value != null && 
+                (TypeUtilities.TryConvert(targetType, value, culture, out result) ||
+                 TryConvertEnum(value, targetType, culture, out result)))
             {
                 return result;
             }
@@ -51,6 +55,35 @@ namespace Perspex.Markup
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             return Convert(value, targetType, parameter, culture);
+        }
+
+        private bool TryConvertEnum(object value, Type targetType, CultureInfo cultur, out object result)
+        {
+            var valueTypeInfo = value.GetType().GetTypeInfo();
+            var targetTypeInfo = targetType.GetTypeInfo();
+
+            if (valueTypeInfo.IsEnum && !targetTypeInfo.IsEnum)
+            {
+                var enumValue = (int)value;
+
+                if (TypeUtilities.TryCast(targetType, enumValue, out result))
+                {
+                    return true;
+                }
+            }
+            else if (!valueTypeInfo.IsEnum && targetTypeInfo.IsEnum)
+            {
+                object intValue;
+
+                if (TypeUtilities.TryCast(typeof(int), value, out intValue))
+                {
+                    result = Enum.ToObject(targetType, intValue);
+                    return true;
+                }
+            }
+
+            result = null;
+            return false;
         }
     }
 }
