@@ -89,6 +89,32 @@ namespace Perspex.Markup.Xaml.UnitTests
         }
 
         [Fact]
+        public void StyleResource_Can_Be_Assigned_To_Setter()
+        {
+            var xaml = @"
+<UserControl xmlns='https://github.com/perspex'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <UserControl.Styles>
+        <Style>
+            <Style.Resources>
+                <SolidColorBrush x:Key='brush'>#ff506070</SolidColorBrush>
+            </Style.Resources>
+        </Style>
+        <Style Selector='Button'>
+            <Setter Property='Background' Value='#ff808080'/>
+        </Style>
+    </UserControl.Styles>
+</UserControl>";
+
+            var loader = new PerspexXamlLoader();
+            var userControl = (UserControl)loader.Load(xaml);
+            var style = (Style)userControl.Styles[1];
+            var setter = (Setter)style.Setters.Single();
+
+            Assert.NotNull(setter.Value);
+        }
+
+        [Fact]
         public void Binding_Should_Be_Assigned_To_Setter_Value_Instead_Of_Bound()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformWrapper))
