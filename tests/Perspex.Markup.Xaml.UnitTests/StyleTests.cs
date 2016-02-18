@@ -19,7 +19,7 @@ namespace Perspex.Markup.Xaml.UnitTests
         public void Color_Can_Be_Added_To_Style_Resources()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformWrapper))
-            {                
+            {
                 var xaml = @"
 <UserControl xmlns='https://github.com/perspex'
              xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
@@ -61,6 +61,31 @@ namespace Perspex.Markup.Xaml.UnitTests
 
                 Assert.Equal(0xff506070, brush.Color.ToUint32());
             }
+        }
+
+        [Fact]
+        public void StyleResource_Can_Be_Assigned_To_Property()
+        {
+            var xaml = @"
+<UserControl xmlns='https://github.com/perspex'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <UserControl.Styles>
+        <Style>
+            <Style.Resources>
+                <SolidColorBrush x:Key='brush'>#ff506070</SolidColorBrush>
+            </Style.Resources>
+        </Style>
+    </UserControl.Styles>
+
+    <Border Name='border' Background='{StyleResource brush}'/>
+</UserControl>";
+
+            var loader = new PerspexXamlLoader();
+            var userControl = (UserControl)loader.Load(xaml);
+            var border = userControl.FindControl<Border>("border");
+            var brush = (SolidColorBrush)border.Background;
+
+            Assert.Equal(0xff506070, brush.Color.ToUint32());
         }
 
         [Fact]

@@ -14,14 +14,13 @@ namespace Perspex.Styling
     public class Style : IStyle
     {
         private static readonly IObservable<bool> True = Observable.Never<bool>().StartWith(true);
-        private Lazy<Dictionary<string, object>> _resources;
+        private Dictionary<string, object> _resources;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Style"/> class.
         /// </summary>
         public Style()
         {
-            _resources = new Lazy<Dictionary<string, object>>(() => new Dictionary<string, object>());
         }
 
         /// <summary>
@@ -34,9 +33,30 @@ namespace Perspex.Styling
         }
 
         /// <summary>
-        /// Gets a dictionary of style resources.
+        /// Gets or sets a dictionary of style resources.
         /// </summary>
-        public IDictionary<string, object> Resources => _resources.Value;
+        public IDictionary<string, object> Resources
+        {
+            get
+            {
+                if (_resources == null)
+                {
+                    _resources = new Dictionary<string, object>();
+                }
+
+                return _resources;
+            }
+
+            set
+            {
+                var resources = Resources;
+
+                foreach (var i in value)
+                {
+                    resources.Add(i);
+                }
+            }
+        }
 
         /// <summary>
         /// Gets or sets style's selector.
@@ -80,6 +100,27 @@ namespace Perspex.Styling
                 {
                     setter.Apply(this, control, null);
                 }
+            }
+        }
+
+        /// <summary>
+        /// Tries to find a named resource within the style.
+        /// </summary>
+        /// <param name="name">The resource name.</param>
+        /// <returns>
+        /// The resource if found, otherwise <see cref="PerspexProperty.UnsetValue"/>.
+        /// </returns>
+        public object FindResource(string name)
+        {
+            object result = null;
+
+            if (_resources?.TryGetValue(name, out result) == true)
+            {
+                return result;
+            }
+            else
+            {
+                return PerspexProperty.UnsetValue;
             }
         }
 

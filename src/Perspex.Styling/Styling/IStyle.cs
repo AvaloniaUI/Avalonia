@@ -16,5 +16,14 @@ namespace Perspex.Styling
         /// The control that contains this style. May be null.
         /// </param>
         void Attach(IStyleable control, IStyleHost container);
+
+        /// <summary>
+        /// Tries to find a named resource within the style.
+        /// </summary>
+        /// <param name="name">The resource name.</param>
+        /// <returns>
+        /// The resource if found, otherwise <see cref="PerspexProperty.UnsetValue"/>.
+        /// </returns>
+        object FindResource(string name);
     }
 }

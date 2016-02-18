@@ -55,6 +55,7 @@
     <Compile Include="Converters\BitmapTypeConverter.cs" />
     <Compile Include="Converters\BrushTypeConverter.cs" />
     <Compile Include="Converters\ClassesTypeConverter.cs" />
+    <Compile Include="Converters\SolidColorBrushTypeConverter.cs" />
     <Compile Include="Converters\ColorTypeConverter.cs" />
     <Compile Include="Converters\ColumnDefinitionsTypeConverter.cs" />
     <Compile Include="Converters\CursorTypeConverter.cs" />
@@ -78,6 +79,7 @@
     <Compile Include="Data\RelativeSource.cs" />
     <Compile Include="Data\SourceBindingEndpoint.cs" />
     <Compile Include="Data\TargetBindingEndpoint.cs" />
+    <Compile Include="MarkupExtensions\StyleResourceExtension.cs" />
     <Compile Include="MarkupExtensions\BindingExtension.cs" />
     <Compile Include="MarkupExtensions\RelativeSourceExtension.cs" />
     <Compile Include="MarkupExtensions\StaticExtension.cs" />

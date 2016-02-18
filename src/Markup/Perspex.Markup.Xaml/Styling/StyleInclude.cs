@@ -35,5 +35,17 @@ namespace Perspex.Markup.Xaml.Styling
                 Loaded.Attach(control, container);
             }
         }
+
+        /// <summary>
+        /// Tries to find a named resource within the style.
+        /// </summary>
+        /// <param name="name">The resource name.</param>
+        /// <returns>
+        /// The resource if found, otherwise <see cref="PerspexProperty.UnsetValue"/>.
+        /// </returns>
+        public object FindResource(string name)
+        {
+            return Loaded.FindResource(name);
+        }
     }
 }

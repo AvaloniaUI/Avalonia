@@ -63,6 +63,7 @@
     <Compile Include="Styling\Style.cs" />
     <Compile Include="Styling\StyleActivator.cs" />
     <Compile Include="Styling\ActivatedObservable.cs" />
+    <Compile Include="Styling\StyleExtensions.cs" />
     <Compile Include="Styling\Styler.cs" />
     <Compile Include="Styling\Styles.cs" />
   </ItemGroup>
