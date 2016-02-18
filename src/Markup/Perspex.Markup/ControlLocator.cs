@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using System.Reactive.Linq;
 using Perspex.Controls;
+using Perspex.LogicalTree;
 
 namespace Perspex.Markup
 {

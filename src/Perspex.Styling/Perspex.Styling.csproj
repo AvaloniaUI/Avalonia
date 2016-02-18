@@ -45,6 +45,7 @@
     </Compile>
     <Compile Include="LogicalTree\ILogical.cs" />
     <Compile Include="LogicalTree\LogicalExtensions.cs" />
+    <Compile Include="LogicalTree\LogicalTreeAttachmentEventArgs.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Styling\ActivatedSubject.cs" />
     <Compile Include="Styling\ActivatedValue.cs" />
