@@ -251,7 +251,15 @@ namespace Perspex.Controls.Primitives
         {
             if (!_templateApplied)
             {
-                VisualChildren.Clear();
+                if (VisualChildren.Count > 0)
+                {
+                    foreach (var child in this.GetTemplateChildren())
+                    {
+                        child.SetValue(TemplatedParentProperty, null);
+                    }
+
+                    VisualChildren.Clear();
+                }
 
                 if (Template != null)
                 {
@@ -318,6 +326,11 @@ namespace Perspex.Controls.Primitives
         /// <param name="e">The event args.</param>
         protected virtual void OnTemplateChanged(PerspexPropertyChangedEventArgs e)
         {
+            if (_templateApplied && VisualChildren.Count > 0)
+            {
+                _templateApplied = false;
+            }
+
             _templateApplied = false;
             InvalidateMeasure();
         }
