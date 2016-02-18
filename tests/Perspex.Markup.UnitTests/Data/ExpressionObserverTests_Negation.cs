@@ -81,12 +81,12 @@ namespace Perspex.Markup.UnitTests.Data
         }
 
         [Fact]
-        public void SetValue_Should_Throw()
+        public void SetValue_Should_Return_False()
         {
             var data = new { Foo = "foo" };
             var target = new ExpressionObserver(data, "!Foo");
 
-            Assert.Throws<NotSupportedException>(() => target.SetValue("bar"));
+            Assert.False(target.SetValue("bar"));
         }
     }
 }
