@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Reactive.Linq;
 using OmniXaml;
 using Perspex.LogicalTree;
 using Perspex.Styling;
@@ -25,7 +26,26 @@ namespace Perspex.Markup.Xaml.MarkupExtensions
                     $"StyleResource cannot be assigned to an object of type '{styleHost.GetType()}'.");
             }
 
-            return styleHost.FindStyleResource(Name);
+            // HACK: This should be as simple as:
+            //     return styleHost.FindStyleResource(Name);
+            // Waiting on OmniXAML issue #84 to be fixed before it can be that simple though.
+            var po = (PerspexObject)styleHost;
+            var parent = PerspexPropertyRegistry.Instance.FindRegistered(po, "Parent");
+
+            po.GetObservable(parent)
+                .Where(x => x != PerspexProperty.UnsetValue && x != null)
+                .Take(1)
+                .Subscribe(_ =>
+                {
+                    var resource = styleHost.FindStyleResource(Name);
+
+                    if (resource != PerspexProperty.UnsetValue)
+                    {
+                        extensionContext.TargetProperty.SetValue(extensionContext.TargetObject, resource);
+                    }
+                });
+
+            return PerspexProperty.UnsetValue;
         }
 
         public string Name { get; set; }
