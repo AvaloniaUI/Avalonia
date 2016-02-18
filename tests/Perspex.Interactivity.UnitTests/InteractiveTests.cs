@@ -385,6 +385,7 @@ namespace Perspex.Interactivity.UnitTests
         private class TestInteractive : Interactive
         {
             public bool ClassHandlerInvoked { get; private set; }
+            public string Name { get; set; }
 
             public IEnumerable<IVisual> Children
             {

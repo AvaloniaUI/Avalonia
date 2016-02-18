@@ -111,6 +111,8 @@ namespace Perspex.Styling.UnitTests
             }
 
             public event EventHandler<PerspexPropertyChangedEventArgs> PropertyChanged;
+            public event EventHandler<LogicalTreeAttachmentEventArgs> AttachedToLogicalTree;
+            public event EventHandler<LogicalTreeAttachmentEventArgs> DetachedFromLogicalTree;
 
             public Classes Classes { get; }
 
