@@ -14,6 +14,7 @@ using Perspex.Controls.Templates;
 using Perspex.Data;
 using Perspex.Input;
 using Perspex.Interactivity;
+using Perspex.LogicalTree;
 using Perspex.Styling;
 
 namespace Perspex.Controls

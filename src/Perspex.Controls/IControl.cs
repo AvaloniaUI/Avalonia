@@ -5,6 +5,7 @@ using System;
 using Perspex.Controls.Templates;
 using Perspex.Input;
 using Perspex.Layout;
+using Perspex.LogicalTree;
 using Perspex.Styling;
 
 namespace Perspex.Controls

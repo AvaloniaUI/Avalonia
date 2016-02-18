@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
+using Perspex.LogicalTree;
 using Perspex.Media;
 using Perspex.Metadata;
 

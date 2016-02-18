@@ -3,7 +3,7 @@
 
 using Perspex.Collections;
 
-namespace Perspex
+namespace Perspex.LogicalTree
 {
     /// <summary>
     /// Represents a node in the logical tree.

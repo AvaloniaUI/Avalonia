@@ -9,6 +9,7 @@ using System.Reactive.Linq;
 using Perspex.Collections;
 using Perspex.Controls;
 using Perspex.Data;
+using Perspex.LogicalTree;
 using Xunit;
 
 namespace Perspex.Styling.UnitTests

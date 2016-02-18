@@ -3,6 +3,7 @@
 
 using System;
 using Perspex.Controls;
+using Perspex.LogicalTree;
 using ReactiveUI;
 
 namespace Perspex.Diagnostics.ViewModels

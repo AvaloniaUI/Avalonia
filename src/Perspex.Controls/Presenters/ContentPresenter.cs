@@ -3,6 +3,7 @@
 
 using Perspex.Controls.Primitives;
 using Perspex.Controls.Templates;
+using Perspex.LogicalTree;
 
 namespace Perspex.Controls.Presenters
 {

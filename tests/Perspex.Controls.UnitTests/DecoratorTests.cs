@@ -3,6 +3,7 @@
 
 using System.Collections.Specialized;
 using System.Linq;
+using Perspex.LogicalTree;
 using Xunit;
 
 namespace Perspex.Controls.UnitTests
