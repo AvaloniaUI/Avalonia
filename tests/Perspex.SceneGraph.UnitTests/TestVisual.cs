@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Perspex.Rendering;
+using Perspex.VisualTree;
 
 namespace Perspex.SceneGraph.UnitTests
 {

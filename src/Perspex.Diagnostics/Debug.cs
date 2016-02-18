@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Perspex.Controls;
 using Perspex.Data;
+using Perspex.VisualTree;
 
 namespace Perspex.Diagnostics
 {

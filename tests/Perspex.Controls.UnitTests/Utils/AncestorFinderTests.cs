@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Perspex.Controls.Utils;
+using Perspex.VisualTree;
 using Xunit;
 
 namespace Perspex.Controls.UnitTests.Utils

@@ -3,6 +3,7 @@
 
 using System;
 using Perspex.Interactivity;
+using Perspex.VisualTree;
 
 namespace Perspex.Input
 {

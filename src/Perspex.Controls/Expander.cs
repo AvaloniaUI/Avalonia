@@ -1,5 +1,6 @@
 ﻿using Perspex.Animation;
 using Perspex.Controls.Primitives;
+using Perspex.VisualTree;
 
 namespace Perspex.Controls
 {

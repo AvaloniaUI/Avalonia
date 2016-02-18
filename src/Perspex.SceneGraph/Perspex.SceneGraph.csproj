@@ -86,7 +86,7 @@
     <Compile Include="Media\FormattedText.cs" />
     <Compile Include="Media\Geometry.cs" />
     <Compile Include="Media\IDrawingContext.cs" />
-    <Compile Include="IVisual.cs" />
+    <Compile Include="VisualTree\IVisual.cs" />
     <Compile Include="Media\Imaging\Bitmap.cs" />
     <Compile Include="Media\Imaging\IBitmap.cs" />
     <Compile Include="Media\Imaging\RenderTargetBitmap.cs" />

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Perspex.Controls;
 using Perspex.Controls.Templates;
+using Perspex.VisualTree;
 using Xunit;
 
 namespace Perspex.Styling.UnitTests

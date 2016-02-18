@@ -7,6 +7,7 @@ using Perspex.Input;
 using Perspex.Layout;
 using Perspex.LogicalTree;
 using Perspex.Styling;
+using Perspex.VisualTree;
 
 namespace Perspex.Controls
 {

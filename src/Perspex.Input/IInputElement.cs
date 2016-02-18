@@ -5,6 +5,7 @@ using System.Diagnostics.Contracts;
 using System;
 using System.Collections.Generic;
 using Perspex.Interactivity;
+using Perspex.VisualTree;
 
 namespace Perspex.Input
 {

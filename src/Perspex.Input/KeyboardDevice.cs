@@ -8,6 +8,7 @@ using System.Reactive.Linq;
 using System.Runtime.CompilerServices;
 using Perspex.Input.Raw;
 using Perspex.Interactivity;
+using Perspex.VisualTree;
 
 namespace Perspex.Input
 {

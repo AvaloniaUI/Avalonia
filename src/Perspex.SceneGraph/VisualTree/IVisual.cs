@@ -4,9 +4,8 @@
 using System;
 using Perspex.Collections;
 using Perspex.Media;
-using Perspex.VisualTree;
 
-namespace Perspex
+namespace Perspex.VisualTree
 {
     /// <summary>
     /// Represents a node in the visual scene graph.

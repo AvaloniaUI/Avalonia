@@ -3,6 +3,7 @@
 
 using System;
 using System.Reactive;
+using Perspex.VisualTree;
 
 namespace Perspex.Rendering
 {
