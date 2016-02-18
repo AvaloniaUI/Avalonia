@@ -23,7 +23,7 @@ namespace Perspex.Markup.Xaml.MarkupExtensions
             if (styleHost == null)
             {
                 throw new ParseException(
-                    $"StyleResource cannot be assigned to an object of type '{styleHost.GetType()}'.");
+                    $"StyleResource cannot be assigned to an object of type '{extensionContext.TargetObject.GetType()}'.");
             }
 
             // HACK: This should be as simple as:

@@ -36,7 +36,7 @@ namespace Perspex.Markup.Xaml.Converters
             {
                 var styleType = context.TypeRepository.GetByType(typeof(Style));
                 var style = (Style)context.TopDownValueContext.GetLastInstance(styleType);
-                type = style.Selector.TargetType;
+                type = style.Selector?.TargetType;
 
                 if (type == null)
                 {
