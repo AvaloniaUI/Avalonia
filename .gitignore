@@ -156,7 +156,3 @@ $RECYCLE.BIN/
 #################
 *.userprefs
 *.nugetreferenceswitcher
-
-#docfx
-_site
-api
