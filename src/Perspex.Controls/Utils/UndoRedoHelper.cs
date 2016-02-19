@@ -42,7 +42,7 @@ namespace Perspex.Controls.Utils
 				_currentNode = _currentNode.Previous;
 			}
 
-			_host.UndoRedoState = _currentNode?.Value;            
+			_host.UndoRedoState = _currentNode.Value;            
         }
 
         public bool IsLastState => _currentNode.Next == null;
@@ -72,7 +72,7 @@ namespace Perspex.Controls.Utils
 				_currentNode = _currentNode.Next;
 			}
 
-			_host.UndoRedoState = _currentNode?.Value;
+			_host.UndoRedoState = _currentNode.Value;
         }
 
         public void Snapshot()
