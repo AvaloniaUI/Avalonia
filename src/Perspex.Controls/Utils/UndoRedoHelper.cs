@@ -37,7 +37,12 @@ namespace Perspex.Controls.Utils
 
         public void Undo()
         {
-            _host.UndoRedoState= (_currentNode = _currentNode?.Previous ?? _currentNode).Value;
+			if (_currentNode != null)  
+			{
+				_currentNode = _currentNode.Previous;
+			}
+
+			_host.UndoRedoState = _currentNode?.Value;            
         }
 
         public bool IsLastState => _currentNode.Next == null;
@@ -62,8 +67,12 @@ namespace Perspex.Controls.Utils
         }
 
         public void Redo()
-        {
-            _host.UndoRedoState = (_currentNode = _currentNode?.Next ?? _currentNode).Value;
+        {            
+			if (_currentNode != null) {
+				_currentNode = _currentNode.Next;
+			}
+
+			_host.UndoRedoState = _currentNode?.Value;
         }
 
         public void Snapshot()
