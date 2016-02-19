@@ -294,6 +294,7 @@ namespace Perspex.Direct2D1.Media
         public BrushImpl CreateBrush(Perspex.Media.Brush brush, Size destinationSize)
         {
             var solidColorBrush = brush as Perspex.Media.SolidColorBrush;
+            var mutableSolidColorBrush = brush as Perspex.Media.Mutable.SolidColorBrush;
             var linearGradientBrush = brush as Perspex.Media.LinearGradientBrush;
             var radialGradientBrush = brush as Perspex.Media.RadialGradientBrush;
             var imageBrush = brush as Perspex.Media.ImageBrush;
@@ -302,6 +303,10 @@ namespace Perspex.Direct2D1.Media
             if (solidColorBrush != null)
             {
                 return new SolidColorBrushImpl(solidColorBrush, _renderTarget);
+            }
+            if (mutableSolidColorBrush != null)
+            {
+                return new SolidColorBrushImpl(mutableSolidColorBrush, _renderTarget);
             }
             else if (linearGradientBrush != null)
             {
@@ -321,7 +326,7 @@ namespace Perspex.Direct2D1.Media
             }
             else
             {
-                return new SolidColorBrushImpl(null, _renderTarget);
+                return new SolidColorBrushImpl((Perspex.Media.SolidColorBrush)null, _renderTarget);
             }
         }
     }
