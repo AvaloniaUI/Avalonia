@@ -92,9 +92,6 @@ namespace Perspex.Markup.Xaml.UnitTests
         [Fact]
         public void StyleResource_Can_Be_Assigned_To_Setter()
         {
-            // For some reason this type can't always be found if we don't do this.
-            var hack = typeof(KeyboardNavigation);
-
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
                 var xaml = @"

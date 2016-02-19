@@ -58,11 +58,11 @@ namespace Perspex.Markup.Xaml.Context
 
             if (!IsClrNamespace(name))
             {
+                ScanNewAssemblies();
                 result = _namespaces.FirstOrDefault(x => x.Name == name);
 
                 if (result == null)
                 {
-                    ScanNewAssemblies();
                     result = _namespaces.FirstOrDefault(x => x.Name == name);
                 }
             }
