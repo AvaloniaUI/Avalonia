@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reactive.Linq;
 using Perspex.Controls;
 using Perspex.Data;
+using Perspex.Input;
 using Perspex.Markup.Xaml.Data;
 using Perspex.Media;
 using Perspex.Styling;
@@ -91,27 +92,34 @@ namespace Perspex.Markup.Xaml.UnitTests
         [Fact]
         public void StyleResource_Can_Be_Assigned_To_Setter()
         {
-            var xaml = @"
-<UserControl xmlns='https://github.com/perspex'
-             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
-    <UserControl.Styles>
+            // For some reason this type can't always be found if we don't do this.
+            var hack = typeof(KeyboardNavigation);
+
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/perspex'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Window.Styles>
         <Style>
             <Style.Resources>
                 <SolidColorBrush x:Key='brush'>#ff506070</SolidColorBrush>
             </Style.Resources>
         </Style>
         <Style Selector='Button'>
-            <Setter Property='Background' Value='#ff808080'/>
+            <Setter Property='Background' Value='{StyleResource brush}'/>
         </Style>
-    </UserControl.Styles>
-</UserControl>";
+    </Window.Styles>
+    <Button Name='button'/>
+</Window>";
 
-            var loader = new PerspexXamlLoader();
-            var userControl = (UserControl)loader.Load(xaml);
-            var style = (Style)userControl.Styles[1];
-            var setter = (Setter)style.Setters.Single();
+                var loader = new PerspexXamlLoader();
+                var window = (Window)loader.Load(xaml);
+                var button = window.FindControl<Button>("button");
+                var brush = (SolidColorBrush)button.Background;
 
-            Assert.NotNull(setter.Value);
+                Assert.Equal(0xff506070, brush.Color.ToUint32());
+            }
         }
 
         [Fact]
