@@ -85,7 +85,7 @@ namespace Perspex.Controls
         /// <see cref="ScrollContentPresenter"/> in the control's template.
         /// </remarks>
         public static readonly AttachedProperty<ScrollBarVisibility> HorizontalScrollBarVisibilityProperty =
-            PerspexProperty.RegisterAttached<ScrollBar, Control, ScrollBarVisibility>(
+            PerspexProperty.RegisterAttached<ScrollViewer, Control, ScrollBarVisibility>(
                 nameof(HorizontalScrollBarVisibility),
                 ScrollBarVisibility.Auto);
 

@@ -3,6 +3,7 @@
 
 using System;
 using Perspex.Interactivity;
+using Perspex.Data;
 
 namespace Perspex.Controls.Primitives
 {
@@ -12,7 +13,7 @@ namespace Perspex.Controls.Primitives
             PerspexProperty.RegisterDirect<ToggleButton, bool>(
                 "IsChecked",
                 o => o.IsChecked,
-                (o,v) => o.IsChecked = v);
+                (o,v) => o.IsChecked = v, BindingMode.TwoWay);
 
         private bool _isChecked;
 

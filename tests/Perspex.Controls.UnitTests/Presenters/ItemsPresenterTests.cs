@@ -148,6 +148,26 @@ namespace Perspex.Controls.UnitTests.Presenters
         }
 
         [Fact]
+        public void Inserting_Items_Should_Update_Containers()
+        {
+            var items = new ObservableCollection<string> { "foo", "bar", "baz" };
+            var target = new ItemsPresenter
+            {
+                Items = items,
+            };
+
+            target.ApplyTemplate();
+            items.Insert(2, "insert");
+
+            var text = target.Panel.Children
+                .OfType<TextBlock>()
+                .Select(x => x.Text)
+                .ToList();
+
+            Assert.Equal(new[] { "foo", "bar", "insert", "baz" }, text);
+        }
+
+        [Fact]
         public void Setting_Items_To_Null_Should_Remove_Containers()
         {
             var target = new ItemsPresenter

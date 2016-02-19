@@ -8,6 +8,17 @@ namespace Perspex.Input
 {
     public class PointerEventArgs : RoutedEventArgs
     {
+        public PointerEventArgs()
+        {
+
+        }
+
+        public PointerEventArgs(RoutedEvent routedEvent)
+           : base(routedEvent)
+        {
+
+        }
+
         public IPointerDevice Device { get; set; }
 
         public InputModifiers InputModifiers { get; set; }
@@ -28,12 +39,32 @@ namespace Perspex.Input
 
     public class PointerPressedEventArgs : PointerEventArgs
     {
+        public PointerPressedEventArgs()
+            : base(InputElement.PointerPressedEvent)
+        {
+        }
+
+        public PointerPressedEventArgs(RoutedEvent routedEvent)
+            : base(routedEvent)
+        {
+        }
+
         public int ClickCount { get; set; }
         public MouseButton MouseButton { get; set; }
     }
 
     public class PointerReleasedEventArgs : PointerEventArgs
     {
+        public PointerReleasedEventArgs()
+            : base(InputElement.PointerReleasedEvent)
+        {
+        }
+
+        public PointerReleasedEventArgs(RoutedEvent routedEvent)
+            : base(routedEvent)
+        {
+        }
+
         public MouseButton MouseButton { get; set; }
     }
 }

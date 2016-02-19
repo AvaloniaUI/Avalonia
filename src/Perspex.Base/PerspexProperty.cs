@@ -342,16 +342,19 @@ namespace Perspex
         /// <param name="name">The name of the property.</param>
         /// <param name="getter">Gets the current value of the property.</param>
         /// <param name="setter">Sets the value of the property.</param>
+        /// <param name="defaultBindingMode">The default binding mode for the property.</param>
         /// <returns>A <see cref="PerspexProperty{TValue}"/></returns>
         public static DirectProperty<TOwner, TValue> RegisterDirect<TOwner, TValue>(
             string name,
             Func<TOwner, TValue> getter,
-            Action<TOwner, TValue> setter = null)
+            Action<TOwner, TValue> setter = null,
+            BindingMode defaultBindingMode = BindingMode.OneWay)
                 where TOwner : IPerspexObject
         {
             Contract.Requires<ArgumentNullException>(name != null);
 
-            var result = new DirectProperty<TOwner, TValue>(name, getter, setter);
+            var metadata = new PropertyMetadata(defaultBindingMode);
+            var result = new DirectProperty<TOwner, TValue>(name, getter, setter, metadata);
             PerspexPropertyRegistry.Instance.Register(typeof(TOwner), result);
             return result;
         }

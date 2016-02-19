@@ -311,6 +311,39 @@ namespace Perspex.Controls.UnitTests.Primitives
             Assert.True(raised);
         }
 
+        [Fact]
+        public void Applying_New_Template_Clears_TemplatedParent_Of_Old_Template_Children()
+        {
+            var target = new TestTemplatedControl
+            {
+                Template = new FuncControlTemplate(_ => new Decorator
+                {
+                    Child = new Border(),
+                })
+            };
+
+            target.ApplyTemplate();
+
+            var decorator = (Decorator)target.GetVisualChildren().Single();
+            var border = (Border)decorator.Child;
+
+            Assert.Equal(target, decorator.TemplatedParent);
+            Assert.Equal(target, border.TemplatedParent);
+
+            target.Template = new FuncControlTemplate(_ => new Canvas());
+
+            // Templated children should not be removed here: the control may be re-added
+            // somewhere with the same template, so they could still be of use.
+            Assert.Same(decorator, target.GetVisualChildren().Single());
+            Assert.Equal(target, decorator.TemplatedParent);
+            Assert.Equal(target, border.TemplatedParent);
+
+            target.ApplyTemplate();
+
+            Assert.Null(decorator.TemplatedParent);
+            Assert.Null(border.TemplatedParent);
+        }
+
         private static IControl ScrollingContentControlTemplate(ContentControl control)
         {
             return new Border

@@ -18,9 +18,9 @@ namespace Perspex.Markup.Xaml.Context
         {
         }
 
-        public override void SetValue(object instance, object value)
+        protected override IMemberValuePlugin LookupXamlMemberValueConnector()
         {
-            PropertyAccessor.SetValue(instance, this, value);
+            return new PerspexMemberValuePlugin(this);
         }
 
         public override string ToString()

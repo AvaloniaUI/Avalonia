@@ -13,6 +13,7 @@ using Perspex.Win32.Interop;
 
 namespace Perspex.Win32
 {
+
     class SystemDialogImpl : ISystemDialogImpl
     {
         public unsafe Task<string[]> ShowFileDialogAsync(FileDialog dialog, IWindowImpl parent)
@@ -44,16 +45,15 @@ namespace Perspex.Win32
                 dialog.InitialFileName?.CopyTo(0, fileBuffer, 0, dialog.InitialFileName.Length);
 
                 string userSelectedExt = null;
-
+                
                 fixed (char* pFileBuffer = fileBuffer)
                 fixed (char* pFilterBuffer = filterBuffer)
                 fixed (char* pDefExt = defExt)
                 fixed (char* pInitDir = dialog.InitialDirectory)
                 fixed (char* pTitle = dialog.Title)
                 {
-
                     var ofn = new UnmanagedMethods.OpenFileName()
-                    {
+                    {                       
                         hwndOwner = hWnd,
                         hInstance = IntPtr.Zero,
                         lCustData = IntPtr.Zero,
@@ -126,6 +126,66 @@ namespace Perspex.Win32
                 }
 
                 return files.Select(f => Path.Combine(dir, f)).ToArray();
+            });
+        }
+
+        public Task<string> ShowFolderDialogAsync(OpenFolderDialog dialog, IWindowImpl parent)
+        {                                
+            return Task.Factory.StartNew(() =>
+            {
+                string result = string.Empty;
+
+                var hWnd = parent?.Handle?.Handle ?? IntPtr.Zero;
+                var frm = (IFileDialog)(new UnmanagedMethods.FileOpenDialogRCW());
+                uint options;
+                frm.GetOptions(out options);
+                options |= (uint)(UnmanagedMethods.FOS.FOS_PICKFOLDERS | UnmanagedMethods.FOS.FOS_FORCEFILESYSTEM | UnmanagedMethods.FOS.FOS_NOVALIDATE | UnmanagedMethods.FOS.FOS_NOTESTFILECREATE | UnmanagedMethods.FOS.FOS_DONTADDTORECENT);
+                frm.SetOptions(options);
+
+                if (dialog.InitialDirectory != null)
+                {
+                    IShellItem directoryShellItem;
+                    var riid = new Guid("43826D1E-E718-42EE-BC55-A1E261C37BFE"); //IShellItem
+                    if (UnmanagedMethods.SHCreateItemFromParsingName(dialog.InitialDirectory, IntPtr.Zero, ref riid, out directoryShellItem) == (uint)UnmanagedMethods.HRESULT.S_OK)
+                    {
+                        frm.SetFolder(directoryShellItem);
+                    }
+                }
+
+                if (dialog.DefaultDirectory != null)
+                {
+                    IShellItem directoryShellItem;
+                    var riid = new Guid("43826D1E-E718-42EE-BC55-A1E261C37BFE"); //IShellItem
+                    if (UnmanagedMethods.SHCreateItemFromParsingName(dialog.DefaultDirectory, IntPtr.Zero, ref riid, out directoryShellItem) == (uint)UnmanagedMethods.HRESULT.S_OK)
+                    {
+                        frm.SetDefaultFolder(directoryShellItem);
+                    }
+                }
+
+                if (frm.Show(hWnd) == (uint)UnmanagedMethods.HRESULT.S_OK)
+                {
+                    IShellItem shellItem;
+                    if (frm.GetResult(out shellItem) == (uint)UnmanagedMethods.HRESULT.S_OK)
+                    {
+                        IntPtr pszString;
+                        if (shellItem.GetDisplayName(UnmanagedMethods.SIGDN_FILESYSPATH, out pszString) == (uint)UnmanagedMethods.HRESULT.S_OK)
+                        {
+                            if (pszString != IntPtr.Zero)
+                            {
+                                try
+                                {
+                                    result = Marshal.PtrToStringAuto(pszString);                                    
+                                }
+                                finally
+                                {
+                                    Marshal.FreeCoTaskMem(pszString);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                return result;
             });
         }
     }

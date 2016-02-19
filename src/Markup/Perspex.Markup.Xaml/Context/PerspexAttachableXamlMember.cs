@@ -20,14 +20,14 @@ namespace Perspex.Markup.Xaml.Context
         {
         }
 
-        public override void SetValue(object instance, object value)
-        {
-            PropertyAccessor.SetValue(instance, this, value);
-        }
-
         public override string ToString()
         {
             return "Perspex Attachable XAML Member " + base.ToString();
+        }
+
+        protected override IMemberValuePlugin LookupXamlMemberValueConnector()
+        {
+            return new PerspexMemberValuePlugin(this);
         }
     }
 }

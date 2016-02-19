@@ -92,7 +92,7 @@ namespace Perspex
         }
 
         /// <summary>
-        /// Finds <see cref="PerspexProperty"/> registered on a type.
+        /// Finds a <see cref="PerspexProperty"/> registered on a type.
         /// </summary>
         /// <param name="type">The type.</param>
         /// <param name="property">The property.</param>
@@ -155,6 +155,7 @@ namespace Perspex
             Contract.Requires<ArgumentNullException>(name != null);
 
             var parts = name.Split('.');
+            var types = GetImplementedTypes(type).ToList();
 
             if (parts.Length < 1 || parts.Length > 2)
             {
@@ -167,11 +168,10 @@ namespace Perspex
             if (parts.Length == 1)
             {
                 propertyName = parts[0];
+                results = results.Where(x => !x.IsAttached || types.Contains(x.OwnerType.Name));
             }
             else
             {
-                var types = GetImplementedTypes(type);
-
                 if (!types.Contains(parts[0]))
                 {
                     results = results.Where(x => x.OwnerType.Name == parts[0]);

@@ -60,6 +60,9 @@
     <Compile Include="MainWindow.paml.cs">
       <DependentUpon>MainWindow.paml</DependentUpon>
     </Compile>
+    <Compile Include="Pages\CheckBoxPage.paml.cs">
+      <DependentUpon>CheckBoxPage.paml</DependentUpon>
+    </Compile>
     <Compile Include="Pages\BorderPage.paml.cs">
       <DependentUpon>BorderPage.paml</DependentUpon>
     </Compile>
@@ -102,6 +105,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Pages\DropDownPage.paml" />
     <None Include="packages.config" />
+    <EmbeddedResource Include="Pages\CheckBoxPage.paml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Gtk\Perspex.Cairo\Perspex.Cairo.csproj">

@@ -2,8 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq.Expressions;
+using System.Reactive.Subjects;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
 
@@ -19,7 +18,8 @@ namespace Perspex.Interactivity
 
     public class RoutedEvent
     {
-        private readonly List<ClassEventSubscription> _subscriptions = new List<ClassEventSubscription>();
+        private Subject<Tuple<object, RoutedEventArgs>> _raised = new Subject<Tuple<object, RoutedEventArgs>>();
+        private Subject<RoutedEventArgs> _routeFinished = new Subject<RoutedEventArgs>();
 
         public RoutedEvent(
             string name,
@@ -62,6 +62,9 @@ namespace Perspex.Interactivity
             private set;
         }
 
+        public IObservable<Tuple<object, RoutedEventArgs>> Raised => _raised;
+        public IObservable<RoutedEventArgs> RouteFinished => _routeFinished;
+
         public static RoutedEvent<TEventArgs> Register<TOwner, TEventArgs>(
             string name,
             RoutingStrategies routingStrategy)
@@ -83,27 +86,24 @@ namespace Perspex.Interactivity
             return new RoutedEvent<TEventArgs>(name, routingStrategy, ownerType);
         }
 
-        public void AddClassHandler(Type type, EventHandler<RoutedEventArgs> handler, RoutingStrategies routes)
+        public IDisposable AddClassHandler(
+            Type targetType,
+            EventHandler<RoutedEventArgs> handler,
+            RoutingStrategies routes = RoutingStrategies.Direct | RoutingStrategies.Bubble,
+            bool handledEventsToo = false)
         {
-            _subscriptions.Add(new ClassEventSubscription
+            return Raised.Subscribe(args =>
             {
-                TargetType = type,
-                Handler = handler,
-                Routes = routes,
-            });
-        }
+                var sender = args.Item1;
+                var e = args.Item2;
 
-        internal void InvokeClassHandlers(object sender, RoutedEventArgs e)
-        {
-            foreach (var sub in _subscriptions)
-            {
-                if (sub.TargetType.GetTypeInfo().IsAssignableFrom(sender.GetType().GetTypeInfo()) &&
-                    ((e.Route == RoutingStrategies.Direct) || (e.Route & sub.Routes) != 0) &&
-                    (!e.Handled || sub.AlsoIfHandled))
+                if (targetType.GetTypeInfo().IsAssignableFrom(sender.GetType().GetTypeInfo()) &&
+                    ((e.Route == RoutingStrategies.Direct) || (e.Route & routes) != 0) &&
+                    (!e.Handled || handledEventsToo))
                 {
                     try
                     {
-                        sub.Handler.DynamicInvoke(sender, e);
+                        handler.DynamicInvoke(sender, e);
                     }
                     catch (TargetInvocationException ex)
                     {
@@ -111,12 +111,17 @@ namespace Perspex.Interactivity
                         ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
                     }
                 }
-            }
+            });
         }
 
-        private class ClassEventSubscription : EventSubscription
+        internal void InvokeRaised(object sender, RoutedEventArgs e)
         {
-            public Type TargetType { get; set; }
+            _raised.OnNext(Tuple.Create(sender, e));
+        }
+
+        internal void InvokeRouteFinished(RoutedEventArgs e)
+        {
+            _routeFinished.OnNext(e);
         }
     }
 
@@ -130,26 +135,24 @@ namespace Perspex.Interactivity
             Contract.Requires<ArgumentNullException>(ownerType != null);
         }
 
-        public void AddClassHandler<TTarget>(
+        public IDisposable AddClassHandler<TTarget>(
             Func<TTarget, Action<TEventArgs>> handler,
-            RoutingStrategies routes = RoutingStrategies.Direct | RoutingStrategies.Bubble)
-            where TTarget : class
+            RoutingStrategies routes = RoutingStrategies.Direct | RoutingStrategies.Bubble,
+            bool handledEventsToo = false)
+                where TTarget : class, IInteractive
         {
-            AddClassHandler(typeof(TTarget), (s, e) => ClassHandlerAdapter<TTarget>(s, e, handler), routes);
-        }
-
-        private static void ClassHandlerAdapter<TTarget>(
-            object sender,
-            RoutedEventArgs e,
-            Func<TTarget, Action<TEventArgs>> handler) where TTarget : class
-        {
-            var target = sender as TTarget;
-            var args = e as TEventArgs;
-
-            if (target != null && args != null)
+            EventHandler<RoutedEventArgs> adapter = (sender, e) =>
             {
-                handler(target)(args);
-            }
+                var target = sender as TTarget;
+                var args = e as TEventArgs;
+
+                if (target != null && args != null)
+                {
+                    handler(target)(args);
+                }
+            };
+
+            return AddClassHandler(typeof(TTarget), adapter, routes, handledEventsToo);
         }
     }
 }

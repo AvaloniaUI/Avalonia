@@ -57,6 +57,12 @@ namespace Perspex.Controls.Primitives
             TextBlock.FontStyleProperty.AddOwner<TemplatedControl>();
 
         /// <summary>
+        /// Defines the <see cref="FontWeight"/> property.
+        /// </summary>
+        public static readonly StyledProperty<FontWeight> FontWeightProperty =
+            TextBlock.FontWeightProperty.AddOwner<TemplatedControl>();
+
+        /// <summary>
         /// Defines the <see cref="Foreground"/> property.
         /// </summary>
         public static readonly StyledProperty<Brush> ForegroundProperty =
@@ -178,6 +184,15 @@ namespace Perspex.Controls.Primitives
         }
 
         /// <summary>
+        /// Gets or sets the font weight used to draw the control's text.
+        /// </summary>
+        public FontWeight FontWeight
+        {
+            get { return GetValue(FontWeightProperty); }
+            set { SetValue(FontWeightProperty, value); }
+        }
+
+        /// <summary>
         /// Gets or sets the brush used to draw the control's text and other foreground elements.
         /// </summary>
         public Brush Foreground
@@ -236,7 +251,15 @@ namespace Perspex.Controls.Primitives
         {
             if (!_templateApplied)
             {
-                VisualChildren.Clear();
+                if (VisualChildren.Count > 0)
+                {
+                    foreach (var child in this.GetTemplateChildren())
+                    {
+                        child.SetValue(TemplatedParentProperty, null);
+                    }
+
+                    VisualChildren.Clear();
+                }
 
                 if (Template != null)
                 {
@@ -303,6 +326,11 @@ namespace Perspex.Controls.Primitives
         /// <param name="e">The event args.</param>
         protected virtual void OnTemplateChanged(PerspexPropertyChangedEventArgs e)
         {
+            if (_templateApplied && VisualChildren.Count > 0)
+            {
+                _templateApplied = false;
+            }
+
             _templateApplied = false;
             InvalidateMeasure();
         }
