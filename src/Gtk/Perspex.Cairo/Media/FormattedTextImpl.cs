@@ -15,6 +15,11 @@ namespace Perspex.Cairo.Media
         private Size _size;
         private readonly string _text;
 
+        static double CorrectScale(double input)
+        {
+            return input * 0.75;
+        }
+
         public FormattedTextImpl(
             Pango.Context context,
             string text,
@@ -25,14 +30,14 @@ namespace Perspex.Cairo.Media
             FontWeight fontWeight)
         {
             Contract.Requires<ArgumentNullException>(context != null);
-            Contract.Requires<ArgumentNullException> (text != null);
+            Contract.Requires<ArgumentNullException>(text != null);
             Layout = new Pango.Layout(context);
             _text = text;
             Layout.SetText(text);
             Layout.FontDescription = new Pango.FontDescription
             {
                 Family = fontFamily,
-                Size = Pango.Units.FromDouble(fontSize),
+                Size = Pango.Units.FromDouble(CorrectScale(fontSize)),
                 Style = (Pango.Style)fontStyle,
                 Weight = fontWeight.ToCairo()
             };

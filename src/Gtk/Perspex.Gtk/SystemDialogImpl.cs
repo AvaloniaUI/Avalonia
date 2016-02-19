@@ -15,7 +15,7 @@ namespace Perspex.Gtk
         public Task<string[]> ShowFileDialogAsync(FileDialog dialog, IWindowImpl parent)
         {
             var tcs = new TaskCompletionSource<string[]>();
-            var dlg = new global::Gtk.FileChooserDialog(dialog.Title, ((WindowImpl) parent),
+            var dlg = new global::Gtk.FileChooserDialog(dialog.Title, ((WindowImpl)parent),
                 dialog is OpenFileDialog
                     ? FileChooserAction.Open
                     : FileChooserAction.Save,
@@ -44,7 +44,7 @@ namespace Perspex.Gtk
                 dlg.Hide();
                 dlg.Dispose();
             };
-            
+
             dlg.Close += delegate
             {
                 tcs.TrySetResult(null);
@@ -56,7 +56,33 @@ namespace Perspex.Gtk
 
         public Task<string> ShowFolderDialogAsync(OpenFolderDialog dialog, IWindowImpl parent)
         {
-            throw new NotImplementedException();
+            var tcs = new TaskCompletionSource<string>();
+            var dlg = new global::Gtk.FileChooserDialog(dialog.Title, ((WindowImpl)parent),
+                FileChooserAction.SelectFolder,
+                "Cancel", ResponseType.Cancel,
+                "Select Folder", ResponseType.Accept)
+            {
+
+            };
+
+            dlg.Modal = true;
+
+            dlg.Response += (_, args) =>
+            {
+                if (args.ResponseId == ResponseType.Accept)
+                    tcs.TrySetResult(dlg.Filename);
+
+                dlg.Hide();
+                dlg.Dispose();
+            };
+
+            dlg.Close += delegate
+            {
+                tcs.TrySetResult(null);
+                dlg.Dispose();
+            };
+            dlg.Show();
+            return tcs.Task;
         }
     }
 }
