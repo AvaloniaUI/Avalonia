@@ -16,7 +16,7 @@ This will add a Perspex project template and a Window template to the standard V
 
 ![](images/add-dialogs.png)
 
-Creating a Perspex Project will give you a simple project with a single XAML window. There's currently no designer, and not even any type-checking or intellisense for Perspex's xaml, but it works when you press F5, which is the important part!
+Creating a Perspex Project will give you a simple project with a single XAML window. We even have a simple designer:
 
 ![](images/hello-world-xaml.png)
 
@@ -28,7 +28,7 @@ You can read news about Perspex on [Groky's blog](http://grokys.github.io/)
 
 ## Cross Platform
 
-Fow now we can run on Windows, Linux and Mac. 
+Fow now we can run on Windows, Linux and Mac.
 
 ![](images/cross-platform.png)
 
