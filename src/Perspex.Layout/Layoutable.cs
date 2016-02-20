@@ -387,6 +387,7 @@ namespace Perspex.Layout
                 IsMeasureValid = false;
                 IsArrangeValid = false;
                 LayoutManager.Instance?.InvalidateMeasure(this);
+                InvalidateVisual();
             }
         }
 
@@ -401,6 +402,7 @@ namespace Perspex.Layout
 
                 IsArrangeValid = false;
                 LayoutManager.Instance?.InvalidateArrange(this);
+                InvalidateVisual();
             }
         }
 
