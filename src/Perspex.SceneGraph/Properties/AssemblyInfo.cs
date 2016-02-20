@@ -5,5 +5,6 @@ using System.Reflection;
 using Perspex.Metadata;
 
 [assembly: AssemblyTitle("Perspex.SceneGraph")]
+[assembly: XmlnsDefinition("https://github.com/perspex", "Perspex.Animation")]
 [assembly: XmlnsDefinition("https://github.com/perspex", "Perspex.Media")]
 [assembly: XmlnsDefinition("https://github.com/perspex/mutable", "Perspex.Media.Mutable")]

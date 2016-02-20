@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using ReactiveUI;
+using Perspex.Controls;
 
 namespace XamlTestApplication.ViewModels
 {
@@ -59,6 +60,23 @@ namespace XamlTestApplication.ViewModels
             CollapseNodesCommand.Subscribe(_ => ExpandNodes(false));
             ExpandNodesCommand = ReactiveCommand.Create();
             ExpandNodesCommand.Subscribe(_ => ExpandNodes(true));
+
+            OpenFileCommand = ReactiveCommand.Create();
+            OpenFileCommand.Subscribe(_ =>
+            {
+                var ofd = new OpenFileDialog();
+
+                ofd.ShowAsync();
+            });
+
+            OpenFolderCommand = ReactiveCommand.Create();
+            OpenFolderCommand.Subscribe(_ =>
+            {
+                var ofd = new OpenFolderDialog();
+
+                ofd.ShowAsync();
+            });
+
         }
 
         public List<TestItem> Items { get; }
@@ -67,6 +85,10 @@ namespace XamlTestApplication.ViewModels
         public ReactiveCommand<object> CollapseNodesCommand { get; }
 
         public ReactiveCommand<object> ExpandNodesCommand { get; }
+
+        public ReactiveCommand<object> OpenFileCommand { get; }
+
+        public ReactiveCommand<object> OpenFolderCommand { get; }
 
         public void ExpandNodes(bool expanded)
         {
