@@ -12,3 +12,4 @@ using Perspex.Metadata;
 [assembly: XmlnsDefinition("https://github.com/perspex", "Perspex.Controls.Presenters")]
 [assembly: XmlnsDefinition("https://github.com/perspex", "Perspex.Controls.Primitives")]
 [assembly: XmlnsDefinition("https://github.com/perspex", "Perspex.Controls.Shapes")]
+[assembly: XmlnsDefinition("https://github.com/perspex", "Perspex.Controls.Templates")]
