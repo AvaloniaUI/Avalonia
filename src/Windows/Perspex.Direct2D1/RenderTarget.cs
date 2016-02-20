@@ -76,14 +76,16 @@ namespace Perspex.Direct2D1
         /// </summary>
         public Factory Direct2DFactory
         {
-            get; }
+            get;
+        }
 
         /// <summary>
         /// Gets the DirectWrite factory.
         /// </summary>
         public DwFactory DirectWriteFactory
         {
-            get; }
+            get;
+        }
 
         /// <summary>
         /// Creates a drawing context for a rendering session.
