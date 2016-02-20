@@ -34,6 +34,8 @@ namespace Perspex.UnitTests
 
         public Size MaxClientSize => Size.Infinity;
 
+        public double LayoutScaling => 1;
+
         public ILayoutManager LayoutManager => PerspexLocator.Current.GetService<ILayoutManager>();
 
         public IRenderTarget RenderTarget => null;

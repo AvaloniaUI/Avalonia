@@ -108,6 +108,8 @@ namespace Perspex.Gtk
             }
         }
 
+        public double Scaling => 1;
+
         IPlatformHandle ITopLevelImpl.Handle => this;
 
         [DllImport("libgdk-win32-2.0-0.dll", CallingConvention = CallingConvention.Cdecl)]
@@ -159,6 +161,8 @@ namespace Perspex.Gtk
         public Action<Rect> Paint { get; set; }
 
         public Action<Size> Resized { get; set; }
+
+        public Action<double> ScalingChanged { get; set; }
 
         public IPopupImpl CreatePopup()
         {

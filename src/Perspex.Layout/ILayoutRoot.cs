@@ -17,5 +17,10 @@ namespace Perspex.Layout
         /// The maximum client size available.
         /// </summary>
         Size MaxClientSize { get; }
+
+        /// <summary>
+        /// The scaling factor to use in layout.
+        /// </summary>
+        double LayoutScaling { get; }
     }
 }

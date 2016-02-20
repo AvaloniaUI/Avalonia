@@ -26,18 +26,13 @@ namespace Perspex.Win32
             IntPtr.Zero, new IntPtr((int)UnmanagedMethods.Cursor.IDC_ARROW));
 
         private UnmanagedMethods.WndProc _wndProcDelegate;
-
         private string _className;
-
         private IntPtr _hwnd;
-
         private IInputRoot _owner;
-
         private bool _trackingMouse;
-
         private bool _isActive;
-
         private bool _decorated = true;
+        private double _scaling = 1;
 
         public WindowImpl()
         {
@@ -56,6 +51,8 @@ namespace Perspex.Win32
         public Action<Rect> Paint { get; set; }
 
         public Action<Size> Resized { get; set; }
+
+        public Action<double> ScalingChanged { get; set; }
 
         public Thickness BorderThickness
         {
@@ -102,6 +99,8 @@ namespace Perspex.Win32
                 }
             }
         }
+
+        public double Scaling => _scaling;
 
         public IPlatformHandle Handle
         {
@@ -410,6 +409,12 @@ namespace Perspex.Win32
 
                     return IntPtr.Zero;
 
+                case UnmanagedMethods.WindowsMessage.WM_DPICHANGED:
+                    var dpi = (int)wParam & 0xffff;
+                    _scaling = dpi / 96.0;
+                    ScalingChanged?.Invoke(_scaling);
+                    break;
+
                 case UnmanagedMethods.WindowsMessage.WM_KEYDOWN:
                 case UnmanagedMethods.WindowsMessage.WM_SYSKEYDOWN:
                     e = new RawKeyEventArgs(
@@ -608,6 +613,20 @@ namespace Perspex.Win32
             }
 
             Handle = new PlatformHandle(_hwnd, PlatformConstants.WindowHandleType);
+
+            var monitor = UnmanagedMethods.MonitorFromWindow(
+                _hwnd, 
+                UnmanagedMethods.MONITOR.MONITOR_DEFAULTTONEAREST);
+
+            uint dpix, dpiy;
+            if (UnmanagedMethods.GetDpiForMonitor(
+                    monitor, 
+                    UnmanagedMethods.MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI, 
+                    out dpix, 
+                    out dpiy) == 0)
+            {
+                _scaling = dpix / 96.0;
+            }
         }
 
         private Point PointFromLParam(IntPtr lParam)
