@@ -623,6 +623,9 @@ namespace Perspex.Win32.Interop
         public static extern bool IsWindowUnicode(IntPtr hWnd);
 
         [DllImport("user32.dll")]
+        public static extern bool IsWindowVisible(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
         public static extern bool KillTimer(IntPtr hWnd, IntPtr uIDEvent);
 
         [DllImport("user32.dll")]

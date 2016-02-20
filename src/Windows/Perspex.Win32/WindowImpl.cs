@@ -33,6 +33,7 @@ namespace Perspex.Win32
         private bool _isActive;
         private bool _decorated = true;
         private double _scaling = 1;
+        private WindowState _showWindowState;
 
         public WindowImpl()
         {
@@ -145,24 +146,14 @@ namespace Perspex.Win32
 
             set
             {
-                UnmanagedMethods.ShowWindowCommand command;
-
-                switch (value)
+                if (UnmanagedMethods.IsWindowVisible(_hwnd))
                 {
-                    case WindowState.Minimized:
-                        command = UnmanagedMethods.ShowWindowCommand.Minimize;
-                        break;
-                    case WindowState.Maximized:
-                        command = UnmanagedMethods.ShowWindowCommand.Maximize;
-                        break;
-                    case WindowState.Normal:
-                        command = UnmanagedMethods.ShowWindowCommand.Restore;
-                        break;
-                    default:
-                        throw new ArgumentException("Invalid WindowState.");
+                    ShowWindow(value);
                 }
-
-                UnmanagedMethods.ShowWindow(_hwnd, command);
+                else
+                {
+                    _showWindowState = value;
+                }
             }
         }
 
@@ -267,7 +258,7 @@ namespace Perspex.Win32
 
         public virtual void Show()
         {
-            UnmanagedMethods.ShowWindow(_hwnd, UnmanagedMethods.ShowWindowCommand.Normal);
+            ShowWindow(_showWindowState);
         }
 
         public void BeginMoveDrag()
@@ -640,5 +631,28 @@ namespace Perspex.Win32
             UnmanagedMethods.ScreenToClient(_hwnd, ref p);
             return new Point(p.X, p.Y);
         }
+
+        private void ShowWindow(WindowState state)
+        {
+            UnmanagedMethods.ShowWindowCommand command;
+
+            switch (state)
+            {
+                case WindowState.Minimized:
+                    command = UnmanagedMethods.ShowWindowCommand.Minimize;
+                    break;
+                case WindowState.Maximized:
+                    command = UnmanagedMethods.ShowWindowCommand.Maximize;
+                    break;
+                case WindowState.Normal:
+                    command = UnmanagedMethods.ShowWindowCommand.Restore;
+                    break;
+                default:
+                    throw new ArgumentException("Invalid WindowState.");
+            }
+
+            UnmanagedMethods.ShowWindow(_hwnd, command);
+        }
+
     }
 }
