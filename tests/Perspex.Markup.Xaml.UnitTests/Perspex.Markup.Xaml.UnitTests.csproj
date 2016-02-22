@@ -103,6 +103,8 @@
     <Compile Include="SamplePerspexObject.cs" />
     <Compile Include="StyleTests.cs" />
     <Compile Include="Templates\DataTemplateTests.cs" />
+    <Compile Include="Xaml\BindingTests.cs" />
+    <Compile Include="Xaml\NonControl.cs" />
     <Compile Include="Xaml\TreeDataTemplateTests.cs" />
     <Compile Include="TypeProviderMock.cs" />
     <Compile Include="ViewModelMock.cs" />
