@@ -12,6 +12,7 @@ using Perspex.Layout;
 using Perspex.Platform;
 using Perspex.Rendering;
 using Perspex.Styling;
+using Perspex.VisualTree;
 
 namespace Perspex.Controls
 {
@@ -99,6 +100,7 @@ namespace Perspex.Controls
             PlatformImpl.Closed = HandleClosed;
             PlatformImpl.Input = HandleInput;
             PlatformImpl.Resized = HandleResized;
+            PlatformImpl.ScalingChanged = HandleScalingChanged;
 
             _keyboardNavigationHandler?.SetOwner(this);
             _accessKeyHandler?.SetOwner(this);
@@ -198,6 +200,9 @@ namespace Perspex.Controls
         /// <inheritdoc/>
         Size ILayoutRoot.MaxClientSize => Size.Infinity;
 
+        /// <inheritdoc/>
+        double ILayoutRoot.LayoutScaling => PlatformImpl.Scaling;
+
         IStyleHost IStyleHost.StylingParent
         {
             get { return PerspexLocator.Current.GetService<IGlobalStyles>(); }
@@ -277,6 +282,19 @@ namespace Perspex.Controls
             ClientSize = clientSize;
             LayoutManager.Instance.ExecuteLayoutPass();
             PlatformImpl.Invalidate(new Rect(clientSize));
+        }
+
+        /// <summary>
+        /// Handles a window scaling change notification from 
+        /// <see cref="ITopLevelImpl.ScalingChanged"/>.
+        /// </summary>
+        /// <param name="scaling">The window scaling.</param>
+        protected virtual void HandleScalingChanged(double scaling)
+        {
+            foreach (ILayoutable control in this.GetSelfAndVisualDescendents())
+            {
+                control.InvalidateMeasure();
+            }
         }
 
         /// <inheritdoc/>

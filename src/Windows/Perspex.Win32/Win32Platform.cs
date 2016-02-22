@@ -22,15 +22,15 @@ namespace Perspex.Win32
     {
         private static readonly Win32Platform s_instance = new Win32Platform();
         private static Thread _uiThread;
-
         private UnmanagedMethods.WndProc _wndProcDelegate;
-
         private IntPtr _hwnd;
-
         private readonly List<Delegate> _delegates = new List<Delegate>();
 
         public Win32Platform()
         {
+            // Declare that this process is aware of per monitor DPI 
+            UnmanagedMethods.SetProcessDpiAwareness(UnmanagedMethods.PROCESS_DPI_AWARENESS.PROCESS_PER_MONITOR_DPI_AWARE);
+
             CreateMessageWindow();
         }
 
@@ -39,8 +39,6 @@ namespace Perspex.Win32
             UnmanagedMethods.GetSystemMetrics(UnmanagedMethods.SystemMetric.SM_CYDOUBLECLK));
 
         public TimeSpan DoubleClickTime => TimeSpan.FromMilliseconds(UnmanagedMethods.GetDoubleClickTime());
-        public double RenderScalingFactor { get; } = 1;
-        public double LayoutScalingFactor { get; } = 1;
 
         public static void Initialize()
         {

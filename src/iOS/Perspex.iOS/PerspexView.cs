@@ -70,9 +70,11 @@ namespace Perspex.iOS
         public Action<RawInputEventArgs> Input { get; set; }
         public Action<Rect> Paint { get; set; }
         public Action<Size> Resized { get; set; }
-
+        public Action<double> ScalingChanged { get; set; }
 
         public IPlatformHandle Handle => PerspexPlatformHandle;
+
+        public double Scaling => 1;
 
         public WindowState WindowState
         {

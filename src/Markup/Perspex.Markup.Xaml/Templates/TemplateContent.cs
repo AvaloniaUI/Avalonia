@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using OmniXaml;
+using OmniXaml.ObjectAssembler;
 using Perspex.Controls;
 using Perspex.Markup.Xaml.Context;
 
@@ -21,7 +22,9 @@ namespace Perspex.Markup.Xaml.Templates
 
         public Control Load()
         {
-            var assembler = new PerspexObjectAssembler(runtimeTypeSource);
+            var assembler = new PerspexObjectAssembler(
+                runtimeTypeSource,
+                new TopDownValueContext());
 
             foreach (var xamlNode in nodes)
             {

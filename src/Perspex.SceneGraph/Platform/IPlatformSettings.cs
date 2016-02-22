@@ -10,9 +10,5 @@ namespace Perspex.Platform
         Size DoubleClickSize { get; }
 
         TimeSpan DoubleClickTime { get; }
-
-        double RenderScalingFactor { get; }
-
-        double LayoutScalingFactor { get; }
     }
 }

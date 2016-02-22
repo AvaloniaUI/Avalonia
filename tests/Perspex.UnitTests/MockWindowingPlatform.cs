@@ -17,7 +17,7 @@ namespace Perspex.UnitTests
 
         public IWindowImpl CreateWindow()
         {
-            return _windowImpl?.Invoke() ?? Mock.Of<IWindowImpl>();
+            return _windowImpl?.Invoke() ?? Mock.Of<IWindowImpl>(x => x.Scaling == 1);
         }
 
         public IWindowImpl CreateEmbeddableWindow()

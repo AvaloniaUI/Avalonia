@@ -88,6 +88,7 @@ namespace Perspex.Controls.UnitTests
                 var impl = new Mock<ITopLevelImpl>();
                 impl.SetupProperty(x => x.ClientSize);
                 impl.SetupProperty(x => x.Resized);
+                impl.SetupGet(x => x.Scaling).Returns(1);
 
                 var target = new TestTopLevel(impl.Object)
                 {
@@ -110,9 +111,9 @@ namespace Perspex.Controls.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var impl = new Mock<ITopLevelImpl>();
+                var impl = Mock.Of<ITopLevelImpl>(x => x.Scaling == 1);
 
-                var target = new TestTopLevel(impl.Object)
+                var target = new TestTopLevel(impl)
                 {
                     Template = CreateTemplate(),
                     Content = new TextBlock
@@ -124,7 +125,7 @@ namespace Perspex.Controls.UnitTests
 
                 LayoutManager.Instance.ExecuteInitialLayoutPass(target);
 
-                impl.VerifySet(x => x.ClientSize = new Size(321, 432));
+                Mock.Get(impl).VerifySet(x => x.ClientSize = new Size(321, 432));
             }
         }
 

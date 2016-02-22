@@ -4,19 +4,21 @@
 using System;
 using OmniXaml;
 using OmniXaml.ObjectAssembler;
-using Perspex.Controls;
+using OmniXaml.ObjectAssembler.Commands;
+using OmniXaml.TypeConversion;
 using Perspex.Markup.Xaml.Templates;
 
 namespace Perspex.Markup.Xaml.Context
 {
-    using OmniXaml.ObjectAssembler.Commands;
-
     public class PerspexObjectAssembler : IObjectAssembler
     {
         private readonly TemplateHostingObjectAssembler objectAssembler;
         private readonly ObjectAssembler assembler;
 
-        public PerspexObjectAssembler(IRuntimeTypeSource runtimeTypeSource, Settings objectAssemblerSettings = null)
+        public PerspexObjectAssembler(
+            IRuntimeTypeSource typeSource, 
+            ITopDownValueContext topDownValueContext, 
+            Settings settings = null)
         {
             var mapping = new DeferredLoaderMapping();
             mapping.Map<ControlTemplate>(x => x.Content, new TemplateLoader());
@@ -25,7 +27,8 @@ namespace Perspex.Markup.Xaml.Context
             mapping.Map<TreeDataTemplate>(x => x.Content, new TemplateLoader());
             mapping.Map<ItemsPanelTemplate>(x => x.Content, new TemplateLoader());
 
-            assembler = new ObjectAssembler(runtimeTypeSource, new TopDownValueContext(), objectAssemblerSettings);
+            var valueContext = new ValueContext(typeSource, topDownValueContext);
+            assembler = new ObjectAssembler(typeSource, valueContext, settings);
             objectAssembler = new TemplateHostingObjectAssembler(assembler, mapping);
         }
 

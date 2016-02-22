@@ -26,18 +26,14 @@ namespace Perspex.Win32
             IntPtr.Zero, new IntPtr((int)UnmanagedMethods.Cursor.IDC_ARROW));
 
         private UnmanagedMethods.WndProc _wndProcDelegate;
-
         private string _className;
-
         private IntPtr _hwnd;
-
         private IInputRoot _owner;
-
         private bool _trackingMouse;
-
         private bool _isActive;
-
         private bool _decorated = true;
+        private double _scaling = 1;
+        private WindowState _showWindowState;
 
         public WindowImpl()
         {
@@ -56,6 +52,8 @@ namespace Perspex.Win32
         public Action<Rect> Paint { get; set; }
 
         public Action<Size> Resized { get; set; }
+
+        public Action<double> ScalingChanged { get; set; }
 
         public Thickness BorderThickness
         {
@@ -103,6 +101,8 @@ namespace Perspex.Win32
             }
         }
 
+        public double Scaling => _scaling;
+
         public IPlatformHandle Handle
         {
             get;
@@ -146,24 +146,14 @@ namespace Perspex.Win32
 
             set
             {
-                UnmanagedMethods.ShowWindowCommand command;
-
-                switch (value)
+                if (UnmanagedMethods.IsWindowVisible(_hwnd))
                 {
-                    case WindowState.Minimized:
-                        command = UnmanagedMethods.ShowWindowCommand.Minimize;
-                        break;
-                    case WindowState.Maximized:
-                        command = UnmanagedMethods.ShowWindowCommand.Maximize;
-                        break;
-                    case WindowState.Normal:
-                        command = UnmanagedMethods.ShowWindowCommand.Restore;
-                        break;
-                    default:
-                        throw new ArgumentException("Invalid WindowState.");
+                    ShowWindow(value);
                 }
-
-                UnmanagedMethods.ShowWindow(_hwnd, command);
+                else
+                {
+                    _showWindowState = value;
+                }
             }
         }
 
@@ -268,7 +258,7 @@ namespace Perspex.Win32
 
         public virtual void Show()
         {
-            UnmanagedMethods.ShowWindow(_hwnd, UnmanagedMethods.ShowWindowCommand.Normal);
+            ShowWindow(_showWindowState);
         }
 
         public void BeginMoveDrag()
@@ -409,6 +399,12 @@ namespace Perspex.Win32
                     }
 
                     return IntPtr.Zero;
+
+                case UnmanagedMethods.WindowsMessage.WM_DPICHANGED:
+                    var dpi = (int)wParam & 0xffff;
+                    _scaling = dpi / 96.0;
+                    ScalingChanged?.Invoke(_scaling);
+                    break;
 
                 case UnmanagedMethods.WindowsMessage.WM_KEYDOWN:
                 case UnmanagedMethods.WindowsMessage.WM_SYSKEYDOWN:
@@ -608,6 +604,20 @@ namespace Perspex.Win32
             }
 
             Handle = new PlatformHandle(_hwnd, PlatformConstants.WindowHandleType);
+
+            var monitor = UnmanagedMethods.MonitorFromWindow(
+                _hwnd, 
+                UnmanagedMethods.MONITOR.MONITOR_DEFAULTTONEAREST);
+
+            uint dpix, dpiy;
+            if (UnmanagedMethods.GetDpiForMonitor(
+                    monitor, 
+                    UnmanagedMethods.MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI, 
+                    out dpix, 
+                    out dpiy) == 0)
+            {
+                _scaling = dpix / 96.0;
+            }
         }
 
         private Point PointFromLParam(IntPtr lParam)
@@ -621,5 +631,28 @@ namespace Perspex.Win32
             UnmanagedMethods.ScreenToClient(_hwnd, ref p);
             return new Point(p.X, p.Y);
         }
+
+        private void ShowWindow(WindowState state)
+        {
+            UnmanagedMethods.ShowWindowCommand command;
+
+            switch (state)
+            {
+                case WindowState.Minimized:
+                    command = UnmanagedMethods.ShowWindowCommand.Minimize;
+                    break;
+                case WindowState.Maximized:
+                    command = UnmanagedMethods.ShowWindowCommand.Maximize;
+                    break;
+                case WindowState.Normal:
+                    command = UnmanagedMethods.ShowWindowCommand.Restore;
+                    break;
+                default:
+                    throw new ArgumentException("Invalid WindowState.");
+            }
+
+            UnmanagedMethods.ShowWindow(_hwnd, command);
+        }
+
     }
 }

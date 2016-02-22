@@ -56,9 +56,9 @@ namespace Perspex.Markup.Xaml.UnitTests.Converters
             Assert.Equal(AttachedOwner.AttachedProperty, result);
         }
 
-        private ITypeConverterContext CreateContext(Style style = null)
+        private IValueContext CreateContext(Style style = null)
         {
-            var context = new Mock<ITypeConverterContext>();
+            var context = new Mock<IValueContext>();
             var topDownValueContext = new Mock<ITopDownValueContext>();
             var typeRepository = new Mock<ITypeRepository>();
             var featureProvider = new Mock<ITypeFeatureProvider>();

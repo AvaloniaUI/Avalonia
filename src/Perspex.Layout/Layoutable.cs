@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using Perspex.Platform;
 using Perspex.VisualTree;
 using Serilog;
 using Serilog.Core.Enrichers;
@@ -386,6 +387,7 @@ namespace Perspex.Layout
                 IsMeasureValid = false;
                 IsArrangeValid = false;
                 LayoutManager.Instance?.InvalidateMeasure(this);
+                InvalidateVisual();
             }
         }
 
@@ -400,6 +402,7 @@ namespace Perspex.Layout
 
                 IsArrangeValid = false;
                 LayoutManager.Instance?.InvalidateArrange(this);
+                InvalidateVisual();
             }
         }
 
@@ -466,6 +469,7 @@ namespace Perspex.Layout
                     .Deflate(margin);
 
                 var measured = MeasureOverride(constrained);
+
                 var width = measured.Width;
                 var height = measured.Height;
 
@@ -484,6 +488,13 @@ namespace Perspex.Layout
 
                 height = Math.Min(height, MaxHeight);
                 height = Math.Max(height, MinHeight);
+
+                if (UseLayoutRounding)
+                {
+                    var scale = GetLayoutScale();
+                    width = Math.Ceiling(width * scale) / scale;
+                    height = Math.Ceiling(height * scale) / scale;
+                }
 
                 return NonNegative(new Size(width, height).Inflate(margin));
             }
@@ -510,12 +521,6 @@ namespace Perspex.Layout
                 height = Math.Max(height, child.DesiredSize.Height);
             }
 
-            if (UseLayoutRounding)
-            {
-                width = Math.Ceiling(width);
-                height = Math.Ceiling(height);
-            }
-
             return new Size(width, height);
         }
 
@@ -537,6 +542,7 @@ namespace Perspex.Layout
                     Math.Max(0, finalRect.Width - Margin.Left - Margin.Right),
                     Math.Max(0, finalRect.Height - Margin.Top - Margin.Bottom));
                 var size = sizeMinusMargins;
+                var scale = GetLayoutScale();
 
                 if (HorizontalAlignment != HorizontalAlignment.Stretch)
                 {
@@ -553,11 +559,11 @@ namespace Perspex.Layout
                 if (UseLayoutRounding)
                 {
                     size = new Size(
-                        Math.Ceiling(size.Width), 
-                        Math.Ceiling(size.Height));
+                        Math.Ceiling(size.Width * scale) / scale, 
+                        Math.Ceiling(size.Height * scale) / scale);
                     sizeMinusMargins = new Size(
-                        Math.Ceiling(sizeMinusMargins.Width), 
-                        Math.Ceiling(sizeMinusMargins.Height));
+                        Math.Ceiling(sizeMinusMargins.Width * scale) / scale, 
+                        Math.Ceiling(sizeMinusMargins.Height * scale) / scale);
                 }
 
                 size = ArrangeOverride(size).Constrain(size);
@@ -586,8 +592,8 @@ namespace Perspex.Layout
 
                 if (UseLayoutRounding)
                 {
-                    originX = Math.Floor(originX);
-                    originY = Math.Floor(originY);
+                    originX = Math.Floor(originX * scale) / scale;
+                    originY = Math.Floor(originY * scale) / scale;
                 }
 
                 Bounds = new Rect(originX, originY, size.Width, size.Height);
@@ -665,6 +671,18 @@ namespace Perspex.Layout
         private static Size NonNegative(Size size)
         {
             return new Size(Math.Max(size.Width, 0), Math.Max(size.Height, 0));
+        }
+
+        private double GetLayoutScale()
+        {
+            var result =  (VisualRoot as ILayoutRoot)?.LayoutScaling ?? 1.0;
+
+            if (result == 0 || double.IsNaN(result) || double.IsInfinity(result))
+            {
+                throw new Exception($"Invalid LayoutScaling returned from {VisualRoot.GetType()}");
+            }
+
+            return result;
         }
     }
 }

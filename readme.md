@@ -5,11 +5,11 @@
 
 A multi-platform .NET UI framework. It can run on Windows, Linux, Mac OS X, iOS and Android.
 
-![](docs/screen.png)
+![](docs/images/screen.png)
 
 Desktop platforms:
 
-<a href='https://www.youtube.com/watch?t=28&v=c_AB_XSILp0' target='_blank'>![](docs/perspex-video.png)<a/>
+<a href='https://www.youtube.com/watch?t=28&v=c_AB_XSILp0' target='_blank'>![](docs/images/perspex-video.png)<a/>
 
 Mobile platforms:
 
@@ -43,19 +43,19 @@ framework.
 ## Documentation
 
 As mentioned above, Perspex is still in alpha and as such there's not much documentation yet. You can
-take a look at the [getting started page](docs/gettingstarted.md) for an
+take a look at the [getting started page](docs/tutorial/gettingstarted.md) for an
 overview of how to get started but probably the best thing to do for now is to already know a little bit
 about WPF/Silverlight/UWP/XAML and ask questions in our [Gitter room](https://gitter.im/Perspex/Perspex).
 
-There's also a high-level [architecture document](docs/architecture.md) that is currently a little bit
+There's also a high-level [architecture document](docs/spec/architecture.md) that is currently a little bit
 out of date, and I've also started writing blog posts on Perspex at http://grokys.github.io/.
 
 Contributions are always welcome!
 
 ## Building and Using
 
-See the [build instructions here](https://github.com/grokys/Perspex/blob/master/docs/build.md)
+See the [build instructions here](docs/guidelines/build.md)
 
 ## Contributing ##
 
-Please read the [contribution guidelines](docs/contributing.md) before submitting a pull request.
+Please read the [contribution guidelines](docs/guidelines/contributing.md) before submitting a pull request.

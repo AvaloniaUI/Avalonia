@@ -17,7 +17,7 @@ namespace Perspex.Controls.UnitTests
 
         public IWindowImpl CreateWindow()
         {
-            return _windowImpl?.Invoke() ?? new Mock<IWindowImpl>().Object;
+            return _windowImpl?.Invoke() ?? Mock.Of<IWindowImpl>(x => x.Scaling == 1);
         }
 
         public IWindowImpl CreateEmbeddableWindow()
@@ -25,6 +25,6 @@ namespace Perspex.Controls.UnitTests
             throw new NotImplementedException();
         }
 
-        public IPopupImpl CreatePopup() => _popupImpl?.Invoke() ?? new Mock<IPopupImpl>().Object;
+        public IPopupImpl CreatePopup() => _popupImpl?.Invoke() ?? Mock.Of<IPopupImpl>(x => x.Scaling == 1);
     }
 }

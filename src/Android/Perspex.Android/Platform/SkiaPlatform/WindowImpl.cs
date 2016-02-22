@@ -85,6 +85,8 @@ namespace Perspex.Android.Platform.SkiaPlatform
 
         public Action<Size> Resized { get; set; }
 
+        public Action<double> ScalingChanged { get; set; }
+
         public View View => this;
 
         Action ITopLevelImpl.Activated { get; set; }
@@ -148,6 +150,8 @@ namespace Perspex.Android.Platform.SkiaPlatform
         }
 
         public Point Position { get; set; }
+
+        public double Scaling => 1;
 
         public IDisposable ShowDialog()
         {

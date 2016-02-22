@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using OmniXaml.ObjectAssembler;
+using OmniXaml.TypeConversion;
 using OmniXaml.Typing;
 using Perspex.Data;
 using Perspex.Styling;
@@ -14,7 +15,11 @@ namespace Perspex.Markup.Xaml.Context
 {
     internal static class PropertyAccessor
     {
-        public static void SetValue(object instance, MutableMember member, object value)
+        public static void SetValue(
+            object instance, 
+            MutableMember member, 
+            object value,
+            IValueContext context)
         {
             var perspexProperty = FindPerspexProperty(instance, member);
 
@@ -31,9 +36,13 @@ namespace Perspex.Markup.Xaml.Context
                 // TODO: Make this more generic somehow.
                 var setter = (Setter)instance;
                 var targetType = setter.Property.PropertyType;
-                var valuePipeline = new ValuePipeline(member.TypeRepository, null);
                 var xamlType = member.TypeRepository.GetByType(targetType);
-                SetClrProperty(instance, member, valuePipeline.ConvertValueIfNecessary(value, xamlType));
+                var convertedValue = default(object);
+
+                if (CommonValueConversion.TryConvert(value, xamlType, context, out convertedValue))
+                {
+                    SetClrProperty(instance, member, convertedValue);
+                }
             }
             else
             {
