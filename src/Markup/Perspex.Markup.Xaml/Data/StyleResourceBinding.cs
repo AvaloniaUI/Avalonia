@@ -5,6 +5,7 @@ using System;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using Perspex.Controls;
 using Perspex.Data;
 using Perspex.Styling;
 
@@ -38,18 +39,20 @@ namespace Perspex.Markup.Xaml.Data
             PerspexProperty targetProperty,
             IPerspexObject treeAnchor = null)
         {
-            return new Subject(target, Name);
+            return new Subject(target, Name, treeAnchor);
         }
 
         private class Subject : ISubject<object>
         {
             private IPerspexObject _target;
             private string _name;
+            private IPerspexObject _treeAnchor;
 
-            public Subject(IPerspexObject target, string name)
+            public Subject(IPerspexObject target, string name, IPerspexObject treeAnchor)
             {
                 _target = target;
                 _name = name;
+                _treeAnchor = treeAnchor;
             }
 
             public void OnCompleted()
@@ -66,24 +69,25 @@ namespace Perspex.Markup.Xaml.Data
 
             public IDisposable Subscribe(IObserver<object> observer)
             {
-                // HACK around OmniXAML issue #84.
-                var po = (PerspexObject)_target;
-                var parent = PerspexPropertyRegistry.Instance.FindRegistered(po, "Parent");
+                var host = (_target as IControl) ?? (_treeAnchor as IControl);
 
-                return po.GetObservable(parent)
-                    .Where(x => x != PerspexProperty.UnsetValue && x != null)
-                    .Take(1)
-                    .Subscribe(_ =>
+                if (host != null)
+                {
+                    var resource = host.FindStyleResource(_name);
+
+                    if (resource != PerspexProperty.UnsetValue)
                     {
-                        var resource = ((IStyleHost)_target).FindStyleResource(_name);
+                        observer.OnNext(resource);
+                    }
 
-                        if (resource != PerspexProperty.UnsetValue)
-                        {
-                            observer.OnNext(resource);
-                        }
+                    observer.OnCompleted();
+                }
+                else
+                {
+                    // TODO: Log error.
+                }
 
-                        observer.OnCompleted();
-                    });
+                return Disposable.Empty;
             }
         }
     }

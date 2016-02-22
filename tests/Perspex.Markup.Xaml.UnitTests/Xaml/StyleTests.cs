@@ -113,5 +113,32 @@ namespace Perspex.Markup.Xaml.UnitTests.Xaml
                 Assert.Equal(0xff506070, brush.Color.ToUint32());
             }
         }
+
+        [Fact]
+        public void StyleResource_Can_Be_Assigned_To_StyleResource_Property()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/perspex'
+        xmlns:mut='https://github.com/perspex/mutable'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Window.Styles>
+        <Style>
+            <Style.Resources>
+                <Color x:Key='color'>#ff506070</Color>
+                <mut:SolidColorBrush x:Key='brush' Color='{StyleResource color}'/>
+            </Style.Resources>
+        </Style>
+    </Window.Styles>
+</Window>";
+
+                var loader = new PerspexXamlLoader();
+                var window = (Window)loader.Load(xaml);
+                var brush = (Perspex.Media.Mutable.SolidColorBrush)window.FindStyleResource("brush");
+
+                Assert.Equal(0xff506070, brush.Color.ToUint32());
+            }
+        }
     }
 }
