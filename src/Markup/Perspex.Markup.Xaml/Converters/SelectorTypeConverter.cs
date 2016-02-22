@@ -10,23 +10,23 @@ namespace Perspex.Markup.Xaml.Converters
 {
     public class SelectorTypeConverter : ITypeConverter
     {
-        public bool CanConvertFrom(ITypeConverterContext context, Type sourceType)
+        public bool CanConvertFrom(IValueContext context, Type sourceType)
         {
             return sourceType == typeof(string);
         }
 
-        public bool CanConvertTo(ITypeConverterContext context, Type destinationType)
+        public bool CanConvertTo(IValueContext context, Type destinationType)
         {
             return false;
         }
 
-        public object ConvertFrom(ITypeConverterContext context, CultureInfo culture, object value)
+        public object ConvertFrom(IValueContext context, CultureInfo culture, object value)
         {
             var parser = new SelectorParser((t, ns) => context.TypeRepository.GetByPrefix(ns ?? "", t).UnderlyingType);
             return parser.Parse((string)value);
         }
 
-        public object ConvertTo(ITypeConverterContext context, CultureInfo culture, object value, Type destinationType)
+        public object ConvertTo(IValueContext context, CultureInfo culture, object value, Type destinationType)
         {
             throw new NotImplementedException();
         }

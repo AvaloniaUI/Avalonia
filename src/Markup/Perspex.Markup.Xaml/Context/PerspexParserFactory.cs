@@ -26,7 +26,10 @@ namespace Perspex.Markup.Xaml.Context
         {
             var xamlInstructionParser = new OrderAwareInstructionParser(new InstructionParser(runtimeTypeSource));
 
-            IObjectAssembler objectAssembler = new PerspexObjectAssembler(runtimeTypeSource, settings);
+            IObjectAssembler objectAssembler = new PerspexObjectAssembler(
+                runtimeTypeSource,
+                new TopDownValueContext(),
+                settings);
             var phaseParserKit = new PhaseParserKit(
                 new ProtoInstructionParser(runtimeTypeSource),
                 xamlInstructionParser,

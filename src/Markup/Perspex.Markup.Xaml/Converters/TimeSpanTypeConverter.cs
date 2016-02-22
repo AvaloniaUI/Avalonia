@@ -10,17 +10,17 @@ namespace Perspex.Markup.Xaml.Converters
 {
     public class TimeSpanTypeConverter : ITypeConverter
     {
-        public bool CanConvertFrom(ITypeConverterContext context, Type sourceType)
+        public bool CanConvertFrom(IValueContext context, Type sourceType)
         {
             return sourceType == typeof(string);
         }
 
-        public bool CanConvertTo(ITypeConverterContext context, Type destinationType)
+        public bool CanConvertTo(IValueContext context, Type destinationType)
         {
             return false;
         }
 
-        public object ConvertFrom(ITypeConverterContext context, CultureInfo culture, object value)
+        public object ConvertFrom(IValueContext context, CultureInfo culture, object value)
         {
             var valueStr = (string)value;
             if (!valueStr.Contains(":"))
@@ -33,7 +33,7 @@ namespace Perspex.Markup.Xaml.Converters
             return TimeSpan.Parse(valueStr);
         }
 
-        public object ConvertTo(ITypeConverterContext context, CultureInfo culture, object value, Type destinationType)
+        public object ConvertTo(IValueContext context, CultureInfo culture, object value, Type destinationType)
         {
             throw new NotImplementedException();
         }
