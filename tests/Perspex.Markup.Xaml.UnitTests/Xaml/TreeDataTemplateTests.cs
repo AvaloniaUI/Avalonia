@@ -8,7 +8,7 @@ using Perspex.Markup.Xaml.Templates;
 using Perspex.UnitTests;
 using Xunit;
 
-namespace Perspex.Markup.Xaml.UnitTests
+namespace Perspex.Markup.Xaml.UnitTests.Xaml
 {
     public class TreeDataTemplateTests
     {
