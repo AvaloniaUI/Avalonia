@@ -1,17 +1,16 @@
 ﻿// Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
+using System.Reactive;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
+using Perspex.Controls;
+using Perspex.Data;
+using Perspex.Markup.Data;
+
 namespace Perspex.Markup.Xaml.Data
 {
-
-    using System;
-    using System.Reactive;
-    using System.Reactive.Linq;
-    using System.Reactive.Subjects;
-    using Controls;
-    using Perspex.Data;
-    using Markup.Data;
-
     /// <summary>
     /// A XAML binding.
     /// </summary>
@@ -67,10 +66,15 @@ namespace Perspex.Markup.Xaml.Data
         /// </summary>
         /// <param name="target">The target instance.</param>
         /// <param name="targetProperty">The target property. May be null.</param>
+        /// <param name="treeAnchor">
+        /// For `ElementName` bindings to elements that are not themselves controls, describes
+        /// where in the logical tree to begin searching for the named element.
+        /// </param>
         /// <returns>An <see cref="ISubject{Object}"/>.</returns>
         public ISubject<object> CreateSubject(
             IPerspexObject target, 
-            PerspexProperty targetProperty)
+            PerspexProperty targetProperty,
+            IPerspexObject treeAnchor = null)
         {
             Contract.Requires<ArgumentNullException>(target != null);
 
@@ -82,7 +86,7 @@ namespace Perspex.Markup.Xaml.Data
             if (pathInfo.ElementName != null || ElementName != null)
             {
                 observer = CreateElementObserver(
-                    (IControl)target, 
+                    (target as IControl) ?? (treeAnchor as IControl),
                     pathInfo.ElementName ?? ElementName, 
                     pathInfo.Path);
             }

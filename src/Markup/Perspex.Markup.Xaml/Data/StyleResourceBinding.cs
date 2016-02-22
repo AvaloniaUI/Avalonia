@@ -33,7 +33,10 @@ namespace Perspex.Markup.Xaml.Data
         public BindingPriority Priority => BindingPriority.LocalValue;
 
         /// <inheritdoc/>
-        public ISubject<object> CreateSubject(IPerspexObject target, PerspexProperty targetProperty)
+        public ISubject<object> CreateSubject(
+            IPerspexObject target,
+            PerspexProperty targetProperty,
+            IPerspexObject treeAnchor = null)
         {
             return new Subject(target, Name);
         }

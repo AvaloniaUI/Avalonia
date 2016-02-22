@@ -68,9 +68,16 @@ namespace Perspex.Markup.Xaml.Data
         /// Creates a subject that can be used to get and set the value of the binding.
         /// </summary>
         /// <param name="target">The target instance.</param>
-        /// <param name="targetProperty">The target property.</param>
+        /// <param name="targetProperty">The target property. May be null.</param>
+        /// <param name="treeAnchor">
+        /// For `ElementName` bindings to elements that are not themselves controls, describes
+        /// where in the logical tree to begin searching for the named element.
+        /// </param>
         /// <returns>An <see cref="ISubject{Object}"/>.</returns>
-        public ISubject<object> CreateSubject(IPerspexObject target, PerspexProperty targetProperty)
+        public ISubject<object> CreateSubject(
+            IPerspexObject target,
+            PerspexProperty targetProperty,
+            IPerspexObject treeAnchor = null)
         {
             if (Converter == null)
             {

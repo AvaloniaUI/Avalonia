@@ -8,6 +8,7 @@ using System.Runtime.CompilerServices;
 using OmniXaml.ObjectAssembler;
 using OmniXaml.TypeConversion;
 using OmniXaml.Typing;
+using Perspex.Controls;
 using Perspex.Data;
 using Perspex.Styling;
 
@@ -25,7 +26,7 @@ namespace Perspex.Markup.Xaml.Context
 
             if (value is IBinding)
             {
-                SetBinding(instance, member, perspexProperty, (IBinding)value);
+                SetBinding(instance, member, perspexProperty, context, (IBinding)value);
             }
             else if (perspexProperty != null)
             {
@@ -71,9 +72,11 @@ namespace Perspex.Markup.Xaml.Context
             object instance,
             MutableMember member, 
             PerspexProperty property, 
+            IValueContext context,
             IBinding binding)
         {
-            if (!(AssignBinding(instance, member, binding) || ApplyBinding(instance, property, binding)))
+            if (!(AssignBinding(instance, member, binding) || 
+                  ApplyBinding(instance, property, context, binding)))
             {
                 throw new InvalidOperationException(
                     $"Cannot assign to '{member.Name}' on '{instance.GetType()}");
@@ -107,11 +110,27 @@ namespace Perspex.Markup.Xaml.Context
             return false;
         }
 
-        private static bool ApplyBinding(object instance, PerspexProperty property, IBinding binding)
+        private static bool ApplyBinding(
+            object instance, 
+            PerspexProperty property,
+            IValueContext context,
+            IBinding binding)
         {
             if (property != null)
             {
-                ((IPerspexObject)instance).Bind(property, binding);
+                IPerspexObject treeAnchor = null;
+
+                if (!(instance is IControl))
+                {
+                    // HACK: StoredInstances not exposed on ITopDownValueContext.
+                    var tdvc = (TopDownValueContext)context.TopDownValueContext;
+                    treeAnchor = (IControl)tdvc.StoredInstances
+                        .Select(x => x.Instance)
+                        .OfType<IControl>()
+                        .LastOrDefault();
+                }
+
+                ((IPerspexObject)instance).Bind(property, binding, treeAnchor);
                 return true;
             }
 

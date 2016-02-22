@@ -1,12 +1,7 @@
 ﻿// Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using System.Linq;
-using System.Reactive.Linq;
 using Perspex.Controls;
-using Perspex.Data;
-using Perspex.Input;
-using Perspex.Markup.Xaml.Data;
 using Perspex.Media;
 using Perspex.Styling;
 using Perspex.UnitTests;

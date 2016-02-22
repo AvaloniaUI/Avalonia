@@ -170,11 +170,16 @@ namespace Perspex
         /// <param name="o">The object.</param>
         /// <param name="property">The property to bind.</param>
         /// <param name="binding">The binding.</param>
+        /// <param name="treeAnchor">
+        /// For `ElementName` bindings to elements that are not themselves controls, describes
+        /// where in the logical tree to begin searching for the named element.
+        /// </param>
         /// <returns>An <see cref="IDisposable"/> which can be used to cancel the binding.</returns>
         public static IDisposable Bind(
             this IPerspexObject o,
             PerspexProperty property,
-            IBinding binding)
+            IBinding binding,
+            IPerspexObject treeAnchor = null)
         {
             Contract.Requires<ArgumentNullException>(o != null);
             Contract.Requires<ArgumentNullException>(property != null);
@@ -189,7 +194,7 @@ namespace Perspex
 
             return o.Bind(
                 property,
-                binding.CreateSubject(o, property),
+                binding.CreateSubject(o, property, treeAnchor),
                 mode,
                 binding.Priority);
         }
