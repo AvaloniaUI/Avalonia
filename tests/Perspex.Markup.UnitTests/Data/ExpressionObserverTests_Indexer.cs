@@ -33,10 +33,20 @@ namespace Perspex.Markup.UnitTests.Data
         }
 
         [Fact]
-        public async void Should_Get_Value_For_Non_Integer_Indexer()
+        public async void Should_Get_Value_For_String_Indexer()
         {
             var data = new { Foo = new Dictionary<string, string> { { "foo", "bar" }, { "baz", "qux" } } };
             var target = new ExpressionObserver(data, "Foo[foo]");
+            var result = await target.Take(1);
+
+            Assert.Equal("bar", result);
+        }
+
+        [Fact]
+        public async void Should_Get_Value_For_Non_String_Indexer()
+        {
+            var data = new { Foo = new Dictionary<double, string> { { 1.0, "bar" }, { 2.0, "qux" } } };
+            var target = new ExpressionObserver(data, "Foo[1.0]");
             var result = await target.Take(1);
 
             Assert.Equal("bar", result);

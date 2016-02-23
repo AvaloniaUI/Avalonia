@@ -12,13 +12,18 @@ namespace Perspex.Markup.Data.Parsers
         {
             if (char.IsDigit(r.Peek))
             {
-                StringBuilder result = new StringBuilder();
-
+                var result = new StringBuilder();
+                var foundDecimal = false;
                 while (!r.End)
                 {
                     if (char.IsDigit(r.Peek))
                     {
                         result.Append(r.Take());
+                    }
+                    else if (!foundDecimal && r.Peek == '.')
+                    {
+                        result.Append(r.Take());
+                        foundDecimal = true;
                     }
                     else
                     {
@@ -26,7 +31,14 @@ namespace Perspex.Markup.Data.Parsers
                     }
                 }
 
-                return int.Parse(result.ToString(), CultureInfo.InvariantCulture);
+                if (!foundDecimal)
+                {
+                    return int.Parse(result.ToString(), CultureInfo.InvariantCulture); 
+                }
+                else
+                {
+                    return result.ToString(); // Leave as a string to support double, float, and decimal indicies
+                }
             }
 
             return null;
