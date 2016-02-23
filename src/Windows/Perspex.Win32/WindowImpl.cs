@@ -585,7 +585,7 @@ namespace Perspex.Win32
                 lpfnWndProc = _wndProcDelegate,
                 hInstance = Marshal.GetHINSTANCE(GetType().Module),
                 hCursor = DefaultCursor,
-                hbrBackground = (IntPtr)5,
+                hbrBackground = IntPtr.Zero,
                 lpszClassName = _className,
             };
 
