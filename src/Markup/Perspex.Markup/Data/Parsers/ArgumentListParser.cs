@@ -32,6 +32,10 @@ namespace Perspex.Markup.Data.Parsers
                         {
                             builder.Append(r.Take());
                         }
+                        if (builder.Length == 0)
+                        {
+                            throw new ExpressionParseException(r.Position, "Expected indexer argument.");
+                        }
                         result.Add(builder.ToString());
                     }
 

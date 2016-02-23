@@ -53,6 +53,10 @@ namespace Perspex.Markup.Data
         private void IndexerPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             var typeInfo = sender.GetType().GetTypeInfo();
+            if (typeInfo.GetDeclaredProperty(e.PropertyName) == null)
+            {
+                return;
+            }
             if (typeInfo.GetDeclaredProperty(e.PropertyName).GetIndexParameters().Any())
             {
                 CurrentValue = GetValue(sender);
