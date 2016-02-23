@@ -2,13 +2,13 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Linq;
 using Perspex.Input;
 using Perspex.Interactivity;
+using Perspex.LogicalTree;
 using Perspex.Metadata;
 using Perspex.Rendering;
 using Perspex.VisualTree;
-using Perspex.LogicalTree;
-using System.Linq;
 
 namespace Perspex.Controls.Primitives
 {
@@ -279,21 +279,13 @@ namespace Perspex.Controls.Primitives
             {
                 case PlacementMode.Pointer:
                     return MouseDevice.Instance.Position;
+
                 case PlacementMode.Bottom:
                     return target?.PointToScreen(new Point(0, target.Bounds.Height)) ?? zero;
+
                 case PlacementMode.Right:
                     return target?.PointToScreen(new Point(target.Bounds.Width, 0)) ?? zero;
-                case PlacementMode.Center:
-                    if ((target == null) || (Child == null))
-                    {
-                        return zero;
-                    }
-                    else
-                    {
-                        Child.Measure(target.Bounds.Size);
 
-                        return target.PointToScreen(new Point((target.Bounds.Width - Child.DesiredSize.Width) / 2, (target.Bounds.Height - Child.DesiredSize.Height) / 2));
-                    }
                 default:
                     throw new InvalidOperationException("Invalid value for Popup.PlacementMode");
             }

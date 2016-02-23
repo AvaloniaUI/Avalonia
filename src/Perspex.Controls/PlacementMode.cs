@@ -23,11 +23,6 @@ namespace Perspex.Controls
         /// <summary>
         /// The popup is placed at the top right of its target.
         /// </summary>
-        Right,
-
-        /// <summary>
-        /// The popup is placed at the center of its target.
-        /// </summary>
-        Center
+        Right
     }
 }
