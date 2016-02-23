@@ -87,11 +87,6 @@
     <Compile Include="MarkupExtensions\TemplateBindingExtension.cs" />
     <Compile Include="MarkupExtensions\TypeExtension.cs" />
     <Compile Include="OmniXAML\Source\Glass\AutoKeyDictionary.cs" />
-    <Compile Include="OmniXAML\Source\Glass\ChangeTracking\ObservableProperty.cs" />
-    <Compile Include="OmniXAML\Source\Glass\ChangeTracking\ObservablePropertyChain.cs" />
-    <Compile Include="OmniXAML\Source\Glass\ChangeTracking\Property.cs" />
-    <Compile Include="OmniXAML\Source\Glass\ChangeTracking\PropertyChain.cs" />
-    <Compile Include="OmniXAML\Source\Glass\ChangeTracking\ValueTypePropertyChain.cs" />
     <Compile Include="OmniXAML\Source\Glass\DependencySorter.cs" />
     <Compile Include="OmniXAML\Source\Glass\EnumExtensions.cs" />
     <Compile Include="OmniXAML\Source\Glass\Extensions.cs" />
@@ -279,7 +274,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <None Include="OmniXAML\Source\Glass\ChangeTracking\packages.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
