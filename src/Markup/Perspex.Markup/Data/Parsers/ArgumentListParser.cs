@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace Perspex.Markup.Data.Parsers
 {
@@ -26,7 +27,12 @@ namespace Perspex.Markup.Data.Parsers
                     }
                     else
                     {
-                        throw new ExpressionParseException(r.Position, "Expected integer.");
+                        var builder = new StringBuilder();
+                        while (!r.End && r.Peek != ',' && r.Peek != close)
+                        {
+                            builder.Append(r.Take());
+                        }
+                        result.Add(builder.ToString());
                     }
 
                     r.SkipWhitespace();

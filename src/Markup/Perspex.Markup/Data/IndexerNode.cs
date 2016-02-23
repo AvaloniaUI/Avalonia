@@ -1,10 +1,12 @@
 ﻿// Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using Perspex.Utilities;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 
@@ -102,6 +104,34 @@ namespace Perspex.Markup.Data
                 if (_intArgs[0] < list.Count)
                 {
                     return list[_intArgs[0]];
+                }
+            }
+            else
+            {
+                PropertyInfo indexerProperty = null;
+                ParameterInfo[] indexerParameters = null;
+                foreach (var property in typeInfo.DeclaredProperties)
+                {
+                    var indexParams = property.GetIndexParameters();
+                    if (indexParams.Length > 0)
+                    {
+                        indexerProperty = property;
+                        indexerParameters = indexParams;
+                    }
+                }
+                if (indexerProperty != null && indexerParameters.Length == Arguments.Count)
+                {
+                    var convertedObjectArray = new object[indexerParameters.Length];
+                    for (int i = 0; i < Arguments.Count; i++)
+                    {
+                        object temp = null;
+                        if (!TypeUtilities.TryConvert(indexerParameters[i].ParameterType, Arguments[i], CultureInfo.InvariantCulture, out temp))
+                        {
+                            return PerspexProperty.UnsetValue;
+                        }
+                        convertedObjectArray[i] = temp;
+                    }
+                    return indexerProperty.GetValue(target, convertedObjectArray);
                 }
             }
 

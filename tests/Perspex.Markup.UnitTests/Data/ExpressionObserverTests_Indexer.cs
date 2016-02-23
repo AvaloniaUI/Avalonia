@@ -33,6 +33,16 @@ namespace Perspex.Markup.UnitTests.Data
         }
 
         [Fact]
+        public async void Should_Get_Value_For_Non_Integer_Indexer()
+        {
+            var data = new { Foo = new Dictionary<string, string> { { "foo", "bar" }, { "baz", "qux" } } };
+            var target = new ExpressionObserver(data, "Foo[foo]");
+            var result = await target.Take(1);
+
+            Assert.Equal("bar", result);
+        }
+
+        [Fact]
         public async void Array_Out_Of_Bounds_Should_Return_UnsetValue()
         {
             var data = new { Foo = new[] { "foo", "bar" } };
