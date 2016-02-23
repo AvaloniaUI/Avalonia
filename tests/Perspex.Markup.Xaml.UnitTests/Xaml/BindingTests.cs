@@ -10,6 +10,52 @@ namespace Perspex.Markup.Xaml.UnitTests.Xaml
     public class BindingTests
     {
         [Fact]
+        public void Binding_To_DataContext_Works()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/perspex'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+             xmlns:local='clr-namespace:Perspex.Markup.Xaml.UnitTests.Xaml;assembly=Perspex.Markup.Xaml.UnitTests'>
+    <Button Name='button' Content='{Binding Foo}'/>
+</Window>";
+                var loader = new PerspexXamlLoader();
+                var window = (Window)loader.Load(xaml);
+                var button = window.FindControl<Button>("button");
+
+                button.DataContext = new { Foo = "foo" };
+
+                Assert.Equal("foo", button.Content);
+            }
+        }
+
+        [Fact]
+        public void Longhand_Binding_To_DataContext_Works()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/perspex'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+             xmlns:local='clr-namespace:Perspex.Markup.Xaml.UnitTests.Xaml;assembly=Perspex.Markup.Xaml.UnitTests'>
+    <Button Name='button'>
+        <Button.Content>
+            <Binding Path='Foo'/>
+        </Button.Content>
+    </Button>
+</Window>";
+                var loader = new PerspexXamlLoader();
+                var window = (Window)loader.Load(xaml);
+                var button = window.FindControl<Button>("button");
+
+                button.DataContext = new { Foo = "foo" };
+
+                Assert.Equal("foo", button.Content);
+            }
+        }
+
+        [Fact]
         public void Can_Bind_Control_To_Non_Control()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
