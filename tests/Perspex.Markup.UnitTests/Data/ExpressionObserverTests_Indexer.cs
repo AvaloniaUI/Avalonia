@@ -146,5 +146,40 @@ namespace Perspex.Markup.UnitTests.Data
 
             Assert.Equal(new[] { "bar", PerspexProperty.UnsetValue }, result);
         }
+
+        [Fact]
+        public void Should_Track_NonIntegerIndexer()
+        {
+            var data = new { Foo = new NonIntegerIndexer() };
+            data.Foo["foo"] = "bar";
+            data.Foo["baz"] = "qux";
+
+            var target = new ExpressionObserver(data, "Foo[foo]");
+            var result = new List<object>();
+
+            var sub = target.Subscribe(x => result.Add(x));
+            data.Foo["foo"] = "bar2";
+
+            var expected = new[] { "bar", "bar2" };
+            Assert.Equal(expected, result);
+        }
+
+        private class NonIntegerIndexer : NotifyingBase
+        {
+            private Dictionary<string, string> storage = new Dictionary<string, string>();
+
+            public string this[string key]
+            {
+                get
+                {
+                    return storage[key];
+                }
+                set
+                {
+                    storage[key] = value;
+                    RaisePropertyChanged(CommonPropertyNames.IndexerName);
+                }
+            }
+        }
     }
 }

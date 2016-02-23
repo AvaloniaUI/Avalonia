@@ -6,6 +6,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -39,6 +40,22 @@ namespace Perspex.Markup.Data
             if (incc != null)
             {
                 incc.CollectionChanged += CollectionChanged;
+            }
+
+            var inpc = target as INotifyPropertyChanged;
+
+            if(inpc != null)
+            {
+                inpc.PropertyChanged += IndexerPropertyChanged;
+            }
+        }
+
+        private void IndexerPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            var typeInfo = sender.GetType().GetTypeInfo();
+            if (typeInfo.GetDeclaredProperty(e.PropertyName).GetIndexParameters().Any())
+            {
+                CurrentValue = GetValue(sender);
             }
         }
 
@@ -108,17 +125,8 @@ namespace Perspex.Markup.Data
             }
             else
             {
-                PropertyInfo indexerProperty = null;
-                ParameterInfo[] indexerParameters = null;
-                foreach (var property in typeInfo.DeclaredProperties)
-                {
-                    var indexParams = property.GetIndexParameters();
-                    if (indexParams.Length > 0)
-                    {
-                        indexerProperty = property;
-                        indexerParameters = indexParams;
-                    }
-                }
+                var indexerProperty = GetIndexer(typeInfo);
+                var indexerParameters = indexerProperty?.GetIndexParameters();
                 if (indexerProperty != null && indexerParameters.Length == Arguments.Count)
                 {
                     var convertedObjectArray = new object[indexerParameters.Length];
@@ -136,6 +144,25 @@ namespace Perspex.Markup.Data
             }
 
             return PerspexProperty.UnsetValue;
+        }
+
+        private static PropertyInfo GetIndexer(TypeInfo typeInfo)
+        {
+            PropertyInfo indexer;
+            // Check for the default indexer name first to make this faster.
+            // This will only be false when a class in VB has a custom indexer name.
+            if ((indexer = typeInfo.GetDeclaredProperty(CommonPropertyNames.IndexerName)) != null)
+            {
+                return indexer;
+            }
+            foreach (var property in typeInfo.DeclaredProperties)
+            {
+                if (property.GetIndexParameters().Any())
+                {
+                    return property;
+                }
+            }
+            return null;
         }
 
         private bool InBounds(int[] args, Array array)
