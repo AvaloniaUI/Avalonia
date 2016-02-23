@@ -20,6 +20,7 @@ namespace Perspex.Markup.Xaml
     public class PerspexXamlLoader : XmlLoader
     {
         private static PerspexParserFactory s_parserFactory;
+        private static IInstanceLifeCycleListener s_lifeCycleListener = new PerspexLifeCycleListener();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PerspexXamlLoader"/> class.
@@ -77,7 +78,7 @@ namespace Perspex.Markup.Xaml
                 {
                     using (var stream = assetLocator.Open(uri))
                     {
-                        return Load(stream, new Settings { RootInstance = rootInstance });
+                        return Load(stream, rootInstance);
                     }
                 }
             }
@@ -106,7 +107,7 @@ namespace Perspex.Markup.Xaml
 
             using (var stream = assetLocator.Open(uri))
             {
-                return Load(stream, new Settings { RootInstance = rootInstance });
+                return Load(stream, rootInstance);
             }
         }
 
@@ -124,7 +125,7 @@ namespace Perspex.Markup.Xaml
 
             using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(xaml)))
             {
-                return Load(stream, new Settings { RootInstance = rootInstance });
+                return Load(stream, rootInstance);
             }
         }
 
@@ -150,6 +151,15 @@ namespace Perspex.Markup.Xaml
             yield return new Uri("resm:" + typeName + ".xaml?assembly=" + asm);
             yield return new Uri("resm:" + typeName + ".paml?assembly=" + asm);
 
+        }
+
+        private object Load(Stream stream, object rootInstance)
+        {
+            return base.Load(stream, new Settings
+            {
+                RootInstance = rootInstance,
+                InstanceLifeCycleListener = s_lifeCycleListener,
+            });
         }
     }
 }

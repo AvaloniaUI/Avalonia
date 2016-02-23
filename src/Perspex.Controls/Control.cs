@@ -31,7 +31,7 @@ namespace Perspex.Controls
     /// - Implements <see cref="IStyleable"/> to allow styling to work on the control.
     /// - Implements <see cref="ILogical"/> to form part of a logical tree.
     /// </remarks>
-    public class Control : InputElement, IControl, INamed, ISetLogicalParent
+    public class Control : InputElement, IControl, INamed, ISetLogicalParent, ISupportInitialize
     {
         /// <summary>
         /// Defines the <see cref="DataContext"/> property.
@@ -84,6 +84,7 @@ namespace Perspex.Controls
         public static readonly RoutedEvent<RequestBringIntoViewEventArgs> RequestBringIntoViewEvent =
             RoutedEvent.Register<Control, RequestBringIntoViewEventArgs>("RequestBringIntoView", RoutingStrategies.Bubble);
 
+        private int _initCount;
         private string _name;
         private IControl _parent;
         private readonly Classes _classes = new Classes();
@@ -93,6 +94,7 @@ namespace Perspex.Controls
         private IPerspexList<ILogical> _logicalChildren;
         private INameScope _nameScope;
         private Styles _styles;
+        private bool _styled;
         private Subject<Unit> _styleDetach = new Subject<Unit>();
 
         /// <summary>
@@ -154,9 +156,9 @@ namespace Perspex.Controls
                     throw new InvalidOperationException("Cannot set Name to empty string.");
                 }
 
-                if (_isAttachedToLogicalTree)
+                if (_styled)
                 {
-                    throw new InvalidOperationException("Cannot set Name : control already added to tree.");
+                    throw new InvalidOperationException("Cannot set Name : control already styled.");
                 }
 
                 _name = value;
@@ -310,6 +312,28 @@ namespace Perspex.Controls
         /// <inheritdoc/>
         IStyleHost IStyleHost.StylingParent => (IStyleHost)InheritanceParent;
 
+        /// <inheritdoc/>
+        void ISupportInitialize.BeginInit()
+        {
+            ++_initCount;
+        }
+
+        /// <inheritdoc/>
+        void ISupportInitialize.EndInit()
+        {
+            if (_initCount == 0)
+            {
+                throw new InvalidOperationException("BeginInit was not called.");
+            }
+
+            if (--_initCount == 0 && !_styled)
+            {
+                RegisterWithNameScope();
+                ApplyStyling();
+                _styled = true;
+            }
+        }
+
         /// <summary>
         /// Gets a value which indicates whether a change to the <see cref="DataContext"/> is in 
         /// the process of being notified.
@@ -457,18 +481,15 @@ namespace Perspex.Controls
             // - That AttachedToLogicalTree signal travels down to the ListBoxItem
             if (!_isAttachedToLogicalTree)
             {
-                if (_nameScope == null)
-                {
-                    _nameScope = NameScope.GetNameScope(this) ?? ((Control)Parent)?._nameScope;
-                }
-
-                if (Name != null)
-                {
-                    _nameScope?.Register(Name, this);
-                }
-
                 _isAttachedToLogicalTree = true;
-                PerspexLocator.Current.GetService<IStyler>()?.ApplyStyles(this);
+
+                if (_initCount == 0)
+                {
+                    RegisterWithNameScope();
+                    ApplyStyling();
+                    _styled = true;
+                }
+
                 AttachedToLogicalTree?.Invoke(this, e);
             }
 
@@ -603,6 +624,24 @@ namespace Perspex.Controls
             }
 
             return null;
+        }
+
+        private void ApplyStyling()
+        {
+            PerspexLocator.Current.GetService<IStyler>()?.ApplyStyles(this);
+        }
+
+        private void RegisterWithNameScope()
+        {
+            if (_nameScope == null)
+            {
+                _nameScope = NameScope.GetNameScope(this) ?? ((Control)Parent)?._nameScope;
+            }
+
+            if (Name != null)
+            {
+                _nameScope?.Register(Name, this);
+            }
         }
 
         private static void ValidateLogicalChild(ILogical c)
