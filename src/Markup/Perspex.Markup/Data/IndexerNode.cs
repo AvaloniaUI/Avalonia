@@ -114,7 +114,6 @@ namespace Perspex.Markup.Data
             var typeInfo = target.GetType().GetTypeInfo();
             var list = target as IList;
             var dictionary = target as IDictionary;
-            //TODO: Implement array as special case. It doesn't have an indexer property.
             var indexerProperty = GetIndexer(typeInfo);
             var indexerParameters = indexerProperty?.GetIndexParameters();
             if (indexerProperty != null && indexerParameters.Length == Arguments.Count)
