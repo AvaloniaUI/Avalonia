@@ -53,7 +53,6 @@
     <Compile Include="Data\LogicalNotNode.cs" />
     <Compile Include="Data\IndexerNode.cs" />
     <Compile Include="Data\Parsers\ArgumentListParser.cs" />
-    <Compile Include="Data\Parsers\LiteralParser.cs" />
     <Compile Include="Data\Parsers\IdentifierParser.cs" />
     <Compile Include="Data\Parsers\ExpressionParser.cs" />
     <Compile Include="Data\Parsers\Reader.cs" />

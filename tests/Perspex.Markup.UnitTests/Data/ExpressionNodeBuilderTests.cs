@@ -77,7 +77,18 @@ namespace Perspex.Markup.UnitTests.Data
 
             Assert.Equal(2, result.Count);
             AssertIsProperty(result[0], "Foo");
-            AssertIsIndexer(result[1], 15);
+            AssertIsIndexer(result[1], "15");
+            Assert.IsType<IndexerNode>(result[1]);
+        }
+
+        [Fact]
+        public void Should_Build_Indexed_Property_StringIndex()
+        {
+            var result = ToList(ExpressionNodeBuilder.Build("Foo[Key]"));
+
+            Assert.Equal(2, result.Count);
+            AssertIsProperty(result[0], "Foo");
+            AssertIsIndexer(result[1], "Key");
             Assert.IsType<IndexerNode>(result[1]);
         }
 
@@ -88,7 +99,7 @@ namespace Perspex.Markup.UnitTests.Data
 
             Assert.Equal(2, result.Count);
             AssertIsProperty(result[0], "Foo");
-            AssertIsIndexer(result[1], 15, 6);
+            AssertIsIndexer(result[1], "15", "6");
         }
 
         [Fact]
@@ -98,7 +109,7 @@ namespace Perspex.Markup.UnitTests.Data
 
             Assert.Equal(2, result.Count);
             AssertIsProperty(result[0], "Foo");
-            AssertIsIndexer(result[1], 5, 16);
+            AssertIsIndexer(result[1], "5", "16");
         }
 
         [Fact]
@@ -108,8 +119,8 @@ namespace Perspex.Markup.UnitTests.Data
 
             Assert.Equal(3, result.Count);
             AssertIsProperty(result[0], "Foo");
-            AssertIsIndexer(result[1], 15);
-            AssertIsIndexer(result[2], 16);
+            AssertIsIndexer(result[1], "15");
+            AssertIsIndexer(result[2], "16");
         }
 
         [Fact]
@@ -120,7 +131,7 @@ namespace Perspex.Markup.UnitTests.Data
             Assert.Equal(4, result.Count);
             AssertIsProperty(result[0], "Foo");
             AssertIsProperty(result[1], "Bar");
-            AssertIsIndexer(result[2], 5, 6);
+            AssertIsIndexer(result[2], "5", "6");
             AssertIsProperty(result[3], "Baz");
         }
 
@@ -132,12 +143,12 @@ namespace Perspex.Markup.UnitTests.Data
             Assert.Equal(name, p.PropertyName);
         }
 
-        private void AssertIsIndexer(ExpressionNode node, params object[] args)
+        private void AssertIsIndexer(ExpressionNode node, params string[] args)
         {
             Assert.IsType<IndexerNode>(node);
 
             var e = (IndexerNode)node;
-            Assert.Equal(e.Arguments.ToArray(), args.ToArray());
+            Assert.Equal(e.Arguments.ToArray(), args);
         }
 
         private List<ExpressionNode> ToList(ExpressionNode node)

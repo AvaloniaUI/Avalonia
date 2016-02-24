@@ -9,35 +9,26 @@ namespace Perspex.Markup.Data.Parsers
 {
     internal static class ArgumentListParser
     {
-        public static IList<object> Parse(Reader r, char open, char close)
+        public static IList<string> Parse(Reader r, char open, char close)
         {
             if (r.Peek == open)
             {
-                var result = new List<object>();
+                var result = new List<string>();
 
                 r.Take();
 
                 while (!r.End)
                 {
-                    var literal = LiteralParser.Parse(r);
-
-                    if (literal != null)
+                    var builder = new StringBuilder();
+                    while (!r.End && r.Peek != ',' && r.Peek != close && !char.IsWhiteSpace(r.Peek))
                     {
-                        result.Add(literal);
+                        builder.Append(r.Take());
                     }
-                    else
+                    if (builder.Length == 0)
                     {
-                        var builder = new StringBuilder();
-                        while (!r.End && r.Peek != ',' && r.Peek != close)
-                        {
-                            builder.Append(r.Take());
-                        }
-                        if (builder.Length == 0)
-                        {
-                            throw new ExpressionParseException(r.Position, "Expected indexer argument.");
-                        }
-                        result.Add(builder.ToString());
+                        throw new ExpressionParseException(r.Position, "Expected indexer argument.");
                     }
+                    result.Add(builder.ToString());
 
                     r.SkipWhitespace();
 

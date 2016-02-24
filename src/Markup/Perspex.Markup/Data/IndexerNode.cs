@@ -15,21 +15,12 @@ namespace Perspex.Markup.Data
 {
     internal class IndexerNode : ExpressionNode
     {
-        private readonly int[] _intArgs;
-
-        public IndexerNode(IList<object> arguments)
+        public IndexerNode(IList<string> arguments)
         {
             Arguments = arguments;
-
-            var intArgs = Arguments.OfType<int>().ToArray();
-
-            if (intArgs.Length == arguments.Count)
-            {
-                _intArgs = intArgs;
-            }
         }
 
-        public IList<object> Arguments { get; }
+        public IList<string> Arguments { get; }
 
         protected override void SubscribeAndUpdate(object target)
         {
@@ -75,29 +66,41 @@ namespace Perspex.Markup.Data
 
         private void CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            bool update = false;
-
-            switch (e.Action)
+            var update = false;
+            if (sender is IList)
             {
-                case NotifyCollectionChangedAction.Add:
-                    update = _intArgs[0] >= e.NewStartingIndex;
-                    break;
-                case NotifyCollectionChangedAction.Remove:
-                    update = _intArgs[0] >= e.OldStartingIndex;
-                    break;
-                case NotifyCollectionChangedAction.Replace:
-                    update = _intArgs[0] >= e.NewStartingIndex &&
-                             _intArgs[0] < e.NewStartingIndex + e.NewItems.Count;
-                    break;
-                case NotifyCollectionChangedAction.Move:
-                    update = (_intArgs[0] >= e.NewStartingIndex &&
-                              _intArgs[0] < e.NewStartingIndex + e.NewItems.Count) ||
-                             (_intArgs[0] >= e.OldStartingIndex &&
-                             _intArgs[0] < e.OldStartingIndex + e.OldItems.Count);
-                    break;
-                case NotifyCollectionChangedAction.Reset:
-                    update = true;
-                    break;
+                object indexObject;
+                if (!TypeUtilities.TryConvert(typeof(int), Arguments[0], CultureInfo.InvariantCulture, out indexObject))
+                {
+                    return;
+                }
+                var index = (int)indexObject;
+                switch (e.Action)
+                {
+                    case NotifyCollectionChangedAction.Add:
+                        update = index >= e.NewStartingIndex;
+                        break;
+                    case NotifyCollectionChangedAction.Remove:
+                        update = index >= e.OldStartingIndex;
+                        break;
+                    case NotifyCollectionChangedAction.Replace:
+                        update = index >= e.NewStartingIndex &&
+                                 index < e.NewStartingIndex + e.NewItems.Count;
+                        break;
+                    case NotifyCollectionChangedAction.Move:
+                        update = (index >= e.NewStartingIndex &&
+                                  index < e.NewStartingIndex + e.NewItems.Count) ||
+                                 (index >= e.OldStartingIndex &&
+                                 index < e.OldStartingIndex + e.OldItems.Count);
+                        break;
+                    case NotifyCollectionChangedAction.Reset:
+                        update = true;
+                        break;
+                }
+            }
+            else
+            {
+                update = true;
             }
 
             if (update)
@@ -110,72 +113,130 @@ namespace Perspex.Markup.Data
         {
             var typeInfo = target.GetType().GetTypeInfo();
             var list = target as IList;
-
-            if (typeInfo.IsArray && _intArgs != null)
+            var dictionary = target as IDictionary;
+            //TODO: Implement array as special case. It doesn't have an indexer property.
+            var indexerProperty = GetIndexer(typeInfo);
+            var indexerParameters = indexerProperty?.GetIndexParameters();
+            if (indexerProperty != null && indexerParameters.Length == Arguments.Count)
             {
-                var array = (Array)target;
-
-                if (InBounds(_intArgs, array))
+                var convertedObjectArray = new object[indexerParameters.Length];
+                for (int i = 0; i < Arguments.Count; i++)
                 {
-                    return array.GetValue(_intArgs);
-                }
-            }
-            else if (target is IList && _intArgs?.Length == 1)
-            {
-                if (_intArgs[0] < list.Count)
-                {
-                    return list[_intArgs[0]];
-                }
-            }
-            else
-            {
-                var indexerProperty = GetIndexer(typeInfo);
-                var indexerParameters = indexerProperty?.GetIndexParameters();
-                if (indexerProperty != null && indexerParameters.Length == Arguments.Count)
-                {
-                    var convertedObjectArray = new object[indexerParameters.Length];
-                    for (int i = 0; i < Arguments.Count; i++)
+                    object temp = null;
+                    if (!TypeUtilities.TryConvert(indexerParameters[i].ParameterType, Arguments[i], CultureInfo.InvariantCulture, out temp))
                     {
-                        object temp = null;
-                        if (!TypeUtilities.TryConvert(indexerParameters[i].ParameterType, Arguments[i], CultureInfo.InvariantCulture, out temp))
-                        {
-                            return PerspexProperty.UnsetValue;
-                        }
-                        convertedObjectArray[i] = temp;
+                        return PerspexProperty.UnsetValue;
                     }
-                    return indexerProperty.GetValue(target, convertedObjectArray);
+                    convertedObjectArray[i] = temp;
                 }
+                var intArgs = convertedObjectArray.OfType<int>().ToArray();
+
+                // Try special cases where we can validate indicies
+                if (typeInfo.IsArray)
+                {
+                    return GetValueFromArray((Array)target, intArgs);
+                }
+                else if (Arguments.Count == 1)
+                {
+                    if (list != null)
+                    {
+                        if (intArgs.Length == Arguments.Count && intArgs[0] >= 0 && intArgs[0] < list.Count)
+                        {
+                            return list[intArgs[0]]; 
+                        }
+                        return PerspexProperty.UnsetValue;
+                    }
+                    else if (dictionary != null)
+                    {
+                        if (dictionary.Contains(convertedObjectArray[0]))
+                        {
+                            return dictionary[convertedObjectArray[0]]; 
+                        }
+                        return PerspexProperty.UnsetValue;
+                    }
+                    else
+                    {
+                        // Fallback to unchecked access
+                        return indexerProperty.GetValue(target, convertedObjectArray);
+                    }
+                }
+                else
+                {
+                    // Fallback to unchecked access
+                    return indexerProperty.GetValue(target, convertedObjectArray); 
+                }
+            }
+            // Multidimensional arrays end up here because the indexer search picks up the IList indexer instead of the
+            //  multidimensional indexer, which doesn't take the same number of arguments
+            else if (typeInfo.IsArray)
+            {
+                return GetValueFromArray((Array)target);
             }
 
             return PerspexProperty.UnsetValue;
         }
 
+        private object GetValueFromArray(Array array)
+        {
+            int[] intArgs;
+            if (!ConvertArgumentsToInts(out intArgs))
+                return PerspexProperty.UnsetValue;
+            return GetValueFromArray(array, intArgs);
+        }
+
+        private object GetValueFromArray(Array array, int[] indicies)
+        {
+            if (ValidBounds(indicies, array))
+            {
+                return array.GetValue(indicies);
+            }
+            return PerspexProperty.UnsetValue;
+        }
+
+        private bool ConvertArgumentsToInts(out int[] intArgs)
+        {
+            intArgs = new int[Arguments.Count];
+            for (int i = 0; i < Arguments.Count; ++i)
+            {
+                object value;
+                if (!TypeUtilities.TryConvert(typeof(int), Arguments[i], CultureInfo.InvariantCulture, out value))
+                {
+                    return false;
+                }
+                intArgs[i] = (int)value;
+            }
+            return true;
+        }
+
         private static PropertyInfo GetIndexer(TypeInfo typeInfo)
         {
             PropertyInfo indexer;
-            // Check for the default indexer name first to make this faster.
-            // This will only be false when a class in VB has a custom indexer name.
-            if ((indexer = typeInfo.GetDeclaredProperty(CommonPropertyNames.IndexerName)) != null)
+            for (;typeInfo != null; typeInfo = typeInfo.BaseType?.GetTypeInfo())
             {
-                return indexer;
-            }
-            foreach (var property in typeInfo.DeclaredProperties)
-            {
-                if (property.GetIndexParameters().Any())
+                // Check for the default indexer name first to make this faster.
+                // This will only be false when a class in VB has a custom indexer name.
+                if ((indexer = typeInfo.GetDeclaredProperty(CommonPropertyNames.IndexerName)) != null)
                 {
-                    return property;
+                    return indexer;
                 }
+                foreach (var property in typeInfo.DeclaredProperties)
+                {
+                    if (property.GetIndexParameters().Any())
+                    {
+                        return property;
+                    }
+                } 
             }
             return null;
         }
 
-        private bool InBounds(int[] args, Array array)
+        private bool ValidBounds(int[] indicies, Array array)
         {
-            if (args.Length == array.Rank)
+            if (indicies.Length == array.Rank)
             {
-                for (var i = 0; i < args.Length; ++i)
+                for (var i = 0; i < indicies.Length; ++i)
                 {
-                    if (args[i] >= array.GetLength(i))
+                    if (indicies[i] >= array.GetLength(i))
                     {
                         return false;
                     }
