@@ -99,6 +99,8 @@ namespace Perspex.Layout
                 stopwatch.Stop();
                 _log.Information("Layout pass finised in {Time}", stopwatch.Elapsed);
             }
+
+            _queued = false;
         }
 
         /// <inheritdoc/>
