@@ -33,6 +33,26 @@ namespace Perspex.Markup.UnitTests.Data
         }
 
         [Fact]
+        public async void Should_Get_Value_For_String_Indexer()
+        {
+            var data = new { Foo = new Dictionary<string, string> { { "foo", "bar" }, { "baz", "qux" } } };
+            var target = new ExpressionObserver(data, "Foo[foo]");
+            var result = await target.Take(1);
+
+            Assert.Equal("bar", result);
+        }
+
+        [Fact]
+        public async void Should_Get_Value_For_Non_String_Indexer()
+        {
+            var data = new { Foo = new Dictionary<double, string> { { 1.0, "bar" }, { 2.0, "qux" } } };
+            var target = new ExpressionObserver(data, "Foo[1.0]");
+            var result = await target.Take(1);
+
+            Assert.Equal("bar", result);
+        }
+
+        [Fact]
         public async void Array_Out_Of_Bounds_Should_Return_UnsetValue()
         {
             var data = new { Foo = new[] { "foo", "bar" } };
@@ -135,6 +155,41 @@ namespace Perspex.Markup.UnitTests.Data
             data.Foo.Clear();
 
             Assert.Equal(new[] { "bar", PerspexProperty.UnsetValue }, result);
+        }
+
+        [Fact]
+        public void Should_Track_NonIntegerIndexer()
+        {
+            var data = new { Foo = new NonIntegerIndexer() };
+            data.Foo["foo"] = "bar";
+            data.Foo["baz"] = "qux";
+
+            var target = new ExpressionObserver(data, "Foo[foo]");
+            var result = new List<object>();
+
+            var sub = target.Subscribe(x => result.Add(x));
+            data.Foo["foo"] = "bar2";
+
+            var expected = new[] { "bar", "bar2" };
+            Assert.Equal(expected, result);
+        }
+
+        private class NonIntegerIndexer : NotifyingBase
+        {
+            private Dictionary<string, string> storage = new Dictionary<string, string>();
+
+            public string this[string key]
+            {
+                get
+                {
+                    return storage[key];
+                }
+                set
+                {
+                    storage[key] = value;
+                    RaisePropertyChanged(CommonPropertyNames.IndexerName);
+                }
+            }
         }
     }
 }
