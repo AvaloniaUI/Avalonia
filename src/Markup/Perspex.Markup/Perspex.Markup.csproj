@@ -41,6 +41,7 @@
     <Compile Include="..\..\Shared\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Data\CommonPropertyNames.cs" />
     <Compile Include="Data\ExpressionNodeBuilder.cs" />
     <Compile Include="Data\ExpressionParseException.cs" />
     <Compile Include="Data\ExpressionSubject.cs" />
@@ -52,7 +53,6 @@
     <Compile Include="Data\LogicalNotNode.cs" />
     <Compile Include="Data\IndexerNode.cs" />
     <Compile Include="Data\Parsers\ArgumentListParser.cs" />
-    <Compile Include="Data\Parsers\LiteralParser.cs" />
     <Compile Include="Data\Parsers\IdentifierParser.cs" />
     <Compile Include="Data\Parsers\ExpressionParser.cs" />
     <Compile Include="Data\Parsers\Reader.cs" />
