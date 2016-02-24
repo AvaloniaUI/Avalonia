@@ -10,6 +10,7 @@ using OmniXaml.TypeConversion;
 using OmniXaml.Typing;
 using Perspex.Controls;
 using Perspex.Data;
+using Perspex.Markup.Xaml.Data;
 using Perspex.Styling;
 
 namespace Perspex.Markup.Xaml.Context
@@ -116,25 +117,28 @@ namespace Perspex.Markup.Xaml.Context
             IValueContext context,
             IBinding binding)
         {
-            if (property != null)
+            if (property == null)
             {
-                IPerspexObject treeAnchor = null;
-
-                if (!(instance is IControl))
-                {
-                    // HACK: StoredInstances not exposed on ITopDownValueContext.
-                    var tdvc = (TopDownValueContext)context.TopDownValueContext;
-                    treeAnchor = (IControl)tdvc.StoredInstances
-                        .Select(x => x.Instance)
-                        .OfType<IControl>()
-                        .LastOrDefault();
-                }
-
-                ((IPerspexObject)instance).Bind(property, binding, treeAnchor);
-                return true;
+                return false;
             }
 
-            return false;
+            var control = instance as IControl;
+
+            if (control != null)
+            {
+                DelayedBinding.Add(control, property, binding);
+            }
+            else
+            {
+                IPerspexObject treeAnchor = context.TopDownValueContext.StoredInstances
+                    .Select(x => x.Instance)
+                    .OfType<IControl>()
+                    .LastOrDefault();
+
+                ((IPerspexObject)instance).Bind(property, binding, treeAnchor);
+            }
+
+            return true;
         }
     }
 }

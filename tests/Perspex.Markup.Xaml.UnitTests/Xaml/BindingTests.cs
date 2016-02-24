@@ -25,6 +25,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Xaml
                 var button = window.FindControl<Button>("button");
 
                 button.DataContext = new { Foo = "foo" };
+                window.ApplyTemplate();
 
                 Assert.Equal("foo", button.Content);
             }
@@ -50,6 +51,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Xaml
                 var button = window.FindControl<Button>("button");
 
                 button.DataContext = new { Foo = "foo" };
+                window.ApplyTemplate();
 
                 Assert.Equal("foo", button.Content);
             }

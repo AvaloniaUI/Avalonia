@@ -10,7 +10,7 @@
             <TextBox Watermark="Two Way" UseFloatingWatermark="True" Text="{Binding Path=StringValue}" Name="first"/>
             <TextBox Watermark="One Way" UseFloatingWatermark="True" Text="{Binding Path=StringValue, Mode=OneWay}"/>
             <TextBox Watermark="One Time" UseFloatingWatermark="True" Text="{Binding Path=StringValue, Mode=OneTime}"/>
-            <TextBox Watermark="One Way To Source" UseFloatingWatermark="True" Text="{Binding Path=StringValue, Mode=OneWayToSource}"/>
+            <!--<TextBox Watermark="One Way To Source" UseFloatingWatermark="True" Text="{Binding Path=StringValue, Mode=OneWayToSource}"/>-->
           </StackPanel>
           <StackPanel Margin="18" Gap="4" Width="200">
             <TextBlock FontSize="16" Text="Collection Bindings"/>

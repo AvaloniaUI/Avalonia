@@ -76,6 +76,7 @@
     <Compile Include="Converters\TimeSpanTypeConverter.cs" />
     <Compile Include="Converters\UriTypeConverter.cs" />
     <Compile Include="Data\Binding.cs" />
+    <Compile Include="Data\DelayedBinding.cs" />
     <Compile Include="Data\MultiBinding.cs" />
     <Compile Include="Data\RelativeSource.cs" />
     <Compile Include="Data\SourceBindingEndpoint.cs" />

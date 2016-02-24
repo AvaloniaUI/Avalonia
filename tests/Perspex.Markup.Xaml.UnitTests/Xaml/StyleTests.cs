@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using Perspex.Controls;
+using Perspex.Markup.Xaml.Data;
 using Perspex.Media;
 using Perspex.Styling;
 using Perspex.UnitTests;
@@ -79,8 +80,10 @@ namespace Perspex.Markup.Xaml.UnitTests.Xaml
             var loader = new PerspexXamlLoader();
             var userControl = (UserControl)loader.Load(xaml);
             var border = userControl.FindControl<Border>("border");
-            var brush = (SolidColorBrush)border.Background;
 
+            DelayedBinding.ApplyBindings(border);
+
+            var brush = (SolidColorBrush)border.Background;
             Assert.Equal(0xff506070, brush.Color.ToUint32());
         }
 

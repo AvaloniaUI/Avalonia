@@ -323,7 +323,8 @@ namespace Perspex.Controls
         {
             if (_initCount == 0)
             {
-                throw new InvalidOperationException("BeginInit was not called.");
+                ++_initCount;
+                //throw new InvalidOperationException("BeginInit was not called.");
             }
 
             if (--_initCount == 0 && !_styled)
