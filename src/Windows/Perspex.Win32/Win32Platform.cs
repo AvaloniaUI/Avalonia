@@ -28,8 +28,11 @@ namespace Perspex.Win32
 
         public Win32Platform()
         {
-            // Declare that this process is aware of per monitor DPI 
-            UnmanagedMethods.SetProcessDpiAwareness(UnmanagedMethods.PROCESS_DPI_AWARENESS.PROCESS_PER_MONITOR_DPI_AWARE);
+            // Declare that this process is aware of per monitor DPI
+            if (UnmanagedMethods.ShCoreAvailable)
+            {
+                UnmanagedMethods.SetProcessDpiAwareness(UnmanagedMethods.PROCESS_DPI_AWARENESS.PROCESS_PER_MONITOR_DPI_AWARE);
+            }
 
             CreateMessageWindow();
         }

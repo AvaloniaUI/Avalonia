@@ -609,14 +609,17 @@ namespace Perspex.Win32
                 _hwnd, 
                 UnmanagedMethods.MONITOR.MONITOR_DEFAULTTONEAREST);
 
-            uint dpix, dpiy;
-            if (UnmanagedMethods.GetDpiForMonitor(
-                    monitor, 
-                    UnmanagedMethods.MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI, 
-                    out dpix, 
-                    out dpiy) == 0)
+            if (UnmanagedMethods.ShCoreAvailable)
             {
-                _scaling = dpix / 96.0;
+                uint dpix, dpiy;
+                if (UnmanagedMethods.GetDpiForMonitor(
+                        monitor,
+                        UnmanagedMethods.MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI,
+                        out dpix,
+                        out dpiy) == 0)
+                {
+                    _scaling = dpix / 96.0;
+                }
             }
         }
 
