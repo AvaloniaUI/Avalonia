@@ -37,22 +37,22 @@ namespace Perspex.Markup.Xaml.Data
         public ISubject<object> CreateSubject(
             IPerspexObject target,
             PerspexProperty targetProperty,
-            IPerspexObject treeAnchor = null)
+            object anchor = null)
         {
-            return new Subject(target, Name, treeAnchor);
+            return new Subject(target, Name, anchor);
         }
 
         private class Subject : ISubject<object>
         {
             private IPerspexObject _target;
             private string _name;
-            private IPerspexObject _treeAnchor;
+            private object _anchor;
 
-            public Subject(IPerspexObject target, string name, IPerspexObject treeAnchor)
+            public Subject(IPerspexObject target, string name, object anchor)
             {
                 _target = target;
                 _name = name;
-                _treeAnchor = treeAnchor;
+                this._anchor = anchor;
             }
 
             public void OnCompleted()
@@ -69,7 +69,7 @@ namespace Perspex.Markup.Xaml.Data
 
             public IDisposable Subscribe(IObserver<object> observer)
             {
-                var host = (_target as IControl) ?? (_treeAnchor as IControl);
+                var host = (_target as IControl) ?? (_anchor as IControl);
 
                 if (host != null)
                 {

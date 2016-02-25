@@ -25,14 +25,16 @@ namespace Perspex.Data
         /// </summary>
         /// <param name="target">The target instance.</param>
         /// <param name="targetProperty">The target property. May be null.</param>
-        /// <param name="treeAnchor">
-        /// For `ElementName` bindings to elements that are not themselves controls, describes
-        /// where in the logical tree to begin searching for the named element.
-        /// </param>
+        /// <param name="anchor">An optional anchor from which to locate required context.</param>
         /// <returns>An <see cref="ISubject{Object}"/>.</returns>
+        /// <remarks>
+        /// When binding to objects that are not in the logical tree, certain types of binding need
+        /// an anchor into the tree in order to locate named controls or resources. The
+        /// <paramref name="anchor"/> parameter can be used to provice this context.
+        /// </remarks>
         ISubject<object> CreateSubject(
             IPerspexObject target, 
             PerspexProperty targetProperty,
-            IPerspexObject treeAnchor = null);
+            object anchor = null);
     }
 }
