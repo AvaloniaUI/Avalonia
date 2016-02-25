@@ -30,7 +30,7 @@ namespace Perspex.Controls
         /// Defines the <see cref="TickFrequency"/> property.
         /// </summary>
         public static readonly StyledProperty<double> TickFrequencyProperty =
-            PerspexProperty.Register<Slider, double>(nameof(TickFrequencyProperty), 0.0);
+            PerspexProperty.Register<Slider, double>(nameof(TickFrequency), 0.0);
 
         // Slider required parts
         private Track _track;
