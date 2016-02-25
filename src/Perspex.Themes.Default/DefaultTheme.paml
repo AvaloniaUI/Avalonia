@@ -17,6 +17,7 @@
   <StyleInclude Source="resm:Perspex.Themes.Default.ProgressBar.paml?assembly=Perspex.Themes.Default"/>
   <StyleInclude Source="resm:Perspex.Themes.Default.RadioButton.paml?assembly=Perspex.Themes.Default"/>
   <StyleInclude Source="resm:Perspex.Themes.Default.Separator.paml?assembly=Perspex.Themes.Default"/>
+  <StyleInclude Source="resm:Perspex.Themes.Default.Slider.paml?assembly=Perspex.Themes.Default"/>  
   <StyleInclude Source="resm:Perspex.Themes.Default.ScrollBar.paml?assembly=Perspex.Themes.Default"/>
   <StyleInclude Source="resm:Perspex.Themes.Default.ScrollViewer.paml?assembly=Perspex.Themes.Default"/>
   <StyleInclude Source="resm:Perspex.Themes.Default.TabStrip.paml?assembly=Perspex.Themes.Default"/>

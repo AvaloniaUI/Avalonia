@@ -78,6 +78,9 @@
     <Compile Include="Pages\DropDownPage.paml.cs">
       <DependentUpon>DropDownPage.paml</DependentUpon>
     </Compile>
+    <Compile Include="Pages\SliderPage.paml.cs">
+      <DependentUpon>SliderPage.paml</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -106,6 +109,9 @@
     <EmbeddedResource Include="Pages\DropDownPage.paml" />
     <None Include="packages.config" />
     <EmbeddedResource Include="Pages\CheckBoxPage.paml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pages\SliderPage.paml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>

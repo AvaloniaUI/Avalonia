@@ -72,6 +72,7 @@
     <Compile Include="Shapes\Line.cs" />
     <Compile Include="Shapes\Polygon.cs" />
     <Compile Include="Shapes\Polyline.cs" />
+    <Compile Include="Slider.cs" />
     <Compile Include="SystemDialog.cs" />
     <Compile Include="Generators\ITreeItemContainerGenerator.cs" />
     <Compile Include="Generators\ItemContainerEventArgs.cs" />
