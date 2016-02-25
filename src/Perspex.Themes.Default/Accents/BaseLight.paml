@@ -27,8 +27,10 @@
     <Color x:Key="SystemListLowColor">#19FFFFFF</Color>
     <Color x:Key="SystemListMediumColor">#33FFFFFF</Color>
 
-    <!-- Assigning StyleResource to non-controls currently fails -->
+    <Color x:Key="FooColor">Red</Color>
+
     <!--<mut:SolidColorBrush x:Key="SystemControlBackgroundBaseHighBrush" Color="{StyleResource SystemBaseHighColor}"/>
-    <mut:SolidColorBrush x:Key="SystemControlBackgroundBaseLowBrush" Color="{StyleResource SystemBaseLowColor}"/>-->
+    <mut:SolidColorBrush x:Key="SystemControlBackgroundBaseLowBrush" Color="{StyleResource SystemBaseLowColor}"/>
+    <mut:SolidColorBrush x:Key="FooBrush" Color="{StyleResource FooColor}"/>-->
   </Style.Resources>
 </Style>

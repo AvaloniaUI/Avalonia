@@ -134,13 +134,20 @@ namespace Perspex.Markup.Xaml.UnitTests.Xaml
             </Style.Resources>
         </Style>
     </Window.Styles>
+    <Button Name='button' Background='{StyleResource brush}'/>
 </Window>";
 
                 var loader = new PerspexXamlLoader();
                 var window = (Window)loader.Load(xaml);
                 var brush = (Perspex.Media.Mutable.SolidColorBrush)window.FindStyleResource("brush");
+                var button = window.FindControl<Button>("button");
+
+                DelayedBinding.ApplyBindings(button);
+
+                var buttonBrush = (Perspex.Media.Mutable.SolidColorBrush)button.Background;
 
                 Assert.Equal(0xff506070, brush.Color.ToUint32());
+                Assert.Equal(0xff506070, buttonBrush.Color.ToUint32());
             }
         }
     }
