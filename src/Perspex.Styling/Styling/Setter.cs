@@ -94,38 +94,57 @@ namespace Perspex.Styling
             }
             else
             {
-                if (activator == null)
+                var source = binding.Initiate(control, Property);
+
+                if (source != null)
                 {
-                    control.Bind(Property, binding);
+                    var cloned = Clone(source, style, activator);
+                    BindingOperations.Apply(control, Property, cloned, null);
+                }
+            }
+        }
+
+        private InstancedBinding Clone(InstancedBinding sourceInstance, IStyle style, IObservable<bool> activator)
+        {
+            InstancedBinding cloned;
+
+            if (activator != null)
+            {
+                var description = style?.ToString();
+
+                if (sourceInstance.Subject != null)
+                {
+                    var activated = new ActivatedSubject(activator, sourceInstance.Subject, description);
+                    cloned = new InstancedBinding(activated, sourceInstance.Mode, BindingPriority.StyleTrigger);
+                }
+                else if (sourceInstance.Observable != null)
+                {
+                    var activated = new ActivatedObservable(activator, sourceInstance.Observable, description);
+                    cloned = new InstancedBinding(activated, sourceInstance.Mode, BindingPriority.StyleTrigger);
                 }
                 else
                 {
-                    var sourceInstance = binding.Initiate(control, Property);
-
-                    if (sourceInstance != null)
-                    {
-                        InstancedBinding activatedInstance;
-
-                        if (sourceInstance.Subject != null)
-                        {
-                            var activated = new ActivatedSubject(activator, sourceInstance.Subject, description);
-                            activatedInstance = new InstancedBinding(activated, sourceInstance.Mode, sourceInstance.Priority);
-                        }
-                        else if (sourceInstance.Observable != null)
-                        {
-                            var activated = new ActivatedObservable(activator, sourceInstance.Observable, description);
-                            activatedInstance = new InstancedBinding(activated, sourceInstance.Mode, sourceInstance.Priority);
-                        }
-                        else
-                        {
-                            var activated = new ActivatedValue(activator, sourceInstance.Value, description);
-                            activatedInstance = new InstancedBinding(activated, BindingMode.OneWay, sourceInstance.Priority);
-                        }
-
-                        BindingOperations.Apply(control, Property, activatedInstance, null);
-                    }
+                    var activated = new ActivatedValue(activator, sourceInstance.Value, description);
+                    cloned = new InstancedBinding(activated, BindingMode.OneWay, BindingPriority.StyleTrigger);
                 }
             }
+            else
+            {
+                if (sourceInstance.Subject != null)
+                {
+                    cloned = new InstancedBinding(sourceInstance.Subject, sourceInstance.Mode, BindingPriority.Style);
+                }
+                else if (sourceInstance.Observable != null)
+                {
+                    cloned = new InstancedBinding(sourceInstance.Observable, sourceInstance.Mode, BindingPriority.Style);
+                }
+                else
+                {
+                    cloned = new InstancedBinding(sourceInstance.Value, BindingPriority.Style);
+                }
+            }
+
+            return cloned;
         }
     }
 }
