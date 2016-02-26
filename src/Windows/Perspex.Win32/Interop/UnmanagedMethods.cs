@@ -742,6 +742,9 @@ namespace Perspex.Win32.Interop
         [DllImport("kernel32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
         public static extern IntPtr GlobalFree(IntPtr hMem);
 
+        [DllImport("kernel32.dll", SetLastError = true)]
+        public static extern IntPtr LoadLibrary(string fileName);
+
         [DllImport("comdlg32.dll", CharSet = CharSet.Unicode, EntryPoint = "GetSaveFileNameW")]
         public static extern bool GetSaveFileName(IntPtr lpofn);
 
@@ -750,6 +753,8 @@ namespace Perspex.Win32.Interop
 
         [DllImport("comdlg32.dll")]
         public static extern int CommDlgExtendedError();
+
+        public static bool ShCoreAvailable => LoadLibrary("shcore.dll") != IntPtr.Zero;
 
         [DllImport("shcore.dll")]
         public static extern void SetProcessDpiAwareness(PROCESS_DPI_AWARENESS value);
