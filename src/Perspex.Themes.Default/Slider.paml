@@ -1,65 +1,53 @@
 ﻿<Styles xmlns="https://github.com/perspex">
   <Style Selector="Slider[Orientation=Horizontal]">
-    <Setter Property="MinWidth" Value="104"/>
-    <Setter Property="MinHeight" Value="21"/>
+    <Setter Property="MinWidth" Value="40"/>
+    <Setter Property="MinHeight" Value="20"/>
     <Setter Property="Template">
       <ControlTemplate>
         <Grid>
           <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"
-                           MinHeight="26" />
+            <RowDefinition Height="Auto" MinHeight="20"/>
             <RowDefinition Height="Auto"/>
           </Grid.RowDefinitions>
-          <Border Name="TrackBackground"
-                  Grid.Row="1"
-                  Height="4"
-                  Margin="10,0"
-                  VerticalAlignment="Center"/>
+          <Border Name="TrackBackground" Grid.Row="1" Height="4" Margin="6,0" VerticalAlignment="Center"/>
           <Track Name="PART_Track" Grid.Row="1">
-            <Thumb MinWidth="26" MinHeight="26">
+            <Thumb MinWidth="20" MinHeight="20">
               <Thumb.Template>
                 <ControlTemplate>
                   <Grid>
-                    <Ellipse Width="26" Height="26" Fill="#5534b4e3"/>
-                    <Ellipse Width="10" Height="10" Fill="#FF34b4e3"/>
+                    <Ellipse Width="12" Height="12" Fill="Gray"/>
                   </Grid>
                 </ControlTemplate>
               </Thumb.Template>
-            </Thumb>            
+            </Thumb>
           </Track>
         </Grid>
       </ControlTemplate>
     </Setter>
   </Style>
   <Style Selector="Slider[Orientation=Vertical]">
-    <Setter Property="MinWidth" Value="21" />
-    <Setter Property="MinHeight" Value="104"/>
+    <Setter Property="MinWidth" Value="20"/>
+    <Setter Property="MinHeight" Value="40"/>
     <Setter Property="Template">
       <ControlTemplate>
         <Grid>
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="Auto"
-                              MinWidth="26"/>
+            <ColumnDefinition Width="Auto" MinWidth="26"/>
             <ColumnDefinition Width="Auto"/>
           </Grid.ColumnDefinitions>
-          <Border Name="TrackBackground"
-                  Grid.Column="1"
-                  Width="4"
-                  Margin="0,10"
-                  HorizontalAlignment="Center"/>
+          <Border Name="TrackBackground" Grid.Column="1" Width="4" Margin="0,6" HorizontalAlignment="Center"/>
           <Track Name="PART_Track" Grid.Column="1">
-            <Thumb MinWidth="26" MinHeight="26">
+            <Thumb MinWidth="20" MinHeight="20">
               <Thumb.Template>
                 <ControlTemplate>
                   <Grid>
-                    <Ellipse Width="26" Height="26" Fill="#5534b4e3"/>
-                    <Ellipse Width="10" Height="10" Fill="#FF34b4e3"/>
+                    <Ellipse Width="12" Height="12" Fill="Gray"/>
                   </Grid>
                 </ControlTemplate>
               </Thumb.Template>
-            </Thumb>            
+            </Thumb>
           </Track>
         </Grid>
       </ControlTemplate>
