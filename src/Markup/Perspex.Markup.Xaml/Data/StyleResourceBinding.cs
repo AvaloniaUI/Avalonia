@@ -34,60 +34,31 @@ namespace Perspex.Markup.Xaml.Data
         public BindingPriority Priority => BindingPriority.LocalValue;
 
         /// <inheritdoc/>
-        public ISubject<object> CreateSubject(
+        public InstancedBinding Initiate(
             IPerspexObject target,
             PerspexProperty targetProperty,
             object anchor = null)
         {
-            return new Subject(target, Name, anchor);
-        }
+            var host = (target as IControl) ?? (anchor as IControl);
+            var style = anchor as IStyle;
+            var resource = PerspexProperty.UnsetValue;
 
-        private class Subject : ISubject<object>
-        {
-            private IPerspexObject _target;
-            private string _name;
-            private object _anchor;
-
-            public Subject(IPerspexObject target, string name, object anchor)
+            if (host != null)
             {
-                _target = target;
-                _name = name;
-                this._anchor = anchor;
+                resource = host.FindStyleResource(Name);
+            }
+            else if (style != null)
+            {
+                resource = style.FindResource(Name);
             }
 
-            public void OnCompleted()
+            if (resource != PerspexProperty.UnsetValue)
             {
+                return new InstancedBinding(resource, Priority);
             }
-
-            public void OnError(Exception error)
+            else
             {
-            }
-
-            public void OnNext(object value)
-            {
-            }
-
-            public IDisposable Subscribe(IObserver<object> observer)
-            {
-                var host = (_target as IControl) ?? (_anchor as IControl);
-
-                if (host != null)
-                {
-                    var resource = host.FindStyleResource(_name);
-
-                    if (resource != PerspexProperty.UnsetValue)
-                    {
-                        observer.OnNext(resource);
-                    }
-
-                    observer.OnCompleted();
-                }
-                else
-                {
-                    // TODO: Log error.
-                }
-
-                return Disposable.Empty;
+                return null;
             }
         }
     }

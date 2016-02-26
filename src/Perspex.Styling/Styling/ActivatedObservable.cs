@@ -30,6 +30,9 @@ namespace Perspex.Styling
             IObservable<object> source,
             string description)
         {
+            Contract.Requires<ArgumentNullException>(activator != null);
+            Contract.Requires<ArgumentNullException>(source != null);
+
             Activator = activator;
             Description = description;
             Source = source;

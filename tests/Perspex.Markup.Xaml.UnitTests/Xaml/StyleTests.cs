@@ -172,5 +172,31 @@ namespace Perspex.Markup.Xaml.UnitTests.Xaml
 
             Assert.Equal(0xff506070, brush.Color.ToUint32());
         }
+
+        [Fact]
+        public void StyleResource_Can_Be_Found_In_Sibling_Styles()
+        {
+            var xaml = @"
+<Styles xmlns='https://github.com/perspex'
+        xmlns:mut='https://github.com/perspex/mutable'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Style>
+        <Style.Resources>
+            <Color x:Key='color'>#ff506070</Color>
+        </Style.Resources>
+    </Style>
+    <Style>
+        <Style.Resources>
+            <mut:SolidColorBrush x:Key='brush' Color='{StyleResource color}'/>
+        </Style.Resources>
+    </Style>
+</Styles>";
+
+            var loader = new PerspexXamlLoader();
+            var styles = (Styles)loader.Load(xaml);
+            var brush = (Perspex.Media.Mutable.SolidColorBrush)styles.FindResource("brush");
+
+            Assert.Equal(0xff506070, brush.Color.ToUint32());
+        }
     }
 }

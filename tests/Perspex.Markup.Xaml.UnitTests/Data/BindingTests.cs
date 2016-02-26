@@ -168,7 +168,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
                 Path = "Foo",
             };
 
-            var result = binding.CreateSubject(target, TextBox.TextProperty);
+            var result = binding.Initiate(target, TextBox.TextProperty).Subject;
 
             Assert.IsType<DefaultValueConverter>(((ExpressionSubject)result).Converter);
         }
@@ -184,7 +184,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
                 Path = "Foo",
             };
 
-            var result = binding.CreateSubject(target, TextBox.TextProperty);
+            var result = binding.Initiate(target, TextBox.TextProperty).Subject;
 
             Assert.Same(converter.Object, ((ExpressionSubject)result).Converter);
         }
@@ -201,7 +201,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
                 Path = "Bar",
             };
 
-            var result = binding.CreateSubject(target, TextBox.TextProperty);
+            var result = binding.Initiate(target, TextBox.TextProperty).Subject;
 
             Assert.Same("foo", ((ExpressionSubject)result).ConverterParameter);
         }

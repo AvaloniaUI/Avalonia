@@ -58,7 +58,7 @@ namespace Perspex.Styling
         }
 
         /// <summary>
-        /// Applies the setter to the control.
+        /// Applies the setter to a control.
         /// </summary>
         /// <param name="style">The style that is being applied.</param>
         /// <param name="control">The control.</param>
@@ -76,20 +76,7 @@ namespace Perspex.Styling
 
             var binding = Value as IBinding;
 
-            if (binding != null)
-            {
-                if (activator == null)
-                {
-                    control.Bind(Property, binding);
-                }
-                else
-                {
-                    var subject = binding.CreateSubject(control, Property);
-                    var activated = new ActivatedSubject(activator, subject, description);
-                    Bind(control, Property, binding, activated);
-                }
-            }
-            else
+            if (binding == null)
             {
                 if (activator == null)
                 {
@@ -98,29 +85,43 @@ namespace Perspex.Styling
                 else
                 {
                     var activated = new ActivatedValue(activator, Value, description);
-                    control.Bind(Property, activated, BindingPriority.StyleTrigger);
+                    var instanced = new InstancedBinding(
+                        activated,
+                        BindingMode.OneWay,
+                        BindingPriority.StyleTrigger);
+                    BindingOperations.Apply(control, Property, instanced, null);
                 }
             }
-        }
-
-        private void Bind(
-            IStyleable control,
-            PerspexProperty property,
-            IBinding binding,
-            ISubject<object> subject)
-        {
-            var mode = binding.Mode;
-
-            if (mode == BindingMode.Default)
+            else
             {
-                mode = property.GetMetadata(control.GetType()).DefaultBindingMode;
-            }
+                if (activator == null)
+                {
+                    control.Bind(Property, binding);
+                }
+                else
+                {
+                    var sourceInstance = binding.Initiate(control, Property);
+                    InstancedBinding activatedInstance;
 
-            control.Bind(
-                property,
-                subject,
-                mode,
-                binding.Priority);
+                    if (sourceInstance.Subject != null)
+                    {
+                        var activated = new ActivatedSubject(activator, sourceInstance.Subject, description);
+                        activatedInstance = new InstancedBinding(activated, sourceInstance.Mode, sourceInstance.Priority);
+                    }
+                    else if (sourceInstance.Observable != null)
+                    {
+                        var activated = new ActivatedObservable(activator, sourceInstance.Observable, description);
+                        activatedInstance = new InstancedBinding(activated, sourceInstance.Mode, sourceInstance.Priority);
+                    }
+                    else
+                    {
+                        var activated = new ActivatedValue(activator, sourceInstance.Value, description);
+                        activatedInstance = new InstancedBinding(activated, sourceInstance.Mode, sourceInstance.Priority);
+                    }
+
+                    BindingOperations.Apply(control, Property, activatedInstance, null);
+                }
+            }
         }
     }
 }

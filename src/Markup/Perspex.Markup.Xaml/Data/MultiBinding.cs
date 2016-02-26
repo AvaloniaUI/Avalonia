@@ -50,7 +50,7 @@ namespace Perspex.Markup.Xaml.Data
         public RelativeSource RelativeSource { get; set; }
 
         /// <inheritdoc/>
-        public ISubject<object> CreateSubject(
+        public InstancedBinding Initiate(
             IPerspexObject target,
             PerspexProperty targetProperty,
             object anchor = null)
@@ -62,10 +62,10 @@ namespace Perspex.Markup.Xaml.Data
 
             var targetType = targetProperty?.PropertyType ?? typeof(object);
             var result = new BehaviorSubject<object>(PerspexProperty.UnsetValue);
-            var children = Bindings.Select(x => x.CreateSubject(target, null));
-            var input = children.CombineLatest().Select(x => ConvertValue(x, targetType));
+            var children = Bindings.Select(x => x.Initiate(target, null));
+            var input = children.Select(x => x.Subject).CombineLatest().Select(x => ConvertValue(x, targetType));
             input.Subscribe(result);
-            return result;
+            return new InstancedBinding(result, Mode, Priority);
         }
 
         /// <summary>

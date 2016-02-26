@@ -130,12 +130,25 @@ namespace Perspex.Markup.Xaml.Context
             }
             else
             {
-                IPerspexObject treeAnchor = context.TopDownValueContext.StoredInstances
+                // The target is not a control, so we need to find an anchor that will let us look
+                // up named controls and style resources. First look for the closest IControl in
+                // the TopDownValueContext.
+                object anchor = context.TopDownValueContext.StoredInstances
                     .Select(x => x.Instance)
                     .OfType<IControl>()
                     .LastOrDefault();
 
-                ((IPerspexObject)instance).Bind(property, binding, treeAnchor);
+                // If a control was not found, then try to find the highest-level style as the XAML
+                // file could be a XAML file containing only styles.
+                if (anchor == null)
+                {
+                    anchor = context.TopDownValueContext.StoredInstances
+                        .Select(x => x.Instance)
+                        .OfType<IStyle>()
+                        .FirstOrDefault();
+                }
+
+                ((IPerspexObject)instance).Bind(property, binding, anchor);
             }
 
             return true;

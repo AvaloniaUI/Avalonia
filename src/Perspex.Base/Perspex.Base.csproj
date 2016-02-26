@@ -44,6 +44,8 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="Data\AssignBindingAttribute.cs" />
+    <Compile Include="Data\BindingOperations.cs" />
+    <Compile Include="Data\InstancedBinding.cs" />
     <Compile Include="Data\IBinding.cs" />
     <Compile Include="Data\IndexerDescriptor.cs" />
     <Compile Include="Collections\PerspexDictionary.cs" />

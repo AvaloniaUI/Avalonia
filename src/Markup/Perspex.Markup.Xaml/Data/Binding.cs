@@ -62,7 +62,7 @@ namespace Perspex.Markup.Xaml.Data
         public object Source { get; set; }
 
         /// <inheritdoc/>
-        public ISubject<object> CreateSubject(
+        public InstancedBinding Initiate(
             IPerspexObject target, 
             PerspexProperty targetProperty,
             object anchor = null)
@@ -101,12 +101,14 @@ namespace Perspex.Markup.Xaml.Data
                 throw new NotSupportedException();
             }
 
-            return new ExpressionSubject(
+            var subject = new ExpressionSubject(
                 observer,
                 targetProperty?.PropertyType ?? typeof(object),
                 Converter ?? DefaultValueConverter.Instance,
                 ConverterParameter,
                 FallbackValue);
+
+            return new InstancedBinding(subject, Mode, Priority);
         }
 
         private static PathInfo ParsePath(string path)

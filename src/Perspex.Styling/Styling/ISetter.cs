@@ -11,7 +11,7 @@ namespace Perspex.Styling
     public interface ISetter
     {
         /// <summary>
-        /// Applies the setter to the control.
+        /// Applies the setter to a control.
         /// </summary>
         /// <param name="style">The style that is being applied.</param>
         /// <param name="control">The control.</param>
