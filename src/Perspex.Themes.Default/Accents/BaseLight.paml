@@ -1,36 +1,29 @@
 ﻿<Style xmlns="https://github.com/perspex"
        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-       xmlns:mut="https://github.com/perspex/mutable">
+       xmlns:mut="https://github.com/perspex/mutable"
+       xmlns:sys="clr-namespace:System;assembly=mscorlib">
   <Style.Resources>
-    <Color x:Key="SystemAltHighColor">#FF000000</Color>
-    <Color x:Key="SystemAltLowColor">#33000000</Color>
-    <Color x:Key="SystemAltMediumColor">#99000000</Color>
-    <Color x:Key="SystemAltMediumHighColor">#CC000000</Color>
-    <Color x:Key="SystemAltMediumLowColor">#66000000</Color>
-    <Color x:Key="SystemBaseHighColor">#FFFFFFFF</Color>
-    <Color x:Key="SystemBaseLowColor">#33FFFFFF</Color>
-    <Color x:Key="SystemBaseMediumColor">#99FFFFFF</Color>
-    <Color x:Key="SystemBaseMediumHighColor">#CCFFFFFF</Color>
-    <Color x:Key="SystemBaseMediumLowColor">#66FFFFFF</Color>
-    <Color x:Key="SystemChromeAltLowColor">#FFF2F2F2</Color>
-    <Color x:Key="SystemChromeBlackHighColor">#FF000000</Color>
-    <Color x:Key="SystemChromeBlackLowColor">#33000000</Color>
-    <Color x:Key="SystemChromeBlackMediumLowColor">#66000000</Color>
-    <Color x:Key="SystemChromeBlackMediumColor">#CC000000</Color>
-    <Color x:Key="SystemChromeDisabledHighColor">#FF333333</Color>
-    <Color x:Key="SystemChromeDisabledLowColor">#FF858585</Color>
-    <Color x:Key="SystemChromeHighColor">#FF767676</Color>
-    <Color x:Key="SystemChromeLowColor">#FF171717</Color>
-    <Color x:Key="SystemChromeMediumColor">#FF1F1F1F</Color>
-    <Color x:Key="SystemChromeMediumLowColor">#FF2B2B2B</Color>
-    <Color x:Key="SystemChromeWhiteColor">#FFFFFFFF</Color>
-    <Color x:Key="SystemListLowColor">#19FFFFFF</Color>
-    <Color x:Key="SystemListMediumColor">#33FFFFFF</Color>
+    <SolidColorBrush x:Key="ThemeBackgroundBrush">#FFFFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="ThemeBorderLightBrush">#FFAAAAAA</SolidColorBrush>
+    <SolidColorBrush x:Key="ThemeBorderMidBrush">#FF888888</SolidColorBrush>
+    <SolidColorBrush x:Key="ThemeBorderDarkBrush">#FF333333</SolidColorBrush>
+    <SolidColorBrush x:Key="ThemeControlLightBrush">#FFFFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="ThemeControlMidBrush">#FFAAAAAA</SolidColorBrush>
+    <SolidColorBrush x:Key="ThemeControlDarkBrush">#FF888888</SolidColorBrush>
+    <SolidColorBrush x:Key="ThemeForegroundBrush">#FF000000</SolidColorBrush>
+    <SolidColorBrush x:Key="ThemeForegroundLightBrush">#FF808080</SolidColorBrush>
 
-    <Color x:Key="FooColor">Red</Color>
+    <SolidColorBrush x:Key="HighlightBrush">#FF086F9E</SolidColorBrush>    
+    <SolidColorBrush x:Key="ThemeAccentBrush">#CC119EDA</SolidColorBrush>
+    <SolidColorBrush x:Key="ThemeAccentBrush2">#99119EDA</SolidColorBrush>
+    <SolidColorBrush x:Key="ThemeAccentBrush3">#66119EDA</SolidColorBrush>
+    <SolidColorBrush x:Key="ThemeAccentBrush4">#33119EDA</SolidColorBrush>
 
-    <!--<mut:SolidColorBrush x:Key="SystemControlBackgroundBaseHighBrush" Color="{StyleResource SystemBaseHighColor}"/>
-    <mut:SolidColorBrush x:Key="SystemControlBackgroundBaseLowBrush" Color="{StyleResource SystemBaseLowColor}"/>
-    <mut:SolidColorBrush x:Key="FooBrush" Color="{StyleResource FooColor}"/>-->
+    <sys:Double x:Key="ThemeBorderThickness">2</sys:Double>
+    <sys:Double x:Key="ThemeDisabledOpacity">0.5</sys:Double>
+
+    <sys:Double x:Key="FontSizeSmall">10</sys:Double>
+    <sys:Double x:Key="FontSizeNormal">12</sys:Double>
+    <sys:Double x:Key="FontSizeLarge">16</sys:Double>
   </Style.Resources>
 </Style>

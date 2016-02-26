@@ -2,7 +2,7 @@
   <Style Selector="ScrollBar">
     <Setter Property="Template">
       <ControlTemplate>
-        <Border Background="Silver">
+        <Border Background="{StyleResource ThemeControlMidBrush}">
           <Track Minimum="{TemplateBinding Minimum}"
                  Maximum="{TemplateBinding Maximum}"
                  Value="{TemplateBinding Path=Value, Mode=TwoWay}"
@@ -11,6 +11,7 @@
             <Thumb Name="thumb">
               <Thumb.Template>
                 <ControlTemplate>
+                  <!-- TODO: Find out why StyleResource doesn't work here -->
                   <Border Background="Gray"/>
                 </ControlTemplate>
               </Thumb.Template>

@@ -1,6 +1,7 @@
 ﻿<Style xmlns="https://github.com/perspex" Selector="ListBox">
-  <Setter Property="BorderBrush" Value="Black"/>
-  <Setter Property="BorderThickness" Value="1"/>
+  <Setter Property="BorderBrush" Value="{StyleResource ThemeBorderMidBrush}"/>
+  <Setter Property="BorderThickness" Value="{StyleResource ThemeBorderThickness}"/>
+  <Setter Property="Padding" Value="4"/>
   <Setter Property="Template">
     <ControlTemplate>
       <Border Background="{TemplateBinding Background}"
@@ -10,6 +11,7 @@
           <ItemsPresenter Name="PART_ItemsPresenter"
                           Items="{TemplateBinding Items}"
                           ItemsPanel="{TemplateBinding ItemsPanel}"
+                          Margin="{TemplateBinding Padding}"
                           MemberSelector="{TemplateBinding MemberSelector}"/>
         </ScrollViewer>
       </Border>

@@ -1,11 +1,12 @@
 ﻿<Styles xmlns="https://github.com/perspex">
   <Style Selector="DropDown">
-    <Setter Property="BorderBrush" Value="#ff707070"/>
-    <Setter Property="BorderThickness" Value="2"/>
+    <Setter Property="BorderBrush" Value="{StyleResource ThemeBorderMidBrush}"/>
+    <Setter Property="BorderThickness" Value="{StyleResource ThemeBorderThickness}"/>
     <Setter Property="Padding" Value="4"/>
     <Setter Property="Template">
       <ControlTemplate>
-        <Border Background="{TemplateBinding Background}"
+        <Border Name="border"
+                Background="{TemplateBinding Background}"
                 BorderBrush="{TemplateBinding BorderBrush}"
                 BorderThickness="{TemplateBinding BorderThickness}">
           <Grid ColumnDefinitions="*,Auto">
@@ -20,7 +21,7 @@
                           Focusable="False"
                           IsChecked="{TemplateBinding IsDropDownOpen, Mode=TwoWay}"
                           Grid.Column="1">
-              <Path Fill="Black"
+              <Path Fill="{StyleResource ThemeForegroundBrush}"
                     Width="8"
                     Height="4"
                     Stretch="Uniform"
@@ -33,7 +34,7 @@
                    MinWidth="{TemplateBinding Path=Bounds.Width}"
                    PlacementTarget="{TemplateBinding}"
                    StaysOpen="False">
-              <Border BorderBrush="Black"
+              <Border BorderBrush="{StyleResource ThemeBorderMidBrush}"
                       BorderThickness="1">
                 <ItemsPresenter Name="PART_ItemsPresenter"
                                 Items="{TemplateBinding Items}" 
@@ -45,10 +46,7 @@
       </ControlTemplate>
     </Setter>
   </Style>
-  <Style Selector="CheckBox /template/ Path#checkMark">
-    <Setter Property="IsVisible" Value="False"/>
-  </Style>
-  <Style Selector="CheckBox:checked /template/ Path#checkMark">
-    <Setter Property="IsVisible" Value="True"/>
+  <Style Selector="DropDown:pointerover /template/ Border#border">
+    <Setter Property="BorderBrush" Value="{StyleResource ThemeBorderDarkBrush}"/>
   </Style>
 </Styles>

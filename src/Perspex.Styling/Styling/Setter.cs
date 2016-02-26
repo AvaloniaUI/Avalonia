@@ -101,25 +101,29 @@ namespace Perspex.Styling
                 else
                 {
                     var sourceInstance = binding.Initiate(control, Property);
-                    InstancedBinding activatedInstance;
 
-                    if (sourceInstance.Subject != null)
+                    if (sourceInstance != null)
                     {
-                        var activated = new ActivatedSubject(activator, sourceInstance.Subject, description);
-                        activatedInstance = new InstancedBinding(activated, sourceInstance.Mode, sourceInstance.Priority);
-                    }
-                    else if (sourceInstance.Observable != null)
-                    {
-                        var activated = new ActivatedObservable(activator, sourceInstance.Observable, description);
-                        activatedInstance = new InstancedBinding(activated, sourceInstance.Mode, sourceInstance.Priority);
-                    }
-                    else
-                    {
-                        var activated = new ActivatedValue(activator, sourceInstance.Value, description);
-                        activatedInstance = new InstancedBinding(activated, sourceInstance.Mode, sourceInstance.Priority);
-                    }
+                        InstancedBinding activatedInstance;
 
-                    BindingOperations.Apply(control, Property, activatedInstance, null);
+                        if (sourceInstance.Subject != null)
+                        {
+                            var activated = new ActivatedSubject(activator, sourceInstance.Subject, description);
+                            activatedInstance = new InstancedBinding(activated, sourceInstance.Mode, sourceInstance.Priority);
+                        }
+                        else if (sourceInstance.Observable != null)
+                        {
+                            var activated = new ActivatedObservable(activator, sourceInstance.Observable, description);
+                            activatedInstance = new InstancedBinding(activated, sourceInstance.Mode, sourceInstance.Priority);
+                        }
+                        else
+                        {
+                            var activated = new ActivatedValue(activator, sourceInstance.Value, description);
+                            activatedInstance = new InstancedBinding(activated, BindingMode.OneWay, sourceInstance.Priority);
+                        }
+
+                        BindingOperations.Apply(control, Property, activatedInstance, null);
+                    }
                 }
             }
         }
