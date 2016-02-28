@@ -1,5 +1,5 @@
 ﻿<Styles xmlns="https://github.com/perspex">
-  <Style Selector="Slider[Orientation=Horizontal]">
+  <Style Selector="Slider:horizontal">
     <Setter Property="MinWidth" Value="40"/>
     <Setter Property="MinHeight" Value="20"/>
     <Setter Property="Template">
@@ -26,7 +26,7 @@
       </ControlTemplate>
     </Setter>
   </Style>
-  <Style Selector="Slider[Orientation=Vertical]">
+  <Style Selector="Slider:vertical">
     <Setter Property="MinWidth" Value="20"/>
     <Setter Property="MinHeight" Value="40"/>
     <Setter Property="Template">
