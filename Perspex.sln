@@ -15,8 +15,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.Win32", "src\Window
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.Direct2D1", "src\Windows\Perspex.Direct2D1\Perspex.Direct2D1.csproj", "{3E908F67-5543-4879-A1DC-08EACE79B3CD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.Designer", "src\Windows\Perspex.Designer\Perspex.Designer.csproj", "{EC42600F-049B-43FF-AED1-8314D61B2749}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.Input", "src\Perspex.Input\Perspex.Input.csproj", "{62024B2D-53EB-4638-B26B-85EEAA54866E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.Interactivity", "src\Perspex.Interactivity\Perspex.Interactivity.csproj", "{6B0ED19D-A08B-461C-A9D9-A9EE40B0C06B}"
@@ -150,20 +148,20 @@ Global
 		src\Shared\PlatformSupport\PlatformSupport.projitems*{e4d9629c-f168-4224-3f51-a5e482ffbc42}*SharedItemsImports = 13
 		src\Skia\Perspex.Skia\Perspex.Skia.projitems*{2f59f3d0-748d-4652-b01e-e0d954756308}*SharedItemsImports = 13
 		src\Shared\PlatformSupport\PlatformSupport.projitems*{db070a10-bf39-4752-8456-86e9d5928478}*SharedItemsImports = 4
-		src\Skia\Perspex.Skia\Perspex.Skia.projitems*{925dd807-b651-475f-9f7c-cbeb974ce43d}*SharedItemsImports = 4
 		src\Shared\RenderHelpers\RenderHelpers.projitems*{925dd807-b651-475f-9f7c-cbeb974ce43d}*SharedItemsImports = 4
+		src\Skia\Perspex.Skia\Perspex.Skia.projitems*{925dd807-b651-475f-9f7c-cbeb974ce43d}*SharedItemsImports = 4
 		samples\TestApplicationShared\TestApplicationShared.projitems*{78345174-5b52-4a14-b9fd-d5f2428137f0}*SharedItemsImports = 13
 		src\Shared\PlatformSupport\PlatformSupport.projitems*{54f237d5-a70a-4752-9656-0c70b1a7b047}*SharedItemsImports = 4
 		samples\TestApplicationShared\TestApplicationShared.projitems*{ff69b927-c545-49ae-8e16-3d14d621aa12}*SharedItemsImports = 4
 		src\Shared\RenderHelpers\RenderHelpers.projitems*{3c4c0cb4-0c0f-4450-a37b-148c84ff905f}*SharedItemsImports = 13
 		src\Shared\PlatformSupport\PlatformSupport.projitems*{811a76cf-1cf6-440f-963b-bbe31bd72a82}*SharedItemsImports = 4
 		src\Shared\PlatformSupport\PlatformSupport.projitems*{88060192-33d5-4932-b0f9-8bd2763e857d}*SharedItemsImports = 4
-		src\Skia\Perspex.Skia\Perspex.Skia.projitems*{47be08a7-5985-410b-9ffc-2264b8ea595f}*SharedItemsImports = 4
 		src\Shared\RenderHelpers\RenderHelpers.projitems*{47be08a7-5985-410b-9ffc-2264b8ea595f}*SharedItemsImports = 4
+		src\Skia\Perspex.Skia\Perspex.Skia.projitems*{47be08a7-5985-410b-9ffc-2264b8ea595f}*SharedItemsImports = 4
 		samples\TestApplicationShared\TestApplicationShared.projitems*{8c923867-8a8f-4f6b-8b80-47d9e8436166}*SharedItemsImports = 4
 		samples\TestApplicationShared\TestApplicationShared.projitems*{e3a1060b-50d0-44e8-88b6-f44ef2e5bd72}*SharedItemsImports = 4
-		src\Skia\Perspex.Skia\Perspex.Skia.projitems*{bd43f7c0-396b-4aa1-bad9-dfde54d51298}*SharedItemsImports = 4
 		src\Shared\RenderHelpers\RenderHelpers.projitems*{bd43f7c0-396b-4aa1-bad9-dfde54d51298}*SharedItemsImports = 4
+		src\Skia\Perspex.Skia\Perspex.Skia.projitems*{bd43f7c0-396b-4aa1-bad9-dfde54d51298}*SharedItemsImports = 4
 		src\Shared\RenderHelpers\RenderHelpers.projitems*{3e908f67-5543-4879-a1dc-08eace79b3cd}*SharedItemsImports = 4
 		src\Shared\PlatformSupport\PlatformSupport.projitems*{e1aa3dbf-9056-4530-9376-18119a7a3ffe}*SharedItemsImports = 4
 	EndGlobalSection
@@ -302,30 +300,6 @@ Global
 		{3E908F67-5543-4879-A1DC-08EACE79B3CD}.Release|iPhone.Build.0 = Release|Any CPU
 		{3E908F67-5543-4879-A1DC-08EACE79B3CD}.Release|iPhoneSimulator.ActiveCfg = Release|Any CPU
 		{3E908F67-5543-4879-A1DC-08EACE79B3CD}.Release|iPhoneSimulator.Build.0 = Release|Any CPU
-		{EC42600F-049B-43FF-AED1-8314D61B2749}.Ad-Hoc|Any CPU.ActiveCfg = Release|Any CPU
-		{EC42600F-049B-43FF-AED1-8314D61B2749}.Ad-Hoc|Any CPU.Build.0 = Release|Any CPU
-		{EC42600F-049B-43FF-AED1-8314D61B2749}.Ad-Hoc|iPhone.ActiveCfg = Release|Any CPU
-		{EC42600F-049B-43FF-AED1-8314D61B2749}.Ad-Hoc|iPhone.Build.0 = Release|Any CPU
-		{EC42600F-049B-43FF-AED1-8314D61B2749}.Ad-Hoc|iPhoneSimulator.ActiveCfg = Release|Any CPU
-		{EC42600F-049B-43FF-AED1-8314D61B2749}.Ad-Hoc|iPhoneSimulator.Build.0 = Release|Any CPU
-		{EC42600F-049B-43FF-AED1-8314D61B2749}.AppStore|Any CPU.ActiveCfg = Release|Any CPU
-		{EC42600F-049B-43FF-AED1-8314D61B2749}.AppStore|Any CPU.Build.0 = Release|Any CPU
-		{EC42600F-049B-43FF-AED1-8314D61B2749}.AppStore|iPhone.ActiveCfg = Release|Any CPU
-		{EC42600F-049B-43FF-AED1-8314D61B2749}.AppStore|iPhone.Build.0 = Release|Any CPU
-		{EC42600F-049B-43FF-AED1-8314D61B2749}.AppStore|iPhoneSimulator.ActiveCfg = Release|Any CPU
-		{EC42600F-049B-43FF-AED1-8314D61B2749}.AppStore|iPhoneSimulator.Build.0 = Release|Any CPU
-		{EC42600F-049B-43FF-AED1-8314D61B2749}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{EC42600F-049B-43FF-AED1-8314D61B2749}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{EC42600F-049B-43FF-AED1-8314D61B2749}.Debug|iPhone.ActiveCfg = Debug|Any CPU
-		{EC42600F-049B-43FF-AED1-8314D61B2749}.Debug|iPhone.Build.0 = Debug|Any CPU
-		{EC42600F-049B-43FF-AED1-8314D61B2749}.Debug|iPhoneSimulator.ActiveCfg = Debug|Any CPU
-		{EC42600F-049B-43FF-AED1-8314D61B2749}.Debug|iPhoneSimulator.Build.0 = Debug|Any CPU
-		{EC42600F-049B-43FF-AED1-8314D61B2749}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{EC42600F-049B-43FF-AED1-8314D61B2749}.Release|Any CPU.Build.0 = Release|Any CPU
-		{EC42600F-049B-43FF-AED1-8314D61B2749}.Release|iPhone.ActiveCfg = Release|Any CPU
-		{EC42600F-049B-43FF-AED1-8314D61B2749}.Release|iPhone.Build.0 = Release|Any CPU
-		{EC42600F-049B-43FF-AED1-8314D61B2749}.Release|iPhoneSimulator.ActiveCfg = Release|Any CPU
-		{EC42600F-049B-43FF-AED1-8314D61B2749}.Release|iPhoneSimulator.Build.0 = Release|Any CPU
 		{62024B2D-53EB-4638-B26B-85EEAA54866E}.Ad-Hoc|Any CPU.ActiveCfg = Release|Any CPU
 		{62024B2D-53EB-4638-B26B-85EEAA54866E}.Ad-Hoc|Any CPU.Build.0 = Release|Any CPU
 		{62024B2D-53EB-4638-B26B-85EEAA54866E}.Ad-Hoc|iPhone.ActiveCfg = Release|Any CPU
@@ -1328,7 +1302,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{811A76CF-1CF6-440F-963B-BBE31BD72A82} = {B39A8919-9F95-48FE-AD7B-76E08B509888}
 		{3E908F67-5543-4879-A1DC-08EACE79B3CD} = {B39A8919-9F95-48FE-AD7B-76E08B509888}
-		{EC42600F-049B-43FF-AED1-8314D61B2749} = {B39A8919-9F95-48FE-AD7B-76E08B509888}
 		{47ECDF59-DEF8-4C53-87B1-2098A3429059} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
 		{5CCB5571-7C30-4E7D-967D-0E2158EBD91F} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
 		{76716382-3159-460E-BDA6-C5715CF606D7} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
