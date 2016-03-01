@@ -4,8 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
-using Perspex.Collections;
 using Perspex.Controls.Primitives;
 using Perspex.Input;
 using Perspex.VisualTree;
@@ -32,8 +30,6 @@ namespace Perspex.Controls
 
         private DefinitionBase _nextDefinition;
 
-        private bool _isResizingColumns;
-
         private List<DefinitionBase> _definitions;
 
         /// <summary>
@@ -52,7 +48,10 @@ namespace Perspex.Controls
                 SetValue(OrientationProperty, value);
             }
         }
-        
+
+        /// <summary>
+        /// Initializes static members of the <see cref="GridSplitter"/> class. 
+        /// </summary>
         static GridSplitter()
         {
             PseudoClass(OrientationProperty, o => o == Perspex.Controls.Orientation.Vertical, ":vertical");

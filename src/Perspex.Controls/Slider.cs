@@ -3,7 +3,6 @@
 
 using System;
 using Perspex.Controls.Primitives;
-using Perspex.Controls.Templates;
 using Perspex.Input;
 using Perspex.Interactivity;
 
@@ -40,6 +39,8 @@ namespace Perspex.Controls
         /// </summary>
         static Slider()
         {
+            PseudoClass(OrientationProperty, o => o == Perspex.Controls.Orientation.Vertical, ":vertical");
+            PseudoClass(OrientationProperty, o => o == Perspex.Controls.Orientation.Horizontal, ":horizontal");
             Thumb.DragStartedEvent.AddClassHandler<Slider>(x => x.OnThumbDragStarted, RoutingStrategies.Bubble);
             Thumb.DragDeltaEvent.AddClassHandler<Slider>(x => x.OnThumbDragDelta, RoutingStrategies.Bubble);
             Thumb.DragCompletedEvent.AddClassHandler<Slider>(x => x.OnThumbDragCompleted, RoutingStrategies.Bubble);

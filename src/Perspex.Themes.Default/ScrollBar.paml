@@ -20,16 +20,16 @@
       </ControlTemplate>
     </Setter>
   </Style>
-  <Style Selector="ScrollBar[Orientation=Horizontal]">
+  <Style Selector="ScrollBar:horizontal">
     <Setter Property="Height" Value="10"/>
   </Style>
-  <Style Selector="ScrollBar[Orientation=Horizontal] /template/ Thumb#thumb">
+  <Style Selector="ScrollBar:horizontal /template/ Thumb#thumb">
     <Setter Property="MinWidth" Value="10"/>
   </Style>
-  <Style Selector="ScrollBar[Orientation=Vertical]">
+  <Style Selector="ScrollBar:vertical">
     <Setter Property="Width" Value="10"/>
   </Style>
-  <Style Selector="ScrollBar[Orientation=Vertical] /template/ Thumb#thumb">
+  <Style Selector="ScrollBar:vertical /template/ Thumb#thumb">
     <Setter Property="MinHeight" Value="10"/>
   </Style>
 </Styles>
