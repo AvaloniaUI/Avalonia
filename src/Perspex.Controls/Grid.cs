@@ -190,6 +190,9 @@ namespace Perspex.Controls
         /// <returns>The desired size of the control.</returns>
         protected override Size MeasureOverride(Size constraint)
         {
+            var sw = new System.Diagnostics.Stopwatch();
+            sw.Start();
+
             Size totalSize = constraint;
             int colCount = ColumnDefinitions.Count;
             int rowCount = RowDefinitions.Count;
@@ -474,6 +477,13 @@ namespace Perspex.Controls
             for (int r = 0; r < rowCount; r++)
             {
                 gridSizeY += _rowMatrix[r, r].DesiredSize;
+            }
+
+            sw.Stop();
+
+            if (this.Name == "PERF_DEBUG_TARGET")
+            {
+                System.Diagnostics.Debug.WriteLine($"Grid.MeasureOverride: {sw.ElapsedMilliseconds}ms");
             }
 
             return new Size(gridSizeX, gridSizeY);

@@ -37,6 +37,7 @@ namespace Perspex.Diagnostics.Views
             {
                 Content = new Grid
                 {
+                    Name = "PERF_DEBUG_TARGET",
                     ColumnDefinitions = new ColumnDefinitions
                     {
                         new ColumnDefinition(GridLength.Auto),
