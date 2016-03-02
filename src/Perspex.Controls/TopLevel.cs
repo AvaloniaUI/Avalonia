@@ -114,7 +114,7 @@ namespace Perspex.Controls
                 .Select(
                     x => (x as InputElement)?.GetObservable(CursorProperty) ?? Observable.Empty<Cursor>())
                 .Switch().Subscribe(cursor => PlatformImpl.SetCursor(cursor?.PlatformCursor));
-            _applicationLifecycle.OnExit += HandleApplicationExiting;
+            _applicationLifecycle.OnExit += OnApplicationExiting;
         }
 
         /// <summary>
@@ -355,7 +355,7 @@ namespace Perspex.Controls
 
         private void OnApplicationExiting(object sender, EventArgs args)
         {
-
+            HandleApplicationExiting();
         }
 
         /// <summary>

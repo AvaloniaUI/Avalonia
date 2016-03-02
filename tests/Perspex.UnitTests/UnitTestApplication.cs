@@ -6,6 +6,7 @@ using Perspex.Input;
 using Perspex.Layout;
 using Perspex.Platform;
 using Perspex.Styling;
+using Perspex.Controls;
 
 namespace Perspex.UnitTests
 {
@@ -41,7 +42,8 @@ namespace Perspex.UnitTests
                 .Bind<IPlatformThreadingInterface>().ToConstant(Services.ThreadingInterface)
                 .Bind<IStandardCursorFactory>().ToConstant(Services.StandardCursorFactory)
                 .Bind<IStyler>().ToConstant(Services.Styler)
-                .Bind<IWindowingPlatform>().ToConstant(Services.WindowingPlatform);
+                .Bind<IWindowingPlatform>().ToConstant(Services.WindowingPlatform)
+                .Bind<IApplicationLifecycle>().ToConstant(this);
         }
     }
 }

@@ -282,11 +282,32 @@ namespace Perspex.Controls.UnitTests
                 });
         }
 
+        [Fact]
+        public void Exiting_Application_Notifies_Top_Level()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var impl = new Mock<ITopLevelImpl>();
+                impl.SetupAllProperties();
+                var target = new TestTopLevel(impl.Object);
+                UnitTestApplication.Current.Exit();
+                Assert.True(target.IsClosed);
+            }
+        }
+
         private class TestTopLevel : TopLevel
         {
+            public bool IsClosed { get; private set; }
+
             public TestTopLevel(ITopLevelImpl impl)
                 : base(impl)
             {
+            }
+
+            protected override void HandleApplicationExiting()
+            {
+                base.HandleApplicationExiting();
+                IsClosed = true;
             }
         }
     }
