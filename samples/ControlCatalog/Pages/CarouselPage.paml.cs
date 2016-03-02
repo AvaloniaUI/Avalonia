@@ -17,7 +17,7 @@ namespace ControlCatalog.Pages
             this.InitializeComponent();
             _left.Click += (s, e) => _carousel.Previous();
             _right.Click += (s, e) => _carousel.Next();
-            //_transition.SelectionChanged += TransitionChanged;
+            _transition.SelectionChanged += TransitionChanged;
         }
 
         private void InitializeComponent()
