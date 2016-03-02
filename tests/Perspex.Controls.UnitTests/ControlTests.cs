@@ -145,6 +145,73 @@ namespace Perspex.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Styles_Not_Applied_Until_Initialization_Finished()
+        {
+            using (PerspexLocator.EnterScope())
+            {
+                var root = new TestRoot();
+                var child = new Border();
+                var styler = new Mock<IStyler>();
+
+                PerspexLocator.CurrentMutable.Bind<IStyler>().ToConstant(styler.Object);
+
+                ((ISupportInitialize)child).BeginInit();
+                root.Child = child;
+                styler.Verify(x => x.ApplyStyles(It.IsAny<IStyleable>()), Times.Never());
+
+                ((ISupportInitialize)child).EndInit();
+                styler.Verify(x => x.ApplyStyles(child), Times.Once());
+            }
+        }
+
+        [Fact]
+        public void Adding_To_Logical_Tree_Should_Register_With_NameScope()
+        {
+            using (PerspexLocator.EnterScope())
+            {
+                var root = new TestRoot();
+                var child = new Border();
+
+                child.Name = "foo";
+                root.Child = child;
+
+                Assert.Same(root.FindControl<Border>("foo"), child);
+            }
+        }
+
+        [Fact]
+        public void Name_Cannot_Be_Set_After_Added_To_Logical_Tree()
+        {
+            using (PerspexLocator.EnterScope())
+            {
+                var root = new TestRoot();
+                var child = new Border();
+
+                root.Child = child;
+
+                Assert.Throws<InvalidOperationException>(() => child.Name = "foo");
+            }
+        }
+
+        [Fact]
+        public void Name_Can_Be_Set_While_Initializing()
+        {
+            using (PerspexLocator.EnterScope())
+            {
+                var root = new TestRoot();
+                var child = new Border();
+
+                ((ISupportInitialize)child).BeginInit();
+                root.Child = child;
+                child.Name = "foo";
+                Assert.Null(root.FindControl<Border>("foo"));
+                ((ISupportInitialize)child).EndInit();
+
+                Assert.Same(root.FindControl<Border>("foo"), child);
+            }
+        }
+
         private class TestControl : Control
         {
             public new PerspexObject InheritanceParent => base.InheritanceParent;

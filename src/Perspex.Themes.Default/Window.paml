@@ -1,6 +1,7 @@
 ﻿<Style xmlns="https://github.com/perspex" Selector="Window">
+  <Setter Property="Background" Value="{StyleResource ThemeBackgroundBrush}"/>
   <Setter Property="FontFamily" Value="Segoe UI"/>
-  <Setter Property="FontSize" Value="12"/>
+  <Setter Property="FontSize" Value="{StyleResource FontSizeNormal}"/>
   <Setter Property="Template">
     <ControlTemplate>
       <Border Background="{TemplateBinding Background}">

@@ -1,4 +1,8 @@
 ﻿<Application x:Class="XamlTestApplicationPcl.XamlTestApp"
         xmlns="https://github.com/perspex"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Application.Styles>
+    <StyleInclude Source="resm:Perspex.Themes.Default.DefaultTheme.paml?assembly=Perspex.Themes.Default"/>
+    <StyleInclude Source="resm:Perspex.Themes.Default.Accents.BaseLight.paml?assembly=Perspex.Themes.Default"/>
+  </Application.Styles>
 </Application>

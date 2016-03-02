@@ -8,7 +8,9 @@ using System.Runtime.CompilerServices;
 using OmniXaml.ObjectAssembler;
 using OmniXaml.TypeConversion;
 using OmniXaml.Typing;
+using Perspex.Controls;
 using Perspex.Data;
+using Perspex.Markup.Xaml.Data;
 using Perspex.Styling;
 
 namespace Perspex.Markup.Xaml.Context
@@ -25,7 +27,7 @@ namespace Perspex.Markup.Xaml.Context
 
             if (value is IBinding)
             {
-                SetBinding(instance, member, perspexProperty, (IBinding)value);
+                SetBinding(instance, member, perspexProperty, context, (IBinding)value);
             }
             else if (perspexProperty != null)
             {
@@ -71,9 +73,11 @@ namespace Perspex.Markup.Xaml.Context
             object instance,
             MutableMember member, 
             PerspexProperty property, 
+            IValueContext context,
             IBinding binding)
         {
-            if (!(AssignBinding(instance, member, binding) || ApplyBinding(instance, property, binding)))
+            if (!(AssignBinding(instance, member, binding) || 
+                  ApplyBinding(instance, property, context, binding)))
             {
                 throw new InvalidOperationException(
                     $"Cannot assign to '{member.Name}' on '{instance.GetType()}");
@@ -107,15 +111,47 @@ namespace Perspex.Markup.Xaml.Context
             return false;
         }
 
-        private static bool ApplyBinding(object instance, PerspexProperty property, IBinding binding)
+        private static bool ApplyBinding(
+            object instance, 
+            PerspexProperty property,
+            IValueContext context,
+            IBinding binding)
         {
-            if (property != null)
+            if (property == null)
             {
-                ((IPerspexObject)instance).Bind(property, binding);
-                return true;
+                return false;
             }
 
-            return false;
+            var control = instance as IControl;
+
+            if (control != null)
+            {
+                DelayedBinding.Add(control, property, binding);
+            }
+            else
+            {
+                // The target is not a control, so we need to find an anchor that will let us look
+                // up named controls and style resources. First look for the closest IControl in
+                // the TopDownValueContext.
+                object anchor = context.TopDownValueContext.StoredInstances
+                    .Select(x => x.Instance)
+                    .OfType<IControl>()
+                    .LastOrDefault();
+
+                // If a control was not found, then try to find the highest-level style as the XAML
+                // file could be a XAML file containing only styles.
+                if (anchor == null)
+                {
+                    anchor = context.TopDownValueContext.StoredInstances
+                        .Select(x => x.Instance)
+                        .OfType<IStyle>()
+                        .FirstOrDefault();
+                }
+
+                ((IPerspexObject)instance).Bind(property, binding, anchor);
+            }
+
+            return true;
         }
     }
 }

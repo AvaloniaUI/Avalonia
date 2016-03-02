@@ -1,17 +1,16 @@
 ﻿// Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
+using System.Reactive;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
+using Perspex.Controls;
+using Perspex.Data;
+using Perspex.Markup.Data;
+
 namespace Perspex.Markup.Xaml.Data
 {
-
-    using System;
-    using System.Reactive;
-    using System.Reactive.Linq;
-    using System.Reactive.Subjects;
-    using Controls;
-    using Perspex.Data;
-    using Markup.Data;
-
     /// <summary>
     /// A XAML binding.
     /// </summary>
@@ -62,15 +61,11 @@ namespace Perspex.Markup.Xaml.Data
         /// </summary>
         public object Source { get; set; }
 
-        /// <summary>
-        /// Creates a subject that can be used to get and set the value of the binding.
-        /// </summary>
-        /// <param name="target">The target instance.</param>
-        /// <param name="targetProperty">The target property. May be null.</param>
-        /// <returns>An <see cref="ISubject{Object}"/>.</returns>
-        public ISubject<object> CreateSubject(
+        /// <inheritdoc/>
+        public InstancedBinding Initiate(
             IPerspexObject target, 
-            PerspexProperty targetProperty)
+            PerspexProperty targetProperty,
+            object anchor = null)
         {
             Contract.Requires<ArgumentNullException>(target != null);
 
@@ -82,7 +77,7 @@ namespace Perspex.Markup.Xaml.Data
             if (pathInfo.ElementName != null || ElementName != null)
             {
                 observer = CreateElementObserver(
-                    (IControl)target, 
+                    (target as IControl) ?? (anchor as IControl),
                     pathInfo.ElementName ?? ElementName, 
                     pathInfo.Path);
             }
@@ -106,12 +101,14 @@ namespace Perspex.Markup.Xaml.Data
                 throw new NotSupportedException();
             }
 
-            return new ExpressionSubject(
+            var subject = new ExpressionSubject(
                 observer,
                 targetProperty?.PropertyType ?? typeof(object),
                 Converter ?? DefaultValueConverter.Instance,
                 ConverterParameter,
                 FallbackValue);
+
+            return new InstancedBinding(subject, Mode, Priority);
         }
 
         private static PathInfo ParsePath(string path)

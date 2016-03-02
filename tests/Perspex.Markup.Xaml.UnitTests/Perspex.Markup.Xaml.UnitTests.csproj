@@ -100,20 +100,17 @@
     <Compile Include="Converters\PerspexPropertyConverterTest.cs" />
     <Compile Include="Parsers\SelectorGrammarTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SampleModel\Level1.cs" />
-    <Compile Include="SampleModel\Level2.cs" />
-    <Compile Include="SampleModel\Level3.cs" />
-    <Compile Include="SampleModel\LogInViewModel.cs" />
-    <Compile Include="SampleModel\MainWindowViewModel.cs" />
-    <Compile Include="SampleModel\PropertyChangeNotifier.cs" />
-    <Compile Include="SampleModel\Repository.cs" />
-    <Compile Include="SampleModel\UserRepositoriesViewModel.cs" />
     <Compile Include="SamplePerspexObject.cs" />
     <Compile Include="StyleTests.cs" />
     <Compile Include="Templates\DataTemplateTests.cs" />
-    <Compile Include="Templates\TreeDataTemplateTests.cs" />
+    <Compile Include="Xaml\BasicTests.cs" />
+    <Compile Include="Xaml\BindingTests.cs" />
+    <Compile Include="Xaml\InitializationOrderTracker.cs" />
+    <Compile Include="Xaml\NonControl.cs" />
+    <Compile Include="Xaml\TreeDataTemplateTests.cs" />
     <Compile Include="TypeProviderMock.cs" />
     <Compile Include="ViewModelMock.cs" />
+    <Compile Include="Xaml\StyleTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Markup\Perspex.Markup.Xaml\Perspex.Markup.Xaml.csproj">

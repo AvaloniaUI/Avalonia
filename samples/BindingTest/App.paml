@@ -1,0 +1,6 @@
+﻿<Application xmlns="https://github.com/perspex">
+  <Application.Styles>
+    <StyleInclude Source="resm:Perspex.Themes.Default.DefaultTheme.paml?assembly=Perspex.Themes.Default"/>
+    <StyleInclude Source="resm:Perspex.Themes.Default.Accents.BaseLight.paml?assembly=Perspex.Themes.Default"/>
+  </Application.Styles>
+</Application>

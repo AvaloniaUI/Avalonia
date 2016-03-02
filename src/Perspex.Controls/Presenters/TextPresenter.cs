@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using System.Reactive.Linq;
 using Perspex.Media;
+using Perspex.Styling;
 using Perspex.Threading;
 using Perspex.VisualTree;
 
@@ -22,10 +23,9 @@ namespace Perspex.Controls.Presenters
             TextBox.SelectionEndProperty.AddOwner<TextPresenter>();
 
         private readonly DispatcherTimer _caretTimer;
-
         private bool _caretBlink;
-
         private IObservable<bool> _canScrollHorizontally;
+        private Brush _highlightBrush;
 
         static TextPresenter()
         {
@@ -85,11 +85,14 @@ namespace Perspex.Controls.Presenters
                 var length = Math.Max(selectionStart, selectionEnd) - start;
                 var rects = FormattedText.HitTestTextRange(start, length);
 
-                var brush = new SolidColorBrush(0xff086f9e);
+                if (_highlightBrush == null)
+                {
+                    _highlightBrush = (Brush)this.FindStyleResource("HighlightBrush");
+                }
 
                 foreach (var rect in rects)
                 {
-                    context.FillRectangle(brush, rect);
+                    context.FillRectangle(_highlightBrush, rect);
                 }
             }
 

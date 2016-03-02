@@ -42,6 +42,7 @@
     </Compile>
     <Compile Include="Context\NameScopeWrapper.cs" />
     <Compile Include="Context\PerspexAttachableXamlMember.cs" />
+    <Compile Include="Context\PerspexLifeCycleListener.cs" />
     <Compile Include="Context\PerspexMemberValuePlugin.cs" />
     <Compile Include="Context\PerspexNamespaceRegistry.cs" />
     <Compile Include="Context\PerspexObjectAssembler.cs" />
@@ -55,6 +56,7 @@
     <Compile Include="Converters\BitmapTypeConverter.cs" />
     <Compile Include="Converters\BrushTypeConverter.cs" />
     <Compile Include="Converters\ClassesTypeConverter.cs" />
+    <Compile Include="Converters\SolidColorBrushTypeConverter.cs" />
     <Compile Include="Converters\ColorTypeConverter.cs" />
     <Compile Include="Converters\ColumnDefinitionsTypeConverter.cs" />
     <Compile Include="Converters\CursorTypeConverter.cs" />
@@ -74,21 +76,19 @@
     <Compile Include="Converters\TimeSpanTypeConverter.cs" />
     <Compile Include="Converters\UriTypeConverter.cs" />
     <Compile Include="Data\Binding.cs" />
+    <Compile Include="Data\DelayedBinding.cs" />
     <Compile Include="Data\MultiBinding.cs" />
     <Compile Include="Data\RelativeSource.cs" />
     <Compile Include="Data\SourceBindingEndpoint.cs" />
+    <Compile Include="Data\StyleResourceBinding.cs" />
     <Compile Include="Data\TargetBindingEndpoint.cs" />
+    <Compile Include="MarkupExtensions\StyleResourceExtension.cs" />
     <Compile Include="MarkupExtensions\BindingExtension.cs" />
     <Compile Include="MarkupExtensions\RelativeSourceExtension.cs" />
     <Compile Include="MarkupExtensions\StaticExtension.cs" />
     <Compile Include="MarkupExtensions\TemplateBindingExtension.cs" />
     <Compile Include="MarkupExtensions\TypeExtension.cs" />
     <Compile Include="OmniXAML\Source\Glass\AutoKeyDictionary.cs" />
-    <Compile Include="OmniXAML\Source\Glass\ChangeTracking\ObservableProperty.cs" />
-    <Compile Include="OmniXAML\Source\Glass\ChangeTracking\ObservablePropertyChain.cs" />
-    <Compile Include="OmniXAML\Source\Glass\ChangeTracking\Property.cs" />
-    <Compile Include="OmniXAML\Source\Glass\ChangeTracking\PropertyChain.cs" />
-    <Compile Include="OmniXAML\Source\Glass\ChangeTracking\ValueTypePropertyChain.cs" />
     <Compile Include="OmniXAML\Source\Glass\DependencySorter.cs" />
     <Compile Include="OmniXAML\Source\Glass\EnumExtensions.cs" />
     <Compile Include="OmniXAML\Source\Glass\Extensions.cs" />
@@ -276,7 +276,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <None Include="OmniXAML\Source\Glass\ChangeTracking\packages.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

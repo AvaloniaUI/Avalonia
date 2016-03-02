@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using Perspex.Layout;
+using Perspex.VisualTree;
 
 namespace Perspex.Interactivity
 {

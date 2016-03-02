@@ -27,7 +27,7 @@ namespace Perspex
     /// To traverse the scene graph (aka Visual Tree), use the extension methods defined
     /// in <see cref="VisualExtensions"/>.
     /// </remarks>
-    public class Visual : Animatable, IVisual, INamed
+    public class Visual : Animatable, IVisual
     {
         /// <summary>
         /// Defines the <see cref="Bounds"/> property.
@@ -46,12 +46,6 @@ namespace Perspex
         /// </summary>
         public static readonly StyledProperty<bool> IsVisibleProperty =
             PerspexProperty.Register<Visual, bool>(nameof(IsVisible), true);
-
-        /// <summary>
-        /// Defines the <see cref="Name"/> property.
-        /// </summary>
-        public static readonly DirectProperty<Visual, string> NameProperty =
-            PerspexProperty.RegisterDirect<Visual, string>(nameof(Name), o => o.Name, (o, v) => o.Name = v);
 
         /// <summary>
         /// Defines the <see cref="Opacity"/> property.
@@ -82,11 +76,6 @@ namespace Perspex
         /// </summary>
         public static readonly StyledProperty<int> ZIndexProperty =
             PerspexProperty.Register<Visual, int>(nameof(ZIndex));
-
-        /// <summary>
-        /// The name of the visual, if any.
-        /// </summary>
-        private string _name;
 
         /// <summary>
         /// The visual's bounds relative to its parent.
@@ -174,36 +163,6 @@ namespace Perspex
         {
             get { return GetValue(IsVisibleProperty); }
             set { SetValue(IsVisibleProperty, value); }
-        }
-
-        /// <summary>
-        /// Gets or sets the name of the visual.
-        /// </summary>
-        /// <remarks>
-        /// An element's name is used to uniquely identify a control within the control's name
-        /// scope. Once the element is added to a visual tree, its name cannot be changed.
-        /// </remarks>
-        public string Name
-        {
-            get
-            {
-                return _name;
-            }
-
-            set
-            {
-                if (value.Trim() == string.Empty)
-                {
-                    throw new InvalidOperationException("Cannot set Name to empty string.");
-                }
-
-                if (VisualRoot != null)
-                {
-                    throw new InvalidOperationException("Cannot set Name : control already added to tree.");
-                }
-
-                _name = value;
-            }
         }
 
         /// <summary>

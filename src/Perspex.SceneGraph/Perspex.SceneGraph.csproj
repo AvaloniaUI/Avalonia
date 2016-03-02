@@ -73,6 +73,7 @@
     <Compile Include="Media\GradientSpreadMethod.cs" />
     <Compile Include="Media\GradientStop.cs" />
     <Compile Include="Media\LineGeometry.cs" />
+    <Compile Include="Media\Mutable\SolidColorBrush.cs" />
     <Compile Include="Media\PenLineJoin.cs" />
     <Compile Include="Media\PolylineGeometry.cs" />
     <Compile Include="Media\RadialGradientBrush.cs" />
@@ -86,7 +87,7 @@
     <Compile Include="Media\FormattedText.cs" />
     <Compile Include="Media\Geometry.cs" />
     <Compile Include="Media\IDrawingContext.cs" />
-    <Compile Include="IVisual.cs" />
+    <Compile Include="VisualTree\IVisual.cs" />
     <Compile Include="Media\Imaging\Bitmap.cs" />
     <Compile Include="Media\Imaging\IBitmap.cs" />
     <Compile Include="Media\Imaging\RenderTargetBitmap.cs" />

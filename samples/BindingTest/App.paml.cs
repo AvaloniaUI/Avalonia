@@ -2,7 +2,7 @@
 using Perspex;
 using Perspex.Controls;
 using Perspex.Diagnostics;
-using Perspex.Themes.Default;
+using Perspex.Markup.Xaml;
 using Serilog;
 using Serilog.Filters;
 
@@ -14,7 +14,7 @@ namespace BindingTest
         {
             RegisterServices();
             InitializeSubsystems((int)Environment.OSVersion.Platform);
-            Styles = new DefaultTheme();
+            InitializeComponent();
 
             Log.Logger = new LoggerConfiguration()
                 .Filter.ByIncludingOnly(Matching.WithProperty("Area", "Property"))
@@ -35,6 +35,11 @@ namespace BindingTest
             var window = new MainWindow();
             window.Show();
             app.Run(window);
+        }
+
+        private void InitializeComponent()
+        {
+            PerspexXamlLoader.Load(this);
         }
     }
 }

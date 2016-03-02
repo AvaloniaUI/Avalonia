@@ -188,7 +188,8 @@ namespace Perspex
                         break;
                     case BindingMode.TwoWay:
                         var subject = sourceBinding.Source.GetSubject(sourceBinding.Property, sourceBinding.Priority);
-                        this.Bind(binding.Property, subject, BindingMode.TwoWay, sourceBinding.Priority);
+                        var instanced = new InstancedBinding(subject, BindingMode.TwoWay, sourceBinding.Priority);
+                        BindingOperations.Apply(this, binding.Property, instanced, null);
                         break;
                 }
             }

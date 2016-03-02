@@ -15,7 +15,13 @@ namespace Perspex.UnitTests
         {
             Services = services ?? new TestServices();
             RegisterServices();
-            Styles = Services.Theme?.Invoke();
+
+            var styles = Services.Theme?.Invoke();
+
+            if (styles != null)
+            {
+                Styles.AddRange(styles);
+            }
         }
 
         public static new UnitTestApplication Current => (UnitTestApplication)Application.Current;

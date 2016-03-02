@@ -4,7 +4,6 @@ using Perspex;
 using Perspex.Controls;
 using Perspex.Diagnostics;
 using Perspex.Markup.Xaml;
-using Perspex.Themes.Default;
 using Serilog;
 
 namespace ControlCatalog
@@ -16,7 +15,6 @@ namespace ControlCatalog
             RegisterServices();
             InitializeSubsystems(GetPlatformId());
             InitializeLogging();
-            Styles = new DefaultTheme();
             InitializeComponent();
         }
 

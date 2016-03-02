@@ -7,6 +7,7 @@ using Perspex.Controls.Primitives;
 using Perspex.Controls.Shapes;
 using Perspex.Input;
 using Perspex.Layout;
+using Perspex.LogicalTree;
 using Perspex.Media;
 using Perspex.VisualTree;
 

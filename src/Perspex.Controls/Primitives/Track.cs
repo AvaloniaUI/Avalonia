@@ -3,7 +3,6 @@
 
 using System;
 using Perspex.Input;
-using Perspex.Interactivity;
 using Perspex.Metadata;
 
 namespace Perspex.Controls.Primitives
@@ -34,26 +33,8 @@ namespace Perspex.Controls.Primitives
 
         static Track()
         {
+            ThumbProperty.Changed.AddClassHandler<Track>(x => x.ThumbChanged);
             AffectsArrange(MinimumProperty, MaximumProperty, ValueProperty, OrientationProperty);
-        }
-
-        public Track()
-        {
-            this.GetObservableWithHistory(ThumbProperty).Subscribe(val =>
-            {
-                if (val.Item1 != null)
-                {
-                    val.Item1.DragDelta -= ThumbDragged;
-                }
-
-                VisualChildren.Clear();
-
-                if (val.Item2 != null)
-                {
-                    val.Item2.DragDelta += ThumbDragged;
-                    VisualChildren.Add(val.Item2);
-                }
-            });
         }
 
         public double Minimum
@@ -149,6 +130,27 @@ namespace Perspex.Controls.Primitives
             }
 
             return finalSize;
+        }
+
+        private void ThumbChanged(PerspexPropertyChangedEventArgs e)
+        {
+            var oldThumb = (Thumb)e.OldValue;
+            var newThumb = (Thumb)e.NewValue;
+
+            if (oldThumb != null)
+            {
+                oldThumb.DragDelta -= ThumbDragged;
+            }
+
+            LogicalChildren.Clear();
+            VisualChildren.Clear();
+
+            if (newThumb != null)
+            {
+                newThumb.DragDelta += ThumbDragged;
+                LogicalChildren.Add(newThumb);
+                VisualChildren.Add(newThumb);
+            }
         }
 
         private void ThumbDragged(object sender, VectorEventArgs e)

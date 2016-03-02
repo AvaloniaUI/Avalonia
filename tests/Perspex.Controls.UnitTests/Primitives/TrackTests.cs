@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using Perspex.Controls.Primitives;
+using Perspex.LogicalTree;
 using Xunit;
 
 namespace Perspex.Controls.UnitTests.Primitives
@@ -117,6 +118,27 @@ namespace Perspex.Controls.UnitTests.Primitives
             target.Arrange(new Rect(0, 0, 100, 100));
 
             Assert.Equal(new Rect(0, 0, 100, 12), thumb.Bounds);
+        }
+
+        [Fact]
+        public void Thumb_Should_Be_Logical_Child()
+        {
+            var thumb = new Thumb
+            {
+                Height = 12,
+            };
+
+            var target = new Track
+            {
+                Height = 12,
+                Thumb = thumb,
+                Orientation = Orientation.Horizontal,
+                Minimum = 100,
+                Maximum = 100,
+            };
+
+            Assert.Same(thumb.Parent, target);
+            Assert.Equal(new[] { thumb }, ((ILogical)target).LogicalChildren);
         }
     }
 }

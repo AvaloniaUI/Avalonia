@@ -20,6 +20,7 @@ namespace Perspex.Markup.Xaml
     public class PerspexXamlLoader : XmlLoader
     {
         private static PerspexParserFactory s_parserFactory;
+        private static IInstanceLifeCycleListener s_lifeCycleListener = new PerspexLifeCycleListener();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PerspexXamlLoader"/> class.
@@ -66,21 +67,26 @@ namespace Perspex.Markup.Xaml
             // in certain situations, so we try to load .xaml and if that's not found we try .paml.
             // Ideally we'd be able to use .xaml everywhere
             var assetLocator = PerspexLocator.Current.GetService<IAssetLoader>();
+
             if (assetLocator == null)
             {
                 throw new InvalidOperationException(
                     "Could not create IAssetLoader : maybe Application.RegisterServices() wasn't called?");
             }
+
             foreach (var uri in GetUrisFor(type))
             {
                 if (assetLocator.Exists(uri))
                 {
                     using (var stream = assetLocator.Open(uri))
                     {
-                        return Load(stream, new Settings { RootInstance = rootInstance });
+                        var initialize = rootInstance as ISupportInitialize;
+                        initialize?.BeginInit();
+                        return Load(stream, rootInstance);
                     }
                 }
             }
+
             throw new FileNotFoundException("Unable to find view for " + type.FullName);
         }
 
@@ -106,7 +112,7 @@ namespace Perspex.Markup.Xaml
 
             using (var stream = assetLocator.Open(uri))
             {
-                return Load(stream, new Settings { RootInstance = rootInstance });
+                return Load(stream, rootInstance);
             }
         }
 
@@ -124,7 +130,7 @@ namespace Perspex.Markup.Xaml
 
             using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(xaml)))
             {
-                return Load(stream, new Settings { RootInstance = rootInstance });
+                return Load(stream, rootInstance);
             }
         }
 
@@ -150,6 +156,15 @@ namespace Perspex.Markup.Xaml
             yield return new Uri("resm:" + typeName + ".xaml?assembly=" + asm);
             yield return new Uri("resm:" + typeName + ".paml?assembly=" + asm);
 
+        }
+
+        private object Load(Stream stream, object rootInstance)
+        {
+            return base.Load(stream, new Settings
+            {
+                RootInstance = rootInstance,
+                InstanceLifeCycleListener = s_lifeCycleListener,
+            });
         }
     }
 }

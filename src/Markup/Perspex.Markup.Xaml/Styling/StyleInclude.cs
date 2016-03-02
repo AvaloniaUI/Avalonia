@@ -11,6 +11,8 @@ namespace Perspex.Markup.Xaml.Styling
     /// </summary>
     public class StyleInclude : IStyle
     {
+        private IStyle _loaded;
+
         /// <summary>
         /// Gets or sets the source URL.
         /// </summary>
@@ -19,21 +21,39 @@ namespace Perspex.Markup.Xaml.Styling
         /// <summary>
         /// Gets the loaded style.
         /// </summary>
-        public IStyle Loaded { get; private set; }
+        public IStyle Loaded
+        {
+            get
+            {
+                if (_loaded == null)
+                {
+                    var loader = new PerspexXamlLoader();
+                    _loaded = (IStyle)loader.Load(Source);
+                }
+
+                return _loaded;
+            }
+        }
 
         /// <inheritdoc/>
         public void Attach(IStyleable control, IStyleHost container)
         {
             if (Source != null)
             {
-                if (Loaded == null)
-                {
-                    var loader = new PerspexXamlLoader();
-                    Loaded = (IStyle)loader.Load(Source);
-                }
-
                 Loaded.Attach(control, container);
             }
+        }
+
+        /// <summary>
+        /// Tries to find a named resource within the style.
+        /// </summary>
+        /// <param name="name">The resource name.</param>
+        /// <returns>
+        /// The resource if found, otherwise <see cref="PerspexProperty.UnsetValue"/>.
+        /// </returns>
+        public object FindResource(string name)
+        {
+            return Loaded.FindResource(name);
         }
     }
 }

@@ -1,9 +1,9 @@
 ﻿<Styles xmlns="https://github.com/perspex">
   <Style Selector="ToggleButton">
-    <Setter Property="Background" Value="#ffaaaaaa"/>
-    <Setter Property="BorderBrush" Value="#ffaaaaaa"/>
-    <Setter Property="BorderThickness" Value="2"/>
-    <Setter Property="Foreground" Value="Black"/>
+    <Setter Property="Background" Value="{StyleResource ThemeControlMidBrush}"/>
+    <Setter Property="BorderBrush" Value="{StyleResource ThemeBorderLightBrush}"/>
+    <Setter Property="BorderThickness" Value="{StyleResource ThemeBorderThickness}"/>
+    <Setter Property="Foreground" Value="{StyleResource ThemeForegroundBrush}"/>
     <Setter Property="HorizontalContentAlignment" Value="Center"/>
     <Setter Property="VerticalContentAlignment" Value="Center"/>
     <Setter Property="Template">
@@ -24,16 +24,16 @@
     </Setter>
   </Style>
   <Style Selector="ToggleButton:checked /template/ Border#border">
-    <Setter Property="Background" Value="#ff777777"/>
-    <Setter Property="BorderBrush" Value="#ff777777"/>
+    <Setter Property="Background" Value="{StyleResource ThemeControlDarkBrush}"/>
+    <Setter Property="BorderBrush" Value="{StyleResource ThemeBorderMidBrush}"/>
   </Style>
   <Style Selector="ToggleButton:pointerover /template/ Border#border">
-    <Setter Property="BorderBrush" Value="#ff888888"/>
+    <Setter Property="BorderBrush" Value="{StyleResource ThemeBorderMidBrush}"/>
   </Style>
   <Style Selector="ToggleButton:pressed  /template/ Border#border">
-    <Setter Property="Background" Value="#ff888888"/>
+    <Setter Property="Background" Value="{StyleResource ThemeControlDarkBrush}"/>
   </Style>
   <Style Selector="ToggleButton:disabled">
-    <Setter Property="Opacity" Value="0.5"/>
+    <Setter Property="Opacity" Value="{StyleResource ThemeDisabledOpacity}"/>
   </Style>
 </Styles>

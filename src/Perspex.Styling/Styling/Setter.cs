@@ -58,7 +58,7 @@ namespace Perspex.Styling
         }
 
         /// <summary>
-        /// Applies the setter to the control.
+        /// Applies the setter to a control.
         /// </summary>
         /// <param name="style">The style that is being applied.</param>
         /// <param name="control">The control.</param>
@@ -76,20 +76,7 @@ namespace Perspex.Styling
 
             var binding = Value as IBinding;
 
-            if (binding != null)
-            {
-                if (activator == null)
-                {
-                    control.Bind(Property, binding);
-                }
-                else
-                {
-                    var subject = binding.CreateSubject(control, Property);
-                    var activated = new ActivatedSubject(activator, subject, description);
-                    Bind(control, Property, binding, activated);
-                }
-            }
-            else
+            if (binding == null)
             {
                 if (activator == null)
                 {
@@ -98,29 +85,66 @@ namespace Perspex.Styling
                 else
                 {
                     var activated = new ActivatedValue(activator, Value, description);
-                    control.Bind(Property, activated, BindingPriority.StyleTrigger);
+                    var instanced = new InstancedBinding(
+                        activated,
+                        BindingMode.OneWay,
+                        BindingPriority.StyleTrigger);
+                    BindingOperations.Apply(control, Property, instanced, null);
+                }
+            }
+            else
+            {
+                var source = binding.Initiate(control, Property);
+
+                if (source != null)
+                {
+                    var cloned = Clone(source, style, activator);
+                    BindingOperations.Apply(control, Property, cloned, null);
                 }
             }
         }
 
-        private void Bind(
-            IStyleable control,
-            PerspexProperty property,
-            IBinding binding,
-            ISubject<object> subject)
+        private InstancedBinding Clone(InstancedBinding sourceInstance, IStyle style, IObservable<bool> activator)
         {
-            var mode = binding.Mode;
+            InstancedBinding cloned;
 
-            if (mode == BindingMode.Default)
+            if (activator != null)
             {
-                mode = property.GetMetadata(control.GetType()).DefaultBindingMode;
+                var description = style?.ToString();
+
+                if (sourceInstance.Subject != null)
+                {
+                    var activated = new ActivatedSubject(activator, sourceInstance.Subject, description);
+                    cloned = new InstancedBinding(activated, sourceInstance.Mode, BindingPriority.StyleTrigger);
+                }
+                else if (sourceInstance.Observable != null)
+                {
+                    var activated = new ActivatedObservable(activator, sourceInstance.Observable, description);
+                    cloned = new InstancedBinding(activated, sourceInstance.Mode, BindingPriority.StyleTrigger);
+                }
+                else
+                {
+                    var activated = new ActivatedValue(activator, sourceInstance.Value, description);
+                    cloned = new InstancedBinding(activated, BindingMode.OneWay, BindingPriority.StyleTrigger);
+                }
+            }
+            else
+            {
+                if (sourceInstance.Subject != null)
+                {
+                    cloned = new InstancedBinding(sourceInstance.Subject, sourceInstance.Mode, BindingPriority.Style);
+                }
+                else if (sourceInstance.Observable != null)
+                {
+                    cloned = new InstancedBinding(sourceInstance.Observable, sourceInstance.Mode, BindingPriority.Style);
+                }
+                else
+                {
+                    cloned = new InstancedBinding(sourceInstance.Value, BindingPriority.Style);
+                }
             }
 
-            control.Bind(
-                property,
-                subject,
-                mode,
-                binding.Priority);
+            return cloned;
         }
     }
 }

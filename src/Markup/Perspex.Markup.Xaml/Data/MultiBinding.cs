@@ -49,28 +49,11 @@ namespace Perspex.Markup.Xaml.Data
         /// </summary>
         public RelativeSource RelativeSource { get; set; }
 
-        /// <summary>
-        /// Applies the binding to a property on an instance.
-        /// </summary>
-        /// <param name="instance">The target instance.</param>
-        /// <param name="property">The target property.</param>
-        public void Bind(IPerspexObject instance, PerspexProperty property)
-        {
-            var subject = CreateSubject(instance, property);
-
-            if (subject != null)
-            {
-                Bind(instance, property, subject);
-            }
-        }
-
-        /// <summary>
-        /// Creates a subject that can be used to get and set the value of the binding.
-        /// </summary>
-        /// <param name="target">The target instance.</param>
-        /// <param name="targetProperty">The target property.</param>
-        /// <returns>An <see cref="ISubject{Object}"/>.</returns>
-        public ISubject<object> CreateSubject(IPerspexObject target, PerspexProperty targetProperty)
+        /// <inheritdoc/>
+        public InstancedBinding Initiate(
+            IPerspexObject target,
+            PerspexProperty targetProperty,
+            object anchor = null)
         {
             if (Converter == null)
             {
@@ -79,10 +62,10 @@ namespace Perspex.Markup.Xaml.Data
 
             var targetType = targetProperty?.PropertyType ?? typeof(object);
             var result = new BehaviorSubject<object>(PerspexProperty.UnsetValue);
-            var children = Bindings.Select(x => x.CreateSubject(target, null));
-            var input = children.CombineLatest().Select(x => ConvertValue(x, targetType));
+            var children = Bindings.Select(x => x.Initiate(target, null));
+            var input = children.Select(x => x.Subject).CombineLatest().Select(x => ConvertValue(x, targetType));
             input.Subscribe(result);
-            return result;
+            return new InstancedBinding(result, Mode, Priority);
         }
 
         /// <summary>

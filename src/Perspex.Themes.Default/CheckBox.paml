@@ -1,7 +1,7 @@
 ﻿<Styles xmlns="https://github.com/perspex">
   <Style Selector="CheckBox">
-    <Setter Property="BorderBrush" Value="#ff333333"/>
-    <Setter Property="BorderThickness" Value="2"/>
+    <Setter Property="BorderBrush" Value="{StyleResource ThemeBorderMidBrush}"/>
+    <Setter Property="BorderThickness" Value="{StyleResource ThemeBorderThickness}"/>
     <Setter Property="Template">
       <ControlTemplate>
         <Grid ColumnDefinitions="Auto,*">
@@ -12,7 +12,7 @@
                   Height="18"
                   VerticalAlignment="Center">
             <Path Name="checkMark"
-                  Fill="#ff333333"
+                  Fill="{StyleResource HighlightBrush}"
                   Width="11"
                   Height="10"
                   Stretch="Uniform"
@@ -29,6 +29,9 @@
       </ControlTemplate>
     </Setter>
   </Style>
+  <Style Selector="CheckBox:pointerover /template/ Border#border">
+    <Setter Property="BorderBrush" Value="{StyleResource ThemeBorderDarkBrush}"/>
+  </Style>
   <Style Selector="CheckBox /template/ Path#checkMark">
     <Setter Property="IsVisible" Value="False"/>
   </Style>
@@ -36,6 +39,6 @@
     <Setter Property="IsVisible" Value="True"/>
   </Style>
   <Style Selector="CheckBox:disabled /template/ Border#border">
-    <Setter Property="Opacity" Value="0.5"/>
+    <Setter Property="Opacity" Value="{StyleResource ThemeDisabledOpacity}"/>
   </Style>
 </Styles>

@@ -1,17 +1,18 @@
 ﻿<Styles xmlns="https://github.com/perspex">
   <Style Selector="RadioButton">
-    <Setter Property="BorderBrush" Value="#ff333333"/>
-    <Setter Property="BorderThickness" Value="2"/>
+    <Setter Property="BorderBrush" Value="{StyleResource ThemeBorderMidBrush}"/>
+    <Setter Property="BorderThickness" Value="{StyleResource ThemeBorderThickness}"/>
     <Setter Property="Template">
       <ControlTemplate>
         <Grid ColumnDefinitions="Auto,*">
-          <Ellipse Stroke="{TemplateBinding BorderBrush}"
+          <Ellipse Name="border"
+                   Stroke="{TemplateBinding BorderBrush}"
                    StrokeThickness="{TemplateBinding BorderThickness}"
                    Width="18"
                    Height="18"
                    VerticalAlignment="Center"/>
           <Ellipse Name="checkMark"
-                   Fill="{TemplateBinding BorderBrush}"
+                   Fill="{StyleResource HighlightBrush}"
                    Width="10"
                    Height="10"
                    Stretch="Uniform"
@@ -25,6 +26,9 @@
         </Grid>
       </ControlTemplate>
     </Setter>
+  </Style>
+  <Style Selector="RadioButton:pointerover /template/ Ellipse#border">
+    <Setter Property="Stroke" Value="{StyleResource ThemeBorderDarkBrush}"/>
   </Style>
   <Style Selector="RadioButton /template/ Ellipse#checkMark">
     <Setter Property="IsVisible" Value="False"/>

@@ -37,7 +37,7 @@
             </ContentPresenter>
             <Path Name="rightArrow"
                   Data="M0,0L4,3.5 0,7z"
-                  Fill="#ff212121"
+                  Fill="{StyleResource ThemeForegroundBrush}"
                   Margin="10,0,0,0"
                   VerticalAlignment="Center"
                   Grid.Column="3"/>
@@ -46,17 +46,17 @@
                    StaysOpen="True"
                    IsOpen="{TemplateBinding Path=IsSubMenuOpen, Mode=TwoWay}">
               <Border Background="{TemplateBinding Background}"
-                      BorderBrush="#ff999999"
-                      BorderThickness="1"
-                      Padding="2">
+                      BorderBrush="{StyleResource ThemeBorderMidBrush}"
+                      BorderThickness="1">
                 <ScrollViewer>
                   <Panel>
                     <ItemsPresenter Name="PART_ItemsPresenter"
                                     Items="{TemplateBinding Items}"
                                     ItemsPanel="{TemplateBinding ItemsPanel}"
+                                    Margin="2"
                                     MemberSelector="{TemplateBinding MemberSelector}"/>
                     <Rectangle Name="iconSeparator"
-                               Fill="#ffd7d7d7"
+                               Fill="{StyleResource ThemeControlMidBrush}"
                                HorizontalAlignment="Left"
                                IsHitTestVisible="False"
                                Margin="29,2,0,2"
@@ -92,17 +92,17 @@
                    IsOpen="{TemplateBinding Path=IsSubMenuOpen, Mode=TwoWay}"
                    StaysOpen="True">
               <Border Background="{TemplateBinding Background}"
-                      BorderBrush="#ff999999"
-                      BorderThickness="1"
-                      Padding="2">
+                      BorderBrush="{StyleResource ThemeBorderMidBrush}"
+                      BorderThickness="1">
                 <ScrollViewer>
                   <Panel>
                     <ItemsPresenter Name="PART_ItemsPresenter"
                                     Items="{TemplateBinding Items}"
                                     ItemsPanel="{TemplateBinding ItemsPanel}"
+                                    Margin="2"
                                     MemberSelector="{TemplateBinding MemberSelector}"/>
                     <Rectangle Name="iconSeparator"
-                               Fill="#ffd7d7d7"
+                               Fill="{StyleResource ThemeControlMidBrush}"
                                HorizontalAlignment="Left"
                                IsHitTestVisible="False"
                                Margin="29,2,0,2"
@@ -118,13 +118,13 @@
   </Style>
 
   <Style Selector="MenuItem:selected /template/ Border#root">
-    <Setter Property="Background" Value="#3d26a0da"/>
-    <Setter Property="BorderBrush" Value="#ff26a0da"/>
+    <Setter Property="Background" Value="{StyleResource ThemeAccentBrush4}"/>
+    <Setter Property="BorderBrush" Value="{StyleResource ThemeAccentBrush}"/>
   </Style>
 
   <Style Selector="MenuItem:pointerover /template/ Border#root">
-    <Setter Property="Background" Value="#3d26a0da"/>
-    <Setter Property="BorderBrush" Value="#ff26a0da"/>
+    <Setter Property="Background" Value="{StyleResource ThemeAccentBrush4}"/>
+    <Setter Property="BorderBrush" Value="{StyleResource ThemeAccentBrush}"/>
   </Style>
 
   <Style Selector="MenuItem:empty /template/ Path#rightArrow">

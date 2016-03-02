@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Perspex.Collections;
 using Perspex.Controls;
 using Perspex.Data;
+using Perspex.LogicalTree;
 using Xunit;
 
 namespace Perspex.Styling.UnitTests
@@ -110,6 +111,8 @@ namespace Perspex.Styling.UnitTests
             }
 
             public event EventHandler<PerspexPropertyChangedEventArgs> PropertyChanged;
+            public event EventHandler<LogicalTreeAttachmentEventArgs> AttachedToLogicalTree;
+            public event EventHandler<LogicalTreeAttachmentEventArgs> DetachedFromLogicalTree;
 
             public Classes Classes { get; }
 

@@ -4,6 +4,7 @@
 using System;
 using Perspex.Interactivity;
 using Perspex.Controls.Primitives;
+using Perspex.VisualTree;
 
 namespace Perspex.Controls.Mixins
 {

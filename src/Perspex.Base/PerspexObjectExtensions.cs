@@ -167,68 +167,35 @@ namespace Perspex
         /// <summary>
         /// Binds a property on an <see cref="IPerspexObject"/> to an <see cref="IBinding"/>.
         /// </summary>
-        /// <param name="o">The object.</param>
+        /// <param name="target">The object.</param>
         /// <param name="property">The property to bind.</param>
         /// <param name="binding">The binding.</param>
+        /// <param name="anchor">
+        /// An optional anchor from which to locate required context. When binding to objects that
+        /// are not in the logical tree, certain types of binding need an anchor into the tree in 
+        /// order to locate named controls or resources. The <paramref name="anchor"/> parameter 
+        /// can be used to provice this context.
+        /// </param>
         /// <returns>An <see cref="IDisposable"/> which can be used to cancel the binding.</returns>
         public static IDisposable Bind(
-            this IPerspexObject o,
+            this IPerspexObject target,
             PerspexProperty property,
-            IBinding binding)
+            IBinding binding,
+            object anchor = null)
         {
-            Contract.Requires<ArgumentNullException>(o != null);
+            Contract.Requires<ArgumentNullException>(target != null);
             Contract.Requires<ArgumentNullException>(property != null);
             Contract.Requires<ArgumentNullException>(binding != null);
 
-            var mode = binding.Mode;
+            var result = binding.Initiate(target, property, anchor);
 
-            if (mode == BindingMode.Default)
+            if (result != null)
             {
-                mode = property.GetMetadata(o.GetType()).DefaultBindingMode;
+                return BindingOperations.Apply(target, property, result, anchor);
             }
-
-            return o.Bind(
-                property,
-                binding.CreateSubject(o, property),
-                mode,
-                binding.Priority);
-        }
-
-        /// <summary>
-        /// Binds a property to a subject according to a <see cref="BindingMode"/>.
-        /// </summary>
-        /// <param name="o">The object.</param>
-        /// <param name="property">The property to bind.</param>
-        /// <param name="source">The binding source.</param>
-        /// <param name="mode">The binding mode.</param>
-        /// <param name="priority">The binding priority.</param>
-        /// <returns>An <see cref="IDisposable"/> which can be used to cancel the binding.</returns>
-        public static IDisposable Bind(
-            this IPerspexObject o, 
-            PerspexProperty property,
-            ISubject<object> source,
-            BindingMode mode,
-            BindingPriority priority = BindingPriority.LocalValue)
-        {
-            Contract.Requires<ArgumentNullException>(o != null);
-            Contract.Requires<ArgumentNullException>(property != null);
-            Contract.Requires<ArgumentNullException>(source != null);
-
-            switch (mode)
+            else
             {
-                case BindingMode.Default:
-                case BindingMode.OneWay:
-                    return o.Bind(property, source, priority);
-                case BindingMode.TwoWay:
-                    return new CompositeDisposable(
-                        o.Bind(property, source, priority),
-                        o.GetObservable(property).Subscribe(source));
-                case BindingMode.OneTime:
-                    return source.Take(1).Subscribe(x => o.SetValue(property, x, priority));
-                case BindingMode.OneWayToSource:
-                    return o.GetObservable(property).Subscribe(source);
-                default:
-                    throw new ArgumentException("Invalid binding mode.");
+                return Disposable.Empty;
             }
         }
 

@@ -58,11 +58,11 @@ namespace Perspex.Markup.Xaml.Context
 
             if (!IsClrNamespace(name))
             {
+                ScanNewAssemblies();
                 result = _namespaces.FirstOrDefault(x => x.Name == name);
 
                 if (result == null)
                 {
-                    ScanNewAssemblies();
                     result = _namespaces.FirstOrDefault(x => x.Name == name);
                 }
             }
@@ -148,7 +148,7 @@ namespace Perspex.Markup.Xaml.Context
                         _namespaces.Add(xamlNamespace);
                     }
                         
-                    var clrNamespaces = namespaces.SelectMany(x => x).Select(x => x.ClrNamespace);
+                    var clrNamespaces = nsa.Select(x => x.ClrNamespace);
                     xamlNamespace.Addresses.Add(new ConfiguredAssemblyWithNamespaces(assembly, clrNamespaces));
                 }
 

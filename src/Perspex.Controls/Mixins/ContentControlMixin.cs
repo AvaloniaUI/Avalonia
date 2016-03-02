@@ -8,6 +8,7 @@ using Perspex.Collections;
 using Perspex.Controls.Presenters;
 using Perspex.Controls.Primitives;
 using Perspex.Interactivity;
+using Perspex.LogicalTree;
 using Perspex.Styling;
 
 namespace Perspex.Controls.Mixins

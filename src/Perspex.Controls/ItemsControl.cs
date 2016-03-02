@@ -12,6 +12,7 @@ using Perspex.Controls.Presenters;
 using Perspex.Controls.Primitives;
 using Perspex.Controls.Templates;
 using Perspex.Controls.Utils;
+using Perspex.LogicalTree;
 using Perspex.Metadata;
 
 namespace Perspex.Controls

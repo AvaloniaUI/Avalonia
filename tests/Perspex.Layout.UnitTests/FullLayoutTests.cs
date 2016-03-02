@@ -18,6 +18,7 @@ using Perspex.Rendering;
 using Perspex.Shared.PlatformSupport;
 using Perspex.Styling;
 using Perspex.Themes.Default;
+using Perspex.VisualTree;
 using Ploeh.AutoFixture;
 using Ploeh.AutoFixture.AutoMoq;
 using Xunit;

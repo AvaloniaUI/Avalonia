@@ -14,6 +14,7 @@ using Perspex.Controls.Templates;
 using Perspex.Data;
 using Perspex.Input;
 using Perspex.Interactivity;
+using Perspex.LogicalTree;
 using Perspex.Styling;
 
 namespace Perspex.Controls
@@ -30,7 +31,7 @@ namespace Perspex.Controls
     /// - Implements <see cref="IStyleable"/> to allow styling to work on the control.
     /// - Implements <see cref="ILogical"/> to form part of a logical tree.
     /// </remarks>
-    public class Control : InputElement, IControl, ISetLogicalParent
+    public class Control : InputElement, IControl, INamed, ISetLogicalParent, ISupportInitialize
     {
         /// <summary>
         /// Defines the <see cref="DataContext"/> property.
@@ -46,6 +47,12 @@ namespace Perspex.Controls
         /// </summary>
         public static readonly StyledProperty<ITemplate<IControl>> FocusAdornerProperty =
             PerspexProperty.Register<Control, ITemplate<IControl>>(nameof(FocusAdorner));
+
+        /// <summary>
+        /// Defines the <see cref="Name"/> property.
+        /// </summary>
+        public static readonly DirectProperty<Control, string> NameProperty =
+            PerspexProperty.RegisterDirect<Control, string>(nameof(Name), o => o.Name, (o, v) => o.Name = v);
 
         /// <summary>
         /// Defines the <see cref="Parent"/> property.
@@ -77,6 +84,8 @@ namespace Perspex.Controls
         public static readonly RoutedEvent<RequestBringIntoViewEventArgs> RequestBringIntoViewEvent =
             RoutedEvent.Register<Control, RequestBringIntoViewEventArgs>("RequestBringIntoView", RoutingStrategies.Bubble);
 
+        private int _initCount;
+        private string _name;
         private IControl _parent;
         private readonly Classes _classes = new Classes();
         private DataTemplates _dataTemplates;
@@ -85,6 +94,7 @@ namespace Perspex.Controls
         private IPerspexList<ILogical> _logicalChildren;
         private INameScope _nameScope;
         private Styles _styles;
+        private bool _styled;
         private Subject<Unit> _styleDetach = new Subject<Unit>();
 
         /// <summary>
@@ -124,6 +134,36 @@ namespace Perspex.Controls
         /// all subscribers to that change have been notified.
         /// </remarks>
         public event EventHandler DataContextChanged;
+
+        /// <summary>
+        /// Gets or sets the name of the control.
+        /// </summary>
+        /// <remarks>
+        /// An element's name is used to uniquely identify a control within the control's name
+        /// scope. Once the element is added to a logical tree, its name cannot be changed.
+        /// </remarks>
+        public string Name
+        {
+            get
+            {
+                return _name;
+            }
+
+            set
+            {
+                if (value.Trim() == string.Empty)
+                {
+                    throw new InvalidOperationException("Cannot set Name to empty string.");
+                }
+
+                if (_styled)
+                {
+                    throw new InvalidOperationException("Cannot set Name : control already styled.");
+                }
+
+                _name = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the control's classes.
@@ -272,6 +312,28 @@ namespace Perspex.Controls
         /// <inheritdoc/>
         IStyleHost IStyleHost.StylingParent => (IStyleHost)InheritanceParent;
 
+        /// <inheritdoc/>
+        void ISupportInitialize.BeginInit()
+        {
+            ++_initCount;
+        }
+
+        /// <inheritdoc/>
+        void ISupportInitialize.EndInit()
+        {
+            if (_initCount == 0)
+            {
+                throw new InvalidOperationException("BeginInit was not called.");
+            }
+
+            if (--_initCount == 0 && _isAttachedToLogicalTree && !_styled)
+            {
+                RegisterWithNameScope();
+                ApplyStyling();
+                _styled = true;
+            }
+        }
+
         /// <summary>
         /// Gets a value which indicates whether a change to the <see cref="DataContext"/> is in 
         /// the process of being notified.
@@ -419,18 +481,15 @@ namespace Perspex.Controls
             // - That AttachedToLogicalTree signal travels down to the ListBoxItem
             if (!_isAttachedToLogicalTree)
             {
-                if (_nameScope == null)
-                {
-                    _nameScope = NameScope.GetNameScope(this) ?? ((Control)Parent)?._nameScope;
-                }
-
-                if (Name != null)
-                {
-                    _nameScope?.Register(Name, this);
-                }
-
                 _isAttachedToLogicalTree = true;
-                PerspexLocator.Current.GetService<IStyler>()?.ApplyStyles(this);
+
+                if (_initCount == 0)
+                {
+                    RegisterWithNameScope();
+                    ApplyStyling();
+                    _styled = true;
+                }
+
                 AttachedToLogicalTree?.Invoke(this, e);
             }
 
@@ -565,6 +624,24 @@ namespace Perspex.Controls
             }
 
             return null;
+        }
+
+        private void ApplyStyling()
+        {
+            PerspexLocator.Current.GetService<IStyler>()?.ApplyStyles(this);
+        }
+
+        private void RegisterWithNameScope()
+        {
+            if (_nameScope == null)
+            {
+                _nameScope = NameScope.GetNameScope(this) ?? ((Control)Parent)?._nameScope;
+            }
+
+            if (Name != null)
+            {
+                _nameScope?.Register(Name, this);
+            }
         }
 
         private static void ValidateLogicalChild(ILogical c)

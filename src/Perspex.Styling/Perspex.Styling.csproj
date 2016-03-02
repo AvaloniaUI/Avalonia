@@ -43,8 +43,9 @@
     <Compile Include="..\Shared\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="ILogical.cs" />
+    <Compile Include="LogicalTree\ILogical.cs" />
     <Compile Include="LogicalTree\LogicalExtensions.cs" />
+    <Compile Include="LogicalTree\LogicalTreeAttachmentEventArgs.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Styling\ActivatedSubject.cs" />
     <Compile Include="Styling\ActivatedValue.cs" />
@@ -63,6 +64,7 @@
     <Compile Include="Styling\Style.cs" />
     <Compile Include="Styling\StyleActivator.cs" />
     <Compile Include="Styling\ActivatedObservable.cs" />
+    <Compile Include="Styling\StyleExtensions.cs" />
     <Compile Include="Styling\Styler.cs" />
     <Compile Include="Styling\Styles.cs" />
   </ItemGroup>

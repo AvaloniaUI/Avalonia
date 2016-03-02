@@ -1,4 +1,5 @@
 ﻿<Style xmlns="https://github.com/perspex" Selector="PopupRoot">
+  <Setter Property="Background" Value="{StyleResource ThemeBackgroundBrush}"/>
   <Setter Property="Template">
     <ControlTemplate>
       <Border Background="{TemplateBinding Background}">

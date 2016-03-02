@@ -1,7 +1,7 @@
 ﻿<Styles xmlns="https://github.com/perspex">
   <Style Selector="TabStripItem">
-    <Setter Property="FontSize" Value="16"/>
-    <Setter Property="Foreground" Value="Gray"/>
+    <Setter Property="FontSize" Value="{StyleResource FontSizeLarge}"/>
+    <Setter Property="Foreground" Value="{StyleResource ThemeForegroundLightBrush}"/>
     <Setter Property="Template">
       <ControlTemplate>
         <Border Background="{TemplateBinding Background}"
@@ -15,6 +15,6 @@
     </Setter>
   </Style>
   <Style Selector="TabStripItem:selected">
-    <Setter Property="Foreground" Value="Black"/>
+    <Setter Property="Foreground" Value="{StyleResource ThemeForegroundBrush}"/>
   </Style>
 </Styles>

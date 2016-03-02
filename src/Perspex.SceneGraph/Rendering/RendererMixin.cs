@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Perspex.Media;
 using Perspex.Platform;
+using Perspex.VisualTree;
 
 namespace Perspex.Rendering
 {

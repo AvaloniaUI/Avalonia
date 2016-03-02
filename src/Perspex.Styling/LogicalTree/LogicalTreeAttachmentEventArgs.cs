@@ -4,11 +4,11 @@
 using System;
 using Perspex.Styling;
 
-namespace Perspex.Controls
+namespace Perspex.LogicalTree
 {
     /// <summary>
-    /// Holds the event arguments for the <see cref="Control.AttachedToLogicalTree"/> and 
-    /// <see cref="Control.DetachedFromLogicalTree"/> events.
+    /// Holds the event arguments for the <see cref="ILogical.AttachedToLogicalTree"/> and 
+    /// <see cref="ILogical.DetachedFromLogicalTree"/> events.
     /// </summary>
     public class LogicalTreeAttachmentEventArgs : EventArgs
     {
