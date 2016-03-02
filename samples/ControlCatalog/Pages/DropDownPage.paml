@@ -14,7 +14,7 @@
       <DropDown SelectedIndex="0">
         <DropDownItem>
           <Panel>
-            <Rectangle Fill="Red"/>
+            <Rectangle Fill="{StyleResource ThemeAccentBrush}"/>
             <TextBlock Margin="8">Control Items</TextBlock>
           </Panel>
         </DropDownItem>

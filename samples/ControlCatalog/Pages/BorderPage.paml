@@ -7,19 +7,22 @@
                 Margin="0,16,0,0"
                 HorizontalAlignment="Center"
                 Gap="16">
-      <Border BorderBrush="#f44336" BorderThickness="2" Padding="16">
+      <Border BorderBrush="{StyleResource ThemeAccentBrush}" BorderThickness="2" Padding="16">
         <TextBlock>Border</TextBlock>
       </Border>
-      <Border Background="#f44336" BorderBrush="#4285f4" BorderThickness="4" Padding="16">
+      <Border Background="{StyleResource ThemeAccentBrush2}" 
+              BorderBrush="{StyleResource ThemeAccentBrush}" 
+              BorderThickness="4" 
+              Padding="16">
         <TextBlock>Border and Background</TextBlock>
       </Border>
-      <Border BorderBrush="#4285f4" 
+      <Border BorderBrush="{StyleResource ThemeAccentBrush}"
               BorderThickness="4" 
               CornerRadius="8"
               Padding="16">
         <TextBlock>Rounded Corners</TextBlock>
       </Border>
-      <Border Background="#f44336" 
+      <Border Background="{StyleResource ThemeAccentBrush2}"
               CornerRadius="8"
               Padding="16">
         <TextBlock>Rounded Corners</TextBlock>
