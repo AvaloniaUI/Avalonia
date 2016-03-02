@@ -11,8 +11,7 @@
             <Thumb Name="thumb">
               <Thumb.Template>
                 <ControlTemplate>
-                  <!-- TODO: Find out why StyleResource doesn't work here -->
-                  <Border Background="Gray"/>
+                  <Border Background="{StyleResource ThemeControlDarkBrush}"/>
                 </ControlTemplate>
               </Thumb.Template>
             </Thumb>
