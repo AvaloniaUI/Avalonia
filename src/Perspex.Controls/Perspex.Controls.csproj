@@ -50,6 +50,7 @@
     <Compile Include="Generators\ItemContainer.cs" />
     <Compile Include="Generators\TreeContainerIndex.cs" />
     <Compile Include="HotkeyManager.cs" />
+    <Compile Include="IApplicationLifecycle.cs" />
     <Compile Include="INameScope.cs" />
     <Compile Include="IPseudoClasses.cs" />
     <Compile Include="DropDownItem.cs" />
