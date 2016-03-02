@@ -5,6 +5,7 @@ using System;
 using Perspex;
 using Perspex.Controls;
 using Perspex.Controls.Templates;
+using Perspex.Markup.Xaml;
 using Perspex.Styling;
 using Perspex.Themes.Default;
 
@@ -17,6 +18,12 @@ namespace TestApplication
             RegisterServices();
             InitializeSubsystems((int)Environment.OSVersion.Platform);            
             Styles.Add(new DefaultTheme());
+
+            var loader = new PerspexXamlLoader();
+            var baseLight = (IStyle)loader.Load(
+                new Uri("resm:Perspex.Themes.Default.Accents.BaseLight.paml?assembly=Perspex.Themes.Default"));
+            Styles.Add(baseLight);
+
             Styles.Add(new SampleTabStyle());
             DataTemplates = new DataTemplates
             {
