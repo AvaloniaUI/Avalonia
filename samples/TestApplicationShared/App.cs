@@ -5,6 +5,7 @@ using System;
 using Perspex;
 using Perspex.Controls;
 using Perspex.Controls.Templates;
+using Perspex.Styling;
 using Perspex.Themes.Default;
 
 namespace TestApplication
@@ -15,7 +16,7 @@ namespace TestApplication
         {
             RegisterServices();
             InitializeSubsystems((int)Environment.OSVersion.Platform);            
-            Styles = new DefaultTheme();
+            Styles.Add(new DefaultTheme());
             Styles.Add(new SampleTabStyle());
             DataTemplates = new DataTemplates
             {

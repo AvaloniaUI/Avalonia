@@ -12,7 +12,6 @@ namespace XamlTestApplication
         {
             RegisterServices();
             RegisterPlatform();
-            Styles = new DefaultTheme();
             InitializeComponent();
         }
 

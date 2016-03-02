@@ -74,7 +74,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="App.cs" />
+    <EmbeddedResource Include="App.paml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <Compile Include="App.paml.cs">
+      <DependentUpon>App.paml</DependentUpon>
+    </Compile>
     <Compile Include="MainWindow.paml.cs">
       <DependentUpon>MainWindow.paml</DependentUpon>
     </Compile>
@@ -90,7 +95,6 @@
     <None Include="App.config" />
     <EmbeddedResource Include="MainWindow.paml">
       <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
     </EmbeddedResource>
     <None Include="packages.config" />
     <EmbeddedResource Include="TestUserControl.paml" />

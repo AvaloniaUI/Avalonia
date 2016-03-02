@@ -43,10 +43,6 @@ namespace Perspex
 
         private readonly Lazy<IClipboard> _clipboard =
             new Lazy<IClipboard>(() => (IClipboard)PerspexLocator.Current.GetService(typeof(IClipboard)));
-
-        /// <summary>
-        /// The styler that will be used to apply styles to controls.
-        /// </summary>
         private readonly Styler _styler = new Styler();
 
         /// <summary>
@@ -123,11 +119,7 @@ namespace Perspex
         /// <remarks>
         /// Global styles apply to all windows in the application.
         /// </remarks>
-        public Styles Styles
-        {
-            get;
-            protected set;
-        }
+        public Styles Styles { get; } = new Styles();
 
         /// <summary>
         /// Gets the styling parent of the application, which is null.

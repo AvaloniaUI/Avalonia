@@ -1,22 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
 using OmniXaml;
+using OmniXaml.ObjectAssembler;
 using Perspex.Controls;
 using Perspex.Controls.Platform;
 using Perspex.Markup.Xaml;
 using Perspex.Platform;
+using Perspex.Styling;
 using Perspex.Themes.Default;
 
 namespace Perspex.DesignerSupport
 {
-    using OmniXaml.ObjectAssembler;
-
     class DesignerAssist
     {
         class DesignerApp : Application
@@ -26,7 +24,12 @@ namespace Perspex.DesignerSupport
                 RegisterServices();
                 //For now we only support windows
                 InitializeSubsystems(2);
-                Styles = new DefaultTheme();
+                Styles.Add(new DefaultTheme());
+
+                var loader = new PerspexXamlLoader();
+                var baseLight = (IStyle)loader.Load(
+                    new Uri("resm:Perspex.Themes.Default.Accents.BaseLight.paml?assembly=Perspex.Themes.Default"));
+                Styles.Add(baseLight);
             }
         }
 
