@@ -3,7 +3,7 @@
     <Setter Property="Template">
       <ControlTemplate>
         <DockPanel>
-          <Border MinWidth="190" Background="#1976D2" DockPanel.Dock="Left">
+          <Border MinWidth="190" Background="{StyleResource ThemeAccentBrush}" DockPanel.Dock="Left">
             <TabStrip Name="PART_TabStrip"
                       MemberSelector="{Static TabControl.HeaderSelector}"
                       Items="{TemplateBinding Items}"
@@ -35,6 +35,6 @@
   </Style>
 
   <Style Selector="TabControl.sidebar TabStripItem:selected">
-    <Setter Property="Background" Value="#20ffffff"/>
+    <Setter Property="Background" Value="{StyleResource ThemeAccentBrush2}"/>
   </Style>
 </Styles>
