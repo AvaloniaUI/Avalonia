@@ -17,7 +17,7 @@
         <Separator Background="Red"/>
         <MenuItem Header="_Test"/>
         <Separator/>
-        <MenuItem Header="_World"/>
+        <MenuItem Name="exitMenu" Header="_Exit"/>
       </MenuItem>
     </Menu>
     <TabControl Grid.Row="1" Grid.ColumnSpan="2" Padding="5">

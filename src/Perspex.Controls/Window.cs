@@ -156,6 +156,12 @@ namespace Perspex.Controls
             PlatformImpl.Dispose();
         }
 
+        protected override void HandleApplicationExiting()
+        {
+            base.HandleApplicationExiting();
+            Close();
+        }
+
         /// <summary>
         /// Closes a dialog window with the specified result.
         /// </summary>

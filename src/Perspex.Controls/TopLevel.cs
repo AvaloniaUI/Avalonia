@@ -48,6 +48,7 @@ namespace Perspex.Controls
         private readonly IInputManager _inputManager;
         private readonly IAccessKeyHandler _accessKeyHandler;
         private readonly IKeyboardNavigationHandler _keyboardNavigationHandler;
+        private readonly IApplicationLifecycle _applicationLifecycle;
         private Size _clientSize;
         private bool _isActive;
 
@@ -92,6 +93,7 @@ namespace Perspex.Controls
             _inputManager = TryGetService<IInputManager>(dependencyResolver);
             _keyboardNavigationHandler = TryGetService<IKeyboardNavigationHandler>(dependencyResolver);
             _renderQueueManager = TryGetService<IRenderQueueManager>(dependencyResolver);
+            _applicationLifecycle = TryGetService<IApplicationLifecycle>(dependencyResolver);
             (TryGetService<ITopLevelRenderer>(dependencyResolver) ?? new DefaultTopLevelRenderer()).Attach(this);
 
             PlatformImpl.SetInputRoot(this);
@@ -112,6 +114,11 @@ namespace Perspex.Controls
                 .Select(
                     x => (x as InputElement)?.GetObservable(CursorProperty) ?? Observable.Empty<Cursor>())
                 .Switch().Subscribe(cursor => PlatformImpl.SetCursor(cursor?.PlatformCursor));
+
+            if (_applicationLifecycle != null)
+            {
+                _applicationLifecycle.OnExit += OnApplicationExiting;
+            }
         }
 
         /// <summary>
@@ -347,6 +354,19 @@ namespace Perspex.Controls
         private void HandleClosed()
         {
             Closed?.Invoke(this, EventArgs.Empty);
+            _applicationLifecycle.OnExit -= OnApplicationExiting;
+        }
+
+        private void OnApplicationExiting(object sender, EventArgs args)
+        {
+            HandleApplicationExiting();
+        }
+
+        /// <summary>
+        /// Handles the application exiting, either from the last window closing, or a call to <see cref="IApplicationLifecycle.Exit"/>.
+        /// </summary>
+        protected virtual void HandleApplicationExiting()
+        {
         }
 
         /// <summary>

@@ -32,7 +32,7 @@ namespace Perspex
     /// method.
     /// - Tracks the lifetime of the application.
     /// </remarks>
-    public class Application : IGlobalDataTemplates, IGlobalStyles, IStyleRoot
+    public class Application : IGlobalDataTemplates, IGlobalStyles, IStyleRoot, IApplicationLifecycle
     {
         static Action _platformInitializationCallback;
 
@@ -56,6 +56,7 @@ namespace Perspex
             }
 
             PerspexLocator.CurrentMutable.BindToSelf(this);
+            OnExit += OnExiting;
         }
 
         /// <summary>
@@ -138,8 +139,33 @@ namespace Perspex
         public void Run(ICloseable closable)
         {
             var source = new CancellationTokenSource();
+            closable.Closed += OnExiting;
             closable.Closed += (s, e) => source.Cancel();
             Dispatcher.UIThread.MainLoop(source.Token);
+        }
+
+        /// <summary>
+        /// Exits the application
+        /// </summary>
+        public void Exit()
+        {
+            OnExit?.Invoke(this, EventArgs.Empty);
+        }
+        
+        /// <summary>
+        /// Sent when the application is exiting.
+        /// </summary>
+        public event EventHandler OnExit;
+
+
+        /// <summary>
+        /// Called when the application is exiting.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected virtual void OnExiting(object sender, EventArgs e)
+        {
+
         }
 
         /// <summary>
@@ -160,7 +186,8 @@ namespace Perspex
                 .Bind<IKeyboardNavigationHandler>().ToTransient<KeyboardNavigationHandler>()
                 .Bind<IStyler>().ToConstant(_styler)
                 .Bind<ILayoutManager>().ToSingleton<LayoutManager>()
-                .Bind<IRenderQueueManager>().ToTransient<RenderQueueManager>();
+                .Bind<IRenderQueueManager>().ToTransient<RenderQueueManager>()
+                .Bind<IApplicationLifecycle>().ToConstant(this);
         }
 
         /// <summary>
