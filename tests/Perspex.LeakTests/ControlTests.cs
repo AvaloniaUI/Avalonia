@@ -9,6 +9,7 @@ using Perspex.Controls;
 using Perspex.Controls.Primitives;
 using Perspex.Controls.Templates;
 using Perspex.Layout;
+using Perspex.Styling;
 using Perspex.UnitTests;
 using Perspex.VisualTree;
 using Xunit;
@@ -79,39 +80,6 @@ namespace Perspex.LeakTests
                     window.Content = null;
                     LayoutManager.Instance.ExecuteLayoutPass();
                     Assert.Null(window.Presenter.Child);
-
-                    return window;
-                };
-
-                var result = run();
-
-                dotMemory.Check(memory =>
-                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Canvas>()).ObjectsCount));
-            }
-        }
-
-        [Fact]
-        public void Templated_Child_Is_Freed_When_Template_Cleared()
-        {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
-            {
-                Func<Window> run = () =>
-                {
-                    var window = new Window
-                    {
-                        Content = new TestTemplatedControl()
-                    };
-
-                    // Do a layout and make sure that the control gets added to visual tree and its
-                    // template applied.
-                    LayoutManager.Instance.ExecuteInitialLayoutPass(window);
-                    Assert.IsType<TestTemplatedControl>(window.Presenter.Child);
-                    Assert.IsType<Canvas>(window.Presenter.Child.GetVisualChildren().SingleOrDefault());
-
-                    // Clear the template and ensure the control template gets removed
-                    ((TestTemplatedControl)window.Content).Template = null;
-                    LayoutManager.Instance.ExecuteLayoutPass();
-                    Assert.Equal(0, window.Presenter.Child.GetVisualChildren().Count());
 
                     return window;
                 };
@@ -236,39 +204,6 @@ namespace Perspex.LeakTests
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<TextBox>()).ObjectsCount));
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Node>()).ObjectsCount));
-            }
-        }
-
-        [Fact]
-        public void TextBox_ScrollViewer_Is_Freed_When_Template_Cleared()
-        {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
-            {
-                Func<Window> run = () =>
-                {
-                    var window = new Window
-                    {
-                        Content = new TextBox()
-                    };
-
-                    // Do a layout and make sure that TextBox gets added to visual tree and its 
-                    // template applied.
-                    LayoutManager.Instance.ExecuteInitialLayoutPass(window);
-                    Assert.IsType<TextBox>(window.Presenter.Child);
-                    Assert.NotEqual(0, window.Presenter.Child.GetVisualChildren().Count());
-
-                    // Clear the template and ensure the TextBox template gets removed
-                    ((TextBox)window.Content).Template = null;
-                    LayoutManager.Instance.ExecuteLayoutPass();
-                    Assert.Equal(0, window.Presenter.Child.GetVisualChildren().Count());
-
-                    return window;
-                };
-
-                var result = run();
-
-                dotMemory.Check(memory =>
-                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<ScrollViewer>()).ObjectsCount));
             }
         }
 
