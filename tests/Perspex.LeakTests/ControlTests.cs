@@ -257,6 +257,55 @@ namespace Perspex.LeakTests
             }
         }
 
+        [Fact]
+        public void Class_Listener_Is_Freed()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                Func<Window> run = () =>
+                {
+                    var window = new Window
+                    {
+                        Styles = new Styles
+                        {
+                            new Style(x => x.OfType<Border>().Class("foo"))
+                            {
+                                Setters = new[]
+                                {
+                                    new Setter(Border.BorderThicknessProperty, 1),
+                                }
+                            }
+                        },
+                        Content = new Border
+                        {
+                            Classes = new Classes("foo"),
+                        }
+                    };
+
+                    // Do a layout and make sure that TreeViewItems get realized.
+                    LayoutManager.Instance.ExecuteInitialLayoutPass(window);
+                    Assert.Equal(1, ((Border)window.Content).BorderThickness);
+
+                    // Clear the content and ensure the TreeView is removed.
+                    window.Content = null;
+                    LayoutManager.Instance.ExecuteLayoutPass();
+                    Assert.Null(window.Presenter.Child);
+
+                    return window;
+                };
+
+                var result = run();
+
+                var type = Type.GetType(
+                    "System.Reactive.Linq.ObservableImpl.FromEventPattern+Impl`2[[System.Collections.Specialized.NotifyCollectionChangedEventHandler, System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089],[System.Collections.Specialized.NotifyCollectionChangedEventArgs, System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089]], System.Reactive.Linq, Version=2.2.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35");
+
+                Assert.NotNull(type);
+
+                dotMemory.Check(memory =>
+                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is(type)).ObjectsCount));
+            }
+        }
+
         private class TestTemplatedControl : TemplatedControl
         {
             public static readonly StyledProperty<int> IsCanvasVisibleProperty =
