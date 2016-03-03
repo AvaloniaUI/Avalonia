@@ -79,5 +79,25 @@ namespace Perspex.Markup.Xaml.UnitTests.Xaml
                 Assert.Same(button, ((NonControl)button.Tag).Control);
             }
         }
+
+        [Fact]
+        public void Binding_To_Window_Works()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/perspex'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+             Title='{Binding Foo}'>
+</Window>";
+                var loader = new PerspexXamlLoader();
+                var window = (Window)loader.Load(xaml);
+
+                window.DataContext = new { Foo = "foo" };
+                window.ApplyTemplate();
+
+                Assert.Equal("foo", window.Title);
+            }
+        }
     }
 }

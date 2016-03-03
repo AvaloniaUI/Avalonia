@@ -12,6 +12,8 @@ using Perspex.Platform;
 namespace Perspex.Markup.Xaml
 {
     using Context;
+    using Controls;
+    using Data;
     using OmniXaml.ObjectAssembler;
 
     /// <summary>
@@ -160,11 +162,20 @@ namespace Perspex.Markup.Xaml
 
         private object Load(Stream stream, object rootInstance)
         {
-            return base.Load(stream, new Settings
+            var result = base.Load(stream, new Settings
             {
                 RootInstance = rootInstance,
                 InstanceLifeCycleListener = s_lifeCycleListener,
             });
+
+            var control = result as IControl;
+
+            if (control != null)
+            {
+                DelayedBinding.ApplyBindings(control);
+            }
+
+            return result;
         }
     }
 }
