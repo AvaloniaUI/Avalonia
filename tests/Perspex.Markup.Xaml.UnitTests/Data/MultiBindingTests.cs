@@ -30,7 +30,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
                 }
             };
 
-            var target = new Mock<IPerspexObject>();
+            var target = new Mock<IPerspexObject>().As<IControl>();
             target.Setup(x => x.GetValue(Control.DataContextProperty)).Returns(source);
 
             var subject = binding.Initiate(target.Object, null).Subject;

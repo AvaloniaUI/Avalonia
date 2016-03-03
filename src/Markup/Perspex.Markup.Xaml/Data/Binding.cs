@@ -90,7 +90,8 @@ namespace Perspex.Markup.Xaml.Data
                 observer = CreateDataContexObserver(
                     target, 
                     pathInfo.Path,
-                    targetProperty == Control.DataContextProperty);
+                    targetProperty == Control.DataContextProperty,
+                    anchor);
             }
             else if (RelativeSource.Mode == RelativeSourceMode.TemplatedParent)
             {
@@ -161,9 +162,20 @@ namespace Perspex.Markup.Xaml.Data
         private ExpressionObserver CreateDataContexObserver(
             IPerspexObject target,
             string path,
-            bool targetIsDataContext)
+            bool targetIsDataContext,
+            object anchor)
         {
             Contract.Requires<ArgumentNullException>(target != null);
+
+            if (!(target is IControl))
+            {
+                target = anchor as IControl;
+
+                if (target == null)
+                {
+                    throw new InvalidOperationException("Cannot find a DataContext to bind to.");
+                }
+            }
 
             if (!targetIsDataContext)
             {

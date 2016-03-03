@@ -10,10 +10,19 @@ namespace Perspex.Markup.Xaml.UnitTests.Xaml
         public static readonly StyledProperty<Control> ControlProperty =
             PerspexProperty.Register<NonControl, Control>("Control");
 
+        public static readonly StyledProperty<string> StringProperty =
+            PerspexProperty.Register<NonControl, string>("String");
+
         public Control Control
         {
             get { return GetValue(ControlProperty); }
             set { SetValue(ControlProperty, value); }
+        }
+
+        public string String
+        {
+            get { return GetValue(StringProperty); }
+            set { SetValue(StringProperty, value); }
         }
     }
 }
