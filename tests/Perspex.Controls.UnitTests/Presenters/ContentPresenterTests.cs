@@ -52,6 +52,32 @@ namespace Perspex.Controls.UnitTests.Presenters
         }
 
         [Fact]
+        public void Control_Content_Should_Not_Be_NameScope()
+        {
+            var target = new ContentPresenter();
+
+            target.Content = new TextBlock();
+
+            Assert.Null(target.Child);
+            target.UpdateChild();
+            Assert.IsType<TextBlock>(target.Child);
+            Assert.Null(NameScope.GetNameScope((Control)target.Child));
+        }
+
+        [Fact]
+        public void DataTemplate_Created_Control_Should_Be_NameScope()
+        {
+            var target = new ContentPresenter();
+
+            target.Content = "Foo";
+
+            Assert.Null(target.Child);
+            target.UpdateChild();
+            Assert.IsType<TextBlock>(target.Child);
+            Assert.NotNull(NameScope.GetNameScope((Control)target.Child));
+        }
+
+        [Fact]
         public void Should_Set_Childs_Parent_To_TemplatedParent()
         {
             var content = new Border();

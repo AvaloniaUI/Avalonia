@@ -45,6 +45,8 @@ namespace Perspex.Controls.Templates
                         result = FuncDataTemplate.Default.Build(data);
                     }
 
+                    NameScope.SetNameScope((Control)result, new NameScope());
+
                     return result;
                 }
             }

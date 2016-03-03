@@ -381,6 +381,48 @@ namespace Perspex.Controls.UnitTests
             Assert.Equal(new[] { "Foo", "Bar" }, text);
         }
 
+        [Fact]
+        public void Control_Item_Should_Not_Be_NameScope()
+        {
+            var items = new object[]
+            {
+                new TextBlock(),
+            };
+
+            var target = new ItemsControl
+            {
+                Template = GetTemplate(),
+                Items = items,
+            };
+
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+
+            var item = target.Presenter.Panel.LogicalChildren[0];
+            Assert.Null(NameScope.GetNameScope((TextBlock)item));
+        }
+
+        [Fact]
+        public void DataTemplate_Created_Item_Should_Be_NameScope()
+        {
+            var items = new object[]
+            {
+                "foo",
+            };
+
+            var target = new ItemsControl
+            {
+                Template = GetTemplate(),
+                Items = items,
+            };
+
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+
+            var item = target.Presenter.Panel.LogicalChildren[0];
+            Assert.NotNull(NameScope.GetNameScope((TextBlock)item));
+        }
+
         private class Item
         {
             public Item(string value)
