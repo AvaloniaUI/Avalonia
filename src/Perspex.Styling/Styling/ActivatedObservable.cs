@@ -62,8 +62,8 @@ namespace Perspex.Styling
         {
             Contract.Requires<ArgumentNullException>(observer != null);
 
-            var sourceCompleted = Source.TakeLast(1).Select(_ => Unit.Default);
-            var activatorCompleted = Activator.TakeLast(1).Select(_ => Unit.Default);
+            var sourceCompleted = Source.LastOrDefaultAsync().Select(_ => Unit.Default);
+            var activatorCompleted = Activator.LastOrDefaultAsync().Select(_ => Unit.Default);
             var completed = sourceCompleted.Merge(activatorCompleted);
 
             return Activator

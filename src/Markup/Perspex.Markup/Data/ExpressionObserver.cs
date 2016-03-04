@@ -197,11 +197,11 @@ namespace Perspex.Markup.Data
 
                 if (_rootObservable != null)
                 {
-                    source = source.TakeUntil(Complete(_rootObservable));
+                    source = source.TakeUntil(_rootObservable.LastOrDefaultAsync());
                 }
                 else if (_update != null)
                 {
-                    source = source.TakeUntil(Complete(_update));
+                    source = source.TakeUntil(_update.LastOrDefaultAsync());
                 }
 
                 var subscription = source.Subscribe(observer);
@@ -230,13 +230,6 @@ namespace Perspex.Markup.Data
                         .Subscribe(observer);
                 }
             }
-        }
-
-        private static IObservable<Unit> Complete<T>(IObservable<T> input)
-        {
-            return Observable.Merge(
-                input.TakeLast(1).Select(_ => Unit.Default),
-                input.IsEmpty().Where(x => x).Select(_ => Unit.Default));
         }
 
         private void IncrementCount()
