@@ -3,9 +3,9 @@ using Perspex.Markup.Xaml;
 
 namespace BindingTest
 {
-    public class TestUserControl : UserControl
+    public class TestItemView : UserControl
     {
-        public TestUserControl()
+        public TestItemView()
         {
             this.InitializeComponent();
         }

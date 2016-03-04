@@ -1,0 +1,6 @@
+﻿<UserControl xmlns="https://github.com/perspex">
+  <StackPanel>
+    <TextBlock Classes="h1" Text="{Binding StringValue}"/>
+    <TextBlock Text="{Binding Detail}"/>
+  </StackPanel>
+</UserControl>

@@ -1,3 +1,0 @@
-﻿<UserControl xmlns="https://github.com/perspex">
-  <TextBlock Text="{Binding Content}"/>
-</UserControl>

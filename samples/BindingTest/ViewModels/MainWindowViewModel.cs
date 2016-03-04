@@ -16,7 +16,8 @@ namespace BindingTest.ViewModels
             Items = new ObservableCollection<TestItem>(
                 Enumerable.Range(0, 20).Select(x => new TestItem
                 {
-                    StringValue = "Item " + x
+                    StringValue = "Item " + x,
+                    Detail = "Item " + " details",
                 }));
 
             SelectedItems = new ObservableCollection<TestItem>();
@@ -32,7 +33,6 @@ namespace BindingTest.ViewModels
         public ObservableCollection<TestItem> Items { get; }
         public ObservableCollection<TestItem> SelectedItems { get; }
         public ReactiveCommand<object> ShuffleItems { get; }
-        public TestUserControlViewModel UserControl { get; } = new TestUserControlViewModel();
 
         public string BooleanString
         {

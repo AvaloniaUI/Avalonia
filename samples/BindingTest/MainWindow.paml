@@ -1,6 +1,12 @@
 ﻿<Window xmlns="https://github.com/perspex"
         xmlns:vm="clr-namespace:BindingTest.ViewModels;assembly=BindingTest"
         xmlns:local="clr-namespace:BindingTest;assembly=BindingTest">
+  <Window.Styles>
+    <Style Selector="TextBlock.h1">
+      <Setter Property="FontSize" Value="18"/>
+    </Style>
+  </Window.Styles>
+  
   <TabControl>
     <TabItem Header="Basic">
       <StackPanel Orientation="Vertical">
@@ -53,12 +59,14 @@
           <TextBlock FontSize="16" Text="Multiple"/>
           <ListBox Items="{Binding Items}" SelectionMode="Multiple" SelectedItems="{Binding SelectedItems}"/>
         </StackPanel>
+        <ContentControl Content="{Binding SelectedItems[0]}">
+          <ContentControl.DataTemplates>
+            <DataTemplate DataType="vm:TestItem">
+              <local:TestItemView></local:TestItemView>
+            </DataTemplate>
+          </ContentControl.DataTemplates>
+        </ContentControl>
       </StackPanel>
-    </TabItem>
-    <TabItem Header="UserControl">
-      <local:TestUserControl DataContext="{Binding UserControl}"
-                             HorizontalAlignment="Center"
-                             VerticalAlignment="Center"/>
     </TabItem>
   </TabControl>
 </Window>

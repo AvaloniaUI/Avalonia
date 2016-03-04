@@ -84,10 +84,9 @@
       <DependentUpon>MainWindow.paml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TestUserControl.paml.cs">
-      <DependentUpon>TestUserControl.paml</DependentUpon>
+    <Compile Include="TestItemView.paml.cs">
+      <DependentUpon>TestItemView.paml</DependentUpon>
     </Compile>
-    <Compile Include="ViewModels\TestUserControlViewModel.cs" />
     <Compile Include="ViewModels\MainWindowViewModel.cs" />
     <Compile Include="ViewModels\TestItem.cs" />
   </ItemGroup>
@@ -97,7 +96,7 @@
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <None Include="packages.config" />
-    <EmbeddedResource Include="TestUserControl.paml" />
+    <EmbeddedResource Include="TestItemView.paml" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Markup\Perspex.Markup.Xaml\Perspex.Markup.Xaml.csproj">
