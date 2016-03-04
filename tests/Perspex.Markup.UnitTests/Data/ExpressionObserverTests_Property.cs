@@ -250,8 +250,7 @@ namespace Perspex.Markup.UnitTests.Data
             }
 
             Assert.Equal(new[] { PerspexProperty.UnsetValue, "foo", "bar" }, result);
-            Assert.Equal(1, source.Subscriptions.Count);
-            Assert.NotEqual(Subscription.Infinite, source.Subscriptions[0].Unsubscribe);
+            Assert.All(source.Subscriptions, x => Assert.NotEqual(Subscription.Infinite, x.Unsubscribe));
         }
 
         [Fact]

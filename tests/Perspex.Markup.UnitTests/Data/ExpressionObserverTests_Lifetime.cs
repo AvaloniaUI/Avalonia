@@ -13,7 +13,7 @@ namespace Perspex.Markup.UnitTests.Data
 {
     public class ExpressionObserverTests_Lifetime
     {
-        [Fact(Skip = "Not working yet")]
+        [Fact]
         public void Should_Complete_When_Source_Observable_Completes()
         {
             var source = new BehaviorSubject<object>(1);
@@ -22,6 +22,19 @@ namespace Perspex.Markup.UnitTests.Data
 
             target.Subscribe(_ => { }, () => completed = true);
             source.OnCompleted();
+
+            Assert.True(completed);
+        }
+
+        [Fact]
+        public void Should_Complete_When_Update_Observable_Completes()
+        {
+            var update = new Subject<Unit>();
+            var target = new ExpressionObserver(() => 1, "Foo", update);
+            var completed = false;
+
+            target.Subscribe(_ => { }, () => completed = true);
+            update.OnCompleted();
 
             Assert.True(completed);
         }
@@ -42,8 +55,7 @@ namespace Perspex.Markup.UnitTests.Data
             }
 
             Assert.Equal(new[] { PerspexProperty.UnsetValue, "foo" }, result);
-            Assert.Equal(1, source.Subscriptions.Count);
-            Assert.NotEqual(Subscription.Infinite, source.Subscriptions[0].Unsubscribe);
+            Assert.All(source.Subscriptions, x => Assert.NotEqual(Subscription.Infinite, x.Unsubscribe));
         }
 
         [Fact]
@@ -61,8 +73,7 @@ namespace Perspex.Markup.UnitTests.Data
             }
 
             Assert.Equal(new[] { "foo" }, result);
-            Assert.Equal(1, update.Subscriptions.Count);
-            Assert.NotEqual(Subscription.Infinite, update.Subscriptions[0].Unsubscribe);
+            Assert.All(update.Subscriptions, x => Assert.NotEqual(Subscription.Infinite, x.Unsubscribe));
         }
 
         [Fact]
