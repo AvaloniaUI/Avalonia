@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
+using Perspex.Platform;
 
 namespace Perspex.Collections
 {
@@ -55,6 +56,7 @@ namespace Perspex.Collections
     public class PerspexList<T> : IPerspexList<T>, IList
     {
         private List<T> _inner;
+        private NotifyCollectionChangedEventHandler _collectionChanged;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PerspexList{T}"/> class.
@@ -85,7 +87,11 @@ namespace Perspex.Collections
         /// <summary>
         /// Raised when a change is made to the collection's items.
         /// </summary>
-        public event NotifyCollectionChangedEventHandler CollectionChanged;
+        public event NotifyCollectionChangedEventHandler CollectionChanged
+        {
+            add { _collectionChanged += value; }
+            remove { _collectionChanged -= value; }
+        }
 
         /// <summary>
         /// Raised when a property on the collection changes.
@@ -145,14 +151,14 @@ namespace Perspex.Collections
                 T old = _inner[index];
                 _inner[index] = value;
 
-                if (CollectionChanged != null)
+                if (_collectionChanged != null)
                 {
                     var e = new NotifyCollectionChangedEventArgs(
                         NotifyCollectionChangedAction.Replace,
                         value,
                         old,
                         index);
-                    CollectionChanged(this, e);
+                    _collectionChanged(this, e);
                 }
             }
         }
@@ -167,6 +173,8 @@ namespace Perspex.Collections
             get { return this[index]; }
             set { this[index] = (T)value; }
         }
+
+        public int SubscriberCount => _collectionChanged?.GetInvocationList().Length ?? 0;
 
         /// <summary>
         /// Adds an item to the collection.
@@ -433,10 +441,10 @@ namespace Perspex.Collections
         /// <param name="index">The starting index.</param>
         private void NotifyAdd(IList t, int index)
         {
-            if (CollectionChanged != null)
+            if (_collectionChanged != null)
             {
                 var e = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, t, index);
-                CollectionChanged(this, e);
+                _collectionChanged(this, e);
             }
 
             NotifyCountChanged();
@@ -458,10 +466,10 @@ namespace Perspex.Collections
         /// <param name="index">The starting index.</param>
         private void NotifyRemove(IList t, int index)
         {
-            if (CollectionChanged != null)
+            if (_collectionChanged != null)
             {
                 var e = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, t, index);
-                CollectionChanged(this, e);
+                _collectionChanged(this, e);
             }
 
             NotifyCountChanged();
@@ -473,7 +481,7 @@ namespace Perspex.Collections
         /// <param name="t">The items that were removed.</param>
         private void NotifyReset(IList t)
         {
-            if (CollectionChanged != null)
+            if (_collectionChanged != null)
             {
                 NotifyCollectionChangedEventArgs e;
 
@@ -481,7 +489,7 @@ namespace Perspex.Collections
                     new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset) : 
                     new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, t, 0);
 
-                CollectionChanged(this, e);
+                _collectionChanged(this, e);
             }
 
             NotifyCountChanged();
