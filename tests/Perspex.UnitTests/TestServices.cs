@@ -6,6 +6,7 @@ using System.Reflection;
 using Moq;
 using Perspex.Input;
 using Perspex.Layout;
+using Perspex.Markup.Xaml;
 using Perspex.Platform;
 using Perspex.Shared.PlatformSupport;
 using Perspex.Styling;
@@ -26,7 +27,7 @@ namespace Perspex.UnitTests
             renderInterface: s_fixture.Create<IPlatformRenderInterface>(),
             standardCursorFactory: Mock.Of<IStandardCursorFactory>(),
             styler: new Styler(),
-            theme: () => new DefaultTheme(),
+            theme: () => CreateDefaultTheme(),
             threadingInterface: Mock.Of<IPlatformThreadingInterface>(x => x.CurrentThreadIsLoopThread == true),
             windowingPlatform: new MockWindowingPlatform());
 
@@ -105,6 +106,21 @@ namespace Perspex.UnitTests
                 threadingInterface: threadingInterface ?? ThreadingInterface,
                 windowImpl: windowImpl ?? WindowImpl,
                 windowingPlatform: windowingPlatform ?? WindowingPlatform);
+        }
+
+        private static Styles CreateDefaultTheme()
+        {
+            var result = new Styles
+            {
+                new DefaultTheme(),
+            };
+
+            var loader = new PerspexXamlLoader();
+            var baseLight = (IStyle)loader.Load(
+                new Uri("resm:Perspex.Themes.Default.Accents.BaseLight.paml?assembly=Perspex.Themes.Default"));
+            result.Add(baseLight);
+
+            return result;
         }
     }
 }

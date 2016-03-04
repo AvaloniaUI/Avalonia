@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using JetBrains.dotMemoryUnit;
+using Perspex.Collections;
 using Perspex.Controls;
 using Perspex.Controls.Primitives;
 using Perspex.Controls.Templates;
@@ -204,6 +205,40 @@ namespace Perspex.LeakTests
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<TextBox>()).ObjectsCount));
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Node>()).ObjectsCount));
+            }
+        }
+
+        [Fact]
+        public void TextBox_Class_Listeners_Are_Freed()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                TextBox textBox;
+
+                var window = new Window
+                {
+                    Content = textBox = new TextBox()
+                };
+
+                // Do a layout and make sure that TextBox gets added to visual tree and its 
+                // template applied.
+                LayoutManager.Instance.ExecuteInitialLayoutPass(window);
+                Assert.Same(textBox, window.Presenter.Child);
+
+                // Get the border from the TextBox template.
+                var border = textBox.GetTemplateChildren().FirstOrDefault(x => x.Name == "border");
+
+                // The TextBox should have subscriptions to its Classes collection from the
+                // default theme.
+                Assert.NotEmpty(((InccDebug)textBox.Classes).GetCollectionChangedSubscribers());
+
+                // Clear the content and ensure the TextBox is removed.
+                window.Content = null;
+                LayoutManager.Instance.ExecuteLayoutPass();
+                Assert.Null(window.Presenter.Child);
+
+                // Check that the TextBox has no subscriptions to its Classes collection.
+                Assert.Null(((InccDebug)textBox.Classes).GetCollectionChangedSubscribers());
             }
         }
 
