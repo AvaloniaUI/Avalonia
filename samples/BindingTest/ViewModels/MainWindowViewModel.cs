@@ -17,7 +17,7 @@ namespace BindingTest.ViewModels
                 Enumerable.Range(0, 20).Select(x => new TestItem
                 {
                     StringValue = "Item " + x,
-                    Detail = "Item " + " details",
+                    Detail = "Item " + x + " details",
                 }));
 
             SelectedItems = new ObservableCollection<TestItem>();

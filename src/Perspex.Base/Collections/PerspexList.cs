@@ -53,7 +53,7 @@ namespace Perspex.Collections
     /// </item>
     /// </list>
     /// </remarks>
-    public class PerspexList<T> : IPerspexList<T>, IList
+    public class PerspexList<T> : IPerspexList<T>, IList, InccDebug
     {
         private List<T> _inner;
         private NotifyCollectionChangedEventHandler _collectionChanged;
@@ -433,6 +433,9 @@ namespace Perspex.Collections
         {
             return _inner.GetEnumerator();
         }
+
+        /// <inheritdoc/>
+        Delegate[] InccDebug.GetCollectionChangedSubscribers() => _collectionChanged?.GetInvocationList();
 
         /// <summary>
         /// Raises the <see cref="CollectionChanged"/> event with an add action.

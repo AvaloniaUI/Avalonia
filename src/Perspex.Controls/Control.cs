@@ -528,6 +528,11 @@ namespace Perspex.Controls
             {
                 child.OnDetachedFromLogicalTree(e);
             }
+
+            if (((InccDebug)_classes).GetCollectionChangedSubscribers()?.Length > 0)
+            {
+                System.Diagnostics.Debugger.Break();
+            }
         }
 
         /// <inheritdoc/>
