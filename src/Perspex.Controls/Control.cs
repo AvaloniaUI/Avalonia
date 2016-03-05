@@ -391,22 +391,32 @@ namespace Perspex.Controls
                     throw new InvalidOperationException("The Control already has a parent.");
                 }
 
-                InheritanceParent = parent as PerspexObject;
-                _parent = (IControl)parent;
-
-                var root = FindStyleRoot(old);
-
-                if (root != null)
+                if (_isAttachedToLogicalTree)
                 {
-                    var e = new LogicalTreeAttachmentEventArgs(root);
+                    var oldRoot = FindStyleRoot(old);
+
+                    if (oldRoot == null)
+                    {
+                        throw new PerspexInternalException("Was attached to logical tree but cannot find root.");
+                    }
+
+                    var e = new LogicalTreeAttachmentEventArgs(oldRoot);
                     OnDetachedFromLogicalTree(e);
                 }
 
-                root = FindStyleRoot(this);
+                InheritanceParent = parent as PerspexObject;
+                _parent = (IControl)parent;
 
-                if (root != null)
+                if (_parent is IStyleRoot || _parent?.IsAttachedToLogicalTree == true)
                 {
-                    var e = new LogicalTreeAttachmentEventArgs(root);
+                    var newRoot = FindStyleRoot(this);
+
+                    if (newRoot == null)
+                    {
+                        throw new PerspexInternalException("Parent is atttached to logical tree but cannot find root.");
+                    }
+
+                    var e = new LogicalTreeAttachmentEventArgs(newRoot);
                     OnAttachedToLogicalTree(e);
                 }
 

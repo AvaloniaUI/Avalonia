@@ -63,6 +63,7 @@
     <Compile Include="Metadata\DependsOnAttribute.cs" />
     <Compile Include="Metadata\ContentAttribute.cs" />
     <Compile Include="PerspexDisposable.cs" />
+    <Compile Include="PerspexInternalException.cs" />
     <Compile Include="PerspexLocator.cs" />
     <Compile Include="Metadata\XmlnsDefinitionAttribute.cs" />
     <Compile Include="PerspexObjectExtensions.cs" />
