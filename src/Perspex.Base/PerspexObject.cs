@@ -268,14 +268,7 @@ namespace Perspex
         {
             Contract.Requires<ArgumentNullException>(property != null);
 
-            if (property.IsDirect)
-            {
-                return (T)((IDirectPropertyAccessor)GetRegistered(property)).GetValue(this);
-            }
-            else
-            {
-                return (T)GetValue((PerspexProperty)property);
-            }
+            return (T)GetValue((PerspexProperty)property);
         }
 
         /// <summary>
@@ -315,7 +308,7 @@ namespace Perspex
             {
                 var accessor = (IDirectPropertyAccessor)GetRegistered(property);
                 LogPropertySet(property, value, priority);
-                accessor.SetValue(this, UnsetToDefault(value, property));
+                accessor.SetValue(this, DirectUnsetToDefault(value, property));
             }
             else
             {
@@ -568,19 +561,6 @@ namespace Perspex
         }
 
         /// <summary>
-        /// Converts an unset value to the default value for a property type.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <param name="property">The property.</param>
-        /// <returns>The value.</returns>
-        private static object UnsetToDefault(object value, PerspexProperty property)
-        {
-            return value == PerspexProperty.UnsetValue ?
-                TypeUtilities.Default(property.PropertyType) :
-                value;
-        }
-
-        /// <summary>
         /// Creates a <see cref="PriorityValue"/> for a <see cref="PerspexProperty"/>.
         /// </summary>
         /// <param name="property">The property.</param>
@@ -624,6 +604,19 @@ namespace Perspex
             });
 
             return result;
+        }
+
+        /// <summary>
+        /// Converts an unset value to the default value for a direct property.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="property">The property.</param>
+        /// <returns>The value.</returns>
+        private object DirectUnsetToDefault(object value, PerspexProperty property)
+        {
+            return value == PerspexProperty.UnsetValue ?
+                ((IDirectPropertyMetadata)property.GetMetadata(GetType())).UnsetValue :
+                value;
         }
 
         /// <summary>

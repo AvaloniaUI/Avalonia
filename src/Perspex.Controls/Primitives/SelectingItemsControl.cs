@@ -53,7 +53,8 @@ namespace Perspex.Controls.Primitives
             PerspexProperty.RegisterDirect<SelectingItemsControl, int>(
                 nameof(SelectedIndex),
                 o => o.SelectedIndex,
-                (o, v) => o.SelectedIndex = v);
+                (o, v) => o.SelectedIndex = v,
+                unsetValue: -1);
 
         /// <summary>
         /// Defines the <see cref="SelectedItem"/> property.
@@ -62,7 +63,8 @@ namespace Perspex.Controls.Primitives
             PerspexProperty.RegisterDirect<SelectingItemsControl, object>(
                 nameof(SelectedItem),
                 o => o.SelectedItem,
-                (o, v) => o.SelectedItem = v, BindingMode.TwoWay);
+                (o, v) => o.SelectedItem = v, 
+                defaultBindingMode: BindingMode.TwoWay);
 
         /// <summary>
         /// Defines the <see cref="SelectedItems"/> property.
