@@ -6,6 +6,7 @@ using System.Collections.Specialized;
 using System.Reactive;
 using System.Reactive.Linq;
 using Perspex.Controls;
+using Perspex.Styling;
 using ReactiveUI;
 
 namespace Perspex.Diagnostics.ViewModels
@@ -25,7 +26,8 @@ namespace Perspex.Diagnostics.ViewModels
                     NotifyCollectionChangedEventHandler, 
                     NotifyCollectionChangedEventArgs>(
                 x => control.Classes.CollectionChanged += x,
-                x => control.Classes.CollectionChanged -= x);
+                x => control.Classes.CollectionChanged -= x)
+                .TakeUntil(((IStyleable)control).StyleDetach);
 
             classesChanged.Select(_ => Unit.Default)
                 .StartWith(Unit.Default)
