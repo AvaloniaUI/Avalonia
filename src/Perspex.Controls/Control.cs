@@ -515,29 +515,29 @@ namespace Perspex.Controls
         /// </remarks>
         protected virtual void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
-            if (!_isAttachedToLogicalTree)
+            if (_isAttachedToLogicalTree)
             {
-                throw new Exception("Logic error: Control is not attached to logical tree");
-            }
+                if (Name != null)
+                {
+                    _nameScope?.Unregister(Name);
+                }
 
-            if (Name != null)
-            {
-                _nameScope?.Unregister(Name);
-            }
+                _isAttachedToLogicalTree = false;
+                _styleDetach.OnNext(Unit.Default);
+                this.TemplatedParent = null;
+                DetachedFromLogicalTree?.Invoke(this, e);
 
-            _isAttachedToLogicalTree = false;
-            _styleDetach.OnNext(Unit.Default);
-            this.TemplatedParent = null;
-            DetachedFromLogicalTree?.Invoke(this, e);
+                foreach (var child in LogicalChildren.OfType<Control>())
+                {
+                    child.OnDetachedFromLogicalTree(e);
+                }
 
-            foreach (var child in LogicalChildren.OfType<Control>())
-            {
-                child.OnDetachedFromLogicalTree(e);
-            }
-
-            if (((InccDebug)_classes).GetCollectionChangedSubscribers()?.Length > 0)
-            {
-                System.Diagnostics.Debugger.Break();
+                if (((InccDebug)_classes).GetCollectionChangedSubscribers()?.Length > 0)
+                {
+                    // TODO: This should be output using a standard logging mechanism.
+                    System.Diagnostics.Debug.WriteLine(
+                        $"{this.GetType().Name} detached from logical tree but still has class listeners");
+                }
             }
         }
 
