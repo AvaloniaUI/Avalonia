@@ -231,6 +231,8 @@ namespace Perspex.Controls.Primitives
         protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
             _topLevel = null;
+            _popupRoot?.Dispose();
+            _popupRoot = null;
         }
 
         /// <summary>

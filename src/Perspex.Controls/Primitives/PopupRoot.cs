@@ -15,7 +15,7 @@ namespace Perspex.Controls.Primitives
     /// <summary>
     /// The root window of a <see cref="Popup"/>.
     /// </summary>
-    public class PopupRoot : TopLevel, IInteractive, IHostedVisualTreeRoot
+    public class PopupRoot : TopLevel, IInteractive, IHostedVisualTreeRoot, IDisposable
     {
         private IDisposable _presenterSubscription;
 
@@ -63,6 +63,12 @@ namespace Perspex.Controls.Primitives
         /// Gets the control that is hosting the popup root.
         /// </summary>
         IVisual IHostedVisualTreeRoot.Host => Parent;
+
+        /// <inheritdoc/>
+        public void Dispose()
+        {
+            this.PlatformImpl.Dispose();
+        }
 
         /// <summary>
         /// Hides the popup.
