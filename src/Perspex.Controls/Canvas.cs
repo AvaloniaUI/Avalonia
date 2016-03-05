@@ -21,25 +21,25 @@ namespace Perspex.Controls
         /// Defines the Left attached property.
         /// </summary>
         public static readonly AttachedProperty<double> LeftProperty =
-            PerspexProperty.RegisterAttached<Canvas, Control, double>("Left");
+            PerspexProperty.RegisterAttached<Canvas, Control, double>("Left", default(double), false, Data.BindingMode.TwoWay);
 
         /// <summary>
         /// Defines the Top attached property.
         /// </summary>
         public static readonly AttachedProperty<double> TopProperty =
-            PerspexProperty.RegisterAttached<Canvas, Control, double>("Top");
+            PerspexProperty.RegisterAttached<Canvas, Control, double>("Top", default(double), false, Data.BindingMode.TwoWay);
 
         /// <summary>
         /// Defines the Right attached property.
         /// </summary>
         public static readonly AttachedProperty<double> RightProperty =
-            PerspexProperty.RegisterAttached<Canvas, Control, double>("Right");
+            PerspexProperty.RegisterAttached<Canvas, Control, double>("Right", default(double), false, Data.BindingMode.TwoWay);
 
         /// <summary>
         /// Defines the Bottom attached property.
         /// </summary>
         public static readonly AttachedProperty<double> BottomProperty =
-            PerspexProperty.RegisterAttached<Canvas, Control, double>("Bottom");
+            PerspexProperty.RegisterAttached<Canvas, Control, double>("Bottom", default(double), false, Data.BindingMode.TwoWay);
 
         /// <summary>
         /// Initializes static members of the <see cref="Canvas"/> class.
