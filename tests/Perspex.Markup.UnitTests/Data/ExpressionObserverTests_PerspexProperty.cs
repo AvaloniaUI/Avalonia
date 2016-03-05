@@ -41,6 +41,24 @@ namespace Perspex.Markup.UnitTests.Data
             sub.Dispose();
         }
 
+        [Fact]
+        public void Should_Not_Keep_Source_Alive()
+        {
+            Func<Tuple<ExpressionObserver, WeakReference>> run = () =>
+            {
+                var source = new Class1();
+                var target = new ExpressionObserver(source, "Foo");
+                return Tuple.Create(target, new WeakReference(source));
+            };
+
+            var result = run();
+            result.Item1.Subscribe(x => { });
+
+            GC.Collect();
+
+            Assert.Null(result.Item2.Target);
+        }
+
         private class Class1 : PerspexObject
         {
             public static readonly StyledProperty<string> FooProperty =

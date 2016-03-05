@@ -174,6 +174,42 @@ namespace Perspex.Markup.UnitTests.Data
             Assert.Equal(expected, result);
         }
 
+        [Fact]
+        public void Should_Not_Keep_Source_Alive_ObservableCollection()
+        {
+            Func<Tuple<ExpressionObserver, WeakReference>> run = () =>
+            {
+                var source = new { Foo = new ObservableCollection<string> { "foo", "bar" } };
+                var target = new ExpressionObserver(source, "Foo");
+                return Tuple.Create(target, new WeakReference(source.Foo));
+            };
+
+            var result = run();
+            result.Item1.Subscribe(x => { });
+
+            GC.Collect();
+
+            Assert.Null(result.Item2.Target);
+        }
+
+        [Fact]
+        public void Should_Not_Keep_Source_Alive_NonIntegerIndexer()
+        {
+            Func<Tuple<ExpressionObserver, WeakReference>> run = () =>
+            {
+                var source = new NonIntegerIndexer();
+                var target = new ExpressionObserver(source, "Foo");
+                return Tuple.Create(target, new WeakReference(source));
+            };
+
+            var result = run();
+            result.Item1.Subscribe(x => { });
+
+            GC.Collect();
+
+            Assert.Null(result.Item2.Target);
+        }
+
         private class NonIntegerIndexer : NotifyingBase
         {
             private Dictionary<string, string> storage = new Dictionary<string, string>();

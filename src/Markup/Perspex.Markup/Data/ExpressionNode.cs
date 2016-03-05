@@ -8,46 +8,55 @@ namespace Perspex.Markup.Data
 {
     internal abstract class ExpressionNode : IObservable<object>
     {
-        private object _target;
+        protected static readonly WeakReference UnsetReference = 
+            new WeakReference(PerspexProperty.UnsetValue);
+
+        private WeakReference _target;
 
         private Subject<object> _subject;
 
-        private object _value = PerspexProperty.UnsetValue;
+        private WeakReference _value = UnsetReference;
 
         public ExpressionNode Next { get; set; }
 
-        public object Target
+        public WeakReference Target
         {
-            get { return _target; }
+            get
+            {
+                return _target;
+            }
             set
             {
-                if (!object.Equals(value, _target))
+                var newInstance = value?.Target;
+                var oldInstance = _target?.Target;
+
+                if (!object.Equals(oldInstance, newInstance))
                 {
-                    if (_target != null)
+                    if (oldInstance != null)
                     {
-                        Unsubscribe(_target);
+                        Unsubscribe(oldInstance);
                     }
 
                     _target = value;
 
-                    if (_target != null)
+                    if (newInstance != null)
                     {
                         SubscribeAndUpdate(_target);
                     }
                     else
                     {
-                        CurrentValue = PerspexProperty.UnsetValue;
+                        CurrentValue = UnsetReference;
                     }
 
                     if (Next != null)
                     {
-                        Next.Target = CurrentValue;
+                        Next.Target = _value;
                     }
                 }
             }
         }
 
-        public object CurrentValue
+        public WeakReference CurrentValue
         {
             get
             {
@@ -63,7 +72,7 @@ namespace Perspex.Markup.Data
                     Next.Target = value;
                 }
 
-                _subject?.OnNext(value);
+                _subject?.OnNext(value.Target);
             }
         }
 
@@ -85,14 +94,14 @@ namespace Perspex.Markup.Data
                     _subject = new Subject<object>();
                 }
 
-                observer.OnNext(CurrentValue);
+                observer.OnNext(CurrentValue.Target);
                 return _subject.Subscribe(observer);
             }
         }
 
-        protected virtual void SubscribeAndUpdate(object target)
+        protected virtual void SubscribeAndUpdate(WeakReference reference)
         {
-            CurrentValue = target;
+            CurrentValue = reference;
         }
 
         protected virtual void Unsubscribe(object target)

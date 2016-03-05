@@ -43,15 +43,17 @@ namespace Perspex.Markup.Data
             }
         }
 
-        protected override void SubscribeAndUpdate(object target)
+        protected override void SubscribeAndUpdate(WeakReference reference)
         {
-            if (target != null)
+            var instance = reference.Target;
+
+            if (instance != null)
             {
-                var plugin = ExpressionObserver.PropertyAccessors.FirstOrDefault(x => x.Match(target));
+                var plugin = ExpressionObserver.PropertyAccessors.FirstOrDefault(x => x.Match(reference));
 
                 if (plugin != null)
                 {
-                    _accessor = plugin.Start(target, PropertyName, SetCurrentValue);
+                    _accessor = plugin.Start(reference, PropertyName, SetCurrentValue);
 
                     if (_accessor != null)
                     {
@@ -61,7 +63,7 @@ namespace Perspex.Markup.Data
                 }
             }
 
-            CurrentValue = PerspexProperty.UnsetValue;
+            CurrentValue = UnsetReference;
         }
 
         protected override void Unsubscribe(object target)
@@ -81,11 +83,11 @@ namespace Perspex.Markup.Data
             // We may need to make this a more general solution.
             if (observable != null && command == null)
             {
-                CurrentValue = PerspexProperty.UnsetValue;
+                CurrentValue = UnsetReference;
                 set = true;
                 _subscription = observable
                     .ObserveOn(SynchronizationContext.Current)
-                    .Subscribe(x => CurrentValue = x);
+                    .Subscribe(x => CurrentValue = new WeakReference(x));
             }
             else if (task != null)
             {
@@ -95,13 +97,13 @@ namespace Perspex.Markup.Data
                 {
                     if (task.Status == TaskStatus.RanToCompletion)
                     {
-                        CurrentValue = resultProperty.GetValue(task);
+                        CurrentValue = new WeakReference(resultProperty.GetValue(task));
                         set = true;
                     }
                     else
                     {
                         task.ContinueWith(
-                                x => CurrentValue = resultProperty.GetValue(task),
+                                x => CurrentValue = new WeakReference(resultProperty.GetValue(task)),
                                 TaskScheduler.FromCurrentSynchronizationContext())
                             .ConfigureAwait(false);
                     }
@@ -109,13 +111,13 @@ namespace Perspex.Markup.Data
             }
             else
             {
-                CurrentValue = value;
+                CurrentValue = new WeakReference(value);
                 set = true;
             }
 
             if (!set)
             {
-                CurrentValue = PerspexProperty.UnsetValue;
+                CurrentValue = UnsetReference;
             }
         }
     }

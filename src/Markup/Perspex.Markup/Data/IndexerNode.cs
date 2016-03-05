@@ -22,9 +22,11 @@ namespace Perspex.Markup.Data
 
         public IList<string> Arguments { get; }
 
-        protected override void SubscribeAndUpdate(object target)
+        protected override void SubscribeAndUpdate(WeakReference reference)
         {
-            CurrentValue = GetValue(target);
+            object target = reference.Target;
+
+            CurrentValue = new WeakReference(GetValue(target));
 
             var incc = target as INotifyCollectionChanged;
 
@@ -50,7 +52,7 @@ namespace Perspex.Markup.Data
             }
             if (typeInfo.GetDeclaredProperty(e.PropertyName).GetIndexParameters().Any())
             {
-                CurrentValue = GetValue(sender);
+                CurrentValue = new WeakReference(GetValue(sender));
             }
         }
 
@@ -105,7 +107,7 @@ namespace Perspex.Markup.Data
 
             if (update)
             {
-                CurrentValue = GetValue(sender);
+                CurrentValue = new WeakReference(GetValue(sender));
             }
         }
 

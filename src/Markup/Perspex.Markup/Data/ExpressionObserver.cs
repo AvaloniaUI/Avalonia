@@ -27,7 +27,7 @@ namespace Perspex.Markup.Data
                 new InpcPropertyAccessorPlugin(),
             };
 
-        private readonly object _root;
+        private readonly WeakReference _root;
         private readonly Func<object> _rootGetter;
         private readonly IObservable<object> _rootObservable;
         private readonly IObservable<Unit> _update;
@@ -45,7 +45,7 @@ namespace Perspex.Markup.Data
         {
             Contract.Requires<ArgumentNullException>(expression != null);
 
-            _root = root;
+            _root = new WeakReference(root);
 
             if (!string.IsNullOrWhiteSpace(expression))
             {
@@ -115,7 +115,7 @@ namespace Perspex.Markup.Data
 
             if (_rootGetter != null && _node != null)
             {
-                _node.Target = _rootGetter();
+                _node.Target = new WeakReference(_rootGetter());
             }
 
             try
@@ -155,7 +155,7 @@ namespace Perspex.Markup.Data
                     }
                     else
                     {
-                        return _root?.GetType();
+                        return _root.Target?.GetType();
                     }
                 }
                 finally
@@ -220,7 +220,9 @@ namespace Perspex.Markup.Data
             {
                 if (_update == null)
                 {
-                    return Observable.Never<object>().StartWith(_root).Subscribe(observer);
+                    return Observable.Never<object>()
+                        .StartWith(_root.Target)
+                        .Subscribe(observer);
                 }
                 else
                 {
@@ -238,16 +240,18 @@ namespace Perspex.Markup.Data
             {
                 if (_rootGetter != null)
                 {
-                    _node.Target = _rootGetter();
+                    _node.Target = new WeakReference(_rootGetter());
 
                     if (_update != null)
                     {
-                        _updateSubscription = _update.Subscribe(x => _node.Target = _rootGetter());
+                        _updateSubscription = _update.Subscribe(x => 
+                            _node.Target = new WeakReference(_rootGetter()));
                     }
                 }
                 else if (_rootObservable != null)
                 {
-                    _rootObserverSubscription = _rootObservable.Subscribe(x => _node.Target = x);
+                    _rootObserverSubscription = _rootObservable.Subscribe(x => 
+                        _node.Target = new WeakReference(x));
                 }
                 else
                 {

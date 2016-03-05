@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reflection;
+using Perspex.Utilities;
 
 namespace Perspex.Markup.Data.Plugins
 {
@@ -18,11 +19,11 @@ namespace Perspex.Markup.Data.Plugins
         /// <summary>
         /// Checks whether this plugin can handle accessing the properties of the specified object.
         /// </summary>
-        /// <param name="instance">The object.</param>
+        /// <param name="reference">The object.</param>
         /// <returns>True if the plugin can handle the object; otherwise false.</returns>
-        public bool Match(object instance)
+        public bool Match(WeakReference reference)
         {
-            Contract.Requires<ArgumentNullException>(instance != null);
+            Contract.Requires<ArgumentNullException>(reference != null);
 
             return true;
         }
@@ -30,24 +31,28 @@ namespace Perspex.Markup.Data.Plugins
         /// <summary>
         /// Starts monitoring the value of a property on an object.
         /// </summary>
-        /// <param name="instance">The object.</param>
+        /// <param name="reference">The object.</param>
         /// <param name="propertyName">The property name.</param>
         /// <param name="changed">A function to call when the property changes.</param>
         /// <returns>
         /// An <see cref="IPropertyAccessor"/> interface through which future interactions with the 
         /// property will be made, or null if the property was not found.
         /// </returns>
-        public IPropertyAccessor Start(object instance, string propertyName, Action<object> changed)
+        public IPropertyAccessor Start(
+            WeakReference reference, 
+            string propertyName, 
+            Action<object> changed)
         {
-            Contract.Requires<ArgumentNullException>(instance != null);
+            Contract.Requires<ArgumentNullException>(reference != null);
             Contract.Requires<ArgumentNullException>(propertyName != null);
             Contract.Requires<ArgumentNullException>(changed != null);
 
+            var instance = reference.Target;
             var p = instance.GetType().GetRuntimeProperties().FirstOrDefault(_ => _.Name == propertyName);
 
             if (p != null)
             {
-                return new Accessor(instance, p, changed);
+                return new Accessor(reference, p, changed);
             }
             else
             {
@@ -55,40 +60,49 @@ namespace Perspex.Markup.Data.Plugins
             }
         }
 
-        private class Accessor : IPropertyAccessor
+        private class Accessor : IPropertyAccessor, IWeakSubscriber<PropertyChangedEventArgs>
         {
-            private readonly object _instance;
+            private readonly WeakReference _reference;
             private readonly PropertyInfo _property;
             private readonly Action<object> _changed;
 
-            public Accessor(object instance, PropertyInfo property, Action<object> changed)
+            public Accessor(
+                WeakReference reference, 
+                PropertyInfo property, 
+                Action<object> changed)
             {
-                Contract.Requires<ArgumentNullException>(instance != null);
+                Contract.Requires<ArgumentNullException>(reference != null);
                 Contract.Requires<ArgumentNullException>(property != null);
 
-                _instance = instance;
+                _reference = reference;
                 _property = property;
                 _changed = changed;
 
-                var inpc = instance as INotifyPropertyChanged;
+                var inpc = reference.Target as INotifyPropertyChanged;
 
                 if (inpc != null)
                 {
-                    inpc.PropertyChanged += PropertyChanged;
+                    WeakSubscriptionManager.Subscribe(
+                        inpc,
+                        nameof(inpc.PropertyChanged),
+                        this);
                 }
             }
 
             public Type PropertyType => _property.PropertyType;
 
-            public object Value => _property.GetValue(_instance);
+            public object Value => _property.GetValue(_reference.Target);
 
             public void Dispose()
             {
-                var inpc = _instance as INotifyPropertyChanged;
+                var inpc = _reference.Target as INotifyPropertyChanged;
 
                 if (inpc != null)
                 {
-                    inpc.PropertyChanged -= PropertyChanged;
+                    //WeakSubscriptionManager.Unsubscribe(
+                    //    inpc,
+                    //    nameof(inpc.PropertyChanged),
+                    //    this);
                 }
             }
 
@@ -96,14 +110,14 @@ namespace Perspex.Markup.Data.Plugins
             {
                 if (_property.CanWrite)
                 {
-                    _property.SetValue(_instance, value);
+                    _property.SetValue(_reference.Target, value);
                     return true;
                 }
 
                 return false;
             }
 
-            private void PropertyChanged(object sender, PropertyChangedEventArgs e)
+            public void OnEvent(object sender, PropertyChangedEventArgs e)
             {
                 if (e.PropertyName == _property.Name || string.IsNullOrEmpty(e.PropertyName))
                 {

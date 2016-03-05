@@ -16,37 +16,41 @@ namespace Perspex.Markup.Data.Plugins
         /// <summary>
         /// Checks whether this plugin can handle accessing the properties of the specified object.
         /// </summary>
-        /// <param name="instance">The object.</param>
+        /// <param name="reference">A weak reference to the object.</param>
         /// <returns>True if the plugin can handle the object; otherwise false.</returns>
-        public bool Match(object instance)
+        public bool Match(WeakReference reference)
         {
-            Contract.Requires<ArgumentNullException>(instance != null);
+            Contract.Requires<ArgumentNullException>(reference != null);
 
-            return instance is PerspexObject;
+            return reference.Target is PerspexObject;
         }
 
         /// <summary>
         /// Starts monitoring the value of a property on an object.
         /// </summary>
-        /// <param name="instance">The object.</param>
+        /// <param name="reference">A weak reference to the object.</param>
         /// <param name="propertyName">The property name.</param>
         /// <param name="changed">A function to call when the property changes.</param>
         /// <returns>
         /// An <see cref="IPropertyAccessor"/> interface through which future interactions with the 
         /// property will be made, or null if the property was not found.
         /// </returns>
-        public IPropertyAccessor Start(object instance, string propertyName, Action<object> changed)
+        public IPropertyAccessor Start(
+            WeakReference reference, 
+            string propertyName, 
+            Action<object> changed)
         {
-            Contract.Requires<ArgumentNullException>(instance != null);
+            Contract.Requires<ArgumentNullException>(reference != null);
             Contract.Requires<ArgumentNullException>(propertyName != null);
             Contract.Requires<ArgumentNullException>(changed != null);
 
+            var instance = reference.Target;
             var o = (PerspexObject)instance;
             var p = PerspexPropertyRegistry.Instance.FindRegistered(o, propertyName);
 
             if (p != null)
             {
-                return new Accessor(o, p, changed);
+                return new Accessor(new WeakReference<PerspexObject>(o), p, changed);
             }
             else
             {
@@ -56,23 +60,36 @@ namespace Perspex.Markup.Data.Plugins
 
         private class Accessor : IPropertyAccessor
         {
-            private readonly PerspexObject _instance;
+            private readonly WeakReference<PerspexObject> _reference;
             private readonly PerspexProperty _property;
             private IDisposable _subscription;
 
-            public Accessor(PerspexObject instance, PerspexProperty property, Action<object> changed)
+            public Accessor(
+                WeakReference<PerspexObject> reference, 
+                PerspexProperty property, 
+                Action<object> changed)
             {
-                Contract.Requires<ArgumentNullException>(instance != null);
+                Contract.Requires<ArgumentNullException>(reference != null);
                 Contract.Requires<ArgumentNullException>(property != null);
 
-                _instance = instance;
+                _reference = reference;
                 _property = property;
-                _subscription = instance.GetObservable(property).Skip(1).Subscribe(changed);
+                _subscription = Instance.GetObservable(property).Skip(1).Subscribe(changed);
+            }
+
+            public PerspexObject Instance
+            {
+                get
+                {
+                    PerspexObject result;
+                    _reference.TryGetTarget(out result);
+                    return result;
+                }
             }
 
             public Type PropertyType => _property.PropertyType;
 
-            public object Value => _instance.GetValue(_property);
+            public object Value => Instance.GetValue(_property);
 
             public void Dispose()
             {
@@ -84,7 +101,7 @@ namespace Perspex.Markup.Data.Plugins
             {
                 if (!_property.IsReadOnly)
                 {
-                    _instance.SetValue(_property, value);
+                    Instance.SetValue(_property, value);
                     return true;
                 }
 

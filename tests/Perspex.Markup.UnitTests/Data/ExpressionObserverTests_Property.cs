@@ -331,6 +331,24 @@ namespace Perspex.Markup.UnitTests.Data
             Assert.Equal(0, second.SubscriptionCount);
         }
 
+        [Fact]
+        public void Should_Not_Keep_Source_Alive()
+        {
+            Func<Tuple<ExpressionObserver, WeakReference>> run = () =>
+            {
+                var source = new Class1 { Foo = "foo" };
+                var target = new ExpressionObserver(source, "Foo");
+                return Tuple.Create(target, new WeakReference(source));
+            };
+
+            var result = run();
+            result.Item1.Subscribe(x => { });
+
+            GC.Collect();
+
+            Assert.Null(result.Item2.Target);
+        }
+
         private interface INext
         {
             int SubscriptionCount { get; }
