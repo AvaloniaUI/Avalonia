@@ -103,7 +103,7 @@ namespace Perspex.Controls.Generators
         /// <inheritdoc/>
         public virtual IEnumerable<ItemContainer> Clear()
         {
-            var result = _containers;
+            var result = _containers.Where(x => x != null).ToList();
             _containers = new List<ItemContainer>();
 
             if (result.Count > 0)
