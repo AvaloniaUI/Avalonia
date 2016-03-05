@@ -7,6 +7,7 @@ using System.Reactive.Linq;
 using Perspex.Controls.Templates;
 using Perspex.Data;
 using Perspex.Interactivity;
+using Perspex.LogicalTree;
 using Perspex.Media;
 using Perspex.Styling;
 using Perspex.VisualTree;
@@ -309,6 +310,17 @@ namespace Perspex.Controls.Primitives
             }
 
             return this;
+        }
+
+        /// <inheritdoc/>
+        protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
+        {
+            if (VisualChildren.Count > 0)
+            {
+                ((ILogical)VisualChildren[0]).NotifyDetachedFromLogicalTree(e);
+            }
+
+            base.OnDetachedFromLogicalTree(e);
         }
 
         /// <summary>

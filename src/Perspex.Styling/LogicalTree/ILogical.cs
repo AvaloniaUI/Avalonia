@@ -35,5 +35,15 @@ namespace Perspex.LogicalTree
         /// Gets the logical children.
         /// </summary>
         IPerspexReadOnlyList<ILogical> LogicalChildren { get; }
+
+        /// <summary>
+        /// Notifies the control that it is being detached from a rooted logical tree.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        /// <remarks>
+        /// This method will be called automatically by the framework, you should not need to call
+        /// this method yourself.
+        /// </remarks>
+        void NotifyDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e);
     }
 }

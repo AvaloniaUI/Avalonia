@@ -135,6 +135,11 @@ namespace Perspex.Styling.UnitTests
             {
                 throw new NotImplementedException();
             }
+
+            public void NotifyDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
+            {
+                throw new NotImplementedException();
+            }
         }
 
         public class TestLogical1 : TestLogical

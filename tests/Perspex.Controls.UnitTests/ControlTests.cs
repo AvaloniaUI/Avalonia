@@ -212,6 +212,24 @@ namespace Perspex.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void StyleDetach_Is_Triggered_When_Control_Removed_From_Logical_Tree()
+        {
+            using (PerspexLocator.EnterScope())
+            {
+                var root = new TestRoot();
+                var child = new Border();
+
+                root.Child = child;
+
+                bool styleDetachTriggered = false;
+                ((IStyleable)child).StyleDetach.Subscribe(_ => styleDetachTriggered = true);
+                root.Child = null;
+
+                Assert.True(styleDetachTriggered);
+            }
+        }
+
         private class TestControl : Control
         {
             public new PerspexObject InheritanceParent => base.InheritanceParent;

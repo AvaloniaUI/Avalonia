@@ -1,6 +1,7 @@
 ﻿// Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
 using System.Linq;
 using System.Reactive.Linq;
 using Moq;
@@ -11,6 +12,9 @@ using System.Threading.Tasks;
 
 namespace Perspex.Styling.UnitTests
 {
+    using System.Reactive;
+    using System.Reactive.Subjects;
+    using Collections;
     using Controls = Controls.Controls;
 
     public class SelectorTests_Template
@@ -106,6 +110,28 @@ namespace Perspex.Styling.UnitTests
             var activator = selector.Match(border).ObservableResult;
 
             Assert.False(await activator.Take(1));
+        }
+
+        [Fact]
+        public void Nested_Selector_Is_Unsubscribed()
+        {
+            var target = new Mock<IVisual>();
+            var templatedControl = target.As<ITemplatedControl>();
+            var styleable = target.As<IStyleable>();
+            BuildVisualTree(target);
+
+            styleable.Setup(x => x.Classes).Returns(new Classes("foo"));
+            var border = (Border)target.Object.VisualChildren.Single();
+            var selector = new Selector().OfType(templatedControl.Object.GetType()).Class("foo").Template().OfType<Border>();
+            var activator = selector.Match(border).ObservableResult;
+            var inccDebug = (InccDebug)styleable.Object.Classes;
+
+            using (activator.Subscribe(_ => { }))
+            {
+                Assert.Equal(1, inccDebug.GetCollectionChangedSubscribers().Length);
+            }
+
+            Assert.Null(inccDebug.GetCollectionChangedSubscribers());
         }
 
         private void BuildVisualTree<T>(Mock<T> templatedControl) where T : class, IVisual

@@ -313,6 +313,12 @@ namespace Perspex.Controls
         IStyleHost IStyleHost.StylingParent => (IStyleHost)InheritanceParent;
 
         /// <inheritdoc/>
+        void ILogical.NotifyDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
+        {
+            this.OnDetachedFromLogicalTree(e);
+        }
+
+        /// <inheritdoc/>
         void ISupportInitialize.BeginInit()
         {
             ++_initCount;

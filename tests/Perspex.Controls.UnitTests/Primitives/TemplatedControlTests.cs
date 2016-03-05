@@ -344,6 +344,52 @@ namespace Perspex.Controls.UnitTests.Primitives
             Assert.Null(border.TemplatedParent);
         }
 
+        [Fact]
+        public void TemplateChild_AttachedToLogicalTree_Should_Be_Raised()
+        {
+            Border templateChild = new Border();
+            var root = new TestRoot
+            {
+                Child = new TestTemplatedControl
+                {
+                    Template = new FuncControlTemplate(_ => new Decorator
+                    {
+                        Child = templateChild,
+                    })
+                }
+            };
+
+            var raised = false;
+            templateChild.AttachedToLogicalTree += (s, e) => raised = true;
+
+            root.Child.ApplyTemplate();
+            Assert.True(raised);
+        }
+
+        [Fact]
+        public void TemplateChild_DetachedFromLogicalTree_Should_Be_Raised()
+        {
+            Border templateChild = new Border();
+            var root = new TestRoot
+            {
+                Child = new TestTemplatedControl
+                {
+                    Template = new FuncControlTemplate(_ => new Decorator
+                    {
+                        Child = templateChild,
+                    })
+                }
+            };
+
+            root.Child.ApplyTemplate();
+
+            var raised = false;
+            templateChild.DetachedFromLogicalTree += (s, e) => raised = true;
+
+            root.Child = null;
+            Assert.True(raised);
+        }
+
         private static IControl ScrollingContentControlTemplate(ContentControl control)
         {
             return new Border
