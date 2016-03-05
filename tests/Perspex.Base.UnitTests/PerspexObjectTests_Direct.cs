@@ -62,7 +62,7 @@ namespace Perspex.Base.UnitTests
 
             target.SetValue((PerspexProperty)Class1.BazProperty, PerspexProperty.UnsetValue);
 
-            Assert.Equal(0, target.Baz);
+            Assert.Equal(-1, target.Baz);
         }
 
         [Fact]
@@ -160,7 +160,7 @@ namespace Perspex.Base.UnitTests
         }
 
         [Fact]
-        public void Bind_NonGeneric_Coerces_UnsetValue()
+        public void Bind_NonGeneric_Uses_UnsetValue()
         {
             var target = new Class1();
             var source = new Subject<object>();
@@ -171,7 +171,7 @@ namespace Perspex.Base.UnitTests
             source.OnNext(6);
             Assert.Equal(6, target.Baz);
             source.OnNext(PerspexProperty.UnsetValue);
-            Assert.Equal(0, target.Baz);
+            Assert.Equal(-1, target.Baz);
         }
 
         [Fact]
@@ -282,6 +282,17 @@ namespace Perspex.Base.UnitTests
             Assert.Equal("newvalue", target.Foo);
         }
 
+
+        [Fact]
+        public void UnsetValue_Is_Used_On_AddOwnered_Property()
+        {
+            var target = new Class2();
+
+            target.SetValue((PerspexProperty)Class1.FooProperty, PerspexProperty.UnsetValue);
+
+            Assert.Equal("unset", target.Foo);
+        }
+
         [Fact]
         public void Bind_Binds_AddOwnered_Property_Value()
         {
@@ -342,13 +353,21 @@ namespace Perspex.Base.UnitTests
         private class Class1 : PerspexObject
         {
             public static readonly DirectProperty<Class1, string> FooProperty =
-                PerspexProperty.RegisterDirect<Class1, string>("Foo", o => o.Foo, (o, v) => o.Foo = v);
+                PerspexProperty.RegisterDirect<Class1, string>(
+                    "Foo", 
+                    o => o.Foo, 
+                    (o, v) => o.Foo = v,
+                    unsetValue: "unset");
 
             public static readonly DirectProperty<Class1, string> BarProperty =
                 PerspexProperty.RegisterDirect<Class1, string>("Bar", o => o.Bar);
 
             public static readonly DirectProperty<Class1, int> BazProperty =
-                PerspexProperty.RegisterDirect<Class1, int>("Bar", o => o.Baz, (o,v) => o.Baz = v);
+                PerspexProperty.RegisterDirect<Class1, int>(
+                    "Bar", 
+                    o => o.Baz, 
+                    (o,v) => o.Baz = v,
+                    unsetValue: -1);
 
             private string _foo = "initial";
             private readonly string _bar = "bar";

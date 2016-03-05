@@ -13,7 +13,8 @@ namespace Perspex.Controls.Primitives
             PerspexProperty.RegisterDirect<ToggleButton, bool>(
                 "IsChecked",
                 o => o.IsChecked,
-                (o,v) => o.IsChecked = v, BindingMode.TwoWay);
+                (o,v) => o.IsChecked = v,
+                defaultBindingMode: BindingMode.TwoWay);
 
         private bool _isChecked;
 
