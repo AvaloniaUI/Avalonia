@@ -47,6 +47,15 @@ namespace Perspex.Controls
         static Canvas()
         {
             AffectsArrange(LeftProperty, TopProperty, RightProperty, BottomProperty);
+            LeftProperty.Changed.Subscribe(e => OnValueChanged(e.Sender, e));
+            TopProperty.Changed.Subscribe(e => OnValueChanged(e.Sender, e));
+            RightProperty.Changed.Subscribe(e => OnValueChanged(e.Sender, e));
+            BottomProperty.Changed.Subscribe(e => OnValueChanged(e.Sender, e));
+        }
+
+        private static void OnValueChanged(PerspexObject dependencyObject, PerspexPropertyChangedEventArgs args)
+        {
+            (dependencyObject as Control)?.Parent?.InvalidateArrange();
         }
 
         /// <summary>
