@@ -63,7 +63,8 @@ namespace Perspex.Controls.Primitives
             PerspexProperty.RegisterDirect<SelectingItemsControl, object>(
                 nameof(SelectedItem),
                 o => o.SelectedItem,
-                (o, v) => o.SelectedItem = v, BindingMode.TwoWay);
+                (o, v) => o.SelectedItem = v, 
+                defaultBindingMode: BindingMode.TwoWay);
 
         /// <summary>
         /// Defines the <see cref="SelectedItems"/> property.
