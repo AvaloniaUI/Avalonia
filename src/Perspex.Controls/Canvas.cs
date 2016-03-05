@@ -50,6 +50,42 @@ namespace Perspex.Controls
         }
 
         /// <summary>
+        /// Gets or sets the value of the Left attached property for a control.
+        /// </summary>
+        public double Left
+        {
+            get { return GetValue(LeftProperty); }
+            set { SetValue(LeftProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the Top attached property for a control.
+        /// </summary>
+        public double Top
+        {
+            get { return GetValue(TopProperty); }
+            set { SetValue(TopProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the Right attached property for a control.
+        /// </summary>
+        public double Right
+        {
+            get { return GetValue(RightProperty); }
+            set { SetValue(RightProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the Bottom attached property for a control.
+        /// </summary>
+        public double Bottom
+        {
+            get { return GetValue(BottomProperty); }
+            set { SetValue(BottomProperty, value); }
+        }
+
+        /// <summary>
         /// Gets the value of the Left attached property for a control.
         /// </summary>
         /// <param name="element">The control.</param>
