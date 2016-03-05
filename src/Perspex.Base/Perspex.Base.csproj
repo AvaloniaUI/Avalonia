@@ -57,6 +57,7 @@
     <Compile Include="IDirectPropertyAccessor.cs" />
     <Compile Include="DirectProperty.cs" />
     <Compile Include="IPerspexObject.cs" />
+    <Compile Include="IDirectPropertyMetadata.cs" />
     <Compile Include="IStyledPropertyMetadata.cs" />
     <Compile Include="ISupportInitialize.cs" />
     <Compile Include="Metadata\DependsOnAttribute.cs" />
@@ -93,6 +94,7 @@
     <Compile Include="Reactive\AnonymousSubject`1.cs" />
     <Compile Include="Reactive\AnonymousSubject`2.cs" />
     <Compile Include="Reactive\PerspexObservable.cs" />
+    <Compile Include="DirectPropertyMetadata`1.cs" />
     <Compile Include="StyledPropertyMetadata`1.cs" />
     <Compile Include="Threading\Dispatcher.cs" />
     <Compile Include="Threading\DispatcherPriority.cs" />
