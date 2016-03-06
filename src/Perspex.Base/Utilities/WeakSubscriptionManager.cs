@@ -1,41 +1,89 @@
-﻿using System;
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Perspex.Utilities
 {
+    /// <summary>
+    /// Manages subscriptions to events using weak listeners.
+    /// </summary>
     public static class WeakSubscriptionManager
     {
-        static class SubscriptionTypeStorage<T>
+        /// <summary>
+        /// Subscribes to an event on an object using a weak subscription.
+        /// </summary>
+        /// <typeparam name="T">The type of the event arguments.</typeparam>
+        /// <param name="target">The event source.</param>
+        /// <param name="eventName">The name of the event.</param>
+        /// <param name="subscriber">The subscriber.</param>
+        public static void Subscribe<T>(object target, string eventName, IWeakSubscriber<T> subscriber)
+            where T : EventArgs
+        {
+            var dic = SubscriptionTypeStorage<T>.Subscribers.GetOrCreateValue(target);
+            Subscription<T> sub;
+
+            if (!dic.TryGetValue(eventName, out sub))
+            {
+                dic[eventName] = sub = new Subscription<T>(dic, target, eventName);
+
+
+            }
+            sub.Add(new WeakReference<IWeakSubscriber<T>>(subscriber));
+        }
+
+        /// <summary>
+        /// Unsubscribes from an event.
+        /// </summary>
+        /// <typeparam name="T">The type of the event arguments.</typeparam>
+        /// <param name="target">The event source.</param>
+        /// <param name="eventName">The name of the event.</param>
+        /// <param name="subscriber">The subscriber.</param>
+        public static void Unsubscribe<T>(object target, string eventName, IWeakSubscriber<T> subscriber)
+            where T : EventArgs
+        {
+            SubscriptionDic<T> dic;
+
+            if (SubscriptionTypeStorage<T>.Subscribers.TryGetValue(target, out dic))
+            {
+                Subscription<T> sub;
+
+                if (dic.TryGetValue(eventName, out sub))
+                {
+                    sub.Remove(subscriber);
+                }
+            }
+        }
+
+        private static class SubscriptionTypeStorage<T>
+            where T : EventArgs
         {
             public static readonly ConditionalWeakTable<object, SubscriptionDic<T>> Subscribers
                 = new ConditionalWeakTable<object, SubscriptionDic<T>>();
         }
 
-        class SubscriptionDic<T> : Dictionary<string, Subscription<T>>
+        private class SubscriptionDic<T> : Dictionary<string, Subscription<T>>
+            where T : EventArgs
         {
-
         }
 
-
-
-        static readonly Dictionary<Type, Dictionary<string, EventInfo>> Accessors
+        private static readonly Dictionary<Type, Dictionary<string, EventInfo>> Accessors
             = new Dictionary<Type, Dictionary<string, EventInfo>>();
 
-        class Subscription<T>
+        private class Subscription<T> where T : EventArgs
         {
-            WeakReference<IWeakSubscriber<T>>[] _data = new WeakReference<IWeakSubscriber<T>>[16];
-            int _count = 0;
-
-            readonly EventInfo _info;
-            readonly SubscriptionDic<T> _sdic;
+            private readonly EventInfo _info;
+            private readonly SubscriptionDic<T> _sdic;
             private readonly object _target;
             private readonly string _eventName;
             private readonly Delegate _delegate;
+
+            private WeakReference<IWeakSubscriber<T>>[] _data = new WeakReference<IWeakSubscriber<T>>[16];
+            private int _count = 0;
+
             public Subscription(SubscriptionDic<T> sdic, object target, string eventName)
             {
                 _sdic = sdic;
@@ -72,10 +120,32 @@ namespace Perspex.Utilities
                 _count++;
             }
 
+            public void Remove(IWeakSubscriber<T> s)
+            {
+                var removed = false;
+
+                for (int c = 0; c < _count; ++c)
+                {
+                    var reference = _data[c];
+                    IWeakSubscriber<T> instance;
+
+                    if (reference != null && reference.TryGetTarget(out instance) && instance == s)
+                    {
+                        _data[c] = null;
+                        removed = true;
+                    }
+                }
+
+                if (removed)
+                {
+                    Compact();
+                }
+            }
+
             void Compact()
             {
                 int empty = -1;
-                for (int c = 1; c < _count; c++)
+                for (int c = 0; c < _count; c++)
                 {
                     var r = _data[c];
                     //Mark current index as first empty
@@ -111,19 +181,5 @@ namespace Perspex.Utilities
                     Compact();
             }
         }
-
-        public static void Subscribe<T>(object target, string eventName, IWeakSubscriber<T> subscriber)
-        {
-            var dic = SubscriptionTypeStorage<T>.Subscribers.GetOrCreateValue(target);
-            Subscription<T> sub;
-            if (!dic.TryGetValue(eventName, out sub))
-                dic[eventName] = sub = new Subscription<T>(dic, target, eventName);
-            sub.Add(new WeakReference<IWeakSubscriber<T>>(subscriber));
-        }
-    }
-
-    public interface IWeakSubscriber<T>
-    {
-        void OnEvent(object sender, T ev);
     }
 }

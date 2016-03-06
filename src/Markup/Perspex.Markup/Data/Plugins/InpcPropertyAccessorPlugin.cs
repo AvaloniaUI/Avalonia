@@ -99,10 +99,10 @@ namespace Perspex.Markup.Data.Plugins
 
                 if (inpc != null)
                 {
-                    //WeakSubscriptionManager.Unsubscribe(
-                    //    inpc,
-                    //    nameof(inpc.PropertyChanged),
-                    //    this);
+                    WeakSubscriptionManager.Unsubscribe(
+                        inpc,
+                        nameof(inpc.PropertyChanged),
+                        this);
                 }
             }
 
