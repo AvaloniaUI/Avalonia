@@ -10,11 +10,7 @@
     public class ContextMenu : SelectingItemsControl
     {
         private bool _isOpen;
-
-        /// <summary>
-        /// The popup window used to display the active context menu.
-        /// </summary>
-        private static Popup _popup;
+        private Popup _popup;
 
         /// <summary>
         /// Initializes static members of the <see cref="ContextMenu"/> class.
@@ -27,7 +23,7 @@
         }
 
         /// <summary>
-        /// called when the <see cref="ContextMenuProperty"/> property changes on a control.
+        /// Called when the <see cref="Control.ContextMenu"/> property changes on a control.
         /// </summary>
         /// <param name="e">The event args.</param>
         private static void ContextMenuChanged(PerspexPropertyChangedEventArgs e)
@@ -61,8 +57,6 @@
         /// </summary>
         public void Hide()
         {
-            
-
             if (_popup != null && _popup.IsVisible)
             {
                 _popup.Close();
@@ -77,7 +71,7 @@
         /// Shows a context menu for the specified control.
         /// </summary>
         /// <param name="control">The control.</param>
-        private static void Show(Control control)
+        private void Show(Control control)
         {
             if (control != null)
             {
@@ -93,7 +87,6 @@
                     _popup.Closed += PopupClosed;
                 }
 
-                ((ISetLogicalParent)_popup).SetParent(null);
                 ((ISetLogicalParent)_popup).SetParent(control);
                 _popup.Child = control.ContextMenu;
 
@@ -131,7 +124,7 @@
                     control.ContextMenu.Hide();
                 }
 
-                Show(control);
+                contextMenu.Show(control);
                 e.Handled = true;
             }
             else if (contextMenu._isOpen)
