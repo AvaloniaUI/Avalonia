@@ -9,6 +9,7 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Perspex.Data;
+using Perspex.Diagnostics;
 using Perspex.Threading;
 using Perspex.Utilities;
 using Serilog;
@@ -22,7 +23,7 @@ namespace Perspex
     /// <remarks>
     /// This class is analogous to DependencyObject in WPF.
     /// </remarks>
-    public class PerspexObject : IPerspexObject, INotifyPropertyChanged
+    public class PerspexObject : IPerspexObject, IPerspexObjectDebug, INotifyPropertyChanged
     {
         /// <summary>
         /// The parent object that inherited values are inherited from.
@@ -39,6 +40,11 @@ namespace Perspex
         /// Event handler for <see cref="INotifyPropertyChanged"/> implementation.
         /// </summary>
         private PropertyChangedEventHandler _inpcChanged;
+
+        /// <summary>
+        /// Event handler for <see cref="PropertyChanged"/> implementation.
+        /// </summary>
+        private EventHandler<PerspexPropertyChangedEventArgs> _propertyChanged;
 
         /// <summary>
         /// A serilog logger for logging property events.
@@ -77,7 +83,11 @@ namespace Perspex
         /// <summary>
         /// Raised when a <see cref="PerspexProperty"/> value changes on this object.
         /// </summary>
-        public event EventHandler<PerspexPropertyChangedEventArgs> PropertyChanged;
+        public event EventHandler<PerspexPropertyChangedEventArgs> PropertyChanged
+        {
+            add { _propertyChanged += value; }
+            remove { _propertyChanged -= value; }
+        }
 
         /// <summary>
         /// Raised when a <see cref="PerspexProperty"/> value changes on this object.
@@ -456,6 +466,11 @@ namespace Perspex
         }
 
         /// <inheritdoc/>
+        Delegate[] IPerspexObjectDebug.GetPropertyChangedSubscribers()
+        {
+            return _propertyChanged?.GetInvocationList();
+        }
+
         /// <summary>
         /// Gets all priority values set on the object.
         /// </summary>
@@ -519,7 +534,7 @@ namespace Perspex
                 OnPropertyChanged(e);
                 property.NotifyChanged(e);
 
-                PropertyChanged?.Invoke(this, e);
+                _propertyChanged?.Invoke(this, e);
 
                 if (_inpcChanged != null)
                 {

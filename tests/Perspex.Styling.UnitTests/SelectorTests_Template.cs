@@ -15,6 +15,7 @@ namespace Perspex.Styling.UnitTests
     using System.Reactive;
     using System.Reactive.Subjects;
     using Collections;
+    using Diagnostics;
     using Controls = Controls.Controls;
 
     public class SelectorTests_Template
@@ -124,7 +125,7 @@ namespace Perspex.Styling.UnitTests
             var border = (Border)target.Object.VisualChildren.Single();
             var selector = new Selector().OfType(templatedControl.Object.GetType()).Class("foo").Template().OfType<Border>();
             var activator = selector.Match(border).ObservableResult;
-            var inccDebug = (InccDebug)styleable.Object.Classes;
+            var inccDebug = (INotifyCollectionChangedDebug)styleable.Object.Classes;
 
             using (activator.Subscribe(_ => { }))
             {

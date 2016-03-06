@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reactive.Linq;
+using Perspex.Diagnostics;
 using Perspex.Markup.Data;
 using Xunit;
 
@@ -24,6 +25,8 @@ namespace Perspex.Markup.UnitTests.Data
             var result = await target.Take(1);
 
             Assert.Equal("foo", result);
+
+            Assert.Null(((IPerspexObjectDebug)data).GetPropertyChangedSubscribers());
         }
 
         [Fact]
@@ -39,6 +42,8 @@ namespace Perspex.Markup.UnitTests.Data
             Assert.Equal(new[] { "foo", "bar" }, result);
 
             sub.Dispose();
+
+            Assert.Null(((IPerspexObjectDebug)data).GetPropertyChangedSubscribers());
         }
 
         [Fact]

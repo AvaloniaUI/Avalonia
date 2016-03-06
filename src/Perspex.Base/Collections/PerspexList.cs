@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
+using Perspex.Diagnostics;
 using Perspex.Platform;
 
 namespace Perspex.Collections
@@ -53,7 +54,7 @@ namespace Perspex.Collections
     /// </item>
     /// </list>
     /// </remarks>
-    public class PerspexList<T> : IPerspexList<T>, IList, InccDebug
+    public class PerspexList<T> : IPerspexList<T>, IList, INotifyCollectionChangedDebug
     {
         private List<T> _inner;
         private NotifyCollectionChangedEventHandler _collectionChanged;
@@ -435,7 +436,7 @@ namespace Perspex.Collections
         }
 
         /// <inheritdoc/>
-        Delegate[] InccDebug.GetCollectionChangedSubscribers() => _collectionChanged?.GetInvocationList();
+        Delegate[] INotifyCollectionChangedDebug.GetCollectionChangedSubscribers() => _collectionChanged?.GetInvocationList();
 
         /// <summary>
         /// Raises the <see cref="CollectionChanged"/> event with an add action.

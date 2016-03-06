@@ -12,6 +12,7 @@ using Perspex.Collections;
 using Perspex.Controls.Primitives;
 using Perspex.Controls.Templates;
 using Perspex.Data;
+using Perspex.Diagnostics;
 using Perspex.Input;
 using Perspex.Interactivity;
 using Perspex.LogicalTree;
@@ -542,7 +543,7 @@ namespace Perspex.Controls
                     child.OnDetachedFromLogicalTree(e);
                 }
 
-                if (((InccDebug)_classes).GetCollectionChangedSubscribers()?.Length > 0)
+                if (((INotifyCollectionChangedDebug)_classes).GetCollectionChangedSubscribers()?.Length > 0)
                 {
                     // TODO: This should be output using a standard logging mechanism.
                     System.Diagnostics.Debug.WriteLine(

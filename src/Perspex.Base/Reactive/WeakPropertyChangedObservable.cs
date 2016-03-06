@@ -45,7 +45,7 @@ namespace Perspex.Reactive
 
             if (_sourceReference.TryGetTarget(out instance))
             {
-                if (_count == 0)
+                if (_count++ == 0)
                 {
                     WeakSubscriptionManager.Subscribe(
                         instance, 

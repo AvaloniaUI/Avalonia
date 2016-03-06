@@ -9,6 +9,7 @@ using Perspex.Collections;
 using Perspex.Controls;
 using Perspex.Controls.Primitives;
 using Perspex.Controls.Templates;
+using Perspex.Diagnostics;
 using Perspex.Layout;
 using Perspex.Styling;
 using Perspex.UnitTests;
@@ -230,7 +231,7 @@ namespace Perspex.LeakTests
 
                 // The TextBox should have subscriptions to its Classes collection from the
                 // default theme.
-                Assert.NotEmpty(((InccDebug)textBox.Classes).GetCollectionChangedSubscribers());
+                Assert.NotEmpty(((INotifyCollectionChangedDebug)textBox.Classes).GetCollectionChangedSubscribers());
 
                 // Clear the content and ensure the TextBox is removed.
                 window.Content = null;
@@ -238,7 +239,7 @@ namespace Perspex.LeakTests
                 Assert.Null(window.Presenter.Child);
 
                 // Check that the TextBox has no subscriptions to its Classes collection.
-                Assert.Null(((InccDebug)textBox.Classes).GetCollectionChangedSubscribers());
+                Assert.Null(((INotifyCollectionChangedDebug)textBox.Classes).GetCollectionChangedSubscribers());
             }
         }
 

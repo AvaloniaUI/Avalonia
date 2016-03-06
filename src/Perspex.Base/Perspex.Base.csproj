@@ -43,7 +43,7 @@
     <Compile Include="..\Shared\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="Collections\InccDebug.cs" />
+    <Compile Include="Diagnostics\INotifyCollectionChangedDebug.cs" />
     <Compile Include="Data\AssignBindingAttribute.cs" />
     <Compile Include="Data\BindingOperations.cs" />
     <Compile Include="Data\InstancedBinding.cs" />
@@ -51,6 +51,7 @@
     <Compile Include="Data\IndexerDescriptor.cs" />
     <Compile Include="Collections\PerspexDictionary.cs" />
     <Compile Include="Data\BindingMode.cs" />
+    <Compile Include="Diagnostics\IPerspexObjectDebug.cs" />
     <Compile Include="Diagnostics\PerspexObjectExtensions.cs" />
     <Compile Include="AttachedProperty.cs" />
     <Compile Include="IStyledPropertyAccessor.cs" />
@@ -68,6 +69,7 @@
     <Compile Include="Metadata\XmlnsDefinitionAttribute.cs" />
     <Compile Include="PerspexObjectExtensions.cs" />
     <Compile Include="PropertyMetadata.cs" />
+    <Compile Include="Reactive\WeakPropertyChangedObservable.cs" />
     <Compile Include="StyledProperty.cs" />
     <Compile Include="StyledPropertyBase.cs" />
     <Compile Include="PerspexPropertyRegistry.cs" />
@@ -104,6 +106,7 @@
     <Compile Include="Threading\PerspexScheduler.cs" />
     <Compile Include="Threading\PerspexSynchronizationContext.cs" />
     <Compile Include="Threading\SingleThreadDispatcher.cs" />
+    <Compile Include="Utilities\IWeakSubscriber.cs" />
     <Compile Include="Utilities\MathUtilities.cs" />
     <Compile Include="Utilities\TypeUtilities.cs" />
     <Compile Include="Utilities\WeakSubscriptionManager.cs" />
