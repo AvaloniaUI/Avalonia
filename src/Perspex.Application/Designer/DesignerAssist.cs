@@ -76,8 +76,11 @@ namespace Perspex.DesignerSupport
 
                 if (window == null)
                 {
-                    window = new Window() {Content = original, SizeToContent = SizeToContent.WidthAndHeight};
+                    window = new Window() {Content = original};
                 }
+
+                if (!window.IsSet(Window.SizeToContentProperty))
+                    window.SizeToContent = SizeToContent.WidthAndHeight;
             }
 
             s_currentWindow?.Close();
