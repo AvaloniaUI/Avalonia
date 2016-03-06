@@ -210,6 +210,48 @@ namespace Perspex.Controls.UnitTests
                 dataContexts);
         }
 
+        [Fact]
+        public void Control_Item_Should_Not_Be_NameScope()
+        {
+            var items = new object[]
+            {
+                new TreeViewItem(),
+            };
+
+            var target = new TreeView
+            {
+                Template = CreateTreeViewTemplate(),
+                Items = items,
+            };
+
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+
+            var item = target.Presenter.Panel.LogicalChildren[0];
+            Assert.Null(NameScope.GetNameScope((TreeViewItem)item));
+        }
+
+        [Fact]
+        public void DataTemplate_Created_Item_Should_Be_NameScope()
+        {
+            var items = new object[]
+            {
+                "foo",
+            };
+
+            var target = new TreeView
+            {
+                Template = CreateTreeViewTemplate(),
+                Items = items,
+            };
+
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+
+            var item = target.Presenter.Panel.LogicalChildren[0];
+            Assert.NotNull(NameScope.GetNameScope((TreeViewItem)item));
+        }
+
         private void ApplyTemplates(TreeView tree)
         {
             tree.ApplyTemplate();

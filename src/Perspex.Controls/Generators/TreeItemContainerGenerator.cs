@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using Perspex.Controls.Templates;
 
@@ -84,6 +83,7 @@ namespace Perspex.Controls.Generators
                     result.DataContext = item;
                 }
 
+                NameScope.SetNameScope((Control)(object)result, new NameScope());
                 Index.Add(item, result);
 
                 return result;
