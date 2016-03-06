@@ -136,6 +136,32 @@ namespace Perspex.Markup.Xaml
             }
         }
 
+        /// <summary>
+        /// Loads XAML from a stream.
+        /// </summary>
+        /// <param name="stream">The stream containing the XAML.</param>
+        /// <param name="rootInstance">
+        /// The optional instance into which the XAML should be loaded.
+        /// </param>
+        /// <returns>The loaded object.</returns>
+        public object Load(Stream stream, object rootInstance = null)
+        {
+            var result = base.Load(stream, new Settings
+            {
+                RootInstance = rootInstance,
+                InstanceLifeCycleListener = s_lifeCycleListener,
+            });
+
+            var control = result as IControl;
+
+            if (control != null)
+            {
+                DelayedBinding.ApplyBindings(control);
+            }
+
+            return result;
+        }
+
         private static PerspexParserFactory GetParserFactory()
         {
             if (s_parserFactory == null)
@@ -158,24 +184,6 @@ namespace Perspex.Markup.Xaml
             yield return new Uri("resm:" + typeName + ".xaml?assembly=" + asm);
             yield return new Uri("resm:" + typeName + ".xaml?assembly=" + asm);
 
-        }
-
-        private object Load(Stream stream, object rootInstance)
-        {
-            var result = base.Load(stream, new Settings
-            {
-                RootInstance = rootInstance,
-                InstanceLifeCycleListener = s_lifeCycleListener,
-            });
-
-            var control = result as IControl;
-
-            if (control != null)
-            {
-                DelayedBinding.ApplyBindings(control);
-            }
-
-            return result;
         }
     }
 }

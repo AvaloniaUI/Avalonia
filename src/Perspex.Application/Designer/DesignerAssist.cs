@@ -63,18 +63,23 @@ namespace Perspex.DesignerSupport
 
         private static void UpdateXaml(string xaml)
         {
-
             Window window;
             Control original;
+
             using (PlatformManager.DesignerMode())
             {
-                original =(Control)((XmlLoader)new PerspexXamlLoader()).Load(new MemoryStream(Encoding.UTF8.GetBytes(xaml)), new Settings());
+                var loader = new PerspexXamlLoader();
+                var stream = new MemoryStream(Encoding.UTF8.GetBytes(xaml));
+
+                original = (Control)loader.Load(stream);
                 window = original as Window;
+
                 if (window == null)
                 {
                     window = new Window() {Content = original};
                 }
             }
+
             s_currentWindow?.Close();
             s_currentWindow = window;
             window.Show();
