@@ -13,7 +13,9 @@ using System.Reflection;
 
 namespace Perspex.Markup.Data
 {
-    internal class IndexerNode : ExpressionNode
+    internal class IndexerNode : ExpressionNode, 
+        IWeakSubscriber<NotifyCollectionChangedEventArgs>,
+        IWeakSubscriber<PropertyChangedEventArgs>
     {
         public IndexerNode(IList<string> arguments)
         {
@@ -22,51 +24,7 @@ namespace Perspex.Markup.Data
 
         public IList<string> Arguments { get; }
 
-        protected override void SubscribeAndUpdate(WeakReference reference)
-        {
-            object target = reference.Target;
-
-            CurrentValue = new WeakReference(GetValue(target));
-
-            var incc = target as INotifyCollectionChanged;
-
-            if (incc != null)
-            {
-                incc.CollectionChanged += CollectionChanged;
-            }
-
-            var inpc = target as INotifyPropertyChanged;
-
-            if(inpc != null)
-            {
-                inpc.PropertyChanged += IndexerPropertyChanged;
-            }
-        }
-
-        private void IndexerPropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            var typeInfo = sender.GetType().GetTypeInfo();
-            if (typeInfo.GetDeclaredProperty(e.PropertyName) == null)
-            {
-                return;
-            }
-            if (typeInfo.GetDeclaredProperty(e.PropertyName).GetIndexParameters().Any())
-            {
-                CurrentValue = new WeakReference(GetValue(sender));
-            }
-        }
-
-        protected override void Unsubscribe(object target)
-        {
-            var incc = target as INotifyCollectionChanged;
-
-            if (incc != null)
-            {
-                incc.CollectionChanged -= CollectionChanged;
-            }
-        }
-
-        private void CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        void IWeakSubscriber<NotifyCollectionChangedEventArgs>.OnEvent(object sender, NotifyCollectionChangedEventArgs e)
         {
             var update = false;
             if (sender is IList)
@@ -108,6 +66,71 @@ namespace Perspex.Markup.Data
             if (update)
             {
                 CurrentValue = new WeakReference(GetValue(sender));
+            }
+        }
+
+        void IWeakSubscriber<PropertyChangedEventArgs>.OnEvent(object sender, PropertyChangedEventArgs e)
+        {
+            var typeInfo = sender.GetType().GetTypeInfo();
+
+            if (typeInfo.GetDeclaredProperty(e.PropertyName) == null)
+            {
+                return;
+            }
+
+            if (typeInfo.GetDeclaredProperty(e.PropertyName).GetIndexParameters().Any())
+            {
+                CurrentValue = new WeakReference(GetValue(sender));
+            }
+        }
+
+        protected override void SubscribeAndUpdate(WeakReference reference)
+        {
+            object target = reference.Target;
+
+            CurrentValue = new WeakReference(GetValue(target));
+
+            var incc = target as INotifyCollectionChanged;
+
+            if (incc != null)
+            {
+                WeakSubscriptionManager.Subscribe<NotifyCollectionChangedEventArgs>(
+                    incc,
+                    nameof(incc.CollectionChanged),
+                    this);
+            }
+
+            var inpc = target as INotifyPropertyChanged;
+
+            if (inpc != null)
+            {
+                WeakSubscriptionManager.Subscribe<PropertyChangedEventArgs>(
+                    inpc,
+                    nameof(inpc.PropertyChanged),
+                    this);
+            }
+        }
+
+        protected override void Unsubscribe(object target)
+        {
+            var incc = target as INotifyCollectionChanged;
+
+            if (incc != null)
+            {
+                WeakSubscriptionManager.Unsubscribe<NotifyCollectionChangedEventArgs>(
+                    incc,
+                    nameof(incc.CollectionChanged),
+                    this);
+            }
+
+            var inpc = target as INotifyPropertyChanged;
+
+            if (inpc != null)
+            {
+                WeakSubscriptionManager.Unsubscribe<PropertyChangedEventArgs>(
+                    inpc,
+                    nameof(inpc.PropertyChanged),
+                    this);
             }
         }
 

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
@@ -29,9 +30,8 @@ namespace Perspex.Utilities
             if (!dic.TryGetValue(eventName, out sub))
             {
                 dic[eventName] = sub = new Subscription<T>(dic, target, eventName);
-
-
             }
+
             sub.Add(new WeakReference<IWeakSubscriber<T>>(subscriber));
         }
 
@@ -93,12 +93,23 @@ namespace Perspex.Utilities
                 Dictionary<string, EventInfo> evDic;
                 if (!Accessors.TryGetValue(t, out evDic))
                     Accessors[t] = evDic = new Dictionary<string, EventInfo>();
+
                 if (!evDic.TryGetValue(eventName, out _info))
-                    evDic[eventName] = _info = t.GetRuntimeEvent(eventName);
+                {
+                    var ev = t.GetRuntimeEvents().FirstOrDefault(x => x.Name == eventName);
+
+                    if (ev == null)
+                    {
+                        throw new ArgumentException(
+                            $"The event {eventName} was not found on {target.GetType()}.");
+                    }
+
+                    evDic[eventName] = _info = ev;
+                }
 
                 var del = new Action<object, T>(OnEvent);
                 _delegate = del.GetMethodInfo().CreateDelegate(_info.EventHandlerType, del.Target);
-                _info.AddEventHandler(target, _delegate);
+                _info.AddMethod.Invoke(target, new[] { _delegate });
             }
 
             void Destroy()

@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Reactive.Linq;
+using Perspex.Collections;
+using Perspex.Diagnostics;
 using Perspex.Markup.Data;
 using Xunit;
 
@@ -95,45 +97,57 @@ namespace Perspex.Markup.UnitTests.Data
         [Fact]
         public void Should_Track_INCC_Add()
         {
-            var data = new { Foo = new ObservableCollection<string> { "foo", "bar" } };
+            var data = new { Foo = new PerspexList<string> { "foo", "bar" } };
             var target = new ExpressionObserver(data, "Foo[2]");
             var result = new List<object>();
 
-            var sub = target.Subscribe(x => result.Add(x));
-            data.Foo.Add("baz");
+            using (var sub = target.Subscribe(x => result.Add(x)))
+            {
+                data.Foo.Add("baz");
+            }
 
             Assert.Equal(new[] { PerspexProperty.UnsetValue, "baz" }, result);
+            Assert.Null(((INotifyCollectionChangedDebug)data.Foo).GetCollectionChangedSubscribers());
         }
 
         [Fact]
         public void Should_Track_INCC_Remove()
         {
-            var data = new { Foo = new ObservableCollection<string> { "foo", "bar" } };
+            var data = new { Foo = new PerspexList<string> { "foo", "bar" } };
             var target = new ExpressionObserver(data, "Foo[0]");
             var result = new List<object>();
 
-            var sub = target.Subscribe(x => result.Add(x));
-            data.Foo.RemoveAt(0);
+            using (var sub = target.Subscribe(x => result.Add(x)))
+            {
+                data.Foo.RemoveAt(0);
+            }
 
             Assert.Equal(new[] { "foo", "bar" }, result);
+            Assert.Null(((INotifyCollectionChangedDebug)data.Foo).GetCollectionChangedSubscribers());
         }
 
         [Fact]
         public void Should_Track_INCC_Replace()
         {
-            var data = new { Foo = new ObservableCollection<string> { "foo", "bar" } };
+            var data = new { Foo = new PerspexList<string> { "foo", "bar" } };
             var target = new ExpressionObserver(data, "Foo[1]");
             var result = new List<object>();
 
-            var sub = target.Subscribe(x => result.Add(x));
-            data.Foo[1] = "baz";
+            using (var sub = target.Subscribe(x => result.Add(x)))
+            {
+                data.Foo[1] = "baz";
+            }
 
             Assert.Equal(new[] { "bar", "baz" }, result);
+            Assert.Null(((INotifyCollectionChangedDebug)data.Foo).GetCollectionChangedSubscribers());
         }
 
         [Fact]
         public void Should_Track_INCC_Move()
         {
+            // Using ObservableCollection here because PerspexList does not yet have a Move
+            // method, but even if it did we need to test with ObservableCollection as well
+            // as PerspexList as it implements PropertyChanged as an explicit interface event.
             var data = new { Foo = new ObservableCollection<string> { "foo", "bar" } };
             var target = new ExpressionObserver(data, "Foo[1]");
             var result = new List<object>();
@@ -147,7 +161,7 @@ namespace Perspex.Markup.UnitTests.Data
         [Fact]
         public void Should_Track_INCC_Reset()
         {
-            var data = new { Foo = new ObservableCollection<string> { "foo", "bar" } };
+            var data = new { Foo = new PerspexList<string> { "foo", "bar" } };
             var target = new ExpressionObserver(data, "Foo[1]");
             var result = new List<object>();
 
@@ -167,11 +181,14 @@ namespace Perspex.Markup.UnitTests.Data
             var target = new ExpressionObserver(data, "Foo[foo]");
             var result = new List<object>();
 
-            var sub = target.Subscribe(x => result.Add(x));
-            data.Foo["foo"] = "bar2";
+            using (var sub = target.Subscribe(x => result.Add(x)))
+            {
+                data.Foo["foo"] = "bar2";
+            }
 
             var expected = new[] { "bar", "bar2" };
             Assert.Equal(expected, result);
+            Assert.Equal(0, data.Foo.SubscriptionCount);
         }
 
         [Fact]
@@ -179,7 +196,7 @@ namespace Perspex.Markup.UnitTests.Data
         {
             Func<Tuple<ExpressionObserver, WeakReference>> run = () =>
             {
-                var source = new { Foo = new ObservableCollection<string> { "foo", "bar" } };
+                var source = new { Foo = new PerspexList<string> { "foo", "bar" } };
                 var target = new ExpressionObserver(source, "Foo");
                 return Tuple.Create(target, new WeakReference(source.Foo));
             };
