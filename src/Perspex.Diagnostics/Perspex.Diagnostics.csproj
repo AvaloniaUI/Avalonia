@@ -105,11 +105,11 @@
     <Compile Include="ViewModels\LogicalTreeNode.cs" />
     <Compile Include="ViewModels\TreeNode.cs" />
     <Compile Include="ViewModels\VisualTreeNode.cs" />
-    <Compile Include="Views\TreePage.paml.cs">
-      <DependentUpon>TreePageView.paml</DependentUpon>
+    <Compile Include="Views\TreePage.xaml.cs">
+      <DependentUpon>TreePageView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="DevTools.paml.cs">
-      <DependentUpon>DevTools.paml</DependentUpon>
+    <Compile Include="DevTools.xaml.cs">
+      <DependentUpon>DevTools.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\ControlDetailsView.cs" />
     <Compile Include="Views\GridRepeater.cs" />
@@ -134,10 +134,10 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
-    <EmbeddedResource Include="DevTools.paml">
+    <EmbeddedResource Include="DevTools.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="Views\TreePageView.paml">
+    <EmbeddedResource Include="Views\TreePageView.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>

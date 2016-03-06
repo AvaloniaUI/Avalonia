@@ -80,8 +80,8 @@
     <Compile Include="..\Shared\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="DefaultTheme.paml.cs">
-      <DependentUpon>DefaultTheme.paml</DependentUpon>
+    <Compile Include="DefaultTheme.xaml.cs">
+      <DependentUpon>DefaultTheme.xaml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -100,103 +100,103 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Accents\BaseLight.paml">
+    <EmbeddedResource Include="Accents\BaseLight.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <None Include="app.config" />
-    <EmbeddedResource Include="Button.paml">
+    <EmbeddedResource Include="Button.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="Carousel.paml">
+    <EmbeddedResource Include="Carousel.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="CheckBox.paml">
+    <EmbeddedResource Include="CheckBox.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="ContentControl.paml">
+    <EmbeddedResource Include="ContentControl.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="DropDown.paml">
+    <EmbeddedResource Include="DropDown.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="FocusAdorner.paml">
+    <EmbeddedResource Include="FocusAdorner.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="GridSplitter.paml">
+    <EmbeddedResource Include="GridSplitter.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="ItemsControl.paml">
+    <EmbeddedResource Include="ItemsControl.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="ListBox.paml">
+    <EmbeddedResource Include="ListBox.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="ListBoxItem.paml">
+    <EmbeddedResource Include="ListBoxItem.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="Menu.paml">
+    <EmbeddedResource Include="Menu.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="MenuItem.paml">
+    <EmbeddedResource Include="MenuItem.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="ProgressBar.paml">
+    <EmbeddedResource Include="ProgressBar.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="ToolTip.paml">
+    <EmbeddedResource Include="ToolTip.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="Expander.paml" />
-    <EmbeddedResource Include="DropDownItem.paml">
+    <EmbeddedResource Include="Expander.xaml" />
+    <EmbeddedResource Include="DropDownItem.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="ContextMenu.paml">
+    <EmbeddedResource Include="ContextMenu.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <None Include="packages.config" />
-    <EmbeddedResource Include="PopupRoot.paml">
+    <EmbeddedResource Include="PopupRoot.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="RadioButton.paml">
+    <EmbeddedResource Include="RadioButton.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="ScrollBar.paml">
+    <EmbeddedResource Include="ScrollBar.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="ScrollViewer.paml">
+    <EmbeddedResource Include="ScrollViewer.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="TabControl.paml">
+    <EmbeddedResource Include="TabControl.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="TabStripItem.paml">
+    <EmbeddedResource Include="TabStripItem.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="TabStrip.paml">
+    <EmbeddedResource Include="TabStrip.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="TextBox.paml">
+    <EmbeddedResource Include="TextBox.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="ToggleButton.paml">
+    <EmbeddedResource Include="ToggleButton.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="TreeView.paml">
+    <EmbeddedResource Include="TreeView.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="TreeViewItem.paml">
+    <EmbeddedResource Include="TreeViewItem.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="Window.paml">
+    <EmbeddedResource Include="Window.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="DefaultTheme.paml">
+    <EmbeddedResource Include="DefaultTheme.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="Separator.paml">
+    <EmbeddedResource Include="Separator.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="Slider.paml">
+    <EmbeddedResource Include="Slider.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>

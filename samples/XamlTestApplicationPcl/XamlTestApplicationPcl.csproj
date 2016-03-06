@@ -35,7 +35,7 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- A reference to the entire .NET Framework is automatically included -->
-    <EmbeddedResource Include="Views\MainWindow.paml">
+    <EmbeddedResource Include="Views\MainWindow.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
@@ -141,7 +141,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="XamlTestApp.paml">
+    <EmbeddedResource Include="XamlTestApp.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <None Include="packages.config" />

@@ -1,7 +1,7 @@
 ﻿<Application xmlns="https://github.com/perspex">
   <Application.Styles>
-    <StyleInclude Source="resm:Perspex.Themes.Default.DefaultTheme.paml?assembly=Perspex.Themes.Default"/>
-    <StyleInclude Source="resm:Perspex.Themes.Default.Accents.BaseLight.paml?assembly=Perspex.Themes.Default"/>
+    <StyleInclude Source="resm:Perspex.Themes.Default.DefaultTheme.xaml?assembly=Perspex.Themes.Default"/>
+    <StyleInclude Source="resm:Perspex.Themes.Default.Accents.BaseLight.xaml?assembly=Perspex.Themes.Default"/>
 
     <Style Selector="TextBlock.h1">
       <Setter Property="Foreground" Value="#212121"/>
@@ -14,6 +14,6 @@
       <Setter Property="FontSize" Value="13"/>
     </Style>
 
-    <StyleInclude Source="resm:ControlCatalog.SideBar.paml"/>
+    <StyleInclude Source="resm:ControlCatalog.SideBar.xaml"/>
   </Application.Styles>
 </Application>

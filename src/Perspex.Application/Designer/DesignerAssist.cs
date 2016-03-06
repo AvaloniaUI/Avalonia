@@ -28,7 +28,7 @@ namespace Perspex.DesignerSupport
 
                 var loader = new PerspexXamlLoader();
                 var baseLight = (IStyle)loader.Load(
-                    new Uri("resm:Perspex.Themes.Default.Accents.BaseLight.paml?assembly=Perspex.Themes.Default"));
+                    new Uri("resm:Perspex.Themes.Default.Accents.BaseLight.xaml?assembly=Perspex.Themes.Default"));
                 Styles.Add(baseLight);
             }
         }

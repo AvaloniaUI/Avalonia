@@ -54,64 +54,64 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="App.paml.cs">
-      <DependentUpon>App.paml</DependentUpon>
+    <Compile Include="App.xaml.cs">
+      <DependentUpon>App.xaml</DependentUpon>
     </Compile>
-    <Compile Include="MainWindow.paml.cs">
-      <DependentUpon>MainWindow.paml</DependentUpon>
+    <Compile Include="MainWindow.xaml.cs">
+      <DependentUpon>MainWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Pages\CheckBoxPage.paml.cs">
-      <DependentUpon>CheckBoxPage.paml</DependentUpon>
+    <Compile Include="Pages\CheckBoxPage.xaml.cs">
+      <DependentUpon>CheckBoxPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Pages\BorderPage.paml.cs">
-      <DependentUpon>BorderPage.paml</DependentUpon>
+    <Compile Include="Pages\BorderPage.xaml.cs">
+      <DependentUpon>BorderPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Pages\CarouselPage.paml.cs">
-      <DependentUpon>CarouselPage.paml</DependentUpon>
+    <Compile Include="Pages\CarouselPage.xaml.cs">
+      <DependentUpon>CarouselPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Pages\CanvasPage.paml.cs">
-      <DependentUpon>CanvasPage.paml</DependentUpon>
+    <Compile Include="Pages\CanvasPage.xaml.cs">
+      <DependentUpon>CanvasPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Pages\ButtonPage.paml.cs">
-      <DependentUpon>ButtonPage.paml</DependentUpon>
+    <Compile Include="Pages\ButtonPage.xaml.cs">
+      <DependentUpon>ButtonPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Pages\DropDownPage.paml.cs">
-      <DependentUpon>DropDownPage.paml</DependentUpon>
+    <Compile Include="Pages\DropDownPage.xaml.cs">
+      <DependentUpon>DropDownPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Pages\SliderPage.paml.cs">
-      <DependentUpon>SliderPage.paml</DependentUpon>
+    <Compile Include="Pages\SliderPage.xaml.cs">
+      <DependentUpon>SliderPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <EmbeddedResource Include="App.paml">
+    <EmbeddedResource Include="App.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="Pages\ButtonPage.paml">
+    <EmbeddedResource Include="Pages\ButtonPage.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="SideBar.paml">
+    <EmbeddedResource Include="SideBar.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="MainWindow.paml">
+    <EmbeddedResource Include="MainWindow.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="Pages\BorderPage.paml">
+    <EmbeddedResource Include="Pages\BorderPage.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="Pages\CanvasPage.paml">
+    <EmbeddedResource Include="Pages\CanvasPage.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="Pages\CarouselPage.paml">
+    <EmbeddedResource Include="Pages\CarouselPage.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="Pages\DropDownPage.paml" />
+    <EmbeddedResource Include="Pages\DropDownPage.xaml" />
     <None Include="packages.config" />
-    <EmbeddedResource Include="Pages\CheckBoxPage.paml">
+    <EmbeddedResource Include="Pages\CheckBoxPage.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="Pages\SliderPage.paml">
+    <EmbeddedResource Include="Pages\SliderPage.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>

@@ -66,7 +66,7 @@ namespace Perspex.Markup.Xaml
             Contract.Requires<ArgumentNullException>(type != null);
 
             // HACK: Currently Visual Studio is forcing us to change the extension of xaml files
-            // in certain situations, so we try to load .xaml and if that's not found we try .paml.
+            // in certain situations, so we try to load .xaml and if that's not found we try .xaml.
             // Ideally we'd be able to use .xaml everywhere
             var assetLocator = PerspexLocator.Current.GetService<IAssetLoader>();
 
@@ -156,7 +156,7 @@ namespace Perspex.Markup.Xaml
             var asm = type.GetTypeInfo().Assembly.GetName().Name;
             var typeName = type.FullName;
             yield return new Uri("resm:" + typeName + ".xaml?assembly=" + asm);
-            yield return new Uri("resm:" + typeName + ".paml?assembly=" + asm);
+            yield return new Uri("resm:" + typeName + ".xaml?assembly=" + asm);
 
         }
 

@@ -74,29 +74,29 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="App.paml">
+    <EmbeddedResource Include="App.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <Compile Include="App.paml.cs">
-      <DependentUpon>App.paml</DependentUpon>
+    <Compile Include="App.xaml.cs">
+      <DependentUpon>App.xaml</DependentUpon>
     </Compile>
-    <Compile Include="MainWindow.paml.cs">
-      <DependentUpon>MainWindow.paml</DependentUpon>
+    <Compile Include="MainWindow.xaml.cs">
+      <DependentUpon>MainWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TestItemView.paml.cs">
-      <DependentUpon>TestItemView.paml</DependentUpon>
+    <Compile Include="TestItemView.xaml.cs">
+      <DependentUpon>TestItemView.xaml</DependentUpon>
     </Compile>
     <Compile Include="ViewModels\MainWindowViewModel.cs" />
     <Compile Include="ViewModels\TestItem.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <EmbeddedResource Include="MainWindow.paml">
+    <EmbeddedResource Include="MainWindow.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <None Include="packages.config" />
-    <EmbeddedResource Include="TestItemView.paml" />
+    <EmbeddedResource Include="TestItemView.xaml" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Markup\Perspex.Markup.Xaml\Perspex.Markup.Xaml.csproj">
