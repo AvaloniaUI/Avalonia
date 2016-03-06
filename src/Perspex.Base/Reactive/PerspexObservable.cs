@@ -11,7 +11,7 @@ namespace Perspex.Reactive
     /// An <see cref="IObservable{T}"/> with an additional description.
     /// </summary>
     /// <typeparam name="T">The type of the elements in the sequence.</typeparam>
-    public sealed class PerspexObservable<T> : ObservableBase<T>, IDescription
+    public class PerspexObservable<T> : ObservableBase<T>, IDescription
     {
         private readonly Func<IObserver<T>, IDisposable> _subscribe;
 

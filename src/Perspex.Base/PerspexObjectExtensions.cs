@@ -165,6 +165,23 @@ namespace Perspex
         }
 
         /// <summary>
+        /// Gets a weak observable for a <see cref="PerspexProperty"/>.
+        /// </summary>
+        /// <param name="o">The object.</param>
+        /// <param name="property">The property.</param>
+        /// <returns>An observable.</returns>
+        public static IObservable<object> GetWeakObservable(this IPerspexObject o, PerspexProperty property)
+        {
+            Contract.Requires<ArgumentNullException>(o != null);
+            Contract.Requires<ArgumentNullException>(property != null);
+
+            return new WeakPropertyChangedObservable(
+                new WeakReference<IPerspexObject>(o), 
+                property, 
+                GetDescription(o, property));
+        }
+
+        /// <summary>
         /// Binds a property on an <see cref="IPerspexObject"/> to an <see cref="IBinding"/>.
         /// </summary>
         /// <param name="target">The object.</param>

@@ -74,7 +74,7 @@ namespace Perspex.Markup.Data.Plugins
 
                 _reference = reference;
                 _property = property;
-                _subscription = Instance.GetObservable(property).Skip(1).Subscribe(changed);
+                _subscription = Instance.GetWeakObservable(property).Skip(1).Subscribe(changed);
             }
 
             public PerspexObject Instance
