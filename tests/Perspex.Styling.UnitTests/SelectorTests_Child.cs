@@ -24,7 +24,7 @@ namespace Perspex.Styling.UnitTests
 
             child.LogicalParent = parent;
 
-            var selector = new Selector().OfType<TestLogical1>().Child().OfType<TestLogical2>();
+            var selector = default(Selector).OfType<TestLogical1>().Child().OfType<TestLogical2>();
 
             Assert.True(selector.Match(child).ImmediateResult);
         }
@@ -39,7 +39,7 @@ namespace Perspex.Styling.UnitTests
             parent.LogicalParent = grandparent;
             child.LogicalParent = parent;
 
-            var selector = new Selector().OfType<TestLogical1>().Child().OfType<TestLogical3>();
+            var selector = default(Selector).OfType<TestLogical1>().Child().OfType<TestLogical3>();
 
             Assert.False(selector.Match(child).ImmediateResult);
         }
@@ -52,7 +52,7 @@ namespace Perspex.Styling.UnitTests
 
             child.LogicalParent = parent;
 
-            var selector = new Selector().OfType<TestLogical1>().Class("foo").Child().OfType<TestLogical2>();
+            var selector = default(Selector).OfType<TestLogical1>().Class("foo").Child().OfType<TestLogical2>();
             var activator = selector.Match(child).ObservableResult;
             var result = new List<bool>();
 
@@ -67,9 +67,17 @@ namespace Perspex.Styling.UnitTests
         public void Child_Doesnt_Match_Control_When_It_Has_No_Parent()
         {
             var control = new TestLogical3();
-            var selector = new Selector().OfType<TestLogical1>().Child().OfType<TestLogical3>();
+            var selector = default(Selector).OfType<TestLogical1>().Child().OfType<TestLogical3>();
 
             Assert.False(selector.Match(control).ImmediateResult);
+        }
+
+        [Fact]
+        public void Child_Selector_Should_Have_Correct_String_Representation()
+        {
+            var selector = default(Selector).OfType<TestLogical1>().Child().OfType<TestLogical3>();
+
+            Assert.Equal("TestLogical1 > TestLogical3", selector.ToString());
         }
 
         public abstract class TestLogical : ILogical, IStyleable
