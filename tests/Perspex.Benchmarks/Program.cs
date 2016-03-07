@@ -5,7 +5,6 @@ using System.Linq;
 using System.Reflection;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Running;
-using Perspex.Benchmarks.Controls;
 
 namespace Perspex.Benchmarks
 {
