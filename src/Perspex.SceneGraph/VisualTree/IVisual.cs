@@ -86,6 +86,11 @@ namespace Perspex.VisualTree
         int ZIndex { get; set; }
 
         /// <summary>
+        /// Invalidates the visual and queues a repaint.
+        /// </summary>
+        void InvalidateVisual();
+
+        /// <summary>
         /// Renders the scene graph node to a <see cref="DrawingContext"/>.
         /// </summary>
         /// <param name="context">The context.</param>
