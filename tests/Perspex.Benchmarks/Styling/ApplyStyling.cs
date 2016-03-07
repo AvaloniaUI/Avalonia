@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using BenchmarkDotNet.Attributes;
 using Perspex.Controls;
+using Perspex.Styling;
 using Perspex.UnitTests;
 using Perspex.VisualTree;
 
@@ -37,6 +38,18 @@ namespace Perspex.Benchmarks.Styling
             }
 
             _window.Content = null;
+
+            // Add a bunch of styles with lots of class selectors to complicate matters.
+            for (int i = 0; i < 100; ++i)
+            {
+                _window.Styles.Add(new Style(x => x.OfType<TextBox>().Class("foo").Class("bar").Class("baz"))
+                {
+                    Setters = new[]
+                    {
+                        new Setter(TextBox.TextProperty, "foo"),
+                    }
+                });
+            }
         }
 
         public void Dispose()
