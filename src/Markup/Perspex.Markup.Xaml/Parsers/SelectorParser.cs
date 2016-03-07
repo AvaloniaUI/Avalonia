@@ -37,7 +37,7 @@ namespace Perspex.Markup.Xaml.Parsers
         public Selector Parse(string s)
         {
             var syntax = SelectorGrammar.Selector.Parse(s);
-            var result = new Selector();
+            var result = default(Selector);
 
             foreach (var i in syntax)
             {

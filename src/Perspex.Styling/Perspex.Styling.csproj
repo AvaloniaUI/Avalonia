@@ -49,6 +49,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Styling\ActivatedSubject.cs" />
     <Compile Include="Styling\ActivatedValue.cs" />
+    <Compile Include="Styling\TemplateSelector.cs" />
+    <Compile Include="Styling\DescendentSelector.cs" />
+    <Compile Include="Styling\ChildSelector.cs" />
     <Compile Include="Styling\IGlobalStyles.cs" />
     <Compile Include="Styling\ISetter.cs" />
     <Compile Include="Styling\IStyle.cs" />
@@ -67,6 +70,8 @@
     <Compile Include="Styling\StyleExtensions.cs" />
     <Compile Include="Styling\Styler.cs" />
     <Compile Include="Styling\Styles.cs" />
+    <Compile Include="Styling\PropertyEqualsSelector.cs" />
+    <Compile Include="Styling\TypeNameAndClassSelector.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System.Reactive.Core">

@@ -31,7 +31,7 @@ namespace Perspex.Styling.UnitTests
 
             control.ApplyTemplate();
 
-            var selector = new Selector()
+            var selector = default(Selector)
                 .OfType<Button>()
                 .Class("foo")
                 .Class("bar")
@@ -54,7 +54,7 @@ namespace Perspex.Styling.UnitTests
         [Fact]
         public void TargetType_OfType()
         {
-            var selector = new Selector().OfType<Button>();
+            var selector = default(Selector).OfType<Button>();
 
             Assert.Equal(typeof(Button), selector.TargetType);
         }
@@ -62,7 +62,7 @@ namespace Perspex.Styling.UnitTests
         [Fact]
         public void TargetType_OfType_Class()
         {
-            var selector = new Selector()
+            var selector = default(Selector)
                 .OfType<Button>()
                 .Class("foo");
 
@@ -72,7 +72,7 @@ namespace Perspex.Styling.UnitTests
         [Fact]
         public void TargetType_Is_Class()
         {
-            var selector = new Selector()
+            var selector = default(Selector)
                 .Is<Button>()
                 .Class("foo");
 
@@ -82,7 +82,7 @@ namespace Perspex.Styling.UnitTests
         [Fact]
         public void TargetType_Child()
         {
-            var selector = new Selector()
+            var selector = default(Selector)
                 .OfType<Button>()
                 .Child()
                 .OfType<TextBlock>();
@@ -93,7 +93,7 @@ namespace Perspex.Styling.UnitTests
         [Fact]
         public void TargetType_Descendent()
         {
-            var selector = new Selector()
+            var selector = default(Selector)
                 .OfType<Button>()
                 .Descendent()
                 .OfType<TextBlock>();
@@ -104,7 +104,7 @@ namespace Perspex.Styling.UnitTests
         [Fact]
         public void TargetType_Template()
         {
-            var selector = new Selector()
+            var selector = default(Selector)
                 .OfType<Button>()
                 .Template()
                 .OfType<TextBlock>();

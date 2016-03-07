@@ -16,7 +16,7 @@ namespace Perspex.Styling.UnitTests
         [Fact]
         public void Class_Selector_Should_Have_Correct_String_Representation()
         {
-            var target = new Selector().Class("foo");
+            var target = default(Selector).Class("foo");
 
             Assert.Equal(".foo", target.ToString());
         }
@@ -24,7 +24,7 @@ namespace Perspex.Styling.UnitTests
         [Fact]
         public void PesudoClass_Selector_Should_Have_Correct_String_Representation()
         {
-            var target = new Selector().Class(":foo");
+            var target = default(Selector).Class(":foo");
 
             Assert.Equal(":foo", target.ToString());
         }
@@ -37,7 +37,7 @@ namespace Perspex.Styling.UnitTests
                 Classes = new Classes { "foo" },
             };
 
-            var target = new Selector().Class("foo");
+            var target = default(Selector).Class("foo");
             var activator = target.Match(control).ObservableResult;
 
             Assert.True(await activator.Take(1));
@@ -51,7 +51,7 @@ namespace Perspex.Styling.UnitTests
                 Classes = new Classes { "bar" },
             };
 
-            var target = new Selector().Class("foo");
+            var target = default(Selector).Class("foo");
             var activator = target.Match(control).ObservableResult;
 
             Assert.False(await activator.Take(1));
@@ -66,7 +66,7 @@ namespace Perspex.Styling.UnitTests
                 TemplatedParent = new Mock<ITemplatedControl>().Object,
             };
 
-            var target = new Selector().Class("foo");
+            var target = default(Selector).Class("foo");
             var activator = target.Match(control).ObservableResult;
 
             Assert.True(await activator.Take(1));
@@ -77,7 +77,7 @@ namespace Perspex.Styling.UnitTests
         {
             var control = new Control1();
 
-            var target = new Selector().Class("foo");
+            var target = default(Selector).Class("foo");
             var activator = target.Match(control).ObservableResult;
 
             Assert.False(await activator.Take(1));
@@ -93,7 +93,7 @@ namespace Perspex.Styling.UnitTests
                 Classes = new Classes { "foo" },
             };
 
-            var target = new Selector().Class("foo");
+            var target = default(Selector).Class("foo");
             var activator = target.Match(control).ObservableResult;
 
             Assert.True(await activator.Take(1));
@@ -105,7 +105,7 @@ namespace Perspex.Styling.UnitTests
         public async Task Multiple_Classes()
         {
             var control = new Control1();
-            var target = new Selector().Class("foo").Class("bar");
+            var target = default(Selector).Class("foo").Class("bar");
             var activator = target.Match(control).ObservableResult;
 
             Assert.False(await activator.Take(1));
