@@ -127,8 +127,7 @@ namespace Perspex.Styling
                             NotifyCollectionChangedEventArgs>(
                         x => control.Classes.CollectionChanged += x,
                         x => control.Classes.CollectionChanged -= x)
-                        .Select(_ => Unit.Default)
-                        .StartWith(Unit.Default)
+                        .StartWith((EventPattern<NotifyCollectionChangedEventArgs>)null)
                         .Select(_ => Matches(control.Classes));
                     return new SelectorMatch(observable);
                 }
