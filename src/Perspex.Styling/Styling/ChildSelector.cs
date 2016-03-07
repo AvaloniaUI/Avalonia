@@ -9,6 +9,7 @@ namespace Perspex.Styling
     internal class ChildSelector : Selector
     {
         private readonly Selector _parent;
+        private string _selectorString;
 
         public ChildSelector(Selector parent)
         {
@@ -28,7 +29,12 @@ namespace Perspex.Styling
 
         public override string ToString()
         {
-            return _parent.ToString() + " > ";
+            if (_selectorString == null)
+            {
+                _selectorString = _parent.ToString() + " > ";
+            }
+
+            return _selectorString;
         }
 
         protected override SelectorMatch Evaluate(IStyleable control, bool subscribe)

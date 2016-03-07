@@ -16,6 +16,7 @@ namespace Perspex.Styling
         private readonly Selector _previous;
         private readonly PerspexProperty _property;
         private readonly object _value;
+        private string _selectorString;
 
         public PropertyEqualsSelector(Selector previous, PerspexProperty property, object value)
         {
@@ -40,27 +41,32 @@ namespace Perspex.Styling
         /// <inheritdoc/>
         public override string ToString()
         {
-            var builder = new StringBuilder();
-
-            if (_previous != null)
+            if (_selectorString == null)
             {
-                builder.Append(_previous.ToString());
+                var builder = new StringBuilder();
+
+                if (_previous != null)
+                {
+                    builder.Append(_previous.ToString());
+                }
+
+                builder.Append('[');
+
+                if (_property.IsAttached)
+                {
+                    builder.Append(_property.OwnerType.Name);
+                    builder.Append('.');
+                }
+
+                builder.Append(_property.Name);
+                builder.Append('=');
+                builder.Append(_value);
+                builder.Append(']');
+
+                _selectorString = builder.ToString();
             }
 
-            builder.Append('[');
-
-            if (_property.IsAttached)
-            {
-                builder.Append(_property.OwnerType.Name);
-                builder.Append('.');
-            }
-
-            builder.Append(_property.Name);
-            builder.Append('=');
-            builder.Append(_value);
-            builder.Append(']');
-
-            return builder.ToString();
+            return _selectorString;
         }
 
         /// <inheritdoc/>

@@ -8,6 +8,7 @@ namespace Perspex.Styling
     internal class TemplateSelector : Selector
     {
         private readonly Selector _parent;
+        private string _selectorString;
 
         public TemplateSelector(Selector parent)
         {
@@ -27,7 +28,12 @@ namespace Perspex.Styling
 
         public override string ToString()
         {
-            return _parent.ToString() + " /template/ ";
+            if (_selectorString == null)
+            {
+                _selectorString = _parent.ToString() + " /template/ ";
+            }
+
+            return _selectorString;
         }
 
         protected override SelectorMatch Evaluate(IStyleable control, bool subscribe)

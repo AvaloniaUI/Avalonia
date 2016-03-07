@@ -20,6 +20,7 @@ namespace Perspex.Styling
         private readonly Selector _previous;
         private Type _targetType;
         private Lazy<List<string>> _classes = new Lazy<List<string>>(() => new List<string>());
+        private string _selectorString;
 
         public static TypeNameAndClassSelector OfType(Selector previous, Type targetType)
         {
@@ -81,47 +82,12 @@ namespace Perspex.Styling
         /// <inheritdoc/>
         public override string ToString()
         {
-            var builder = new StringBuilder();
-            
-            if (_previous != null)
+            if (_selectorString == null)
             {
-                builder.Append(_previous.ToString());
+                _selectorString = BuildSelectorString();
             }
 
-            if (TargetType != null)
-            {
-                if (IsConcreteType)
-                {
-                    builder.Append(TargetType.Name);
-                }
-                else
-                {
-                    builder.Append(":is(");
-                    builder.Append(TargetType.Name);
-                    builder.Append(")");
-                }
-            }
-
-            if (Name != null)
-            {
-                builder.Append('#');
-                builder.Append(Name);
-            }
-
-            if (_classes.IsValueCreated && _classes.Value.Count > 0)
-            {
-                foreach (var c in Classes)
-                {
-                    if (!c.StartsWith(":"))
-                    {
-                        builder.Append('.');
-                    }
-
-                    builder.Append(c);
-                }
-            }
-
-            return builder.ToString();
+            return _selectorString;
         }
 
         /// <inheritdoc/>
@@ -192,6 +158,51 @@ namespace Perspex.Styling
             }
 
             return remaining == 0;
+        }
+
+        private string BuildSelectorString()
+        {
+            var builder = new StringBuilder();
+
+            if (_previous != null)
+            {
+                builder.Append(_previous.ToString());
+            }
+
+            if (TargetType != null)
+            {
+                if (IsConcreteType)
+                {
+                    builder.Append(TargetType.Name);
+                }
+                else
+                {
+                    builder.Append(":is(");
+                    builder.Append(TargetType.Name);
+                    builder.Append(")");
+                }
+            }
+
+            if (Name != null)
+            {
+                builder.Append('#');
+                builder.Append(Name);
+            }
+
+            if (_classes.IsValueCreated && _classes.Value.Count > 0)
+            {
+                foreach (var c in Classes)
+                {
+                    if (!c.StartsWith(":"))
+                    {
+                        builder.Append('.');
+                    }
+
+                    builder.Append(c);
+                }
+            }
+
+            return builder.ToString();
         }
     }
 }
