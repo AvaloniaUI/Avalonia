@@ -13,8 +13,8 @@ namespace Perspex.Controls
         /// <summary>
         /// Defines the <see cref="Child"/> property.
         /// </summary>
-        public static readonly StyledProperty<Control> ChildProperty =
-            PerspexProperty.Register<Decorator, Control>(nameof(Child));
+        public static readonly StyledProperty<IControl> ChildProperty =
+            PerspexProperty.Register<Decorator, IControl>(nameof(Child));
 
         /// <summary>
         /// Defines the <see cref="Padding"/> property.
@@ -35,7 +35,7 @@ namespace Perspex.Controls
         /// Gets or sets the decorated control.
         /// </summary>
         [Content]
-        public Control Child
+        public IControl Child
         {
             get { return GetValue(ChildProperty); }
             set { SetValue(ChildProperty, value); }
@@ -70,8 +70,7 @@ namespace Perspex.Controls
         /// <inheritdoc/>
         protected override Size ArrangeOverride(Size finalSize)
         {
-            Control content = Child;
-            content?.Arrange(new Rect(finalSize).Deflate(Padding));
+            Child?.Arrange(new Rect(finalSize).Deflate(Padding));
             return finalSize;
         }
 
