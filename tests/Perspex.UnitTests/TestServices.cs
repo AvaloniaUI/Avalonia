@@ -2,29 +2,25 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Reflection;
 using Moq;
 using Perspex.Input;
 using Perspex.Layout;
 using Perspex.Markup.Xaml;
+using Perspex.Media;
 using Perspex.Platform;
 using Perspex.Shared.PlatformSupport;
 using Perspex.Styling;
 using Perspex.Themes.Default;
-using Ploeh.AutoFixture;
-using Ploeh.AutoFixture.AutoMoq;
 
 namespace Perspex.UnitTests
 {
     public class TestServices
     {
-        private static IFixture s_fixture = new Fixture().Customize(new AutoMoqCustomization());
-
         public static readonly TestServices StyledWindow = new TestServices(
             assetLoader: new AssetLoader(),
             layoutManager: new LayoutManager(),
             platformWrapper: new PclPlatformWrapper(),
-            renderInterface: s_fixture.Create<IPlatformRenderInterface>(),
+            renderInterface: CreateRenderInterfaceMock(),
             standardCursorFactory: Mock.Of<IStandardCursorFactory>(),
             styler: new Styler(),
             theme: () => CreateDefaultTheme(),
@@ -121,6 +117,20 @@ namespace Perspex.UnitTests
             result.Add(baseLight);
 
             return result;
+        }
+
+        private static IPlatformRenderInterface CreateRenderInterfaceMock()
+        {
+            return Mock.Of<IPlatformRenderInterface>(x => 
+                x.CreateFormattedText(
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<double>(),
+                    It.IsAny<FontStyle>(),
+                    It.IsAny<TextAlignment>(),
+                    It.IsAny<FontWeight>()) == Mock.Of<IFormattedTextImpl>() &&
+                x.CreateStreamGeometry() == Mock.Of<IStreamGeometryImpl>(
+                    y => y.Open() == Mock.Of<IStreamGeometryContextImpl>()));
         }
     }
 }
