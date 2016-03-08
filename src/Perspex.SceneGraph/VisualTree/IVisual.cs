@@ -4,6 +4,7 @@
 using System;
 using Perspex.Collections;
 using Perspex.Media;
+using Perspex.Rendering;
 
 namespace Perspex.VisualTree
 {
@@ -79,6 +80,11 @@ namespace Perspex.VisualTree
         /// Gets the scene graph node's parent node.
         /// </summary>
         IVisual VisualParent { get; }
+
+        /// <summary>
+        /// Gets the root of the visual tree, if the control is attached to a visual tree.
+        /// </summary>
+        IRenderRoot VisualRoot { get; }
 
         /// <summary>
         /// Gets or sets the Z index of the node.
