@@ -4,13 +4,12 @@
     <Setter Property="Foreground" Value="{StyleResource ThemeForegroundLightBrush}"/>
     <Setter Property="Template">
       <ControlTemplate>
-        <Border Background="{TemplateBinding Background}"
-                BorderBrush="{TemplateBinding BorderBrush}"
-                BorderThickness="{TemplateBinding BorderThickness}">
-          <ContentPresenter Name="PART_ContentPresenter"
+        <ContentPresenter Name="PART_ContentPresenter"
+                          Background="{TemplateBinding Background}"
+                          BorderBrush="{TemplateBinding BorderBrush}"
+                          BorderThickness="{TemplateBinding BorderThickness}"
                           Content="{TemplateBinding Content}"
-                          Margin="{TemplateBinding Padding}"/>
-        </Border>
+                          Padding="{TemplateBinding Padding}"/>
       </ControlTemplate>
     </Setter>
   </Style>

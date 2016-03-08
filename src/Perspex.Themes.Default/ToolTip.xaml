@@ -5,13 +5,12 @@
   <Setter Property="Padding" Value="4,2"/>
   <Setter Property="Template">
     <ControlTemplate>
-      <Border Background="{TemplateBinding Background}"
-              BorderBrush="{TemplateBinding BorderBrush}"
-              BorderThickness="{TemplateBinding BorderThickness}">
-        <ContentPresenter Name="PART_ContentPresenter" 
-                          Content="{TemplateBinding Content}" 
-                          Margin="{TemplateBinding Padding}"/>
-      </Border>
+      <ContentPresenter Name="PART_ContentPresenter"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        Content="{TemplateBinding Content}" 
+                        Padding="{TemplateBinding Padding}"/>
     </ControlTemplate>
   </Setter>
 </Style>
