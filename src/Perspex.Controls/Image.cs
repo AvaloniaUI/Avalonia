@@ -42,11 +42,17 @@ namespace Perspex.Controls
             set { SetValue(StretchProperty, value); }
         }
 
-        /// <summary>
-        /// Renders the control.
-        /// </summary>
-        /// <param name="context">The drawing context.</param>
-        public override void Render(DrawingContext context)
+		static Image()
+		{
+			AffectsRender(SourceProperty);
+			AffectsRender(StretchProperty);
+		}
+
+		/// <summary>
+		/// Renders the control.
+		/// </summary>
+		/// <param name="context">The drawing context.</param>
+		public override void Render(DrawingContext context)
         {
             var source = Source;
 
