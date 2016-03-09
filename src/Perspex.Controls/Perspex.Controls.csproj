@@ -63,6 +63,7 @@
     <Compile Include="Platform\PlatformManager.cs" />
     <Compile Include="Presenters\IContentPresenterHost.cs" />
     <Compile Include="Presenters\IItemsPresenterHost.cs" />
+    <Compile Include="Presenters\ItemsPresenterBase.cs" />
     <Compile Include="Primitives\HeaderedSelectingControl.cs" />
     <Compile Include="Primitives\IScrollable.cs" />
     <Compile Include="Primitives\TabStripItem.cs" />
