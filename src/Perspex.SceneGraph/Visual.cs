@@ -231,7 +231,7 @@ namespace Perspex
         /// <summary>
         /// Gets the root of the visual tree, if the control is attached to a visual tree.
         /// </summary>
-        IRenderRoot IVisual.VisualRoot { get; }
+        IRenderRoot IVisual.VisualRoot => VisualRoot;
 
         /// <summary>
         /// Invalidates the visual and queues a repaint.
