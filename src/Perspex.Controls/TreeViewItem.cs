@@ -19,8 +19,11 @@ namespace Perspex.Controls
         /// <summary>
         /// Defines the <see cref="IsExpanded"/> property.
         /// </summary>
-        public static readonly StyledProperty<bool> IsExpandedProperty =
-            PerspexProperty.Register<TreeViewItem, bool>("IsExpanded", default(bool), false, Data.BindingMode.TwoWay);
+        public static readonly DirectProperty<TreeViewItem, bool> IsExpandedProperty =
+            PerspexProperty.RegisterDirect<TreeViewItem, bool>(
+                "IsExpanded",
+                o => o.IsExpanded,
+                (o, v) => o.IsExpanded = v);
 
         /// <summary>
         /// Defines the <see cref="IsSelected"/> property.
@@ -35,6 +38,7 @@ namespace Perspex.Controls
             });
 
         private TreeView _treeView;
+        private bool _isExpanded;
 
         /// <summary>
         /// Initializes static members of the <see cref="TreeViewItem"/> class.
@@ -51,8 +55,8 @@ namespace Perspex.Controls
         /// </summary>
         public bool IsExpanded
         {
-            get { return GetValue(IsExpandedProperty); }
-            set { SetValue(IsExpandedProperty, value); }
+            get { return _isExpanded; }
+            set { SetAndRaise(IsExpandedProperty, ref _isExpanded, value); }
         }
 
         /// <summary>
