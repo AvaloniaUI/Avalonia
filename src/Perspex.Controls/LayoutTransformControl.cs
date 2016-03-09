@@ -126,7 +126,7 @@ namespace Perspex.Controls
         /// Should be used to notify the LayoutTransformer control that some aspect
         /// of its Transform property has changed.
         /// </remarks>
-        public void ApplyLayoutTransform()
+        private void ApplyLayoutTransform()
         {
             if (LayoutTransform == null) return;
 
