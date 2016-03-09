@@ -8,6 +8,7 @@
   <StyleInclude Source="resm:Perspex.Themes.Default.DropDownItem.xaml?assembly=Perspex.Themes.Default"/>
   <StyleInclude Source="resm:Perspex.Themes.Default.GridSplitter.xaml?assembly=Perspex.Themes.Default"/>
   <StyleInclude Source="resm:Perspex.Themes.Default.ItemsControl.xaml?assembly=Perspex.Themes.Default"/>
+  <StyleInclude Source="resm:Perspex.Themes.Default.LayoutTransformControl.xaml?assembly=Perspex.Themes.Default"/>
   <StyleInclude Source="resm:Perspex.Themes.Default.ListBox.xaml?assembly=Perspex.Themes.Default"/>
   <StyleInclude Source="resm:Perspex.Themes.Default.ListBoxItem.xaml?assembly=Perspex.Themes.Default"/>
   <StyleInclude Source="resm:Perspex.Themes.Default.Menu.xaml?assembly=Perspex.Themes.Default"/>

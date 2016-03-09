@@ -1,0 +1,12 @@
+﻿<Style xmlns="https://github.com/perspex" Selector="LayoutTransformControl">
+  <Setter Property="Template">
+    <ControlTemplate>
+      <ContentPresenter Name="PART_ContentPresenter"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        Content="{TemplateBinding Content}" 
+                        Padding="{TemplateBinding Padding}"/>
+    </ControlTemplate>
+  </Setter>
+</Style>

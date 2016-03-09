@@ -26,7 +26,6 @@ namespace Perspex.Controls
         {
             LayoutTransformProperty.Changed
                 .AddClassHandler<LayoutTransformControl>(x => x.OnLayoutTransformChanged);
-            TemplateProperty.OverrideDefaultValue<LayoutTransformControl>(_defaultTemplate);
         }
 
         public Transform LayoutTransform
@@ -44,18 +43,6 @@ namespace Perspex.Controls
         /// Number of decimals to round the Matrix to.
         /// </summary>
         private const int DecimalsAfterRound = 4;
-
-        private static readonly FuncControlTemplate<LayoutTransformControl> _defaultTemplate =
-            new FuncControlTemplate<LayoutTransformControl>(control =>
-        {
-            return new Decorator()
-            {
-                Child = new ContentPresenter()
-                {
-                    [~ContentPresenter.ContentProperty] = control[~ContentControl.ContentProperty]
-                }
-            };
-        });
 
         /// <summary>
         /// RenderTransform/MatrixTransform applied to TransformRoot.
