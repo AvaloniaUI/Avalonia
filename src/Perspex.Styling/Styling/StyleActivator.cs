@@ -17,18 +17,40 @@ namespace Perspex.Styling
 
     public static class StyleActivator
     {
-        public static IObservable<bool> And(IEnumerable<IObservable<bool>> inputs)
+        public static IObservable<bool> And(IList<IObservable<bool>> inputs)
         {
-            return inputs.CombineLatest()
-                .Select(values => values.All(x => x))
-                .DistinctUntilChanged();
+            if (inputs.Count == 0)
+            {
+                throw new ArgumentException("StyleActivator.And inputs may not be empty.");
+            }
+            else if (inputs.Count == 1)
+            {
+                return inputs[0];
+            }
+            else
+            {
+                return inputs.CombineLatest()
+                    .Select(values => values.All(x => x))
+                    .DistinctUntilChanged();
+            }
         }
 
-        public static IObservable<bool> Or(IEnumerable<IObservable<bool>> inputs)
+        public static IObservable<bool> Or(IList<IObservable<bool>> inputs)
         {
-            return inputs.CombineLatest()
+            if (inputs.Count == 0)
+            {
+                throw new ArgumentException("StyleActivator.Or inputs may not be empty.");
+            }
+            else if (inputs.Count == 1)
+            {
+                return inputs[0];
+            }
+            else
+            {
+                return inputs.CombineLatest()
                 .Select(values => values.Any(x => x))
                 .DistinctUntilChanged();
+            }
         }
     }
 }
