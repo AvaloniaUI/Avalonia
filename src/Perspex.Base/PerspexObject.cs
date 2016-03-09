@@ -515,7 +515,7 @@ namespace Perspex
             PerspexProperty property,
             object oldValue,
             object newValue,
-            BindingPriority priority)
+            BindingPriority priority = BindingPriority.LocalValue)
         {
             Contract.Requires<ArgumentNullException>(property != null);
             VerifyAccess();

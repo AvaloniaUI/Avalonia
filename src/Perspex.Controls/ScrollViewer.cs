@@ -2,9 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Collections.Specialized;
 using System.Linq;
-using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using Perspex.Controls.Presenters;
 using Perspex.Controls.Primitives;
@@ -51,37 +49,44 @@ namespace Perspex.Controls
         /// Defines the HorizontalScrollBarMaximum property.
         /// </summary>
         /// <remarks>
-        /// There is no C# accessor for this property as it is intended to be bound to by a 
+        /// There is no public C# accessor for this property as it is intended to be bound to by a 
         /// <see cref="ScrollContentPresenter"/> in the control's template.
         /// </remarks>
-        public static readonly StyledProperty<double> HorizontalScrollBarMaximumProperty =
-            PerspexProperty.Register<ScrollViewer, double>("HorizontalScrollBarMaximum");
+        public static readonly DirectProperty<ScrollViewer, double> HorizontalScrollBarMaximumProperty =
+            PerspexProperty.RegisterDirect<ScrollViewer, double>(
+                nameof(HorizontalScrollBarMaximum),
+                o => o.HorizontalScrollBarMaximum);
 
         /// <summary>
         /// Defines the HorizontalScrollBarValue property.
         /// </summary>
         /// <remarks>
-        /// There is no C# accessor for this property as it is intended to be bound to by a 
+        /// There is no public C# accessor for this property as it is intended to be bound to by a 
         /// <see cref="ScrollContentPresenter"/> in the control's template.
         /// </remarks>
-        public static readonly StyledProperty<double> HorizontalScrollBarValueProperty =
-            PerspexProperty.Register<ScrollViewer, double>("HorizontalScrollBarValue");
+        public static readonly DirectProperty<ScrollViewer, double> HorizontalScrollBarValueProperty =
+            PerspexProperty.RegisterDirect<ScrollViewer, double>(
+                nameof(HorizontalScrollBarValue),
+                o => o.HorizontalScrollBarValue,
+                (o, v) => o.HorizontalScrollBarValue = v);
 
         /// <summary>
         /// Defines the HorizontalScrollBarViewportSize property.
         /// </summary>
         /// <remarks>
-        /// There is no C# accessor for this property as it is intended to be bound to by a 
+        /// There is no public C# accessor for this property as it is intended to be bound to by a 
         /// <see cref="ScrollContentPresenter"/> in the control's template.
         /// </remarks>
-        public static readonly StyledProperty<double> HorizontalScrollBarViewportSizeProperty =
-            PerspexProperty.Register<ScrollViewer, double>("HorizontalScrollBarViewportSize");
+        public static readonly DirectProperty<ScrollViewer, double> HorizontalScrollBarViewportSizeProperty =
+            PerspexProperty.RegisterDirect<ScrollViewer, double>(
+                nameof(HorizontalScrollBarViewportSize),
+                o => o.HorizontalScrollBarViewportSize);
 
         /// <summary>
         /// Defines the <see cref="HorizontalScrollBarVisibility"/> property.
         /// </summary>
         /// <remarks>
-        /// There is no C# accessor for this property as it is intended to be bound to by a 
+        /// There is no public C# accessor for this property as it is intended to be bound to by a 
         /// <see cref="ScrollContentPresenter"/> in the control's template.
         /// </remarks>
         public static readonly AttachedProperty<ScrollBarVisibility> HorizontalScrollBarVisibilityProperty =
@@ -93,31 +98,38 @@ namespace Perspex.Controls
         /// Defines the VerticalScrollBarMaximum property.
         /// </summary>
         /// <remarks>
-        /// There is no C# accessor for this property as it is intended to be bound to by a 
+        /// There is no public C# accessor for this property as it is intended to be bound to by a 
         /// <see cref="ScrollContentPresenter"/> in the control's template.
         /// </remarks>
-        public static readonly StyledProperty<double> VerticalScrollBarMaximumProperty =
-            PerspexProperty.Register<ScrollViewer, double>("VerticalScrollBarMaximum");
+        public static readonly DirectProperty<ScrollViewer, double> VerticalScrollBarMaximumProperty =
+            PerspexProperty.RegisterDirect<ScrollViewer, double>(
+                nameof(VerticalScrollBarMaximum),
+                o => o.VerticalScrollBarMaximum);
 
         /// <summary>
         /// Defines the VerticalScrollBarValue property.
         /// </summary>
         /// <remarks>
-        /// There is no C# accessor for this property as it is intended to be bound to by a 
+        /// There is no public C# accessor for this property as it is intended to be bound to by a 
         /// <see cref="ScrollContentPresenter"/> in the control's template.
         /// </remarks>
-        public static readonly StyledProperty<double> VerticalScrollBarValueProperty =
-            PerspexProperty.Register<ScrollViewer, double>("VerticalScrollBarValue");
+        public static readonly DirectProperty<ScrollViewer, double> VerticalScrollBarValueProperty =
+            PerspexProperty.RegisterDirect<ScrollViewer, double>(
+                nameof(VerticalScrollBarValue),
+                o => o.VerticalScrollBarValue,
+                (o, v) => o.VerticalScrollBarValue = v);
 
         /// <summary>
         /// Defines the VerticalScrollBarViewportSize property.
         /// </summary>
         /// <remarks>
-        /// There is no C# accessor for this property as it is intended to be bound to by a 
+        /// There is no public C# accessor for this property as it is intended to be bound to by a 
         /// <see cref="ScrollContentPresenter"/> in the control's template.
         /// </remarks>
-        public static readonly StyledProperty<double> VerticalScrollBarViewportSizeProperty =
-            PerspexProperty.Register<ScrollViewer, double>("VerticalScrollBarViewportSize");
+        public static readonly DirectProperty<ScrollViewer, double> VerticalScrollBarViewportSizeProperty =
+            PerspexProperty.RegisterDirect<ScrollViewer, double>(
+                nameof(VerticalScrollBarViewportSize),
+                o => o.VerticalScrollBarViewportSize);
 
         /// <summary>
         /// Defines the <see cref="VerticalScrollBarVisibility"/> property.
@@ -149,34 +161,6 @@ namespace Perspex.Controls
                 this.GetObservable(ExtentProperty),
                 this.GetObservable(ViewportProperty))
                 .Select(x => new { Extent = x[0], Viewport = x[1] });
-
-            Bind(
-                VerticalScrollBarViewportSizeProperty,
-                extentAndViewport.Select(x => Max((x.Viewport.Height / x.Extent.Height) * (x.Extent.Height - x.Viewport.Height), 0)));
-
-            Bind(
-                HorizontalScrollBarViewportSizeProperty,
-                extentAndViewport.Select(x => Max((x.Viewport.Width / x.Extent.Width) * (x.Extent.Width - x.Viewport.Width), 0)));
-
-            Bind(
-                HorizontalScrollBarMaximumProperty,
-                extentAndViewport.Select(x => Max(x.Extent.Width - x.Viewport.Width, 0)));
-
-            Bind(
-                VerticalScrollBarMaximumProperty,
-                extentAndViewport.Select(x => Max(x.Extent.Height - x.Viewport.Height, 0)));
-
-            this.GetObservable(OffsetProperty).Subscribe(x =>
-            {
-                SetValue(HorizontalScrollBarValueProperty, x.X);
-                SetValue(VerticalScrollBarValueProperty, x.Y);
-            });
-
-            var scrollBarOffset = Observable.CombineLatest(
-                this.GetObservable(HorizontalScrollBarValueProperty),
-                this.GetObservable(VerticalScrollBarValueProperty))
-                .Select(x => new Vector(x[0], x[1]))
-                .Subscribe(x => Offset = x);
         }
 
         /// <summary>
@@ -184,8 +168,18 @@ namespace Perspex.Controls
         /// </summary>
         public Size Extent
         {
-            get { return _extent; }
-            private set { SetAndRaise(ExtentProperty, ref _extent, value); }
+            get
+            {
+                return _extent;
+            }
+
+            private set
+            {
+                if (SetAndRaise(ExtentProperty, ref _extent, value))
+                {
+                    CalculatedPropertiesChanged();
+                }
+            }
         }
 
         /// <summary>
@@ -201,7 +195,11 @@ namespace Perspex.Controls
             set
             {
                 value = ValidateOffset(this, value);
-                SetAndRaise(OffsetProperty, ref _offset, value);
+
+                if (SetAndRaise(OffsetProperty, ref _offset, value))
+                {
+                    CalculatedPropertiesChanged();
+                }
             }
         }
 
@@ -241,6 +239,72 @@ namespace Perspex.Controls
             set { SetValue(VerticalScrollBarVisibilityProperty, value); }
         }
 
+        /// <summary>
+        /// Gets the maximum horizontal scrollbar value.
+        /// </summary>
+        protected double HorizontalScrollBarMaximum
+        {
+            get { return Max(_extent.Width - _viewport.Width, 0); }
+        }
+
+        /// <summary>
+        /// Gets or sets the horizontal scrollbar value.
+        /// </summary>
+        protected double HorizontalScrollBarValue
+        {
+            get { return _offset.X; }
+            set
+            {
+                if (_offset.X != value)
+                {
+                    var old = Offset.X;
+                    Offset = Offset.WithX(value);
+                    RaisePropertyChanged(HorizontalScrollBarValueProperty, old, value);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the size of the horizontal scrollbar viewport.
+        /// </summary>
+        protected double HorizontalScrollBarViewportSize
+        {
+            get { return Max((_viewport.Width / _extent.Width) * (_extent.Width - _viewport.Width), 0); }
+        }
+
+        /// <summary>
+        /// Gets the maximum vertical scrollbar value.
+        /// </summary>
+        protected double VerticalScrollBarMaximum
+        {
+            get { return Max(_extent.Height - _viewport.Height, 0); }
+        }
+
+        /// <summary>
+        /// Gets or sets the vertical scrollbar value.
+        /// </summary>
+        protected double VerticalScrollBarValue
+        {
+            get { return _offset.Y; }
+            set
+            {
+                if (_offset.Y != value)
+                {
+                    var old = Offset.Y;
+                    Offset = Offset.WithY(value);
+                    RaisePropertyChanged(VerticalScrollBarValueProperty, old, value);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the size of the vertical scrollbar viewport.
+        /// </summary>
+        protected double VerticalScrollBarViewportSize
+        {
+            get { return Max((_viewport.Height / _extent.Height) * (_extent.Height - _viewport.Height), 0); }
+        }
+
         internal static Vector CoerceOffset(Size extent, Size viewport, Vector offset)
         {
             var maxX = Math.Max(extent.Width - viewport.Width, 0);
@@ -273,6 +337,18 @@ namespace Perspex.Controls
             {
                 return value;
             }
+        }
+
+        private void CalculatedPropertiesChanged()
+        {
+            // Pass old values of 0 here because we don't have the old values at this point,
+            // and it shouldn't matter as only the template uses these properies.
+            RaisePropertyChanged(HorizontalScrollBarMaximumProperty, 0, HorizontalScrollBarMaximum);
+            RaisePropertyChanged(HorizontalScrollBarValueProperty, 0, HorizontalScrollBarValue);
+            RaisePropertyChanged(HorizontalScrollBarViewportSizeProperty, 0, HorizontalScrollBarViewportSize);
+            RaisePropertyChanged(VerticalScrollBarMaximumProperty, 0, VerticalScrollBarMaximum);
+            RaisePropertyChanged(VerticalScrollBarValueProperty, 0, VerticalScrollBarValue);
+            RaisePropertyChanged(VerticalScrollBarViewportSizeProperty, 0, VerticalScrollBarViewportSize);
         }
     }
 }
