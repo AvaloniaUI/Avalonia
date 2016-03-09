@@ -5,13 +5,11 @@
 // http://silverlight.codeplex.com/SourceControl/changeset/view/74775#Release/Silverlight4/Source/Controls.Layout.Toolkit/LayoutTransformer/LayoutTransformer.cs
 //
 
-using Perspex.Controls.Presenters;
 using Perspex.Controls.Primitives;
-using Perspex.Controls.Templates;
 using Perspex.Media;
 using Perspex.VisualTree;
 using System;
-using System.Diagnostics.CodeAnalysis;
+//using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reactive.Linq;
 
