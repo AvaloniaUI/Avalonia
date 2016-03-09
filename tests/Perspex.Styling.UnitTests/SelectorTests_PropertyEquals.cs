@@ -15,7 +15,7 @@ namespace Perspex.Styling.UnitTests
         public async Task PropertyEquals_Matches_When_Property_Has_Matching_Value()
         {
             var control = new TextBlock();
-            var target = new Selector().PropertyEquals(TextBlock.TextProperty, "foo");
+            var target = default(Selector).PropertyEquals(TextBlock.TextProperty, "foo");
             var activator = target.Match(control).ObservableResult;
 
             Assert.False(await activator.Take(1));
@@ -23,6 +23,16 @@ namespace Perspex.Styling.UnitTests
             Assert.True(await activator.Take(1));
             control.Text = null;
             Assert.False(await activator.Take(1));
+        }
+
+        [Fact]
+        public void PropertyEquals_Selector_Should_Have_Correct_String_Representation()
+        {
+            var target = default(Selector)
+                .OfType<TextBlock>()
+                .PropertyEquals(TextBlock.TextProperty, "foo");
+
+            Assert.Equal("TextBlock[Text=foo]", target.ToString());
         }
     }
 }

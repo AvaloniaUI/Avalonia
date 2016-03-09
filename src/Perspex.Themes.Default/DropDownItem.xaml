@@ -3,21 +3,19 @@
     <Setter Property="Padding" Value="2"/>
     <Setter Property="Template">
       <ControlTemplate>
-        <Border Name="border"
-                Background="{TemplateBinding Background}"
-                BorderBrush="{TemplateBinding BorderBrush}"
-                BorderThickness="{TemplateBinding BorderThickness}">
-          <ContentPresenter Name="PART_ContentPresenter"
-                            Content="{TemplateBinding Content}"
-                            Margin="{TemplateBinding Padding}"/>
-        </Border>
+        <ContentPresenter Name="PART_ContentPresenter"
+                          Background="{TemplateBinding Background}"
+                          BorderBrush="{TemplateBinding BorderBrush}"
+                          BorderThickness="{TemplateBinding BorderThickness}"
+                          Content="{TemplateBinding Content}"
+                          Padding="{TemplateBinding Padding}"/>
       </ControlTemplate>
     </Setter>
   </Style>
-  <Style Selector="DropDownItem:selected /template/ Border#border">
+  <Style Selector="DropDownItem:selected /template/ ContentPresenter">
     <Setter Property="Background" Value="#fff0f0f0"/>
   </Style>
-  <Style Selector="DropDownItem:pointerover /template/ Border#border">
+  <Style Selector="DropDownItem:pointerover /template/ ContentPresenter">
     <Setter Property="Background" Value="#ffd0d0d0"/>
   </Style>
 </Styles>

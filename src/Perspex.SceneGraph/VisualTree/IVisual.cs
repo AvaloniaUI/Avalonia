@@ -4,6 +4,7 @@
 using System;
 using Perspex.Collections;
 using Perspex.Media;
+using Perspex.Rendering;
 
 namespace Perspex.VisualTree
 {
@@ -81,9 +82,19 @@ namespace Perspex.VisualTree
         IVisual VisualParent { get; }
 
         /// <summary>
+        /// Gets the root of the visual tree, if the control is attached to a visual tree.
+        /// </summary>
+        IRenderRoot VisualRoot { get; }
+
+        /// <summary>
         /// Gets or sets the Z index of the node.
         /// </summary>
         int ZIndex { get; set; }
+
+        /// <summary>
+        /// Invalidates the visual and queues a repaint.
+        /// </summary>
+        void InvalidateVisual();
 
         /// <summary>
         /// Renders the scene graph node to a <see cref="DrawingContext"/>.

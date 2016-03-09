@@ -176,15 +176,7 @@ namespace Perspex.VisualTree
         {
             Contract.Requires<ArgumentNullException>(visual != null);
 
-            var parent = visual.VisualParent;
-
-            while (parent != null)
-            {
-                visual = parent;
-                parent = visual.VisualParent;
-            }
-
-            return visual;
+            return visual.VisualRoot as IVisual;
         }
 
         /// <summary>

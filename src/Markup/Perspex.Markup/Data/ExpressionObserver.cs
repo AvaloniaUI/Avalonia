@@ -7,6 +7,7 @@ using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using Perspex.Data;
 using Perspex.Markup.Data.Plugins;
 
 namespace Perspex.Markup.Data
@@ -105,11 +106,12 @@ namespace Perspex.Markup.Data
         /// Attempts to set the value of a property expression.
         /// </summary>
         /// <param name="value">The value to set.</param>
+        /// <param name="priority">The binding priority to use.</param>
         /// <returns>
         /// True if the value could be set; false if the expression does not evaluate to a 
         /// property.
         /// </returns>
-        public bool SetValue(object value)
+        public bool SetValue(object value, BindingPriority priority = BindingPriority.LocalValue)
         {
             IncrementCount();
 
@@ -120,7 +122,7 @@ namespace Perspex.Markup.Data
 
             try
             {
-                return _node?.SetValue(value) ?? false;
+                return _node?.SetValue(value, priority) ?? false;
             }
             finally
             {

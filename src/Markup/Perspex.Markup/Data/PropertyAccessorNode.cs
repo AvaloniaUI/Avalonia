@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Perspex.Data;
 using Perspex.Markup.Data.Plugins;
 
 namespace Perspex.Markup.Data
@@ -26,17 +27,17 @@ namespace Perspex.Markup.Data
 
         public Type PropertyType => _accessor?.PropertyType;
 
-        public override bool SetValue(object value)
+        public override bool SetValue(object value, BindingPriority priority)
         {
             if (Next != null)
             {
-                return Next.SetValue(value);
+                return Next.SetValue(value, priority);
             }
             else
             {
                 if (_accessor != null)
                 {
-                    return _accessor.SetValue(value);
+                    return _accessor.SetValue(value, priority);
                 }
 
                 return false;

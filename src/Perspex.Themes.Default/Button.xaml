@@ -9,24 +9,22 @@
     <Setter Property="Padding" Value="4"/>
     <Setter Property="Template">
       <ControlTemplate>
-        <Border Name="border"
-                Background="{TemplateBinding Background}"
-                BorderBrush="{TemplateBinding BorderBrush}"
-                BorderThickness="{TemplateBinding BorderThickness}">
-          <ContentPresenter Name="PART_ContentPresenter"
-                            Content="{TemplateBinding Content}"
-                            Margin="{TemplateBinding Padding}"
-                            TextBlock.Foreground="{TemplateBinding Foreground}"
-                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
-        </Border>
+        <ContentPresenter Name="PART_ContentPresenter"
+                          Background="{TemplateBinding Background}"
+                          BorderBrush="{TemplateBinding BorderBrush}"
+                          BorderThickness="{TemplateBinding BorderThickness}"
+                          Content="{TemplateBinding Content}"
+                          Padding="{TemplateBinding Padding}"
+                          TextBlock.Foreground="{TemplateBinding Foreground}"
+                          HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
       </ControlTemplate>
     </Setter>
   </Style>
-  <Style Selector="Button:pointerover /template/ Border#border">
+  <Style Selector="Button:pointerover /template/ ContentPresenter">
     <Setter Property="BorderBrush" Value="{StyleResource ThemeBorderMidBrush}"/>
   </Style>
-  <Style Selector="Button:pressed  /template/ Border#border">
+  <Style Selector="Button:pressed  /template/ ContentPresenter">
     <Setter Property="Background" Value="{StyleResource ThemeControlDarkBrush}"/>
   </Style>
   <Style Selector="Button:disabled">

@@ -29,7 +29,7 @@ namespace Perspex.Styling
         /// <param name="selector">The style selector.</param>
         public Style(Func<Selector, Selector> selector)
         {
-            Selector = selector(new Selector());
+            Selector = selector(null);
         }
 
         /// <summary>

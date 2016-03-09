@@ -7,16 +7,14 @@
             <ToggleButton Name="expander"
                           Focusable="False"
                           IsChecked="{TemplateBinding Path=IsExpanded, Mode=TwoWay}"/>
-            <Border Name="header"
-                    Background="{TemplateBinding Background}"
-                    BorderBrush="{TemplateBinding BorderBrush}"
-                    BorderThickness="{TemplateBinding BorderThickness}"
-                    TemplatedControl.IsTemplateFocusTarget="True"
-                    Grid.Column="1">
-              <ContentPresenter Name="PART_HeaderPresenter"
-                                Content="{TemplateBinding Header}"
-                                Margin="{TemplateBinding Padding}"/>
-            </Border>
+            <ContentPresenter Name="PART_HeaderPresenter"
+                              Background="{TemplateBinding Background}"
+                              BorderBrush="{TemplateBinding BorderBrush}"
+                              BorderThickness="{TemplateBinding BorderThickness}"
+                              Content="{TemplateBinding Header}"
+                              Padding="{TemplateBinding Padding}"
+                              TemplatedControl.IsTemplateFocusTarget="True"
+                              Grid.Column="1"/>
           </Grid>
           <ItemsPresenter Name="PART_ItemsPresenter"
                           IsVisible="{TemplateBinding IsExpanded}"
@@ -45,15 +43,15 @@
     </Setter>
   </Style>
 
-  <Style Selector="TreeViewItem /template/ Border#header">
+  <Style Selector="TreeViewItem /template/ ContentPresenter#PART_HeaderPresenter">
     <Setter Property="Padding" Value="2"/>
   </Style>
   
-  <Style Selector="TreeViewItem:selected /template/ Border#header">
+  <Style Selector="TreeViewItem:selected /template/ ContentPresenter#PART_HeaderPresenter">
     <Setter Property="Background" Value="#fff0f0f0"/>
   </Style>
   
-  <Style Selector="TreeViewItem:selected:focus /template/ Border#header">
+  <Style Selector="TreeViewItem:selected:focus /template/ ContentPresenter#PART_HeaderPresenter">
     <Setter Property="Background" Value="#ffd0d0d0"/>
   </Style>
   

@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reflection;
+using Perspex.Data;
 using Perspex.Utilities;
 
 namespace Perspex.Markup.Data.Plugins
@@ -106,7 +107,7 @@ namespace Perspex.Markup.Data.Plugins
                 }
             }
 
-            public bool SetValue(object value)
+            public bool SetValue(object value, BindingPriority priority)
             {
                 if (_property.CanWrite)
                 {

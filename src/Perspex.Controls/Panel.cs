@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
-using Perspex.LogicalTree;
 using Perspex.Media;
 using Perspex.Metadata;
 
@@ -28,8 +27,6 @@ namespace Perspex.Controls
 
         private readonly Controls _children = new Controls();
 
-        private ILogical _childLogicalParent;
-
         /// <summary>
         /// Initializes static members of the <see cref="Panel"/> class.
         /// </summary>
@@ -44,7 +41,6 @@ namespace Perspex.Controls
         public Panel()
         {
             _children.CollectionChanged += ChildrenChanged;
-            _childLogicalParent = this;
         }
 
         /// <summary>

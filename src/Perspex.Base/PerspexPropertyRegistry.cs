@@ -17,14 +17,14 @@ namespace Perspex
         /// <summary>
         /// The registered properties by type.
         /// </summary>
-        private readonly Dictionary<Type, List<PerspexProperty>> _registered =
-            new Dictionary<Type, List<PerspexProperty>>();
+        private readonly Dictionary<Type, Dictionary<int, PerspexProperty>> _registered =
+            new Dictionary<Type, Dictionary<int, PerspexProperty>>();
 
         /// <summary>
         /// The registered attached properties by owner type.
         /// </summary>
-        private readonly Dictionary<Type, List<PerspexProperty>> _attached =
-            new Dictionary<Type, List<PerspexProperty>>();
+        private readonly Dictionary<Type, Dictionary<int, PerspexProperty>> _attached =
+            new Dictionary<Type, Dictionary<int, PerspexProperty>>();
 
         /// <summary>
         /// Gets the <see cref="PerspexPropertyRegistry"/> instance
@@ -39,11 +39,11 @@ namespace Perspex
         /// <returns>A collection of <see cref="PerspexProperty"/> definitions.</returns>
         public IEnumerable<PerspexProperty> GetAttached(Type ownerType)
         {
-            List<PerspexProperty> list;
+            Dictionary<int, PerspexProperty> inner;
 
-            if (_attached.TryGetValue(ownerType, out list))
+            if (_attached.TryGetValue(ownerType, out inner))
             {
-                return list;
+                return inner.Values;
             }
 
             return Enumerable.Empty<PerspexProperty>();
@@ -65,13 +65,13 @@ namespace Perspex
                 // Ensure the type's static ctor has been run.
                 RuntimeHelpers.RunClassConstructor(type.TypeHandle);
 
-                List<PerspexProperty> list;
+                Dictionary<int, PerspexProperty> inner;
 
-                if (_registered.TryGetValue(type, out list))
+                if (_registered.TryGetValue(type, out inner))
                 {
-                    foreach (PerspexProperty p in list)
+                    foreach (var p in inner)
                     {
-                        yield return p;
+                        yield return p.Value;
                     }
                 }
 
@@ -105,15 +105,15 @@ namespace Perspex
         {
             while (type != null)
             {
-                List<PerspexProperty> list;
+                Dictionary<int, PerspexProperty> inner;
 
-                if (_registered.TryGetValue(type, out list))
+                if (_registered.TryGetValue(type, out inner))
                 {
-                    var index = list.IndexOf(property);
+                    PerspexProperty result;
 
-                    if (index != -1)
+                    if (inner.TryGetValue(property.Id, out result))
                     {
-                        return list[index];
+                        return result;
                     }
                 }
 
@@ -250,30 +250,30 @@ namespace Perspex
             Contract.Requires<ArgumentNullException>(type != null);
             Contract.Requires<ArgumentNullException>(property != null);
 
-            List<PerspexProperty> list;
+            Dictionary<int, PerspexProperty> inner;
 
-            if (!_registered.TryGetValue(type, out list))
+            if (!_registered.TryGetValue(type, out inner))
             {
-                list = new List<PerspexProperty>();
-                _registered.Add(type, list);
+                inner = new Dictionary<int, PerspexProperty>();
+                _registered.Add(type, inner);
             }
 
-            if (!list.Contains(property))
+            if (!inner.ContainsKey(property.Id))
             {
-                list.Add(property);
+                inner.Add(property.Id, property);
             }
 
             if (property.IsAttached)
             {
-                if (!_attached.TryGetValue(property.OwnerType, out list))
+                if (!_attached.TryGetValue(property.OwnerType, out inner))
                 {
-                    list = new List<PerspexProperty>();
-                    _attached.Add(property.OwnerType, list);
+                    inner = new Dictionary<int, PerspexProperty>();
+                    _attached.Add(property.OwnerType, inner);
                 }
 
-                if (!list.Contains(property))
+                if (!inner.ContainsKey(property.Id))
                 {
-                    list.Add(property);
+                    inner.Add(property.Id, property);
                 }
             }
         }

@@ -77,19 +77,8 @@ namespace Perspex
         public static readonly StyledProperty<int> ZIndexProperty =
             PerspexProperty.Register<Visual, int>(nameof(ZIndex));
 
-        /// <summary>
-        /// The visual's bounds relative to its parent.
-        /// </summary>
         private Rect _bounds;
-
-        /// <summary>
-        /// Holds the parent of the visual.
-        /// </summary>
         private IVisual _visualParent;
-
-        /// <summary>
-        /// The logger for visual-level events.
-        /// </summary>
         private readonly ILogger _visualLogger;
 
         /// <summary>
@@ -238,6 +227,11 @@ namespace Perspex
         /// Gets the scene graph node's parent node.
         /// </summary>
         IVisual IVisual.VisualParent => _visualParent;
+
+        /// <summary>
+        /// Gets the root of the visual tree, if the control is attached to a visual tree.
+        /// </summary>
+        IRenderRoot IVisual.VisualRoot { get; }
 
         /// <summary>
         /// Invalidates the visual and queues a repaint.
@@ -483,7 +477,6 @@ namespace Perspex
             _visualLogger.Verbose("Attached to visual tree");
 
             VisualRoot = e.Root;
-
             OnAttachedToVisualTree(e);
 
             if (VisualChildren != null)

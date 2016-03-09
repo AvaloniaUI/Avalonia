@@ -22,7 +22,6 @@ namespace Perspex
         public static readonly object UnsetValue = new Unset();
 
         private static int s_nextId = 1;
-        private readonly int _id;
         private readonly Subject<PerspexPropertyChangedEventArgs> _initialized;
         private readonly Subject<PerspexPropertyChangedEventArgs> _changed;
         private readonly PropertyMetadata _defaultMetadata;
@@ -61,7 +60,7 @@ namespace Perspex
             PropertyType = valueType;
             OwnerType = ownerType;
             Notifying = notifying;
-            _id = s_nextId++;
+            Id = s_nextId++;
 
             _metadata.Add(ownerType, metadata);
             _defaultMetadata = metadata;
@@ -85,7 +84,7 @@ namespace Perspex
             PropertyType = source.PropertyType;
             OwnerType = ownerType;
             Notifying = source.Notifying;
-            _id = source._id;
+            Id = source.Id;
             _defaultMetadata = source._defaultMetadata;
         }
 
@@ -163,6 +162,11 @@ namespace Perspex
         /// callback is intended to support Control.IsDataContextChanging.
         /// </remarks>
         public Action<IPerspexObject, bool> Notifying { get; }
+
+        /// <summary>
+        /// Gets the integer ID that represents this property.
+        /// </summary>
+        internal int Id { get; }
 
         /// <summary>
         /// Provides access to a property's binding via the <see cref="PerspexObject"/>
@@ -392,13 +396,13 @@ namespace Perspex
         /// <inheritdoc/>
         public bool Equals(PerspexProperty other)
         {
-            return other != null && _id == other._id;
+            return other != null && Id == other.Id;
         }
 
         /// <inheritdoc/>
         public override int GetHashCode()
         {
-            return _id;
+            return Id;
         }
 
         /// <summary>

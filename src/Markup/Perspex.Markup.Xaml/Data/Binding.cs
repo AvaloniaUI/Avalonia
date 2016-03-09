@@ -107,7 +107,8 @@ namespace Perspex.Markup.Xaml.Data
                 targetProperty?.PropertyType ?? typeof(object),
                 Converter ?? DefaultValueConverter.Instance,
                 ConverterParameter,
-                FallbackValue);
+                FallbackValue,
+                Priority);
 
             return new InstancedBinding(subject, Mode, Priority);
         }

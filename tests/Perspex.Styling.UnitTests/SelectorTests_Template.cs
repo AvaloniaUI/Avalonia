@@ -7,17 +7,12 @@ using System.Reactive.Linq;
 using Moq;
 using Perspex.Controls;
 using Perspex.VisualTree;
+using Perspex.Diagnostics;
 using Xunit;
 using System.Threading.Tasks;
 
 namespace Perspex.Styling.UnitTests
 {
-    using System.Reactive;
-    using System.Reactive.Subjects;
-    using Collections;
-    using Diagnostics;
-    using Controls = Controls.Controls;
-
     public class SelectorTests_Template
     {
         [Fact]
@@ -29,7 +24,10 @@ namespace Perspex.Styling.UnitTests
             BuildVisualTree(target);
 
             var border = (Border)target.Object.GetVisualChildren().Single();
-            var selector = new Selector().Template().OfType<Border>();
+            var selector = default(Selector)
+                .OfType(target.Object.GetType())
+                .Template()
+                .OfType<Border>();
 
             Assert.True(selector.Match(border).ImmediateResult);
         }
@@ -44,7 +42,10 @@ namespace Perspex.Styling.UnitTests
 
             var border = (Border)target.Object.GetVisualChildren().Single();
             border.SetValue(Control.TemplatedParentProperty, null);
-            var selector = new Selector().Template().OfType<Border>();
+            var selector = default(Selector)
+                .OfType(target.Object.GetType())
+                .Template()
+                .OfType<Border>();
 
             Assert.False(selector.Match(border).ImmediateResult);
         }
@@ -58,7 +59,10 @@ namespace Perspex.Styling.UnitTests
             BuildVisualTree(target);
 
             var textBlock = (TextBlock)target.Object.VisualChildren.Single().VisualChildren.Single();
-            var selector = new Selector().Template().OfType<TextBlock>();
+            var selector = default(Selector)
+                .OfType(target.Object.GetType())
+                .Template()
+                .OfType<TextBlock>();
 
             Assert.True(selector.Match(textBlock).ImmediateResult);
         }
@@ -74,7 +78,7 @@ namespace Perspex.Styling.UnitTests
 
             var border = (Border)target.Object.VisualChildren.Single();
 
-            var selector = new Selector().OfType(styleKey).Template().OfType<Border>();
+            var selector = default(Selector).OfType(styleKey).Template().OfType<Border>();
 
             Assert.True(selector.Match(border).ImmediateResult);
         }
@@ -91,7 +95,7 @@ namespace Perspex.Styling.UnitTests
             styleable.Setup(x => x.StyleKey).Returns(styleKey);
             styleable.Setup(x => x.Classes).Returns(new Classes("foo"));
             var border = (Border)target.Object.VisualChildren.Single();
-            var selector = new Selector().OfType(styleKey).Class("foo").Template().OfType<Border>();
+            var selector = default(Selector).OfType(styleKey).Class("foo").Template().OfType<Border>();
             var activator = selector.Match(border).ObservableResult;
 
             Assert.True(await activator.Take(1));
@@ -107,7 +111,7 @@ namespace Perspex.Styling.UnitTests
 
             styleable.Setup(x => x.Classes).Returns(new Classes("bar"));
             var border = (Border)target.Object.VisualChildren.Single();
-            var selector = new Selector().OfType(templatedControl.Object.GetType()).Class("foo").Template().OfType<Border>();
+            var selector = default(Selector).OfType(templatedControl.Object.GetType()).Class("foo").Template().OfType<Border>();
             var activator = selector.Match(border).ObservableResult;
 
             Assert.False(await activator.Take(1));
@@ -123,7 +127,7 @@ namespace Perspex.Styling.UnitTests
 
             styleable.Setup(x => x.Classes).Returns(new Classes("foo"));
             var border = (Border)target.Object.VisualChildren.Single();
-            var selector = new Selector().OfType(templatedControl.Object.GetType()).Class("foo").Template().OfType<Border>();
+            var selector = default(Selector).OfType(templatedControl.Object.GetType()).Class("foo").Template().OfType<Border>();
             var activator = selector.Match(border).ObservableResult;
             var inccDebug = (INotifyCollectionChangedDebug)styleable.Object.Classes;
 
@@ -137,7 +141,7 @@ namespace Perspex.Styling.UnitTests
 
         private void BuildVisualTree<T>(Mock<T> templatedControl) where T : class, IVisual
         {
-            templatedControl.Setup(x => x.VisualChildren).Returns(new Controls
+            templatedControl.Setup(x => x.VisualChildren).Returns(new Controls.Controls
             {
                 new Border
                 {

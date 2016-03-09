@@ -2,13 +2,6 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Linq;
-using System.Reactive;
-using System.Reactive.Linq;
-using System.Reflection;
-using Perspex.LogicalTree;
 
 namespace Perspex.Styling
 {
@@ -24,9 +17,7 @@ namespace Perspex.Styling
         /// <returns>The selector.</returns>
         public static Selector Child(this Selector previous)
         {
-            Contract.Requires<ArgumentNullException>(previous != null);
-
-            return new Selector(previous, x => MatchChild(x, previous), " < ", stopTraversal: true);
+            return new ChildSelector(previous);
         }
 
         /// <summary>
@@ -37,10 +28,17 @@ namespace Perspex.Styling
         /// <returns>The selector.</returns>
         public static Selector Class(this Selector previous, string name)
         {
-            Contract.Requires<ArgumentNullException>(previous != null);
-            Contract.Requires<ArgumentNullException>(name != null);
+            var tac = previous as TypeNameAndClassSelector;
 
-            return new Selector(previous, x => MatchClass(x, name), name[0] == ':' ? name : '.' + name);
+            if (tac != null)
+            {
+                tac.Classes.Add(name);
+                return tac;
+            }
+            else
+            {
+                return TypeNameAndClassSelector.ForClass(previous, name);
+            }
         }
 
         /// <summary>
@@ -50,9 +48,7 @@ namespace Perspex.Styling
         /// <returns>The selector.</returns>
         public static Selector Descendent(this Selector previous)
         {
-            Contract.Requires<ArgumentNullException>(previous != null);
-
-            return new Selector(previous, x => MatchDescendent(x, previous), " ", stopTraversal: true);
+            return new DescendentSelector(previous);
         }
 
         /// <summary>
@@ -63,9 +59,7 @@ namespace Perspex.Styling
         /// <returns>The selector.</returns>
         public static Selector Is(this Selector previous, Type type)
         {
-            Contract.Requires<ArgumentNullException>(previous != null);
-
-            return new Selector(previous, x => MatchIs(x, type), $":is({type.Name})", type);
+            return TypeNameAndClassSelector.Is(previous, type);
         }
 
         /// <summary>
@@ -87,9 +81,17 @@ namespace Perspex.Styling
         /// <returns>The selector.</returns>
         public static Selector Name(this Selector previous, string name)
         {
-            Contract.Requires<ArgumentNullException>(previous != null);
+            var tac = previous as TypeNameAndClassSelector;
 
-            return new Selector(previous, x => MatchName(x, name), '#' + name);
+            if (tac != null)
+            {
+                tac.Name = name;
+                return tac;
+            }
+            else
+            {
+                return TypeNameAndClassSelector.ForName(previous, name);
+            }
         }
 
         /// <summary>
@@ -100,9 +102,7 @@ namespace Perspex.Styling
         /// <returns>The selector.</returns>
         public static Selector OfType(this Selector previous, Type type)
         {
-            Contract.Requires<ArgumentNullException>(previous != null);
-
-            return new Selector(previous, x => MatchOfType(x, type), type.Name, type);
+            return TypeNameAndClassSelector.OfType(previous, type);
         }
 
         /// <summary>
@@ -126,10 +126,7 @@ namespace Perspex.Styling
         /// <returns>The selector.</returns>
         public static Selector PropertyEquals<T>(this Selector previous, PerspexProperty<T> property, object value)
         {
-            Contract.Requires<ArgumentNullException>(previous != null);
-            Contract.Requires<ArgumentNullException>(property != null);
-
-            return new Selector(previous, x => MatchPropertyEquals(x, property, value), $"[{property.Name}={value}]");
+            return new PropertyEqualsSelector(previous, property, value);
         }
 
         /// <summary>
@@ -141,10 +138,7 @@ namespace Perspex.Styling
         /// <returns>The selector.</returns>
         public static Selector PropertyEquals(this Selector previous, PerspexProperty property, object value)
         {
-            Contract.Requires<ArgumentNullException>(previous != null);
-            Contract.Requires<ArgumentNullException>(property != null);
-
-            return new Selector(previous, x => MatchPropertyEquals(x, property, value), $"[{property.Name}={value}]");
+            return new PropertyEqualsSelector(previous, property, value);
         }
 
         /// <summary>
@@ -154,114 +148,7 @@ namespace Perspex.Styling
         /// <returns>The selector.</returns>
         public static Selector Template(this Selector previous)
         {
-            Contract.Requires<ArgumentNullException>(previous != null);
-
-            return new Selector(
-                previous,
-                x => MatchTemplate(x, previous),
-                " /template/ ",
-                inTemplate: true,
-                stopTraversal: true);
-        }
-
-        private static SelectorMatch MatchChild(IStyleable control, Selector previous)
-        {
-            var parent = ((ILogical)control).LogicalParent;
-
-            if (parent != null)
-            {
-                return previous.Match((IStyleable)parent);
-            }
-            else
-            {
-                return SelectorMatch.False;
-            }
-        }
-
-        private static SelectorMatch MatchClass(IStyleable control, string name)
-        {
-            var observable = Observable.FromEventPattern<
-                    NotifyCollectionChangedEventHandler,
-                    NotifyCollectionChangedEventArgs>(
-                x => control.Classes.CollectionChanged += x,
-                x => control.Classes.CollectionChanged -= x)
-                .Select(_ => Unit.Default)
-                .StartWith(Unit.Default)
-                .Select(_ => control.Classes.Contains(name));
-
-            return new SelectorMatch(observable);
-        }
-
-        private static SelectorMatch MatchDescendent(IStyleable control, Selector previous)
-        {
-            ILogical c = (ILogical)control;
-            List<IObservable<bool>> descendentMatches = new List<IObservable<bool>>();
-
-            while (c != null)
-            {
-                c = c.LogicalParent;
-
-                if (c is IStyleable)
-                {
-                    var match = previous.Match((IStyleable)c);
-
-                    if (match.ImmediateResult != null)
-                    {
-                        if (match.ImmediateResult == true)
-                        {
-                            return SelectorMatch.True;
-                        }
-                    }
-                    else
-                    {
-                        descendentMatches.Add(match.ObservableResult);
-                    }
-                }
-            }
-
-            return new SelectorMatch(StyleActivator.Or(descendentMatches));
-        }
-
-        private static SelectorMatch MatchIs(IStyleable control, Type type)
-        {
-            var controlType = control.StyleKey ?? control.GetType();
-            return new SelectorMatch(type.GetTypeInfo().IsAssignableFrom(controlType.GetTypeInfo()));
-        }
-
-        private static SelectorMatch MatchName(IStyleable control, string name)
-        {
-            return new SelectorMatch(control.Name == name);
-        }
-
-        private static SelectorMatch MatchOfType(IStyleable control, Type type)
-        {
-            var controlType = control.StyleKey ?? control.GetType();
-            return new SelectorMatch(controlType == type);
-        }
-
-        private static SelectorMatch MatchPropertyEquals(IStyleable x, PerspexProperty property, object value)
-        {
-            if (!PerspexPropertyRegistry.Instance.IsRegistered(x, property))
-            {
-                return SelectorMatch.False;
-            }
-            else
-            {
-                return new SelectorMatch(x.GetObservable(property).Select(v => Equals(v, value)));
-            }
-        }
-
-        private static SelectorMatch MatchTemplate(IStyleable control, Selector previous)
-        {
-            IStyleable templatedParent = control.TemplatedParent as IStyleable;
-
-            if (templatedParent == null)
-            {
-                throw new InvalidOperationException(
-                    "Cannot call Template selector on control with null TemplatedParent.");
-            }
-
-            return previous.Match(templatedParent);
+            return new TemplateSelector(previous);
         }
     }
 }

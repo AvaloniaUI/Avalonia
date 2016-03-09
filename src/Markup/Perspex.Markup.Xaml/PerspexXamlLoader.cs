@@ -152,11 +152,11 @@ namespace Perspex.Markup.Xaml
                 InstanceLifeCycleListener = s_lifeCycleListener,
             });
 
-            var control = result as IControl;
+            var topLevel = result as TopLevel;
 
-            if (control != null)
+            if (topLevel != null)
             {
-                DelayedBinding.ApplyBindings(control);
+                DelayedBinding.ApplyBindings(topLevel);
             }
 
             return result;

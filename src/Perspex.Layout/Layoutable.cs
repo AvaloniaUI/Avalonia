@@ -536,20 +536,22 @@ namespace Perspex.Layout
         {
             if (IsVisible)
             {
-                double originX = finalRect.X + Margin.Left;
-                double originY = finalRect.Y + Margin.Top;
+                var originX = finalRect.X + Margin.Left;
+                var originY = finalRect.Y + Margin.Top;
                 var sizeMinusMargins = new Size(
                     Math.Max(0, finalRect.Width - Margin.Left - Margin.Right),
                     Math.Max(0, finalRect.Height - Margin.Top - Margin.Bottom));
+                var horizontalAlignment = HorizontalAlignment;
+                var verticalAlignment = VerticalAlignment;
                 var size = sizeMinusMargins;
                 var scale = GetLayoutScale();
 
-                if (HorizontalAlignment != HorizontalAlignment.Stretch)
+                if (horizontalAlignment != HorizontalAlignment.Stretch)
                 {
                     size = size.WithWidth(Math.Min(size.Width, DesiredSize.Width));
                 }
 
-                if (VerticalAlignment != VerticalAlignment.Stretch)
+                if (verticalAlignment != VerticalAlignment.Stretch)
                 {
                     size = size.WithHeight(Math.Min(size.Height, DesiredSize.Height));
                 }
@@ -568,7 +570,7 @@ namespace Perspex.Layout
 
                 size = ArrangeOverride(size).Constrain(size);
 
-                switch (HorizontalAlignment)
+                switch (horizontalAlignment)
                 {
                     case HorizontalAlignment.Center:
                     case HorizontalAlignment.Stretch:
@@ -579,7 +581,7 @@ namespace Perspex.Layout
                         break;
                 }
 
-                switch (VerticalAlignment)
+                switch (verticalAlignment)
                 {
                     case VerticalAlignment.Center:
                     case VerticalAlignment.Stretch:
