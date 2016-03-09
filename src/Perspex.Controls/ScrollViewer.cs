@@ -208,8 +208,18 @@ namespace Perspex.Controls
         /// </summary>
         public Size Viewport
         {
-            get { return _viewport; }
-            private set { SetAndRaise(ViewportProperty, ref _viewport, value); }
+            get
+            {
+                return _viewport;
+            }
+
+            private set
+            {
+                if (SetAndRaise(ViewportProperty, ref _viewport, value))
+                {
+                    CalculatedPropertiesChanged();
+                }
+            }
         }
 
         /// <summary>
