@@ -9,7 +9,7 @@ using Perspex.Controls.Primitives;
 using Perspex.Media;
 using Perspex.VisualTree;
 using System;
-//using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reactive.Linq;
 
@@ -32,137 +32,8 @@ namespace Perspex.Controls
             set { SetValue(LayoutTransformProperty, value); }
         }
 
-        /// <summary>
-        /// Acceptable difference between two doubles.
-        /// </summary>
-        private const double AcceptableDelta = 0.0001;
-
-        /// <summary>
-        /// Number of decimals to round the Matrix to.
-        /// </summary>
-        private const int DecimalsAfterRound = 4;
-
-        /// <summary>
-        /// RenderTransform/MatrixTransform applied to TransformRoot.
-        /// </summary>
-        private MatrixTransform _matrixTransform;
-
-        /// <summary>
-        /// Transformation matrix corresponding to _matrixTransform.
-        /// </summary>
-        private Matrix _transformation;
-
-        /// <summary>
-        /// Actual DesiredSize of Child element (the value it returned from its MeasureOverride method).
-        /// </summary>
-        private Size _childActualSize = Size.Empty;
-
-        private Control _transformRoot;
-
         public Control TransformRoot => _transformRoot ??
-                    (_transformRoot = this.GetVisualChildren().OfType<Control>().FirstOrDefault());
-
-        private IDisposable _transformChangedEvent = null;
-
-        private void OnLayoutTransformChanged(PerspexPropertyChangedEventArgs e)
-        {
-            var newTransform = e.NewValue as Transform;
-
-            if (_transformChangedEvent != null)
-            {
-                _transformChangedEvent.Dispose();
-                _transformChangedEvent = null;
-            }
-
-            if (newTransform != null)
-            {
-                _transformChangedEvent = Observable.FromEventPattern<EventHandler, EventArgs>(
-                                        v => newTransform.Changed += v, v => newTransform.Changed -= v)
-                                        .Subscribe(onNext: v => ApplyLayoutTransform());
-            }
-
-            ApplyLayoutTransform();
-        }
-
-        /// <summary>
-        /// Builds the visual tree for the LayoutTransformerControl when a new
-        /// template is applied.
-        /// </summary>
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
-        {
-            base.OnTemplateApplied(e);
-
-            _matrixTransform = new MatrixTransform();
-
-            if (null != TransformRoot)
-            {
-                TransformRoot.RenderTransform = _matrixTransform;
-                TransformRoot.TransformOrigin = new RelativePoint(0, 0, RelativeUnit.Absolute);
-            }
-
-            ApplyLayoutTransform();
-        }
-
-        /// <summary>
-        /// Applies the layout transform on the LayoutTransformerControl content.
-        /// </summary>
-        /// <remarks>
-        /// Only used in advanced scenarios (like animating the LayoutTransform).
-        /// Should be used to notify the LayoutTransformer control that some aspect
-        /// of its Transform property has changed.
-        /// </remarks>
-        private void ApplyLayoutTransform()
-        {
-            if (LayoutTransform == null) return;
-
-            // Get the transform matrix and apply it
-            _transformation = RoundMatrix(LayoutTransform.Value, DecimalsAfterRound);
-
-            if (null != _matrixTransform)
-            {
-                _matrixTransform.Matrix = _transformation;
-            }
-
-            // New transform means re-layout is necessary
-            InvalidateMeasure();
-        }
-
-        /// <summary>
-        /// Provides the behavior for the "Measure" pass of layout.
-        /// </summary>
-        /// <param name="availableSize">The available size that this element can give to child elements.</param>
-        /// <returns>The size that this element determines it needs during layout, based on its calculations of child element sizes.</returns>
-        protected override Size MeasureOverride(Size availableSize)
-        {
-            if (TransformRoot == null || LayoutTransform == null)
-            {
-                return base.MeasureOverride(availableSize);
-            }
-
-            Size measureSize;
-            if (_childActualSize == Size.Empty)
-            {
-                // Determine the largest size after the transformation
-                measureSize = ComputeLargestTransformedSize(availableSize);
-            }
-            else
-            {
-                // Previous measure/arrange pass determined that Child.DesiredSize was larger than believed
-                measureSize = _childActualSize;
-            }
-
-            // Perform a measure on the TransformRoot (containing Child)
-            TransformRoot.Measure(measureSize);
-
-            var desiredSize = TransformRoot.DesiredSize;
-
-            // Transform DesiredSize to find its width/height
-            Rect transformedDesiredRect = new Rect(0, 0, desiredSize.Width, desiredSize.Height).TransformToAABB(_transformation);
-            Size transformedDesiredSize = new Size(transformedDesiredRect.Width, transformedDesiredRect.Height);
-
-            // Return result to allocate enough space for the transformation
-            return transformedDesiredSize;
-        }
+                            (_transformRoot = this.GetVisualChildren().OfType<Control>().FirstOrDefault());
 
         /// <summary>
         /// Provides the behavior for the "Arrange" pass of layout.
@@ -216,6 +87,140 @@ namespace Perspex.Controls
 
             // Return result to perform the transformation
             return finalSize;
+        }
+
+        /// <summary>
+        /// Provides the behavior for the "Measure" pass of layout.
+        /// </summary>
+        /// <param name="availableSize">The available size that this element can give to child elements.</param>
+        /// <returns>The size that this element determines it needs during layout, based on its calculations of child element sizes.</returns>
+        protected override Size MeasureOverride(Size availableSize)
+        {
+            if (TransformRoot == null || LayoutTransform == null)
+            {
+                return base.MeasureOverride(availableSize);
+            }
+
+            Size measureSize;
+            if (_childActualSize == Size.Empty)
+            {
+                // Determine the largest size after the transformation
+                measureSize = ComputeLargestTransformedSize(availableSize);
+            }
+            else
+            {
+                // Previous measure/arrange pass determined that Child.DesiredSize was larger than believed
+                measureSize = _childActualSize;
+            }
+
+            // Perform a measure on the TransformRoot (containing Child)
+            TransformRoot.Measure(measureSize);
+
+            var desiredSize = TransformRoot.DesiredSize;
+
+            // Transform DesiredSize to find its width/height
+            Rect transformedDesiredRect = new Rect(0, 0, desiredSize.Width, desiredSize.Height).TransformToAABB(_transformation);
+            Size transformedDesiredSize = new Size(transformedDesiredRect.Width, transformedDesiredRect.Height);
+
+            // Return result to allocate enough space for the transformation
+            return transformedDesiredSize;
+        }
+
+        /// <summary>
+        /// Builds the visual tree for the LayoutTransformerControl when a new
+        /// template is applied.
+        /// </summary>
+        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        {
+            base.OnTemplateApplied(e);
+
+            _matrixTransform = new MatrixTransform();
+
+            if (null != TransformRoot)
+            {
+                TransformRoot.RenderTransform = _matrixTransform;
+                TransformRoot.TransformOrigin = new RelativePoint(0, 0, RelativeUnit.Absolute);
+            }
+
+            ApplyLayoutTransform();
+        }
+
+        /// <summary>
+        /// Acceptable difference between two doubles.
+        /// </summary>
+        private const double AcceptableDelta = 0.0001;
+
+        /// <summary>
+        /// Number of decimals to round the Matrix to.
+        /// </summary>
+        private const int DecimalsAfterRound = 4;
+
+        /// <summary>
+        /// Actual DesiredSize of Child element (the value it returned from its MeasureOverride method).
+        /// </summary>
+        private Size _childActualSize = Size.Empty;
+
+        /// <summary>
+        /// RenderTransform/MatrixTransform applied to TransformRoot.
+        /// </summary>
+        private MatrixTransform _matrixTransform;
+
+        /// <summary>
+        /// Transformation matrix corresponding to _matrixTransform.
+        /// </summary>
+        private Matrix _transformation;
+        private IDisposable _transformChangedEvent = null;
+        private Control _transformRoot;
+        /// <summary>
+        /// Returns true if Size a is smaller than Size b in either dimension.
+        /// </summary>
+        /// <param name="a">Second Size.</param>
+        /// <param name="b">First Size.</param>
+        /// <returns>True if Size a is smaller than Size b in either dimension.</returns>
+        private static bool IsSizeSmaller(Size a, Size b)
+        {
+            return (a.Width + AcceptableDelta < b.Width) || (a.Height + AcceptableDelta < b.Height);
+        }
+
+        /// <summary>
+        /// Rounds the non-offset elements of a Matrix to avoid issues due to floating point imprecision.
+        /// </summary>
+        /// <param name="matrix">Matrix to round.</param>
+        /// <param name="decimals">Number of decimal places to round to.</param>
+        /// <returns>Rounded Matrix.</returns>
+        private static Matrix RoundMatrix(Matrix matrix, int decimals)
+        {
+            return new Matrix(
+                Math.Round(matrix.M11, decimals),
+                Math.Round(matrix.M12, decimals),
+                Math.Round(matrix.M21, decimals),
+                Math.Round(matrix.M22, decimals),
+                matrix.M31,
+                matrix.M32);
+        }
+
+        /// <summary>
+        /// Applies the layout transform on the LayoutTransformerControl content.
+        /// </summary>
+        /// <remarks>
+        /// Only used in advanced scenarios (like animating the LayoutTransform).
+        /// Should be used to notify the LayoutTransformer control that some aspect
+        /// of its Transform property has changed.
+        /// </remarks>
+        private void ApplyLayoutTransform()
+        {
+            if (LayoutTransform == null) return;
+
+            // Get the transform matrix and apply it
+            _transformation = RoundMatrix(LayoutTransform.Value, DecimalsAfterRound);
+
+            if (null != _matrixTransform)
+            {
+                _matrixTransform.Matrix = _transformation;
+            }
+
+            // New transform means re-layout is necessary
+            InvalidateMeasure();
         }
 
         /// <summary>
@@ -361,32 +366,24 @@ namespace Perspex.Controls
             return computedSize;
         }
 
-        /// <summary>
-        /// Returns true if Size a is smaller than Size b in either dimension.
-        /// </summary>
-        /// <param name="a">Second Size.</param>
-        /// <param name="b">First Size.</param>
-        /// <returns>True if Size a is smaller than Size b in either dimension.</returns>
-        private static bool IsSizeSmaller(Size a, Size b)
+        private void OnLayoutTransformChanged(PerspexPropertyChangedEventArgs e)
         {
-            return (a.Width + AcceptableDelta < b.Width) || (a.Height + AcceptableDelta < b.Height);
-        }
+            var newTransform = e.NewValue as Transform;
 
-        /// <summary>
-        /// Rounds the non-offset elements of a Matrix to avoid issues due to floating point imprecision.
-        /// </summary>
-        /// <param name="matrix">Matrix to round.</param>
-        /// <param name="decimals">Number of decimal places to round to.</param>
-        /// <returns>Rounded Matrix.</returns>
-        private static Matrix RoundMatrix(Matrix matrix, int decimals)
-        {
-            return new Matrix(
-                Math.Round(matrix.M11, decimals),
-                Math.Round(matrix.M12, decimals),
-                Math.Round(matrix.M21, decimals),
-                Math.Round(matrix.M22, decimals),
-                matrix.M31,
-                matrix.M32);
+            if (_transformChangedEvent != null)
+            {
+                _transformChangedEvent.Dispose();
+                _transformChangedEvent = null;
+            }
+
+            if (newTransform != null)
+            {
+                _transformChangedEvent = Observable.FromEventPattern<EventHandler, EventArgs>(
+                                        v => newTransform.Changed += v, v => newTransform.Changed -= v)
+                                        .Subscribe(onNext: v => ApplyLayoutTransform());
+            }
+
+            ApplyLayoutTransform();
         }
     }
 }

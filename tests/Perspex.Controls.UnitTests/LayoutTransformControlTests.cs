@@ -223,19 +223,16 @@ namespace Perspex.Controls.UnitTests
             {
                 LayoutTransform = transform,
                 Template = new FuncControlTemplate<LayoutTransformControl>(
-                                p =>
-                                {
-                                    var c = new ContentPresenter() { Content = p.Content };
-                                    //we need to force create visual child
-                                    //so the measure after is correct
-                                    c.UpdateChild();
-                                    return c;
-                                })
+                                p => new ContentPresenter() { Content = p.Content })
             };
 
             lt.Content = new Rectangle() { Width = width, Height = height };
 
             lt.ApplyTemplate();
+
+            //we need to force create visual child
+            //so the measure after is correct
+            (lt.Presenter as ContentPresenter).UpdateChild();
 
             Assert.NotNull(lt.Presenter?.Child);
 
