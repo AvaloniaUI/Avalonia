@@ -140,6 +140,7 @@ namespace Perspex
             return Disposable.Create(() =>
             {
                 Bindings.Remove(node);
+                entry.Dispose();
 
                 if (entry.Index >= ActiveBindingIndex)
                 {

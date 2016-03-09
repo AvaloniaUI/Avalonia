@@ -4,6 +4,7 @@
 using System;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using Microsoft.Reactive.Testing;
 using Perspex.Data;
 using Xunit;
 
@@ -79,6 +80,22 @@ namespace Perspex.Base.UnitTests
             Class1 target = new Class1();
             target.Bind((PerspexProperty)Class1.FooProperty, Observable.Return((object)123));
             Assert.Equal("foodefault", target.GetValue(Class1.FooProperty));
+        }
+
+        [Fact]
+        public void Observable_Is_Unsubscribed_When_Subscription_Disposed()
+        {
+            var scheduler = new TestScheduler();
+            var source = scheduler.CreateColdObservable<object>();
+            var target = new Class1();
+
+            var subscription = target.Bind(Class1.FooProperty, source);
+            Assert.Equal(1, source.Subscriptions.Count);
+            Assert.Equal(Subscription.Infinite, source.Subscriptions[0].Unsubscribe);
+
+            subscription.Dispose();
+            Assert.Equal(1, source.Subscriptions.Count);
+            Assert.Equal(0, source.Subscriptions[0].Unsubscribe);
         }
 
         [Fact]
