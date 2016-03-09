@@ -80,6 +80,7 @@
     <Compile Include="Media\LinearGradientBrush.cs" />
     <Compile Include="Media\MediaExtensions.cs" />
     <Compile Include="Media\PenLineCap.cs" />
+    <Compile Include="Media\ScaleTransform.cs" />
     <Compile Include="Media\TextAlignment.cs" />
     <Compile Include="Media\FontWeight.cs" />
     <Compile Include="Media\FontStyle.cs" />
