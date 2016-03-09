@@ -4,12 +4,13 @@
 using System;
 using System.Globalization;
 using System.Reactive.Linq;
+using Perspex.Data;
 
 namespace Perspex.Markup.Data
 {
     internal class LogicalNotNode : ExpressionNode
     {
-        public override bool SetValue(object value)
+        public override bool SetValue(object value, BindingPriority priority)
         {
             return false;
         }

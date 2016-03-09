@@ -3,6 +3,7 @@
 
 using System;
 using System.Reactive.Linq;
+using Perspex.Data;
 
 namespace Perspex.Markup.Data.Plugins
 {
@@ -95,11 +96,11 @@ namespace Perspex.Markup.Data.Plugins
                 _subscription = null;
             }
 
-            public bool SetValue(object value)
+            public bool SetValue(object value, BindingPriority priority)
             {
                 if (!_property.IsReadOnly)
                 {
-                    Instance.SetValue(_property, value);
+                    Instance.SetValue(_property, value, priority);
                     return true;
                 }
 

@@ -5,6 +5,7 @@ using System;
 using System.Globalization;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using Perspex.Data;
 using Perspex.Utilities;
 
 namespace Perspex.Markup.Data
@@ -18,6 +19,7 @@ namespace Perspex.Markup.Data
         private readonly ExpressionObserver _inner;
         private readonly Type _targetType;
         private readonly object _fallbackValue;
+        private readonly BindingPriority _priority;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ExpressionObserver"/> class.
@@ -41,12 +43,14 @@ namespace Perspex.Markup.Data
         /// <param name="fallbackValue">
         /// The value to use when the binding is unable to produce a value.
         /// </param>
+        /// <param name="priority">The binding priority.</param>
         public ExpressionSubject(
             ExpressionObserver inner, 
             Type targetType, 
             IValueConverter converter,
             object converterParameter = null,
-            object fallbackValue = null)
+            object fallbackValue = null,
+            BindingPriority priority = BindingPriority.LocalValue)
         {
             Contract.Requires<ArgumentNullException>(inner != null);
             Contract.Requires<ArgumentNullException>(targetType != null);
@@ -57,6 +61,7 @@ namespace Perspex.Markup.Data
             Converter = converter;
             ConverterParameter = converterParameter;
             _fallbackValue = fallbackValue;
+            _priority = priority;
         }
 
         /// <summary>
@@ -100,7 +105,7 @@ namespace Perspex.Markup.Data
                     converted = TypeUtilities.Default(type);
                 }
 
-                _inner.SetValue(converted);
+                _inner.SetValue(converted, _priority);
             }
         }
 

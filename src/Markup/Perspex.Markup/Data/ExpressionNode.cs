@@ -3,6 +3,7 @@
 
 using System;
 using System.Reactive.Subjects;
+using Perspex.Data;
 
 namespace Perspex.Markup.Data
 {
@@ -76,9 +77,9 @@ namespace Perspex.Markup.Data
             }
         }
 
-        public virtual bool SetValue(object value)
+        public virtual bool SetValue(object value, BindingPriority priority)
         {
-            return Next?.SetValue(value) ?? false;
+            return Next?.SetValue(value, priority) ?? false;
         }
 
         public virtual IDisposable Subscribe(IObserver<object> observer)
