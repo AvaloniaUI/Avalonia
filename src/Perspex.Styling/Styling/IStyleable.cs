@@ -3,7 +3,6 @@
 
 using System;
 using Perspex.Collections;
-using System.Reactive;
 
 namespace Perspex.Styling
 {
@@ -13,9 +12,9 @@ namespace Perspex.Styling
     public interface IStyleable : IPerspexObject, INamed
     {
         /// <summary>
-        /// Raised when the control's style should be removed.
+        /// Signalled when the control's style should be removed.
         /// </summary>
-        IObservable<Unit> StyleDetach { get; }
+        IObservable<IStyleable> StyleDetach { get; }
 
         /// <summary>
         /// Gets the list of classes for the control.

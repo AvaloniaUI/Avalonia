@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Reactive.Disposables;
 using System.Reactive.Subjects;
 using Perspex.Data;
 using Perspex.Metadata;
@@ -63,7 +64,7 @@ namespace Perspex.Styling
         /// <param name="style">The style that is being applied.</param>
         /// <param name="control">The control.</param>
         /// <param name="activator">An optional activator.</param>
-        public void Apply(IStyle style, IStyleable control, IObservable<bool> activator)
+        public IDisposable Apply(IStyle style, IStyleable control, IObservable<bool> activator)
         {
             Contract.Requires<ArgumentNullException>(control != null);
 
@@ -80,16 +81,12 @@ namespace Perspex.Styling
             {
                 if (activator == null)
                 {
-                    control.SetValue(Property, Value, BindingPriority.Style);
+                    return control.Bind(Property, ObservableEx.SingleValue(Value), BindingPriority.Style);
                 }
                 else
                 {
                     var activated = new ActivatedValue(activator, Value, description);
-                    var instanced = new InstancedBinding(
-                        activated,
-                        BindingMode.OneWay,
-                        BindingPriority.StyleTrigger);
-                    BindingOperations.Apply(control, Property, instanced, null);
+                    return control.Bind(Property, activated, BindingPriority.StyleTrigger);
                 }
             }
             else
@@ -99,9 +96,11 @@ namespace Perspex.Styling
                 if (source != null)
                 {
                     var cloned = Clone(source, style, activator);
-                    BindingOperations.Apply(control, Property, cloned, null);
+                    return BindingOperations.Apply(control, Property, cloned, null);
                 }
             }
+
+            return Disposable.Empty;
         }
 
         private InstancedBinding Clone(InstancedBinding sourceInstance, IStyle style, IObservable<bool> activator)

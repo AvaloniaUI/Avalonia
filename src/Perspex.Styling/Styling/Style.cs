@@ -13,7 +13,9 @@ namespace Perspex.Styling
     /// </summary>
     public class Style : IStyle
     {
-        private static readonly IObservable<bool> True = Observable.Never<bool>().StartWith(true);
+        private static Dictionary<IStyleable, List<IDisposable>> _applied = 
+            new Dictionary<IStyleable, List<IDisposable>>();
+
         private Dictionary<string, object> _resources;
 
         /// <summary>
@@ -85,20 +87,23 @@ namespace Perspex.Styling
 
                 if (match.ImmediateResult != false)
                 {
-                    var activator = (match.ObservableResult ?? True)
-                        .TakeUntil(control.StyleDetach);
+                    var subs = GetSubscriptions(control);
 
                     foreach (var setter in Setters)
                     {
-                        setter.Apply(this, control, activator);
+                        var sub = setter.Apply(this, control, match.ObservableResult);
+                        subs.Add(sub);
                     }
                 }
             }
             else if (control == container)
             {
+                var subs = GetSubscriptions(control);
+
                 foreach (var setter in Setters)
                 {
-                    setter.Apply(this, control, null);
+                    var sub = setter.Apply(this, control, null);
+                    subs.Add(sub);
                 }
             }
         }
@@ -138,6 +143,37 @@ namespace Perspex.Styling
             {
                 return "Style";
             }
+        }
+
+        private static List<IDisposable> GetSubscriptions(IStyleable control)
+        {
+            List<IDisposable> subscriptions;
+
+            if (!_applied.TryGetValue(control, out subscriptions))
+            {
+                subscriptions = new List<IDisposable>(2);
+                subscriptions.Add(control.StyleDetach.Subscribe(ControlDetach));
+                _applied.Add(control, subscriptions);
+            }
+
+            return subscriptions;
+        }
+
+        /// <summary>
+        /// Called when a control's <see cref="IStyleable.StyleDetach"/> is signalled to remove
+        /// all applied styles.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        private static void ControlDetach(IStyleable control)
+        {
+            var subscriptions = _applied[control];
+
+            foreach (var subscription in subscriptions)
+            {
+                subscription.Dispose();
+            }
+
+            _applied.Remove(control);
         }
     }
 }

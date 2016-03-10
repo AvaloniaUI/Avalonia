@@ -35,7 +35,7 @@ namespace Perspex.Styling.UnitTests
 
         IPerspexReadOnlyList<string> IStyleable.Classes => Classes;
 
-        IObservable<Unit> IStyleable.StyleDetach { get; }
+        IObservable<IStyleable> IStyleable.StyleDetach { get; }
 
         public object GetValue(PerspexProperty property)
         {
