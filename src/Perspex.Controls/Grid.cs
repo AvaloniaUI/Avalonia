@@ -203,747 +203,12 @@ namespace Perspex.Controls
          return value;
       }
 
-      /*
-      private Segment[,] _rowMatrix;
+      private void Invalidate()
+      {
+         validationNeeded = true;
+         InvalidateMeasure();
+      }
 
-      private Segment[,] _colMatrix;
-      /// <summary>
-      /// Measures the grid.
-      /// </summary>
-      /// <param name="constraint">The available size.</param>
-      /// <returns>The desired size of the control.</returns>
-      protected override Size MeasureOverride(Size constraint)
-        {
-            Size totalSize = constraint;
-            int colCount = ColumnDefinitions.Count;
-            int rowCount = RowDefinitions.Count;
-            double totalStarsX = 0;
-            double totalStarsY = 0;
-            bool emptyRows = rowCount == 0;
-            bool emptyCols = colCount == 0;
-            bool hasChildren = Children.Count > 0;
-
-            if (emptyRows)
-            {
-                rowCount = 1;
-            }
-
-            if (emptyCols)
-            {
-                colCount = 1;
-            }
-
-            CreateMatrices(rowCount, colCount);
-
-            if (emptyRows)
-            {
-                _rowMatrix[0, 0] = new Segment(0, 0, double.PositiveInfinity, GridUnitType.Star);
-                _rowMatrix[0, 0].Stars = 1.0;
-                totalStarsY += 1.0;
-            }
-            else
-            {
-                for (int i = 0; i < rowCount; i++)
-                {
-                    RowDefinition rowdef = RowDefinitions[i];
-                    GridLength height = rowdef.Height;
-
-                    rowdef.ActualHeight = double.PositiveInfinity;
-                    _rowMatrix[i, i] = new Segment(0, rowdef.MinHeight, rowdef.MaxHeight, height.GridUnitType);
-
-                    if (height.GridUnitType == GridUnitType.Pixel)
-                    {
-                        _rowMatrix[i, i].OfferedSize = Clamp(height.Value, _rowMatrix[i, i].Min, _rowMatrix[i, i].Max);
-                        _rowMatrix[i, i].DesiredSize = _rowMatrix[i, i].OfferedSize;
-                        rowdef.ActualHeight = _rowMatrix[i, i].OfferedSize;
-                    }
-                    else if (height.GridUnitType == GridUnitType.Star)
-                    {
-                        _rowMatrix[i, i].Stars = height.Value;
-                        totalStarsY += height.Value;
-                    }
-                    else if (height.GridUnitType == GridUnitType.Auto)
-                    {
-                        _rowMatrix[i, i].OfferedSize = Clamp(0, _rowMatrix[i, i].Min, _rowMatrix[i, i].Max);
-                        _rowMatrix[i, i].DesiredSize = _rowMatrix[i, i].OfferedSize;
-                    }
-                }
-            }
-
-            if (emptyCols)
-            {
-                _colMatrix[0, 0] = new Segment(0, 0, double.PositiveInfinity, GridUnitType.Star);
-                _colMatrix[0, 0].Stars = 1.0;
-                totalStarsX += 1.0;
-            }
-            else
-            {
-                for (int i = 0; i < colCount; i++)
-                {
-                    ColumnDefinition coldef = ColumnDefinitions[i];
-                    GridLength width = coldef.Width;
-
-                    coldef.ActualWidth = double.PositiveInfinity;
-                    _colMatrix[i, i] = new Segment(0, coldef.MinWidth, coldef.MaxWidth, width.GridUnitType);
-
-                    if (width.GridUnitType == GridUnitType.Pixel)
-                    {
-                        _colMatrix[i, i].OfferedSize = Clamp(width.Value, _colMatrix[i, i].Min, _colMatrix[i, i].Max);
-                        _colMatrix[i, i].DesiredSize = _colMatrix[i, i].OfferedSize;
-                        coldef.ActualWidth = _colMatrix[i, i].OfferedSize;
-                    }
-                    else if (width.GridUnitType == GridUnitType.Star)
-                    {
-                        _colMatrix[i, i].Stars = width.Value;
-                        totalStarsX += width.Value;
-                    }
-                    else if (width.GridUnitType == GridUnitType.Auto)
-                    {
-                        _colMatrix[i, i].OfferedSize = Clamp(0, _colMatrix[i, i].Min, _colMatrix[i, i].Max);
-                        _colMatrix[i, i].DesiredSize = _colMatrix[i, i].OfferedSize;
-                    }
-                }
-            }
-
-            List<GridNode> sizes = new List<GridNode>();
-            GridNode node;
-            GridNode separator = new GridNode(null, 0, 0, 0);
-            int separatorIndex;
-
-            sizes.Add(separator);
-
-            // Pre-process the grid children so that we know what types of elements we have so
-            // we can apply our special measuring rules.
-            GridWalker gridWalker = new GridWalker(this, _rowMatrix, _colMatrix);
-
-            for (int i = 0; i < 6; i++)
-            {
-                // These bools tell us which grid element type we should be measuring. i.e.
-                // 'star/auto' means we should measure elements with a star row and auto col
-                bool autoAuto = i == 0;
-                bool starAuto = i == 1;
-                bool autoStar = i == 2;
-                bool starAutoAgain = i == 3;
-                bool nonStar = i == 4;
-                bool remainingStar = i == 5;
-
-                if (hasChildren)
-                {
-                    ExpandStarCols(totalSize);
-                    ExpandStarRows(totalSize);
-                }
-
-                foreach (Control child in Children)
-                {
-                    int col, row;
-                    int colspan, rowspan;
-                    double childSizeX = 0;
-                    double childSizeY = 0;
-                    bool starCol = false;
-                    bool starRow = false;
-                    bool autoCol = false;
-                    bool autoRow = false;
-
-                    col = Math.Min(GetColumn(child), colCount - 1);
-                    row = Math.Min(GetRow(child), rowCount - 1);
-                    colspan = Math.Min(GetColumnSpan(child), colCount - col);
-                    rowspan = Math.Min(GetRowSpan(child), rowCount - row);
-
-                    for (int r = row; r < row + rowspan; r++)
-                    {
-                        starRow |= _rowMatrix[r, r].Type == GridUnitType.Star;
-                        autoRow |= _rowMatrix[r, r].Type == GridUnitType.Auto;
-                    }
-
-                    for (int c = col; c < col + colspan; c++)
-                    {
-                        starCol |= _colMatrix[c, c].Type == GridUnitType.Star;
-                        autoCol |= _colMatrix[c, c].Type == GridUnitType.Auto;
-                    }
-
-                    // This series of if statements checks whether or not we should measure
-                    // the current element and also if we need to override the sizes
-                    // passed to the Measure call.
-
-                    // If the element has Auto rows and Auto columns and does not span Star
-                    // rows/cols it should only be measured in the auto_auto phase.
-                    // There are similar rules governing auto/star and star/auto elements.
-                    // NOTE: star/auto elements are measured twice. The first time with
-                    // an override for height, the second time without it.
-                    if (autoRow && autoCol && !starRow && !starCol)
-                    {
-                        if (!autoAuto)
-                        {
-                            continue;
-                        }
-
-                        childSizeX = double.PositiveInfinity;
-                        childSizeY = double.PositiveInfinity;
-                    }
-                    else if (starRow && autoCol && !starCol)
-                    {
-                        if (!(starAuto || starAutoAgain))
-                        {
-                            continue;
-                        }
-
-                        if (starAuto && gridWalker.HasAutoStar)
-                        {
-                            childSizeY = double.PositiveInfinity;
-                        }
-
-                        childSizeX = double.PositiveInfinity;
-                    }
-                    else if (autoRow && starCol && !starRow)
-                    {
-                        if (!autoStar)
-                        {
-                            continue;
-                        }
-
-                        childSizeY = double.PositiveInfinity;
-                    }
-                    else if ((autoRow || autoCol) && !(starRow || starCol))
-                    {
-                        if (!nonStar)
-                        {
-                            continue;
-                        }
-
-                        if (autoRow)
-                        {
-                            childSizeY = double.PositiveInfinity;
-                        }
-
-                        if (autoCol)
-                        {
-                            childSizeX = double.PositiveInfinity;
-                        }
-                    }
-                    else if (!(starRow || starCol))
-                    {
-                        if (!nonStar)
-                        {
-                            continue;
-                        }
-                    }
-                    else
-                    {
-                        if (!remainingStar)
-                        {
-                            continue;
-                        }
-                    }
-
-                    for (int r = row; r < row + rowspan; r++)
-                    {
-                        childSizeY += _rowMatrix[r, r].OfferedSize;
-                    }
-
-                    for (int c = col; c < col + colspan; c++)
-                    {
-                        childSizeX += _colMatrix[c, c].OfferedSize;
-                    }
-
-                    child.Measure(new Size(childSizeX, childSizeY));
-                    Size desired = child.DesiredSize;
-
-                    // Elements distribute their height based on two rules:
-                    // 1) Elements with rowspan/colspan == 1 distribute their height first
-                    // 2) Everything else distributes in a LIFO manner.
-                    // As such, add all UIElements with rowspan/colspan == 1 after the separator in
-                    // the list and everything else before it. Then to process, just keep popping
-                    // elements off the end of the list.
-                    if (!starAuto)
-                    {
-                        node = new GridNode(_rowMatrix, row + rowspan - 1, row, desired.Height);
-                        separatorIndex = sizes.IndexOf(separator);
-                        sizes.Insert(node.Row == node.Column ? separatorIndex + 1 : separatorIndex, node);
-                    }
-
-                    node = new GridNode(_colMatrix, col + colspan - 1, col, desired.Width);
-
-                    separatorIndex = sizes.IndexOf(separator);
-                    sizes.Insert(node.Row == node.Column ? separatorIndex + 1 : separatorIndex, node);
-                }
-
-                sizes.Remove(separator);
-
-                while (sizes.Count > 0)
-                {
-                    node = sizes.Last();
-                    node.Matrix[node.Row, node.Column].DesiredSize = Math.Max(node.Matrix[node.Row, node.Column].DesiredSize, node.Size);
-                    AllocateDesiredSize(rowCount, colCount);
-                    sizes.Remove(node);
-                }
-
-                sizes.Add(separator);
-            }
-
-            // Once we have measured and distributed all sizes, we have to store
-            // the results. Every time we want to expand the rows/cols, this will
-            // be used as the baseline.
-            SaveMeasureResults();
-
-            sizes.Remove(separator);
-
-            double gridSizeX = 0;
-            double gridSizeY = 0;
-
-            for (int c = 0; c < colCount; c++)
-            {
-                gridSizeX += _colMatrix[c, c].DesiredSize;
-            }
-
-            for (int r = 0; r < rowCount; r++)
-            {
-                gridSizeY += _rowMatrix[r, r].DesiredSize;
-            }
-
-            return new Size(gridSizeX, gridSizeY);
-        }
-
-        /// <summary>
-        /// Arranges the grid's children.
-        /// </summary>
-        /// <param name="finalSize">The size allocated to the control.</param>
-        /// <returns>The space taken.</returns>
-        protected override Size ArrangeOverride(Size finalSize)
-        {
-            int colCount = ColumnDefinitions.Count;
-            int rowCount = RowDefinitions.Count;
-            int colMatrixDim = _colMatrix.GetLength(0);
-            int rowMatrixDim = _rowMatrix.GetLength(0);
-
-            RestoreMeasureResults();
-
-            double totalConsumedX = 0;
-            double totalConsumedY = 0;
-
-            for (int c = 0; c < colMatrixDim; c++)
-            {
-                _colMatrix[c, c].OfferedSize = _colMatrix[c, c].DesiredSize;
-                totalConsumedX += _colMatrix[c, c].OfferedSize;
-            }
-
-            for (int r = 0; r < rowMatrixDim; r++)
-            {
-                _rowMatrix[r, r].OfferedSize = _rowMatrix[r, r].DesiredSize;
-                totalConsumedY += _rowMatrix[r, r].OfferedSize;
-            }
-
-            if (totalConsumedX != finalSize.Width)
-            {
-                ExpandStarCols(finalSize);
-            }
-
-            if (totalConsumedY != finalSize.Height)
-            {
-                ExpandStarRows(finalSize);
-            }
-
-            for (int c = 0; c < colCount; c++)
-            {
-                ColumnDefinitions[c].ActualWidth = _colMatrix[c, c].OfferedSize;
-            }
-
-            for (int r = 0; r < rowCount; r++)
-            {
-                RowDefinitions[r].ActualHeight = _rowMatrix[r, r].OfferedSize;
-            }
-
-            foreach (Control child in Children)
-            {
-                int col = Math.Min(GetColumn(child), colMatrixDim - 1);
-                int row = Math.Min(GetRow(child), rowMatrixDim - 1);
-                int colspan = Math.Min(GetColumnSpan(child), colMatrixDim - col);
-                int rowspan = Math.Min(GetRowSpan(child), rowMatrixDim - row);
-
-                double childFinalX = 0;
-                double childFinalY = 0;
-                double childFinalW = 0;
-                double childFinalH = 0;
-
-                for (int c = 0; c < col; c++)
-                {
-                    childFinalX += _colMatrix[c, c].OfferedSize;
-                }
-
-                for (int c = col; c < col + colspan; c++)
-                {
-                    childFinalW += _colMatrix[c, c].OfferedSize;
-                }
-
-                for (int r = 0; r < row; r++)
-                {
-                    childFinalY += _rowMatrix[r, r].OfferedSize;
-                }
-
-                for (int r = row; r < row + rowspan; r++)
-                {
-                    childFinalH += _rowMatrix[r, r].OfferedSize;
-                }
-
-                child.Arrange(new Rect(childFinalX, childFinalY, childFinalW, childFinalH));
-            }
-
-            return finalSize;
-        }
-
-        private static double Clamp(double val, double min, double max)
-        {
-            if (val < min)
-            {
-                return min;
-            }
-            else if (val > max)
-            {
-                return max;
-            }
-            else
-            {
-                return val;
-            }
-        }
-
-        
-
-        private void CreateMatrices(int rowCount, int colCount)
-        {
-            if (_rowMatrix == null || _colMatrix == null ||
-                _rowMatrix.GetLength(0) != rowCount ||
-                _colMatrix.GetLength(0) != colCount)
-            {
-                _rowMatrix = new Segment[rowCount, rowCount];
-                _colMatrix = new Segment[colCount, colCount];
-            }
-            else
-            {
-                Array.Clear(_rowMatrix, 0, _rowMatrix.Length);
-                Array.Clear(_colMatrix, 0, _colMatrix.Length);
-            }
-        }
-
-        private void ExpandStarCols(Size availableSize)
-        {
-            int matrixCount = _colMatrix.GetLength(0);
-            int columnsCount = ColumnDefinitions.Count;
-            double width = availableSize.Width;
-
-            for (int i = 0; i < matrixCount; i++)
-            {
-                if (_colMatrix[i, i].Type == GridUnitType.Star)
-                {
-                    _colMatrix[i, i].OfferedSize = 0;
-                }
-                else
-                {
-                    width = Math.Max(width - _colMatrix[i, i].OfferedSize, 0);
-                }
-            }
-
-            AssignSize(_colMatrix, 0, matrixCount - 1, ref width, GridUnitType.Star, false);
-            width = Math.Max(0, width);
-
-            if (columnsCount > 0)
-            {
-                for (int i = 0; i < matrixCount; i++)
-                {
-                    if (_colMatrix[i, i].Type == GridUnitType.Star)
-                    {
-                        ColumnDefinitions[i].ActualWidth = _colMatrix[i, i].OfferedSize;
-                    }
-                }
-            }
-        }
-
-        private void ExpandStarRows(Size availableSize)
-        {
-            int matrixCount = _rowMatrix.GetLength(0);
-            int rowCount = RowDefinitions.Count;
-            double height = availableSize.Height;
-
-            // When expanding star rows, we need to zero out their height before
-            // calling AssignSize. AssignSize takes care of distributing the
-            // available size when there are Mins and Maxs applied.
-            for (int i = 0; i < matrixCount; i++)
-            {
-                if (_rowMatrix[i, i].Type == GridUnitType.Star)
-                {
-                    _rowMatrix[i, i].OfferedSize = 0.0;
-                }
-                else
-                {
-                    height = Math.Max(height - _rowMatrix[i, i].OfferedSize, 0);
-                }
-            }
-
-            AssignSize(_rowMatrix, 0, matrixCount - 1, ref height, GridUnitType.Star, false);
-
-            if (rowCount > 0)
-            {
-                for (int i = 0; i < matrixCount; i++)
-                {
-                    if (_rowMatrix[i, i].Type == GridUnitType.Star)
-                    {
-                        RowDefinitions[i].ActualHeight = _rowMatrix[i, i].OfferedSize;
-                    }
-                }
-            }
-        }
-
-        private void AssignSize(
-            Segment[,] matrix,
-            int start,
-            int end,
-            ref double size,
-            GridUnitType type,
-            bool desiredSize)
-        {
-            double count = 0;
-            bool assigned;
-
-            // Count how many segments are of the correct type. If we're measuring Star rows/cols
-            // we need to count the number of stars instead.
-            for (int i = start; i <= end; i++)
-            {
-                double segmentSize = desiredSize ? matrix[i, i].DesiredSize : matrix[i, i].OfferedSize;
-                if (segmentSize < matrix[i, i].Max)
-                {
-                    count += type == GridUnitType.Star ? matrix[i, i].Stars : 1;
-                }
-            }
-
-            do
-            {
-                double contribution = size / count;
-
-                assigned = false;
-
-                for (int i = start; i <= end; i++)
-                {
-                    double segmentSize = desiredSize ? matrix[i, i].DesiredSize : matrix[i, i].OfferedSize;
-
-                    if (!(matrix[i, i].Type == type && segmentSize < matrix[i, i].Max))
-                    {
-                        continue;
-                    }
-
-                    double newsize = segmentSize;
-                    newsize += contribution * (type == GridUnitType.Star ? matrix[i, i].Stars : 1);
-                    newsize = Math.Min(newsize, matrix[i, i].Max);
-                    assigned |= newsize > segmentSize;
-                    size -= newsize - segmentSize;
-
-                    if (desiredSize)
-                    {
-                        matrix[i, i].DesiredSize = newsize;
-                    }
-                    else
-                    {
-                        matrix[i, i].OfferedSize = newsize;
-                    }
-                }
-            }
-            while (assigned);
-        }
-
-        private void AllocateDesiredSize(int rowCount, int colCount)
-        {
-            // First allocate the heights of the RowDefinitions, then allocate
-            // the widths of the ColumnDefinitions.
-            for (int i = 0; i < 2; i++)
-            {
-                Segment[,] matrix = i == 0 ? _rowMatrix : _colMatrix;
-                int count = i == 0 ? rowCount : colCount;
-
-                for (int row = count - 1; row >= 0; row--)
-                {
-                    for (int col = row; col >= 0; col--)
-                    {
-                        bool spansStar = false;
-                        for (int j = row; j >= col; j--)
-                        {
-                            spansStar |= matrix[j, j].Type == GridUnitType.Star;
-                        }
-
-                        // This is the amount of pixels which must be available between the grid rows
-                        // at index 'col' and 'row'. i.e. if 'row' == 0 and 'col' == 2, there must
-                        // be at least 'matrix [row][col].size' pixels of height allocated between
-                        // all the rows in the range col -> row.
-                        double current = matrix[row, col].DesiredSize;
-
-                        // Count how many pixels have already been allocated between the grid rows
-                        // in the range col -> row. The amount of pixels allocated to each grid row/column
-                        // is found on the diagonal of the matrix.
-                        double totalAllocated = 0;
-
-                        for (int k = row; k >= col; k--)
-                        {
-                            totalAllocated += matrix[k, k].DesiredSize;
-                        }
-
-                        // If the size requirement has not been met, allocate the additional required
-                        // size between 'pixel' rows, then 'star' rows, finally 'auto' rows, until all
-                        // height has been assigned.
-                        if (totalAllocated < current)
-                        {
-                            double additional = current - totalAllocated;
-
-                            if (spansStar)
-                            {
-                                AssignSize(matrix, col, row, ref additional, GridUnitType.Star, true);
-                            }
-                            else
-                            {
-                                AssignSize(matrix, col, row, ref additional, GridUnitType.Pixel, true);
-                                AssignSize(matrix, col, row, ref additional, GridUnitType.Auto, true);
-                            }
-                        }
-                    }
-                }
-            }
-
-            int rowMatrixDim = _rowMatrix.GetLength(0);
-            int colMatrixDim = _colMatrix.GetLength(0);
-
-            for (int r = 0; r < rowMatrixDim; r++)
-            {
-                _rowMatrix[r, r].OfferedSize = _rowMatrix[r, r].DesiredSize;
-            }
-
-            for (int c = 0; c < colMatrixDim; c++)
-            {
-                _colMatrix[c, c].OfferedSize = _colMatrix[c, c].DesiredSize;
-            }
-        }
-
-        private void SaveMeasureResults()
-        {
-            int rowMatrixDim = _rowMatrix.GetLength(0);
-            int colMatrixDim = _colMatrix.GetLength(0);
-
-            for (int i = 0; i < rowMatrixDim; i++)
-            {
-                for (int j = 0; j < rowMatrixDim; j++)
-                {
-                    _rowMatrix[i, j].OriginalSize = _rowMatrix[i, j].OfferedSize;
-                }
-            }
-
-            for (int i = 0; i < colMatrixDim; i++)
-            {
-                for (int j = 0; j < colMatrixDim; j++)
-                {
-                    _colMatrix[i, j].OriginalSize = _colMatrix[i, j].OfferedSize;
-                }
-            }
-        }
-
-        private void RestoreMeasureResults()
-        {
-            int rowMatrixDim = _rowMatrix.GetLength(0);
-            int colMatrixDim = _colMatrix.GetLength(0);
-
-            for (int i = 0; i < rowMatrixDim; i++)
-            {
-                for (int j = 0; j < rowMatrixDim; j++)
-                {
-                    _rowMatrix[i, j].OfferedSize = _rowMatrix[i, j].OriginalSize;
-                }
-            }
-
-            for (int i = 0; i < colMatrixDim; i++)
-            {
-                for (int j = 0; j < colMatrixDim; j++)
-                {
-                    _colMatrix[i, j].OfferedSize = _colMatrix[i, j].OriginalSize;
-                }
-            }
-        }
-
-        private struct Segment
-        {
-            public double OriginalSize;
-            public double Max;
-            public double Min;
-            public double DesiredSize;
-            public double OfferedSize;
-            public double Stars;
-            public GridUnitType Type;
-
-            public Segment(double offeredSize, double min, double max, GridUnitType type)
-            {
-                OriginalSize = 0;
-                Min = min;
-                Max = max;
-                DesiredSize = 0;
-                OfferedSize = offeredSize;
-                Stars = 0;
-                Type = type;
-            }
-        }
-
-        private struct GridNode
-        {
-            public readonly int Row;
-            public readonly int Column;
-            public readonly double Size;
-            public readonly Segment[,] Matrix;
-
-            public GridNode(Segment[,] matrix, int row, int col, double size)
-            {
-                Matrix = matrix;
-                Row = row;
-                Column = col;
-                Size = size;
-            }
-        }
-
-        private class GridWalker
-        {
-            public GridWalker(Grid grid, Segment[,] rowMatrix, Segment[,] colMatrix)
-            {
-                int rowMatrixDim = rowMatrix.GetLength(0);
-                int colMatrixDim = colMatrix.GetLength(0);
-
-                foreach (Control child in grid.Children)
-                {
-                    bool starCol = false;
-                    bool starRow = false;
-                    bool autoCol = false;
-                    bool autoRow = false;
-
-                    int col = Math.Min(GetColumn(child), colMatrixDim - 1);
-                    int row = Math.Min(GetRow(child), rowMatrixDim - 1);
-                    int colspan = Math.Min(GetColumnSpan(child), colMatrixDim - 1);
-                    int rowspan = Math.Min(GetRowSpan(child), rowMatrixDim - 1);
-
-                    for (int r = row; r < row + rowspan; r++)
-                    {
-                        starRow |= rowMatrix[r, r].Type == GridUnitType.Star;
-                        autoRow |= rowMatrix[r, r].Type == GridUnitType.Auto;
-                    }
-
-                    for (int c = col; c < col + colspan; c++)
-                    {
-                        starCol |= colMatrix[c, c].Type == GridUnitType.Star;
-                        autoCol |= colMatrix[c, c].Type == GridUnitType.Auto;
-                    }
-
-                    HasAutoAuto |= autoRow && autoCol && !starRow && !starCol;
-                    HasStarAuto |= starRow && autoCol;
-                    HasAutoStar |= autoRow && starCol;
-                }
-            }
-
-            public bool HasAutoAuto { get; }
-
-            public bool HasStarAuto { get; }
-
-            public bool HasAutoStar { get; }
-        }
-        */
 
       private List<Cell> Group1 = new List<Cell>();
       private List<Cell> Group2 = new List<Cell>();
@@ -960,26 +225,36 @@ namespace Perspex.Controls
       private bool HasStarCellsV;
 
       private bool validationNeeded = true;
+      private const double c_starClip = 1e298; //  used as maximum for clipping star values during normalization
 
-      double totalStarsX = 0;
-      double totalStarsY = 0;
+      private double totalHeight;
+      private double totalWidth;
 
-      double totalHeight;
-      double totalWidth;
+      private bool definitionsEmpty
+         =>
+            ((_rowDefinitions == null || _rowDefinitions.Count == 0) &&
+             (_columnDefinitions == null || _columnDefinitions.Count == 0));
 
-      private bool definitionsEmpty => (_rowDefinitions?.Count == 0 && _columnDefinitions?.Count == 0);
+      private RowDefinition _rowDefition;
+      private ColumnDefinition _colDefinition;
+
+      private static readonly IComparer _spanPreferredDistributionOrderComparer = new SpanPreferredDistributionOrderComparer();
+      private static readonly IComparer _spanMaxDistributionOrderComparer = new SpanMaxDistributionOrderComparer();
 
       protected override Size MeasureOverride(Size availableSize)
       {
          Stopwatch measureTimer = Stopwatch.StartNew();
+         Size totalSize;
          if (definitionsEmpty)
          {
+            double w = 0, h = 0;
             foreach (Control child in Children)
             {
                child.Measure(availableSize);
-               totalWidth = Math.Max(child.DesiredSize.Width, totalWidth);
-               totalHeight = Math.Max(child.DesiredSize.Height, totalHeight);
+               w = Math.Max(child.DesiredSize.Width, totalWidth);
+               h = Math.Max(child.DesiredSize.Height, totalHeight);
             }
+            totalSize = new Size(w, h).Constrain(availableSize);
          }
          else
          {
@@ -994,13 +269,13 @@ namespace Perspex.Controls
             {
                if (HasStarCellsV)
                {
-                  ExpandRows(availableSize.Height, totalStarsY);
+                  ResolveStars(_rowSegment, availableSize.Height, true);
                }
                MeasureGroup(Group2, false, false);
 
                if (HasStarCellsU)
                {
-                  ExpandCols(availableSize.Width, totalStarsX);
+                  ResolveStars(_colSegment, availableSize.Width, false);
                }
                MeasureGroup(Group3, false, false);
             }
@@ -1013,13 +288,13 @@ namespace Perspex.Controls
                {
                   if (HasStarCellsU)
                   {
-                     ExpandCols(availableSize.Width, totalStarsX);
+                     ResolveStars(_colSegment, availableSize.Width, false);
                   }
 
                   MeasureGroup(Group3, false, false);
                   if (HasStarCellsV)
                   {
-                     ExpandRows(availableSize.Height, totalStarsY);
+                     ResolveStars(_rowSegment, availableSize.Height, true);
                   }
                }
                else
@@ -1038,22 +313,22 @@ namespace Perspex.Controls
                      if (hasDesiredSizeChanged)
                      {
                         // Reset cached Group3Heights
-                        ApplyMinSizes(Group3, group3MinSizesDoubles, true);
+                        ApplyCachedMinSizes(group3MinSizesDoubles, true);
                      }
 
                      if (HasStarCellsU)
                      {
-                        ExpandCols(availableSize.Width, totalStarsX);
+                        ResolveStars(_colSegment, availableSize.Width, false);
                      }
 
                      MeasureGroup(Group3, false, false);
 
                      //Reset cached Group2Widths
-                     ApplyMinSizes(Group2, group2MinSizesDoubles, false);
+                     ApplyCachedMinSizes(group2MinSizesDoubles, false);
 
                      if (HasStarCellsV)
                      {
-                        ExpandRows(availableSize.Height, totalStarsY);
+                        ResolveStars(_rowSegment, availableSize.Height, true);
                      }
 
                      MeasureGroup(Group2, count == maxLayoutLoopCount, false, out hasDesiredSizeChanged);
@@ -1065,28 +340,23 @@ namespace Perspex.Controls
 
             MeasureGroup(Group4, false, false);
 
-
             //
             //Recalculate width and height of non star cols/rows to fit to the available width and height 
+            //regardless of were any cell present there or not, because if we do not do this, In those row/cols
+            //ActualHeight/Width will be 0, which will lead to the shaking of the controls while resizing columns
             //(this is extremely important part because it will influence of the whole Grid size (especially when span is present
             // and user will resize the Grid
             //
-            if (HasStarCellsV)
-            {
-               ExpandRows(availableSize.Height, totalStarsY);
-            }
-            if (HasStarCellsU)
-            {
-               ExpandCols(availableSize.Width, totalStarsX);
-            }
+            ResolveStars(_rowSegment, availableSize.Height, true);
+            ResolveStars(_colSegment, availableSize.Width, false);
 
-            totalHeight = CalculateTotalRowSize(false);
-            totalWidth = CalculateTotalColSize(false);
+            totalHeight = CalculateTotalSize(_rowSegment);
+            totalWidth = CalculateTotalSize(_colSegment);
+            totalSize = new Size(totalWidth, totalHeight);
          }
 
          Debug.WriteLine("Grid measure time = " + measureTimer.ElapsedMilliseconds);
-         Debug.WriteLine("Total size = " + new Size(totalWidth, totalHeight));
-         return new Size(totalWidth, totalHeight);
+         return totalSize;
       }
 
       protected override Size ArrangeOverride(Size finalSize)
@@ -1102,24 +372,25 @@ namespace Perspex.Controls
          }
          else
          {
-
             Double offsetX = 0.0;
             Double offsetY = 0.0;
 
             for (int r = 0; r < _rowDefinitions.Count; r++)
             {
-               _rowDefinitions[r].ActualHeight = _rowSegment[r].MeasuredSize;
+               _rowDefinitions[r].ActualHeight = _rowSegment[r].Min;
+               _rowDefinitions[r].MinMeasuredSize = _rowSegment[r].MinMeasuredSize;
                _rowSegment[r].Offset = offsetY;
-               //_rowDefinitions[r].Offset = offsetY;
-               offsetY += _rowSegment[r].MeasuredSize;
+               _rowDefinitions[r].Offset = offsetY;
+               offsetY += _rowSegment[r].Min;
             }
 
             for (int r = 0; r < _columnDefinitions.Count; r++)
             {
-               _columnDefinitions[r].ActualWidth = _colSegment[r].MeasuredSize;
+               _columnDefinitions[r].ActualWidth = _colSegment[r].Min;
+               _columnDefinitions[r].MinMeasuredSize = _colSegment[r].MinMeasuredSize;
                _colSegment[r].Offset = offsetX;
-               //_columnDefinitions[r].Offset = offsetX;
-               offsetX += _colSegment[r].MeasuredSize;
+               _columnDefinitions[r].Offset = offsetX;
+               offsetX += _colSegment[r].Min;
             }
 
             int index = 0;
@@ -1127,15 +398,20 @@ namespace Perspex.Controls
             {
                var cell = _cells[index];
 
-               var childFinalX = _colSegment[cell.colIndex].Offset;
-               var childFinalY = _rowSegment[cell.rowIndex].Offset;
+               var childFinalX = _colSegment[cell.ColIndex].Offset;
+               var childFinalY = _rowSegment[cell.RowIndex].Offset;
+               double childFinalW;
+               double childFinalH;
 
-               var childFinalW = (_colSegment[cell.colIndex + cell.colSpan - 1].Offset +
-                                  _colSegment[cell.colIndex + cell.colSpan - 1].MeasuredSize) -
-                                 _colSegment[cell.colIndex].Offset;
-               var childFinalH = (_rowSegment[cell.rowIndex + cell.rowSpan - 1].Offset +
-                                  _rowSegment[cell.rowIndex + cell.rowSpan - 1].MeasuredSize) -
-                                 _rowSegment[cell.rowIndex].Offset;
+
+               childFinalW = (_colSegment[cell.ColIndex + cell.ColSpan - 1].Offset +
+                              _colSegment[cell.ColIndex + cell.ColSpan - 1].Min) -
+                             _colSegment[cell.ColIndex].Offset;
+
+               childFinalH = (_rowSegment[cell.RowIndex + cell.RowSpan - 1].Offset +
+                              _rowSegment[cell.RowIndex + cell.RowSpan - 1].Min) -
+                             _rowSegment[cell.RowIndex].Offset;
+
 
                child.Arrange(new Rect(childFinalX, childFinalY, childFinalW, childFinalH));
                index++;
@@ -1161,9 +437,6 @@ namespace Perspex.Controls
          bool emptyRows = rowCount == 0;
          bool emptyCols = colCount == 0;
 
-         totalStarsX = 0;
-         totalStarsY = 0;
-
          if (emptyRows)
          {
             rowCount = 1;
@@ -1177,19 +450,20 @@ namespace Perspex.Controls
          ClearSegments();
          CreateSegments(rowCount, colCount);
 
-         bool replaceRowStarsWidthAuto = double.IsPositiveInfinity(availableSize.Height);
+         bool replaceRowStarsWithAuto = double.IsPositiveInfinity(availableSize.Height);
          bool replaceColStarsWithAuto = double.IsPositiveInfinity(availableSize.Width);
 
          if (emptyRows)
          {
-            if (!replaceRowStarsWidthAuto)
+            if (!replaceRowStarsWithAuto)
             {
                _rowSegment[0] = new GridSegment(0, 0, double.PositiveInfinity, GridUnitType.Star) { Stars = 1.0 };
-               totalStarsY = 1.0;
+               _rowDefition = new RowDefinition();
             }
             else
             {
                _rowSegment[0] = new GridSegment(0, 0, double.PositiveInfinity, GridUnitType.Auto);
+               _rowDefition = new RowDefinition(new GridLength(0, GridUnitType.Auto));
             }
          }
          else
@@ -1199,31 +473,40 @@ namespace Perspex.Controls
                RowDefinition def = RowDefinitions[i];
                GridLength height = def.Height;
 
-               def.ActualHeight = double.PositiveInfinity;
-               _rowSegment[i] = new GridSegment(0, def.MinHeight, def.MaxHeight, height.GridUnitType);
+               double minSize = def.MinHeight;
+               double maxSize = def.MaxHeight;
+               double measured = 0;
 
-               if (height.GridUnitType == GridUnitType.Pixel)
+               GridSegment segment = new GridSegment(0, def.MinHeight, def.MaxHeight, height.GridUnitType);
+
+               switch (def.Height.GridUnitType)
                {
-                  _rowSegment[i].MeasuredSize = Clamp(height.Value, def.MinHeight, def.MaxHeight);
-                  def.ActualHeight = _rowSegment[i].MeasuredSize;
+                  case GridUnitType.Pixel:
+                     measured = def.Height.Value;
+                     minSize = Math.Max(minSize, Math.Min(measured, maxSize));
+                     break;
+                  case GridUnitType.Auto:
+                     minSize = Math.Max(minSize, Math.Min(measured, maxSize));
+                     break;
+                  case GridUnitType.Star:
+                     if (replaceRowStarsWithAuto)
+                     {
+                        segment.Type = GridUnitType.Auto;
+                        measured = Double.PositiveInfinity;
+                     }
+                     else
+                     {
+                        segment.Type = GridUnitType.Star;
+                        segment.Stars = height.Value;
+
+                     }
+                     break;
                }
-               else if (height.GridUnitType == GridUnitType.Auto)
-               {
-                  _rowSegment[i].MeasuredSize = Clamp(0, _rowSegment[i].Min, _rowSegment[i].Max);
-               }
-               else if (height.GridUnitType == GridUnitType.Star)
-               {
-                  if (!replaceRowStarsWidthAuto)
-                  {
-                     _rowSegment[i].Stars = height.Value;
-                     totalStarsY += height.Value;
-                  }
-                  else
-                  {
-                     _rowSegment[i].Type = GridUnitType.Auto;
-                  }
-               }
-               _rowSegment[i].index = i;
+
+               segment.Min = minSize;
+               segment.MeasuredSize = Math.Max(minSize, Math.Min(measured, maxSize));
+
+               _rowSegment[i] = segment;
             }
          }
 
@@ -1232,45 +515,54 @@ namespace Perspex.Controls
             if (!replaceColStarsWithAuto)
             {
                _colSegment[0] = new GridSegment(0, 0, double.PositiveInfinity, GridUnitType.Star) { Stars = 1.0 };
-               totalStarsX = 1.0;
+               _colDefinition = new ColumnDefinition();
             }
             else
             {
                _colSegment[0] = new GridSegment(0, 0, double.PositiveInfinity, GridUnitType.Auto);
+               _colDefinition = new ColumnDefinition(new GridLength(0, GridUnitType.Auto));
             }
          }
          else
          {
             for (int i = 0; i < colCount; i++)
             {
-               ColumnDefinition coldef = ColumnDefinitions[i];
-               GridLength width = coldef.Width;
+               ColumnDefinition def = ColumnDefinitions[i];
+               GridLength width = def.Width;
 
-               coldef.ActualWidth = double.PositiveInfinity;
-               _colSegment[i] = new GridSegment(0, coldef.MinWidth, coldef.MaxWidth, width.GridUnitType);
+               double minSize = def.MinWidth;
+               double maxSize = def.MaxWidth;
+               double measured = 0;
 
-               if (width.GridUnitType == GridUnitType.Pixel)
+               GridSegment segment = new GridSegment(0, def.MinWidth, def.MaxWidth, width.GridUnitType);
+               switch (def.Width.GridUnitType)
                {
-                  _colSegment[i].MeasuredSize = Clamp(width.Value, _colSegment[i].Min, _colSegment[i].Max);
-                  coldef.ActualWidth = _colSegment[i].MeasuredSize;
+                  case GridUnitType.Pixel:
+                     measured = def.Width.Value;
+                     minSize = Math.Max(minSize, Math.Min(measured, maxSize));
+                     break;
+                  case GridUnitType.Auto:
+                     minSize = Math.Max(minSize, Math.Min(measured, maxSize));
+                     break;
+                  case GridUnitType.Star:
+                     if (replaceColStarsWithAuto)
+                     {
+                        segment.Type = GridUnitType.Auto;
+                        measured = Double.PositiveInfinity;
+                     }
+                     else
+                     {
+                        segment.Type = GridUnitType.Star;
+                        segment.Stars = width.Value;
+                     }
+
+                     break;
                }
-               else if (width.GridUnitType == GridUnitType.Star)
-               {
-                  if (!replaceRowStarsWidthAuto)
-                  {
-                     _colSegment[i].Stars = width.Value;
-                     totalStarsX += width.Value;
-                  }
-                  else
-                  {
-                     _colSegment[i].Type = GridUnitType.Auto;
-                  }
-               }
-               else if (width.GridUnitType == GridUnitType.Auto)
-               {
-                  _colSegment[i].MeasuredSize = Clamp(0, _colSegment[i].Min, _colSegment[i].Max);
-               }
-               _colSegment[i].index = i;
+
+               segment.Min = minSize;
+               segment.MeasuredSize = Math.Max(minSize, Math.Min(measured, maxSize));
+
+               _colSegment[i] = segment;
             }
          }
 
@@ -1291,44 +583,175 @@ namespace Perspex.Controls
                int row = Math.Min(GetRow(child), rowCount - 1);
                int colspan = Math.Min(GetColumnSpan(child), colCount - col);
                int rowspan = Math.Min(GetRowSpan(child), rowCount - row);
-               _cells[i] = new Cell(_rowSegment[row], _colSegment[col], row, col, rowspan, colspan, i);
+
+               if (rowspan > 1)
+               {
+                  for (int j = row; j < row + rowspan; j++)
+                  {
+                     _rowSegment[j].SpanPresent = true;
+                  }
+               }
+
+               if (colspan > 1)
+               {
+                  for (int j = col; j < col + colspan; j++)
+                  {
+                     _colSegment[col].SpanPresent = true;
+                  }
+               }
+
+               _cells[i] = new Cell(row, col, rowspan, colspan, i);
+               _cells[i].Group = Cell.ResolveCellGroup(_rowSegment[row], _colSegment[col]);
                AddToCorrespondingGroup(_cells[i]);
                i++;
             }
          }
+
+         if (!emptyRows && rowCount > 1)
+         {
+            for (int i = 0; i < rowCount; i++)
+            {
+               RowDefinition def = RowDefinitions[i];
+               GridLength height = def.Height;
+
+               double minSize = def.MinHeight;
+               double maxSize = def.MaxHeight;
+               double measured = 0;
+
+               GridSegment segment = _rowSegment[i];
+               if (segment.SpanPresent)
+               {
+                  segment.MinMeasuredSize = def.MinMeasuredSize;
+               }
+
+               switch (def.Height.GridUnitType)
+               {
+                  case GridUnitType.Pixel:
+                     measured = def.Height.Value;
+                     minSize = Math.Max(minSize, Math.Min(measured, maxSize));
+                     if (segment.SpanPresent)
+                     {
+                        minSize = Math.Max(minSize, segment.MinMeasuredSize);
+                     }
+                     break;
+                  case GridUnitType.Auto:
+                     minSize = Math.Max(minSize, Math.Min(measured, maxSize));
+                     if (segment.SpanPresent)
+                     {
+                        minSize = Math.Max(minSize, segment.MinMeasuredSize);
+                     }
+                     break;
+                  case GridUnitType.Star:
+                     if (segment.SpanPresent)
+                     {
+                        minSize = Math.Max(minSize, segment.MinMeasuredSize);
+                     }
+                     if (replaceRowStarsWithAuto)
+                     {
+                        measured = Double.PositiveInfinity;
+                     }
+                     else
+                     {
+                        segment.Stars = height.Value;
+                     }
+
+                     break;
+               }
+
+               segment.Min = minSize;
+               segment.MeasuredSize = Math.Max(minSize, Math.Min(measured, maxSize));
+            }
+         }
+
+         if (!emptyCols && colCount > 1)
+         {
+            for (int i = 0; i < colCount; i++)
+            {
+               ColumnDefinition def = ColumnDefinitions[i];
+               GridLength width = def.Width;
+
+               double minSize = def.MinWidth;
+               double maxSize = def.MaxWidth;
+               double measured = 0;
+
+               GridSegment segment = _colSegment[i];
+               if (segment.SpanPresent)
+               {
+                  segment.MinMeasuredSize = def.MinMeasuredSize;
+               }
+
+               switch (def.Width.GridUnitType)
+               {
+                  case GridUnitType.Pixel:
+                     measured = def.Width.Value;
+                     minSize = Math.Max(minSize, Math.Min(measured, maxSize));
+                     if (segment.SpanPresent)
+                     {
+                        minSize = Math.Max(minSize, segment.MinMeasuredSize);
+                     }
+                     break;
+                  case GridUnitType.Auto:
+                     minSize = Math.Max(minSize, Math.Min(measured, maxSize));
+                     if (segment.SpanPresent)
+                     {
+                        minSize = Math.Max(minSize, segment.MinMeasuredSize);
+                     }
+                     break;
+                  case GridUnitType.Star:
+                     if (segment.SpanPresent)
+                     {
+                        minSize = Math.Max(minSize, segment.MinMeasuredSize);
+                     }
+                     if (replaceColStarsWithAuto)
+                     {
+                        measured = Double.PositiveInfinity;
+                     }
+                     else
+                     {
+                        segment.Stars = width.Value;
+                     }
+
+                     break;
+               }
+
+               segment.Min = minSize;
+               segment.MeasuredSize = Math.Max(minSize, Math.Min(measured, maxSize));
+            }
+         }
+
          validationNeeded = false;
       }
 
       private double[] GetMinSizes(List<Cell> cellGroup, bool isRows)
       {
-         double[] minSizes = new double[cellGroup.Count];
+         double[] minSizes = new double[isRows ? _rowSegment.Length : _colSegment.Length];
 
          for (int i = 0; i < cellGroup.Count; i++)
          {
             if (isRows)
             {
-               minSizes[i] = cellGroup[i].MinHeight;
+               minSizes[cellGroup[i].RowIndex] = _rowSegment[cellGroup[i].RowIndex].Min;
             }
             else
             {
-               minSizes[i] = cellGroup[i].MinWidth;
+               minSizes[cellGroup[i].ColIndex] = _colSegment[cellGroup[i].ColIndex].Min;
             }
          }
 
          return minSizes;
       }
 
-      private void ApplyMinSizes(List<Cell> cellGroup, double[] minSizes, bool isRows)
+      private void ApplyCachedMinSizes(double[] minSizes, bool isRows)
       {
          for (int i = 0; i < minSizes.Length; i++)
          {
             if (isRows)
             {
-               cellGroup[i].SetMinHeight(minSizes[i]);
+               _rowSegment[i].Min = minSizes[i];
             }
             else
             {
-               cellGroup[i].SetMinWidth(minSizes[i]);
+               _colSegment[i].Min = minSizes[i];
             }
          }
       }
@@ -1345,47 +768,24 @@ namespace Perspex.Controls
          return size;
       }
 
-      private Double CalculateTotalRowSize(bool excludeStars = true)
+      private Double CalculateTotalSize(GridSegment[] segment)
       {
-         double height = 0;
-         for (int i = 0; i < _rowSegment.Length; i++)
+         double size = 0;
+
+         for (int i = 0; i < segment.Length; i++)
          {
-            if (!excludeStars)
+            if (!segment[i].IsStar)
             {
-               height += _rowSegment[i].MeasuredSize;
+               size += segment[i].Min;
             }
             else
             {
-               if (!_rowSegment[i].IsStar)
-               {
-                  height += _rowSegment[i].MeasuredSize;
-               }
+               size += segment[i].MeasuredSize;
+               segment[i].Min = segment[i].MeasuredSize;
             }
          }
 
-         return height;
-      }
-
-      private Double CalculateTotalColSize(bool excludeStars = true)
-      {
-         double width = 0;
-
-         for (int i = 0; i < _colSegment.Length; i++)
-         {
-            if (!excludeStars)
-            {
-               width += _colSegment[i].MeasuredSize;
-            }
-            else
-            {
-               if (!_colSegment[i].IsStar)
-               {
-                  width += _colSegment[i].MeasuredSize;
-               }
-            }
-         }
-
-         return width;
+         return size;
       }
 
       private void AddToCorrespondingGroup(Cell cell)
@@ -1397,21 +797,21 @@ namespace Perspex.Controls
          else if (cell.Group == CellGroup.Group2)
          {
             Group2.Add(cell);
-            HasStarCellsV |= cell.rowSegment.IsStar;
+            HasStarCellsV |= _rowSegment[cell.RowIndex].IsStar;
          }
          else if (cell.Group == CellGroup.Group3)
          {
             Group3.Add(cell);
-            HasGroup3CellsInAutoRows |= cell.rowSegment.IsAuto;
+            HasGroup3CellsInAutoRows |= _rowSegment[cell.RowIndex].IsAuto;
 
-            HasStarCellsU |= cell.colSegment.IsStar;
+            HasStarCellsU |= _colSegment[cell.ColIndex].IsStar;
 
          }
          else if (cell.Group == CellGroup.Group4)
          {
             Group4.Add(cell);
-            HasStarCellsU |= cell.rowSegment.IsStar;
-            HasStarCellsV |= cell.colSegment.IsStar;
+            HasStarCellsU |= _rowSegment[cell.RowIndex].IsStar;
+            HasStarCellsV |= _colSegment[cell.ColIndex].IsStar;
          }
       }
 
@@ -1421,8 +821,8 @@ namespace Perspex.Controls
          MeasureGroup(group, ignoreDesiredSizeWidth, forceInfinitHeight, out fake);
       }
 
-
-      private void MeasureGroup(List<Cell> group, bool ignoreDesiredSizeWidth, bool forceInfinitHeight, out bool hasDesiredWidthChanged)
+      private void MeasureGroup(List<Cell> group, bool ignoreDesiredSizeWidth, bool forceInfinitHeight,
+         out bool hasDesiredWidthChanged)
       {
          Dictionary<SpanKey, Double> spanStore = null;
          hasDesiredWidthChanged = false;
@@ -1430,27 +830,32 @@ namespace Perspex.Controls
 
          foreach (var cell in group)
          {
+            var element = Children[cell.ChildIndex];
+            double childSizeX;
+            double childSizeY;
+            GridSegment row = _rowSegment[cell.RowIndex];
+            GridSegment column = _colSegment[cell.ColIndex];
+            ColumnDefinition columnDef = null;
+            RowDefinition rowDef = null;
+            rowDef = _rowDefinitions.Count > 0 ? _rowDefinitions[cell.RowIndex] : _rowDefition;
+            columnDef = _columnDefinitions.Count > 0 ? _columnDefinitions[cell.ColIndex] : _colDefinition;
 
-            var element = Children[cell.Index];
-            double childSizeX = 0.0;
-            double childSizeY = 0.0;
-
-            if (cell.rowSegment.IsAuto && !cell.rowSegment.IsStar)
+            if (row.IsAuto && !row.IsStar)
             {
                childSizeY = double.PositiveInfinity;
             }
             else
             {
-               childSizeY = GetMeasureSizeForRange(_rowSegment, cell.rowIndex, cell.rowSpan);
+               childSizeY = GetMeasureSizeForRange(_rowSegment, cell.RowIndex, cell.RowSpan);
             }
 
-            if (cell.colSegment.IsAuto && !cell.colSegment.IsStar)
+            if (column.IsAuto && !column.IsStar)
             {
                childSizeX = double.PositiveInfinity;
             }
             else
             {
-               childSizeX = GetMeasureSizeForRange(_colSegment, cell.colIndex, cell.colSpan);
+               childSizeX = GetMeasureSizeForRange(_colSegment, cell.ColIndex, cell.ColSpan);
             }
 
             var oldWidth = element.DesiredSize.Width;
@@ -1461,41 +866,37 @@ namespace Perspex.Controls
 
             if (!ignoreDesiredSizeHeight)
             {
-               if (cell.rowSpan == 1)
+               if (cell.RowSpan == 1)
                {
-                  var size = Math.Min(desired.Height, _rowSegment[cell.rowIndex].Max);
-                  _rowSegment[cell.rowIndex].Min = Clamp(size, _rowSegment[cell.rowIndex].Min,
-                     _rowSegment[cell.rowIndex].Max);
-                  _rowSegment[cell.rowIndex].MeasuredSize = Math.Max(size, _rowSegment[cell.rowIndex].MeasuredSize);
+                  row.Min = Clamp(desired.Height, row.Min, row.Max);
+                  row.MinMeasuredSize = Math.Max(Clamp(desired.Height, rowDef.MinHeight, rowDef.MaxHeight), row.MinMeasuredSize);
                }
                else
                {
                   RegisterSpan(
                      ref spanStore,
-                     cell.rowIndex,
-                     cell.rowSpan,
+                     cell.RowIndex,
+                     cell.RowSpan,
                      true,
-                     element.DesiredSize.Height);
+                     desired.Height);
                }
             }
 
             if (!ignoreDesiredSizeWidth)
             {
-               if (cell.colSpan == 1)
+               if (cell.ColSpan == 1)
                {
-                  var size = Math.Min(desired.Width, _colSegment[cell.colIndex].Max);
-                  _colSegment[cell.colIndex].Min = Clamp(size, _colSegment[cell.colIndex].Min,
-                     _colSegment[cell.colIndex].Max);
-                  _colSegment[cell.colIndex].MeasuredSize = Math.Max(size, _colSegment[cell.colIndex].MeasuredSize);
+                  column.Min = Clamp(desired.Width, column.Min, column.Max);
+                  column.MinMeasuredSize = Math.Max(Clamp(desired.Width, columnDef.MinWidth, columnDef.MaxWidth), column.MinMeasuredSize);
                }
                else
                {
                   RegisterSpan(
                      ref spanStore,
-                     cell.colIndex,
-                     cell.colSpan,
+                     cell.ColIndex,
+                     cell.ColSpan,
                      false,
-                     element.DesiredSize.Width);
+                     desired.Width);
                }
             }
          }
@@ -1504,7 +905,7 @@ namespace Perspex.Controls
          {
             foreach (var entry in spanStore)
             {
-               SpanKey key = (SpanKey)entry.Key;
+               SpanKey key = entry.Key;
                DistributeSpanSizes(key.IsRow ? _rowSegment : _colSegment, key.Start, key.Count, (double)entry.Value);
             }
             spanStore.Clear();
@@ -1519,17 +920,24 @@ namespace Perspex.Controls
             bool isSizeValid = true;
             int autoCount = 0;
             int end = start + count;
-            double rangePrefferedSize = 0.0;
+            double rangePreferredSize = 0.0;
             double rangeMinSize = 0.0;
             double rangeMaxSize = 0.0;
             double maxMaxSize = 0; //  maximum of maximum sizes
 
             for (int i = start; i < end; i++)
             {
-               rangeMinSize += segment[i].Min;
-               rangePrefferedSize += segment[i].MeasuredSize;
-               rangeMaxSize += segment[i].Max;
-               if (maxMaxSize < segment[i].Max) maxMaxSize = segment[i].Max;
+               double minSize = segment[i].Min;
+               double preferred = segment[i].MeasuredSize;
+               double maxSize = Math.Max(segment[i].Max, minSize);
+
+               rangeMinSize += minSize;
+               rangePreferredSize += preferred;
+               rangeMaxSize += maxSize;
+
+               segment[i].SizeCache = maxSize;
+
+               if (maxMaxSize < maxSize) maxMaxSize = maxSize;
                if (segment[i].IsAuto)
                {
                   autoCount++;
@@ -1540,52 +948,53 @@ namespace Perspex.Controls
             //  avoid processing if the range already big enough
             if (size > rangeMinSize)
             {
-               if (size <= rangePrefferedSize)
+               if (size <= rangePreferredSize)
                {
                   double sizeToDistribute;
                   int i;
 
-                  Array.Sort(tempDefinitions, 0, count, s_spanPreferredDistributionOrderComparer);
-                  for (i = 0, sizeToDistribute = size; i < autoCount; i++)
+                  Array.Sort(tempDefinitions, 0, count, _spanPreferredDistributionOrderComparer);
+                  for (i = 0, sizeToDistribute = size; i < autoCount; ++i)
                   {
-                     sizeToDistribute -= tempDefinitions[i].MeasuredSize;
+                     sizeToDistribute -= tempDefinitions[i].Min;
                   }
 
                   for (; i < count; ++i)
                   {
-                     double newMeasuredSize = sizeToDistribute / (count - i);
-                     newMeasuredSize = Clamp(newMeasuredSize, tempDefinitions[i].Min, tempDefinitions[i].Max);
+                     double newMeasuredSize = Math.Min(sizeToDistribute / (count - i), tempDefinitions[i].MinMeasuredSize);
                      if (newMeasuredSize > tempDefinitions[i].Min)
                      {
                         tempDefinitions[i].Min = newMeasuredSize;
                      }
-                     newMeasuredSize = Math.Max(newMeasuredSize, tempDefinitions[i].MeasuredSize);
-                     tempDefinitions[i].MeasuredSize = Clamp(newMeasuredSize, tempDefinitions[i].Min,
-                        tempDefinitions[i].Max);
                      sizeToDistribute -= tempDefinitions[i].Min;
                   }
                }
                else if (size <= rangeMaxSize)
                {
                   double sizeToDistribute;
-                  int i = 0;
+                  int i;
 
-                  Array.Sort(tempDefinitions, 0, count, s_spanMaxDistributionOrderComparer);
-                  for (i = 0, sizeToDistribute = size - rangePrefferedSize; i < count - autoCount; ++i)
+
+                  Array.Sort(tempDefinitions, 0, count, _spanMaxDistributionOrderComparer);
+                  for (i = 0, sizeToDistribute = size - rangePreferredSize; i < count - autoCount; ++i)
                   {
                      double measuredSize = tempDefinitions[i].MeasuredSize;
                      double newMeasuredSize = measuredSize + sizeToDistribute / (count - autoCount - i);
                      newMeasuredSize = Clamp(newMeasuredSize, tempDefinitions[i].Min, tempDefinitions[i].Max);
-                     tempDefinitions[i].MeasuredSize = Math.Max(newMeasuredSize, tempDefinitions[i].MeasuredSize);
+                     tempDefinitions[i].Min = Math.Max(newMeasuredSize, tempDefinitions[i].MeasuredSize);
+                     tempDefinitions[i].MinMeasuredSize = Math.Max(newMeasuredSize, tempDefinitions[i].MeasuredSize);
+                     //tempDefinitions[i].Min = Math.Max(tempDefinitions[i].Min, tempDefinitions[i].MinMeasuredSize);
                      sizeToDistribute -= (tempDefinitions[i].Min - measuredSize);
                   }
 
                   for (; i < count; ++i)
                   {
-                     double measuredSize = tempDefinitions[i].Min;
+                     double measuredSize = tempDefinitions[i].MeasuredSize;
                      double newMeasuredSize = measuredSize + sizeToDistribute / (count - i);
                      newMeasuredSize = Clamp(newMeasuredSize, tempDefinitions[i].Min, tempDefinitions[i].Max);
-                     tempDefinitions[i].MeasuredSize = Math.Max(newMeasuredSize, tempDefinitions[i].MeasuredSize);
+                     tempDefinitions[i].Min = Math.Max(newMeasuredSize, tempDefinitions[i].MeasuredSize);
+                     tempDefinitions[i].MinMeasuredSize = Math.Max(newMeasuredSize, tempDefinitions[i].MeasuredSize);
+                     //tempDefinitions[i].Min = Math.Max(tempDefinitions[i].Min, tempDefinitions[i].MinMeasuredSize);
                      sizeToDistribute -= (tempDefinitions[i].Min - measuredSize);
                   }
                }
@@ -1604,26 +1013,21 @@ namespace Perspex.Controls
                      //  bigger ones.
                      double totalRemainingSize = maxMaxSize * count - rangeMaxSize;
                      double sizeToDistribute = size - rangeMaxSize;
-                     for (int i = start; i < end; i++)
+                     for (int i = 0; i < count; ++i)
                      {
-                        double deltaSize = (maxMaxSize - segment[i].Max) * sizeToDistribute / totalRemainingSize;
-                        segment[i].Min = segment[i].Max + deltaSize;
+                        double deltaSize = (maxMaxSize - tempDefinitions[i].Max) * sizeToDistribute / totalRemainingSize;
+                        tempDefinitions[i].Min = tempDefinitions[i].Max + deltaSize;
                      }
                   }
                   else
                   {
                      //  equi-size is greater or equal to maximum of max sizes.
                      //  all definitions receive equalSize as their mim sizes.
-                     for (int i = 0; i < end; i++)
+                     for (int i = 0; i < count; i++)
                      {
-                        segment[i].Min = equalSize;
+                        tempDefinitions[i].Min = equalSize;
                      }
                   }
-               }
-
-               for (int i = 0; i < tempDefinitions.Length; i++)
-               {
-                  segment[tempDefinitions[i].index] = tempDefinitions[i];
                }
             }
          }
@@ -1664,45 +1068,80 @@ namespace Perspex.Controls
          }
       }
 
-      private void ExpandRows(Double availableHeigth, double starsCount)
+      private void ResolveStars(GridSegment[] segment, double availableSize, bool isRow)
       {
-         if (starsCount <= 0)
+         int starDefinitionCount = 0;
+         GridSegment[] tempSegments = new GridSegment[segment.Length];
+         double takenSize = 0;
+         for (int i = 0; i < segment.Length; ++i)
          {
-            return;
-         }
-         var totalSize = CalculateTotalRowSize();
-         var remainingHeight = Math.Max(0, availableHeigth - totalSize);
-         if (remainingHeight > 0.0)
-         {
-            double onestarHeight = remainingHeight / starsCount;
-            for (int i = 0; i < _rowSegment.Length; i++)
+            switch (segment[i].Type)
             {
-               if (_rowSegment[i].Type == GridUnitType.Star)
-               {
-                  _rowSegment[i].MeasuredSize = _rowSegment[i].Stars * onestarHeight;
-               }
-            }
-         }
-      }
+               case GridUnitType.Auto:
+                  takenSize += segment[i].Min;
+                  break;
+               case (GridUnitType.Pixel):
+                  takenSize += segment[i].MeasuredSize;
+                  break;
+               case (GridUnitType.Star):
+                  {
+                     tempSegments[starDefinitionCount++] = segment[i];
 
-      private void ExpandCols(Double availableWidth, double starsCount)
-      {
-         if (starsCount <= 0)
-         {
-            return;
-         }
-         var totalSize = CalculateTotalColSize();
-         var remainingWidth = Math.Max(0, availableWidth - totalSize);
-         if (remainingWidth > 0.0)
-         {
-            double onestarWidth = remainingWidth / starsCount;
-            for (int i = 0; i < _colSegment.Length; i++)
-            {
-               if (_colSegment[i].Type == GridUnitType.Star)
-               {
-                  _colSegment[i].MeasuredSize = _colSegment[i].Stars * onestarWidth;
-               }
+                     double starValue = segment[i].Stars;
+                     if (starValue <= 0.0)
+                     {
+                        segment[i].MeasuredSize = 0;
+                        segment[i].SizeCache = 0;
+                     }
+                     else
+                     {
+                        //  clipping by c_starClip guarantees that sum of even a very big number of max'ed out star values
+                        //  can be summed up without overflow
+                        starValue = Math.Min(starValue, c_starClip);
+
+                        //  Note: normalized star value is temporary cached into MeasureSize
+                        segment[i].MeasuredSize = starValue;
+                        double maxSize = Math.Max(segment[i].Min, segment[i].Max);
+                        maxSize = Math.Min(maxSize, c_starClip);
+                        segment[i].SizeCache = maxSize / starValue;
+                     }
+                  }
+                  break;
             }
+         }
+
+         if (starDefinitionCount > 0)
+         {
+            double allStarWeights = 0;
+            int i = starDefinitionCount - 1;
+            do
+            {
+               allStarWeights += tempSegments[i].MeasuredSize;
+               tempSegments[i].SizeCache = allStarWeights;
+            } while (--i >= 0);
+
+            i = 0;
+
+            do
+            {
+               double resolvedSize;
+               double starValue = tempSegments[i].MeasuredSize;
+
+               if (starValue == 0.0)
+               {
+                  resolvedSize = tempSegments[i].MinMeasuredSize;
+               }
+               else
+               {
+                  double userSize = Math.Max(availableSize - takenSize, 0.0) * (starValue / tempSegments[i].SizeCache);
+                  resolvedSize = Math.Min(userSize, tempSegments[i].Max);
+                  //resolvedSize = Math.Max(tempSegments[i].Min, resolvedSize);
+                  resolvedSize = Math.Max(tempSegments[i].MinMeasuredSize, resolvedSize);
+               }
+
+               tempSegments[i].MeasuredSize = resolvedSize;
+               takenSize += resolvedSize;
+            } while (++i < starDefinitionCount);
          }
       }
 
@@ -1752,16 +1191,17 @@ namespace Perspex.Controls
 
 
 
-      private struct GridSegment
+      private class GridSegment
       {
-         public double OriginalSize;
+         public double MinMeasuredSize;
+         public double SizeCache;
          public double Max;
          public double Min;
          public double MeasuredSize;
          public double Stars;
-         public GridUnitType Type;
-         public int index;
+         public GridUnitType Type { get; set; }
          public double Offset;
+         public bool SpanPresent = false;
 
          public Boolean IsAuto => Type == GridUnitType.Auto;
 
@@ -1771,8 +1211,7 @@ namespace Perspex.Controls
 
          public GridSegment(double offeredSize, double min, double max, GridUnitType type)
          {
-            index = 0;
-            OriginalSize = 0;
+            SizeCache = 0;
             Min = min;
             Max = max;
             MeasuredSize = offeredSize;
@@ -1784,69 +1223,37 @@ namespace Perspex.Controls
 
       private struct Cell
       {
-         public double Width
-         {
-            get { return colSegment.MeasuredSize; }
-            set { colSegment.MeasuredSize = value; }
-         }
-
-         public double Height
-         {
-            get { return rowSegment.MeasuredSize; }
-            set { rowSegment.MeasuredSize = value; }
-         }
-
-         public double MaxHeight => rowSegment.Max;
-         public double MaxWidth => colSegment.Max;
-         public double MinHeight => rowSegment.Min;
-         public double MinWidth => colSegment.Min;
-
-         public int rowIndex;
-         public int colIndex;
-         public int rowSpan;
-         public int colSpan;
-         public readonly int Index;
-
-         public GridSegment rowSegment;
-         public GridSegment colSegment;
-
-         public void SetMinWidth(double size)
-         {
-            rowSegment.Min = size;
-         }
-
-         public void SetMinHeight(double size)
-         {
-            colSegment.Min = size;
-         }
+         public readonly int RowIndex;
+         public readonly int ColIndex;
+         public readonly int RowSpan;
+         public readonly int ColSpan;
+         public readonly int ChildIndex;
 
          public CellGroup Group;
 
-         public bool IsPixelPixel => rowSegment.IsAbsolute & colSegment.IsAbsolute;
-         public bool IsPixelAuto => rowSegment.IsAbsolute & colSegment.IsAuto;
-         public bool IsAutoPixel => rowSegment.IsAuto & colSegment.IsAbsolute;
-         public bool IsAutoAuto => rowSegment.IsAuto & colSegment.IsAuto;
-         public bool IsStarAuto => rowSegment.IsStar & colSegment.IsAuto;
-         public bool IsPixelStar => rowSegment.IsAbsolute & colSegment.IsStar;
-         public bool IsAutoStar => rowSegment.IsAuto & colSegment.IsStar;
-         public bool IsStarPixel => rowSegment.IsStar & colSegment.IsAbsolute;
-         public bool IsStarStar => rowSegment.IsStar & colSegment.IsStar;
-
-         public Cell(GridSegment row, GridSegment col, int rowIndex, int colIndex, int rowSpan, int colSpan, int index)
+         public Cell(int rowIndex, int colIndex, int rowSpan, int colSpan, int childIndex)
          {
-            rowSegment = row;
-            colSegment = col;
-            this.rowIndex = rowIndex;
-            this.colIndex = colIndex;
-            this.rowSpan = rowSpan;
-            this.colSpan = colSpan;
+            this.RowIndex = rowIndex;
+            this.ColIndex = colIndex;
+            this.RowSpan = rowSpan;
+            this.ColSpan = colSpan;
             Group = CellGroup.Undefined;
-            Index = index;
-            SetCategory();
+            ChildIndex = childIndex;
          }
 
-         private void SetCategory()
+         public static CellGroup ResolveCellGroup(GridSegment row, GridSegment col)
          {
+            var IsPixelPixel = row.IsAbsolute & col.IsAbsolute;
+            var IsPixelAuto = row.IsAbsolute & col.IsAuto;
+            var IsAutoPixel = row.IsAuto & col.IsAbsolute;
+            var IsAutoAuto = row.IsAuto & col.IsAuto;
+            var IsStarAuto = row.IsStar & col.IsAuto;
+            var IsPixelStar = row.IsAbsolute & col.IsStar;
+            var IsAutoStar = row.IsAuto & col.IsStar;
+            var IsStarPixel = row.IsStar & col.IsAbsolute;
+            var IsStarStar = row.IsStar & col.IsStar;
+            CellGroup Group;
+
             if (IsPixelPixel || IsPixelAuto || IsAutoPixel || IsAutoAuto)
             {
                Group = CellGroup.Group1;
@@ -1863,6 +1270,8 @@ namespace Perspex.Controls
             {
                Group = CellGroup.Group4;
             }
+
+            return Group;
          }
       }
 
@@ -1876,7 +1285,7 @@ namespace Perspex.Controls
          /// </summary>
          /// <param name="start">Starting index of the span.</param>
          /// <param name="count">Span count.</param>
-         /// <param name="isRow"><c>true</c> for columns; <c>false</c> for rows.</param>
+         /// <param name="isRow"><c>true</c> for rows; <c>false</c> for columns.</param>
          internal SpanKey(int start, int count, bool isRow)
          {
             Start = start;
@@ -1955,7 +1364,7 @@ namespace Perspex.Controls
                {
                   if (definitionY.IsAuto)
                   {
-                     result = definitionX.MeasuredSize.CompareTo(definitionY.MeasuredSize);
+                     result = definitionX.Min.CompareTo(definitionY.Min);
                   }
                   else
                   {
@@ -1997,7 +1406,7 @@ namespace Perspex.Controls
                {
                   if (definitionY.IsAuto)
                   {
-                     result = definitionX.Max.CompareTo(definitionY.Max);
+                     result = definitionX.SizeCache.CompareTo(definitionY.SizeCache);
                   }
                   else
                   {
@@ -2012,7 +1421,7 @@ namespace Perspex.Controls
                   }
                   else
                   {
-                     result = definitionX.Max.CompareTo(definitionY.Max);
+                     result = definitionX.SizeCache.CompareTo(definitionY.SizeCache);
                   }
                }
             }
@@ -2053,8 +1462,5 @@ namespace Perspex.Controls
 
          return (result != 2);
       }
-
-      private static readonly IComparer s_spanPreferredDistributionOrderComparer = new SpanPreferredDistributionOrderComparer();
-      private static readonly IComparer s_spanMaxDistributionOrderComparer = new SpanMaxDistributionOrderComparer();
    }
 }
