@@ -23,7 +23,7 @@ collection:
 ## DataTemplates
 
 As styles aren't stored  in `Resources`, neither are `DataTemplates` ([in fact
-there is no `Resources` collection](#Resources)). Instead, `DataTemplates` are
+there is no `Resources` collection](#resources)). Instead, `DataTemplates` are
 placed in a `DataTemplates` collection on each control (and on `Application`):
 
     <UserControl xmlns:viewmodels="clr-namespace:MyApp.ViewModels;assembly=MyApp">
@@ -139,4 +139,4 @@ and error-prone](http://stackoverflow.com/questions/23682232).
 
 In Perspex, there is no `PropertyChangedCallback` at the time of registration,
 instead a class listener is [added to the control's static constructor in much
-the same way that event class listeners are added](../spec/working-with-properties.md#Subscribing%20%to%20%a%20%Property%20%on%20%Any%20%Object).
+the same way that event class listeners are added](../spec/working-with-properties.md#subscribing-to-a-property-on-any-object).
