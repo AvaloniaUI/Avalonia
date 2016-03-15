@@ -5,7 +5,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using Perspex.Collections;
 
 namespace Perspex.Controls
@@ -202,13 +201,6 @@ namespace Perspex.Controls
 
          return value;
       }
-
-      private void Invalidate()
-      {
-         validationNeeded = true;
-         InvalidateMeasure();
-      }
-
 
       private List<Cell> Group1 = new List<Cell>();
       private List<Cell> Group2 = new List<Cell>();
@@ -423,7 +415,7 @@ namespace Perspex.Controls
 
       private void Validate(Size availableSize)
       {
-         if (validationNeeded)
+         //if (validationNeeded)
          {
             ValidateCore(availableSize);
          }
