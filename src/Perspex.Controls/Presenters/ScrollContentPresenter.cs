@@ -220,11 +220,24 @@ namespace Perspex.Controls.Presenters
         {
             if (Extent.Height > Viewport.Height)
             {
-                var y = Offset.Y + (-e.Delta.Y * 50);
-                y = Math.Max(y, 0);
-                y = Math.Min(y, Extent.Height - Viewport.Height);
-                Offset = new Vector(Offset.X, y);
-                e.Handled = true;
+                var scrollable = Child as IScrollable;
+
+                if (scrollable != null)
+                {                    
+                    var y = Offset.Y + (-e.Delta.Y * scrollable.ScrollSize.Height);
+                    y = Math.Max(y, 0);
+                    y = Math.Min(y, Extent.Height - Viewport.Height);
+                    Offset = new Vector(Offset.X, y);
+                    e.Handled = true;
+                }
+                else
+                {
+                    var y = Offset.Y + (-e.Delta.Y * 50);
+                    y = Math.Max(y, 0);
+                    y = Math.Min(y, Extent.Height - Viewport.Height);
+                    Offset = new Vector(Offset.X, y);
+                    e.Handled = true;
+                }
             }
         }
 
