@@ -97,7 +97,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Converters
                 get { throw new NotImplementedException(); }
             }
 
-            IObservable<Unit> IStyleable.StyleDetach { get; }
+            IObservable<IStyleable> IStyleable.StyleDetach { get; }
         }
 
         private class AttachedOwner

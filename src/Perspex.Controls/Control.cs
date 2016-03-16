@@ -96,7 +96,7 @@ namespace Perspex.Controls
         private INameScope _nameScope;
         private Styles _styles;
         private bool _styled;
-        private Subject<Unit> _styleDetach = new Subject<Unit>();
+        private Subject<IStyleable> _styleDetach = new Subject<IStyleable>();
 
         /// <summary>
         /// Initializes static members of the <see cref="Control"/> class.
@@ -308,7 +308,7 @@ namespace Perspex.Controls
         Type IStyleable.StyleKey => GetType();
 
         /// <inheritdoc/>
-        IObservable<Unit> IStyleable.StyleDetach => _styleDetach;
+        IObservable<IStyleable> IStyleable.StyleDetach => _styleDetach;
 
         /// <inheritdoc/>
         IStyleHost IStyleHost.StylingParent => (IStyleHost)InheritanceParent;
@@ -534,7 +534,7 @@ namespace Perspex.Controls
                 }
 
                 _isAttachedToLogicalTree = false;
-                _styleDetach.OnNext(Unit.Default);
+                _styleDetach.OnNext(this);
                 this.TemplatedParent = null;
                 DetachedFromLogicalTree?.Invoke(this, e);
 

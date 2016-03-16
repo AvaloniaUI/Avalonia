@@ -69,6 +69,7 @@
     <Compile Include="Metadata\XmlnsDefinitionAttribute.cs" />
     <Compile Include="PerspexObjectExtensions.cs" />
     <Compile Include="PropertyMetadata.cs" />
+    <Compile Include="Reactive\ObservableEx.cs" />
     <Compile Include="Reactive\WeakPropertyChangedObservable.cs" />
     <Compile Include="StyledProperty.cs" />
     <Compile Include="StyledPropertyBase.cs" />

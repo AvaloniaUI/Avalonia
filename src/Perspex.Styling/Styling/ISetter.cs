@@ -16,6 +16,6 @@ namespace Perspex.Styling
         /// <param name="style">The style that is being applied.</param>
         /// <param name="control">The control.</param>
         /// <param name="activator">An optional activator.</param>
-        void Apply(IStyle style, IStyleable control, IObservable<bool> activator);
+        IDisposable Apply(IStyle style, IStyleable control, IObservable<bool> activator);
     }
 }
