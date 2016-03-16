@@ -4,7 +4,9 @@
 using System;
 using System.Diagnostics;
 using Perspex.Controls;
+using Perspex.Controls.Presenters;
 using Perspex.Controls.Shapes;
+using Perspex.Controls.Templates;
 using Perspex.Media;
 using Xunit;
 
@@ -25,7 +27,7 @@ namespace Perspex.Controls.UnitTests
          {
             MeasureArg = availableSize;
             MeasureResult = MeasureFunc != null ? MeasureFunc() : MeasureResult;
-            Debug.WriteLine($"Panel available size is {availableSize}");
+            Debug.WriteLine(string.Format("Panel available size is {0}", availableSize));
             return MeasureResult;
          }
 
@@ -33,68 +35,47 @@ namespace Perspex.Controls.UnitTests
          {
             ArrangeArg = finalSize;
             ArrangeResult = ArrangeFunc != null ? ArrangeFunc() : ArrangeResult;
-            Debug.WriteLine($"Panel final size is {finalSize}");
+            Debug.WriteLine(string.Format("Panel final size is {0}", finalSize));
             return ArrangeResult;
          }
       }
 
 
+
       [Fact]
-        public void Calculates_Colspan_Correctly()
-        {
-            var target = new Grid
-            {
-                ColumnDefinitions = new ColumnDefinitions
-                {
-                    new ColumnDefinition(GridLength.Auto),
-                    new ColumnDefinition(new GridLength(4, GridUnitType.Pixel)),
-                    new ColumnDefinition(GridLength.Auto),
-                },
-                RowDefinitions = new RowDefinitions
-                {
-                    new RowDefinition(GridLength.Auto),
-                    new RowDefinition(GridLength.Auto),
-                },
-                Children = new Controls
-                {
-                    new Border
-                    {
-                        Width = 100,
-                        Height = 25,
-                        [Grid.ColumnSpanProperty] = 3,
-                    },
-                    new Border
-                    {
-                        Width = 150,
-                        Height = 25,
-                        [Grid.RowProperty] = 1,
-                    },
-                    new Border
-                    {
-                        Width = 50,
-                        Height = 25,
-                        [Grid.RowProperty] = 1,
-                        [Grid.ColumnProperty] = 2,
-                    }
-                },
-            };
+      public void CalculatesColSpanCorrectly()
+      {
 
-            target.Measure(Size.Infinity);
+         Grid grid = new Grid();
+         grid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Auto));
+         grid.ColumnDefinitions.Add(new ColumnDefinition(4, GridUnitType.Pixel));
+         grid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Auto));
 
-            // Issue #25 only appears after a second measure
-            target.InvalidateMeasure();
-            target.Measure(Size.Infinity);
+         grid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
+         grid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
 
-            target.Arrange(new Rect(target.DesiredSize));
+         grid.Children.Add(new Border() { Width = 100, Height = 25, [Grid.ColumnSpanProperty] = 3 });
+         grid.Children.Add(new Border() { Width = 150, Height = 25, [Grid.RowProperty] = 1 });
+         grid.Children.Add(new Border() { Width = 50, Height = 25, [Grid.ColumnProperty] = 2, [Grid.RowProperty] = 1 });
 
-            Assert.Equal(new Size(204, 50), target.Bounds.Size);
-            Assert.Equal(150d, target.ColumnDefinitions[0].ActualWidth);
-            Assert.Equal(4d, target.ColumnDefinitions[1].ActualWidth);
-            Assert.Equal(50d, target.ColumnDefinitions[2].ActualWidth);
-            Assert.Equal(new Rect(52, 0, 100, 25), target.Children[0].Bounds);
-            Assert.Equal(new Rect(0, 25, 150, 25), target.Children[1].Bounds);
-            Assert.Equal(new Rect(154, 25, 50, 25), target.Children[2].Bounds);
-        }
+
+         grid.Measure(Size.Infinity);
+
+         grid.InvalidateMeasure();
+
+         grid.Measure(Size.Infinity);
+
+         grid.Arrange(new Rect(grid.DesiredSize));
+
+         Assert.Equal(new Size(204, 50), grid.Bounds.Size);
+         Assert.Equal(150d, grid.ColumnDefinitions[0].ActualWidth);
+         Assert.Equal(4d, grid.ColumnDefinitions[1].ActualWidth);
+         Assert.Equal(50d, grid.ColumnDefinitions[2].ActualWidth);
+         Assert.Equal(new Rect(52, 0, 100, 25), grid.Children[0].Bounds);
+         Assert.Equal(new Rect(0, 25, 150, 25), grid.Children[1].Bounds);
+         Assert.Equal(new Rect(154, 25, 50, 25), grid.Children[2].Bounds);
+
+      }
 
       [Fact]
       public void ComputeActualWidth()
@@ -102,19 +83,19 @@ namespace Perspex.Controls.UnitTests
          var c = new Grid();
 
          Assert.Equal(new Size(0, 0), c.DesiredSize);
-         Assert.Equal(new Size(0, 0), c.Bounds.Size);
+         Assert.Equal(new Size(0, 0), c.DesiredSize);
 
          c.MaxWidth = 25;
          c.Width = 50;
          c.MinHeight = 33;
 
          Assert.Equal(new Size(0, 0), c.DesiredSize);
-         Assert.Equal(new Size(0, 0), c.Bounds.Size);
+         Assert.Equal(new Size(0, 0), c.DesiredSize);
 
          c.Measure(new Size(100, 100));
 
          Assert.Equal(new Size(25, 33), c.DesiredSize);
-         Assert.Equal(new Size(0, 0), c.DesiredSize);
+         Assert.Equal(new Size(0, 0), c.Bounds.Size);
       }
 
       [Fact]
@@ -433,9 +414,8 @@ namespace Perspex.Controls.UnitTests
          Grid.SetColumn(rect, 2);
 
          grid.Measure(new Size(210, 100));
-         grid.Arrange(new Rect(grid.DesiredSize));
 
-         Assert.Equal(new Size(210, 100), grid.DesiredSize);
+         Assert.Equal(new Size(210, 0), grid.DesiredSize);
       }
 
       [Fact]
@@ -460,7 +440,7 @@ namespace Perspex.Controls.UnitTests
          grid.Measure(new Size(100, 210));
          grid.Arrange(new Rect(grid.DesiredSize));
 
-         Assert.Equal(new Size(100, 210), grid.DesiredSize);
+         Assert.Equal(new Size(10, 210), grid.DesiredSize);
       }
 
 
@@ -612,7 +592,11 @@ namespace Perspex.Controls.UnitTests
          child1 = new Canvas();
          child1.Width = 200;
          child1.Height = 200;
-         mc = new ContentControl { Content = child1 };
+         mc = new ContentControl();
+         mc.Template = GetTemplate();
+         mc.ApplyTemplate();
+         mc.Content = child1;
+         ((ContentPresenter)mc.Presenter).UpdateChild();
          Grid.SetRow(mc, 0);
          Grid.SetColumn(mc, 0);
          Grid.SetColumnSpan(mc, 2);
@@ -718,7 +702,12 @@ namespace Perspex.Controls.UnitTests
          g.Margin = new Thickness(5);
 
          var r = new Border();
-         ContentControl mc = new ContentControl { Content = r };
+         ContentControl mc = new ContentControl();
+         mc.Template = GetTemplate();
+         mc.ApplyTemplate();
+         mc.Content = r;
+         ((ContentPresenter)mc.Presenter).UpdateChild();
+
          Grid.SetRow(mc, 0);
          Grid.SetColumn(mc, 0);
 
@@ -738,6 +727,22 @@ namespace Perspex.Controls.UnitTests
          //Assert.Equal(new Rect(0, 0, 100, 50).ToString(), LayoutInformation.GetLayoutSlot(r).ToString(), "slot");
          Assert.Equal(new Size(100, 50), r.Bounds.Size);
          Assert.Equal(new Size(100, 50), g.Bounds.Size);
+      }
+
+      private FuncControlTemplate GetTemplate()
+      {
+         return new FuncControlTemplate<ContentControl>(parent =>
+         {
+            return new Border
+            {
+               Background = new Media.SolidColorBrush(0xffffffff),
+               Child = new ContentPresenter
+               {
+                  Name = "PART_ContentPresenter",
+                  [~ContentPresenter.ContentProperty] = parent[~ContentControl.ContentProperty],
+               }
+            };
+         });
       }
 
       [Fact]
@@ -785,7 +790,8 @@ namespace Perspex.Controls.UnitTests
          Assert.Equal(new Size(0, 0), ra.DesiredSize);
          Assert.Equal(new Size(130, 60), g.DesiredSize);
 
-         Assert.Equal(new Size(100, 50),ra.Bounds.Size);
+         //Assert.Equal(new Rect(0, 0, 100, 50).ToString(), LayoutInformation.GetLayoutSlot(ra).ToString(), "slot");
+         Assert.Equal(new Size(100, 50), ra.Bounds.Size);
          Assert.Equal(new Size(20, 50), rb.Bounds.Size);
          Assert.Equal(new Size(120, 50), g.Bounds.Size);
       }
@@ -801,10 +807,21 @@ namespace Perspex.Controls.UnitTests
          Border b2 = new Border();
          b2.Background = Brushes.Green;
          b2.Width = b2.Height = 50;
+         ContentControl mc1 = new ContentControl();
+         grid.Children.Add(mc1);
+         mc1.Template = GetTemplate();
+         mc1.ApplyTemplate();
+         mc1.Content = b;
+         ((ContentPresenter)mc1.Presenter).UpdateChild();
 
-         grid.Children.Add(new ContentControl { Content = b });
-         grid.Children.Add(new ContentControl { Content = b2 });
-
+         ContentControl mc2 = new ContentControl();
+         grid.Children.Add(mc2);
+         mc2.Template = GetTemplate();
+         mc2.ApplyTemplate();
+         mc2.Content = b2;
+         ((ContentPresenter)mc2.Presenter).UpdateChild();
+         grid.Children.Add(mc2);
+         
          //grid.Measure(new Size(inf, inf));
          //grid.CheckMeasureArgs("#MeasureOverrideArg", new Size(inf, inf), new Size(inf, inf));
          //grid.Reset();
