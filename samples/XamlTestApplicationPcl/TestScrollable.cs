@@ -37,6 +37,22 @@ namespace XamlTestApplication
             get { return _viewport; }
         }
 
+        public Size ScrollSize
+        {
+            get
+            {
+                return new Size(double.PositiveInfinity, 1);
+            }
+        }
+
+        public Size PageScrollSize
+        {
+            get
+            {
+                return new Size(double.PositiveInfinity, Bounds.Height);
+            }
+        }
+
         protected override Size MeasureOverride(Size availableSize)
         {
             using (var line = new FormattedText(

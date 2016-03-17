@@ -208,6 +208,22 @@ namespace Perspex.Controls.UnitTests
                 }
             }
 
+            public Size ScrollSize
+            {
+                get
+                {
+                    return new Size(double.PositiveInfinity, 1);
+                }
+            }
+
+            public Size PageScrollSize
+            {
+                get
+                {
+                    return new Size(double.PositiveInfinity, Viewport.Height);
+                }
+            }
+
             protected override Size MeasureOverride(Size availableSize)
             {
                 AvailableSize = availableSize;
