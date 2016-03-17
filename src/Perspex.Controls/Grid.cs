@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Perspex.Collections;
+using Perspex.VisualTree;
 
 namespace Perspex.Controls
 {
@@ -216,7 +217,6 @@ namespace Perspex.Controls
       private bool HasStarCellsU;
       private bool HasStarCellsV;
 
-      private bool validationNeeded = true;
       private const double c_starClip = 1e298; //  used as maximum for clipping star values during normalization
 
       private double totalHeight;
@@ -230,12 +230,16 @@ namespace Perspex.Controls
       private RowDefinition _rowDefition;
       private ColumnDefinition _colDefinition;
 
+      bool ReplaceRowStarsWithAuto;
+      bool ReplaceColStarsWithAuto;
+
       private static readonly IComparer _spanPreferredDistributionOrderComparer = new SpanPreferredDistributionOrderComparer();
       private static readonly IComparer _spanMaxDistributionOrderComparer = new SpanMaxDistributionOrderComparer();
 
       protected override Size MeasureOverride(Size availableSize)
       {
          Stopwatch measureTimer = Stopwatch.StartNew();
+         
          Size totalSize;
          if (definitionsEmpty)
          {
@@ -250,7 +254,15 @@ namespace Perspex.Controls
          }
          else
          {
-            Validate(availableSize);
+            ReplaceRowStarsWithAuto = double.IsPositiveInfinity(availableSize.Height);
+            ReplaceColStarsWithAuto = double.IsPositiveInfinity(availableSize.Width);
+
+            Validate();
+
+            if (Parent is Border)
+            {
+               int x = 0;
+            }
 
             MeasureGroup(Group1, false, false);
 
@@ -364,6 +376,11 @@ namespace Perspex.Controls
          }
          else
          {
+            if (Parent is Border)
+            {
+               int x = 0;
+            }
+            /*
             double finalWidth = CalculateFinalSize(_colSegment);
             double finalHeight = CalculateFinalSize(_rowSegment);
             //
@@ -395,10 +412,10 @@ namespace Perspex.Controls
                _colSegment[r].Offset = offsetX;
                _columnDefinitions[r].Offset = offsetX;
                offsetX += _colSegment[r].Min;
-            }
+            }*/
 
-            //SetFinalSize(_rowSegment, finalSize.Height, true);
-            //SetFinalSize(_colSegment, finalSize.Width, false);
+            SetFinalSize(_rowSegment, finalSize.Height, true);
+            SetFinalSize(_colSegment, finalSize.Width, false);
 
             int index = 0;
             foreach (Control child in Children)
@@ -412,11 +429,11 @@ namespace Perspex.Controls
 
 
                childFinalW = (_colSegment[cell.ColIndex + cell.ColSpan - 1].Offset +
-                              _colSegment[cell.ColIndex + cell.ColSpan - 1].Min) -
+                              _colSegment[cell.ColIndex + cell.ColSpan - 1].SizeCache) -
                              _colSegment[cell.ColIndex].Offset;
 
                childFinalH = (_rowSegment[cell.RowIndex + cell.RowSpan - 1].Offset +
-                              _rowSegment[cell.RowIndex + cell.RowSpan - 1].Min) -
+                              _rowSegment[cell.RowIndex + cell.RowSpan - 1].SizeCache) -
                              _rowSegment[cell.RowIndex].Offset;
 
 
@@ -426,14 +443,6 @@ namespace Perspex.Controls
          }
          Debug.WriteLine("Grid arrange time = " + arrangeTimer.ElapsedMilliseconds);
          return finalSize;
-      }
-
-      private void Validate(Size availableSize)
-      {
-         //if (validationNeeded)
-         {
-            ValidateCore(availableSize);
-         }
       }
 
       private Double CalculateFinalSize(GridSegment[] segment)
@@ -456,7 +465,7 @@ namespace Perspex.Controls
          return size;
       }
 
-      private void ValidateCore(Size availableSize)
+      private void Validate()
       {
          int colCount = ColumnDefinitions.Count;
          int rowCount = RowDefinitions.Count;
@@ -477,12 +486,9 @@ namespace Perspex.Controls
          ClearSegments();
          CreateSegments(rowCount, colCount);
 
-         bool replaceRowStarsWithAuto = double.IsPositiveInfinity(availableSize.Height);
-         bool replaceColStarsWithAuto = double.IsPositiveInfinity(availableSize.Width);
-
          if (emptyRows)
          {
-            if (replaceRowStarsWithAuto)
+            if (ReplaceRowStarsWithAuto)
             {
                _rowSegment[0] = new GridSegment(0, 0, double.PositiveInfinity, GridUnitType.Auto);
                _rowDefition = new RowDefinition(new GridLength(0, GridUnitType.Auto));
@@ -516,7 +522,7 @@ namespace Perspex.Controls
                      minSize = Math.Max(minSize, Math.Min(measured, maxSize));
                      break;
                   case GridUnitType.Star:
-                     if (replaceRowStarsWithAuto)
+                     if (ReplaceRowStarsWithAuto)
                      {
                         segment.Type = GridUnitType.Auto;
                      }
@@ -538,7 +544,7 @@ namespace Perspex.Controls
 
          if (emptyCols)
          {
-            if (replaceColStarsWithAuto)
+            if (ReplaceColStarsWithAuto)
             {
                _colSegment[0] = new GridSegment(0, 0, double.PositiveInfinity, GridUnitType.Auto);
                _colDefinition = new ColumnDefinition(new GridLength(0, GridUnitType.Auto));
@@ -571,7 +577,7 @@ namespace Perspex.Controls
                      minSize = Math.Max(minSize, Math.Min(measured, maxSize));
                      break;
                   case GridUnitType.Star:
-                     if (replaceColStarsWithAuto)
+                     if (ReplaceColStarsWithAuto)
                      {
                         segment.Type = GridUnitType.Auto;
                      }
@@ -671,7 +677,7 @@ namespace Perspex.Controls
                      {
                         minSize = Math.Max(minSize, segment.MinMeasuredSize);
                      }
-                     if (replaceRowStarsWithAuto)
+                     if (ReplaceRowStarsWithAuto)
                      {
                         measured = 0;
                      }
@@ -727,7 +733,7 @@ namespace Perspex.Controls
                      {
                         minSize = Math.Max(minSize, segment.MinMeasuredSize);
                      }
-                     if (replaceColStarsWithAuto)
+                     if (ReplaceColStarsWithAuto)
                      {
                         measured = 0;
                      }
@@ -779,7 +785,7 @@ namespace Perspex.Controls
                   segment[i].SizeCache = maxSize / starValue;
                }
                starDefitions[starDefinitionCount] = currentSegment;
-               //segmentIndices[starDefinitionCount] = i;
+               segmentIndices[starDefinitionCount] = i;
                starDefinitionCount++;
             }
             else
@@ -839,25 +845,25 @@ namespace Perspex.Controls
 
          if (allPreferredArrangeSize > finalSize && !(allPreferredArrangeSize - finalSize > Double.Epsilon))
          {
-            ////DistributionOrderIndexComparer distributionOrderIndexComparer = new DistributionOrderIndexComparer(segment);
-            ////Array.Sort(segmentIndices, 0, segment.Length, distributionOrderIndexComparer);
+            DistributionOrderIndexComparer distributionOrderIndexComparer = new DistributionOrderIndexComparer(segment);
+            Array.Sort(segmentIndices, 0, segment.Length, distributionOrderIndexComparer);
             double sizeToDistribute = finalSize - allPreferredArrangeSize;
             for (int i = 0; i < segment.Length; i++)
             {
-               //int segmentIndex = segmentIndices[i];
-               //double final = segment[i].SizeCache + (sizeToDistribute/segment.Length - i);
-               //final = Math.Max(final, segment[segmentIndex].MinMeasuredSize);
-               //final = Math.Min(final, segment[segmentIndex].SizeCache);
-
-               //sizeToDistribute -= (finalSize - segment[segmentIndex].SizeCache);
-               //segment[segmentIndex].SizeCache = final;
-
+               int segmentIndex = segmentIndices[i];
                double final = segment[i].SizeCache + (sizeToDistribute / segment.Length - i);
-               final = Math.Max(final, segment[i].MinMeasuredSize);
-               final = Math.Min(final, segment[i].SizeCache);
+               final = Math.Max(final, segment[segmentIndex].MinMeasuredSize);
+               final = Math.Min(final, segment[segmentIndex].SizeCache);
 
-               sizeToDistribute -= (finalSize - segment[i].SizeCache);
-               segment[i].SizeCache = final;
+               sizeToDistribute -= (finalSize - segment[segmentIndex].SizeCache);
+               segment[segmentIndex].SizeCache = final;
+
+               //double final = segment[i].SizeCache + (sizeToDistribute / segment.Length - i);
+               //final = Math.Max(final, segment[i].MinMeasuredSize);
+               //final = Math.Min(final, segment[i].SizeCache);
+
+               //sizeToDistribute -= (finalSize - segment[i].SizeCache);
+               //segment[i].SizeCache = final;
             }
          }
 
@@ -873,7 +879,6 @@ namespace Perspex.Controls
                _rowSegment[r].Offset = offset;
                _rowDefinitions[r].Offset = offset;
                offset += _rowSegment[r].SizeCache;
-               _rowSegment[r].Min = _rowSegment[r].SizeCache;
             }
          }
          else if (!isRow && ColumnDefinitions.Count > 0)
@@ -885,8 +890,49 @@ namespace Perspex.Controls
                _colSegment[r].Offset = offset;
                _columnDefinitions[r].Offset = offset;
                offset += _colSegment[r].SizeCache;
-               _colSegment[r].Min = _colSegment[r].SizeCache;
             }
+         }
+      }
+
+      /// <summary>
+      /// DistributionOrderComparer.
+      /// </summary>
+      private class DistributionOrderIndexComparer : IComparer
+      {
+         private readonly GridSegment[] definitions;
+
+         internal DistributionOrderIndexComparer(GridSegment[] definitions)
+         {
+            this.definitions = definitions;
+         }
+
+         public int Compare(object x, object y)
+         {
+            int? indexX = x as int?;
+            int? indexY = y as int?;
+
+            GridSegment definitionX = null;
+            GridSegment definitionY = null;
+
+            if (indexX != null)
+            {
+               definitionX = definitions[indexX.Value];
+            }
+            if (indexY != null)
+            {
+               definitionY = definitions[indexY.Value];
+            }
+
+            int result;
+
+            if (!CompareNullRefs(definitionX, definitionY, out result))
+            {
+               double xprime = definitionX.SizeCache - definitionX.MinMeasuredSize;
+               double yprime = definitionY.SizeCache - definitionY.MinMeasuredSize;
+               result = xprime.CompareTo(yprime);
+            }
+
+            return result;
          }
       }
 
@@ -1134,16 +1180,15 @@ namespace Perspex.Controls
                   double sizeToDistribute;
                   int i;
 
-
                   Array.Sort(tempDefinitions, 0, count, _spanMaxDistributionOrderComparer);
+
                   for (i = 0, sizeToDistribute = size - rangePreferredSize; i < count - autoCount; ++i)
                   {
-                     double measuredSize = tempDefinitions[i].MeasuredSize;
+                     double measuredSize = tempDefinitions[i].Min;
                      double newMeasuredSize = measuredSize + sizeToDistribute / (count - autoCount - i);
                      newMeasuredSize = Clamp(newMeasuredSize, tempDefinitions[i].Min, tempDefinitions[i].Max);
                      tempDefinitions[i].Min = Math.Max(newMeasuredSize, tempDefinitions[i].MeasuredSize);
-                     tempDefinitions[i].MinMeasuredSize = Math.Max(newMeasuredSize, tempDefinitions[i].MeasuredSize);
-                     //tempDefinitions[i].Min = Math.Max(tempDefinitions[i].Min, tempDefinitions[i].MinMeasuredSize);
+                     //tempDefinitions[i].MinMeasuredSize = Math.Max(newMeasuredSize, tempDefinitions[i].MeasuredSize);
                      sizeToDistribute -= (tempDefinitions[i].Min - measuredSize);
                   }
 
@@ -1154,7 +1199,6 @@ namespace Perspex.Controls
                      newMeasuredSize = Clamp(newMeasuredSize, tempDefinitions[i].Min, tempDefinitions[i].Max);
                      tempDefinitions[i].Min = Math.Max(newMeasuredSize, tempDefinitions[i].MeasuredSize);
                      tempDefinitions[i].MinMeasuredSize = Math.Max(newMeasuredSize, tempDefinitions[i].MeasuredSize);
-                     //tempDefinitions[i].Min = Math.Max(tempDefinitions[i].Min, tempDefinitions[i].MinMeasuredSize);
                      sizeToDistribute -= (tempDefinitions[i].Min - measuredSize);
                   }
                }
