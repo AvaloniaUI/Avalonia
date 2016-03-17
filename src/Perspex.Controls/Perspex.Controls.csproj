@@ -54,6 +54,7 @@
     <Compile Include="INameScope.cs" />
     <Compile Include="IPseudoClasses.cs" />
     <Compile Include="DropDownItem.cs" />
+    <Compile Include="LayoutTransformControl.cs" />
     <Compile Include="Mixins\ContentControlMixin.cs" />
     <Compile Include="NameScope.cs" />
     <Compile Include="NameScopeEventArgs.cs" />

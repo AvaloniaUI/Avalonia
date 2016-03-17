@@ -90,6 +90,7 @@
   </Choose>
   <ItemGroup>
     <Compile Include="ClassesTests.cs" />
+    <Compile Include="LayoutTransformControlTests.cs" />
     <Compile Include="UserControlTests.cs" />
     <Compile Include="DockPanelTests.cs" />
     <Compile Include="EnumerableExtensions.cs" />
