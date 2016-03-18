@@ -38,6 +38,7 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="Classes.cs" />
+    <Compile Include="IApplicationLifecycle.cs" />
     <Compile Include="IControl.cs" />
     <Compile Include="IGlobalDataTemplates.cs" />
     <Compile Include="IPseudoClasses.cs" />
