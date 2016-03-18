@@ -183,6 +183,10 @@
       <Project>{3e10a5fa-e8da-48b1-ad44-6a5b6cb7750f}</Project>
       <Name>Perspex.Themes.Default</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\Perspex.Controls.Base\Perspex.Controls.Base.csproj">
+      <Project>{4788bf94-e9b8-41e1-b031-629639b5f906}</Project>
+      <Name>Perspex.Controls.Base</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Perspex.HtmlRenderer\Perspex.HtmlRenderer.csproj">
       <Project>{5fb2b005-0a7f-4dad-add4-3ed01444e63d}</Project>
       <Name>Perspex.HtmlRenderer</Name>
