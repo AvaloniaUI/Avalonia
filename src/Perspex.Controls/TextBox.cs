@@ -373,23 +373,26 @@ namespace Perspex.Controls
                 var index = CaretIndex = _presenter.GetCaretIndex(point);
                 var text = Text;
 
-                switch (e.ClickCount)
+                if (text != null)
                 {
-                    case 1:
-                        SelectionStart = SelectionEnd = index;
-                        break;
-                    case 2:
-                        if (!StringUtils.IsStartOfWord(text, index))
-                        {
-                            SelectionStart = StringUtils.PreviousWord(text, index, false);
-                        }
+                    switch (e.ClickCount)
+                    {
+                        case 1:
+                            SelectionStart = SelectionEnd = index;
+                            break;
+                        case 2:
+                            if (!StringUtils.IsStartOfWord(text, index))
+                            {
+                                SelectionStart = StringUtils.PreviousWord(text, index, false);
+                            }
 
-                        SelectionEnd = StringUtils.NextWord(text, index, false);
-                        break;
-                    case 3:
-                        SelectionStart = 0;
-                        SelectionEnd = text.Length;
-                        break;
+                            SelectionEnd = StringUtils.NextWord(text, index, false);
+                            break;
+                        case 3:
+                            SelectionStart = 0;
+                            SelectionEnd = text.Length;
+                            break;
+                    }
                 }
 
                 e.Device.Capture(_presenter);
