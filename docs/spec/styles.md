@@ -49,6 +49,16 @@ As in CSS, controls can be given *style classes* which can be used in selectors:
       <Button>I will not.</Button>
     </StackPanel>
 
+Each control can be given 0 or more style classes. This is different to WPF
+where only a single style can be applied to a control: in Perspex any number
+of separate styles can be applied to a control. If more than one style affects
+a particular property, the style closest to the control will take precedence.
+
+Style classes can also be manipulated in code using the `Classes` collection:
+
+    control.Classes.Add("blue");
+    control.Classes.Remove("red");
+
 ## Pseudoclasses
 
 Also as in CSS, controls can have pseudoclasses; these are classes that are

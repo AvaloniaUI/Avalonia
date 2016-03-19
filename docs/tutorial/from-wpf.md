@@ -40,6 +40,29 @@ placed in a `DataTemplates` collection on each control (and on `Application`):
         <ContentControl Content="{Binding Foo}"/>
     <UserControl>    
 
+`ItemsControl`s don't currently have an `ItemTemplate` property: instead just
+place the template for your items into the control's `DataTemplates`, e.g.
+
+    <ListBox Items="ItemsSource">
+        <ListBox.DataTemplates>
+            <DataTemplate>
+                <TextBlock Text="{Binding Caption}"/>
+            </DataTemplate>
+        </ListBox.DataTemplates>
+    </ListBox>
+
+Data templates in Perspex can also target interfaces and derived classes (which
+cannot be done in WPF) and so the order of `DataTemplate`s can be important:
+`DataTemplate`s  within the same collection are evaluated in declaration order
+so you need to place them from most-specific to least-specific as you would in
+code.
+
+## HierachicalDataTemplate
+
+WPF's `HierarchicalDataTemplate` is called `TreeDataTemplate` in Perspex (as the
+former is difficult to type!). The two are almost entirely equivalent except
+that the `ItemTemplate` property is not present in Perspex.
+
 ## UIElement, FrameworkElement and Control
 
 WPF's `UIElement` and `FrameworkElement` are non-templated control base classes,
@@ -79,11 +102,22 @@ reasons](http://www.codemag.com/article/1501091) for this, but briefly:
 
 ## Grid
 
-Perspex has a `Grid` panel just like WPF, however a common use of `Grid` in WPF
-is to stack two controls on top of each other. For this purpose in Perspex you
-can just use a `Panel` which is more lightweight than `Grid`.
+Column and row definitions can be specified in Perspex using strings, avoiding
+the clunky syntax in WPF:
+
+    <Grid ColumnDefinitions="Auto,*,32" RowDefinitions="*,Auto">
+
+A common use of `Grid` in WPF is to stack two controls on top of each other.
+For this purpose in Perspex you can just use a `Panel` which is more lightweight
+than `Grid`.
 
 We don't yet support `SharedSizeScope` in `Grid`.
+
+## ItemsControl
+
+In WPF, `ItemsControl` and derived classes such as `ListBox` have two separate
+items properties: `Items` and `ItemsSource`. Perspex however just has a single
+one: `Items`.
 
 ## Tunnelling Events
 
