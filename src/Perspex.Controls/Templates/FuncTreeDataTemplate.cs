@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Reflection;
+using Perspex.Data;
 
 namespace Perspex.Controls.Templates
 {
@@ -59,9 +60,9 @@ namespace Perspex.Controls.Templates
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns>The child items, or null if no child items.</returns>
-        public IEnumerable ItemsSelector(object item)
+        public InstancedBinding ItemsSelector(object item)
         {
-            return this?._itemsSelector(item);
+            return new InstancedBinding(this?._itemsSelector(item));
         }
 
         /// <summary>
