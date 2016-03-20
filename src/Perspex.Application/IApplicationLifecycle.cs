@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Perspex.Controls
+namespace Perspex
 {
     /// <summary>
     /// Sends events about the application lifecycle.
