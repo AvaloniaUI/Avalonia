@@ -30,6 +30,7 @@ namespace Perspex.Markup.Xaml.Context
             typeof(DataTemplate).GetTypeInfo().Assembly,
             typeof(SolidColorBrush).GetTypeInfo().Assembly,
             typeof(IValueConverter).GetTypeInfo().Assembly,
+            typeof(IControl).GetTypeInfo().Assembly
         };
 
         private List<ClrNamespace> _clrNamespaces = new List<ClrNamespace>();

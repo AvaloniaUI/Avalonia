@@ -5,7 +5,6 @@ using System;
 using System.Reflection;
 using System.Threading;
 using Perspex.Controls;
-using Perspex.Controls.Platform;
 using Perspex.Controls.Templates;
 using Perspex.Input;
 using Perspex.Input.Platform;

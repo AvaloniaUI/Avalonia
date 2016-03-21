@@ -96,6 +96,10 @@
       <Project>{B09B78D8-9B26-48B0-9149-D64A2F120F3F}</Project>
       <Name>Perspex.Base</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\Perspex.Controls.Base\Perspex.Controls.Base.csproj">
+      <Project>{4788bf94-e9b8-41e1-b031-629639b5f906}</Project>
+      <Name>Perspex.Controls.Base</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Perspex.Controls\Perspex.Controls.csproj">
       <Project>{D2221C82-4A25-4583-9B43-D791E3F6820C}</Project>
       <Name>Perspex.Controls</Name>

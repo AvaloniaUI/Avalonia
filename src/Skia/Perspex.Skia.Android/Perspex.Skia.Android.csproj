@@ -15,7 +15,7 @@
     <AndroidResgenFile>Resources\Resource.Designer.cs</AndroidResgenFile>
     <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
     <AndroidUseLatestPlatformSdk>True</AndroidUseLatestPlatformSdk>
-    <TargetFrameworkVersion>v5.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v6.0</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -55,6 +55,10 @@
     <ProjectReference Include="..\..\Perspex.Base\Perspex.Base.csproj">
       <Project>{b09b78d8-9b26-48b0-9149-d64a2f120f3f}</Project>
       <Name>Perspex.Base</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Perspex.Controls.Base\Perspex.Controls.Base.csproj">
+      <Project>{4788bf94-e9b8-41e1-b031-629639b5f906}</Project>
+      <Name>Perspex.Controls.Base</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Perspex.Controls\Perspex.Controls.csproj">
       <Project>{d2221c82-4a25-4583-9b43-d791e3f6820c}</Project>

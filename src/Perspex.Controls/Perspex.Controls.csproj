@@ -43,16 +43,13 @@
     <Compile Include="..\Shared\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="Classes.cs" />
     <Compile Include="ContextMenu.cs" />
     <Compile Include="DockPanel.cs" />
     <Compile Include="Expander.cs" />
     <Compile Include="Generators\ItemContainer.cs" />
     <Compile Include="Generators\TreeContainerIndex.cs" />
     <Compile Include="HotkeyManager.cs" />
-    <Compile Include="IApplicationLifecycle.cs" />
     <Compile Include="INameScope.cs" />
-    <Compile Include="IPseudoClasses.cs" />
     <Compile Include="DropDownItem.cs" />
     <Compile Include="LayoutTransformControl.cs" />
     <Compile Include="Mixins\ContentControlMixin.cs" />
@@ -79,7 +76,6 @@
     <Compile Include="Generators\ITreeItemContainerGenerator.cs" />
     <Compile Include="Generators\ItemContainerEventArgs.cs" />
     <Compile Include="IContentControl.cs" />
-    <Compile Include="IControl.cs" />
     <Compile Include="IPanel.cs" />
     <Compile Include="ISetLogicalParent.cs" />
     <Compile Include="MenuItemAccessKeyHandler.cs" />
@@ -101,10 +97,8 @@
     <Compile Include="Templates\FuncControlTemplate`2.cs" />
     <Compile Include="Templates\FuncDataTemplate`1.cs" />
     <Compile Include="Templates\FuncMemberSelector.cs" />
-    <Compile Include="Templates\IControlTemplate.cs" />
     <Compile Include="Templates\FuncTemplate`2.cs" />
     <Compile Include="Templates\FuncTemplate`1.cs" />
-    <Compile Include="Templates\IDataTemplate.cs" />
     <Compile Include="Presenters\IItemsPresenter.cs" />
     <Compile Include="Presenters\IPresenter.cs" />
     <Compile Include="Presenters\CarouselPresenter.cs" />
@@ -133,8 +127,6 @@
     <Compile Include="Generators\TreeItemContainerGenerator.cs" />
     <Compile Include="Generators\ItemContainerGenerator`1.cs" />
     <Compile Include="Generators\ItemContainerGenerator.cs" />
-    <Compile Include="IGlobalDataTemplates.cs" />
-    <Compile Include="Templates\DataTemplates.cs" />
     <Compile Include="Decorator.cs" />
     <Compile Include="DefinitionBase.cs" />
     <Compile Include="Grid.cs" />
@@ -152,10 +144,6 @@
     <Compile Include="Primitives\Thumb.cs" />
     <Compile Include="RequestBringIntoViewEventArgs.cs" />
     <Compile Include="Shapes\Ellipse.cs" />
-    <Compile Include="Templates\IMemberSelector.cs" />
-    <Compile Include="Templates\ITemplate`2.cs" />
-    <Compile Include="Templates\ITemplate`1.cs" />
-    <Compile Include="Templates\ITreeDataTemplate.cs" />
     <Compile Include="Templates\FuncTreeDataTemplate.cs" />
     <Compile Include="ToolTip.cs" />
     <Compile Include="UserControl.cs" />
@@ -224,9 +212,17 @@
       <Project>{D211E587-D8BC-45B9-95A4-F297C8FA5200}</Project>
       <Name>Perspex.Animation</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Perspex.Application\Perspex.Application.csproj">
+      <Project>{799a7bb5-3c2c-48b6-85a7-406a12c420da}</Project>
+      <Name>Perspex.Application</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Perspex.Base\Perspex.Base.csproj">
       <Project>{B09B78D8-9B26-48B0-9149-D64A2F120F3F}</Project>
       <Name>Perspex.Base</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Perspex.Controls.Base\Perspex.Controls.Base.csproj">
+      <Project>{4788bf94-e9b8-41e1-b031-629639b5f906}</Project>
+      <Name>Perspex.Controls.Base</Name>
     </ProjectReference>
     <ProjectReference Include="..\Perspex.Input\Perspex.Input.csproj">
       <Project>{62024B2D-53EB-4638-B26B-85EEAA54866E}</Project>

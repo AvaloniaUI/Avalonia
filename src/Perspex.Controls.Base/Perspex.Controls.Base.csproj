@@ -2,14 +2,14 @@
 <Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
-    <MinimumVisualStudioVersion>11.0</MinimumVisualStudioVersion>
+    <MinimumVisualStudioVersion>10.0</MinimumVisualStudioVersion>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{6417E941-21BC-467B-A771-0DE389353CE6}</ProjectGuid>
+    <ProjectGuid>{4788BF94-E9B8-41E1-B031-629639B5F906}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Perspex.Markup</RootNamespace>
-    <AssemblyName>Perspex.Markup</AssemblyName>
+    <RootNamespace>Perspex.Controls</RootNamespace>
+    <AssemblyName>Perspex.Controls.Base</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -24,8 +24,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Debug\Perspex.Markup.XML</DocumentationFile>
-    <NoWarn>CS1591</NoWarn>
+    <DocumentationFile>bin\Debug\Perspex.Controls.Base.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -34,55 +33,44 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Release\Perspex.Markup.XML</DocumentationFile>
-    <NoWarn>CS1591</NoWarn>
+    <DocumentationFile>bin\Release\Perspex.Controls.Base.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="..\..\Shared\SharedAssemblyInfo.cs">
+    <Compile Include="..\Shared\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="Data\CommonPropertyNames.cs" />
-    <Compile Include="Data\ExpressionNodeBuilder.cs" />
-    <Compile Include="Data\ExpressionParseException.cs" />
-    <Compile Include="Data\ExpressionSubject.cs" />
-    <Compile Include="ControlLocator.cs" />
-    <Compile Include="Data\Plugins\PerspexPropertyAccessorPlugin.cs" />
-    <Compile Include="Data\Plugins\InpcPropertyAccessorPlugin.cs" />
-    <Compile Include="Data\Plugins\IPropertyAccessor.cs" />
-    <Compile Include="Data\Plugins\IPropertyAccessorPlugin.cs" />
-    <Compile Include="Data\LogicalNotNode.cs" />
-    <Compile Include="Data\IndexerNode.cs" />
-    <Compile Include="Data\Parsers\ArgumentListParser.cs" />
-    <Compile Include="Data\Parsers\IdentifierParser.cs" />
-    <Compile Include="Data\Parsers\ExpressionParser.cs" />
-    <Compile Include="Data\Parsers\Reader.cs" />
-    <Compile Include="Data\PropertyAccessorNode.cs" />
-    <Compile Include="Data\ExpressionNode.cs" />
-    <Compile Include="Data\ExpressionObserver.cs" />
-    <Compile Include="FuncMultiValueConverter.cs" />
-    <Compile Include="FuncValueConverter.cs" />
-    <Compile Include="IMultiValueConverter.cs" />
-    <Compile Include="BoolConverters.cs" />
-    <Compile Include="StringConverters.cs" />
-    <Compile Include="DefaultValueConverter.cs" />
-    <Compile Include="IValueConverter.cs" />
+    <Compile Include="Classes.cs" />
+    <Compile Include="IControl.cs" />
+    <Compile Include="IGlobalDataTemplates.cs" />
+    <Compile Include="IPseudoClasses.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Templates\DataTemplates.cs" />
+    <Compile Include="Templates\IControlTemplate.cs" />
+    <Compile Include="Templates\IDataTemplate.cs" />
+    <Compile Include="Templates\IMemberSelector.cs" />
+    <Compile Include="Templates\ITemplate`1.cs" />
+    <Compile Include="Templates\ITemplate`2.cs" />
+    <Compile Include="Templates\ITreeDataTemplate.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="JetBrains.Annotations.PCL328, Version=10.0.0.0, Culture=neutral, PublicKeyToken=1010a0d8d6380325, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\JetBrains.Annotations.10.0.0\lib\portable-net4+sl5+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1\JetBrains.Annotations.PCL328.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Reactive.Core, Version=2.2.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Rx-Core.2.2.5\lib\portable-windows8+net45+wp8\System.Reactive.Core.dll</HintPath>
+      <HintPath>..\..\packages\Rx-Core.2.2.5\lib\portable-windows8+net45+wp8\System.Reactive.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Reactive.Interfaces, Version=2.2.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Rx-Interfaces.2.2.5\lib\portable-windows8+net45+wp8\System.Reactive.Interfaces.dll</HintPath>
+      <HintPath>..\..\packages\Rx-Interfaces.2.2.5\lib\portable-windows8+net45+wp8\System.Reactive.Interfaces.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Reactive.Linq, Version=2.2.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Rx-Linq.2.2.5\lib\portable-windows8+net45+wp8\System.Reactive.Linq.dll</HintPath>
+      <HintPath>..\..\packages\Rx-Linq.2.2.5\lib\portable-windows8+net45+wp8\System.Reactive.Linq.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Reactive.PlatformServices, Version=2.2.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Rx-PlatformServices.2.2.5\lib\portable-windows8+net45+wp8\System.Reactive.PlatformServices.dll</HintPath>
+      <HintPath>..\..\packages\Rx-PlatformServices.2.2.5\lib\portable-windows8+net45+wp8\System.Reactive.PlatformServices.dll</HintPath>
       <Private>True</Private>
     </Reference>
   </ItemGroup>
@@ -90,35 +78,27 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Perspex.Base\Perspex.Base.csproj">
+    <ProjectReference Include="..\Perspex.Base\Perspex.Base.csproj">
       <Project>{b09b78d8-9b26-48b0-9149-d64a2f120f3f}</Project>
       <Name>Perspex.Base</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Perspex.Controls.Base\Perspex.Controls.Base.csproj">
-      <Project>{4788bf94-e9b8-41e1-b031-629639b5f906}</Project>
-      <Name>Perspex.Controls.Base</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Perspex.Controls\Perspex.Controls.csproj">
-      <Project>{d2221c82-4a25-4583-9b43-d791e3f6820c}</Project>
-      <Name>Perspex.Controls</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Perspex.Input\Perspex.Input.csproj">
+    <ProjectReference Include="..\Perspex.Input\Perspex.Input.csproj">
       <Project>{62024b2d-53eb-4638-b26b-85eeaa54866e}</Project>
       <Name>Perspex.Input</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Perspex.Interactivity\Perspex.Interactivity.csproj">
+    <ProjectReference Include="..\Perspex.Interactivity\Perspex.Interactivity.csproj">
       <Project>{6b0ed19d-a08b-461c-a9d9-a9ee40b0c06b}</Project>
       <Name>Perspex.Interactivity</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Perspex.Layout\Perspex.Layout.csproj">
+    <ProjectReference Include="..\Perspex.Layout\Perspex.Layout.csproj">
       <Project>{42472427-4774-4c81-8aff-9f27b8e31721}</Project>
       <Name>Perspex.Layout</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Perspex.SceneGraph\Perspex.SceneGraph.csproj">
+    <ProjectReference Include="..\Perspex.SceneGraph\Perspex.SceneGraph.csproj">
       <Project>{eb582467-6abb-43a1-b052-e981ba910e3a}</Project>
       <Name>Perspex.SceneGraph</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Perspex.Styling\Perspex.Styling.csproj">
+    <ProjectReference Include="..\Perspex.Styling\Perspex.Styling.csproj">
       <Project>{f1baa01a-f176-4c6a-b39d-5b40bb1b148f}</Project>
       <Name>Perspex.Styling</Name>
     </ProjectReference>

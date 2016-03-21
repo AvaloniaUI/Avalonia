@@ -41,14 +41,6 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- A reference to the entire .NET Framework is automatically included -->
-    <ProjectReference Include="..\Markup\Perspex.Markup.Xaml\Perspex.Markup.Xaml.csproj">
-      <Project>{3e53a01a-b331-47f3-b828-4a5717e77a24}</Project>
-      <Name>Perspex.Markup.Xaml</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Markup\Perspex.Markup\Perspex.Markup.csproj">
-      <Project>{6417e941-21bc-467b-a771-0de389353ce6}</Project>
-      <Name>Perspex.Markup</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Perspex.Animation\Perspex.Animation.csproj">
       <Project>{d211e587-d8bc-45b9-95a4-f297c8fa5200}</Project>
       <Name>Perspex.Animation</Name>
@@ -57,9 +49,9 @@
       <Project>{B09B78D8-9B26-48B0-9149-D64A2F120F3F}</Project>
       <Name>Perspex.Base</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Perspex.Controls\Perspex.Controls.csproj">
-      <Project>{D2221C82-4A25-4583-9B43-D791E3F6820C}</Project>
-      <Name>Perspex.Controls</Name>
+    <ProjectReference Include="..\Perspex.Controls.Base\Perspex.Controls.Base.csproj">
+      <Project>{4788bf94-e9b8-41e1-b031-629639b5f906}</Project>
+      <Name>Perspex.Controls.Base</Name>
     </ProjectReference>
     <ProjectReference Include="..\Perspex.Input\Perspex.Input.csproj">
       <Project>{62024B2D-53EB-4638-B26B-85EEAA54866E}</Project>
@@ -81,19 +73,13 @@
       <Project>{F1BAA01A-F176-4C6A-B39D-5B40BB1B148F}</Project>
       <Name>Perspex.Styling</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Perspex.Themes.Default\Perspex.Themes.Default.csproj">
-      <Project>{3E10A5FA-E8DA-48B1-AD44-6A5B6CB7750F}</Project>
-      <Name>Perspex.Themes.Default</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\Shared\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="Application.cs" />
-    <Compile Include="Designer\Design.cs" />
-    <Compile Include="Designer\DesignerAssist.cs" />
-    <Compile Include="Designer\DesignerApi.cs" />
+    <Compile Include="IApplicationLifecycle.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
