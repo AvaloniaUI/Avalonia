@@ -10,6 +10,9 @@ using Perspex.Layout;
 using Perspex.Media;
 using Perspex.Platform;
 using Perspex.Styling;
+using System.Collections;
+using System.Collections.Generic;
+using Perspex.Threading;
 
 namespace Perspex.Controls
 {
@@ -44,6 +47,22 @@ namespace Perspex.Controls
     /// </summary>
     public class Window : TopLevel, IStyleable, IFocusScope, ILayoutRoot, INameScope
     {
+        private static IList<Window> windows = new List<Window>();
+
+        /// <summary>
+        /// Retrieves an enumeration of all Windows in the currently running application.
+        /// Can only be accessed from the UI Thread.
+        /// </summary>
+        public static IEnumerable<Window> Windows
+        {
+            get
+            {
+                Dispatcher.UIThread.VerifyAccess();
+
+                return windows;
+            }
+        }
+
         /// <summary>
         /// Defines the <see cref="SizeToContent"/> property.
         /// </summary>
@@ -153,6 +172,7 @@ namespace Perspex.Controls
         /// </summary>
         public void Close()
         {
+            windows.Remove(this);
             PlatformImpl.Dispose();
         }
 
@@ -193,6 +213,8 @@ namespace Perspex.Controls
         /// </summary>
         public void Show()
         {
+            windows.Add(this);
+
             LayoutManager.Instance.ExecuteInitialLayoutPass(this);
 
             using (BeginAutoSizing())
@@ -223,6 +245,8 @@ namespace Perspex.Controls
         /// </returns>
         public Task<TResult> ShowDialog<TResult>()
         {
+            windows.Add(this);
+
             LayoutManager.Instance.ExecuteInitialLayoutPass(this);
 
             using (BeginAutoSizing())
