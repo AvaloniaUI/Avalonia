@@ -49,7 +49,6 @@ namespace Perspex.Controls
 
         /// <summary>
         /// Retrieves an enumeration of all Windows in the currently running application.
-        /// Can only be accessed from the UI Thread.
         /// </summary>
         public static IList<Window> OpenWindows => s_windows;
 
