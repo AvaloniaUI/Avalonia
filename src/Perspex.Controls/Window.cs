@@ -10,9 +10,7 @@ using Perspex.Layout;
 using Perspex.Media;
 using Perspex.Platform;
 using Perspex.Styling;
-using System.Collections;
 using System.Collections.Generic;
-using Perspex.Threading;
 
 namespace Perspex.Controls
 {
@@ -57,8 +55,6 @@ namespace Perspex.Controls
         {
             get
             {
-                Dispatcher.UIThread.VerifyAccess();
-
                 return s_windows;
             }
         }
