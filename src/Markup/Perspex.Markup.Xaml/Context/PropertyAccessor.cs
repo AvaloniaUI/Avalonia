@@ -66,7 +66,14 @@ namespace Perspex.Markup.Xaml.Context
                 member.Name : 
                 member.DeclaringType.Name + "." + member.Name;
 
-            return PerspexPropertyRegistry.Instance.FindRegistered(target, propertyName);
+            var registered = PerspexPropertyRegistry.Instance.FindRegistered(target, propertyName);
+            if (registered == null)
+            {
+                // Find attached property when using bindings.
+                return PerspexPropertyRegistry.Instance.FindRegistered(member.DeclaringType.UnderlyingType, propertyName);
+            }
+
+            return registered;
         }
 
         private static void SetBinding(
