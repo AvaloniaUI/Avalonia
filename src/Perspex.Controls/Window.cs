@@ -51,13 +51,7 @@ namespace Perspex.Controls
         /// Retrieves an enumeration of all Windows in the currently running application.
         /// Can only be accessed from the UI Thread.
         /// </summary>
-        public static IList<Window> OpenWindows
-        {
-            get
-            {
-                return s_windows;
-            }
-        }
+        public static IList<Window> OpenWindows => s_windows;
 
         /// <summary>
         /// Defines the <see cref="SizeToContent"/> property.
