@@ -27,12 +27,12 @@ mkdir $ios
 
 Copy-Item ..\src\Perspex.Animation\bin\Release\Perspex.Animation.dll $lib
 Copy-Item ..\src\Perspex.Animation\bin\Release\Perspex.Animation.xml $lib
-Copy-Item ..\src\Perspex.Application\bin\Release\Perspex.Application.dll $lib
-Copy-Item ..\src\Perspex.Application\bin\Release\Perspex.Application.xml $lib
 Copy-Item ..\src\Perspex.Base\bin\Release\Perspex.Base.dll $lib
 Copy-Item ..\src\Perspex.Base\bin\Release\Perspex.Base.xml $lib
 Copy-Item ..\src\Perspex.Controls\bin\Release\Perspex.Controls.dll $lib
 Copy-Item ..\src\Perspex.Controls\bin\Release\Perspex.Controls.xml $lib
+Copy-Item ..\src\Perspex.DesignerSupport\bin\Release\Perspex.DesignerSupport.dll $lib
+Copy-Item ..\src\Perspex.DesignerSupport\bin\Release\Perspex.DesignerSupport.xml $lib
 Copy-Item ..\src\Perspex.Diagnostics\bin\Release\\Perspex.Diagnostics.dll $lib
 Copy-Item ..\src\Perspex.Diagnostics\bin\Release\\Perspex.Diagnostics.xml $lib
 Copy-Item ..\src\Perspex.Input\bin\Release\Perspex.Input.dll $lib
