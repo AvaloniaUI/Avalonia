@@ -47,19 +47,19 @@ namespace Perspex.Controls
     /// </summary>
     public class Window : TopLevel, IStyleable, IFocusScope, ILayoutRoot, INameScope
     {
-        private static IList<Window> windows = new List<Window>();
+        private static IList<Window> s_windows = new List<Window>();
 
         /// <summary>
         /// Retrieves an enumeration of all Windows in the currently running application.
         /// Can only be accessed from the UI Thread.
         /// </summary>
-        public static IEnumerable<Window> Windows
+        public static IList<Window> OpenWindows
         {
             get
             {
                 Dispatcher.UIThread.VerifyAccess();
 
-                return windows;
+                return s_windows;
             }
         }
 
@@ -172,7 +172,7 @@ namespace Perspex.Controls
         /// </summary>
         public void Close()
         {
-            windows.Remove(this);
+            s_windows.Remove(this);
             PlatformImpl.Dispose();
         }
 
@@ -213,7 +213,7 @@ namespace Perspex.Controls
         /// </summary>
         public void Show()
         {
-            windows.Add(this);
+            s_windows.Add(this);
 
             LayoutManager.Instance.ExecuteInitialLayoutPass(this);
 
@@ -245,7 +245,7 @@ namespace Perspex.Controls
         /// </returns>
         public Task<TResult> ShowDialog<TResult>()
         {
-            windows.Add(this);
+            s_windows.Add(this);
 
             LayoutManager.Instance.ExecuteInitialLayoutPass(this);
 
