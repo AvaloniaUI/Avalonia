@@ -91,6 +91,7 @@
     <Compile Include="Data\ExpressionObserverTests_Indexer.cs" />
     <Compile Include="Data\ExpressionObserverTests_Negation.cs" />
     <Compile Include="Data\ExpressionObserverTests_Observable.cs" />
+    <Compile Include="Data\ExpressionObserverTests_AttachedProperty.cs" />
     <Compile Include="Data\ExpressionObserverTests_PerspexProperty.cs" />
     <Compile Include="Data\ExpressionObserverTests_Property.cs" />
     <Compile Include="Data\ExpressionObserverTests_SetValue.cs" />
