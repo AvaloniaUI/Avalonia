@@ -1,5 +1,6 @@
 ﻿<Styles xmlns="https://github.com/perspex">
   <Style Selector="TreeViewItem">
+    <Setter Property="Padding" Value="2"/>
     <Setter Property="Template">
       <ControlTemplate>
         <StackPanel>
