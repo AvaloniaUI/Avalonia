@@ -26,16 +26,6 @@ namespace Perspex.Controls
         public static readonly StyledProperty<bool> AcceptsTabProperty =
             PerspexProperty.Register<TextBox, bool>("AcceptsTab");
 
-        // TODO: Remove these when "(attached.property)" syntax is supported in bindings. They are
-        // bound to in the TextBox template, but ideally they should just be bound to the attached
-        // property.
-        public static readonly StyledProperty<bool> CanScrollHorizontally = 
-            ScrollViewer.CanScrollHorizontallyProperty.AddOwner<TextBox>();
-        public static readonly StyledProperty<ScrollBarVisibility> HorizontalScrollBarVisibilityProperty = 
-            ScrollViewer.HorizontalScrollBarVisibilityProperty.AddOwner<TextBox>();
-        public static readonly StyledProperty<ScrollBarVisibility> VerticalScrollBarVisibilityProperty = 
-            ScrollViewer.VerticalScrollBarVisibilityProperty.AddOwner<TextBox>();
-
         // TODO: Should CaretIndex, SelectionStart/End and Text be direct properties?
         public static readonly StyledProperty<int> CaretIndexProperty =
             PerspexProperty.Register<TextBox, int>("CaretIndex", validate: ValidateCaretIndex);
