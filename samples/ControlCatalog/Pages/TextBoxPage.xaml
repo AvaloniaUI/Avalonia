@@ -14,17 +14,16 @@
                  Watermark="Floating Watermark" 
                  UseFloatingWatermark="True"
                  Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit."/>
-        <TextBox AcceptsReturn="True" TextWrapping="Wrap" Width="200" Height="125"
-                 Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est." />
-        <TextBox Text="TextBox with horizontal scrollbar set to Auto."
-                 ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                 Width="200" />
-      </StackPanel>
-
-      <StackPanel Orientation="Vertical" Gap="8">
         <TextBox Width="200" Text="Left aligned text" TextAlignment="Left" />
         <TextBox Width="200" Text="Center aligned text" TextAlignment="Center" />
         <TextBox Width="200" Text="Right aligned text" TextAlignment="Right" />
+      </StackPanel>
+
+      <StackPanel Orientation="Vertical" Gap="8">
+        <TextBox AcceptsReturn="True" TextWrapping="Wrap" Width="200" Height="125"
+                 Text="Multiline TextBox with TextWrapping.&#xD;&#xD;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est." />
+        <TextBox AcceptsReturn="True" Width="200" Height="125"
+                 Text="Multiline TextBox with no TextWrapping.&#xD;&#xD;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est." />
       </StackPanel>
     </StackPanel>
   </StackPanel>
