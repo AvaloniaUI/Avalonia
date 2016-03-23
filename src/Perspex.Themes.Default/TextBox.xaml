@@ -10,24 +10,27 @@
                 Background="{TemplateBinding Background}"
                 BorderBrush="{TemplateBinding BorderBrush}"
                 BorderThickness="{TemplateBinding BorderThickness}">
-          <ScrollViewer CanScrollHorizontally="{TemplateBinding CanScrollHorizontally}"
-                        HorizontalScrollBarVisibility="{TemplateBinding HorizontalScrollBarVisibility}"
-                        VerticalScrollBarVisibility="{TemplateBinding VerticalScrollBarVisibility}">
-            <StackPanel Margin="{TemplateBinding Padding}">
-              <TextBlock Name="floatingWatermark"
-                         Foreground="{StyleResource ThemeAccentBrush}"
-                         FontSize="{StyleResource FontSizeSmall}"
-                         Text="{TemplateBinding Watermark}">
-                <TextBlock.IsVisible>
-                  <MultiBinding Converter="{Static BoolConverters.And}">
-                    <Binding RelativeSource="{RelativeSource TemplatedParent}"
-                             Path="UseFloatingWatermark"/>
-                    <Binding RelativeSource="{RelativeSource TemplatedParent}"
-                             Path="Text" 
-                             Converter="{Static StringConverters.NotNullOrEmpty}"/>
-                  </MultiBinding>
-                </TextBlock.IsVisible>
-              </TextBlock>
+          <DockPanel Margin="{TemplateBinding Padding}">
+            
+            <TextBlock Name="floatingWatermark"
+                       Foreground="{StyleResource ThemeAccentBrush}"
+                       FontSize="{StyleResource FontSizeSmall}"
+                       Text="{TemplateBinding Watermark}"
+                       DockPanel.Dock="Top">
+              <TextBlock.IsVisible>
+                <MultiBinding Converter="{Static BoolConverters.And}">
+                  <Binding RelativeSource="{RelativeSource TemplatedParent}"
+                           Path="UseFloatingWatermark"/>
+                  <Binding RelativeSource="{RelativeSource TemplatedParent}"
+                           Path="Text"
+                           Converter="{Static StringConverters.NotNullOrEmpty}"/>
+                </MultiBinding>
+              </TextBlock.IsVisible>
+            </TextBlock>
+            
+            <ScrollViewer CanScrollHorizontally="{TemplateBinding CanScrollHorizontally}"
+                          HorizontalScrollBarVisibility="{TemplateBinding HorizontalScrollBarVisibility}"
+                          VerticalScrollBarVisibility="{TemplateBinding VerticalScrollBarVisibility}">
               <Panel>
                 <TextBlock Name="watermark"
                            Opacity="0.5"
@@ -41,8 +44,9 @@
                                TextAlignment="{TemplateBinding TextAlignment}"
                                TextWrapping="{TemplateBinding TextWrapping}"/>
               </Panel>
-            </StackPanel>
-          </ScrollViewer>
+            </ScrollViewer>
+            
+          </DockPanel>
         </Border>
       </ControlTemplate>
     </Setter>
