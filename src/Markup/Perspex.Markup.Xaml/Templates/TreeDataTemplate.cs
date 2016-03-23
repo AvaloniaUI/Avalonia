@@ -36,12 +36,12 @@ namespace Perspex.Markup.Xaml.Templates
             }
         }
 
-        public IEnumerable ItemsSelector(object item)
+        public InstancedBinding ItemsSelector(object item)
         {
             if (ItemsSource != null)
             {
                 var obs = new ExpressionObserver(item, ItemsSource.Path);
-                return obs.Take(1).Wait() as IEnumerable;
+                return new InstancedBinding(obs);
             }
 
             return null;

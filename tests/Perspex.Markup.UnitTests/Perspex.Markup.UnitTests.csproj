@@ -96,7 +96,6 @@
     <Compile Include="Data\ExpressionObserverTests_SetValue.cs" />
     <Compile Include="Data\ExpressionObserverTests_Task.cs" />
     <Compile Include="Data\ExpressionSubjectTests.cs" />
-    <Compile Include="Data\NotifyingBase.cs" />
     <Compile Include="DefaultValueConverterTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UnitTestSynchronizationContext.cs" />

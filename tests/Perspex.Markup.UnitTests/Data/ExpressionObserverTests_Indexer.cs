@@ -8,6 +8,7 @@ using System.Reactive.Linq;
 using Perspex.Collections;
 using Perspex.Diagnostics;
 using Perspex.Markup.Data;
+using Perspex.UnitTests;
 using Xunit;
 
 namespace Perspex.Markup.UnitTests.Data

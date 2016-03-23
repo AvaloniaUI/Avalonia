@@ -7,6 +7,7 @@ using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Perspex.Markup.Data;
+using Perspex.UnitTests;
 using Xunit;
 
 namespace Perspex.Markup.UnitTests.Data

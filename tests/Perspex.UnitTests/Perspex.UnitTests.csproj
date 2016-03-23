@@ -62,6 +62,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="NotifyingBase.cs" />
     <Compile Include="TestTemplatedRoot.cs" />
     <Compile Include="TestRoot.cs" />
     <Compile Include="TestServices.cs" />
