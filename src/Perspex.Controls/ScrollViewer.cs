@@ -315,6 +315,46 @@ namespace Perspex.Controls
             get { return Max((_viewport.Height / _extent.Height) * (_extent.Height - _viewport.Height), 0); }
         }
 
+        /// <summary>
+        /// Gets the value of the HorizontalScrollBarVisibility attached property.
+        /// </summary>
+        /// <param name="control">The control to read the value from.</param>
+        /// <returns>The value of the property.</returns>
+        public ScrollBarVisibility GetHorizontalScrollBarVisibility(Control control)
+        {
+            return control.GetValue(HorizontalScrollBarVisibilityProperty);
+        }
+
+        /// <summary>
+        /// Gets the value of the HorizontalScrollBarVisibility attached property.
+        /// </summary>
+        /// <param name="control">The control to set the value on.</param>
+        /// <param name="value">The value of the property.</param>
+        public void SetHorizontalScrollBarVisibility(Control control, ScrollBarVisibility value)
+        {
+            control.SetValue(HorizontalScrollBarVisibilityProperty, value);
+        }
+
+        /// <summary>
+        /// Gets the value of the VerticalScrollBarVisibility attached property.
+        /// </summary>
+        /// <param name="control">The control to read the value from.</param>
+        /// <returns>The value of the property.</returns>
+        public ScrollBarVisibility GetVerticalScrollBarVisibility(Control control)
+        {
+            return control.GetValue(VerticalScrollBarVisibilityProperty);
+        }
+
+        /// <summary>
+        /// Gets the value of the VerticalScrollBarVisibility attached property.
+        /// </summary>
+        /// <param name="control">The control to set the value on.</param>
+        /// <param name="value">The value of the property.</param>
+        public void SetVerticalScrollBarVisibility(Control control, ScrollBarVisibility value)
+        {
+            control.SetValue(VerticalScrollBarVisibilityProperty, value);
+        }
+
         internal static Vector CoerceOffset(Size extent, Size viewport, Vector offset)
         {
             var maxX = Math.Max(extent.Width - viewport.Width, 0);
