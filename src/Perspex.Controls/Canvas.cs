@@ -21,25 +21,25 @@ namespace Perspex.Controls
         /// Defines the Left attached property.
         /// </summary>
         public static readonly AttachedProperty<double> LeftProperty =
-            PerspexProperty.RegisterAttached<StackPanel, Control, double>("Left");
+            PerspexProperty.RegisterAttached<Canvas, Control, double>("Left", default(double), false, Data.BindingMode.TwoWay);
 
         /// <summary>
         /// Defines the Top attached property.
         /// </summary>
         public static readonly AttachedProperty<double> TopProperty =
-            PerspexProperty.RegisterAttached<StackPanel, Control, double>("Top");
+            PerspexProperty.RegisterAttached<Canvas, Control, double>("Top", default(double), false, Data.BindingMode.TwoWay);
 
         /// <summary>
         /// Defines the Right attached property.
         /// </summary>
         public static readonly AttachedProperty<double> RightProperty =
-            PerspexProperty.RegisterAttached<StackPanel, Control, double>("Right");
+            PerspexProperty.RegisterAttached<Canvas, Control, double>("Right", default(double), false, Data.BindingMode.TwoWay);
 
         /// <summary>
         /// Defines the Bottom attached property.
         /// </summary>
         public static readonly AttachedProperty<double> BottomProperty =
-            PerspexProperty.RegisterAttached<StackPanel, Control, double>("Bottom");
+            PerspexProperty.RegisterAttached<Canvas, Control, double>("Bottom", default(double), false, Data.BindingMode.TwoWay);
 
         /// <summary>
         /// Initializes static members of the <see cref="Canvas"/> class.
@@ -47,6 +47,51 @@ namespace Perspex.Controls
         static Canvas()
         {
             AffectsArrange(LeftProperty, TopProperty, RightProperty, BottomProperty);
+            LeftProperty.Changed.Subscribe(e => OnValueChanged(e.Sender, e));
+            TopProperty.Changed.Subscribe(e => OnValueChanged(e.Sender, e));
+            RightProperty.Changed.Subscribe(e => OnValueChanged(e.Sender, e));
+            BottomProperty.Changed.Subscribe(e => OnValueChanged(e.Sender, e));
+        }
+
+        private static void OnValueChanged(PerspexObject dependencyObject, PerspexPropertyChangedEventArgs args)
+        {
+            (dependencyObject as Control)?.Parent?.InvalidateArrange();
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the Left attached property for a control.
+        /// </summary>
+        public double Left
+        {
+            get { return GetValue(LeftProperty); }
+            set { SetValue(LeftProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the Top attached property for a control.
+        /// </summary>
+        public double Top
+        {
+            get { return GetValue(TopProperty); }
+            set { SetValue(TopProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the Right attached property for a control.
+        /// </summary>
+        public double Right
+        {
+            get { return GetValue(RightProperty); }
+            set { SetValue(RightProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the Bottom attached property for a control.
+        /// </summary>
+        public double Bottom
+        {
+            get { return GetValue(BottomProperty); }
+            set { SetValue(BottomProperty, value); }
         }
 
         /// <summary>
