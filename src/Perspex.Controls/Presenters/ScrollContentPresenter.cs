@@ -45,7 +45,7 @@ namespace Perspex.Controls.Presenters
         /// Defines the <see cref="CanScrollHorizontally"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> CanScrollHorizontallyProperty =
-            PerspexProperty.Register<ScrollContentPresenter, bool>("CanScrollHorizontally", true);
+            ScrollViewer.CanScrollHorizontallyProperty.AddOwner<ScrollContentPresenter>();
 
         private Size _extent;
         private Size _measuredExtent;

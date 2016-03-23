@@ -17,8 +17,8 @@ namespace Perspex.Controls
         /// <summary>
         /// Defines the <see cref="CanScrollHorizontally"/> property.
         /// </summary>
-        public static readonly AttachedProperty<bool> CanScrollHorizontallyProperty =
-            PerspexProperty.RegisterAttached<ScrollViewer, Control, bool>(nameof(CanScrollHorizontally), true);
+        public static readonly StyledProperty<bool> CanScrollHorizontallyProperty =
+            PerspexProperty.Register<ScrollViewer, bool>(nameof(CanScrollHorizontally), true);
 
         /// <summary>
         /// Defines the <see cref="Extent"/> property.

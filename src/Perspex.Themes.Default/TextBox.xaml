@@ -28,7 +28,7 @@
               </TextBlock.IsVisible>
             </TextBlock>
             
-            <ScrollViewer CanScrollHorizontally="{TemplateBinding (ScrollViewer.CanScrollHorizontally)}"
+            <ScrollViewer CanScrollHorizontally="{TemplateBinding CanScrollHorizontally}"
                           HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
                           VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}">
               <Panel>

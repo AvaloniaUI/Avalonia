@@ -26,6 +26,9 @@ namespace Perspex.Controls
         public static readonly StyledProperty<bool> AcceptsTabProperty =
             PerspexProperty.Register<TextBox, bool>("AcceptsTab");
 
+        public static readonly DirectProperty<TextBox, bool> CanScrollHorizontallyProperty =
+            PerspexProperty.RegisterDirect<TextBox, bool>("CanScrollHorizontally", o => o.CanScrollHorizontally);
+
         // TODO: Should CaretIndex, SelectionStart/End and Text be direct properties?
         public static readonly StyledProperty<int> CaretIndexProperty =
             PerspexProperty.Register<TextBox, int>("CaretIndex", validate: ValidateCaretIndex);
@@ -68,6 +71,7 @@ namespace Perspex.Controls
             public bool Equals(UndoRedoState other) => ReferenceEquals(Text, other.Text) || Equals(Text, other.Text);
         }
 
+        private bool _canScrollHorizontally;
         private TextPresenter _presenter;
         private UndoRedoHelper<UndoRedoState> _undoRedoHelper;
 
@@ -80,12 +84,8 @@ namespace Perspex.Controls
         public TextBox()
         {
             var canScrollHorizontally = this.GetObservable(TextWrappingProperty)
-                .Select(x => x == TextWrapping.NoWrap);
-
-            Bind(
-                ScrollViewer.CanScrollHorizontallyProperty,
-                canScrollHorizontally,
-                BindingPriority.Style);
+                .Select(x => x == TextWrapping.NoWrap)
+                .Subscribe(x => CanScrollHorizontally = x);
 
             var horizontalScrollBarVisibility = this.GetObservable(AcceptsReturnProperty)
                 .Select(x => x ? ScrollBarVisibility.Auto : ScrollBarVisibility.Hidden);
@@ -107,6 +107,12 @@ namespace Perspex.Controls
         {
             get { return GetValue(AcceptsTabProperty); }
             set { SetValue(AcceptsTabProperty, value); }
+        }
+
+        public bool CanScrollHorizontally
+        {
+            get { return _canScrollHorizontally; }
+            private set { SetAndRaise(CanScrollHorizontallyProperty, ref _canScrollHorizontally, value); }
         }
 
         public int CaretIndex
