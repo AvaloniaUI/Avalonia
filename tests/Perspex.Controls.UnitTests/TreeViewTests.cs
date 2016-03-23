@@ -273,6 +273,9 @@ namespace Perspex.Controls.UnitTests
             Assert.Equal(new[] { "Child1", "Child2" }, ExtractItemHeader(target, 1));
             Assert.Equal(new[] { "Grandchild2a" }, ExtractItemHeader(target, 2));
 
+            // Make sure that the binding to Node.Children does not get collected.
+            GC.Collect();
+
             data[0].Children = new PerspexList<Node>
             {
                 new Node
