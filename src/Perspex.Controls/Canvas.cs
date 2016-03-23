@@ -3,6 +3,7 @@
 
 using System;
 using Perspex.Input;
+using Perspex.Layout;
 
 namespace Perspex.Controls
 {
@@ -46,7 +47,7 @@ namespace Perspex.Controls
         /// </summary>
         static Canvas()
         {
-            AffectsArrange(LeftProperty, TopProperty, RightProperty, BottomProperty);
+            AffectsCanvasArrange(LeftProperty, TopProperty, RightProperty, BottomProperty);
         }
 
         /// <summary>
@@ -203,6 +204,30 @@ namespace Perspex.Controls
             }
 
             return finalSize;
+        }
+
+        /// <summary>
+        /// Marks a property on a child as affecting the canvas' arrangement.
+        /// </summary>
+        /// <param name="properties">The properties.</param>
+        private static void AffectsCanvasArrange(params PerspexProperty[] properties)
+        {
+            foreach (var property in properties)
+            {
+                property.Changed.Subscribe(AffectsCanvasArrangeInvalidate);
+            }
+        }
+
+        /// <summary>
+        /// Calls <see cref="Layoutable.InvalidateArrange"/> on the parent of the control whose
+        /// property changed, if that parent is a canvas.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        private static void AffectsCanvasArrangeInvalidate(PerspexPropertyChangedEventArgs e)
+        {
+            var control = e.Sender as IControl;
+            var canvas = control?.Parent as Canvas;
+            canvas?.InvalidateArrange();
         }
     }
 }
