@@ -79,8 +79,8 @@ namespace Perspex.Controls
 
         public TextBox()
         {
-            var canScrollHorizontally = this.GetObservable(AcceptsReturnProperty)
-                .Select(x => !x);
+            var canScrollHorizontally = this.GetObservable(TextWrappingProperty)
+                .Select(x => x == TextWrapping.NoWrap);
 
             Bind(
                 ScrollViewer.CanScrollHorizontallyProperty,
