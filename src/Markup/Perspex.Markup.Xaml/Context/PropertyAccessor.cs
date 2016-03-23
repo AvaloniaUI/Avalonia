@@ -54,6 +54,8 @@ namespace Perspex.Markup.Xaml.Context
 
         private static PerspexProperty FindPerspexProperty(object instance, MutableMember member)
         {
+            var registry = PerspexPropertyRegistry.Instance;
+            var attached = member as PerspexAttachableXamlMember;
             var target = instance as PerspexObject;
 
             if (target == null)
@@ -61,12 +63,20 @@ namespace Perspex.Markup.Xaml.Context
                 return null;
             }
 
-            var attached = member as PerspexAttachableXamlMember;
-            var propertyName = attached == null ? 
-                member.Name : 
-                member.DeclaringType.Name + "." + member.Name;
+            if (attached == null)
+            {
+                return registry.FindRegistered(target, member.Name);
+            }
+            else
+            {
+                var ownerType = attached.DeclaringType.UnderlyingType;
 
-            return PerspexPropertyRegistry.Instance.FindRegistered(target, propertyName);
+                RuntimeHelpers.RunClassConstructor(ownerType.TypeHandle);
+
+                return registry.GetRegistered(target)
+                    .Where(x => x.OwnerType == ownerType && x.Name == attached.Name)
+                    .FirstOrDefault();
+            }
         }
 
         private static void SetBinding(
