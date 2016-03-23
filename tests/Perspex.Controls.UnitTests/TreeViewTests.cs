@@ -1,13 +1,16 @@
 ﻿// Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Perspex.Collections;
 using Perspex.Controls.Presenters;
 using Perspex.Controls.Templates;
+using Perspex.Data;
 using Perspex.Input;
 using Perspex.LogicalTree;
+using Perspex.Markup.Data;
 using Perspex.UnitTests;
 using Xunit;
 
@@ -252,6 +255,36 @@ namespace Perspex.Controls.UnitTests
             Assert.NotNull(NameScope.GetNameScope((TreeViewItem)item));
         }
 
+        [Fact]
+        public void Should_React_To_Children_Changing()
+        {
+            var data = CreateTestTreeData();
+
+            var target = new TreeView
+            {
+                Template = CreateTreeViewTemplate(),
+                Items = data,
+                DataTemplates = CreateNodeDataTemplate(),
+            };
+
+            ApplyTemplates(target);
+
+            Assert.Equal(new[] { "Root" }, ExtractItemHeader(target, 0));
+            Assert.Equal(new[] { "Child1", "Child2" }, ExtractItemHeader(target, 1));
+            Assert.Equal(new[] { "Grandchild2a" }, ExtractItemHeader(target, 2));
+
+            data[0].Children = new PerspexList<Node>
+            {
+                new Node
+                {
+                    Value = "NewChild1",
+                }
+            };
+
+            Assert.Equal(new[] { "Root" }, ExtractItemHeader(target, 0));
+            Assert.Equal(new[] { "NewChild1" }, ExtractItemHeader(target, 1));
+        }
+
         private void ApplyTemplates(TreeView tree)
         {
             tree.ApplyTemplate();
@@ -303,9 +336,7 @@ namespace Perspex.Controls.UnitTests
         {
             return new DataTemplates
             {
-                new FuncTreeDataTemplate<Node>(
-                    x => new TextBlock { Text = x.Value },
-                    x => x.Children),
+                new TestTreeDataTemplate()
             };
         }
 
@@ -360,10 +391,45 @@ namespace Perspex.Controls.UnitTests
             }
         }
 
-        private class Node
+        private class Node :  NotifyingBase
         {
+            private IPerspexList<Node> _children;
+
             public string Value { get; set; }
-            public IPerspexList<Node> Children { get; set; }
+
+            public IPerspexList<Node> Children
+            {
+                get
+                {
+                    return _children;
+                }
+
+                set
+                {
+                    _children = value;
+                    RaisePropertyChanged(nameof(Children));
+                }
+            }
+        }
+
+        private class TestTreeDataTemplate : ITreeDataTemplate
+        {
+            public IControl Build(object param)
+            {
+                var node = (Node)param;
+                return new TextBlock { Text = node.Value };
+            }
+
+            public InstancedBinding ItemsSelector(object item)
+            {
+                var obs = new ExpressionObserver(item, nameof(Node.Children));
+                return new InstancedBinding(obs);
+            }
+
+            public bool Match(object data)
+            {
+                return data is Node;
+            }
         }
     }
 }

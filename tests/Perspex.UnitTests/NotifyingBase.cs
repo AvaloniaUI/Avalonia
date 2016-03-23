@@ -4,7 +4,7 @@
 using System.ComponentModel;
 using System.Linq;
 
-namespace Perspex.Markup.UnitTests.Data
+namespace Perspex.UnitTests
 {
     public class NotifyingBase : INotifyPropertyChanged
     {
@@ -34,7 +34,7 @@ namespace Perspex.Markup.UnitTests.Data
             private set;
         }
 
-        protected void RaisePropertyChanged(string propertyName)
+        public void RaisePropertyChanged(string propertyName)
         {
             _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
