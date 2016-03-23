@@ -26,6 +26,17 @@ namespace Perspex
     public class PerspexObject : IPerspexObject, IPerspexObjectDebug, INotifyPropertyChanged
     {
         /// <summary>
+        /// Maintains a list of direct property binding subscriptions so that the binding source
+        /// doesn't get collected.
+        /// </summary>
+        /// <remarks>
+        /// If/when we provide a ClearBindings() method, then this collection will be need to be
+        /// moved to an instance field and indexed by property, but until that point a static
+        /// collection will suffice.
+        /// </remarks>
+        private static List<IDisposable> s_directBindings = new List<IDisposable>();
+
+        /// <summary>
         /// The parent object that inherited values are inherited from.
         /// </summary>
         private PerspexObject _inheritanceParent;
@@ -401,9 +412,20 @@ namespace Perspex
                     property,
                     GetDescription(source));
 
-                return source
+                IDisposable subscription = null;
+
+                subscription = source
                     .Select(x => TypeUtilities.CastOrDefault(x, property.PropertyType))
+                    .Do(_ => { }, () => s_directBindings.Remove(subscription))
                     .Subscribe(x => SetValue(property, x));
+
+                s_directBindings.Add(subscription);
+
+                return Disposable.Create(() =>
+                {
+                    subscription.Dispose();
+                    s_directBindings.Remove(subscription);
+                });
             }
             else
             {
