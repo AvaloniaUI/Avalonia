@@ -77,7 +77,13 @@ namespace Perspex.Controls.Generators
                 var result = new T();
 
                 result.SetValue(ContentProperty, template.Build(item));
-                BindingOperations.Apply(result, ItemsProperty, template.ItemsSelector(item), null);
+
+                var itemsSelector = template.ItemsSelector(item);
+
+                if (itemsSelector != null)
+                {
+                    BindingOperations.Apply(result, ItemsProperty, itemsSelector, null);
+                }
 
                 if (!(item is IControl))
                 {
