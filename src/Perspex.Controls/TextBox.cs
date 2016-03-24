@@ -258,8 +258,16 @@ namespace Perspex.Controls
                     {
                         Copy();
                     }
-
                     break;
+
+                case Key.X:
+                    if(modifiers == InputModifiers.Control)
+                    {
+                        Copy();
+                        DeleteSelection();
+                    }
+                    break;
+
                 case Key.V:
                     if (modifiers == InputModifiers.Control)
                     {
@@ -267,6 +275,7 @@ namespace Perspex.Controls
                     }
 
                     break;
+
                 case Key.Z:
                     if (modifiers == InputModifiers.Control)
                         _undoRedoHelper.Undo();
