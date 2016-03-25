@@ -42,8 +42,7 @@ namespace BindingTest
         {
 #if DEBUG
             SerilogLogger.Initialize(new LoggerConfiguration()
-                .Filter.ByIncludingOnly(Matching.WithProperty("Area", LogArea.Layout))
-                .MinimumLevel.Verbose()
+                .MinimumLevel.Warning()
                 .WriteTo.Trace(outputTemplate: "{Area}: {Message}")
                 .CreateLogger());
 #endif
