@@ -3,8 +3,19 @@
 
 namespace Perspex.Logging
 {
+    /// <summary>
+    /// Defines a sink for Perspex logging messages.
+    /// </summary>
     public interface ILogSink
     {
+        /// <summary>
+        /// Logs a new event.
+        /// </summary>
+        /// <param name="level">The log event level.</param>
+        /// <param name="area">The area that the event originates.</param>
+        /// <param name="source">The object from which the event originates.</param>
+        /// <param name="messageTemplate">The message template.</param>
+        /// <param name="propertyValues">The message property values.</param>
         void Log(
             LogEventLevel level,
             string area,

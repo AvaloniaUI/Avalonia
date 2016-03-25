@@ -2,6 +2,7 @@
 using Perspex;
 using Perspex.Controls;
 using Perspex.Diagnostics;
+using Perspex.Logging;
 using Perspex.Logging.Serilog;
 using Perspex.Markup.Xaml;
 using Serilog;
@@ -41,7 +42,8 @@ namespace BindingTest
         {
 #if DEBUG
             SerilogLogger.Initialize(new LoggerConfiguration()
-                .MinimumLevel.Warning()
+                .Filter.ByIncludingOnly(Matching.WithProperty("Area", LogArea.Layout))
+                .MinimumLevel.Verbose()
                 .WriteTo.Trace(outputTemplate: "{Area}: {Message}")
                 .CreateLogger());
 #endif
