@@ -41,6 +41,8 @@ Copy-Item ..\src\Perspex.Interactivity\bin\Release\Perspex.Interactivity.dll $li
 Copy-Item ..\src\Perspex.Interactivity\bin\Release\Perspex.Interactivity.xml $lib
 Copy-Item ..\src\Perspex.Layout\bin\Release\Perspex.Layout.dll $lib
 Copy-Item ..\src\Perspex.Layout\bin\Release\Perspex.Layout.xml $lib
+Copy-Item ..\src\Perspex.Logging.Serilog\bin\Release\Perspex.Logging.Serilog.dll $lib
+Copy-Item ..\src\Perspex.Logging.Serilog\bin\Release\Perspex.Logging.Serilog.xml $lib
 Copy-Item ..\src\Perspex.SceneGraph\bin\Release\Perspex.SceneGraph.dll $lib
 Copy-Item ..\src\Perspex.SceneGraph\bin\Release\Perspex.SceneGraph.xml $lib
 Copy-Item ..\src\Perspex.Styling\bin\Release\Perspex.Styling.dll $lib
