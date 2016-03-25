@@ -2,11 +2,9 @@
 using Perspex;
 using Perspex.Controls;
 using Perspex.Diagnostics;
-using Perspex.Logging;
 using Perspex.Logging.Serilog;
 using Perspex.Markup.Xaml;
 using Serilog;
-using Serilog.Filters;
 
 namespace BindingTest
 {
