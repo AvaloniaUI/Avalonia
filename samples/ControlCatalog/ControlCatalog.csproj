@@ -60,6 +60,9 @@
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Pages\ToolTipPage.xaml.cs">
+      <DependentUpon>ToolTipPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Pages\TextBoxPage.xaml.cs">
       <DependentUpon>TextBoxPage.xaml</DependentUpon>
     </Compile>
@@ -217,6 +220,11 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Pages\TextBoxPage.xaml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Pages\ToolTipPage.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>

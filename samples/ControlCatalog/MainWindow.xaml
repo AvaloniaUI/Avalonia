@@ -14,5 +14,6 @@
     <TabItem Header="LayoutTransformControl"><pages:LayoutTransformControlPage/></TabItem>
     <TabItem Header="Slider"><pages:SliderPage/></TabItem>
     <TabItem Header="TextBox"><pages:TextBoxPage/></TabItem>
+    <TabItem Header="ToolTip"><pages:ToolTipPage/></TabItem>
   </TabControl>
 </Window>

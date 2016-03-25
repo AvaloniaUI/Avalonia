@@ -11,7 +11,7 @@ using Perspex.Threading;
 namespace Perspex.Controls
 {
     /// <summary>
-    /// A tooltip control.
+    /// A control which pops up a hint when a control is hovered.
     /// </summary>
     /// <remarks>
     /// You will probably not want to create a <see cref="ToolTip"/> control directly: if added to
