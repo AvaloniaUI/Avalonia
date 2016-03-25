@@ -2,19 +2,17 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Reactive.Linq;
 using Perspex.Animation;
 using Perspex.Collections;
 using Perspex.Data;
+using Perspex.Logging;
 using Perspex.Media;
 using Perspex.Platform;
 using Perspex.Rendering;
 using Perspex.VisualTree;
-using Serilog;
-using Serilog.Core.Enrichers;
 
 namespace Perspex
 {
@@ -79,7 +77,6 @@ namespace Perspex
 
         private Rect _bounds;
         private IVisual _visualParent;
-        private readonly ILogger _visualLogger;
 
         /// <summary>
         /// Initializes static members of the <see cref="Visual"/> class.
@@ -95,13 +92,6 @@ namespace Perspex
         /// </summary>
         public Visual()
         {
-            _visualLogger = Log.ForContext(new[]
-            {
-                new PropertyEnricher("Area", "Visual"),
-                new PropertyEnricher("SourceContext", GetType()),
-                new PropertyEnricher("Id", GetHashCode()),
-            });
-
             var visualChildren = new PerspexList<IVisual>();
             visualChildren.ResetBehavior = ResetBehavior.Remove;
             visualChildren.Validate = ValidateLogicalChild;
@@ -474,7 +464,7 @@ namespace Perspex
         /// <param name="e">The event args.</param>
         private void NotifyAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
-            _visualLogger.Verbose("Attached to visual tree");
+            Logger.Verbose(LogArea.Visual, this, "Attached to visual tree");
 
             VisualRoot = e.Root;
             OnAttachedToVisualTree(e);
@@ -495,7 +485,7 @@ namespace Perspex
         /// <param name="e">The event args.</param>
         private void NotifyDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
-            _visualLogger.Verbose("Detached from visual tree");
+            Logger.Verbose(LogArea.Visual, this, "Detached from visual tree");
 
             VisualRoot = null;
             OnDetachedFromVisualTree(e);

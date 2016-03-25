@@ -6,8 +6,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Subjects;
 using System.Text;
+using Perspex.Logging;
 using Perspex.Utilities;
-using Serilog;
 
 namespace Perspex
 {
@@ -25,6 +25,11 @@ namespace Perspex
     /// </remarks>
     internal class PriorityValue
     {
+        /// <summary>
+        /// The owner of the object.
+        /// </summary>
+        private readonly PerspexObject _owner;
+
         /// <summary>
         /// The name of the property.
         /// </summary>
@@ -56,29 +61,24 @@ namespace Perspex
         private readonly Func<object, object> _validate;
 
         /// <summary>
-        /// An optional logger.
-        /// </summary>
-        private ILogger _logger;
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="PriorityValue"/> class.
         /// </summary>
+        /// <param name="owner">The owner of the object.</param>
         /// <param name="name">The name of the property.</param>
         /// <param name="valueType">The value type.</param>
         /// <param name="validate">An optional validation function.</param>
-        /// <param name="logger">An optional logger</param>
         public PriorityValue(
+            PerspexObject owner,
             string name, 
             Type valueType,
-            Func<object, object> validate = null,
-            ILogger logger = null)
+            Func<object, object> validate = null)
         {
+            _owner = owner;
             _name = name;
             _valueType = valueType;
             _value = PerspexProperty.UnsetValue;
             ValuePriority = int.MaxValue;
             _validate = validate;
-            _logger = logger;
         }
 
         /// <summary>
@@ -239,12 +239,14 @@ namespace Perspex
                 _value = castValue;
                 _changed.OnNext(Tuple.Create(old, _value));
             }
-            else if (_logger != null)
+            else
             {
-                _logger.Error(
+                Logger.Error(
+                    LogArea.Property, 
+                    _owner,
                     "Binding produced invalid value for {$Property} ({$PropertyType}): {$Value} ({$ValueType})",
-                    _name,
-                    _valueType,
+                    _name, 
+                    _valueType, 
                     value,
                     value.GetType());
             }

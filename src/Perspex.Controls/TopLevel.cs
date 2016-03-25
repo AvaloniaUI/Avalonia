@@ -9,6 +9,7 @@ using Perspex.Controls.Primitives;
 using Perspex.Input;
 using Perspex.Input.Raw;
 using Perspex.Layout;
+using Perspex.Logging;
 using Perspex.Platform;
 using Perspex.Rendering;
 using Perspex.Styling;
@@ -320,13 +321,18 @@ namespace Perspex.Controls
         /// <typeparam name="T">The service type.</typeparam>
         /// <param name="resolver">The resolver.</param>
         /// <returns>The service.</returns>
-        private static T TryGetService<T>(IPerspexDependencyResolver resolver) where T : class
+        private T TryGetService<T>(IPerspexDependencyResolver resolver) where T : class
         {
             var result = resolver.GetService<T>();
 
-            System.Diagnostics.Debug.WriteLineIf(
-                result == null,
-                $"Could not create {typeof(T).Name} : maybe Application.RegisterServices() wasn't called?");
+            if (result == null)
+            {
+                Logger.Warning(
+                    LogArea.Control,
+                    this,
+                    "Could not create {Service} : maybe Application.RegisterServices() wasn't called?",
+                    typeof(T));
+            }
 
             return result;
         }

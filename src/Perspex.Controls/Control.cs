@@ -15,6 +15,7 @@ using Perspex.Data;
 using Perspex.Diagnostics;
 using Perspex.Input;
 using Perspex.Interactivity;
+using Perspex.Logging;
 using Perspex.LogicalTree;
 using Perspex.Styling;
 
@@ -543,11 +544,15 @@ namespace Perspex.Controls
                     child.OnDetachedFromLogicalTree(e);
                 }
 
+#if DEBUG
                 if (((INotifyCollectionChangedDebug)_classes).GetCollectionChangedSubscribers()?.Length > 0)
                 {
-                    // TODO: This should be output using a standard logging mechanism.
-                    System.Diagnostics.Debug.WriteLine(
-                        $"{this.GetType().Name} detached from logical tree but still has class listeners");
+                    Logger.Warning(
+                        LogArea.Control,
+                        this,
+                        "{Type} detached from logical tree but still has class listeners",
+                        this.GetType());
+#endif
                 }
             }
         }

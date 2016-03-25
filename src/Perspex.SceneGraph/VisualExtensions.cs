@@ -13,8 +13,6 @@ using Perspex.Media;
 using Perspex.Platform;
 using Perspex.Rendering;
 using Perspex.VisualTree;
-using Serilog;
-using Serilog.Core.Enrichers;
 
 namespace Perspex
 {

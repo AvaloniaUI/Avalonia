@@ -4,6 +4,7 @@ using Perspex;
 using Perspex.Controls;
 using Perspex.Diagnostics;
 using Perspex.Markup.Xaml;
+using Perspex.Logging.Serilog;
 using Serilog;
 
 namespace ControlCatalog
@@ -41,10 +42,10 @@ namespace ControlCatalog
         private void InitializeLogging()
         {
 #if DEBUG
-            Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Error()
-                .WriteTo.Trace(outputTemplate: "{Message}")
-                .CreateLogger();
+            SerilogLogger.Initialize(new LoggerConfiguration()
+                .MinimumLevel.Warning()
+                .WriteTo.Trace(outputTemplate: "{Area}: {Message}")
+                .CreateLogger());
 #endif
         }
 

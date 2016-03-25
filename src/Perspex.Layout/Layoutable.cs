@@ -3,10 +3,9 @@
 
 using System;
 using System.Linq;
+using Perspex.Logging;
 using Perspex.Platform;
 using Perspex.VisualTree;
-using Serilog;
-using Serilog.Core.Enrichers;
 
 namespace Perspex.Layout
 {
@@ -133,7 +132,6 @@ namespace Perspex.Layout
         public static readonly StyledProperty<bool> UseLayoutRoundingProperty =
             PerspexProperty.Register<Layoutable, bool>(nameof(UseLayoutRounding), defaultValue: true, inherits: true);
 
-        private readonly ILogger _layoutLog;
         private bool _measuring;
         private Size? _previousMeasure;
         private Rect? _previousArrange;
@@ -154,19 +152,6 @@ namespace Perspex.Layout
                 MarginProperty,
                 HorizontalAlignmentProperty,
                 VerticalAlignmentProperty);
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Layoutable"/> class.
-        /// </summary>
-        public Layoutable()
-        {
-            _layoutLog = Log.ForContext(new[]
-            {
-                new PropertyEnricher("Area", "Layout"),
-                new PropertyEnricher("SourceContext", GetType()),
-                new PropertyEnricher("Id", GetHashCode()),
-            });
         }
 
         /// <summary>
@@ -340,7 +325,7 @@ namespace Perspex.Layout
                 DesiredSize = desiredSize;
                 _previousMeasure = availableSize;
 
-                _layoutLog.Verbose("Measure requested {DesiredSize}", DesiredSize);
+                Logger.Verbose(LogArea.Layout, this, "Measure requested {DesiredSize}", DesiredSize);
 
                 if (DesiredSize != previousDesiredSize)
                 {
@@ -367,7 +352,7 @@ namespace Perspex.Layout
 
             if (!IsArrangeValid || _previousArrange != rect)
             {
-                _layoutLog.Verbose("Arrange to {Rect} ", rect);
+                Logger.Verbose(LogArea.Layout, this, "Arrange to {Rect} ", rect);
 
                 IsArrangeValid = true;
                 ArrangeCore(rect);
@@ -382,7 +367,7 @@ namespace Perspex.Layout
         {
             if (IsMeasureValid)
             {
-                _layoutLog.Verbose("Invalidated measure");
+                Logger.Verbose(LogArea.Layout, this, "Invalidated measure");
 
                 IsMeasureValid = false;
                 IsArrangeValid = false;
@@ -398,7 +383,7 @@ namespace Perspex.Layout
         {
             if (IsArrangeValid)
             {
-                _layoutLog.Verbose("Arrange measure");
+                Logger.Verbose(LogArea.Layout, this, "Invalidated arrange");
 
                 IsArrangeValid = false;
                 LayoutManager.Instance?.InvalidateArrange(this);
