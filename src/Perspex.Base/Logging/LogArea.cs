@@ -9,9 +9,14 @@ namespace Perspex.Logging
     public static class LogArea
     {
         /// <summary>
-        /// The log event comes from the property and binding system.
+        /// The log event comes from the property system.
         /// </summary>
         public const string Property = "Property";
+
+        /// <summary>
+        /// The log event comes from the binding system.
+        /// </summary>
+        public const string Binding = "Binding";
 
         /// <summary>
         /// The log event comes from the visual system.

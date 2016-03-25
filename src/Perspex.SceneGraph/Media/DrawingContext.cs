@@ -178,7 +178,7 @@ namespace Perspex.Media
         /// <param name="opacity">The opacity.</param>
         /// <returns>A disposable used to undo the opacity.</returns>
         public PushedState PushOpacity(double opacity)
-            //TODO: Elimintate platform-specific push opacity call
+            //TODO: Eliminate platform-specific push opacity call
         {
             _impl.PushOpacity(opacity);
             return new PushedState(this, PushedState.PushedStateType.Opacity);
