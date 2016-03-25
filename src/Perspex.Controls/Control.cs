@@ -552,8 +552,8 @@ namespace Perspex.Controls
                         this,
                         "{Type} detached from logical tree but still has class listeners",
                         this.GetType());
-#endif
                 }
+#endif
             }
         }
 
