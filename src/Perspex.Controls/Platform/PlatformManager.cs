@@ -1,13 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reactive.Disposables;
-using System.Text;
-using System.Threading.Tasks;
 using Perspex.Input;
 using Perspex.Input.Raw;
 using Perspex.Media;
-using Perspex.Media.Imaging;
 using Perspex.Platform;
 
 namespace Perspex.Controls.Platform
@@ -109,12 +104,12 @@ namespace Perspex.Controls.Platform
 
             public Point PointToClient(Point point)
             {
-                return _tl.PointToClient(point / Scaling) * Scaling;
+                return _tl.PointToClient(point);
             }
 
             public Point PointToScreen(Point point)
             {
-                return _tl.PointToScreen(point * Scaling) / Scaling;
+                return _tl.PointToScreen(point);
             }
 
             public void Invalidate(Rect rc)
