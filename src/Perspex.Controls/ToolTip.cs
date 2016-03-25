@@ -7,6 +7,7 @@ using System.Reactive.Subjects;
 using Perspex.Controls.Primitives;
 using Perspex.Input;
 using Perspex.Threading;
+using Perspex.VisualTree;
 
 namespace Perspex.Controls
 {
@@ -102,7 +103,7 @@ namespace Perspex.Controls
         /// <param name="control">The control.</param>
         private static void ShowToolTip(Control control)
         {
-            if (control != null)
+            if (control != null && control.IsVisible && control.GetVisualRoot() != null)
             {
                 if (s_popup == null)
                 {
