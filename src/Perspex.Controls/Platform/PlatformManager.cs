@@ -109,7 +109,7 @@ namespace Perspex.Controls.Platform
 
             public Point PointToScreen(Point point)
             {
-                return _tl.PointToScreen(point * Scaling);
+                return _tl.PointToScreen(point);
             }
 
             public void Invalidate(Rect rc)
