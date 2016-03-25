@@ -95,7 +95,8 @@ namespace Perspex.Controls
             _keyboardNavigationHandler = TryGetService<IKeyboardNavigationHandler>(dependencyResolver);
             _renderQueueManager = TryGetService<IRenderQueueManager>(dependencyResolver);
             _applicationLifecycle = TryGetService<IApplicationLifecycle>(dependencyResolver);
-            (TryGetService<ITopLevelRenderer>(dependencyResolver) ?? new DefaultTopLevelRenderer()).Attach(this);
+
+            (dependencyResolver.GetService<ITopLevelRenderer>() ?? new DefaultTopLevelRenderer()).Attach(this);
 
             PlatformImpl.SetInputRoot(this);
             PlatformImpl.Activated = HandleActivated;
