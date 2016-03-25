@@ -127,6 +127,10 @@
       <Project>{42472427-4774-4C81-8AFF-9F27B8E31721}</Project>
       <Name>Perspex.Layout</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\src\Perspex.Logging.Serilog\Perspex.Logging.Serilog.csproj">
+      <Project>{b61b66a3-b82d-4875-8001-89d3394fe0c9}</Project>
+      <Name>Perspex.Logging.Serilog</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\Perspex.ReactiveUI\Perspex.ReactiveUI.csproj">
       <Project>{6417B24E-49C2-4985-8DB2-3AB9D898EC91}</Project>
       <Name>Perspex.ReactiveUI</Name>

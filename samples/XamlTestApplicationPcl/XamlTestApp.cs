@@ -1,6 +1,5 @@
 ﻿using Perspex;
 using Perspex.Markup.Xaml;
-using Perspex.Themes.Default;
 
 namespace XamlTestApplication
 {
