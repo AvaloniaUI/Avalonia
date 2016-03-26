@@ -608,13 +608,14 @@ namespace Perspex.Win32
 
             Handle = new PlatformHandle(_hwnd, PlatformConstants.WindowHandleType);
 
-            var monitor = UnmanagedMethods.MonitorFromWindow(
-                _hwnd, 
-                UnmanagedMethods.MONITOR.MONITOR_DEFAULTTONEAREST);
-
             if (UnmanagedMethods.ShCoreAvailable)
             {
                 uint dpix, dpiy;
+
+                var monitor = UnmanagedMethods.MonitorFromWindow(
+                    _hwnd,
+                    UnmanagedMethods.MONITOR.MONITOR_DEFAULTTONEAREST);
+
                 if (UnmanagedMethods.GetDpiForMonitor(
                         monitor,
                         UnmanagedMethods.MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI,
