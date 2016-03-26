@@ -34,6 +34,7 @@ namespace Perspex.Input
         /// <inheritdoc/>
         public void ProcessInput(RawInputEventArgs e)
         {
+            _preProcess.OnNext(e);
             _process.OnNext(e);
             _postProcess.OnNext(e);
         }
