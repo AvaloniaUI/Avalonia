@@ -16,6 +16,7 @@
                    Width="10"
                    Height="10"
                    Stretch="Uniform"
+                   UseLayoutRounding="False"
                    HorizontalAlignment="Center"
                    VerticalAlignment="Center"/>
           <ContentPresenter Name="PART_ContentPresenter"
