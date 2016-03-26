@@ -317,7 +317,7 @@ namespace Perspex.Controls
         /// <inheritdoc/>
         void ILogical.NotifyDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
-            this.OnDetachedFromLogicalTree(e);
+            this.OnDetachedFromLogicalTreeCore(e);
         }
 
         /// <inheritdoc/>
@@ -403,7 +403,7 @@ namespace Perspex.Controls
                     }
 
                     var e = new LogicalTreeAttachmentEventArgs(oldRoot);
-                    OnDetachedFromLogicalTree(e);
+                    OnDetachedFromLogicalTreeCore(e);
                 }
 
                 InheritanceParent = parent as PerspexObject;
@@ -419,7 +419,7 @@ namespace Perspex.Controls
                     }
 
                     var e = new LogicalTreeAttachmentEventArgs(newRoot);
-                    OnAttachedToLogicalTree(e);
+                    OnAttachedToLogicalTreeCore(e);
                 }
 
                 RaisePropertyChanged(ParentProperty, old, _parent, BindingPriority.LocalValue);
@@ -482,79 +482,21 @@ namespace Perspex.Controls
         }
 
         /// <summary>
-        /// Called when the control is added to a logical tree.
+        /// Called when the control is added to a rooted logical tree.
         /// </summary>
         /// <param name="e">The event args.</param>
-        /// <remarks>
-        /// It is vital that if you override this method you call the base implementation;
-        /// failing to do so will cause numerous features to not work as expected.
-        /// </remarks>
         protected virtual void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
-            // This method can be called when a control is already attached to the logical tree
-            // in the following scenario:
-            // - ListBox gets assigned Items containing ListBoxItem
-            // - ListBox makes ListBoxItem a logical child
-            // - ListBox template gets applied; making its Panel get attached to logical tree
-            // - That AttachedToLogicalTree signal travels down to the ListBoxItem
-            if (!_isAttachedToLogicalTree)
-            {
-                _isAttachedToLogicalTree = true;
-
-                if (_initCount == 0)
-                {
-                    RegisterWithNameScope();
-                    ApplyStyling();
-                    _styled = true;
-                }
-
-                AttachedToLogicalTree?.Invoke(this, e);
-            }
-
-            foreach (var child in LogicalChildren.OfType<Control>())
-            {
-                child.OnAttachedToLogicalTree(e);
-            }
+            AttachedToLogicalTree?.Invoke(this, e);
         }
 
         /// <summary>
-        /// Called when the control is removed from a logical tree.
+        /// Called when the control is removed from a rooted logical tree.
         /// </summary>
         /// <param name="e">The event args.</param>
-        /// <remarks>
-        /// It is vital that if you override this method you call the base implementation;
-        /// failing to do so will cause numerous features to not work as expected.
-        /// </remarks>
         protected virtual void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
-            if (_isAttachedToLogicalTree)
-            {
-                if (Name != null)
-                {
-                    _nameScope?.Unregister(Name);
-                }
-
-                _isAttachedToLogicalTree = false;
-                _styleDetach.OnNext(this);
-                this.TemplatedParent = null;
-                DetachedFromLogicalTree?.Invoke(this, e);
-
-                foreach (var child in LogicalChildren.OfType<Control>())
-                {
-                    child.OnDetachedFromLogicalTree(e);
-                }
-
-#if DEBUG
-                if (((INotifyCollectionChangedDebug)_classes).GetCollectionChangedSubscribers()?.Length > 0)
-                {
-                    Logger.Warning(
-                        LogArea.Control,
-                        this,
-                        "{Type} detached from logical tree but still has class listeners",
-                        this.GetType());
-                }
-#endif
-            }
+            DetachedFromLogicalTree?.Invoke(this, e);
         }
 
         /// <inheritdoc/>
@@ -676,6 +618,66 @@ namespace Perspex.Controls
             if (c == null)
             {
                 throw new ArgumentException("Cannot add null to LogicalChildren.");
+            }
+        }
+
+        private void OnAttachedToLogicalTreeCore(LogicalTreeAttachmentEventArgs e)
+        {
+            // This method can be called when a control is already attached to the logical tree
+            // in the following scenario:
+            // - ListBox gets assigned Items containing ListBoxItem
+            // - ListBox makes ListBoxItem a logical child
+            // - ListBox template gets applied; making its Panel get attached to logical tree
+            // - That AttachedToLogicalTree signal travels down to the ListBoxItem
+            if (!_isAttachedToLogicalTree)
+            {
+                _isAttachedToLogicalTree = true;
+
+                if (_initCount == 0)
+                {
+                    RegisterWithNameScope();
+                    ApplyStyling();
+                    _styled = true;
+                }
+
+                OnAttachedToLogicalTree(e);
+            }
+
+            foreach (var child in LogicalChildren.OfType<Control>())
+            {
+                child.OnAttachedToLogicalTreeCore(e);
+            }
+        }
+
+        private void OnDetachedFromLogicalTreeCore(LogicalTreeAttachmentEventArgs e)
+        {
+            if (_isAttachedToLogicalTree)
+            {
+                if (Name != null)
+                {
+                    _nameScope?.Unregister(Name);
+                }
+
+                _isAttachedToLogicalTree = false;
+                _styleDetach.OnNext(this);
+                this.TemplatedParent = null;
+                OnDetachedFromLogicalTree(e);
+
+                foreach (var child in LogicalChildren.OfType<Control>())
+                {
+                    child.OnDetachedFromLogicalTreeCore(e);
+                }
+
+#if DEBUG
+                if (((INotifyCollectionChangedDebug)_classes).GetCollectionChangedSubscribers()?.Length > 0)
+                {
+                    Logger.Warning(
+                        LogArea.Control,
+                        this,
+                        "{Type} detached from logical tree but still has class listeners",
+                        this.GetType());
+                }
+#endif
             }
         }
 
