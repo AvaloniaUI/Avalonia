@@ -59,6 +59,23 @@ namespace Perspex.Layout.UnitTests
         }
 
         [Fact]
+        public void ArrangeOverride_Receives_Requested_Size_When_Arranged_To_DesiredSize()
+        {
+            var target = new TestControl
+            {
+                MeasureResult = new Size(100, 100),
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+                Margin = new Thickness(8),
+            };
+
+            target.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+            target.Arrange(new Rect(target.DesiredSize));
+
+            Assert.Equal(new Size(100, 100), target.ArrangeFinalSize);
+        }
+
+        [Fact]
         public void Arrange_With_IsMeasureValid_False_Calls_Measure()
         {
             var target = new TestControl();

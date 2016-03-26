@@ -534,14 +534,12 @@ namespace Perspex.Layout
 
                 if (horizontalAlignment != HorizontalAlignment.Stretch)
                 {
-                    size = size.WithWidth(Math.Min(size.Width, DesiredSize.Width) 
-                        - margin.Left - margin.Right);
+                    size = size.WithWidth(Math.Min(size.Width, DesiredSize.Width - margin.Left - margin.Right));
                 }
 
                 if (verticalAlignment != VerticalAlignment.Stretch)
                 {
-                    size = size.WithHeight(Math.Min(size.Height, DesiredSize.Height)
-                        - margin.Top - margin.Bottom);
+                    size = size.WithHeight(Math.Min(size.Height, DesiredSize.Height - margin.Top - margin.Bottom));
                 }
 
                 size = LayoutHelper.ApplyLayoutConstraints(this, size);
