@@ -508,7 +508,7 @@ namespace Perspex.Win32
                         WindowsMouseDevice.Instance,
                         timestamp,
                         _owner,
-                        ScreenToClient(PointFromLParam(lParam)),
+                        ScreenToClient(DipFromLParam(lParam)),
                         new Vector(0, ((int)wParam >> 16) / wheelDelta), GetMouseModifiers(wParam));
                     break;
 
