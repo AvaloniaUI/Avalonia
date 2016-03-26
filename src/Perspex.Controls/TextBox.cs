@@ -353,6 +353,10 @@ namespace Perspex.Controls
                     }
 
                     break;
+
+                default:
+                    handled = false;
+                    break;
             }
 
             if (movement && ((modifiers & InputModifiers.Shift) != 0))
