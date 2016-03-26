@@ -87,18 +87,18 @@ namespace Perspex.Input
         /// <returns>The mouse position in the control's coordinates.</returns>
         public Point GetPosition(IVisual relativeTo)
         {
-            Point p = Position;
+            Point p = default(Point);
             IVisual v = relativeTo;
             IVisual root = null;
 
             while (v != null)
             {
-                p -= v.Bounds.Position;
+                p += v.Bounds.Position;
                 root = v;
                 v = v.VisualParent;
             }
 
-            return root.PointToClient(p);
+            return root.PointToClient(Position) - p;
         }
 
         private void ProcessRawEvent(RawMouseEventArgs e)
