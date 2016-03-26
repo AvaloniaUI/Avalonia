@@ -15,6 +15,7 @@ namespace Perspex.Direct2D1
     {
         private readonly IntPtr _hwnd;
         private Size2 _savedSize;
+        private Size2F _savedDpi;
 
         /// <summary>
         /// The render target.
@@ -82,28 +83,24 @@ namespace Perspex.Direct2D1
         public DrawingContext CreateDrawingContext()
         {
             var window = _renderTarget as WindowRenderTarget;
-            var factor = 1.0;
 
             if (window != null)
             {
                 var size = GetWindowSize();
-                factor = GetWindowScaling();
+                var dpi = GetWindowDpi();
 
                 if (size != _savedSize)
                 {
                     window.Resize(_savedSize = size);
                 }
+
+                if (dpi != _savedDpi)
+                {
+                    window.DotsPerInch = _savedDpi = dpi;
+                }
             }
 
-            var ctx = new DrawingContext(new Media.DrawingContext(_renderTarget, DirectWriteFactory));
-
-            if (factor != 1)
-            {
-                ctx.PushPostTransform(Matrix.CreateScale(factor, factor));
-                ctx.PushTransformContainer();
-            }
-
-            return ctx;
+            return new DrawingContext(new Media.DrawingContext(_renderTarget, DirectWriteFactory));
         }
 
         public void Dispose()
@@ -111,7 +108,7 @@ namespace Perspex.Direct2D1
             _renderTarget.Dispose();
         }
 
-        private double GetWindowScaling()
+        private Size2F GetWindowDpi()
         {
             if (UnmanagedMethods.ShCoreAvailable)
             {
@@ -127,11 +124,11 @@ namespace Perspex.Direct2D1
                         out dpix,
                         out dpiy) == 0)
                 {
-                    return dpix / 96.0;
+                    return new Size2F(dpix, dpiy);
                 }
             }
 
-            return 1;
+            return new Size2F(1, 1);
         }
 
         private Size2 GetWindowSize()
