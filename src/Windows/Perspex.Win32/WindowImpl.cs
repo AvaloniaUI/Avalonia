@@ -238,11 +238,12 @@ namespace Perspex.Win32
         {
             var p = new UnmanagedMethods.POINT { X = (int)point.X, Y = (int)point.Y };
             UnmanagedMethods.ScreenToClient(_hwnd, ref p);
-            return new Point(p.X, p.Y);
+            return new Point(p.X, p.Y) / Scaling;
         }
 
         public Point PointToScreen(Point point)
         {
+            point *= Scaling;
             var p = new UnmanagedMethods.POINT { X = (int)point.X, Y = (int)point.Y };
             UnmanagedMethods.ClientToScreen(_hwnd, ref p);
             return new Point(p.X, p.Y);
