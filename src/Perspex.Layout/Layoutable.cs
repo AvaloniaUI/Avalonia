@@ -521,24 +521,27 @@ namespace Perspex.Layout
         {
             if (IsVisible)
             {
-                var originX = finalRect.X + Margin.Left;
-                var originY = finalRect.Y + Margin.Top;
-                var sizeMinusMargins = new Size(
-                    Math.Max(0, finalRect.Width - Margin.Left - Margin.Right),
-                    Math.Max(0, finalRect.Height - Margin.Top - Margin.Bottom));
+                var margin = Margin;
+                var originX = finalRect.X + margin.Left;
+                var originY = finalRect.Y + margin.Top;
+                var availableSizeMinusMargins = new Size(
+                    Math.Max(0, finalRect.Width - margin.Left - margin.Right),
+                    Math.Max(0, finalRect.Height - margin.Top - margin.Bottom));
                 var horizontalAlignment = HorizontalAlignment;
                 var verticalAlignment = VerticalAlignment;
-                var size = sizeMinusMargins;
+                var size = availableSizeMinusMargins;
                 var scale = GetLayoutScale();
 
                 if (horizontalAlignment != HorizontalAlignment.Stretch)
                 {
-                    size = size.WithWidth(Math.Min(size.Width, DesiredSize.Width));
+                    size = size.WithWidth(Math.Min(size.Width, DesiredSize.Width) 
+                        - margin.Left - margin.Right);
                 }
 
                 if (verticalAlignment != VerticalAlignment.Stretch)
                 {
-                    size = size.WithHeight(Math.Min(size.Height, DesiredSize.Height));
+                    size = size.WithHeight(Math.Min(size.Height, DesiredSize.Height)
+                        - margin.Top - margin.Bottom);
                 }
 
                 size = LayoutHelper.ApplyLayoutConstraints(this, size);
@@ -548,9 +551,9 @@ namespace Perspex.Layout
                     size = new Size(
                         Math.Ceiling(size.Width * scale) / scale, 
                         Math.Ceiling(size.Height * scale) / scale);
-                    sizeMinusMargins = new Size(
-                        Math.Ceiling(sizeMinusMargins.Width * scale) / scale, 
-                        Math.Ceiling(sizeMinusMargins.Height * scale) / scale);
+                    availableSizeMinusMargins = new Size(
+                        Math.Ceiling(availableSizeMinusMargins.Width * scale) / scale, 
+                        Math.Ceiling(availableSizeMinusMargins.Height * scale) / scale);
                 }
 
                 size = ArrangeOverride(size).Constrain(size);
@@ -559,10 +562,10 @@ namespace Perspex.Layout
                 {
                     case HorizontalAlignment.Center:
                     case HorizontalAlignment.Stretch:
-                        originX += (sizeMinusMargins.Width - size.Width) / 2;
+                        originX += (availableSizeMinusMargins.Width - size.Width) / 2;
                         break;
                     case HorizontalAlignment.Right:
-                        originX += sizeMinusMargins.Width - size.Width;
+                        originX += availableSizeMinusMargins.Width - size.Width;
                         break;
                 }
 
@@ -570,10 +573,10 @@ namespace Perspex.Layout
                 {
                     case VerticalAlignment.Center:
                     case VerticalAlignment.Stretch:
-                        originY += (sizeMinusMargins.Height - size.Height) / 2;
+                        originY += (availableSizeMinusMargins.Height - size.Height) / 2;
                         break;
                     case VerticalAlignment.Bottom:
-                        originY += sizeMinusMargins.Height - size.Height;
+                        originY += availableSizeMinusMargins.Height - size.Height;
                         break;
                 }
 
