@@ -236,6 +236,11 @@ namespace Perspex.Controls
       private static readonly IComparer _spanPreferredDistributionOrderComparer = new SpanPreferredDistributionOrderComparer();
       private static readonly IComparer _spanMaxDistributionOrderComparer = new SpanMaxDistributionOrderComparer();
 
+      /// <summary>
+      /// Measures the control and its child elements as part of a layout pass.
+      /// </summary>
+      /// <param name="availableSize">The size available to the control.</param>
+      /// <returns>The desired size for the control.</returns>
       protected override Size MeasureOverride(Size availableSize)
       {
          Stopwatch measureTimer = Stopwatch.StartNew();
@@ -343,10 +348,15 @@ namespace Perspex.Controls
             totalSize = new Size(totalWidth, totalHeight);
          }
 
-         Debug.WriteLine("Grid measure time = " + measureTimer.ElapsedMilliseconds);
+         //Debug.WriteLine("Grid measure time = " + measureTimer.ElapsedMilliseconds);
          return totalSize;
       }
 
+      /// <summary>
+      /// Positions child elements as part of a layout pass.
+      /// </summary>
+      /// <param name="finalSize">The size available to the control.</param>
+      /// <returns>The actual size used.</returns>
       protected override Size ArrangeOverride(Size finalSize)
       {
          Stopwatch arrangeTimer = Stopwatch.StartNew();
@@ -360,40 +370,6 @@ namespace Perspex.Controls
          }
          else
          {
-            /*
-            double finalWidth = CalculateFinalSize(_colSegment);
-            double finalHeight = CalculateFinalSize(_rowSegment);
-            //
-            //Recalculate width and height of non star cols/rows to fit to the available width and height 
-            //regardless of were any cell present there or not, because if we do not do this, In those row/cols
-            //ActualHeight/Width will be 0, which will lead to the shaking of the controls while resizing columns
-            //(this is extremely important part because it will influence of the whole Grid size (especially when span is present
-            // and user will resize the Grid
-            //
-            ResolveStars(_rowSegment, finalHeight, true);
-            ResolveStars(_colSegment, finalWidth, false);
-
-            Double offsetX = 0.0;
-            Double offsetY = 0.0;
-
-            for (int r = 0; r < _rowDefinitions.Count; r++)
-            {
-               _rowDefinitions[r].ActualHeight = _rowSegment[r].Min;
-               _rowDefinitions[r].MinMeasuredSize = _rowSegment[r].MinMeasuredSize;
-               _rowSegment[r].Offset = offsetY;
-               _rowDefinitions[r].Offset = offsetY;
-               offsetY += _rowSegment[r].Min;
-            }
-
-            for (int r = 0; r < _columnDefinitions.Count; r++)
-            {
-               _columnDefinitions[r].ActualWidth = _colSegment[r].Min;
-               _columnDefinitions[r].MinMeasuredSize = _colSegment[r].MinMeasuredSize;
-               _colSegment[r].Offset = offsetX;
-               _columnDefinitions[r].Offset = offsetX;
-               offsetX += _colSegment[r].Min;
-            }*/
-
             CalculateFinalSegmentSize(_rowSegment, finalSize.Height, true);
             CalculateFinalSegmentSize(_colSegment, finalSize.Width, false);
 
@@ -404,24 +380,20 @@ namespace Perspex.Controls
 
                var childFinalX = _colSegment[cell.ColIndex].Offset;
                var childFinalY = _rowSegment[cell.RowIndex].Offset;
-               double childFinalW;
-               double childFinalH;
 
+               var childFinalW = (_colSegment[cell.ColIndex + cell.ColSpan - 1].Offset +
+                                     _colSegment[cell.ColIndex + cell.ColSpan - 1].SizeCache) -
+                                    _colSegment[cell.ColIndex].Offset;
 
-               childFinalW = (_colSegment[cell.ColIndex + cell.ColSpan - 1].Offset +
-                              _colSegment[cell.ColIndex + cell.ColSpan - 1].SizeCache) -
-                             _colSegment[cell.ColIndex].Offset;
-
-               childFinalH = (_rowSegment[cell.RowIndex + cell.RowSpan - 1].Offset +
-                              _rowSegment[cell.RowIndex + cell.RowSpan - 1].SizeCache) -
-                             _rowSegment[cell.RowIndex].Offset;
-
+               var childFinalH = (_rowSegment[cell.RowIndex + cell.RowSpan - 1].Offset +
+                                     _rowSegment[cell.RowIndex + cell.RowSpan - 1].SizeCache) -
+                                    _rowSegment[cell.RowIndex].Offset;
 
                child.Arrange(new Rect(childFinalX, childFinalY, childFinalW, childFinalH));
                index++;
             }
          }
-         Debug.WriteLine("Grid arrange time = " + arrangeTimer.ElapsedMilliseconds);
+         //Debug.WriteLine("Grid arrange time = " + arrangeTimer.ElapsedMilliseconds);
          return finalSize;
       }
 
@@ -447,25 +419,22 @@ namespace Perspex.Controls
                }
                else
                {
-                  //  clipping by c_starClip guarantees that sum of even a very big number of max'ed out star values
-                  //  can be summed up without overflow
                   starValue = Math.Min(starValue, maxSegmentSize);
 
-                  //  Note: normalized star value is temporary cached into MeasureSize
                   segment[i].MeasuredSize = starValue;
                   double maxSize = Math.Max(segment[i].Min, segment[i].Max);
                   maxSize = Math.Min(maxSize, maxSegmentSize);
                   segment[i].SizeCache = maxSize / starValue;
                }
                starDefitions[starDefinitionCount] = currentSegment;
-               //segmentIndices[starDefinitionCount] = i;
+               segmentIndices[starDefinitionCount] = i;
                starDefinitionCount++;
             }
             else
             {
                double userSize = 0;
 
-               switch (currentSegment.Type)
+               switch (currentSegment.OriginalType)
                {
                   case GridUnitType.Auto:
                      userSize = currentSegment.MinMeasuredSize;
@@ -516,25 +485,25 @@ namespace Perspex.Controls
 
          if (allPreferredArrangeSize > finalSize && !(allPreferredArrangeSize - finalSize > Double.Epsilon))
          {
-            ////DistributionOrderIndexComparer distributionOrderIndexComparer = new DistributionOrderIndexComparer(segment);
-            ////Array.Sort(segmentIndices, 0, segment.Length, distributionOrderIndexComparer);
+            DistributionOrderIndexComparer distributionOrderIndexComparer = new DistributionOrderIndexComparer(segment);
+            Array.Sort(segmentIndices, 0, segment.Length, distributionOrderIndexComparer);
             double sizeToDistribute = finalSize - allPreferredArrangeSize;
             for (int i = 0; i < segment.Length; i++)
             {
-               //int segmentIndex = segmentIndices[i];
-               //double final = segment[i].SizeCache + (sizeToDistribute/segment.Length - i);
-               //final = Math.Max(final, segment[segmentIndex].MinMeasuredSize);
-               //final = Math.Min(final, segment[segmentIndex].SizeCache);
-
-               //sizeToDistribute -= (finalSize - segment[segmentIndex].SizeCache);
-               //segment[segmentIndex].SizeCache = final;
-
+               int segmentIndex = segmentIndices[i];
                double final = segment[i].SizeCache + (sizeToDistribute / segment.Length - i);
-               final = Math.Max(final, segment[i].MinMeasuredSize);
-               final = Math.Min(final, segment[i].SizeCache);
+               final = Math.Max(final, segment[segmentIndex].MinMeasuredSize);
+               final = Math.Min(final, segment[segmentIndex].SizeCache);
 
-               sizeToDistribute -= (finalSize - segment[i].SizeCache);
-               segment[i].SizeCache = final;
+               sizeToDistribute -= (finalSize - segment[segmentIndex].SizeCache);
+               segment[segmentIndex].SizeCache = final;
+
+               //double final = segment[i].SizeCache + (sizeToDistribute / segment.Length - i);
+               //final = Math.Max(final, segment[i].MinMeasuredSize);
+               //final = Math.Min(final, segment[i].SizeCache);
+
+               //sizeToDistribute -= (finalSize - segment[i].SizeCache);
+               //segment[i].SizeCache = final;
             }
          }
 
@@ -635,16 +604,10 @@ namespace Perspex.Controls
 
          if (emptyRows)
          {
-            if (ReplaceRowStarsWithAuto)
-            {
-               _rowSegment[0] = new GridSegment(0, 0, double.PositiveInfinity, GridUnitType.Auto);
-               _rowDefition = new RowDefinition(new GridLength(0, GridUnitType.Auto));
-            }
-            else
-            {
-               _rowSegment[0] = new GridSegment(0, 0, double.PositiveInfinity, GridUnitType.Star) { Stars = 1.0 };
-               _rowDefition = new RowDefinition();
-            }
+            _rowSegment[0] = new GridSegment(0, 0, double.PositiveInfinity, GridUnitType.Star) { Stars = 1.0 };
+            _rowDefition = new RowDefinition();
+            _rowSegment[0].MeasuredSize = Double.PositiveInfinity;
+            _rowSegment[0].MeasureType = ReplaceRowStarsWithAuto ? InnerGridUnitType.Auto : InnerGridUnitType.Star;
          }
          else
          {
@@ -662,23 +625,18 @@ namespace Perspex.Controls
                switch (def.Height.GridUnitType)
                {
                   case GridUnitType.Pixel:
+                     segment.MeasureType = InnerGridUnitType.Pixel;
                      measured = def.Height.Value;
                      minSize = Math.Max(minSize, Math.Min(measured, maxSize));
                      break;
                   case GridUnitType.Auto:
-                     minSize = Math.Max(minSize, Math.Min(measured, maxSize));
+                     segment.MeasureType = InnerGridUnitType.Auto;
+                     measured = Double.PositiveInfinity;
                      break;
                   case GridUnitType.Star:
-                     if (ReplaceRowStarsWithAuto)
-                     {
-                        segment.Type = GridUnitType.Auto;
-                     }
-                     else
-                     {
-                        segment.Type = GridUnitType.Star;
-                        segment.Stars = height.Value;
-
-                     }
+                     segment.MeasureType = ReplaceRowStarsWithAuto ? InnerGridUnitType.Auto : InnerGridUnitType.Star;
+                     segment.Stars = height.Value;
+                     measured = Double.PositiveInfinity;
                      break;
                }
 
@@ -691,16 +649,10 @@ namespace Perspex.Controls
 
          if (emptyCols)
          {
-            if (ReplaceColStarsWithAuto)
-            {
-               _colSegment[0] = new GridSegment(0, 0, double.PositiveInfinity, GridUnitType.Auto);
-               _colDefinition = new ColumnDefinition(new GridLength(0, GridUnitType.Auto));
-            }
-            else
-            {
-               _colSegment[0] = new GridSegment(0, 0, double.PositiveInfinity, GridUnitType.Star) { Stars = 1.0 };
-               _colDefinition = new ColumnDefinition();
-            }
+            _colSegment[0] = new GridSegment(0, 0, double.PositiveInfinity, GridUnitType.Star) { Stars = 1.0 };
+            _colDefinition = new ColumnDefinition();
+            _colSegment[0].MeasuredSize = Double.PositiveInfinity;
+            _colSegment[0].MeasureType = ReplaceColStarsWithAuto ? InnerGridUnitType.Auto : InnerGridUnitType.Star;
          }
          else
          {
@@ -717,23 +669,18 @@ namespace Perspex.Controls
                switch (def.Width.GridUnitType)
                {
                   case GridUnitType.Pixel:
+                     segment.MeasureType = InnerGridUnitType.Pixel;
                      measured = def.Width.Value;
                      minSize = Math.Max(minSize, Math.Min(measured, maxSize));
                      break;
                   case GridUnitType.Auto:
-                     minSize = Math.Max(minSize, Math.Min(measured, maxSize));
+                     segment.MeasureType = InnerGridUnitType.Auto;
+                     measured = Double.PositiveInfinity;
                      break;
                   case GridUnitType.Star:
-                     if (ReplaceColStarsWithAuto)
-                     {
-                        segment.Type = GridUnitType.Auto;
-                     }
-                     else
-                     {
-                        segment.Type = GridUnitType.Star;
-                        segment.Stars = width.Value;
-                     }
-
+                     segment.MeasureType = ReplaceColStarsWithAuto ? InnerGridUnitType.Auto : InnerGridUnitType.Star;
+                     measured = Double.PositiveInfinity;
+                     segment.Stars = width.Value;
                      break;
                }
 
@@ -778,12 +725,43 @@ namespace Perspex.Controls
                   }
                }
 
-               _cells[i] = new Cell(row, col, rowspan, colspan, i);
-               _cells[i].Group = Cell.ResolveCellGroup(_rowSegment[row], _colSegment[col]);
-               AddToCorrespondingGroup(_cells[i]);
+               var cell = new Cell(row, col, rowspan, colspan, i);
+               cell.SizeTypeU = GetInnerGridUnitTypeForRange(_colSegment, col, colspan);
+               cell.SizeTypeV = GetInnerGridUnitTypeForRange(_rowSegment, row, rowspan);
+
+               HasStarCellsU |= cell.IsStarU;
+               HasStarCellsV |= cell.IsStarV;
+
+               if (!cell.IsStarV)
+               {
+                  if (!cell.IsStarU)
+                  {
+                     cell.Group = CellGroup.Group1;
+                  }
+                  else
+                  {
+                     cell.Group = CellGroup.Group3;
+                     HasGroup3CellsInAutoRows |= cell.IsAutoV;
+                  }
+               }
+               else
+               {
+                  if (cell.IsAutoU && !cell.IsStarU)
+                  {
+                     cell.Group = CellGroup.Group2;
+                  }
+                  else
+                  {
+                     cell.Group = CellGroup.Group4;
+                  }
+               }
+
+               AddToCorrespondingGroup(cell);
+               _cells[i] = cell;
                i++;
             }
          }
+
 
          if (!emptyRows && rowCount > 1)
          {
@@ -888,7 +866,6 @@ namespace Perspex.Controls
                      {
                         segment.Stars = width.Value;
                      }
-
                      break;
                }
 
@@ -896,7 +873,16 @@ namespace Perspex.Controls
                segment.MeasuredSize = Math.Max(minSize, Math.Min(measured, maxSize));
             }
          }
+      }
 
+      private InnerGridUnitType GetInnerGridUnitTypeForRange(GridSegment[] segment, int start, int count)
+      {
+         InnerGridUnitType type = InnerGridUnitType.None;
+         for (int i = start + count - 1; i >= start; --i)
+         {
+            type |= segment[i].MeasureType;
+         }
+         return type;
       }
 
       private double[] GetMinSizes(List<Cell> cellGroup, bool isRows)
@@ -939,7 +925,7 @@ namespace Perspex.Controls
          //Go from end of the range to the beginning
          for (int i = startIndex + count - 1; i >= startIndex; --i)
          {
-            size += (segment[i].Type == GridUnitType.Auto) ? segment[i].Min : segment[i].MeasuredSize;
+            size += (segment[i].MeasureType == InnerGridUnitType.Auto) ? segment[i].Min : segment[i].MeasuredSize;
          }
 
          return size;
@@ -1009,7 +995,7 @@ namespace Perspex.Controls
             rowDef = _rowDefinitions.Count > 0 ? _rowDefinitions[cell.RowIndex] : _rowDefition;
             columnDef = _columnDefinitions.Count > 0 ? _columnDefinitions[cell.ColIndex] : _colDefinition;
 
-            if (row.IsAuto && !row.IsStar)
+            if (cell.IsAutoV && !cell.IsStarV)
             {
                childSizeY = double.PositiveInfinity;
             }
@@ -1018,7 +1004,12 @@ namespace Perspex.Controls
                childSizeY = GetMeasureSizeForRange(_rowSegment, cell.RowIndex, cell.RowSpan);
             }
 
-            if (column.IsAuto && !column.IsStar)
+            if (forceInfinitHeight)
+            {
+               childSizeY = Double.PositiveInfinity;
+            }
+
+            if (cell.IsAutoU && !cell.IsStarU)
             {
                childSizeX = double.PositiveInfinity;
             }
@@ -1240,7 +1231,7 @@ namespace Perspex.Controls
          double takenSize = 0;
          for (int i = 0; i < segment.Length; ++i)
          {
-            switch (segment[i].Type)
+            switch (segment[i].OriginalType)
             {
                case GridUnitType.Auto:
                   takenSize += segment[i].Min;
@@ -1351,6 +1342,15 @@ namespace Perspex.Controls
          Group4.Clear();
       }
 
+      [Flags]
+      private enum InnerGridUnitType
+      {
+         None = 0,
+         Pixel = 1,
+         Star = 2,
+         Auto = 4
+      }
+
 
 
       private class GridSegment
@@ -1361,24 +1361,25 @@ namespace Perspex.Controls
          public double Min;
          public double MeasuredSize;
          public double Stars;
-         public GridUnitType Type { get; set; }
+         public GridUnitType OriginalType { get; }
+         public InnerGridUnitType MeasureType { get; set; }
          public double Offset;
          public bool SpanPresent = false;
 
-         public Boolean IsAuto => Type == GridUnitType.Auto;
+         public Boolean IsAuto => OriginalType == GridUnitType.Auto;
 
-         public Boolean IsStar => Type == GridUnitType.Star;
+         public Boolean IsStar => OriginalType == GridUnitType.Star;
 
-         public Boolean IsAbsolute => Type == GridUnitType.Pixel;
+         public Boolean IsAbsolute => OriginalType == GridUnitType.Pixel;
 
-         public GridSegment(double offeredSize, double min, double max, GridUnitType type)
+         public GridSegment(double offeredSize, double min, double max, GridUnitType originalType)
          {
             SizeCache = 0;
             Min = min;
             Max = max;
             MeasuredSize = offeredSize;
             Stars = 0;
-            Type = type;
+            OriginalType = originalType;
             Offset = 0;
          }
       }
@@ -1391,49 +1392,27 @@ namespace Perspex.Controls
          public readonly int ColSpan;
          public readonly int ChildIndex;
 
+         //Contains combination of types by row and column including span definitions
+         public InnerGridUnitType SizeTypeU;
+         public InnerGridUnitType SizeTypeV;
+
+         public bool IsStarU => ((SizeTypeU & InnerGridUnitType.Star) != 0);
+         public bool IsStarV => ((SizeTypeV & InnerGridUnitType.Star) != 0);
+         public bool IsAutoU => ((SizeTypeU & InnerGridUnitType.Auto) != 0);
+         public bool IsAutoV => ((SizeTypeV & InnerGridUnitType.Auto) != 0);
+
          public CellGroup Group;
 
          public Cell(int rowIndex, int colIndex, int rowSpan, int colSpan, int childIndex)
          {
+            SizeTypeU = InnerGridUnitType.None;
+            SizeTypeV = InnerGridUnitType.None;
             this.RowIndex = rowIndex;
             this.ColIndex = colIndex;
             this.RowSpan = rowSpan;
             this.ColSpan = colSpan;
             Group = CellGroup.Undefined;
             ChildIndex = childIndex;
-         }
-
-         public static CellGroup ResolveCellGroup(GridSegment row, GridSegment col)
-         {
-            var IsPixelPixel = row.IsAbsolute & col.IsAbsolute;
-            var IsPixelAuto = row.IsAbsolute & col.IsAuto;
-            var IsAutoPixel = row.IsAuto & col.IsAbsolute;
-            var IsAutoAuto = row.IsAuto & col.IsAuto;
-            var IsStarAuto = row.IsStar & col.IsAuto;
-            var IsPixelStar = row.IsAbsolute & col.IsStar;
-            var IsAutoStar = row.IsAuto & col.IsStar;
-            var IsStarPixel = row.IsStar & col.IsAbsolute;
-            var IsStarStar = row.IsStar & col.IsStar;
-            CellGroup Group;
-
-            if (IsPixelPixel || IsPixelAuto || IsAutoPixel || IsAutoAuto)
-            {
-               Group = CellGroup.Group1;
-            }
-            else if (IsStarAuto)
-            {
-               Group = CellGroup.Group2;
-            }
-            else if (IsPixelStar || IsAutoStar)
-            {
-               Group = CellGroup.Group3;
-            }
-            else
-            {
-               Group = CellGroup.Group4;
-            }
-
-            return Group;
          }
       }
 
