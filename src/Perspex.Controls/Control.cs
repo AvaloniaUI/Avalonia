@@ -138,6 +138,16 @@ namespace Perspex.Controls
         public event EventHandler DataContextChanged;
 
         /// <summary>
+        /// Occurs when the control has finished initialization.
+        /// </summary>
+        /// <remarks>
+        /// The Initialized event indicates that all property values on the control have been set.
+        /// It occurs when <see cref="ISupportInitialize.EndInit"/> is called when loading the
+        /// control from markup, or when the control is attached to the visual tree otherwise.
+        /// </remarks>
+        public event EventHandler Initialized;
+
+        /// <summary>
         /// Gets or sets the name of the control.
         /// </summary>
         /// <remarks>
@@ -232,6 +242,15 @@ namespace Perspex.Controls
             get { return _dataTemplates ?? (_dataTemplates = new DataTemplates()); }
             set { _dataTemplates = value; }
         }
+
+        /// <summary>
+        /// Gets a value that indicates whether the element has finished initialization.
+        /// </summary>
+        /// <remarks>
+        /// For more information about when IsInitialized is set, see the <see cref="Initialized"/>
+        /// event.
+        /// </remarks>
+        public bool IsInitialized { get; private set; }
 
         /// <summary>
         /// Gets or sets the styles for the control.
@@ -334,11 +353,20 @@ namespace Perspex.Controls
                 throw new InvalidOperationException("BeginInit was not called.");
             }
 
-            if (--_initCount == 0 && _isAttachedToLogicalTree && !_styled)
+            if (--_initCount == 0)
             {
-                RegisterWithNameScope();
-                ApplyStyling();
-                _styled = true;
+                if (_isAttachedToLogicalTree && !_styled)
+                {
+                    RegisterWithNameScope();
+                    ApplyStyling();
+                    _styled = true;
+                }
+
+                if (!IsInitialized)
+                {
+                    IsInitialized = true;
+                    Initialized?.Invoke(this, EventArgs.Empty);
+                }
             }
         }
 
@@ -497,6 +525,24 @@ namespace Perspex.Controls
         protected virtual void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
             DetachedFromLogicalTree?.Invoke(this, e);
+        }
+
+        /// <inheritdoc/>
+        protected sealed override void OnAttachedToVisualTreeCore(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTreeCore(e);
+
+            if (!IsInitialized)
+            {
+                IsInitialized = true;
+                Initialized?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        /// <inheritdoc/>
+        protected sealed override void OnDetachedFromVisualTreeCore(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnDetachedFromVisualTreeCore(e);
         }
 
         /// <inheritdoc/>
