@@ -27,9 +27,9 @@ namespace Perspex.Input
         /// </summary>
         public MouseDevice()
         {
-            InputManager.RawEventReceived
+            InputManager.Process
                 .OfType<RawMouseEventArgs>()
-                .Where(x => x.Device == this)
+                .Where(e => e.Device == this && !e.Handled)
                 .Subscribe(ProcessRawEvent);
         }
 

@@ -26,7 +26,7 @@ namespace Perspex.Diagnostics
             Root = root;
             DataContext = new DevToolsViewModel(root);
 
-            _keySubscription = InputManager.Instance.RawEventReceived
+            _keySubscription = InputManager.Instance.Process
                 .OfType<RawKeyEventArgs>()
                 .Subscribe(RawKeyDown);
         }

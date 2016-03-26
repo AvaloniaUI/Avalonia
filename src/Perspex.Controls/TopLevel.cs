@@ -392,7 +392,7 @@ namespace Perspex.Controls
         /// <param name="e">The event args.</param>
         private void HandleInput(RawInputEventArgs e)
         {
-            _inputManager.Process(e);
+            _inputManager.ProcessInput(e);
         }
 
         /// <summary>
