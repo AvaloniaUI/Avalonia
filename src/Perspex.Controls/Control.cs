@@ -142,8 +142,11 @@ namespace Perspex.Controls
         /// </summary>
         /// <remarks>
         /// The Initialized event indicates that all property values on the control have been set.
-        /// It occurs when <see cref="ISupportInitialize.EndInit"/> is called when loading the
-        /// control from markup, or when the control is attached to the visual tree otherwise.
+        /// When loading the control from markup, it occurs when 
+        /// <see cref="ISupportInitialize.EndInit"/> is called *and* the control
+        /// is attached to a rooted logical tree. When the control is created by code and
+        /// <see cref="ISupportInitialize"/> is not used, it is called when the control is attached
+        /// to the visual tree.
         /// </remarks>
         public event EventHandler Initialized;
 
@@ -353,9 +356,9 @@ namespace Perspex.Controls
                 throw new InvalidOperationException("BeginInit was not called.");
             }
 
-            if (--_initCount == 0)
+            if (--_initCount == 0 && _isAttachedToLogicalTree)
             {
-                if (_isAttachedToLogicalTree && !_styled)
+                if (!_styled)
                 {
                     RegisterWithNameScope();
                     ApplyStyling();
