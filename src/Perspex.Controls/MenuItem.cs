@@ -9,6 +9,7 @@ using Perspex.Controls.Primitives;
 using Perspex.Controls.Templates;
 using Perspex.Input;
 using Perspex.Interactivity;
+using Perspex.LogicalTree;
 using Perspex.Threading;
 
 namespace Perspex.Controls
@@ -92,6 +93,7 @@ namespace Perspex.Controls
         {
             SelectableMixin.Attach<MenuItem>(IsSelectedProperty);
             FocusableProperty.OverrideDefaultValue<MenuItem>(true);
+            IconProperty.Changed.AddClassHandler<MenuItem>(x => x.IconChanged);
             ItemsPanelProperty.OverrideDefaultValue<MenuItem>(DefaultPanel);
             ClickEvent.AddClassHandler<MenuItem>(x => x.OnClick);
             SubmenuOpenedEvent.AddClassHandler<MenuItem>(x => x.OnSubmenuOpened);
@@ -388,6 +390,26 @@ namespace Perspex.Controls
             foreach (var child in Items.OfType<MenuItem>())
             {
                 child.IsSubMenuOpen = false;
+            }
+        }
+
+        /// <summary>
+        /// Called when the <see cref="Icon"/> property changes.
+        /// </summary>
+        /// <param name="e">The property change event.</param>
+        private void IconChanged(PerspexPropertyChangedEventArgs e)
+        {
+            var oldValue = e.OldValue as ILogical;
+            var newValue = e.NewValue as ILogical;
+
+            if (oldValue != null)
+            {
+                LogicalChildren.Remove(oldValue);
+            }
+
+            if (newValue != null)
+            {
+                LogicalChildren.Add(newValue);
             }
         }
 
