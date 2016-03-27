@@ -1,6 +1,8 @@
 ﻿<Styles xmlns="https://github.com/perspex">
   <Style Selector="DropDownItem">
     <Setter Property="Padding" Value="2"/>
+    <Setter Property="HorizontalAlignment" Value="Stretch"/>
+    <Setter Property="HorizontalContentAlignment" Value="Left"/>
     <Setter Property="Template">
       <ControlTemplate>
         <ContentPresenter Name="PART_ContentPresenter"
@@ -8,6 +10,8 @@
                           BorderBrush="{TemplateBinding BorderBrush}"
                           BorderThickness="{TemplateBinding BorderThickness}"
                           Content="{TemplateBinding Content}"
+                          HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                           Padding="{TemplateBinding Padding}"/>
       </ControlTemplate>
     </Setter>
