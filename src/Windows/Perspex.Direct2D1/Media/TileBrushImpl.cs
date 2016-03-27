@@ -1,13 +1,9 @@
 ﻿// Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using System;
-using Perspex.Layout;
 using Perspex.Media;
-using SharpDX;
-using SharpDX.Direct2D1;
 using Perspex.RenderHelpers;
-
+using SharpDX.Direct2D1;
 
 namespace Perspex.Direct2D1.Media
 {
@@ -37,7 +33,6 @@ namespace Perspex.Direct2D1.Media
                     GetBrushProperties(brush, helper.DestinationRect));
             }
         }
-
 
         private static BrushProperties GetBrushProperties(TileBrush brush, Rect destinationRect)
         {
