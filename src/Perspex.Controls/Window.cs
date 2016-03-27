@@ -204,6 +204,7 @@ namespace Perspex.Controls
         {
             s_windows.Add(this);
 
+            EnsureInitialized();
             LayoutManager.Instance.ExecuteInitialLayoutPass(this);
 
             using (BeginAutoSizing())
@@ -236,6 +237,7 @@ namespace Perspex.Controls
         {
             s_windows.Add(this);
 
+            EnsureInitialized();
             LayoutManager.Instance.ExecuteInitialLayoutPass(this);
 
             using (BeginAutoSizing())
@@ -310,6 +312,16 @@ namespace Perspex.Controls
             }
 
             base.HandleResized(clientSize);
+        }
+
+        private void EnsureInitialized()
+        {
+            if (!this.IsInitialized)
+            {
+                var init = (ISupportInitialize)this;
+                init.BeginInit();
+                init.EndInit();
+            }
         }
     }
 }

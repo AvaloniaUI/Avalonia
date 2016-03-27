@@ -84,6 +84,7 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         public void Show()
         {
+            EnsureInitialized();
             PlatformImpl.Show();
             LayoutManager.Instance.ExecuteInitialLayoutPass(this);
             IsVisible = true;
@@ -105,6 +106,16 @@ namespace Perspex.Controls.Primitives
                 Presenter?.ApplyTemplate();
                 Presenter?.GetObservable(ContentPresenter.ChildProperty)
                     .Subscribe(SetTemplatedParentAndApplyChildTemplates);
+            }
+        }
+
+        private void EnsureInitialized()
+        {
+            if (!this.IsInitialized)
+            {
+                var init = (ISupportInitialize)this;
+                init.BeginInit();
+                init.EndInit();
             }
         }
 
