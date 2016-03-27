@@ -128,7 +128,7 @@ namespace Perspex.Direct2D1
                 }
             }
 
-            return new Size2F(1, 1);
+            return new Size2F(96, 96);
         }
 
         private Size2 GetWindowSize()
