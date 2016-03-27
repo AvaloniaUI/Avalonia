@@ -7,7 +7,9 @@ using Perspex.Metadata;
 
 [assembly: AssemblyTitle("Perspex.Controls")]
 [assembly: InternalsVisibleTo("Perspex.Controls.UnitTests")]
+[assembly: InternalsVisibleTo("Perspex.DesignerSupport")]
 
+[assembly: XmlnsDefinition("https://github.com/perspex", "Perspex")]
 [assembly: XmlnsDefinition("https://github.com/perspex", "Perspex.Controls")]
 [assembly: XmlnsDefinition("https://github.com/perspex", "Perspex.Controls.Presenters")]
 [assembly: XmlnsDefinition("https://github.com/perspex", "Perspex.Controls.Primitives")]

@@ -9,7 +9,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Perspex</RootNamespace>
-    <AssemblyName>Perspex.Application</AssemblyName>
+    <AssemblyName>Perspex.DesignerSupport</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -26,7 +26,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Debug\Perspex.Application.XML</DocumentationFile>
+    <DocumentationFile>bin\Debug\Perspex.DesignerSupport.xml</DocumentationFile>
     <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -36,7 +36,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Release\Perspex.Application.XML</DocumentationFile>
+    <DocumentationFile>bin\Release\Perspex.DesignerSupport.xml</DocumentationFile>
     <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
   <ItemGroup>
@@ -90,10 +90,8 @@
     <Compile Include="..\Shared\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="Application.cs" />
-    <Compile Include="Designer\Design.cs" />
-    <Compile Include="Designer\DesignerAssist.cs" />
-    <Compile Include="Designer\DesignerApi.cs" />
+    <Compile Include="DesignerAssist.cs" />
+    <Compile Include="DesignerApi.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
