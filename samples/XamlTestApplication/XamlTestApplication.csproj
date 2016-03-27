@@ -103,6 +103,10 @@
       <Project>{D2221C82-4A25-4583-9B43-D791E3F6820C}</Project>
       <Name>Perspex.Controls</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\src\Perspex.DesignerSupport\Perspex.DesignerSupport.csproj">
+      <Project>{799a7bb5-3c2c-48b6-85a7-406a12c420da}</Project>
+      <Name>Perspex.DesignerSupport</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\Perspex.Diagnostics\Perspex.Diagnostics.csproj">
       <Project>{7062AE20-5DCC-4442-9645-8195BDECE63E}</Project>
       <Name>Perspex.Diagnostics</Name>
