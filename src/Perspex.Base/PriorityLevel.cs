@@ -4,6 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Reactive.Disposables;
+using Perspex.Data;
+using Perspex.Logging;
 
 namespace Perspex
 {
@@ -53,6 +55,11 @@ namespace Perspex
         private readonly Action<PriorityLevel> _changed;
 
         /// <summary>
+        /// Method called when a binding error occurs.
+        /// </summary>
+        private readonly Action<PriorityLevel, BindingError> _error;
+
+        /// <summary>
         /// The current direct value.
         /// </summary>
         private object _directValue;
@@ -70,15 +77,18 @@ namespace Perspex
         /// <param name="priority">The priority.</param>
         /// <param name="mode">The precedence mode.</param>
         /// <param name="changed">A method to be called when the current value changes.</param>
+        /// <param name="error">A method to be called when a binding error occurs.</param>
         public PriorityLevel(
             int priority,
             LevelPrecedenceMode mode,
-            Action<PriorityLevel> changed)
+            Action<PriorityLevel> changed,
+            Action<PriorityLevel, BindingError> error)
         {
             Contract.Requires<ArgumentNullException>(changed != null);
 
             _mode = mode;
             _changed = changed;
+            _error = error;
             Priority = priority;
             Value = _directValue = PerspexProperty.UnsetValue;
             ActiveBindingIndex = -1;
@@ -135,7 +145,7 @@ namespace Perspex
             var entry = new PriorityBindingEntry(_nextIndex++);
             var node = Bindings.AddFirst(entry);
 
-            entry.Start(binding, Changed, Completed);
+            entry.Start(binding, Changed, Completed, Error);
 
             return Disposable.Create(() =>
             {
@@ -182,6 +192,16 @@ namespace Perspex
             {
                 ActivateFirstBinding();
             }
+        }
+
+        /// <summary>
+        /// Invoked when an entry in <see cref="Bindings"/> encounters a recoverable error.
+        /// </summary>
+        /// <param name="entry">The entry that completed.</param>
+        /// <param name="error">The error.</param>
+        private void Error(PriorityBindingEntry entry, BindingError error)
+        {
+            _error(this, error);
         }
 
         /// <summary>

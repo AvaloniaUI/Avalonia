@@ -2,10 +2,14 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Microsoft.Reactive.Testing;
 using Perspex.Data;
+using Perspex.Logging;
+using Perspex.UnitTests;
 using Xunit;
 
 namespace Perspex.Base.UnitTests
@@ -261,6 +265,35 @@ namespace Perspex.Base.UnitTests
             target1.SetValue(Class1.FooProperty, "second");
 
             Assert.Equal("first", target2.GetValue(Class1.FooProperty));
+        }
+
+        [Fact]
+        public void Bind_Logs_BindingError()
+        {
+            var target = new Class1();
+            var source = new Subject<object>();
+            var called = false;
+            var expectedMessageTemplate = "Error binding to {Target}.{PropertyName}: {Message}";
+
+            LogCallback checkLogMessage = (level, area, src, mt, pv) =>
+            {
+                if (level == LogEventLevel.Error &&
+                    area == LogArea.Binding &&
+                    mt == expectedMessageTemplate)
+                {
+                    called = true;
+                }
+            };
+
+            using (TestLogSink.Start(checkLogMessage))
+            {
+                target.Bind(Class1.QuxProperty, source);
+                source.OnNext(6.7);
+                source.OnNext(new BindingError(new InvalidOperationException("Foo")));
+
+                Assert.Equal(6.7, target.GetValue(Class1.QuxProperty));
+                Assert.True(called);
+            }
         }
 
         /// <summary>

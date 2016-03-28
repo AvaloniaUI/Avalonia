@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using Perspex.Data;
 
 namespace Perspex
 {
@@ -63,10 +64,12 @@ namespace Perspex
         /// <param name="binding">The binding.</param>
         /// <param name="changed">Called when the binding changes.</param>
         /// <param name="completed">Called when the binding completes.</param>
+        /// <param name="error">Called when a binding error occurs.</param>
         public void Start(
             IObservable<object> binding,
             Action<PriorityBindingEntry> changed,
-            Action<PriorityBindingEntry> completed)
+            Action<PriorityBindingEntry> completed,
+            Action<PriorityBindingEntry, BindingError> error)
         {
             Contract.Requires<ArgumentNullException>(binding != null);
             Contract.Requires<ArgumentNullException>(changed != null);
@@ -88,8 +91,17 @@ namespace Perspex
             _subscription = binding.Subscribe(
                 value =>
                 {
-                    Value = value;
-                    changed(this);
+                    var bindingError = value as BindingError;
+
+                    if (bindingError == null)
+                    {
+                        Value = value;
+                        changed(this);
+                    }
+                    else if (error != null)
+                    {
+                        error(this, bindingError);
+                    }
                 },
                 () => completed(this));
         }

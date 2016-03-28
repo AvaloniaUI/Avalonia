@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Reactive.Subjects;
 using Perspex.Data;
+using Perspex.Logging;
+using Perspex.UnitTests;
 using Xunit;
 
 namespace Perspex.Base.UnitTests
@@ -392,6 +394,34 @@ namespace Perspex.Base.UnitTests
             target = new Class1();
 
             Assert.True(raised);
+        }
+
+        [Fact]
+        public void Binding_To_Direct_Property_Logs_BindingError()
+        {
+            var target = new Class1();
+            var source = new Subject<object>();
+            var called = false;
+            var expectedMessageTemplate = "Error binding to {Target}.{PropertyName}: {Message}";
+
+            LogCallback checkLogMessage = (level, area, src, mt, pv) =>
+            {
+                if (level == LogEventLevel.Error &&
+                    area == LogArea.Binding &&
+                    mt == expectedMessageTemplate)
+                {
+                    called = true;
+                }
+            };
+
+            using (TestLogSink.Start(checkLogMessage))
+            {
+                target.Bind(Class1.FooProperty, source);
+                source.OnNext("baz");
+                source.OnNext(new BindingError(new InvalidOperationException("Foo")));
+            }
+
+            Assert.True(called);
         }
 
         private class Class1 : PerspexObject

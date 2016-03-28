@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Subjects;
 using System.Text;
+using Perspex.Data;
 using Perspex.Logging;
 using Perspex.Utilities;
 
@@ -210,7 +211,7 @@ namespace Perspex
             if (!_levels.TryGetValue(priority, out result))
             {
                 var mode = (LevelPrecedenceMode)(priority % 2);
-                result = new PriorityLevel(priority, mode, ValueChanged);
+                result = new PriorityLevel(priority, mode, ValueChanged, Error);
                 _levels.Add(priority, result);
             }
 
@@ -242,7 +243,7 @@ namespace Perspex
             else
             {
                 Logger.Error(
-                    LogArea.Property, 
+                    LogArea.Binding, 
                     _owner,
                     "Binding produced invalid value for {$Property} ({$PropertyType}): {$Value} ({$ValueType})",
                     _name, 
@@ -278,6 +279,23 @@ namespace Perspex
                     UpdateValue(PerspexProperty.UnsetValue, int.MaxValue);
                 }
             }
+        }
+
+        /// <summary>
+        /// Called when a priority level encounters an error.
+        /// </summary>
+        /// <param name="level">The priority level of the changed entry.</param>
+        /// <param name="error">The binding error.</param>
+        private void Error(PriorityLevel level, BindingError error)
+        {
+            Logger.Log(
+                LogEventLevel.Error,
+                LogArea.Binding,
+                _owner,
+                "Error binding to {Target}.{PropertyName}: {Message}",
+                _owner,
+                _name,
+                error.Exception.Message);
         }
     }
 }

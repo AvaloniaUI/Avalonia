@@ -63,6 +63,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="NotifyingBase.cs" />
+    <Compile Include="TestLogSink.cs" />
     <Compile Include="TestTemplatedRoot.cs" />
     <Compile Include="TestRoot.cs" />
     <Compile Include="TestServices.cs" />

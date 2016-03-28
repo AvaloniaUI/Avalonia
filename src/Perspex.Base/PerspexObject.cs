@@ -403,9 +403,9 @@ namespace Perspex
                 IDisposable subscription = null;
 
                 subscription = source
-                    .Select(x => TypeUtilities.CastOrDefault(x, property.PropertyType))
+                    .Select(x => CastOrDefault(x, property.PropertyType))
                     .Do(_ => { }, () => s_directBindings.Remove(subscription))
-                    .Subscribe(x => SetValue(property, x));
+                    .Subscribe(x => DirectBindingSet(property, x));
 
                 s_directBindings.Add(subscription);
 
@@ -588,6 +588,27 @@ namespace Perspex
         }
 
         /// <summary>
+        /// Tries to cast a value to a type, taking into account that the value may be a
+        /// <see cref="BindingError"/>.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="type">The type.</param>
+        /// <returns>The cast value, or a <see cref="BindingError"/>.</returns>
+        private static object CastOrDefault(object value, Type type)
+        {
+            var error = value as BindingError;
+
+            if (error == null)
+            {
+                return TypeUtilities.CastOrDefault(value, type);
+            }
+            else
+            {
+                return error;
+            }
+        }
+
+        /// <summary>
         /// Creates a <see cref="PriorityValue"/> for a <see cref="PerspexProperty"/>.
         /// </summary>
         /// <param name="property">The property.</param>
@@ -633,6 +654,33 @@ namespace Perspex
             });
 
             return result;
+        }
+
+        /// <summary>
+        /// Sets a property value for a direct property binding.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        private void DirectBindingSet(PerspexProperty property, object value)
+        {
+            var error = value as BindingError;
+
+            if (error == null)
+            {
+                SetValue(property, value);
+            }
+            else
+            {
+                Logger.Error(
+                    LogArea.Binding,
+                    this,
+                    "Error binding to {Target}.{PropertyName}: {Message}",
+                    property.Name,
+                    property.PropertyType,
+                    value,
+                    value.GetType());
+            }
         }
 
         /// <summary>
