@@ -74,7 +74,7 @@ namespace Perspex.Controls.Mixins
                         UpdateLogicalChild(
                             sender,
                             logicalChildren,
-                            null,
+                            logicalChildren.FirstOrDefault(),
                             presenter.GetValue(ContentPresenter.ChildProperty));
 
                         subscriptions.Value.Add(sender, subscription);
