@@ -672,6 +672,11 @@ namespace Perspex
             }
             else
             {
+                if (error.UseFallbackValue)
+                {
+                    SetValue(property, error.FallbackValue);
+                }
+
                 Logger.Error(
                     LogArea.Binding,
                     this,

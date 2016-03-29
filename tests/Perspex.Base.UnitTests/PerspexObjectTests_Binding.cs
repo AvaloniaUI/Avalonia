@@ -268,6 +268,32 @@ namespace Perspex.Base.UnitTests
         }
 
         [Fact]
+        public void BindingError_Does_Not_Cause_Target_Update()
+        {
+            var target = new Class1();
+            var source = new Subject<object>();
+
+            target.Bind(Class1.QuxProperty, source);
+            source.OnNext(6.7);
+            source.OnNext(new BindingError(new InvalidOperationException("Foo")));
+
+            Assert.Equal(6.7, target.GetValue(Class1.QuxProperty));
+        }
+
+        [Fact]
+        public void BindingError_With_FallbackValue_Causes_Target_Update()
+        {
+            var target = new Class1();
+            var source = new Subject<object>();
+
+            target.Bind(Class1.QuxProperty, source);
+            source.OnNext(6.7);
+            source.OnNext(new BindingError(new InvalidOperationException("Foo"), 8.9));
+
+            Assert.Equal(8.9, target.GetValue(Class1.QuxProperty));
+        }
+
+        [Fact]
         public void Bind_Logs_BindingError()
         {
             var target = new Class1();
