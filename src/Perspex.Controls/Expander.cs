@@ -15,7 +15,7 @@ namespace Perspex.Controls
     public class Expander : HeaderedContentControl
     {
         public static readonly StyledProperty<bool> IsExpandedProperty =
-            PerspexProperty.Register<Expander, bool>(nameof(IsExpanded), true);
+            PerspexProperty.Register<Expander, bool>(nameof(IsExpanded));
 
         public static readonly StyledProperty<ExpandDirection> ExpandDirectionProperty =
             PerspexProperty.Register<Expander, ExpandDirection>(nameof(ExpandDirection), ExpandDirection.Down);

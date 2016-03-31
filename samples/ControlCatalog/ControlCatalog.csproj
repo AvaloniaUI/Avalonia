@@ -61,6 +61,9 @@
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Pages\ExpanderPage.xaml.cs">
+      <DependentUpon>ExpanderPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Pages\RadioButtonPage.xaml.cs">
       <DependentUpon>RadioButtonPage.xaml</DependentUpon>
     </Compile>
@@ -247,6 +250,11 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Pages\RadioButtonPage.xaml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Pages\ExpanderPage.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
