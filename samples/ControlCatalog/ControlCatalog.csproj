@@ -61,6 +61,9 @@
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Pages\ImagePage.xaml.cs">
+      <DependentUpon>ImagePage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Pages\ExpanderPage.xaml.cs">
       <DependentUpon>ExpanderPage.xaml</DependentUpon>
     </Compile>
@@ -255,6 +258,11 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Pages\ExpanderPage.xaml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Pages\ImagePage.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
