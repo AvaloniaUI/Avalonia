@@ -1,0 +1,15 @@
+﻿<UserControl xmlns="https://github.com/perspex">
+  <StackPanel Orientation="Vertical" Gap="4">
+    <TextBlock Classes="h1">RadioButton</TextBlock>
+    <TextBlock Classes="h2">Allows the selection of a single option of many</TextBlock>
+
+    <StackPanel Orientation="Vertical"
+                Margin="0,16,0,0"
+                HorizontalAlignment="Center"
+                Gap="16">
+      <RadioButton IsChecked="True">Option 1</RadioButton>
+      <RadioButton>Option 2</RadioButton>
+      <RadioButton IsEnabled="False">Disabled</RadioButton>
+    </StackPanel>    
+  </StackPanel>
+</UserControl>
