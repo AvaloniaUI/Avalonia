@@ -1,9 +1,10 @@
 // Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using OmniXaml;
+using System;
 using Perspex.Data;
 using Perspex.Markup.Xaml.Data;
+using Portable.Xaml.Markup;
 
 namespace Perspex.Markup.Xaml.MarkupExtensions
 {
@@ -18,7 +19,7 @@ namespace Perspex.Markup.Xaml.MarkupExtensions
             Path = path;
         }
 
-        public override object ProvideValue(MarkupExtensionContext extensionContext)
+        public override object ProvideValue(IServiceProvider serviceProvider)
         {
             return new Binding
             {

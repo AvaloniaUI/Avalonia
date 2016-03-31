@@ -4,25 +4,25 @@
 using System;
 using System.Globalization;
 using System.Linq;
-using OmniXaml;
-using OmniXaml.TypeConversion;
 using Perspex.Styling;
+using Portable.Xaml;
+using Portable.Xaml.ComponentModel;
 
 namespace Perspex.Markup.Xaml.Converters
 {
-    public class PerspexPropertyTypeConverter : ITypeConverter
+    public class PerspexPropertyTypeConverter : TypeConverter
     {
-        public bool CanConvertFrom(IValueContext context, Type sourceType)
+        public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
         {
             return sourceType == typeof(string);
         }
 
-        public bool CanConvertTo(IValueContext context, Type destinationType)
+        public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
         {
             return false;
         }
 
-        public object ConvertFrom(IValueContext context, CultureInfo culture, object value)
+        public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
         {
             var s = (string)value;
 
@@ -34,23 +34,23 @@ namespace Perspex.Markup.Xaml.Converters
 
             if (typeName == null)
             {
-                var styleType = context.TypeRepository.GetByType(typeof(Style));
-                var style = (Style)context.TopDownValueContext.GetLastInstance(styleType);
-                type = style.Selector?.TargetType;
+                ////var styleType = context.TypeRepository.GetByType(typeof(Style));
+                ////var style = (Style)context.TopDownValueContext.GetLastInstance(styleType);
+                ////type = style.Selector?.TargetType;
 
-                if (type == null)
+                ////if (type == null)
                 {
-                    throw new ParseException(
+                    throw new XamlException(
                         "Could not determine the target type. Please fully qualify the property name.");
                 }
             }
             else
             {
-                type = context.TypeRepository.GetByQualifiedName(typeName)?.UnderlyingType;
+                ////type = context.TypeRepository.GetByQualifiedName(typeName)?.UnderlyingType;
 
-                if (type == null)
+                ////if (type == null)
                 {
-                    throw new ParseException($"Could not find type '{typeName}'.");
+                    throw new XamlException($"Could not find type '{typeName}'.");
                 }
             }
 
@@ -61,14 +61,14 @@ namespace Perspex.Markup.Xaml.Converters
 
             if (property == null)
             {
-                throw new ParseException(
+                throw new XamlException(
                     $"Could not find PerspexProperty '{type.Name}.{propertyName}'.");
             }
 
             return property;
         }
 
-        public object ConvertTo(IValueContext context, CultureInfo culture, object value, Type destinationType)
+        public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
         {
             throw new NotImplementedException();
         }
@@ -89,7 +89,7 @@ namespace Perspex.Markup.Xaml.Converters
             }
             else
             {
-                throw new ParseException($"Invalid property name: '{s}'.");
+                throw new XamlException($"Invalid property name: '{s}'.");
             }
         }
     }

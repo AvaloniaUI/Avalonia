@@ -2,11 +2,8 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Reactive.Linq;
-using OmniXaml;
-using Perspex.LogicalTree;
 using Perspex.Markup.Xaml.Data;
-using Perspex.Styling;
+using Portable.Xaml.Markup;
 
 namespace Perspex.Markup.Xaml.MarkupExtensions
 {
@@ -17,7 +14,7 @@ namespace Perspex.Markup.Xaml.MarkupExtensions
             Name = name;
         }
 
-        public override object ProvideValue(MarkupExtensionContext extensionContext)
+        public override object ProvideValue(IServiceProvider serviceProvider)
         {
             return new StyleResourceBinding(this.Name);
         }

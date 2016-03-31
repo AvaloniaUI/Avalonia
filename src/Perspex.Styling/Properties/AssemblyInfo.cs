@@ -4,6 +4,7 @@
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Perspex.Metadata;
+using Portable.Xaml.Markup;
 
 [assembly: AssemblyTitle("Perspex.Styling")]
 [assembly: XmlnsDefinition("https://github.com/perspex", "Perspex.Styling")]

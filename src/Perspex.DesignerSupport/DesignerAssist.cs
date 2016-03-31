@@ -4,8 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using OmniXaml;
-using OmniXaml.ObjectAssembler;
 using Perspex.Controls;
 using Perspex.Controls.Platform;
 using Perspex.Markup.Xaml;

@@ -2,16 +2,11 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Reactive;
 using Moq;
-using OmniXaml;
-using OmniXaml.ObjectAssembler.Commands;
-using OmniXaml.TypeConversion;
-using OmniXaml.Typing;
 using Perspex.Collections;
-using Perspex.Controls;
 using Perspex.Markup.Xaml.Converters;
 using Perspex.Styling;
+using Portable.Xaml.ComponentModel;
 using Xunit;
 
 namespace Perspex.Markup.Xaml.UnitTests.Converters
@@ -56,19 +51,19 @@ namespace Perspex.Markup.Xaml.UnitTests.Converters
             Assert.Equal(AttachedOwner.AttachedProperty, result);
         }
 
-        private IValueContext CreateContext(Style style = null)
+        private ITypeDescriptorContext CreateContext(Style style = null)
         {
-            var context = new Mock<IValueContext>();
-            var topDownValueContext = new Mock<ITopDownValueContext>();
-            var typeRepository = new Mock<ITypeRepository>();
-            var featureProvider = new Mock<ITypeFeatureProvider>();
-            var class1XamlType = new XamlType(typeof(Class1), typeRepository.Object, null, featureProvider.Object);
-            var attachedOwnerXamlType = new XamlType(typeof(AttachedOwner), typeRepository.Object, null, featureProvider.Object);
-            context.Setup(x => x.TopDownValueContext).Returns(topDownValueContext.Object);
-            context.Setup(x => x.TypeRepository).Returns(typeRepository.Object);
-            topDownValueContext.Setup(x => x.GetLastInstance(It.IsAny<XamlType>())).Returns(style);
-            typeRepository.Setup(x => x.GetByQualifiedName("Class1")).Returns(class1XamlType);
-            typeRepository.Setup(x => x.GetByQualifiedName("AttachedOwner")).Returns(attachedOwnerXamlType);
+            var context = new Mock<ITypeDescriptorContext>();
+            //var topDownValueContext = new Mock<ITopDownValueContext>();
+            //var typeRepository = new Mock<ITypeRepository>();
+            //var featureProvider = new Mock<ITypeFeatureProvider>();
+            //var class1XamlType = new XamlType(typeof(Class1), typeRepository.Object, null, featureProvider.Object);
+            //var attachedOwnerXamlType = new XamlType(typeof(AttachedOwner), typeRepository.Object, null, featureProvider.Object);
+            //context.Setup(x => x.TopDownValueContext).Returns(topDownValueContext.Object);
+            //context.Setup(x => x.TypeRepository).Returns(typeRepository.Object);
+            //topDownValueContext.Setup(x => x.GetLastInstance(It.IsAny<XamlType>())).Returns(style);
+            //typeRepository.Setup(x => x.GetByQualifiedName("Class1")).Returns(class1XamlType);
+            //typeRepository.Setup(x => x.GetByQualifiedName("AttachedOwner")).Returns(attachedOwnerXamlType);
             return context.Object;
         }
 

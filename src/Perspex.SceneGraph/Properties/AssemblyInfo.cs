@@ -3,6 +3,7 @@
 
 using System.Reflection;
 using Perspex.Metadata;
+using Portable.Xaml.Markup;
 
 [assembly: AssemblyTitle("Perspex.SceneGraph")]
 [assembly: XmlnsDefinition("https://github.com/perspex", "Perspex.Animation")]

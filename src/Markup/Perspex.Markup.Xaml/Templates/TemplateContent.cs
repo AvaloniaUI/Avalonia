@@ -1,37 +1,24 @@
 // Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using System.Collections.Generic;
-using OmniXaml;
-using OmniXaml.ObjectAssembler;
 using Perspex.Controls;
-using Perspex.Markup.Xaml.Context;
+using Portable.Xaml;
 
 namespace Perspex.Markup.Xaml.Templates
 {
     public class TemplateContent
     {
-        private readonly IEnumerable<Instruction> nodes;
-        private readonly IRuntimeTypeSource runtimeTypeSource;
-
-        public TemplateContent(IEnumerable<Instruction> nodes, IRuntimeTypeSource runtimeTypeSource)
+        public TemplateContent(XamlReader reader)
         {
-            this.nodes = nodes;
-            this.runtimeTypeSource = runtimeTypeSource;
+            List = new XamlNodeList(reader.SchemaContext);
+            XamlServices.Transform(reader, List.Writer);
         }
 
-        public Control Load()
+        public XamlNodeList List { get; set; }
+
+        public IControl Load()
         {
-            var assembler = new PerspexObjectAssembler(
-                runtimeTypeSource,
-                new TopDownValueContext());
-
-            foreach (var xamlNode in nodes)
-            {
-                assembler.Process(xamlNode);
-            }
-
-            return (Control)assembler.Result;
+            return (IControl)XamlServices.Load(List.GetReader());
         }
     }
 }

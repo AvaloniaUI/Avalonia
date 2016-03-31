@@ -21,8 +21,8 @@ namespace Perspex.Markup.Xaml.Parsers
         /// </summary>
         /// <param name="typeResolver">
         /// The type resolver to use. The type resolver is a function which accepts two strings:
-        /// a type name and a XML namespace prefix and a type name, and should return the resolved
-        /// type or throw an exception.
+        /// a type name and a XML namespace prefix, and should return the resolved type or throw 
+        /// an exception.
         /// </param>
         public SelectorParser(Func<string, string, Type> typeResolver)
         {

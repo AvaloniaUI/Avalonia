@@ -9,8 +9,10 @@ using Perspex.Controls;
 using Perspex.Controls.Templates;
 using Perspex.Data;
 using Perspex.Markup.Data;
+using Perspex.Markup.Xaml.Context;
 using Perspex.Markup.Xaml.Data;
 using Perspex.Metadata;
+using Portable.Xaml.Markup;
 
 namespace Perspex.Markup.Xaml.Templates
 {
@@ -19,6 +21,7 @@ namespace Perspex.Markup.Xaml.Templates
         public Type DataType { get; set; }
 
         [Content]
+        [XamlDeferLoad(typeof(DeferredLoader), typeof(IControl))]
         public TemplateContent Content { get; set; }
 
         [AssignBinding]
@@ -54,9 +57,9 @@ namespace Perspex.Markup.Xaml.Templates
 
         public IControl Build(object data)
         {
-            var visualTreeForItem = Content.Load();
-            visualTreeForItem.DataContext = data;
-            return visualTreeForItem;
+            var result = Content.Load();
+            result.DataContext = data;
+            return result;
         }
     }
 }

@@ -3,6 +3,7 @@
 
 using System.Reflection;
 using Perspex.Metadata;
+using Portable.Xaml.Markup;
 
 [assembly: AssemblyTitle("Perspex.Input")]
 [assembly: XmlnsDefinition("https://github.com/perspex", "Perspex.Input")]

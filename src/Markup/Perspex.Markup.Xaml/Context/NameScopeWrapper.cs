@@ -3,7 +3,7 @@
 
 namespace Perspex.Markup.Xaml.Context
 {
-    internal class NameScopeWrapper : OmniXaml.INameScope
+    internal class NameScopeWrapper : Portable.Xaml.Markup.INameScope
     {
         private readonly Perspex.Controls.INameScope _inner;
 
@@ -12,17 +12,17 @@ namespace Perspex.Markup.Xaml.Context
             _inner = inner;
         }
 
-        public object Find(string name)
+        public object FindName(string name)
         {
             return _inner.Find(name);
         }
 
-        public void Register(string name, object scopedElement)
+        public void RegisterName(string name, object scopedElement)
         {
             _inner.Register(name, scopedElement);
         }
 
-        public void Unregister(string name)
+        public void UnregisterName(string name)
         {
             _inner.Unregister(name);
         }

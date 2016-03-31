@@ -4,6 +4,7 @@
 using System.Reflection;
 using Perspex.Metadata;
 using System.Runtime.CompilerServices;
+using Portable.Xaml.Markup;
 
 [assembly: AssemblyTitle("Perspex.Markup.Xaml")]
 [assembly: XmlnsDefinition("https://github.com/perspex", "Perspex.Markup.Xaml.Data")]

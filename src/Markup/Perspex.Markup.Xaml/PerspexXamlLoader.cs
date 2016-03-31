@@ -6,38 +6,24 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Text;
-using OmniXaml;
+using Perspex.Controls;
+using Perspex.Data;
+using Perspex.Markup.Xaml.Context;
 using Perspex.Platform;
+using Portable.Xaml;
 
 namespace Perspex.Markup.Xaml
 {
-    using Context;
-    using Controls;
-    using Data;
-    using OmniXaml.ObjectAssembler;
 
     /// <summary>
     /// Loads XAML for a perspex application.
     /// </summary>
-    public class PerspexXamlLoader : XmlLoader
+    public class PerspexXamlLoader
     {
-        private static PerspexParserFactory s_parserFactory;
-        private static IInstanceLifeCycleListener s_lifeCycleListener = new PerspexLifeCycleListener();
-
         /// <summary>
         /// Initializes a new instance of the <see cref="PerspexXamlLoader"/> class.
         /// </summary>
         public PerspexXamlLoader()
-            : this(GetParserFactory())
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PerspexXamlLoader"/> class.
-        /// </summary>
-        /// <param name="xamlParserFactory">The parser factory to use.</param>
-        public PerspexXamlLoader(IParserFactory xamlParserFactory)
-            : base(xamlParserFactory)
         {
         }
 
@@ -146,30 +132,33 @@ namespace Perspex.Markup.Xaml
         /// <returns>The loaded object.</returns>
         public object Load(Stream stream, object rootInstance = null)
         {
-            var result = base.Load(stream, new Settings
-            {
-                RootInstance = rootInstance,
-                InstanceLifeCycleListener = s_lifeCycleListener,
-            });
+            Contract.Requires<ArgumentNullException>(stream != null);
 
-            var topLevel = result as TopLevel;
-
-            if (topLevel != null)
-            {
-                DelayedBinding.ApplyBindings(topLevel);
-            }
-
-            return result;
+            var context = new PerspexXamlSchemaContext();
+            return Load(new XamlXmlReader(stream, context), rootInstance);
         }
 
-        private static PerspexParserFactory GetParserFactory()
+        /// <summary>
+        /// Loads XAML from a <see cref="XamlReader"/>.
+        /// </summary>
+        /// <param name="xamlReader">The XAML reader.</param>
+        /// <param name="rootInstance">
+        /// The optional instance into which the XAML should be loaded.
+        /// </param>
+        /// <returns>The loaded object.</returns>
+        public object Load(XamlReader xamlReader, object rootInstance = null)
         {
-            if (s_parserFactory == null)
-            {
-                s_parserFactory = new PerspexParserFactory();
-            }
+            Contract.Requires<ArgumentNullException>(xamlReader != null);
 
-            return s_parserFactory;
+            var w = new XamlObjectWriter(
+                xamlReader.SchemaContext,
+                new XamlObjectWriterSettings
+                {
+                    RootObjectInstance = rootInstance,
+                });
+
+            XamlServices.Transform(xamlReader, w);
+            return w.Result;
         }
 
         /// <summary>
@@ -183,7 +172,6 @@ namespace Perspex.Markup.Xaml
             var typeName = type.FullName;
             yield return new Uri("resm:" + typeName + ".xaml?assembly=" + asm);
             yield return new Uri("resm:" + typeName + ".paml?assembly=" + asm);
-
         }
     }
 }

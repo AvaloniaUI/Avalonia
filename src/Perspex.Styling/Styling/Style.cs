@@ -53,6 +53,8 @@ namespace Perspex.Styling
             {
                 var resources = Resources;
 
+                resources.Clear();
+
                 foreach (var i in value)
                 {
                     resources.Add(i);

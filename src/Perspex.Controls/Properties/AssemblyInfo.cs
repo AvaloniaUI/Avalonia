@@ -4,6 +4,7 @@
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Perspex.Metadata;
+using Portable.Xaml.Markup;
 
 [assembly: AssemblyTitle("Perspex.Controls")]
 [assembly: InternalsVisibleTo("Perspex.Controls.UnitTests")]
