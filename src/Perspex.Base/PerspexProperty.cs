@@ -71,7 +71,11 @@ namespace Perspex
         /// </summary>
         /// <param name="source">The direct property to copy.</param>
         /// <param name="ownerType">The new owner type.</param>
-        protected PerspexProperty(PerspexProperty source, Type ownerType)
+        /// <param name="metadata">Optional overridden metadata.</param>
+        protected PerspexProperty(
+            PerspexProperty source, 
+            Type ownerType, 
+            PropertyMetadata metadata)
         {
             Contract.Requires<ArgumentNullException>(source != null);
             Contract.Requires<ArgumentNullException>(ownerType != null);
@@ -86,6 +90,11 @@ namespace Perspex
             Notifying = source.Notifying;
             Id = source.Id;
             _defaultMetadata = source._defaultMetadata;
+
+            if (metadata != null)
+            {
+                _metadata.Add(ownerType, metadata);
+            }
         }
 
         /// <summary>

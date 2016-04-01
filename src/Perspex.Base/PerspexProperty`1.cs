@@ -32,8 +32,12 @@ namespace Perspex
         /// </summary>
         /// <param name="source">The property to copy.</param>
         /// <param name="ownerType">The new owner type.</param>
-        protected PerspexProperty(PerspexProperty source, Type ownerType)
-            : base(source, ownerType)
+        /// <param name="metadata">Optional overridden metadata.</param>
+        protected PerspexProperty(
+            PerspexProperty source, 
+            Type ownerType, 
+            PropertyMetadata metadata)
+            : base(source, ownerType, metadata)
         {
         }
     }
