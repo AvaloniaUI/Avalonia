@@ -8,11 +8,11 @@ namespace Perspex.Direct2D1.Media
 {
     internal class BrushWrapper : ComObject
     {
-        public BrushWrapper(Brush brush)
+        public BrushWrapper(IBrush brush)
         {
             Brush = brush;
         }
 
-        public Brush Brush { get; private set; }
+        public IBrush Brush { get; private set; }
     }
 }

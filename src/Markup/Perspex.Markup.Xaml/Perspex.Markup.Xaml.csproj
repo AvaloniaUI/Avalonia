@@ -56,7 +56,6 @@
     <Compile Include="Converters\BitmapTypeConverter.cs" />
     <Compile Include="Converters\BrushTypeConverter.cs" />
     <Compile Include="Converters\ClassesTypeConverter.cs" />
-    <Compile Include="Converters\SolidColorBrushTypeConverter.cs" />
     <Compile Include="Converters\ColorTypeConverter.cs" />
     <Compile Include="Converters\ColumnDefinitionsTypeConverter.cs" />
     <Compile Include="Converters\CursorTypeConverter.cs" />

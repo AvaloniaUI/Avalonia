@@ -118,7 +118,7 @@ namespace Perspex.Direct2D1.Media
             return new Size(width, TextLayout.Metrics.Height);
         }
 
-        public void SetForegroundBrush(Brush brush, int startIndex, int count)
+        public void SetForegroundBrush(IBrush brush, int startIndex, int count)
         {
             TextLayout.SetDrawingEffect(
                 new BrushWrapper(brush),

@@ -23,7 +23,7 @@ namespace Perspex.Controls.Presenters
 
         private readonly DispatcherTimer _caretTimer;
         private bool _caretBlink;
-        private Brush _highlightBrush;
+        private IBrush _highlightBrush;
 
         static TextPresenter()
         {
@@ -82,7 +82,7 @@ namespace Perspex.Controls.Presenters
 
                 if (_highlightBrush == null)
                 {
-                    _highlightBrush = (Brush)this.FindStyleResource("HighlightBrush");
+                    _highlightBrush = (IBrush)this.FindStyleResource("HighlightBrush");
                 }
 
                 foreach (var rect in rects)

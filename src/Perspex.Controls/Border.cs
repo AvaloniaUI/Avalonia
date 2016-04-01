@@ -13,14 +13,14 @@ namespace Perspex.Controls
         /// <summary>
         /// Defines the <see cref="Background"/> property.
         /// </summary>
-        public static readonly StyledProperty<Brush> BackgroundProperty =
-            PerspexProperty.Register<Border, Brush>(nameof(Background));
+        public static readonly StyledProperty<IBrush> BackgroundProperty =
+            PerspexProperty.Register<Border, IBrush>(nameof(Background));
 
         /// <summary>
         /// Defines the <see cref="BorderBrush"/> property.
         /// </summary>
-        public static readonly StyledProperty<Brush> BorderBrushProperty =
-            PerspexProperty.Register<Border, Brush>(nameof(BorderBrush));
+        public static readonly StyledProperty<IBrush> BorderBrushProperty =
+            PerspexProperty.Register<Border, IBrush>(nameof(BorderBrush));
 
         /// <summary>
         /// Defines the <see cref="BorderThickness"/> property.
@@ -45,7 +45,7 @@ namespace Perspex.Controls
         /// <summary>
         /// Gets or sets a brush with which to paint the background.
         /// </summary>
-        public Brush Background
+        public IBrush Background
         {
             get { return GetValue(BackgroundProperty); }
             set { SetValue(BackgroundProperty, value); }
@@ -54,7 +54,7 @@ namespace Perspex.Controls
         /// <summary>
         /// Gets or sets a brush with which to paint the border.
         /// </summary>
-        public Brush BorderBrush
+        public IBrush BorderBrush
         {
             get { return GetValue(BorderBrushProperty); }
             set { SetValue(BorderBrushProperty, value); }

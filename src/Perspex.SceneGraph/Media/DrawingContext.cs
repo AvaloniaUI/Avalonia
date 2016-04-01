@@ -83,7 +83,7 @@ namespace Perspex.Media
         /// <param name="brush">The fill brush.</param>
         /// <param name="pen">The stroke pen.</param>
         /// <param name="geometry">The geometry.</param>
-        public void DrawGeometry(Brush brush, Pen pen, Geometry geometry) => _impl.DrawGeometry(brush, pen, geometry);
+        public void DrawGeometry(IBrush brush, Pen pen, Geometry geometry) => _impl.DrawGeometry(brush, pen, geometry);
 
         /// <summary>
         /// Draws the outline of a rectangle.
@@ -100,7 +100,7 @@ namespace Perspex.Media
         /// <param name="foreground">The foreground brush.</param>
         /// <param name="origin">The upper-left corner of the text.</param>
         /// <param name="text">The text.</param>
-        public void DrawText(Brush foreground, Point origin, FormattedText text)
+        public void DrawText(IBrush foreground, Point origin, FormattedText text)
             => _impl.DrawText(foreground, origin, text);
 
         /// <summary>
@@ -109,7 +109,7 @@ namespace Perspex.Media
         /// <param name="brush">The brush.</param>
         /// <param name="rect">The rectangle bounds.</param>
         /// <param name="cornerRadius">The corner radius.</param>
-        public void FillRectangle(Brush brush, Rect rect, float cornerRadius = 0.0f)
+        public void FillRectangle(IBrush brush, Rect rect, float cornerRadius = 0.0f)
             => _impl.FillRectangle(brush, rect, cornerRadius);
 
         public struct PushedState : IDisposable

@@ -85,14 +85,14 @@ namespace Perspex.Controls.Html
         public static readonly PerspexProperty TextProperty =
             PropertyHelper.Register<HtmlControl, string>("Text", null, OnPerspexProperty_valueChanged);
 
-        public static readonly StyledProperty<Brush> BackgroundProperty =
+        public static readonly StyledProperty<IBrush> BackgroundProperty =
             Border.BackgroundProperty.AddOwner<HtmlControl>();
 
         public static readonly PerspexProperty BorderThicknessProperty =
             PerspexProperty.Register<HtmlControl, Thickness>("BorderThickness", new Thickness(0));
 
         public static readonly PerspexProperty BorderBrushProperty =
-    PerspexProperty.Register<HtmlControl, Brush>("BorderBrush");
+    PerspexProperty.Register<HtmlControl, IBrush>("BorderBrush");
 
         public static readonly PerspexProperty PaddingProperty =
             PerspexProperty.Register<HtmlControl, Thickness>("Padding", new Thickness(0));
@@ -255,9 +255,9 @@ namespace Perspex.Controls.Html
             set { SetValue(BorderThicknessProperty, value); }
         }
 
-        public Brush BorderBrush
+        public IBrush BorderBrush
         {
-            get { return (Brush)GetValue(BorderBrushProperty); }
+            get { return (IBrush)GetValue(BorderBrushProperty); }
             set { SetValue(BorderThicknessProperty, value); }
         }
 
@@ -267,9 +267,9 @@ namespace Perspex.Controls.Html
             set { SetValue(PaddingProperty, value); }
         }
 
-        public Brush Background
+        public IBrush Background
         {
-            get { return (Brush) GetValue(BackgroundProperty); }
+            get { return (IBrush) GetValue(BackgroundProperty); }
             set { SetValue(BackgroundProperty, value);}
         }
 

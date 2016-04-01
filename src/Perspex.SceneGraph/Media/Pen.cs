@@ -20,7 +20,7 @@ namespace Perspex.Media
         /// <param name="lineJoin">The line join.</param>
         /// <param name="miterLimit">The miter limit.</param>
         public Pen(
-            Brush brush, 
+            IBrush brush, 
             double thickness = 1.0,
             DashStyle dashStyle = null, 
             PenLineCap dashCap = PenLineCap.Flat, 
@@ -73,7 +73,7 @@ namespace Perspex.Media
         /// <summary>
         /// Gets the brush used to draw the stroke.
         /// </summary>
-        public Brush Brush { get; }
+        public IBrush Brush { get; }
 
         /// <summary>
         /// Gets the stroke thickness.

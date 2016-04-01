@@ -133,7 +133,7 @@ namespace Perspex.Cairo.Media
             return new Size(width, height);
         }
 
-        public void SetForegroundBrush(Brush brush, int startIndex, int count)
+        public void SetForegroundBrush(IBrush brush, int startIndex, int count)
         {
             var scb = brush as SolidColorBrush;
             if (scb != null)

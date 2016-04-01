@@ -114,7 +114,7 @@ namespace Perspex.Direct2D1.Media
         /// <param name="brush">The fill brush.</param>
         /// <param name="pen">The stroke pen.</param>
         /// <param name="geometry">The geometry.</param>
-        public void DrawGeometry(Perspex.Media.Brush brush, Pen pen, Perspex.Media.Geometry geometry)
+        public void DrawGeometry(IBrush brush, Pen pen, Perspex.Media.Geometry geometry)
         {
             if (brush != null)
             {
@@ -181,7 +181,7 @@ namespace Perspex.Direct2D1.Media
         /// <param name="foreground">The foreground brush.</param>
         /// <param name="origin">The upper-left corner of the text.</param>
         /// <param name="text">The text.</param>
-        public void DrawText(Perspex.Media.Brush foreground, Point origin, FormattedText text)
+        public void DrawText(IBrush foreground, Point origin, FormattedText text)
         {
             if (!string.IsNullOrEmpty(text.Text))
             {
@@ -204,7 +204,7 @@ namespace Perspex.Direct2D1.Media
         /// <param name="brush">The brush.</param>
         /// <param name="rect">The rectangle bounds.</param>
         /// <param name="cornerRadius">The corner radius.</param>
-        public void FillRectangle(Perspex.Media.Brush brush, Rect rect, float cornerRadius)
+        public void FillRectangle(IBrush brush, Rect rect, float cornerRadius)
         {
             using (var b = CreateBrush(brush, rect.Size))
             {
@@ -291,10 +291,9 @@ namespace Perspex.Direct2D1.Media
         /// <param name="brush">The perspex brush.</param>
         /// <param name="destinationSize">The size of the brush's target area.</param>
         /// <returns>The Direct2D brush wrapper.</returns>
-        public BrushImpl CreateBrush(Perspex.Media.Brush brush, Size destinationSize)
+        public BrushImpl CreateBrush(IBrush brush, Size destinationSize)
         {
-            var solidColorBrush = brush as Perspex.Media.SolidColorBrush;
-            var mutableSolidColorBrush = brush as Perspex.Media.Mutable.SolidColorBrush;
+            var solidColorBrush = brush as Perspex.Media.ISolidColorBrush;
             var linearGradientBrush = brush as Perspex.Media.LinearGradientBrush;
             var radialGradientBrush = brush as Perspex.Media.RadialGradientBrush;
             var imageBrush = brush as Perspex.Media.ImageBrush;
@@ -303,10 +302,6 @@ namespace Perspex.Direct2D1.Media
             if (solidColorBrush != null)
             {
                 return new SolidColorBrushImpl(solidColorBrush, _renderTarget);
-            }
-            if (mutableSolidColorBrush != null)
-            {
-                return new SolidColorBrushImpl(mutableSolidColorBrush, _renderTarget);
             }
             else if (linearGradientBrush != null)
             {

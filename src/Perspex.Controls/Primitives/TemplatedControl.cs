@@ -23,13 +23,13 @@ namespace Perspex.Controls.Primitives
         /// <summary>
         /// Defines the <see cref="Background"/> property.
         /// </summary>
-        public static readonly StyledProperty<Brush> BackgroundProperty =
+        public static readonly StyledProperty<IBrush> BackgroundProperty =
             Border.BackgroundProperty.AddOwner<TemplatedControl>();
 
         /// <summary>
         /// Defines the <see cref="BorderBrush"/> property.
         /// </summary>
-        public static readonly StyledProperty<Brush> BorderBrushProperty =
+        public static readonly StyledProperty<IBrush> BorderBrushProperty =
             Border.BorderBrushProperty.AddOwner<TemplatedControl>();
 
         /// <summary>
@@ -65,7 +65,7 @@ namespace Perspex.Controls.Primitives
         /// <summary>
         /// Defines the <see cref="Foreground"/> property.
         /// </summary>
-        public static readonly StyledProperty<Brush> ForegroundProperty =
+        public static readonly StyledProperty<IBrush> ForegroundProperty =
             TextBlock.ForegroundProperty.AddOwner<TemplatedControl>();
 
         /// <summary>
@@ -117,7 +117,7 @@ namespace Perspex.Controls.Primitives
         /// <summary>
         /// Gets or sets the brush used to draw the control's background.
         /// </summary>
-        public Brush Background
+        public IBrush Background
         {
             get { return GetValue(BackgroundProperty); }
             set { SetValue(BackgroundProperty, value); }
@@ -126,7 +126,7 @@ namespace Perspex.Controls.Primitives
         /// <summary>
         /// Gets or sets the brush used to draw the control's border.
         /// </summary>
-        public Brush BorderBrush
+        public IBrush BorderBrush
         {
             get { return GetValue(BorderBrushProperty); }
             set { SetValue(BorderBrushProperty, value); }
@@ -180,7 +180,7 @@ namespace Perspex.Controls.Primitives
         /// <summary>
         /// Gets or sets the brush used to draw the control's text and other foreground elements.
         /// </summary>
-        public Brush Foreground
+        public IBrush Foreground
         {
             get { return GetValue(ForegroundProperty); }
             set { SetValue(ForegroundProperty, value); }

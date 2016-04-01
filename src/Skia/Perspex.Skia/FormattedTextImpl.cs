@@ -73,7 +73,7 @@ namespace Perspex.Skia
             return _size;
         }
 
-        public void SetForegroundBrush(Brush brush, int startIndex, int length)
+        public void SetForegroundBrush(IBrush brush, int startIndex, int length)
         {
         }
 

@@ -72,6 +72,8 @@
     <Compile Include="Media\GradientBrush.cs" />
     <Compile Include="Media\GradientSpreadMethod.cs" />
     <Compile Include="Media\GradientStop.cs" />
+    <Compile Include="Media\IBrush.cs" />
+    <Compile Include="Media\ISolidColorBrush.cs" />
     <Compile Include="Media\LineGeometry.cs" />
     <Compile Include="Media\Mutable\SolidColorBrush.cs" />
     <Compile Include="Media\PenLineJoin.cs" />

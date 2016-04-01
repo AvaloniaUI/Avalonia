@@ -49,7 +49,7 @@ namespace TestApplication
                     Setters = new[]
                     {
                         new Setter(TemplatedControl.ForegroundProperty, Brushes.White),
-                        new Setter(TemplatedControl.BackgroundProperty, new SolidColorBrush(Colors.White) { Opacity = 0.1 }),
+                        new Setter(TemplatedControl.BackgroundProperty, new SolidColorBrush(Colors.White, 0.1)),
                     },
                 },
             });
@@ -91,7 +91,7 @@ namespace TestApplication
                     new Border
                     {
                         Width = 190,
-                        Background = SolidColorBrush.Parse("#1976D2"),
+                        Background = Brush.Parse("#1976D2"),
                         Child = new ScrollViewer
                         {
                             Content = new TabStrip
