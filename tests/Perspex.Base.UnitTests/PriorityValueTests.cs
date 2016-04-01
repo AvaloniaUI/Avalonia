@@ -67,23 +67,7 @@ namespace Perspex.Base.UnitTests
         }
 
         [Fact]
-        public void Earlier_Binding_Firing_Should_Override_Later_Priority_0()
-        {
-            var target = new PriorityValue(null, "Test", typeof(string));
-            var nonActive = new BehaviorSubject<object>("na");
-            var source = new BehaviorSubject<object>("initial");
-
-            target.Add(nonActive, 0);
-            target.Add(source, 0);
-            Assert.Equal("initial", target.Value);
-            target.SetValue("first", 0);
-            Assert.Equal("first", target.Value);
-            nonActive.OnNext("second");
-            Assert.Equal("second", target.Value);
-        }
-
-        [Fact]
-        public void Earlier_Binding_Firing_Should_Not_Override_Later_Priority_1()
+        public void Earlier_Binding_Firing_Should_Not_Override_Later()
         {
             var target = new PriorityValue(null, "Test", typeof(string));
             var nonActive = new BehaviorSubject<object>("na");

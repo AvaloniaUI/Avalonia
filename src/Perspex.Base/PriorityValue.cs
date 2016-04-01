@@ -209,8 +209,7 @@ namespace Perspex
 
             if (!_levels.TryGetValue(priority, out result))
             {
-                var mode = (LevelPrecedenceMode)(priority % 2);
-                result = new PriorityLevel(priority, mode, ValueChanged);
+                result = new PriorityLevel(priority, ValueChanged);
                 _levels.Add(priority, result);
             }
 
