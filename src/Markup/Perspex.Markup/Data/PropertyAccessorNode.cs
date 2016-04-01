@@ -17,6 +17,7 @@ namespace Perspex.Markup.Data
     {
         private IPropertyAccessor _accessor;
         private IDisposable _subscription;
+        private object syncRoot = new object();
 
         public PropertyAccessorNode(string propertyName)
         {
@@ -37,7 +38,18 @@ namespace Perspex.Markup.Data
             {
                 if (_accessor != null)
                 {
-                    return _accessor.SetValue(value, priority);
+                    lock (syncRoot)
+                    {
+                        try
+                        {
+                            _accessor.IgnoreNotification();
+                            return _accessor.SetValue(value, priority);
+                        }
+                        finally
+                        {
+                            _accessor.RestartNotification();
+                        }
+                    }
                 }
 
                 return false;
