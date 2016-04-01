@@ -37,4 +37,7 @@
   <Style Selector="RadioButton:checked /template/ Ellipse#checkMark">
     <Setter Property="IsVisible" Value="True"/>
   </Style>
+  <Style Selector="RadioButton:disabled /template/ Ellipse#border">
+    <Setter Property="Opacity" Value="{StyleResource ThemeDisabledOpacity}"/>
+  </Style>
 </Styles>
