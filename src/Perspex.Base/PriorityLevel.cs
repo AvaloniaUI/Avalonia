@@ -31,34 +31,22 @@ namespace Perspex
     /// </remarks>
     internal class PriorityLevel
     {
-        /// <summary>
-        /// Method called when current value changes.
-        /// </summary>
-        private readonly Action<PriorityLevel> _changed;
-
-        /// <summary>
-        /// The current direct value.
-        /// </summary>
+        private PriorityValue _owner;
         private object _directValue;
-
-        /// <summary>
-        /// The index of the next <see cref="PriorityBindingEntry"/>.
-        /// </summary>
         private int _nextIndex;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PriorityLevel"/> class.
         /// </summary>
+        /// <param name="owner">The owner.</param>
         /// <param name="priority">The priority.</param>
-        /// <param name="mode">The precedence mode.</param>
-        /// <param name="changed">A method to be called when the current value changes.</param>
         public PriorityLevel(
-            int priority,
-            Action<PriorityLevel> changed)
+            PriorityValue owner,
+            int priority)
         {
-            Contract.Requires<ArgumentNullException>(changed != null);
+            Contract.Requires<ArgumentNullException>(owner != null);
 
-            _changed = changed;
+            _owner = owner;
             Priority = priority;
             Value = _directValue = PerspexProperty.UnsetValue;
             ActiveBindingIndex = -1;
@@ -83,7 +71,7 @@ namespace Perspex
             set
             {
                 Value = _directValue = value;
-                _changed(this);
+                _owner.LevelValueChanged(this);
             }
         }
 
@@ -141,7 +129,7 @@ namespace Perspex
                 {
                     Value = entry.Value;
                     ActiveBindingIndex = entry.Index;
-                    _changed(this);
+                    _owner.LevelValueChanged(this);
                 }
                 else
                 {
@@ -175,14 +163,14 @@ namespace Perspex
                 {
                     Value = binding.Value;
                     ActiveBindingIndex = binding.Index;
-                    _changed(this);
+                    _owner.LevelValueChanged(this);
                     return;
                 }
             }
 
             Value = DirectValue;
             ActiveBindingIndex = -1;
-            _changed(this);
+            _owner.LevelValueChanged(this);
         }
     }
 }

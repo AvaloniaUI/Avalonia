@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reactive.Subjects;
 using System.Text;
 using Perspex.Logging;
 using Perspex.Utilities;
@@ -21,34 +20,15 @@ namespace Perspex
     /// priority binding that doesn't return <see cref="PerspexProperty.UnsetValue"/>. Where there
     /// are multiple bindings registered with the same priority, the most recently added binding
     /// has a higher priority. Each time the value changes, the 
-    /// <see cref="IPriorityValueOwner.Changed(PerspexProperty, object, object)"/> method on the 
+    /// <see cref="IPriorityValueOwner.Changed(PriorityValue, object, object)"/> method on the 
     /// owner object is fired with the old and new values.
     /// </remarks>
     internal class PriorityValue
     {
-        /// <summary>
-        /// The owner of the object.
-        /// </summary>
         private readonly IPriorityValueOwner _owner;
-
-        /// <summary>
-        /// The value type.
-        /// </summary>
         private readonly Type _valueType;
-
-        /// <summary>
-        /// The currently registered bindings organised by priority.
-        /// </summary>
         private readonly Dictionary<int, PriorityLevel> _levels = new Dictionary<int, PriorityLevel>();
-
-        /// <summary>
-        /// The current value.
-        /// </summary>
         private object _value;
-
-        /// <summary>
-        /// The function used to validate the value, if any.
-        /// </summary>
         private readonly Func<object, object> _validate;
 
         /// <summary>
@@ -170,6 +150,34 @@ namespace Perspex
         }
 
         /// <summary>
+        /// Called when the value for a priority level changes.
+        /// </summary>
+        /// <param name="level">The priority level of the changed entry.</param>
+        public void LevelValueChanged(PriorityLevel level)
+        {
+            if (level.Priority <= ValuePriority)
+            {
+                if (level.Value != PerspexProperty.UnsetValue)
+                {
+                    UpdateValue(level.Value, level.Priority);
+                }
+                else
+                {
+                    foreach (var i in _levels.Values.OrderBy(x => x.Priority))
+                    {
+                        if (i.Value != PerspexProperty.UnsetValue)
+                        {
+                            UpdateValue(i.Value, i.Priority);
+                            return;
+                        }
+                    }
+
+                    UpdateValue(PerspexProperty.UnsetValue, int.MaxValue);
+                }
+            }
+        }
+
+        /// <summary>
         /// Causes a revalidation of the value.
         /// </summary>
         public void Revalidate()
@@ -197,7 +205,7 @@ namespace Perspex
 
             if (!_levels.TryGetValue(priority, out result))
             {
-                result = new PriorityLevel(priority, ValueChanged);
+                result = new PriorityLevel(this, priority);
                 _levels.Add(priority, result);
             }
 
@@ -236,34 +244,6 @@ namespace Perspex
                     _valueType, 
                     value,
                     value.GetType());
-            }
-        }
-
-        /// <summary>
-        /// Called when the value for a priority level changes.
-        /// </summary>
-        /// <param name="level">The priority level of the changed entry.</param>
-        private void ValueChanged(PriorityLevel level)
-        {
-            if (level.Priority <= ValuePriority)
-            {
-                if (level.Value != PerspexProperty.UnsetValue)
-                {
-                    UpdateValue(level.Value, level.Priority);
-                }
-                else
-                {
-                    foreach (var i in _levels.Values.OrderBy(x => x.Priority))
-                    {
-                        if (i.Value != PerspexProperty.UnsetValue)
-                        {
-                            UpdateValue(i.Value, i.Priority);
-                            return;
-                        }
-                    }
-
-                    UpdateValue(PerspexProperty.UnsetValue, int.MaxValue);
-                }
             }
         }
     }
