@@ -198,5 +198,31 @@ namespace Perspex.Markup.Xaml.UnitTests.Xaml
 
             Assert.Equal(0xff506070, brush.Color.ToUint32());
         }
+
+        [Fact(Skip = "TODO: Issue #492")]
+        public void StyleResource_Can_Be_Found_Across_Xaml_Files()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/perspex'
+        xmlns:mut='https://github.com/perspex/mutable'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Window.Styles>
+        <StyleInclude Source='resm:Perspex.Markup.Xaml.UnitTests.Xaml.Style1.xaml?assembly=Perspex.Markup.Xaml.UnitTests'/>
+        <StyleInclude Source='resm:Perspex.Markup.Xaml.UnitTests.Xaml.Style2.xaml?assembly=Perspex.Markup.Xaml.UnitTests'/>
+    </Window.Styles>
+    <Border Name='border' Background='{StyleResource RedBrush}'/>
+</Window>";
+
+                var loader = new PerspexXamlLoader();
+                var window = (Window)loader.Load(xaml);
+                var border = window.FindControl<Border>("border");
+                var borderBrush = (Perspex.Media.Mutable.SolidColorBrush)border.Background;
+
+                Assert.NotNull(borderBrush);
+                Assert.Equal(0xffff0000, borderBrush.Color.ToUint32());
+            }
+        }
     }
 }
