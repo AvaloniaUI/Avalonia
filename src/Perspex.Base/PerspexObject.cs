@@ -21,7 +21,7 @@ namespace Perspex
     /// <remarks>
     /// This class is analogous to DependencyObject in WPF.
     /// </remarks>
-    public class PerspexObject : IPerspexObject, IPerspexObjectDebug, INotifyPropertyChanged
+    public class PerspexObject : IPerspexObject, IPerspexObjectDebug, INotifyPropertyChanged, IPriorityValueOwner
     {
         /// <summary>
         /// Maintains a list of direct property binding subscriptions so that the binding source
@@ -478,6 +478,34 @@ namespace Perspex
         }
 
         /// <inheritdoc/>
+        void IPriorityValueOwner.Changed(PriorityValue sender, object oldValue, object newValue)
+        {
+            var property = sender.Property;
+            var priority = (BindingPriority)sender.ValuePriority;
+
+            oldValue = (oldValue == PerspexProperty.UnsetValue) ?
+                GetDefaultValue(property) :
+                oldValue;
+            newValue = (newValue == PerspexProperty.UnsetValue) ?
+                GetDefaultValue(property) :
+                newValue;
+
+            if (!Equals(oldValue, newValue))
+            {
+                RaisePropertyChanged(property, oldValue, newValue, priority);
+
+                Logger.Verbose(
+                    LogArea.Property,
+                    this,
+                    "{Property} changed from {$Old} to {$Value} with priority {Priority}",
+                    property,
+                    oldValue,
+                    newValue,
+                    priority);
+            }
+        }
+
+        /// <inheritdoc/>
         Delegate[] IPerspexObjectDebug.GetPropertyChangedSubscribers()
         {
             return _propertyChanged?.GetInvocationList();
@@ -604,33 +632,9 @@ namespace Perspex
 
             PriorityValue result = new PriorityValue(
                 this,
-                property.Name, 
+                property,
                 property.PropertyType, 
                 validate2);
-
-            result.Changed.Subscribe(x =>
-            {
-                object oldValue = (x.Item1 == PerspexProperty.UnsetValue) ?
-                    GetDefaultValue(property) :
-                    x.Item1;
-                object newValue = (x.Item2 == PerspexProperty.UnsetValue) ?
-                    GetDefaultValue(property) :
-                    x.Item2;
-
-                if (!Equals(oldValue, newValue))
-                {
-                    RaisePropertyChanged(property, oldValue, newValue, (BindingPriority)result.ValuePriority);
-
-                    Logger.Verbose(
-                        LogArea.Property, 
-                        this,
-                        "{Property} changed from {$Old} to {$Value} with priority {Priority}",
-                        property, 
-                        oldValue, 
-                        newValue, 
-                        (BindingPriority)result.ValuePriority);
-                }
-            });
 
             return result;
         }

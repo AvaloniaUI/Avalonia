@@ -20,20 +20,16 @@ namespace Perspex
     /// represent higher priorites. The current <see cref="Value"/> is selected from the highest
     /// priority binding that doesn't return <see cref="PerspexProperty.UnsetValue"/>. Where there
     /// are multiple bindings registered with the same priority, the most recently added binding
-    /// has a higher priority. Each time the value changes, the <see cref="Changed"/> observable is
-    /// fired with the old and new values.
+    /// has a higher priority. Each time the value changes, the 
+    /// <see cref="IPriorityValueOwner.Changed(PerspexProperty, object, object)"/> method on the 
+    /// owner object is fired with the old and new values.
     /// </remarks>
     internal class PriorityValue
     {
         /// <summary>
         /// The owner of the object.
         /// </summary>
-        private readonly PerspexObject _owner;
-
-        /// <summary>
-        /// The name of the property.
-        /// </summary>
-        private readonly string _name;
+        private readonly IPriorityValueOwner _owner;
 
         /// <summary>
         /// The value type.
@@ -44,11 +40,6 @@ namespace Perspex
         /// The currently registered bindings organised by priority.
         /// </summary>
         private readonly Dictionary<int, PriorityLevel> _levels = new Dictionary<int, PriorityLevel>();
-
-        /// <summary>
-        /// The changed observable.
-        /// </summary>
-        private readonly Subject<Tuple<object, object>> _changed = new Subject<Tuple<object, object>>();
 
         /// <summary>
         /// The current value.
@@ -64,17 +55,17 @@ namespace Perspex
         /// Initializes a new instance of the <see cref="PriorityValue"/> class.
         /// </summary>
         /// <param name="owner">The owner of the object.</param>
-        /// <param name="name">The name of the property.</param>
+        /// <param name="property">The property that the value represents.</param>
         /// <param name="valueType">The value type.</param>
         /// <param name="validate">An optional validation function.</param>
         public PriorityValue(
-            PerspexObject owner,
-            string name, 
+            IPriorityValueOwner owner,
+            PerspexProperty property, 
             Type valueType,
             Func<object, object> validate = null)
         {
             _owner = owner;
-            _name = name;
+            Property = property;
             _valueType = valueType;
             _value = PerspexProperty.UnsetValue;
             ValuePriority = int.MaxValue;
@@ -82,12 +73,9 @@ namespace Perspex
         }
 
         /// <summary>
-        /// Fired whenever the current <see cref="Value"/> changes.
+        /// Gets the property that the value represents.
         /// </summary>
-        /// <remarks>
-        /// The old and new values may be the same, this class does not check for distinct values.
-        /// </remarks>
-        public IObservable<Tuple<object, object>> Changed => _changed;
+        public PerspexProperty Property { get; }
 
         /// <summary>
         /// Gets the current value.
@@ -236,7 +224,7 @@ namespace Perspex
 
                 ValuePriority = priority;
                 _value = castValue;
-                _changed.OnNext(Tuple.Create(old, _value));
+                _owner?.Changed(this, old, _value);
             }
             else
             {
@@ -244,7 +232,7 @@ namespace Perspex
                     LogArea.Property, 
                     _owner,
                     "Binding produced invalid value for {$Property} ({$PropertyType}): {$Value} ({$ValueType})",
-                    _name, 
+                    Property.Name, 
                     _valueType, 
                     value,
                     value.GetType());
