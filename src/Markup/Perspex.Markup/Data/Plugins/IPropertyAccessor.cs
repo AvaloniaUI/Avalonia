@@ -35,16 +35,5 @@ namespace Perspex.Markup.Data.Plugins
         /// True if the property was set; false if the property could not be set.
         /// </returns>
         bool SetValue(object value, BindingPriority priority);
-
-        /// <summary>
-        /// Tells the <see cref="IPropertyAccessor"/> to stop notifying of changed values.
-        /// </summary>
-        void IgnoreNotification();
-
-        /// <summary>
-        /// Tells the <see cref="IPropertyAccessor"/> to resume notifying of changed values.
-        /// If already sending notifications of changed values, this method is a no-op.
-        /// </summary>
-        void RestartNotification();
     }
 }

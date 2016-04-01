@@ -108,21 +108,19 @@ namespace Perspex.Markup.Data.Plugins
             {
                 if (!_property.IsReadOnly)
                 {
-                    Instance.SetValue(_property, value, priority);
+                    try
+                    {
+                        notifying = false;
+                        Instance.SetValue(_property, value, priority);
+                    }
+                    finally
+                    {
+                        notifying = true;
+                    }
                     return true;
                 }
 
                 return false;
-            }
-
-            public void IgnoreNotification()
-            {
-                notifying = false;
-            }
-
-            public void RestartNotification()
-            {
-                notifying = true;
             }
         }
     }

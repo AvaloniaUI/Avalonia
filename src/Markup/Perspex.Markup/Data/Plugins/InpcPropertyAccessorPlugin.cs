@@ -130,8 +130,16 @@ namespace Perspex.Markup.Data.Plugins
             {
                 if (_property.CanWrite)
                 {
-                    _property.SetValue(_reference.Target, value);
-                    return true;
+                    try
+                    {
+                        notifying = false;
+                        _property.SetValue(_reference.Target, value);
+                        return true;
+                    }
+                    finally
+                    {
+                        notifying = true;
+                    }
                 }
 
                 return false;
@@ -143,16 +151,6 @@ namespace Perspex.Markup.Data.Plugins
                 {
                     _changed(Value);
                 }
-            }
-
-            public void IgnoreNotification()
-            {
-                notifying = false;
-            }
-
-            public void RestartNotification()
-            {
-                notifying = true;
             }
         }
     }
