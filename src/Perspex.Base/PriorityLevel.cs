@@ -100,10 +100,10 @@ namespace Perspex
         {
             Contract.Requires<ArgumentNullException>(binding != null);
 
-            var entry = new PriorityBindingEntry(_nextIndex++);
+            var entry = new PriorityBindingEntry(this, _nextIndex++);
             var node = Bindings.AddFirst(entry);
 
-            entry.Start(binding, Changed, Completed);
+            entry.Start(binding);
 
             return Disposable.Create(() =>
             {
@@ -121,7 +121,7 @@ namespace Perspex
         /// Invoked when an entry in <see cref="Bindings"/> changes value.
         /// </summary>
         /// <param name="entry">The entry that changed.</param>
-        private void Changed(PriorityBindingEntry entry)
+        public void Changed(PriorityBindingEntry entry)
         {
             if (entry.Index >= ActiveBindingIndex)
             {
@@ -142,7 +142,7 @@ namespace Perspex
         /// Invoked when an entry in <see cref="Bindings"/> completes.
         /// </summary>
         /// <param name="entry">The entry that completed.</param>
-        private void Completed(PriorityBindingEntry entry)
+        public void Completed(PriorityBindingEntry entry)
         {
             Bindings.Remove(entry);
 
