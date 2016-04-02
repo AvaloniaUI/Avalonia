@@ -110,8 +110,7 @@ namespace Perspex.Markup.Data
                 {
                     var error = converted as BindingError;
 
-                    Logger.Log(
-                        LogEventLevel.Error,
+                    Logger.Error(
                         LogArea.Binding,
                         this,
                         "Error binding to {Expression}: {Message}",
@@ -130,8 +129,7 @@ namespace Perspex.Markup.Data
                         }
                         else
                         {
-                            Logger.Log(
-                                LogEventLevel.Error,
+                            Logger.Error(
                                 LogArea.Binding,
                                 this,
                                 "Could not convert FallbackValue {FallbackValue} to {Type}",
