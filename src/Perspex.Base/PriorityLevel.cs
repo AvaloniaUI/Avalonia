@@ -4,6 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Reactive.Disposables;
+using Perspex.Data;
+using Perspex.Logging;
 
 namespace Perspex
 {
@@ -150,6 +152,16 @@ namespace Perspex
             {
                 ActivateFirstBinding();
             }
+        }
+
+        /// <summary>
+        /// Invoked when an entry in <see cref="Bindings"/> encounters a recoverable error.
+        /// </summary>
+        /// <param name="entry">The entry that completed.</param>
+        /// <param name="error">The error.</param>
+        public void Error(PriorityBindingEntry entry, BindingError error)
+        {
+            _owner.LevelError(this, error);
         }
 
         /// <summary>

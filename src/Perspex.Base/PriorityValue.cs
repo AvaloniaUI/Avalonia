@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Perspex.Data;
 using Perspex.Logging;
 using Perspex.Utilities;
 
@@ -178,6 +179,23 @@ namespace Perspex
         }
 
         /// <summary>
+        /// Called when a priority level encounters an error.
+        /// </summary>
+        /// <param name="level">The priority level of the changed entry.</param>
+        /// <param name="error">The binding error.</param>
+        public void LevelError(PriorityLevel level, BindingError error)
+        {
+            Logger.Log(
+                LogEventLevel.Error,
+                LogArea.Binding,
+                _owner,
+                "Error binding to {Target}.{Property}: {Message}",
+                _owner,
+                Property,
+                error.Exception.Message);
+        }
+
+        /// <summary>
         /// Causes a revalidation of the value.
         /// </summary>
         public void Revalidate()
@@ -237,7 +255,7 @@ namespace Perspex
             else
             {
                 Logger.Error(
-                    LogArea.Property, 
+                    LogArea.Binding, 
                     _owner,
                     "Binding produced invalid value for {$Property} ({$PropertyType}): {$Value} ({$ValueType})",
                     Property.Name, 

@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using Perspex.Data;
 
 namespace Perspex
 {
@@ -91,8 +92,18 @@ namespace Perspex
 
         private void ValueChanged(object value)
         {
-            Value = value;
-            _owner.Changed(this);
+            var bindingError = value as BindingError;
+
+            if (bindingError != null)
+            {
+                _owner.Error(this, bindingError);
+            }
+
+            if (bindingError == null || bindingError.UseFallbackValue)
+            {
+                Value = bindingError == null ? value : bindingError.FallbackValue;
+                _owner.Changed(this);
+            }
         }
 
         private void Completed()

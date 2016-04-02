@@ -43,6 +43,7 @@
     <Compile Include="..\Shared\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Data\BindingError.cs" />
     <Compile Include="Diagnostics\INotifyCollectionChangedDebug.cs" />
     <Compile Include="Data\AssignBindingAttribute.cs" />
     <Compile Include="Data\BindingOperations.cs" />

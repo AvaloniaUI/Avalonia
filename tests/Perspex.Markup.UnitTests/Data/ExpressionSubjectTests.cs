@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Reactive.Linq;
 using Moq;
+using Perspex.Data;
 using Perspex.Markup.Data;
 using Xunit;
 
@@ -47,13 +48,13 @@ namespace Perspex.Markup.UnitTests.Data
         }
 
         [Fact]
-        public async void Should_Convert_Get_Invalid_Double_String_To_UnsetValue()
+        public async void Getting_Invalid_Double_String_Should_Return_BindingError()
         {
             var data = new Class1 { StringValue = "foo" };
             var target = new ExpressionSubject(new ExpressionObserver(data, "StringValue"), typeof(double));
             var result = await target.Take(1);
 
-            Assert.Equal(PerspexProperty.UnsetValue, result);
+            Assert.IsType<BindingError>(result);
         }
 
         [Fact]
@@ -105,14 +106,29 @@ namespace Perspex.Markup.UnitTests.Data
         }
 
         [Fact]
-        public void Should_Coerce_Set_Invalid_Double_String_To_Default_Value()
+        public void Setting_Invalid_Double_String_Should_Not_Change_Target()
         {
             var data = new Class1 { DoubleValue = 5.6 };
             var target = new ExpressionSubject(new ExpressionObserver(data, "DoubleValue"), typeof(string));
 
             target.OnNext("foo");
 
-            Assert.Equal(0, data.DoubleValue);
+            Assert.Equal(5.6, data.DoubleValue);
+        }
+
+        [Fact]
+        public void Setting_Invalid_Double_String_Should_Use_FallbackValue()
+        {
+            var data = new Class1 { DoubleValue = 5.6 };
+            var target = new ExpressionSubject(
+                new ExpressionObserver(data, "DoubleValue"),
+                typeof(string),
+                DefaultValueConverter.Instance,
+                fallbackValue: "9.8");
+
+            target.OnNext("foo");
+
+            Assert.Equal(9.8, data.DoubleValue);
         }
 
         [Fact]
