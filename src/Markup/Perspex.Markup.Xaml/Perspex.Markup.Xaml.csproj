@@ -42,9 +42,7 @@
     </Compile>
     <Compile Include="Context\DeferredLoader.cs" />
     <Compile Include="Context\NameScopeWrapper.cs" />
-    <Compile Include="Context\PerspexAttachableXamlMember.cs" />
     <Compile Include="Context\PerspexAttributeProvider.cs" />
-    <Compile Include="Context\PerspexMemberValuePlugin.cs" />
     <Compile Include="Context\PerspexXamlSchemaContext.cs" />
     <Compile Include="Context\PerspexXamlType.cs" />
     <Compile Include="Context\PropertyAccessor.cs" />
@@ -81,9 +79,7 @@
     <Compile Include="MarkupExtensions\StyleResourceExtension.cs" />
     <Compile Include="MarkupExtensions\BindingExtension.cs" />
     <Compile Include="MarkupExtensions\RelativeSourceExtension.cs" />
-    <Compile Include="MarkupExtensions\StaticExtension.cs" />
     <Compile Include="MarkupExtensions\TemplateBindingExtension.cs" />
-    <Compile Include="MarkupExtensions\TypeExtension.cs" />
     <Compile Include="Parsers\SelectorGrammar.cs" />
     <Compile Include="Parsers\SelectorParser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -96,7 +92,6 @@
     <Compile Include="Templates\MemberSelector.cs" />
     <Compile Include="Templates\Template.cs" />
     <Compile Include="Templates\TemplateContent.cs" />
-    <Compile Include="Templates\TemplateLoader.cs" />
     <Compile Include="Templates\TreeDataTemplate.cs" />
   </ItemGroup>
   <ItemGroup>
