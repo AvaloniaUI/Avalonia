@@ -40,7 +40,7 @@
                                CaretIndex="{TemplateBinding CaretIndex}"
                                SelectionStart="{TemplateBinding SelectionStart}"
                                SelectionEnd="{TemplateBinding SelectionEnd}"
-                               Text="{TemplateBinding Text}"
+                               Text="{TemplateBinding Text, Mode=TwoWay}"
                                TextAlignment="{TemplateBinding TextAlignment}"
                                TextWrapping="{TemplateBinding TextWrapping}"/>
               </Panel>
