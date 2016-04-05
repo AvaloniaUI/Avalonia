@@ -43,7 +43,7 @@ namespace Perspex.Markup
 
             if (value != null)
             {
-                var message = $"Could not convert {value} to {targetType}";
+                var message = $"Could not convert '{value}' to '{targetType}'";
                 return new BindingError(new InvalidCastException(message));
             }
 

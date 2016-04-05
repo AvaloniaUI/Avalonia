@@ -26,7 +26,7 @@ namespace Perspex.Markup.Data.Plugins
         /// <param name="changed">A function to call when the property changes.</param>
         /// <returns>
         /// An <see cref="IPropertyAccessor"/> interface through which future interactions with the 
-        /// property will be made, or null if the property was not found.
+        /// property will be made.
         /// </returns>
         IPropertyAccessor Start(
             WeakReference reference, 

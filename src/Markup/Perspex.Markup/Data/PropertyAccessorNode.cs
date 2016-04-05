@@ -48,7 +48,7 @@ namespace Perspex.Markup.Data
         {
             var instance = reference.Target;
 
-            if (instance != null)
+            if (instance != null && instance != PerspexProperty.UnsetValue)
             {
                 var plugin = ExpressionObserver.PropertyAccessors.FirstOrDefault(x => x.Match(reference));
 

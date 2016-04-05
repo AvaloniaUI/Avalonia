@@ -153,7 +153,9 @@ namespace Perspex.Markup.Data
 
         private object ConvertValue(object value)
         {
-            var converted = Converter.Convert(
+            var converted = 
+                value as BindingError ??
+                Converter.Convert(
                     value,
                     _targetType,
                     ConverterParameter,
