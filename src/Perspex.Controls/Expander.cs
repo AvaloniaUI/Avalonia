@@ -14,14 +14,24 @@ namespace Perspex.Controls
 
     public class Expander : HeaderedContentControl
     {
-        public static readonly StyledProperty<bool> IsExpandedProperty =
-            PerspexProperty.Register<Expander, bool>(nameof(IsExpanded));
+        public static readonly DirectProperty<Expander, IPageTransition> ContentTransitionProperty =
+            PerspexProperty.RegisterDirect<Expander, IPageTransition>(
+                nameof(ContentTransition),
+                o => o.ContentTransition,
+                (o, v) => o.ContentTransition = v);
 
-        public static readonly StyledProperty<ExpandDirection> ExpandDirectionProperty =
-            PerspexProperty.Register<Expander, ExpandDirection>(nameof(ExpandDirection), ExpandDirection.Down);
+        public static readonly DirectProperty<Expander, ExpandDirection> ExpandDirectionProperty =
+            PerspexProperty.RegisterDirect<Expander, ExpandDirection>(
+                nameof(ExpandDirection),
+                o => o.ExpandDirection,
+                (o, v) => o.ExpandDirection = v,
+                ExpandDirection.Down);
 
-        public static readonly StyledProperty<IPageTransition> ContentTransitionProperty =
-            PerspexProperty.Register<Expander, IPageTransition>(nameof(ContentTransition));
+        public static readonly DirectProperty<Expander, bool> IsExpandedProperty =
+            PerspexProperty.RegisterDirect<Expander, bool>(
+                nameof(IsExpanded),
+                o => o.IsExpanded,
+                (o, v) => o.IsExpanded = v);
 
         static Expander()
         {
@@ -35,22 +45,22 @@ namespace Perspex.Controls
             IsExpandedProperty.Changed.AddClassHandler<Expander>(x => x.OnIsExpandedChanged);
         }
 
-        public bool IsExpanded
+        public IPageTransition ContentTransition
         {
-            get { return GetValue(IsExpandedProperty); }
-            set { SetValue(IsExpandedProperty, value); }
+            get { return _contentTransition; }
+            set { SetAndRaise(ContentTransitionProperty, ref _contentTransition, value); }
         }
 
         public ExpandDirection ExpandDirection
         {
-            get { return GetValue(ExpandDirectionProperty); }
-            set { SetValue(ExpandDirectionProperty, value); }
+            get { return _expandDirection; }
+            set { SetAndRaise(ExpandDirectionProperty, ref _expandDirection, value); }
         }
 
-        public IPageTransition ContentTransition
+        public bool IsExpanded
         {
-            get { return GetValue(ContentTransitionProperty); }
-            set { SetValue(ContentTransitionProperty, value); }
+            get { return _isExpanded; }
+            set { SetAndRaise(IsExpandedProperty, ref _isExpanded, value); }
         }
 
         protected virtual void OnIsExpandedChanged(PerspexPropertyChangedEventArgs e)
@@ -71,5 +81,9 @@ namespace Perspex.Controls
                 }
             }
         }
+
+        private IPageTransition _contentTransition;
+        private ExpandDirection _expandDirection;
+        private bool _isExpanded;
     }
 }
