@@ -65,6 +65,7 @@
     <Compile Include="Logging\LogArea.cs" />
     <Compile Include="Logging\LogEventLevel.cs" />
     <Compile Include="Logging\Logger.cs" />
+    <Compile Include="Metadata\AmbientAttribute.cs" />
     <Compile Include="Metadata\DependsOnAttribute.cs" />
     <Compile Include="Metadata\ContentAttribute.cs" />
     <Compile Include="PerspexDisposable.cs" />

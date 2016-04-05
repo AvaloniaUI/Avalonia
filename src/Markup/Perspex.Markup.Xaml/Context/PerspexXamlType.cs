@@ -17,7 +17,7 @@ namespace Perspex.Markup.Xaml.Context
 
         protected override ICustomAttributeProvider LookupCustomAttributeProvider()
         {
-            return new PerspexAttributeProvider(this.UnderlyingType);
+            return new PerspexTypeAttributeProvider(this.UnderlyingType);
         }
 
         protected override XamlValueConverter<TypeConverter> LookupTypeConverter()

@@ -42,7 +42,8 @@
     </Compile>
     <Compile Include="Context\DeferredLoader.cs" />
     <Compile Include="Context\NameScopeWrapper.cs" />
-    <Compile Include="Context\PerspexAttributeProvider.cs" />
+    <Compile Include="Context\PerspexMemberAttributeProvider.cs" />
+    <Compile Include="Context\PerspexTypeAttributeProvider.cs" />
     <Compile Include="Context\PerspexXamlSchemaContext.cs" />
     <Compile Include="Context\PerspexXamlType.cs" />
     <Compile Include="Context\PropertyAccessor.cs" />

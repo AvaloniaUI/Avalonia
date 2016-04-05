@@ -10,11 +10,11 @@ using Portable.Xaml.Markup;
 
 namespace Perspex.Markup.Xaml.Context
 {
-    public class PerspexAttributeProvider : ICustomAttributeProvider
+    public class PerspexTypeAttributeProvider : ICustomAttributeProvider
     {
         private readonly Type _type;
 
-        public PerspexAttributeProvider(Type type)
+        public PerspexTypeAttributeProvider(Type type)
         {
             _type = type;
         }
@@ -26,21 +26,18 @@ namespace Perspex.Markup.Xaml.Context
 
         public object[] GetCustomAttributes(Type attributeType, bool inherit)
         {
-            Attribute result = null;
-
             if (attributeType == typeof(Portable.Xaml.Markup.ContentPropertyAttribute))
             {
-                result = GetContentPropertyAttribute(inherit);
-            }
+                var cp = GetContentPropertyAttribute(inherit);
 
-            if (result != null)
-            {
-                return new[] { result };
+                if (cp != null)
+                {
+                    return new object[] { cp };
+                }
             }
-            else
-            {
-                return new object[0];
-            }
+            
+            var attr = _type.GetTypeInfo().GetCustomAttributes(attributeType, inherit);
+            return (attr as object[]) ?? attr.ToArray();
         }
 
         public bool IsDefined(Type attributeType, bool inherit)

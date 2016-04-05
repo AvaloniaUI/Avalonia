@@ -7,6 +7,7 @@ using System.Linq;
 using Perspex.Styling;
 using Portable.Xaml;
 using Portable.Xaml.ComponentModel;
+using Portable.Xaml.Markup;
 
 namespace Perspex.Markup.Xaml.Converters
 {
@@ -34,11 +35,15 @@ namespace Perspex.Markup.Xaml.Converters
 
             if (typeName == null)
             {
-                ////var styleType = context.TypeRepository.GetByType(typeof(Style));
-                ////var style = (Style)context.TopDownValueContext.GetLastInstance(styleType);
-                ////type = style.Selector?.TargetType;
+                var ambient = (IAmbientProvider)context.GetService(typeof(IAmbientProvider));
+                var schema = (IXamlSchemaContextProvider)context.GetService(typeof(IXamlSchemaContextProvider));
+                var styleType = schema.SchemaContext.GetXamlType(typeof(Style));
+                var ambientValue = (AmbientPropertyValue)ambient.GetFirstAmbientValue(styleType);
+                var style = (Style)ambientValue?.Value;
 
-                ////if (type == null)
+                type = style?.Selector.TargetType;
+
+                if (type == null)
                 {
                     throw new XamlException(
                         "Could not determine the target type. Please fully qualify the property name.");
@@ -46,9 +51,11 @@ namespace Perspex.Markup.Xaml.Converters
             }
             else
             {
-                ////type = context.TypeRepository.GetByQualifiedName(typeName)?.UnderlyingType;
+                var resolver = (IXamlTypeResolver)context.GetService(typeof(IXamlTypeResolver));
 
-                ////if (type == null)
+                type = resolver.Resolve(typeName);
+
+                if (type == null)
                 {
                     throw new XamlException($"Could not find type '{typeName}'.");
                 }

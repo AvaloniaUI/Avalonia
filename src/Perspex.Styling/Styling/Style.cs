@@ -65,13 +65,14 @@ namespace Perspex.Styling
         /// <summary>
         /// Gets or sets style's selector.
         /// </summary>
+        [Ambient]
         public Selector Selector { get; set; }
 
         /// <summary>
         /// Gets or sets style's setters.
         /// </summary>
         [Content]
-        public IEnumerable<ISetter> Setters { get; set; } = new List<ISetter>();
+        public IList<ISetter> Setters { get; set; } = new List<ISetter>();
 
         /// <summary>
         /// Attaches the style to a control if the style's selector matches.

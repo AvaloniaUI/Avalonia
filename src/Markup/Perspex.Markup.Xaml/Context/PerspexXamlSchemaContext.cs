@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using Portable.Xaml;
 using Portable.Xaml.ComponentModel;
 
@@ -14,7 +15,12 @@ namespace Perspex.Markup.Xaml.Context
 
         protected override ICustomAttributeProvider GetCustomAttributeProvider(Type type)
         {
-            return new PerspexAttributeProvider(type);
+            return new PerspexTypeAttributeProvider(type);
+        }
+
+        protected override ICustomAttributeProvider GetCustomAttributeProvider(MemberInfo member)
+        {
+            return new PerspexMemberAttributeProvider(member);
         }
 
         public override XamlType GetXamlType(Type type)
