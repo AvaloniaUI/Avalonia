@@ -3,10 +3,9 @@
 
 using System;
 using System.Linq;
+using Perspex.Logging;
 using Perspex.Platform;
 using Perspex.VisualTree;
-using Serilog;
-using Serilog.Core.Enrichers;
 
 namespace Perspex.Layout
 {
@@ -133,7 +132,6 @@ namespace Perspex.Layout
         public static readonly StyledProperty<bool> UseLayoutRoundingProperty =
             PerspexProperty.Register<Layoutable, bool>(nameof(UseLayoutRounding), defaultValue: true, inherits: true);
 
-        private readonly ILogger _layoutLog;
         private bool _measuring;
         private Size? _previousMeasure;
         private Rect? _previousArrange;
@@ -154,19 +152,6 @@ namespace Perspex.Layout
                 MarginProperty,
                 HorizontalAlignmentProperty,
                 VerticalAlignmentProperty);
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Layoutable"/> class.
-        /// </summary>
-        public Layoutable()
-        {
-            _layoutLog = Log.ForContext(new[]
-            {
-                new PropertyEnricher("Area", "Layout"),
-                new PropertyEnricher("SourceContext", GetType()),
-                new PropertyEnricher("Id", GetHashCode()),
-            });
         }
 
         /// <summary>
@@ -340,7 +325,7 @@ namespace Perspex.Layout
                 DesiredSize = desiredSize;
                 _previousMeasure = availableSize;
 
-                _layoutLog.Verbose("Measure requested {DesiredSize}", DesiredSize);
+                Logger.Verbose(LogArea.Layout, this, "Measure requested {DesiredSize}", DesiredSize);
 
                 if (DesiredSize != previousDesiredSize)
                 {
@@ -367,7 +352,7 @@ namespace Perspex.Layout
 
             if (!IsArrangeValid || _previousArrange != rect)
             {
-                _layoutLog.Verbose("Arrange to {Rect} ", rect);
+                Logger.Verbose(LogArea.Layout, this, "Arrange to {Rect} ", rect);
 
                 IsArrangeValid = true;
                 ArrangeCore(rect);
@@ -382,7 +367,7 @@ namespace Perspex.Layout
         {
             if (IsMeasureValid)
             {
-                _layoutLog.Verbose("Invalidated measure");
+                Logger.Verbose(LogArea.Layout, this, "Invalidated measure");
 
                 IsMeasureValid = false;
                 IsArrangeValid = false;
@@ -398,7 +383,7 @@ namespace Perspex.Layout
         {
             if (IsArrangeValid)
             {
-                _layoutLog.Verbose("Arrange measure");
+                Logger.Verbose(LogArea.Layout, this, "Invalidated arrange");
 
                 IsArrangeValid = false;
                 LayoutManager.Instance?.InvalidateArrange(this);
@@ -536,24 +521,25 @@ namespace Perspex.Layout
         {
             if (IsVisible)
             {
-                var originX = finalRect.X + Margin.Left;
-                var originY = finalRect.Y + Margin.Top;
-                var sizeMinusMargins = new Size(
-                    Math.Max(0, finalRect.Width - Margin.Left - Margin.Right),
-                    Math.Max(0, finalRect.Height - Margin.Top - Margin.Bottom));
+                var margin = Margin;
+                var originX = finalRect.X + margin.Left;
+                var originY = finalRect.Y + margin.Top;
+                var availableSizeMinusMargins = new Size(
+                    Math.Max(0, finalRect.Width - margin.Left - margin.Right),
+                    Math.Max(0, finalRect.Height - margin.Top - margin.Bottom));
                 var horizontalAlignment = HorizontalAlignment;
                 var verticalAlignment = VerticalAlignment;
-                var size = sizeMinusMargins;
+                var size = availableSizeMinusMargins;
                 var scale = GetLayoutScale();
 
                 if (horizontalAlignment != HorizontalAlignment.Stretch)
                 {
-                    size = size.WithWidth(Math.Min(size.Width, DesiredSize.Width));
+                    size = size.WithWidth(Math.Min(size.Width, DesiredSize.Width - margin.Left - margin.Right));
                 }
 
                 if (verticalAlignment != VerticalAlignment.Stretch)
                 {
-                    size = size.WithHeight(Math.Min(size.Height, DesiredSize.Height));
+                    size = size.WithHeight(Math.Min(size.Height, DesiredSize.Height - margin.Top - margin.Bottom));
                 }
 
                 size = LayoutHelper.ApplyLayoutConstraints(this, size);
@@ -563,9 +549,9 @@ namespace Perspex.Layout
                     size = new Size(
                         Math.Ceiling(size.Width * scale) / scale, 
                         Math.Ceiling(size.Height * scale) / scale);
-                    sizeMinusMargins = new Size(
-                        Math.Ceiling(sizeMinusMargins.Width * scale) / scale, 
-                        Math.Ceiling(sizeMinusMargins.Height * scale) / scale);
+                    availableSizeMinusMargins = new Size(
+                        Math.Ceiling(availableSizeMinusMargins.Width * scale) / scale, 
+                        Math.Ceiling(availableSizeMinusMargins.Height * scale) / scale);
                 }
 
                 size = ArrangeOverride(size).Constrain(size);
@@ -574,10 +560,10 @@ namespace Perspex.Layout
                 {
                     case HorizontalAlignment.Center:
                     case HorizontalAlignment.Stretch:
-                        originX += (sizeMinusMargins.Width - size.Width) / 2;
+                        originX += (availableSizeMinusMargins.Width - size.Width) / 2;
                         break;
                     case HorizontalAlignment.Right:
-                        originX += sizeMinusMargins.Width - size.Width;
+                        originX += availableSizeMinusMargins.Width - size.Width;
                         break;
                 }
 
@@ -585,10 +571,10 @@ namespace Perspex.Layout
                 {
                     case VerticalAlignment.Center:
                     case VerticalAlignment.Stretch:
-                        originY += (sizeMinusMargins.Height - size.Height) / 2;
+                        originY += (availableSizeMinusMargins.Height - size.Height) / 2;
                         break;
                     case VerticalAlignment.Bottom:
-                        originY += sizeMinusMargins.Height - size.Height;
+                        originY += availableSizeMinusMargins.Height - size.Height;
                         break;
                 }
 

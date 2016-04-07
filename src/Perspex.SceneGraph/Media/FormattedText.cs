@@ -206,7 +206,7 @@ namespace Perspex.Media
         /// <param name="brush">The brush.</param>
         /// <param name="startIndex">The start of the text range.</param>
         /// <param name="length">The length of the text range.</param>
-        public void SetForegroundBrush(Brush brush, int startIndex, int length)
+        public void SetForegroundBrush(IBrush brush, int startIndex, int length)
         {
             CheckDisposed();
             PlatformImpl.SetForegroundBrush(brush, startIndex, length);

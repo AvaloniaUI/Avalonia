@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using Microsoft.Reactive.Testing;
 using Xunit;
 
 namespace Perspex.Styling.UnitTests
@@ -37,6 +38,24 @@ namespace Perspex.Styling.UnitTests
             activator.OnCompleted();
 
             Assert.True(completed);
+        }
+
+        [Fact]
+        public void Should_Unsubscribe_From_Activator_When_All_Subscriptions_Disposed()
+        {
+            var scheduler = new TestScheduler();
+            var activator1 = scheduler.CreateColdObservable<bool>();
+            var activator2 = scheduler.CreateColdObservable<bool>();
+            var activator = StyleActivator.And(new[] { activator1, activator2 });
+            var target = new ActivatedValue(activator, 1, string.Empty);
+
+            var subscription = target.Subscribe(_ => { });
+            Assert.Equal(1, activator1.Subscriptions.Count);
+            Assert.Equal(Subscription.Infinite, activator1.Subscriptions[0].Unsubscribe);
+
+            subscription.Dispose();
+            Assert.Equal(1, activator1.Subscriptions.Count);
+            Assert.Equal(0, activator1.Subscriptions[0].Unsubscribe);
         }
     }
 }

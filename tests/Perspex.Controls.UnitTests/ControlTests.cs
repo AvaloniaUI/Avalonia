@@ -230,6 +230,36 @@ namespace Perspex.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void EndInit_Should_Raise_Initialized()
+        {
+            var root = new TestRoot();
+            var target = new Border();
+            var called = false;
+
+            target.Initialized += (s, e) => called = true;
+            ((ISupportInitialize)target).BeginInit();
+            root.Child = target;
+            ((ISupportInitialize)target).EndInit();
+
+            Assert.True(called);
+            Assert.True(target.IsInitialized);
+        }
+
+        [Fact]
+        public void Attaching_To_Visual_Tree_Should_Raise_Initialized()
+        {
+            var root = new TestRoot();
+            var target = new Border();
+            var called = false;
+
+            target.Initialized += (s, e) => called = true;
+            root.Child = target;
+
+            Assert.True(called);
+            Assert.True(target.IsInitialized);
+        }
+
         private class TestControl : Control
         {
             public new PerspexObject InheritanceParent => base.InheritanceParent;

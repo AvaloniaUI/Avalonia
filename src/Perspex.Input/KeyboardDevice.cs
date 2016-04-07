@@ -18,9 +18,9 @@ namespace Perspex.Input
 
         public KeyboardDevice()
         {
-            InputManager.RawEventReceived
+            InputManager.Process
                 .OfType<RawInputEventArgs>()
-                .Where(x => x.Device == this)
+                .Where(e => e.Device == this && !e.Handled)
                 .Subscribe(ProcessRawEvent);
         }
 

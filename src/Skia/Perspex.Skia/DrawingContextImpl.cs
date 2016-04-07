@@ -34,7 +34,7 @@ namespace Perspex.Skia
         }
 
         static readonly NativeBrushContainer _dummy = new NativeBrushContainer(null);
-        public void DrawGeometry(Brush brush, Pen pen, Geometry geometry)
+        public void DrawGeometry(IBrush brush, Pen pen, Geometry geometry)
         {
             var impl = ((StreamGeometryImpl) geometry.PlatformImpl);
             var size = geometry.Bounds.Size;
@@ -46,7 +46,7 @@ namespace Perspex.Skia
             }
         }
 
-        unsafe NativeBrushContainer CreateBrush(Brush brush, Size targetSize)
+        unsafe NativeBrushContainer CreateBrush(IBrush brush, Size targetSize)
         {
             var rv = NativeBrushPool.Instance.Get();
             rv.Brush->Opacity = brush.Opacity;
@@ -141,7 +141,7 @@ namespace Perspex.Skia
             }
         }
 
-        public void FillRectangle(Brush pbrush, Rect rect, float cornerRadius = 0)
+        public void FillRectangle(IBrush pbrush, Rect rect, float cornerRadius = 0)
         {
             using (var brush = CreateBrush(pbrush, rect.Size))
             {
@@ -150,7 +150,7 @@ namespace Perspex.Skia
             }
         }
 
-        public void DrawText(Brush foreground, Point origin, FormattedText text)
+        public void DrawText(IBrush foreground, Point origin, FormattedText text)
         {
             using (var br = CreateBrush(foreground, text.Measure()))
                 MethodTable.Instance.DrawFormattedText(Handle, br.Brush, ((FormattedTextImpl) text.PlatformImpl).Handle,

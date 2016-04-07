@@ -3,7 +3,7 @@
     <Setter Property="Template">
       <ControlTemplate>
         <DockPanel>
-          <Border MinWidth="190" Background="{StyleResource ThemeAccentBrush}" DockPanel.Dock="Left">
+          <ScrollViewer MinWidth="190" Background="{StyleResource ThemeAccentBrush}" DockPanel.Dock="Left">
             <TabStrip Name="PART_TabStrip"
                       MemberSelector="{Static TabControl.HeaderSelector}"
                       Items="{TemplateBinding Items}"
@@ -14,7 +14,7 @@
                 </ItemsPanelTemplate>
               </TabStrip.ItemsPanel>
             </TabStrip>
-          </Border>
+          </ScrollViewer>
           <Carousel Name="PART_Content"
                     Margin="8 0 0 0"
                     MemberSelector="{Static TabControl.ContentSelector}"

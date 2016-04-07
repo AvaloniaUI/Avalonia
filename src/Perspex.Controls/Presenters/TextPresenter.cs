@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Linq;
 using System.Reactive.Linq;
 using Perspex.Media;
 using Perspex.Styling;
@@ -24,8 +23,7 @@ namespace Perspex.Controls.Presenters
 
         private readonly DispatcherTimer _caretTimer;
         private bool _caretBlink;
-        private IObservable<bool> _canScrollHorizontally;
-        private Brush _highlightBrush;
+        private IBrush _highlightBrush;
 
         static TextPresenter()
         {
@@ -37,9 +35,6 @@ namespace Perspex.Controls.Presenters
             _caretTimer = new DispatcherTimer();
             _caretTimer.Interval = TimeSpan.FromMilliseconds(500);
             _caretTimer.Tick += CaretTimerTick;
-
-            _canScrollHorizontally = this.GetObservable(TextWrappingProperty)
-                .Select(x => x == TextWrapping.NoWrap);
 
             Observable.Merge(
                 this.GetObservable(SelectionStartProperty),
@@ -87,7 +82,7 @@ namespace Perspex.Controls.Presenters
 
                 if (_highlightBrush == null)
                 {
-                    _highlightBrush = (Brush)this.FindStyleResource("HighlightBrush");
+                    _highlightBrush = (IBrush)this.FindStyleResource("HighlightBrush");
                 }
 
                 foreach (var rect in rects)

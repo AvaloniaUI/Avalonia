@@ -276,12 +276,18 @@ namespace Perspex.Controls.Primitives
         protected virtual Point GetPosition()
         {
             var zero = default(Point);
+            var mode = PlacementMode;
             var target = PlacementTarget ?? this.GetVisualParent<Control>();
 
-            switch (PlacementMode)
+            if (target?.GetVisualRoot() == null)
+            {
+                mode = PlacementMode.Pointer;
+            }
+
+            switch (mode)
             {
                 case PlacementMode.Pointer:
-                    return MouseDevice.Instance.Position;
+                    return MouseDevice.Instance?.Position ?? default(Point);
 
                 case PlacementMode.Bottom:
                     return target?.PointToScreen(new Point(0, target.Bounds.Height)) ?? zero;

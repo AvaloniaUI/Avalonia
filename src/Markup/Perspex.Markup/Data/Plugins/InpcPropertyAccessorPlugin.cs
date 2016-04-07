@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Reflection;
 using Perspex.Data;
+using Perspex.Logging;
 using Perspex.Utilities;
 
 namespace Perspex.Markup.Data.Plugins
@@ -57,6 +58,13 @@ namespace Perspex.Markup.Data.Plugins
             }
             else
             {
+                Logger.Error(
+                    LogArea.Binding,
+                    this,
+                    "Could not find CLR property {Property} on {Source}",
+                    propertyName,
+                    instance);
+
                 return null;
             }
         }
@@ -87,6 +95,16 @@ namespace Perspex.Markup.Data.Plugins
                         inpc,
                         nameof(inpc.PropertyChanged),
                         this);
+                }
+                else
+                {
+                    Logger.Warning(
+                        LogArea.Binding,
+                        this,
+                        "Bound to property {Property} on {Source} which does not implement INotifyPropertyChanged",
+                        property.Name,
+                        reference.Target,
+                        reference.Target.GetType());
                 }
             }
 

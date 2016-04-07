@@ -29,6 +29,10 @@ namespace Perspex.Markup.Data.Parsers
                     case State.BeforeMember:
                         state = ParseBeforeMember(r, nodes);
                         break;
+
+                    case State.AttachedProperty:
+                        state = ParseAttachedProperty(r, nodes);
+                        break;
                 }
             }
 
@@ -51,6 +55,10 @@ namespace Perspex.Markup.Data.Parsers
             {
                 nodes.Add(new LogicalNotNode());
                 return State.Start;
+            }
+            else if (ParseOpenBrace(r))
+            {
+                return State.AttachedProperty;
             }
             else
             {
@@ -93,15 +101,42 @@ namespace Perspex.Markup.Data.Parsers
 
         private static State ParseBeforeMember(Reader r, IList<ExpressionNode> nodes)
         {
-            var identifier = IdentifierParser.Parse(r);
-
-            if (identifier != null)
+            if (ParseOpenBrace(r))
             {
-                nodes.Add(new PropertyAccessorNode(identifier));
-                return State.AfterMember;
+                return State.AttachedProperty;
+            }
+            else
+            {
+                var identifier = IdentifierParser.Parse(r);
+
+                if (identifier != null)
+                {
+                    nodes.Add(new PropertyAccessorNode(identifier));
+                    return State.AfterMember;
+                }
+
+                return State.End;
+            }
+        }
+
+        private static State ParseAttachedProperty(Reader r, List<ExpressionNode> nodes)
+        {
+            var owner = IdentifierParser.Parse(r);
+
+            if (r.End || !r.TakeIf('.'))
+            {
+                throw new ExpressionParseException(r.Position, "Invalid attached property name.");
             }
 
-            return State.End;
+            var name = IdentifierParser.Parse(r);
+
+            if (r.End || !r.TakeIf(')'))
+            {
+                throw new ExpressionParseException(r.Position, "Expected ')'.");
+            }
+
+            nodes.Add(new PropertyAccessorNode(owner + '.' + name));
+            return State.AfterMember;
         }
 
         private static bool ParseNot(Reader r)
@@ -114,11 +149,17 @@ namespace Perspex.Markup.Data.Parsers
             return !r.End && r.TakeIf('.');
         }
 
+        private static bool ParseOpenBrace(Reader r)
+        {
+            return !r.End && r.TakeIf('(');
+        }
+
         private enum State
         {
             Start,
             AfterMember,
             BeforeMember,
+            AttachedProperty,
             End,
         }
     }

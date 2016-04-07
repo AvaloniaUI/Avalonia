@@ -9,9 +9,10 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>ControlCatalog</RootNamespace>
     <AssemblyName>ControlCatalog</AssemblyName>
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -59,6 +60,27 @@
     </Compile>
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\ImagePage.xaml.cs">
+      <DependentUpon>ImagePage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\ExpanderPage.xaml.cs">
+      <DependentUpon>ExpanderPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\RadioButtonPage.xaml.cs">
+      <DependentUpon>RadioButtonPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\MenuPage.xaml.cs">
+      <DependentUpon>MenuPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\ToolTipPage.xaml.cs">
+      <DependentUpon>ToolTipPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\TextBoxPage.xaml.cs">
+      <DependentUpon>TextBoxPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\LayoutTransformControlPage.xaml.cs">
+      <DependentUpon>LayoutTransformControlPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Pages\CheckBoxPage.xaml.cs">
       <DependentUpon>CheckBoxPage.xaml</DependentUpon>
@@ -136,10 +158,6 @@
       <Project>{d211e587-d8bc-45b9-95a4-f297c8fa5200}</Project>
       <Name>Perspex.Animation</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\Perspex.Application\Perspex.Application.csproj">
-      <Project>{799a7bb5-3c2c-48b6-85a7-406a12c420da}</Project>
-      <Name>Perspex.Application</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\src\Perspex.Base\Perspex.Base.csproj">
       <Project>{b09b78d8-9b26-48b0-9149-d64a2f120f3f}</Project>
       <Name>Perspex.Base</Name>
@@ -147,6 +165,10 @@
     <ProjectReference Include="..\..\src\Perspex.Controls\Perspex.Controls.csproj">
       <Project>{d2221c82-4a25-4583-9b43-d791e3f6820c}</Project>
       <Name>Perspex.Controls</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\Perspex.DesignerSupport\Perspex.DesignerSupport.csproj">
+      <Project>{799a7bb5-3c2c-48b6-85a7-406a12c420da}</Project>
+      <Name>Perspex.DesignerSupport</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\Perspex.Diagnostics\Perspex.Diagnostics.csproj">
       <Project>{7062ae20-5dcc-4442-9645-8195bdece63e}</Project>
@@ -167,6 +189,10 @@
     <ProjectReference Include="..\..\src\Perspex.Layout\Perspex.Layout.csproj">
       <Project>{42472427-4774-4c81-8aff-9f27b8e31721}</Project>
       <Name>Perspex.Layout</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\Perspex.Logging.Serilog\Perspex.Logging.Serilog.csproj">
+      <Project>{b61b66a3-b82d-4875-8001-89d3394fe0c9}</Project>
+      <Name>Perspex.Logging.Serilog</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\Perspex.ReactiveUI\Perspex.ReactiveUI.csproj">
       <Project>{6417b24e-49c2-4985-8db2-3ab9d898ec91}</Project>
@@ -199,6 +225,46 @@
   <ItemGroup>
     <EmbeddedResource Include="Assets\delicate-arch-896885_640.jpg" />
     <EmbeddedResource Include="Assets\maple-leaf-888807_640.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Pages\LayoutTransformControlPage.xaml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Pages\TextBoxPage.xaml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Pages\ToolTipPage.xaml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Pages\MenuPage.xaml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\github_icon.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Pages\RadioButtonPage.xaml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Pages\ExpanderPage.xaml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Pages\ImagePage.xaml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

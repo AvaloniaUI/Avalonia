@@ -62,6 +62,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="NotifyingBase.cs" />
     <Compile Include="TestTemplatedRoot.cs" />
     <Compile Include="TestRoot.cs" />
     <Compile Include="TestServices.cs" />
@@ -81,10 +82,6 @@
     <ProjectReference Include="..\..\src\Perspex.Animation\Perspex.Animation.csproj">
       <Project>{d211e587-d8bc-45b9-95a4-f297c8fa5200}</Project>
       <Name>Perspex.Animation</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Perspex.Application\Perspex.Application.csproj">
-      <Project>{799a7bb5-3c2c-48b6-85a7-406a12c420da}</Project>
-      <Name>Perspex.Application</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\Perspex.Base\Perspex.Base.csproj">
       <Project>{b09b78d8-9b26-48b0-9149-d64a2f120f3f}</Project>

@@ -99,6 +99,24 @@ namespace Perspex.Controls.UnitTests
         }
 
         [Fact]
+        public void Control_Content_Should_Be_Logical_Child_After_ApplyTemplate()
+        {
+            var target = new ContentControl
+            {
+                Template = GetTemplate(),
+            };
+
+            var child = new Control();
+            target.Content = child;
+            target.ApplyTemplate();
+            ((ContentPresenter)target.Presenter).UpdateChild();
+
+            Assert.Equal(child.Parent, target);
+            Assert.Equal(child.GetLogicalParent(), target);
+            Assert.Equal(new[] { child }, target.GetLogicalChildren());
+        }
+
+        [Fact]
         public void DataTemplate_Created_Control_Should_Be_Logical_Child_After_ApplyTemplate()
         {
             var target = new ContentControl

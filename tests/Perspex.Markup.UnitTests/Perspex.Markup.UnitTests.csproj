@@ -91,12 +91,12 @@
     <Compile Include="Data\ExpressionObserverTests_Indexer.cs" />
     <Compile Include="Data\ExpressionObserverTests_Negation.cs" />
     <Compile Include="Data\ExpressionObserverTests_Observable.cs" />
+    <Compile Include="Data\ExpressionObserverTests_AttachedProperty.cs" />
     <Compile Include="Data\ExpressionObserverTests_PerspexProperty.cs" />
     <Compile Include="Data\ExpressionObserverTests_Property.cs" />
     <Compile Include="Data\ExpressionObserverTests_SetValue.cs" />
     <Compile Include="Data\ExpressionObserverTests_Task.cs" />
     <Compile Include="Data\ExpressionSubjectTests.cs" />
-    <Compile Include="Data\NotifyingBase.cs" />
     <Compile Include="DefaultValueConverterTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UnitTestSynchronizationContext.cs" />

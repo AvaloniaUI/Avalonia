@@ -18,13 +18,13 @@ namespace Perspex.Controls.Presenters
         /// <summary>
         /// Defines the <see cref="Background"/> property.
         /// </summary>
-        public static readonly StyledProperty<Brush> BackgroundProperty =
+        public static readonly StyledProperty<IBrush> BackgroundProperty =
             Border.BackgroundProperty.AddOwner<ContentPresenter>();
 
         /// <summary>
         /// Defines the <see cref="BorderBrush"/> property.
         /// </summary>
-        public static readonly PerspexProperty<Brush> BorderBrushProperty =
+        public static readonly PerspexProperty<IBrush> BorderBrushProperty =
             Border.BorderBrushProperty.AddOwner<ContentPresenter>();
 
         /// <summary>
@@ -86,7 +86,7 @@ namespace Perspex.Controls.Presenters
         /// <summary>
         /// Gets or sets a brush with which to paint the background.
         /// </summary>
-        public Brush Background
+        public IBrush Background
         {
             get { return GetValue(BackgroundProperty); }
             set { SetValue(BackgroundProperty, value); }
@@ -95,7 +95,7 @@ namespace Perspex.Controls.Presenters
         /// <summary>
         /// Gets or sets a brush with which to paint the border.
         /// </summary>
-        public Brush BorderBrush
+        public IBrush BorderBrush
         {
             get { return GetValue(BorderBrushProperty); }
             set { SetValue(BorderBrushProperty, value); }

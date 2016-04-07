@@ -27,12 +27,12 @@ mkdir $ios
 
 Copy-Item ..\src\Perspex.Animation\bin\Release\Perspex.Animation.dll $lib
 Copy-Item ..\src\Perspex.Animation\bin\Release\Perspex.Animation.xml $lib
-Copy-Item ..\src\Perspex.Application\bin\Release\Perspex.Application.dll $lib
-Copy-Item ..\src\Perspex.Application\bin\Release\Perspex.Application.xml $lib
 Copy-Item ..\src\Perspex.Base\bin\Release\Perspex.Base.dll $lib
 Copy-Item ..\src\Perspex.Base\bin\Release\Perspex.Base.xml $lib
 Copy-Item ..\src\Perspex.Controls\bin\Release\Perspex.Controls.dll $lib
 Copy-Item ..\src\Perspex.Controls\bin\Release\Perspex.Controls.xml $lib
+Copy-Item ..\src\Perspex.DesignerSupport\bin\Release\Perspex.DesignerSupport.dll $lib
+Copy-Item ..\src\Perspex.DesignerSupport\bin\Release\Perspex.DesignerSupport.xml $lib
 Copy-Item ..\src\Perspex.Diagnostics\bin\Release\\Perspex.Diagnostics.dll $lib
 Copy-Item ..\src\Perspex.Diagnostics\bin\Release\\Perspex.Diagnostics.xml $lib
 Copy-Item ..\src\Perspex.Input\bin\Release\Perspex.Input.dll $lib
@@ -41,6 +41,8 @@ Copy-Item ..\src\Perspex.Interactivity\bin\Release\Perspex.Interactivity.dll $li
 Copy-Item ..\src\Perspex.Interactivity\bin\Release\Perspex.Interactivity.xml $lib
 Copy-Item ..\src\Perspex.Layout\bin\Release\Perspex.Layout.dll $lib
 Copy-Item ..\src\Perspex.Layout\bin\Release\Perspex.Layout.xml $lib
+Copy-Item ..\src\Perspex.Logging.Serilog\bin\Release\Perspex.Logging.Serilog.dll $lib
+Copy-Item ..\src\Perspex.Logging.Serilog\bin\Release\Perspex.Logging.Serilog.xml $lib
 Copy-Item ..\src\Perspex.SceneGraph\bin\Release\Perspex.SceneGraph.dll $lib
 Copy-Item ..\src\Perspex.SceneGraph\bin\Release\Perspex.SceneGraph.xml $lib
 Copy-Item ..\src\Perspex.Styling\bin\Release\Perspex.Styling.dll $lib

@@ -19,7 +19,7 @@ namespace Perspex.Controls
         /// <summary>
         /// Defines the <see cref="Background"/> property.
         /// </summary>
-        public static readonly StyledProperty<Brush> BackgroundProperty =
+        public static readonly StyledProperty<IBrush> BackgroundProperty =
             Border.BackgroundProperty.AddOwner<TextBlock>();
 
         // TODO: Define these attached properties elswhere (e.g. on a Text class) and AddOwner
@@ -63,8 +63,8 @@ namespace Perspex.Controls
         /// <summary>
         /// Defines the <see cref="Foreground"/> property.
         /// </summary>
-        public static readonly AttachedProperty<Brush> ForegroundProperty =
-            PerspexProperty.RegisterAttached<TextBlock, Control, Brush>(
+        public static readonly AttachedProperty<IBrush> ForegroundProperty =
+            PerspexProperty.RegisterAttached<TextBlock, Control, IBrush>(
                 nameof(Foreground),
                 new SolidColorBrush(0xff000000),
                 inherits: true);
@@ -128,7 +128,7 @@ namespace Perspex.Controls
         /// <summary>
         /// Gets or sets a brush used to paint the control's background.
         /// </summary>
-        public Brush Background
+        public IBrush Background
         {
             get { return GetValue(BackgroundProperty); }
             set { SetValue(BackgroundProperty, value); }
@@ -183,7 +183,7 @@ namespace Perspex.Controls
         /// <summary>
         /// Gets or sets a brush used to paint the text.
         /// </summary>
-        public Brush Foreground
+        public IBrush Foreground
         {
             get { return GetValue(ForegroundProperty); }
             set { SetValue(ForegroundProperty, value); }
@@ -268,7 +268,7 @@ namespace Perspex.Controls
         /// </summary>
         /// <param name="control">The control.</param>
         /// <returns>The foreground.</returns>
-        public static Brush GetForeground(Control control)
+        public static IBrush GetForeground(Control control)
         {
             return control.GetValue(ForegroundProperty);
         }
@@ -323,7 +323,7 @@ namespace Perspex.Controls
         /// <param name="control">The control.</param>
         /// <param name="value">The property value to set.</param>
         /// <returns>The font family.</returns>
-        public static void SetForeground(Control control, Brush value)
+        public static void SetForeground(Control control, IBrush value)
         {
             control.SetValue(ForegroundProperty, value);
         }
@@ -334,7 +334,7 @@ namespace Perspex.Controls
         /// <param name="context">The drawing context.</param>
         public override void Render(DrawingContext context)
         {
-            Brush background = Background;
+            var background = Background;
 
             if (background != null)
             {

@@ -50,9 +50,9 @@ namespace TheArtOfDev.HtmlRenderer.Perspex.Adapters
         /// <summary>
         /// Get solid color brush for the given color.
         /// </summary>
-        private static Brush GetSolidColorBrush(RColor color)
+        private static IBrush GetSolidColorBrush(RColor color)
         {
-            Brush solidBrush;
+            IBrush solidBrush;
             if (color == RColor.White)
                 solidBrush = Brushes.White;
             else if (color == RColor.Black)

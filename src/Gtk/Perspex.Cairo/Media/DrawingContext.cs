@@ -135,7 +135,7 @@ namespace Perspex.Cairo.Media
         /// <param name="brush">The fill brush.</param>
         /// <param name="pen">The stroke pen.</param>
         /// <param name="geometry">The geometry.</param>
-        public void DrawGeometry(Brush brush, Pen pen, Geometry geometry)
+        public void DrawGeometry(IBrush brush, Pen pen, Geometry geometry)
         {
             var impl = geometry.PlatformImpl as StreamGeometryImpl;
 
@@ -190,7 +190,7 @@ namespace Perspex.Cairo.Media
         /// <param name="foreground">The foreground brush.</param>
         /// <param name="origin">The upper-left corner of the text.</param>
         /// <param name="text">The text.</param>
-        public void DrawText(Brush foreground, Point origin, FormattedText text)
+        public void DrawText(IBrush foreground, Point origin, FormattedText text)
         {
             var layout = ((FormattedTextImpl)text.PlatformImpl).Layout;
             _context.MoveTo(origin.X, origin.Y);
@@ -206,7 +206,7 @@ namespace Perspex.Cairo.Media
         /// </summary>
         /// <param name="brush">The brush.</param>
         /// <param name="rect">The rectangle bounds.</param>
-        public void FillRectangle(Brush brush, Rect rect, float cornerRadius)
+        public void FillRectangle(IBrush brush, Rect rect, float cornerRadius)
         {
 			using (var b = SetBrush(brush, rect.Size)) 
 			{
@@ -271,7 +271,7 @@ namespace Perspex.Cairo.Media
         
 		private double opacityOverride = 1.0f;
 
-        private IDisposable SetBrush(Brush brush, Size destinationSize)
+        private IDisposable SetBrush(IBrush brush, Size destinationSize)
         {
 			_context.Save ();
 

@@ -22,7 +22,7 @@ namespace Perspex.Controls
         /// <summary>
         /// Defines the <see cref="Background"/> property.
         /// </summary>
-        public static readonly StyledProperty<Brush> BackgroundProperty =
+        public static readonly StyledProperty<IBrush> BackgroundProperty =
             Border.BackgroundProperty.AddOwner<Panel>();
 
         private readonly Controls _children = new Controls();
@@ -73,7 +73,7 @@ namespace Perspex.Controls
         /// <summary>
         /// Gets or Sets Panel background brush.
         /// </summary>
-        public Brush Background
+        public IBrush Background
         {
             get { return GetValue(BackgroundProperty); }
             set { SetValue(BackgroundProperty, value); }
@@ -129,7 +129,7 @@ namespace Perspex.Controls
         /// <param name="context">The drawing context.</param>
         public override void Render(DrawingContext context)
         {
-            Brush background = Background;
+            var background = Background;
             if (background != null)
             {
                 var renderSize = Bounds.Size;

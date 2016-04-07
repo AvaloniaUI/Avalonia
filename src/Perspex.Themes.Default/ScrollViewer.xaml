@@ -1,7 +1,7 @@
 ﻿<Style xmlns="https://github.com/perspex" Selector="ScrollViewer">
   <Setter Property="Template">
     <ControlTemplate>
-      <Grid ColumnDefinitions="*,Auto" RowDefinitions="*,Auto">
+      <Grid ColumnDefinitions="*,Auto" RowDefinitions="*,Auto" Background="{TemplateBinding Background}">
         <ScrollContentPresenter Name="PART_ContentPresenter"
                                 Content="{TemplateBinding Content}"
                                 Extent="{TemplateBinding Path=Extent, Mode=TwoWay}"

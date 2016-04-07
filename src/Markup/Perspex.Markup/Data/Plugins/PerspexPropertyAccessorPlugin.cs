@@ -4,6 +4,7 @@
 using System;
 using System.Reactive.Linq;
 using Perspex.Data;
+using Perspex.Logging;
 
 namespace Perspex.Markup.Data.Plugins
 {
@@ -53,6 +54,12 @@ namespace Perspex.Markup.Data.Plugins
             }
             else
             {
+                Logger.Error(
+                    LogArea.Binding,
+                    this,
+                    "Could not find PerspexProperty {Property} on {Source}",
+                    propertyName,
+                    instance);
                 return null;
             }
         }

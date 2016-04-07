@@ -17,14 +17,9 @@ namespace Perspex.Controls
     public interface IControl : IVisual, ILogical, ILayoutable, IInputElement, INamed, IStyleable, IStyleHost
     {
         /// <summary>
-        /// Raised when the control is attached to a rooted logical tree.
+        /// Occurs when the control has finished initialization.
         /// </summary>
-        event EventHandler<LogicalTreeAttachmentEventArgs> AttachedToLogicalTree;
-
-        /// <summary>
-        /// Raised when the control is detached from a rooted logical tree.
-        /// </summary>
-        event EventHandler<LogicalTreeAttachmentEventArgs> DetachedFromLogicalTree;
+        event EventHandler Initialized;
 
         /// <summary>
         /// Gets or sets the control's styling classes.
@@ -40,6 +35,11 @@ namespace Perspex.Controls
         /// Gets the data templates for the control.
         /// </summary>
         DataTemplates DataTemplates { get; }
+
+        /// <summary>
+        /// Gets a value that indicates whether the element has finished initialization.
+        /// </summary>
+        bool IsInitialized { get; }
 
         /// <summary>
         /// Gets the control's logical parent.

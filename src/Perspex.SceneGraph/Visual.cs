@@ -2,19 +2,17 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Reactive.Linq;
 using Perspex.Animation;
 using Perspex.Collections;
 using Perspex.Data;
+using Perspex.Logging;
 using Perspex.Media;
 using Perspex.Platform;
 using Perspex.Rendering;
 using Perspex.VisualTree;
-using Serilog;
-using Serilog.Core.Enrichers;
 
 namespace Perspex
 {
@@ -79,7 +77,6 @@ namespace Perspex
 
         private Rect _bounds;
         private IVisual _visualParent;
-        private readonly ILogger _visualLogger;
 
         /// <summary>
         /// Initializes static members of the <see cref="Visual"/> class.
@@ -95,13 +92,6 @@ namespace Perspex
         /// </summary>
         public Visual()
         {
-            _visualLogger = Log.ForContext(new[]
-            {
-                new PropertyEnricher("Area", "Visual"),
-                new PropertyEnricher("SourceContext", GetType()),
-                new PropertyEnricher("Id", GetHashCode()),
-            });
-
             var visualChildren = new PerspexList<IVisual>();
             visualChildren.ResetBehavior = ResetBehavior.Remove;
             visualChildren.Validate = ValidateLogicalChild;
@@ -231,7 +221,7 @@ namespace Perspex
         /// <summary>
         /// Gets the root of the visual tree, if the control is attached to a visual tree.
         /// </summary>
-        IRenderRoot IVisual.VisualRoot { get; }
+        IRenderRoot IVisual.VisualRoot => VisualRoot;
 
         /// <summary>
         /// Invalidates the visual and queues a repaint.
@@ -292,20 +282,65 @@ namespace Perspex
         }
 
         /// <summary>
-        /// Called when the control is added to a visual tree.
+        /// Calls the <see cref="OnAttachedToVisualTree(VisualTreeAttachmentEventArgs)"/> method 
+        /// for this control and all of its visual descendents.
         /// </summary>
         /// <param name="e">The event args.</param>
-        /// <remarks>
-        /// It is vital that if you override this method you call the base implementation;
-        /// failing to do so will cause numerous features to not work as expected.
-        /// </remarks>
-        protected virtual void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        protected virtual void OnAttachedToVisualTreeCore(VisualTreeAttachmentEventArgs e)
         {
+            Logger.Verbose(LogArea.Visual, this, "Attached to visual tree");
+
+            VisualRoot = e.Root;
+
             if (RenderTransform != null)
             {
                 RenderTransform.Changed += RenderTransformChanged;
             }
 
+            OnAttachedToVisualTree(e);
+
+            if (VisualChildren != null)
+            {
+                foreach (Visual child in VisualChildren.OfType<Visual>())
+                {
+                    child.OnAttachedToVisualTreeCore(e);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Calls the <see cref="OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs)"/> method 
+        /// for this control and all of its visual descendents.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        protected virtual void OnDetachedFromVisualTreeCore(VisualTreeAttachmentEventArgs e)
+        {
+            Logger.Verbose(LogArea.Visual, this, "Detached from visual tree");
+
+            VisualRoot = null;
+
+            if (RenderTransform != null)
+            {
+                RenderTransform.Changed -= RenderTransformChanged;
+            }
+
+            OnDetachedFromVisualTree(e);
+
+            if (VisualChildren != null)
+            {
+                foreach (Visual child in VisualChildren.OfType<Visual>())
+                {
+                    child.OnDetachedFromVisualTreeCore(e);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Called when the control is added to a visual tree.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        protected virtual void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
             AttachedToVisualTree?.Invoke(this, e);
         }
 
@@ -313,17 +348,8 @@ namespace Perspex
         /// Called when the control is removed from a visual tree.
         /// </summary>
         /// <param name="e">The event args.</param>
-        /// <remarks>
-        /// It is vital that if you override this method you call the base implementation;
-        /// failing to do so will cause numerous features to not work as expected.
-        /// </remarks>
         protected virtual void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
-            if (RenderTransform != null)
-            {
-                RenderTransform.Changed -= RenderTransformChanged;
-            }
-
             DetachedFromVisualTree?.Invoke(this, e);
         }
 
@@ -427,14 +453,14 @@ namespace Perspex
             if (VisualRoot != null)
             {
                 var e = new VisualTreeAttachmentEventArgs(VisualRoot);
-                NotifyDetachedFromVisualTree(e);
+                OnDetachedFromVisualTreeCore(e);
             }
 
             if (_visualParent is IRenderRoot || _visualParent?.IsAttachedToVisualTree == true)
             {
                 var root = this.GetVisualAncestors().OfType<IRenderRoot>().FirstOrDefault();
                 var e = new VisualTreeAttachmentEventArgs(root);
-                NotifyAttachedToVisualTree(e);
+                OnAttachedToVisualTreeCore(e);
             }
 
             RaisePropertyChanged(VisualParentProperty, old, value, BindingPriority.LocalValue);
@@ -464,48 +490,6 @@ namespace Perspex
                     }
 
                     break;
-            }
-        }
-
-        /// <summary>
-        /// Calls the <see cref="OnAttachedToVisualTree(VisualTreeAttachmentEventArgs)"/> method 
-        /// for this control and all of its visual descendents.
-        /// </summary>
-        /// <param name="e">The event args.</param>
-        private void NotifyAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
-        {
-            _visualLogger.Verbose("Attached to visual tree");
-
-            VisualRoot = e.Root;
-            OnAttachedToVisualTree(e);
-
-            if (VisualChildren != null)
-            {
-                foreach (Visual child in VisualChildren.OfType<Visual>())
-                {
-                    child.NotifyAttachedToVisualTree(e);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Calls the <see cref="OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs)"/> method 
-        /// for this control and all of its visual descendents.
-        /// </summary>
-        /// <param name="e">The event args.</param>
-        private void NotifyDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
-        {
-            _visualLogger.Verbose("Detached from visual tree");
-
-            VisualRoot = null;
-            OnDetachedFromVisualTree(e);
-
-            if (VisualChildren != null)
-            {
-                foreach (Visual child in VisualChildren.OfType<Visual>())
-                {
-                    child.NotifyDetachedFromVisualTree(e);
-                }
             }
         }
     }

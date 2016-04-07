@@ -39,6 +39,10 @@ namespace Perspex.Markup.Xaml.Data
             PerspexProperty targetProperty,
             object anchor = null)
         {
+            if (Name == "Red")
+            {
+            }
+
             var host = (target as IControl) ?? (anchor as IControl);
             var style = anchor as IStyle;
             var resource = PerspexProperty.UnsetValue;

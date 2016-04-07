@@ -40,5 +40,15 @@ namespace Perspex.Controls.Primitives
         /// Gets the size of the viewport, in logical units.
         /// </summary>
         Size Viewport { get; }
+
+        /// <summary>
+        /// Gets the size to scroll by, in logical units.
+        /// </summary>
+        Size ScrollSize { get; }
+
+        /// <summary>
+        /// Gets the size to page by, in logical units.
+        /// </summary>
+        Size PageScrollSize { get; }
     }
 }

@@ -43,8 +43,10 @@
     <Compile Include="..\Shared\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Application.cs" />
     <Compile Include="Classes.cs" />
     <Compile Include="ContextMenu.cs" />
+    <Compile Include="Design.cs" />
     <Compile Include="DockPanel.cs" />
     <Compile Include="Expander.cs" />
     <Compile Include="Generators\ItemContainer.cs" />
@@ -54,6 +56,7 @@
     <Compile Include="INameScope.cs" />
     <Compile Include="IPseudoClasses.cs" />
     <Compile Include="DropDownItem.cs" />
+    <Compile Include="LayoutTransformControl.cs" />
     <Compile Include="Mixins\ContentControlMixin.cs" />
     <Compile Include="NameScope.cs" />
     <Compile Include="NameScopeEventArgs.cs" />
@@ -195,10 +198,6 @@
   <ItemGroup>
     <Reference Include="JetBrains.Annotations.PCL328, Version=10.0.0.0, Culture=neutral, PublicKeyToken=1010a0d8d6380325, processorArchitecture=MSIL">
       <HintPath>..\..\packages\JetBrains.Annotations.10.0.0\lib\portable-net4+sl5+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1\JetBrains.Annotations.PCL328.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Serilog, Version=1.5.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Serilog.1.5.14\lib\portable-net45+win+wpa81+wp80+MonoAndroid10+MonoTouch10\Serilog.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Reactive.Core">

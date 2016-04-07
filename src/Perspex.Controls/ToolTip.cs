@@ -7,11 +7,12 @@ using System.Reactive.Subjects;
 using Perspex.Controls.Primitives;
 using Perspex.Input;
 using Perspex.Threading;
+using Perspex.VisualTree;
 
 namespace Perspex.Controls
 {
     /// <summary>
-    /// A tooltip control.
+    /// A control which pops up a hint when a control is hovered.
     /// </summary>
     /// <remarks>
     /// You will probably not want to create a <see cref="ToolTip"/> control directly: if added to
@@ -102,7 +103,7 @@ namespace Perspex.Controls
         /// <param name="control">The control.</param>
         private static void ShowToolTip(Control control)
         {
-            if (control != null)
+            if (control != null && control.IsVisible && control.GetVisualRoot() != null)
             {
                 if (s_popup == null)
                 {

@@ -21,7 +21,10 @@ namespace Perspex
         /// </summary>
         /// <param name="o">The object.</param>
         /// <param name="property">The property.</param>
-        /// <returns>An observable.</returns>
+        /// <returns>
+        /// An observable which fires immediately with the current value of the property on the
+        /// object and subsequently each time the property value changes.
+        /// </returns>
         public static IObservable<object> GetObservable(this IPerspexObject o, PerspexProperty property)
         {
             Contract.Requires<ArgumentNullException>(o != null);
@@ -56,7 +59,10 @@ namespace Perspex
         /// <param name="o">The object.</param>
         /// <typeparam name="T">The property type.</typeparam>
         /// <param name="property">The property.</param>
-        /// <returns>An observable.</returns>
+        /// <returns>
+        /// An observable which fires immediately with the current value of the property on the
+        /// object and subsequently each time the property value changes.
+        /// </returns>
         public static IObservable<T> GetObservable<T>(this IPerspexObject o, PerspexProperty<T> property)
         {
             Contract.Requires<ArgumentNullException>(o != null);
@@ -73,7 +79,8 @@ namespace Perspex
         /// <param name="property">The property.</param>
         /// <returns>
         /// An observable which when subscribed pushes the old and new values of the property each
-        /// time it is changed.
+        /// time it is changed. Note that the observable returned from this method does not fire
+        /// with the current value of the property immediately.
         /// </returns>
         public static IObservable<Tuple<T, T>> GetObservableWithHistory<T>(
             this IPerspexObject o, 

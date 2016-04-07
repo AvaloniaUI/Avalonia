@@ -14,7 +14,7 @@ namespace Perspex.Markup.Xaml.Data
     /// </summary>
     /// <remarks>
     /// The XAML engine applies its bindings in a delayed manner where bindings are only applied
-    /// when a control is added to the visual tree. This was done because applying bindings as soon
+    /// when a control has finished initializing. This was done because applying bindings as soon
     /// as controls are created means that long-form bindings (i.e. bindings that don't use the
     /// `{Binding}` markup extension) don't work as the binding is applied to the property before
     /// the binding properties are set, and looking at WPF it uses a similar mechanism for bindings
@@ -33,7 +33,7 @@ namespace Perspex.Markup.Xaml.Data
         /// <param name="binding">The binding.</param>
         public static void Add(IControl target, PerspexProperty property, IBinding binding)
         {
-            if (target.IsAttachedToVisualTree)
+            if (target.IsInitialized)
             {
                 target.Bind(property, binding);
             }
@@ -47,7 +47,7 @@ namespace Perspex.Markup.Xaml.Data
                     _entries.Add(target, bindings);
 
                     // TODO: Make this a weak event listener.
-                    target.AttachedToVisualTree += ApplyBindings;
+                    target.Initialized += ApplyBindings;
                 }
 
                 bindings.Add(new Entry(binding, property));
@@ -73,11 +73,11 @@ namespace Perspex.Markup.Xaml.Data
             }
         }
 
-        private static void ApplyBindings(object sender, VisualTreeAttachmentEventArgs e)
+        private static void ApplyBindings(object sender, EventArgs e)
         {
             var target = (IControl)sender;
             ApplyBindings(target);
-            target.AttachedToVisualTree -= ApplyBindings;
+            target.Initialized -= ApplyBindings;
         }
 
         private class Entry

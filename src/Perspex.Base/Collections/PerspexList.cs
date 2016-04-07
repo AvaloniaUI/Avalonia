@@ -175,8 +175,6 @@ namespace Perspex.Collections
             set { this[index] = (T)value; }
         }
 
-        public int SubscriberCount => _collectionChanged?.GetInvocationList().Length ?? 0;
-
         /// <summary>
         /// Adds an item to the collection.
         /// </summary>

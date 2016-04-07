@@ -23,12 +23,12 @@ namespace TheArtOfDev.HtmlRenderer.Perspex.Adapters
         /// <summary>
         /// The actual Perspex brush instance.
         /// </summary>
-        private readonly Brush _brush;
+        private readonly IBrush _brush;
 
         /// <summary>
         /// Init.
         /// </summary>
-        public BrushAdapter(Brush brush)
+        public BrushAdapter(IBrush brush)
         {
             _brush = brush;
         }
@@ -36,7 +36,7 @@ namespace TheArtOfDev.HtmlRenderer.Perspex.Adapters
         /// <summary>
         /// The actual Perspex brush instance.
         /// </summary>
-        public Brush Brush
+        public IBrush Brush
         {
             get { return _brush; }
         }

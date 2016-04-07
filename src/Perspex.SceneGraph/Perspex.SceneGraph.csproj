@@ -72,6 +72,8 @@
     <Compile Include="Media\GradientBrush.cs" />
     <Compile Include="Media\GradientSpreadMethod.cs" />
     <Compile Include="Media\GradientStop.cs" />
+    <Compile Include="Media\IBrush.cs" />
+    <Compile Include="Media\ISolidColorBrush.cs" />
     <Compile Include="Media\LineGeometry.cs" />
     <Compile Include="Media\Mutable\SolidColorBrush.cs" />
     <Compile Include="Media\PenLineJoin.cs" />
@@ -80,6 +82,7 @@
     <Compile Include="Media\LinearGradientBrush.cs" />
     <Compile Include="Media\MediaExtensions.cs" />
     <Compile Include="Media\PenLineCap.cs" />
+    <Compile Include="Media\ScaleTransform.cs" />
     <Compile Include="Media\TextAlignment.cs" />
     <Compile Include="Media\FontWeight.cs" />
     <Compile Include="Media\FontStyle.cs" />
@@ -139,10 +142,6 @@
     <Compile Include="VisualTree\VisualExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Serilog, Version=1.5.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Serilog.1.5.14\lib\portable-net45+win+wpa81+wp80+MonoAndroid10+MonoTouch10\Serilog.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System.Reactive.Core">
       <HintPath>..\..\packages\Rx-Core.2.2.5\lib\portable-windows8+net45+wp8\System.Reactive.Core.dll</HintPath>
     </Reference>

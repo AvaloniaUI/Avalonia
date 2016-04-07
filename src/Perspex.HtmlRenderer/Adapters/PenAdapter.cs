@@ -25,7 +25,7 @@ namespace TheArtOfDev.HtmlRenderer.Perspex.Adapters
         /// <summary>
         /// The actual Perspex brush instance.
         /// </summary>
-        private readonly Brush _brush;
+        private readonly IBrush _brush;
 
         /// <summary>
         /// the width of the pen
@@ -42,7 +42,7 @@ namespace TheArtOfDev.HtmlRenderer.Perspex.Adapters
         /// <summary>
         /// Init.
         /// </summary>
-        public PenAdapter(Brush brush)
+        public PenAdapter(IBrush brush)
         {
             _brush = brush;
         }

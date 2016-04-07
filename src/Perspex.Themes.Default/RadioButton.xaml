@@ -16,6 +16,7 @@
                    Width="10"
                    Height="10"
                    Stretch="Uniform"
+                   UseLayoutRounding="False"
                    HorizontalAlignment="Center"
                    VerticalAlignment="Center"/>
           <ContentPresenter Name="PART_ContentPresenter"
@@ -35,5 +36,8 @@
   </Style>
   <Style Selector="RadioButton:checked /template/ Ellipse#checkMark">
     <Setter Property="IsVisible" Value="True"/>
+  </Style>
+  <Style Selector="RadioButton:disabled /template/ Ellipse#border">
+    <Setter Property="Opacity" Value="{StyleResource ThemeDisabledOpacity}"/>
   </Style>
 </Styles>

@@ -3,9 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using Perspex.Logging;
 using Perspex.Threading;
-using Serilog;
-using Serilog.Core.Enrichers;
 
 namespace Perspex.Layout
 {
@@ -16,22 +15,8 @@ namespace Perspex.Layout
     {
         private readonly Queue<ILayoutable> _toMeasure = new Queue<ILayoutable>();
         private readonly Queue<ILayoutable> _toArrange = new Queue<ILayoutable>();
-        private readonly ILogger _log;
         private bool _queued;
         private bool _running;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="LayoutManager"/> class.
-        /// </summary>
-        public LayoutManager()
-        {
-            _log = Log.ForContext(new[]
-            {
-                new PropertyEnricher("Area", "Layout"),
-                new PropertyEnricher("SourceContext", GetType()),
-                new PropertyEnricher("Id", GetHashCode()),
-            });
-        }
 
         /// <summary>
         /// Gets the layout manager.
@@ -70,7 +55,9 @@ namespace Perspex.Layout
             {
                 _running = true;
 
-                _log.Information(
+                Logger.Information(
+                    LogArea.Layout,
+                    this,
                     "Started layout pass. To measure: {Measure} To arrange: {Arrange}",
                     _toMeasure.Count,
                     _toArrange.Count);
@@ -97,7 +84,7 @@ namespace Perspex.Layout
                 }
 
                 stopwatch.Stop();
-                _log.Information("Layout pass finised in {Time}", stopwatch.Elapsed);
+                Logger.Information(LogArea.Layout, this, "Layout pass finised in {Time}", stopwatch.Elapsed);
             }
 
             _queued = false;

@@ -1,18 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-using Perspex;
+﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using Perspex.Controls;
 using Perspex.Media;
 using Perspex.Rendering;
-using Perspex.Layout;
-using Perspex.Media.Imaging;
-using Perspex.Platform;
-
+using Perspex.VisualTree;
 
 namespace Perspex.RenderHelpers
 {
-    class TileBrushImplHelper
+    internal class TileBrushImplHelper
     {
         public Size IntermediateSize { get; }
         public Rect DestinationRect { get; }
@@ -27,8 +23,7 @@ namespace Perspex.RenderHelpers
         private readonly Rect _drawRect;
 
         public bool IsValid { get; }
-
-
+        
         public TileBrushImplHelper(TileBrush brush, Size targetSize)
         {
             _imageBrush = brush as ImageBrush;
@@ -42,20 +37,19 @@ namespace Perspex.RenderHelpers
             }
             else if (_visualBrush != null)
             {
-                var visual = _visualBrush.Visual;
-                if (visual == null)
-                    return;
-                var layoutable = visual as ILayoutable;
+                var control = _visualBrush.Visual as IControl;
 
-                if (layoutable != null)
+                if (control != null)
                 {
-                    if (layoutable.IsArrangeValid == false)
+                    EnsureInitialized(control);
+
+                    if (control.IsArrangeValid == false)
                     {
-                        layoutable.Measure(Size.Infinity);
-                        layoutable.Arrange(new Rect(layoutable.DesiredSize));
+                        control.Measure(Size.Infinity);
+                        control.Arrange(new Rect(control.DesiredSize));
                     }
 
-                    _imageSize = layoutable.Bounds.Size;
+                    _imageSize = control.Bounds.Size;
                     IsValid = true;
                 }
             }
@@ -118,8 +112,8 @@ namespace Perspex.RenderHelpers
 
 
         /// <summary>
-        /// Calculates a _translate based on a <see cref="TileBrush"/>, a source and destination
-        /// rectangle and a _scale.
+        /// Calculates a translate based on a <see cref="TileBrush"/>, a source and destination
+        /// rectangle and a scale.
         /// </summary>
         /// <param name="brush">The brush.</param>
         /// <param name="sourceRect">The source rectangle.</param>
@@ -160,7 +154,6 @@ namespace Perspex.RenderHelpers
             return new Vector(x, y);
         }
 
-
         public static Matrix CalculateIntermediateTransform(
             TileMode tileMode,
             Rect sourceRect,
@@ -189,13 +182,28 @@ namespace Perspex.RenderHelpers
             return transform;
         }
 
-
-
-
-        static Size CalculateIntermediateSize(
+        private static Size CalculateIntermediateSize(
             TileMode tileMode,
             Size targetSize,
             Size destinationSize) => tileMode == TileMode.None ? targetSize : destinationSize;
 
+        private static void EnsureInitialized(IControl control)
+        {
+            foreach (var i in control.GetSelfAndVisualDescendents())
+            {
+                var c = i as IControl;
+
+                if (c?.IsInitialized == false)
+                {
+                    var init = c as ISupportInitialize;
+
+                    if (init != null)
+                    {
+                        init.BeginInit();
+                        init.EndInit();
+                    }
+                }
+            }
+        }
     }
 }

@@ -9,6 +9,21 @@ namespace Perspex.Layout.UnitTests
     public class MeasureTests
     {
         [Fact]
+        public void Margin_Should_Be_Included_In_DesiredSize()
+        {
+            var decorator = new Decorator
+            {
+                Width = 100,
+                Height = 100,
+                Margin = new Thickness(8),
+            };
+
+            decorator.Measure(Size.Infinity);
+
+            Assert.Equal(new Size(116, 116), decorator.DesiredSize);
+        }
+
+        [Fact]
         public void Invalidating_Child_Should_Not_Invalidate_Parent()
         {
             var panel = new StackPanel();

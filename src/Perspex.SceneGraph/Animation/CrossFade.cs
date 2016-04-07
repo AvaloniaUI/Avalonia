@@ -89,7 +89,10 @@ namespace Perspex.Animation
                 from.Opacity = 1;
             }
 
-            to.Opacity = 1;
+            if (to != null)
+            {
+                to.Opacity = 1;
+            }
         }
 
         /// <summary>

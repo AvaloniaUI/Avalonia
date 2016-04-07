@@ -61,6 +61,10 @@
     <Compile Include="IDirectPropertyMetadata.cs" />
     <Compile Include="IStyledPropertyMetadata.cs" />
     <Compile Include="ISupportInitialize.cs" />
+    <Compile Include="Logging\ILogSink.cs" />
+    <Compile Include="Logging\LogArea.cs" />
+    <Compile Include="Logging\LogEventLevel.cs" />
+    <Compile Include="Logging\Logger.cs" />
     <Compile Include="Metadata\DependsOnAttribute.cs" />
     <Compile Include="Metadata\ContentAttribute.cs" />
     <Compile Include="PerspexDisposable.cs" />
@@ -69,6 +73,7 @@
     <Compile Include="Metadata\XmlnsDefinitionAttribute.cs" />
     <Compile Include="PerspexObjectExtensions.cs" />
     <Compile Include="PropertyMetadata.cs" />
+    <Compile Include="Reactive\ObservableEx.cs" />
     <Compile Include="Reactive\WeakPropertyChangedObservable.cs" />
     <Compile Include="StyledProperty.cs" />
     <Compile Include="StyledPropertyBase.cs" />
@@ -115,10 +120,6 @@
   <ItemGroup>
     <Reference Include="JetBrains.Annotations.PCL328, Version=10.0.0.0, Culture=neutral, PublicKeyToken=1010a0d8d6380325, processorArchitecture=MSIL">
       <HintPath>..\..\packages\JetBrains.Annotations.10.0.0\lib\portable-net4+sl5+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1\JetBrains.Annotations.PCL328.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Serilog, Version=1.5.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Serilog.1.5.14\lib\portable-net45+win+wpa81+wp80+MonoAndroid10+MonoTouch10\Serilog.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Reactive.Core">

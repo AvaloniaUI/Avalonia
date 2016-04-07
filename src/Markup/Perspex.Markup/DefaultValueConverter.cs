@@ -5,6 +5,7 @@ using System;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using Perspex.Logging;
 using Perspex.Utilities;
 
 namespace Perspex.Markup
@@ -38,10 +39,18 @@ namespace Perspex.Markup
             {
                 return result;
             }
-            else
+
+            if (value != null)
             {
-                return PerspexProperty.UnsetValue;
+                Logger.Error(
+                    LogArea.Binding,
+                    this,
+                    "Could not convert {Value} to {Type}",
+                    value,
+                    targetType);
             }
+
+            return PerspexProperty.UnsetValue;
         }
 
         /// <summary>

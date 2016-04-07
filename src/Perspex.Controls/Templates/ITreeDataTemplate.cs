@@ -1,7 +1,7 @@
 ﻿// Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using System.Collections;
+using Perspex.Data;
 
 namespace Perspex.Controls.Templates
 {
@@ -14,7 +14,10 @@ namespace Perspex.Controls.Templates
         /// Selects the child items of an item.
         /// </summary>
         /// <param name="item">The item.</param>
-        /// <returns>The child items, or null if no child items.</returns>
-        IEnumerable ItemsSelector(object item);
+        /// <returns>
+        /// An <see cref="InstancedBinding"/> holding the items, or an observable that tracks the
+        /// items. May return null if no child items.
+        /// </returns>
+        InstancedBinding ItemsSelector(object item);
     }
 }

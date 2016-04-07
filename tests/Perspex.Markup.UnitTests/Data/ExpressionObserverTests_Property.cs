@@ -8,6 +8,7 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Microsoft.Reactive.Testing;
 using Perspex.Markup.Data;
+using Perspex.UnitTests;
 using Xunit;
 
 namespace Perspex.Markup.UnitTests.Data
@@ -384,11 +385,6 @@ namespace Perspex.Markup.UnitTests.Data
                     _next = value;
                     RaisePropertyChanged(nameof(Next));
                 }
-            }
-
-            public void RaisePropertyChanged(string propertyName)
-            {
-                base.RaisePropertyChanged(propertyName);
             }
         }
 

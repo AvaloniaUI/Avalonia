@@ -6,3 +6,5 @@
   href: defining-properties.md
 - name: Working with Properties
   href: working-with-properties.md
+- name: Logging
+  href: logging.md

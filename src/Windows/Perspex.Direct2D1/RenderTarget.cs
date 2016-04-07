@@ -2,10 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using Perspex.Direct2D1.Media;
-using Perspex.Media;
 using Perspex.Platform;
-using Perspex.Rendering;
 using Perspex.Win32.Interop;
 using SharpDX;
 using SharpDX.Direct2D1;
@@ -18,13 +15,12 @@ namespace Perspex.Direct2D1
     {
         private readonly IntPtr _hwnd;
         private Size2 _savedSize;
+        private Size2F _savedDpi;
 
         /// <summary>
         /// The render target.
         /// </summary>
         private readonly SharpDX.Direct2D1.RenderTarget _renderTarget;
-
-
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RenderTarget"/> class.
@@ -51,13 +47,6 @@ namespace Perspex.Direct2D1
                 Direct2DFactory,
                 renderTargetProperties,
                 hwndProperties);
-        }
-
-        Size2 GetWindowSize()
-        {
-            UnmanagedMethods.RECT rc;
-            UnmanagedMethods.GetClientRect(_hwnd, out rc);
-            return new Size2(rc.right - rc.left, rc.bottom - rc.top);
         }
 
         /// <summary>
@@ -94,11 +83,21 @@ namespace Perspex.Direct2D1
         public DrawingContext CreateDrawingContext()
         {
             var window = _renderTarget as WindowRenderTarget;
+
             if (window != null)
             {
                 var size = GetWindowSize();
+                var dpi = GetWindowDpi();
+
                 if (size != _savedSize)
+                {
                     window.Resize(_savedSize = size);
+                }
+
+                if (dpi != _savedDpi)
+                {
+                    window.DotsPerInch = _savedDpi = dpi;
+                }
             }
 
             return new DrawingContext(new Media.DrawingContext(_renderTarget, DirectWriteFactory));
@@ -107,6 +106,36 @@ namespace Perspex.Direct2D1
         public void Dispose()
         {
             _renderTarget.Dispose();
+        }
+
+        private Size2F GetWindowDpi()
+        {
+            if (UnmanagedMethods.ShCoreAvailable)
+            {
+                uint dpix, dpiy;
+
+                var monitor = UnmanagedMethods.MonitorFromWindow(
+                    _hwnd,
+                    UnmanagedMethods.MONITOR.MONITOR_DEFAULTTONEAREST);
+
+                if (UnmanagedMethods.GetDpiForMonitor(
+                        monitor,
+                        UnmanagedMethods.MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI,
+                        out dpix,
+                        out dpiy) == 0)
+                {
+                    return new Size2F(dpix, dpiy);
+                }
+            }
+
+            return new Size2F(96, 96);
+        }
+
+        private Size2 GetWindowSize()
+        {
+            UnmanagedMethods.RECT rc;
+            UnmanagedMethods.GetClientRect(_hwnd, out rc);
+            return new Size2(rc.right - rc.left, rc.bottom - rc.top);
         }
     }
 }

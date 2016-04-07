@@ -26,15 +26,8 @@ namespace Perspex.Controls
         public static readonly StyledProperty<bool> AcceptsTabProperty =
             PerspexProperty.Register<TextBox, bool>("AcceptsTab");
 
-        // TODO: Remove these when "(attached.property)" syntax is supported in bindings. They are
-        // bound to in the TextBox template, but ideally they should just be bound to the attached
-        // property.
-        public static readonly StyledProperty<bool> CanScrollHorizontally = 
-            ScrollViewer.CanScrollHorizontallyProperty.AddOwner<TextBox>();
-        public static readonly StyledProperty<ScrollBarVisibility> HorizontalScrollBarVisibilityProperty = 
-            ScrollViewer.HorizontalScrollBarVisibilityProperty.AddOwner<TextBox>();
-        public static readonly StyledProperty<ScrollBarVisibility> VerticalScrollBarVisibilityProperty = 
-            ScrollViewer.VerticalScrollBarVisibilityProperty.AddOwner<TextBox>();
+        public static readonly DirectProperty<TextBox, bool> CanScrollHorizontallyProperty =
+            PerspexProperty.RegisterDirect<TextBox, bool>("CanScrollHorizontally", o => o.CanScrollHorizontally);
 
         // TODO: Should CaretIndex, SelectionStart/End and Text be direct properties?
         public static readonly StyledProperty<int> CaretIndexProperty =
@@ -78,6 +71,7 @@ namespace Perspex.Controls
             public bool Equals(UndoRedoState other) => ReferenceEquals(Text, other.Text) || Equals(Text, other.Text);
         }
 
+        private bool _canScrollHorizontally;
         private TextPresenter _presenter;
         private UndoRedoHelper<UndoRedoState> _undoRedoHelper;
 
@@ -89,13 +83,9 @@ namespace Perspex.Controls
 
         public TextBox()
         {
-            var canScrollHorizontally = this.GetObservable(AcceptsReturnProperty)
-                .Select(x => !x);
-
-            Bind(
-                ScrollViewer.CanScrollHorizontallyProperty,
-                canScrollHorizontally,
-                BindingPriority.Style);
+            var canScrollHorizontally = this.GetObservable(TextWrappingProperty)
+                .Select(x => x == TextWrapping.NoWrap)
+                .Subscribe(x => CanScrollHorizontally = x);
 
             var horizontalScrollBarVisibility = this.GetObservable(AcceptsReturnProperty)
                 .Select(x => x ? ScrollBarVisibility.Auto : ScrollBarVisibility.Hidden);
@@ -117,6 +107,12 @@ namespace Perspex.Controls
         {
             get { return GetValue(AcceptsTabProperty); }
             set { SetValue(AcceptsTabProperty, value); }
+        }
+
+        public bool CanScrollHorizontally
+        {
+            get { return _canScrollHorizontally; }
+            private set { SetAndRaise(CanScrollHorizontallyProperty, ref _canScrollHorizontally, value); }
         }
 
         public int CaretIndex
@@ -262,8 +258,16 @@ namespace Perspex.Controls
                     {
                         Copy();
                     }
-
                     break;
+
+                case Key.X:
+                    if(modifiers == InputModifiers.Control)
+                    {
+                        Copy();
+                        DeleteSelection();
+                    }
+                    break;
+
                 case Key.V:
                     if (modifiers == InputModifiers.Control)
                     {
@@ -271,6 +275,7 @@ namespace Perspex.Controls
                     }
 
                     break;
+
                 case Key.Z:
                     if (modifiers == InputModifiers.Control)
                         _undoRedoHelper.Undo();
@@ -348,6 +353,10 @@ namespace Perspex.Controls
                     }
 
                     break;
+
+                default:
+                    handled = false;
+                    break;
             }
 
             if (movement && ((modifiers & InputModifiers.Shift) != 0))
@@ -373,23 +382,26 @@ namespace Perspex.Controls
                 var index = CaretIndex = _presenter.GetCaretIndex(point);
                 var text = Text;
 
-                switch (e.ClickCount)
+                if (text != null)
                 {
-                    case 1:
-                        SelectionStart = SelectionEnd = index;
-                        break;
-                    case 2:
-                        if (!StringUtils.IsStartOfWord(text, index))
-                        {
-                            SelectionStart = StringUtils.PreviousWord(text, index, false);
-                        }
+                    switch (e.ClickCount)
+                    {
+                        case 1:
+                            SelectionStart = SelectionEnd = index;
+                            break;
+                        case 2:
+                            if (!StringUtils.IsStartOfWord(text, index))
+                            {
+                                SelectionStart = StringUtils.PreviousWord(text, index, false);
+                            }
 
-                        SelectionEnd = StringUtils.NextWord(text, index, false);
-                        break;
-                    case 3:
-                        SelectionStart = 0;
-                        SelectionEnd = text.Length;
-                        break;
+                            SelectionEnd = StringUtils.NextWord(text, index, false);
+                            break;
+                        case 3:
+                            SelectionStart = 0;
+                            SelectionEnd = text.Length;
+                            break;
+                    }
                 }
 
                 e.Device.Capture(_presenter);

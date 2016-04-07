@@ -39,7 +39,7 @@ namespace Perspex.Media
         /// <param name="brush">The fill brush.</param>
         /// <param name="pen">The stroke pen.</param>
         /// <param name="geometry">The geometry.</param>
-        void DrawGeometry(Brush brush, Pen pen, Geometry geometry);
+        void DrawGeometry(IBrush brush, Pen pen, Geometry geometry);
 
         /// <summary>
         /// Draws the outline of a rectangle.
@@ -55,7 +55,7 @@ namespace Perspex.Media
         /// <param name="foreground">The foreground brush.</param>
         /// <param name="origin">The upper-left corner of the text.</param>
         /// <param name="text">The text.</param>
-        void DrawText(Brush foreground, Point origin, FormattedText text);
+        void DrawText(IBrush foreground, Point origin, FormattedText text);
 
         /// <summary>
         /// Draws a filled rectangle.
@@ -63,7 +63,7 @@ namespace Perspex.Media
         /// <param name="brush">The brush.</param>
         /// <param name="rect">The rectangle bounds.</param>
         /// <param name="cornerRadius">The corner radius.</param>
-        void FillRectangle(Brush brush, Rect rect, float cornerRadius = 0.0f);
+        void FillRectangle(IBrush brush, Rect rect, float cornerRadius = 0.0f);
 
         /// <summary>
         /// Pushes a clip rectange.

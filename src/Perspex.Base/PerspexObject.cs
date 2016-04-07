@@ -7,13 +7,11 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
-using System.Reactive.Subjects;
 using Perspex.Data;
 using Perspex.Diagnostics;
+using Perspex.Logging;
 using Perspex.Threading;
 using Perspex.Utilities;
-using Serilog;
-using Serilog.Core.Enrichers;
 
 namespace Perspex
 {
@@ -25,6 +23,17 @@ namespace Perspex
     /// </remarks>
     public class PerspexObject : IPerspexObject, IPerspexObjectDebug, INotifyPropertyChanged
     {
+        /// <summary>
+        /// Maintains a list of direct property binding subscriptions so that the binding source
+        /// doesn't get collected.
+        /// </summary>
+        /// <remarks>
+        /// If/when we provide a ClearBindings() method, then this collection will be need to be
+        /// moved to an instance field and indexed by property, but until that point a static
+        /// collection will suffice.
+        /// </remarks>
+        private static List<IDisposable> s_directBindings = new List<IDisposable>();
+
         /// <summary>
         /// The parent object that inherited values are inherited from.
         /// </summary>
@@ -47,22 +56,10 @@ namespace Perspex
         private EventHandler<PerspexPropertyChangedEventArgs> _propertyChanged;
 
         /// <summary>
-        /// A serilog logger for logging property events.
-        /// </summary>
-        private readonly ILogger _propertyLog;
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="PerspexObject"/> class.
         /// </summary>
         public PerspexObject()
         {
-            _propertyLog = Log.ForContext(new[]
-            {
-                new PropertyEnricher("Area", "Property"),
-                new PropertyEnricher("SourceContext", GetType()),
-                new PropertyEnricher("Id", GetHashCode()),
-            });
-
             foreach (var property in PerspexPropertyRegistry.Instance.GetRegistered(this))
             {
                 object value = property.IsDirect ?
@@ -396,14 +393,27 @@ namespace Perspex
                     throw new ArgumentException($"The property {property.Name} is readonly.");
                 }
 
-                _propertyLog.Verbose(
-                    "Bound {Property} to {Binding} with priority LocalValue",
-                    property,
+                Logger.Verbose(
+                    LogArea.Property, 
+                    this,
+                    "Bound {Property} to {Binding} with priority LocalValue", 
+                    property, 
                     GetDescription(source));
 
-                return source
+                IDisposable subscription = null;
+
+                subscription = source
                     .Select(x => TypeUtilities.CastOrDefault(x, property.PropertyType))
+                    .Do(_ => { }, () => s_directBindings.Remove(subscription))
                     .Subscribe(x => SetValue(property, x));
+
+                s_directBindings.Add(subscription);
+
+                return Disposable.Create(() =>
+                {
+                    subscription.Dispose();
+                    s_directBindings.Remove(subscription);
+                });
             }
             else
             {
@@ -420,7 +430,9 @@ namespace Perspex
                     _values.Add(property, v);
                 }
 
-                _propertyLog.Verbose(
+                Logger.Verbose(
+                    LogArea.Property,
+                    this,
                     "Bound {Property} to {Binding} with priority {Priority}",
                     property,
                     GetDescription(source),
@@ -515,7 +527,7 @@ namespace Perspex
             PerspexProperty property,
             object oldValue,
             object newValue,
-            BindingPriority priority)
+            BindingPriority priority = BindingPriority.LocalValue)
         {
             Contract.Requires<ArgumentNullException>(property != null);
             VerifyAccess();
@@ -591,10 +603,10 @@ namespace Perspex
             }
 
             PriorityValue result = new PriorityValue(
+                this,
                 property.Name, 
                 property.PropertyType, 
-                validate2,
-                _propertyLog);
+                validate2);
 
             result.Changed.Subscribe(x =>
             {
@@ -609,11 +621,13 @@ namespace Perspex
                 {
                     RaisePropertyChanged(property, oldValue, newValue, (BindingPriority)result.ValuePriority);
 
-                    _propertyLog.Verbose(
+                    Logger.Verbose(
+                        LogArea.Property, 
+                        this,
                         "{Property} changed from {$Old} to {$Value} with priority {Priority}",
-                        property,
-                        oldValue,
-                        newValue,
+                        property, 
+                        oldValue, 
+                        newValue, 
                         (BindingPriority)result.ValuePriority);
                 }
             });
@@ -706,7 +720,9 @@ namespace Perspex
         /// <param name="priority">The priority.</param>
         private void LogPropertySet(PerspexProperty property, object value, BindingPriority priority)
         {
-            _propertyLog.Verbose(
+            Logger.Verbose(
+                LogArea.Property,
+                this,
                 "Set {Property} to {$Value} with priority {Priority}",
                 property,
                 value,

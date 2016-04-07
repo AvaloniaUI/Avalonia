@@ -131,13 +131,13 @@ namespace TestApplication
                                 Text = "Button",
                                 FontWeight = FontWeight.Medium,
                                 FontSize = 20,
-                                Foreground = SolidColorBrush.Parse("#212121"),
+                                Foreground = Brush.Parse("#212121"),
                             },
                             new TextBlock
                             {
                                 Text = "A button control",
                                 FontSize = 13,
-                                Foreground = SolidColorBrush.Parse("#727272"),
+                                Foreground = Brush.Parse("#727272"),
                                 Margin = new Thickness(0, 0, 0, 10)
                             },
                             new Button
@@ -157,13 +157,13 @@ namespace TestApplication
                                 Text = "ToggleButton",
                                 FontWeight = FontWeight.Medium,
                                 FontSize = 20,
-                                Foreground = SolidColorBrush.Parse("#212121"),
+                                Foreground = Brush.Parse("#212121"),
                             },
                             new TextBlock
                             {
                                 Text = "A toggle button control",
                                 FontSize = 13,
-                                Foreground = SolidColorBrush.Parse("#727272"),
+                                Foreground = Brush.Parse("#727272"),
                                 Margin = new Thickness(0, 0, 0, 10)
                             },
                             new ToggleButton
@@ -207,13 +207,13 @@ namespace TestApplication
                                 Text = "TextBlock",
                                 FontWeight = FontWeight.Medium,
                                 FontSize = 20,
-                                Foreground = SolidColorBrush.Parse("#212121"),
+                                Foreground = Brush.Parse("#212121"),
                             },
                             new TextBlock
                             {
                                 Text = "A control for displaying text.",
                                 FontSize = 13,
-                                Foreground = SolidColorBrush.Parse("#727272"),
+                                Foreground = Brush.Parse("#727272"),
                                 Margin = new Thickness(0, 0, 0, 10)
                             },
                             new TextBlock
@@ -245,18 +245,18 @@ namespace TestApplication
                                 Text = "HtmlLabel",
                                 FontWeight = FontWeight.Medium,
                                 FontSize = 20,
-                                Foreground = SolidColorBrush.Parse("#212121"),
+                                Foreground = Brush.Parse("#212121"),
                             },
                             new TextBlock
                             {
                                 Text = "A label capable of displaying HTML content",
                                 FontSize = 13,
-                                Foreground = SolidColorBrush.Parse("#727272"),
+                                Foreground = Brush.Parse("#727272"),
                                 Margin = new Thickness(0, 0, 0, 10)
                             },
                             new HtmlLabel
                             {
-                                Background = SolidColorBrush.Parse("#CCCCCC"),
+                                Background = Brush.Parse("#CCCCCC"),
                                 Padding = new Thickness(5),
                                 Text = @"<p><strong>Pellentesque habitant morbi tristique</strong> senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. <em>Aenean ultricies mi vitae est.</em> Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, <code>commodo vitae</code>, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci, sagittis tempus lacus enim ac dui. <a href=""#"">Donec non enim</a> in turpis pulvinar facilisis. Ut felis.</p>
 										<h2>Header Level 2</h2>
@@ -300,13 +300,13 @@ namespace TestApplication
                                 Text = "TextBox",
                                 FontWeight = FontWeight.Medium,
                                 FontSize = 20,
-                                Foreground = SolidColorBrush.Parse("#212121"),
+                                Foreground = Brush.Parse("#212121"),
                             },
                             new TextBlock
                             {
                                 Text = "A text box control",
                                 FontSize = 13,
-                                Foreground = SolidColorBrush.Parse("#727272"),
+                                Foreground = Brush.Parse("#727272"),
                                 Margin = new Thickness(0, 0, 0, 10)
                             },
 
@@ -320,13 +320,13 @@ namespace TestApplication
                                 Text = "CheckBox",
                                 FontWeight = FontWeight.Medium,
                                 FontSize = 20,
-                                Foreground = SolidColorBrush.Parse("#212121"),
+                                Foreground = Brush.Parse("#212121"),
                             },
                             new TextBlock
                             {
                                 Text = "A check box control",
                                 FontSize = 13,
-                                Foreground = SolidColorBrush.Parse("#727272"),
+                                Foreground = Brush.Parse("#727272"),
                                 Margin = new Thickness(0, 0, 0, 10)
                             },
                             new CheckBox { IsChecked = true, Margin = new Thickness(0, 0, 0, 5), Content = "Checked" },
@@ -337,13 +337,13 @@ namespace TestApplication
                                 Text = "RadioButton",
                                 FontWeight = FontWeight.Medium,
                                 FontSize = 20,
-                                Foreground = SolidColorBrush.Parse("#212121"),
+                                Foreground = Brush.Parse("#212121"),
                             },
                             new TextBlock
                             {
                                 Text = "A radio button control",
                                 FontSize = 13,
-                                Foreground = SolidColorBrush.Parse("#727272"),
+                                Foreground = Brush.Parse("#727272"),
                                 Margin = new Thickness(0, 0, 0, 10)
                             },
                             new RadioButton { IsChecked = true, Content = "Option 1" },
@@ -398,13 +398,13 @@ namespace TestApplication
                                 Text = "ListBox",
                                 FontWeight = FontWeight.Medium,
                                 FontSize = 20,
-                                Foreground = SolidColorBrush.Parse("#212121"),
+                                Foreground = Brush.Parse("#212121"),
                             },
                             new TextBlock
                             {
                                 Text = "A list box control.",
                                 FontSize = 13,
-                                Foreground = SolidColorBrush.Parse("#727272"),
+                                Foreground = Brush.Parse("#727272"),
                                 Margin = new Thickness(0, 0, 0, 10)
                             },
                             new ListBox
@@ -420,13 +420,13 @@ namespace TestApplication
                                 Text = "TreeView",
                                 FontWeight = FontWeight.Medium,
                                 FontSize = 20,
-                                Foreground = SolidColorBrush.Parse("#212121"),
+                                Foreground = Brush.Parse("#212121"),
                             },
                             new TextBlock
                             {
                                 Text = "A tree view control.",
                                 FontSize = 13,
-                                Foreground = SolidColorBrush.Parse("#727272"),
+                                Foreground = Brush.Parse("#727272"),
                                 Margin = new Thickness(0, 0, 0, 10)
                             },
                             new TreeView
@@ -514,13 +514,13 @@ namespace TestApplication
                                 Text = "Carousel",
                                 FontWeight = FontWeight.Medium,
                                 FontSize = 20,
-                                Foreground = SolidColorBrush.Parse("#212121"),
+                                Foreground = Brush.Parse("#212121"),
                             },
                             new TextBlock
                             {
                                 Text = "An items control that displays its items as pages that fill the controls.",
                                 FontSize = 13,
-                                Foreground = SolidColorBrush.Parse("#727272"),
+                                Foreground = Brush.Parse("#727272"),
                                 Margin = new Thickness(0, 0, 0, 10)
                             },
                             new StackPanel
@@ -573,13 +573,13 @@ namespace TestApplication
                                 Text = "Grid",
                                 FontWeight = FontWeight.Medium,
                                 FontSize = 20,
-                                Foreground = SolidColorBrush.Parse("#212121"),
+                                Foreground = Brush.Parse("#212121"),
                             },
                             new TextBlock
                             {
                                 Text = "Lays out child controls according to a grid.",
                                 FontSize = 13,
-                                Foreground = SolidColorBrush.Parse("#727272"),
+                                Foreground = Brush.Parse("#727272"),
                                 Margin = new Thickness(0, 0, 0, 10)
                             },
                             new Grid
@@ -601,21 +601,21 @@ namespace TestApplication
 
                                     new Rectangle
                                     {
-                                        Fill = SolidColorBrush.Parse("#FF5722"),
+                                        Fill = Brush.Parse("#FF5722"),
                                         [Grid.ColumnSpanProperty] = 2,
                                         Height = 200,
                                         Margin = new Thickness(2.5)
                                     },
                                     new Rectangle
                                     {
-                                        Fill = SolidColorBrush.Parse("#FF5722"),
+                                        Fill = Brush.Parse("#FF5722"),
                                         [Grid.RowProperty] = 1,
                                         Height = 100,
                                         Margin = new Thickness(2.5)
                                     },
                                     new Rectangle
                                     {
-                                        Fill = SolidColorBrush.Parse("#FF5722"),
+                                        Fill = Brush.Parse("#FF5722"),
                                         [Grid.RowProperty] = 1,
                                         [Grid.ColumnProperty] = 1,
                                         Height = 100,
@@ -629,13 +629,13 @@ namespace TestApplication
                                 Text = "StackPanel",
                                 FontWeight = FontWeight.Medium,
                                 FontSize = 20,
-                                Foreground = SolidColorBrush.Parse("#212121"),
+                                Foreground = Brush.Parse("#212121"),
                             },
                             new TextBlock
                             {
                                 Text = "A panel which lays out its children horizontally or vertically.",
                                 FontSize = 13,
-                                Foreground = SolidColorBrush.Parse("#727272"),
+                                Foreground = Brush.Parse("#727272"),
                                 Margin = new Thickness(0, 0, 0, 10)
                             },
                             new StackPanel
@@ -647,17 +647,17 @@ namespace TestApplication
                                 {
                                     new Rectangle
                                     {
-                                        Fill = SolidColorBrush.Parse("#FFC107"),
+                                        Fill = Brush.Parse("#FFC107"),
                                         Height = 50,
                                     },
                                     new Rectangle
                                     {
-                                        Fill = SolidColorBrush.Parse("#FFC107"),
+                                        Fill = Brush.Parse("#FFC107"),
                                         Height = 50,
                                     },
                                     new Rectangle
                                     {
-                                        Fill = SolidColorBrush.Parse("#FFC107"),
+                                        Fill = Brush.Parse("#FFC107"),
                                         Height = 50,
                                     },
                                 }
@@ -668,13 +668,13 @@ namespace TestApplication
                                 Text = "Canvas",
                                 FontWeight = FontWeight.Medium,
                                 FontSize = 20,
-                                Foreground = SolidColorBrush.Parse("#212121"),
+                                Foreground = Brush.Parse("#212121"),
                             },
                             new TextBlock
                             {
                                 Text = "A panel which lays out its children by explicit coordinates.",
                                 FontSize = 13,
-                                Foreground = SolidColorBrush.Parse("#727272"),
+                                Foreground = Brush.Parse("#727272"),
                                 Margin = new Thickness(0, 0, 0, 10)
                             },
                             new Canvas
@@ -762,13 +762,13 @@ namespace TestApplication
                             Text = "Animations",
                             FontWeight = FontWeight.Medium,
                             FontSize = 20,
-                            Foreground = SolidColorBrush.Parse("#212121"),
+                            Foreground = Brush.Parse("#212121"),
                         },
                         new TextBlock
                         {
                             Text = "A few animations showcased below",
                             FontSize = 13,
-                            Foreground = SolidColorBrush.Parse("#727272"),
+                            Foreground = Brush.Parse("#727272"),
                             Margin = new Thickness(0, 0, 0, 10)
                         },
                         (button1 = new Button

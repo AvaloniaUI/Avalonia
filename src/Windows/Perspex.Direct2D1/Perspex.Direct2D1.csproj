@@ -107,6 +107,18 @@
       <Project>{B09B78D8-9B26-48B0-9149-D64A2F120F3F}</Project>
       <Name>Perspex.Base</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\Perspex.Controls\Perspex.Controls.csproj">
+      <Project>{d2221c82-4a25-4583-9b43-d791e3f6820c}</Project>
+      <Name>Perspex.Controls</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Perspex.Input\Perspex.Input.csproj">
+      <Project>{62024b2d-53eb-4638-b26b-85eeaa54866e}</Project>
+      <Name>Perspex.Input</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Perspex.Interactivity\Perspex.Interactivity.csproj">
+      <Project>{6b0ed19d-a08b-461c-a9d9-a9ee40b0c06b}</Project>
+      <Name>Perspex.Interactivity</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Perspex.Layout\Perspex.Layout.csproj">
       <Project>{42472427-4774-4C81-8AFF-9F27B8E31721}</Project>
       <Name>Perspex.Layout</Name>
@@ -114,6 +126,10 @@
     <ProjectReference Include="..\..\Perspex.SceneGraph\Perspex.SceneGraph.csproj">
       <Project>{EB582467-6ABB-43A1-B052-E981BA910E3A}</Project>
       <Name>Perspex.SceneGraph</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Perspex.Styling\Perspex.Styling.csproj">
+      <Project>{f1baa01a-f176-4c6a-b39d-5b40bb1b148f}</Project>
+      <Name>Perspex.Styling</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="..\..\Shared\RenderHelpers\RenderHelpers.projitems" Label="Shared" />

@@ -3,16 +3,36 @@
 
 using System;
 using Perspex.Input.Raw;
-using Perspex.Layout;
 
 namespace Perspex.Input
 {
+    /// <summary>
+    /// Recieves input from the windowing subsystem and dispatches it to interested parties
+    /// for processing.
+    /// </summary>
     public interface IInputManager
     {
-        IObservable<RawInputEventArgs> RawEventReceived { get; }
+        /// <summary>
+        /// Gets an observable that notifies on each input event recieved before
+        /// <see cref="Process"/>.
+        /// </summary>
+        IObservable<RawInputEventArgs> PreProcess { get; }
 
+        /// <summary>
+        /// Gets an observable that notifies on each input event recieved.
+        /// </summary>
+        IObservable<RawInputEventArgs> Process { get; }
+
+        /// <summary>
+        /// Gets an observable that notifies on each input event recieved after
+        /// <see cref="Process"/>.
+        /// </summary>
         IObservable<RawInputEventArgs> PostProcess { get; }
 
-        void Process(RawInputEventArgs e);
+        /// <summary>
+        /// Processes a raw input event.
+        /// </summary>
+        /// <param name="e">The raw input event.</param>
+        void ProcessInput(RawInputEventArgs e);
     }
 }

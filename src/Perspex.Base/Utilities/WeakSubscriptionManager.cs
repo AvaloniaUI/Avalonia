@@ -114,7 +114,7 @@ namespace Perspex.Utilities
 
             void Destroy()
             {
-                _info.RemoveEventHandler(_target, _delegate);
+                _info.RemoveMethod.Invoke(_target, new[] { _delegate });
                 _sdic.Remove(_eventName);
             }
 

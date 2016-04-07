@@ -54,6 +54,11 @@ namespace Perspex
         public bool IsIdentity => Equals(Identity);
 
         /// <summary>
+        /// HasInverse Property - returns true if this matrix is invertable, false otherwise.
+        /// </summary>
+        public bool HasInverse => GetDeterminant() != 0;
+
+        /// <summary>
         /// The first element of the first row
         /// </summary>
         public double M11 => _m11;
@@ -208,6 +213,7 @@ namespace Perspex
         {
             return (_m11 * _m22) - (_m12 * _m21);
         }
+
 
         /// <summary>
         /// Returns a boolean indicating whether the matrix is equal to the other given matrix.

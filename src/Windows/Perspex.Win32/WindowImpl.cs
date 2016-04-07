@@ -80,13 +80,14 @@ namespace Perspex.Win32
             {
                 UnmanagedMethods.RECT rect;
                 UnmanagedMethods.GetClientRect(_hwnd, out rect);
-                return new Size(rect.right, rect.bottom);
+                return new Size(rect.right, rect.bottom) / Scaling;
             }
 
             set
             {
                 if (value != ClientSize)
                 {
+                    value *= Scaling;
                     value += BorderThickness;
 
                     UnmanagedMethods.SetWindowPos(
@@ -119,10 +120,10 @@ namespace Perspex.Win32
         {
             get
             {
-                return new Size(
+                return (new Size(
                     UnmanagedMethods.GetSystemMetrics(UnmanagedMethods.SystemMetric.SM_CXMAXTRACK),
                     UnmanagedMethods.GetSystemMetrics(UnmanagedMethods.SystemMetric.SM_CYMAXTRACK))
-                    - BorderThickness;
+                    - BorderThickness) / Scaling;
             }
         }
 
@@ -221,12 +222,13 @@ namespace Perspex.Win32
 
         public void Invalidate(Rect rect)
         {
+            var f = Scaling;
             var r = new UnmanagedMethods.RECT
             {
-                left = (int)rect.X,
-                top = (int)rect.Y,
-                right = (int)rect.Right,
-                bottom = (int)rect.Bottom,
+                left = (int)(rect.X * f),
+                top = (int)(rect.Y * f),
+                right = (int)(rect.Right * f),
+                bottom = (int)(rect.Bottom * f),
             };
 
             UnmanagedMethods.InvalidateRect(_hwnd, ref r, false);
@@ -236,11 +238,12 @@ namespace Perspex.Win32
         {
             var p = new UnmanagedMethods.POINT { X = (int)point.X, Y = (int)point.Y };
             UnmanagedMethods.ScreenToClient(_hwnd, ref p);
-            return new Point(p.X, p.Y);
+            return new Point(p.X, p.Y) / Scaling;
         }
 
         public Point PointToScreen(Point point)
         {
+            point *= Scaling;
             var p = new UnmanagedMethods.POINT { X = (int)point.X, Y = (int)point.Y };
             UnmanagedMethods.ClientToScreen(_hwnd, ref p);
             return new Point(p.X, p.Y);
@@ -459,7 +462,7 @@ namespace Perspex.Win32
                             : msg == (int)UnmanagedMethods.WindowsMessage.WM_RBUTTONDOWN
                                 ? RawMouseEventType.RightButtonDown
                                 : RawMouseEventType.MiddleButtonDown,
-                        PointFromLParam(lParam), GetMouseModifiers(wParam));
+                        DipFromLParam(lParam), GetMouseModifiers(wParam));
                     break;
                     
                 case UnmanagedMethods.WindowsMessage.WM_LBUTTONUP:
@@ -474,7 +477,7 @@ namespace Perspex.Win32
                             : msg == (int) UnmanagedMethods.WindowsMessage.WM_RBUTTONUP
                                 ? RawMouseEventType.RightButtonUp
                                 : RawMouseEventType.MiddleButtonUp,
-                        PointFromLParam(lParam), GetMouseModifiers(wParam));
+                        DipFromLParam(lParam), GetMouseModifiers(wParam));
                     break;
 
                 case UnmanagedMethods.WindowsMessage.WM_MOUSEMOVE:
@@ -496,7 +499,7 @@ namespace Perspex.Win32
                         timestamp,
                         _owner,
                         RawMouseEventType.Move,
-                        PointFromLParam(lParam), GetMouseModifiers(wParam));
+                        DipFromLParam(lParam), GetMouseModifiers(wParam));
 
                     break;
 
@@ -505,7 +508,7 @@ namespace Perspex.Win32
                         WindowsMouseDevice.Instance,
                         timestamp,
                         _owner,
-                        ScreenToClient(PointFromLParam(lParam)),
+                        ScreenToClient(DipFromLParam(lParam)),
                         new Vector(0, ((int)wParam >> 16) / wheelDelta), GetMouseModifiers(wParam));
                     break;
 
@@ -528,7 +531,8 @@ namespace Perspex.Win32
                         {
                             UnmanagedMethods.RECT r;
                             UnmanagedMethods.GetUpdateRect(_hwnd, out r, false);
-                            Paint(new Rect(r.left, r.top, r.right - r.left, r.bottom - r.top));
+                            var f = Scaling;
+                            Paint(new Rect(r.left / f, r.top / f, (r.right - r.left) / f, (r.bottom - r.top) / f));
                             UnmanagedMethods.EndPaint(_hwnd, ref ps);
                         }
                     }
@@ -539,7 +543,7 @@ namespace Perspex.Win32
                     if (Resized != null)
                     {
                         var clientSize = new Size((int)lParam & 0xffff, (int)lParam >> 16);
-                        Resized(clientSize);
+                        Resized(clientSize / Scaling);
                     }
 
                     return IntPtr.Zero;
@@ -605,13 +609,14 @@ namespace Perspex.Win32
 
             Handle = new PlatformHandle(_hwnd, PlatformConstants.WindowHandleType);
 
-            var monitor = UnmanagedMethods.MonitorFromWindow(
-                _hwnd, 
-                UnmanagedMethods.MONITOR.MONITOR_DEFAULTTONEAREST);
-
             if (UnmanagedMethods.ShCoreAvailable)
             {
                 uint dpix, dpiy;
+
+                var monitor = UnmanagedMethods.MonitorFromWindow(
+                    _hwnd,
+                    UnmanagedMethods.MONITOR.MONITOR_DEFAULTTONEAREST);
+
                 if (UnmanagedMethods.GetDpiForMonitor(
                         monitor,
                         UnmanagedMethods.MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI,
@@ -621,6 +626,11 @@ namespace Perspex.Win32
                     _scaling = dpix / 96.0;
                 }
             }
+        }
+
+        private Point DipFromLParam(IntPtr lParam)
+        {
+            return new Point((short)((int)lParam & 0xffff), (short)((int)lParam >> 16)) / Scaling;
         }
 
         private Point PointFromLParam(IntPtr lParam)

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Perspex.Controls.Templates;
+using Perspex.Data;
 
 namespace Perspex.Controls.Generators
 {
@@ -76,7 +77,13 @@ namespace Perspex.Controls.Generators
                 var result = new T();
 
                 result.SetValue(ContentProperty, template.Build(item));
-                result.SetValue(ItemsProperty, template.ItemsSelector(item));
+
+                var itemsSelector = template.ItemsSelector(item);
+
+                if (itemsSelector != null)
+                {
+                    BindingOperations.Apply(result, ItemsProperty, itemsSelector, null);
+                }
 
                 if (!(item is IControl))
                 {

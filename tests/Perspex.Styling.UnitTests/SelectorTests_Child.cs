@@ -105,7 +105,7 @@ namespace Perspex.Styling.UnitTests
 
             public ITemplatedControl TemplatedParent { get; }
 
-            IObservable<Unit> IStyleable.StyleDetach { get; }
+            IObservable<IStyleable> IStyleable.StyleDetach { get; }
 
             IPerspexReadOnlyList<string> IStyleable.Classes => Classes;
 

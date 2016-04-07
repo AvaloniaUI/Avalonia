@@ -50,6 +50,6 @@
       "_appTitle": "Perspex Website"
     },
     "dest": "_site",
-    "template": "default"
+    "template": [ "default", "template"]
   }
 }

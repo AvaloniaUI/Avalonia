@@ -10,6 +10,7 @@ using Perspex.Layout;
 using Perspex.Media;
 using Perspex.Platform;
 using Perspex.Styling;
+using System.Collections.Generic;
 
 namespace Perspex.Controls
 {
@@ -44,6 +45,13 @@ namespace Perspex.Controls
     /// </summary>
     public class Window : TopLevel, IStyleable, IFocusScope, ILayoutRoot, INameScope
     {
+        private static IList<Window> s_windows = new List<Window>();
+
+        /// <summary>
+        /// Retrieves an enumeration of all Windows in the currently running application.
+        /// </summary>
+        public static IList<Window> OpenWindows => s_windows;
+
         /// <summary>
         /// Defines the <see cref="SizeToContent"/> property.
         /// </summary>
@@ -153,6 +161,7 @@ namespace Perspex.Controls
         /// </summary>
         public void Close()
         {
+            s_windows.Remove(this);
             PlatformImpl.Dispose();
         }
 
@@ -193,6 +202,9 @@ namespace Perspex.Controls
         /// </summary>
         public void Show()
         {
+            s_windows.Add(this);
+
+            EnsureInitialized();
             LayoutManager.Instance.ExecuteInitialLayoutPass(this);
 
             using (BeginAutoSizing())
@@ -223,6 +235,9 @@ namespace Perspex.Controls
         /// </returns>
         public Task<TResult> ShowDialog<TResult>()
         {
+            s_windows.Add(this);
+
+            EnsureInitialized();
             LayoutManager.Instance.ExecuteInitialLayoutPass(this);
 
             using (BeginAutoSizing())
@@ -297,6 +312,16 @@ namespace Perspex.Controls
             }
 
             base.HandleResized(clientSize);
+        }
+
+        private void EnsureInitialized()
+        {
+            if (!this.IsInitialized)
+            {
+                var init = (ISupportInitialize)this;
+                init.BeginInit();
+                init.EndInit();
+            }
         }
     }
 }

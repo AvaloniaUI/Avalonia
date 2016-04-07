@@ -150,7 +150,7 @@ namespace Perspex.Markup.Xaml.Context
             RegisterTypeConverter(typeof(Type), new TypeTypeConverter());
 
             RegisterTypeConverter(typeof(IBitmap), new BitmapTypeConverter());
-            RegisterTypeConverter(typeof(Brush), new BrushTypeConverter());
+            RegisterTypeConverter(typeof(IBrush), new BrushTypeConverter());
             RegisterTypeConverter(typeof(Color), new ColorTypeConverter());
             RegisterTypeConverter(typeof(Classes), new ClassesTypeConverter());
             RegisterTypeConverter(typeof(ColumnDefinitions), new ColumnDefinitionsTypeConverter());
@@ -166,7 +166,7 @@ namespace Perspex.Markup.Xaml.Context
             RegisterTypeConverter(typeof(RelativeRect), new RelativeRectTypeConverter());
             RegisterTypeConverter(typeof(RowDefinitions), new RowDefinitionsTypeConverter());
             RegisterTypeConverter(typeof(Selector), new SelectorTypeConverter());
-            RegisterTypeConverter(typeof(SolidColorBrush), new SolidColorBrushTypeConverter());
+            RegisterTypeConverter(typeof(SolidColorBrush), new BrushTypeConverter());
             RegisterTypeConverter(typeof(Thickness), new ThicknessTypeConverter());
             RegisterTypeConverter(typeof(TimeSpan), new TimeSpanTypeConverter());
             RegisterTypeConverter(typeof(Uri), new UriTypeConverter());

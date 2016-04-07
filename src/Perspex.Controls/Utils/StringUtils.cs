@@ -21,6 +21,11 @@ namespace Perspex.Controls.Utils
 
         public static bool IsStartOfWord(string text, int index)
         {
+            if (index >= text.Length)
+            {
+                return false;
+            }
+
             // A 'word' starts with an AlphaNumeric or some punctuation symbols immediately
             // preceeded by lwsp.
             if (index > 0 && !char.IsWhiteSpace(text[index - 1]))

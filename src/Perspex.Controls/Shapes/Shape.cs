@@ -10,14 +10,14 @@ namespace Perspex.Controls.Shapes
 {
     public abstract class Shape : Control
     {
-        public static readonly StyledProperty<Brush> FillProperty =
-            PerspexProperty.Register<Shape, Brush>("Fill");
+        public static readonly StyledProperty<IBrush> FillProperty =
+            PerspexProperty.Register<Shape, IBrush>("Fill");
 
         public static readonly StyledProperty<Stretch> StretchProperty =
             PerspexProperty.Register<Shape, Stretch>("Stretch");
 
-        public static readonly StyledProperty<Brush> StrokeProperty =
-            PerspexProperty.Register<Shape, Brush>("Stroke");
+        public static readonly StyledProperty<IBrush> StrokeProperty =
+            PerspexProperty.Register<Shape, IBrush>("Stroke");
 
         public static readonly StyledProperty<PerspexList<double>> StrokeDashArrayProperty =
             PerspexProperty.Register<Shape, PerspexList<double>>("StrokeDashArray");
@@ -48,7 +48,7 @@ namespace Perspex.Controls.Shapes
             }
         }
 
-        public Brush Fill
+        public IBrush Fill
         {
             get { return GetValue(FillProperty); }
             set { SetValue(FillProperty, value); }
@@ -77,7 +77,7 @@ namespace Perspex.Controls.Shapes
             set { SetValue(StretchProperty, value); }
         }
 
-        public Brush Stroke
+        public IBrush Stroke
         {
             get { return GetValue(StrokeProperty); }
             set { SetValue(StrokeProperty, value); }

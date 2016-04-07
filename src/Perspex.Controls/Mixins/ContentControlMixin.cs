@@ -64,12 +64,19 @@ namespace Perspex.Controls.Mixins
 
                         var logicalChildren = logicalChildrenSelector(sender);
                         var subscription = presenter
-                            .GetObservable(ContentPresenter.ChildProperty)
+                            .GetObservableWithHistory(ContentPresenter.ChildProperty)
                             .Subscribe(child => UpdateLogicalChild(
                                 sender,
                                 logicalChildren, 
-                                logicalChildren.FirstOrDefault(), 
-                                child));
+                                child.Item1, 
+                                child.Item2));
+
+                        UpdateLogicalChild(
+                            sender,
+                            logicalChildren,
+                            logicalChildren.FirstOrDefault(),
+                            presenter.GetValue(ContentPresenter.ChildProperty));
+
                         subscriptions.Value.Add(sender, subscription);
                     }
                 }

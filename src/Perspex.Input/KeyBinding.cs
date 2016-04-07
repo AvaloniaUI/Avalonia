@@ -18,6 +18,15 @@ namespace Perspex.Input
             set { SetValue(CommandProperty, value); }
         }
 
+        public static readonly StyledProperty<object> CommandParameterProperty =
+            PerspexProperty.Register<KeyBinding, object>("CommandParameter");
+
+        public object CommandParameter
+        {
+            get { return GetValue(CommandParameterProperty); }
+            set { SetValue(CommandParameterProperty, value); }
+        }
+
         public static readonly StyledProperty<KeyGesture> GestureProperty =
             PerspexProperty.Register<KeyBinding, KeyGesture>("Gesture");
 
@@ -32,8 +41,8 @@ namespace Perspex.Input
             if (Gesture?.Matches(args) == true)
             {
                 args.Handled = true;
-                if (Command?.CanExecute(null) == true)
-                    Command.Execute(null);
+                if (Command?.CanExecute(CommandParameter) == true)
+                    Command.Execute(CommandParameter);
             }
         }
     }

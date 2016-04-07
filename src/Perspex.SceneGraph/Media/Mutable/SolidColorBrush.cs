@@ -10,7 +10,7 @@ namespace Perspex.Media.Mutable
     /// This is a mutable version of the normal immutable <see cref="Perspex.Media.SolidColorBrush"/>
     /// for use in XAML. XAML really needs support for immutable data...
     /// </remarks>
-    public class SolidColorBrush : Brush
+    public class SolidColorBrush : Brush, ISolidColorBrush
     {
         public static readonly DirectProperty<SolidColorBrush, Color> ColorProperty =
             PerspexProperty.RegisterDirect<SolidColorBrush, Color>(

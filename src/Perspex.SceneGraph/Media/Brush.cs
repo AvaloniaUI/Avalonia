@@ -10,7 +10,7 @@ namespace Perspex.Media
     /// <summary>
     /// Describes how an area is painted.
     /// </summary>
-    public abstract class Brush : PerspexObject
+    public abstract class Brush : PerspexObject, IBrush
     {
         /// <summary>
         /// Defines the <see cref="Opacity"/> property.
@@ -32,7 +32,7 @@ namespace Perspex.Media
         /// </summary>
         /// <param name="s">The brush string.</param>
         /// <returns>The <see cref="Color"/>.</returns>
-        public static Brush Parse(string s)
+        public static IBrush Parse(string s)
         {
             if (s[0] == '#')
             {
@@ -46,7 +46,7 @@ namespace Perspex.Media
 
                 if (member != null)
                 {
-                    return (Brush)member.GetValue(null);
+                    return (IBrush)member.GetValue(null);
                 }
                 else
                 {
