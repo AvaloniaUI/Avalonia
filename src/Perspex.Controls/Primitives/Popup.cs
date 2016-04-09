@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using Perspex.Input;
+using Perspex.Input.Raw;
 using Perspex.Interactivity;
 using Perspex.LogicalTree;
 using Perspex.Metadata;
@@ -53,6 +54,7 @@ namespace Perspex.Controls.Primitives
         private bool _isOpen;
         private PopupRoot _popupRoot;
         private TopLevel _topLevel;
+        private IDisposable _nonClientListener;
 
         /// <summary>
         /// Initializes static members of the <see cref="Popup"/> class.
@@ -181,6 +183,7 @@ namespace Perspex.Controls.Primitives
             {
                 _topLevel.Deactivated += TopLevelDeactivated;
                 _topLevel.AddHandler(PointerPressedEvent, PointerPressedOutside, RoutingStrategies.Tunnel);
+                _nonClientListener = InputManager.Instance.Process.Subscribe(ListenForNonClientClick);
             }
 
             PopupRootCreated?.Invoke(this, EventArgs.Empty);
@@ -201,6 +204,8 @@ namespace Perspex.Controls.Primitives
                 {
                     _topLevel.RemoveHandler(PointerPressedEvent, PointerPressedOutside);
                     _topLevel.Deactivated -= TopLevelDeactivated;
+                    _nonClientListener?.Dispose();
+                    _nonClientListener = null;
                 }
 
                 _popupRoot.Hide();
@@ -297,6 +302,16 @@ namespace Perspex.Controls.Primitives
 
                 default:
                     throw new InvalidOperationException("Invalid value for Popup.PlacementMode");
+            }
+        }
+
+        private void ListenForNonClientClick(RawInputEventArgs e)
+        {
+            var mouse = e as RawMouseEventArgs;
+
+            if (!StaysOpen && mouse?.Type == RawMouseEventType.NonClientLeftButtonDown)
+            {
+                Close();
             }
         }
 
