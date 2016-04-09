@@ -69,6 +69,7 @@ namespace Perspex.Markup.Data.Plugins
             private readonly WeakReference _reference;
             private readonly PropertyInfo _property;
             private readonly Action<object> _changed;
+            private bool notifying = true;
 
             public Accessor(
                 WeakReference reference, 
@@ -124,8 +125,16 @@ namespace Perspex.Markup.Data.Plugins
             {
                 if (_property.CanWrite)
                 {
-                    _property.SetValue(_reference.Target, value);
-                    return true;
+                    try
+                    {
+                        notifying = false;
+                        _property.SetValue(_reference.Target, value);
+                        return true;
+                    }
+                    finally
+                    {
+                        notifying = true;
+                    }
                 }
 
                 return false;
@@ -133,7 +142,7 @@ namespace Perspex.Markup.Data.Plugins
 
             public void OnEvent(object sender, PropertyChangedEventArgs e)
             {
-                if (e.PropertyName == _property.Name || string.IsNullOrEmpty(e.PropertyName))
+                if (notifying && e.PropertyName == _property.Name || string.IsNullOrEmpty(e.PropertyName))
                 {
                     _changed(Value);
                 }

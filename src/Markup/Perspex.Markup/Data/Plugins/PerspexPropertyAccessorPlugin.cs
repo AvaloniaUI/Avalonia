@@ -69,6 +69,7 @@ namespace Perspex.Markup.Data.Plugins
             private readonly WeakReference<PerspexObject> _reference;
             private readonly PerspexProperty _property;
             private IDisposable _subscription;
+            private bool notifying = true;
 
             public Accessor(
                 WeakReference<PerspexObject> reference, 
@@ -80,7 +81,7 @@ namespace Perspex.Markup.Data.Plugins
 
                 _reference = reference;
                 _property = property;
-                _subscription = Instance.GetWeakObservable(property).Skip(1).Subscribe(changed);
+                _subscription = Instance.GetWeakObservable(property).Skip(1).Where(_ => notifying).Subscribe(changed);
             }
 
             public PerspexObject Instance
@@ -107,7 +108,15 @@ namespace Perspex.Markup.Data.Plugins
             {
                 if (!_property.IsReadOnly)
                 {
-                    Instance.SetValue(_property, value, priority);
+                    try
+                    {
+                        notifying = false;
+                        Instance.SetValue(_property, value, priority);
+                    }
+                    finally
+                    {
+                        notifying = true;
+                    }
                     return true;
                 }
 
