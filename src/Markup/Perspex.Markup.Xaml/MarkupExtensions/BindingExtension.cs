@@ -25,6 +25,7 @@ namespace Perspex.Markup.Xaml.MarkupExtensions
                 Converter = Converter,
                 ConverterParameter = ConverterParameter,
                 ElementName = ElementName,
+                FallbackValue = FallbackValue,
                 Mode = Mode,
                 Path = Path,
                 Priority = Priority,

@@ -5,16 +5,23 @@ using System;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using Moq;
 using Xunit;
 
 namespace Perspex.Base.UnitTests
 {
     public class PriorityValueTests
     {
+        private static readonly PerspexProperty TestProperty = 
+            new StyledProperty<string>(
+                "Test", 
+                typeof(PriorityValueTests), 
+                new StyledPropertyMetadata<string>());
+
         [Fact]
         public void Initial_Value_Should_Be_UnsetValue()
         {
-            var target = new PriorityValue(null, "Test", typeof(string));
+            var target = new PriorityValue(null, TestProperty, typeof(string));
 
             Assert.Same(PerspexProperty.UnsetValue, target.Value);
         }
@@ -22,7 +29,7 @@ namespace Perspex.Base.UnitTests
         [Fact]
         public void First_Binding_Sets_Value()
         {
-            var target = new PriorityValue(null, "Test", typeof(string));
+            var target = new PriorityValue(null, TestProperty, typeof(string));
 
             target.Add(Single("foo"), 0);
 
@@ -32,7 +39,7 @@ namespace Perspex.Base.UnitTests
         [Fact]
         public void Changing_Binding_Should_Set_Value()
         {
-            var target = new PriorityValue(null, "Test", typeof(string));
+            var target = new PriorityValue(null, TestProperty, typeof(string));
             var subject = new BehaviorSubject<string>("foo");
 
             target.Add(subject, 0);
@@ -44,7 +51,7 @@ namespace Perspex.Base.UnitTests
         [Fact]
         public void Setting_Direct_Value_Should_Override_Binding()
         {
-            var target = new PriorityValue(null, "Test", typeof(string));
+            var target = new PriorityValue(null, TestProperty, typeof(string));
 
             target.Add(Single("foo"), 0);
             target.SetValue("bar", 0);
@@ -55,7 +62,7 @@ namespace Perspex.Base.UnitTests
         [Fact]
         public void Binding_Firing_Should_Override_Direct_Value()
         {
-            var target = new PriorityValue(null, "Test", typeof(string));
+            var target = new PriorityValue(null, TestProperty, typeof(string));
             var source = new BehaviorSubject<object>("initial");
 
             target.Add(source, 0);
@@ -67,25 +74,9 @@ namespace Perspex.Base.UnitTests
         }
 
         [Fact]
-        public void Earlier_Binding_Firing_Should_Override_Later_Priority_0()
+        public void Earlier_Binding_Firing_Should_Not_Override_Later()
         {
-            var target = new PriorityValue(null, "Test", typeof(string));
-            var nonActive = new BehaviorSubject<object>("na");
-            var source = new BehaviorSubject<object>("initial");
-
-            target.Add(nonActive, 0);
-            target.Add(source, 0);
-            Assert.Equal("initial", target.Value);
-            target.SetValue("first", 0);
-            Assert.Equal("first", target.Value);
-            nonActive.OnNext("second");
-            Assert.Equal("second", target.Value);
-        }
-
-        [Fact]
-        public void Earlier_Binding_Firing_Should_Not_Override_Later_Priority_1()
-        {
-            var target = new PriorityValue(null, "Test", typeof(string));
+            var target = new PriorityValue(null, TestProperty, typeof(string));
             var nonActive = new BehaviorSubject<object>("na");
             var source = new BehaviorSubject<object>("initial");
 
@@ -101,7 +92,7 @@ namespace Perspex.Base.UnitTests
         [Fact]
         public void Binding_Completing_Should_Revert_To_Direct_Value()
         {
-            var target = new PriorityValue(null, "Test", typeof(string));
+            var target = new PriorityValue(null, TestProperty, typeof(string));
             var source = new BehaviorSubject<object>("initial");
 
             target.Add(source, 0);
@@ -117,7 +108,7 @@ namespace Perspex.Base.UnitTests
         [Fact]
         public void Binding_With_Lower_Priority_Has_Precedence()
         {
-            var target = new PriorityValue(null, "Test", typeof(string));
+            var target = new PriorityValue(null, TestProperty, typeof(string));
 
             target.Add(Single("foo"), 1);
             target.Add(Single("bar"), 0);
@@ -129,7 +120,7 @@ namespace Perspex.Base.UnitTests
         [Fact]
         public void Later_Binding_With_Same_Priority_Should_Take_Precedence()
         {
-            var target = new PriorityValue(null, "Test", typeof(string));
+            var target = new PriorityValue(null, TestProperty, typeof(string));
 
             target.Add(Single("foo"), 1);
             target.Add(Single("bar"), 0);
@@ -142,7 +133,7 @@ namespace Perspex.Base.UnitTests
         [Fact]
         public void Changing_Binding_With_Lower_Priority_Should_Set_Not_Value()
         {
-            var target = new PriorityValue(null, "Test", typeof(string));
+            var target = new PriorityValue(null, TestProperty, typeof(string));
             var subject = new BehaviorSubject<string>("bar");
 
             target.Add(Single("foo"), 0);
@@ -155,7 +146,7 @@ namespace Perspex.Base.UnitTests
         [Fact]
         public void UnsetValue_Should_Fall_Back_To_Next_Binding()
         {
-            var target = new PriorityValue(null, "Test", typeof(string));
+            var target = new PriorityValue(null, TestProperty, typeof(string));
             var subject = new BehaviorSubject<object>("bar");
 
             target.Add(subject, 0);
@@ -171,33 +162,31 @@ namespace Perspex.Base.UnitTests
         [Fact]
         public void Adding_Value_Should_Call_OnNext()
         {
-            var target = new PriorityValue(null, "Test", typeof(string));
-            bool called = false;
+            var owner = new Mock<IPriorityValueOwner>();
+            var target = new PriorityValue(owner.Object, TestProperty, typeof(string));
 
-            target.Changed.Subscribe(value => called = value.Item1 == PerspexProperty.UnsetValue && (string)value.Item2 == "foo");
             target.Add(Single("foo"), 0);
 
-            Assert.True(called);
+            owner.Verify(x => x.Changed(target, PerspexProperty.UnsetValue, "foo"));
         }
 
         [Fact]
         public void Changing_Value_Should_Call_OnNext()
         {
-            var target = new PriorityValue(null, "Test", typeof(string));
+            var owner = new Mock<IPriorityValueOwner>();
+            var target = new PriorityValue(owner.Object, TestProperty, typeof(string));
             var subject = new BehaviorSubject<object>("foo");
-            bool called = false;
 
             target.Add(subject, 0);
-            target.Changed.Subscribe(value => called = (string)value.Item1 == "foo" && (string)value.Item2 == "bar");
             subject.OnNext("bar");
 
-            Assert.True(called);
+            owner.Verify(x => x.Changed(target, "foo", "bar"));
         }
 
         [Fact]
         public void Disposing_A_Binding_Should_Revert_To_Next_Value()
         {
-            var target = new PriorityValue(null, "Test", typeof(string));
+            var target = new PriorityValue(null, TestProperty, typeof(string));
 
             target.Add(Single("foo"), 0);
             var disposable = target.Add(Single("bar"), 0);
@@ -210,7 +199,7 @@ namespace Perspex.Base.UnitTests
         [Fact]
         public void Disposing_A_Binding_Should_Remove_BindingEntry()
         {
-            var target = new PriorityValue(null, "Test", typeof(string));
+            var target = new PriorityValue(null, TestProperty, typeof(string));
 
             target.Add(Single("foo"), 0);
             var disposable = target.Add(Single("bar"), 0);
@@ -223,7 +212,7 @@ namespace Perspex.Base.UnitTests
         [Fact]
         public void Completing_A_Binding_Should_Revert_To_Previous_Binding()
         {
-            var target = new PriorityValue(null, "Test", typeof(string));
+            var target = new PriorityValue(null, TestProperty, typeof(string));
             var source = new BehaviorSubject<object>("bar");
 
             target.Add(Single("foo"), 0);
@@ -237,7 +226,7 @@ namespace Perspex.Base.UnitTests
         [Fact]
         public void Completing_A_Binding_Should_Revert_To_Lower_Priority()
         {
-            var target = new PriorityValue(null, "Test", typeof(string));
+            var target = new PriorityValue(null, TestProperty, typeof(string));
             var source = new BehaviorSubject<object>("bar");
 
             target.Add(Single("foo"), 1);
@@ -251,7 +240,7 @@ namespace Perspex.Base.UnitTests
         [Fact]
         public void Completing_A_Binding_Should_Remove_BindingEntry()
         {
-            var target = new PriorityValue(null, "Test", typeof(string));
+            var target = new PriorityValue(null, TestProperty, typeof(string));
             var subject = new BehaviorSubject<object>("bar");
 
             target.Add(Single("foo"), 0);
@@ -265,7 +254,7 @@ namespace Perspex.Base.UnitTests
         [Fact]
         public void Direct_Value_Should_Be_Coerced()
         {
-            var target = new PriorityValue(null, "Test", typeof(int), x => Math.Min((int)x, 10));
+            var target = new PriorityValue(null, TestProperty, typeof(int), x => Math.Min((int)x, 10));
 
             target.SetValue(5, 0);
             Assert.Equal(5, target.Value);
@@ -276,7 +265,7 @@ namespace Perspex.Base.UnitTests
         [Fact]
         public void Bound_Value_Should_Be_Coerced()
         {
-            var target = new PriorityValue(null, "Test", typeof(int), x => Math.Min((int)x, 10));
+            var target = new PriorityValue(null, TestProperty, typeof(int), x => Math.Min((int)x, 10));
             var source = new Subject<object>();
 
             target.Add(source, 0);
@@ -290,7 +279,7 @@ namespace Perspex.Base.UnitTests
         public void Revalidate_Should_ReCoerce_Value()
         {
             var max = 10;
-            var target = new PriorityValue(null, "Test", typeof(int), x => Math.Min((int)x, max));
+            var target = new PriorityValue(null, TestProperty, typeof(int), x => Math.Min((int)x, max));
             var source = new Subject<object>();
 
             target.Add(source, 0);

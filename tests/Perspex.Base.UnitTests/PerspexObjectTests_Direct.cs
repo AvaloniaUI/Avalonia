@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Reactive.Subjects;
 using Perspex.Data;
+using Perspex.Logging;
+using Perspex.UnitTests;
 using Xunit;
 
 namespace Perspex.Base.UnitTests
@@ -392,6 +394,63 @@ namespace Perspex.Base.UnitTests
             target = new Class1();
 
             Assert.True(raised);
+        }
+
+        [Fact]
+        public void BindingError_Does_Not_Cause_Target_Update()
+        {
+            var target = new Class1();
+            var source = new Subject<object>();
+
+            target.Bind(Class1.FooProperty, source);
+            source.OnNext("initial");
+            source.OnNext(new BindingError(new InvalidOperationException("Foo")));
+
+            Assert.Equal("initial", target.GetValue(Class1.FooProperty));
+        }
+
+        [Fact]
+        public void BindingError_With_FallbackValue_Causes_Target_Update()
+        {
+            var target = new Class1();
+            var source = new Subject<object>();
+
+            target.Bind(Class1.FooProperty, source);
+            source.OnNext("initial");
+            source.OnNext(new BindingError(new InvalidOperationException("Foo"), "fallback"));
+
+            Assert.Equal("fallback", target.GetValue(Class1.FooProperty));
+        }
+
+        [Fact]
+        public void Binding_To_Direct_Property_Logs_BindingError()
+        {
+            var target = new Class1();
+            var source = new Subject<object>();
+            var called = false;
+
+            LogCallback checkLogMessage = (level, area, src, mt, pv) =>
+            {
+                if (level == LogEventLevel.Error &&
+                    area == LogArea.Binding &&
+                    mt == "Error binding to {Target}.{Property}: {Message}" &&
+                    pv.Length == 3 &&
+                    pv[0] is Class1 &&
+                    object.ReferenceEquals(pv[1], Class1.FooProperty) &&
+                    (string)pv[2] == "Binding Error Message")
+                {
+                    called = true;
+                }
+            };
+
+            using (TestLogSink.Start(checkLogMessage))
+            {
+                target.Bind(Class1.FooProperty, source);
+                source.OnNext("baz");
+                source.OnNext(new BindingError(new InvalidOperationException("Binding Error Message")));
+            }
+
+            Assert.True(called);
         }
 
         private class Class1 : PerspexObject

@@ -46,7 +46,7 @@ namespace Perspex
         /// <param name="source">The property to add the owner to.</param>
         /// <param name="ownerType">The type of the class that registers the property.</param>
         protected StyledPropertyBase(StyledPropertyBase<TValue> source, Type ownerType)
-            : base(source, ownerType)
+            : base(source, ownerType, null)
         {
             _inherits = source.Inherits;
         }

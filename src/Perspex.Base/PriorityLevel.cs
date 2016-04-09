@@ -4,25 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Reactive.Disposables;
+using Perspex.Data;
+using Perspex.Logging;
 
 namespace Perspex
 {
-    /// <summary>
-    /// Determines how the current binding is selected for a <see cref="PriorityLevel"/>.
-    /// </summary>
-    internal enum LevelPrecedenceMode
-    {
-        /// <summary>
-        /// The latest fired binding is used as the current value.
-        /// </summary>
-        Latest,
-
-        /// <summary>
-        /// The latest added binding is used as the current value.
-        /// </summary>
-        Newest,
-    }
-
     /// <summary>
     /// Stores bindings for a priority level in a <see cref="PriorityValue"/>.
     /// </summary>
@@ -47,38 +33,22 @@ namespace Perspex
     /// </remarks>
     internal class PriorityLevel
     {
-        /// <summary>
-        /// Method called when current value changes.
-        /// </summary>
-        private readonly Action<PriorityLevel> _changed;
-
-        /// <summary>
-        /// The current direct value.
-        /// </summary>
+        private PriorityValue _owner;
         private object _directValue;
-
-        /// <summary>
-        /// The index of the next <see cref="PriorityBindingEntry"/>.
-        /// </summary>
         private int _nextIndex;
-
-        private readonly LevelPrecedenceMode _mode;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PriorityLevel"/> class.
         /// </summary>
+        /// <param name="owner">The owner.</param>
         /// <param name="priority">The priority.</param>
-        /// <param name="mode">The precedence mode.</param>
-        /// <param name="changed">A method to be called when the current value changes.</param>
         public PriorityLevel(
-            int priority,
-            LevelPrecedenceMode mode,
-            Action<PriorityLevel> changed)
+            PriorityValue owner,
+            int priority)
         {
-            Contract.Requires<ArgumentNullException>(changed != null);
+            Contract.Requires<ArgumentNullException>(owner != null);
 
-            _mode = mode;
-            _changed = changed;
+            _owner = owner;
             Priority = priority;
             Value = _directValue = PerspexProperty.UnsetValue;
             ActiveBindingIndex = -1;
@@ -103,7 +73,7 @@ namespace Perspex
             set
             {
                 Value = _directValue = value;
-                _changed(this);
+                _owner.LevelValueChanged(this);
             }
         }
 
@@ -132,10 +102,10 @@ namespace Perspex
         {
             Contract.Requires<ArgumentNullException>(binding != null);
 
-            var entry = new PriorityBindingEntry(_nextIndex++);
+            var entry = new PriorityBindingEntry(this, _nextIndex++);
             var node = Bindings.AddFirst(entry);
 
-            entry.Start(binding, Changed, Completed);
+            entry.Start(binding);
 
             return Disposable.Create(() =>
             {
@@ -153,15 +123,15 @@ namespace Perspex
         /// Invoked when an entry in <see cref="Bindings"/> changes value.
         /// </summary>
         /// <param name="entry">The entry that changed.</param>
-        private void Changed(PriorityBindingEntry entry)
+        public void Changed(PriorityBindingEntry entry)
         {
-            if (_mode == LevelPrecedenceMode.Latest || entry.Index >= ActiveBindingIndex)
+            if (entry.Index >= ActiveBindingIndex)
             {
                 if (entry.Value != PerspexProperty.UnsetValue)
                 {
                     Value = entry.Value;
                     ActiveBindingIndex = entry.Index;
-                    _changed(this);
+                    _owner.LevelValueChanged(this);
                 }
                 else
                 {
@@ -174,7 +144,7 @@ namespace Perspex
         /// Invoked when an entry in <see cref="Bindings"/> completes.
         /// </summary>
         /// <param name="entry">The entry that completed.</param>
-        private void Completed(PriorityBindingEntry entry)
+        public void Completed(PriorityBindingEntry entry)
         {
             Bindings.Remove(entry);
 
@@ -182,6 +152,16 @@ namespace Perspex
             {
                 ActivateFirstBinding();
             }
+        }
+
+        /// <summary>
+        /// Invoked when an entry in <see cref="Bindings"/> encounters a recoverable error.
+        /// </summary>
+        /// <param name="entry">The entry that completed.</param>
+        /// <param name="error">The error.</param>
+        public void Error(PriorityBindingEntry entry, BindingError error)
+        {
+            _owner.LevelError(this, error);
         }
 
         /// <summary>
@@ -195,14 +175,14 @@ namespace Perspex
                 {
                     Value = binding.Value;
                     ActiveBindingIndex = binding.Index;
-                    _changed(this);
+                    _owner.LevelValueChanged(this);
                     return;
                 }
             }
 
             Value = DirectValue;
             ActiveBindingIndex = -1;
-            _changed(this);
+            _owner.LevelValueChanged(this);
         }
     }
 }

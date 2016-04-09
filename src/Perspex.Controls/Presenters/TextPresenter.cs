@@ -12,23 +12,27 @@ namespace Perspex.Controls.Presenters
 {
     public class TextPresenter : TextBlock
     {
-        public static readonly StyledProperty<int> CaretIndexProperty =
-            TextBox.CaretIndexProperty.AddOwner<TextPresenter>();
+        public static readonly DirectProperty<TextPresenter, int> CaretIndexProperty =
+            TextBox.CaretIndexProperty.AddOwner<TextPresenter>(
+                o => o.CaretIndex,
+                (o, v) => o.CaretIndex = v);
 
-        public static readonly StyledProperty<int> SelectionStartProperty =
-            TextBox.SelectionStartProperty.AddOwner<TextPresenter>();
+        public static readonly DirectProperty<TextPresenter, int> SelectionStartProperty =
+            TextBox.SelectionStartProperty.AddOwner<TextPresenter>(
+                o => o.SelectionStart,
+                (o, v) => o.SelectionStart = v);
 
-        public static readonly StyledProperty<int> SelectionEndProperty =
-            TextBox.SelectionEndProperty.AddOwner<TextPresenter>();
+        public static readonly DirectProperty<TextPresenter, int> SelectionEndProperty =
+            TextBox.SelectionEndProperty.AddOwner<TextPresenter>(
+                o => o.SelectionEnd,
+                (o, v) => o.SelectionEnd = v);
 
         private readonly DispatcherTimer _caretTimer;
+        private int _caretIndex;
+        private int _selectionStart;
+        private int _selectionEnd;
         private bool _caretBlink;
         private IBrush _highlightBrush;
-
-        static TextPresenter()
-        {
-            CaretIndexProperty.OverrideValidation<TextPresenter>((o, v) => v);
-        }
 
         public TextPresenter()
         {
@@ -47,20 +51,44 @@ namespace Perspex.Controls.Presenters
 
         public int CaretIndex
         {
-            get { return GetValue(CaretIndexProperty); }
-            set { SetValue(CaretIndexProperty, value); }
+            get
+            {
+                return _caretIndex;
+            }
+
+            set
+            {
+                value = CoerceCaretIndex(value);
+                SetAndRaise(CaretIndexProperty, ref _caretIndex, value);
+            }
         }
 
         public int SelectionStart
         {
-            get { return GetValue(SelectionStartProperty); }
-            set { SetValue(SelectionStartProperty, value); }
+            get
+            {
+                return _selectionStart;
+            }
+
+            set
+            {
+                value = CoerceCaretIndex(value);
+                SetAndRaise(SelectionStartProperty, ref _selectionStart, value);
+            }
         }
 
         public int SelectionEnd
         {
-            get { return GetValue(SelectionEndProperty); }
-            set { SetValue(SelectionEndProperty, value); }
+            get
+            {
+                return _selectionEnd;
+            }
+
+            set
+            {
+                value = CoerceCaretIndex(value);
+                SetAndRaise(SelectionEndProperty, ref _selectionEnd, value);
+            }
         }
 
         public int GetCaretIndex(Point point)
@@ -204,6 +232,13 @@ namespace Perspex.Controls.Presenters
                     return formattedText.Measure();
                 }
             }
+        }
+
+        private int CoerceCaretIndex(int value)
+        {
+            var text = Text;
+            var length = text?.Length ?? 0;
+            return Math.Max(0, Math.Min(length, value));
         }
 
         private void CaretTimerTick(object sender, EventArgs e)
