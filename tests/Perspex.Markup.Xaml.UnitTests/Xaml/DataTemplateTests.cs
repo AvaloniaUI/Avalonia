@@ -50,7 +50,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Xaml
             <Canvas Name='foo' DataContext='{Binding Child}'/>
         </DataTemplate>
     </Window.DataTemplates>
-    <ContentControl Name='target' Content='{Binding}'/>
+    <ContentControl Name='target' Content='{Binding Child}'/>
 </Window>";
                 var loader = new PerspexXamlLoader();
                 var window = (Window)loader.Load(xaml);
@@ -62,6 +62,10 @@ namespace Perspex.Markup.Xaml.UnitTests.Xaml
                     Child = new TestViewModel
                     {
                         String = "Child",
+                        Child = new TestViewModel
+                        {
+                            String = "Grandchild",
+                        }
                     },
                 };
 
@@ -73,7 +77,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Xaml
 
                 var canvas = (Canvas)target.Presenter.Child;
                 Assert.Same(viewModel, target.DataContext);
-                Assert.Same(viewModel.Child, canvas.DataContext);
+                Assert.Same(viewModel.Child.Child, canvas.DataContext);
             }
         }
     }
