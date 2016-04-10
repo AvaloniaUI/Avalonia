@@ -3,6 +3,7 @@
 
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace Perspex.UnitTests
 {
@@ -34,7 +35,7 @@ namespace Perspex.UnitTests
             private set;
         }
 
-        public void RaisePropertyChanged(string propertyName)
+        public void RaisePropertyChanged([CallerMemberName] string propertyName = null)
         {
             _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
