@@ -7,6 +7,7 @@
                           BorderBrush="{TemplateBinding BorderBrush}"
                           BorderThickness="{TemplateBinding BorderThickness}"
                           Content="{TemplateBinding Content}"
+                          DataContext="{TemplateBinding Content}" 
                           Padding="{TemplateBinding Padding}"/>
       </ControlTemplate>
     </Setter>
