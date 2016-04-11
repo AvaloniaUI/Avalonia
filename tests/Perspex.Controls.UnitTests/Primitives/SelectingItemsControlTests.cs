@@ -1,6 +1,7 @@
 ﻿// Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Perspex.Collections;
@@ -8,6 +9,8 @@ using Perspex.Controls.Presenters;
 using Perspex.Controls.Primitives;
 using Perspex.Controls.Templates;
 using Perspex.Interactivity;
+using Perspex.Markup.Xaml.Data;
+using Perspex.UnitTests;
 using Xunit;
 
 namespace Perspex.Controls.UnitTests.Primitives
@@ -487,6 +490,56 @@ namespace Perspex.Controls.UnitTests.Primitives
             Assert.True(called);
         }
 
+        [Fact]
+        public void Changing_DataContext_Should_Not_Clear_Nested_ViewModel_SelectedItem()
+        {
+            var items = new[]
+            {
+                new Item(),
+                new Item(),
+            };
+
+            var vm = new MasterViewModel
+            {
+                Child = new ChildViewModel
+                {
+                    Items = items,
+                    SelectedItem = items[1],
+                }
+            };
+
+            var target = new SelectingItemsControl { DataContext = vm };
+            var itemsBinding = new Binding("Child.Items");
+            var selectedBinding = new Binding("Child.SelectedItem");
+
+            target.Bind(SelectingItemsControl.ItemsProperty, itemsBinding);
+            target.Bind(SelectingItemsControl.SelectedItemProperty, selectedBinding);
+
+            Assert.Equal(1, target.SelectedIndex);
+            Assert.Same(vm.Child.SelectedItem, target.SelectedItem);
+
+            items = new[]
+            {
+                new Item(),
+                new Item(),
+                new Item(),
+            };
+
+            vm = new MasterViewModel
+            {
+                Child = new ChildViewModel
+                {
+                    Items = items,
+                    SelectedItem = items[2],
+                }
+            };
+
+            target.DataContext = vm;
+
+            Assert.Equal(2, target.SelectedIndex);
+            Assert.Same(vm.Child.SelectedItem, target.SelectedItem);
+        }
+
         private FuncControlTemplate Template()
         {
             return new FuncControlTemplate<SelectingItemsControl>(control =>
@@ -501,6 +554,27 @@ namespace Perspex.Controls.UnitTests.Primitives
         private class Item : Control, ISelectable
         {
             public bool IsSelected { get; set; }
+        }
+
+        private class MasterViewModel : NotifyingBase
+        {
+            private ChildViewModel _child;
+
+            public ChildViewModel Child
+            {
+                get { return _child; }
+                set
+                {
+                    _child = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
+        private class ChildViewModel : NotifyingBase
+        {
+            public IList<Item> Items { get; set; }
+            public Item SelectedItem { get; set; }
         }
     }
 }
