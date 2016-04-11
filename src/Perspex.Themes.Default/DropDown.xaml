@@ -11,7 +11,7 @@
                 BorderThickness="{TemplateBinding BorderThickness}">
           <Grid ColumnDefinitions="*,Auto">
             <ContentPresenter Content="{TemplateBinding SelectionBoxItem}"
-                              DataContext="{TemplateBinding Content}" 
+                              DataContext="{TemplateBinding SelectionBoxItem}" 
                               Margin="{TemplateBinding Padding}"
                               HorizontalAlignment="Center"
                               VerticalAlignment="Center"/>

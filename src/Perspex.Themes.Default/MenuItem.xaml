@@ -13,7 +13,7 @@
           <Grid ColumnDefinitions="22,13,*,20">
             <ContentPresenter Name="icon"
                               Content="{TemplateBinding Icon}"
-                              DataContext="{TemplateBinding Content}" 
+                              DataContext="{TemplateBinding Icon}" 
                               Width="16"
                               Height="16"
                               Margin="3"
@@ -27,7 +27,7 @@
                   VerticalAlignment="Center"/>
             <ContentPresenter Name="PART_HeaderPresenter"
                               Content="{TemplateBinding Header}"
-                              DataContext="{TemplateBinding Content}" 
+                              DataContext="{TemplateBinding Header}" 
                               Margin="{TemplateBinding Padding}"
                               VerticalAlignment="Center"
                               Grid.Column="2">
@@ -83,7 +83,7 @@
           <Panel>
             <ContentPresenter Name="PART_HeaderPresenter"
                               Content="{TemplateBinding Header}"
-                              DataContext="{TemplateBinding Content}" 
+                              DataContext="{TemplateBinding Header}" 
                               Margin="{TemplateBinding Padding}">
               <ContentPresenter.DataTemplates>
                 <DataTemplate DataType="sys:String">
