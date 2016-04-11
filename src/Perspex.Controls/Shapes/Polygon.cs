@@ -13,7 +13,7 @@ namespace Perspex.Controls.Shapes
 
         static Polygon()
         {
-            AffectsGeometry(PointsProperty);
+            AffectsGeometry<Polygon>(PointsProperty);
         }
 
         public IList<Point> Points

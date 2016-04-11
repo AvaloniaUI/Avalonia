@@ -14,7 +14,7 @@ namespace Perspex.Controls.Shapes
         static Polyline()
         {
             StrokeThicknessProperty.OverrideDefaultValue<Polyline>(1);
-            AffectsGeometry(PointsProperty);
+            AffectsGeometry<Polyline>(PointsProperty);
         }
 
         public IList<Point> Points

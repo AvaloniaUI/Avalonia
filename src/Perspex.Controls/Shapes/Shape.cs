@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Reflection;
 using Perspex.Collections;
 using Perspex.Controls;
 using Perspex.Media;
@@ -123,11 +124,21 @@ namespace Perspex.Controls.Shapes
         /// After a call to this method in a control's static constructor, any change to the
         /// property will cause <see cref="InvalidateGeometry"/> to be called on the element.
         /// </remarks>
-        protected static void AffectsGeometry(params PerspexProperty[] properties)
+        protected static void AffectsGeometry<TShape>(params PerspexProperty[] properties)
+            where TShape : Shape
         {
             foreach (var property in properties)
             {
-                property.Changed.Subscribe(AffectsGeometryInvalidate);
+                property.Changed.Subscribe(e =>
+                {
+                    var senderType = e.Sender.GetType().GetTypeInfo();
+                    var affectedType = typeof(TShape).GetTypeInfo();
+
+                    if (affectedType.IsAssignableFrom(senderType))
+                    {
+                        AffectsGeometryInvalidate(e);
+                    }
+                });
             }
         }
 
