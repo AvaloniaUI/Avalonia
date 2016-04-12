@@ -13,7 +13,7 @@ namespace Perspex.Controls.Shapes
 
         static Path()
         {
-            AffectsGeometry(DataProperty);
+            AffectsGeometry<Path>(DataProperty);
         }
 
         public Geometry Data

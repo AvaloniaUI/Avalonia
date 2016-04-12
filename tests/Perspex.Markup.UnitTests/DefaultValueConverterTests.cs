@@ -3,6 +3,7 @@
 
 using System.Globalization;
 using Perspex.Controls;
+using Perspex.Data;
 using Xunit;
 
 namespace Perspex.Markup.UnitTests
@@ -114,7 +115,7 @@ namespace Perspex.Markup.UnitTests
                 null,
                 CultureInfo.InvariantCulture);
 
-            Assert.Equal(PerspexProperty.UnsetValue, result);
+            Assert.IsType<BindingError>(result);
         }
 
         private enum TestEnum

@@ -11,6 +11,7 @@ using Perspex.Controls.Generators;
 using Perspex.Controls.Primitives;
 using Perspex.Controls.Templates;
 using Perspex.Controls.Utils;
+using Perspex.Data;
 
 namespace Perspex.Controls.Presenters
 {
@@ -127,8 +128,22 @@ namespace Perspex.Controls.Presenters
         /// </summary>
         public int SelectedIndex
         {
-            get { return _selectedIndex; }
-            set { SetAndRaise(SelectedIndexProperty, ref _selectedIndex, value); }
+            get
+            {
+                return _selectedIndex;
+            }
+
+            set
+            {
+                var old = SelectedIndex;
+                var effective = (value >= 0 && value < Items?.Cast<object>().Count()) ? value : -1;
+
+                if (old != effective)
+                {
+                    _selectedIndex = effective;
+                    RaisePropertyChanged(SelectedIndexProperty, old, effective, BindingPriority.LocalValue);
+                }
+            }
         }
 
         /// <summary>

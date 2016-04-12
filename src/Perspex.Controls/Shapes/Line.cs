@@ -16,7 +16,7 @@ namespace Perspex.Controls.Shapes
         static Line()
         {
             StrokeThicknessProperty.OverrideDefaultValue<Line>(1);
-            AffectsGeometry(StartPointProperty, EndPointProperty);
+            AffectsGeometry<Line>(StartPointProperty, EndPointProperty);
         }
 
         public Point StartPoint

@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using Perspex.Data;
 
 namespace Perspex
 {
@@ -10,19 +11,19 @@ namespace Perspex
     /// </summary>
     internal class PriorityBindingEntry : IDisposable
     {
-        /// <summary>
-        /// The binding subscription.
-        /// </summary>
+        private PriorityLevel _owner;
         private IDisposable _subscription;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PriorityBindingEntry"/> class.
         /// </summary>
+        /// <param name="owner">The owner.</param>
         /// <param name="index">
         /// The binding index. Later bindings should have higher indexes.
         /// </param>
-        public PriorityBindingEntry(int index)
+        public PriorityBindingEntry(PriorityLevel owner, int index)
         {
+            _owner = owner;
             Index = index;
         }
 
@@ -61,16 +62,9 @@ namespace Perspex
         /// Starts listening to the binding.
         /// </summary>
         /// <param name="binding">The binding.</param>
-        /// <param name="changed">Called when the binding changes.</param>
-        /// <param name="completed">Called when the binding completes.</param>
-        public void Start(
-            IObservable<object> binding,
-            Action<PriorityBindingEntry> changed,
-            Action<PriorityBindingEntry> completed)
+        public void Start(IObservable<object> binding)
         {
             Contract.Requires<ArgumentNullException>(binding != null);
-            Contract.Requires<ArgumentNullException>(changed != null);
-            Contract.Requires<ArgumentNullException>(completed != null);
 
             if (_subscription != null)
             {
@@ -85,13 +79,7 @@ namespace Perspex
                 Description = ((IDescription)binding).Description;
             }
 
-            _subscription = binding.Subscribe(
-                value =>
-                {
-                    Value = value;
-                    changed(this);
-                },
-                () => completed(this));
+            _subscription = binding.Subscribe(ValueChanged, Completed);
         }
 
         /// <summary>
@@ -100,6 +88,27 @@ namespace Perspex
         public void Dispose()
         {
             _subscription?.Dispose();
+        }
+
+        private void ValueChanged(object value)
+        {
+            var bindingError = value as BindingError;
+
+            if (bindingError != null)
+            {
+                _owner.Error(this, bindingError);
+            }
+
+            if (bindingError == null || bindingError.UseFallbackValue)
+            {
+                Value = bindingError == null ? value : bindingError.FallbackValue;
+                _owner.Changed(this);
+            }
+        }
+
+        private void Completed()
+        {
+            _owner.Completed(this);
         }
     }
 }

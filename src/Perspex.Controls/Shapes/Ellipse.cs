@@ -9,7 +9,7 @@ namespace Perspex.Controls.Shapes
     {
         static Ellipse()
         {
-            AffectsGeometry(BoundsProperty, StrokeThicknessProperty);
+            AffectsGeometry<Ellipse>(BoundsProperty, StrokeThicknessProperty);
         }
 
         protected override Geometry CreateDefiningGeometry()

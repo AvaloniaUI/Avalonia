@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using Perspex.Data;
 
 namespace Perspex
 {
@@ -44,11 +45,13 @@ namespace Perspex
         /// <param name="source">The property to copy.</param>
         /// <param name="getter">Gets the current value of the property.</param>
         /// <param name="setter">Sets the value of the property. May be null.</param>
+        /// <param name="metadata">Optional overridden metadata.</param>
         private DirectProperty(
             PerspexProperty<TValue> source,
             Func<TOwner, TValue> getter,
-            Action<TOwner, TValue> setter)
-            : base(source, typeof(TOwner))
+            Action<TOwner, TValue> setter,
+            PropertyMetadata metadata)
+            : base(source, typeof(TOwner), metadata)
         {
             Contract.Requires<ArgumentNullException>(getter != null);
 
@@ -76,16 +79,25 @@ namespace Perspex
         /// Registers the direct property on another type.
         /// </summary>
         /// <typeparam name="TNewOwner">The type of the additional owner.</typeparam>
+        /// <param name="getter">Gets the current value of the property.</param>
+        /// <param name="setter">Sets the value of the property.</param>
+        /// <param name="unsetValue">
+        /// The value to use when the property is set to <see cref="PerspexProperty.UnsetValue"/>
+        /// </param>
+        /// <param name="defaultBindingMode">The default binding mode for the property.</param>
         /// <returns>The property.</returns>
         public DirectProperty<TNewOwner, TValue> AddOwner<TNewOwner>(
             Func<TNewOwner, TValue> getter,
-            Action<TNewOwner, TValue> setter = null)
+            Action<TNewOwner, TValue> setter = null,
+            TValue unsetValue = default(TValue),
+            BindingMode defaultBindingMode = BindingMode.OneWay)
                 where TNewOwner : PerspexObject
         {
             var result = new DirectProperty<TNewOwner, TValue>(
                 this,
                 getter,
-                setter);
+                setter,
+                new DirectPropertyMetadata<TValue>(unsetValue, defaultBindingMode));
 
             PerspexPropertyRegistry.Instance.Register(typeof(TNewOwner), result);
             return result;

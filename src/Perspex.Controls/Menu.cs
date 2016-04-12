@@ -7,6 +7,7 @@ using System.Reactive.Disposables;
 using Perspex.Controls.Primitives;
 using Perspex.Controls.Templates;
 using Perspex.Input;
+using Perspex.Input.Raw;
 using Perspex.Interactivity;
 using Perspex.LogicalTree;
 using Perspex.Rendering;
@@ -112,7 +113,8 @@ namespace Perspex.Controls
 
             _subscription = new CompositeDisposable(
                 pointerPress,
-                Disposable.Create(() => topLevel.Deactivated -= Deactivated));
+                Disposable.Create(() => topLevel.Deactivated -= Deactivated),
+                InputManager.Instance.Process.Subscribe(ListenForNonClientClick));
 
             var inputRoot = e.Root as IInputRoot;
 
@@ -193,6 +195,20 @@ namespace Perspex.Controls
         private void Deactivated(object sender, EventArgs e)
         {
             Close();
+        }
+
+        /// <summary>
+        /// Listens for non-client clicks and closes the menu when one is detected.
+        /// </summary>
+        /// <param name="e">The raw event.</param>
+        private void ListenForNonClientClick(RawInputEventArgs e)
+        {
+            var mouse = e as RawMouseEventArgs;
+
+            if (mouse?.Type == RawMouseEventType.NonClientLeftButtonDown)
+            {
+                Close();
+            }
         }
 
         /// <summary>

@@ -6,3 +6,4 @@ using System.Runtime.CompilerServices;
 
 [assembly: AssemblyTitle("Perspex.Base")]
 [assembly: InternalsVisibleTo("Perspex.Base.UnitTests")]
+[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")] 

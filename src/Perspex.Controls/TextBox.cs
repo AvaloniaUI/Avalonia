@@ -29,18 +29,29 @@ namespace Perspex.Controls
         public static readonly DirectProperty<TextBox, bool> CanScrollHorizontallyProperty =
             PerspexProperty.RegisterDirect<TextBox, bool>("CanScrollHorizontally", o => o.CanScrollHorizontally);
 
-        // TODO: Should CaretIndex, SelectionStart/End and Text be direct properties?
-        public static readonly StyledProperty<int> CaretIndexProperty =
-            PerspexProperty.Register<TextBox, int>("CaretIndex", validate: ValidateCaretIndex);
+        public static readonly DirectProperty<TextBox, int> CaretIndexProperty =
+            PerspexProperty.RegisterDirect<TextBox, int>(
+                nameof(CaretIndex),
+                o => o.CaretIndex,
+                (o, v) => o.CaretIndex = v);
 
-        public static readonly StyledProperty<int> SelectionStartProperty =
-            PerspexProperty.Register<TextBox, int>("SelectionStart", validate: ValidateCaretIndex);
+        public static readonly DirectProperty<TextBox, int> SelectionStartProperty =
+            PerspexProperty.RegisterDirect<TextBox, int>(
+                nameof(SelectionStart),
+                o => o.SelectionStart,
+                (o, v) => o.SelectionStart = v);
 
-        public static readonly StyledProperty<int> SelectionEndProperty =
-            PerspexProperty.Register<TextBox, int>("SelectionEnd", validate: ValidateCaretIndex);
+        public static readonly DirectProperty<TextBox, int> SelectionEndProperty =
+            PerspexProperty.RegisterDirect<TextBox, int>(
+                nameof(SelectionEnd),
+                o => o.SelectionEnd,
+                (o, v) => o.SelectionEnd = v);
 
-        public static readonly StyledProperty<string> TextProperty =
-            TextBlock.TextProperty.AddOwner<TextBox>();
+        public static readonly DirectProperty<TextBox, string> TextProperty =
+            TextBlock.TextProperty.AddOwner<TextBox>(
+                o => o.Text,
+                (o, v) => o.Text = v,
+                defaultBindingMode: BindingMode.TwoWay);
 
         public static readonly StyledProperty<TextAlignment> TextAlignmentProperty =
             TextBlock.TextAlignmentProperty.AddOwner<TextBox>();
@@ -71,6 +82,10 @@ namespace Perspex.Controls
             public bool Equals(UndoRedoState other) => ReferenceEquals(Text, other.Text) || Equals(Text, other.Text);
         }
 
+        private string _text;
+        private int _caretIndex;
+        private int _selectionStart;
+        private int _selectionEnd;
         private bool _canScrollHorizontally;
         private TextPresenter _presenter;
         private UndoRedoHelper<UndoRedoState> _undoRedoHelper;
@@ -78,7 +93,6 @@ namespace Perspex.Controls
         static TextBox()
         {
             FocusableProperty.OverrideDefaultValue(typeof(TextBox), true);
-            TextProperty.OverrideMetadata<TextBox>(new StyledPropertyMetadata<string>(defaultBindingMode: BindingMode.TwoWay));
         }
 
         public TextBox()
@@ -117,10 +131,15 @@ namespace Perspex.Controls
 
         public int CaretIndex
         {
-            get { return GetValue(CaretIndexProperty); }
+            get
+            {
+                return _caretIndex;
+            }
+
             set
             {
-                SetValue(CaretIndexProperty, value);
+                value = CoerceCaretIndex(value);
+                SetAndRaise(CaretIndexProperty, ref _caretIndex, value);
                 if (_undoRedoHelper.IsLastState && _undoRedoHelper.LastState.Text == Text)
                     _undoRedoHelper.UpdateLastState();
             }
@@ -128,21 +147,37 @@ namespace Perspex.Controls
 
         public int SelectionStart
         {
-            get { return GetValue(SelectionStartProperty); }
-            set { SetValue(SelectionStartProperty, value); }
+            get
+            {
+                return _selectionStart;
+            }
+
+            set
+            {
+                value = CoerceCaretIndex(value);
+                SetAndRaise(SelectionStartProperty, ref _selectionStart, value);
+            }
         }
 
         public int SelectionEnd
         {
-            get { return GetValue(SelectionEndProperty); }
-            set { SetValue(SelectionEndProperty, value); }
+            get
+            {
+                return _selectionEnd;
+            }
+
+            set
+            {
+                value = CoerceCaretIndex(value);
+                SetAndRaise(SelectionEndProperty, ref _selectionEnd, value);
+            }
         }
 
         [Content]
         public string Text
         {
-            get { return GetValue(TextProperty); }
-            set { SetValue(TextProperty, value); }
+            get { return _text; }
+            set { SetAndRaise(TextProperty, ref _text, value); }
         }
 
         public TextAlignment TextAlignment
@@ -426,9 +461,9 @@ namespace Perspex.Controls
             }
         }
 
-        private static int ValidateCaretIndex(PerspexObject o, int value)
+        private int CoerceCaretIndex(int value)
         {
-            var text = o.GetValue(TextProperty);
+            var text = Text;
             var length = text?.Length ?? 0;
             return Math.Max(0, Math.Min(length, value));
         }

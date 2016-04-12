@@ -5,6 +5,7 @@ using System;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using Perspex.Data;
 using Perspex.Logging;
 using Perspex.Utilities;
 
@@ -42,12 +43,8 @@ namespace Perspex.Markup
 
             if (value != null)
             {
-                Logger.Error(
-                    LogArea.Binding,
-                    this,
-                    "Could not convert {Value} to {Type}",
-                    value,
-                    targetType);
+                var message = $"Could not convert '{value}' to '{targetType}'";
+                return new BindingError(new InvalidCastException(message));
             }
 
             return PerspexProperty.UnsetValue;

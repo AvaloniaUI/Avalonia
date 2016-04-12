@@ -16,6 +16,7 @@ namespace Perspex.Input.Raw
         MiddleButtonUp,
         Move,
         Wheel,
+        NonClientLeftButtonDown,
     }
 
     /// <summary>

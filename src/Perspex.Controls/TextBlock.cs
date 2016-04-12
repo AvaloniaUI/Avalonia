@@ -72,8 +72,11 @@ namespace Perspex.Controls
         /// <summary>
         /// Defines the <see cref="Text"/> property.
         /// </summary>
-        public static readonly StyledProperty<string> TextProperty =
-            PerspexProperty.Register<TextBlock, string>(nameof(Text));
+        public static readonly DirectProperty<TextBlock, string> TextProperty =
+            PerspexProperty.RegisterDirect<TextBlock, string>(
+                nameof(Text),
+                o => o.Text,
+                (o, v) => o.Text = v);
 
         /// <summary>
         /// Defines the <see cref="TextAlignment"/> property.
@@ -87,14 +90,8 @@ namespace Perspex.Controls
         public static readonly StyledProperty<TextWrapping> TextWrappingProperty =
             PerspexProperty.Register<TextBlock, TextWrapping>(nameof(TextWrapping));
 
-        /// <summary>
-        /// The formatted text used for rendering.
-        /// </summary>
+        private string _text;
         private FormattedText _formattedText;
-
-        /// <summary>
-        /// Stores the last constraint passed to MeasureOverride.
-        /// </summary>
         private Size _constraint;
 
         /// <summary>
@@ -140,8 +137,8 @@ namespace Perspex.Controls
         [Content]
         public string Text
         {
-            get { return GetValue(TextProperty); }
-            set { SetValue(TextProperty, value); }
+            get { return _text; }
+            set { SetAndRaise(TextProperty, ref _text, value); }
         }
 
         /// <summary>

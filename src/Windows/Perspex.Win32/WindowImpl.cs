@@ -436,20 +436,6 @@ namespace Perspex.Win32
 
                     break;
 
-                ////case UnmanagedMethods.WindowsMessage.WM_NCLBUTTONDOWN:
-                ////case UnmanagedMethods.WindowsMessage.WM_NCRBUTTONDOWN:
-                ////case UnmanagedMethods.WindowsMessage.WM_NCMBUTTONDOWN:
-                ////    e = new RawMouseEventArgs(
-                ////        WindowsMouseDevice.Instance,
-                ////        timestamp,
-                ////        _owner,
-                ////        msg == (int)UnmanagedMethods.WindowsMessage.WM_NCLBUTTONDOWN
-                ////            ? RawMouseEventType.LeftButtonDown
-                ////            : msg == (int)UnmanagedMethods.WindowsMessage.WM_NCRBUTTONDOWN
-                ////                ? RawMouseEventType.RightButtonDown
-                ////                : RawMouseEventType.MiddleButtonDown,
-                ////        new Point(0, 0), GetMouseModifiers(wParam));
-                ////    break;
                 case UnmanagedMethods.WindowsMessage.WM_LBUTTONDOWN:
                 case UnmanagedMethods.WindowsMessage.WM_RBUTTONDOWN:
                 case UnmanagedMethods.WindowsMessage.WM_MBUTTONDOWN:
@@ -520,6 +506,21 @@ namespace Perspex.Win32
                         _owner,
                         RawMouseEventType.LeaveWindow,
                         new Point(), WindowsKeyboardDevice.Instance.Modifiers);
+                    break;
+
+                case UnmanagedMethods.WindowsMessage.WM_NCLBUTTONDOWN:
+                case UnmanagedMethods.WindowsMessage.WM_NCRBUTTONDOWN:
+                case UnmanagedMethods.WindowsMessage.WM_NCMBUTTONDOWN:
+                    e = new RawMouseEventArgs(
+                        WindowsMouseDevice.Instance,
+                        timestamp,
+                        _owner,
+                        msg == (int)UnmanagedMethods.WindowsMessage.WM_NCLBUTTONDOWN
+                            ? RawMouseEventType.NonClientLeftButtonDown
+                            : msg == (int)UnmanagedMethods.WindowsMessage.WM_NCRBUTTONDOWN
+                                ? RawMouseEventType.RightButtonDown
+                                : RawMouseEventType.MiddleButtonDown,
+                        new Point(0, 0), GetMouseModifiers(wParam));
                     break;
 
                 case UnmanagedMethods.WindowsMessage.WM_PAINT:

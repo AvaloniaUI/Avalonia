@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Perspex.Data;
+using Perspex.Logging;
 using Perspex.Utilities;
 
 namespace Perspex.Markup.Data
@@ -103,9 +104,44 @@ namespace Perspex.Markup.Data
                 if (converted == PerspexProperty.UnsetValue)
                 {
                     converted = TypeUtilities.Default(type);
+                    _inner.SetValue(converted, _priority);
                 }
+                else if (converted is BindingError)
+                {
+                    var error = converted as BindingError;
 
-                _inner.SetValue(converted, _priority);
+                    Logger.Error(
+                        LogArea.Binding,
+                        this,
+                        "Error binding to {Expression}: {Message}",
+                        _inner.Expression,
+                        error.Exception.Message);
+
+                    if (_fallbackValue != null)
+                    {
+                        if (TypeUtilities.TryConvert(
+                            type, 
+                            _fallbackValue, 
+                            CultureInfo.InvariantCulture, 
+                            out converted))
+                        {
+                            _inner.SetValue(converted, _priority);
+                        }
+                        else
+                        {
+                            Logger.Error(
+                                LogArea.Binding,
+                                this,
+                                "Could not convert FallbackValue {FallbackValue} to {Type}",
+                                _fallbackValue,
+                                type);
+                        }
+                    }
+                }
+                else
+                {
+                    _inner.SetValue(converted, _priority);
+                }
             }
         }
 
@@ -117,15 +153,37 @@ namespace Perspex.Markup.Data
 
         private object ConvertValue(object value)
         {
-            var converted = Converter.Convert(
+            var converted = 
+                value as BindingError ??
+                Converter.Convert(
                     value,
                     _targetType,
                     ConverterParameter,
                     CultureInfo.CurrentUICulture);
 
-            if (converted == PerspexProperty.UnsetValue && _fallbackValue != null)
+            if (_fallbackValue != null &&
+                (converted == PerspexProperty.UnsetValue ||
+                 converted is BindingError))
             {
-                converted = _fallbackValue;
+                var error = converted as BindingError;
+                
+                if (TypeUtilities.TryConvert(
+                    _targetType, 
+                    _fallbackValue,
+                    CultureInfo.InvariantCulture,
+                    out converted))
+                {
+                    if (error != null)
+                    {
+                        converted = new BindingError(error.Exception, converted);
+                    }
+                }
+                else
+                {
+                    converted = new BindingError(
+                        new InvalidCastException(
+                            $"Could not convert FallbackValue '{_fallbackValue}' to '{_targetType}'"));
+                }
             }
 
             return converted;

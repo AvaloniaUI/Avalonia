@@ -33,7 +33,7 @@ namespace Perspex.Markup.Data.Plugins
         /// <param name="changed">A function to call when the property changes.</param>
         /// <returns>
         /// An <see cref="IPropertyAccessor"/> interface through which future interactions with the 
-        /// property will be made, or null if the property was not found.
+        /// property will be made.
         /// </returns>
         public IPropertyAccessor Start(
             WeakReference reference, 
@@ -52,14 +52,14 @@ namespace Perspex.Markup.Data.Plugins
             {
                 return new Accessor(new WeakReference<PerspexObject>(o), p, changed);
             }
+            else if (instance != PerspexProperty.UnsetValue)
+            {
+                var message = $"Could not find PerspexProperty '{propertyName}' on '{instance}'";
+                var exception = new MissingMemberException(message);
+                return new PropertyError(new BindingError(exception));
+            }
             else
             {
-                Logger.Error(
-                    LogArea.Binding,
-                    this,
-                    "Could not find PerspexProperty {Property} on {Source}",
-                    propertyName,
-                    instance);
                 return null;
             }
         }

@@ -21,7 +21,7 @@ namespace Perspex
     /// <remarks>
     /// This class is analogous to DependencyObject in WPF.
     /// </remarks>
-    public class PerspexObject : IPerspexObject, IPerspexObjectDebug, INotifyPropertyChanged
+    public class PerspexObject : IPerspexObject, IPerspexObjectDebug, INotifyPropertyChanged, IPriorityValueOwner
     {
         /// <summary>
         /// Maintains a list of direct property binding subscriptions so that the binding source
@@ -403,9 +403,9 @@ namespace Perspex
                 IDisposable subscription = null;
 
                 subscription = source
-                    .Select(x => TypeUtilities.CastOrDefault(x, property.PropertyType))
+                    .Select(x => CastOrDefault(x, property.PropertyType))
                     .Do(_ => { }, () => s_directBindings.Remove(subscription))
-                    .Subscribe(x => SetValue(property, x));
+                    .Subscribe(x => DirectBindingSet(property, x));
 
                 s_directBindings.Add(subscription);
 
@@ -474,6 +474,34 @@ namespace Perspex
             if (_values.TryGetValue(property, out value))
             {
                 value.Revalidate();
+            }
+        }
+
+        /// <inheritdoc/>
+        void IPriorityValueOwner.Changed(PriorityValue sender, object oldValue, object newValue)
+        {
+            var property = sender.Property;
+            var priority = (BindingPriority)sender.ValuePriority;
+
+            oldValue = (oldValue == PerspexProperty.UnsetValue) ?
+                GetDefaultValue(property) :
+                oldValue;
+            newValue = (newValue == PerspexProperty.UnsetValue) ?
+                GetDefaultValue(property) :
+                newValue;
+
+            if (!Equals(oldValue, newValue))
+            {
+                RaisePropertyChanged(property, oldValue, newValue, priority);
+
+                Logger.Verbose(
+                    LogArea.Property,
+                    this,
+                    "{Property} changed from {$Old} to {$Value} with priority {Priority}",
+                    property,
+                    oldValue,
+                    newValue,
+                    priority);
             }
         }
 
@@ -588,6 +616,27 @@ namespace Perspex
         }
 
         /// <summary>
+        /// Tries to cast a value to a type, taking into account that the value may be a
+        /// <see cref="BindingError"/>.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="type">The type.</param>
+        /// <returns>The cast value, or a <see cref="BindingError"/>.</returns>
+        private static object CastOrDefault(object value, Type type)
+        {
+            var error = value as BindingError;
+
+            if (error == null)
+            {
+                return TypeUtilities.CastOrDefault(value, type);
+            }
+            else
+            {
+                return error;
+            }
+        }
+
+        /// <summary>
         /// Creates a <see cref="PriorityValue"/> for a <see cref="PerspexProperty"/>.
         /// </summary>
         /// <param name="property">The property.</param>
@@ -604,35 +653,42 @@ namespace Perspex
 
             PriorityValue result = new PriorityValue(
                 this,
-                property.Name, 
+                property,
                 property.PropertyType, 
                 validate2);
 
-            result.Changed.Subscribe(x =>
-            {
-                object oldValue = (x.Item1 == PerspexProperty.UnsetValue) ?
-                    GetDefaultValue(property) :
-                    x.Item1;
-                object newValue = (x.Item2 == PerspexProperty.UnsetValue) ?
-                    GetDefaultValue(property) :
-                    x.Item2;
-
-                if (!Equals(oldValue, newValue))
-                {
-                    RaisePropertyChanged(property, oldValue, newValue, (BindingPriority)result.ValuePriority);
-
-                    Logger.Verbose(
-                        LogArea.Property, 
-                        this,
-                        "{Property} changed from {$Old} to {$Value} with priority {Priority}",
-                        property, 
-                        oldValue, 
-                        newValue, 
-                        (BindingPriority)result.ValuePriority);
-                }
-            });
-
             return result;
+        }
+
+        /// <summary>
+        /// Sets a property value for a direct property binding.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        private void DirectBindingSet(PerspexProperty property, object value)
+        {
+            var error = value as BindingError;
+
+            if (error == null)
+            {
+                SetValue(property, value);
+            }
+            else
+            {
+                if (error.UseFallbackValue)
+                {
+                    SetValue(property, error.FallbackValue);
+                }
+
+                Logger.Error(
+                    LogArea.Binding,
+                    this,
+                    "Error binding to {Target}.{Property}: {Message}",
+                    this,
+                    property,
+                    error.Exception.Message);
+            }
         }
 
         /// <summary>

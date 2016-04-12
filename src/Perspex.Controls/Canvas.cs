@@ -226,7 +226,7 @@ namespace Perspex.Controls
         private static void AffectsCanvasArrangeInvalidate(PerspexPropertyChangedEventArgs e)
         {
             var control = e.Sender as IControl;
-            var canvas = control?.Parent as Canvas;
+            var canvas = control?.VisualParent as Canvas;
             canvas?.InvalidateArrange();
         }
     }

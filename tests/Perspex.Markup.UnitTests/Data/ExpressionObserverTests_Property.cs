@@ -7,6 +7,7 @@ using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Microsoft.Reactive.Testing;
+using Perspex.Data;
 using Perspex.Markup.Data;
 using Perspex.UnitTests;
 using Xunit;
@@ -74,13 +75,17 @@ namespace Perspex.Markup.UnitTests.Data
         }
 
         [Fact]
-        public async void Should_Not_Have_Value_For_Broken_Chain()
+        public async void Should_Return_BindingError_For_Broken_Chain()
         {
             var data = new { Foo = new { Bar = 1 } };
             var target = new ExpressionObserver(data, "Foo.Bar.Baz");
             var result = await target.Take(1);
 
-            Assert.Equal(PerspexProperty.UnsetValue, result);
+            Assert.IsType<BindingError>(result);
+
+            var error = result as BindingError;
+            Assert.IsType<MissingMemberException>(error.Exception);
+            Assert.Equal("Could not find CLR property 'Baz' on '1'", error.Exception.Message);
         }
 
         [Fact]
@@ -209,7 +214,10 @@ namespace Perspex.Markup.UnitTests.Data
             data.Next = breaking;
             data.Next = new Class2 { Bar = "baz" };
 
-            Assert.Equal(new[] { "bar", PerspexProperty.UnsetValue, "baz" }, result);
+            Assert.Equal(3, result.Count);
+            Assert.Equal("bar", result[0]);
+            Assert.IsType<BindingError>(result[1]);
+            Assert.Equal("baz", result[2]);
 
             sub.Dispose();
 

@@ -41,7 +41,7 @@ the parent control.
 on which the property is being set and the value and returns the coerced value
 or throws an exception for an invalid value.
 
-## Using a StyledProperty from Another Class
+## Using a StyledProperty on Another Class
 
 Sometimes the property you want to add to your control already exists on another
 control, `Background` being a good example. To register a property defined on
@@ -157,6 +157,27 @@ They don't support the following:
 - Validation/Coercion (although this could be done in the property setter)
 - Overriding default values.
 - Inherited values
+
+## Using a DirectProperty on Another Class
+
+In the same way that you can call `AddOwner` on a styled property, you can also
+add an owner to a direct property. Because direct properties reference fields
+on the control, you must also add a field for the property:
+
+```c#
+    public static readonly DirectProperty<MyControl, IEnumerable> ItemsProperty =
+        ItemsControl.ItemsProperty.AddOwner<MyControl>(
+            o => o.Items,
+            (o, v) => o.Items = v);
+
+    private IEnumerable _items = new PerspexList<object>();
+
+    public IEnumerable Items
+    {
+        get { return _items; }
+        set { SetAndRaise(ItemsProperty, ref _items, value); }
+    }
+```
 
 ## When to use a Direct vs a Styled Property
 
