@@ -337,19 +337,13 @@ namespace Perspex.Controls
         IStyleHost IStyleHost.StylingParent => (IStyleHost)InheritanceParent;
 
         /// <inheritdoc/>
-        void ILogical.NotifyDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
-        {
-            this.OnDetachedFromLogicalTreeCore(e);
-        }
-
-        /// <inheritdoc/>
-        void ISupportInitialize.BeginInit()
+        public virtual void BeginInit()
         {
             ++_initCount;
         }
 
         /// <inheritdoc/>
-        void ISupportInitialize.EndInit()
+        public virtual void EndInit()
         {
             if (_initCount == 0)
             {
@@ -373,14 +367,10 @@ namespace Perspex.Controls
             }
         }
 
-        /// <summary>
-        /// Gets a value which indicates whether a change to the <see cref="DataContext"/> is in 
-        /// the process of being notified.
-        /// </summary>
-        protected bool IsDataContextChanging
+        /// <inheritdoc/>
+        void ILogical.NotifyDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
-            get;
-            private set;
+            this.OnDetachedFromLogicalTreeCore(e);
         }
 
         /// <summary>
@@ -548,6 +538,21 @@ namespace Perspex.Controls
             base.OnDetachedFromVisualTreeCore(e);
         }
 
+        /// <summary>
+        /// Called before the <see cref="DataContext"/> property changes.
+        /// </summary>
+        protected virtual void OnDataContextChanging()
+        {
+        }
+
+        /// <summary>
+        /// Called after the <see cref="DataContext"/> property changes.
+        /// </summary>
+        protected virtual void OnDataContextChanged()
+        {
+            DataContextChanged?.Invoke(this, EventArgs.Empty);
+        }
+
         /// <inheritdoc/>
         protected override void OnGotFocus(GotFocusEventArgs e)
         {
@@ -599,15 +604,6 @@ namespace Perspex.Controls
         }
 
         /// <summary>
-        /// Called when the <see cref="DataContext"/> is changed and all subscribers to that change
-        /// have been notified.
-        /// </summary>
-        protected virtual void OnDataContextChanged()
-        {
-            DataContextChanged?.Invoke(this, EventArgs.Empty);
-        }
-
-        /// <summary>
         /// Called when the <see cref="DataContext"/> property begins and ends being notified.
         /// </summary>
         /// <param name="o">The object on which the DataContext is changing.</param>
@@ -618,9 +614,11 @@ namespace Perspex.Controls
 
             if (control != null)
             {
-                control.IsDataContextChanging = notifying;
-
-                if (!notifying)
+                if (notifying)
+                {
+                    control.OnDataContextChanging();
+                }
+                else
                 {
                     control.OnDataContextChanged();
                 }

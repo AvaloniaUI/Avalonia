@@ -506,6 +506,21 @@ namespace Perspex.Controls.UnitTests.Primitives
         }
 
         [Fact]
+        public void Order_Of_Setting_Items_And_SelectedItem_During_Initialization_Should_Not_Matter()
+        {
+            var items = new[] { "Foo", "Bar" };
+            var target = new SelectingItemsControl();
+
+            ((ISupportInitialize)target).BeginInit();
+            target.SelectedItem = "Bar";
+            target.Items = items;
+            ((ISupportInitialize)target).EndInit();
+
+            Assert.Equal(1, target.SelectedIndex);
+            Assert.Equal("Bar", target.SelectedItem);
+        }
+
+        [Fact]
         public void Changing_DataContext_Should_Not_Clear_Nested_ViewModel_SelectedItem()
         {
             var items = new[]
@@ -535,9 +550,9 @@ namespace Perspex.Controls.UnitTests.Primitives
 
             items = new[]
             {
-                new Item(),
-                new Item(),
-                new Item(),
+                new Item { Value = "Item1" },
+                new Item { Value = "Item2" },
+                new Item { Value = "Item3" },
             };
 
             vm = new MasterViewModel
@@ -568,6 +583,7 @@ namespace Perspex.Controls.UnitTests.Primitives
 
         private class Item : Control, ISelectable
         {
+            public string Value { get; set; }
             public bool IsSelected { get; set; }
         }
 
