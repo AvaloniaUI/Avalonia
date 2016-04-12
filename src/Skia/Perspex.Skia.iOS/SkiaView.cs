@@ -21,7 +21,7 @@ namespace Perspex.Skia.iOS
         //static extern IntPtr GetPerspexEAGLContext();
 
         bool _drawQueued;
-        CADisplayLink _link;
+        //CADisplayLink _link;
         static EAGLContext GetContext()
         {
 			/* No longer needed with SkiaSharp
@@ -43,7 +43,7 @@ namespace Perspex.Skia.iOS
 
         protected SkiaView() : base(UIScreen.MainScreen.ApplicationFrame)	//, GetContext())
         {
-            (_link = CADisplayLink.Create(() => OnFrame())).AddToRunLoop(NSRunLoop.Main, NSRunLoop.NSDefaultRunLoopMode);
+            //(_link = CADisplayLink.Create(() => OnFrame())).AddToRunLoop(NSRunLoop.Main, NSRunLoop.NSDefaultRunLoopMode);
         }
 
         protected void OnFrame()
@@ -54,6 +54,8 @@ namespace Perspex.Skia.iOS
 
 				// GLKView
 				//Display();
+
+				this.SetNeedsDisplay();
             }
         }
 

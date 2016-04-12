@@ -57,7 +57,8 @@ namespace Perspex.iOS
                            (_controller.InterfaceOrientation == UIInterfaceOrientation.LandscapeLeft
                             || _controller.InterfaceOrientation == UIInterfaceOrientation.LandscapeRight);
 
-            var frame = UIScreen.MainScreen.Bounds;
+			// Bounds here (if top level) needs to correspond with the rendertarget 
+			var frame = UIScreen.MainScreen.Bounds;
             if (needFlip)
                 Frame = new CGRect(frame.Y, frame.X, frame.Height, frame.Width);
             else

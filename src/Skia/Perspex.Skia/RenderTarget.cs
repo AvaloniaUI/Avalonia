@@ -50,6 +50,25 @@ namespace Perspex.Skia
 			FixSize();
 		}
 
+#if __IOS__
+		private CGRect GetApplicationFrame()
+		{
+			// if we are excluding Status Bar then we use ApplicationFrame
+			// otherwise we use full screen bounds. Note that this must also match
+			// the Skia/PerspexView!!!
+			//
+			bool excludeStatusArea = false; // TODO: make this configurable later
+			if (excludeStatusArea)
+			{
+				return UIScreen.MainScreen.ApplicationFrame;
+			}
+			else
+			{
+				return UIScreen.MainScreen.Bounds;
+			}
+		}
+#endif
+
 		void FixSize()
 		{
 			int width, height;
@@ -83,7 +102,7 @@ namespace Perspex.Skia
 		void GetPlatformWindowSize(IntPtr hwnd, out int w, out int h)
 		{
 #if __IOS__
-			var bounds = UIScreen.MainScreen.ApplicationFrame;
+			var bounds = GetApplicationFrame();
 			w = (int) bounds.Width;
 			h = (int)bounds.Height;
 
@@ -126,7 +145,8 @@ namespace Perspex.Skia
 
 #if __IOS__
 			const int bitmapInfo = ((int)CGBitmapFlags.ByteOrder32Big) | ((int)CGImageAlphaInfo.PremultipliedLast);
-			var bounds = UIScreen.MainScreen.ApplicationFrame;
+			var bounds = GetApplicationFrame();
+			var statusBarOffset = UIScreen.MainScreen.Bounds.Height - bounds.Height;
 
 			using (var colorSpace = CGColorSpace.CreateDeviceRGB())
 			using (var bContext = new CGBitmapContext(pixels, _bitmap.Width, _bitmap.Height, 8, _bitmap.Width * 4, colorSpace, (CGImageAlphaInfo)bitmapInfo))
@@ -134,7 +154,7 @@ namespace Perspex.Skia
 			using (var context = UIGraphics.GetCurrentContext())
 			{
 				// flip the image for CGContext.DrawImage
-				context.TranslateCTM(0, bounds.Height);	// Frame.Height);
+				context.TranslateCTM(0, bounds.Height + statusBarOffset);
 				context.ScaleCTM(1, -1);
 				context.DrawImage(bounds, image);
 			}

@@ -40,17 +40,20 @@ namespace Perspex.Win32
                 var filterBuffer = new char[filters.Length];
                 filters.CopyTo(0, filterBuffer, 0, filterBuffer.Length);
 
-                var defExt = (dialog as SaveFileDialog)?.DefaultExtension;
+				var defExt = (dialog as SaveFileDialog)?.DefaultExtension.ToArray();
                 var fileBuffer = new char[256];
                 dialog.InitialFileName?.CopyTo(0, fileBuffer, 0, dialog.InitialFileName.Length);
 
                 string userSelectedExt = null;
-                
-                fixed (char* pFileBuffer = fileBuffer)
+
+				var title = dialog.Title.ToArray();
+				var initialDir = dialog.InitialDirectory.ToArray();
+
+				fixed (char* pFileBuffer = fileBuffer)
                 fixed (char* pFilterBuffer = filterBuffer)
                 fixed (char* pDefExt = defExt)
-                fixed (char* pInitDir = dialog.InitialDirectory)
-                fixed (char* pTitle = dialog.Title)
+                fixed (char* pInitDir = initialDir)
+                fixed (char* pTitle = title)
                 {
                     var ofn = new UnmanagedMethods.OpenFileName()
                     {                       

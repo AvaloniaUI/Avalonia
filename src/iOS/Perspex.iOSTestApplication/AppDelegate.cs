@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Foundation;
+using Perspex.Controls;
 using Perspex.iOS;
+using Perspex.Media;
 using Perspex.Threading;
 using TestApplication;
 using UIKit;
@@ -29,12 +31,42 @@ namespace Perspex.iOSTestApplication
 
             var app = new App();
 
-            MainWindow.RootNamespace = "Perspex.iOSTestApplication";
-            var window = MainWindow.Create();
+			MainWindow.RootNamespace = "Perspex.iOSTestApplication";
+			var window = MainWindow.Create();
             window.Show();
             app.Run(window);
 
             return true;
         }
+
+		// This provides a simple UI tree for testing input handling
+		public static Window Create()
+		{
+			Window window = new Window
+			{
+				Title = "Perspex Test Application",
+				//Width = 900,
+				//Height = 480,
+				Background = Brushes.Red,
+				Content = new Grid
+				{
+					Margin = new Thickness(100),
+					Background = Brushes.Yellow,
+					Children = new Controls.Controls
+					{
+						new Button
+						{
+							Content = "Hello World!",
+							Width = 200,
+							Height = 200
+						}
+					}
+				}
+			};
+
+			return window;
+		}
     }
+
+
 }
