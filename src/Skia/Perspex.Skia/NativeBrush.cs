@@ -6,6 +6,7 @@ using Perspex.Media;
 
 namespace Perspex.Skia
 {
+/* No longer needed with SkiaSharp
     internal enum NativeBrushType
     {
         Solid,
@@ -110,4 +111,5 @@ namespace Perspex.Skia
             return _pool.Pop();
         }
     }
+*/
 }

@@ -16,8 +16,14 @@ namespace TestApplication
         public App()
         {
             RegisterServices();
-            InitializeSubsystems((int)Environment.OSVersion.Platform);            
-            Styles.Add(new DefaultTheme());
+
+#if !__IOS__	// IOS Startup flow is a bit different and cannot use this
+			RegisterPlatformCallback(PlatformInitialization);
+#endif
+
+			InitializeSubsystems((int)Environment.OSVersion.Platform);
+
+			Styles.Add(new DefaultTheme());
 
             var loader = new PerspexXamlLoader();
             var baseLight = (IStyle)loader.Load(
@@ -32,5 +38,11 @@ namespace TestApplication
                     x => x.Children),
             };
         }
-    }
+
+		protected virtual void PlatformInitialization()
+		{
+			// default behavior
+			InitializeSubsystems((int)Environment.OSVersion.Platform);
+		}
+	}
 }

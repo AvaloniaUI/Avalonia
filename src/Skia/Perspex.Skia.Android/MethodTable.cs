@@ -14,6 +14,7 @@ using Android.Widget;
 
 namespace Perspex.Skia
 {
+/* No longer needed with SkiaSharp
     class MethodTableImpl : MethodTable
     {
         [DllImport(@"perspesk")]
@@ -26,4 +27,5 @@ namespace Perspex.Skia
             PerspexJniInit(JNIEnv.Handle);
         }
     }
+	*/
 }

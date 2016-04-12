@@ -1,5 +1,7 @@
 using System.Runtime.InteropServices;
 
+/* No longer needed with SkiaSharp
+
 namespace Perspex.Skia
 {
     [StructLayout(LayoutKind.Sequential)]
@@ -27,3 +29,5 @@ namespace Perspex.Skia
         public static implicit operator SkiaPoint(Point pt) => new SkiaPoint(pt);
     }
 }
+
+	*/

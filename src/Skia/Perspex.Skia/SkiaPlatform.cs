@@ -9,17 +9,22 @@ namespace Perspex.Skia
     {
         private static bool s_forceSoftwareRendering;
 
-        public static void Initialize() 
-            => PerspexLocator.CurrentMutable.Bind<IPlatformRenderInterface>().ToConstant(new PlatformRenderInterface());
+		public static void Initialize()
+		{
+			PerspexLocator.CurrentMutable.Bind<IPlatformRenderInterface>().ToConstant(new PlatformRenderInterface());
+		}
 
-        public static bool ForceSoftwareRendering
+		public static bool ForceSoftwareRendering
         {
             get { return s_forceSoftwareRendering; }
             set
             {
                 s_forceSoftwareRendering = value;
-                MethodTable.Instance.SetOption(MethodTable.Option.ForceSoftware, new IntPtr(value ? 1 : 0));
-            }
-        }
+
+				// Do we still need this with SkiaSharp??
+				//MethodTable.Instance.SetOption(MethodTable.Option.ForceSoftware, new IntPtr(value ? 1 : 0));
+				throw new NotImplementedException();
+			}
+		}
     }
 }

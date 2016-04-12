@@ -14,6 +14,8 @@ using Perspex.Platform;
 
 namespace Perspex.Skia
 {
+/* This lives in shared project now, but we may need an android specific implementation anyways
+ * 
     class RenderTarget : IRenderTarget
     {
         private IntPtr _currentRenderTarget = IntPtr.Zero;
@@ -61,4 +63,5 @@ namespace Perspex.Skia
                 new DrawingContextImpl(MethodTable.Instance.RenderTargetCreateRenderingContext(_currentRenderTarget)));
         }
     }
+*/
 }

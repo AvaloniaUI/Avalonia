@@ -7,6 +7,8 @@ using Perspex.Media;
 
 namespace Perspex.Skia
 {
+/* No longer needed with SkiaSharp
+
     unsafe abstract class MethodTable
     {
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -234,5 +236,5 @@ namespace Perspex.Skia
         public static readonly MethodTable Instance = new MethodTableImpl();
     }
 
-
+*/
 }

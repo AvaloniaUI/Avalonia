@@ -1,5 +1,7 @@
 using System;
 
+/* No longer needed with SkiaSharp
+
 namespace Perspex.Skia
 {
     abstract class PerspexHandleHolder : IDisposable
@@ -104,3 +106,5 @@ namespace Perspex.Skia
         }
     }
 }
+
+*/

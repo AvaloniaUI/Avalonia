@@ -6,46 +6,18 @@ using System.Text;
 using Perspex.Media;
 using Perspex.Platform;
 using Perspex.RenderHelpers;
+using SkiaSharp;
 
 namespace Perspex.Skia
 {
-    enum SkiaGeometryElementType
-    {
-        LineTo,
-        QuadTo,
-        BezierTo,
-        BeginFigure,
-        EndFigure
-    };
-
-    [StructLayout(LayoutKind.Sequential)]
-    struct SkiaGeometryElement
-    {
-        public SkiaGeometryElementType Type;
-        public SkiaPoint Point1, Point2, Point3;
-        public bool Flag;
-    }
-
-    class SkPath : PerspexHandleHolder
-    {
-        public SkPath(IntPtr handle) : base(handle)
-        {
-        }
-
-        protected override void Delete(IntPtr handle)
-        {
-            MethodTable.Instance.DisposePath(handle);
-        }
-    }
-
-
     class StreamGeometryImpl : IStreamGeometryImpl
     {
-        RefCountable<SkPath> _path;
-        RefCountable<SkPath> _transformedPath;
-        private Matrix _transform = Matrix.Identity;
+		SKPath _path;
+		SKPath _transformedPath;
+
+		private Matrix _transform = Matrix.Identity;
         
-        public IntPtr EffectivePath => (_transformedPath ?? _path).Handle;
+        public SKPath EffectivePath => (_transformedPath ?? _path);
 
         public Rect GetRenderBounds(double strokeThickness)
         {
@@ -62,6 +34,7 @@ namespace Perspex.Skia
             {
                 if(_transform == value)
                     return;
+
                 _transform = value;
                 ApplyTransform();
             }
@@ -69,108 +42,115 @@ namespace Perspex.Skia
 
         void ApplyTransform()
         {
-            if(_path == null)
-                return;
-            if (_transformedPath != null)
-            {
-                _transformedPath.Dispose();
-                _transformedPath = null;
-            }
-            if (!_transform.IsIdentity)
-                _transformedPath =
-                    new RefCountable<SkPath>(new SkPath(MethodTable.Instance.TransformPath(_path.Handle, Transform)));
-        }
+			if (_path == null)
+				return;
 
-        public IStreamGeometryImpl Clone()
-        {
-            return new StreamGeometryImpl {_path = _path?.Clone(), _transformedPath = _transformedPath?.Clone(), _transform = Transform, Bounds = Bounds};
-        }
+			if (_transformedPath != null)
+			{
+				_transformedPath.Dispose();
+				_transformedPath = null;
+			}
+
+			// TODO: SkiaSharp does not expose Transform yet!!!
+			//if (!Transform.IsIdentity)
+			//{
+			//	_transformedPath = new SKPath();
+			//	_path.Transform(Transform.ToSKMatrix(), _transformedPath);
+			//}
+		}
+
+		public IStreamGeometryImpl Clone()
+		{
+			// TODO: there is no SKPath.Clone yet!!!!!!!!!!!!!
+			//
+			//return new StreamGeometryImpl
+			//{
+			//	_path = _path?.Clone(),
+			//	_transformedPath = _transformedPath?.Clone(),
+			//	_transform = Transform,
+			//	Bounds = Bounds
+			//};
+
+			return this;		// this will probably end bad!!
+		}
 
         public IStreamGeometryContextImpl Open()
         {
+			_path = new SKPath();
             return new StreamContext(this);
         }
 
         class StreamContext : IStreamGeometryContextImpl
         {
             private readonly StreamGeometryImpl _geometryImpl;
-            readonly List<SkiaGeometryElement> _elements = new List<SkiaGeometryElement>();
+			private SKPath _path;
+
+            //readonly List<SkiaGeometryElement> _elements = new List<SkiaGeometryElement>();
             Point _currentPoint;
             public StreamContext(StreamGeometryImpl geometryImpl)
             {
                 _geometryImpl = geometryImpl;
-            }
+				_path = _geometryImpl._path;
+			}
 
-            public void Dispose()
+			public void Dispose()
+			{
+				// Not sure what we need to do here....
+
+				//	//throw new NotImplementedException();
+
+				//	var arr = _elements.ToArray();
+				//             SkRect rc;
+				//             _path?.Dispose();
+				//             _path = new SKPath(new SkPath(MethodTable.Instance.CreatePath(arr, arr.Length, out rc)));
+				//             _geometryImpl.ApplyTransform();
+
+				//             _geometryImpl.Bounds = rc.ToRect();
+
+				SKRect rc;
+				_path.GetBounds(out rc);
+				_geometryImpl.ApplyTransform();
+				_geometryImpl.Bounds = rc.ToPerspexRect();
+			}
+
+			public void ArcTo(Point point, Size size, double rotationAngle, bool isLargeArc, SweepDirection sweepDirection)
             {
-                var arr = _elements.ToArray();
-                SkRect rc;
-                _geometryImpl._path?.Dispose();
-                _geometryImpl._path =
-                    new RefCountable<SkPath>(new SkPath(MethodTable.Instance.CreatePath(arr, arr.Length, out rc)));
-                _geometryImpl.ApplyTransform();
+				throw new NotImplementedException();
 
-                _geometryImpl.Bounds = rc.ToRect();
-
-            }
-
-            public void ArcTo(Point point, Size size, double rotationAngle, bool isLargeArc, SweepDirection sweepDirection)
-            {
-                ArcToHelper.ArcTo(this, _currentPoint, point, size, rotationAngle, isLargeArc, sweepDirection);
-                _currentPoint = point;
+                //ArcToHelper.ArcTo(this, _currentPoint, point, size, rotationAngle, isLargeArc, sweepDirection);
+                //_currentPoint = point;
             }
 
             public void BeginFigure(Point startPoint, bool isFilled)
             {
-                _elements.Add(new SkiaGeometryElement
-                {
-                    Type = SkiaGeometryElementType.BeginFigure,
-                    Point1 = new SkiaPoint(startPoint),
-                    Flag = isFilled
-                });
-                _currentPoint = startPoint;
+				_path.MoveTo((float)startPoint.X, (float)startPoint.Y);
+				_currentPoint = startPoint;
             }
 
             public void CubicBezierTo(Point point1, Point point2, Point point3)
             {
-                _elements.Add(new SkiaGeometryElement
-                {
-                    Type = SkiaGeometryElementType.BezierTo,
-                    Point1 = new SkiaPoint(point1),
-                    Point2 = new SkiaPoint(point2),
-                    Point3 = new SkiaPoint(point3)
-                });
-                _currentPoint = point3;
+				_path.CubicTo((float)point1.X, (float)point1.Y, (float)point2.X, (float)point2.Y, (float)point3.X, (float)point3.Y);
+				_currentPoint = point3;
             }
 
-            public void QuadraticBezierTo(Point control, Point endPoint)
+            public void QuadraticBezierTo(Point point1, Point point2)
             {
-                _elements.Add(new SkiaGeometryElement
-                {
-                    Type = SkiaGeometryElementType.QuadTo,
-                    Point1 = control,
-                    Point2 = endPoint
-                });
-                _currentPoint = endPoint;
+				_path.QuadTo((float)point1.X, (float)point1.Y, (float)point2.X, (float)point2.Y);
+				_currentPoint = point2;
             }
 
             public void LineTo(Point point)
             {
-                _elements.Add(new SkiaGeometryElement
-                {
-                    Type = SkiaGeometryElementType.LineTo,
-                    Point1 = new SkiaPoint(point)
-                });
-                _currentPoint = point;
+				_path.LineTo((float)point.X, (float)point.Y);
+				_currentPoint = point;
             }
 
             public void EndFigure(bool isClosed)
             {
-                _elements.Add(new SkiaGeometryElement
-                {
-                    Type = SkiaGeometryElementType.EndFigure,
-                    Flag = isClosed
-                });
+				if(isClosed)
+				{
+					_path.Close();
+				}
             }
 
             public void SetFillRule(FillRule fillRule)

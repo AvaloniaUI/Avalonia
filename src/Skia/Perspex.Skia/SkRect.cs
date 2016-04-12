@@ -1,7 +1,10 @@
-﻿using System;
+﻿using SkiaSharp;
+using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
+
+/* No longer needed with SkiaSharp
 
 namespace Perspex.Skia
 {
@@ -24,3 +27,5 @@ namespace Perspex.Skia
         public Rect ToRect() => new Rect(Left, Top, Right - Left, Bottom - Top);
     }
 }
+
+*/

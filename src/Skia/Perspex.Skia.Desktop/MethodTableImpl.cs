@@ -9,6 +9,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
+/* OBSOLETE
 
 //Library loaders were taken from https://github.com/kekekeks/evhttp-sharp/tree/master/EvHttpSharp/Interop (MIT licensed)
 
@@ -233,3 +234,5 @@ namespace Perspex.Skia
         }
     }
 }
+
+	*/

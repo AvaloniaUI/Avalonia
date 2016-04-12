@@ -3,181 +3,257 @@ using System.Collections.Generic;
 using Perspex.Media;
 using Perspex.Media.Imaging;
 using Perspex.RenderHelpers;
+using SkiaSharp;
+using System.Linq;
 
 namespace Perspex.Skia
 {
-    unsafe class DrawingContextImpl : PerspexHandleHolder, IDrawingContextImpl
+    unsafe class DrawingContextImpl : IDrawingContextImpl
     {
-        private readonly NativeDrawingContextSettings* _settings;
-        public DrawingContextImpl(IntPtr handle) : base(handle)
-        {
-            _settings = MethodTable.Instance.GetDrawingContextSettingsPtr(handle);
-            _settings->Opacity = 1;
-        }
+		public SKCanvas Canvas { get; private set; }
 
-        protected override void Delete(IntPtr handle) => MethodTable.Instance.DisposeRenderingContext(handle);
+        public DrawingContextImpl(SKCanvas canvas)
+        {
+			Canvas = canvas;
+        }
 
         public void DrawImage(IBitmap source, double opacity, Rect sourceRect, Rect destRect)
         {
-            var impl = (BitmapImpl) source.PlatformImpl;
-            var s = SkRect.FromRect(sourceRect);
-            var d = SkRect.FromRect(destRect);
-            MethodTable.Instance.DrawImage(Handle, impl.Handle, (float) opacity, ref s, ref d);
+			var impl = (BitmapImpl)source.PlatformImpl;
+			var s = sourceRect.ToSKRect();
+			var d = destRect.ToSKRect();
+			Canvas.DrawBitmap(impl.Bitmap, s, d);
         }
 
         public void DrawLine(Pen pen, Point p1, Point p2)
         {
-
-            using (var brush = CreateBrush(pen, new Size(Math.Abs(p2.X - p1.X), Math.Abs(p2.Y - p1.Y))))
-                MethodTable.Instance.DrawLine(Handle, brush.Brush,
-                    (float) p1.X, (float) p1.Y, (float) p2.X, (float) p2.Y);
+			using (var paint = CreatePaint(pen, new Size(Math.Abs(p2.X - p1.X), Math.Abs(p2.Y - p1.Y))))
+			{
+				Canvas.DrawLine((float)p1.X, (float)p1.Y, (float)p2.X, (float)p2.Y, paint);
         }
+		}
 
-        static readonly NativeBrushContainer _dummy = new NativeBrushContainer(null);
         public void DrawGeometry(IBrush brush, Pen pen, Geometry geometry)
         {
-            var impl = ((StreamGeometryImpl) geometry.PlatformImpl);
+			var impl = ((StreamGeometryImpl)geometry.PlatformImpl);
             var size = geometry.Bounds.Size;
-            using(var fill = brush!=null?CreateBrush(brush, size):null)
-            using (var stroke = pen?.Brush != null ? CreateBrush(pen, size) : null)
-            {
-                MethodTable.Instance.DrawGeometry(Handle, impl.EffectivePath, fill != null ? fill.Brush : null,
-                    stroke != null ? stroke.Brush : null, impl.FillRule == FillRule.EvenOdd);
-            }
-        }
 
-        unsafe NativeBrushContainer CreateBrush(IBrush brush, Size targetSize)
+			using (var fill = brush != null ? CreatePaint(brush, size) : null)
+			using (var stroke = pen?.Brush != null ? CreatePaint(pen, size) : null)
+            {
+				if (fill != null)
+				{
+					Canvas.DrawPath(impl.EffectivePath, fill);
+				}
+				if (stroke != null)
+				{
+					Canvas.DrawPath(impl.EffectivePath, stroke);
+				}
+			}
+		}
+
+		private SKPaint CreatePaint(IBrush brush, Size targetSize)
         {
-            var rv = NativeBrushPool.Instance.Get();
-            rv.Brush->Opacity = brush.Opacity;
+			SKPaint paint = new SKPaint();
+
+			paint.IsStroke = false;
+
+			// TODO: SkiaSharp does not contain alpha yet!
+			//double opacity = brush.Opacity * _currentOpacity;
+			//paint.SetAlpha(paint.GetAlpha() * opacity);
+			paint.IsAntialias = true;
 
             var solid = brush as SolidColorBrush;
             if (solid != null)
             {
-                rv.Brush->Type = NativeBrushType.Solid;
-                rv.Brush->Color = solid.Color.ToUint32();
-                return rv;
+				paint.Color = solid.Color.ToSKColor();
+				return paint;
             }
+
             var gradient = brush as GradientBrush;
             if (gradient != null)
             {
-                if (gradient.GradientStops.Count > NativeBrush.MaxGradientStops)
-                    throw new NotSupportedException("Maximum supported gradient stop count is " +
-                                                    NativeBrush.MaxGradientStops);
-                rv.Brush->GradientSpreadMethod = gradient.SpreadMethod;
-                rv.Brush->GradientStopCount = gradient.GradientStops.Count;
+				var tileMode = gradient.SpreadMethod.ToSKShaderTileMode();
+				var stopColors = gradient.GradientStops.Select(s => s.Color.ToSKColor()).ToArray();
+				var stopOffsets = gradient.GradientStops.Select(s => (float)s.Offset).ToArray();
 
-                for (var c = 0; c < gradient.GradientStops.Count; c++)
+				var linearGradient = brush as LinearGradientBrush;
+				if (linearGradient != null)
                 {
-                    var st = gradient.GradientStops[c];
-                    rv.Brush->GradientStops[c] = (float) st.Offset;
-                    rv.Brush->GradientStopColors[c] = st.Color.ToUint32();
-                }
+					var start = linearGradient.StartPoint.ToPixels(targetSize).ToSKPoint();
+					var end = linearGradient.EndPoint.ToPixels(targetSize).ToSKPoint();
 
+					// would be nice to cache these shaders possibly?
+					var shader = SKShader.CreateLinearGradient(start, end, stopColors, stopOffsets, tileMode);
+					paint.Shader = shader;
             }
-
-            var linearGradient = brush as LinearGradientBrush;
-            if (linearGradient != null)
+				else
             {
-                rv.Brush->Type = NativeBrushType.LinearGradient;
-                rv.Brush->GradientStartPoint = linearGradient.StartPoint.ToPixels(targetSize);
-                rv.Brush->GradientEndPoint = linearGradient.EndPoint.ToPixels(targetSize);
-            }
             var radialGradient = brush as RadialGradientBrush;
             if (radialGradient != null)
             {
-                rv.Brush->Type = NativeBrushType.RadialGradient;
-                rv.Brush->GradientStartPoint = radialGradient.Center.ToPixels(targetSize);
-                rv.Brush->GradientRadius = (float)radialGradient.Radius;
+						var center = radialGradient.Center.ToPixels(targetSize).ToSKPoint();
+						var radius = (float)radialGradient.Radius;
+
+						// TODO: There is no SetAlpha in SkiaSharp
+						//paint.setAlpha(128);
+
+						// would be nice to cache these shaders possibly?
+						var shader = SKShader.CreateRadialGradient(center, radius, stopColors, stopOffsets, tileMode);
+						paint.Shader = shader;
             }
+				}
+
+				return paint;
+			}
+
             var tileBrush = brush as TileBrush;
             if (tileBrush != null)
             {
-                rv.Brush->Type = NativeBrushType.Image;
-                var helper = new TileBrushImplHelper(tileBrush, targetSize);
-                var bitmap = new BitmapImpl((int) helper.IntermediateSize.Width, (int) helper.IntermediateSize.Height);
-                rv.AddDisposable(bitmap);
-                using (var ctx = bitmap.CreateDrawingContext())
-                    helper.DrawIntermediate(ctx);
-                rv.Brush->Bitmap = bitmap.Handle;
-                rv.Brush->BitmapTileMode = tileBrush.TileMode;
-                rv.Brush->BitmapTranslation = new SkiaPoint(-helper.DestinationRect.X, -helper.DestinationRect.Y);
+				// TODO: Get Tile Brushes working!!!
+				//
+				throw new NotImplementedException();
+
+				//	rv.Brush->Type = NativeBrushType.Image;
+				//	var helper = new TileBrushImplHelper(tileBrush, targetSize);
+				//	var bitmap = new BitmapImpl((int)helper.IntermediateSize.Width, (int)helper.IntermediateSize.Height);
+				//	rv.AddDisposable(bitmap);
+				//	using (var ctx = bitmap.CreateDrawingContext())
+				//		helper.DrawIntermediate(ctx);
+				//	rv.Brush->Bitmap = bitmap.Handle;
+				//	rv.Brush->BitmapTileMode = tileBrush.TileMode;
+				//	rv.Brush->BitmapTranslation = new SkiaPoint(-helper.DestinationRect.X, -helper.DestinationRect.Y);
+
+				//	SkMatrix matrix;
+				//	matrix.setTranslate(brush->BitmapTranslation);
+				//	SkShader::TileMode tileX = brush->BitmapTileMode == ptmNone ? SkShader::kClamp_TileMode
+				//		: (brush->BitmapTileMode == ptmFlipX || brush->BitmapTileMode == ptmFlipXY) ? SkShader::kMirror_TileMode : SkShader::kRepeat_TileMode;
+				//	SkShader::TileMode tileY = brush->BitmapTileMode == ptmNone ? SkShader::kClamp_TileMode
+				//		: (brush->BitmapTileMode == ptmFlipY || brush->BitmapTileMode == ptmFlipXY) ? SkShader::kMirror_TileMode : SkShader::kRepeat_TileMode;
+
+				//	paint.setShader(SkShader::CreateBitmapShader(brush->Bitmap->Bitmap, tileX, tileY, &matrix))->unref();
             }
 
-            return rv;
+			return paint;
         }
 
-        NativeBrushContainer CreateBrush(Pen pen, Size targetSize)
+		private SKPaint CreatePaint(Pen pen, Size targetSize)
         {
-            var brush = CreateBrush(pen.Brush, targetSize);
-            brush.Brush->Stroke = true;
-            brush.Brush->StrokeThickness = (float)pen.Thickness;
-            brush.Brush->StrokeLineCap = pen.StartLineCap;
-            brush.Brush->StrokeLineJoin = pen.LineJoin;
-            brush.Brush->StrokeMiterLimit = (float)pen.MiterLimit;
+			var paint = CreatePaint(pen.Brush, targetSize);
 
-            if (pen.DashStyle?.Dashes != null)
-            {
-                var dashes = pen.DashStyle.Dashes;
-                if (dashes.Count > NativeBrush.MaxDashCount)
-                    throw new NotSupportedException("Maximum supported dash count is " + NativeBrush.MaxDashCount);
-                brush.Brush->StrokeDashCount = dashes.Count;
-                for (int c = 0; c < dashes.Count; c++)
-                    brush.Brush->StrokeDashes[c] = (float) dashes[c];
-                brush.Brush->StrokeDashOffset = (float)pen.DashStyle.Offset;
+			paint.IsStroke = true;
+			paint.StrokeWidth = (float) pen.Thickness;
 
-            }
+			if (pen.StartLineCap == PenLineCap.Round)
+				paint.StrokeCap = SKStrokeCap.Round;
+			else if (pen.StartLineCap == PenLineCap.Square)
+				paint.StrokeCap = SKStrokeCap.Square;
+			else
+				paint.StrokeCap = SKStrokeCap.Butt;
 
+			if (pen.LineJoin == PenLineJoin.Miter)
+				paint.StrokeJoin = SKStrokeJoin.Mitter;
+			else if (pen.LineJoin == PenLineJoin.Round)
+				paint.StrokeJoin = SKStrokeJoin.Round;
+			else
+				paint.StrokeJoin = SKStrokeJoin.Bevel;
 
-            return brush;
+			paint.StrokeMiter = (float) pen.MiterLimit;
+
+			//if (pen.DashStyle?.Dashes != null)
+			//{
+			//	var dashes = pen.DashStyle.Dashes;
+			//	if (dashes.Count > NativeBrush.MaxDashCount)
+			//		throw new NotSupportedException("Maximum supported dash count is " + NativeBrush.MaxDashCount);
+			//	brush.Brush->StrokeDashCount = dashes.Count;
+			//	for (int c = 0; c < dashes.Count; c++)
+			//		brush.Brush->StrokeDashes[c] = (float)dashes[c];
+			//	brush.Brush->StrokeDashOffset = (float)pen.DashStyle.Offset;
+
+			//}
+
+			//if (brush->StrokeDashCount != 0)
+			//{
+			//	paint.setPathEffect(SkDashPathEffect::Create(brush->StrokeDashes, brush->StrokeDashCount, brush->StrokeDashOffset))->unref();
+			//}
+
+			return paint;
         }
 
         public void DrawRectangle(Pen pen, Rect rect, float cornerRadius = 0)
         {
-            using (var brush = CreateBrush(pen, rect.Size))
+			using (var paint = CreatePaint(pen, rect.Size))
             {
-                var rc = SkRect.FromRect(rect);
-                MethodTable.Instance.DrawRectangle(Handle, brush.Brush, ref rc, cornerRadius);
+				var rc = rect.ToSKRect();
+				if (cornerRadius == 0)
+				{
+					Canvas.DrawRect(rc, paint);
             }
+				else
+				{
+					// this does not appear to exist in SkiaSharp?
+					throw new NotImplementedException();
+					//Canvas.DrawRoundedRect(rc, cornerRadius, cornerRadius, paint);
         }
+			}
+		}
 
-        public void FillRectangle(IBrush pbrush, Rect rect, float cornerRadius = 0)
+		public void FillRectangle(IBrush brush, Rect rect, float cornerRadius = 0)
         {
-            using (var brush = CreateBrush(pbrush, rect.Size))
+			using (var paint = CreatePaint(brush, rect.Size))
             {
-                var rc = SkRect.FromRect(rect);
-                MethodTable.Instance.DrawRectangle(Handle, brush.Brush, ref rc, cornerRadius);
+				var rc = rect.ToSKRect();
+				if (cornerRadius == 0)
+				{
+					Canvas.DrawRect(rc, paint);
             }
+				else
+				{
+					// this does not appear to exist in SkiaSharp?
+					//throw new NotImplementedException();
+					//Canvas.DrawRoundedRect(rc, cornerRadius, cornerRadius, paint);
+					Canvas.DrawRect(rc, paint);
         }
+			}
+		}
 
         public void DrawText(IBrush foreground, Point origin, FormattedText text)
         {
-            using (var br = CreateBrush(foreground, text.Measure()))
-                MethodTable.Instance.DrawFormattedText(Handle, br.Brush, ((FormattedTextImpl) text.PlatformImpl).Handle,
-                    (float) origin.X, (float) origin.Y);
+			using (var paint = CreatePaint(foreground, text.Measure()))
+			{
+				var textImpl = text.PlatformImpl as FormattedTextImpl;
+				textImpl.Draw(this.Canvas, origin.ToSKPoint());
         }
-
+		}
 
         public void PushClip(Rect clip)
         {
-            var rc = SkRect.FromRect(clip);
-            MethodTable.Instance.PushClip(Handle, ref rc);
+			Canvas.Save();
+			Canvas.ClipRect(clip.ToSKRect());
         }
 
         public void PopClip()
         {
-            MethodTable.Instance.PopClip(Handle);
+			Canvas.Restore();
         }
 
+		double _currentOpacity = 1.0f;
         private readonly Stack<double> _opacityStack = new Stack<double>();
 
         public void PushOpacity(double opacity)
         {
-            _opacityStack.Push(_settings->Opacity);
-            _settings->Opacity *= opacity;
+			_opacityStack.Push(_currentOpacity);
+			_currentOpacity *= opacity;
         }
 
-        public void PopOpacity() => _settings->Opacity = _opacityStack.Pop();
+		public void PopOpacity()
+		{
+			_currentOpacity = _opacityStack.Pop();
+		}
+
+		public virtual void Dispose()
+		{
+		}
 
         private Matrix _currentTransform = Matrix.Identity;
 
@@ -188,9 +264,28 @@ namespace Perspex.Skia
             {
                 if(_currentTransform == value)
                     return;
+
                 _currentTransform = value;
-                MethodTable.Instance.SetTransform(Handle, value);
-            } 
+				Canvas.SetMatrix(value.ToSKMatrix());
         }
     }
+    }
+
+	// not sure we need this yet
+	internal class WindowDrawingContextImpl : DrawingContextImpl
+	{
+		WindowRenderTarget _target;
+
+		public WindowDrawingContextImpl(WindowRenderTarget target)
+			: base(target.Surface.Canvas)
+		{
+			_target = target;
+		}
+
+		public override void Dispose()
+		{
+			base.Dispose();
+			_target.Present();
+		}
+	}
 }
