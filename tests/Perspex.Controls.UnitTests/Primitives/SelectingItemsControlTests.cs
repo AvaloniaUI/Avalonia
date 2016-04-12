@@ -491,6 +491,21 @@ namespace Perspex.Controls.UnitTests.Primitives
         }
 
         [Fact]
+        public void Order_Of_Setting_Items_And_SelectedIndex_During_Initialization_Should_Not_Matter()
+        {
+            var items = new[] { "Foo", "Bar" };
+            var target = new SelectingItemsControl();
+
+            ((ISupportInitialize)target).BeginInit();
+            target.SelectedIndex = 1;
+            target.Items = items;
+            ((ISupportInitialize)target).EndInit();
+
+            Assert.Equal(1, target.SelectedIndex);
+            Assert.Equal("Bar", target.SelectedItem);
+        }
+
+        [Fact]
         public void Changing_DataContext_Should_Not_Clear_Nested_ViewModel_SelectedItem()
         {
             var items = new[]
