@@ -109,7 +109,7 @@ namespace Perspex.Controls.Primitives
         private bool _syncingSelectedItems;
         private int _updateCount;
         private int _updateSelectedIndex;
-        private object[] _updateSelectedItems;
+        private IList _updateSelectedItems;
 
         /// <summary>
         /// Initializes static members of the <see cref="SelectingItemsControl"/> class.
@@ -211,7 +211,7 @@ namespace Perspex.Controls.Primitives
                 }
                 else
                 {
-                    _updateSelectedItems = new[] { value };
+                    _updateSelectedItems = new PerspexList<object>(value);
                     _updateSelectedIndex = int.MinValue;
                 }
             }
@@ -235,6 +235,12 @@ namespace Perspex.Controls.Primitives
 
             set
             {
+                if (value.IsFixedSize || value.IsReadOnly)
+                {
+                    throw new NotSupportedException(
+                        "Cannot use a fixed size or read-only collection as SelectedItems.");
+                }
+
                 UnsubscribeFromSelectedItems();
                 _selectedItems = value ?? new PerspexList<object>();
                 SubscribeToSelectedItems();
