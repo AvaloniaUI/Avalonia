@@ -10,6 +10,18 @@ using Perspex.Input;
 using Perspex.Platform;
 using Perspex.Shared.PlatformSupport;
 
+namespace Perspex
+{
+	public static class GtkApplicationExtensions
+	{
+		public static AppT UseGtkSubsystem<AppT>(this AppT app) where AppT : Application
+		{
+			Perspex.Gtk.GtkPlatform.Initialize();
+			return app;
+		}
+	}
+}
+
 namespace Perspex.Gtk
 {
     using Gtk = global::Gtk;

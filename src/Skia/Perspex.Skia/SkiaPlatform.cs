@@ -3,6 +3,18 @@ using System.Collections.Generic;
 using System.Text;
 using Perspex.Platform;
 
+namespace Perspex
+{
+	public static class SkiaApplicationExtensions
+	{
+		public static AppT UseSkia<AppT>(this AppT app) where AppT : Application
+		{
+			Perspex.Skia.SkiaPlatform.Initialize();
+			return app;
+		}
+	}
+}
+
 namespace Perspex.Skia
 {
     public static class SkiaPlatform

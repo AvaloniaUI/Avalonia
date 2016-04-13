@@ -7,6 +7,18 @@ using Perspex.Cairo.Media.Imaging;
 using Perspex.Media;
 using Perspex.Platform;
 
+namespace Perspex
+{
+	public static class GtkApplicationExtensions
+	{
+		public static AppT UseCairo<AppT>(this AppT app) where AppT : Application
+		{
+			Perspex.Cairo.CairoPlatform.Initialize();
+			return app;
+		}
+	}
+}
+
 namespace Perspex.Cairo
 {
     using System.IO;
