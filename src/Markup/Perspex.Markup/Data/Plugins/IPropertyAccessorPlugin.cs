@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections;
 
 namespace Perspex.Markup.Data.Plugins
 {
@@ -24,6 +25,7 @@ namespace Perspex.Markup.Data.Plugins
         /// <param name="reference">A weak reference to the object.</param>
         /// <param name="propertyName">The property name.</param>
         /// <param name="changed">A function to call when the property changes.</param>
+        /// <param name="validationChanged">A function to call when the validation status of the property changes.</param>
         /// <returns>
         /// An <see cref="IPropertyAccessor"/> interface through which future interactions with the 
         /// property will be made.
@@ -31,6 +33,7 @@ namespace Perspex.Markup.Data.Plugins
         IPropertyAccessor Start(
             WeakReference reference, 
             string propertyName, 
-            Action<object> changed);
+            Action<object> changed,
+            Action<IEnumerable> validationChanged);
     }
 }

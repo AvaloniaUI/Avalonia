@@ -54,7 +54,7 @@ namespace Perspex.Markup.Data
 
                 if (plugin != null)
                 {
-                    _accessor = plugin.Start(reference, PropertyName, SetCurrentValue);
+                    _accessor = plugin.Start(reference, PropertyName, SetCurrentValue, _ => { });
 
                     if (_accessor != null)
                     {
