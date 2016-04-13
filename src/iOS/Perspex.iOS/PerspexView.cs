@@ -75,7 +75,15 @@ namespace Perspex.iOS
 
         public IPlatformHandle Handle => PerspexPlatformHandle;
 
-        public double Scaling => 1;
+        public double Scaling
+		{
+			get
+			{
+				// This does not appear to make any difference, but on iOS we
+				// have Retina (x2) and we probably want this eventually
+				return 1;	//UIScreen.MainScreen.Scale;
+			}
+		}
 
         public WindowState WindowState
         {

@@ -33,7 +33,8 @@ namespace Perspex.iOSTestApplication
 
 			MainWindow.RootNamespace = "Perspex.iOSTestApplication";
 			var window = MainWindow.Create();
-            window.Show();
+			//var window = Create();
+			window.Show();
             app.Run(window);
 
             return true;
@@ -48,18 +49,30 @@ namespace Perspex.iOSTestApplication
 				//Width = 900,
 				//Height = 480,
 				Background = Brushes.Red,
-				Content = new Grid
+				Content = new StackPanel
 				{
-					Margin = new Thickness(100),
+					Margin = new Thickness(30),
 					Background = Brushes.Yellow,
 					Children = new Controls.Controls
 					{
+						new TextBlock
+						{
+							Text = "TEXT BLOCK",
+							Width = 300,
+							Height = 40,
+							Background = Brushes.White,
+							Foreground = Brushes.Black
+						},
+
 						new Button
 						{
-							Content = "Hello World!",
-							Width = 200,
-							Height = 200
+							Content = "BUTTON",
+							Width = 150,
+							Height = 40,
+							Background = Brushes.LightGreen,
+							Foreground = Brushes.Black
 						}
+
 					}
 				}
 			};

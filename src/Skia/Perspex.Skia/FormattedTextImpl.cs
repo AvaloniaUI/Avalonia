@@ -12,29 +12,18 @@ namespace Perspex.Skia
     {
 		public SKPaint Paint { get; private set; }
 
-        //private readonly NativeFormattedText* _shared;
-        private readonly string _text;
-
 		public FormattedTextImpl(string text)
 		{
 			_text = text;
 			Paint = new SKPaint();
 
-			//Length = length;
 			Paint.TextEncoding = SKTextEncoding.Utf16;
 			Paint.IsStroke = false;
 			Paint.IsAntialias = true;
 			LineOffset = 0;
 
-			//Shared.WidthConstraint = -1.0;
-			//Data = new pchar[length + 1];
-			//memcpy(Data, data, length * 2);
-			//Data[length] = 0;
-
 			//Replace 0 characters with zero-width spaces (200B)
 			_text = _text.Replace((char)0, (char) 0x200B);
-
-			//Rebuild();
 		}
 
 		public static FormattedTextImpl Create(string text, string fontFamilyName, double fontSize, FontStyle fontStyle,
@@ -45,22 +34,12 @@ namespace Perspex.Skia
 			FormattedTextImpl instance = new FormattedTextImpl(text);
 			instance.Paint.Typeface = typeface;
 			instance.Paint.TextSize = (float) fontSize;
-
-			//rv->Paint.setTextAlign(align); //TODO: Manually align
+			instance.Paint.TextAlign = textAlignment.ToSKTextAlign();
 			instance.Rebuild();
-
-			//NativeFormattedText* pShared;
-			//fixed (void* ptext = text)
-			//{
-			//    IntPtr handle = MethodTable.Instance.CreateFormattedText(ptext, text.Length,
-			//        TypefaceCache.GetTypeface(fontFamilyName, fontStyle, fontWeight),
-			//        (float) fontSize, textAlignment, &pShared);
-
-			//    return new FormattedTextImpl(handle, pShared, text);
-			//}
-
 			return instance;
 		}
+
+		private readonly string _text;
 
 		readonly List<FormattedTextLine> _lines = new List<FormattedTextLine>();
         readonly List<Rect> _rects = new List<Rect>();
@@ -129,7 +108,15 @@ namespace Perspex.Skia
 
         public void SetForegroundBrush(IBrush brush, int startIndex, int length)
         {
+			// Is this method even relevant now???
+			//
+			//var scb = brush as SolidColorBrush;
+			//if (scb != null)
+			//{
+			//	Layout.Attributes.Insert(brushAttr);
+			//}
         }
+
 
 		void Rebuild()
         {
@@ -141,12 +128,18 @@ namespace Perspex.Skia
 			_skiaLines = new List<PerspexFormattedTextLine>();
 
 			int curOff = 0;
-			int curY = 0;
+			float curY = 0;
 
-			// TODO: cannot find Font Metrics in SkiaSharp!
-			//SKPaint.FontMetrics metrics;
-			float lineHeight = Paint.TextSize;  // Paint.getFontMetrics(&metrics);
-			LineOffset = 0; // -metrics.fTop;
+			var metrics = Paint.FontMetrics;
+			var mTop = metrics.Top;  // The greatest distance above the baseline for any glyph (will be <= 0).
+			var mBottom = metrics.Bottom;  // The greatest distance below the baseline for any glyph (will be >= 0). 
+			var mLeading = metrics.Leading;  // The recommended distance to add between lines of text (will be >= 0). 
+
+			// This seems like the best measure of full vertical extent
+			float lineHeight = mBottom - mTop; 
+
+			// Rendering is relative to baseline
+			LineOffset = -metrics.Top;
 
 			string subString;
 
@@ -171,18 +164,19 @@ namespace Perspex.Skia
 
 					subString = _text.Substring(curOff);
 
-					// This method is not linking into SkiaSharp so we must use the RAW buffer version
+					// TODO: This method is not linking into SkiaSharp so we must use the RAW buffer version
 					//measured = (int)Paint.BreakText(subString, constraint, out lineWidth) / 2;
-					bytes = Encoding.ASCII.GetBytes(subString);
+					bytes = Encoding.UTF8.GetBytes(subString);
 					pinnedArray = GCHandle.Alloc(bytes, GCHandleType.Pinned);
 					pointer = pinnedArray.AddrOfPinnedObject();
-					measured = (int)Paint.BreakText(pointer, (IntPtr)bytes.Length, constraint, out lineWidth);
+					// for some reason I have to pass nBytes * 2
+					measured = (int)Paint.BreakText(pointer, (IntPtr)(bytes.Length * 2), constraint, out lineWidth) / 2;
 
 					// some weird unicode byte issue again
-					if(subString.Length % 2 == 1)
-					{
-						measured -= 1;
-					}
+					//if(subString.Length % 2 == 1)
+					//{
+					//	measured -= 1;
+					//}
 
 					pinnedArray.Free();
 
@@ -232,15 +226,7 @@ namespace Perspex.Skia
 						prevRight = _skiaRects[i - 1].Right;
 
 					subString = _text.Substring(line.Start, i - line.Start + 1);
-
-					// Unfortunately this version appears to be incorrect and skipping
-					// even characters. Some issue with Unicode?
-					//float w = Paint.MeasureText(subString);
-					bytes = Encoding.ASCII.GetBytes(subString);
-					pinnedArray = GCHandle.Alloc(bytes, GCHandleType.Pinned);
-					pointer = pinnedArray.AddrOfPinnedObject();
-					float w = Paint.MeasureText(pointer, (IntPtr)bytes.Length);
-					pinnedArray.Free();
+					float w = Paint.MeasureText(subString);
 
 					SKRect rc;
 					rc.Left = prevRight;
@@ -251,24 +237,13 @@ namespace Perspex.Skia
 				}
 
 				subString = _text.Substring(line.Start, line.Length);
-
-				// Unfortunately this version appears to be incorrect and skipping
-				// even characters. Some issue with Unicode?
-				//line.Width = Paint.MeasureText(subString);
-				bytes = Encoding.ASCII.GetBytes(subString);
-				pinnedArray = GCHandle.Alloc(bytes, GCHandleType.Pinned);
-				pointer = pinnedArray.AddrOfPinnedObject();
-				line.Width = Paint.MeasureText(pointer, (IntPtr)bytes.Length);
-				pinnedArray.Free();
+				line.Width = Paint.MeasureText(subString);
 
 				_skiaLines.Add(line);
 
-				curY += (int)lineHeight;
+				curY += lineHeight;	// + mLeading;
 				curOff += measured + extraSkip;
 			}
-
-			//Shared.Lines = Lines.data();
-			//Shared.CharRects = Rects.data();
 
 			// Now convert to Perspex data formats
 			_lines.Clear();
@@ -296,12 +271,11 @@ namespace Perspex.Skia
 			}
 		}
 
-		internal void Draw(SKCanvas canvas, /*PerspexBrush* foreground, */ SKPoint origin)
+		internal void Draw(SKCanvas canvas, SKPoint origin)
 		{
 			SKPaint paint = Paint;
-			//ConfigurePaint(paint, ctx, foreground);
 
-			/*
+			/* This originated from Native code, it might be useful
 			//Debugging code for character positions
 			SkPaint dpaint;
 			ctx->Canvas->save();
@@ -325,11 +299,14 @@ namespace Perspex.Skia
 			ctx->Canvas->restore();
 			*/
 
+			// These seems to vertically align the text properly
+			var yOffset = (LineOffset);	// + 1) / 2;		
+
 			for (int c = 0; c < _skiaLines.Count; c++)
 			{
 				PerspexFormattedTextLine line = _skiaLines[c];
 				var subString = _text.Substring(line.Start, line.Length);
-				canvas.DrawText(subString, origin.X, origin.Y + line.Top + LineOffset, paint);
+				canvas.DrawText(subString, origin.X, origin.Y + line.Top + yOffset, paint);
 			}
 		}
 

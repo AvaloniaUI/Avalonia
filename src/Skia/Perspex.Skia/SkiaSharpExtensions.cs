@@ -1,4 +1,5 @@
-﻿using SkiaSharp;
+﻿using Perspex.Media;
+using SkiaSharp;
 
 
 namespace Perspex.Skia
@@ -51,6 +52,17 @@ namespace Perspex.Skia
 				case Media.GradientSpreadMethod.Pad: return SKShaderTileMode.Clamp;
 				case Media.GradientSpreadMethod.Reflect: return SKShaderTileMode.Mirror;
 				case Media.GradientSpreadMethod.Repeat: return SKShaderTileMode.Repeat;
+			}
+		}
+
+		public static SKTextAlign ToSKTextAlign(this TextAlignment a)
+		{
+			switch (a)
+			{
+				default:
+				case TextAlignment.Left: return SKTextAlign.Left;
+				case TextAlignment.Center: return SKTextAlign.Center;
+				case TextAlignment.Right: return SKTextAlign.Right;
 			}
 		}
 	}
