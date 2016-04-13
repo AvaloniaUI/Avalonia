@@ -235,7 +235,7 @@ namespace Perspex.Controls.Primitives
 
             set
             {
-                if (value.IsFixedSize || value.IsReadOnly)
+                if (value?.IsFixedSize == true || value?.IsReadOnly == true)
                 {
                     throw new NotSupportedException(
                         "Cannot use a fixed size or read-only collection as SelectedItems.");

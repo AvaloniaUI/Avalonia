@@ -57,7 +57,7 @@ namespace Perspex.Controls.UnitTests.Primitives
             };
 
             target.ApplyTemplate();
-            target.SelectedItems = new[] { "bar" };
+            target.SelectedItems = new PerspexList<object>("bar");
 
             Assert.Equal(1, target.SelectedIndex);
         }
@@ -536,7 +536,7 @@ namespace Perspex.Controls.UnitTests.Primitives
 
             target.ApplyTemplate();
             target.Presenter.ApplyTemplate();
-            target.SelectedItems = new[] { "foo", "baz" };
+            target.SelectedItems = new PerspexList<object>("foo", "baz");
 
             Assert.True(called);
         }
