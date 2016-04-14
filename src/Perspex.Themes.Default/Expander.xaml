@@ -17,7 +17,6 @@
                               Grid.Row="1"
                               IsVisible="{TemplateBinding IsExpanded}"
                               Content="{TemplateBinding Content}"
-                              DataContext="{TemplateBinding Content}" 
                               HorizontalAlignment="Stretch"
                               VerticalAlignment="Stretch" />
           </Grid>
@@ -35,7 +34,6 @@
                               Grid.Row="0"
                               IsVisible="{TemplateBinding IsExpanded}"
                               Content="{TemplateBinding Content}"
-                              DataContext="{TemplateBinding Content}" 
                               HorizontalAlignment="Stretch"
                               VerticalAlignment="Stretch" />
           </Grid>
@@ -53,7 +51,6 @@
                               Grid.Column="1"
                               IsVisible="{TemplateBinding IsExpanded}"
                               Content="{TemplateBinding Content}"
-                              DataContext="{TemplateBinding Content}" 
                               HorizontalAlignment="Stretch"
                               VerticalAlignment="Stretch" />
           </Grid>
@@ -71,7 +68,6 @@
                               Grid.Column="0"
                               IsVisible="{TemplateBinding IsExpanded}"
                               Content="{TemplateBinding Content}"
-                              DataContext="{TemplateBinding Content}" 
                               HorizontalAlignment="Stretch"
                               VerticalAlignment="Stretch" />
           </Grid>
