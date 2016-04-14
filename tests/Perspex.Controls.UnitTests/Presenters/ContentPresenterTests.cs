@@ -130,6 +130,28 @@ namespace Perspex.Controls.UnitTests.Presenters
             Assert.IsType<Decorator>(target.Child);
         }
 
+        [Fact]
+        public void Assigning_Control_To_Content_Should_Not_Set_DataContext()
+        {
+            var target = new ContentPresenter
+            {
+                Content = new Border(),
+            };
+
+            Assert.False(target.IsSet(Control.DataContextProperty));
+        }
+
+        [Fact]
+        public void Assigning_NonControl_To_Content_Should_Set_DataContext()
+        {
+            var target = new ContentPresenter
+            {
+                Content = "foo",
+            };
+
+            Assert.Equal("foo", target.DataContext);
+        }
+
         private class TestContentControl : TemplatedControl
         {
             public IControl Child { get; set; }
