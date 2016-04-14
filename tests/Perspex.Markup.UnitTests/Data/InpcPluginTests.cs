@@ -19,7 +19,11 @@ namespace Perspex.Markup.UnitTests.Data
             public int NoValidationTest
             {
                 get { return noValidationTest; }
-                set { noValidationTest = value; NotifyPropertyChanged(); }
+                set
+                {
+                    noValidationTest = value;
+                    NotifyPropertyChanged();
+                }
             }
 
             public bool HasErrors
@@ -79,7 +83,7 @@ namespace Perspex.Markup.UnitTests.Data
             var plugin = new InpcPropertyAccessorPlugin();
             var source = new InpcTest { NoValidationTest = 0 };
             var changeFired = false;
-            plugin.Start(new WeakReference(source), nameof(InpcTest.NoValidationTest), _ => changeFired = true, _ => { });
+            var accessor = plugin.Start(new WeakReference(source), nameof(InpcTest.NoValidationTest), _ => changeFired = true, _ => { });
             source.NoValidationTest = 1;
 
             Assert.True(changeFired);
