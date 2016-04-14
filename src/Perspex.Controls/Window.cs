@@ -325,6 +325,7 @@ namespace Perspex.Controls
         }
     }
 }
+
 namespace Perspex
 {
     public static class WindowApplicationExtensions
