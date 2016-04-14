@@ -16,8 +16,8 @@ namespace Perspex.Markup.Xaml.UnitTests.Xaml
             {
                 var xaml = @"
 <Window xmlns='https://github.com/perspex'
-             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
-             xmlns:local='clr-namespace:Perspex.Markup.Xaml.UnitTests.Xaml;assembly=Perspex.Markup.Xaml.UnitTests'>
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Perspex.Markup.Xaml.UnitTests.Xaml;assembly=Perspex.Markup.Xaml.UnitTests'>
     <Button Name='button' Content='{Binding Foo}'/>
 </Window>";
                 var loader = new PerspexXamlLoader();
@@ -38,8 +38,8 @@ namespace Perspex.Markup.Xaml.UnitTests.Xaml
             {
                 var xaml = @"
 <Window xmlns='https://github.com/perspex'
-             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
-             xmlns:local='clr-namespace:Perspex.Markup.Xaml.UnitTests.Xaml;assembly=Perspex.Markup.Xaml.UnitTests'>
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Perspex.Markup.Xaml.UnitTests.Xaml;assembly=Perspex.Markup.Xaml.UnitTests'>
     <Button Name='button'>
         <Button.Content>
             <Binding Path='Foo'/>
@@ -64,8 +64,8 @@ namespace Perspex.Markup.Xaml.UnitTests.Xaml
             {
                 var xaml = @"
 <Window xmlns='https://github.com/perspex'
-             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
-             xmlns:local='clr-namespace:Perspex.Markup.Xaml.UnitTests.Xaml;assembly=Perspex.Markup.Xaml.UnitTests'>
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Perspex.Markup.Xaml.UnitTests.Xaml;assembly=Perspex.Markup.Xaml.UnitTests'>
     <Button Name='button' Content='Foo'>
         <Button.Tag>
             <local:NonControl Control='{Binding #button}'/>
@@ -87,8 +87,8 @@ namespace Perspex.Markup.Xaml.UnitTests.Xaml
             {
                 var xaml = @"
 <Window xmlns='https://github.com/perspex'
-             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
-             xmlns:local='clr-namespace:Perspex.Markup.Xaml.UnitTests.Xaml;assembly=Perspex.Markup.Xaml.UnitTests'>
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Perspex.Markup.Xaml.UnitTests.Xaml;assembly=Perspex.Markup.Xaml.UnitTests'>
     <Button Name='button'>
         <Button.Tag>
             <local:NonControl String='{Binding Foo}'/>
@@ -112,8 +112,8 @@ namespace Perspex.Markup.Xaml.UnitTests.Xaml
             {
                 var xaml = @"
 <Window xmlns='https://github.com/perspex'
-             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
-             Title='{Binding Foo}'>
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        Title='{Binding Foo}'>
 </Window>";
                 var loader = new PerspexXamlLoader();
                 var window = (Window)loader.Load(xaml);
@@ -122,6 +122,27 @@ namespace Perspex.Markup.Xaml.UnitTests.Xaml
                 window.ApplyTemplate();
 
                 Assert.Equal("foo", window.Title);
+            }
+        }
+
+        [Fact]
+        public void Binding_DataContext_To_Inherited_DataContext_Works()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/perspex'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Border DataContext='{Binding Foo}'/>
+</Window>";
+                var loader = new PerspexXamlLoader();
+                var window = (Window)loader.Load(xaml);
+                var border = (Border)window.Content;
+
+                window.DataContext = new { Foo = "foo" };
+                window.ApplyTemplate();
+
+                Assert.Equal("foo", border.DataContext);
             }
         }
     }
