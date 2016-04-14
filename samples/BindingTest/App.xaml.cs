@@ -13,30 +13,20 @@ namespace BindingTest
         public App()
         {
             RegisterServices();
-            InitializeSubsystems((int)Environment.OSVersion.Platform);
-            InitializeComponent();
-            InitializeLogging();
-        }
-
-        public static void AttachDevTools(Window window)
-        {
-            DevTools.Attach(window);
         }
 
         private static void Main()
         {
-            var app = new App();
-            var window = new MainWindow();
-            window.Show();
-            app.Run(window);
+			InitializeLogging();
+
+			new App()
+				.UseWin32Subsystem()
+				.UseDirect2D()
+				.LoadFromXaml()
+				.RunWithMainWindow<MainWindow>();
         }
 
-        private void InitializeComponent()
-        {
-            PerspexXamlLoader.Load(this);
-        }
-
-        private void InitializeLogging()
+		private static void InitializeLogging()
         {
 #if DEBUG
             SerilogLogger.Initialize(new LoggerConfiguration()

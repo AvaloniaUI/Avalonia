@@ -187,3 +187,15 @@ namespace Perspex.Markup.Xaml
         }
     }
 }
+
+namespace Perspex
+{
+	public static class XamlObjectExtensions
+	{
+		public static ObjectT LoadFromXaml<ObjectT>(this ObjectT obj)
+		{
+			Markup.Xaml.PerspexXamlLoader.Load(obj);
+			return obj;
+		}
+	}
+}

@@ -103,6 +103,7 @@
     <Compile Include="Pages\SliderPage.xaml.cs">
       <DependentUpon>SliderPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

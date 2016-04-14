@@ -1,4 +1,5 @@
 ﻿using BindingTest.ViewModels;
+using Perspex;
 using Perspex.Controls;
 using Perspex.Markup.Xaml;
 
@@ -10,12 +11,12 @@ namespace BindingTest
         {
             this.InitializeComponent();
             this.DataContext = new MainWindowViewModel();
-            App.AttachDevTools(this);
+			this.AttachDevTools();
         }
 
         private void InitializeComponent()
         {
-            PerspexXamlLoader.Load(this);
+			this.LoadFromXaml();
         }
     }
 }

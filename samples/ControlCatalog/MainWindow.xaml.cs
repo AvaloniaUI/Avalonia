@@ -1,4 +1,5 @@
-﻿using Perspex.Controls;
+﻿using Perspex;
+using Perspex.Controls;
 using Perspex.Markup.Xaml;
 
 namespace ControlCatalog
@@ -8,12 +9,12 @@ namespace ControlCatalog
         public MainWindow()
         {
             this.InitializeComponent();
-            App.AttachDevTools(this);
+			this.AttachDevTools();
         }
 
         private void InitializeComponent()
         {
-            PerspexXamlLoader.Load(this);
+			this.LoadFromXaml();
         }
     }
 }
