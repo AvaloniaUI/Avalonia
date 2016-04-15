@@ -325,3 +325,16 @@ namespace Perspex.Controls
         }
     }
 }
+
+namespace Perspex
+{
+    public static class WindowApplicationExtensions
+    {
+        public static void RunWithMainWindow<TWindow>(this Application app) where TWindow : Perspex.Controls.Window, new()
+        {
+            var window = new TWindow();
+            window.Show();
+            app.Run(window);
+        }
+    }
+}

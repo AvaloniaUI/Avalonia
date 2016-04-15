@@ -9,58 +9,14 @@ using Serilog;
 
 namespace ControlCatalog
 {
+    // Eventually we should move this into a PCL library so we can access
+    // from mobile platforms
+    //
     class App : Application
     {
         public App()
         {
             RegisterServices();
-            InitializeSubsystems(GetPlatformId());
-            InitializeLogging();
-            InitializeComponent();
-        }
-
-        public static void AttachDevTools(Window window)
-        {
-#if DEBUG
-            DevTools.Attach(window);
-#endif
-        }
-
-        static void Main(string[] args)
-        {
-            var app = new App();
-            var window = new MainWindow();
-            window.Show();
-            app.Run(window);
-        }
-
-        private void InitializeComponent()
-        {
-            PerspexXamlLoader.Load(this);
-        }
-
-        private void InitializeLogging()
-        {
-#if DEBUG
-            SerilogLogger.Initialize(new LoggerConfiguration()
-                .MinimumLevel.Warning()
-                .WriteTo.Trace(outputTemplate: "{Area}: {Message}")
-                .CreateLogger());
-#endif
-        }
-
-        private int GetPlatformId()
-        {
-            var args = Environment.GetCommandLineArgs();
-
-            if (args.Contains("--gtk"))
-            {
-                return (int)PlatformID.Unix;
-            }
-            else
-            {
-                return (int)Environment.OSVersion.Platform;
-            }
         }
     }
 }

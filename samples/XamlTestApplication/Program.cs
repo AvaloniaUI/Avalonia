@@ -1,39 +1,39 @@
 ﻿// Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using System;
+using System.Linq;
 using System.Diagnostics;
 using System.Windows.Threading;
 using Perspex;
-using Perspex.Collections;
-using Perspex.Controls;
-using Perspex.Controls.Templates;
-using ReactiveUI;
-using XamlTestApplication.Views;
+using Serilog;
+using Perspex.Logging.Serilog;
 
 namespace XamlTestApplication
 {
     internal class Program
     {
-        private static void Main()
+        private static void Main(string[] args)
         {
-            var sw = new Stopwatch();
-            sw.Start();
-
+            // this sucks. Can we fix this? Do we even need it anymore?
             var foo = Dispatcher.CurrentDispatcher;
 
-            App application = new App
-            {
+            InitializeLogging();
 
-            };
+            new XamlTestApp()
+                   .UseWin32()
+                   .UseDirect2D()
+                   .LoadFromXaml()
+                   .RunWithMainWindow<Views.MainWindow>();
+        }
 
-            var window = new MainWindow();
-            window.Show();
-
-            sw.Stop();
-            Debug.WriteLine($"Startup: {sw.ElapsedMilliseconds}ms");
-
-            Application.Current.Run(window);
+        private static void InitializeLogging()
+        {
+#if DEBUG
+            SerilogLogger.Initialize(new LoggerConfiguration()
+                .MinimumLevel.Warning()
+                .WriteTo.Trace(outputTemplate: "{Area}: {Message}")
+                .CreateLogger());
+#endif
         }
     }
 }
