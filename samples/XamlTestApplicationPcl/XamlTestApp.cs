@@ -1,23 +1,14 @@
 ﻿using Perspex;
 using Perspex.Markup.Xaml;
+using XamlTestApplication.Views;
 
 namespace XamlTestApplication
 {
-    public abstract class XamlTestApp : Application
+    public class XamlTestApp : Application
     {
-        protected abstract void RegisterPlatform();
-
         public XamlTestApp()
         {
             RegisterServices();
-            RegisterPlatform();
-            InitializeComponent();
-        }
-
-        private void InitializeComponent()
-        {
-            var loader = new PerspexXamlLoader();
-            loader.Load(typeof(XamlTestApp), this);
         }
     }
 }

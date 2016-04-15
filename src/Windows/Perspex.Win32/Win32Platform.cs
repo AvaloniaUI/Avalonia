@@ -16,6 +16,18 @@ using Perspex.Shared.PlatformSupport;
 using Perspex.Win32.Input;
 using Perspex.Win32.Interop;
 
+namespace Perspex
+{
+    public static class Win32ApplicationExtensions
+    {
+        public static TApp UseWin32<TApp>(this TApp app) where TApp : Application
+        {
+            Perspex.Win32.Win32Platform.Initialize();
+            return app;
+        }
+    }
+}
+
 namespace Perspex.Win32
 {
     public class Win32Platform : IPlatformThreadingInterface, IPlatformSettings, IWindowingPlatform

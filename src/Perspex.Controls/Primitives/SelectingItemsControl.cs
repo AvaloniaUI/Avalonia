@@ -107,7 +107,9 @@ namespace Perspex.Controls.Primitives
         private IList _selectedItems;
         private bool _ignoreContainerSelectionChanged;
         private bool _syncingSelectedItems;
-        private IList _clearSelectedItemsAfterDataContextChanged;
+        private int _updateCount;
+        private int _updateSelectedIndex;
+        private IList _updateSelectedItems;
 
         /// <summary>
         /// Initializes static members of the <see cref="SelectingItemsControl"/> class.
@@ -115,13 +117,6 @@ namespace Perspex.Controls.Primitives
         static SelectingItemsControl()
         {
             IsSelectedChangedEvent.AddClassHandler<SelectingItemsControl>(x => x.ContainerSelectionChanged);
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SelectingItemsControl"/> class.
-        /// </summary>
-        public SelectingItemsControl()
-        {
         }
 
         /// <summary>
@@ -145,7 +140,6 @@ namespace Perspex.Controls.Primitives
         /// <summary>
         /// Gets or sets the index of the selected item.
         /// </summary>
-        [DependsOn(nameof(Items))]
         public int SelectedIndex
         {
             get
@@ -155,14 +149,22 @@ namespace Perspex.Controls.Primitives
 
             set
             {
-                var old = SelectedIndex;
-                var effective = (value >= 0 && value < Items?.Cast<object>().Count()) ? value : -1;
-
-                if (old != effective)
+                if (_updateCount == 0)
                 {
-                    _selectedIndex = effective;
-                    RaisePropertyChanged(SelectedIndexProperty, old, effective, BindingPriority.LocalValue);
-                    SelectedItem = ElementAt(Items, effective);
+                    var old = SelectedIndex;
+                    var effective = (value >= 0 && value < Items?.Cast<object>().Count()) ? value : -1;
+
+                    if (old != effective)
+                    {
+                        _selectedIndex = effective;
+                        RaisePropertyChanged(SelectedIndexProperty, old, effective, BindingPriority.LocalValue);
+                        SelectedItem = ElementAt(Items, effective);
+                    }
+                }
+                else
+                {
+                    _updateSelectedIndex = value;
+                    _updateSelectedItems = null;
                 }
             }
         }
@@ -170,7 +172,6 @@ namespace Perspex.Controls.Primitives
         /// <summary>
         /// Gets or sets the selected item.
         /// </summary>
-        [DependsOn(nameof(Items))]
         public object SelectedItem
         {
             get
@@ -180,44 +181,38 @@ namespace Perspex.Controls.Primitives
 
             set
             {
-                var old = SelectedItem;
-                var index = IndexOf(Items, value);
-                var effective = index != -1 ? value : null;
-
-                if (!object.Equals(effective, old))
+                if (_updateCount == 0)
                 {
-                    _selectedItem = effective;
-                    RaisePropertyChanged(SelectedItemProperty, old, effective, BindingPriority.LocalValue);
-                    SelectedIndex = index;
+                    var old = SelectedItem;
+                    var index = IndexOf(Items, value);
+                    var effective = index != -1 ? value : null;
 
-                    if (effective != null)
+                    if (!object.Equals(effective, old))
                     {
-                        if (SelectedItems.Count != 1 || SelectedItems[0] != effective)
+                        _selectedItem = effective;
+                        RaisePropertyChanged(SelectedItemProperty, old, effective, BindingPriority.LocalValue);
+                        SelectedIndex = index;
+
+                        if (effective != null)
                         {
-                            _syncingSelectedItems = true;
+                            if (SelectedItems.Count != 1 || SelectedItems[0] != effective)
+                            {
+                                _syncingSelectedItems = true;
+                                SelectedItems.Clear();
+                                SelectedItems.Add(effective);
+                                _syncingSelectedItems = false;
+                            }
+                        }
+                        else if (SelectedItems.Count > 0)
+                        {
                             SelectedItems.Clear();
-                            SelectedItems.Add(effective);
-                            _syncingSelectedItems = false;
                         }
                     }
-                    else if (SelectedItems.Count > 0)
-                    {
-                        if (!IsDataContextChanging)
-                        {
-                            SelectedItems.Clear();
-                        }
-                        else
-                        {
-                            // The DataContext is changing, and it's quite possible that our 
-                            // selection is being cleared because both Items and SelectedItems
-                            // are bound to something on the DataContext. However, if we clear
-                            // the collection now, we may be clearing a the SelectedItems from
-                            // the DataContext which is being unbound, so do it after DataContext
-                            // has notified all interested parties, in 
-                            // the OnDataContextFinishedChanging method.
-                            _clearSelectedItemsAfterDataContextChanged = SelectedItems;
-                        }
-                    }
+                }
+                else
+                {
+                    _updateSelectedItems = new PerspexList<object>(value);
+                    _updateSelectedIndex = int.MinValue;
                 }
             }
         }
@@ -240,6 +235,12 @@ namespace Perspex.Controls.Primitives
 
             set
             {
+                if (value?.IsFixedSize == true || value?.IsReadOnly == true)
+                {
+                    throw new NotSupportedException(
+                        "Cannot use a fixed size or read-only collection as SelectedItems.");
+                }
+
                 UnsubscribeFromSelectedItems();
                 _selectedItems = value ?? new PerspexList<object>();
                 SubscribeToSelectedItems();
@@ -260,6 +261,25 @@ namespace Perspex.Controls.Primitives
         /// </summary>
         protected bool AlwaysSelected => (SelectionMode & SelectionMode.AlwaysSelected) != 0;
 
+        /// <inheritdoc/>
+        public override void BeginInit()
+        {
+            base.BeginInit();
+            ++_updateCount;
+            _updateSelectedIndex = int.MinValue;
+        }
+
+        /// <inheritdoc/>
+        public override void EndInit()
+        {
+            base.EndInit();
+
+            if (--_updateCount == 0)
+            {
+                UpdateFinished();
+            }
+        }
+
         /// <summary>
         /// Tries to get the container that was the source of an event.
         /// </summary>
@@ -279,13 +299,16 @@ namespace Perspex.Controls.Primitives
         {
             base.ItemsChanged(e);
 
-            if (SelectedIndex != -1)
+            if (_updateCount == 0)
             {
-                SelectedIndex = IndexOf((IEnumerable)e.NewValue, SelectedItem);
-            }
-            else if (AlwaysSelected && Items != null && Items.Cast<object>().Any())
-            {
-                SelectedIndex = 0;
+                if (SelectedIndex != -1)
+                {
+                    SelectedIndex = IndexOf((IEnumerable)e.NewValue, SelectedItem);
+                }
+                else if (AlwaysSelected && Items != null && Items.Cast<object>().Any())
+                {
+                    SelectedIndex = 0;
+                }
             }
         }
 
@@ -355,14 +378,21 @@ namespace Perspex.Controls.Primitives
         }
 
         /// <inheritdoc/>
+        protected override void OnDataContextChanging()
+        {
+            base.OnDataContextChanging();
+            ++_updateCount;
+        }
+
+        /// <inheritdoc/>
         protected override void OnDataContextChanged()
         {
-            if (_clearSelectedItemsAfterDataContextChanged == SelectedItems)
-            {
-                _clearSelectedItemsAfterDataContextChanged.Clear();
-            }
+            base.OnDataContextChanged();
 
-            _clearSelectedItemsAfterDataContextChanged = null;
+            if (--_updateCount == 0)
+            {
+                UpdateFinished();
+            }
         }
 
         /// <summary>
@@ -695,6 +725,7 @@ namespace Perspex.Controls.Primitives
 
                     if (SelectedItems.Count > 0)
                     {
+                        _selectedItem = null;
                         SelectedItemsAdded(SelectedItems);
                         added = SelectedItems;
                     }
@@ -798,6 +829,18 @@ namespace Perspex.Controls.Primitives
             if (incc != null)
             {
                 incc.CollectionChanged -= SelectedItemsCollectionChanged;
+            }
+        }
+
+        private void UpdateFinished()
+        {
+            if (_updateSelectedIndex != int.MinValue)
+            {
+                SelectedIndex = _updateSelectedIndex;
+            }
+            else if (_updateSelectedItems != null)
+            {
+                SelectedItems = _updateSelectedItems;
             }
         }
     }

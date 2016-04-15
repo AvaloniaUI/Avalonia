@@ -17,6 +17,22 @@ namespace Perspex.Markup.Xaml.Data
     public class Binding : IBinding
     {
         /// <summary>
+        /// Initializes a new instance of the <see cref="Binding"/> class.
+        /// </summary>
+        public Binding()
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Binding"/> class.
+        /// </summary>
+        /// <param name="path">The binding path.</param>
+        public Binding(string path)
+        {
+            Path = path;
+        }
+
+        /// <summary>
         /// Gets or sets the <see cref="IValueConverter"/> to use.
         /// </summary>
         public IValueConverter Converter { get; set; }

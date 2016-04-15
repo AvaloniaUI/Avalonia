@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Reactive.Linq;
 using Perspex.Controls.Primitives;
 using Perspex.Controls.Templates;
 using Perspex.Layout;
@@ -81,6 +82,17 @@ namespace Perspex.Controls.Presenters
         {
             ContentProperty.Changed.AddClassHandler<ContentPresenter>(x => x.ContentChanged);
             TemplatedParentProperty.Changed.AddClassHandler<ContentPresenter>(x => x.TemplatedParentChanged);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ContentPresenter"/> class.
+        /// </summary>
+        public ContentPresenter()
+        {
+            var dataContext = this.GetObservable(ContentProperty)
+                .Select(x => x is IControl ? PerspexProperty.UnsetValue : x);
+
+            Bind(Control.DataContextProperty, dataContext);
         }
 
         /// <summary>

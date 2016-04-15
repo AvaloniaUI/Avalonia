@@ -13,9 +13,20 @@ using Perspex.Markup.Xaml;
 using Perspex.VisualTree;
 using ReactiveUI;
 
+namespace Perspex
+{
+	public static class WindowExtensions
+	{
+		public static void AttachDevTools(this Window window)
+		{
+			Perspex.Diagnostics.DevTools.Attach(window);
+		}
+	}
+}
+
 namespace Perspex.Diagnostics
 {
-    public class DevTools : UserControl
+	public class DevTools : UserControl
     {
         private static Dictionary<Window, Window> s_open = new Dictionary<Window, Window>();
         private IDisposable _keySubscription;

@@ -13,7 +13,6 @@
                               BorderBrush="{TemplateBinding BorderBrush}"
                               BorderThickness="{TemplateBinding BorderThickness}"
                               Content="{TemplateBinding Header}"
-                              DataContext="{TemplateBinding Header}" 
                               Padding="{TemplateBinding Padding}"
                               TemplatedControl.IsTemplateFocusTarget="True"
                               Grid.Column="1"/>

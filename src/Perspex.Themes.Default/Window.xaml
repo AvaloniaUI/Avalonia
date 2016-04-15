@@ -6,10 +6,7 @@
     <ControlTemplate>
       <Border Background="{TemplateBinding Background}">
         <AdornerDecorator>
-          <ContentPresenter Name="PART_ContentPresenter" 
-                            Content="{TemplateBinding Content}"
-                            DataContext="{TemplateBinding Content}" 
-                            Margin="{TemplateBinding Padding}"/>
+          <ContentPresenter Name="PART_ContentPresenter" Content="{TemplateBinding Content}" Margin="{TemplateBinding Padding}"/>
         </AdornerDecorator>
       </Border>
     </ControlTemplate>
