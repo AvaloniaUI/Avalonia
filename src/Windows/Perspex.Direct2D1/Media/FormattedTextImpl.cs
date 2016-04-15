@@ -22,19 +22,20 @@ namespace Perspex.Direct2D1.Media
         {
             var factory = PerspexLocator.Current.GetService<DWrite.Factory>();
 
-            var format = new DWrite.TextFormat(
+            using (var format = new DWrite.TextFormat(
                 factory,
                 fontFamily,
                 (DWrite.FontWeight)fontWeight,
                 (DWrite.FontStyle)fontStyle,
-                (float)fontSize);
-
-            TextLayout = new DWrite.TextLayout(
-                factory,
-                text ?? string.Empty,
-                format,
-                float.MaxValue,
-                float.MaxValue);
+                (float)fontSize))
+            {
+                TextLayout = new DWrite.TextLayout(
+                    factory,
+                    text ?? string.Empty,
+                    format,
+                    float.MaxValue,
+                    float.MaxValue);
+            }
 
             TextLayout.TextAlignment = textAlignment.ToDirect2D();
         }
