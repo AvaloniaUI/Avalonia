@@ -7,5 +7,5 @@ using Serilog;
 
 namespace XamlTestApplication
 {
-	// No longer needed!
+    // No longer needed!
 }

@@ -17,16 +17,16 @@ namespace BindingTest
 
         private static void Main()
         {
-			InitializeLogging();
+            InitializeLogging();
 
-			new App()
-				.UseWin32Subsystem()
-				.UseDirect2D()
-				.LoadFromXaml()
-				.RunWithMainWindow<MainWindow>();
+            new App()
+                .UseWin32()
+                .UseDirect2D()
+                .LoadFromXaml()
+                .RunWithMainWindow<MainWindow>();
         }
 
-		private static void InitializeLogging()
+        private static void InitializeLogging()
         {
 #if DEBUG
             SerilogLogger.Initialize(new LoggerConfiguration()

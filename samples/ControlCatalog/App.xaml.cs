@@ -9,14 +9,14 @@ using Serilog;
 
 namespace ControlCatalog
 {
-	// Eventually we should move this into a PCL library so we can access
-	// from mobile platforms
-	//
+    // Eventually we should move this into a PCL library so we can access
+    // from mobile platforms
+    //
     class App : Application
     {
         public App()
         {
             RegisterServices();
         }
-	}
+    }
 }

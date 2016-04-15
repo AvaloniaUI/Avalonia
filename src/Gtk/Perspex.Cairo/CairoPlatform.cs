@@ -9,14 +9,14 @@ using Perspex.Platform;
 
 namespace Perspex
 {
-	public static class GtkApplicationExtensions
-	{
-		public static AppT UseCairo<AppT>(this AppT app) where AppT : Application
-		{
-			Perspex.Cairo.CairoPlatform.Initialize();
-			return app;
-		}
-	}
+    public static class GtkApplicationExtensions
+    {
+        public static TApp UseCairo<TApp>(this TApp app) where TApp : Application
+        {
+            Perspex.Cairo.CairoPlatform.Initialize();
+            return app;
+        }
+    }
 }
 
 namespace Perspex.Cairo

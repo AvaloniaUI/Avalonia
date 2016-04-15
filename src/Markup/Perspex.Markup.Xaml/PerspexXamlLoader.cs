@@ -190,12 +190,12 @@ namespace Perspex.Markup.Xaml
 
 namespace Perspex
 {
-	public static class XamlObjectExtensions
-	{
-		public static ObjectT LoadFromXaml<ObjectT>(this ObjectT obj)
-		{
-			Markup.Xaml.PerspexXamlLoader.Load(obj);
-			return obj;
-		}
-	}
+    public static class XamlObjectExtensions
+    {
+        public static TObject LoadFromXaml<TObject>(this TObject obj)
+        {
+            Markup.Xaml.PerspexXamlLoader.Load(obj);
+            return obj;
+        }
+    }
 }

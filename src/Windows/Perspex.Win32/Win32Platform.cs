@@ -18,14 +18,14 @@ using Perspex.Win32.Interop;
 
 namespace Perspex
 {
-	public static class Win32ApplicationExtensions
-	{
-		public static AppT UseWin32Subsystem<AppT>(this AppT app) where AppT : Application
-		{
-			Perspex.Win32.Win32Platform.Initialize();
-			return app;
-		}
-	}
+    public static class Win32ApplicationExtensions
+    {
+        public static TApp UseWin32<TApp>(this TApp app) where TApp : Application
+        {
+            Perspex.Win32.Win32Platform.Initialize();
+            return app;
+        }
+    }
 }
 
 namespace Perspex.Win32

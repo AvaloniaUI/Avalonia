@@ -10,5 +10,5 @@ namespace XamlTestApplication
         {
             RegisterServices();
         }
-	}
+    }
 }

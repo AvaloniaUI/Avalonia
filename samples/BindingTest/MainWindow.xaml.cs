@@ -11,12 +11,12 @@ namespace BindingTest
         {
             this.InitializeComponent();
             this.DataContext = new MainWindowViewModel();
-			this.AttachDevTools();
+            this.AttachDevTools();
         }
 
         private void InitializeComponent()
         {
-			this.LoadFromXaml();
+            this.LoadFromXaml();
         }
     }
 }

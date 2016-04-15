@@ -330,9 +330,9 @@ namespace Perspex
 {
     public static class WindowApplicationExtensions
     {
-        public static void RunWithMainWindow<WindowT>(this Application app) where WindowT : Perspex.Controls.Window, new()
+        public static void RunWithMainWindow<TWindow>(this Application app) where TWindow : Perspex.Controls.Window, new()
         {
-            var window = new WindowT();
+            var window = new TWindow();
             window.Show();
             app.Run(window);
         }

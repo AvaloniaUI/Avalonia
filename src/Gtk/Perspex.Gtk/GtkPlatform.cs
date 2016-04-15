@@ -12,14 +12,14 @@ using Perspex.Shared.PlatformSupport;
 
 namespace Perspex
 {
-	public static class GtkApplicationExtensions
-	{
-		public static AppT UseGtkSubsystem<AppT>(this AppT app) where AppT : Application
-		{
-			Perspex.Gtk.GtkPlatform.Initialize();
-			return app;
-		}
-	}
+    public static class GtkApplicationExtensions
+    {
+        public static TApp UseGtk<TApp>(this TApp app) where TApp : Application
+        {
+            Perspex.Gtk.GtkPlatform.Initialize();
+            return app;
+        }
+    }
 }
 
 namespace Perspex.Gtk

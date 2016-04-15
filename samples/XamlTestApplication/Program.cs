@@ -14,26 +14,26 @@ namespace XamlTestApplication
     {
         private static void Main(string[] args)
         {
-			// this sucks. Can we fix this? Do we even need it anymore?
+            // this sucks. Can we fix this? Do we even need it anymore?
             var foo = Dispatcher.CurrentDispatcher;
 
-			InitializeLogging();
+            InitializeLogging();
 
-			 new XamlTestApp()
-					.UseWin32Subsystem()
-					.UseDirect2D()
-					.LoadFromXaml()
-					.RunWithMainWindow<Views.MainWindow>();
+            new XamlTestApp()
+                   .UseWin32()
+                   .UseDirect2D()
+                   .LoadFromXaml()
+                   .RunWithMainWindow<Views.MainWindow>();
         }
 
-		private static void InitializeLogging()
-		{
+        private static void InitializeLogging()
+        {
 #if DEBUG
-			SerilogLogger.Initialize(new LoggerConfiguration()
-				.MinimumLevel.Warning()
-				.WriteTo.Trace(outputTemplate: "{Area}: {Message}")
-				.CreateLogger());
+            SerilogLogger.Initialize(new LoggerConfiguration()
+                .MinimumLevel.Warning()
+                .WriteTo.Trace(outputTemplate: "{Area}: {Message}")
+                .CreateLogger());
 #endif
-		}
-	}
+        }
+    }
 }

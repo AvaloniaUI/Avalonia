@@ -9,12 +9,12 @@ namespace ControlCatalog
         public MainWindow()
         {
             this.InitializeComponent();
-			this.AttachDevTools();
+            this.AttachDevTools();
         }
 
         private void InitializeComponent()
         {
-			this.LoadFromXaml();
+            this.LoadFromXaml();
         }
     }
 }

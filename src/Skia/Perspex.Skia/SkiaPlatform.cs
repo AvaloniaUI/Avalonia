@@ -5,14 +5,14 @@ using Perspex.Platform;
 
 namespace Perspex
 {
-	public static class SkiaApplicationExtensions
-	{
-		public static AppT UseSkia<AppT>(this AppT app) where AppT : Application
-		{
-			Perspex.Skia.SkiaPlatform.Initialize();
-			return app;
-		}
-	}
+    public static class SkiaApplicationExtensions
+    {
+        public static TApp UseSkia<TApp>(this TApp app) where TApp : Application
+        {
+            Perspex.Skia.SkiaPlatform.Initialize();
+            return app;
+        }
+    }
 }
 
 namespace Perspex.Skia
@@ -21,7 +21,7 @@ namespace Perspex.Skia
     {
         private static bool s_forceSoftwareRendering;
 
-        public static void Initialize() 
+        public static void Initialize()
             => PerspexLocator.CurrentMutable.Bind<IPlatformRenderInterface>().ToConstant(new PlatformRenderInterface());
 
         public static bool ForceSoftwareRendering
