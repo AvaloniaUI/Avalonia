@@ -73,6 +73,9 @@
     <Compile Include="Pages\MenuPage.xaml.cs">
       <DependentUpon>MenuPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Pages\TabControlPage.xaml.cs">
+      <DependentUpon>TabControlPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Pages\ToolTipPage.xaml.cs">
       <DependentUpon>ToolTipPage.xaml</DependentUpon>
     </Compile>
@@ -264,6 +267,11 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Pages\ImagePage.xaml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Pages\TabControlPage.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>

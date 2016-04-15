@@ -1,0 +1,23 @@
+﻿<UserControl xmlns="https://github.com/perspex">
+  <StackPanel Orientation="Vertical" Gap="4">
+    <TextBlock Classes="h1">TabControl</TextBlock>
+    <TextBlock Classes="h2">A tab control that displays a tab strip along with the content of the selected tab</TextBlock>
+
+    <StackPanel Orientation="Vertical"
+                Margin="0,16,0,0"
+                HorizontalAlignment="Center"
+                Gap="16">
+      <TabControl MinWidth="300">
+        <TabItem Header="Arch">
+          <Image Source="resm:ControlCatalog.Assets.delicate-arch-896885_640.jpg" Height="200"/>
+        </TabItem>
+        <TabItem Header="Deer">
+          <Image Source="resm:ControlCatalog.Assets.hirsch-899118_640.jpg" Height="200"/>
+        </TabItem>
+        <TabItem Header="Maple Leaf">
+          <Image Source="resm:ControlCatalog.Assets.maple-leaf-888807_640.jpg" Height="200"/>
+        </TabItem>
+      </TabControl>
+    </StackPanel>
+  </StackPanel>
+</UserControl>
