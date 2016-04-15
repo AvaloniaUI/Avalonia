@@ -5,18 +5,18 @@ BitmapImpl
 - Save
 
 DrawingContextImpl
-- DrawRoundRect is not properly implemented due to lack of support in Skia
+- DrawRoundRect is not properly implemented due to lack of support in SkiaSharp
 - Alpha support missing as SkiaSharp does not expose this
 - Gradient Shader caching?
 - TileBrushes
 - Pen Dash styles
 
 Formatted Text Rendering 
-- still needs a lot of work once SkiaSharp implementation is better
+- minor polish
 
 RenderTarget
 - Figure out a cleaner implementation across all platforms
-- HW accelerated working?
+- HW acceleration
 
 StreamGeometry
 - Paths within Paths may not work right
@@ -30,13 +30,12 @@ App Bootstrapping
 	- ie.    app.UseDirect2D()    (via platform specific extension methods)
 
 Android
-- Testing & fixes
+- Not tested at all yet
 
 iOS
-- Get GLView working again?
-
+- Get GLView working again. See HW above
 
 General
 - Cleanup/eliminate obsolete files
-- Cleanup the many Test Applications
+- Finish cleanup of the many Test Applications
 - Get Skia Unit Tests passing

@@ -110,12 +110,11 @@ namespace ControlCatalog
             {
                 app.UseWin32();
 
-                // not available until we do the SkiaSharp merge
-                //if (args.Contains("--skia") || DefaultRenderSystem() == RenderSystem.Skia)
-                //{
-                //	app.UseSkia();
-                //}
-                //else
+                if (args.Contains("--skia") || DefaultRenderSystem() == RenderSystem.Skia)
+                {
+                    app.UseSkia();
+                }
+                else
                 {
                     app.UseDirect2D();
                 }

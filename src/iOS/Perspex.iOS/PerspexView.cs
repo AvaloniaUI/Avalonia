@@ -168,7 +168,7 @@ namespace Perspex.iOS
                 var location = touch.LocationInView(this).ToPerspex();
 
                 Input?.Invoke(new RawMouseEventArgs(
-                    PerspexAppDelegate.MouseDevice,
+                    iOSPlatform.MouseDevice,
                     (uint) touch.Timestamp,
                     _inputRoot,
                     RawMouseEventType.LeftButtonUp,
@@ -185,10 +185,10 @@ namespace Perspex.iOS
             {
                 var location = touch.LocationInView(this).ToPerspex();
                 _touchLastPoint = location;
-                Input?.Invoke(new RawMouseEventArgs(PerspexAppDelegate.MouseDevice, (uint) touch.Timestamp, _inputRoot,
+                Input?.Invoke(new RawMouseEventArgs(iOSPlatform.MouseDevice, (uint) touch.Timestamp, _inputRoot,
                     RawMouseEventType.Move, location, InputModifiers.None));
 
-                Input?.Invoke(new RawMouseEventArgs(PerspexAppDelegate.MouseDevice, (uint) touch.Timestamp, _inputRoot,
+                Input?.Invoke(new RawMouseEventArgs(iOSPlatform.MouseDevice, (uint) touch.Timestamp, _inputRoot,
                     RawMouseEventType.LeftButtonDown, location, InputModifiers.None));
             }
         }
@@ -199,15 +199,15 @@ namespace Perspex.iOS
             if (touch != null)
             {
                 var location = touch.LocationInView(this).ToPerspex();
-                if (PerspexAppDelegate.MouseDevice.Captured != null)
-                    Input?.Invoke(new RawMouseEventArgs(PerspexAppDelegate.MouseDevice, (uint) touch.Timestamp, _inputRoot,
+                if (iOSPlatform.MouseDevice.Captured != null)
+                    Input?.Invoke(new RawMouseEventArgs(iOSPlatform.MouseDevice, (uint) touch.Timestamp, _inputRoot,
                         RawMouseEventType.Move, location, InputModifiers.LeftMouseButton));
                 else
                 {
                     //magic number based on test - correction of 0.02 is working perfect
                     double correction = 0.02;
 
-                    Input?.Invoke(new RawMouseWheelEventArgs(PerspexAppDelegate.MouseDevice, (uint)touch.Timestamp,
+                    Input?.Invoke(new RawMouseWheelEventArgs(iOSPlatform.MouseDevice, (uint)touch.Timestamp,
                         _inputRoot, location, (location - _touchLastPoint)* correction, InputModifiers.LeftMouseButton));
                 }
                 _touchLastPoint = location;

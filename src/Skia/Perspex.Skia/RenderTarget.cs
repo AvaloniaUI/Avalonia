@@ -17,174 +17,174 @@ using Perspex.Win32.Interop;
 
 namespace Perspex.Skia
 {
-	internal class RenderTarget : IRenderTarget
+    internal class RenderTarget : IRenderTarget
     {
-		public SKSurface Surface { get; protected set; }
+        public SKSurface Surface { get; protected set; }
 
-		//protected override void Delete(IntPtr handle) => MethodTable.Instance.DisposeRenderTarget(handle);
+        //protected override void Delete(IntPtr handle) => MethodTable.Instance.DisposeRenderTarget(handle);
 
-		public virtual DrawingContext CreateDrawingContext()
+        public virtual DrawingContext CreateDrawingContext()
         {
-			return
-				new DrawingContext(
-					new DrawingContextImpl(Surface.Canvas));	// MethodTable.Instance.RenderTargetCreateRenderingContext(Handle)));
+            return
+                new DrawingContext(
+                    new DrawingContextImpl(Surface.Canvas));	// MethodTable.Instance.RenderTargetCreateRenderingContext(Handle)));
         }
 
-		public void Dispose()
-		{
-			//throw new NotImplementedException();
-		}
-	}
+        public void Dispose()
+        {
+            //throw new NotImplementedException();
+        }
+    }
 
-	internal class WindowRenderTarget : RenderTarget
-	{
-		private readonly IntPtr _hwnd;
-		SKBitmap _bitmap;
+    internal class WindowRenderTarget : RenderTarget
+    {
+        private readonly IntPtr _hwnd;
+        SKBitmap _bitmap;
 
-		int Width { get; set; }
-		int Height { get; set; }
+        int Width { get; set; }
+        int Height { get; set; }
 
-		public WindowRenderTarget(IntPtr hwnd)
-		{
-			_hwnd = hwnd;
-			FixSize();
-		}
+        public WindowRenderTarget(IntPtr hwnd)
+        {
+            _hwnd = hwnd;
+            FixSize();
+        }
 
 #if __IOS__
-		private CGRect GetApplicationFrame()
-		{
-			// if we are excluding Status Bar then we use ApplicationFrame
-			// otherwise we use full screen bounds. Note that this must also match
-			// the Skia/PerspexView!!!
-			//
-			bool excludeStatusArea = false; // TODO: make this configurable later
-			if (excludeStatusArea)
-			{
-				return UIScreen.MainScreen.ApplicationFrame;
-			}
-			else
-			{
-				return UIScreen.MainScreen.Bounds;
-			}
-		}
+        private CGRect GetApplicationFrame()
+        {
+            // if we are excluding Status Bar then we use ApplicationFrame
+            // otherwise we use full screen bounds. Note that this must also match
+            // the Skia/PerspexView!!!
+            //
+            bool excludeStatusArea = false; // TODO: make this configurable later
+            if (excludeStatusArea)
+            {
+                return UIScreen.MainScreen.ApplicationFrame;
+            }
+            else
+            {
+                return UIScreen.MainScreen.Bounds;
+            }
+        }
 #endif
 
-		void FixSize()
-		{
-			int width, height;
-			GetPlatformWindowSize(_hwnd, out width, out height);
-			if (Width == width && Height == height)
-				return;
+        void FixSize()
+        {
+            int width, height;
+            GetPlatformWindowSize(_hwnd, out width, out height);
+            if (Width == width && Height == height)
+                return;
 
-			Width = width;
-			Height = height;
+            Width = width;
+            Height = height;
 
-			if(Surface != null)
-			{
-				Surface.Dispose();
-			}
+            if (Surface != null)
+            {
+                Surface.Dispose();
+            }
 
-			if(_bitmap != null)
-			{
-				_bitmap.Dispose();
-			}
+            if (_bitmap != null)
+            {
+                _bitmap.Dispose();
+            }
 
-			_bitmap = new SKBitmap(width, height, SKColorType.N_32, SKAlphaType.Premul);
+            _bitmap = new SKBitmap(width, height, SKColorType.N_32, SKAlphaType.Premul);
 
-			//bitmap.LockPixels();
-			IntPtr length;
-			var pixels = _bitmap.GetPixels(out length);
+            //bitmap.LockPixels();
+            IntPtr length;
+            var pixels = _bitmap.GetPixels(out length);
 
-			// Wrap the bitmap in a Surface and keep it cached
-			Surface = SKSurface.Create(_bitmap.Info, pixels, _bitmap.RowBytes);
-		}
+            // Wrap the bitmap in a Surface and keep it cached
+            Surface = SKSurface.Create(_bitmap.Info, pixels, _bitmap.RowBytes);
+        }
 
-		void GetPlatformWindowSize(IntPtr hwnd, out int w, out int h)
-		{
+        void GetPlatformWindowSize(IntPtr hwnd, out int w, out int h)
+        {
 #if __IOS__
-			var bounds = GetApplicationFrame();
-			w = (int) bounds.Width;
-			h = (int)bounds.Height;
+            var bounds = GetApplicationFrame();
+            w = (int)bounds.Width;
+            h = (int)bounds.Height;
 
 #elif WIN32
-			UnmanagedMethods.RECT rc;
-			UnmanagedMethods.GetClientRect(_hwnd, out rc);
-			w = rc.right - rc.left;
-			h = rc.bottom - rc.top;
+            UnmanagedMethods.RECT rc;
+            UnmanagedMethods.GetClientRect(_hwnd, out rc);
+            w = rc.right - rc.left;
+            h = rc.bottom - rc.top;
 #else
 			throw new NotImplementedException();
 #endif
-		}
+        }
 
-		public override DrawingContext CreateDrawingContext()
-		{
-			FixSize();
+        public override DrawingContext CreateDrawingContext()
+        {
+            FixSize();
 
-			var canvas = Surface.Canvas;
-			canvas.RestoreToCount(0);
-			canvas.Save();
+            var canvas = Surface.Canvas;
+            canvas.RestoreToCount(0);
+            canvas.Save();
 
 #if __IOS__
-			var screenScale = UIScreen.MainScreen.Scale;
-			canvas.Scale((float)screenScale, (float)screenScale);
+            var screenScale = UIScreen.MainScreen.Scale;
+            canvas.Scale((float)screenScale, (float)screenScale);
 #endif
 
-			canvas.Clear(SKColors.Red);
-			canvas.ResetMatrix();
+            canvas.Clear(SKColors.Red);
+            canvas.ResetMatrix();
 
-			return
-				new DrawingContext(
-					new WindowDrawingContextImpl(this));
-		}
+            return
+                new DrawingContext(
+                    new WindowDrawingContextImpl(this));
+        }
 
-		public void Present()
-		{
-			_bitmap.LockPixels();
-			IntPtr length;
-			var pixels = _bitmap.GetPixels(out length);
+        public void Present()
+        {
+            _bitmap.LockPixels();
+            IntPtr length;
+            var pixels = _bitmap.GetPixels(out length);
 
 #if __IOS__
-			const int bitmapInfo = ((int)CGBitmapFlags.ByteOrder32Big) | ((int)CGImageAlphaInfo.PremultipliedLast);
-			var bounds = GetApplicationFrame();
-			var statusBarOffset = UIScreen.MainScreen.Bounds.Height - bounds.Height;
+            const int bitmapInfo = ((int)CGBitmapFlags.ByteOrder32Big) | ((int)CGImageAlphaInfo.PremultipliedLast);
+            var bounds = GetApplicationFrame();
+            var statusBarOffset = UIScreen.MainScreen.Bounds.Height - bounds.Height;
 
-			using (var colorSpace = CGColorSpace.CreateDeviceRGB())
-			using (var bContext = new CGBitmapContext(pixels, _bitmap.Width, _bitmap.Height, 8, _bitmap.Width * 4, colorSpace, (CGImageAlphaInfo)bitmapInfo))
-			using (var image = bContext.ToImage())
-			using (var context = UIGraphics.GetCurrentContext())
-			{
-				// flip the image for CGContext.DrawImage
-				context.TranslateCTM(0, bounds.Height + statusBarOffset);
-				context.ScaleCTM(1, -1);
-				context.DrawImage(bounds, image);
-			}
+            using (var colorSpace = CGColorSpace.CreateDeviceRGB())
+            using (var bContext = new CGBitmapContext(pixels, _bitmap.Width, _bitmap.Height, 8, _bitmap.Width * 4, colorSpace, (CGImageAlphaInfo)bitmapInfo))
+            using (var image = bContext.ToImage())
+            using (var context = UIGraphics.GetCurrentContext())
+            {
+                // flip the image for CGContext.DrawImage
+                context.TranslateCTM(0, bounds.Height + statusBarOffset);
+                context.ScaleCTM(1, -1);
+                context.DrawImage(bounds, image);
+            }
 
 #elif WIN32
-			UnmanagedMethods.BITMAPINFO bmi = new UnmanagedMethods.BITMAPINFO();
-			bmi.biSize = UnmanagedMethods.SizeOf_BITMAPINFOHEADER;
-			bmi.biWidth = _bitmap.Width;
-			bmi.biHeight = -_bitmap.Height; // top-down image
-			bmi.biPlanes = 1;
-			bmi.biBitCount = 32;
-			bmi.biCompression = (uint)UnmanagedMethods.BitmapCompressionMode.BI_RGB;
-			bmi.biSizeImage = 0;
+            UnmanagedMethods.BITMAPINFO bmi = new UnmanagedMethods.BITMAPINFO();
+            bmi.biSize = UnmanagedMethods.SizeOf_BITMAPINFOHEADER;
+            bmi.biWidth = _bitmap.Width;
+            bmi.biHeight = -_bitmap.Height; // top-down image
+            bmi.biPlanes = 1;
+            bmi.biBitCount = 32;
+            bmi.biCompression = (uint)UnmanagedMethods.BitmapCompressionMode.BI_RGB;
+            bmi.biSizeImage = 0;
 
-			IntPtr hdc = UnmanagedMethods.GetDC(_hwnd);
+            IntPtr hdc = UnmanagedMethods.GetDC(_hwnd);
 
-			int ret = UnmanagedMethods.SetDIBitsToDevice(hdc,
-				0, 0,
-				(uint) _bitmap.Width, (uint) _bitmap.Height,
-				0, 0,
-				0, (uint) _bitmap.Height,
-				pixels,
-				ref bmi,
-				(uint)UnmanagedMethods.DIBColorTable.DIB_RGB_COLORS);
+            int ret = UnmanagedMethods.SetDIBitsToDevice(hdc,
+                0, 0,
+                (uint)_bitmap.Width, (uint)_bitmap.Height,
+                0, 0,
+                0, (uint)_bitmap.Height,
+                pixels,
+                ref bmi,
+                (uint)UnmanagedMethods.DIBColorTable.DIB_RGB_COLORS);
 
-			UnmanagedMethods.ReleaseDC(_hwnd, hdc);
+            UnmanagedMethods.ReleaseDC(_hwnd, hdc);
 #endif
 
-			_bitmap.UnlockPixels();
-		}
+            _bitmap.UnlockPixels();
+        }
 
-	}
+    }
 }

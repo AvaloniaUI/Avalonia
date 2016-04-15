@@ -26,66 +26,60 @@ using ReactiveUI;
 
 namespace Perspex.Skia.Desktop.TestApp
 {
-	internal class Program
-	{
-		private static void Main(string[] args)
-		{
-			// The version of ReactiveUI currently included is for WPF and so expects a WPF
-			// dispatcher. This makes sure it's initialized.
-			System.Windows.Threading.Dispatcher foo = System.Windows.Threading.Dispatcher.CurrentDispatcher;
-			new SkiaApp();
+    internal class Program
+    {
+        private static void Main(string[] args)
+        {
+            // The version of ReactiveUI currently included is for WPF and so expects a WPF
+            // dispatcher. This makes sure it's initialized.
+            System.Windows.Threading.Dispatcher foo = System.Windows.Threading.Dispatcher.CurrentDispatcher;
 
-			//RendererMixin.DrawFpsCounter = true;
+            new App()
+                .UseWin32()
+                .UseSkia();
 
-			MainWindow.RootNamespace = "Perspex.Skia.Desktop.TestApp";
-			var wnd = MainWindow.Create();
+            //RendererMixin.DrawFpsCounter = true;
 
-			// let's start small :)
-			//var wnd = SimpleWindow.Create();
+            MainWindow.RootNamespace = "Perspex.Skia.Desktop.TestApp";
+            var wnd = MainWindow.Create();
 
-			DevTools.Attach(wnd);
-			Application.Current.Run(wnd);
-		}
-	}
+            // let's start small :)
+            //var wnd = SimpleWindow.Create();
 
-	internal class SkiaApp : App
-	{
-		protected override void PlatformInitialization()
-		{
-			SkiaPlatform.Initialize();
-			InitializeSubsystem("Perspex.Win32");
-		}
-	}
+            DevTools.Attach(wnd);
+            Application.Current.Run(wnd);
+        }
+    }
 
-	internal class SimpleWindow
-	{
-		public static Window Create()
-		{
-			Border container;
+    internal class SimpleWindow
+    {
+        public static Window Create()
+        {
+            Border container;
 
-			Window window = new Window
-			{
-				Title = "Perspex Test Application",
-				Content = (container = new Border
-				{
-					Background = Brushes.Green,
-					BorderBrush = Brushes.Yellow,
-					BorderThickness = 12,
-					Padding = new Thickness(5),
-					Child = new Rectangle
-					{
-						Fill = Brushes.Blue,
-						Width = 200,
-						Height = 200,
-						Margin = new Thickness(50)
-					}
-				})
+            Window window = new Window
+            {
+                Title = "Perspex Test Application",
+                Content = (container = new Border
+                {
+                    Background = Brushes.Green,
+                    BorderBrush = Brushes.Yellow,
+                    BorderThickness = 12,
+                    Padding = new Thickness(5),
+                    Child = new Rectangle
+                    {
+                        Fill = Brushes.Blue,
+                        Width = 200,
+                        Height = 200,
+                        Margin = new Thickness(50)
+                    }
+                })
 
-			};
+            };
 
-			window.Show();
-			return window;
-		}
+            window.Show();
+            return window;
+        }
 
-	}
+    }
 }

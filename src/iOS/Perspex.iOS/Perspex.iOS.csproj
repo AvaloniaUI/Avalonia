@@ -37,6 +37,7 @@
     <Compile Include="Clipboard.cs" />
     <Compile Include="CursorFactory.cs" />
     <Compile Include="Extensions.cs" />
+    <Compile Include="iOSPlatform.cs" />
     <Compile Include="PerspexView.cs" />
     <Compile Include="PerspexAppDelegate.cs" />
     <Compile Include="PlatformSettings.cs" />

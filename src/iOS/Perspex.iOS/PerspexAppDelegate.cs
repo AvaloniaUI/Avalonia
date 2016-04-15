@@ -10,6 +10,7 @@ using Perspex.Shared.PlatformSupport;
 using Perspex.Skia;
 using UIKit;
 
+/* No Longer needed
 namespace Perspex.iOS
 {
     public class PerspexAppDelegate : UIApplicationDelegate
@@ -73,3 +74,4 @@ namespace Perspex.iOS
         }
     }
 }
+*/

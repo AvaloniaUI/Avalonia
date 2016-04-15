@@ -15,8 +15,8 @@ using UIKit;
 
 namespace Perspex.Skia.iOS
 {
-    public abstract class SkiaView : UIView	//GLKView
-	{
+    public abstract class SkiaView : UIView //GLKView
+    {
         //[DllImport("__Internal")]
         //static extern IntPtr GetPerspexEAGLContext();
 
@@ -24,15 +24,15 @@ namespace Perspex.Skia.iOS
         //CADisplayLink _link;
         static EAGLContext GetContext()
         {
-			/* No longer needed with SkiaSharp
-						//Ensure initialization
-						MethodTable.Instance.SetOption((MethodTable.Option)0x10009999, IntPtr.Zero);
-						var ctx = GetPerspexEAGLContext();
-						var rv = Runtime.GetNSObject<EAGLContext>(ctx);
-						rv.DangerousRetain();
-						return rv;
-			*/
-			return null;
+            /* No longer needed with SkiaSharp, but require a variant for HW accel
+                //Ensure initialization
+                MethodTable.Instance.SetOption((MethodTable.Option)0x10009999, IntPtr.Zero);
+                var ctx = GetPerspexEAGLContext();
+                var rv = Runtime.GetNSObject<EAGLContext>(ctx);
+                rv.DangerousRetain();
+                return rv;
+            */
+            return null;
         }
 
 
@@ -52,10 +52,10 @@ namespace Perspex.Skia.iOS
             {
                 _drawQueued = false;
 
-				// GLKView
-				//Display();
+                // GLKView
+                //Display();
 
-				this.SetNeedsDisplay();
+                this.SetNeedsDisplay();
             }
         }
 
@@ -64,9 +64,9 @@ namespace Perspex.Skia.iOS
             _drawQueued = true;
         }
 
-        protected IPlatformHandle PerspexPlatformHandle { get; } 
+        protected IPlatformHandle PerspexPlatformHandle { get; }
             = new PlatformHandle(IntPtr.Zero, "Null (iOS-specific)");
-            
+
 
         protected abstract void Draw();
 

@@ -147,6 +147,10 @@
       <Project>{d2221c82-4a25-4583-9b43-d791e3f6820c}</Project>
       <Name>Perspex.Controls</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\Perspex.Diagnostics\Perspex.Diagnostics.csproj">
+      <Project>{7062ae20-5dcc-4442-9645-8195bdece63e}</Project>
+      <Name>Perspex.Diagnostics</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Perspex.HtmlRenderer\Perspex.HtmlRenderer.csproj">
       <Project>{5fb2b005-0a7f-4dad-add4-3ed01444e63d}</Project>
       <Name>Perspex.HtmlRenderer</Name>

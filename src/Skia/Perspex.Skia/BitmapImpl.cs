@@ -11,28 +11,28 @@ namespace Perspex.Skia
 {
     class BitmapImpl : IRenderTargetBitmapImpl
     {
-		public SKBitmap Bitmap { get; private set; }
+        public SKBitmap Bitmap { get; private set; }
 
-		public BitmapImpl(SKBitmap bm)
-		{
-			Bitmap = bm;
-			PixelHeight = bm.Width;
-			PixelWidth = bm.Height;
-		}
-
-		public BitmapImpl(int width, int height)
-		{
-			throw new NotImplementedException();
-		}
-
-		public void Dispose()
-		{
-		}
-
-		public void Save(string fileName)
+        public BitmapImpl(SKBitmap bm)
         {
-			// TODO: Implement this for SkiaSharp
-			throw new NotImplementedException();
+            Bitmap = bm;
+            PixelHeight = bm.Width;
+            PixelWidth = bm.Height;
+        }
+
+        public BitmapImpl(int width, int height)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Dispose()
+        {
+        }
+
+        public void Save(string fileName)
+        {
+            // TODO: Implement this for SkiaSharp
+            throw new NotImplementedException();
 
             //var ext = Path.GetExtension(fileName)?.ToLower();
             //var type = MethodTable.SkiaImageType.Png;
@@ -49,12 +49,12 @@ namespace Perspex.Skia
 
         public int PixelWidth { get; private set; }
         public int PixelHeight { get; private set; }
-        
+
         public DrawingContext CreateDrawingContext()
         {
-			return
-				new DrawingContext(
-					new DrawingContextImpl(null));	// MethodTable.Instance.RenderTargetCreateRenderingContext(Handle)));
+            return
+                new DrawingContext(
+                    new DrawingContextImpl(null));	// MethodTable.Instance.RenderTargetCreateRenderingContext(Handle)));
         }
 
     }

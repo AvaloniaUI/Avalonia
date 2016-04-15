@@ -22,13 +22,13 @@ namespace Perspex.Skia
             SKTypeface typeface = null;
             if (!entry.TryGetValue(style, out typeface))
             {
-				typeface = SKTypeface.FromFamilyName(name, style);
-				if(typeface == null)
-				{
-					typeface = SKTypeface.FromFamilyName(null, style);
-				}
-				entry[style] = typeface;
-			}
+                typeface = SKTypeface.FromFamilyName(name, style);
+                if (typeface == null)
+                {
+                    typeface = SKTypeface.FromFamilyName(null, style);
+                }
+                entry[style] = typeface;
+            }
             return typeface;
         }
 
@@ -38,8 +38,8 @@ namespace Perspex.Skia
             if (style != FontStyle.Normal)
                 sstyle |= SKTypefaceStyle.Italic;
 
-            if(weight>FontWeight.Normal)
-				sstyle |= SKTypefaceStyle.Bold;
+            if (weight > FontWeight.Normal)
+                sstyle |= SKTypefaceStyle.Bold;
 
             return GetTypeface(name, sstyle);
         }

@@ -10,59 +10,59 @@ namespace Perspex.Skia
 {
     unsafe class FormattedTextImpl : IFormattedTextImpl
     {
-		public SKPaint Paint { get; private set; }
+        public SKPaint Paint { get; private set; }
 
-		public FormattedTextImpl(string text)
-		{
-			_text = text;
-			Paint = new SKPaint();
+        public FormattedTextImpl(string text)
+        {
+            _text = text;
+            Paint = new SKPaint();
 
-			Paint.TextEncoding = SKTextEncoding.Utf16;
-			Paint.IsStroke = false;
-			Paint.IsAntialias = true;
-			LineOffset = 0;
+            Paint.TextEncoding = SKTextEncoding.Utf16;
+            Paint.IsStroke = false;
+            Paint.IsAntialias = true;
+            LineOffset = 0;
 
-			//Replace 0 characters with zero-width spaces (200B)
-			_text = _text.Replace((char)0, (char) 0x200B);
-		}
+            //Replace 0 characters with zero-width spaces (200B)
+            _text = _text.Replace((char)0, (char)0x200B);
+        }
 
-		public static FormattedTextImpl Create(string text, string fontFamilyName, double fontSize, FontStyle fontStyle,
+        public static FormattedTextImpl Create(string text, string fontFamilyName, double fontSize, FontStyle fontStyle,
             TextAlignment textAlignment, FontWeight fontWeight)
         {
-			var typeface = TypefaceCache.GetTypeface(fontFamilyName, fontStyle, fontWeight);
+            var typeface = TypefaceCache.GetTypeface(fontFamilyName, fontStyle, fontWeight);
 
-			FormattedTextImpl instance = new FormattedTextImpl(text);
-			instance.Paint.Typeface = typeface;
-			instance.Paint.TextSize = (float) fontSize;
-			instance.Paint.TextAlign = textAlignment.ToSKTextAlign();
-			instance.Rebuild();
-			return instance;
-		}
+            FormattedTextImpl instance = new FormattedTextImpl(text);
+            instance.Paint.Typeface = typeface;
+            instance.Paint.TextSize = (float)fontSize;
+            instance.Paint.TextAlign = textAlignment.ToSKTextAlign();
+            instance.Rebuild();
+            return instance;
+        }
 
-		private readonly string _text;
+        private readonly string _text;
 
-		readonly List<FormattedTextLine> _lines = new List<FormattedTextLine>();
+        readonly List<FormattedTextLine> _lines = new List<FormattedTextLine>();
         readonly List<Rect> _rects = new List<Rect>();
 
-		List<PerspexFormattedTextLine> _skiaLines;
-		SKRect[] _skiaRects;
+        List<PerspexFormattedTextLine> _skiaLines;
+        SKRect[] _skiaRects;
 
-		Size _size;
+        Size _size;
 
-		const float MAX_LINE_WIDTH = 10000;
-		float LineOffset;
-		float WidthConstraint = -1;
+        const float MAX_LINE_WIDTH = 10000;
+        float LineOffset;
+        float WidthConstraint = -1;
 
-		struct PerspexFormattedTextLine
-		{
-			public float Top;
-			public int Start;
-			public int Length;
-			public float Height;
-			public float Width;
-		};
+        struct PerspexFormattedTextLine
+        {
+            public float Top;
+            public int Start;
+            public int Length;
+            public float Height;
+            public float Width;
+        };
 
-		public IEnumerable<FormattedTextLine> GetLines()
+        public IEnumerable<FormattedTextLine> GetLines()
         {
             return _lines;
         }
@@ -79,13 +79,13 @@ namespace Perspex.Skia
                     {
                         IsInside = true,
                         TextPosition = c,
-                        IsTrailing = (point.X - rc.X) > rc.Width/2
+                        IsTrailing = (point.X - rc.X) > rc.Width / 2
                     };
 
                 }
             }
             bool end = point.X > _size.Width || point.Y > _size.Height;
-            return new TextHitTestResult() {IsTrailing = end, TextPosition = end ? _text.Length - 1 : 0};
+            return new TextHitTestResult() { IsTrailing = end, TextPosition = end ? _text.Length - 1 : 0 };
         }
 
         public Rect HitTestTextPosition(int index)
@@ -108,224 +108,224 @@ namespace Perspex.Skia
 
         public void SetForegroundBrush(IBrush brush, int startIndex, int length)
         {
-			// Is this method even relevant now???
-			//
-			//var scb = brush as SolidColorBrush;
-			//if (scb != null)
-			//{
-			//	Layout.Attributes.Insert(brushAttr);
-			//}
+            // Is this method even relevant now???
+            //
+            //var scb = brush as SolidColorBrush;
+            //if (scb != null)
+            //{
+            //	Layout.Attributes.Insert(brushAttr);
+            //}
         }
 
 
-		void Rebuild()
+        void Rebuild()
         {
-			var length = _text.Length;
+            var length = _text.Length;
 
-			_lines.Clear();
+            _lines.Clear();
 
-			_skiaRects = new SKRect[length];
-			_skiaLines = new List<PerspexFormattedTextLine>();
+            _skiaRects = new SKRect[length];
+            _skiaLines = new List<PerspexFormattedTextLine>();
 
-			int curOff = 0;
-			float curY = 0;
+            int curOff = 0;
+            float curY = 0;
 
-			var metrics = Paint.FontMetrics;
-			var mTop = metrics.Top;  // The greatest distance above the baseline for any glyph (will be <= 0).
-			var mBottom = metrics.Bottom;  // The greatest distance below the baseline for any glyph (will be >= 0). 
-			var mLeading = metrics.Leading;  // The recommended distance to add between lines of text (will be >= 0). 
+            var metrics = Paint.FontMetrics;
+            var mTop = metrics.Top;  // The greatest distance above the baseline for any glyph (will be <= 0).
+            var mBottom = metrics.Bottom;  // The greatest distance below the baseline for any glyph (will be >= 0). 
+            var mLeading = metrics.Leading;  // The recommended distance to add between lines of text (will be >= 0). 
 
-			// This seems like the best measure of full vertical extent
-			float lineHeight = mBottom - mTop; 
+            // This seems like the best measure of full vertical extent
+            float lineHeight = mBottom - mTop;
 
-			// Rendering is relative to baseline
-			LineOffset = -metrics.Top;
+            // Rendering is relative to baseline
+            LineOffset = -metrics.Top;
 
-			string subString;
+            string subString;
 
-			byte[] bytes;
-			GCHandle pinnedArray;
-			IntPtr pointer;
+            byte[] bytes;
+            GCHandle pinnedArray;
+            IntPtr pointer;
 
-			for (int c = 0; curOff < length; c++)
-			{
-				float lineWidth = -1;
-				int measured;
-				int extraSkip = 0;
-				if (WidthConstraint <= 0)
-				{
-					measured = length;
-				}
-				else
-				{
-					float constraint = WidthConstraint;
-					if (constraint > MAX_LINE_WIDTH)
-						constraint = MAX_LINE_WIDTH;
+            for (int c = 0; curOff < length; c++)
+            {
+                float lineWidth = -1;
+                int measured;
+                int extraSkip = 0;
+                if (WidthConstraint <= 0)
+                {
+                    measured = length;
+                }
+                else
+                {
+                    float constraint = WidthConstraint;
+                    if (constraint > MAX_LINE_WIDTH)
+                        constraint = MAX_LINE_WIDTH;
 
-					subString = _text.Substring(curOff);
+                    subString = _text.Substring(curOff);
 
-					// TODO: This method is not linking into SkiaSharp so we must use the RAW buffer version
-					//measured = (int)Paint.BreakText(subString, constraint, out lineWidth) / 2;
-					bytes = Encoding.UTF8.GetBytes(subString);
-					pinnedArray = GCHandle.Alloc(bytes, GCHandleType.Pinned);
-					pointer = pinnedArray.AddrOfPinnedObject();
-					// for some reason I have to pass nBytes * 2
-					measured = (int)Paint.BreakText(pointer, (IntPtr)(bytes.Length * 2), constraint, out lineWidth) / 2;
+                    // TODO: This method is not linking into SkiaSharp so we must use the RAW buffer version
+                    //measured = (int)Paint.BreakText(subString, constraint, out lineWidth) / 2;
+                    bytes = Encoding.UTF8.GetBytes(subString);
+                    pinnedArray = GCHandle.Alloc(bytes, GCHandleType.Pinned);
+                    pointer = pinnedArray.AddrOfPinnedObject();
+                    // for some reason I have to pass nBytes * 2
+                    measured = (int)Paint.BreakText(pointer, (IntPtr)(bytes.Length * 2), constraint, out lineWidth) / 2;
 
-					// some weird unicode byte issue again
-					//if(subString.Length % 2 == 1)
-					//{
-					//	measured -= 1;
-					//}
+                    // some weird unicode byte issue again
+                    //if(subString.Length % 2 == 1)
+                    //{
+                    //	measured -= 1;
+                    //}
 
-					pinnedArray.Free();
+                    pinnedArray.Free();
 
-					if (measured == 0)
-					{
-						measured = 1;
-						lineWidth = -1;
-					}
+                    if (measured == 0)
+                    {
+                        measured = 1;
+                        lineWidth = -1;
+                    }
 
-					char nextChar = ' ';
-					if (curOff + measured < length)
-						nextChar = _text[curOff + measured];
+                    char nextChar = ' ';
+                    if (curOff + measured < length)
+                        nextChar = _text[curOff + measured];
 
-					if (nextChar != ' ')
-					{
-						//Perform scan for the last space and end the line there
-						for (int si = curOff + measured - 1; si > curOff; si--)
-						{
-							if (_text[si] == ' ')
-							{
-								measured = si - curOff;
-								extraSkip = 1;
-								//Rects[si] = SkRect();
-								break;
-							}
-						}
-					}
+                    if (nextChar != ' ')
+                    {
+                        //Perform scan for the last space and end the line there
+                        for (int si = curOff + measured - 1; si > curOff; si--)
+                        {
+                            if (_text[si] == ' ')
+                            {
+                                measured = si - curOff;
+                                extraSkip = 1;
+                                //Rects[si] = SkRect();
+                                break;
+                            }
+                        }
+                    }
 
 
-				}
+                }
 
-				PerspexFormattedTextLine line = new PerspexFormattedTextLine();
-				line.Start = curOff;
-				line.Length = measured;
-				line.Width = lineWidth;
-				line.Height = lineHeight;
-				line.Top = curY;
+                PerspexFormattedTextLine line = new PerspexFormattedTextLine();
+                line.Start = curOff;
+                line.Length = measured;
+                line.Width = lineWidth;
+                line.Height = lineHeight;
+                line.Top = curY;
 
-				if (line.Width < 0)
-					line.Width = _skiaRects[line.Start + line.Length - 1].Right;
+                if (line.Width < 0)
+                    line.Width = _skiaRects[line.Start + line.Length - 1].Right;
 
-				//Build character rects
-				for (int i = line.Start; i < line.Start + line.Length; i++)
-				{
-					float prevRight = 0;
-					if (i != line.Start)
-						prevRight = _skiaRects[i - 1].Right;
+                //Build character rects
+                for (int i = line.Start; i < line.Start + line.Length; i++)
+                {
+                    float prevRight = 0;
+                    if (i != line.Start)
+                        prevRight = _skiaRects[i - 1].Right;
 
-					subString = _text.Substring(line.Start, i - line.Start + 1);
-					float w = Paint.MeasureText(subString);
+                    subString = _text.Substring(line.Start, i - line.Start + 1);
+                    float w = Paint.MeasureText(subString);
 
-					SKRect rc;
-					rc.Left = prevRight;
-					rc.Right = w;
-					rc.Top = line.Top;
-					rc.Bottom = line.Top + line.Height;
-					_skiaRects[i] = rc;
-				}
+                    SKRect rc;
+                    rc.Left = prevRight;
+                    rc.Right = w;
+                    rc.Top = line.Top;
+                    rc.Bottom = line.Top + line.Height;
+                    _skiaRects[i] = rc;
+                }
 
-				subString = _text.Substring(line.Start, line.Length);
-				line.Width = Paint.MeasureText(subString);
+                subString = _text.Substring(line.Start, line.Length);
+                line.Width = Paint.MeasureText(subString);
 
-				_skiaLines.Add(line);
+                _skiaLines.Add(line);
 
-				curY += lineHeight;	// + mLeading;
-				curOff += measured + extraSkip;
-			}
+                curY += lineHeight; // + mLeading;
+                curOff += measured + extraSkip;
+            }
 
-			// Now convert to Perspex data formats
-			_lines.Clear();
-			_rects.Clear();
-			float maxX = 0;
+            // Now convert to Perspex data formats
+            _lines.Clear();
+            _rects.Clear();
+            float maxX = 0;
 
-			for (var c = 0; c < _skiaLines.Count; c++)
-			{
-				var w = _skiaLines[c].Width;
-				if (maxX < w)
-					maxX = w;
+            for (var c = 0; c < _skiaLines.Count; c++)
+            {
+                var w = _skiaLines[c].Width;
+                if (maxX < w)
+                    maxX = w;
 
-				_lines.Add(new FormattedTextLine(_skiaLines[c].Length, _skiaLines[c].Height));
-			}
+                _lines.Add(new FormattedTextLine(_skiaLines[c].Length, _skiaLines[c].Height));
+            }
 
-			for (var c = 0; c < _text.Length; c++)
-				_rects.Add(_skiaRects[c].ToPerspexRect());
+            for (var c = 0; c < _text.Length; c++)
+                _rects.Add(_skiaRects[c].ToPerspexRect());
 
-			if (_skiaLines.Count == 0)
-				_size = new Size();
-			else
-			{
-				var lastLine = _skiaLines[_skiaLines.Count - 1];
-				_size = new Size(maxX, lastLine.Top + lastLine.Height);
-			}
-		}
+            if (_skiaLines.Count == 0)
+                _size = new Size();
+            else
+            {
+                var lastLine = _skiaLines[_skiaLines.Count - 1];
+                _size = new Size(maxX, lastLine.Top + lastLine.Height);
+            }
+        }
 
-		internal void Draw(SKCanvas canvas, SKPoint origin)
-		{
-			SKPaint paint = Paint;
+        internal void Draw(SKCanvas canvas, SKPoint origin)
+        {
+            SKPaint paint = Paint;
 
-			/* This originated from Native code, it might be useful
-			//Debugging code for character positions
-			SkPaint dpaint;
-			ctx->Canvas->save();
-			ctx->Canvas->translate(origin.fX, origin.fY);
-			for (int c = 0; c < Lines.size(); c++)
-			{
-				dpaint.setARGB(255, 0, 0, 0);
-				SkRect rc;
-				rc.fLeft = 0;
-				rc.fTop = Lines[c].Top;
-				rc.fRight = Lines[c].Width;
-				rc.fBottom = rc.fTop + LineOffset;
-				ctx->Canvas->drawRect(rc, dpaint);
-			}
-			for (int c = 0; c < Length; c++)
-			{
-				dpaint.setARGB(255, c % 10 * 125 / 10 + 125, (c * 7) % 10 * 250 / 10, (c * 13) % 10 * 250 / 10);
-				dpaint.setStyle(SkPaint::kFill_Style);
-				ctx->Canvas->drawRect(Rects[c], dpaint);
-			}
-			ctx->Canvas->restore();
-			*/
+            /* This originated from Native code, it might be useful
+                //Debugging code for character positions
+                SkPaint dpaint;
+                ctx->Canvas->save();
+                ctx->Canvas->translate(origin.fX, origin.fY);
+                for (int c = 0; c < Lines.size(); c++)
+                {
+                dpaint.setARGB(255, 0, 0, 0);
+                SkRect rc;
+                rc.fLeft = 0;
+                rc.fTop = Lines[c].Top;
+                rc.fRight = Lines[c].Width;
+                rc.fBottom = rc.fTop + LineOffset;
+                ctx->Canvas->drawRect(rc, dpaint);
+                }
+                for (int c = 0; c < Length; c++)
+                {
+                dpaint.setARGB(255, c % 10 * 125 / 10 + 125, (c * 7) % 10 * 250 / 10, (c * 13) % 10 * 250 / 10);
+                dpaint.setStyle(SkPaint::kFill_Style);
+                ctx->Canvas->drawRect(Rects[c], dpaint);
+                }
+                ctx->Canvas->restore();
+            */
 
-			// These seems to vertically align the text properly
-			var yOffset = (LineOffset);	// + 1) / 2;		
+            // These seems to vertically align the text properly
+            var yOffset = (LineOffset); // + 1) / 2;		
 
-			for (int c = 0; c < _skiaLines.Count; c++)
-			{
-				PerspexFormattedTextLine line = _skiaLines[c];
-				var subString = _text.Substring(line.Start, line.Length);
-				canvas.DrawText(subString, origin.X, origin.Y + line.Top + yOffset, paint);
-			}
-		}
+            for (int c = 0; c < _skiaLines.Count; c++)
+            {
+                PerspexFormattedTextLine line = _skiaLines[c];
+                var subString = _text.Substring(line.Start, line.Length);
+                canvas.DrawText(subString, origin.X, origin.Y + line.Top + yOffset, paint);
+            }
+        }
 
-		Size _constraint = new Size(double.PositiveInfinity, double.PositiveInfinity);
+        Size _constraint = new Size(double.PositiveInfinity, double.PositiveInfinity);
 
         public Size Constraint
         {
             get { return _constraint; }
             set
             {
-                if(_constraint == value)
+                if (_constraint == value)
                     return;
 
                 _constraint = value;
-				WidthConstraint = (_constraint.Width != double.PositiveInfinity)
-					? (float)_constraint.Width
-					: -1;
+                WidthConstraint = (_constraint.Width != double.PositiveInfinity)
+                    ? (float)_constraint.Width
+                    : -1;
 
-				Rebuild();
+                Rebuild();
             }
         }
 
@@ -334,8 +334,8 @@ namespace Perspex.Skia
             return _text;
         }
 
-		public void Dispose()
-		{
-		}
-	}
+        public void Dispose()
+        {
+        }
+    }
 }
