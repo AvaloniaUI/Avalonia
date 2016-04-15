@@ -8,8 +8,8 @@ using System.Reactive.Disposables;
 using Perspex.Media;
 using SharpDX;
 using SharpDX.Direct2D1;
-using IBitmap = Perspex.Media.Imaging.IBitmap;
 using SharpDX.Mathematics.Interop;
+using IBitmap = Perspex.Media.Imaging.IBitmap;
 
 namespace Perspex.Direct2D1.Media
 {
