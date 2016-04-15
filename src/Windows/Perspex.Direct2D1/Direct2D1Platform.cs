@@ -7,6 +7,18 @@ using Perspex.Direct2D1.Media;
 using Perspex.Media;
 using Perspex.Platform;
 
+namespace Perspex
+{
+    public static class Direct2DApplicationExtensions
+    {
+        public static TApp UseDirect2D<TApp>(this TApp app) where TApp : Application
+        {
+            Perspex.Direct2D1.Direct2D1Platform.Initialize();
+            return app;
+        }
+    }
+}
+
 namespace Perspex.Direct2D1
 {
     public class Direct2D1Platform : IPlatformRenderInterface
