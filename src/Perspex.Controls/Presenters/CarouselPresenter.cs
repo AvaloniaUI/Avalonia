@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
@@ -18,31 +19,13 @@ namespace Perspex.Controls.Presenters
     /// <summary>
     /// Displays pages inside an <see cref="ItemsControl"/>.
     /// </summary>
-    public class CarouselPresenter : Control, IItemsPresenter
+    public class CarouselPresenter : ItemsPresenterBase
     {
         /// <summary>
         /// Defines the <see cref="IsVirtualized"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> IsVirtualizedProperty =
             Carousel.IsVirtualizedProperty.AddOwner<CarouselPresenter>();
-
-        /// <summary>
-        /// Defines the <see cref="Items"/> property.
-        /// </summary>
-        public static readonly DirectProperty<CarouselPresenter, IEnumerable> ItemsProperty =
-            ItemsControl.ItemsProperty.AddOwner<CarouselPresenter>(o => o.Items, (o, v) => o.Items = v);
-
-        /// <summary>
-        /// Defines the <see cref="ItemsPanel"/> property.
-        /// </summary>
-        public static readonly StyledProperty<ITemplate<IPanel>> ItemsPanelProperty =
-            ItemsControl.ItemsPanelProperty.AddOwner<CarouselPresenter>();
-        
-        /// <summary>
-        /// Defines the <see cref="MemberSelector"/> property.
-        /// </summary>
-        public static readonly StyledProperty<IMemberSelector> MemberSelectorProperty =
-            ItemsControl.MemberSelectorProperty.AddOwner<CarouselPresenter>();
 
         /// <summary>
         /// Defines the <see cref="SelectedIndex"/> property.
@@ -58,10 +41,7 @@ namespace Perspex.Controls.Presenters
         public static readonly StyledProperty<IPageTransition> TransitionProperty =
             Carousel.TransitionProperty.AddOwner<CarouselPresenter>();
 
-        private IEnumerable _items;
         private int _selectedIndex = -1;
-        private bool _createdPanel;
-        private IItemContainerGenerator _generator;
         private Task _currentTransition;
         private int _queuedTransitionIndex = -1;
 
@@ -71,35 +51,6 @@ namespace Perspex.Controls.Presenters
         static CarouselPresenter()
         {
             SelectedIndexProperty.Changed.AddClassHandler<CarouselPresenter>(x => x.SelectedIndexChanged);
-            TemplatedParentProperty.Changed.AddClassHandler<CarouselPresenter>(x => x.TemplatedParentChanged);
-        }
-
-        /// <summary>
-        /// Gets the <see cref="IItemContainerGenerator"/> used to generate item container
-        /// controls.
-        /// </summary>
-        public IItemContainerGenerator ItemContainerGenerator
-        {
-            get
-            {
-                if (_generator == null)
-                {
-                    var i = TemplatedParent as ItemsControl;
-                    _generator = i?.ItemContainerGenerator ?? new ItemContainerGenerator(this);
-                }
-
-                return _generator;
-            }
-
-            set
-            {
-                if (_generator != null)
-                {
-                    throw new InvalidOperationException("ItemContainerGenerator is already set.");
-                }
-
-                _generator = value;
-            }
         }
 
         /// <summary>
@@ -112,33 +63,6 @@ namespace Perspex.Controls.Presenters
         {
             get { return GetValue(IsVirtualizedProperty); }
             set { SetValue(IsVirtualizedProperty, value); }
-        }
-
-        /// <summary>
-        /// Gets or sets the items to display.
-        /// </summary>
-        public IEnumerable Items
-        {
-            get { return _items; }
-            set { SetAndRaise(ItemsProperty, ref _items, value); }
-        }
-
-        /// <summary>
-        /// Gets or sets the panel used to display the pages.
-        /// </summary>
-        public ITemplate<IPanel> ItemsPanel
-        {
-            get { return GetValue(ItemsPanelProperty); }
-            set { SetValue(ItemsPanelProperty, value); }
-        }
-
-        /// <summary>
-        /// Selects a member from <see cref="Items"/> to use as the list item.
-        /// </summary>
-        public IMemberSelector MemberSelector
-        {
-            get { return GetValue(MemberSelectorProperty); }
-            set { SetValue(MemberSelectorProperty, value); }
         }
 
         /// <summary>
@@ -165,15 +89,6 @@ namespace Perspex.Controls.Presenters
         }
 
         /// <summary>
-        /// Gets the panel used to display the pages.
-        /// </summary>
-        public IPanel Panel
-        {
-            get;
-            private set;
-        }
-
-        /// <summary>
         /// Gets or sets a transition to use when switching pages.
         /// </summary>
         public IPageTransition Transition
@@ -183,29 +98,16 @@ namespace Perspex.Controls.Presenters
         }
 
         /// <inheritdoc/>
-        public override sealed void ApplyTemplate()
+        protected override void CreatePanel()
         {
-            if (!_createdPanel)
-            {
-                CreatePanel();
-            }
+            base.CreatePanel();
+            var task = MoveToPage(-1, SelectedIndex);
         }
 
-        /// <summary>
-        /// Creates the <see cref="Panel"/>.
-        /// </summary>
-        private void CreatePanel()
+        /// <inheritdoc/>
+        protected override void ItemsChanged(NotifyCollectionChangedEventArgs e)
         {
-            Panel = ItemsPanel.Build();
-            Panel.SetValue(TemplatedParentProperty, TemplatedParent);
-
-            LogicalChildren.Clear();
-            VisualChildren.Clear();
-            LogicalChildren.Add(Panel);
-            VisualChildren.Add(Panel);
-
-            _createdPanel = true;
-            var task = MoveToPage(-1, SelectedIndex);
+            // TODO: Handle items changing.
         }
 
         /// <summary>
@@ -224,24 +126,13 @@ namespace Perspex.Controls.Presenters
 
                 if (fromIndex != -1)
                 {
-                    from = generator.ContainerFromIndex(fromIndex);
+                    from = ItemContainerGenerator.ContainerFromIndex(fromIndex);
                 }
 
                 if (toIndex != -1)
                 {
                     var item = Items.Cast<object>().ElementAt(toIndex);
-                    to = generator.ContainerFromIndex(toIndex);
-
-                    if (to == null)
-                    {
-                        to = generator.Materialize(toIndex, new[] { item }, MemberSelector)
-                           .FirstOrDefault()?.ContainerControl;
-
-                        if (to != null)
-                        {
-                            Panel.Children.Add(to);
-                        }
-                    }
+                    to = GetOrCreateContainer(toIndex);
                 }
 
                 if (Transition != null && (from != null || to != null))
@@ -266,6 +157,24 @@ namespace Perspex.Controls.Presenters
                     }
                 }
             }
+        }
+
+        private IControl GetOrCreateContainer(int index)
+        {
+            var container = ItemContainerGenerator.ContainerFromIndex(index);
+
+            if (container == null)
+            {
+                var item = Items.Cast<object>().ElementAt(index);
+                var materialized = ItemContainerGenerator.Materialize(
+                    index,
+                    new[] { item },
+                    MemberSelector);
+                container = materialized.First().ContainerControl;
+                Panel.Children.Add(container);
+            }
+
+            return container;
         }
 
         /// <summary>
@@ -304,11 +213,6 @@ namespace Perspex.Controls.Presenters
                     _queuedTransitionIndex = (int)e.NewValue;
                 }
             }
-        }
-
-        private void TemplatedParentChanged(PerspexPropertyChangedEventArgs e)
-        {
-            (e.NewValue as IItemsPresenterHost)?.RegisterItemsPresenter(this);
         }
     }
 }

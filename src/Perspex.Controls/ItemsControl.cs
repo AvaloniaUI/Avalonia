@@ -239,7 +239,7 @@ namespace Perspex.Controls
             {
                 // If the item is its own container, then it will be removed from the logical tree
                 // when it is removed from the Items collection.
-                if (container.ContainerControl != container.Item)
+                if (container?.ContainerControl != container?.Item)
                 {
                     toRemove.Add(container.ContainerControl);
                 }
