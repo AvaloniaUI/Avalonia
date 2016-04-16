@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -43,9 +44,22 @@ namespace Perspex.DesignerSupport
 
             var plat = (IPclPlatformWrapper) Activator.CreateInstance(Assembly.Load(new AssemblyName("Perspex.Win32"))
                 .DefinedTypes.First(typeof (IPclPlatformWrapper).GetTypeInfo().IsAssignableFrom).AsType());
-            var app = plat.GetLoadedAssemblies()
-                .SelectMany(a => a.DefinedTypes)
-                .Where(typeof (Application).GetTypeInfo().IsAssignableFrom).FirstOrDefault(t => t.Assembly != typeof (Application).GetTypeInfo().Assembly);
+            TypeInfo app = null;
+            foreach (var asm in plat.GetLoadedAssemblies())
+            {
+                if(Equals(asm, typeof(Application).GetTypeInfo().Assembly))
+                    continue;
+                try
+                {
+                    app = asm.DefinedTypes.Where(typeof (Application).GetTypeInfo().IsAssignableFrom).FirstOrDefault();
+                    if (app != null)
+                        break;
+                }
+                catch
+                {
+                    //Ignore, Assembly.DefinedTypes threw an exception, we can't do anything about that
+                }
+            }
             if (app == null)
                 new DesignerApp();
             else
