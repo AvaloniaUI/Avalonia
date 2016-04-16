@@ -1,16 +1,12 @@
 ﻿// Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using System;
-using System.Collections;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Perspex.Animation;
-using Perspex.Controls.Generators;
 using Perspex.Controls.Primitives;
-using Perspex.Controls.Templates;
 using Perspex.Controls.Utils;
 using Perspex.Data;
 

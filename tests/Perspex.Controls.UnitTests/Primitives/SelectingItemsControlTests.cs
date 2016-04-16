@@ -570,6 +570,41 @@ namespace Perspex.Controls.UnitTests.Primitives
             Assert.Same(vm.Child.SelectedItem, target.SelectedItem);
         }
 
+        [Fact]
+        public void Nested_ListBox_Does_Not_Change_Parent_SelectedIndex()
+        {
+            SelectingItemsControl nested;
+
+            var root = new SelectingItemsControl
+            {
+                Template = Template(),
+                Items = new IControl[]
+                {
+                    new Border(),
+                    nested = new ListBox
+                    {
+                        Template = Template(),
+                        Items = new[] { "foo", "bar" },
+                        SelectedIndex = 1,
+                    }
+                },
+                SelectedIndex = 0,
+            };
+
+            root.ApplyTemplate();
+            root.Presenter.ApplyTemplate();
+            nested.ApplyTemplate();
+            nested.Presenter.ApplyTemplate();
+
+            Assert.Equal(0, root.SelectedIndex);
+            Assert.Equal(1, nested.SelectedIndex);
+
+            nested.SelectedIndex = 0;
+
+            Assert.Equal(0, root.SelectedIndex);
+        }
+
+
         private FuncControlTemplate Template()
         {
             return new FuncControlTemplate<SelectingItemsControl>(control =>

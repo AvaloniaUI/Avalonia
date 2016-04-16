@@ -574,12 +574,21 @@ namespace Perspex.Controls.Primitives
         {
             if (!_ignoreContainerSelectionChanged)
             {
-                var selectable = (ISelectable)e.Source;
+                var control = e.Source as IControl;
+                var selectable = e.Source as ISelectable;
 
-                if (selectable != null)
+                if (control != null &&
+                    selectable != null &&
+                    control.LogicalParent == this &&
+                    ItemContainerGenerator?.IndexFromContainer(control) != -1)
                 {
-                    UpdateSelectionFromEventSource(e.Source, selectable.IsSelected);
+                    UpdateSelection(control, selectable.IsSelected);
                 }
+            }
+
+            if (e.Source != this)
+            {
+                e.Handled = true;
             }
         }
 
