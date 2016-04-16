@@ -42,8 +42,10 @@ namespace Perspex.Threading
         /// <inheritdoc/>
         public override void Send(SendOrPostCallback d, object state)
         {
-            // TODO: Add check for being on the main thread, we should invoke the method immediately in this case
-            Dispatcher.UIThread.InvokeTaskAsync(() => d(state)).Wait();
+            if (Dispatcher.UIThread.CheckAccess())
+                d(state);
+            else
+                Dispatcher.UIThread.InvokeTaskAsync(() => d(state)).Wait();
         }
     }
 }
