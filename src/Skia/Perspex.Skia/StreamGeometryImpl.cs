@@ -85,7 +85,6 @@ namespace Perspex.Skia
             private readonly StreamGeometryImpl _geometryImpl;
             private SKPath _path;
 
-            //readonly List<SkiaGeometryElement> _elements = new List<SkiaGeometryElement>();
             Point _currentPoint;
             public StreamContext(StreamGeometryImpl geometryImpl)
             {
@@ -95,16 +94,13 @@ namespace Perspex.Skia
 
             public void Dispose()
             {
-                // Not sure what we need to do here....
-
-                //	//throw new NotImplementedException();
-
+                // TODO: Not sure what we need to do here. This code left here for reference.
+                //
                 //	var arr = _elements.ToArray();
                 //             SkRect rc;
                 //             _path?.Dispose();
                 //             _path = new SKPath(new SkPath(MethodTable.Instance.CreatePath(arr, arr.Length, out rc)));
                 //             _geometryImpl.ApplyTransform();
-
                 //             _geometryImpl.Bounds = rc.ToRect();
 
                 SKRect rc;
@@ -116,9 +112,6 @@ namespace Perspex.Skia
             public void ArcTo(Point point, Size size, double rotationAngle, bool isLargeArc, SweepDirection sweepDirection)
             {
                 throw new NotImplementedException();
-
-                //ArcToHelper.ArcTo(this, _currentPoint, point, size, rotationAngle, isLargeArc, sweepDirection);
-                //_currentPoint = point;
             }
 
             public void BeginFigure(Point startPoint, bool isFilled)

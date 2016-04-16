@@ -35,7 +35,12 @@ Android
 iOS
 - Get GLView working again. See HW above
 
+Win32
+- Cleanup the unmanaged methods (BITMAPINFO) if possible
+
 General
 - Cleanup/eliminate obsolete files
 - Finish cleanup of the many Test Applications
 - Get Skia Unit Tests passing
+
+

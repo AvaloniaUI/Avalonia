@@ -11,6 +11,7 @@ using Perspex.Themes.Default;
 using Perspex.Diagnostics;
 using Perspex.Platform;
 using Perspex.Shared.PlatformSupport;
+using Perspex.Media;
 
 namespace TestApplication
 {
@@ -43,10 +44,49 @@ namespace TestApplication
             };
 
             MainWindow.RootNamespace = "TestApplication";
-            var wnd = MainWindow.Create();
+            var wnd = MainWindow.Create(); 
             wnd.AttachDevTools();
 
             Run(wnd);
         }
+
+        // This provides a simple UI tree for testing input handling, drawing, etc
+        public static Window CreateSimpleWindow()
+        {
+            Window window = new Window
+            {
+                Title = "Perspex Test Application",
+                Background = Brushes.Red,
+                Content = new StackPanel
+                {
+                    Margin = new Thickness(30),
+                    Background = Brushes.Yellow,
+                    Children = new Controls
+                    {
+                        new TextBlock
+                        {
+                            Text = "TEXT BLOCK",
+                            Width = 300,
+                            Height = 40,
+                            Background = Brushes.White,
+                            Foreground = Brushes.Black
+                        },
+
+                        new Button
+                        {
+                            Content = "BUTTON",
+                            Width = 150,
+                            Height = 40,
+                            Background = Brushes.LightGreen,
+                            Foreground = Brushes.Black
+                        }
+
+                    }
+                }
+            };
+
+            return window;
+        }
+
     }
 }

@@ -18,6 +18,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)SkiaSharpExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)StreamGeometryImpl.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TypefaceCache.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WindowDrawingContextImpl.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)readme.md" />

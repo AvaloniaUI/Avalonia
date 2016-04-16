@@ -2,13 +2,12 @@
 using System.Collections.Generic;
 using Perspex.Media;
 using Perspex.Media.Imaging;
-using Perspex.RenderHelpers;
 using SkiaSharp;
 using System.Linq;
 
 namespace Perspex.Skia
 {
-    unsafe class DrawingContextImpl : IDrawingContextImpl
+    internal class DrawingContextImpl : IDrawingContextImpl
     {
         public SKCanvas Canvas { get; private set; }
 
@@ -160,6 +159,8 @@ namespace Perspex.Skia
 
             paint.StrokeMiter = (float)pen.MiterLimit;
 
+            // TODO: Implement Dash Style support
+            //
             //if (pen.DashStyle?.Dashes != null)
             //{
             //	var dashes = pen.DashStyle.Dashes;
@@ -191,7 +192,7 @@ namespace Perspex.Skia
                 }
                 else
                 {
-                    // DrawRRect is not accesible in SkiaSharp yet. We should add that
+                    // TODO: DrawRRect (ore DrawRoundedRect) is not accesible in SkiaSharp yet. We should add that
                     // to SkiaSharp and initiate a PR....
                     Canvas.DrawRect(rc, paint);
                     //Canvas.DrawRoundedRect(rc, cornerRadius, cornerRadius, paint);
@@ -210,7 +211,7 @@ namespace Perspex.Skia
                 }
                 else
                 {
-                    // this does not appear to exist in SkiaSharp?
+                    // TODO: this does not exist in SkiaSharp yet
                     //throw new NotImplementedException();
                     //Canvas.DrawRoundedRect(rc, cornerRadius, cornerRadius, paint);
                     Canvas.DrawRect(rc, paint);
@@ -269,24 +270,6 @@ namespace Perspex.Skia
                 _currentTransform = value;
                 Canvas.SetMatrix(value.ToSKMatrix());
             }
-        }
-    }
-
-    // not sure we need this yet
-    internal class WindowDrawingContextImpl : DrawingContextImpl
-    {
-        WindowRenderTarget _target;
-
-        public WindowDrawingContextImpl(WindowRenderTarget target)
-            : base(target.Surface.Canvas)
-        {
-            _target = target;
-        }
-
-        public override void Dispose()
-        {
-            base.Dispose();
-            _target.Present();
         }
     }
 }

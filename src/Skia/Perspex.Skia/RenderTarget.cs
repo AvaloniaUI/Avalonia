@@ -17,22 +17,20 @@ using Perspex.Win32.Interop;
 
 namespace Perspex.Skia
 {
-    internal class RenderTarget : IRenderTarget
+    internal partial class RenderTarget : IRenderTarget
     {
         public SKSurface Surface { get; protected set; }
-
-        //protected override void Delete(IntPtr handle) => MethodTable.Instance.DisposeRenderTarget(handle);
 
         public virtual DrawingContext CreateDrawingContext()
         {
             return
                 new DrawingContext(
-                    new DrawingContextImpl(Surface.Canvas));	// MethodTable.Instance.RenderTargetCreateRenderingContext(Handle)));
+                    new DrawingContextImpl(Surface.Canvas));
         }
 
         public void Dispose()
         {
-            //throw new NotImplementedException();
+            // Nothing to do here.
         }
     }
 
@@ -69,7 +67,7 @@ namespace Perspex.Skia
         }
 #endif
 
-        void FixSize()
+        private void FixSize()
         {
             int width, height;
             GetPlatformWindowSize(_hwnd, out width, out height);
@@ -91,7 +89,6 @@ namespace Perspex.Skia
 
             _bitmap = new SKBitmap(width, height, SKColorType.N_32, SKAlphaType.Premul);
 
-            //bitmap.LockPixels();
             IntPtr length;
             var pixels = _bitmap.GetPixels(out length);
 
@@ -99,7 +96,7 @@ namespace Perspex.Skia
             Surface = SKSurface.Create(_bitmap.Info, pixels, _bitmap.RowBytes);
         }
 
-        void GetPlatformWindowSize(IntPtr hwnd, out int w, out int h)
+        private void GetPlatformWindowSize(IntPtr hwnd, out int w, out int h)
         {
 #if __IOS__
             var bounds = GetApplicationFrame();

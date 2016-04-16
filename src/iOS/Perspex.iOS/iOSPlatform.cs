@@ -18,8 +18,7 @@ namespace Perspex
             return app;
         }
 
-        // I wish I could merge this with the SkiaPlatform itself. Might be possible
-        // once we switch to SkiaSharp
+        // TODO: Can we merge this with UseSkia somehow once HW/platform cleanup is done?
         public static AppT UseSkiaViewHost<AppT>(this AppT app) where AppT : Application
         {
             var window = new UIWindow(UIScreen.MainScreen.Bounds);
@@ -28,7 +27,7 @@ namespace Perspex
             window.MakeKeyAndVisible();
 
             PerspexLocator.CurrentMutable
-                .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatform(controller.PerspexView));
+                .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformImpl(controller.PerspexView));
 
             SkiaPlatform.Initialize();
 
@@ -40,45 +39,15 @@ namespace Perspex
             // Asset loading searches our own assembly?
             var loader = new AssetLoader(assembly);
             PerspexLocator.CurrentMutable.Bind<IAssetLoader>().ToConstant(loader);
-
             return app;
         }
-
-        // This is somewhat generic, could probably put this elsewhere. But I don't think
-        // it should part of the iOS App Delegate
-        //
-        class WindowingPlatform : IWindowingPlatform
-        {
-            private readonly IWindowImpl _window;
-
-            public WindowingPlatform(IWindowImpl window)
-            {
-                _window = window;
-            }
-
-            public IWindowImpl CreateWindow()
-            {
-                return _window;
-            }
-
-            public IWindowImpl CreateEmbeddableWindow()
-            {
-                throw new NotImplementedException();
-            }
-
-            public IPopupImpl CreatePopup()
-            {
-                throw new NotImplementedException();
-            }
-        }
-
     }
 }
 
 namespace Perspex.iOS
 {
     // TODO: Perhaps we should make this class handle all these interfaces directly, like we 
-    // do for Win32 and Gtk
+    // do for Win32 and Gtk platforms
     //
     public class iOSPlatform //: IPlatformThreadingInterface, IPlatformSettings, IWindowingPlatform
     {
@@ -90,12 +59,10 @@ namespace Perspex.iOS
             MouseDevice = new MouseDevice();
             KeyboardDevice = new KeyboardDevice();
 
-            // refactored
-            //SharedPlatform.Register(appType.Assembly);
-
             PerspexLocator.CurrentMutable
                 .Bind<IPclPlatformWrapper>().ToSingleton<PclPlatformWrapper>()
                 .Bind<IClipboard>().ToTransient<Clipboard>()
+                // TODO: what does this look like for iOS??
                 //.Bind<ISystemDialogImpl>().ToTransient<SystemDialogImpl>()
                 .Bind<IStandardCursorFactory>().ToTransient<CursorFactory>()
                 .Bind<IKeyboardDevice>().ToConstant(KeyboardDevice)

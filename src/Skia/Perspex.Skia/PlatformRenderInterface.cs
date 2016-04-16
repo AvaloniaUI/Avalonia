@@ -30,16 +30,16 @@ namespace Perspex.Skia
 
         IBitmapImpl LoadBitmap(byte[] data)
         {
-			var bitmap = new SKBitmap();
-			if(!SKImageDecoder.DecodeMemory(data, bitmap))
-			{
-				throw new ArgumentException("Unable to load bitmap from provided data");
-			}
+            var bitmap = new SKBitmap();
+            if (!SKImageDecoder.DecodeMemory(data, bitmap))
+            {
+                throw new ArgumentException("Unable to load bitmap from provided data");
+            }
 
-			return new BitmapImpl(bitmap);
-		}
+            return new BitmapImpl(bitmap);
+        }
 
-		public IBitmapImpl LoadBitmap(System.IO.Stream stream)
+        public IBitmapImpl LoadBitmap(System.IO.Stream stream)
         {
             using (var sr = new BinaryReader(stream))
             {
@@ -62,9 +62,9 @@ namespace Perspex.Skia
             return new BitmapImpl(width, height);
         }
 
-		public IRenderTarget CreateRenderer(IPlatformHandle handle)
-		{
-			return new WindowRenderTarget(handle.Handle);
-		}
+        public IRenderTarget CreateRenderer(IPlatformHandle handle)
+        {
+            return new WindowRenderTarget(handle.Handle);
+        }
     }
 }

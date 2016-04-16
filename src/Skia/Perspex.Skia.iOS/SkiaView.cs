@@ -15,35 +15,25 @@ using UIKit;
 
 namespace Perspex.Skia.iOS
 {
-    public abstract class SkiaView : UIView //GLKView
+    // TODO: This implementation will be revised as part of HW acceleration work
+    // and we may use the GLKView as a base for the implementation.
+    //
+    public abstract class SkiaView : UIView
     {
-        //[DllImport("__Internal")]
-        //static extern IntPtr GetPerspexEAGLContext();
-
         bool _drawQueued;
-        //CADisplayLink _link;
         static EAGLContext GetContext()
         {
-            /* No longer needed with SkiaSharp, but require a variant for HW accel
-                //Ensure initialization
-                MethodTable.Instance.SetOption((MethodTable.Option)0x10009999, IntPtr.Zero);
-                var ctx = GetPerspexEAGLContext();
-                var rv = Runtime.GetNSObject<EAGLContext>(ctx);
-                rv.DangerousRetain();
-                return rv;
-            */
             return null;
         }
 
 
-        protected SkiaView(Action<Action> registerFrame) : base(UIScreen.MainScreen.ApplicationFrame)	//, GetContext())
+        protected SkiaView(Action<Action> registerFrame) : base(UIScreen.MainScreen.ApplicationFrame)
         {
             registerFrame(OnFrame);
         }
 
-        protected SkiaView() : base(UIScreen.MainScreen.ApplicationFrame)	//, GetContext())
+        protected SkiaView() : base(UIScreen.MainScreen.ApplicationFrame)
         {
-            //(_link = CADisplayLink.Create(() => OnFrame())).AddToRunLoop(NSRunLoop.Main, NSRunLoop.NSDefaultRunLoopMode);
         }
 
         protected void OnFrame()
@@ -51,10 +41,6 @@ namespace Perspex.Skia.iOS
             if (_drawQueued)
             {
                 _drawQueued = false;
-
-                // GLKView
-                //Display();
-
                 this.SetNeedsDisplay();
             }
         }

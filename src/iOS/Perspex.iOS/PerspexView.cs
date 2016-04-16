@@ -57,8 +57,8 @@ namespace Perspex.iOS
                            (_controller.InterfaceOrientation == UIInterfaceOrientation.LandscapeLeft
                             || _controller.InterfaceOrientation == UIInterfaceOrientation.LandscapeRight);
 
-			// Bounds here (if top level) needs to correspond with the rendertarget 
-			var frame = UIScreen.MainScreen.Bounds;
+            // Bounds here (if top level) needs to correspond with the rendertarget 
+            var frame = UIScreen.MainScreen.Bounds;
             if (needFlip)
                 Frame = new CGRect(frame.Y, frame.X, frame.Height, frame.Width);
             else
@@ -76,14 +76,14 @@ namespace Perspex.iOS
         public IPlatformHandle Handle => PerspexPlatformHandle;
 
         public double Scaling
-		{
-			get
-			{
-				// This does not appear to make any difference, but on iOS we
-				// have Retina (x2) and we probably want this eventually
-				return 1;	//UIScreen.MainScreen.Scale;
-			}
-		}
+        {
+            get
+            {
+                // This does not appear to make any difference, but on iOS we
+                // have Retina (x2) and we probably want this eventually
+                return 1;   //UIScreen.MainScreen.Scale;
+            }
+        }
 
         public WindowState WindowState
         {
@@ -169,7 +169,7 @@ namespace Perspex.iOS
 
                 Input?.Invoke(new RawMouseEventArgs(
                     iOSPlatform.MouseDevice,
-                    (uint) touch.Timestamp,
+                    (uint)touch.Timestamp,
                     _inputRoot,
                     RawMouseEventType.LeftButtonUp,
                     location,
@@ -185,10 +185,10 @@ namespace Perspex.iOS
             {
                 var location = touch.LocationInView(this).ToPerspex();
                 _touchLastPoint = location;
-                Input?.Invoke(new RawMouseEventArgs(iOSPlatform.MouseDevice, (uint) touch.Timestamp, _inputRoot,
+                Input?.Invoke(new RawMouseEventArgs(iOSPlatform.MouseDevice, (uint)touch.Timestamp, _inputRoot,
                     RawMouseEventType.Move, location, InputModifiers.None));
 
-                Input?.Invoke(new RawMouseEventArgs(iOSPlatform.MouseDevice, (uint) touch.Timestamp, _inputRoot,
+                Input?.Invoke(new RawMouseEventArgs(iOSPlatform.MouseDevice, (uint)touch.Timestamp, _inputRoot,
                     RawMouseEventType.LeftButtonDown, location, InputModifiers.None));
             }
         }
@@ -200,7 +200,7 @@ namespace Perspex.iOS
             {
                 var location = touch.LocationInView(this).ToPerspex();
                 if (iOSPlatform.MouseDevice.Captured != null)
-                    Input?.Invoke(new RawMouseEventArgs(iOSPlatform.MouseDevice, (uint) touch.Timestamp, _inputRoot,
+                    Input?.Invoke(new RawMouseEventArgs(iOSPlatform.MouseDevice, (uint)touch.Timestamp, _inputRoot,
                         RawMouseEventType.Move, location, InputModifiers.LeftMouseButton));
                 else
                 {
@@ -208,7 +208,7 @@ namespace Perspex.iOS
                     double correction = 0.02;
 
                     Input?.Invoke(new RawMouseWheelEventArgs(iOSPlatform.MouseDevice, (uint)touch.Timestamp,
-                        _inputRoot, location, (location - _touchLastPoint)* correction, InputModifiers.LeftMouseButton));
+                        _inputRoot, location, (location - _touchLastPoint) * correction, InputModifiers.LeftMouseButton));
                 }
                 _touchLastPoint = location;
             }
