@@ -54,14 +54,53 @@ namespace Perspex.Controls.UnitTests
             Assert.Equal("Foo", ((TextBlock)child).Text);
         }
 
+        [Fact]
+        public void Should_Remove_NonCurrent_Page_When_IsVirtualized_True()
+        {
+            var target = new Carousel
+            {
+                Template = new FuncControlTemplate<Carousel>(CreateTemplate),
+                Items = new[] { "foo", "bar" },
+                IsVirtualized = true,
+                SelectedIndex = 0,
+            };
+
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+
+            Assert.Equal(1, target.ItemContainerGenerator.Containers.Count());
+            target.SelectedIndex = 1;
+            Assert.Equal(1, target.ItemContainerGenerator.Containers.Count());
+        }
+
+        [Fact]
+        public void Should_Not_Remove_NonCurrent_Page_When_IsVirtualized_False()
+        {
+            var target = new Carousel
+            {
+                Template = new FuncControlTemplate<Carousel>(CreateTemplate),
+                Items = new[] { "foo", "bar" },
+                IsVirtualized = false,
+                SelectedIndex = 0,
+            };
+
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+
+            Assert.Equal(1, target.ItemContainerGenerator.Containers.Count());
+            target.SelectedIndex = 1;
+            Assert.Equal(2, target.ItemContainerGenerator.Containers.Count());
+        }
+
         private Control CreateTemplate(Carousel control)
         {
             return new CarouselPresenter
             {
                 Name = "PART_ItemsPresenter",
-                [~ItemsPresenter.ItemsProperty] = control[~ItemsControl.ItemsProperty],
-                [~ItemsPresenter.ItemsPanelProperty] = control[~ItemsControl.ItemsPanelProperty],
-                [~CarouselPresenter.SelectedIndexProperty] = control[~SelectingItemsControl.SelectedIndexProperty],
+                [~CarouselPresenter.IsVirtualizedProperty] = control[~Carousel.IsVirtualizedProperty],
+                [~CarouselPresenter.ItemsProperty] = control[~Carousel.ItemsProperty],
+                [~CarouselPresenter.ItemsPanelProperty] = control[~Carousel.ItemsPanelProperty],
+                [~CarouselPresenter.SelectedIndexProperty] = control[~Carousel.SelectedIndexProperty],
                 [~CarouselPresenter.TransitionProperty] = control[~Carousel.TransitionProperty],
             };
         }

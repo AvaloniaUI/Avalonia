@@ -15,6 +15,12 @@ namespace Perspex.Controls
     public class Carousel : SelectingItemsControl
     {
         /// <summary>
+        /// Defines the <see cref="IsVirtualized"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> IsVirtualizedProperty =
+            PerspexProperty.Register<Carousel, bool>(nameof(IsVirtualized), true);
+
+        /// <summary>
         /// Defines the <see cref="Transition"/> property.
         /// </summary>
         public static readonly StyledProperty<IPageTransition> TransitionProperty =
@@ -34,6 +40,18 @@ namespace Perspex.Controls
         {
             SelectionModeProperty.OverrideDefaultValue<Carousel>(SelectionMode.AlwaysSelected);
             ItemsPanelProperty.OverrideDefaultValue<Carousel>(PanelTemplate);
+        }
+        
+        /// <summary>
+        /// Gets or sets a value indicating whether the items in the carousel are virtualized.
+        /// </summary>
+        /// <remarks>
+        /// When the carousel is virtualized, only the active page is held in memory.
+        /// </remarks>
+        public bool IsVirtualized
+        {
+            get { return GetValue(IsVirtualizedProperty); }
+            set { SetValue(IsVirtualizedProperty, value); }
         }
 
         /// <summary>

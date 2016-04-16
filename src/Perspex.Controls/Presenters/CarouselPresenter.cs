@@ -21,6 +21,12 @@ namespace Perspex.Controls.Presenters
     public class CarouselPresenter : Control, IItemsPresenter
     {
         /// <summary>
+        /// Defines the <see cref="IsVirtualized"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> IsVirtualizedProperty =
+            Carousel.IsVirtualizedProperty.AddOwner<CarouselPresenter>();
+
+        /// <summary>
         /// Defines the <see cref="Items"/> property.
         /// </summary>
         public static readonly DirectProperty<CarouselPresenter, IEnumerable> ItemsProperty =
@@ -94,6 +100,18 @@ namespace Perspex.Controls.Presenters
 
                 _generator = value;
             }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the items in the carousel are virtualized.
+        /// </summary>
+        /// <remarks>
+        /// When the carousel is virtualized, only the active page is held in memory.
+        /// </remarks>
+        public bool IsVirtualized
+        {
+            get { return GetValue(IsVirtualizedProperty); }
+            set { SetValue(IsVirtualizedProperty, value); }
         }
 
         /// <summary>
@@ -212,13 +230,17 @@ namespace Perspex.Controls.Presenters
                 if (toIndex != -1)
                 {
                     var item = Items.Cast<object>().ElementAt(toIndex);
-                    to = generator.ContainerFromIndex(toIndex) ??
-                         generator.Materialize(toIndex, new[] { item }, MemberSelector)
-                            .FirstOrDefault()?.ContainerControl;
+                    to = generator.ContainerFromIndex(toIndex);
 
-                    if (to != null)
+                    if (to == null)
                     {
-                        Panel.Children.Add(to);
+                        to = generator.Materialize(toIndex, new[] { item }, MemberSelector)
+                           .FirstOrDefault()?.ContainerControl;
+
+                        if (to != null)
+                        {
+                            Panel.Children.Add(to);
+                        }
                     }
                 }
 
@@ -233,10 +255,16 @@ namespace Perspex.Controls.Presenters
 
                 if (from != null)
                 {
-                    Panel.Children.Remove(from);
-                    generator.Dematerialize(fromIndex, 1);
+                    if (IsVirtualized)
+                    {
+                        Panel.Children.Remove(from);
+                        generator.Dematerialize(fromIndex, 1);
+                    }
+                    else
+                    {
+                        from.IsVisible = false;
+                    }
                 }
-
             }
         }
 

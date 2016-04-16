@@ -1,6 +1,7 @@
 ﻿// Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System.Linq;
 using Moq;
 using Perspex.Controls.Generators;
 using Perspex.Controls.Presenters;
@@ -76,6 +77,43 @@ namespace Perspex.Controls.UnitTests.Presenters
 
             Assert.IsType<TextBlock>(target.Panel.Children[0]);
             Assert.Equal("bar", ((TextBlock)target.Panel.Children[0]).Text);
+        }
+
+        [Fact]
+        public void Should_Remove_NonCurrent_Page_When_IsVirtualized_True()
+        {
+            var target = new CarouselPresenter
+            {
+                Items = new[] { "foo", "bar" },
+                IsVirtualized = true,
+                SelectedIndex = 0,
+            };
+
+            target.ApplyTemplate();
+            Assert.Equal(1, target.ItemContainerGenerator.Containers.Count());
+            target.SelectedIndex = 1;
+            Assert.Equal(1, target.ItemContainerGenerator.Containers.Count());
+        }
+
+        [Fact]
+        public void Should_Not_Remove_NonCurrent_Page_When_IsVirtualized_False()
+        {
+            var target = new CarouselPresenter
+            {
+                Items = new[] { "foo", "bar" },
+                IsVirtualized = false,
+                SelectedIndex = 0,
+            };
+
+            target.ApplyTemplate();
+            Assert.Equal(1, target.ItemContainerGenerator.Containers.Count());
+            Assert.Equal(1, target.Panel.Children.Count);
+            target.SelectedIndex = 1;
+            Assert.Equal(2, target.ItemContainerGenerator.Containers.Count());
+            Assert.Equal(2, target.Panel.Children.Count);
+            target.SelectedIndex = 0;
+            Assert.Equal(2, target.ItemContainerGenerator.Containers.Count());
+            Assert.Equal(2, target.Panel.Children.Count);
         }
 
         private class TestItem : ContentControl

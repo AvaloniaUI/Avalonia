@@ -29,7 +29,7 @@ namespace Perspex.Controls.Generators
         }
 
         /// <inheritdoc/>
-        public IEnumerable<ItemContainer> Containers => _containers;
+        public IEnumerable<ItemContainer> Containers => _containers.Where(x => x != null);
 
         /// <inheritdoc/>
         public event EventHandler<ItemContainerEventArgs> Materialized;
