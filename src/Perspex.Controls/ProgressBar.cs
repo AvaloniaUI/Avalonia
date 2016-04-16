@@ -12,7 +12,7 @@ namespace Perspex.Controls
     /// </summary>
     public class ProgressBar : RangeBase
     {
-        private Border _indicator;
+        internal Border Indicator;
 
         static ProgressBar()
         {
@@ -29,16 +29,16 @@ namespace Perspex.Controls
         /// <inheritdoc/>
         protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
         {
-            _indicator = e.NameScope.Get<Border>("PART_Indicator");
+            Indicator = e.NameScope.Get<Border>("PART_Indicator");
             UpdateIndicator(Bounds.Size);
         }
 
         private void UpdateIndicator(Size bounds)
         {
-            if (_indicator != null)
+            if (Indicator != null)
             {
                 double percent = MathUtilities.Equal(Maximum, Minimum) ? 1.0 : (Value - Minimum) / (Maximum - Minimum);
-                _indicator.Width = bounds.Width * percent;
+                Indicator.Width = bounds.Width * percent;
             }
         }
 
