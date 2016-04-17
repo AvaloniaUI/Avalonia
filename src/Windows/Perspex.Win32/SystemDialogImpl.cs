@@ -46,8 +46,8 @@ namespace Perspex.Win32
 
                 string userSelectedExt = null;
 
-                var title = dialog.Title.ToArray();
-                var initialDir = dialog.InitialDirectory.ToArray();
+                var title = dialog.Title?.ToArray();
+                var initialDir = dialog.InitialDirectory?.ToArray();
 
                 fixed (char* pFileBuffer = fileBuffer)
                 fixed (char* pFilterBuffer = filterBuffer)
