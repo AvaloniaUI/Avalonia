@@ -23,7 +23,13 @@ namespace Perspex.Controls
         /// </summary>
         public static readonly StyledProperty<Stretch> StretchProperty =
             PerspexProperty.Register<Image, Stretch>(nameof(Stretch), Stretch.Uniform);
-        
+
+        static Image()
+        {
+            AffectsRender(SourceProperty);
+            AffectsRender(StretchProperty);
+        }
+
         /// <summary>
         /// Gets or sets the bitmap image that will be displayed.
         /// </summary>
@@ -42,17 +48,11 @@ namespace Perspex.Controls
             set { SetValue(StretchProperty, value); }
         }
 
-		static Image()
-		{
-			AffectsRender(SourceProperty);
-			AffectsRender(StretchProperty);
-		}
-
-		/// <summary>
-		/// Renders the control.
-		/// </summary>
-		/// <param name="context">The drawing context.</param>
-		public override void Render(DrawingContext context)
+        /// <summary>
+        /// Renders the control.
+        /// </summary>
+        /// <param name="context">The drawing context.</param>
+        public override void Render(DrawingContext context)
         {
             var source = Source;
 
