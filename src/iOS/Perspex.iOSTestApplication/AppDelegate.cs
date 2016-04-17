@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Foundation;
+using Perspex.Controls;
 using Perspex.iOS;
+using Perspex.Media;
 using Perspex.Threading;
 using TestApplication;
 using UIKit;
@@ -14,7 +16,7 @@ namespace Perspex.iOSTestApplication
     // User Interface of the application, as well as listening (and optionally responding) to 
     // application events from iOS.
     [Register("AppDelegate")]
-    public partial class AppDelegate : PerspexAppDelegate
+    public partial class AppDelegate : UIApplicationDelegate
     {
         //
         // This method is invoked when the application has loaded and is ready to run. In this 
@@ -25,16 +27,18 @@ namespace Perspex.iOSTestApplication
         //
         public override bool FinishedLaunching(UIApplication uiapp, NSDictionary options)
         {
-            InitPerspex (typeof (App));
+            var app = new App()
+                .UseiOS()
+                .UseSkiaViewHost()
+                .UseSkia();
 
-            var app = new App();
-
-            MainWindow.RootNamespace = "Perspex.iOSTestApplication";
-            var window = MainWindow.Create();
-            window.Show();
-            app.Run(window);
+            var asm = typeof(App).Assembly;
+            app.UseAssetAssembly(asm);
+            app.Run();
 
             return true;
         }
     }
+
+
 }

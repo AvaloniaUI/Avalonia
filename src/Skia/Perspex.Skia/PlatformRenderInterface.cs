@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Perspex.Media;
 using Perspex.Platform;
+using SkiaSharp;
 
 namespace Perspex.Skia
 {
@@ -29,12 +30,13 @@ namespace Perspex.Skia
 
         IBitmapImpl LoadBitmap(byte[] data)
         {
-            IntPtr ptr;
-            int width;
-            int height;
-            if (!MethodTable.Instance.LoadImage(data, data.Length, out ptr, out width, out height))
+            var bitmap = new SKBitmap();
+            if (!SKImageDecoder.DecodeMemory(data, bitmap))
+            {
                 throw new ArgumentException("Unable to load bitmap from provided data");
-            return new BitmapImpl(ptr, width, height);
+            }
+
+            return new BitmapImpl(bitmap);
         }
 
         public IBitmapImpl LoadBitmap(System.IO.Stream stream)
@@ -56,10 +58,13 @@ namespace Perspex.Skia
                 throw new ArgumentException("Width can't be less than 1", nameof(width));
             if (height < 1)
                 throw new ArgumentException("Height can't be less than 1", nameof(height));
+
             return new BitmapImpl(width, height);
         }
 
-        public IRenderTarget CreateRenderer(IPlatformHandle handle) 
-            => new RenderTarget(handle);
+        public IRenderTarget CreateRenderer(IPlatformHandle handle)
+        {
+            return new WindowRenderTarget(handle.Handle);
+        }
     }
 }

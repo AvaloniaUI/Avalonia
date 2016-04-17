@@ -30,7 +30,11 @@ namespace Perspex.Skia
             set
             {
                 s_forceSoftwareRendering = value;
-                MethodTable.Instance.SetOption(MethodTable.Option.ForceSoftware, new IntPtr(value ? 1 : 0));
+
+                // TODO: I left this property here as place holder. Do we still need the ability to Force software rendering? 
+                // Is it even possible with SkiaSharp? Perhaps kekekes can answer as part of the HW accel work. 
+                // 
+                throw new NotImplementedException();
             }
         }
     }

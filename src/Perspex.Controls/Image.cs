@@ -23,7 +23,13 @@ namespace Perspex.Controls
         /// </summary>
         public static readonly StyledProperty<Stretch> StretchProperty =
             PerspexProperty.Register<Image, Stretch>(nameof(Stretch), Stretch.Uniform);
-        
+
+        static Image()
+        {
+            AffectsRender(SourceProperty);
+            AffectsRender(StretchProperty);
+        }
+
         /// <summary>
         /// Gets or sets the bitmap image that will be displayed.
         /// </summary>

@@ -105,7 +105,20 @@ namespace Perspex.Shared.PlatformSupport
                         "No defaultAssembly, entry assembly or explicit assembly specified, don't know where to look up for the resource, try specifiyng assembly explicitly");
 
                 IAssetDescriptor rv;
-                asm.Resources.TryGetValue(uri.AbsolutePath, out rv);
+
+                var resourceKey = uri.AbsolutePath;
+
+#if __IOS__
+                // TODO: HACK: to get iOS up and running. Using Shared projects for resources
+                // is flawed as this alters the reource key locations across platforms
+                // I think we need to use Portable libraries from now on to avoid that.
+                if(asm.Name.Contains("iOS"))
+                {
+                    resourceKey = resourceKey.Replace("TestApplication", "Perspex.iOSTestApplication");
+                }
+#endif
+
+                asm.Resources.TryGetValue(resourceKey, out rv);
                 return rv;
             }
             throw new ArgumentException($"Invalid uri, see https://github.com/Perspex/Perspex/issues/282#issuecomment-166982104", nameof(uri));

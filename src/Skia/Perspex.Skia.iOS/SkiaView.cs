@@ -15,32 +15,25 @@ using UIKit;
 
 namespace Perspex.Skia.iOS
 {
-    public abstract class SkiaView : GLKView
+    // TODO: This implementation will be revised as part of HW acceleration work
+    // and we may use the GLKView as a base for the implementation.
+    //
+    public abstract class SkiaView : UIView
     {
-        [DllImport("__Internal")]
-        static extern IntPtr GetPerspexEAGLContext();
-
         bool _drawQueued;
-        CADisplayLink _link;
         static EAGLContext GetContext()
         {
-            //Ensure initialization
-            MethodTable.Instance.SetOption((MethodTable.Option)0x10009999, IntPtr.Zero);
-            var ctx = GetPerspexEAGLContext();
-            var rv = Runtime.GetNSObject<EAGLContext>(ctx);
-            rv.DangerousRetain();
-            return rv;
+            return null;
         }
 
 
-        protected SkiaView(Action<Action> registerFrame) : base(UIScreen.MainScreen.ApplicationFrame, GetContext())
+        protected SkiaView(Action<Action> registerFrame) : base(UIScreen.MainScreen.ApplicationFrame)
         {
             registerFrame(OnFrame);
         }
 
-        protected SkiaView() : base(UIScreen.MainScreen.ApplicationFrame, GetContext())
+        protected SkiaView() : base(UIScreen.MainScreen.ApplicationFrame)
         {
-            (_link = CADisplayLink.Create(() => OnFrame())).AddToRunLoop(NSRunLoop.Main, NSRunLoop.NSDefaultRunLoopMode);
         }
 
         protected void OnFrame()
@@ -48,7 +41,7 @@ namespace Perspex.Skia.iOS
             if (_drawQueued)
             {
                 _drawQueued = false;
-                Display();
+                this.SetNeedsDisplay();
             }
         }
 
@@ -57,9 +50,9 @@ namespace Perspex.Skia.iOS
             _drawQueued = true;
         }
 
-        protected IPlatformHandle PerspexPlatformHandle { get; } 
+        protected IPlatformHandle PerspexPlatformHandle { get; }
             = new PlatformHandle(IntPtr.Zero, "Null (iOS-specific)");
-            
+
 
         protected abstract void Draw();
 

@@ -2,49 +2,45 @@
 using System.Collections.Generic;
 using System.Text;
 using Perspex.Media;
+using SkiaSharp;
 
 namespace Perspex.Skia
 {
     static class TypefaceCache
     {
-        static readonly Dictionary<string, Dictionary<Style, IntPtr>>Cache = new Dictionary<string, Dictionary<Style, IntPtr>>();
-        unsafe static IntPtr GetTypeface(string name, Style style)
+        static readonly Dictionary<string, Dictionary<SKTypefaceStyle, SKTypeface>> Cache = new Dictionary<string, Dictionary<SKTypefaceStyle, SKTypeface>>();
+
+        unsafe static SKTypeface GetTypeface(string name, SKTypefaceStyle style)
         {
             if (name == null)
                 name = "Arial";
-            Dictionary<Style, IntPtr> entry;
+
+            Dictionary<SKTypefaceStyle, SKTypeface> entry;
             if (!Cache.TryGetValue(name, out entry))
-                Cache[name] = entry = new Dictionary<Style, IntPtr>();
-            IntPtr rv;
-            if (!entry.TryGetValue(style, out rv))
+                Cache[name] = entry = new Dictionary<SKTypefaceStyle, SKTypeface>();
+
+            SKTypeface typeface = null;
+            if (!entry.TryGetValue(style, out typeface))
             {
-                var bytes = Encoding.ASCII.GetBytes(name);
-                var buffer = new byte[bytes.Length + 1];
-                bytes.CopyTo(buffer, 0);
-                fixed (void* pname = buffer)
+                typeface = SKTypeface.FromFamilyName(name, style);
+                if (typeface == null)
                 {
-                    entry[style] = rv = MethodTable.Instance.CreateTypeface(pname, (int)style);
+                    typeface = SKTypeface.FromFamilyName(null, style);
                 }
+                entry[style] = typeface;
             }
-            return rv;
+            return typeface;
         }
 
-        [Flags]
-        enum Style
+        public static SKTypeface GetTypeface(string name, FontStyle style, FontWeight weight)
         {
-            Normal = 0,
-            Bold = 0x01,
-            Italic = 0x02,
-            BoldItalic = 0x03
-        };
-
-        public static IntPtr GetTypeface(string name, FontStyle style, FontWeight weight)
-        {
-            Style sstyle = Style.Normal;
+            SKTypefaceStyle sstyle = SKTypefaceStyle.Normal;
             if (style != FontStyle.Normal)
-                sstyle |= Style.Italic;
-            if(weight>FontWeight.Normal)
-            sstyle |= Style.Bold;
+                sstyle |= SKTypefaceStyle.Italic;
+
+            if (weight > FontWeight.Normal)
+                sstyle |= SKTypefaceStyle.Bold;
+
             return GetTypeface(name, sstyle);
         }
 
