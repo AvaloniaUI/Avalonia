@@ -65,7 +65,7 @@ Copy-Item skia\build $skia_root -recurse
 mkdir $skia_native
 Copy-Item ..\src\Skia\native\Windows $skia_native -recurse
 Copy-Item ..\src\Skia\native\Linux $skia_native -recurse
-Copy-Item ..\src\Skia\Perspex.Skia.Desktop\bin\Release\Perspex.Skia.Desktop.dll $skia_lib
+Copy-Item ..\src\Skia\Perspex.Skia.Desktop\bin\x86\Release\Perspex.Skia.Desktop.dll $skia_lib
 
 
 Copy-Item ..\src\Android\Perspex.Android\bin\Release\Perspex.Android.dll $android
