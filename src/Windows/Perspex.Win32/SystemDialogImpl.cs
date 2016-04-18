@@ -40,7 +40,7 @@ namespace Perspex.Win32
                 var filterBuffer = new char[filters.Length];
                 filters.CopyTo(0, filterBuffer, 0, filterBuffer.Length);
 
-                var defExt = (dialog as SaveFileDialog)?.DefaultExtension.ToArray();
+                var defExt = (dialog as SaveFileDialog)?.DefaultExtension?.ToArray();
                 var fileBuffer = new char[256];
                 dialog.InitialFileName?.CopyTo(0, fileBuffer, 0, dialog.InitialFileName.Length);
 
