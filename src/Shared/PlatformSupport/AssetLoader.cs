@@ -56,13 +56,21 @@ namespace Perspex.Shared.PlatformSupport
         AssemblyDescriptor GetAssembly(string name)
         {
             if (name == null)
+            {
                 return _defaultAssembly;
+            }
+
             AssemblyDescriptor rv;
             if (!AssemblyNameCache.TryGetValue(name, out rv))
-                AssemblyNameCache[name] = rv =
-                    new AssemblyDescriptor(AppDomain.CurrentDomain.GetAssemblies()
-                        .FirstOrDefault(a => a.GetName().Name == name)
-                                           ?? Assembly.Load(name));
+            {
+                var loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies();
+                var match = loadedAssemblies.FirstOrDefault(a => a.GetName().Name == name);
+                if (match != null)
+                {
+                    AssemblyNameCache[name] = rv = new AssemblyDescriptor(Assembly.Load(name));
+                }
+            }
+
             return rv;
         }
 
