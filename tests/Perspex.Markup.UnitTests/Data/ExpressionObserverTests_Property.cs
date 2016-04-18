@@ -300,16 +300,6 @@ namespace Perspex.Markup.UnitTests.Data
             Assert.False(target.SetValue("baz"));
         }
 
-        [Fact(Skip = "Validation captures the exception")]
-        public void SetValue_Should_Throw_For_Wrong_Type()
-        {
-            var data = new Class1 { Foo = "foo" };
-            var target = new ExpressionObserver(data, "Foo");
-
-            Assert.Throws<ArgumentException>(() => 
-            target.SetValue(1.2));
-        }
-
         [Fact]
         public async void Should_Handle_Null_Root()
         {
