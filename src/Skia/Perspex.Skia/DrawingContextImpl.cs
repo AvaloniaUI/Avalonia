@@ -4,6 +4,7 @@ using Perspex.Media;
 using Perspex.Media.Imaging;
 using SkiaSharp;
 using System.Linq;
+using Perspex.RenderHelpers;
 
 namespace Perspex.Skia
 {
@@ -29,7 +30,7 @@ namespace Perspex.Skia
         {
             using (var paint = CreatePaint(pen, new Size(Math.Abs(p2.X - p1.X), Math.Abs(p2.Y - p1.Y))))
             {
-                Canvas.DrawLine((float)p1.X, (float)p1.Y, (float)p2.X, (float)p2.Y, paint);
+                Canvas.DrawLine((float)p1.X, (float)p1.Y, (float)p2.X, (float)p2.Y, paint.Paint);
             }
         }
 
@@ -38,24 +39,53 @@ namespace Perspex.Skia
             var impl = ((StreamGeometryImpl)geometry.PlatformImpl);
             var size = geometry.Bounds.Size;
 
-            using (var fill = brush != null ? CreatePaint(brush, size) : null)
-            using (var stroke = pen?.Brush != null ? CreatePaint(pen, size) : null)
+            using (var fill = brush != null ? CreatePaint(brush, size) : default(PaintWrapper))
+            using (var stroke = pen?.Brush != null ? CreatePaint(pen, size) : default(PaintWrapper))
             {
-                if (fill != null)
+                if (fill.Paint != null)
                 {
-                    Canvas.DrawPath(impl.EffectivePath, fill);
+                    Canvas.DrawPath(impl.EffectivePath, fill.Paint);
                 }
-                if (stroke != null)
+                if (stroke.Paint != null)
                 {
-                    Canvas.DrawPath(impl.EffectivePath, stroke);
+                    Canvas.DrawPath(impl.EffectivePath, stroke.Paint);
                 }
             }
         }
 
-        private SKPaint CreatePaint(IBrush brush, Size targetSize)
+        struct PaintWrapper : IDisposable
+        {
+            //We are saving memory allocations there
+            //TODO: add more disposable fields if needed
+
+            public readonly SKPaint Paint;
+            private IDisposable _disposable1;
+
+            public void AddDisposable(IDisposable disposable)
+            {
+                if (_disposable1 == null)
+                    _disposable1 = disposable;
+                else
+                    throw new InvalidOperationException();
+            }
+
+            public PaintWrapper(SKPaint paint)
+            {
+                Paint = paint;
+                _disposable1 = null;
+            }
+
+            public void Dispose()
+            {
+                Paint?.Dispose();
+                _disposable1?.Dispose();
+            }
+        }
+
+        private PaintWrapper CreatePaint(IBrush brush, Size targetSize)
         {
             SKPaint paint = new SKPaint();
-
+            var rv = new PaintWrapper(paint);
             paint.IsStroke = false;
 
             // TODO: SkiaSharp does not contain alpha yet!
@@ -67,7 +97,7 @@ namespace Perspex.Skia
             if (solid != null)
             {
                 paint.Color = solid.Color.ToSKColor();
-                return paint;
+                return rv;
             }
 
             var gradient = brush as GradientBrush;
@@ -104,12 +134,33 @@ namespace Perspex.Skia
                     }
                 }
 
-                return paint;
+                return rv;
             }
 
             var tileBrush = brush as TileBrush;
             if (tileBrush != null)
             {
+                var helper = new TileBrushImplHelper(tileBrush, targetSize);
+                var bitmap = new BitmapImpl((int)helper.IntermediateSize.Width, (int)helper.IntermediateSize.Height);
+                rv.AddDisposable(bitmap);
+                using (var ctx = bitmap.CreateDrawingContext())
+                	helper.DrawIntermediate(ctx);
+                SKMatrix translation = SKMatrix.MakeTranslation(-(float)helper.DestinationRect.X, -(float)helper.DestinationRect.Y);
+                SKShaderTileMode tileX =
+                    tileBrush.TileMode == TileMode.None
+                        ? SKShaderTileMode.Clamp
+                        : tileBrush.TileMode == TileMode.FlipX || tileBrush.TileMode == TileMode.FlipXY
+                            ? SKShaderTileMode.Mirror
+                            : SKShaderTileMode.Repeat;
+
+                SKShaderTileMode tileY =
+                    tileBrush.TileMode == TileMode.None
+                        ? SKShaderTileMode.Clamp
+                        : tileBrush.TileMode == TileMode.FlipY || tileBrush.TileMode == TileMode.FlipXY
+                            ? SKShaderTileMode.Mirror
+                            : SKShaderTileMode.Repeat;
+                paint.Shader = SKShader.CreateBitmap(bitmap.Bitmap, tileX, tileY, translation);
+
                 // TODO: Get Tile Brushes working!!!
                 //
                 //throw new NotImplementedException();
@@ -134,12 +185,13 @@ namespace Perspex.Skia
                 //	paint.setShader(SkShader::CreateBitmapShader(brush->Bitmap->Bitmap, tileX, tileY, &matrix))->unref();
             }
 
-            return paint;
+            return rv;
         }
 
-        private SKPaint CreatePaint(Pen pen, Size targetSize)
+        private PaintWrapper CreatePaint(Pen pen, Size targetSize)
         {
-            var paint = CreatePaint(pen.Brush, targetSize);
+            var rv = CreatePaint(pen.Brush, targetSize);
+            var paint = rv.Paint;
 
             paint.IsStroke = true;
             paint.StrokeWidth = (float)pen.Thickness;
@@ -179,7 +231,7 @@ namespace Perspex.Skia
             //	paint.setPathEffect(SkDashPathEffect::Create(brush->StrokeDashes, brush->StrokeDashCount, brush->StrokeDashOffset))->unref();
             //}
 
-            return paint;
+            return rv;
         }
 
         public void DrawRectangle(Pen pen, Rect rect, float cornerRadius = 0)
@@ -189,13 +241,13 @@ namespace Perspex.Skia
                 var rc = rect.ToSKRect();
                 if (cornerRadius == 0)
                 {
-                    Canvas.DrawRect(rc, paint);
+                    Canvas.DrawRect(rc, paint.Paint);
                 }
                 else
                 {
                     // TODO: DrawRRect (ore DrawRoundedRect) is not accesible in SkiaSharp yet. We should add that
                     // to SkiaSharp and initiate a PR....
-                    Canvas.DrawRect(rc, paint);
+                    Canvas.DrawRect(rc, paint.Paint);
                     //Canvas.DrawRoundedRect(rc, cornerRadius, cornerRadius, paint);
                 }
             }
@@ -208,14 +260,14 @@ namespace Perspex.Skia
                 var rc = rect.ToSKRect();
                 if (cornerRadius == 0)
                 {
-                    Canvas.DrawRect(rc, paint);
+                    Canvas.DrawRect(rc, paint.Paint);
                 }
                 else
                 {
                     // TODO: this does not exist in SkiaSharp yet
                     //throw new NotImplementedException();
                     //Canvas.DrawRoundedRect(rc, cornerRadius, cornerRadius, paint);
-                    Canvas.DrawRect(rc, paint);
+                    Canvas.DrawRect(rc, paint.Paint);
                 }
             }
         }
