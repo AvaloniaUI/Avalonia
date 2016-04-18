@@ -77,6 +77,9 @@ namespace Perspex.Markup.Xaml.Data
         /// </summary>
         public object Source { get; set; }
 
+        /// <summary>
+        /// Gets or sets the validation methods for the binding to use.
+        /// </summary>
         public ValidationMethods ValidationMethods { get; set; }
 
         /// <inheritdoc/>
