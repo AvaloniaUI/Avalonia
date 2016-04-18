@@ -401,17 +401,22 @@ namespace Perspex
                     GetDescription(source));
 
                 IDisposable subscription = null;
+                IDisposable validationSubcription = null;
 
                 subscription = source
                     .Where(x =>  !(x is ValidationStatus))
                     .Select(x => CastOrDefault(x, property.PropertyType))
                     .Do(_ => { }, () => s_directBindings.Remove(subscription))
                     .Subscribe(x => DirectBindingSet(property, x));
+                validationSubcription = source.OfType<ValidationStatus>().Subscribe(x => ValidationChanged(property, x));
 
                 s_directBindings.Add(subscription);
+                s_directBindings.Add(validationSubcription);
 
                 return Disposable.Create(() =>
                 {
+                    validationSubcription.Dispose();
+                    s_directBindings.Remove(validationSubcription);
                     subscription.Dispose();
                     s_directBindings.Remove(subscription);
                 });
