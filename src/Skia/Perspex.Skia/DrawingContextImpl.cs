@@ -89,16 +89,20 @@ namespace Perspex.Skia
             paint.IsStroke = false;
 
             // TODO: SkiaSharp does not contain alpha yet!
-            //double opacity = brush.Opacity * _currentOpacity;
+            double opacity = brush.Opacity * _currentOpacity;
             //paint.SetAlpha(paint.GetAlpha() * opacity);
             paint.IsAntialias = true;
 
+            SKColor color = new SKColor(255, 255, 255, 255);
+
             var solid = brush as SolidColorBrush;
             if (solid != null)
-            {
-                paint.Color = solid.Color.ToSKColor();
+                color = solid.Color.ToSKColor();
+
+            paint.Color = (new SKColor(color.Red, color.Green, color.Blue, (byte) (color.Alpha*opacity)));
+            if (solid != null)
                 return rv;
-            }
+
 
             var gradient = brush as GradientBrush;
             if (gradient != null)
@@ -116,6 +120,7 @@ namespace Perspex.Skia
                     // would be nice to cache these shaders possibly?
                     var shader = SKShader.CreateLinearGradient(start, end, stopColors, stopOffsets, tileMode);
                     paint.Shader = shader;
+                    shader.Dispose();
                 }
                 else
                 {
@@ -131,6 +136,7 @@ namespace Perspex.Skia
                         // would be nice to cache these shaders possibly?
                         var shader = SKShader.CreateRadialGradient(center, radius, stopColors, stopOffsets, tileMode);
                         paint.Shader = shader;
+                        shader.Dispose();
                     }
                 }
 
@@ -160,29 +166,7 @@ namespace Perspex.Skia
                             ? SKShaderTileMode.Mirror
                             : SKShaderTileMode.Repeat;
                 paint.Shader = SKShader.CreateBitmap(bitmap.Bitmap, tileX, tileY, translation);
-
-                // TODO: Get Tile Brushes working!!!
-                //
-                //throw new NotImplementedException();
-
-                //	rv.Brush->Type = NativeBrushType.Image;
-                //	var helper = new TileBrushImplHelper(tileBrush, targetSize);
-                //	var bitmap = new BitmapImpl((int)helper.IntermediateSize.Width, (int)helper.IntermediateSize.Height);
-                //	rv.AddDisposable(bitmap);
-                //	using (var ctx = bitmap.CreateDrawingContext())
-                //		helper.DrawIntermediate(ctx);
-                //	rv.Brush->Bitmap = bitmap.Handle;
-                //	rv.Brush->BitmapTileMode = tileBrush.TileMode;
-                //	rv.Brush->BitmapTranslation = new SkiaPoint(-helper.DestinationRect.X, -helper.DestinationRect.Y);
-
-                //	SkMatrix matrix;
-                //	matrix.setTranslate(brush->BitmapTranslation);
-                //	SkShader::TileMode tileX = brush->BitmapTileMode == ptmNone ? SkShader::kClamp_TileMode
-                //		: (brush->BitmapTileMode == ptmFlipX || brush->BitmapTileMode == ptmFlipXY) ? SkShader::kMirror_TileMode : SkShader::kRepeat_TileMode;
-                //	SkShader::TileMode tileY = brush->BitmapTileMode == ptmNone ? SkShader::kClamp_TileMode
-                //		: (brush->BitmapTileMode == ptmFlipY || brush->BitmapTileMode == ptmFlipXY) ? SkShader::kMirror_TileMode : SkShader::kRepeat_TileMode;
-
-                //	paint.setShader(SkShader::CreateBitmapShader(brush->Bitmap->Bitmap, tileX, tileY, &matrix))->unref();
+                paint.Shader.Dispose();
             }
 
             return rv;
