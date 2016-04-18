@@ -13,6 +13,7 @@ namespace Perspex
     {
         private PriorityLevel _owner;
         private IDisposable _subscription;
+        private ValidationMethods _validation;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PriorityBindingEntry"/> class.
@@ -21,10 +22,12 @@ namespace Perspex
         /// <param name="index">
         /// The binding index. Later bindings should have higher indexes.
         /// </param>
-        public PriorityBindingEntry(PriorityLevel owner, int index)
+        /// <param name="validation">The validation settings for the binding.</param>
+        public PriorityBindingEntry(PriorityLevel owner, int index, ValidationMethods validation)
         {
             _owner = owner;
             Index = index;
+            _validation = validation;
         }
 
         /// <summary>
@@ -103,7 +106,10 @@ namespace Perspex
 
             if (validationStatus != null)
             {
-                _owner.Validation(this, validationStatus);
+                if (validationStatus.Match(_validation))
+                {
+                    _owner.Validation(this, validationStatus);
+                }
             }
             else if (bindingError == null || bindingError.UseFallbackValue)
             {

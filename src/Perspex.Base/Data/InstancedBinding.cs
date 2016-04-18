@@ -29,12 +29,16 @@ namespace Perspex.Data
         /// <param name="value">
         /// The value used for the <see cref="BindingMode.OneTime"/> binding.
         /// </param>
+        /// <param name="methods">The validation methods for this binding.</param>
         /// <param name="priority">The binding priority.</param>
-        public InstancedBinding(object value, BindingPriority priority = BindingPriority.LocalValue)
+        public InstancedBinding(object value,
+            BindingPriority priority = BindingPriority.LocalValue,
+            ValidationMethods methods = ValidationMethods.None)
         {
             Mode = BindingMode.OneTime;
             Priority = priority;
             Value = value;
+            ValidationMethods = methods;
         }
 
         /// <summary>
@@ -43,10 +47,12 @@ namespace Perspex.Data
         /// <param name="observable">The observable for a one-way binding.</param>
         /// <param name="mode">The binding mode.</param>
         /// <param name="priority">The binding priority.</param>
+        /// <param name="methods">The validation methods for this binding.</param>
         public InstancedBinding(
             IObservable<object> observable, 
             BindingMode mode = BindingMode.OneWay,
-            BindingPriority priority = BindingPriority.LocalValue)
+            BindingPriority priority = BindingPriority.LocalValue,
+            ValidationMethods methods = ValidationMethods.None)
         {
             Contract.Requires<ArgumentNullException>(observable != null);
 
@@ -60,6 +66,7 @@ namespace Perspex.Data
             Mode = mode;
             Priority = priority;
             Observable = observable;
+            ValidationMethods = methods;
         }
 
         /// <summary>
@@ -68,16 +75,19 @@ namespace Perspex.Data
         /// <param name="subject">The subject for a two-way binding.</param>
         /// <param name="mode">The binding mode.</param>
         /// <param name="priority">The binding priority.</param>
+        /// <param name="methods">The validation methods for this binding.</param>
         public InstancedBinding(
             ISubject<object> subject,
             BindingMode mode = BindingMode.OneWay,
-            BindingPriority priority = BindingPriority.LocalValue)
+            BindingPriority priority = BindingPriority.LocalValue,
+            ValidationMethods methods = ValidationMethods.None)
         {
             Contract.Requires<ArgumentNullException>(subject != null);
 
             Mode = mode;
             Priority = priority;
             Subject = subject;
+            ValidationMethods = methods;
         }
 
         /// <summary>
@@ -104,5 +114,10 @@ namespace Perspex.Data
         /// Gets the subject for a two-way binding.
         /// </summary>
         public ISubject<object> Subject { get; }
+
+        /// <summary>
+        /// Gets the validation methods for this binding.
+        /// </summary>
+        public ValidationMethods ValidationMethods { get; }
     }
 }

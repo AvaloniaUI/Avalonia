@@ -375,13 +375,15 @@ namespace Perspex
         /// <param name="property">The property.</param>
         /// <param name="source">The observable.</param>
         /// <param name="priority">The priority of the binding.</param>
+        /// <param name="validation">The validation methods of the binding.</param>
         /// <returns>
         /// A disposable which can be used to terminate the binding.
         /// </returns>
         public IDisposable Bind(
             PerspexProperty property,
             IObservable<object> source,
-            BindingPriority priority = BindingPriority.LocalValue)
+            BindingPriority priority = BindingPriority.LocalValue,
+            ValidationMethods validation = ValidationMethods.None)
         {
             Contract.Requires<ArgumentNullException>(property != null);
             VerifyAccess();
@@ -408,15 +410,16 @@ namespace Perspex
                     .Select(x => CastOrDefault(x, property.PropertyType))
                     .Do(_ => { }, () => s_directBindings.Remove(subscription))
                     .Subscribe(x => DirectBindingSet(property, x));
-                validationSubcription = source.OfType<ValidationStatus>().Subscribe(x => ValidationChanged(property, x));
+                validationSubcription = source
+                    .OfType<ValidationStatus>()
+                    .Where(v => v.Match(validation))
+                    .Subscribe(x => ValidationChanged(property, x));
 
                 s_directBindings.Add(subscription);
-                s_directBindings.Add(validationSubcription);
 
                 return Disposable.Create(() =>
                 {
                     validationSubcription.Dispose();
-                    s_directBindings.Remove(validationSubcription);
                     subscription.Dispose();
                     s_directBindings.Remove(subscription);
                 });
@@ -444,7 +447,7 @@ namespace Perspex
                     GetDescription(source),
                     priority);
 
-                return v.Add(source, (int)priority);
+                return v.Add(source, (int)priority, validation);
             }
         }
 
@@ -455,13 +458,15 @@ namespace Perspex
         /// <param name="property">The property.</param>
         /// <param name="source">The observable.</param>
         /// <param name="priority">The priority of the binding.</param>
+        /// <param name="validation">The validation methods of the binding.</param>
         /// <returns>
         /// A disposable which can be used to terminate the binding.
         /// </returns>
         public IDisposable Bind<T>(
             PerspexProperty<T> property,
             IObservable<T> source,
-            BindingPriority priority = BindingPriority.LocalValue)
+            BindingPriority priority = BindingPriority.LocalValue,
+            ValidationMethods validation = ValidationMethods.None)
         {
             Contract.Requires<ArgumentNullException>(property != null);
 

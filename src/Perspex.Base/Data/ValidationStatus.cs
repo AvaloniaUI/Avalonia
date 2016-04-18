@@ -19,5 +19,12 @@ namespace Perspex.Data
         /// True when the data passes validation; otherwise, false.
         /// </summary>
         public abstract bool IsValid { get; }
+
+        /// <summary>
+        /// Checks if this validation status came from a currently enabled method of validation checking.
+        /// </summary>
+        /// <param name="enabledMethods">The enabled methods of validation checking.</param>
+        /// <returns>True if enabled; otherwise, false.</returns>
+        public abstract bool Match(ValidationMethods enabledMethods);
     }
 }

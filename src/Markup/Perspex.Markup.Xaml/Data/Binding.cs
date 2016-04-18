@@ -77,6 +77,8 @@ namespace Perspex.Markup.Xaml.Data
         /// </summary>
         public object Source { get; set; }
 
+        public ValidationMethods ValidationMethods { get; set; }
+
         /// <inheritdoc/>
         public InstancedBinding Initiate(
             IPerspexObject target, 
@@ -126,7 +128,7 @@ namespace Perspex.Markup.Xaml.Data
                 FallbackValue,
                 Priority);
 
-            return new InstancedBinding(subject, Mode, Priority);
+            return new InstancedBinding(subject, Mode, Priority, ValidationMethods);
         }
 
         private static PathInfo ParsePath(string path)

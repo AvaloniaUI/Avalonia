@@ -29,6 +29,7 @@ namespace Perspex.Markup.Xaml.MarkupExtensions
                 Mode = Mode,
                 Path = Path,
                 Priority = Priority,
+                ValidationMethods = ValidationMethods
             };
         }
 
@@ -40,5 +41,6 @@ namespace Perspex.Markup.Xaml.MarkupExtensions
         public string Path { get; set; }
         public BindingPriority Priority { get; set; } = BindingPriority.LocalValue;
         public object Source { get; set; }
+        public ValidationMethods ValidationMethods { get; set; } = ValidationMethods.None;
     }
 }

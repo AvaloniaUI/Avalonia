@@ -86,6 +86,11 @@ namespace Perspex.Markup.Data.Plugins
             /// The errors on the given property and on the object as a whole.
             /// </summary>
             public IEnumerable Errors { get; }
+
+            public override bool Match(ValidationMethods enabledMethods)
+            {
+                return (enabledMethods & ValidationMethods.INotifyDataErrorInfo) != 0;
+            }
         }
     }
 }

@@ -129,7 +129,7 @@ namespace Perspex.Styling.UnitTests
                 throw new NotImplementedException();
             }
 
-            public IDisposable Bind(PerspexProperty property, IObservable<object> source, BindingPriority priority)
+            public IDisposable Bind(PerspexProperty property, IObservable<object> source, BindingPriority priority, ValidationMethods validation)
             {
                 throw new NotImplementedException();
             }
@@ -139,7 +139,7 @@ namespace Perspex.Styling.UnitTests
                 throw new NotImplementedException();
             }
 
-            public IDisposable Bind<T>(PerspexProperty<T> property, IObservable<T> source, BindingPriority priority = BindingPriority.LocalValue)
+            public IDisposable Bind<T>(PerspexProperty<T> property, IObservable<T> source, BindingPriority priority = BindingPriority.LocalValue, ValidationMethods validation = ValidationMethods.None)
             {
                 throw new NotImplementedException();
             }

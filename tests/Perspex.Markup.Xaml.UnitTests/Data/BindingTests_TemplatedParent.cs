@@ -32,7 +32,8 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
             target.Verify(x => x.Bind(
                 TextBox.TextProperty, 
                 It.IsAny<IObservable<object>>(), 
-                BindingPriority.TemplatedParent));
+                BindingPriority.TemplatedParent,
+                ValidationMethods.None));
         }
 
         [Fact]
@@ -52,7 +53,8 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
             target.Verify(x => x.Bind(
                 TextBox.TextProperty,
                 It.IsAny<ISubject<object>>(),
-                BindingPriority.TemplatedParent));
+                BindingPriority.TemplatedParent,
+                ValidationMethods.None));
         }
 
         private Mock<IControl> CreateTarget(

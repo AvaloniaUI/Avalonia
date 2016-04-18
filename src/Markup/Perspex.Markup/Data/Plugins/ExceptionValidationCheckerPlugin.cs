@@ -64,6 +64,11 @@ namespace Perspex.Markup.Data.Plugins
 
             /// <inheritdoc/>
             public override bool IsValid => Exception == null;
+
+            public override bool Match(ValidationMethods enabledMethods)
+            {
+                return (enabledMethods & ValidationMethods.Exceptions) != 0;
+            }
         }
     }
 }
