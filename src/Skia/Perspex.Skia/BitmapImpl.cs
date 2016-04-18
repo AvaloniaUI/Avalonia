@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -38,7 +37,7 @@ namespace Perspex.Skia
 #if DESKTOP
             IntPtr length;
             using (var sdb = new System.Drawing.Bitmap(PixelWidth, PixelHeight, Bitmap.RowBytes,
-                PixelFormat.Format32bppArgb, Bitmap.GetPixels(out length)))
+                System.Drawing.Imaging.PixelFormat.Format32bppArgb, Bitmap.GetPixels(out length)))
                 sdb.Save(fileName);
 #else
             //SkiaSharp doesn't expose image encoders yet
