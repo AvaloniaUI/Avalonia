@@ -15,6 +15,9 @@ namespace Perspex.Data
     /// </summary>
     public abstract class ValidationStatus
     {
+        /// <summary>
+        /// True when the data passes validation; otherwise, false.
+        /// </summary>
         public abstract bool IsValid { get; }
     }
 }
