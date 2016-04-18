@@ -14,6 +14,7 @@ namespace Perspex.Skia
         public DrawingContextImpl(SKCanvas canvas)
         {
             Canvas = canvas;
+            Canvas.Clear();
         }
 
         public void DrawImage(IBitmap source, double opacity, Rect sourceRect, Rect destRect)
