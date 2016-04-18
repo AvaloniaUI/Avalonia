@@ -125,7 +125,7 @@ namespace Perspex
 
         public static Size operator -(Size size, Size toSubstract)
         {
-            return new Size(size._width + toSubstract._width, size._height + toSubstract._height);
+            return new Size(size._width - toSubstract._width, size._height - toSubstract._height);
         }
 
         /// <summary>
