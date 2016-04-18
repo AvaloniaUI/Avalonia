@@ -38,7 +38,7 @@ namespace Perspex.Shared.PlatformSupport
         private static readonly Dictionary<string, AssemblyDescriptor> AssemblyNameCache
             = new Dictionary<string, AssemblyDescriptor>();
 
-        private readonly AssemblyDescriptor _defaultAssembly;
+        private AssemblyDescriptor _defaultAssembly;
 
         public AssetLoader(Assembly assembly = null)
         {
@@ -47,8 +47,11 @@ namespace Perspex.Shared.PlatformSupport
             if (assembly != null)
                 _defaultAssembly = new AssemblyDescriptor(assembly);
         }
-    
 
+        public void SetDefaultAssembly(Assembly assembly)
+        {
+            _defaultAssembly = new AssemblyDescriptor(assembly);
+        }
 
         AssemblyDescriptor GetAssembly(string name)
         {
