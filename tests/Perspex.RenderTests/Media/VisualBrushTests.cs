@@ -87,7 +87,7 @@ namespace Perspex.Direct2D1.RenderTests.Media
 
 #if PERSPEX_CAIRO
         [Fact(Skip = "Font scaling currently broken on cairo")]
-#elif PERSPEX_SKIA
+#elif PERSPEX_SKIA_SKIP_FAIL
         [Fact(Skip = "FIXME")]
 #else
         [Fact]
@@ -143,7 +143,7 @@ namespace Perspex.Direct2D1.RenderTests.Media
 
 #if PERSPEX_CAIRO
         [Fact(Skip = "Font scaling currently broken on cairo")]
-#elif PERSPEX_SKIA
+#elif PERSPEX_SKIA_SKIP_FAIL
         [Fact(Skip = "FIXME")]
 #else
         [Fact]
@@ -172,7 +172,7 @@ namespace Perspex.Direct2D1.RenderTests.Media
 
 #if PERSPEX_CAIRO
         [Fact(Skip = "Font scaling currently broken on cairo")]
-#elif PERSPEX_SKIA
+#elif PERSPEX_SKIA_SKIP_FAIL
         [Fact(Skip = "FIXME")]
 #else
         [Fact]
@@ -201,7 +201,7 @@ namespace Perspex.Direct2D1.RenderTests.Media
 
 #if PERSPEX_CAIRO
         [Fact(Skip = "Font scaling currently broken on cairo")]
-#elif PERSPEX_SKIA
+#elif PERSPEX_SKIA_SKIP_FAIL
         [Fact(Skip = "FIXME")]
 #else
         [Fact]
@@ -254,7 +254,7 @@ namespace Perspex.Direct2D1.RenderTests.Media
 
 #if PERSPEX_CAIRO
         [Fact(Skip = "Font scaling currently broken on cairo")]
-#elif PERSPEX_SKIA
+#elif PERSPEX_SKIA_SKIP_FAIL
         [Fact(Skip = "FIXME")]
 #else
         [Fact]
@@ -282,7 +282,7 @@ namespace Perspex.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
-#if PERSPEX_SKIA
+#if PERSPEX_SKIA_SKIP_FAIL
         [Fact(Skip = "FIXME")]
 #else
         [Fact]
@@ -311,11 +311,7 @@ namespace Perspex.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
-#if PERSPEX_SKIA
-        [Fact(Skip = "FIXME")]
-#else
         [Fact]
-#endif
         public void VisualBrush_NoStretch_Tile_BottomRightQuarterSource_CenterQuarterDest()
         {
             Decorator target = new Decorator
@@ -342,7 +338,7 @@ namespace Perspex.Direct2D1.RenderTests.Media
 
 #if PERSPEX_CAIRO
         [Fact(Skip = "TileMode.FlipX not yet supported on cairo")]
-#elif PERSPEX_SKIA
+#elif PERSPEX_SKIA_SKIP_FAIL
         [Fact(Skip = "FIXME")]
 #else
         [Fact]
@@ -372,7 +368,7 @@ namespace Perspex.Direct2D1.RenderTests.Media
 
 #if PERSPEX_CAIRO
         [Fact(Skip = "TileMode.FlipY not yet supported on cairo")]
-#elif PERSPEX_SKIA
+#elif PERSPEX_SKIA_SKIP_FAIL
         [Fact(Skip = "FIXME")]
 #else
         [Fact]
@@ -402,7 +398,7 @@ namespace Perspex.Direct2D1.RenderTests.Media
 
 #if PERSPEX_CAIRO
         [Fact(Skip = "Font scaling currently broken on cairo")]
-#elif PERSPEX_SKIA
+#elif PERSPEX_SKIA_SKIP_FAIL
         [Fact(Skip = "FIXME")]
 #else
         [Fact]
