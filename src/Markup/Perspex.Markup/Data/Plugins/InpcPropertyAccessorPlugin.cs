@@ -37,7 +37,6 @@ namespace Perspex.Markup.Data.Plugins
         /// <param name="reference">The object.</param>
         /// <param name="propertyName">The property name.</param>
         /// <param name="changed">A function to call when the property changes.</param>
-        /// <param name="validationChanged">A function to call when the validation state of the property changes.</param>
         /// <returns>
         /// An <see cref="IPropertyAccessor"/> interface through which future interactions with the 
         /// property will be made.
@@ -45,8 +44,7 @@ namespace Perspex.Markup.Data.Plugins
         public IPropertyAccessor Start(
             WeakReference reference, 
             string propertyName, 
-            Action<object> changed,
-            Action<IEnumerable> validationChanged)
+            Action<object> changed)
         {
             Contract.Requires<ArgumentNullException>(reference != null);
             Contract.Requires<ArgumentNullException>(propertyName != null);
@@ -57,7 +55,7 @@ namespace Perspex.Markup.Data.Plugins
 
             if (p != null)
             {
-                return new Accessor(reference, p, changed, validationChanged);
+                return new Accessor(reference, p, changed);
             }
             else
             {
@@ -67,18 +65,16 @@ namespace Perspex.Markup.Data.Plugins
             }
         }
 
-        private class Accessor : IPropertyAccessor, IWeakSubscriber<PropertyChangedEventArgs>, IWeakSubscriber<DataErrorsChangedEventArgs>
+        private class Accessor : IPropertyAccessor, IWeakSubscriber<PropertyChangedEventArgs>
         {
             private readonly WeakReference _reference;
             private readonly PropertyInfo _property;
             private readonly Action<object> _changed;
-            private readonly Action<IEnumerable> _validationChanged;
 
             public Accessor(
                 WeakReference reference, 
                 PropertyInfo property, 
-                Action<object> changed,
-                Action<IEnumerable> validationChanged)
+                Action<object> changed)
             {
                 Contract.Requires<ArgumentNullException>(reference != null);
                 Contract.Requires<ArgumentNullException>(property != null);
@@ -86,7 +82,6 @@ namespace Perspex.Markup.Data.Plugins
                 _reference = reference;
                 _property = property;
                 _changed = changed;
-                _validationChanged = validationChanged;
 
                 var inpc = reference.Target as INotifyPropertyChanged;
 
@@ -107,19 +102,6 @@ namespace Perspex.Markup.Data.Plugins
                         reference.Target,
                         reference.Target.GetType());
                 }
-
-                var indei = _reference.Target as INotifyDataErrorInfo;
-                if (indei != null)
-                {
-                    if (indei.HasErrors)
-                    {
-                        _validationChanged(indei.GetErrors(property.Name));
-                    }
-                    WeakSubscriptionManager.Subscribe<DataErrorsChangedEventArgs>(
-                        indei,
-                        nameof(indei.ErrorsChanged),
-                        this);
-                }
             }
 
             public Type PropertyType => _property.PropertyType;
@@ -135,15 +117,6 @@ namespace Perspex.Markup.Data.Plugins
                     WeakSubscriptionManager.Unsubscribe<PropertyChangedEventArgs>(
                         inpc,
                         nameof(inpc.PropertyChanged),
-                        this);
-                }
-
-                var indei = _reference.Target as INotifyDataErrorInfo;
-                if (indei != null)
-                {
-                    WeakSubscriptionManager.Unsubscribe<DataErrorsChangedEventArgs>(
-                        indei,
-                        nameof(indei.ErrorsChanged),
                         this);
                 }
             }
@@ -164,15 +137,6 @@ namespace Perspex.Markup.Data.Plugins
                 if (e.PropertyName == _property.Name || string.IsNullOrEmpty(e.PropertyName))
                 {
                     _changed(Value);
-                }
-            }
-
-            void IWeakSubscriber<DataErrorsChangedEventArgs>.OnEvent(object sender, DataErrorsChangedEventArgs e)
-            {
-                if (e.PropertyName == _property.Name || string.IsNullOrEmpty(e.PropertyName))
-                {
-                    var indei = _reference.Target as INotifyDataErrorInfo;
-                    _validationChanged(indei.GetErrors(e.PropertyName));
                 }
             }
         }

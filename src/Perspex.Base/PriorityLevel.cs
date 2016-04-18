@@ -165,6 +165,17 @@ namespace Perspex
         }
 
         /// <summary>
+        /// Invoked when an entry in <see cref="Bindings"/> reports validation status.
+        /// </summary>
+        /// <param name="entry">The entry that completed.</param>
+        /// <param name="validationStatus">The validation status.</param>
+        public void Validation(PriorityBindingEntry entry, ValidationStatus validationStatus)
+        {
+            _owner.LevelValidation(this, validationStatus);
+        }
+
+
+        /// <summary>
         /// Activates the first binding that has a value.
         /// </summary>
         private void ActivateFirstBinding()

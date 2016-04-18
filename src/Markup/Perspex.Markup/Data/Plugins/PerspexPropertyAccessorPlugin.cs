@@ -31,7 +31,6 @@ namespace Perspex.Markup.Data.Plugins
         /// <param name="reference">A weak reference to the object.</param>
         /// <param name="propertyName">The property name.</param>
         /// <param name="changed">A function to call when the property changes.</param>
-        /// <param name="validationChanged">A function to call when the validation state of the property changes.</param>
         /// <returns>
         /// An <see cref="IPropertyAccessor"/> interface through which future interactions with the 
         /// property will be made.
@@ -39,8 +38,7 @@ namespace Perspex.Markup.Data.Plugins
         public IPropertyAccessor Start(
             WeakReference reference, 
             string propertyName, 
-            Action<object> changed,
-            Action<System.Collections.IEnumerable> validationChanged)
+            Action<object> changed)
         {
             Contract.Requires<ArgumentNullException>(reference != null);
             Contract.Requires<ArgumentNullException>(propertyName != null);

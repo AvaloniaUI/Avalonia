@@ -105,6 +105,11 @@ namespace Perspex.Markup.Data
             CurrentValue = reference;
         }
 
+        protected virtual void SendValidationStatus(ValidationStatus status)
+        {
+            _subject?.OnNext(status);
+        }
+
         protected virtual void Unsubscribe(object target)
         {
         }

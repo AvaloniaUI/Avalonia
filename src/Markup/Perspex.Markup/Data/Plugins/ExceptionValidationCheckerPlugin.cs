@@ -7,8 +7,17 @@ using Perspex.Data;
 
 namespace Perspex.Markup.Data.Plugins
 {
+    /// <summary>
+    /// Validates properties that report errors by throwing exceptions.
+    /// </summary>
     public class ExceptionValidationCheckerPlugin : IValidationCheckerPlugin
     {
+
+        /// <inheritdoc/>
+        public bool Match(WeakReference reference) => true;
+
+
+        /// <inheritdoc/>
         public ValidationCheckerBase Start(WeakReference reference, string name, IPropertyAccessor accessor, Action<ValidationStatus> callback)
         {
             return new ExceptionValidationChecker(reference, name, accessor, callback);
@@ -37,16 +46,24 @@ namespace Perspex.Markup.Data.Plugins
             }
         }
 
-        private class ExceptionValidationStatus : ValidationStatus
+        /// <summary>
+        /// Describes the current validation status after setting a property value.
+        /// </summary>
+        public class ExceptionValidationStatus : ValidationStatus
         {
-            public ExceptionValidationStatus(Exception exception)
+            internal ExceptionValidationStatus(Exception exception)
             {
                 Exception = exception;
             }
 
+            /// <summary>
+            /// The thrown exception. If there was no thrown exception, null.
+            /// </summary>
             public Exception Exception { get; }
 
-            public override bool IsValid => Exception != null;
+
+            /// <inheritdoc/>
+            public override bool IsValid => Exception == null;
         }
     }
 }

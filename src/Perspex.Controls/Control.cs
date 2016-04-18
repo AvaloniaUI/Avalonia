@@ -86,6 +86,12 @@ namespace Perspex.Controls
         public static readonly RoutedEvent<RequestBringIntoViewEventArgs> RequestBringIntoViewEvent =
             RoutedEvent.Register<Control, RequestBringIntoViewEventArgs>("RequestBringIntoView", RoutingStrategies.Bubble);
 
+        /// <summary>
+        /// Defines the <see cref="ValidationStatus"/> property.
+        /// </summary>
+        public static readonly DirectProperty<Control, ValidationStatus> ValidationStatusProperty =
+            PerspexProperty.RegisterDirect<Control, ValidationStatus>(nameof(ValidationStatus), c=> c.ValidationStatus);
+
         private int _initCount;
         private string _name;
         private IControl _parent;
@@ -108,6 +114,7 @@ namespace Perspex.Controls
             PseudoClass(IsEnabledCoreProperty, x => !x, ":disabled");
             PseudoClass(IsFocusedProperty, ":focus");
             PseudoClass(IsPointerOverProperty, ":pointerover");
+            PseudoClass(ValidationStatusProperty, status => status != null && !status.IsValid, ":invalid");
         }
 
         /// <summary>
@@ -398,6 +405,29 @@ namespace Perspex.Controls
         /// pseudoclasses.
         /// </summary>
         protected IPseudoClasses PseudoClasses => Classes;
+
+        private ValidationStatus validationStatus;
+
+        /// <summary>
+        /// The current validation status of the control.
+        /// </summary>
+        public ValidationStatus ValidationStatus
+        {
+            get
+            {
+                return validationStatus;
+            }
+            private set
+            {
+                SetAndRaise(ValidationStatusProperty, ref validationStatus, value);
+            }
+        }
+
+        protected override void ValidationChanged(PerspexProperty property, ValidationStatus status)
+        {
+            base.ValidationChanged(property, status);
+            ValidationStatus = status;
+        }
 
         /// <summary>
         /// Sets the control's logical parent.

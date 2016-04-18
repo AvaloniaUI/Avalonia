@@ -403,6 +403,7 @@ namespace Perspex
                 IDisposable subscription = null;
 
                 subscription = source
+                    .Where(x =>  !(x is ValidationStatus))
                     .Select(x => CastOrDefault(x, property.PropertyType))
                     .Do(_ => { }, () => s_directBindings.Remove(subscription))
                     .Subscribe(x => DirectBindingSet(property, x));
@@ -503,6 +504,18 @@ namespace Perspex
                     newValue,
                     priority);
             }
+        }
+
+        /// <inheritdoc/>
+        void IPriorityValueOwner.ValidationChanged(PriorityValue sender, ValidationStatus status)
+        {
+            var property = sender.Property;
+            ValidationChanged(property, status);
+        }
+
+        protected virtual void ValidationChanged(PerspexProperty property, ValidationStatus status)
+        {
+
         }
 
         /// <inheritdoc/>

@@ -155,6 +155,7 @@ namespace Perspex.Markup.Data
         {
             var converted = 
                 value as BindingError ??
+                value as ValidationStatus ??
                 Converter.Convert(
                     value,
                     _targetType,

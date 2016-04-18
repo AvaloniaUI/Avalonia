@@ -10,8 +10,18 @@ using Perspex.Utilities;
 
 namespace Perspex.Markup.Data.Plugins
 {
-    class IndeiValidationCheckerPlugin : IValidationCheckerPlugin
+    /// <summary>
+    /// Validates properties on objects that implement <see cref="INotifyDataErrorInfo"/>.
+    /// </summary>
+    public class IndeiValidationCheckerPlugin : IValidationCheckerPlugin
     {
+        /// <inheritdoc/>
+        public bool Match(WeakReference reference)
+        {
+            return reference.Target is INotifyDataErrorInfo;
+        }
+
+        /// <inheritdoc/>
         public ValidationCheckerBase Start(WeakReference reference, string name, IPropertyAccessor accessor, Action<ValidationStatus> callback)
         {
             return new IndeiValidationChecker(reference, name, accessor, callback);
@@ -59,14 +69,22 @@ namespace Perspex.Markup.Data.Plugins
             }
         }
 
-        private class IndeiValidationStatus : ValidationStatus
+        /// <summary>
+        /// Describes the current validation status of a property as reported by an object that implements <see cref="INotifyDataErrorInfo"/>.
+        /// </summary>
+        public class IndeiValidationStatus : ValidationStatus
         {
-            public IndeiValidationStatus(IEnumerable errors)
+            internal IndeiValidationStatus(IEnumerable errors)
             {
                 Errors = errors;
             }
+
+            /// <inheritdoc/>
             public override bool IsValid => !Errors.OfType<object>().Any();
 
+            /// <summary>
+            /// The errors on the given property and on the object as a whole.
+            /// </summary>
             public IEnumerable Errors { get; }
         }
     }

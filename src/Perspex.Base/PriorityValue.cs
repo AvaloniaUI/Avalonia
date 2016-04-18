@@ -179,6 +179,16 @@ namespace Perspex
         }
 
         /// <summary>
+        /// Called whenever a priority level validation state changes.
+        /// </summary>
+        /// <param name="priorityLevel">The priority level of the changed entry.</param>
+        /// <param name="validationStatus">The validation status.</param>
+        public void LevelValidation(PriorityLevel priorityLevel, ValidationStatus validationStatus)
+        {
+            _owner.ValidationChanged(this, validationStatus);
+        }
+
+        /// <summary>
         /// Called when a priority level encounters an error.
         /// </summary>
         /// <param name="level">The priority level of the changed entry.</param>

@@ -28,6 +28,17 @@ namespace Perspex.Markup.Data
                 new InpcPropertyAccessorPlugin(),
             };
 
+        /// <summary>
+        /// An ordered collection of validation checker plugins that can be used to customize
+        /// the validation of view model and model data.
+        /// </summary>
+        public static readonly IList<IValidationCheckerPlugin> ValidationCheckers =
+            new List<IValidationCheckerPlugin>
+            {
+                new IndeiValidationCheckerPlugin(),
+                new ExceptionValidationCheckerPlugin()
+            };
+
         private readonly WeakReference _root;
         private readonly Func<object> _rootGetter;
         private readonly IObservable<object> _rootObservable;
