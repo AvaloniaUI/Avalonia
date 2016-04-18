@@ -50,7 +50,7 @@ namespace Perspex.Skia
                 _transformedPath.Dispose();
                 _transformedPath = null;
             }
-
+            
             // TODO: SkiaSharp does not expose Transform yet!!!
             //if (!Transform.IsIdentity)
             //{
@@ -111,7 +111,7 @@ namespace Perspex.Skia
 
             public void ArcTo(Point point, Size size, double rotationAngle, bool isLargeArc, SweepDirection sweepDirection)
             {
-                throw new NotImplementedException();
+                ArcToHelper.ArcTo(this, _currentPoint, point, size, rotationAngle, isLargeArc, sweepDirection);
             }
 
             public void BeginFigure(Point startPoint, bool isFilled)
