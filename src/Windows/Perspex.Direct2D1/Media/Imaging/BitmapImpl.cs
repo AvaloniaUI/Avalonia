@@ -74,6 +74,11 @@ namespace Perspex.Direct2D1.Media
         /// </summary>
         public int PixelHeight => WicImpl.Size.Height;
 
+        public virtual void Dispose()
+        {
+            WicImpl.Dispose();
+        }
+
         /// <summary>
         /// Gets the WIC implementation of the bitmap.
         /// </summary>
