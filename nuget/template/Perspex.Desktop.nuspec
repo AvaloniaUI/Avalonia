@@ -21,9 +21,9 @@
       <dependency id="Rx-Linq" version="2.2.5" />
       <dependency id="Rx-Main" version="2.2.5" />
       <dependency id="Rx-PlatformServices" version="2.2.5" />
-      <dependency id="SharpDX" version="3.0.1"/>
-      <dependency id="SharpDX.Direct2D1" version="3.0.1"/>
-      <dependency id="SharpDX.DXGI" version="3.0.1"/>
+      <dependency id="SharpDX" version="3.0.2"/>
+      <dependency id="SharpDX.Direct2D1" version="3.0.2"/>
+      <dependency id="SharpDX.DXGI" version="3.0.2"/>
       <dependency id="Perspex" version="#VERSION#" />
     </dependencies>
   </metadata>
