@@ -20,7 +20,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;PERSPEX_SKIA</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;PERSPEX_SKIA;PERSPEX_SKIA_SKIP_FAIL</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>

@@ -102,7 +102,7 @@ namespace Perspex.Direct2D1.RenderTests.Media
             RenderToFile(target);
             CompareImages();
         }
-#if PERSPEX_SKIA
+#if PERSPEX_SKIA_SKIP_FAIL
         [Fact(Skip = "FIXME")]
 #else
         [Fact]
@@ -129,7 +129,7 @@ namespace Perspex.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
-#if PERSPEX_SKIA
+#if PERSPEX_SKIA_SKIP_FAIL
         [Fact(Skip = "FIXME")]
 #else
         [Fact]
@@ -156,7 +156,7 @@ namespace Perspex.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
-#if PERSPEX_SKIA
+#if PERSPEX_SKIA_SKIP_FAIL
         [Fact(Skip = "FIXME")]
 #else
         [Fact]
@@ -207,7 +207,7 @@ namespace Perspex.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
-#if PERSPEX_SKIA
+#if PERSPEX_SKIA_SKIP_FAIL
         [Fact(Skip = "FIXME")]
 #else
         [Fact]
@@ -235,7 +235,7 @@ namespace Perspex.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
-#if PERSPEX_SKIA
+#if PERSPEX_SKIA_SKIP_FAIL
         [Fact(Skip = "FIXME")]
 #else
         [Fact]

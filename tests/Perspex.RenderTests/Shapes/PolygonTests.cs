@@ -23,6 +23,8 @@ namespace Perspex.Direct2D1.RenderTests.Shapes
 
 #if PERSPEX_CAIRO
         [Fact(Skip = "Caused by cairo bug")]
+#elif PERSPEX_SKIA_SKIP_FAIL
+        [Fact(Skip = "Waiting for https://github.com/mono/SkiaSharp/pull/63")]
 #else
         [Fact]
 #endif
@@ -49,6 +51,8 @@ namespace Perspex.Direct2D1.RenderTests.Shapes
 
 #if PERSPEX_CAIRO
         [Fact(Skip = "Caused by cairo bug")]
+#elif PERSPEX_SKIA_SKIP_FAIL
+        [Fact(Skip = "Waiting for https://github.com/mono/SkiaSharp/pull/63")]
 #else
         [Fact]
 #endif

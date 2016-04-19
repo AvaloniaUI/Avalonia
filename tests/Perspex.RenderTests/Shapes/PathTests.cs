@@ -45,8 +45,11 @@ namespace Perspex.Direct2D1.RenderTests.Shapes
             RenderToFile(target);
             CompareImages();
         }
-
+#if PERSPEX_SKIA_SKIP_FAIL
+        [Fact(Skip = "Waiting for https://github.com/mono/SkiaSharp/pull/63")]
+#else
         [Fact]
+#endif
         public void Path_Tick_Scaled()
         {
             Decorator target = new Decorator
@@ -69,7 +72,11 @@ namespace Perspex.Direct2D1.RenderTests.Shapes
             CompareImages();
         }
 
+#if PERSPEX_SKIA_SKIP_FAIL
+        [Fact(Skip = "Waiting for https://github.com/mono/SkiaSharp/pull/63")]
+#else
         [Fact]
+#endif
         public void Path_Tick_Scaled_Stroke_8px()
         {
             Decorator target = new Decorator
@@ -122,7 +129,7 @@ namespace Perspex.Direct2D1.RenderTests.Shapes
 
 #if PERSPEX_CAIRO
         [Fact(Skip = "Path with StrokeDashCap, StrokeStartLineCap, StrokeEndLineCap rendering is not implemented in Cairo yet")]
-#elif PERSPEX_SKIA
+#elif PERSPEX_SKIA_SKIP_FAIL
         [Fact(Skip = "FIXME")]
 #else
         [Fact]

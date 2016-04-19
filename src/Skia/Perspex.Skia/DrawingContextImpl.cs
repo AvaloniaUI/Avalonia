@@ -4,6 +4,7 @@ using Perspex.Media;
 using Perspex.Media.Imaging;
 using SkiaSharp;
 using System.Linq;
+using Perspex.RenderHelpers;
 
 namespace Perspex.Skia
 {
@@ -14,6 +15,7 @@ namespace Perspex.Skia
         public DrawingContextImpl(SKCanvas canvas)
         {
             Canvas = canvas;
+            Canvas.Clear();
         }
 
         public void DrawImage(IBitmap source, double opacity, Rect sourceRect, Rect destRect)
@@ -28,7 +30,7 @@ namespace Perspex.Skia
         {
             using (var paint = CreatePaint(pen, new Size(Math.Abs(p2.X - p1.X), Math.Abs(p2.Y - p1.Y))))
             {
-                Canvas.DrawLine((float)p1.X, (float)p1.Y, (float)p2.X, (float)p2.Y, paint);
+                Canvas.DrawLine((float)p1.X, (float)p1.Y, (float)p2.X, (float)p2.Y, paint.Paint);
             }
         }
 
@@ -37,37 +39,70 @@ namespace Perspex.Skia
             var impl = ((StreamGeometryImpl)geometry.PlatformImpl);
             var size = geometry.Bounds.Size;
 
-            using (var fill = brush != null ? CreatePaint(brush, size) : null)
-            using (var stroke = pen?.Brush != null ? CreatePaint(pen, size) : null)
+            using (var fill = brush != null ? CreatePaint(brush, size) : default(PaintWrapper))
+            using (var stroke = pen?.Brush != null ? CreatePaint(pen, size) : default(PaintWrapper))
             {
-                if (fill != null)
+                if (fill.Paint != null)
                 {
-                    Canvas.DrawPath(impl.EffectivePath, fill);
+                    Canvas.DrawPath(impl.EffectivePath, fill.Paint);
                 }
-                if (stroke != null)
+                if (stroke.Paint != null)
                 {
-                    Canvas.DrawPath(impl.EffectivePath, stroke);
+                    Canvas.DrawPath(impl.EffectivePath, stroke.Paint);
                 }
             }
         }
 
-        private SKPaint CreatePaint(IBrush brush, Size targetSize)
+        struct PaintWrapper : IDisposable
+        {
+            //We are saving memory allocations there
+            //TODO: add more disposable fields if needed
+
+            public readonly SKPaint Paint;
+            private IDisposable _disposable1;
+
+            public void AddDisposable(IDisposable disposable)
+            {
+                if (_disposable1 == null)
+                    _disposable1 = disposable;
+                else
+                    throw new InvalidOperationException();
+            }
+
+            public PaintWrapper(SKPaint paint)
+            {
+                Paint = paint;
+                _disposable1 = null;
+            }
+
+            public void Dispose()
+            {
+                Paint?.Dispose();
+                _disposable1?.Dispose();
+            }
+        }
+
+        private PaintWrapper CreatePaint(IBrush brush, Size targetSize)
         {
             SKPaint paint = new SKPaint();
-
+            var rv = new PaintWrapper(paint);
             paint.IsStroke = false;
 
             // TODO: SkiaSharp does not contain alpha yet!
-            //double opacity = brush.Opacity * _currentOpacity;
+            double opacity = brush.Opacity * _currentOpacity;
             //paint.SetAlpha(paint.GetAlpha() * opacity);
             paint.IsAntialias = true;
 
+            SKColor color = new SKColor(255, 255, 255, 255);
+
             var solid = brush as SolidColorBrush;
             if (solid != null)
-            {
-                paint.Color = solid.Color.ToSKColor();
-                return paint;
-            }
+                color = solid.Color.ToSKColor();
+
+            paint.Color = (new SKColor(color.Red, color.Green, color.Blue, (byte) (color.Alpha*opacity)));
+            if (solid != null)
+                return rv;
+
 
             var gradient = brush as GradientBrush;
             if (gradient != null)
@@ -85,6 +120,7 @@ namespace Perspex.Skia
                     // would be nice to cache these shaders possibly?
                     var shader = SKShader.CreateLinearGradient(start, end, stopColors, stopOffsets, tileMode);
                     paint.Shader = shader;
+                    shader.Dispose();
                 }
                 else
                 {
@@ -100,45 +136,46 @@ namespace Perspex.Skia
                         // would be nice to cache these shaders possibly?
                         var shader = SKShader.CreateRadialGradient(center, radius, stopColors, stopOffsets, tileMode);
                         paint.Shader = shader;
+                        shader.Dispose();
                     }
                 }
 
-                return paint;
+                return rv;
             }
 
             var tileBrush = brush as TileBrush;
             if (tileBrush != null)
             {
-                // TODO: Get Tile Brushes working!!!
-                //
-                //throw new NotImplementedException();
+                var helper = new TileBrushImplHelper(tileBrush, targetSize);
+                var bitmap = new BitmapImpl((int)helper.IntermediateSize.Width, (int)helper.IntermediateSize.Height);
+                rv.AddDisposable(bitmap);
+                using (var ctx = bitmap.CreateDrawingContext())
+                	helper.DrawIntermediate(ctx);
+                SKMatrix translation = SKMatrix.MakeTranslation(-(float)helper.DestinationRect.X, -(float)helper.DestinationRect.Y);
+                SKShaderTileMode tileX =
+                    tileBrush.TileMode == TileMode.None
+                        ? SKShaderTileMode.Clamp
+                        : tileBrush.TileMode == TileMode.FlipX || tileBrush.TileMode == TileMode.FlipXY
+                            ? SKShaderTileMode.Mirror
+                            : SKShaderTileMode.Repeat;
 
-                //	rv.Brush->Type = NativeBrushType.Image;
-                //	var helper = new TileBrushImplHelper(tileBrush, targetSize);
-                //	var bitmap = new BitmapImpl((int)helper.IntermediateSize.Width, (int)helper.IntermediateSize.Height);
-                //	rv.AddDisposable(bitmap);
-                //	using (var ctx = bitmap.CreateDrawingContext())
-                //		helper.DrawIntermediate(ctx);
-                //	rv.Brush->Bitmap = bitmap.Handle;
-                //	rv.Brush->BitmapTileMode = tileBrush.TileMode;
-                //	rv.Brush->BitmapTranslation = new SkiaPoint(-helper.DestinationRect.X, -helper.DestinationRect.Y);
-
-                //	SkMatrix matrix;
-                //	matrix.setTranslate(brush->BitmapTranslation);
-                //	SkShader::TileMode tileX = brush->BitmapTileMode == ptmNone ? SkShader::kClamp_TileMode
-                //		: (brush->BitmapTileMode == ptmFlipX || brush->BitmapTileMode == ptmFlipXY) ? SkShader::kMirror_TileMode : SkShader::kRepeat_TileMode;
-                //	SkShader::TileMode tileY = brush->BitmapTileMode == ptmNone ? SkShader::kClamp_TileMode
-                //		: (brush->BitmapTileMode == ptmFlipY || brush->BitmapTileMode == ptmFlipXY) ? SkShader::kMirror_TileMode : SkShader::kRepeat_TileMode;
-
-                //	paint.setShader(SkShader::CreateBitmapShader(brush->Bitmap->Bitmap, tileX, tileY, &matrix))->unref();
+                SKShaderTileMode tileY =
+                    tileBrush.TileMode == TileMode.None
+                        ? SKShaderTileMode.Clamp
+                        : tileBrush.TileMode == TileMode.FlipY || tileBrush.TileMode == TileMode.FlipXY
+                            ? SKShaderTileMode.Mirror
+                            : SKShaderTileMode.Repeat;
+                paint.Shader = SKShader.CreateBitmap(bitmap.Bitmap, tileX, tileY, translation);
+                paint.Shader.Dispose();
             }
 
-            return paint;
+            return rv;
         }
 
-        private SKPaint CreatePaint(Pen pen, Size targetSize)
+        private PaintWrapper CreatePaint(Pen pen, Size targetSize)
         {
-            var paint = CreatePaint(pen.Brush, targetSize);
+            var rv = CreatePaint(pen.Brush, targetSize);
+            var paint = rv.Paint;
 
             paint.IsStroke = true;
             paint.StrokeWidth = (float)pen.Thickness;
@@ -178,7 +215,7 @@ namespace Perspex.Skia
             //	paint.setPathEffect(SkDashPathEffect::Create(brush->StrokeDashes, brush->StrokeDashCount, brush->StrokeDashOffset))->unref();
             //}
 
-            return paint;
+            return rv;
         }
 
         public void DrawRectangle(Pen pen, Rect rect, float cornerRadius = 0)
@@ -188,13 +225,13 @@ namespace Perspex.Skia
                 var rc = rect.ToSKRect();
                 if (cornerRadius == 0)
                 {
-                    Canvas.DrawRect(rc, paint);
+                    Canvas.DrawRect(rc, paint.Paint);
                 }
                 else
                 {
                     // TODO: DrawRRect (ore DrawRoundedRect) is not accesible in SkiaSharp yet. We should add that
                     // to SkiaSharp and initiate a PR....
-                    Canvas.DrawRect(rc, paint);
+                    Canvas.DrawRect(rc, paint.Paint);
                     //Canvas.DrawRoundedRect(rc, cornerRadius, cornerRadius, paint);
                 }
             }
@@ -207,14 +244,14 @@ namespace Perspex.Skia
                 var rc = rect.ToSKRect();
                 if (cornerRadius == 0)
                 {
-                    Canvas.DrawRect(rc, paint);
+                    Canvas.DrawRect(rc, paint.Paint);
                 }
                 else
                 {
                     // TODO: this does not exist in SkiaSharp yet
                     //throw new NotImplementedException();
                     //Canvas.DrawRoundedRect(rc, cornerRadius, cornerRadius, paint);
-                    Canvas.DrawRect(rc, paint);
+                    Canvas.DrawRect(rc, paint.Paint);
                 }
             }
         }

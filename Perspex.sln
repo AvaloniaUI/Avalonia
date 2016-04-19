@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.Base", "src\Perspex.Base\Perspex.Base.csproj", "{B09B78D8-9B26-48B0-9149-D64A2F120F3F}"
 EndProject
@@ -153,6 +153,7 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ControlCatalog.Desktop", "samples\ControlCatalog.Desktop\ControlCatalog.Desktop.csproj", "{2B888490-D14A-4BCA-AB4B-48676FA93C9B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ControlCatalog.iOS", "samples\ControlCatalog.iOS\ControlCatalog.iOS.csproj", "{57E0455D-D565-44BB-B069-EE1AA20F8337}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.Skia.RenderTests", "tests\Perspex.RenderTests\Perspex.Skia.RenderTests.csproj", "{D35A9F3D-8BB0-496E-BF72-444038A7DEBB}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
@@ -1805,6 +1806,38 @@ Global
 		{57E0455D-D565-44BB-B069-EE1AA20F8337}.Release|iPhoneSimulator.ActiveCfg = Release|iPhoneSimulator
 		{57E0455D-D565-44BB-B069-EE1AA20F8337}.Release|iPhoneSimulator.Build.0 = Release|iPhoneSimulator
 		{57E0455D-D565-44BB-B069-EE1AA20F8337}.Release|x86.ActiveCfg = Release|iPhone
+		{D35A9F3D-8BB0-496E-BF72-444038A7DEBB}.Ad-Hoc|Any CPU.ActiveCfg = Release|Any CPU
+		{D35A9F3D-8BB0-496E-BF72-444038A7DEBB}.Ad-Hoc|Any CPU.Build.0 = Release|Any CPU
+		{D35A9F3D-8BB0-496E-BF72-444038A7DEBB}.Ad-Hoc|iPhone.ActiveCfg = Release|Any CPU
+		{D35A9F3D-8BB0-496E-BF72-444038A7DEBB}.Ad-Hoc|iPhone.Build.0 = Release|Any CPU
+		{D35A9F3D-8BB0-496E-BF72-444038A7DEBB}.Ad-Hoc|iPhoneSimulator.ActiveCfg = Release|Any CPU
+		{D35A9F3D-8BB0-496E-BF72-444038A7DEBB}.Ad-Hoc|iPhoneSimulator.Build.0 = Release|Any CPU
+		{D35A9F3D-8BB0-496E-BF72-444038A7DEBB}.Ad-Hoc|x86.ActiveCfg = Release|Any CPU
+		{D35A9F3D-8BB0-496E-BF72-444038A7DEBB}.Ad-Hoc|x86.Build.0 = Release|Any CPU
+		{D35A9F3D-8BB0-496E-BF72-444038A7DEBB}.AppStore|Any CPU.ActiveCfg = Release|Any CPU
+		{D35A9F3D-8BB0-496E-BF72-444038A7DEBB}.AppStore|Any CPU.Build.0 = Release|Any CPU
+		{D35A9F3D-8BB0-496E-BF72-444038A7DEBB}.AppStore|iPhone.ActiveCfg = Release|Any CPU
+		{D35A9F3D-8BB0-496E-BF72-444038A7DEBB}.AppStore|iPhone.Build.0 = Release|Any CPU
+		{D35A9F3D-8BB0-496E-BF72-444038A7DEBB}.AppStore|iPhoneSimulator.ActiveCfg = Release|Any CPU
+		{D35A9F3D-8BB0-496E-BF72-444038A7DEBB}.AppStore|iPhoneSimulator.Build.0 = Release|Any CPU
+		{D35A9F3D-8BB0-496E-BF72-444038A7DEBB}.AppStore|x86.ActiveCfg = Release|Any CPU
+		{D35A9F3D-8BB0-496E-BF72-444038A7DEBB}.AppStore|x86.Build.0 = Release|Any CPU
+		{D35A9F3D-8BB0-496E-BF72-444038A7DEBB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D35A9F3D-8BB0-496E-BF72-444038A7DEBB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D35A9F3D-8BB0-496E-BF72-444038A7DEBB}.Debug|iPhone.ActiveCfg = Debug|Any CPU
+		{D35A9F3D-8BB0-496E-BF72-444038A7DEBB}.Debug|iPhone.Build.0 = Debug|Any CPU
+		{D35A9F3D-8BB0-496E-BF72-444038A7DEBB}.Debug|iPhoneSimulator.ActiveCfg = Debug|Any CPU
+		{D35A9F3D-8BB0-496E-BF72-444038A7DEBB}.Debug|iPhoneSimulator.Build.0 = Debug|Any CPU
+		{D35A9F3D-8BB0-496E-BF72-444038A7DEBB}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D35A9F3D-8BB0-496E-BF72-444038A7DEBB}.Debug|x86.Build.0 = Debug|Any CPU
+		{D35A9F3D-8BB0-496E-BF72-444038A7DEBB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D35A9F3D-8BB0-496E-BF72-444038A7DEBB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D35A9F3D-8BB0-496E-BF72-444038A7DEBB}.Release|iPhone.ActiveCfg = Release|Any CPU
+		{D35A9F3D-8BB0-496E-BF72-444038A7DEBB}.Release|iPhone.Build.0 = Release|Any CPU
+		{D35A9F3D-8BB0-496E-BF72-444038A7DEBB}.Release|iPhoneSimulator.ActiveCfg = Release|Any CPU
+		{D35A9F3D-8BB0-496E-BF72-444038A7DEBB}.Release|iPhoneSimulator.Build.0 = Release|Any CPU
+		{D35A9F3D-8BB0-496E-BF72-444038A7DEBB}.Release|x86.ActiveCfg = Release|Any CPU
+		{D35A9F3D-8BB0-496E-BF72-444038A7DEBB}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1852,5 +1885,6 @@ Global
 		{D0A739B9-3C68-4BA6-A328-41606954B6BD} = {9B9E3891-2366-4253-A952-D08BCEB71098}
 		{2B888490-D14A-4BCA-AB4B-48676FA93C9B} = {9B9E3891-2366-4253-A952-D08BCEB71098}
 		{57E0455D-D565-44BB-B069-EE1AA20F8337} = {9B9E3891-2366-4253-A952-D08BCEB71098}
+		{D35A9F3D-8BB0-496E-BF72-444038A7DEBB} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
 	EndGlobalSection
 EndGlobal
