@@ -55,10 +55,12 @@ namespace Perspex.Markup.Data
                 if (accessorPlugin != null)
                 {
                     _accessor = accessorPlugin.Start(reference, PropertyName, SetCurrentValue);
-                    var validationPlugin = ExpressionObserver.ValidationCheckers.FirstOrDefault(x => x.Match(reference));
-                    if (validationPlugin != null)
+                    foreach (var validationPlugin in ExpressionObserver.ValidationCheckers.Where(x => x.Match(reference)))
                     {
-                        _accessor = validationPlugin.Start(reference, PropertyName, _accessor, SendValidationStatus);
+                        if (validationPlugin != null)
+                        {
+                            _accessor = validationPlugin.Start(reference, PropertyName, _accessor, SendValidationStatus);
+                        } 
                     }
 
                     if (_accessor != null)

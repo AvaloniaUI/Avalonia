@@ -89,8 +89,8 @@ namespace Perspex.Controls
         /// <summary>
         /// Defines the <see cref="ValidationStatus"/> property.
         /// </summary>
-        public static readonly DirectProperty<Control, ValidationStatus> ValidationStatusProperty =
-            PerspexProperty.RegisterDirect<Control, ValidationStatus>(nameof(ValidationStatus), c=> c.ValidationStatus);
+        public static readonly DirectProperty<Control, ControlValidationStatus> ValidationStatusProperty =
+            PerspexProperty.RegisterDirect<Control, ControlValidationStatus>(nameof(ValidationStatus), c=> c.ValidationStatus);
 
         private int _initCount;
         private string _name;
@@ -406,12 +406,12 @@ namespace Perspex.Controls
         /// </summary>
         protected IPseudoClasses PseudoClasses => Classes;
 
-        private ValidationStatus validationStatus;
+        private ControlValidationStatus validationStatus = new ControlValidationStatus();
 
         /// <summary>
         /// The current validation status of the control.
         /// </summary>
-        public ValidationStatus ValidationStatus
+        public ControlValidationStatus ValidationStatus
         {
             get
             {
@@ -427,7 +427,7 @@ namespace Perspex.Controls
         protected override void DataValidation(PerspexProperty property, ValidationStatus status)
         {
             base.DataValidation(property, status);
-            ValidationStatus = status;
+            ValidationStatus.UpdateValidationStatus(status);
         }
 
         /// <summary>

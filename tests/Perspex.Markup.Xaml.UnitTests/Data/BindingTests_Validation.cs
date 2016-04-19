@@ -13,7 +13,6 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
 {
     public class BindingTests_Validation
     {
-
         public class Data : INotifyPropertyChanged
         {
             private string mustbeNonEmpty;
@@ -54,7 +53,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
             
             target.Text = "";
 
-            Assert.Null(target.ValidationStatus);
+            Assert.True(target.ValidationStatus.IsValid);
         }
 
         [Fact]
@@ -71,7 +70,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
             target.Bind(TextBlock.TextProperty, binding);
             
             target.Text = "";
-            Assert.NotNull(target.ValidationStatus);
+            Assert.False(target.ValidationStatus.IsValid);
         }
 
         [Fact]
@@ -89,7 +88,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
 
             target.Tag = "";
 
-            Assert.Null(target.ValidationStatus);
+            Assert.True(target.ValidationStatus.IsValid);
         }
 
         [Fact]
@@ -106,7 +105,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
             target.Bind(Control.TagProperty, binding);
 
             target.Tag = "";
-            Assert.NotNull(target.ValidationStatus);
+            Assert.False(target.ValidationStatus.IsValid);
         }
     }
 }
