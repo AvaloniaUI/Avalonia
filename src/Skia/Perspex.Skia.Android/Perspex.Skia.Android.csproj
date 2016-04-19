@@ -91,14 +91,6 @@
     <Compile Include="SkiaView.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedNativeLibrary Include="..\native\Android\arm_v7\libperspesk.so">
-      <Link>native\armeabi-v7a\libperspesk.so</Link>
-    </EmbeddedNativeLibrary>
-    <EmbeddedNativeLibrary Include="..\native\Android\x86\libperspesk.so">
-      <Link>native\x86\libperspesk.so</Link>
-    </EmbeddedNativeLibrary>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="..\Perspex.Skia\Perspex.Skia.projitems" Label="Shared" />

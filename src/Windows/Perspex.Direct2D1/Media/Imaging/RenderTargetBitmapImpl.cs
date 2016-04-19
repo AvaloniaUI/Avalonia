@@ -33,9 +33,10 @@ namespace Perspex.Direct2D1.Media
                 props);
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
-            // TODO:
+            _target.Dispose();
+            base.Dispose();
         }
 
         public Perspex.Media.DrawingContext CreateDrawingContext() => new RenderTarget(_target).CreateDrawingContext();
