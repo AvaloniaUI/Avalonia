@@ -131,7 +131,7 @@ namespace Perspex.Markup.Xaml.Data
                 FallbackValue,
                 Priority);
 
-            return new InstancedBinding(subject, Mode, Priority, ValidationMethods);
+            return new InstancedBinding(subject, Mode, Priority);
         }
 
         private static PathInfo ParsePath(string path)
@@ -207,7 +207,7 @@ namespace Perspex.Markup.Xaml.Data
                 var result = new ExpressionObserver(
                     () => target.GetValue(Control.DataContextProperty),
                     path,
-                    update);
+                    update, ValidationMethods);
 
                 return result;
             }
@@ -218,7 +218,7 @@ namespace Perspex.Markup.Xaml.Data
                           .OfType<IPerspexObject>()
                           .Select(x => x.GetObservable(Control.DataContextProperty))
                           .Switch(),
-                    path);
+                    path, ValidationMethods);
             }
         }
 
@@ -228,7 +228,7 @@ namespace Perspex.Markup.Xaml.Data
 
             var result = new ExpressionObserver(
                 ControlLocator.Track(target, elementName),
-                path);
+                path, ValidationMethods);
             return result;
         }
 
@@ -236,7 +236,7 @@ namespace Perspex.Markup.Xaml.Data
         {
             Contract.Requires<ArgumentNullException>(source != null);
 
-            return new ExpressionObserver(source, path);
+            return new ExpressionObserver(source, path, ValidationMethods);
         }
 
         private ExpressionObserver CreateTemplatedParentObserver(

@@ -81,9 +81,9 @@ namespace Perspex
         /// <returns>
         /// A disposable that will remove the binding.
         /// </returns>
-        public IDisposable Add(IObservable<object> binding, int priority, ValidationMethods validation = ValidationMethods.None)
+        public IDisposable Add(IObservable<object> binding, int priority)
         {
-            return GetLevel(priority).Add(binding, validation);
+            return GetLevel(priority).Add(binding);
         }
 
         /// <summary>
@@ -186,7 +186,7 @@ namespace Perspex
         /// <param name="validationStatus">The validation status.</param>
         public void LevelValidation(PriorityLevel priorityLevel, ValidationStatus validationStatus)
         {
-            _owner.ValidationChanged(this, validationStatus);
+            _owner.DataValidationChanged(this, validationStatus);
         }
 
         /// <summary>

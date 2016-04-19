@@ -67,15 +67,13 @@ namespace Perspex
         /// <param name="property">The property.</param>
         /// <param name="source">The observable.</param>
         /// <param name="priority">The priority of the binding.</param>
-        /// <param name="validation">The validation methods of the binding.</param>
         /// <returns>
         /// A disposable which can be used to terminate the binding.
         /// </returns>
         IDisposable Bind(
             PerspexProperty property,
             IObservable<object> source,
-            BindingPriority priority = BindingPriority.LocalValue,
-            ValidationMethods validation = ValidationMethods.None);
+            BindingPriority priority = BindingPriority.LocalValue);
 
         /// <summary>
         /// Binds a <see cref="PerspexProperty"/> to an observable.
@@ -84,14 +82,12 @@ namespace Perspex
         /// <param name="property">The property.</param>
         /// <param name="source">The observable.</param>
         /// <param name="priority">The priority of the binding.</param>
-        /// <param name="validation">The validation methods of the binding.</param>
         /// <returns>
         /// A disposable which can be used to terminate the binding.
         /// </returns>
         IDisposable Bind<T>(
             PerspexProperty<T> property,
             IObservable<T> source,
-            BindingPriority priority = BindingPriority.LocalValue,
-            ValidationMethods validation = ValidationMethods.None);
+            BindingPriority priority = BindingPriority.LocalValue);
     }
 }

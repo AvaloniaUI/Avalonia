@@ -99,11 +99,11 @@ namespace Perspex
         /// <param name="binding">The binding to add.</param>
         /// <param name="validation">Validation settings for the binding.</param>
         /// <returns>A disposable used to remove the binding.</returns>
-        public IDisposable Add(IObservable<object> binding, ValidationMethods validation)
+        public IDisposable Add(IObservable<object> binding)
         {
             Contract.Requires<ArgumentNullException>(binding != null);
 
-            var entry = new PriorityBindingEntry(this, _nextIndex++, validation);
+            var entry = new PriorityBindingEntry(this, _nextIndex++);
             var node = Bindings.AddFirst(entry);
 
             entry.Start(binding);

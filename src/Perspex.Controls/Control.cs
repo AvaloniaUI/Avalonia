@@ -423,9 +423,10 @@ namespace Perspex.Controls
             }
         }
 
-        protected override void ValidationChanged(PerspexProperty property, ValidationStatus status)
+        /// <inheritdoc/>
+        protected override void DataValidation(PerspexProperty property, ValidationStatus status)
         {
-            base.ValidationChanged(property, status);
+            base.DataValidation(property, status);
             ValidationStatus = status;
         }
 

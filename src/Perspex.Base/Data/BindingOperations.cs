@@ -44,10 +44,10 @@ namespace Perspex.Data
             {
                 case BindingMode.Default:
                 case BindingMode.OneWay:
-                    return target.Bind(property, binding.Observable ?? binding.Subject, binding.Priority, binding.ValidationMethods);
+                    return target.Bind(property, binding.Observable ?? binding.Subject, binding.Priority);
                 case BindingMode.TwoWay:
                     return new CompositeDisposable(
-                        target.Bind(property, binding.Subject, binding.Priority, binding.ValidationMethods),
+                        target.Bind(property, binding.Subject, binding.Priority),
                         target.GetObservable(property).Subscribe(binding.Subject));
                 case BindingMode.OneTime:
                     var source = binding.Subject ?? binding.Observable;
