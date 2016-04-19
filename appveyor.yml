@@ -21,6 +21,7 @@ configuration:
   - Release
 
 after_test:
+- .\packages\JetBrains.dotMemoryUnit.2.1.20150828.125449\tools\dotMemoryUnit.exe -targetExecutable="%xunit20%\xunit.console.x86.exe" -returnTargetExitCode  --"tests\Perspex.LeakTests\bin\Release\Perspex.LeakTests.dll"
 - ps: nuget\build-appveyor.ps1
 
 artifacts:
