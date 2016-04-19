@@ -67,7 +67,15 @@ namespace Perspex.Shared.PlatformSupport
                 var match = loadedAssemblies.FirstOrDefault(a => a.GetName().Name == name);
                 if (match != null)
                 {
+                    AssemblyNameCache[name] = rv = new AssemblyDescriptor(match);
+                }
+                else
+                {
+                    // iOS does not support loading assemblies dynamically!
+                    //
+#if !__IOS__
                     AssemblyNameCache[name] = rv = new AssemblyDescriptor(Assembly.Load(name));
+#endif
                 }
             }
 
