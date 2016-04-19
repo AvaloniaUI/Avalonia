@@ -107,9 +107,9 @@
       <Project>{811A76CF-1CF6-440F-963B-BBE31BD72A82}</Project>
       <Name>Perspex.Win32</Name>
     </ProjectReference>
-    <ProjectReference Include="..\ControlCatalog\ControlCatalog.PCL.csproj">
+    <ProjectReference Include="..\ControlCatalog\ControlCatalog.csproj">
       <Project>{d0a739b9-3c68-4ba6-a328-41606954b6bd}</Project>
-      <Name>ControlCatalog.PCL</Name>
+      <Name>ControlCatalog</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
