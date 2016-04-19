@@ -103,7 +103,25 @@ namespace Perspex.Controls.Presenters
         /// <inheritdoc/>
         protected override void ItemsChanged(NotifyCollectionChangedEventArgs e)
         {
-            // TODO: Handle items changing.
+            // TODO: Handle items changing.           
+            switch(e.Action)
+            {
+                case NotifyCollectionChangedAction.Remove:
+                    if (!IsVirtualized)
+                    {
+                        var generator = ItemContainerGenerator;                        
+
+                        foreach (var removed in e.OldItems)
+                        {
+                            var currentContainer = generator.Containers.FirstOrDefault((c) => c.Item == removed);
+                            var index = generator.IndexFromContainer(currentContainer.ContainerControl);
+                                                        
+                            Panel.Children.Remove(currentContainer.ContainerControl);
+                            generator.Dematerialize(index, 1);
+                        }
+                    }
+                    break;
+            }
         }
 
         /// <summary>
