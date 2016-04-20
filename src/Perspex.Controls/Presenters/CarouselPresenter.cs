@@ -115,6 +115,7 @@ namespace Perspex.Controls.Presenters
                         Panel.Children.RemoveAll(containers.Select(x => x.ContainerControl));
                     }
                     break;
+
             }
         }
 
