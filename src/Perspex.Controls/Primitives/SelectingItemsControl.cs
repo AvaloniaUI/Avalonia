@@ -378,6 +378,23 @@ namespace Perspex.Controls.Primitives
         }
 
         /// <inheritdoc/>
+        protected override void OnContainersDematerialized(ItemContainerEventArgs e)
+        {
+            base.OnContainersDematerialized(e);
+
+            var panel = (InputElement)Presenter.Panel;
+
+            foreach (var container in e.Containers)
+            {
+                if (KeyboardNavigation.GetTabOnceActiveElement(panel) == container.ContainerControl)
+                {
+                    KeyboardNavigation.SetTabOnceActiveElement(panel, null);
+                    break;
+                }
+            }
+        }
+
+        /// <inheritdoc/>
         protected override void OnDataContextChanging()
         {
             base.OnDataContextChanging();
