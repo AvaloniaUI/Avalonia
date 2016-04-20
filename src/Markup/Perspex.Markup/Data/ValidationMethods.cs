@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Perspex.Data
+namespace Perspex.Markup.Data
 {
     [Flags]
     public enum ValidationMethods

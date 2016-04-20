@@ -64,6 +64,7 @@
     <Compile Include="Data\PropertyAccessorNode.cs" />
     <Compile Include="Data\ExpressionNode.cs" />
     <Compile Include="Data\ExpressionObserver.cs" />
+    <Compile Include="Data\ValidationMethods.cs" />
     <Compile Include="FuncMultiValueConverter.cs" />
     <Compile Include="FuncValueConverter.cs" />
     <Compile Include="IMultiValueConverter.cs" />
