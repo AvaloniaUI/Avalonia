@@ -94,6 +94,7 @@
   <ItemGroup>
     <Compile Include="Data\BindingTests_Source.cs" />
     <Compile Include="Data\BindingTests_ElementName.cs" />
+    <Compile Include="Data\BindingTests_Validation.cs" />
     <Compile Include="Data\MultiBindingTests.cs" />
     <Compile Include="Data\BindingTests_TemplatedParent.cs" />
     <Compile Include="Data\BindingTests.cs" />

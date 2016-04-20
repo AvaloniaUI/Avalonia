@@ -401,16 +401,22 @@ namespace Perspex
                     GetDescription(source));
 
                 IDisposable subscription = null;
+                IDisposable validationSubcription = null;
 
                 subscription = source
+                    .Where(x =>  !(x is ValidationStatus))
                     .Select(x => CastOrDefault(x, property.PropertyType))
                     .Do(_ => { }, () => s_directBindings.Remove(subscription))
                     .Subscribe(x => DirectBindingSet(property, x));
+                validationSubcription = source
+                    .OfType<ValidationStatus>()
+                    .Subscribe(x => DataValidation(property, x));
 
                 s_directBindings.Add(subscription);
 
                 return Disposable.Create(() =>
                 {
+                    validationSubcription.Dispose();
                     subscription.Dispose();
                     s_directBindings.Remove(subscription);
                 });
@@ -459,7 +465,7 @@ namespace Perspex
         {
             Contract.Requires<ArgumentNullException>(property != null);
 
-            return Bind((PerspexProperty)property, source.Select(x => (object)x), priority);
+            return Bind(property, source.Select(x => (object)x), priority);
         }
 
         /// <summary>
@@ -503,6 +509,23 @@ namespace Perspex
                     newValue,
                     priority);
             }
+        }
+
+        /// <inheritdoc/>
+        void IPriorityValueOwner.DataValidationChanged(PriorityValue sender, ValidationStatus status)
+        {
+            var property = sender.Property;
+            DataValidation(property, status);
+        }
+
+        /// <summary>
+        /// Called when the validation state on a tracked property is changed.
+        /// </summary>
+        /// <param name="property">The property whose validation state changed.</param>
+        /// <param name="status">The new validation state.</param>
+        protected virtual void DataValidation(PerspexProperty property, ValidationStatus status)
+        {
+
         }
 
         /// <inheritdoc/>

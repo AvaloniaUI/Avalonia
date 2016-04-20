@@ -46,6 +46,10 @@
     <Compile Include="Data\ExpressionParseException.cs" />
     <Compile Include="Data\ExpressionSubject.cs" />
     <Compile Include="ControlLocator.cs" />
+    <Compile Include="Data\Plugins\ExceptionValidationCheckerPlugin.cs" />
+    <Compile Include="Data\Plugins\IndeiValidationCheckerPlugin.cs" />
+    <Compile Include="Data\Plugins\ValidationCheckerBase.cs" />
+    <Compile Include="Data\Plugins\IValidationCheckerPlugin.cs" />
     <Compile Include="Data\Plugins\PerspexPropertyAccessorPlugin.cs" />
     <Compile Include="Data\Plugins\InpcPropertyAccessorPlugin.cs" />
     <Compile Include="Data\Plugins\IPropertyAccessor.cs" />
