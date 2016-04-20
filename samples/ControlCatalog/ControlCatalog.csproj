@@ -2,20 +2,21 @@
 <Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
+    <MinimumVisualStudioVersion>10.0</MinimumVisualStudioVersion>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{61BEC86C-F307-4295-B5B8-9428610D7D55}</ProjectGuid>
-    <OutputType>WinExe</OutputType>
+    <ProjectGuid>{D0A739B9-3C68-4BA6-A328-41606954B6BD}</ProjectGuid>
+    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>ControlCatalog</RootNamespace>
     <AssemblyName>ControlCatalog</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <DefaultLanguage>en-US</DefaultLanguage>
     <FileAlignment>512</FileAlignment>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <TargetFrameworkProfile />
+    <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <TargetFrameworkProfile>Profile7</TargetFrameworkProfile>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -25,7 +26,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -33,88 +33,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <PropertyGroup>
-    <StartupObject />
-  </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Serilog, Version=1.5.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Serilog.1.5.14\lib\net45\Serilog.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Serilog.FullNetFx, Version=1.5.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Serilog.1.5.14\lib\net45\Serilog.FullNetFx.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="App.xaml.cs">
-      <DependentUpon>App.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="MainWindow.xaml.cs">
-      <DependentUpon>MainWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Pages\ImagePage.xaml.cs">
-      <DependentUpon>ImagePage.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Pages\ExpanderPage.xaml.cs">
-      <DependentUpon>ExpanderPage.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Pages\RadioButtonPage.xaml.cs">
-      <DependentUpon>RadioButtonPage.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Pages\MenuPage.xaml.cs">
-      <DependentUpon>MenuPage.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Pages\ToolTipPage.xaml.cs">
-      <DependentUpon>ToolTipPage.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Pages\TextBoxPage.xaml.cs">
-      <DependentUpon>TextBoxPage.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Pages\LayoutTransformControlPage.xaml.cs">
-      <DependentUpon>LayoutTransformControlPage.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Pages\CheckBoxPage.xaml.cs">
-      <DependentUpon>CheckBoxPage.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Pages\BorderPage.xaml.cs">
-      <DependentUpon>BorderPage.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Pages\CarouselPage.xaml.cs">
-      <DependentUpon>CarouselPage.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Pages\CanvasPage.xaml.cs">
-      <DependentUpon>CanvasPage.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Pages\ButtonPage.xaml.cs">
-      <DependentUpon>ButtonPage.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Pages\DropDownPage.xaml.cs">
-      <DependentUpon>DropDownPage.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Pages\SliderPage.xaml.cs">
-      <DependentUpon>SliderPage.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Program.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
+    <!-- A reference to the entire .NET Framework is automatically included -->
     <EmbeddedResource Include="App.xaml">
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Pages\ButtonPage.xaml">
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="SideBar.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="MainWindow.xaml">
@@ -123,155 +44,167 @@
     <EmbeddedResource Include="Pages\BorderPage.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <EmbeddedResource Include="Pages\ButtonPage.xaml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Include="Pages\CanvasPage.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Pages\CarouselPage.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="Pages\DropDownPage.xaml" />
-    <None Include="packages.config" />
     <EmbeddedResource Include="Pages\CheckBoxPage.xaml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pages\DropDownPage.xaml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pages\ExpanderPage.xaml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pages\ImagePage.xaml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pages\LayoutTransformControlPage.xaml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pages\MenuPage.xaml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pages\RadioButtonPage.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Pages\SliderPage.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\Gtk\Perspex.Cairo\Perspex.Cairo.csproj">
-      <Project>{fb05ac90-89ba-4f2f-a924-f37875fb547c}</Project>
-      <Name>Perspex.Cairo</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Gtk\Perspex.Gtk\Perspex.Gtk.csproj">
-      <Project>{54f237d5-a70a-4752-9656-0c70b1a7b047}</Project>
-      <Name>Perspex.Gtk</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Markup\Perspex.Markup.Xaml\Perspex.Markup.Xaml.csproj">
-      <Project>{3e53a01a-b331-47f3-b828-4a5717e77a24}</Project>
-      <Name>Perspex.Markup.Xaml</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Markup\Perspex.Markup\Perspex.Markup.csproj">
-      <Project>{6417e941-21bc-467b-a771-0de389353ce6}</Project>
-      <Name>Perspex.Markup</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Perspex.Animation\Perspex.Animation.csproj">
-      <Project>{d211e587-d8bc-45b9-95a4-f297c8fa5200}</Project>
-      <Name>Perspex.Animation</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Perspex.Base\Perspex.Base.csproj">
-      <Project>{b09b78d8-9b26-48b0-9149-d64a2f120f3f}</Project>
-      <Name>Perspex.Base</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Perspex.Controls\Perspex.Controls.csproj">
-      <Project>{d2221c82-4a25-4583-9b43-d791e3f6820c}</Project>
-      <Name>Perspex.Controls</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Perspex.DesignerSupport\Perspex.DesignerSupport.csproj">
-      <Project>{799a7bb5-3c2c-48b6-85a7-406a12c420da}</Project>
-      <Name>Perspex.DesignerSupport</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Perspex.Diagnostics\Perspex.Diagnostics.csproj">
-      <Project>{7062ae20-5dcc-4442-9645-8195bdece63e}</Project>
-      <Name>Perspex.Diagnostics</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Perspex.HtmlRenderer\Perspex.HtmlRenderer.csproj">
-      <Project>{5fb2b005-0a7f-4dad-add4-3ed01444e63d}</Project>
-      <Name>Perspex.HtmlRenderer</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Perspex.Input\Perspex.Input.csproj">
-      <Project>{62024b2d-53eb-4638-b26b-85eeaa54866e}</Project>
-      <Name>Perspex.Input</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Perspex.Interactivity\Perspex.Interactivity.csproj">
-      <Project>{6b0ed19d-a08b-461c-a9d9-a9ee40b0c06b}</Project>
-      <Name>Perspex.Interactivity</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Perspex.Layout\Perspex.Layout.csproj">
-      <Project>{42472427-4774-4c81-8aff-9f27b8e31721}</Project>
-      <Name>Perspex.Layout</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Perspex.Logging.Serilog\Perspex.Logging.Serilog.csproj">
-      <Project>{b61b66a3-b82d-4875-8001-89d3394fe0c9}</Project>
-      <Name>Perspex.Logging.Serilog</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Perspex.ReactiveUI\Perspex.ReactiveUI.csproj">
-      <Project>{6417b24e-49c2-4985-8db2-3ab9d898ec91}</Project>
-      <Name>Perspex.ReactiveUI</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Perspex.SceneGraph\Perspex.SceneGraph.csproj">
-      <Project>{eb582467-6abb-43a1-b052-e981ba910e3a}</Project>
-      <Name>Perspex.SceneGraph</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Perspex.Styling\Perspex.Styling.csproj">
-      <Project>{f1baa01a-f176-4c6a-b39d-5b40bb1b148f}</Project>
-      <Name>Perspex.Styling</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Perspex.Themes.Default\Perspex.Themes.Default.csproj">
-      <Project>{3e10a5fa-e8da-48b1-ad44-6a5b6cb7750f}</Project>
-      <Name>Perspex.Themes.Default</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Skia\Perspex.Skia.Desktop\Perspex.Skia.Desktop.csproj">
-      <Project>{925dd807-b651-475f-9f7c-cbeb974ce43d}</Project>
-      <Name>Perspex.Skia.Desktop</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Windows\Perspex.Direct2D1\Perspex.Direct2D1.csproj">
-      <Project>{3e908f67-5543-4879-a1dc-08eace79b3cd}</Project>
-      <Name>Perspex.Direct2D1</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Windows\Perspex.Win32\Perspex.Win32.csproj">
-      <Project>{811a76cf-1cf6-440f-963b-bbe31bd72a82}</Project>
-      <Name>Perspex.Win32</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Assets\hirsch-899118_640.jpg" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Assets\delicate-arch-896885_640.jpg" />
-    <EmbeddedResource Include="Assets\maple-leaf-888807_640.jpg" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Pages\LayoutTransformControlPage.xaml">
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="Pages\TextBoxPage.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="Pages\ToolTipPage.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Pages\MenuPage.xaml">
+    <Compile Include="App.xaml.cs">
+      <DependentUpon>App.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="MainWindow.xaml.cs">
+      <DependentUpon>MainWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\BorderPage.xaml.cs">
+      <DependentUpon>BorderPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\ButtonPage.xaml.cs">
+      <DependentUpon>ButtonPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\CanvasPage.xaml.cs">
+      <DependentUpon>CanvasPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\CarouselPage.xaml.cs">
+      <DependentUpon>CarouselPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\CheckBoxPage.xaml.cs">
+      <DependentUpon>CheckBoxPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\DropDownPage.xaml.cs">
+      <DependentUpon>DropDownPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\ExpanderPage.xaml.cs">
+      <DependentUpon>ExpanderPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\ImagePage.xaml.cs">
+      <DependentUpon>ImagePage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\LayoutTransformControlPage.xaml.cs">
+      <DependentUpon>LayoutTransformControlPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\MenuPage.xaml.cs">
+      <DependentUpon>MenuPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\RadioButtonPage.xaml.cs">
+      <DependentUpon>RadioButtonPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\SliderPage.xaml.cs">
+      <DependentUpon>SliderPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\TextBoxPage.xaml.cs">
+      <DependentUpon>TextBoxPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\ToolTipPage.xaml.cs">
+      <DependentUpon>ToolTipPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\delicate-arch-896885_640.jpg" />
+    <EmbeddedResource Include="Assets\github_icon.png" />
+    <EmbeddedResource Include="Assets\hirsch-899118_640.jpg" />
+    <EmbeddedResource Include="Assets\maple-leaf-888807_640.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="SideBar.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Assets\github_icon.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
+    <ProjectReference Include="..\..\src\Markup\Perspex.Markup.Xaml\Perspex.Markup.Xaml.csproj">
+      <Project>{3E53A01A-B331-47F3-B828-4A5717E77A24}</Project>
+      <Name>Perspex.Markup.Xaml</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\Markup\Perspex.Markup\Perspex.Markup.csproj">
+      <Project>{6417E941-21BC-467B-A771-0DE389353CE6}</Project>
+      <Name>Perspex.Markup</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\Perspex.Animation\Perspex.Animation.csproj">
+      <Project>{D211E587-D8BC-45B9-95A4-F297C8FA5200}</Project>
+      <Name>Perspex.Animation</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\Perspex.Base\Perspex.Base.csproj">
+      <Project>{B09B78D8-9B26-48B0-9149-D64A2F120F3F}</Project>
+      <Name>Perspex.Base</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\Perspex.Controls\Perspex.Controls.csproj">
+      <Project>{D2221C82-4A25-4583-9B43-D791E3F6820C}</Project>
+      <Name>Perspex.Controls</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\Perspex.Diagnostics\Perspex.Diagnostics.csproj">
+      <Project>{7062AE20-5DCC-4442-9645-8195BDECE63E}</Project>
+      <Name>Perspex.Diagnostics</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\Perspex.HtmlRenderer\Perspex.HtmlRenderer.csproj">
+      <Project>{5FB2B005-0A7F-4DAD-ADD4-3ED01444E63D}</Project>
+      <Name>Perspex.HtmlRenderer</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\Perspex.Input\Perspex.Input.csproj">
+      <Project>{62024B2D-53EB-4638-B26B-85EEAA54866E}</Project>
+      <Name>Perspex.Input</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\Perspex.Interactivity\Perspex.Interactivity.csproj">
+      <Project>{6B0ED19D-A08B-461C-A9D9-A9EE40B0C06B}</Project>
+      <Name>Perspex.Interactivity</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\Perspex.Layout\Perspex.Layout.csproj">
+      <Project>{42472427-4774-4C81-8AFF-9F27B8E31721}</Project>
+      <Name>Perspex.Layout</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\Perspex.ReactiveUI\Perspex.ReactiveUI.csproj">
+      <Project>{6417B24E-49C2-4985-8DB2-3AB9D898EC91}</Project>
+      <Name>Perspex.ReactiveUI</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\Perspex.SceneGraph\Perspex.SceneGraph.csproj">
+      <Project>{EB582467-6ABB-43A1-B052-E981BA910E3A}</Project>
+      <Name>Perspex.SceneGraph</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\Perspex.Styling\Perspex.Styling.csproj">
+      <Project>{F1BAA01A-F176-4C6A-B39D-5B40BB1B148F}</Project>
+      <Name>Perspex.Styling</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\Perspex.Themes.Default\Perspex.Themes.Default.csproj">
+      <Project>{3E10A5FA-E8DA-48B1-AD44-6A5B6CB7750F}</Project>
+      <Name>Perspex.Themes.Default</Name>
+    </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Pages\RadioButtonPage.xaml">
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Pages\ExpanderPage.xaml">
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Pages\ImagePage.xaml">
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

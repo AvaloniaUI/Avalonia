@@ -38,7 +38,7 @@ namespace Perspex.Shared.PlatformSupport
         private static readonly Dictionary<string, AssemblyDescriptor> AssemblyNameCache
             = new Dictionary<string, AssemblyDescriptor>();
 
-        private readonly AssemblyDescriptor _defaultAssembly;
+        private AssemblyDescriptor _defaultAssembly;
 
         public AssetLoader(Assembly assembly = null)
         {
@@ -47,19 +47,38 @@ namespace Perspex.Shared.PlatformSupport
             if (assembly != null)
                 _defaultAssembly = new AssemblyDescriptor(assembly);
         }
-    
 
+        public void SetDefaultAssembly(Assembly assembly)
+        {
+            _defaultAssembly = new AssemblyDescriptor(assembly);
+        }
 
         AssemblyDescriptor GetAssembly(string name)
         {
             if (name == null)
+            {
                 return _defaultAssembly;
+            }
+
             AssemblyDescriptor rv;
             if (!AssemblyNameCache.TryGetValue(name, out rv))
-                AssemblyNameCache[name] = rv =
-                    new AssemblyDescriptor(AppDomain.CurrentDomain.GetAssemblies()
-                        .FirstOrDefault(a => a.GetName().Name == name)
-                                           ?? Assembly.Load(name));
+            {
+                var loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies();
+                var match = loadedAssemblies.FirstOrDefault(a => a.GetName().Name == name);
+                if (match != null)
+                {
+                    AssemblyNameCache[name] = rv = new AssemblyDescriptor(match);
+                }
+                else
+                {
+                    // iOS does not support loading assemblies dynamically!
+                    //
+#if !__IOS__
+                    AssemblyNameCache[name] = rv = new AssemblyDescriptor(Assembly.Load(name));
+#endif
+                }
+            }
+
             return rv;
         }
 
