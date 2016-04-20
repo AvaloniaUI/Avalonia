@@ -32,11 +32,11 @@ namespace Perspex.Markup.Data
         /// An ordered collection of validation checker plugins that can be used to customize
         /// the validation of view model and model data.
         /// </summary>
-        public static readonly IList<IValidationCheckerPlugin> ValidationCheckers =
-            new List<IValidationCheckerPlugin>
+        public static readonly IList<IValidationPlugin> ValidationCheckers =
+            new List<IValidationPlugin>
             {
-                new IndeiValidationCheckerPlugin(),
-                new ExceptionValidationCheckerPlugin()
+                new IndeiValidationPlugin(),
+                new ExceptionValidationPlugin()
             };
 
         private readonly WeakReference _root;

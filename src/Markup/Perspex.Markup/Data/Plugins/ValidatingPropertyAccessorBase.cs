@@ -3,14 +3,14 @@ using Perspex.Data;
 
 namespace Perspex.Markup.Data.Plugins
 {
-    public abstract class ValidationCheckerBase : IPropertyAccessor
+    public abstract class ValidatingPropertyAccessorBase : IPropertyAccessor
     {
         protected readonly WeakReference _reference;
         protected readonly string _name;
         private readonly IPropertyAccessor _accessor;
         private readonly Action<ValidationStatus> _callback;
 
-        protected ValidationCheckerBase(WeakReference reference, string name, IPropertyAccessor accessor, Action<ValidationStatus> callback)
+        protected ValidatingPropertyAccessorBase(WeakReference reference, string name, IPropertyAccessor accessor, Action<ValidationStatus> callback)
         {
             _reference = reference;
             _name = name;

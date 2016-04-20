@@ -30,8 +30,7 @@ namespace Perspex.Data
         /// The value used for the <see cref="BindingMode.OneTime"/> binding.
         /// </param>
         /// <param name="priority">The binding priority.</param>
-        public InstancedBinding(object value,
-            BindingPriority priority = BindingPriority.LocalValue)
+        public InstancedBinding(object value, BindingPriority priority = BindingPriority.LocalValue)
         {
             Mode = BindingMode.OneTime;
             Priority = priority;

@@ -10,7 +10,7 @@ namespace Perspex.Markup.Data.Plugins
     /// <summary>
     /// Validates properties that report errors by throwing exceptions.
     /// </summary>
-    public class ExceptionValidationCheckerPlugin : IValidationCheckerPlugin
+    public class ExceptionValidationPlugin : IValidationPlugin
     {
 
         /// <inheritdoc/>
@@ -18,12 +18,12 @@ namespace Perspex.Markup.Data.Plugins
 
 
         /// <inheritdoc/>
-        public ValidationCheckerBase Start(WeakReference reference, string name, IPropertyAccessor accessor, Action<ValidationStatus> callback)
+        public ValidatingPropertyAccessorBase Start(WeakReference reference, string name, IPropertyAccessor accessor, Action<ValidationStatus> callback)
         {
             return new ExceptionValidationChecker(reference, name, accessor, callback);
         }
 
-        private class ExceptionValidationChecker : ValidationCheckerBase
+        private class ExceptionValidationChecker : ValidatingPropertyAccessorBase
         {
             public ExceptionValidationChecker(WeakReference reference, string name, IPropertyAccessor accessor, Action<ValidationStatus> callback)
                 : base(reference, name, accessor, callback)

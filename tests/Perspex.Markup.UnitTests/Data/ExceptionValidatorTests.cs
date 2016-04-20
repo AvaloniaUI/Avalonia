@@ -53,7 +53,7 @@ namespace Perspex.Markup.UnitTests.Data
         public void Setting_Non_Validating_Triggers_Validation()
         {
             var inpcAccessorPlugin = new InpcPropertyAccessorPlugin();
-            var validatorPlugin = new ExceptionValidationCheckerPlugin();
+            var validatorPlugin = new ExceptionValidationPlugin();
             var data = new Data();
             var accessor = inpcAccessorPlugin.Start(new WeakReference(data), nameof(data.NonValidated), _ => { });
             ValidationStatus status = null;
@@ -68,7 +68,7 @@ namespace Perspex.Markup.UnitTests.Data
         public void Setting_Validating_Property_To_Valid_Value_Returns_Successful_ValidationStatus()
         {
             var inpcAccessorPlugin = new InpcPropertyAccessorPlugin();
-            var validatorPlugin = new ExceptionValidationCheckerPlugin();
+            var validatorPlugin = new ExceptionValidationPlugin();
             var data = new Data();
             var accessor = inpcAccessorPlugin.Start(new WeakReference(data), nameof(data.MustBePositive), _ => { });
             ValidationStatus status = null;
@@ -85,7 +85,7 @@ namespace Perspex.Markup.UnitTests.Data
         public void Setting_Validating_Property_To_Invalid_Value_Returns_Failed_ValidationStatus()
         {
             var inpcAccessorPlugin = new InpcPropertyAccessorPlugin();
-            var validatorPlugin = new ExceptionValidationCheckerPlugin();
+            var validatorPlugin = new ExceptionValidationPlugin();
             var data = new Data();
             var accessor = inpcAccessorPlugin.Start(new WeakReference(data), nameof(data.MustBePositive), _ => { });
             ValidationStatus status = null;

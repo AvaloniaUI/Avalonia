@@ -13,7 +13,7 @@ namespace Perspex.Markup.Data.Plugins
     /// <summary>
     /// Validates properties on objects that implement <see cref="INotifyDataErrorInfo"/>.
     /// </summary>
-    public class IndeiValidationCheckerPlugin : IValidationCheckerPlugin
+    public class IndeiValidationPlugin : IValidationPlugin
     {
         /// <inheritdoc/>
         public bool Match(WeakReference reference)
@@ -22,12 +22,12 @@ namespace Perspex.Markup.Data.Plugins
         }
 
         /// <inheritdoc/>
-        public ValidationCheckerBase Start(WeakReference reference, string name, IPropertyAccessor accessor, Action<ValidationStatus> callback)
+        public ValidatingPropertyAccessorBase Start(WeakReference reference, string name, IPropertyAccessor accessor, Action<ValidationStatus> callback)
         {
             return new IndeiValidationChecker(reference, name, accessor, callback);
         }
 
-        private class IndeiValidationChecker : ValidationCheckerBase, IWeakSubscriber<DataErrorsChangedEventArgs>
+        private class IndeiValidationChecker : ValidatingPropertyAccessorBase, IWeakSubscriber<DataErrorsChangedEventArgs>
         {
             public IndeiValidationChecker(WeakReference reference, string name, IPropertyAccessor accessor, Action<ValidationStatus> callback)
                 : base(reference, name, accessor, callback)
