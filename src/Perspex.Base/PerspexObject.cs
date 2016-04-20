@@ -56,6 +56,30 @@ namespace Perspex
         private EventHandler<PerspexPropertyChangedEventArgs> _propertyChanged;
 
         /// <summary>
+        /// Defines the <see cref="ValidationStatus"/> property.
+        /// </summary>
+        public static readonly DirectProperty<PerspexObject, ObjectValidationStatus> ValidationStatusProperty =
+            PerspexProperty.RegisterDirect<PerspexObject, ObjectValidationStatus>(nameof(ValidationStatus), c => c.ValidationStatus);
+
+        private ObjectValidationStatus validationStatus;
+
+        /// <summary>
+        /// The current validation status of the control.
+        /// </summary>
+        public ObjectValidationStatus ValidationStatus
+        {
+            get
+            {
+                return validationStatus;
+            }
+            private set
+            {
+                SetAndRaise(ValidationStatusProperty, ref validationStatus, value);
+            }
+        }
+
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="PerspexObject"/> class.
         /// </summary>
         public PerspexObject()
@@ -410,7 +434,7 @@ namespace Perspex
                     .Subscribe(x => DirectBindingSet(property, x));
                 validationSubcription = source
                     .OfType<IValidationStatus>()
-                    .Subscribe(x => DataValidation(property, x));
+                    .Subscribe(x => DataValidationChanged(property, x));
 
                 s_directBindings.Add(subscription);
 
@@ -515,7 +539,7 @@ namespace Perspex
         void IPriorityValueOwner.DataValidationChanged(PriorityValue sender, IValidationStatus status)
         {
             var property = sender.Property;
-            DataValidation(property, status);
+            DataValidationChanged(property, status);
         }
 
         /// <summary>
@@ -523,9 +547,18 @@ namespace Perspex
         /// </summary>
         /// <param name="property">The property whose validation state changed.</param>
         /// <param name="status">The new validation state.</param>
-        protected virtual void DataValidation(PerspexProperty property, IValidationStatus status)
+        protected virtual void DataValidationChanged(PerspexProperty property, IValidationStatus status)
         {
 
+        }
+
+        /// <summary>
+        /// Updates the validation status of the current object.
+        /// </summary>
+        /// <param name="status">The new validation status.</param>
+        protected void UpdateValidationState(IValidationStatus status)
+        {
+            ValidationStatus = ValidationStatus.UpdateValidationStatus(status);
         }
 
         /// <inheritdoc/>
