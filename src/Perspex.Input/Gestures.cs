@@ -18,7 +18,7 @@ namespace Perspex.Input
             RoutingStrategies.Bubble,
             typeof(Gestures));
 
-        private static IInteractive s_lastPress;
+        private static WeakReference s_lastPress;
 
         static Gestures()
         {
@@ -34,9 +34,9 @@ namespace Perspex.Input
 
                 if (e.ClickCount <= 1)
                 {
-                    s_lastPress = e.Source;
+                    s_lastPress = new WeakReference(e.Source);
                 }
-                else if (e.ClickCount == 2 && s_lastPress == e.Source)
+                else if (s_lastPress?.IsAlive == true && e.ClickCount == 2 && s_lastPress.Target == e.Source)
                 {
                     e.Source.RaiseEvent(new RoutedEventArgs(DoubleTappedEvent));
                 }
@@ -49,9 +49,9 @@ namespace Perspex.Input
             {
                 var e = (PointerReleasedEventArgs)ev;
 
-                if (s_lastPress == e.Source)
+                if (s_lastPress?.IsAlive == true && s_lastPress.Target == e.Source)
                 {
-                    s_lastPress.RaiseEvent(new RoutedEventArgs(TappedEvent));
+                    ((IInteractive)s_lastPress.Target).RaiseEvent(new RoutedEventArgs(TappedEvent));
                 }
             }
         }

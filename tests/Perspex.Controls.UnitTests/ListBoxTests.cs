@@ -104,30 +104,6 @@ namespace Perspex.Controls.UnitTests
                 dataContexts);
         }
 
-        [Fact]
-        public void Setting_SelectedItem_Should_Set_Panel_Keyboard_Navigation()
-        {
-            var target = new ListBox
-            {
-                Template = new FuncControlTemplate(CreateListBoxTemplate),
-                Items = new[] { "Foo", "Bar", "Baz " },
-            };
-
-            ApplyTemplate(target);
-
-            target.Presenter.Panel.Children[1].RaiseEvent(new PointerPressedEventArgs
-            {
-                RoutedEvent = InputElement.PointerPressedEvent,
-                MouseButton = MouseButton.Left,
-            });
-
-            var panel = target.Presenter.Panel;
-
-            Assert.Equal(
-                KeyboardNavigation.GetTabOnceActiveElement((InputElement)panel),
-                panel.Children[1]);
-        }
-
         private Control CreateListBoxTemplate(ITemplatedControl parent)
         {
             return new ScrollViewer

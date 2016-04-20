@@ -40,8 +40,10 @@ namespace Perspex.UnitTests
         {
             PerspexLocator.CurrentMutable
                 .Bind<IAssetLoader>().ToConstant(Services.AssetLoader)
+                .Bind<IFocusManager>().ToConstant(Services.FocusManager)
                 .BindToSelf<IGlobalStyles>(this)
                 .Bind<IInputManager>().ToConstant(Services.InputManager)
+                .Bind<IKeyboardDevice>().ToConstant(Services.KeyboardDevice?.Invoke())
                 .Bind<ILayoutManager>().ToConstant(Services.LayoutManager)
                 .Bind<IPclPlatformWrapper>().ToConstant(Services.PlatformWrapper)
                 .Bind<IPlatformRenderInterface>().ToConstant(Services.RenderInterface)
