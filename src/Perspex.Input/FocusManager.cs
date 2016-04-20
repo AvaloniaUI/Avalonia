@@ -39,7 +39,7 @@ namespace Perspex.Input
         /// <summary>
         /// Gets the currently focused <see cref="IInputElement"/>.
         /// </summary>
-        public IInputElement Current => KeyboardDevice.Instance.FocusedElement;
+        public IInputElement Current => KeyboardDevice.Instance?.FocusedElement;
 
         /// <summary>
         /// Gets the current focus scope.
@@ -82,9 +82,12 @@ namespace Perspex.Input
                     if (_focusScopes.TryGetValue(scope, out element))
                     {
                         Focus(element, method);
-                        break;
+                        return;
                     }
                 }
+
+                // Couldn't find a focus scope, clear focus.
+                SetFocusedElement(Scope, null);
             }
         }
 
@@ -111,7 +114,7 @@ namespace Perspex.Input
 
             if (Scope == scope)
             {
-                KeyboardDevice.Instance.SetFocusedElement(element, method, modifiers);
+                KeyboardDevice.Instance?.SetFocusedElement(element, method, modifiers);
             }
         }
 
@@ -176,7 +179,7 @@ namespace Perspex.Input
             if (sender == e.Source)
             {
                 var ev = (PointerPressedEventArgs)e;
-                var element = (ev.Device.Captured as IInputElement) ?? (e.Source as IInputElement);
+                var element = (ev.Device?.Captured as IInputElement) ?? (e.Source as IInputElement);
 
                 if (element == null || !CanFocus(element))
                 {

@@ -376,9 +376,9 @@ namespace Perspex.Input
         }
 
         /// <inheritdoc/>
-        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        protected override void OnDetachedFromVisualTreeCore(VisualTreeAttachmentEventArgs e)
         {
-            base.OnDetachedFromVisualTree(e);
+            base.OnDetachedFromVisualTreeCore(e);
 
             if (IsFocused)
             {
@@ -387,9 +387,9 @@ namespace Perspex.Input
         }
 
         /// <inheritdoc/>
-        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        protected override void OnAttachedToVisualTreeCore(VisualTreeAttachmentEventArgs e)
         {
-            base.OnAttachedToVisualTree(e);
+            base.OnAttachedToVisualTreeCore(e);
             UpdateIsEnabledCore();
         }
 
