@@ -18,7 +18,7 @@ namespace Perspex.Markup.Data.Plugins
 
 
         /// <inheritdoc/>
-        public ValidatingPropertyAccessorBase Start(WeakReference reference, string name, IPropertyAccessor accessor, Action<ValidationStatus> callback)
+        public IPropertyAccessor Start(WeakReference reference, string name, IPropertyAccessor accessor, Action<ValidationStatus> callback)
         {
             return new ExceptionValidationChecker(reference, name, accessor, callback);
         }
