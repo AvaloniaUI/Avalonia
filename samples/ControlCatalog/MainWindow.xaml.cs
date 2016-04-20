@@ -14,6 +14,13 @@ namespace ControlCatalog
 
         private void InitializeComponent()
         {
+            // TODO: iOS does not support dynamically loading assemblies
+            // so we must refer to this resource DLL statically. For
+            // now I am doing that here. But we need a better solution!!
+            var theme = new Perspex.Themes.Default.DefaultTheme();
+            theme.FindResource("Button");
+
+
             this.LoadFromXaml();
         }
     }

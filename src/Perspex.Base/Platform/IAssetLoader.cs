@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Reflection;
 
 namespace Perspex.Platform
 {
@@ -11,6 +12,16 @@ namespace Perspex.Platform
     /// </summary>
     public interface IAssetLoader
     {
+        /// <summary>
+        /// We need a way to override the default assembly selected by the host platform
+        /// because right now it is selecting the wrong one for PCL based Apps. The 
+        /// AssetLoader needs a refactor cause right now it lives in 3+ platforms which 
+        /// can all be loaded on Windows. 
+        /// </summary>
+        /// <param name="asm"></param>
+        void SetDefaultAssembly(Assembly asm);
+
+
         /// <summary>
         /// Checks if an asset with the specified URI exists.
         /// </summary>
