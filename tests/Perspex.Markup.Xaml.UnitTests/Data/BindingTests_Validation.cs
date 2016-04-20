@@ -1,4 +1,5 @@
 ﻿using Perspex.Controls;
+using Perspex.Markup.Data;
 using Perspex.Markup.Xaml.Data;
 using System;
 using System.Collections.Generic;
@@ -47,7 +48,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
             {
                 Path = nameof(source.MustBeNonEmpty),
                 Mode = Perspex.Data.BindingMode.TwoWay,
-                ValidationMethods = Perspex.Data.ValidationMethods.None
+                ValidationMethods = ValidationMethods.None
             };
             target.Bind(TextBlock.TextProperty, binding);
             
@@ -65,7 +66,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
             {
                 Path = nameof(source.MustBeNonEmpty),
                 Mode = Perspex.Data.BindingMode.TwoWay,
-                ValidationMethods = Perspex.Data.ValidationMethods.All
+                ValidationMethods = ValidationMethods.All
             };
             target.Bind(TextBlock.TextProperty, binding);
             
@@ -82,7 +83,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
             {
                 Path = nameof(source.MustBeNonEmpty),
                 Mode = Perspex.Data.BindingMode.TwoWay,
-                ValidationMethods = Perspex.Data.ValidationMethods.None
+                ValidationMethods = ValidationMethods.None
             };
             target.Bind(Control.TagProperty, binding);
 
@@ -100,7 +101,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
             {
                 Path = nameof(source.MustBeNonEmpty),
                 Mode = Perspex.Data.BindingMode.TwoWay,
-                ValidationMethods = Perspex.Data.ValidationMethods.All
+                ValidationMethods = ValidationMethods.All
             };
             target.Bind(Control.TagProperty, binding);
 

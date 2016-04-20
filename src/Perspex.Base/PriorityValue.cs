@@ -184,7 +184,7 @@ namespace Perspex
         /// </summary>
         /// <param name="priorityLevel">The priority level of the changed entry.</param>
         /// <param name="validationStatus">The validation status.</param>
-        public void LevelValidation(PriorityLevel priorityLevel, ValidationStatus validationStatus)
+        public void LevelValidation(PriorityLevel priorityLevel, IValidationStatus validationStatus)
         {
             _owner.DataValidationChanged(this, validationStatus);
         }

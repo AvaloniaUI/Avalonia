@@ -221,7 +221,7 @@ namespace Perspex.Markup.Data
                 {
                     source = source.TakeUntil(_update.LastOrDefaultAsync());
                 }
-                var validationFiltered = source.Where(o => (o as ValidationStatus)?.Match(_methods) ?? true);
+                var validationFiltered = source.Where(o => (o as IFilterableValidationStatus)?.Match(_methods) ?? true);
                 var subscription = validationFiltered.Subscribe(observer);
 
                 return Disposable.Create(() =>

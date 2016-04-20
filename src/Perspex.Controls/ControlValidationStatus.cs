@@ -8,17 +8,15 @@ using System.Threading.Tasks;
 
 namespace Perspex.Controls
 {
-    public class ControlValidationStatus : ValidationStatus, INotifyPropertyChanged
+    public class ControlValidationStatus : IValidationStatus, INotifyPropertyChanged
     {
-        private Dictionary<Type, ValidationStatus> propertyValidation = new Dictionary<Type, ValidationStatus>();
+        private Dictionary<Type, IValidationStatus> propertyValidation = new Dictionary<Type, IValidationStatus>();
 
-        public override bool IsValid => propertyValidation.Values.All(status => status.IsValid);
+        public bool IsValid => propertyValidation.Values.All(status => status.IsValid);
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public override bool Match(ValidationMethods enabledMethods) => true;
-
-        public void UpdateValidationStatus(ValidationStatus status)
+        public void UpdateValidationStatus(IValidationStatus status)
         {
             propertyValidation[status.GetType()] = status;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(""));

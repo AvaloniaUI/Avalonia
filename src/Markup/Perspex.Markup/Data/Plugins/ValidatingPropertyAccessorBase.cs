@@ -12,9 +12,9 @@ namespace Perspex.Markup.Data.Plugins
         protected readonly WeakReference _reference;
         protected readonly string _name;
         private readonly IPropertyAccessor _accessor;
-        private readonly Action<ValidationStatus> _callback;
+        private readonly Action<IValidationStatus> _callback;
 
-        protected ValidatingPropertyAccessorBase(WeakReference reference, string name, IPropertyAccessor accessor, Action<ValidationStatus> callback)
+        protected ValidatingPropertyAccessorBase(WeakReference reference, string name, IPropertyAccessor accessor, Action<IValidationStatus> callback)
         {
             _reference = reference;
             _name = name;
@@ -38,7 +38,7 @@ namespace Perspex.Markup.Data.Plugins
         /// Sends the validation status to the callback specified in construction.
         /// </summary>
         /// <param name="status">The validation status.</param>
-        protected void SendValidationCallback(ValidationStatus status)
+        protected void SendValidationCallback(IValidationStatus status)
         {
             _callback?.Invoke(status);
         }

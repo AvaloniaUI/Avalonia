@@ -56,7 +56,7 @@ namespace Perspex.Markup.UnitTests.Data
             var validatorPlugin = new ExceptionValidationPlugin();
             var data = new Data();
             var accessor = inpcAccessorPlugin.Start(new WeakReference(data), nameof(data.NonValidated), _ => { });
-            ValidationStatus status = null;
+            IValidationStatus status = null;
             var validator = validatorPlugin.Start(new WeakReference(data), nameof(data.NonValidated), accessor, s => status = s);
 
             validator.SetValue(5, BindingPriority.LocalValue);
@@ -71,7 +71,7 @@ namespace Perspex.Markup.UnitTests.Data
             var validatorPlugin = new ExceptionValidationPlugin();
             var data = new Data();
             var accessor = inpcAccessorPlugin.Start(new WeakReference(data), nameof(data.MustBePositive), _ => { });
-            ValidationStatus status = null;
+            IValidationStatus status = null;
             var validator = validatorPlugin.Start(new WeakReference(data), nameof(data.MustBePositive), accessor, s => status = s);
 
             validator.SetValue(5, BindingPriority.LocalValue);
@@ -88,7 +88,7 @@ namespace Perspex.Markup.UnitTests.Data
             var validatorPlugin = new ExceptionValidationPlugin();
             var data = new Data();
             var accessor = inpcAccessorPlugin.Start(new WeakReference(data), nameof(data.MustBePositive), _ => { });
-            ValidationStatus status = null;
+            IValidationStatus status = null;
             var validator = validatorPlugin.Start(new WeakReference(data), nameof(data.MustBePositive), accessor, s => status = s);
 
             validator.SetValue(-5, BindingPriority.LocalValue);

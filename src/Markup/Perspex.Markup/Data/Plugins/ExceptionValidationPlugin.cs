@@ -18,14 +18,14 @@ namespace Perspex.Markup.Data.Plugins
 
 
         /// <inheritdoc/>
-        public IPropertyAccessor Start(WeakReference reference, string name, IPropertyAccessor accessor, Action<ValidationStatus> callback)
+        public IPropertyAccessor Start(WeakReference reference, string name, IPropertyAccessor accessor, Action<IValidationStatus> callback)
         {
             return new ExceptionValidationChecker(reference, name, accessor, callback);
         }
 
         private class ExceptionValidationChecker : ValidatingPropertyAccessorBase
         {
-            public ExceptionValidationChecker(WeakReference reference, string name, IPropertyAccessor accessor, Action<ValidationStatus> callback)
+            public ExceptionValidationChecker(WeakReference reference, string name, IPropertyAccessor accessor, Action<IValidationStatus> callback)
                 : base(reference, name, accessor, callback)
             {
             }
@@ -49,7 +49,7 @@ namespace Perspex.Markup.Data.Plugins
         /// <summary>
         /// Describes the current validation status after setting a property value.
         /// </summary>
-        public class ExceptionValidationStatus : ValidationStatus
+        public class ExceptionValidationStatus : IFilterableValidationStatus
         {
             internal ExceptionValidationStatus(Exception exception)
             {
@@ -63,9 +63,9 @@ namespace Perspex.Markup.Data.Plugins
 
 
             /// <inheritdoc/>
-            public override bool IsValid => Exception == null;
+            public bool IsValid => Exception == null;
 
-            public override bool Match(ValidationMethods enabledMethods)
+            public bool Match(ValidationMethods enabledMethods)
             {
                 return (enabledMethods & ValidationMethods.Exceptions) != 0;
             }

@@ -46,6 +46,7 @@
     <Compile Include="Data\ExpressionParseException.cs" />
     <Compile Include="Data\ExpressionSubject.cs" />
     <Compile Include="ControlLocator.cs" />
+    <Compile Include="Data\IFilterableValidationStatus.cs" />
     <Compile Include="Data\Plugins\ExceptionValidationPlugin.cs" />
     <Compile Include="Data\Plugins\IndeiValidationPlugin.cs" />
     <Compile Include="Data\Plugins\ValidatingPropertyAccessorBase.cs" />

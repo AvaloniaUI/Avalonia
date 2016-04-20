@@ -3,6 +3,7 @@
 
 using OmniXaml;
 using Perspex.Data;
+using Perspex.Markup.Data;
 using Perspex.Markup.Xaml.Data;
 
 namespace Perspex.Markup.Xaml.MarkupExtensions

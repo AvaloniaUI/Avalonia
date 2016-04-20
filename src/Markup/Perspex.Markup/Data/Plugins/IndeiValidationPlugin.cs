@@ -22,14 +22,14 @@ namespace Perspex.Markup.Data.Plugins
         }
 
         /// <inheritdoc/>
-        public IPropertyAccessor Start(WeakReference reference, string name, IPropertyAccessor accessor, Action<ValidationStatus> callback)
+        public IPropertyAccessor Start(WeakReference reference, string name, IPropertyAccessor accessor, Action<IValidationStatus> callback)
         {
             return new IndeiValidationChecker(reference, name, accessor, callback);
         }
 
         private class IndeiValidationChecker : ValidatingPropertyAccessorBase, IWeakSubscriber<DataErrorsChangedEventArgs>
         {
-            public IndeiValidationChecker(WeakReference reference, string name, IPropertyAccessor accessor, Action<ValidationStatus> callback)
+            public IndeiValidationChecker(WeakReference reference, string name, IPropertyAccessor accessor, Action<IValidationStatus> callback)
                 : base(reference, name, accessor, callback)
             {
                 var target = reference.Target as INotifyDataErrorInfo;
@@ -72,7 +72,7 @@ namespace Perspex.Markup.Data.Plugins
         /// <summary>
         /// Describes the current validation status of a property as reported by an object that implements <see cref="INotifyDataErrorInfo"/>.
         /// </summary>
-        public class IndeiValidationStatus : ValidationStatus
+        public class IndeiValidationStatus : IFilterableValidationStatus
         {
             internal IndeiValidationStatus(IEnumerable errors)
             {
@@ -80,14 +80,14 @@ namespace Perspex.Markup.Data.Plugins
             }
 
             /// <inheritdoc/>
-            public override bool IsValid => !Errors.OfType<object>().Any();
+            public bool IsValid => !Errors.OfType<object>().Any();
 
             /// <summary>
             /// The errors on the given property and on the object as a whole.
             /// </summary>
             public IEnumerable Errors { get; }
 
-            public override bool Match(ValidationMethods enabledMethods)
+            public bool Match(ValidationMethods enabledMethods)
             {
                 return (enabledMethods & ValidationMethods.INotifyDataErrorInfo) != 0;
             }

@@ -170,7 +170,7 @@ namespace Perspex
         /// </summary>
         /// <param name="entry">The entry that completed.</param>
         /// <param name="validationStatus">The validation status.</param>
-        public void Validation(PriorityBindingEntry entry, ValidationStatus validationStatus)
+        public void Validation(PriorityBindingEntry entry, IValidationStatus validationStatus)
         {
             _owner.LevelValidation(this, validationStatus);
         }

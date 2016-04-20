@@ -404,12 +404,12 @@ namespace Perspex
                 IDisposable validationSubcription = null;
 
                 subscription = source
-                    .Where(x =>  !(x is ValidationStatus))
+                    .Where(x =>  !(x is IValidationStatus))
                     .Select(x => CastOrDefault(x, property.PropertyType))
                     .Do(_ => { }, () => s_directBindings.Remove(subscription))
                     .Subscribe(x => DirectBindingSet(property, x));
                 validationSubcription = source
-                    .OfType<ValidationStatus>()
+                    .OfType<IValidationStatus>()
                     .Subscribe(x => DataValidation(property, x));
 
                 s_directBindings.Add(subscription);
@@ -512,7 +512,7 @@ namespace Perspex
         }
 
         /// <inheritdoc/>
-        void IPriorityValueOwner.DataValidationChanged(PriorityValue sender, ValidationStatus status)
+        void IPriorityValueOwner.DataValidationChanged(PriorityValue sender, IValidationStatus status)
         {
             var property = sender.Property;
             DataValidation(property, status);
@@ -523,7 +523,7 @@ namespace Perspex
         /// </summary>
         /// <param name="property">The property whose validation state changed.</param>
         /// <param name="status">The new validation state.</param>
-        protected virtual void DataValidation(PerspexProperty property, ValidationStatus status)
+        protected virtual void DataValidation(PerspexProperty property, IValidationStatus status)
         {
 
         }

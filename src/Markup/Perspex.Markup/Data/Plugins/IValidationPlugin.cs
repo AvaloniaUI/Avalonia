@@ -31,6 +31,6 @@ namespace Perspex.Markup.Data.Plugins
         /// A <see cref="ValidatingPropertyAccessorBase"/> subclass through which future interactions with the 
         /// property will be made.
         /// </returns>
-        IPropertyAccessor Start(WeakReference reference, string name, IPropertyAccessor accessor, Action<ValidationStatus> callback);
+        IPropertyAccessor Start(WeakReference reference, string name, IPropertyAccessor accessor, Action<IValidationStatus> callback);
     }
 }
