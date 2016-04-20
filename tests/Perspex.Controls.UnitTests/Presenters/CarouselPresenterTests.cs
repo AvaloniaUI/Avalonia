@@ -7,6 +7,7 @@ using Perspex.Controls.Generators;
 using Perspex.Controls.Presenters;
 using Perspex.Controls.Templates;
 using Xunit;
+using System.Collections.ObjectModel;
 
 namespace Perspex.Controls.UnitTests.Presenters
 {
@@ -114,6 +115,82 @@ namespace Perspex.Controls.UnitTests.Presenters
             target.SelectedIndex = 0;
             Assert.Equal(2, target.ItemContainerGenerator.Containers.Count());
             Assert.Equal(2, target.Panel.Children.Count);
+        }
+
+        [Fact]
+        public void Should_Remove_Controls_When_IsVirtualized_Is_False()
+        {
+            ObservableCollection<string> items = new ObservableCollection<string>();
+            
+            var target = new CarouselPresenter
+            {
+                Items = items,              
+                SelectedIndex = 0,
+                IsVirtualized = false,
+            };
+
+            target.ApplyTemplate();
+            target.SelectedIndex = 0;
+            items.Add("foo");
+            target.SelectedIndex = 0;
+
+            Assert.Equal(1, target.ItemContainerGenerator.Containers.Count());
+            Assert.Equal(1, target.Panel.Children.Count);
+
+            items.Add("bar");
+            Assert.Equal(1, target.ItemContainerGenerator.Containers.Count());
+            Assert.Equal(1, target.Panel.Children.Count);
+
+            target.SelectedIndex = 1;
+            Assert.Equal(2, target.ItemContainerGenerator.Containers.Count());
+            Assert.Equal(2, target.Panel.Children.Count);            
+
+            items.Remove(items[0]);
+            Assert.Equal(1, target.ItemContainerGenerator.Containers.Count());
+            Assert.Equal(1, target.Panel.Children.Count);            
+
+            items.Remove(items[0]);
+            Assert.Equal(0, target.ItemContainerGenerator.Containers.Count());
+            Assert.Equal(0, target.Panel.Children.Count);            
+        }
+
+        [Fact]
+        public void Should_have_correct_index_itemscontainer()
+        {
+            ObservableCollection<string> items = new ObservableCollection<string>();
+
+            var target = new CarouselPresenter
+            {
+                Items = items,
+                SelectedIndex = 0,
+                IsVirtualized = false,
+            };
+
+            target.ApplyTemplate();
+            target.SelectedIndex = 0;
+            items.Add("foo");
+            target.SelectedIndex = 0;
+
+            Assert.Equal(1, target.ItemContainerGenerator.Containers.Count());
+            Assert.Equal(1, target.Panel.Children.Count);
+
+            items.Add("bar");
+            Assert.Equal(1, target.ItemContainerGenerator.Containers.Count());
+            Assert.Equal(1, target.Panel.Children.Count);
+
+            target.SelectedIndex = 1;
+            Assert.Equal(2, target.ItemContainerGenerator.Containers.Count());
+            Assert.Equal(2, target.Panel.Children.Count);
+            Assert.Equal(0, target.ItemContainerGenerator.Containers.First().Index);
+
+            items.Remove(items[0]);
+            Assert.Equal(1, target.ItemContainerGenerator.Containers.Count());
+            Assert.Equal(1, target.Panel.Children.Count);
+            Assert.Equal(1, target.ItemContainerGenerator.Containers.First().Index);
+
+            items.Remove(items[0]);
+            Assert.Equal(0, target.ItemContainerGenerator.Containers.Count());
+            Assert.Equal(0, target.Panel.Children.Count);            
         }
 
         private class TestItem : ContentControl
