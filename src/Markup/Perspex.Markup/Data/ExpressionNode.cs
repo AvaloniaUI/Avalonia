@@ -114,7 +114,7 @@ namespace Perspex.Markup.Data
             }
             else
             {
-                Next.SendValidationStatus(status);
+                Next?.SendValidationStatus(status);
             }
         }
 
