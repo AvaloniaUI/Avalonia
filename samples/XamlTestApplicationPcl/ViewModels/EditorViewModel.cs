@@ -1,4 +1,6 @@
-﻿namespace XamlTestApplication.ViewModels
+﻿using Perspex.Threading;
+
+namespace XamlTestApplication.ViewModels
 {
     using ReactiveUI;
     using System;
@@ -19,6 +21,12 @@
             {
                 Documents.Add(new EditorViewModel());
             });
+
+            GCCommand = ReactiveCommand.Create();
+            GCCommand.Subscribe(_ =>
+            {
+                GC.Collect();
+            });
         }
 
         public static ShellViewModel Instance = new ShellViewModel();
@@ -38,14 +46,28 @@
             set { this.RaiseAndSetIfChanged(ref selectedDocument, value); }
         }
 
+        private int instanceCount;
+
+        public int InstanceCount
+        {
+            get { return instanceCount; }
+            set { this.RaiseAndSetIfChanged(ref instanceCount, value); }
+        }
+
+
 
         public ReactiveCommand<object> AddDocumentCommand { get; }
+        public ReactiveCommand<object> GCCommand { get; }
     }
 
     public class EditorViewModel : ReactiveObject
     {
+        private static int InstanceCount = 0;
+
         public EditorViewModel()
         {
+            InstanceCount++;
+            ShellViewModel.Instance.InstanceCount = InstanceCount;
             text = "This is some text.";
 
             CloseCommand = ReactiveCommand.Create();
@@ -58,6 +80,14 @@
 
         ~EditorViewModel()
         {
+            
+            
+            //System.Console.WriteLine("EVM Destructed");
+            InstanceCount--;
+            Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                ShellViewModel.Instance.InstanceCount = InstanceCount;
+            });
 
         }
 

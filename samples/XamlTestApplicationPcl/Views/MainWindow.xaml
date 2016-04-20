@@ -381,7 +381,8 @@
             </TabStrip>
             <Grid Background="#007ACC" Height="2" />
               <Button Content="AddTab" Command="{Binding AddDocumentCommand}" Width="50" Height="30" />
-          
+              <Button Content="GC.Collecy" Command="{Binding GCCommand}" Width="50" Height="30" />
+              <TextBox Text="{Binding InstanceCount}"           />
 
           <Carousel Items="{Binding Documents}" SelectedIndex="{Binding #strip.SelectedIndex}" IsVirtualized="false">
             <Carousel.DataTemplates>
