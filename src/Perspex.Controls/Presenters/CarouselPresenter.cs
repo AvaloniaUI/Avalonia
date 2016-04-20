@@ -111,18 +111,8 @@ namespace Perspex.Controls.Presenters
                     if (!IsVirtualized)
                     {
                         var generator = ItemContainerGenerator;
-
-                        for (int index = 0; index < e.OldItems.Count; index++)
-                        {
-                            var currentContainer = generator.ContainerFromIndex(e.OldStartingIndex + index);
-
-                            if (currentContainer != null)
-                            {
-                                Panel.Children.Remove(currentContainer);
-                            }
-
-                            generator.Dematerialize(e.OldStartingIndex + index, 1);
-                        }
+                        var containers = generator.RemoveRange(e.OldStartingIndex, e.OldItems.Count);
+                        Panel.Children.RemoveAll(containers.Select(x => x.ContainerControl));
                     }
                     break;
             }
