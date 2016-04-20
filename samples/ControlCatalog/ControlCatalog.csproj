@@ -139,11 +139,11 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Gtk\Perspex.Cairo\Perspex.Cairo.csproj">
+    <ProjectReference Include="..\..\src\Gtk\Perspex.Cairo\Perspex.Cairo.csproj" Condition="$(DefineConstants.Contains('PERSPEX_CAIRO'))">
       <Project>{fb05ac90-89ba-4f2f-a924-f37875fb547c}</Project>
       <Name>Perspex.Cairo</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\Gtk\Perspex.Gtk\Perspex.Gtk.csproj">
+    <ProjectReference Include="..\..\src\Gtk\Perspex.Gtk\Perspex.Gtk.csproj" Condition="$(DefineConstants.Contains('PERSPEX_GTK'))">
       <Project>{54f237d5-a70a-4752-9656-0c70b1a7b047}</Project>
       <Name>Perspex.Gtk</Name>
     </ProjectReference>
