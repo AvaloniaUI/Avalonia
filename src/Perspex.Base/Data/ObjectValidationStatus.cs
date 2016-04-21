@@ -13,7 +13,7 @@ namespace Perspex.Data
     {
         private Dictionary<Type, IValidationStatus> currentValidationStatus;
 
-        public bool IsValid => currentValidationStatus.Values.All(status => status.IsValid);
+        public bool IsValid => currentValidationStatus?.Values.All(status => status.IsValid) ?? true;
 
         /// <summary>
         /// Constructs the structure with the given validation information.
@@ -32,7 +32,8 @@ namespace Perspex.Data
         /// <returns>The new validation status.</returns>
         public ObjectValidationStatus UpdateValidationStatus(IValidationStatus status)
         {
-            var newStatus = new Dictionary<Type, IValidationStatus>(currentValidationStatus);
+            var newStatus = new Dictionary<Type, IValidationStatus>(currentValidationStatus ??
+                                                                new Dictionary<Type, IValidationStatus>());
             newStatus[status.GetType()] = status;
             return new ObjectValidationStatus(newStatus);
         }

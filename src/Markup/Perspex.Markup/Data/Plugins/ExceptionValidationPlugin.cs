@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Perspex.Data;
+using System.Reflection;
 
 namespace Perspex.Markup.Data.Plugins
 {
@@ -37,6 +38,10 @@ namespace Perspex.Markup.Data.Plugins
                     var success = base.SetValue(value, priority);
                     SendValidationCallback(new ExceptionValidationStatus(null));
                     return success;
+                }
+                catch (TargetInvocationException ex)
+                {
+                    SendValidationCallback(new ExceptionValidationStatus(ex.InnerException));
                 }
                 catch (Exception ex)
                 {

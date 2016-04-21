@@ -109,7 +109,7 @@ namespace Perspex.Controls
             PseudoClass(IsEnabledCoreProperty, x => !x, ":disabled");
             PseudoClass(IsFocusedProperty, ":focus");
             PseudoClass(IsPointerOverProperty, ":pointerover");
-            PseudoClass(ValidationStatusProperty, status => status != null && !status.IsValid, ":invalid");
+            PseudoClass(ValidationStatusProperty, status => !status.IsValid, ":invalid");
         }
 
         /// <summary>
