@@ -482,7 +482,8 @@ namespace Perspex.Controls
             }
 
             property.Changed.Merge(property.Initialized)
-                .Subscribe(e =>
+                .Where(e => e.Sender is Control) // Because ValidationStatus is on PerspexObject now, we need insure we have a Control
+                .Subscribe(e =>                 // because ValidationStatus is on all PerspexObjects, not just controls.
                 {
                     if (selector((T)e.NewValue))
                     {
