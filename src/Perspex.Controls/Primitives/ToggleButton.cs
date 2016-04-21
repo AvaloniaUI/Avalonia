@@ -34,6 +34,14 @@ namespace Perspex.Controls.Primitives
             Toggle();
         }
 
+        protected override void DataValidationChanged(PerspexProperty property, IValidationStatus status)
+        {
+            if (property == IsCheckedProperty)
+            {
+                UpdateValidationState(status);
+            }
+        }
+
         protected virtual void Toggle()
         {
             IsChecked = !IsChecked;

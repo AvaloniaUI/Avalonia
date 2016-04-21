@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using Perspex.Data;
 using Perspex.Input;
 using Perspex.Metadata;
 
@@ -130,6 +131,14 @@ namespace Perspex.Controls.Primitives
             }
 
             return finalSize;
+        }
+
+        protected override void DataValidationChanged(PerspexProperty property, IValidationStatus status)
+        {
+            if (property == ValueProperty)
+            {
+                UpdateValidationState(status);
+            }
         }
 
         private void ThumbChanged(PerspexPropertyChangedEventArgs e)
