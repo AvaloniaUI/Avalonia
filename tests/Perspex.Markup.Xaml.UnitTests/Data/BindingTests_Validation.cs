@@ -40,7 +40,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
         }
 
         [Fact]
-        public void Disabled_Validation_Should_Not_Trigger_Validation_Change_Direct()
+        public void Disabled_Validation_Should_Not_Trigger_Validation_Change()
         {
             var source = new Data { MustBeNonEmpty = "Test" };
             var target = new TextBlock { DataContext = source };
@@ -58,7 +58,7 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
         }
 
         [Fact]
-        public void Enabled_Validation_Should_Trigger_Validation_Change_Direct()
+        public void Enabled_Validation_Should_Trigger_Validation_Change()
         {
             var source = new Data { MustBeNonEmpty = "Test" };
             var target = new TextBlock { DataContext = source };
@@ -71,41 +71,6 @@ namespace Perspex.Markup.Xaml.UnitTests.Data
             target.Bind(TextBlock.TextProperty, binding);
             
             target.Text = "";
-            Assert.False(target.ValidationStatus.IsValid);
-        }
-
-        [Fact]
-        public void Disabled_Validation_Should_Not_Trigger_Validation_Change_Styled()
-        {
-            var source = new Data { MustBeNonEmpty = "Test" };
-            var target = new TextBlock { DataContext = source };
-            var binding = new Binding
-            {
-                Path = nameof(source.MustBeNonEmpty),
-                Mode = Perspex.Data.BindingMode.TwoWay,
-                ValidationMethods = ValidationMethods.None
-            };
-            target.Bind(Control.TagProperty, binding);
-
-            target.Tag = "";
-
-            Assert.True(target.ValidationStatus.IsValid);
-        }
-
-        [Fact]
-        public void Enabled_Validation_Should_Trigger_Validation_Change_Styled()
-        {
-            var source = new Data { MustBeNonEmpty = "Test" };
-            var target = new TextBlock { DataContext = source };
-            var binding = new Binding
-            {
-                Path = nameof(source.MustBeNonEmpty),
-                Mode = Perspex.Data.BindingMode.TwoWay,
-                ValidationMethods = ValidationMethods.All
-            };
-            target.Bind(Control.TagProperty, binding);
-
-            target.Tag = "";
             Assert.False(target.ValidationStatus.IsValid);
         }
     }
