@@ -25,7 +25,7 @@ namespace Perspex.Base.UnitTests
                 .Select(x => x.Name)
                 .ToArray();
 
-            Assert.Equal(new[] { "Foo", "Baz", "Qux", "Attached" }, names);
+            Assert.Equal(new[] { "Foo", "Baz", "Qux", "Attached", "ValidationStatus" }, names);
         }
 
         [Fact]
@@ -35,7 +35,7 @@ namespace Perspex.Base.UnitTests
                 .Select(x => x.Name)
                 .ToArray();
 
-            Assert.Equal(new[] { "Bar", "Flob", "Fred", "Foo", "Baz", "Qux", "Attached" }, names);
+            Assert.Equal(new[] { "Bar", "Flob", "Fred", "Foo", "Baz", "Qux", "Attached", "ValidationStatus" }, names);
         }
 
         [Fact]
