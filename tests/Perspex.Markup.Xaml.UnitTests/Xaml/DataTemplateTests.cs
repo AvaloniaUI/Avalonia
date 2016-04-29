@@ -80,5 +80,26 @@ namespace Perspex.Markup.Xaml.UnitTests.Xaml
                 Assert.Same(viewModel.Child.Child, canvas.DataContext);
             }
         }
+
+        [Fact]
+        public void DataTemplate_Without_Data_Type_Should_Not_Cause_StackOverflow()
+        {
+            var xaml = @"<Window xmlns='https://github.com/perspex'>
+                <ContentControl Content='{Binding Integer}'>
+                    <ContentControl.DataTemplates>
+                        <DataTemplate>
+                            <Button>1</Button>
+                        </DataTemplate>
+                    </ContentControl.DataTemplates>
+                </ContentControl>
+            </Window>";
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var perspexLoader = new PerspexXamlLoader();
+                var window = (Window)perspexLoader.Load(xaml);
+                window.DataContext = new TestViewModel();
+                TestServices.StyledWindow.LayoutManager.ExecuteInitialLayoutPass(window);
+            }
+        }
     }
 }
