@@ -101,5 +101,29 @@ namespace Perspex.Markup.Xaml.UnitTests.Xaml
                 TestServices.StyledWindow.LayoutManager.ExecuteInitialLayoutPass(window);
             }
         }
+
+        [Fact]
+        public void DataTemplate_With_Child_That_Resolves_DataTemplate_Should_Not_Cause_StackOverflow()
+        {
+            var xaml = @"<Window xmlns='https://github.com/perspex'
+                            xmlns:local='clr-namespace:Perspex.Markup.Xaml.UnitTests;assembly=Perspex.Markup.Xaml.UnitTests'>
+                <ContentControl Content='{Binding Child}'>
+                    <ContentControl.DataTemplates>
+                        <DataTemplate DataType='{Type local:TestViewModel}'>
+                            <Button Content='{Binding Child}' />
+                        </DataTemplate>
+                    </ContentControl.DataTemplates>
+                </ContentControl>
+            </Window>";
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var perspexLoader = new PerspexXamlLoader();
+                var window = (Window)perspexLoader.Load(xaml);
+                var model = new TestViewModel();
+                model.Child = model;
+                window.DataContext = model;
+                TestServices.StyledWindow.LayoutManager.ExecuteInitialLayoutPass(window);
+            }
+        }
     }
 }
