@@ -33,7 +33,7 @@ namespace Perspex.Controls
     /// - Implements <see cref="IStyleable"/> to allow styling to work on the control.
     /// - Implements <see cref="ILogical"/> to form part of a logical tree.
     /// </remarks>
-    public class Control : InputElement, IControl, INamed, ISetLogicalParent, ISupportInitialize
+    public class Control : InputElement, IControl, INamed, ISetLogicalParent, ISupportInitialize, ISetMaterializedFrom
     {
         /// <summary>
         /// Defines the <see cref="DataContext"/> property.
@@ -91,6 +91,7 @@ namespace Perspex.Controls
         private IControl _parent;
         private readonly Classes _classes = new Classes();
         private DataTemplates _dataTemplates;
+        private IDataTemplate _materializedFrom;
         private IControl _focusAdorner;
         private bool _isAttachedToLogicalTree;
         private IPerspexList<ILogical> _logicalChildren;
@@ -238,13 +239,17 @@ namespace Perspex.Controls
         /// </summary>
         /// <remarks>
         /// Each control may define data templates which are applied to the control itself and its
-        /// children.
+        /// children. When controls are materialized from templates, they will skip templates that 
+        /// have already been used to materialize ancestors to avoid causing a stack overflow.
         /// </remarks>
         public DataTemplates DataTemplates
         {
             get { return _dataTemplates ?? (_dataTemplates = new DataTemplates()); }
             set { _dataTemplates = value; }
         }
+
+        /// <inheritdoc/>
+        public IDataTemplate MaterializedFrom => _materializedFrom;
 
         /// <summary>
         /// Gets a value that indicates whether the element has finished initialization.
@@ -770,6 +775,11 @@ namespace Perspex.Controls
                     ((ISetLogicalParent)i).SetParent(null);
                 }
             }
+        }
+
+        void ISetMaterializedFrom.SetMaterializedFrom(IDataTemplate template)
+        {
+            _materializedFrom = template;
         }
     }
 }

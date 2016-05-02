@@ -45,7 +45,15 @@ namespace Perspex.Controls.Templates
                         result = FuncDataTemplate.Default.Build(data);
                     }
 
-                    NameScope.SetNameScope((Control)result, new NameScope());
+                    if (result is ISetMaterializedFrom)
+                    {
+                        ((ISetMaterializedFrom)result).SetMaterializedFrom(template);
+                    }
+
+                    if (result is Control)
+                    {
+                        NameScope.SetNameScope((Control)result, new NameScope());
+                    }
 
                     return result;
                 }
@@ -60,9 +68,11 @@ namespace Perspex.Controls.Templates
         /// <returns>The data template or null if no matching data template was found.</returns>
         public static IDataTemplate FindDataTemplate(this IControl control, object data)
         {
+            var templatesMaterializedFrom = control.GetSelfAndLogicalAncestors().OfType<IControl>()
+                                                    .Select(c => c.MaterializedFrom).Where(dt => dt != null);
             foreach (var i in control.GetSelfAndLogicalAncestors().OfType<IControl>())
             {
-                foreach (IDataTemplate dt in i.DataTemplates)
+                foreach (IDataTemplate dt in i.DataTemplates.Except(templatesMaterializedFrom))
                 {
                     if (dt.Match(data))
                     {
@@ -75,7 +85,7 @@ namespace Perspex.Controls.Templates
 
             if (global != null)
             {
-                foreach (IDataTemplate dt in global.DataTemplates)
+                foreach (IDataTemplate dt in global.DataTemplates.Except(templatesMaterializedFrom))
                 {
                     if (dt.Match(data))
                     {
