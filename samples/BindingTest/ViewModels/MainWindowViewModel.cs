@@ -2,6 +2,7 @@
 using System.Collections.ObjectModel;
 using System.Linq;
 using ReactiveUI;
+using System.Reactive.Linq;
 
 namespace BindingTest.ViewModels
 {
@@ -28,6 +29,9 @@ namespace BindingTest.ViewModels
                 var r = new Random();
                 Items.Move(r.Next(Items.Count), 1);
             });
+
+            StringValueCommand = ReactiveCommand.Create();
+            StringValueCommand.Subscribe(param => StringValue = param.ToString());
         }
 
         public ObservableCollection<TestItem> Items { get; }
@@ -51,5 +55,7 @@ namespace BindingTest.ViewModels
             get { return _stringValue; }
             set { this.RaiseAndSetIfChanged(ref _stringValue, value); }
         }
+
+        public ReactiveCommand<object> StringValueCommand { get; }
     }
 }
