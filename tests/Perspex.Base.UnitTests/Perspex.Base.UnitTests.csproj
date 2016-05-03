@@ -95,6 +95,7 @@
     <Compile Include="Collections\PerspexListTests.cs" />
     <Compile Include="Collections\PropertyChangedTracker.cs" />
     <Compile Include="AttachedPropertyTests.cs" />
+    <Compile Include="MathUtilitiesTests.cs" />
     <Compile Include="PerspexObjectTests_Direct.cs" />
     <Compile Include="PerspexObjectTests_GetSubject.cs" />
     <Compile Include="PerspexObjectTests_GetObservable.cs" />
