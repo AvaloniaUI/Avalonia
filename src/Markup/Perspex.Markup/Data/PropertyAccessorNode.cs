@@ -50,11 +50,18 @@ namespace Perspex.Markup.Data
 
             if (instance != null && instance != PerspexProperty.UnsetValue)
             {
-                var plugin = ExpressionObserver.PropertyAccessors.FirstOrDefault(x => x.Match(reference));
+                var accessorPlugin = ExpressionObserver.PropertyAccessors.FirstOrDefault(x => x.Match(reference));
 
-                if (plugin != null)
+                if (accessorPlugin != null)
                 {
-                    _accessor = plugin.Start(reference, PropertyName, SetCurrentValue);
+                    _accessor = accessorPlugin.Start(reference, PropertyName, SetCurrentValue);
+                    foreach (var validationPlugin in ExpressionObserver.ValidationCheckers.Where(x => x.Match(reference)))
+                    {
+                        if (validationPlugin != null)
+                        {
+                            _accessor = validationPlugin.Start(reference, PropertyName, _accessor, SendValidationStatus);
+                        } 
+                    }
 
                     if (_accessor != null)
                     {

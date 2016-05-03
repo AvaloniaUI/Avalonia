@@ -62,7 +62,7 @@ namespace Perspex.Styling.UnitTests
             throw new NotImplementedException();
         }
 
-        public IDisposable Bind(PerspexProperty property, IObservable<object> source, BindingPriority priority)
+        public IDisposable Bind(PerspexProperty property, IObservable<object> source, BindingPriority priority = BindingPriority.LocalValue)
         {
             throw new NotImplementedException();
         }

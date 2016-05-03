@@ -46,6 +46,11 @@
     <Compile Include="Data\ExpressionParseException.cs" />
     <Compile Include="Data\ExpressionSubject.cs" />
     <Compile Include="ControlLocator.cs" />
+    <Compile Include="Data\IFilterableValidationStatus.cs" />
+    <Compile Include="Data\Plugins\ExceptionValidationPlugin.cs" />
+    <Compile Include="Data\Plugins\IndeiValidationPlugin.cs" />
+    <Compile Include="Data\Plugins\ValidatingPropertyAccessorBase.cs" />
+    <Compile Include="Data\Plugins\IValidationPlugin.cs" />
     <Compile Include="Data\Plugins\PerspexPropertyAccessorPlugin.cs" />
     <Compile Include="Data\Plugins\InpcPropertyAccessorPlugin.cs" />
     <Compile Include="Data\Plugins\IPropertyAccessor.cs" />
@@ -60,6 +65,7 @@
     <Compile Include="Data\PropertyAccessorNode.cs" />
     <Compile Include="Data\ExpressionNode.cs" />
     <Compile Include="Data\ExpressionObserver.cs" />
+    <Compile Include="Data\ValidationMethods.cs" />
     <Compile Include="FuncMultiValueConverter.cs" />
     <Compile Include="FuncValueConverter.cs" />
     <Compile Include="IMultiValueConverter.cs" />

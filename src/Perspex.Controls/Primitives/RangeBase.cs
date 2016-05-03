@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using Perspex.Data;
 using Perspex.Utilities;
 
 namespace Perspex.Controls.Primitives
@@ -100,6 +101,14 @@ namespace Perspex.Controls.Primitives
             {
                 value = ValidateValue(value);
                 SetAndRaise(ValueProperty, ref _value, value);
+            }
+        }
+
+        protected override void DataValidationChanged(PerspexProperty property, IValidationStatus status)
+        {
+            if (property == ValueProperty)
+            {
+                UpdateValidationState(status);
             }
         }
 

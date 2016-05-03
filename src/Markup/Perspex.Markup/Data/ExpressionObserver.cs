@@ -28,6 +28,17 @@ namespace Perspex.Markup.Data
                 new InpcPropertyAccessorPlugin(),
             };
 
+        /// <summary>
+        /// An ordered collection of validation checker plugins that can be used to customize
+        /// the validation of view model and model data.
+        /// </summary>
+        public static readonly IList<IValidationPlugin> ValidationCheckers =
+            new List<IValidationPlugin>
+            {
+                new IndeiValidationPlugin(),
+                new ExceptionValidationPlugin()
+            };
+
         private readonly WeakReference _root;
         private readonly Func<object> _rootGetter;
         private readonly IObservable<object> _rootObservable;
@@ -36,18 +47,20 @@ namespace Perspex.Markup.Data
         private IDisposable _updateSubscription;
         private int _count;
         private readonly ExpressionNode _node;
+        private ValidationMethods _methods;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ExpressionObserver"/> class.
         /// </summary>
         /// <param name="root">The root object.</param>
         /// <param name="expression">The expression.</param>
-        public ExpressionObserver(object root, string expression)
+        /// <param name="methods">The validation methods to enable on this observer.</param>
+        public ExpressionObserver(object root, string expression, ValidationMethods methods = ValidationMethods.None)
         {
             Contract.Requires<ArgumentNullException>(expression != null);
 
             _root = new WeakReference(root);
-
+            _methods = methods;
             if (!string.IsNullOrWhiteSpace(expression))
             {
                 _node = ExpressionNodeBuilder.Build(expression);
@@ -61,13 +74,14 @@ namespace Perspex.Markup.Data
         /// </summary>
         /// <param name="rootObservable">An observable which provides the root object.</param>
         /// <param name="expression">The expression.</param>
-        public ExpressionObserver(IObservable<object> rootObservable, string expression)
+        /// <param name="methods">The validation methods to enable on this observer.</param>
+        public ExpressionObserver(IObservable<object> rootObservable, string expression, ValidationMethods methods = ValidationMethods.None)
         {
             Contract.Requires<ArgumentNullException>(rootObservable != null);
             Contract.Requires<ArgumentNullException>(expression != null);
 
             _rootObservable = rootObservable;
-
+            _methods = methods;
             if (!string.IsNullOrWhiteSpace(expression))
             {
                 _node = ExpressionNodeBuilder.Build(expression);
@@ -82,10 +96,12 @@ namespace Perspex.Markup.Data
         /// <param name="rootGetter">A function which gets the root object.</param>
         /// <param name="expression">The expression.</param>
         /// <param name="update">An observable which triggers a re-read of the getter.</param>
+        /// <param name="methods">The validation methods to enable on this observer.</param>
         public ExpressionObserver(
             Func<object> rootGetter, 
             string expression,
-            IObservable<Unit> update)
+            IObservable<Unit> update,
+            ValidationMethods methods = ValidationMethods.None)
         {
             Contract.Requires<ArgumentNullException>(rootGetter != null);
             Contract.Requires<ArgumentNullException>(expression != null);
@@ -93,7 +109,7 @@ namespace Perspex.Markup.Data
 
             _rootGetter = rootGetter;
             _update = update;
-
+            _methods = methods;
             if (!string.IsNullOrWhiteSpace(expression))
             {
                 _node = ExpressionNodeBuilder.Build(expression);
@@ -205,8 +221,8 @@ namespace Perspex.Markup.Data
                 {
                     source = source.TakeUntil(_update.LastOrDefaultAsync());
                 }
-
-                var subscription = source.Subscribe(observer);
+                var validationFiltered = source.Where(o => (o as IFilterableValidationStatus)?.Match(_methods) ?? true);
+                var subscription = validationFiltered.Subscribe(observer);
 
                 return Disposable.Create(() =>
                 {

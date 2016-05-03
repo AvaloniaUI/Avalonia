@@ -235,6 +235,14 @@ namespace Perspex.Controls
             HandleTextInput(e.Text);
         }
 
+        protected override void DataValidationChanged(PerspexProperty property, IValidationStatus status)
+        {
+            if (property == TextProperty)
+            {
+                UpdateValidationState(status);
+            }
+        }
+
         private void HandleTextInput(string input)
         {
             if (!IsReadOnly)

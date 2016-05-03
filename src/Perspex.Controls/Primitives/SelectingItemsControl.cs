@@ -401,6 +401,16 @@ namespace Perspex.Controls.Primitives
             ++_updateCount;
         }
 
+        protected override void DataValidationChanged(PerspexProperty property, IValidationStatus status)
+        {
+            // Only one of these properties *should* be bound to at one time. If not, they all influence each other anyway,
+            // so any sane view model that uses multiple would validate these all the same.
+            if (property == SelectedIndexProperty || property == SelectedItemProperty || property == SelectedItemsProperty)
+            {
+                UpdateValidationState(status);
+            }
+        }
+
         /// <inheritdoc/>
         protected override void OnDataContextChanged()
         {

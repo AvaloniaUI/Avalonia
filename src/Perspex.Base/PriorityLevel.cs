@@ -97,6 +97,7 @@ namespace Perspex
         /// Adds a binding.
         /// </summary>
         /// <param name="binding">The binding to add.</param>
+        /// <param name="validation">Validation settings for the binding.</param>
         /// <returns>A disposable used to remove the binding.</returns>
         public IDisposable Add(IObservable<object> binding)
         {
@@ -163,6 +164,17 @@ namespace Perspex
         {
             _owner.LevelError(this, error);
         }
+
+        /// <summary>
+        /// Invoked when an entry in <see cref="Bindings"/> reports validation status.
+        /// </summary>
+        /// <param name="entry">The entry that completed.</param>
+        /// <param name="validationStatus">The validation status.</param>
+        public void Validation(PriorityBindingEntry entry, IValidationStatus validationStatus)
+        {
+            _owner.LevelValidation(this, validationStatus);
+        }
+
 
         /// <summary>
         /// Activates the first binding that has a value.

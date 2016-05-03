@@ -86,6 +86,7 @@ namespace Perspex.Controls
         public static readonly RoutedEvent<RequestBringIntoViewEventArgs> RequestBringIntoViewEvent =
             RoutedEvent.Register<Control, RequestBringIntoViewEventArgs>("RequestBringIntoView", RoutingStrategies.Bubble);
 
+
         private int _initCount;
         private string _name;
         private IControl _parent;
@@ -108,6 +109,7 @@ namespace Perspex.Controls
             PseudoClass(IsEnabledCoreProperty, x => !x, ":disabled");
             PseudoClass(IsFocusedProperty, ":focus");
             PseudoClass(IsPointerOverProperty, ":pointerover");
+            PseudoClass(ValidationStatusProperty, status => !status.IsValid, ":invalid");
         }
 
         /// <summary>
@@ -480,7 +482,8 @@ namespace Perspex.Controls
             }
 
             property.Changed.Merge(property.Initialized)
-                .Subscribe(e =>
+                .Where(e => e.Sender is Control) // Because ValidationStatus is on PerspexObject now, we need insure we have a Control
+                .Subscribe(e =>                 // because ValidationStatus is on all PerspexObjects, not just controls.
                 {
                     if (selector((T)e.NewValue))
                     {

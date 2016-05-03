@@ -44,6 +44,8 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="Data\BindingError.cs" />
+    <Compile Include="Data\ObjectValidationStatus.cs" />
+    <Compile Include="Data\IValidationStatus.cs" />
     <Compile Include="Diagnostics\INotifyCollectionChangedDebug.cs" />
     <Compile Include="Data\AssignBindingAttribute.cs" />
     <Compile Include="Data\BindingOperations.cs" />

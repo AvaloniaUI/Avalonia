@@ -21,6 +21,7 @@ namespace Perspex
         /// <param name="index">
         /// The binding index. Later bindings should have higher indexes.
         /// </param>
+        /// <param name="validation">The validation settings for the binding.</param>
         public PriorityBindingEntry(PriorityLevel owner, int index)
         {
             _owner = owner;
@@ -99,7 +100,13 @@ namespace Perspex
                 _owner.Error(this, bindingError);
             }
 
-            if (bindingError == null || bindingError.UseFallbackValue)
+            var validationStatus = value as IValidationStatus;
+
+            if (validationStatus != null)
+            {
+                _owner.Validation(this, validationStatus);
+            }
+            else if (bindingError == null || bindingError.UseFallbackValue)
             {
                 Value = bindingError == null ? value : bindingError.FallbackValue;
                 _owner.Changed(this);

@@ -9,6 +9,7 @@ using System.Reflection;
 using Perspex.Data;
 using Perspex.Logging;
 using Perspex.Utilities;
+using System.Collections;
 
 namespace Perspex.Markup.Data.Plugins
 {
@@ -86,7 +87,7 @@ namespace Perspex.Markup.Data.Plugins
 
                 if (inpc != null)
                 {
-                    WeakSubscriptionManager.Subscribe(
+                    WeakSubscriptionManager.Subscribe<PropertyChangedEventArgs>(
                         inpc,
                         nameof(inpc.PropertyChanged),
                         this);
@@ -113,7 +114,7 @@ namespace Perspex.Markup.Data.Plugins
 
                 if (inpc != null)
                 {
-                    WeakSubscriptionManager.Unsubscribe(
+                    WeakSubscriptionManager.Unsubscribe<PropertyChangedEventArgs>(
                         inpc,
                         nameof(inpc.PropertyChanged),
                         this);
@@ -131,7 +132,7 @@ namespace Perspex.Markup.Data.Plugins
                 return false;
             }
 
-            public void OnEvent(object sender, PropertyChangedEventArgs e)
+            void IWeakSubscriber<PropertyChangedEventArgs>.OnEvent(object sender, PropertyChangedEventArgs e)
             {
                 if (e.PropertyName == _property.Name || string.IsNullOrEmpty(e.PropertyName))
                 {

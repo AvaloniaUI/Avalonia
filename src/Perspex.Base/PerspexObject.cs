@@ -51,6 +51,30 @@ namespace Perspex
         private EventHandler<PerspexPropertyChangedEventArgs> _propertyChanged;
 
         /// <summary>
+        /// Defines the <see cref="ValidationStatus"/> property.
+        /// </summary>
+        public static readonly DirectProperty<PerspexObject, ObjectValidationStatus> ValidationStatusProperty =
+            PerspexProperty.RegisterDirect<PerspexObject, ObjectValidationStatus>(nameof(ValidationStatus), c => c.ValidationStatus);
+
+        private ObjectValidationStatus validationStatus;
+
+        /// <summary>
+        /// The current validation status of the control.
+        /// </summary>
+        public ObjectValidationStatus ValidationStatus
+        {
+            get
+            {
+                return validationStatus;
+            }
+            private set
+            {
+                SetAndRaise(ValidationStatusProperty, ref validationStatus, value);
+            }
+        }
+
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="PerspexObject"/> class.
         /// </summary>
         public PerspexObject()
@@ -396,6 +420,7 @@ namespace Perspex
                     GetDescription(source));
 
                 IDisposable subscription = null;
+                IDisposable validationSubcription = null;
 
                 if (_directBindings == null)
                 {
@@ -403,14 +428,19 @@ namespace Perspex
                 }
 
                 subscription = source
+                    .Where(x =>  !(x is IValidationStatus))
                     .Select(x => CastOrDefault(x, property.PropertyType))
                     .Do(_ => { }, () => _directBindings.Remove(subscription))
                     .Subscribe(x => DirectBindingSet(property, x));
+                validationSubcription = source
+                    .OfType<IValidationStatus>()
+                    .Subscribe(x => DataValidationChanged(property, x));
 
                 _directBindings.Add(subscription);
 
                 return Disposable.Create(() =>
                 {
+                    validationSubcription.Dispose();
                     subscription.Dispose();
                     _directBindings.Remove(subscription);
                 });
@@ -459,7 +489,7 @@ namespace Perspex
         {
             Contract.Requires<ArgumentNullException>(property != null);
 
-            return Bind((PerspexProperty)property, source.Select(x => (object)x), priority);
+            return Bind(property, source.Select(x => (object)x), priority);
         }
 
         /// <summary>
@@ -503,6 +533,32 @@ namespace Perspex
                     newValue,
                     priority);
             }
+        }
+
+        /// <inheritdoc/>
+        void IPriorityValueOwner.DataValidationChanged(PriorityValue sender, IValidationStatus status)
+        {
+            var property = sender.Property;
+            DataValidationChanged(property, status);
+        }
+
+        /// <summary>
+        /// Called when the validation state on a tracked property is changed.
+        /// </summary>
+        /// <param name="property">The property whose validation state changed.</param>
+        /// <param name="status">The new validation state.</param>
+        protected virtual void DataValidationChanged(PerspexProperty property, IValidationStatus status)
+        {
+
+        }
+
+        /// <summary>
+        /// Updates the validation status of the current object.
+        /// </summary>
+        /// <param name="status">The new validation status.</param>
+        protected void UpdateValidationState(IValidationStatus status)
+        {
+            ValidationStatus = ValidationStatus.UpdateValidationStatus(status);
         }
 
         /// <inheritdoc/>

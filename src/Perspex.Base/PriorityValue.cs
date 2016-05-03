@@ -77,6 +77,7 @@ namespace Perspex
         /// </summary>
         /// <param name="binding">The binding.</param>
         /// <param name="priority">The binding priority.</param>
+        /// <param name="validation">Validation settings for the binding.</param>
         /// <returns>
         /// A disposable that will remove the binding.
         /// </returns>
@@ -176,6 +177,16 @@ namespace Perspex
                     UpdateValue(PerspexProperty.UnsetValue, int.MaxValue);
                 }
             }
+        }
+
+        /// <summary>
+        /// Called whenever a priority level validation state changes.
+        /// </summary>
+        /// <param name="priorityLevel">The priority level of the changed entry.</param>
+        /// <param name="validationStatus">The validation status.</param>
+        public void LevelValidation(PriorityLevel priorityLevel, IValidationStatus validationStatus)
+        {
+            _owner.DataValidationChanged(this, validationStatus);
         }
 
         /// <summary>
