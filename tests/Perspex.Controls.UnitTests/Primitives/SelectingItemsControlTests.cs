@@ -8,6 +8,7 @@ using Perspex.Collections;
 using Perspex.Controls.Presenters;
 using Perspex.Controls.Primitives;
 using Perspex.Controls.Templates;
+using Perspex.Input;
 using Perspex.Interactivity;
 using Perspex.Markup.Xaml.Data;
 using Perspex.UnitTests;
@@ -604,6 +605,57 @@ namespace Perspex.Controls.UnitTests.Primitives
             Assert.Equal(0, root.SelectedIndex);
         }
 
+        [Fact]
+        public void Setting_SelectedItem_With_Pointer_Should_Set_TabOnceActiveElement()
+        {
+            var target = new ListBox
+            {
+                Template = Template(),
+                Items = new[] { "Foo", "Bar", "Baz " },
+            };
+
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+
+            target.Presenter.Panel.Children[1].RaiseEvent(new PointerPressedEventArgs
+            {
+                RoutedEvent = InputElement.PointerPressedEvent,
+                MouseButton = MouseButton.Left,
+            });
+
+            var panel = target.Presenter.Panel;
+
+            Assert.Equal(
+                KeyboardNavigation.GetTabOnceActiveElement((InputElement)panel),
+                panel.Children[1]);
+        }
+
+        [Fact]
+        public void Removing_SelectedItem_Should_Clear_TabOnceActiveElement()
+        {
+            var items = new ObservableCollection<string>(new[] { "Foo", "Bar", "Baz " });
+
+            var target = new ListBox
+            {
+                Template = Template(),
+                Items = items,
+            };
+
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+
+            target.Presenter.Panel.Children[1].RaiseEvent(new PointerPressedEventArgs
+            {
+                RoutedEvent = InputElement.PointerPressedEvent,
+                MouseButton = MouseButton.Left,
+            });
+
+            items.RemoveAt(1);
+
+            var panel = target.Presenter.Panel;
+
+            Assert.Null(KeyboardNavigation.GetTabOnceActiveElement((InputElement)panel));
+        }
 
         private FuncControlTemplate Template()
         {

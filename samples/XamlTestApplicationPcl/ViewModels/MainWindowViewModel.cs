@@ -56,7 +56,11 @@ namespace XamlTestApplication.ViewModels
                 }
             };
 
-            CollapseNodesCommand = ReactiveCommand.Create();
+            
+        
+
+
+        CollapseNodesCommand = ReactiveCommand.Create();
             CollapseNodesCommand.Subscribe(_ => ExpandNodes(false));
             ExpandNodesCommand = ReactiveCommand.Create();
             ExpandNodesCommand.Subscribe(_ => ExpandNodes(true));
@@ -77,6 +81,15 @@ namespace XamlTestApplication.ViewModels
                 ofd.ShowAsync();
             });
 
+            shell = ShellViewModel.Instance;
+        }
+
+        private ShellViewModel shell;
+
+        public ShellViewModel Shell
+        {
+            get { return shell; }
+            set { shell = value; }
         }
 
         public List<TestItem> Items { get; }
