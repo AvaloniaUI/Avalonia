@@ -3,6 +3,7 @@
 
 using System;
 using Perspex.Controls;
+using Perspex.Input;
 using Perspex.Layout;
 using Perspex.Platform;
 using Perspex.Rendering;
@@ -10,7 +11,7 @@ using Perspex.Styling;
 
 namespace Perspex.UnitTests
 {
-    public class TestRoot : Decorator, ILayoutRoot, INameScope, IRenderRoot, IStyleRoot
+    public class TestRoot : Decorator, IFocusScope, ILayoutRoot, INameScope, IRenderRoot, IStyleRoot
     {
         private readonly NameScope _nameScope = new NameScope();
 

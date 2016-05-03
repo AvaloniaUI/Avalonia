@@ -94,9 +94,15 @@ namespace Perspex.Controls.Generators
         /// <inheritdoc/>
         public virtual IEnumerable<ItemContainer> RemoveRange(int startingIndex, int count)
         {
-            var result = _containers.GetRange(startingIndex, count);
-            _containers.RemoveRange(startingIndex, count);
-            Dematerialized?.Invoke(this, new ItemContainerEventArgs(startingIndex, result));
+            List<ItemContainer> result = new List<ItemContainer>();
+
+            if (startingIndex < _containers.Count)
+            {
+                result.AddRange(_containers.GetRange(startingIndex, count));
+                _containers.RemoveRange(startingIndex, count);
+                Dematerialized?.Invoke(this, new ItemContainerEventArgs(startingIndex, result));
+            }
+
             return result;
         }
 

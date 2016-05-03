@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Perspex.Animation;
+using Perspex.Controls.Generators;
 using Perspex.Controls.Primitives;
 using Perspex.Controls.Utils;
 using Perspex.Data;
@@ -103,7 +104,19 @@ namespace Perspex.Controls.Presenters
         /// <inheritdoc/>
         protected override void ItemsChanged(NotifyCollectionChangedEventArgs e)
         {
-            // TODO: Handle items changing.
+            // TODO: Handle items changing.           
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Remove:
+                    if (!IsVirtualized)
+                    {
+                        var generator = ItemContainerGenerator;
+                        var containers = generator.RemoveRange(e.OldStartingIndex, e.OldItems.Count);
+                        Panel.Children.RemoveAll(containers.Select(x => x.ContainerControl));
+                    }
+                    break;
+
+            }
         }
 
         /// <summary>

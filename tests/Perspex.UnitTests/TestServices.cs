@@ -36,12 +36,19 @@ namespace Perspex.UnitTests
         public static readonly TestServices MockThreadingInterface = new TestServices(
             threadingInterface: Mock.Of<IPlatformThreadingInterface>(x => x.CurrentThreadIsLoopThread == true));
 
+        public static readonly TestServices RealFocus = new TestServices(
+            focusManager: new FocusManager(),
+            keyboardDevice: () => new KeyboardDevice(),
+            inputManager: new InputManager());
+
         public static readonly TestServices RealStyler = new TestServices(
             styler: new Styler());
 
         public TestServices(
             IAssetLoader assetLoader = null,
+            IFocusManager focusManager = null,
             IInputManager inputManager = null,
+            Func<IKeyboardDevice> keyboardDevice = null,
             ILayoutManager layoutManager = null,
             IPclPlatformWrapper platformWrapper = null,
             IPlatformRenderInterface renderInterface = null,
@@ -53,7 +60,9 @@ namespace Perspex.UnitTests
             IWindowingPlatform windowingPlatform = null)
         {
             AssetLoader = assetLoader;
+            FocusManager = focusManager;
             InputManager = inputManager;
+            KeyboardDevice = keyboardDevice;
             LayoutManager = layoutManager;
             PlatformWrapper = platformWrapper;
             RenderInterface = renderInterface;
@@ -67,6 +76,8 @@ namespace Perspex.UnitTests
 
         public IAssetLoader AssetLoader { get; }
         public IInputManager InputManager { get; }
+        public IFocusManager FocusManager { get; }
+        public Func<IKeyboardDevice> KeyboardDevice { get; }
         public ILayoutManager LayoutManager { get; }
         public IPclPlatformWrapper PlatformWrapper { get; }
         public IPlatformRenderInterface RenderInterface { get; }
@@ -79,7 +90,9 @@ namespace Perspex.UnitTests
 
         public TestServices With(
             IAssetLoader assetLoader = null,
+            IFocusManager focusManager = null,
             IInputManager inputManager = null,
+            Func<IKeyboardDevice> keyboardDevice = null,
             ILayoutManager layoutManager = null,
             IPclPlatformWrapper platformWrapper = null,
             IPlatformRenderInterface renderInterface = null,
@@ -92,7 +105,9 @@ namespace Perspex.UnitTests
         {
             return new TestServices(
                 assetLoader: assetLoader ?? AssetLoader,
+                focusManager: focusManager ?? FocusManager,
                 inputManager: inputManager ?? InputManager,
+                keyboardDevice: keyboardDevice ?? KeyboardDevice,
                 layoutManager: layoutManager ?? LayoutManager,
                 platformWrapper: platformWrapper ?? PlatformWrapper,
                 renderInterface: renderInterface ?? RenderInterface,
