@@ -81,22 +81,22 @@
     <Compile Include="Data\SourceBindingEndpoint.cs" />
     <Compile Include="Data\StyleResourceBinding.cs" />
     <Compile Include="Data\TargetBindingEndpoint.cs" />
+    <Compile Include="glass\Glass.Core\AutoKeyDictionary.cs" />
+    <Compile Include="glass\Glass.Core\DependencySorter.cs" />
+    <Compile Include="glass\Glass.Core\EnumExtensions.cs" />
+    <Compile Include="glass\Glass.Core\Extensions.cs" />
+    <Compile Include="glass\Glass.Core\Guard.cs" />
+    <Compile Include="glass\Glass.Core\IAdd.cs" />
+    <Compile Include="glass\Glass.Core\IDependency.cs" />
+    <Compile Include="glass\Glass.Core\ReflectionExtensions.cs" />
+    <Compile Include="glass\Glass.Core\StackingLinkedList.cs" />
+    <Compile Include="glass\Glass.Core\StackingLinkedListMixin.cs" />
     <Compile Include="MarkupExtensions\StyleResourceExtension.cs" />
     <Compile Include="MarkupExtensions\BindingExtension.cs" />
     <Compile Include="MarkupExtensions\RelativeSourceExtension.cs" />
     <Compile Include="MarkupExtensions\StaticExtension.cs" />
     <Compile Include="MarkupExtensions\TemplateBindingExtension.cs" />
     <Compile Include="MarkupExtensions\TypeExtension.cs" />
-    <Compile Include="OmniXAML\Source\Glass\AutoKeyDictionary.cs" />
-    <Compile Include="OmniXAML\Source\Glass\DependencySorter.cs" />
-    <Compile Include="OmniXAML\Source\Glass\EnumExtensions.cs" />
-    <Compile Include="OmniXAML\Source\Glass\Extensions.cs" />
-    <Compile Include="OmniXAML\Source\Glass\Guard.cs" />
-    <Compile Include="OmniXAML\Source\Glass\IAdd.cs" />
-    <Compile Include="OmniXAML\Source\Glass\IDependency.cs" />
-    <Compile Include="OmniXAML\Source\Glass\ReflectionExtensions.cs" />
-    <Compile Include="OmniXAML\Source\Glass\StackingLinkedList.cs" />
-    <Compile Include="OmniXAML\Source\Glass\StackingLinkedListMixin.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\Attributes\ContentPropertyAttribute.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\Attributes\DependsOnAttribute.cs" />
     <Compile Include="OmniXAML\Source\OmniXaml\Attributes\XmlnsDefinitionAttribute.cs" />
@@ -275,6 +275,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="glass\Glass.Core\Glass.Core.nuspec" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
@@ -316,6 +317,10 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="Glass, Version=1.6.0.113, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Glass.1.6.0.113\lib\portable45-net45+win8\Glass.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Sprache, Version=2.0.0.50, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\Sprache.2.0.0.50\lib\portable-net4+netcore45+win8+wp8+sl5+MonoAndroid+Xamarin.iOS10+MonoTouch\Sprache.dll</HintPath>
       <Private>True</Private>
@@ -332,6 +337,9 @@
     <Reference Include="System.Reactive.PlatformServices, Version=2.2.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
       <HintPath>..\..\..\packages\Rx-PlatformServices.2.2.5\lib\portable-windows8+net45+wp8\System.Reactive.PlatformServices.dll</HintPath>
     </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="glass\Glass.Core\Glass.Core.csproj" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
