@@ -5,7 +5,6 @@ BitmapImpl
 - Save
 
 DrawingContextImpl
-- DrawRoundRect is not properly implemented due to lack of support in SkiaSharp
 - Alpha support missing as SkiaSharp does not expose this
 - Gradient Shader caching?
 - TileBrushes
