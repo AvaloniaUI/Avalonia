@@ -15,7 +15,7 @@ namespace Perspex.Markup.Xaml
     using Controls;
     using Data;
     using OmniXaml.ObjectAssembler;
-
+    using System.Linq;
     /// <summary>
     /// Loads XAML for a perspex application.
     /// </summary>
@@ -23,6 +23,7 @@ namespace Perspex.Markup.Xaml
     {
         private static PerspexParserFactory s_parserFactory;
         private static IInstanceLifeCycleListener s_lifeCycleListener = new PerspexLifeCycleListener();
+        private static Stack<Uri> s_uriStack = new Stack<Uri>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PerspexXamlLoader"/> class.
@@ -40,6 +41,18 @@ namespace Perspex.Markup.Xaml
             : base(xamlParserFactory)
         {
         }
+
+        /// <summary>
+        /// Gets the URI of the XAML file currently being loaded.
+        /// </summary>
+        /// <remarks>
+        /// TODO: Making this internal for now as I'm not sure that this is the correct
+        /// thing to do, but its needd by <see cref="StyleInclude"/> to get the URL of
+        /// the currently loading XAML file, as we can't use the OmniXAML parsing context
+        /// there. Maybe we need a way to inject OmniXAML context into the objects its
+        /// constructing?
+        /// </remarks>
+        internal static Uri UriContext => s_uriStack.Count > 0 ? s_uriStack.Peek() : null;
 
         /// <summary>
         /// Loads the XAML into a Perspex component.
@@ -84,7 +97,7 @@ namespace Perspex.Markup.Xaml
                     {
                         var initialize = rootInstance as ISupportInitialize;
                         initialize?.BeginInit();
-                        return Load(stream, rootInstance);
+                        return Load(stream, rootInstance, uri);
                     }
                 }
             }
@@ -96,11 +109,14 @@ namespace Perspex.Markup.Xaml
         /// Loads XAML from a URI.
         /// </summary>
         /// <param name="uri">The URI of the XAML file.</param>
+        /// <param name="baseUri">
+        /// A base URI to use if <paramref name="uri"/> is relative.
+        /// </param>
         /// <param name="rootInstance">
         /// The optional instance into which the XAML should be loaded.
         /// </param>
         /// <returns>The loaded object.</returns>
-        public object Load(Uri uri, object rootInstance = null)
+        public object Load(Uri uri, Uri baseUri = null, object rootInstance = null)
         {
             Contract.Requires<ArgumentNullException>(uri != null);
 
@@ -112,9 +128,9 @@ namespace Perspex.Markup.Xaml
                     "Could not create IAssetLoader : maybe Application.RegisterServices() wasn't called?");
             }
 
-            using (var stream = assetLocator.Open(uri))
+            using (var stream = assetLocator.Open(uri, baseUri))
             {
-                return Load(stream, rootInstance);
+                return Load(stream, rootInstance, uri);
             }
         }
 
@@ -143,23 +159,43 @@ namespace Perspex.Markup.Xaml
         /// <param name="rootInstance">
         /// The optional instance into which the XAML should be loaded.
         /// </param>
+        /// <param name="uri">The URI of the XAML</param>
         /// <returns>The loaded object.</returns>
-        public object Load(Stream stream, object rootInstance = null)
+        public object Load(Stream stream, object rootInstance = null, Uri uri = null)
         {
-            var result = base.Load(stream, new Settings
+            try
             {
-                RootInstance = rootInstance,
-                InstanceLifeCycleListener = s_lifeCycleListener,
-            });
+                if (uri != null)
+                {
+                    s_uriStack.Push(uri);
+                }
 
-            var topLevel = result as TopLevel;
+                var result = base.Load(stream, new Settings
+                {
+                    RootInstance = rootInstance,
+                    InstanceLifeCycleListener = s_lifeCycleListener,
+                    ParsingContext = new Dictionary<string, object>
+                    {
+                        { "Uri", uri }
+                    }
+                });
 
-            if (topLevel != null)
-            {
-                DelayedBinding.ApplyBindings(topLevel);
+                var topLevel = result as TopLevel;
+
+                if (topLevel != null)
+                {
+                    DelayedBinding.ApplyBindings(topLevel);
+                }
+
+                return result;
             }
-
-            return result;
+            finally
+            {
+                if (uri != null)
+                {
+                    s_uriStack.Pop();
+                }
+            }
         }
 
         private static PerspexParserFactory GetParserFactory()

@@ -21,22 +21,27 @@ namespace Perspex.Platform
         /// <param name="asm"></param>
         void SetDefaultAssembly(Assembly asm);
 
-
         /// <summary>
         /// Checks if an asset with the specified URI exists.
         /// </summary>
         /// <param name="uri">The URI.</param>
+        /// <param name="baseUri">
+        /// A base URI to use if <paramref name="uri"/> is relative.
+        /// </param>
         /// <returns>True if the asset could be found; otherwise false.</returns>
-        bool Exists(Uri uri);
+        bool Exists(Uri uri, Uri baseUri = null);
 
         /// <summary>
         /// Opens the resource with the requested URI.
         /// </summary>
         /// <param name="uri">The URI.</param>
+        /// <param name="baseUri">
+        /// A base URI to use if <paramref name="uri"/> is relative.
+        /// </param>
         /// <returns>A stream containing the resource contents.</returns>
         /// <exception cref="FileNotFoundException">
         /// The resource was not found.
         /// </exception>
-        Stream Open(Uri uri);
+        Stream Open(Uri uri, Uri baseUri = null);
     }
 }

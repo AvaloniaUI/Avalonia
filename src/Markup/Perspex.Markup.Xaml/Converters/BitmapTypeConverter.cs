@@ -24,6 +24,7 @@ namespace Perspex.Markup.Xaml.Converters
         public object ConvertFrom(IValueContext context, CultureInfo culture, object value)
         {
             var uri = new Uri((string)value, UriKind.RelativeOrAbsolute);
+            var baseUri = GetBaseUri(context);
             var scheme = uri.IsAbsoluteUri ? uri.Scheme : "file";
 
             switch (scheme)
@@ -32,13 +33,20 @@ namespace Perspex.Markup.Xaml.Converters
                     return new Bitmap((string)value);
                 default:
                     var assets = PerspexLocator.Current.GetService<IAssetLoader>();
-                    return new Bitmap(assets.Open(uri));
+                    return new Bitmap(assets.Open(uri, baseUri));
             }
         }
 
         public object ConvertTo(IValueContext context, CultureInfo culture, object value, Type destinationType)
         {
             throw new NotImplementedException();
+        }
+
+        private Uri GetBaseUri(IValueContext context)
+        {
+            object result;
+            context.ParsingDictionary.TryGetValue("Uri", out result);
+            return result as Uri;
         }
     }
 }

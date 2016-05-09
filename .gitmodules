@@ -8,3 +8,6 @@
 [submodule "src/Markup/Perspex.Markup.Xaml/OmniXAML"]
 	path = src/Markup/Perspex.Markup.Xaml/OmniXAML
 	url = https://github.com/Perspex/OmniXAML.git
+[submodule "src/Markup/Perspex.Markup.Xaml/glass"]
+	path = src/Markup/Perspex.Markup.Xaml/glass
+	url = https://github.com/SuperJMN/glass

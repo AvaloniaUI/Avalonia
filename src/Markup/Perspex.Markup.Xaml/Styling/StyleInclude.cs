@@ -11,7 +11,19 @@ namespace Perspex.Markup.Xaml.Styling
     /// </summary>
     public class StyleInclude : IStyle
     {
+        private Uri _baseUri;
         private IStyle _loaded;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="StyleInclude"/> class.
+        /// </summary>
+        public StyleInclude()
+        {
+            // StyleInclude will usually be loaded from XAML and its URI can be relative to the
+            // XAML file that its included in, so store the current XAML file's URI if any as
+            // a base URI.
+            _baseUri = PerspexXamlLoader.UriContext;
+        }
 
         /// <summary>
         /// Gets or sets the source URL.
@@ -28,7 +40,7 @@ namespace Perspex.Markup.Xaml.Styling
                 if (_loaded == null)
                 {
                     var loader = new PerspexXamlLoader();
-                    _loaded = (IStyle)loader.Load(Source);
+                    _loaded = (IStyle)loader.Load(Source, _baseUri);
                 }
 
                 return _loaded;
