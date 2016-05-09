@@ -229,10 +229,7 @@ namespace Perspex.Skia
                 }
                 else
                 {
-                    // TODO: DrawRRect (ore DrawRoundedRect) is not accesible in SkiaSharp yet. We should add that
-                    // to SkiaSharp and initiate a PR....
-                    Canvas.DrawRect(rc, paint.Paint);
-                    //Canvas.DrawRoundedRect(rc, cornerRadius, cornerRadius, paint);
+                    Canvas.DrawRoundRect(rc, cornerRadius, cornerRadius, paint.Paint);
                 }
             }
         }
@@ -248,10 +245,7 @@ namespace Perspex.Skia
                 }
                 else
                 {
-                    // TODO: this does not exist in SkiaSharp yet
-                    //throw new NotImplementedException();
-                    //Canvas.DrawRoundedRect(rc, cornerRadius, cornerRadius, paint);
-                    Canvas.DrawRect(rc, paint.Paint);
+                    Canvas.DrawRoundRect(rc, cornerRadius, cornerRadius, paint.Paint);
                 }
             }
         }

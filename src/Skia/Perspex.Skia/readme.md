@@ -5,7 +5,6 @@ BitmapImpl
 - Save
 
 DrawingContextImpl
-- DrawRoundRect is not properly implemented due to lack of support in SkiaSharp
 - Alpha support missing as SkiaSharp does not expose this
 - Gradient Shader caching?
 - TileBrushes
@@ -17,12 +16,6 @@ Formatted Text Rendering
 RenderTarget
 - Figure out a cleaner implementation across all platforms
 - HW acceleration
-
-StreamGeometry
-- Paths within Paths may not work right
-- Paths cannot be Cloned (lack of SkiaSupport)
-- Paths cannot be transformed (lack of SkiaSupport)
-- ArcTo
 
 App Bootstrapping
 - Cleanup the testapplications across all platforms
