@@ -66,6 +66,7 @@
     <Compile Include="Converters\PerspexListTypeConverter.cs" />
     <Compile Include="Converters\PerspexPropertyTypeConverter.cs" />
     <Compile Include="Converters\PointsListTypeConverter.cs" />
+    <Compile Include="Converters\SizeTypeConverter.cs" />
     <Compile Include="Converters\PointTypeConverter.cs" />
     <Compile Include="Converters\RelativePointTypeConverter.cs" />
     <Compile Include="Converters\RelativeRectTypeConverter.cs" />
