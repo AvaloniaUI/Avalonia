@@ -49,7 +49,7 @@ namespace Perspex.Markup.Xaml
         /// TODO: Making this internal for now as I'm not sure that this is the correct
         /// thing to do, but its needd by <see cref="StyleInclude"/> to get the URL of
         /// the currently loading XAML file, as we can't use the OmniXAML parsing context
-        /// there. Maybe we need a way to inject OmniXAML context into the objects it's
+        /// there. Maybe we need a way to inject OmniXAML context into the objects its
         /// constructing?
         /// </remarks>
         internal static Uri UriContext => s_uriStack.Count > 0 ? s_uriStack.Peek() : null;
