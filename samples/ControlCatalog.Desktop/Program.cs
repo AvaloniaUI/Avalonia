@@ -6,24 +6,6 @@ using Perspex;
 using System.Reflection;
 using Perspex.Platform;
 
-
-// Not sure where the best home for this is
-namespace Perspex
-{
-    public static class SharedApplicationExtensions
-    {
-        // For true Portable apps we need to select the PCL assembly NOT the host platform exe. Unfortunately
-        // Win32 subsystem registers one by default (the wrong one) and so this can override that.
-        //
-        public static AppT UseAssetAssembly<AppT>(this AppT app, Assembly assembly) where AppT : Application
-        {
-            // Asset loading searches our own assembly?
-            PerspexLocator.CurrentMutable.GetService<IAssetLoader>().SetDefaultAssembly(assembly);
-            return app;
-        }
-    }
-}
-
 namespace ControlCatalog
 {
     internal class Program
@@ -34,7 +16,6 @@ namespace ControlCatalog
 
             new App()
                 .ConfigureRenderSystem(args)
-                .UseAssetAssembly(typeof(App).Assembly)
                 .LoadFromXaml()
                 .RunWithMainWindow<MainWindow>();
         }

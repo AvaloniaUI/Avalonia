@@ -7,6 +7,8 @@ using OmniXaml.ObjectAssembler;
 using OmniXaml.ObjectAssembler.Commands;
 using OmniXaml.TypeConversion;
 using Perspex.Markup.Xaml.Templates;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace Perspex.Markup.Xaml.Context
 {
@@ -27,7 +29,8 @@ namespace Perspex.Markup.Xaml.Context
             mapping.Map<TreeDataTemplate>(x => x.Content, new TemplateLoader());
             mapping.Map<ItemsPanelTemplate>(x => x.Content, new TemplateLoader());
 
-            var valueContext = new ValueContext(typeSource, topDownValueContext);
+            var parsingDictionary = GetDictionary(settings);
+            var valueContext = new ValueContext(typeSource, topDownValueContext, parsingDictionary);
             assembler = new ObjectAssembler(typeSource, valueContext, settings);
             objectAssembler = new TemplateHostingObjectAssembler(assembler, mapping);
         }
@@ -54,6 +57,22 @@ namespace Perspex.Markup.Xaml.Context
         public void OverrideInstance(object instance)
         {
             objectAssembler.OverrideInstance(instance);
+        }
+
+        private static IReadOnlyDictionary<string, object> GetDictionary(Settings settings)
+        {
+            IReadOnlyDictionary<string, object> dict;
+
+            if (settings != null)
+            {
+                dict = settings.ParsingContext;
+            }
+            else
+            {
+                dict = new ReadOnlyDictionary<string, object>(new Dictionary<string, object>());
+            }
+
+            return dict;
         }
     }
 }

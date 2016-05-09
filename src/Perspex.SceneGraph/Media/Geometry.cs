@@ -36,7 +36,7 @@ namespace Perspex.Media
         /// <summary>
         /// Gets the platform-specific implementation of the geometry.
         /// </summary>
-        public IGeometryImpl PlatformImpl
+        public virtual IGeometryImpl PlatformImpl
         {
             get;
             protected set;

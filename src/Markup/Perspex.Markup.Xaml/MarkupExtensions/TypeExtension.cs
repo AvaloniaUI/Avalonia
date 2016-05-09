@@ -43,7 +43,7 @@ namespace Perspex.Markup.Xaml.MarkupExtensions
                 return Type;
             }
 
-            return ResolveFromString(TypeName, markupExtensionContext.TypeRepository);
+            return ResolveFromString(TypeName, markupExtensionContext.ValueContext.TypeRepository);
         }
     }
 }

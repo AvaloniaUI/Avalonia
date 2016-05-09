@@ -165,6 +165,7 @@ namespace Perspex.Markup.Xaml.Context
             RegisterTypeConverter(typeof(RelativePoint), new RelativePointTypeConverter());
             RegisterTypeConverter(typeof(RelativeRect), new RelativeRectTypeConverter());
             RegisterTypeConverter(typeof(RowDefinitions), new RowDefinitionsTypeConverter());
+            RegisterTypeConverter(typeof(Size), new SizeTypeConverter());
             RegisterTypeConverter(typeof(Selector), new SelectorTypeConverter());
             RegisterTypeConverter(typeof(SolidColorBrush), new BrushTypeConverter());
             RegisterTypeConverter(typeof(Thickness), new ThicknessTypeConverter());

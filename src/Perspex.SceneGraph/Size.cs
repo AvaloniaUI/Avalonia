@@ -3,6 +3,7 @@
 
 using System;
 using System.Globalization;
+using System.Linq;
 
 namespace Perspex
 {
@@ -126,6 +127,28 @@ namespace Perspex
         public static Size operator -(Size size, Size toSubstract)
         {
             return new Size(size._width - toSubstract._width, size._height - toSubstract._height);
+        }
+
+        /// <summary>
+        /// Parses a <see cref="Size"/> string.
+        /// </summary>
+        /// <param name="s">The string.</param>
+        /// <param name="culture">The current culture.</param>
+        /// <returns>The <see cref="Size"/>.</returns>
+        public static Size Parse(string s, CultureInfo culture)
+        {
+            var parts = s.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(x => x.Trim())
+                .ToList();
+
+            if (parts.Count == 2)
+            {
+                return new Size(double.Parse(parts[0], culture), double.Parse(parts[1], culture));
+            }
+            else
+            {
+                throw new FormatException("Invalid Size.");
+            }
         }
 
         /// <summary>
