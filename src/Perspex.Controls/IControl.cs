@@ -37,6 +37,11 @@ namespace Perspex.Controls
         DataTemplates DataTemplates { get; }
 
         /// <summary>
+        /// Gets the <see cref="IDataTemplate"/> that this control was materialized from.
+        /// </summary>
+        IDataTemplate MaterializedFrom { get; }
+
+        /// <summary>
         /// Gets a value that indicates whether the element has finished initialization.
         /// </summary>
         bool IsInitialized { get; }
