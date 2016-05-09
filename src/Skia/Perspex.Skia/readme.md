@@ -17,12 +17,6 @@ RenderTarget
 - Figure out a cleaner implementation across all platforms
 - HW acceleration
 
-StreamGeometry
-- Paths within Paths may not work right
-- Paths cannot be Cloned (lack of SkiaSupport)
-- Paths cannot be transformed (lack of SkiaSupport)
-- ArcTo
-
 App Bootstrapping
 - Cleanup the testapplications across all platforms
 - Add a cleaner Fluent API for the subsystems
