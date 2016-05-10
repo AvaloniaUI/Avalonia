@@ -4,8 +4,8 @@
 using System;
 using System.Linq;
 using System.Reflection;
-using Glass;
 using OmniXaml;
+using Glass.Core;
 
 namespace Perspex.Markup.Xaml.MarkupExtensions
 {
