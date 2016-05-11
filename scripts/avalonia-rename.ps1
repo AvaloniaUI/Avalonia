@@ -59,4 +59,4 @@ function Process-Files {
 
 & git submodule deinit .
 & git clean -xdf
-Process-Files C:\projects\Perspex
+Process-Files .
