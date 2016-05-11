@@ -1,5 +1,5 @@
 # Avalonia
-[![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/Avalonia/Avalonia?utm_campaign=pr-badge&utm_content=badge&utm_medium=badge&utm_source=badge)
+[![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/AvaloniaUI/Avalonia?utm_campaign=pr-badge&utm_content=badge&utm_medium=badge&utm_source=badge)
 
 [![Build status](https://ci.appveyor.com/api/projects/status/hubk3k0w9idyibfg/branch/master?svg=true)](https://ci.appveyor.com/project/Avalonia/Avalonia/branch/master)
 
