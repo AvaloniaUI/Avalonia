@@ -50,28 +50,23 @@ namespace Perspex.Skia
                 _transformedPath.Dispose();
                 _transformedPath = null;
             }
-            
-            // TODO: SkiaSharp does not expose Transform yet!!!
-            //if (!Transform.IsIdentity)
-            //{
-            //	_transformedPath = new SKPath();
-            //	_path.Transform(Transform.ToSKMatrix(), _transformedPath);
-            //}
+
+            if (!Transform.IsIdentity)
+            {
+                _transformedPath = new SKPath(_path);
+                _transformedPath.Transform(Transform.ToSKMatrix());
+            }
         }
 
         public IStreamGeometryImpl Clone()
         {
-            // TODO: there is no SKPath.Clone yet!!!!!!!!!!!!!
-            //
-            //return new StreamGeometryImpl
-            //{
-            //	_path = _path?.Clone(),
-            //	_transformedPath = _transformedPath?.Clone(),
-            //	_transform = Transform,
-            //	Bounds = Bounds
-            //};
-
-            return this;        // this will probably end bad!!
+            return new StreamGeometryImpl
+            {
+                _path = _path?.Clone(),
+                _transformedPath = _transformedPath?.Clone(),
+                _transform = Transform,
+                Bounds = Bounds
+            };
         }
 
         public IStreamGeometryContextImpl Open()
@@ -94,15 +89,6 @@ namespace Perspex.Skia
 
             public void Dispose()
             {
-                // TODO: Not sure what we need to do here. This code left here for reference.
-                //
-                //	var arr = _elements.ToArray();
-                //             SkRect rc;
-                //             _path?.Dispose();
-                //             _path = new SKPath(new SkPath(MethodTable.Instance.CreatePath(arr, arr.Length, out rc)));
-                //             _geometryImpl.ApplyTransform();
-                //             _geometryImpl.Bounds = rc.ToRect();
-
                 SKRect rc;
                 _path.GetBounds(out rc);
                 _geometryImpl.ApplyTransform();

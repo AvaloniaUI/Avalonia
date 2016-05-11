@@ -24,17 +24,6 @@ namespace Perspex
     public class PerspexObject : IPerspexObject, IPerspexObjectDebug, INotifyPropertyChanged, IPriorityValueOwner
     {
         /// <summary>
-        /// Maintains a list of direct property binding subscriptions so that the binding source
-        /// doesn't get collected.
-        /// </summary>
-        /// <remarks>
-        /// If/when we provide a ClearBindings() method, then this collection will be need to be
-        /// moved to an instance field and indexed by property, but until that point a static
-        /// collection will suffice.
-        /// </remarks>
-        private static List<IDisposable> s_directBindings = new List<IDisposable>();
-
-        /// <summary>
         /// The parent object that inherited values are inherited from.
         /// </summary>
         private PerspexObject _inheritanceParent;
@@ -44,6 +33,12 @@ namespace Perspex
         /// </summary>
         private readonly Dictionary<PerspexProperty, PriorityValue> _values =
             new Dictionary<PerspexProperty, PriorityValue>();
+
+        /// <summary>
+        /// Maintains a list of direct property binding subscriptions so that the binding source
+        /// doesn't get collected.
+        /// </summary>
+        private List<IDisposable> _directBindings;
 
         /// <summary>
         /// Event handler for <see cref="INotifyPropertyChanged"/> implementation.
@@ -403,22 +398,27 @@ namespace Perspex
                 IDisposable subscription = null;
                 IDisposable validationSubcription = null;
 
+                if (_directBindings == null)
+                {
+                    _directBindings = new List<IDisposable>();
+                }
+
                 subscription = source
                     .Where(x =>  !(x is ValidationStatus))
                     .Select(x => CastOrDefault(x, property.PropertyType))
-                    .Do(_ => { }, () => s_directBindings.Remove(subscription))
+                    .Do(_ => { }, () => _directBindings.Remove(subscription))
                     .Subscribe(x => DirectBindingSet(property, x));
                 validationSubcription = source
                     .OfType<ValidationStatus>()
                     .Subscribe(x => DataValidation(property, x));
 
-                s_directBindings.Add(subscription);
+                _directBindings.Add(subscription);
 
                 return Disposable.Create(() =>
                 {
                     validationSubcription.Dispose();
                     subscription.Dispose();
-                    s_directBindings.Remove(subscription);
+                    _directBindings.Remove(subscription);
                 });
             }
             else

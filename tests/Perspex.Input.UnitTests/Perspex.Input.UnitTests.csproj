@@ -60,6 +60,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="InputElement_Focus.cs" />
     <Compile Include="InputElement_HitTesting.cs" />
     <Compile Include="KeyboardNavigationTests_Arrows.cs" />
     <Compile Include="KeyboardNavigationTests_Tab.cs" />
@@ -102,6 +103,10 @@
     <ProjectReference Include="..\..\src\Perspex.Styling\Perspex.Styling.csproj">
       <Project>{F1BAA01A-F176-4C6A-B39D-5B40BB1B148F}</Project>
       <Name>Perspex.Styling</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Perspex.UnitTests\Perspex.UnitTests.csproj">
+      <Project>{88060192-33D5-4932-B0F9-8BD2763E857D}</Project>
+      <Name>Perspex.UnitTests</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

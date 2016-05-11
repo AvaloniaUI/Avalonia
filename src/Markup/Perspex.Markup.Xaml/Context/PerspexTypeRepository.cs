@@ -2,10 +2,9 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using Glass;
 using OmniXaml;
 using OmniXaml.Typing;
-using Perspex.Markup.Xaml.Data;
+using Glass.Core;
 
 namespace Perspex.Markup.Xaml.Context
 {

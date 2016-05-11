@@ -60,9 +60,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perspex.Markup.Xaml", "src\Markup\Perspex.Markup.Xaml\Perspex.Markup.Xaml.csproj", "{3E53A01A-B331-47F3-B828-4A5717E77A24}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{9B9E3891-2366-4253-A952-D08BCEB71098}"
-	ProjectSection(SolutionItems) = preProject
-		samples\ControlCatalog\ControlCatalog.csproj = samples\ControlCatalog\ControlCatalog.csproj
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestApplication", "samples\TestApplication\TestApplication.csproj", "{E3A1060B-50D0-44E8-88B6-F44EF2E5BD72}"
 	ProjectSection(ProjectDependencies) = postProject

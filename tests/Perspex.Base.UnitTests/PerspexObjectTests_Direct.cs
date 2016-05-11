@@ -344,6 +344,7 @@ namespace Perspex.Base.UnitTests
             {
                 var source = new Subject<string>();
                 var sub = target.Bind((PerspexProperty)Class1.FooProperty, source);
+                source.OnNext("foo");
                 return new WeakReference(source);
             };
 
@@ -351,6 +352,7 @@ namespace Perspex.Base.UnitTests
 
             GC.Collect();
 
+            Assert.Equal("foo", target.Foo);
             Assert.True(weakSource.IsAlive);
         }
 

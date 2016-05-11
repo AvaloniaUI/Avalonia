@@ -65,5 +65,10 @@ namespace Perspex.Skia
                 case TextAlignment.Right: return SKTextAlign.Right;
             }
         }
+
+        public static SKPath Clone(this SKPath src)
+        {
+            return src != null ? new SKPath(src) : null;
+        }
     }
 }

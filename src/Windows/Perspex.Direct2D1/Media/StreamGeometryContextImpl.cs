@@ -5,6 +5,7 @@ using Perspex.Media;
 using Perspex.Platform;
 using SharpDX.Direct2D1;
 using SweepDirection = SharpDX.Direct2D1.SweepDirection;
+using D2D = SharpDX.Direct2D1;
 
 namespace Perspex.Direct2D1.Media
 {
@@ -24,7 +25,7 @@ namespace Perspex.Direct2D1.Media
             bool isLargeArc,
             Perspex.Media.SweepDirection sweepDirection)
         {
-            _sink.AddArc(new ArcSegment
+            _sink.AddArc(new D2D.ArcSegment
             {
                 Point = point.ToSharpDX(),
                 Size = size.ToSharpDX(),
@@ -41,7 +42,7 @@ namespace Perspex.Direct2D1.Media
 
         public void CubicBezierTo(Point point1, Point point2, Point point3)
         {
-            _sink.AddBezier(new BezierSegment
+            _sink.AddBezier(new D2D.BezierSegment
             {
                 Point1 = point1.ToSharpDX(),
                 Point2 = point2.ToSharpDX(),
@@ -51,7 +52,7 @@ namespace Perspex.Direct2D1.Media
 
         public void QuadraticBezierTo(Point control, Point dest)
         {
-            _sink.AddQuadraticBezier(new QuadraticBezierSegment
+            _sink.AddQuadraticBezier(new D2D.QuadraticBezierSegment
             {
                 Point1 = control.ToSharpDX(),
                 Point2 = dest.ToSharpDX()

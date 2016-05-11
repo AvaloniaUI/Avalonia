@@ -4,8 +4,8 @@
 using System;
 using System.Linq;
 using System.Reflection;
-using Glass;
 using OmniXaml;
+using Glass.Core;
 
 namespace Perspex.Markup.Xaml.MarkupExtensions
 {
@@ -24,7 +24,7 @@ namespace Perspex.Markup.Xaml.MarkupExtensions
 
         public override object ProvideValue(MarkupExtensionContext markupExtensionContext)
         {
-            var typeRepository = markupExtensionContext.TypeRepository;
+            var typeRepository = markupExtensionContext.ValueContext.TypeRepository;
             var typeAndMember = GetTypeAndMember(Identifier);
             var prefixAndType = GetPrefixAndType(typeAndMember.Item1);
             var xamlType = typeRepository.GetByPrefix(prefixAndType.Item1, prefixAndType.Item2);

@@ -32,6 +32,7 @@ namespace Perspex.Controls.Primitives
         protected override void OnClick(RoutedEventArgs e)
         {
             Toggle();
+            base.OnClick(e);
         }
 
         protected virtual void Toggle()

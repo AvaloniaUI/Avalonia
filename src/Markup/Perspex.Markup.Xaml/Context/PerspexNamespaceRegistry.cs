@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Glass;
 using OmniXaml.Builder;
 using OmniXaml.Typing;
 using Perspex.Controls;
@@ -14,6 +13,7 @@ using Perspex.Media;
 using Perspex.Metadata;
 using Perspex.Platform;
 using Perspex.Styling;
+using Glass.Core;
 
 namespace Perspex.Markup.Xaml.Context
 {

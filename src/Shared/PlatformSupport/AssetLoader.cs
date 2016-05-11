@@ -15,26 +15,6 @@ namespace Perspex.Shared.PlatformSupport
     /// </summary>
     public class AssetLoader : IAssetLoader
     {
-        class AssemblyDescriptor
-        {
-            public AssemblyDescriptor(Assembly assembly)
-            {
-                Assembly = assembly;
-
-                if (assembly != null)
-                {
-                    Resources = assembly.GetManifestResourceNames()
-                        .ToDictionary(n => n, n => (IAssetDescriptor)new AssemblyResourceDescriptor(assembly, n));
-                    Name = assembly.GetName().Name;
-                }
-            }
-
-            public Assembly Assembly { get; }
-            public Dictionary<string, IAssetDescriptor> Resources { get; }
-            public string Name { get; }
-        }
-
-
         private static readonly Dictionary<string, AssemblyDescriptor> AssemblyNameCache
             = new Dictionary<string, AssemblyDescriptor>();
 
@@ -53,7 +33,94 @@ namespace Perspex.Shared.PlatformSupport
             _defaultAssembly = new AssemblyDescriptor(assembly);
         }
 
-        AssemblyDescriptor GetAssembly(string name)
+        /// <summary>
+        /// Checks if an asset with the specified URI exists.
+        /// </summary>
+        /// <param name="uri">The URI.</param>
+        /// <param name="baseUri">
+        /// A base URI to use if <paramref name="uri"/> is relative.
+        /// </param>
+        /// <returns>True if the asset could be found; otherwise false.</returns>
+        public bool Exists(Uri uri, Uri baseUri = null)
+        {
+            return GetAsset(uri, baseUri) != null;
+        }
+
+        /// <summary>
+        /// Opens the resource with the requested URI.
+        /// </summary>
+        /// <param name="uri">The URI.</param>
+        /// <param name="baseUri">
+        /// A base URI to use if <paramref name="uri"/> is relative.
+        /// </param>
+        /// <returns>A stream containing the resource contents.</returns>
+        /// <exception cref="FileNotFoundException">
+        /// The resource was not found.
+        /// </exception>
+        public Stream Open(Uri uri, Uri baseUri = null)
+        {
+            var asset = GetAsset(uri, baseUri);
+
+            if (asset == null)
+            {
+                throw new FileNotFoundException($"The resource {uri} could not be found.");
+            }
+
+            return asset.GetStream();
+        }
+
+        private IAssetDescriptor GetAsset(Uri uri, Uri baseUri)
+        {
+            if (!uri.IsAbsoluteUri || uri.Scheme == "resm")
+            {
+                var uriQueryParams = ParseQueryString(uri);
+                var baseUriQueryParams = uri != null ? ParseQueryString(uri) : null;
+                var asm = GetAssembly(uri) ?? GetAssembly(baseUri) ?? _defaultAssembly;
+
+                if (asm == null && _defaultAssembly == null)
+                {
+                    throw new ArgumentException(
+                        "No default assembly, entry assembly or explicit assembly specified; " +
+                        "don't know where to look up for the resource, try specifiyng assembly explicitly.");
+                }
+
+                IAssetDescriptor rv;
+
+                var resourceKey = uri.AbsolutePath;
+
+#if __IOS__
+                // TODO: HACK: to get iOS up and running. Using Shared projects for resources
+                // is flawed as this alters the reource key locations across platforms
+                // I think we need to use Portable libraries from now on to avoid that.
+                if(asm.Name.Contains("iOS"))
+                {
+                    resourceKey = resourceKey.Replace("TestApplication", "Perspex.iOSTestApplication");
+                }
+#endif
+
+                asm.Resources.TryGetValue(resourceKey, out rv);
+                return rv;
+            }
+            throw new ArgumentException($"Invalid uri, see https://github.com/Perspex/Perspex/issues/282#issuecomment-166982104", nameof(uri));
+        }
+
+        private AssemblyDescriptor GetAssembly(Uri uri)
+        {
+            if (uri != null)
+            {
+                var qs = ParseQueryString(uri);
+                string assemblyName;
+
+                if (qs.TryGetValue("assembly", out assemblyName))
+                {
+                    return GetAssembly(assemblyName);
+                }
+            }
+
+            return null;
+        }
+
+        private AssemblyDescriptor GetAssembly(string name)
         {
             if (name == null)
             {
@@ -82,13 +149,20 @@ namespace Perspex.Shared.PlatformSupport
             return rv;
         }
 
-        interface IAssetDescriptor
+        private Dictionary<string, string> ParseQueryString(Uri uri)
+        {
+            return uri.Query.TrimStart('?')
+                .Split(new[] { '&' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(p => p.Split('='))
+                .ToDictionary(p => p[0], p => p[1]);
+        }
+
+        private interface IAssetDescriptor
         {
             Stream GetStream();
         }
 
-
-        class AssemblyResourceDescriptor : IAssetDescriptor
+        private class AssemblyResourceDescriptor : IAssetDescriptor
         {
             private readonly Assembly _asm;
             private readonly string _name;
@@ -104,69 +178,24 @@ namespace Perspex.Shared.PlatformSupport
                 return _asm.GetManifestResourceStream(_name);
             }
         }
-        
 
-        IAssetDescriptor GetAsset(Uri uri)
+        private class AssemblyDescriptor
         {
-            if (!uri.IsAbsoluteUri || uri.Scheme == "resm")
+            public AssemblyDescriptor(Assembly assembly)
             {
-                var qs = uri.Query.TrimStart('?')
-                    .Split(new[] {'&'}, StringSplitOptions.RemoveEmptyEntries)
-                    .Select(p => p.Split('='))
-                    .ToDictionary(p => p[0], p => p[1]);
-                //TODO: Replace _defaultAssembly by current one (need support from OmniXAML)
-                var asm = _defaultAssembly;
-                if (qs.ContainsKey("assembly"))
-                    asm = GetAssembly(qs["assembly"]);
+                Assembly = assembly;
 
-                if (asm == null && _defaultAssembly == null)
-                    throw new ArgumentException(
-                        "No defaultAssembly, entry assembly or explicit assembly specified, don't know where to look up for the resource, try specifiyng assembly explicitly");
-
-                IAssetDescriptor rv;
-
-                var resourceKey = uri.AbsolutePath;
-
-#if __IOS__
-                // TODO: HACK: to get iOS up and running. Using Shared projects for resources
-                // is flawed as this alters the reource key locations across platforms
-                // I think we need to use Portable libraries from now on to avoid that.
-                if(asm.Name.Contains("iOS"))
+                if (assembly != null)
                 {
-                    resourceKey = resourceKey.Replace("TestApplication", "Perspex.iOSTestApplication");
+                    Resources = assembly.GetManifestResourceNames()
+                        .ToDictionary(n => n, n => (IAssetDescriptor)new AssemblyResourceDescriptor(assembly, n));
+                    Name = assembly.GetName().Name;
                 }
-#endif
-
-                asm.Resources.TryGetValue(resourceKey, out rv);
-                return rv;
             }
-            throw new ArgumentException($"Invalid uri, see https://github.com/Perspex/Perspex/issues/282#issuecomment-166982104", nameof(uri));
-        }
 
-        /// <summary>
-        /// Checks if an asset with the specified URI exists.
-        /// </summary>
-        /// <param name="uri">The URI.</param>
-        /// <returns>True if the asset could be found; otherwise false.</returns>
-        public bool Exists(Uri uri)
-        {
-            return GetAsset(uri) != null;
-        }
-
-        /// <summary>
-        /// Opens the resource with the requested URI.
-        /// </summary>
-        /// <param name="uri">The URI.</param>
-        /// <returns>A stream containing the resource contents.</returns>
-        /// <exception cref="FileNotFoundException">
-        /// The resource was not found.
-        /// </exception>
-        public Stream Open(Uri uri)
-        {
-            var asset = GetAsset(uri);
-            if (asset == null)
-                throw new FileNotFoundException($"The resource {uri} could not be found.");
-            return asset.GetStream();
+            public Assembly Assembly { get; }
+            public Dictionary<string, IAssetDescriptor> Resources { get; }
+            public string Name { get; }
         }
     }
 }

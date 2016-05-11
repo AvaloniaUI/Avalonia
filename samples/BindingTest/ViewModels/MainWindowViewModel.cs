@@ -2,6 +2,7 @@
 using System.Collections.ObjectModel;
 using System.Linq;
 using ReactiveUI;
+using System.Reactive.Linq;
 
 namespace BindingTest.ViewModels
 {
@@ -10,6 +11,7 @@ namespace BindingTest.ViewModels
         private string _booleanString = "True";
         private double _doubleValue = 5.0;
         private string _stringValue = "Simple Binding";
+        private bool _booleanFlag = false;
 
         public MainWindowViewModel()
         {
@@ -27,6 +29,13 @@ namespace BindingTest.ViewModels
             {
                 var r = new Random();
                 Items.Move(r.Next(Items.Count), 1);
+            });
+
+            StringValueCommand = ReactiveCommand.Create();
+            StringValueCommand.Subscribe(param =>
+            {
+                BooleanFlag = !BooleanFlag;
+                StringValue = param.ToString();
             });
         }
 
@@ -51,5 +60,13 @@ namespace BindingTest.ViewModels
             get { return _stringValue; }
             set { this.RaiseAndSetIfChanged(ref _stringValue, value); }
         }
+
+        public bool BooleanFlag
+        {
+            get { return _booleanFlag; }
+            set { this.RaiseAndSetIfChanged(ref _booleanFlag, value); }
+        }
+
+        public ReactiveCommand<object> StringValueCommand { get; }
     }
 }
