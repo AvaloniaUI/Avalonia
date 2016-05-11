@@ -21,6 +21,8 @@ function Rename-Contents {
 
     if ($extensions.Contains($file.Extension)) {
         $text = [IO.File]::ReadAllText($file.FullName)
+        $text = $text.Replace("github.com/perspex", "github.com/avaloniaui")
+        $text = $text.Replace("github.com/Perspex", "github.com/AvaloniaUI")
         $text = $text.Replace("perspex", "avalonia")
         $text = $text.Replace("Perspex", "Avalonia")
         $text = $text.Replace("PERSPEX", "AVALONIA")
