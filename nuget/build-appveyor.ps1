@@ -27,7 +27,7 @@ if ([string]::IsNullOrWhiteSpace($pullreq))
         echo "Repo branch matched"
         foreach($pkg in $Packages)
         {
-            nuget.exe push "$($pkg).$($version).nupkg" $key -Source https://www.myget.org/F/avalonia-nightly/api/v2/package
+            nuget.exe push "$($pkg).$($version).nupkg" $key -Source https://www.myget.org/F/avalonia-ci/api/v2/package
         }
     }
 }
