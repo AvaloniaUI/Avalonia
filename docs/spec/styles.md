@@ -1,7 +1,7 @@
-# Styling in Perspex
+# Styling in Avalonia
 
-The main difference between Perspex and existing XAML toolkits such as WPF and
-UWP is in styling. Styling in Perspex uses a CSS-like system that aims to be
+The main difference between Avalonia and existing XAML toolkits such as WPF and
+UWP is in styling. Styling in Avalonia uses a CSS-like system that aims to be
 more powerful and flexible than existing XAML styling systems. For convenience
 for the rest of this document we'll refer to existing XAML toolkit's styling as
 "WPF styling" as that's where it originated.
@@ -50,7 +50,7 @@ As in CSS, controls can be given *style classes* which can be used in selectors:
     </StackPanel>
 
 Each control can be given 0 or more style classes. This is different to WPF
-where only a single style can be applied to a control: in Perspex any number
+where only a single style can be applied to a control: in Avalonia any number
 of separate styles can be applied to a control. If more than one style affects
 a particular property, the style closest to the control will take precedence.
 

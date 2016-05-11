@@ -1,6 +1,6 @@
-﻿using Foundation;
+using Foundation;
 using UIKit;
-using Perspex;
+using Avalonia;
 
 namespace ControlCatalog
 {

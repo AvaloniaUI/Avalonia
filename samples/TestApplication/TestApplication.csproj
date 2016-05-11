@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -78,86 +78,86 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Gtk\Perspex.Cairo\Perspex.Cairo.csproj">
+    <ProjectReference Include="..\..\src\Gtk\Avalonia.Cairo\Avalonia.Cairo.csproj">
       <Project>{FB05AC90-89BA-4F2F-A924-F37875FB547C}</Project>
-      <Name>Perspex.Cairo</Name>
+      <Name>Avalonia.Cairo</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\Gtk\Perspex.Gtk\Perspex.Gtk.csproj">
+    <ProjectReference Include="..\..\src\Gtk\Avalonia.Gtk\Avalonia.Gtk.csproj">
       <Project>{54f237d5-a70a-4752-9656-0c70b1a7b047}</Project>
-      <Name>Perspex.Gtk</Name>
+      <Name>Avalonia.Gtk</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\Markup\Perspex.Markup.Xaml\Perspex.Markup.Xaml.csproj">
+    <ProjectReference Include="..\..\src\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj">
       <Project>{3e53a01a-b331-47f3-b828-4a5717e77a24}</Project>
-      <Name>Perspex.Markup.Xaml</Name>
+      <Name>Avalonia.Markup.Xaml</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\Markup\Perspex.Markup\Perspex.Markup.csproj">
+    <ProjectReference Include="..\..\src\Markup\Avalonia.Markup\Avalonia.Markup.csproj">
       <Project>{6417e941-21bc-467b-a771-0de389353ce6}</Project>
-      <Name>Perspex.Markup</Name>
+      <Name>Avalonia.Markup</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\Perspex.Animation\Perspex.Animation.csproj">
+    <ProjectReference Include="..\..\src\Avalonia.Animation\Avalonia.Animation.csproj">
       <Project>{D211E587-D8BC-45B9-95A4-F297C8FA5200}</Project>
-      <Name>Perspex.Animation</Name>
+      <Name>Avalonia.Animation</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\Perspex.Base\Perspex.Base.csproj">
+    <ProjectReference Include="..\..\src\Avalonia.Base\Avalonia.Base.csproj">
       <Project>{B09B78D8-9B26-48B0-9149-D64A2F120F3F}</Project>
-      <Name>Perspex.Base</Name>
+      <Name>Avalonia.Base</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\Perspex.Controls\Perspex.Controls.csproj">
+    <ProjectReference Include="..\..\src\Avalonia.Controls\Avalonia.Controls.csproj">
       <Project>{D2221C82-4A25-4583-9B43-D791E3F6820C}</Project>
-      <Name>Perspex.Controls</Name>
+      <Name>Avalonia.Controls</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\Perspex.DesignerSupport\Perspex.DesignerSupport.csproj">
+    <ProjectReference Include="..\..\src\Avalonia.DesignerSupport\Avalonia.DesignerSupport.csproj">
       <Project>{799a7bb5-3c2c-48b6-85a7-406a12c420da}</Project>
-      <Name>Perspex.DesignerSupport</Name>
+      <Name>Avalonia.DesignerSupport</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\Perspex.Diagnostics\Perspex.Diagnostics.csproj">
+    <ProjectReference Include="..\..\src\Avalonia.Diagnostics\Avalonia.Diagnostics.csproj">
       <Project>{7062AE20-5DCC-4442-9645-8195BDECE63E}</Project>
-      <Name>Perspex.Diagnostics</Name>
+      <Name>Avalonia.Diagnostics</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\Perspex.HtmlRenderer\Perspex.HtmlRenderer.csproj">
+    <ProjectReference Include="..\..\src\Avalonia.HtmlRenderer\Avalonia.HtmlRenderer.csproj">
       <Project>{5FB2B005-0A7F-4DAD-ADD4-3ED01444E63D}</Project>
-      <Name>Perspex.HtmlRenderer</Name>
+      <Name>Avalonia.HtmlRenderer</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\Perspex.Input\Perspex.Input.csproj">
+    <ProjectReference Include="..\..\src\Avalonia.Input\Avalonia.Input.csproj">
       <Project>{62024B2D-53EB-4638-B26B-85EEAA54866E}</Project>
-      <Name>Perspex.Input</Name>
+      <Name>Avalonia.Input</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\Perspex.Interactivity\Perspex.Interactivity.csproj">
+    <ProjectReference Include="..\..\src\Avalonia.Interactivity\Avalonia.Interactivity.csproj">
       <Project>{6B0ED19D-A08B-461C-A9D9-A9EE40B0C06B}</Project>
-      <Name>Perspex.Interactivity</Name>
+      <Name>Avalonia.Interactivity</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\Perspex.Layout\Perspex.Layout.csproj">
+    <ProjectReference Include="..\..\src\Avalonia.Layout\Avalonia.Layout.csproj">
       <Project>{42472427-4774-4C81-8AFF-9F27B8E31721}</Project>
-      <Name>Perspex.Layout</Name>
+      <Name>Avalonia.Layout</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\Perspex.ReactiveUI\Perspex.ReactiveUI.csproj">
+    <ProjectReference Include="..\..\src\Avalonia.ReactiveUI\Avalonia.ReactiveUI.csproj">
       <Project>{6417B24E-49C2-4985-8DB2-3AB9D898EC91}</Project>
-      <Name>Perspex.ReactiveUI</Name>
+      <Name>Avalonia.ReactiveUI</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\Perspex.SceneGraph\Perspex.SceneGraph.csproj">
+    <ProjectReference Include="..\..\src\Avalonia.SceneGraph\Avalonia.SceneGraph.csproj">
       <Project>{EB582467-6ABB-43A1-B052-E981BA910E3A}</Project>
-      <Name>Perspex.SceneGraph</Name>
+      <Name>Avalonia.SceneGraph</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\Perspex.Styling\Perspex.Styling.csproj">
+    <ProjectReference Include="..\..\src\Avalonia.Styling\Avalonia.Styling.csproj">
       <Project>{F1BAA01A-F176-4C6A-B39D-5B40BB1B148F}</Project>
-      <Name>Perspex.Styling</Name>
+      <Name>Avalonia.Styling</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\Perspex.Themes.Default\Perspex.Themes.Default.csproj">
+    <ProjectReference Include="..\..\src\Avalonia.Themes.Default\Avalonia.Themes.Default.csproj">
       <Project>{3E10A5FA-E8DA-48B1-AD44-6A5B6CB7750F}</Project>
-      <Name>Perspex.Themes.Default</Name>
+      <Name>Avalonia.Themes.Default</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\Windows\Perspex.Direct2D1\Perspex.Direct2D1.csproj">
+    <ProjectReference Include="..\..\src\Windows\Avalonia.Direct2D1\Avalonia.Direct2D1.csproj">
       <Project>{3E908F67-5543-4879-A1DC-08EACE79B3CD}</Project>
-      <Name>Perspex.Direct2D1</Name>
+      <Name>Avalonia.Direct2D1</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\Windows\Perspex.Win32\Perspex.Win32.csproj">
+    <ProjectReference Include="..\..\src\Windows\Avalonia.Win32\Avalonia.Win32.csproj">
       <Project>{811A76CF-1CF6-440F-963B-BBE31BD72A82}</Project>
-      <Name>Perspex.Win32</Name>
+      <Name>Avalonia.Win32</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="..\TestApplicationShared\TestApplicationShared.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="..\..\src\Shared\perspex.platform.targets" />
+  <Import Project="..\..\src\Shared\avalonia.platform.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

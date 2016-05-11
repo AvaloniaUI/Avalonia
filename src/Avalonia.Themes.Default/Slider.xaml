@@ -1,0 +1,66 @@
+<Styles xmlns="https://github.com/avaloniaui">
+  <Style Selector="Slider:horizontal">
+    <Setter Property="MinWidth" Value="40"/>
+    <Setter Property="MinHeight" Value="20"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Grid>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto" MinHeight="20"/>
+            <RowDefinition Height="Auto"/>
+          </Grid.RowDefinitions>
+          <Border Name="TrackBackground" Grid.Row="1" Height="4" Margin="6,0" VerticalAlignment="Center"/>
+          <Track Name="PART_Track" Grid.Row="1">
+            <Thumb MinWidth="20" MinHeight="20">
+              <Thumb.Template>
+                <ControlTemplate>
+                  <Grid>
+                    <Ellipse Width="12" Height="12" Fill="{StyleResource ThemeAccentBrush}"/>
+                  </Grid>
+                </ControlTemplate>
+              </Thumb.Template>
+            </Thumb>
+          </Track>
+        </Grid>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+  <Style Selector="Slider:vertical">
+    <Setter Property="MinWidth" Value="20"/>
+    <Setter Property="MinHeight" Value="40"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Grid>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto" MinWidth="26"/>
+            <ColumnDefinition Width="Auto"/>
+          </Grid.ColumnDefinitions>
+          <Border Name="TrackBackground" Grid.Column="1" Width="4" Margin="0,6" HorizontalAlignment="Center"/>
+          <Track Name="PART_Track" Grid.Column="1">
+            <Thumb MinWidth="20" MinHeight="20">
+              <Thumb.Template>
+                <ControlTemplate>
+                  <Grid>
+                    <Ellipse Width="12" Height="12" Fill="{StyleResource ThemeAccentBrush}"/>
+                  </Grid>
+                </ControlTemplate>
+              </Thumb.Template>
+            </Thumb>
+          </Track>
+        </Grid>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+  <Style Selector="Slider /template/ Track#PART_Track">
+    <Setter Property="Minimum" Value="{TemplateBinding Minimum}"/>
+    <Setter Property="Maximum" Value="{TemplateBinding Maximum}"/>
+    <Setter Property="Value" Value="{TemplateBinding Path=Value, Mode=TwoWay}"/>
+    <Setter Property="Orientation" Value="{TemplateBinding Orientation}"/>
+  </Style>
+  <Style Selector="Slider /template/ Border#TrackBackground">
+    <Setter Property="BorderThickness" Value="2"/>
+    <Setter Property="BorderBrush" Value="{StyleResource ThemeBorderLightBrush}"/>
+  </Style>  
+</Styles>

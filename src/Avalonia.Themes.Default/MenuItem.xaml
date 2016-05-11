@@ -1,0 +1,133 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib">
+  
+  <Style Selector="MenuItem">
+    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="Padding" Value="6,0"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Name="root"
+                Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}">
+          <Grid ColumnDefinitions="22,13,*,20">
+            <ContentPresenter Name="icon"
+                              Content="{TemplateBinding Icon}"
+                              Width="16"
+                              Height="16"
+                              Margin="3"
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center"/>
+            <Path Name="check"
+                  Fill="{TemplateBinding Foreground}"
+                  Data="F1M10,1.2L4.7,9.1 4.5,9.1 0,5.2 1.3,3.5 4.3,6.1 8.3,0 10,1.2z"
+                  IsVisible="False"
+                  Margin="3"
+                  VerticalAlignment="Center"/>
+            <ContentPresenter Name="PART_HeaderPresenter"
+                              Content="{TemplateBinding Header}"
+                              Margin="{TemplateBinding Padding}"
+                              VerticalAlignment="Center"
+                              Grid.Column="2">
+              <ContentPresenter.DataTemplates>
+                <DataTemplate DataType="sys:String">
+                  <AccessText Text="{Binding}"/>
+                </DataTemplate>
+              </ContentPresenter.DataTemplates>
+            </ContentPresenter>
+            <Path Name="rightArrow"
+                  Data="M0,0L4,3.5 0,7z"
+                  Fill="{StyleResource ThemeForegroundBrush}"
+                  Margin="10,0,0,0"
+                  VerticalAlignment="Center"
+                  Grid.Column="3"/>
+            <Popup Name="PART_Popup"
+                   PlacementMode="Right"
+                   StaysOpen="True"
+                   IsOpen="{TemplateBinding Path=IsSubMenuOpen, Mode=TwoWay}">
+              <Border Background="{TemplateBinding Background}"
+                      BorderBrush="{StyleResource ThemeBorderMidBrush}"
+                      BorderThickness="1">
+                <ScrollViewer>
+                  <Panel>
+                    <ItemsPresenter Name="PART_ItemsPresenter"
+                                    Items="{TemplateBinding Items}"
+                                    ItemsPanel="{TemplateBinding ItemsPanel}"
+                                    Margin="2"
+                                    MemberSelector="{TemplateBinding MemberSelector}"/>
+                    <Rectangle Name="iconSeparator"
+                               Fill="{StyleResource ThemeControlMidBrush}"
+                               HorizontalAlignment="Left"
+                               IsHitTestVisible="False"
+                               Margin="29,2,0,2"
+                               Width="1"/>
+                  </Panel>
+                </ScrollViewer>
+              </Border>
+            </Popup>
+            </Grid>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+  
+  <Style Selector="Menu > MenuItem">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Name="root"
+                Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}">
+          <Panel>
+            <ContentPresenter Name="PART_HeaderPresenter"
+                              Content="{TemplateBinding Header}"
+                              Margin="{TemplateBinding Padding}">
+              <ContentPresenter.DataTemplates>
+                <DataTemplate DataType="sys:String">
+                  <AccessText Text="{Binding}"/>
+                </DataTemplate>
+              </ContentPresenter.DataTemplates>
+            </ContentPresenter>
+            <Popup Name="PART_Popup"
+                   IsOpen="{TemplateBinding Path=IsSubMenuOpen, Mode=TwoWay}"
+                   StaysOpen="True">
+              <Border Background="{TemplateBinding Background}"
+                      BorderBrush="{StyleResource ThemeBorderMidBrush}"
+                      BorderThickness="1">
+                <ScrollViewer>
+                  <Panel>
+                    <ItemsPresenter Name="PART_ItemsPresenter"
+                                    Items="{TemplateBinding Items}"
+                                    ItemsPanel="{TemplateBinding ItemsPanel}"
+                                    Margin="2"
+                                    MemberSelector="{TemplateBinding MemberSelector}"/>
+                    <Rectangle Name="iconSeparator"
+                               Fill="{StyleResource ThemeControlMidBrush}"
+                               HorizontalAlignment="Left"
+                               IsHitTestVisible="False"
+                               Margin="29,2,0,2"
+                               Width="1"/>
+                  </Panel>
+                </ScrollViewer>
+              </Border>
+            </Popup>
+          </Panel>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <Style Selector="MenuItem:selected /template/ Border#root">
+    <Setter Property="Background" Value="{StyleResource ThemeAccentBrush4}"/>
+    <Setter Property="BorderBrush" Value="{StyleResource ThemeAccentBrush}"/>
+  </Style>
+
+  <Style Selector="MenuItem:pointerover /template/ Border#root">
+    <Setter Property="Background" Value="{StyleResource ThemeAccentBrush4}"/>
+    <Setter Property="BorderBrush" Value="{StyleResource ThemeAccentBrush}"/>
+  </Style>
+
+  <Style Selector="MenuItem:empty /template/ Path#rightArrow">
+    <Setter Property="IsVisible" Value="False"/>
+  </Style>
+</Styles>

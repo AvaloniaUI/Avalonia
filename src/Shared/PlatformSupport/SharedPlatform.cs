@@ -1,16 +1,16 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
-using Perspex.Platform;
+using Avalonia.Platform;
 
-namespace Perspex.Shared.PlatformSupport
+namespace Avalonia.Shared.PlatformSupport
 {
     static class SharedPlatform
     {
         public static void Register(Assembly assembly = null)
         {
-            PerspexLocator.CurrentMutable
+            AvaloniaLocator.CurrentMutable
                 .Bind<IPclPlatformWrapper>().ToSingleton<PclPlatformWrapper>()
                 .Bind<IAssetLoader>().ToConstant(new AssetLoader(assembly));
         }

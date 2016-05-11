@@ -1,4 +1,4 @@
-﻿using Perspex.Threading;
+using Avalonia.Threading;
 
 namespace XamlTestApplication.ViewModels
 {

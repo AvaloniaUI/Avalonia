@@ -1,0 +1,29 @@
+<Style xmlns="https://github.com/avaloniaui" Selector="ScrollViewer">
+  <Setter Property="Template">
+    <ControlTemplate>
+      <Grid ColumnDefinitions="*,Auto" RowDefinitions="*,Auto" Background="{TemplateBinding Background}">
+        <ScrollContentPresenter Name="PART_ContentPresenter"
+                                Content="{TemplateBinding Content}"
+                                Extent="{TemplateBinding Path=Extent, Mode=TwoWay}"
+                                Margin="{TemplateBinding Padding}"
+                                Offset="{TemplateBinding Path=Offset, Mode=TwoWay}"
+                                Viewport="{TemplateBinding Path=Viewport, Mode=TwoWay}"
+                                CanScrollHorizontally="{TemplateBinding CanScrollHorizontally}"/>
+        <ScrollBar Name="horizontalScrollBar"
+                   Orientation="Horizontal"
+                   Maximum="{TemplateBinding HorizontalScrollBarMaximum}"
+                   Value="{TemplateBinding Path=HorizontalScrollBarValue, Mode=TwoWay}"
+                   ViewportSize="{TemplateBinding HorizontalScrollBarViewportSize}"
+                   Visibility="{TemplateBinding HorizontalScrollBarVisibility}"
+                   Grid.Row="1"/>
+        <ScrollBar Name="verticalScrollBar"
+                   Orientation="Vertical"
+                   Maximum="{TemplateBinding VerticalScrollBarMaximum}"
+                   Value="{TemplateBinding Path=VerticalScrollBarValue, Mode=TwoWay}"
+                   ViewportSize="{TemplateBinding VerticalScrollBarViewportSize}"
+                   Visibility="{TemplateBinding VerticalScrollBarVisibility}"
+                   Grid.Column="1"/>
+      </Grid>
+    </ControlTemplate>
+  </Setter>
+</Style>

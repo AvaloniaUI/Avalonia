@@ -1,4 +1,4 @@
-﻿<Styles xmlns="https://github.com/perspex">
+<Styles xmlns="https://github.com/avaloniaui">
   <Style Selector="TabControl.sidebar">
     <Setter Property="Template">
       <ControlTemplate>

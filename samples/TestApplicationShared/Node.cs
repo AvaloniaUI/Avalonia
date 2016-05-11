@@ -1,4 +1,4 @@
-﻿using Perspex.Collections;
+using Avalonia.Collections;
 
 namespace TestApplication
 {
@@ -6,11 +6,11 @@ namespace TestApplication
     {
         public Node()
         {
-            Children = new PerspexList<Node>();
+            Children = new AvaloniaList<Node>();
         }
 
         public string Name { get; set; }
-        public PerspexList<Node> Children { get; set; }
+        public AvaloniaList<Node> Children { get; set; }
     }
 
 }

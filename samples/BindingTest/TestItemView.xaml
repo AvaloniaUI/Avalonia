@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/perspex">
+<UserControl xmlns="https://github.com/avaloniaui">
   <StackPanel>
     <TextBlock Classes="h1" Text="{Binding StringValue}"/>
     <TextBox Text="{Binding Detail}" AcceptsReturn="True"/>

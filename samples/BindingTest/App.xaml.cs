@@ -1,9 +1,9 @@
-﻿using System;
-using Perspex;
-using Perspex.Controls;
-using Perspex.Diagnostics;
-using Perspex.Logging.Serilog;
-using Perspex.Markup.Xaml;
+using System;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Diagnostics;
+using Avalonia.Logging.Serilog;
+using Avalonia.Markup.Xaml;
 using Serilog;
 
 namespace BindingTest

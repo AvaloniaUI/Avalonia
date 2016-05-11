@@ -1,5 +1,5 @@
-﻿using Perspex;
-using Perspex.Markup.Xaml;
+using Avalonia;
+using Avalonia.Markup.Xaml;
 using XamlTestApplication.Views;
 
 namespace XamlTestApplication

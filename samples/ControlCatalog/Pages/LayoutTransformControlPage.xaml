@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/perspex"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <DockPanel>
     <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto" Margin="16" DockPanel.Dock="Top">

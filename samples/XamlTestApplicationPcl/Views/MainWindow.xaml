@@ -1,9 +1,9 @@
-﻿<Window x:Class="XamlTestApplication.MainWindow"
-        xmlns="https://github.com/perspex"
+<Window x:Class="XamlTestApplication.MainWindow"
+        xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:XamlTestApplication;assembly=XamlTestApplicationPcl"
         xmlns:vm="clr-namespace:XamlTestApplication.ViewModels;assembly=XamlTestApplicationPcl"
-        Title="Perspex Test Application" Width="800" Height="600">
+        Title="Avalonia Test Application" Width="800" Height="600">
   <Grid RowDefinitions="Auto,*,Auto" ColumnDefinitions="*,*">
     <Menu Grid.ColumnSpan="2">
       <MenuItem Header="_File">

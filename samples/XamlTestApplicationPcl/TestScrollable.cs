@@ -1,8 +1,8 @@
-﻿using System;
-using Perspex;
-using Perspex.Controls;
-using Perspex.Controls.Primitives;
-using Perspex.Media;
+using System;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
+using Avalonia.Media;
 
 namespace XamlTestApplication
 {

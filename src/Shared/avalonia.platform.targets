@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- Includes the Avalonia platform-specific libraries in an application's output directory -->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Condition="'$(MSBuildThisFileDirectory)' != '' And HasTrailingSlash('$(MSBuildThisFileDirectory)')">
+    <PlatformLib Include="$(MSBuildThisFileDirectory)..\Gtk\Avalonia.Cairo\bin\$(Configuration)\Avalonia.Cairo.dll" />
+    <PlatformLib Include="$(MSBuildThisFileDirectory)..\Gtk\Avalonia.Gtk\bin\$(Configuration)\Avalonia.Gtk.dll" />
+    <PlatformLib Include="$(MSBuildThisFileDirectory)..\Windows\Avalonia.Direct2D1\bin\$(Configuration)\Avalonia.Direct2D1.dll" />
+    <PlatformLib Include="$(MSBuildThisFileDirectory)..\Windows\Avalonia.Direct2D1\bin\$(Configuration)\SharpDX.dll" />
+    <PlatformLib Include="$(MSBuildThisFileDirectory)..\Windows\Avalonia.Direct2D1\bin\$(Configuration)\SharpDX.Direct2D1.dll" />
+    <PlatformLib Include="$(MSBuildThisFileDirectory)..\Windows\Avalonia.Direct2D1\bin\$(Configuration)\SharpDX.DXGI.dll" />
+    <PlatformLib Include="$(MSBuildThisFileDirectory)..\Windows\Avalonia.Win32\bin\$(Configuration)\Avalonia.Win32.dll" />
+  </ItemGroup>
+  <PropertyGroup>
+    <PrepareForRunDependsOn>$(PrepareForRunDependsOn);CopyPlatformLibs</PrepareForRunDependsOn>
+  </PropertyGroup>
+  <Target Name="CopyPlatformLibs">
+    <Copy SourceFiles="@(PlatformLib)" DestinationFolder="$(OutDir)" ContinueOnError="true"/>
+  </Target>
+</Project>

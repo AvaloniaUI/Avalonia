@@ -1,0 +1,20 @@
+<Styles xmlns="https://github.com/avaloniaui">
+  <Style Selector="ListBoxItem">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <ContentPresenter Name="PART_ContentPresenter"
+                          Background="{TemplateBinding Background}"
+                          BorderBrush="{TemplateBinding BorderBrush}"
+                          BorderThickness="{TemplateBinding BorderThickness}"
+                          Content="{TemplateBinding Content}"
+                          Padding="{TemplateBinding Padding}"/>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+  <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+    <Setter Property="Background" Value="#fff0f0f0"/>
+  </Style>
+  <Style Selector="ListBoxItem:selected:focus /template/ ContentPresenter">
+    <Setter Property="Background" Value="#ffd0d0d0"/>
+  </Style>
+</Styles>

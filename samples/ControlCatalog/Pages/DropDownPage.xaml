@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/perspex">
+<UserControl xmlns="https://github.com/avaloniaui">
   <StackPanel Orientation="Vertical" Gap="4">
     <TextBlock Classes="h1">DropDown</TextBlock>
     <TextBlock Classes="h2">A drop-down list.</TextBlock>

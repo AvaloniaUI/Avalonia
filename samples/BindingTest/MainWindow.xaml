@@ -1,4 +1,4 @@
-﻿<Window xmlns="https://github.com/perspex"
+<Window xmlns="https://github.com/avaloniaui"
         xmlns:vm="clr-namespace:BindingTest.ViewModels;assembly=BindingTest"
         xmlns:local="clr-namespace:BindingTest;assembly=BindingTest">
   <Window.Styles>

@@ -2,7 +2,7 @@ version: 1.0.{build}
 os: Visual Studio 2015
 before_build:
 - git submodule update --init
-- nuget restore Perspex.sln
+- nuget restore Avalonia.sln
 
 environment:
   myget_key:
@@ -20,12 +20,12 @@ configuration:
   - Release
 
 after_test:
-- .\packages\JetBrains.dotMemoryUnit.2.1.20150828.125449\tools\dotMemoryUnit.exe -targetExecutable="%xunit20%\xunit.console.x86.exe" -returnTargetExitCode  --"tests\Perspex.LeakTests\bin\Release\Perspex.LeakTests.dll"
+- .\packages\JetBrains.dotMemoryUnit.2.1.20150828.125449\tools\dotMemoryUnit.exe -targetExecutable="%xunit20%\xunit.console.x86.exe" -returnTargetExitCode  --"tests\Avalonia.LeakTests\bin\Release\Avalonia.LeakTests.dll"
 - ps: nuget\build-appveyor.ps1
 
 artifacts:
   - path: nuget\*.nupkg
 
 build:
-  project: Perspex.sln
+  project: Avalonia.sln
   verbosity: minimal

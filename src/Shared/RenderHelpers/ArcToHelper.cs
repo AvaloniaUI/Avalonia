@@ -1,5 +1,5 @@
-﻿// Copyright © 2003-2004, Luc Maisonobe
-// 2015 - Alexey Rozanov <thehdotx@gmail.com> - Adaptations for Perspex and oval center computations
+// Copyright © 2003-2004, Luc Maisonobe
+// 2015 - Alexey Rozanov <thehdotx@gmail.com> - Adaptations for Avalonia and oval center computations
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with
@@ -35,7 +35,7 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-// C#/WPF/Perspex adaptation by Alexey Rozanov <thehdotx@gmail.com>, 2015.
+// C#/WPF/Avalonia adaptation by Alexey Rozanov <thehdotx@gmail.com>, 2015.
 // I do not mind if anyone would find this adaptation useful, but
 // please retain the above disclaimer made by the original class 
 // author Luc Maisonobe. He worked really hard on this subject, so
@@ -47,10 +47,10 @@
 // as these may be helpful for debugging.
 
 using System;
-using Perspex.Media;
-using Perspex.Platform;
+using Avalonia.Media;
+using Avalonia.Platform;
 
-namespace Perspex.RenderHelpers
+namespace Avalonia.RenderHelpers
 {
     static class ArcToHelper
     {

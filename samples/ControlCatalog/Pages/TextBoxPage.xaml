@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/perspex">
+<UserControl xmlns="https://github.com/avaloniaui">
   <StackPanel Orientation="Vertical" Gap="4">
     <TextBlock Classes="h1">TextBox</TextBlock>
     <TextBlock Classes="h2">A control into which the user can input text</TextBlock>

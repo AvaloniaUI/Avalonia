@@ -1,0 +1,19 @@
+<Styles xmlns="https://github.com/avaloniaui">
+  <Style Selector="TabStripItem">
+    <Setter Property="FontSize" Value="{StyleResource FontSizeLarge}"/>
+    <Setter Property="Foreground" Value="{StyleResource ThemeForegroundLightBrush}"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+        <ContentPresenter Name="PART_ContentPresenter"
+                          Background="{TemplateBinding Background}"
+                          BorderBrush="{TemplateBinding BorderBrush}"
+                          BorderThickness="{TemplateBinding BorderThickness}"
+                          Content="{TemplateBinding Content}"
+                          Padding="{TemplateBinding Padding}"/>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+  <Style Selector="TabStripItem:selected">
+    <Setter Property="Foreground" Value="{StyleResource ThemeForegroundBrush}"/>
+  </Style>
+</Styles>

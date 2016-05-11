@@ -1,0 +1,16 @@
+<Style xmlns="https://github.com/avaloniaui" Selector="ToolTip">
+  <Setter Property="Background" Value="{StyleResource ThemeBackgroundBrush}"/>
+  <Setter Property="BorderBrush" Value="{StyleResource ThemeBorderMidBrush}"/>
+  <Setter Property="BorderThickness" Value="{StyleResource ThemeBorderThickness}"/>
+  <Setter Property="Padding" Value="4,2"/>
+  <Setter Property="Template">
+    <ControlTemplate>
+      <ContentPresenter Name="PART_ContentPresenter"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        Content="{TemplateBinding Content}" 
+                        Padding="{TemplateBinding Padding}"/>
+    </ControlTemplate>
+  </Setter>
+</Style>

@@ -1,0 +1,60 @@
+<Styles xmlns="https://github.com/avaloniaui">
+  <Style Selector="TextBox">
+    <Setter Property="Background" Value="{StyleResource ThemeBackgroundBrush}"/>
+    <Setter Property="BorderBrush" Value="{StyleResource ThemeBorderMidBrush}"/>
+    <Setter Property="BorderThickness" Value="{StyleResource ThemeBorderThickness}"/>
+    <Setter Property="Padding" Value="4"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Name="border"
+                Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}">
+          <DockPanel Margin="{TemplateBinding Padding}">
+            
+            <TextBlock Name="floatingWatermark"
+                       Foreground="{StyleResource ThemeAccentBrush}"
+                       FontSize="{StyleResource FontSizeSmall}"
+                       Text="{TemplateBinding Watermark}"
+                       DockPanel.Dock="Top">
+              <TextBlock.IsVisible>
+                <MultiBinding Converter="{Static BoolConverters.And}">
+                  <Binding RelativeSource="{RelativeSource TemplatedParent}"
+                           Path="UseFloatingWatermark"/>
+                  <Binding RelativeSource="{RelativeSource TemplatedParent}"
+                           Path="Text"
+                           Converter="{Static StringConverters.NotNullOrEmpty}"/>
+                </MultiBinding>
+              </TextBlock.IsVisible>
+            </TextBlock>
+            
+            <ScrollViewer CanScrollHorizontally="{TemplateBinding CanScrollHorizontally}"
+                          HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
+                          VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}">
+              <Panel>
+                <TextBlock Name="watermark"
+                           Opacity="0.5"
+                           Text="{TemplateBinding Watermark}"
+                           IsVisible="{TemplateBinding Path=Text, Converter={Static StringConverters.NullOrEmpty}}"/>
+                <TextPresenter Name="PART_TextPresenter"
+                               CaretIndex="{TemplateBinding CaretIndex}"
+                               SelectionStart="{TemplateBinding SelectionStart}"
+                               SelectionEnd="{TemplateBinding SelectionEnd}"
+                               Text="{TemplateBinding Text, Mode=TwoWay}"
+                               TextAlignment="{TemplateBinding TextAlignment}"
+                               TextWrapping="{TemplateBinding TextWrapping}"/>
+              </Panel>
+            </ScrollViewer>
+            
+          </DockPanel>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+  <Style Selector="TextBox:pointerover /template/ Border#border">
+    <Setter Property="BorderBrush" Value="{StyleResource ThemeBorderDarkBrush}"/>
+  </Style>
+  <Style Selector="TextBox:focus /template/ Border#border">
+    <Setter Property="BorderBrush" Value="{StyleResource ThemeBorderDarkBrush}"/>
+  </Style>
+</Styles>

@@ -1,17 +1,17 @@
-﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using Perspex;
-using Perspex.Controls;
-using Perspex.Controls.Templates;
-using Perspex.Markup.Xaml;
-using Perspex.Styling;
-using Perspex.Themes.Default;
-using Perspex.Diagnostics;
-using Perspex.Platform;
-using Perspex.Shared.PlatformSupport;
-using Perspex.Media;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Templates;
+using Avalonia.Markup.Xaml;
+using Avalonia.Styling;
+using Avalonia.Themes.Default;
+using Avalonia.Diagnostics;
+using Avalonia.Platform;
+using Avalonia.Shared.PlatformSupport;
+using Avalonia.Media;
 
 namespace TestApplication
 {
@@ -30,9 +30,9 @@ namespace TestApplication
         {
             Styles.Add(new DefaultTheme());
 
-            var loader = new PerspexXamlLoader();
+            var loader = new AvaloniaXamlLoader();
             var baseLight = (IStyle)loader.Load(
-                new Uri("resm:Perspex.Themes.Default.Accents.BaseLight.xaml?assembly=Perspex.Themes.Default"));
+                new Uri("resm:Avalonia.Themes.Default.Accents.BaseLight.xaml?assembly=Avalonia.Themes.Default"));
             Styles.Add(baseLight);
 
             Styles.Add(new SampleTabStyle());
@@ -55,7 +55,7 @@ namespace TestApplication
         {
             Window window = new Window
             {
-                Title = "Perspex Test Application",
+                Title = "Avalonia Test Application",
                 Background = Brushes.Red,
                 Content = new StackPanel
                 {

@@ -1,10 +1,10 @@
-﻿using Perspex;
-using Perspex.Controls;
-using Perspex.Controls.Presenters;
-using Perspex.Controls.Primitives;
-using Perspex.Controls.Templates;
-using Perspex.Media;
-using Perspex.Styling;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Templates;
+using Avalonia.Media;
+using Avalonia.Styling;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -67,7 +67,7 @@ namespace TestApplication
                         Padding = new Thickness(10),
                         Child = new TextBlock
                         {
-                            VerticalAlignment = Perspex.Layout.VerticalAlignment.Center,
+                            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
                             Text = x
                         }
                     })

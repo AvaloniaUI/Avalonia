@@ -1,6 +1,6 @@
-﻿<Window xmlns="https://github.com/perspex"
+<Window xmlns="https://github.com/avaloniaui"
         xmlns:pages="clr-namespace:ControlCatalog.Pages;assembly=ControlCatalog"
-        Title="Perspex Control Gallery">
+        Title="Avalonia Control Gallery">
   <TabControl Classes="sidebar">
     <TabControl.Transition>
       <CrossFade Duration="0.25"/>

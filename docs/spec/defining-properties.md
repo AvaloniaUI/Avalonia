@@ -1,7 +1,7 @@
 # Defining Properties
 
 If you are creating a control, you will want to define properties on your
-control. The process in Perspex is broadly similar to other XAML languages
+control. The process in Avalonia is broadly similar to other XAML languages
 with a few differences - the main one being that Perpsex's equivalent of
 `DependencyProperty` is called `StyledProperty`.
 
@@ -10,7 +10,7 @@ with a few differences - the main one being that Perpsex's equivalent of
 A styled property is analogous to a `DependencyProperty` in other XAML
 frameworks.
 
-You register a styled property by calling `PerspexProperty.Register` and
+You register a styled property by calling `AvaloniaProperty.Register` and
 storing the result in a `static readonly` field. You then create a standard C#
 property to access it.
 
@@ -18,7 +18,7 @@ Here's how the `Border` control defines its `Background` property:
 
 ```c#
     public static readonly StyledProperty<Brush> BackgroundProperty =
-        PerspexProperty.Register<Border, Brush>(nameof(Background));
+        AvaloniaProperty.Register<Border, Brush>(nameof(Background));
 
     public Brush Background
     {
@@ -27,7 +27,7 @@ Here's how the `Border` control defines its `Background` property:
     }
 ```
 
-The `PerspexProperty.Register` method also accepts a number of other parameters:
+The `AvaloniaProperty.Register` method also accepts a number of other parameters:
 
 - `defaultValue`: This gives the property a default value. Be sure to only pass
 value types and immutable types here as passing a reference type will cause the
@@ -72,7 +72,7 @@ Here's how `Grid` defines its `Grid.Column` attached property:
 
 ```c#
     public static readonly AttachedProperty<int> ColumnProperty =
-        PerspexProperty.RegisterAttached<Grid, Control, int>("Column");
+        AvaloniaProperty.RegisterAttached<Grid, Control, int>("Column");
 
     public static int GetColumn(Control element)
     {
@@ -85,14 +85,14 @@ Here's how `Grid` defines its `Grid.Column` attached property:
     }
 ```
 
-## Readonly PerspexProperties
+## Readonly AvaloniaProperties
 
-To create a readonly property you use the `PerspexProperty.RegisterDirect`
+To create a readonly property you use the `AvaloniaProperty.RegisterDirect`
 method. Here is how `Visual` registers the readonly `Bounds` property:
 
 ```c#
     public static readonly DirectProperty<Visual, Rect> BoundsProperty =
-        PerspexProperty.RegisterDirect<Visual, Rect>(
+        AvaloniaProperty.RegisterDirect<Visual, Rect>(
             nameof(Bounds),
             o => o.Bounds);
 
@@ -110,13 +110,13 @@ registering the property, a getter is passed which is used to access the
 property value through `GetValue` and then `SetAndRaise` is used to notify
 listeners to changes to the property.
 
-## Direct PerspexProperties
+## Direct AvaloniaProperties
 
 As its name suggests, `RegisterDirect` isn't just used for registering readonly
 properties. You can also pass a *setter* to `RegisterDirect` to expose a
-standard C# property as a Perspex property.
+standard C# property as a Avalonia property.
 
-A `StyledProperty` which is registered using `PerspexProperty.Register`
+A `StyledProperty` which is registered using `AvaloniaProperty.Register`
 maintains a prioritized list of values and bindings that allow styles to work.
 However, this is overkill for many properties, such as `ItemsControl.Items` -
 this will never be styled and the overhead involved with styled properties is
@@ -126,12 +126,12 @@ Here is how `ItemsControl.Items` is registered:
 
 ```c#
     public static readonly DirectProperty<ItemsControl, IEnumerable> ItemsProperty =
-        PerspexProperty.RegisterDirect<ItemsControl, IEnumerable>(
+        AvaloniaProperty.RegisterDirect<ItemsControl, IEnumerable>(
             nameof(Items),
             o => o.Items,
             (o, v) => o.Items = v);
 
-    private IEnumerable _items = new PerspexList<object>();
+    private IEnumerable _items = new AvaloniaList<object>();
 
     public IEnumerable Items
     {
@@ -144,8 +144,8 @@ Here is how `ItemsControl.Items` is registered:
 Direct properties are a lightweight version of styled properties that support
 the following:
 
-- PerspexObject.GetValue
-- PerspexObject.SetValue for non-readonly properties
+- AvaloniaObject.GetValue
+- AvaloniaObject.SetValue for non-readonly properties
 - PropertyChanged
 - Binding (only with LocalValue priority)
 - GetObservable
@@ -170,7 +170,7 @@ on the control, you must also add a field for the property:
             o => o.Items,
             (o, v) => o.Items = v);
 
-    private IEnumerable _items = new PerspexList<object>();
+    private IEnumerable _items = new AvaloniaList<object>();
 
     public IEnumerable Items
     {
@@ -190,7 +190,7 @@ Pros:
 
 Cons:
 - Cannot inherit value from parent control
-- Cannot take advantage of Perspex's styling system
+- Cannot take advantage of Avalonia's styling system
 - Property value is a field and as such is allocated whether the property is
 set on the object or not
 

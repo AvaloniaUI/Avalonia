@@ -1,7 +1,7 @@
-# Perspex Logging
+# Avalonia Logging
 
-Perspex uses [Serilog](https://github.com/serilog/serilog) for logging via
-the Perspex.Logging.Serilog assembly.
+Avalonia uses [Serilog](https://github.com/serilog/serilog) for logging via
+the Avalonia.Logging.Serilog assembly.
 
 The following method should be present in your App.xaml.cs file:
 
@@ -24,7 +24,7 @@ for more information on the options here.
 
 ## Areas
 
-Each Perspex log message has an "Area" that can be used to filter the log to
+Each Avalonia log message has an "Area" that can be used to filter the log to
 include only the type of events that you are interested in. These are currently:
 
 - Property
@@ -47,8 +47,8 @@ SerilogLogger.Initialize(new LoggerConfiguration()
 ## Removing Serilog
 
 If you don't want a dependency on Serilog in your application, simply remove
-the reference to Perspex.Logging.Serilog and the code that initializes it. If
+the reference to Avalonia.Logging.Serilog and the code that initializes it. If
 you do however still want some kinda of logging, there are two steps:
 
-- Implement `Perspex.Logging.ILogSink`
+- Implement `Avalonia.Logging.ILogSink`
 - Assign your implementation to `Logger.Sink`

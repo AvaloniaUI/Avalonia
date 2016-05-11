@@ -1,4 +1,4 @@
-﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
@@ -6,9 +6,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Perspex.Platform;
+using Avalonia.Platform;
 
-namespace Perspex.Shared.PlatformSupport
+namespace Avalonia.Shared.PlatformSupport
 {
     /// <summary>
     /// Loads assets compiled into the application binary.
@@ -94,14 +94,14 @@ namespace Perspex.Shared.PlatformSupport
                 // I think we need to use Portable libraries from now on to avoid that.
                 if(asm.Name.Contains("iOS"))
                 {
-                    resourceKey = resourceKey.Replace("TestApplication", "Perspex.iOSTestApplication");
+                    resourceKey = resourceKey.Replace("TestApplication", "Avalonia.iOSTestApplication");
                 }
 #endif
 
                 asm.Resources.TryGetValue(resourceKey, out rv);
                 return rv;
             }
-            throw new ArgumentException($"Invalid uri, see https://github.com/Perspex/Perspex/issues/282#issuecomment-166982104", nameof(uri));
+            throw new ArgumentException($"Invalid uri, see https://github.com/AvaloniaUI/Avalonia/issues/282#issuecomment-166982104", nameof(uri));
         }
 
         private AssemblyDescriptor GetAssembly(Uri uri)

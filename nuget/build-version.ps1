@@ -8,14 +8,14 @@ foreach($pkg in $Packages)
 }
 
 rm -Force -Recurse *.nupkg -ErrorAction SilentlyContinue
-Copy-Item template Perspex -Recurse
-sv lib "Perspex\lib\portable-windows8+net45"
-sv build "Perspex.Desktop\lib\net45"
+Copy-Item template Avalonia -Recurse
+sv lib "Avalonia\lib\portable-windows8+net45"
+sv build "Avalonia.Desktop\lib\net45"
 
-sv skia_root "Perspex.Skia.Desktop"
-sv skia_lib "Perspex.Skia.Desktop\lib\net45"
-sv android "Perspex.Android\lib\MonoAndroid10"
-sv ios "Perspex.iOS\lib\Xamarin.iOS10"
+sv skia_root "Avalonia.Skia.Desktop"
+sv skia_lib "Avalonia.Skia.Desktop\lib\net45"
+sv android "Avalonia.Android\lib\MonoAndroid10"
+sv ios "Avalonia.iOS\lib\Xamarin.iOS10"
 
 mkdir $lib -ErrorAction SilentlyContinue
 mkdir $build -ErrorAction SilentlyContinue
@@ -24,53 +24,53 @@ mkdir $android
 mkdir $ios
 
 
-Copy-Item ..\src\Perspex.Animation\bin\Release\Perspex.Animation.dll $lib
-Copy-Item ..\src\Perspex.Animation\bin\Release\Perspex.Animation.xml $lib
-Copy-Item ..\src\Perspex.Base\bin\Release\Perspex.Base.dll $lib
-Copy-Item ..\src\Perspex.Base\bin\Release\Perspex.Base.xml $lib
-Copy-Item ..\src\Perspex.Controls\bin\Release\Perspex.Controls.dll $lib
-Copy-Item ..\src\Perspex.Controls\bin\Release\Perspex.Controls.xml $lib
-Copy-Item ..\src\Perspex.DesignerSupport\bin\Release\Perspex.DesignerSupport.dll $lib
-Copy-Item ..\src\Perspex.DesignerSupport\bin\Release\Perspex.DesignerSupport.xml $lib
-Copy-Item ..\src\Perspex.Diagnostics\bin\Release\\Perspex.Diagnostics.dll $lib
-Copy-Item ..\src\Perspex.Diagnostics\bin\Release\\Perspex.Diagnostics.xml $lib
-Copy-Item ..\src\Perspex.Input\bin\Release\Perspex.Input.dll $lib
-Copy-Item ..\src\Perspex.Input\bin\Release\Perspex.Input.xml $lib
-Copy-Item ..\src\Perspex.Interactivity\bin\Release\Perspex.Interactivity.dll $lib
-Copy-Item ..\src\Perspex.Interactivity\bin\Release\Perspex.Interactivity.xml $lib
-Copy-Item ..\src\Perspex.Layout\bin\Release\Perspex.Layout.dll $lib
-Copy-Item ..\src\Perspex.Layout\bin\Release\Perspex.Layout.xml $lib
-Copy-Item ..\src\Perspex.Logging.Serilog\bin\Release\Perspex.Logging.Serilog.dll $lib
-Copy-Item ..\src\Perspex.Logging.Serilog\bin\Release\Perspex.Logging.Serilog.xml $lib
-Copy-Item ..\src\Perspex.SceneGraph\bin\Release\Perspex.SceneGraph.dll $lib
-Copy-Item ..\src\Perspex.SceneGraph\bin\Release\Perspex.SceneGraph.xml $lib
-Copy-Item ..\src\Perspex.Styling\bin\Release\Perspex.Styling.dll $lib
-Copy-Item ..\src\Perspex.Styling\bin\Release\Perspex.Styling.xml $lib
-Copy-Item ..\src\Perspex.Themes.Default\bin\Release\Perspex.Themes.Default.dll $lib
-Copy-Item ..\src\Perspex.Themes.Default\bin\Release\Perspex.Themes.Default.xml $lib
-Copy-Item ..\src\Markup\Perspex.Markup\bin\Release\Perspex.Markup.dll $lib
-Copy-Item ..\src\Markup\Perspex.Markup\bin\Release\Perspex.Markup.xml $lib
-Copy-Item ..\src\Markup\Perspex.Markup.Xaml\bin\Release\Perspex.Markup.Xaml.dll $lib
-Copy-Item ..\src\Markup\Perspex.Markup.Xaml\bin\Release\Perspex.Markup.Xaml.xml $lib
-Copy-Item ..\src\Perspex.HtmlRenderer\bin\Release\Perspex.HtmlRenderer.dll $lib
-Copy-Item ..\src\Perspex.ReactiveUI\bin\Release\Perspex.ReactiveUI.dll $lib
+Copy-Item ..\src\Avalonia.Animation\bin\Release\Avalonia.Animation.dll $lib
+Copy-Item ..\src\Avalonia.Animation\bin\Release\Avalonia.Animation.xml $lib
+Copy-Item ..\src\Avalonia.Base\bin\Release\Avalonia.Base.dll $lib
+Copy-Item ..\src\Avalonia.Base\bin\Release\Avalonia.Base.xml $lib
+Copy-Item ..\src\Avalonia.Controls\bin\Release\Avalonia.Controls.dll $lib
+Copy-Item ..\src\Avalonia.Controls\bin\Release\Avalonia.Controls.xml $lib
+Copy-Item ..\src\Avalonia.DesignerSupport\bin\Release\Avalonia.DesignerSupport.dll $lib
+Copy-Item ..\src\Avalonia.DesignerSupport\bin\Release\Avalonia.DesignerSupport.xml $lib
+Copy-Item ..\src\Avalonia.Diagnostics\bin\Release\\Avalonia.Diagnostics.dll $lib
+Copy-Item ..\src\Avalonia.Diagnostics\bin\Release\\Avalonia.Diagnostics.xml $lib
+Copy-Item ..\src\Avalonia.Input\bin\Release\Avalonia.Input.dll $lib
+Copy-Item ..\src\Avalonia.Input\bin\Release\Avalonia.Input.xml $lib
+Copy-Item ..\src\Avalonia.Interactivity\bin\Release\Avalonia.Interactivity.dll $lib
+Copy-Item ..\src\Avalonia.Interactivity\bin\Release\Avalonia.Interactivity.xml $lib
+Copy-Item ..\src\Avalonia.Layout\bin\Release\Avalonia.Layout.dll $lib
+Copy-Item ..\src\Avalonia.Layout\bin\Release\Avalonia.Layout.xml $lib
+Copy-Item ..\src\Avalonia.Logging.Serilog\bin\Release\Avalonia.Logging.Serilog.dll $lib
+Copy-Item ..\src\Avalonia.Logging.Serilog\bin\Release\Avalonia.Logging.Serilog.xml $lib
+Copy-Item ..\src\Avalonia.SceneGraph\bin\Release\Avalonia.SceneGraph.dll $lib
+Copy-Item ..\src\Avalonia.SceneGraph\bin\Release\Avalonia.SceneGraph.xml $lib
+Copy-Item ..\src\Avalonia.Styling\bin\Release\Avalonia.Styling.dll $lib
+Copy-Item ..\src\Avalonia.Styling\bin\Release\Avalonia.Styling.xml $lib
+Copy-Item ..\src\Avalonia.Themes.Default\bin\Release\Avalonia.Themes.Default.dll $lib
+Copy-Item ..\src\Avalonia.Themes.Default\bin\Release\Avalonia.Themes.Default.xml $lib
+Copy-Item ..\src\Markup\Avalonia.Markup\bin\Release\Avalonia.Markup.dll $lib
+Copy-Item ..\src\Markup\Avalonia.Markup\bin\Release\Avalonia.Markup.xml $lib
+Copy-Item ..\src\Markup\Avalonia.Markup.Xaml\bin\Release\Avalonia.Markup.Xaml.dll $lib
+Copy-Item ..\src\Markup\Avalonia.Markup.Xaml\bin\Release\Avalonia.Markup.Xaml.xml $lib
+Copy-Item ..\src\Avalonia.HtmlRenderer\bin\Release\Avalonia.HtmlRenderer.dll $lib
+Copy-Item ..\src\Avalonia.ReactiveUI\bin\Release\Avalonia.ReactiveUI.dll $lib
 
-Copy-Item ..\src\Windows\Perspex.Direct2D1\bin\Release\Perspex.Direct2D1.dll $build
-Copy-Item ..\src\Windows\Perspex.Win32\bin\Release\Perspex.Win32.dll $build
-Copy-Item ..\src\Gtk\Perspex.Gtk\bin\Release\Perspex.Gtk.dll $build
-Copy-Item ..\src\Gtk\Perspex.Cairo\bin\Release\Perspex.Cairo.dll $build
+Copy-Item ..\src\Windows\Avalonia.Direct2D1\bin\Release\Avalonia.Direct2D1.dll $build
+Copy-Item ..\src\Windows\Avalonia.Win32\bin\Release\Avalonia.Win32.dll $build
+Copy-Item ..\src\Gtk\Avalonia.Gtk\bin\Release\Avalonia.Gtk.dll $build
+Copy-Item ..\src\Gtk\Avalonia.Cairo\bin\Release\Avalonia.Cairo.dll $build
 
-Copy-Item ..\src\Skia\Perspex.Skia.Desktop\bin\x86\Release\Perspex.Skia.Desktop.dll $skia_lib
+Copy-Item ..\src\Skia\Avalonia.Skia.Desktop\bin\x86\Release\Avalonia.Skia.Desktop.dll $skia_lib
 
-Copy-Item ..\src\Android\Perspex.Android\bin\Release\Perspex.Android.dll $android
-Copy-Item ..\src\Skia\Perspex.Skia.Android\bin\Release\Perspex.Skia.Android.dll $android
+Copy-Item ..\src\Android\Avalonia.Android\bin\Release\Avalonia.Android.dll $android
+Copy-Item ..\src\Skia\Avalonia.Skia.Android\bin\Release\Avalonia.Skia.Android.dll $android
 
-Copy-Item ..\src\iOS\Perspex.iOS\bin\iPhone\Release\Perspex.iOS.dll $ios
-Copy-Item ..\src\Skia\Perspex.Skia.iOS\bin\iPhone\Release\Perspex.Skia.iOS.dll $ios
+Copy-Item ..\src\iOS\Avalonia.iOS\bin\iPhone\Release\Avalonia.iOS.dll $ios
+Copy-Item ..\src\Skia\Avalonia.Skia.iOS\bin\iPhone\Release\Avalonia.Skia.iOS.dll $ios
 
 foreach($pkg in $Packages)
 {
-    (gc Perspex\$pkg.nuspec).replace('#VERSION#', $args[0]) | sc $pkg\$pkg.nuspec
+    (gc Avalonia\$pkg.nuspec).replace('#VERSION#', $args[0]) | sc $pkg\$pkg.nuspec
 }
 
 foreach($pkg in $Packages)

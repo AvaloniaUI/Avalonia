@@ -1,1 +1,1 @@
-$Packages = @("Perspex", "Perspex.Desktop",  "Perspex.Skia.Desktop", "Perspex.Android", "Perspex.iOS")
+$Packages = @("Avalonia", "Avalonia.Desktop",  "Avalonia.Skia.Desktop", "Avalonia.Android", "Avalonia.iOS")

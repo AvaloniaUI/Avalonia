@@ -1,9 +1,0 @@
-﻿<Style xmlns="https://github.com/perspex" Selector=":is(Control)">
-  <Setter Property="FocusAdorner">
-    <FocusAdornerTemplate>
-      <Rectangle Stroke="Black"
-                 StrokeThickness="1"
-                 StrokeDashArray="1,2"/>
-    </FocusAdornerTemplate>
-  </Setter>
-</Style>

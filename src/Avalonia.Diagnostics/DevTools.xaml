@@ -1,0 +1,20 @@
+<UserControl xmlns="https://github.com/avaloniaui">
+  <Grid RowDefinitions="Auto,*,Auto">
+    <TabStrip SelectedIndex="{Binding SelectedTab, Mode=TwoWay}">
+      <TabStripItem Content="Logical Tree"/>
+      <TabStripItem Content="Visual Tree"/>
+    </TabStrip>
+
+    <ContentControl Content="{Binding Content}" Grid.Row="1"/> 
+    
+    <StackPanel Gap="4" Orientation="Horizontal" Grid.Row="2">
+      <TextBlock>Hold Ctrl+Shift over a control to inspect.</TextBlock>
+      <Separator Width="8"/>
+      <TextBlock>Focused:</TextBlock>
+      <TextBlock Text="{Binding FocusedControl}"/>
+      <Separator Width="8"/>
+      <TextBlock>Pointer Over:</TextBlock>
+      <TextBlock Text="{Binding PointerOverElement}"/>
+    </StackPanel>
+  </Grid>
+</UserControl>

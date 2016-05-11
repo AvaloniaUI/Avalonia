@@ -1,0 +1,20 @@
+<Style xmlns="https://github.com/avaloniaui" Selector="ContextMenu">
+    <Setter Property="BorderBrush" Value="Gray"/>
+    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="Padding" Value="4,2"/>
+    <Setter Property="TextBlock.FontSize" Value="12" />
+    <Setter Property="TextBlock.FontWeight" Value="Normal" />
+    <Setter Property="Template">
+    <ControlTemplate>
+      <Border Background="{TemplateBinding Background}"
+              BorderBrush="{TemplateBinding BorderBrush}"
+              BorderThickness="{TemplateBinding BorderThickness}"
+              Padding="{TemplateBinding Padding}">
+        <ItemsPresenter Name="PART_ItemsPresenter"
+                        Items="{TemplateBinding Items}"
+                        ItemsPanel="{TemplateBinding ItemsPanel}"
+                        KeyboardNavigation.TabNavigation="Continue"/>
+      </Border>
+    </ControlTemplate>
+  </Setter>
+</Style>

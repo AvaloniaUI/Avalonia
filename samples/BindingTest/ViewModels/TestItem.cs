@@ -1,4 +1,4 @@
-﻿using ReactiveUI;
+using ReactiveUI;
 
 namespace BindingTest.ViewModels
 {

@@ -1,6 +1,6 @@
-# Perspex Documentation
+# Avalonia Documentation
 
-* [API Reference](http://perspex.github.io/)
+* [API Reference](http://avalonia.github.io/)
 
 ## Building
 

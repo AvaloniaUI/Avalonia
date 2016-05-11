@@ -1,6 +1,6 @@
-- name: Perspex Architecture
+- name: Avalonia Architecture
   href: architecture.md
-- name: Styling in Perspex
+- name: Styling in Avalonia
   href: styles.md
 - name: Defining Properties
   href: defining-properties.md

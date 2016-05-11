@@ -1,6 +1,6 @@
 # Working with Properties
 
-Perspex controls expose their properties as standard CLR properties, so for
+Avalonia controls expose their properties as standard CLR properties, so for
 reading and writing values there's no surprises:
 
 ```c#
@@ -77,9 +77,9 @@ The `GetObservable` method returns an observable that tracks changes to a
 property on a single instance. However, if you're writing a control you may
 want to implement an `OnPropertyChanged` method. In WPF this is done by passing
 a static `PropertyChangedCallback` to the `DependencyProperty` registration
-method, but in Perspex it's slightly different (and hopefully easier!)
+method, but in Avalonia it's slightly different (and hopefully easier!)
 
-The field which defines the property is derived from `PerspexProperty` and this
+The field which defines the property is derived from `AvaloniaProperty` and this
 has a `Changed` observable which is fired every time the property changes on
 *any* object. In addition there is an `AddClassHandler` extension method which
 can automatically route the event to a method on your control.
@@ -93,7 +93,7 @@ you'd do it like this:
         FooProperty.Changed.AddClassHandler<MyControl>(x => x.FooChanged);
     }
 
-    private void FooChanged(PerspexPropertyChangedEventArgs e)
+    private void FooChanged(AvaloniaPropertyChangedEventArgs e)
     {
         // The 'e' parameter describes what's changed.
     }

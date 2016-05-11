@@ -1,4 +1,4 @@
-﻿namespace TestApplication
+namespace TestApplication
 {
     internal class Item
     {

@@ -1,7 +1,7 @@
-﻿using BindingTest.ViewModels;
-using Perspex;
-using Perspex.Controls;
-using Perspex.Markup.Xaml;
+using BindingTest.ViewModels;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Markup.Xaml;
 
 namespace BindingTest
 {

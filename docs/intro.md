@@ -1,4 +1,4 @@
-# Perspex #
+# Avalonia #
 
 ...a next generation WPF?
 
@@ -14,8 +14,8 @@ written for .NET 1 and barely updated to even bring it up-to-date with .NET 2 fe
 generics.
 
 So I began to think: what if we were to start anew with modern C# features such as *(gasp)* 
-Generics, Observables, async, etc etc. The result of that thought is Perspex 
-(https://github.com/grokys/Perspex).
+Generics, Observables, async, etc etc. The result of that thought is Avalonia 
+(https://github.com/grokys/Avalonia).
 
 ##### DISCLAIMER
 This is really **early development pre-alpha-alpha** stuff. Everything is subject to 
@@ -27,9 +27,9 @@ So what can it do so far? Not a whole lot right now. Here's the demo application
 
 ![](screen.png)
 
-## PerspexProperty ##
+## AvaloniaProperty ##
 
-PerspexProperty is the equivalent of WPF's DependencyProperty. 
+AvaloniaProperty is the equivalent of WPF's DependencyProperty. 
 
 I'm not a big fan of DependencyProperty. My first thought was that I'd rather not have something 
 like this at all and just use basic INPC but DPs give you two important features: Inheritance and 
@@ -58,8 +58,8 @@ Eww! All that just to declare a single property. There's **A LOT** of boilerplat
 generics and default parameters we can at least make it look a bit nicer:
 
 ```csharp
-public static readonly PerspexProperty<PropertyType> PropertyDeclaration =
-PerspexProperty.Register<OwnerClass, PropertyType>("PropertyName", inherits: true);
+public static readonly AvaloniaProperty<PropertyType> PropertyDeclaration =
+AvaloniaProperty.Register<OwnerClass, PropertyType>("PropertyName", inherits: true);
 
 public PropertyType PropertyName
 {
@@ -70,7 +70,7 @@ public PropertyType PropertyName
 
 What can we see here?
 
-- PerspexProperties are typed, so no more having to cast in the getter.
+- AvaloniaProperties are typed, so no more having to cast in the getter.
 - We pass the property type and owner class as a generic type to `Register()` so we don't have to 
 write `typeof()` twice.
 - We used default parameter values in `Register()` so that defaults don't have to be restated.
@@ -79,13 +79,13 @@ write `typeof()` twice.
 
 ## Binding
 
-Binding in Perspex uses Reactive Extensions' [IObservable](http://msdn.microsoft.com/library/dd990377.aspx). To bind an IObservable to a property, use the `Bind()` method:
+Binding in Avalonia uses Reactive Extensions' [IObservable](http://msdn.microsoft.com/library/dd990377.aspx). To bind an IObservable to a property, use the `Bind()` method:
 
 ```csharp
 control.Bind(BorderProperty, someObject.SomeObservable());
 ```
 
-Note that because PerspexProperty is typed, we can check that the observable is of the correct type.
+Note that because AvaloniaProperty is typed, we can check that the observable is of the correct type.
 
 To get the value of a property as an observable, call `GetObservable()`:
 
@@ -144,7 +144,7 @@ var control = new Control
 
 ## Visual and Logical trees
 
-Perspex uses the same visual/logical tree separation that is used by WPF (and to some extent HTML 
+Avalonia uses the same visual/logical tree separation that is used by WPF (and to some extent HTML 
 is moving in this direction with the Shadow DOM). The manner of accessing the two trees is slightly
 different however. Rather than using Visual/LogicalTreeHelper you can cast any control to an 
 `IVisual` or `ILogical` to reveal the tree operations. There's also the VisualExtensions class which
@@ -156,7 +156,7 @@ property, which is determined by...
 
 ## Styles
 
-Styles in Perspex diverge from styles in WPF quite a lot, and move towards a more CSS-like system.
+Styles in Avalonia diverge from styles in WPF quite a lot, and move towards a more CSS-like system.
 It's probably easiest to show in an example. Here is the default style for the CheckBox control:
 
 ```csharp
@@ -215,11 +215,11 @@ different look-and-feel.
 ## XAML
 
 As you can see, all of the examples here are defined in code - but a XAML implementation is being
-worked on. The current progress can be reviewed at [https://github.com/SuperJMN/Perspex](https://github.com/SuperJMN/Perspex).
+worked on. The current progress can be reviewed at [https://github.com/SuperJMN/Avalonia](https://github.com/SuperJMN/Avalonia).
 
 ## That's all for now
 
 There's a lot more to see, and even more to do, so if you want to have a play you can get the code 
-here: [https://github.com/grokys/Perspex](https://github.com/grokys/Perspex)
+here: [https://github.com/grokys/Avalonia](https://github.com/grokys/Avalonia)
 
 Feedback is always welcome!

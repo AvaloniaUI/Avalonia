@@ -1,8 +1,8 @@
-﻿<Application x:Class="XamlTestApplicationPcl.XamlTestApp"
-        xmlns="https://github.com/perspex"
+<Application x:Class="XamlTestApplicationPcl.XamlTestApp"
+        xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <Application.Styles>
-    <StyleInclude Source="resm:Perspex.Themes.Default.DefaultTheme.xaml?assembly=Perspex.Themes.Default"/>
-    <StyleInclude Source="resm:Perspex.Themes.Default.Accents.BaseLight.xaml?assembly=Perspex.Themes.Default"/>
+    <StyleInclude Source="resm:Avalonia.Themes.Default.DefaultTheme.xaml?assembly=Avalonia.Themes.Default"/>
+    <StyleInclude Source="resm:Avalonia.Themes.Default.Accents.BaseLight.xaml?assembly=Avalonia.Themes.Default"/>
   </Application.Styles>
 </Application>

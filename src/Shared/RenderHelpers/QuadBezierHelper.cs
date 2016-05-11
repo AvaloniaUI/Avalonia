@@ -1,6 +1,6 @@
-﻿using Perspex.Platform;
+using Avalonia.Platform;
 
-namespace Perspex.RenderHelpers
+namespace Avalonia.RenderHelpers
 {
     static class QuadBezierHelper
     {

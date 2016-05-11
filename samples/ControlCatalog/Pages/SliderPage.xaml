@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/perspex">
+<UserControl xmlns="https://github.com/avaloniaui">
   <StackPanel Orientation="Vertical" Gap="4">
     <TextBlock Classes="h1">Slider</TextBlock>
     <TextBlock Classes="h2">A control that lets the user select from a range of values by moving a Thumb control along a Track.</TextBlock>

@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>Avalonia.Android</id>
+    <version>#VERSION#</version>
+    <authors>Avalonia Team</authors>
+    <owners>stevenk</owners>
+    <licenseUrl>http://opensource.org/licenses/MIT</licenseUrl>
+    <projectUrl>https://github.com/AvaloniaUI/Avalonia/</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>The Avalonia UI framework</description>
+    <releaseNotes></releaseNotes>
+    <copyright>Copyright 2015</copyright>
+    <tags>Avalonia</tags>
+    <dependencies>
+      <dependency id="Serilog" version="1.5.14" />
+      <dependency id="Splat" version="1.6.2" />
+      <dependency id="Sprache" version="2.0.0.50" />
+      <dependency id="Rx-Core" version="2.2.5" />
+      <dependency id="Rx-Interfaces" version="2.2.5" />
+      <dependency id="Rx-Linq" version="2.2.5" />
+      <dependency id="Rx-Main" version="2.2.5" />
+      <dependency id="Rx-PlatformServices" version="2.2.5" />
+      <dependency id="Avalonia" version="#VERSION#" />
+    </dependencies>
+  </metadata>
+</package>

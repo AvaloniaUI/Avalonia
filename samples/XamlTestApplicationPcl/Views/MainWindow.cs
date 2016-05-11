@@ -1,10 +1,10 @@
-﻿// Copyright (c) The Perspex Project. All rights reserved.
+// Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using Perspex;
-using Perspex.Controls;
-using Perspex.Diagnostics;
-using Perspex.Markup.Xaml;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Diagnostics;
+using Avalonia.Markup.Xaml;
 using XamlTestApplication.ViewModels;
 
 namespace XamlTestApplication.Views
@@ -22,7 +22,7 @@ namespace XamlTestApplication.Views
 
         private void InitializeComponent()
         {
-            PerspexXamlLoader.Load(this);
+            AvaloniaXamlLoader.Load(this);
             _exitMenu = this.FindControl<MenuItem>("exitMenu");
             _exitMenu.Click += (s, e) => Application.Current.Exit();
         }

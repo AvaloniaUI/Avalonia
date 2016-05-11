@@ -1,10 +1,10 @@
-﻿using Perspex.Logging.Serilog;
+using Avalonia.Logging.Serilog;
 using Serilog;
 using System;
 using System.Linq;
-using Perspex;
+using Avalonia;
 using System.Reflection;
-using Perspex.Platform;
+using Avalonia.Platform;
 
 namespace ControlCatalog
 {

@@ -1,21 +1,21 @@
-# Building Perspex 
+# Building Avalonia 
 
 ## Windows
 
-Perspex requires Visual Studio 2015 to build on Windows.
+Avalonia requires Visual Studio 2015 to build on Windows.
 
 ### Install GTK Sharp
 
 To compile the full project under windows, you must have [gtk-sharp](http://www.mono-project.com/download/#download-win) installed. However, if you're 
 not interested in building the cross-platform bits you can simply unload these projects from Visual Studio:
 
- - Perspex.Cairo
- - Perspex.Cairo.RenderTests
- - Perspex.Gtk
+ - Avalonia.Cairo
+ - Avalonia.Cairo.RenderTests
+ - Avalonia.Gtk
 
-### Clone the Perspex repository
+### Clone the Avalonia repository
 
-    git clone https://github.com/Perspex/Perspex.git
+    git clone https://github.com/AvaloniaUI/Avalonia.git
 
 We currently need to build our own private version of ReactiveUI as it doesn't work on mono. This
 is linked as a submodule in the git repository, so run:
@@ -40,9 +40,9 @@ Then install the needed packages:
 
     sudo apt-get install git mono-devel referenceassemblies-pcl monodevelop
 
-### Clone the Perspex repository
+### Clone the Avalonia repository
 
-    git clone https://github.com/Perspex/Perspex.git
+    git clone https://github.com/AvaloniaUI/Avalonia.git
 
 We currently need to build our own private version of ReactiveUI as it doesn't work on mono. This
 is linked as a submodule in the git repository, so run:
@@ -53,11 +53,11 @@ The next step is to download the Skia native libraries. Run ```getnatives.sh``` 
    
 ### Load the Project in MonoDevelop
 
-Start MonoDevelop and open the `Perspex.sln` solution. Wait for MonoDevelop to install the
+Start MonoDevelop and open the `Avalonia.sln` solution. Wait for MonoDevelop to install the
 project's NuGet packages.
 
 Set the TestApplication project as the startup project and click Run.
 
 There will be some compile errors in the tests, but ignore them for now. 
 
-You can track the Linux version's progress in the [Linux issue](https://github.com/Perspex/Perspex/issues/78).
+You can track the Linux version's progress in the [Linux issue](https://github.com/AvaloniaUI/Avalonia/issues/78).

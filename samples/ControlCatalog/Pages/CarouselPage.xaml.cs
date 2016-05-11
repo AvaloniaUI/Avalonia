@@ -1,7 +1,7 @@
-﻿using System;
-using Perspex.Animation;
-using Perspex.Controls;
-using Perspex.Markup.Xaml;
+using System;
+using Avalonia.Animation;
+using Avalonia.Controls;
+using Avalonia.Markup.Xaml;
 
 namespace ControlCatalog.Pages
 {
@@ -22,7 +22,7 @@ namespace ControlCatalog.Pages
 
         private void InitializeComponent()
         {
-            PerspexXamlLoader.Load(this);
+            AvaloniaXamlLoader.Load(this);
             _carousel = this.FindControl<Carousel>("carousel");
             _left = this.FindControl<Button>("left");
             _right = this.FindControl<Button>("right");

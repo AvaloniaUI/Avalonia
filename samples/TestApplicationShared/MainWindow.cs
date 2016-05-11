@@ -1,35 +1,35 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reactive.Linq;
 using System.Text;
-using Perspex;
-using Perspex.Animation;
-using Perspex.Collections;
-using Perspex.Controls;
-using Perspex.Controls.Html;
-using Perspex.Controls.Primitives;
-using Perspex.Controls.Shapes;
-using Perspex.Controls.Templates;
-using Perspex.Data;
-using Perspex.Diagnostics;
-using Perspex.Layout;
-using Perspex.Media;
-using Perspex.Media.Imaging;
-using Perspex.Platform;
-using Perspex.Threading;
+using Avalonia;
+using Avalonia.Animation;
+using Avalonia.Collections;
+using Avalonia.Controls;
+using Avalonia.Controls.Html;
+using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Shapes;
+using Avalonia.Controls.Templates;
+using Avalonia.Data;
+using Avalonia.Diagnostics;
+using Avalonia.Layout;
+using Avalonia.Media;
+using Avalonia.Media.Imaging;
+using Avalonia.Platform;
+using Avalonia.Threading;
 using TestApplication;
 
 namespace TestApplication
 {
     class MainWindow
     {
-        private static readonly PerspexList<Node> s_treeData = new PerspexList<Node>
+        private static readonly AvaloniaList<Node> s_treeData = new AvaloniaList<Node>
         {
             new Node
             {
                 Name = "Root 1",
-                Children = new PerspexList<Node>
+                Children = new AvaloniaList<Node>
                 {
                     new Node
                     {
@@ -38,7 +38,7 @@ namespace TestApplication
                     new Node
                     {
                         Name = "Child 2",
-                        Children = new PerspexList<Node>
+                        Children = new AvaloniaList<Node>
                         {
                             new Node
                             {
@@ -62,7 +62,7 @@ namespace TestApplication
             },
         };
 
-        private static readonly PerspexList<Item> s_listBoxData = new PerspexList<Item>
+        private static readonly AvaloniaList<Item> s_listBoxData = new AvaloniaList<Item>
         {
             new Item { Name = "Item 1", Value = "Item 1 Value" },
             new Item { Name = "Item 2", Value = "Item 2 Value" },
@@ -82,7 +82,7 @@ namespace TestApplication
 
             Window window = new Window
             {
-                Title = "Perspex Test Application",
+                Title = "Avalonia Test Application",
                 //Width = 900,
                 //Height = 480,
                 Content = (container = new TabControl
@@ -359,7 +359,7 @@ namespace TestApplication
 
         static Stream GetImage(string path)
         {
-            return PerspexLocator.Current.GetService<IAssetLoader>().Open(new Uri("resm:" + RootNamespace + "." + path));
+            return AvaloniaLocator.Current.GetService<IAssetLoader>().Open(new Uri("resm:" + RootNamespace + "." + path));
         }
 
         private static TabItem ListsTab()
@@ -461,7 +461,7 @@ namespace TestApplication
             {
                 VerticalAlignment = VerticalAlignment.Center,
                 Padding = new Thickness(20),
-                Content = new Perspex.Controls.Shapes.Path
+                Content = new Avalonia.Controls.Shapes.Path
                 {
                     Data = StreamGeometry.Parse("M4,11V13H16L10.5,18.5L11.92,19.92L19.84,12L11.92,4.08L10.5,5.5L16,11H4Z"),
                     Fill = Brushes.Black
@@ -472,7 +472,7 @@ namespace TestApplication
             {
                 VerticalAlignment = VerticalAlignment.Center,
                 Padding = new Thickness(20),
-                Content = new Perspex.Controls.Shapes.Path
+                Content = new Avalonia.Controls.Shapes.Path
                 {
                     Data = StreamGeometry.Parse("M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"),
                     Fill = Brushes.Black
@@ -707,7 +707,7 @@ namespace TestApplication
                                         StartPoint = new Point(120, 185),
                                         EndPoint = new Point(30, 115)
                                     },
-                                    new Perspex.Controls.Shapes.Path
+                                    new Avalonia.Controls.Shapes.Path
                                     {
                                         Fill = Brushes.Orange,
                                         Data = StreamGeometry.Parse("M 30,250 c 50,0 50,-50 c 50,0 50,50 h -50 v 50 l -50,-50 Z"),
@@ -810,7 +810,7 @@ namespace TestApplication
                                                         Radius = 75
                                                     }
                                             },
-                                            new Perspex.Controls.Shapes.Path
+                                            new Avalonia.Controls.Shapes.Path
                                             {
                                                 Data =
                                                     StreamGeometry.Parse(

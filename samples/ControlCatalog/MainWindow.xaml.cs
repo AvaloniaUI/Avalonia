@@ -1,6 +1,6 @@
-﻿using Perspex;
-using Perspex.Controls;
-using Perspex.Markup.Xaml;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Markup.Xaml;
 
 namespace ControlCatalog
 {
@@ -17,7 +17,7 @@ namespace ControlCatalog
             // TODO: iOS does not support dynamically loading assemblies
             // so we must refer to this resource DLL statically. For
             // now I am doing that here. But we need a better solution!!
-            var theme = new Perspex.Themes.Default.DefaultTheme();
+            var theme = new Avalonia.Themes.Default.DefaultTheme();
             theme.FindResource("Button");
 
 

@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/perspex">
+<UserControl xmlns="https://github.com/avaloniaui">
   <StackPanel Orientation="Vertical" Gap="4">
     <TextBlock Classes="h1">Border</TextBlock>
     <TextBlock Classes="h2">A control which decorates a child with a border and background</TextBlock>

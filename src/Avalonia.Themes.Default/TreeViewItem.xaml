@@ -1,0 +1,68 @@
+<Styles xmlns="https://github.com/avaloniaui">
+  <Style Selector="TreeViewItem">
+    <Setter Property="Padding" Value="2"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+        <StackPanel>
+          <Grid ColumnDefinitions="16, Auto">
+            <ToggleButton Name="expander"
+                          Focusable="False"
+                          IsChecked="{TemplateBinding Path=IsExpanded, Mode=TwoWay}"/>
+            <ContentPresenter Name="PART_HeaderPresenter"
+                              Background="{TemplateBinding Background}"
+                              BorderBrush="{TemplateBinding BorderBrush}"
+                              BorderThickness="{TemplateBinding BorderThickness}"
+                              Content="{TemplateBinding Header}"
+                              Padding="{TemplateBinding Padding}"
+                              TemplatedControl.IsTemplateFocusTarget="True"
+                              Grid.Column="1"/>
+          </Grid>
+          <ItemsPresenter Name="PART_ItemsPresenter"
+                          IsVisible="{TemplateBinding IsExpanded}"
+                          Items="{TemplateBinding Items}"
+                          ItemsPanel="{TemplateBinding ItemsPanel}"
+                          Margin="24,0,0,0"
+                          MemberSelector="{TemplateBinding MemberSelector}"/>
+        </StackPanel>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <Style Selector="TreeViewItem /template/ ToggleButton#expander">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Width="14"
+                Height="12"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center">
+          <Path Fill="{StyleResource ThemeForegroundBrush}"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Data="M 0 2 L 4 6 L 0 10 Z"/>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <Style Selector="TreeViewItem /template/ ContentPresenter#PART_HeaderPresenter">
+    <Setter Property="Padding" Value="2"/>
+  </Style>
+  
+  <Style Selector="TreeViewItem:selected /template/ ContentPresenter#PART_HeaderPresenter">
+    <Setter Property="Background" Value="#fff0f0f0"/>
+  </Style>
+  
+  <Style Selector="TreeViewItem:selected:focus /template/ ContentPresenter#PART_HeaderPresenter">
+    <Setter Property="Background" Value="#ffd0d0d0"/>
+  </Style>
+  
+  <Style Selector="TreeViewItem /template/ ToggleButton#expander:checked">
+    <Setter Property="RenderTransform">
+      <RotateTransform Angle="45"/>
+    </Setter>
+  </Style>
+
+  <Style Selector="TreeViewItem:empty /template/ ToggleButton#expander">
+    <Setter Property="IsVisible" Value="False"/>
+  </Style>
+</Styles>

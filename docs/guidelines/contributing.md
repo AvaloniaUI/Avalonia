@@ -2,7 +2,7 @@
 
 ## Before You Start ##
 
-Drop into our [gitter chat room](https://gitter.im/Perspex/Perspex) and let us know what you're thinking of doing. We might be able to give you guidance or let you know if someone else is already working on the feature.
+Drop into our [gitter chat room](https://gitter.im/Avalonia/Avalonia) and let us know what you're thinking of doing. We might be able to give you guidance or let you know if someone else is already working on the feature.
 
 ## Style ##
 
@@ -46,9 +46,9 @@ There are two types of tests currently in the codebase; unit tests and render te
 Unit tests should be contained in a class name that mirrors the class being tested with the suffix
 -Tests, e.g.
 
-    Perspex.Controls.UnitTests.Presenters.TextPresenterTests
+    Avalonia.Controls.UnitTests.Presenters.TextPresenterTests
 
-Where Perspex.Controls.UnitTests is the name of the project.
+Where Avalonia.Controls.UnitTests is the name of the project.
 
 Unit test methods should be named in a sentence style, separated by underscores, that describes in
 English what the test is testing, e.g.
