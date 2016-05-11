@@ -17,7 +17,7 @@ function Get-NewFileName {
 function Rename-Contents {
     param ([System.IO.FileInfo] $file)
 
-    $extensions = @(".cs",".xaml",".csproj",".sln",".md",".json",".yml",".partial",".ps1",".nuspec",".htm",".html",".gitmodules")
+    $extensions = @(".cs",".xaml",".csproj",".sln",".md",".json",".yml",".partial",".ps1",".nuspec",".htm",".html",".gitmodules".".xml",".plist")
 
     if ($extensions.Contains($file.Extension)) {
         $text = [IO.File]::ReadAllText($file.FullName)
