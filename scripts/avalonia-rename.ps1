@@ -1,16 +1,16 @@
 function Get-NewDirectoryName {
     param ([System.IO.DirectoryInfo]$item)
 
-    $name = $item.Name.Replace("avalonia", "avalonia")
-    $name = $name.Replace("Avalonia", "Avalonia")
+    $name = $item.Name.Replace("perspex", "avalonia")
+    $name = $name.Replace("Perspex", "Avalonia")
     Join-Path $item.Parent.FullName $name
 }
 
 function Get-NewFileName {
     param ([System.IO.FileInfo]$item)
 
-    $name = $item.Name.Replace("avalonia", "avalonia")
-    $name = $name.Replace("Avalonia", "Avalonia")
+    $name = $item.Name.Replace("perspex", "avalonia")
+    $name = $name.Replace("Perspex", "Avalonia")
     Join-Path $item.DirectoryName $name
 }
 
@@ -21,11 +21,11 @@ function Rename-Contents {
 
     if ($extensions.Contains($file.Extension)) {
         $text = [IO.File]::ReadAllText($file.FullName)
-        $text = $text.Replace("github.com/avaloniaui", "github.com/avaloniaui")
-        $text = $text.Replace("github.com/AvaloniaUI", "github.com/AvaloniaUI")
-        $text = $text.Replace("avalonia", "avalonia")
-        $text = $text.Replace("Avalonia", "Avalonia")
-        $text = $text.Replace("AVALONIA", "AVALONIA")
+        $text = $text.Replace("github.com/perspex", "github.com/avaloniaui")
+        $text = $text.Replace("github.com/Perspex", "github.com/AvaloniaUI")
+        $text = $text.Replace("perspex", "avalonia")
+        $text = $text.Replace("Perspex", "Avalonia")
+        $text = $text.Replace("PERSPEX", "AVALONIA")
         [IO.File]::WriteAllText($file.FullName, $text)
     }
 }
