@@ -33,6 +33,7 @@ namespace Avalonia.UnitTests
         {
             var scope = AvaloniaLocator.EnterScope();
             var app = new UnitTestApplication(services);
+            AvaloniaLocator.CurrentMutable.BindToSelf<Application>(app);
             return scope;
         }
 

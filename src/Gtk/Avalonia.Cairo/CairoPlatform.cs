@@ -6,15 +6,16 @@ using Avalonia.Cairo.Media;
 using Avalonia.Cairo.Media.Imaging;
 using Avalonia.Media;
 using Avalonia.Platform;
+using Avalonia.Controls;
 
 namespace Avalonia
 {
     public static class GtkApplicationExtensions
     {
-        public static TApp UseCairo<TApp>(this TApp app) where TApp : Application
+        public static AppBuilder UseCairo(this AppBuilder builder)
         {
-            Avalonia.Cairo.CairoPlatform.Initialize();
-            return app;
+            builder.RenderingSubsystem = Avalonia.Cairo.CairoPlatform.Initialize;
+            return builder;
         }
     }
 }

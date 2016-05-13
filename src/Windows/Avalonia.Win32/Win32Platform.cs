@@ -15,15 +15,16 @@ using Avalonia.Platform;
 using Avalonia.Shared.PlatformSupport;
 using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop;
+using Avalonia.Controls;
 
 namespace Avalonia
 {
     public static class Win32ApplicationExtensions
     {
-        public static TApp UseWin32<TApp>(this TApp app) where TApp : Application
+        public static AppBuilder UseWin32(this AppBuilder builder)
         {
-            Avalonia.Win32.Win32Platform.Initialize();
-            return app;
+            builder.WindowingSubsystem = Avalonia.Win32.Win32Platform.Initialize;
+            return builder;
         }
     }
 }

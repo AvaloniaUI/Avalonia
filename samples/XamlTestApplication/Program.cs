@@ -7,6 +7,7 @@ using System.Windows.Threading;
 using Avalonia;
 using Serilog;
 using Avalonia.Logging.Serilog;
+using Avalonia.Controls;
 
 namespace XamlTestApplication
 {
@@ -19,11 +20,10 @@ namespace XamlTestApplication
 
             InitializeLogging();
 
-            new XamlTestApp()
-                   .UseWin32()
-                   .UseDirect2D()
-                   .LoadFromXaml()
-                   .RunWithMainWindow<Views.MainWindow>();
+            AppBuilder.Configure<XamlTestApp>()
+                .UseWin32()
+                .UseDirect2D1()
+                .Start<Views.MainWindow>();
         }
 
         private static void InitializeLogging()

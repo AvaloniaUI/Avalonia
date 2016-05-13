@@ -50,12 +50,6 @@ namespace Avalonia
         /// </summary>
         public Application()
         {
-            if (Current != null)
-            {
-                throw new InvalidOperationException("Cannot create more than one Application instance.");
-            }
-
-            AvaloniaLocator.CurrentMutable.BindToSelf(this);
             OnExit += OnExiting;
         }
 
@@ -133,6 +127,13 @@ namespace Avalonia
         }
 
         /// <summary>
+        /// Initializes the application by loading XAML etc.
+        /// </summary>
+        public virtual void Initialize()
+        {
+        }
+
+        /// <summary>
         /// Runs the application's main loop until the <see cref="ICloseable"/> is closed.
         /// </summary>
         /// <param name="closable">The closable to track</param>
@@ -165,7 +166,6 @@ namespace Avalonia
         /// <param name="e"></param>
         protected virtual void OnExiting(object sender, EventArgs e)
         {
-
         }
 
         /// <summary>

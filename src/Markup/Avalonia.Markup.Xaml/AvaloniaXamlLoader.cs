@@ -223,15 +223,3 @@ namespace Avalonia.Markup.Xaml
         }
     }
 }
-
-namespace Avalonia
-{
-    public static class XamlObjectExtensions
-    {
-        public static TObject LoadFromXaml<TObject>(this TObject obj)
-        {
-            Markup.Xaml.AvaloniaXamlLoader.Load(obj);
-            return obj;
-        }
-    }
-}

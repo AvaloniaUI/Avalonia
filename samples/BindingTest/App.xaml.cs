@@ -1,7 +1,6 @@
 using System;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Diagnostics;
 using Avalonia.Logging.Serilog;
 using Avalonia.Markup.Xaml;
 using Serilog;
@@ -15,15 +14,19 @@ namespace BindingTest
             RegisterServices();
         }
 
+        public override void Initialize()
+        {
+            AvaloniaXamlLoader.Load(this);
+        }
+
         private static void Main()
         {
             InitializeLogging();
 
-            new App()
+            AppBuilder.Configure<App>()
                 .UseWin32()
-                .UseDirect2D()
-                .LoadFromXaml()
-                .RunWithMainWindow<MainWindow>();
+                .UseDirect2D1()
+                .Start<MainWindow>();
         }
 
         private static void InitializeLogging()
