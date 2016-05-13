@@ -90,6 +90,8 @@ namespace Avalonia.Win32
                     value *= Scaling;
                     value += BorderThickness;
 
+                    System.Diagnostics.Debug.WriteLine($"Set client size to {value}");
+
                     UnmanagedMethods.SetWindowPos(
                         _hwnd,
                         IntPtr.Zero,
@@ -405,9 +407,11 @@ namespace Avalonia.Win32
 
                 case UnmanagedMethods.WindowsMessage.WM_DPICHANGED:
                     var dpi = (int)wParam & 0xffff;
+                    var newDisplayRect = (UnmanagedMethods.RECT)Marshal.PtrToStructure(lParam, typeof(UnmanagedMethods.RECT));
+                    Position = new Point(newDisplayRect.left, newDisplayRect.top);
                     _scaling = dpi / 96.0;
                     ScalingChanged?.Invoke(_scaling);
-                    break;
+                    return IntPtr.Zero;
 
                 case UnmanagedMethods.WindowsMessage.WM_KEYDOWN:
                 case UnmanagedMethods.WindowsMessage.WM_SYSKEYDOWN:
