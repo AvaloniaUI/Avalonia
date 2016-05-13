@@ -73,10 +73,6 @@ _TeamCity*
 # DotCover is a Code Coverage Tool
 *.dotCover
 
-# NCrunch
-*.ncrunch*
-.*crunch*.local.xml
-
 # Installshield output folder
 [Ee]xpress/
 
