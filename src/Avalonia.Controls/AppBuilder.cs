@@ -55,6 +55,18 @@ namespace Avalonia.Controls
             return this;
         }
 
+        public AppBuilder WithWindowingSubsystem(Action initializer)
+        {
+            WindowingSubsystem = initializer;
+            return this;
+        }
+
+        public AppBuilder WithRenderingSubsystem(Action initializer)
+        {
+            RenderingSubsystem = initializer;
+            return this;
+        }
+
         public void Setup()
         {
             if (Instance == null)
