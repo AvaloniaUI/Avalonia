@@ -83,7 +83,7 @@ namespace Avalonia.Controls
             {
                 throw new InvalidOperationException("No rendering system configured.");
             }
-
+            Instance.RegisterServices();
             WindowingSubsystem();
             RenderingSubsystem();
             Instance.Initialize();

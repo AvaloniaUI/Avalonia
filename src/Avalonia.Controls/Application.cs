@@ -171,7 +171,7 @@ namespace Avalonia
         /// <summary>
         /// Register's the services needed by Avalonia.
         /// </summary>
-        protected virtual void RegisterServices()
+        public virtual void RegisterServices()
         {
             AvaloniaSynchronizationContext.InstallIfNeeded();
             FocusManager = new FocusManager();

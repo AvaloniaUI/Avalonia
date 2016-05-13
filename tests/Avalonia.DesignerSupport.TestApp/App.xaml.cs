@@ -9,12 +9,6 @@ namespace Avalonia.DesignerSupport.TestApp
 {
     public class App : Application
     {
-
-        public App()
-        {
-            RegisterServices();
-        }
-
         public override void Initialize()
         {
             AvaloniaXamlLoader.Load(this);
