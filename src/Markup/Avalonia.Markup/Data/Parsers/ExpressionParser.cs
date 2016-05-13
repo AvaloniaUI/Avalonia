@@ -7,9 +7,16 @@ using System.Linq;
 
 namespace Avalonia.Markup.Data.Parsers
 {
-    internal static class ExpressionParser
+    internal class ExpressionParser
     {
-        public static ExpressionNode Parse(Reader r)
+        private bool _enableValidation;
+
+        public ExpressionParser(bool enableValidation)
+        {
+            _enableValidation = enableValidation;
+        }
+
+        public ExpressionNode Parse(Reader r)
         {
             var nodes = new List<ExpressionNode>();
             var state = State.Start;
@@ -49,7 +56,7 @@ namespace Avalonia.Markup.Data.Parsers
             return nodes.FirstOrDefault();
         }
 
-        private static State ParseStart(Reader r, IList<ExpressionNode> nodes)
+        private State ParseStart(Reader r, IList<ExpressionNode> nodes)
         {
             if (ParseNot(r))
             {
@@ -66,7 +73,7 @@ namespace Avalonia.Markup.Data.Parsers
 
                 if (identifier != null)
                 {
-                    nodes.Add(new PropertyAccessorNode(identifier));
+                    nodes.Add(new PropertyAccessorNode(identifier, _enableValidation));
                     return State.AfterMember;
                 }
             }
@@ -99,7 +106,7 @@ namespace Avalonia.Markup.Data.Parsers
             return State.End;
         }
 
-        private static State ParseBeforeMember(Reader r, IList<ExpressionNode> nodes)
+        private State ParseBeforeMember(Reader r, IList<ExpressionNode> nodes)
         {
             if (ParseOpenBrace(r))
             {
@@ -111,7 +118,7 @@ namespace Avalonia.Markup.Data.Parsers
 
                 if (identifier != null)
                 {
-                    nodes.Add(new PropertyAccessorNode(identifier));
+                    nodes.Add(new PropertyAccessorNode(identifier, _enableValidation));
                     return State.AfterMember;
                 }
 
@@ -119,7 +126,7 @@ namespace Avalonia.Markup.Data.Parsers
             }
         }
 
-        private static State ParseAttachedProperty(Reader r, List<ExpressionNode> nodes)
+        private State ParseAttachedProperty(Reader r, List<ExpressionNode> nodes)
         {
             var owner = IdentifierParser.Parse(r);
 
@@ -135,7 +142,7 @@ namespace Avalonia.Markup.Data.Parsers
                 throw new ExpressionParseException(r.Position, "Expected ')'.");
             }
 
-            nodes.Add(new PropertyAccessorNode(owner + '.' + name));
+            nodes.Add(new PropertyAccessorNode(owner + '.' + name, _enableValidation));
             return State.AfterMember;
         }
 

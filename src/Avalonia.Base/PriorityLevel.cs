@@ -97,7 +97,6 @@ namespace Avalonia
         /// Adds a binding.
         /// </summary>
         /// <param name="binding">The binding to add.</param>
-        /// <param name="validation">Validation settings for the binding.</param>
         /// <returns>A disposable used to remove the binding.</returns>
         public IDisposable Add(IObservable<object> binding)
         {
@@ -170,7 +169,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="entry">The entry that completed.</param>
         /// <param name="validationStatus">The validation status.</param>
-        public void Validation(PriorityBindingEntry entry, ValidationStatus validationStatus)
+        public void Validation(PriorityBindingEntry entry, IValidationStatus validationStatus)
         {
             _owner.LevelValidation(this, validationStatus);
         }

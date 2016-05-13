@@ -1,11 +1,11 @@
+﻿// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Avalonia.Data;
-using System.ComponentModel;
 using System.Collections;
+using System.ComponentModel;
+using System.Linq;
+using Avalonia.Data;
 using Avalonia.Utilities;
 
 namespace Avalonia.Markup.Data.Plugins
@@ -13,7 +13,7 @@ namespace Avalonia.Markup.Data.Plugins
     /// <summary>
     /// Validates properties on objects that implement <see cref="INotifyDataErrorInfo"/>.
     /// </summary>
-    public class IndeiValidationCheckerPlugin : IValidationCheckerPlugin
+    public class IndeiValidationPlugin : IValidationPlugin
     {
         /// <inheritdoc/>
         public bool Match(WeakReference reference)
@@ -22,14 +22,14 @@ namespace Avalonia.Markup.Data.Plugins
         }
 
         /// <inheritdoc/>
-        public ValidationCheckerBase Start(WeakReference reference, string name, IPropertyAccessor accessor, Action<ValidationStatus> callback)
+        public IPropertyAccessor Start(WeakReference reference, string name, IPropertyAccessor accessor, Action<IValidationStatus> callback)
         {
             return new IndeiValidationChecker(reference, name, accessor, callback);
         }
 
-        private class IndeiValidationChecker : ValidationCheckerBase, IWeakSubscriber<DataErrorsChangedEventArgs>
+        private class IndeiValidationChecker : ValidatingPropertyAccessorBase, IWeakSubscriber<DataErrorsChangedEventArgs>
         {
-            public IndeiValidationChecker(WeakReference reference, string name, IPropertyAccessor accessor, Action<ValidationStatus> callback)
+            public IndeiValidationChecker(WeakReference reference, string name, IPropertyAccessor accessor, Action<IValidationStatus> callback)
                 : base(reference, name, accessor, callback)
             {
                 var target = reference.Target as INotifyDataErrorInfo;
@@ -72,7 +72,7 @@ namespace Avalonia.Markup.Data.Plugins
         /// <summary>
         /// Describes the current validation status of a property as reported by an object that implements <see cref="INotifyDataErrorInfo"/>.
         /// </summary>
-        public class IndeiValidationStatus : ValidationStatus
+        public class IndeiValidationStatus : IValidationStatus
         {
             internal IndeiValidationStatus(IEnumerable errors)
             {
@@ -80,17 +80,12 @@ namespace Avalonia.Markup.Data.Plugins
             }
 
             /// <inheritdoc/>
-            public override bool IsValid => !Errors.OfType<object>().Any();
+            public bool IsValid => !Errors?.OfType<object>().Any() ?? true;
 
             /// <summary>
             /// The errors on the given property and on the object as a whole.
             /// </summary>
             public IEnumerable Errors { get; }
-
-            public override bool Match(ValidationMethods enabledMethods)
-            {
-                return (enabledMethods & ValidationMethods.INotifyDataErrorInfo) != 0;
-            }
         }
     }
 }

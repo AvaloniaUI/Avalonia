@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -46,10 +46,9 @@
     <Compile Include="Data\ExpressionParseException.cs" />
     <Compile Include="Data\ExpressionSubject.cs" />
     <Compile Include="ControlLocator.cs" />
-    <Compile Include="Data\Plugins\ExceptionValidationCheckerPlugin.cs" />
-    <Compile Include="Data\Plugins\IndeiValidationCheckerPlugin.cs" />
-    <Compile Include="Data\Plugins\ValidationCheckerBase.cs" />
-    <Compile Include="Data\Plugins\IValidationCheckerPlugin.cs" />
+    <Compile Include="Data\Plugins\ExceptionValidationPlugin.cs" />
+    <Compile Include="Data\Plugins\IndeiValidationPlugin.cs" />
+    <Compile Include="Data\Plugins\IValidationPlugin.cs" />
     <Compile Include="Data\Plugins\AvaloniaPropertyAccessorPlugin.cs" />
     <Compile Include="Data\Plugins\InpcPropertyAccessorPlugin.cs" />
     <Compile Include="Data\Plugins\IPropertyAccessor.cs" />
@@ -61,6 +60,7 @@
     <Compile Include="Data\Parsers\ExpressionParser.cs" />
     <Compile Include="Data\Parsers\Reader.cs" />
     <Compile Include="Data\Plugins\PropertyError.cs" />
+    <Compile Include="Data\Plugins\ValidatingPropertyAccessorBase.cs" />
     <Compile Include="Data\PropertyAccessorNode.cs" />
     <Compile Include="Data\ExpressionNode.cs" />
     <Compile Include="Data\ExpressionObserver.cs" />

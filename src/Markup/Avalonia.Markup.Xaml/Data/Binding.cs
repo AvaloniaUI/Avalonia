@@ -4,7 +4,6 @@
 using System;
 using System.Reactive;
 using System.Reactive.Linq;
-using System.Reactive.Subjects;
 using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Markup.Data;
@@ -78,13 +77,13 @@ namespace Avalonia.Markup.Xaml.Data
         public object Source { get; set; }
 
         /// <summary>
-        /// Gets or sets the validation methods for the binding to use.
+        /// Gets or sets a value indicating whether the property should be validated.
         /// </summary>
-        public ValidationMethods ValidationMethods { get; set; }
+        public bool EnableValidation { get; set; }
 
         /// <inheritdoc/>
         public InstancedBinding Initiate(
-            IAvaloniaObject target, 
+            IAvaloniaObject target,
             AvaloniaProperty targetProperty,
             object anchor = null)
         {
@@ -99,7 +98,7 @@ namespace Avalonia.Markup.Xaml.Data
             {
                 observer = CreateElementObserver(
                     (target as IControl) ?? (anchor as IControl),
-                    pathInfo.ElementName ?? ElementName, 
+                    pathInfo.ElementName ?? ElementName,
                     pathInfo.Path);
             }
             else if (Source != null)
@@ -109,7 +108,7 @@ namespace Avalonia.Markup.Xaml.Data
             else if (RelativeSource == null || RelativeSource.Mode == RelativeSourceMode.DataContext)
             {
                 observer = CreateDataContexObserver(
-                    target, 
+                    target,
                     pathInfo.Path,
                     targetProperty == Control.DataContextProperty,
                     anchor);
@@ -207,7 +206,8 @@ namespace Avalonia.Markup.Xaml.Data
                 var result = new ExpressionObserver(
                     () => target.GetValue(Control.DataContextProperty),
                     path,
-                    update, ValidationMethods);
+                    update,
+                    EnableValidation);
 
                 return result;
             }
@@ -218,7 +218,8 @@ namespace Avalonia.Markup.Xaml.Data
                           .OfType<IAvaloniaObject>()
                           .Select(x => x.GetObservable(Control.DataContextProperty))
                           .Switch(),
-                    path, ValidationMethods);
+                    path,
+                    EnableValidation);
             }
         }
 
@@ -228,7 +229,8 @@ namespace Avalonia.Markup.Xaml.Data
 
             var result = new ExpressionObserver(
                 ControlLocator.Track(target, elementName),
-                path, ValidationMethods);
+                path,
+                EnableValidation);
             return result;
         }
 
@@ -236,7 +238,7 @@ namespace Avalonia.Markup.Xaml.Data
         {
             Contract.Requires<ArgumentNullException>(source != null);
 
-            return new ExpressionObserver(source, path, ValidationMethods);
+            return new ExpressionObserver(source, path, EnableValidation);
         }
 
         private ExpressionObserver CreateTemplatedParentObserver(

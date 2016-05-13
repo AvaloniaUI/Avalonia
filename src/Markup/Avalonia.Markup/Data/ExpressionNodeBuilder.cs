@@ -8,7 +8,7 @@ namespace Avalonia.Markup.Data
 {
     internal static class ExpressionNodeBuilder
     {
-        public static ExpressionNode Build(string expression)
+        public static ExpressionNode Build(string expression, bool enableValidation = false)
         {
             if (string.IsNullOrWhiteSpace(expression))
             {
@@ -16,7 +16,8 @@ namespace Avalonia.Markup.Data
             }
 
             var reader = new Reader(expression);
-            var node = ExpressionParser.Parse(reader);
+            var parser = new ExpressionParser(enableValidation);
+            var node = parser.Parse(reader);
 
             if (!reader.End)
             {

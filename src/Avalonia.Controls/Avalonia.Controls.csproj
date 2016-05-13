@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -46,7 +46,6 @@
     <Compile Include="Application.cs" />
     <Compile Include="Classes.cs" />
     <Compile Include="ContextMenu.cs" />
-    <Compile Include="ControlValidationStatus.cs" />
     <Compile Include="Design.cs" />
     <Compile Include="DockPanel.cs" />
     <Compile Include="Expander.cs" />

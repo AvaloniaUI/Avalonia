@@ -100,7 +100,7 @@ namespace Avalonia
                 _owner.Error(this, bindingError);
             }
 
-            var validationStatus = value as ValidationStatus;
+            var validationStatus = value as IValidationStatus;
 
             if (validationStatus != null)
             {

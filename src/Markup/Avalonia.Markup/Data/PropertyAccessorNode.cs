@@ -17,10 +17,12 @@ namespace Avalonia.Markup.Data
     {
         private IPropertyAccessor _accessor;
         private IDisposable _subscription;
+        private bool _enableValidation;
 
-        public PropertyAccessorNode(string propertyName)
+        public PropertyAccessorNode(string propertyName, bool enableValidation)
         {
             PropertyName = propertyName;
+            _enableValidation = enableValidation;
         }
 
         public string PropertyName { get; }
@@ -54,13 +56,21 @@ namespace Avalonia.Markup.Data
 
                 if (accessorPlugin != null)
                 {
-                    _accessor = accessorPlugin.Start(reference, PropertyName, SetCurrentValue);
-                    foreach (var validationPlugin in ExpressionObserver.ValidationCheckers.Where(x => x.Match(reference)))
+                    _accessor = ExceptionValidationPlugin.Instance.Start(
+                        reference,
+                        PropertyName,
+                        accessorPlugin.Start(reference, PropertyName, SetCurrentValue),
+                        SendValidationStatus);
+
+                    if (_enableValidation)
                     {
-                        if (validationPlugin != null)
+                        foreach (var validationPlugin in ExpressionObserver.ValidationCheckers)
                         {
-                            _accessor = validationPlugin.Start(reference, PropertyName, _accessor, SendValidationStatus);
-                        } 
+                            if (validationPlugin.Match(reference))
+                            {
+                                _accessor = validationPlugin.Start(reference, PropertyName, _accessor, SendValidationStatus);
+                            }
+                        }
                     }
 
                     if (_accessor != null)

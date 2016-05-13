@@ -51,6 +51,29 @@ namespace Avalonia
         private EventHandler<AvaloniaPropertyChangedEventArgs> _propertyChanged;
 
         /// <summary>
+        /// Defines the <see cref="ValidationStatus"/> property.
+        /// </summary>
+        public static readonly DirectProperty<AvaloniaObject, ObjectValidationStatus> ValidationStatusProperty =
+            AvaloniaProperty.RegisterDirect<AvaloniaObject, ObjectValidationStatus>(nameof(ValidationStatus), c => c.ValidationStatus);
+
+        private ObjectValidationStatus validationStatus;
+
+        /// <summary>
+        /// The current validation status of the control.
+        /// </summary>
+        public ObjectValidationStatus ValidationStatus
+        {
+            get
+            {
+                return validationStatus;
+            }
+            private set
+            {
+                SetAndRaise(ValidationStatusProperty, ref validationStatus, value);
+            }
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="AvaloniaObject"/> class.
         /// </summary>
         public AvaloniaObject()
@@ -404,13 +427,13 @@ namespace Avalonia
                 }
 
                 subscription = source
-                    .Where(x =>  !(x is ValidationStatus))
+                    .Where(x =>  !(x is IValidationStatus))
                     .Select(x => CastOrDefault(x, property.PropertyType))
                     .Do(_ => { }, () => _directBindings.Remove(subscription))
                     .Subscribe(x => DirectBindingSet(property, x));
                 validationSubcription = source
-                    .OfType<ValidationStatus>()
-                    .Subscribe(x => DataValidation(property, x));
+                    .OfType<IValidationStatus>()
+                    .Subscribe(x => DataValidationChanged(property, x));
 
                 _directBindings.Add(subscription);
 
@@ -512,10 +535,10 @@ namespace Avalonia
         }
 
         /// <inheritdoc/>
-        void IPriorityValueOwner.DataValidationChanged(PriorityValue sender, ValidationStatus status)
+        void IPriorityValueOwner.DataValidationChanged(PriorityValue sender, IValidationStatus status)
         {
             var property = sender.Property;
-            DataValidation(property, status);
+            DataValidationChanged(property, status);
         }
 
         /// <summary>
@@ -523,9 +546,17 @@ namespace Avalonia
         /// </summary>
         /// <param name="property">The property whose validation state changed.</param>
         /// <param name="status">The new validation state.</param>
-        protected virtual void DataValidation(AvaloniaProperty property, ValidationStatus status)
+        protected virtual void DataValidationChanged(AvaloniaProperty property, IValidationStatus status)
         {
+        }
 
+        /// <summary>
+        /// Updates the validation status of the current object.
+        /// </summary>
+        /// <param name="status">The new validation status.</param>
+        protected void UpdateValidationState(IValidationStatus status)
+        {
+            ValidationStatus = ValidationStatus.UpdateValidationStatus(status);
         }
 
         /// <inheritdoc/>

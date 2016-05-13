@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
-using System.Reactive.Subjects;
 using Avalonia.Data;
 using Avalonia.Markup.Data.Plugins;
 
@@ -32,11 +31,10 @@ namespace Avalonia.Markup.Data
         /// An ordered collection of validation checker plugins that can be used to customize
         /// the validation of view model and model data.
         /// </summary>
-        public static readonly IList<IValidationCheckerPlugin> ValidationCheckers =
-            new List<IValidationCheckerPlugin>
+        public static readonly IList<IValidationPlugin> ValidationCheckers =
+            new List<IValidationPlugin>
             {
-                new IndeiValidationCheckerPlugin(),
-                new ExceptionValidationCheckerPlugin()
+                new IndeiValidationPlugin(),
             };
 
         private readonly WeakReference _root;
@@ -47,23 +45,24 @@ namespace Avalonia.Markup.Data
         private IDisposable _updateSubscription;
         private int _count;
         private readonly ExpressionNode _node;
-        private ValidationMethods _methods;
+        private bool _enableValidation;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ExpressionObserver"/> class.
         /// </summary>
         /// <param name="root">The root object.</param>
         /// <param name="expression">The expression.</param>
-        /// <param name="methods">The validation methods to enable on this observer.</param>
-        public ExpressionObserver(object root, string expression, ValidationMethods methods = ValidationMethods.None)
+        /// <param name="enableValidation">Whether property validation should be enabled.</param>
+        public ExpressionObserver(object root, string expression, bool enableValidation = false)
         {
             Contract.Requires<ArgumentNullException>(expression != null);
 
             _root = new WeakReference(root);
-            _methods = methods;
+            _enableValidation = enableValidation;
+
             if (!string.IsNullOrWhiteSpace(expression))
             {
-                _node = ExpressionNodeBuilder.Build(expression);
+                _node = ExpressionNodeBuilder.Build(expression, enableValidation);
             }
 
             Expression = expression;
@@ -74,17 +73,21 @@ namespace Avalonia.Markup.Data
         /// </summary>
         /// <param name="rootObservable">An observable which provides the root object.</param>
         /// <param name="expression">The expression.</param>
-        /// <param name="methods">The validation methods to enable on this observer.</param>
-        public ExpressionObserver(IObservable<object> rootObservable, string expression, ValidationMethods methods = ValidationMethods.None)
+        /// <param name="enableValidation">Whether property validation should be enabled.</param>
+        public ExpressionObserver(
+            IObservable<object> rootObservable,
+            string expression,
+            bool enableValidation = false)
         {
             Contract.Requires<ArgumentNullException>(rootObservable != null);
             Contract.Requires<ArgumentNullException>(expression != null);
 
             _rootObservable = rootObservable;
-            _methods = methods;
+            _enableValidation = enableValidation;
+
             if (!string.IsNullOrWhiteSpace(expression))
             {
-                _node = ExpressionNodeBuilder.Build(expression);
+                _node = ExpressionNodeBuilder.Build(expression, enableValidation);
             }
 
             Expression = expression;
@@ -96,12 +99,12 @@ namespace Avalonia.Markup.Data
         /// <param name="rootGetter">A function which gets the root object.</param>
         /// <param name="expression">The expression.</param>
         /// <param name="update">An observable which triggers a re-read of the getter.</param>
-        /// <param name="methods">The validation methods to enable on this observer.</param>
+        /// <param name="enableValidation">Whether property validation should be enabled.</param>
         public ExpressionObserver(
-            Func<object> rootGetter, 
+            Func<object> rootGetter,
             string expression,
             IObservable<Unit> update,
-            ValidationMethods methods = ValidationMethods.None)
+            bool enableValidation = false)
         {
             Contract.Requires<ArgumentNullException>(rootGetter != null);
             Contract.Requires<ArgumentNullException>(expression != null);
@@ -109,10 +112,11 @@ namespace Avalonia.Markup.Data
 
             _rootGetter = rootGetter;
             _update = update;
-            _methods = methods;
+            _enableValidation = enableValidation;
+
             if (!string.IsNullOrWhiteSpace(expression))
             {
-                _node = ExpressionNodeBuilder.Build(expression);
+                _node = ExpressionNodeBuilder.Build(expression, enableValidation);
             }
 
             Expression = expression;
@@ -167,7 +171,7 @@ namespace Avalonia.Markup.Data
                     {
                         return (Leaf as PropertyAccessorNode)?.PropertyType;
                     }
-                    else if(_rootGetter != null)
+                    else if (_rootGetter != null)
                     {
                         return _rootGetter()?.GetType();
                     }
@@ -221,8 +225,8 @@ namespace Avalonia.Markup.Data
                 {
                     source = source.TakeUntil(_update.LastOrDefaultAsync());
                 }
-                var validationFiltered = source.Where(o => (o as ValidationStatus)?.Match(_methods) ?? true);
-                var subscription = validationFiltered.Subscribe(observer);
+
+                var subscription = source.Subscribe(observer);
 
                 return Disposable.Create(() =>
                 {
@@ -262,13 +266,13 @@ namespace Avalonia.Markup.Data
 
                     if (_update != null)
                     {
-                        _updateSubscription = _update.Subscribe(x => 
+                        _updateSubscription = _update.Subscribe(x =>
                             _node.Target = new WeakReference(_rootGetter()));
                     }
                 }
                 else if (_rootObservable != null)
                 {
-                    _rootObserverSubscription = _rootObservable.Subscribe(x => 
+                    _rootObserverSubscription = _rootObservable.Subscribe(x =>
                         _node.Target = new WeakReference(x));
                 }
                 else

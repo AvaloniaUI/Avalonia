@@ -68,5 +68,8 @@ namespace BindingTest.ViewModels
         }
 
         public ReactiveCommand<object> StringValueCommand { get; }
+
+        public ExceptionPropertyErrorViewModel ExceptionPropertyValidation { get; }
+            = new ExceptionPropertyErrorViewModel();
     }
 }

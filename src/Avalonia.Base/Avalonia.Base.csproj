@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -44,8 +44,8 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="Data\BindingError.cs" />
-    <Compile Include="Data\ValidationMethods.cs" />
-    <Compile Include="Data\ValidationStatus.cs" />
+    <Compile Include="Data\IValidationStatus.cs" />
+    <Compile Include="Data\ObjectValidationStatus.cs" />
     <Compile Include="Diagnostics\INotifyCollectionChangedDebug.cs" />
     <Compile Include="Data\AssignBindingAttribute.cs" />
     <Compile Include="Data\BindingOperations.cs" />

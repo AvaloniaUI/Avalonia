@@ -1,16 +1,15 @@
-using Avalonia.Data;
+﻿// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Avalonia.Data;
 
 namespace Avalonia.Markup.Data.Plugins
 {
     /// <summary>
     /// Defines how view model data validation is observed by an <see cref="ExpressionObserver"/>.
     /// </summary>
-    public interface IValidationCheckerPlugin
+    public interface IValidationPlugin
     {
 
         /// <summary>
@@ -21,16 +20,16 @@ namespace Avalonia.Markup.Data.Plugins
         bool Match(WeakReference reference);
 
         /// <summary>
-        /// Starts monitering the validation state of an object for the given property.
+        /// Starts monitoring the validation state of an object for the given property.
         /// </summary>
         /// <param name="reference">A weak reference to the object.</param>
         /// <param name="name">The property name.</param>
         /// <param name="accessor">An underlying <see cref="IPropertyAccessor"/> to access the property.</param>
         /// <param name="callback">A function to call when the validation state changes.</param>
         /// <returns>
-        /// A <see cref="ValidationCheckerBase"/> subclass through which future interactions with the 
+        /// A <see cref="ValidatingPropertyAccessorBase"/> subclass through which future interactions with the 
         /// property will be made.
         /// </returns>
-        ValidationCheckerBase Start(WeakReference reference, string name, IPropertyAccessor accessor, Action<ValidationStatus> callback);
+        IPropertyAccessor Start(WeakReference reference, string name, IPropertyAccessor accessor, Action<IValidationStatus> callback);
     }
 }

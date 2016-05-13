@@ -23,6 +23,6 @@ namespace Avalonia
         /// </summary>
         /// <param name="sender">The source of the change.</param>
         /// <param name="status">The validation status.</param>
-        void DataValidationChanged(PriorityValue sender, ValidationStatus status);
+        void DataValidationChanged(PriorityValue sender, IValidationStatus status);
     }
 }

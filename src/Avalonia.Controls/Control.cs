@@ -86,12 +86,6 @@ namespace Avalonia.Controls
         public static readonly RoutedEvent<RequestBringIntoViewEventArgs> RequestBringIntoViewEvent =
             RoutedEvent.Register<Control, RequestBringIntoViewEventArgs>("RequestBringIntoView", RoutingStrategies.Bubble);
 
-        /// <summary>
-        /// Defines the <see cref="ValidationStatus"/> property.
-        /// </summary>
-        public static readonly DirectProperty<Control, ControlValidationStatus> ValidationStatusProperty =
-            AvaloniaProperty.RegisterDirect<Control, ControlValidationStatus>(nameof(ValidationStatus), c=> c.ValidationStatus);
-
         private int _initCount;
         private string _name;
         private IControl _parent;
@@ -114,7 +108,7 @@ namespace Avalonia.Controls
             PseudoClass(IsEnabledCoreProperty, x => !x, ":disabled");
             PseudoClass(IsFocusedProperty, ":focus");
             PseudoClass(IsPointerOverProperty, ":pointerover");
-            PseudoClass(ValidationStatusProperty, status => status != null && !status.IsValid, ":invalid");
+            PseudoClass(ValidationStatusProperty, status => !status.IsValid, ":invalid");
         }
 
         /// <summary>
@@ -406,27 +400,10 @@ namespace Avalonia.Controls
         /// </summary>
         protected IPseudoClasses PseudoClasses => Classes;
 
-        private ControlValidationStatus validationStatus = new ControlValidationStatus();
-
-        /// <summary>
-        /// The current validation status of the control.
-        /// </summary>
-        public ControlValidationStatus ValidationStatus
-        {
-            get
-            {
-                return validationStatus;
-            }
-            private set
-            {
-                SetAndRaise(ValidationStatusProperty, ref validationStatus, value);
-            }
-        }
-
         /// <inheritdoc/>
-        protected override void DataValidation(AvaloniaProperty property, ValidationStatus status)
+        protected override void DataValidationChanged(AvaloniaProperty property, IValidationStatus status)
         {
-            base.DataValidation(property, status);
+            base.DataValidationChanged(property, status);
             ValidationStatus.UpdateValidationStatus(status);
         }
 
@@ -511,6 +488,7 @@ namespace Avalonia.Controls
             }
 
             property.Changed.Merge(property.Initialized)
+                .Where(e => e.Sender is Control)
                 .Subscribe(e =>
                 {
                     if (selector((T)e.NewValue))

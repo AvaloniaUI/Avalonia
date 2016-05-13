@@ -235,6 +235,14 @@ namespace Avalonia.Controls
             HandleTextInput(e.Text);
         }
 
+        protected override void DataValidationChanged(AvaloniaProperty property, IValidationStatus status)
+        {
+            if (property == TextProperty)
+            {
+                UpdateValidationState(status);
+            }
+        }
+
         private void HandleTextInput(string input)
         {
             if (!IsReadOnly)

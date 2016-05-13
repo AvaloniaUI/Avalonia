@@ -105,12 +105,12 @@ namespace Avalonia.Markup.Data
             CurrentValue = reference;
         }
 
-        protected virtual void SendValidationStatus(ValidationStatus status)
+        protected virtual void SendValidationStatus(IValidationStatus status)
         {
             //Even if elements only bound to sub-values, send validation changes along so they will be surfaced to the UI level.
             if (_subject != null)
             {
-                _subject.OnNext(status); 
+                _subject.OnNext(status);
             }
             else
             {

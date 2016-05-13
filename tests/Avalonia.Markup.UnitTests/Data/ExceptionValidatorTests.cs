@@ -1,15 +1,11 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using Avalonia.Data;
 using Avalonia.Markup.Data.Plugins;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace Avalonia.Markup.UnitTests.Data
@@ -53,10 +49,10 @@ namespace Avalonia.Markup.UnitTests.Data
         public void Setting_Non_Validating_Triggers_Validation()
         {
             var inpcAccessorPlugin = new InpcPropertyAccessorPlugin();
-            var validatorPlugin = new ExceptionValidationCheckerPlugin();
+            var validatorPlugin = new ExceptionValidationPlugin();
             var data = new Data();
             var accessor = inpcAccessorPlugin.Start(new WeakReference(data), nameof(data.NonValidated), _ => { });
-            ValidationStatus status = null;
+            IValidationStatus status = null;
             var validator = validatorPlugin.Start(new WeakReference(data), nameof(data.NonValidated), accessor, s => status = s);
 
             validator.SetValue(5, BindingPriority.LocalValue);
@@ -68,27 +64,25 @@ namespace Avalonia.Markup.UnitTests.Data
         public void Setting_Validating_Property_To_Valid_Value_Returns_Successful_ValidationStatus()
         {
             var inpcAccessorPlugin = new InpcPropertyAccessorPlugin();
-            var validatorPlugin = new ExceptionValidationCheckerPlugin();
+            var validatorPlugin = new ExceptionValidationPlugin();
             var data = new Data();
             var accessor = inpcAccessorPlugin.Start(new WeakReference(data), nameof(data.MustBePositive), _ => { });
-            ValidationStatus status = null;
+            IValidationStatus status = null;
             var validator = validatorPlugin.Start(new WeakReference(data), nameof(data.MustBePositive), accessor, s => status = s);
 
             validator.SetValue(5, BindingPriority.LocalValue);
 
             Assert.True(status.IsValid);
         }
-
-
-
+        
         [Fact]
         public void Setting_Validating_Property_To_Invalid_Value_Returns_Failed_ValidationStatus()
         {
             var inpcAccessorPlugin = new InpcPropertyAccessorPlugin();
-            var validatorPlugin = new ExceptionValidationCheckerPlugin();
+            var validatorPlugin = new ExceptionValidationPlugin();
             var data = new Data();
             var accessor = inpcAccessorPlugin.Start(new WeakReference(data), nameof(data.MustBePositive), _ => { });
-            ValidationStatus status = null;
+            IValidationStatus status = null;
             var validator = validatorPlugin.Start(new WeakReference(data), nameof(data.MustBePositive), accessor, s => status = s);
 
             validator.SetValue(-5, BindingPriority.LocalValue);
