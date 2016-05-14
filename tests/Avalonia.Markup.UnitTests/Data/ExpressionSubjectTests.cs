@@ -72,12 +72,12 @@ namespace Avalonia.Markup.UnitTests.Data
         {
             CultureInfo.CurrentUICulture = CultureInfo.InvariantCulture;
 
-            var data = new Class1 { StringValue = "5.6" };
+            var data = new Class1 { StringValue = (5.6).ToString() };
             var target = new ExpressionSubject(new ExpressionObserver(data, "StringValue"), typeof(double));
 
             target.OnNext(6.7);
 
-            Assert.Equal("6.7", data.StringValue);
+            Assert.Equal((6.7).ToString(), data.StringValue);
         }
 
         [Fact]
@@ -89,7 +89,7 @@ namespace Avalonia.Markup.UnitTests.Data
             var target = new ExpressionSubject(new ExpressionObserver(data, "DoubleValue"), typeof(string));
             var result = await target.Take(1);
 
-            Assert.Equal("5.6", result);
+            Assert.Equal((5.6).ToString(), result);
         }
 
         [Fact]
