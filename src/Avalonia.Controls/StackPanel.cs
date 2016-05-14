@@ -181,6 +181,7 @@ namespace Avalonia.Controls
         /// <returns>The space taken.</returns>
         protected override Size ArrangeOverride(Size finalSize)
         {
+            var orientation = Orientation;
             double arrangedWidth = finalSize.Width;
             double arrangedHeight = finalSize.Height;
             double gap = Gap;
@@ -199,11 +200,11 @@ namespace Avalonia.Controls
                 double childWidth = child.DesiredSize.Width;
                 double childHeight = child.DesiredSize.Height;
 
-                if (Orientation == Orientation.Vertical)
+                if (orientation == Orientation.Vertical)
                 {
                     double width = Math.Max(childWidth, arrangedWidth);
                     Rect childFinal = new Rect(0, arrangedHeight, width, childHeight);
-                    child.Arrange(childFinal);
+                    ArrangeChild(child, childFinal, finalSize, orientation);
                     arrangedWidth = Math.Max(arrangedWidth, childWidth);
                     arrangedHeight += childHeight + gap;
                 }
@@ -211,13 +212,13 @@ namespace Avalonia.Controls
                 {
                     double height = Math.Max(childHeight, arrangedHeight);
                     Rect childFinal = new Rect(arrangedWidth, 0, childWidth, height);
-                    child.Arrange(childFinal);
+                    ArrangeChild(child, childFinal, finalSize, orientation);
                     arrangedWidth += childWidth + gap;
                     arrangedHeight = Math.Max(arrangedHeight, childHeight);
                 }
             }
 
-            if (Orientation == Orientation.Vertical)
+            if (orientation == Orientation.Vertical)
             {
                 arrangedHeight = Math.Max(arrangedHeight - gap, finalSize.Height);
             }
@@ -227,6 +228,15 @@ namespace Avalonia.Controls
             }
 
             return new Size(arrangedWidth, arrangedHeight);
+        }
+
+        internal virtual void ArrangeChild(
+            IControl child,
+            Rect rect,
+            Size panelSize,
+            Orientation orientation)
+        {
+            child.Arrange(rect);
         }
     }
 }

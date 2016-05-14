@@ -24,6 +24,17 @@
       <TabControl.Transition>
         <PageSlide Duration="0.25" />
       </TabControl.Transition>
+
+
+      <TabItem Header="Virtualization">
+        <DockPanel LastChildFill="True">
+          <StackPanel DockPanel.Dock="Right" Orientation="Vertical">
+            <Button Name="vadd">Add Item</Button>
+          </StackPanel>
+          <Thingamybob></Thingamybob>
+        </DockPanel>
+      </TabItem>
+      
       <TabItem Header="Buttons">
         <ScrollViewer CanScrollHorizontally="False">
           <StackPanel Margin="10" Gap="4">

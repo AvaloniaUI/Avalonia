@@ -25,6 +25,17 @@ namespace XamlTestApplication.Views
             AvaloniaXamlLoader.Load(this);
             _exitMenu = this.FindControl<MenuItem>("exitMenu");
             _exitMenu.Click += (s, e) => Application.Current.Exit();
+
+            var vadd = this.FindControl<Button>("vadd");
+            var vsp = this.FindControl<VirtualizingStackPanel>("vsp");
+            var ivp = (IVirtualizingPanel)vsp;
+            var index = 0;
+
+            vadd.Click += (s, e) =>
+            {
+                vsp.Children.Add(new TextBlock { Text = "Hello " + ++index });
+                vadd.IsEnabled = !ivp.IsFull;
+            };
         }
     }
 }
