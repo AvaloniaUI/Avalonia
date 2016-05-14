@@ -1,10 +1,10 @@
-using Avalonia.Logging.Serilog;
-using Serilog;
 using System;
 using System.Linq;
 using Avalonia;
-using System.Reflection;
+using Avalonia.Controls;
+using Avalonia.Logging.Serilog;
 using Avalonia.Platform;
+using Serilog;
 
 namespace ControlCatalog
 {
@@ -14,10 +14,12 @@ namespace ControlCatalog
         {
             InitializeLogging();
 
-            new App()
-                .ConfigureRenderSystem(args)
-                .LoadFromXaml()
-                .RunWithMainWindow<MainWindow>();
+            // TODO: Make this work with GTK/Skia/Cairo depending on command-line args
+            // again.
+            AppBuilder.Configure<App>()
+                .UseWin32()
+                .UseDirect2D1()
+                .Start<MainWindow>();
         }
 
         // This will be made into a runtime configuration extension soon!
@@ -31,6 +33,12 @@ namespace ControlCatalog
 #endif
         }
 
+        private static void ConfigureAssetAssembly(AppBuilder builder)
+        {
+            AvaloniaLocator.CurrentMutable
+                .GetService<IAssetLoader>()
+                .SetDefaultAssembly(typeof(App).Assembly);
+        }
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -96,33 +104,32 @@ namespace ControlCatalog
         /// <summary>
         /// Selects the optimal render system for desktop platforms. Supports cmd line overrides
         /// </summary>
-        /// <param name="app"></param>
+        /// <param name="builder"></param>
         /// <param name="args"></param>
-        public static TApp ConfigureRenderSystem<TApp>(this TApp app, string[] args) where TApp : Application
+        public static AppBuilder ConfigureRenderSystem(this AppBuilder builder, string[] args)
         {
             // So this all works great under Windows where it can support
             // ALL configurations. But on OSX/Unix we cannot use Direct2D
-            //
             if (args.Contains("--gtk") || DefaultRenderSystem() == RenderSystem.GTK)
             {
-                app.UseGtk();
-                app.UseCairo();
+                builder.UseGtk();
+                builder.UseCairo();
             }
             else
             {
-                app.UseWin32();
+                builder.UseWin32();
 
                 if (args.Contains("--skia") || DefaultRenderSystem() == RenderSystem.Skia)
                 {
-                    app.UseSkia();
+                    builder.UseSkia();
                 }
                 else
                 {
-                    app.UseDirect2D();
+                    builder.UseDirect2D1();
                 }
             }
 
-            return app;
+            return builder;
         }
     }
 }

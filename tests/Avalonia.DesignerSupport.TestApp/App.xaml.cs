@@ -1,7 +1,11 @@
-using Avalonia;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using Avalonia.Markup.Xaml;
 
-namespace ControlCatalog
+namespace Avalonia.DesignerSupport.TestApp
 {
     public class App : Application
     {

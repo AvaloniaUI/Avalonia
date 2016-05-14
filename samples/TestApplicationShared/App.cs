@@ -17,15 +17,6 @@ namespace TestApplication
 {
     public class App : Application
     {
-        public App()
-        {
-            // TODO: I believe this has to happen before we select sub systems. Can we
-            // move this safely into Application itself? Is there anything in here
-            // that is platform specific??
-            //
-            RegisterServices();
-        }
-
         public void Run()
         {
             Styles.Add(new DefaultTheme());

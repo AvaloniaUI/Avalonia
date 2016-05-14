@@ -16,7 +16,7 @@ namespace BindingTest
 
         private void InitializeComponent()
         {
-            this.LoadFromXaml();
+            AvaloniaXamlLoader.Load(this);
         }
     }
 }

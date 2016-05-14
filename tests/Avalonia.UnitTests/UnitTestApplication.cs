@@ -12,31 +12,27 @@ namespace Avalonia.UnitTests
 {
     public class UnitTestApplication : Application
     {
+        private readonly TestServices _services;
+
         public UnitTestApplication(TestServices services)
         {
-            Services = services ?? new TestServices();
+            _services = services ?? new TestServices();
             RegisterServices();
-
-            var styles = Services.Theme?.Invoke();
-
-            if (styles != null)
-            {
-                Styles.AddRange(styles);
-            }
         }
 
         public static new UnitTestApplication Current => (UnitTestApplication)Application.Current;
 
-        public TestServices Services { get; }
+        public TestServices Services => _services;
 
         public static IDisposable Start(TestServices services = null)
         {
             var scope = AvaloniaLocator.EnterScope();
             var app = new UnitTestApplication(services);
+            AvaloniaLocator.CurrentMutable.BindToSelf<Application>(app);
             return scope;
         }
 
-        protected override void RegisterServices()
+        public override void RegisterServices()
         {
             AvaloniaLocator.CurrentMutable
                 .Bind<IAssetLoader>().ToConstant(Services.AssetLoader)
@@ -52,6 +48,12 @@ namespace Avalonia.UnitTests
                 .Bind<IStyler>().ToConstant(Services.Styler)
                 .Bind<IWindowingPlatform>().ToConstant(Services.WindowingPlatform)
                 .Bind<IApplicationLifecycle>().ToConstant(this);
+            var styles = Services.Theme?.Invoke();
+
+            if (styles != null)
+            {
+                Styles.AddRange(styles);
+            }
         }
     }
 }

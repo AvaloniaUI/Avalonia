@@ -6,9 +6,9 @@ namespace XamlTestApplication
 {
     public class XamlTestApp : Application
     {
-        public XamlTestApp()
+        public override void Initialize()
         {
-            RegisterServices();
+            AvaloniaXamlLoader.Load(this);
         }
     }
 }

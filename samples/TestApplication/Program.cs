@@ -34,25 +34,10 @@ namespace TestApplication
 
             var app = new App();
 
-            if (args.Contains("--gtk"))
-            {
-                app.UseGtk();
-                app.UseCairo();
-            }
-            else
-            {
-                app.UseWin32();
-
-                // not available until we do the SkiaSharp merge
-                //if (args.Contains("--skia"))
-                //{
-                //	app.UseSkia();
-                //}
-                //else
-                {
-                    app.UseDirect2D();
-                }
-            }
+            AppBuilder.Configure(app)
+                .UseWin32()
+                .UseDirect2D1()
+                .SetupWithoutStarting();
 
             app.Run();
         }

@@ -6,15 +6,16 @@ using System.IO;
 using Avalonia.Direct2D1.Media;
 using Avalonia.Media;
 using Avalonia.Platform;
+using Avalonia.Controls;
 
 namespace Avalonia
 {
     public static class Direct2DApplicationExtensions
     {
-        public static TApp UseDirect2D<TApp>(this TApp app) where TApp : Application
+        public static AppBuilder UseDirect2D1(this AppBuilder builder)
         {
-            Avalonia.Direct2D1.Direct2D1Platform.Initialize();
-            return app;
+            builder.RenderingSubsystem = Avalonia.Direct2D1.Direct2D1Platform.Initialize;
+            return builder;
         }
     }
 }

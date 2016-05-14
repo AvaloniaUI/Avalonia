@@ -19,9 +19,7 @@ namespace ControlCatalog
             // now I am doing that here. But we need a better solution!!
             var theme = new Avalonia.Themes.Default.DefaultTheme();
             theme.FindResource("Button");
-
-
-            this.LoadFromXaml();
+            AvaloniaXamlLoader.Load(this);
         }
     }
 }

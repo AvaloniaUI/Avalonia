@@ -9,15 +9,16 @@ using Avalonia.Input.Platform;
 using Avalonia.Input;
 using Avalonia.Platform;
 using Avalonia.Shared.PlatformSupport;
+using Avalonia.Controls;
 
 namespace Avalonia
 {
     public static class GtkApplicationExtensions
     {
-        public static TApp UseGtk<TApp>(this TApp app) where TApp : Application
+        public static AppBuilder UseGtk(this AppBuilder builder)
         {
-            Avalonia.Gtk.GtkPlatform.Initialize();
-            return app;
+            builder.WindowingSubsystem = Avalonia.Gtk.GtkPlatform.Initialize;
+            return builder;
         }
     }
 }

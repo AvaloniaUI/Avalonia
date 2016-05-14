@@ -20,11 +20,8 @@ namespace Avalonia.DesignerSupport
     {
         class DesignerApp : Application
         {
-            public DesignerApp()
+            public override void Initialize()
             {
-                RegisterServices();
-                //For now we only support windows
-                InitializeSubsystems(2);
                 Styles.Add(new DefaultTheme());
 
                 var loader = new AvaloniaXamlLoader();
@@ -40,30 +37,32 @@ namespace Avalonia.DesignerSupport
         {
             Design.IsDesignMode = true;
             Api = new DesignerApi(shared) {UpdateXaml = UpdateXaml, SetScalingFactor = SetScalingFactor};
-            Application.RegisterPlatformCallback(Application.InitializeWin32Subsystem);
-
             var plat = (IPclPlatformWrapper) Activator.CreateInstance(Assembly.Load(new AssemblyName("Avalonia.Win32"))
                 .DefinedTypes.First(typeof (IPclPlatformWrapper).GetTypeInfo().IsAssignableFrom).AsType());
+            
             TypeInfo app = null;
-            foreach (var asm in plat.GetLoadedAssemblies())
+            var asms = plat.GetLoadedAssemblies();
+            foreach (var asm in asms)
             {
-                if(Equals(asm, typeof(Application).GetTypeInfo().Assembly))
+                if(Equals(asm, typeof(Application).GetTypeInfo().Assembly) || Equals(asm, typeof(DesignerApp).GetTypeInfo().Assembly))
                     continue;
                 try
                 {
                     app = asm.DefinedTypes.Where(typeof (Application).GetTypeInfo().IsAssignableFrom).FirstOrDefault();
                     if (app != null)
                         break;
+
                 }
                 catch
                 {
                     //Ignore, Assembly.DefinedTypes threw an exception, we can't do anything about that
                 }
             }
-            if (app == null)
-                new DesignerApp();
-            else
-                Activator.CreateInstance(app.AsType());
+
+            AppBuilder.Configure(app == null ? new DesignerApp() : (Application) Activator.CreateInstance(app.AsType()))
+                .WithWindowingSubsystem(Application.InitializeWin32Subsystem)
+                .WithRenderingSubsystem(() => { })
+                .SetupWithoutStarting();
         }
 
         private static void SetScalingFactor(double factor)

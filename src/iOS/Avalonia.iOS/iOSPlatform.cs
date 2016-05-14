@@ -7,19 +7,20 @@ using Avalonia.Platform;
 using Avalonia.Shared.PlatformSupport;
 using Avalonia.Skia;
 using UIKit;
+using Avalonia.Controls;
 
 namespace Avalonia
 {
     public static class iOSApplicationExtensions
     {
-        public static AppT UseiOS<AppT>(this AppT app) where AppT : Application
+        public static AppBuilder UseiOS(this AppBuilder builder)
         {
-            Avalonia.iOS.iOSPlatform.Initialize();
-            return app;
+            builder.WindowingSubsystem = Avalonia.iOS.iOSPlatform.Initialize;
+            return builder;
         }
 
         // TODO: Can we merge this with UseSkia somehow once HW/platform cleanup is done?
-        public static AppT UseSkiaViewHost<AppT>(this AppT app) where AppT : Application
+        public static AppBuilder UseSkiaViewHost(this AppBuilder builder)
         {
             var window = new UIWindow(UIScreen.MainScreen.Bounds);
             var controller = new AvaloniaViewController(window);
@@ -31,15 +32,7 @@ namespace Avalonia
 
             SkiaPlatform.Initialize();
 
-            return app;
-        }
-
-        public static AppT UseAssetAssembly<AppT>(this AppT app, Assembly assembly) where AppT : Application
-        {
-            // Asset loading searches our own assembly?
-            var loader = new AssetLoader(assembly);
-            AvaloniaLocator.CurrentMutable.Bind<IAssetLoader>().ToConstant(loader);
-            return app;
+            return builder;
         }
     }
 }

@@ -19,17 +19,13 @@ namespace ControlCatalog
         //
         public override bool FinishedLaunching(UIApplication uiapp, NSDictionary options)
         {
-            new App()
+            AppBuilder.Configure<App>()
                 .UseiOS()
                 .UseSkiaViewHost()
                 .UseSkia()
-                .UseAssetAssembly(typeof(App).Assembly)
-                .LoadFromXaml()
-                .RunWithMainWindow<MainWindow>();
+                .Start<MainWindow>();
 
             return true;
         }
     }
-
-
 }

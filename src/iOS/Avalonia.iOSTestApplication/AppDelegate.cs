@@ -27,13 +27,14 @@ namespace Avalonia.iOSTestApplication
         //
         public override bool FinishedLaunching(UIApplication uiapp, NSDictionary options)
         {
-            var app = new App()
+            var app = new App();
+
+            AppBuilder.Configure(app)
                 .UseiOS()
                 .UseSkiaViewHost()
-                .UseSkia();
+                .UseSkia()
+                .SetupWithoutStarting();
 
-            var asm = typeof(App).Assembly;
-            app.UseAssetAssembly(asm);
             app.Run();
 
             return true;

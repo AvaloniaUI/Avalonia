@@ -1,16 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Avalonia.Controls;
 using Avalonia.Platform;
 
 namespace Avalonia
 {
     public static class SkiaApplicationExtensions
     {
-        public static TApp UseSkia<TApp>(this TApp app) where TApp : Application
+        public static AppBuilder UseSkia(this AppBuilder builder)
         {
-            Avalonia.Skia.SkiaPlatform.Initialize();
-            return app;
+            builder.RenderingSubsystem = Avalonia.Skia.SkiaPlatform.Initialize;
+            return builder;
         }
     }
 }
