@@ -62,7 +62,7 @@ namespace Avalonia.DesignerSupport
             AppBuilder.Configure(app == null ? new DesignerApp() : (Application) Activator.CreateInstance(app.AsType()))
                 .WithWindowingSubsystem(Application.InitializeWin32Subsystem)
                 .WithRenderingSubsystem(() => { })
-                .Setup();
+                .SetupWithoutStarting();
         }
 
         private static void SetScalingFactor(double factor)
