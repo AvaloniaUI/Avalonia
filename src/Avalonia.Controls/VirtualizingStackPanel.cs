@@ -7,7 +7,7 @@ using System.Collections.Specialized;
 
 namespace Avalonia.Controls
 {
-    public class VirtualizingStackPanel : StackPanel, IScrollable, IVirtualizingPanel
+    public class VirtualizingStackPanel : StackPanel, IVirtualizingPanel
     {
         private double _takenSpace;
         private int _canBeRemoved;
@@ -25,26 +25,6 @@ namespace Avalonia.Controls
         int IVirtualizingPanel.OverflowCount => _canBeRemoved;
 
         Action IVirtualizingPanel.ArrangeCompleted { get; set; }
-
-        Action IScrollable.InvalidateScroll
-        {
-            get;
-            set;
-        }
-
-        Size IScrollable.Extent => new Size(_takenSpace, _takenSpace);
-
-        Vector IScrollable.Offset
-        {
-            get { return default(Vector); }
-            set { }
-        }
-
-        Size IScrollable.Viewport => Bounds.Size;
-
-        Size IScrollable.ScrollSize => new Size(1, 1);
-
-        Size IScrollable.PageScrollSize => new Size(1, 1);
 
         protected override Size ArrangeOverride(Size finalSize)
         {
