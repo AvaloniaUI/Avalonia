@@ -17,6 +17,7 @@ namespace Avalonia.Controls.Presenters
                 _panel = new VirtualizingStackPanel();
                 _panel.ArrangeCompleted = CheckPanel;
                 Child = _panel;
+                CheckPanel();
             }
         }
 
@@ -24,27 +25,30 @@ namespace Avalonia.Controls.Presenters
 
         Action IScrollable.InvalidateScroll { get; set; }
 
-        Size IScrollable.Extent => new Size(1, 100);
+        Size IScrollable.Extent => new Size(1, 100 * AverageItemSize );
 
         Vector IScrollable.Offset
         {
             get
             {
-                return new Vector(0, _firstIndex);
+                return new Vector(0, _firstIndex * AverageItemSize);
             }
 
             set
             {
                 var count = _lastIndex - _firstIndex;
-                _firstIndex = (int)Math.Round(value.Y);
+                _firstIndex = (int)(value.Y / AverageItemSize);
                 _lastIndex = _firstIndex + count;
+                _panel.PixelOffset = value.Y % AverageItemSize;
                 Renumber();
             }
         }
 
-        Size IScrollable.Viewport => new Size(1, _lastIndex - _firstIndex);
+        Size IScrollable.Viewport => new Size(1, (_lastIndex - _firstIndex) * AverageItemSize);
         Size IScrollable.ScrollSize => new Size(0, 1);
         Size IScrollable.PageScrollSize => new Size(0, 1);
+
+        private double AverageItemSize => _panel?.AverageItemSize ?? 1;
 
         protected override Size ArrangeOverride(Size finalSize)
         {

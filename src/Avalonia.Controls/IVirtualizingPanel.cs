@@ -8,6 +8,10 @@ namespace Avalonia.Controls
 
         int OverflowCount { get; }
 
+        double AverageItemSize { get; }
+
+        double PixelOffset { get; set; }
+
         Action ArrangeCompleted { get; set; }
     }
 }
