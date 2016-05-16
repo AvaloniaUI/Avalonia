@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
+using Avalonia.Media;
 
 namespace Avalonia.VisualTree
 {
@@ -36,18 +37,25 @@ namespace Avalonia.VisualTree
         {
             var visuals = visual.GetSelfAndVisualAncestors()
                 .TakeWhile(x => x != relativeTo)
-                .Reverse();
-            var boundsSubscriptions = new List<IObservable<Rect>>();
+                .Cast<Visual>();
 
-            foreach (var v in visuals.Cast<Visual>())
-            {
-                boundsSubscriptions.Add(v.GetObservable(Visual.BoundsProperty));
-            }
-
-            var bounds = boundsSubscriptions.CombineLatest().Select(ExtractBounds);
-
-            // TODO: Track transform and clip rectangle.
-            return bounds.Select(x => new TransformedBounds(x, new Rect(), Matrix.Identity));
+            var bounds = visuals.Select(v => v.GetObservable(Visual.BoundsProperty)).CombineLatest().Select(ExtractBounds);
+            
+            return visuals.Select(v => v.GetObservable(Visual.BoundsProperty)
+                .CombineLatest(v.GetObservable(Visual.RenderTransformProperty), v.GetObservable(Visual.TransformOriginProperty),
+                (b, rt, to) => new { b, t = new { rt, to = to.ToPixels(new Size(b.Width, b.Height)) } })).CombineLatest()
+                .Select(visualsInfo =>
+                    new
+                    {
+                        b = ExtractBounds(visualsInfo.Select(visualInfo => visualInfo.b)),
+                        m = visualsInfo
+                            .Select(visualInfo =>
+                            (visualInfo.t.rt?.Value ?? Matrix.Identity)
+                            )
+                            .Aggregate(Matrix.Identity, (acc, mat) => mat * acc)
+                    }
+                ).
+                Select(transformedBounds => new TransformedBounds(transformedBounds.b, new Rect(), transformedBounds.m));
         }
 
         /// <summary>
@@ -55,10 +63,10 @@ namespace Avalonia.VisualTree
         /// </summary>
         /// <param name="rects">The collection of rectangles.</param>
         /// <returns>The summed rectangle.</returns>
-        private static Rect ExtractBounds(IList<Rect> rects)
+        private static Rect ExtractBounds(IEnumerable<Rect> rects)
         {
             var position = rects.Select(x => x.Position).Aggregate((a, b) => a + b);
-            return new Rect(position, rects.Last().Size);
+            return new Rect(position, rects.First().Size);
         }
     }
 }

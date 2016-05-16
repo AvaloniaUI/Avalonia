@@ -5,6 +5,7 @@ using System;
 using System.Collections.Specialized;
 using System.Linq;
 using Avalonia.VisualTree;
+using Avalonia.Media;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -58,6 +59,7 @@ namespace Avalonia.Controls.Primitives
 
                 if (info != null)
                 {
+                    child.RenderTransform = new MatrixTransform(info.Bounds.Transform);
                     child.Arrange(info.Bounds.Bounds);
                 }
                 else
