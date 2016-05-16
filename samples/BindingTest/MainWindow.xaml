@@ -30,8 +30,15 @@
           </StackPanel>
         </StackPanel>
         <StackPanel Orientation="Horizontal">
+          <StackPanel.RenderTransform>
+            <RotateTransform Angle="10" />
+          </StackPanel.RenderTransform>
           <StackPanel Margin="18" Gap="4" Width="200" HorizontalAlignment="Left">
-            <TextBlock FontSize="16" Text="Numeric Bindings"/>
+            <TextBlock FontSize="16" Text="Numeric Bindings">
+              <TextBlock.RenderTransform>
+                <RotateTransform Angle="90" />
+              </TextBlock.RenderTransform>
+            </TextBlock>
             <TextBox Watermark="Double" UseFloatingWatermark="True" Text="{Binding Path=DoubleValue, Mode=TwoWay}"/>
             <TextBlock Text="{Binding Path=DoubleValue}"/>
             <ProgressBar Maximum="10" Value="{Binding DoubleValue}"/>
