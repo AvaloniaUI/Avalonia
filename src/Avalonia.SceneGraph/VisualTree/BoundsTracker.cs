@@ -17,14 +17,22 @@ namespace Avalonia.VisualTree
     /// </remarks>
     public class BoundsTracker
     {
+        private static AttachedProperty<TransformedBounds> TransformedBoundsProperty =
+            AvaloniaProperty.RegisterAttached<BoundsTracker, Visual, TransformedBounds>("TransformedBounds");
+
         /// <summary>
         /// Starts tracking the specified visual.
         /// </summary>
         /// <param name="visual">The visual.</param>
         /// <returns>An observable that returns the tracked bounds.</returns>
-        public IObservable<TransformedBounds> Track(Visual visual)
+        public IObservable<TransformedBounds> TrackBounds(Visual visual)
         {
-            return Track(visual, (Visual)visual.GetVisualRoot());
+            return visual.GetObservable(TransformedBoundsProperty);
+        }
+
+        internal static void SetTransformedBounds(Visual visual, TransformedBounds bounds)
+        {
+            visual.SetValue(TransformedBoundsProperty, bounds);
         }
 
         /// <summary>
@@ -48,14 +56,15 @@ namespace Avalonia.VisualTree
                     new
                     {
                         b = ExtractBounds(visualsInfo.Select(visualInfo => visualInfo.b)),
-                        m = visualsInfo
-                            .Select(visualInfo =>
-                            (visualInfo.t.rt?.Value ?? Matrix.Identity)
-                            )
-                            .Aggregate(Matrix.Identity, (acc, mat) => mat * acc)
+                        m = ExtractTransformationMatrix(visualsInfo.Select(visualInfo => Tuple.Create(visualInfo.b, visualInfo.t.rt, visualInfo.t.to)))
                     }
                 ).
                 Select(transformedBounds => new TransformedBounds(transformedBounds.b, new Rect(), transformedBounds.m));
+        }
+
+        private static Matrix ExtractTransformationMatrix(IEnumerable<Tuple<Rect, Transform, Point>> visualInfos)
+        {
+            throw new NotImplementedException();
         }
 
         /// <summary>

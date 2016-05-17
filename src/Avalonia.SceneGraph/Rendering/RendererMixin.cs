@@ -121,6 +121,12 @@ namespace Avalonia.Rendering
                 using (context.PushTransformContainer())
                 {
                     visual.Render(context);
+                    var transformed =
+                        new TransformedBounds(bounds, new Rect(), context.CurrentContainerTransform);
+                    if (visual is Visual)
+                    {
+                        BoundsTracker.SetTransformedBounds((Visual)visual, transformed);
+                    }
 
                     var lst = GetSortedVisualList(visual.VisualChildren);
 

@@ -12,7 +12,11 @@
       <StackPanel Orientation="Vertical">
         <StackPanel Orientation="Horizontal">
           <StackPanel Margin="18" Gap="4" Width="200">
-            <TextBlock FontSize="16" Text="Simple Bindings"/>
+            <TextBlock FontSize="16" Text="Simple Bindings">
+              <TextBlock.RenderTransform>
+                <RotateTransform Angle="90" />
+              </TextBlock.RenderTransform>
+            </TextBlock>
             <TextBox Watermark="Two Way" UseFloatingWatermark="True" Text="{Binding Path=StringValue}" Name="first"/>
             <TextBox Watermark="One Way" UseFloatingWatermark="True" Text="{Binding Path=StringValue, Mode=OneWay}"/>
             <TextBox Watermark="One Time" UseFloatingWatermark="True" Text="{Binding Path=StringValue, Mode=OneTime}"/>
