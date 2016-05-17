@@ -60,6 +60,7 @@ namespace Avalonia.Controls.Primitives
                 if (info != null)
                 {
                     child.RenderTransform = new MatrixTransform(info.Bounds.Transform);
+                    child.TransformOrigin = new RelativePoint(new Point(0,0), RelativeUnit.Absolute);
                     child.Arrange(info.Bounds.Bounds);
                 }
                 else
@@ -117,7 +118,7 @@ namespace Avalonia.Controls.Primitives
                     adorner.SetValue(s_adornedElementInfoProperty, info);
                 }
 
-                info.Subscription = _tracker.Track(adorned).Subscribe(x =>
+                info.Subscription = _tracker.TrackBounds(adorned).Subscribe(x =>
                 {
                     info.Bounds = x;
                     InvalidateArrange();

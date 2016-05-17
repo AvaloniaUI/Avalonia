@@ -59,6 +59,8 @@ namespace Avalonia.Media
 
         private Matrix _currentContainerTransform = Matrix.Identity;
 
+        internal Matrix CurrentContainerTransform => _currentContainerTransform;
+
         /// <summary>
         /// Draws a bitmap image.
         /// </summary>
