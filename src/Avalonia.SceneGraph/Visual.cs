@@ -442,6 +442,11 @@ namespace Avalonia
         /// <param name="value">The visual parent.</param>
         private void SetVisualParent(Visual value)
         {
+            if (value != null && _visualParent != null)
+            {
+                throw new InvalidOperationException("The control already has a visual parent.");
+            }
+
             if (_visualParent == value)
             {
                 return;
