@@ -118,7 +118,7 @@ namespace Avalonia.Controls.Primitives
                     adorner.SetValue(s_adornedElementInfoProperty, info);
                 }
 
-                info.Subscription = _tracker.TrackBounds(adorned).Subscribe(x =>
+                info.Subscription = _tracker.Track(adorned).Subscribe(x =>
                 {
                     info.Bounds = x;
                     InvalidateArrange();
