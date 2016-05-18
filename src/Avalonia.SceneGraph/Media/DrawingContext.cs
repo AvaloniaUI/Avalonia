@@ -44,6 +44,8 @@ namespace Avalonia.Media
 
         private Matrix _currentTransform = Matrix.Identity;
 
+        private Matrix _currentContainerTransform = Matrix.Identity;
+        
         /// <summary>
         /// Gets the current transform of the drawing context.
         /// </summary>
@@ -56,8 +58,6 @@ namespace Avalonia.Media
                 _impl.Transform = _currentTransform*_currentContainerTransform;
             }
         }
-
-        private Matrix _currentContainerTransform = Matrix.Identity;
 
         internal Matrix CurrentContainerTransform => _currentContainerTransform;
 
