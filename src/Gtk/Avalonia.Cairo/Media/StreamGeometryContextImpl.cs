@@ -62,6 +62,11 @@ namespace Avalonia.Cairo.Media
             }
         }
 
+        internal bool FillContains(Point point)
+        {
+            return _context.InFill(point.X, point.Y);
+        }
+
         public void LineTo(Point point)
         {
             if (this.Path == null)
