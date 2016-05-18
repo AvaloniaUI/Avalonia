@@ -84,5 +84,12 @@ namespace Avalonia.Direct2D1.Media
                 return DefiningGeometry.GetWidenedBounds((float)strokeThickness).ToAvalonia();
             }
         }
+
+
+        public bool FillContains(Point point)
+        {
+            return Geometry.FillContainsPoint(point.ToSharpDX());
+        }
+
     }
 }

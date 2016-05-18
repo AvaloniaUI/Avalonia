@@ -40,6 +40,6 @@ namespace Avalonia.VisualTree
         /// </summary>
         /// <param name="visual">The visual.</param>
         /// <returns>The transformed bounds.</returns>
-        public TransformedBounds GetTransformedBounds(Visual visual) => visual.GetValue(TransformedBoundsProperty);
+        public static TransformedBounds GetTransformedBounds(Visual visual) => visual.GetValue(TransformedBoundsProperty);
     }
 }
