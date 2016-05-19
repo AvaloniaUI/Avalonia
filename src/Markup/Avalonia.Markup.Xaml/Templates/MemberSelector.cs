@@ -10,6 +10,10 @@ namespace Avalonia.Markup.Xaml.Templates
 {
     public class MemberSelector : IMemberSelector
     {
+        private ExpressionNode _expressionNode;
+        private string _memberName;
+        private ExpressionNode _memberValueNode;
+
         public string MemberName
         {
             get { return _memberName; }
@@ -38,7 +42,9 @@ namespace Avalonia.Markup.Xaml.Templates
                 _memberValueNode = _expressionNode;
 
                 while (_memberValueNode.Next != null)
+                {
                     _memberValueNode = _memberValueNode.Next;
+                }
             }
 
             _expressionNode.Target = new WeakReference(o);
@@ -56,9 +62,5 @@ namespace Avalonia.Markup.Xaml.Templates
 
             return result;
         }
-
-        private ExpressionNode _expressionNode;
-        private string _memberName;
-        private ExpressionNode _memberValueNode;
     }
 }
