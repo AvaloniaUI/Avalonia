@@ -49,6 +49,12 @@ namespace Avalonia.Controls.Presenters
             ContentControl.ContentProperty.AddOwner<ContentPresenter>();
 
         /// <summary>
+        /// Defines the <see cref="ContentTemplate"/> property.
+        /// </summary>
+        public static readonly StyledProperty<IDataTemplate> ContentTemplateProperty =
+            ContentControl.ContentTemplateProperty.AddOwner<ContentPresenter>();
+
+        /// <summary>
         /// Defines the <see cref="CornerRadius"/> property.
         /// </summary>
         public static readonly StyledProperty<float> CornerRadiusProperty =
@@ -141,6 +147,15 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <summary>
+        /// Gets or sets the data template used to display the content of the control.
+        /// </summary>
+        public IDataTemplate ContentTemplate
+        {
+            get { return GetValue(ContentTemplateProperty); }
+            set { SetValue(ContentTemplateProperty, value); }
+        }
+
+        /// <summary>
         /// Gets or sets the radius of the border rounded corners.
         /// </summary>
         public float CornerRadius
@@ -200,7 +215,7 @@ namespace Avalonia.Controls.Presenters
         {
             var old = Child;
             var content = Content;
-            var result = this.MaterializeDataTemplate(content);
+            var result = this.MaterializeDataTemplate(content, ContentTemplate);
 
             if (old != null)
             {

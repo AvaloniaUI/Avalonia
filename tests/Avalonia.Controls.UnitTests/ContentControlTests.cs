@@ -117,6 +117,24 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Should_Use_ContentTemplate_To_Create_Control()
+        {
+            var target = new ContentControl
+            {
+                Template = GetTemplate(),
+                ContentTemplate = new FuncDataTemplate<string>(_ => new Canvas()),
+            };
+
+            target.Content = "Foo";
+            target.ApplyTemplate();
+            ((ContentPresenter)target.Presenter).UpdateChild();
+
+            var child = target.Presenter.Child;
+
+            Assert.IsType<Canvas>(child);
+        }
+
+        [Fact]
         public void DataTemplate_Created_Control_Should_Be_Logical_Child_After_ApplyTemplate()
         {
             var target = new ContentControl
@@ -266,6 +284,7 @@ namespace Avalonia.Controls.UnitTests
                     {
                         Name = "PART_ContentPresenter",
                         [~ContentPresenter.ContentProperty] = parent[~ContentControl.ContentProperty],
+                        [~ContentPresenter.ContentTemplateProperty] = parent[~ContentControl.ContentTemplateProperty],
                     }
                 };
             });
