@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.Markup.Data;
 using System;
 
@@ -25,6 +26,11 @@ namespace Avalonia.Markup.Xaml.Templates
 
         public object Select(object o)
         {
+            if (string.IsNullOrEmpty(MemberName))
+            {
+                return o;
+            }
+
             if (_expressionNode == null)
             {
                 _expressionNode = ExpressionNodeBuilder.Build(MemberName);
@@ -37,7 +43,18 @@ namespace Avalonia.Markup.Xaml.Templates
 
             _expressionNode.Target = new WeakReference(o);
 
-            return _memberValueNode.CurrentValue.Target;
+            object result = _memberValueNode.CurrentValue.Target;
+
+            if (result == AvaloniaProperty.UnsetValue)
+            {
+                return null;
+            }
+            else if (result is BindingError)
+            {
+                return null;
+            }
+
+            return result;
         }
 
         private ExpressionNode _expressionNode;
