@@ -98,5 +98,18 @@ namespace Avalonia.SceneGraph.UnitTests
             Assert.True(called1);
             Assert.True(called2);
         }
+
+        [Fact]
+        public void Adding_Already_Parented_Control_Should_Throw()
+        {
+            var root1 = new TestRoot();
+            var root2 = new TestRoot();
+            var child = new TestVisual();
+
+            root1.AddChild(child);
+
+            Assert.Throws<InvalidOperationException>(() => root2.AddChild(child));
+            Assert.Equal(0, root2.GetVisualChildren().Count());
+        }
     }
 }

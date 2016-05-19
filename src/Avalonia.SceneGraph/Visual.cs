@@ -94,7 +94,7 @@ namespace Avalonia
         {
             var visualChildren = new AvaloniaList<IVisual>();
             visualChildren.ResetBehavior = ResetBehavior.Remove;
-            visualChildren.Validate = ValidateLogicalChild;
+            visualChildren.Validate = ValidateVisualChild;
             visualChildren.CollectionChanged += VisualChildrenChanged;
             VisualChildren = visualChildren;
         }
@@ -414,14 +414,19 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Ensures a visual child is not null.
+        /// Ensures a visual child is not null and not already parented.
         /// </summary>
         /// <param name="c">The visual child.</param>
-        private static void ValidateLogicalChild(IVisual c)
+        private static void ValidateVisualChild(IVisual c)
         {
             if (c == null)
             {
                 throw new ArgumentNullException("Cannot add null to VisualChildren.");
+            }
+
+            if (c.VisualParent != null)
+            {
+                throw new InvalidOperationException("The control already has a visual parent.");
             }
         }
 
@@ -442,11 +447,6 @@ namespace Avalonia
         /// <param name="value">The visual parent.</param>
         private void SetVisualParent(Visual value)
         {
-            if (value != null && _visualParent != null)
-            {
-                throw new InvalidOperationException("The control already has a visual parent.");
-            }
-
             if (_visualParent == value)
             {
                 return;
