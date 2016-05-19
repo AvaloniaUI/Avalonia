@@ -8,3 +8,4 @@ using System.Runtime.CompilerServices;
 [assembly: AssemblyTitle("Avalonia.Markup")]
 [assembly: XmlnsDefinition("https://github.com/avaloniaui", "Avalonia.Markup")]
 [assembly: InternalsVisibleTo("Avalonia.Markup.UnitTests")]
+[assembly: InternalsVisibleTo("Avalonia.Markup.Xaml")]
