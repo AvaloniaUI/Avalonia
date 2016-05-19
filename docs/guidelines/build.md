@@ -6,12 +6,7 @@ Avalonia requires Visual Studio 2015 to build on Windows.
 
 ### Install GTK Sharp
 
-To compile the full project under windows, you must have [gtk-sharp](http://www.mono-project.com/download/#download-win) installed. However, if you're 
-not interested in building the cross-platform bits you can simply unload these projects from Visual Studio:
-
- - Avalonia.Cairo
- - Avalonia.Cairo.RenderTests
- - Avalonia.Gtk
+For the moment under windows, you must have [gtk-sharp](http://www.mono-project.com/download/#download-win) installed. Note that after installing the package your machine may require a restart before GTK# is added to your path. We hope to remove or make this dependency optional at some point in the future.
 
 ### Clone the Avalonia repository
 
