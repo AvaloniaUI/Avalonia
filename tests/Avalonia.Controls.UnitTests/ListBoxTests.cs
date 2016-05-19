@@ -15,6 +15,27 @@ namespace Avalonia.Controls.UnitTests
     public class ListBoxTests
     {
         [Fact]
+        public void Should_Use_ItemTemplate_To_Create_Item_Content()
+        {
+            var target = new ListBox
+            {
+                Template = new FuncControlTemplate(CreateListBoxTemplate),
+                ItemTemplate = new FuncDataTemplate<string>(_ => new Canvas()),
+            };
+
+            target.Items = new[] { "Foo" };
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+
+            var container = (ListBoxItem)target.Presenter.Panel.Children[0];
+            container.Template = ListBoxItemTemplate();
+            container.ApplyTemplate();
+            ((ContentPresenter)container.Presenter).UpdateChild();
+
+            Assert.IsType<Canvas>(container.Presenter.Child);
+        }
+
+        [Fact]
         public void ListBox_Should_Find_ItemsPresenter_In_ScrollViewer()
         {
             var target = new ListBox
@@ -123,6 +144,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 Name = "PART_ContentPresenter",
                 [!ContentPresenter.ContentProperty] = parent[!ListBoxItem.ContentProperty],
+                [!ContentPresenter.ContentTemplateProperty] = parent[!ListBoxItem.ContentTemplateProperty],
             });
         }
 

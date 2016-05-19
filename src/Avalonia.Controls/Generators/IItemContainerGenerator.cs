@@ -19,6 +19,11 @@ namespace Avalonia.Controls.Generators
         IEnumerable<ItemContainer> Containers { get; }
 
         /// <summary>
+        /// Gets or sets the data template used to display the items in the control.
+        /// </summary>
+        IDataTemplate ItemTemplate { get; set; }
+
+        /// <summary>
         /// Signalled whenever new containers are materialized.
         /// </summary>
         event EventHandler<ItemContainerEventArgs> Materialized;

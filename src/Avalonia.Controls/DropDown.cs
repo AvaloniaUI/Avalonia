@@ -68,7 +68,10 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         protected override IItemContainerGenerator CreateItemContainerGenerator()
         {
-            return new ItemContainerGenerator<DropDownItem>(this, DropDownItem.ContentProperty);
+            return new ItemContainerGenerator<DropDownItem>(
+                this,
+                DropDownItem.ContentProperty,
+                DropDownItem.ContentTemplateProperty);
         }
 
         /// <inheritdoc/>

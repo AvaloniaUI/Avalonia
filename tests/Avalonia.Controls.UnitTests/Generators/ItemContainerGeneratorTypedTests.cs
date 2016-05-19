@@ -14,7 +14,7 @@ namespace Avalonia.Controls.UnitTests.Generators
         {
             var items = new[] { "foo", "bar", "baz" };
             var owner = new Decorator();
-            var target = new ItemContainerGenerator<ListBoxItem>(owner, ListBoxItem.ContentProperty);
+            var target = new ItemContainerGenerator<ListBoxItem>(owner, ListBoxItem.ContentProperty, null);
             var containers = target.Materialize(0, items, null);
             var result = containers
                 .Select(x => x.ContainerControl)

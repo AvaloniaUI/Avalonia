@@ -20,16 +20,18 @@ namespace Avalonia.Controls.Generators
         /// </summary>
         /// <param name="owner">The owner control.</param>
         /// <param name="contentProperty">The container's Content property.</param>
+        /// <param name="contentTemplateProperty">The container's ContentTemplate property.</param>
         /// <param name="itemsProperty">The container's Items property.</param>
         /// <param name="isExpandedProperty">The container's IsExpanded property.</param>
         /// <param name="index">The container index for the tree</param>
         public TreeItemContainerGenerator(
             IControl owner,
             AvaloniaProperty contentProperty,
+            AvaloniaProperty contentTemplateProperty,
             AvaloniaProperty itemsProperty,
             AvaloniaProperty isExpandedProperty,
             TreeContainerIndex index)
-            : base(owner, contentProperty)
+            : base(owner, contentProperty, contentTemplateProperty)
         {
             Contract.Requires<ArgumentNullException>(owner != null);
             Contract.Requires<ArgumentNullException>(contentProperty != null);

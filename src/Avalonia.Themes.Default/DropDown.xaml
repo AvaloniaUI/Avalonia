@@ -38,6 +38,7 @@
                       BorderThickness="1">
                 <ItemsPresenter Name="PART_ItemsPresenter"
                                 Items="{TemplateBinding Items}" 
+                                ItemTemplate="{TemplateBinding ItemTemplate}"
                                 MemberSelector="{TemplateBinding MemberSelector}"/>
               </Border>
             </Popup>

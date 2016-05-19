@@ -96,6 +96,7 @@ namespace Avalonia.Controls
             var result = new TreeItemContainerGenerator<TreeViewItem>(
                 this,
                 TreeViewItem.HeaderProperty,
+                null,
                 TreeViewItem.ItemsProperty,
                 TreeViewItem.IsExpandedProperty,
                 new TreeContainerIndex());
