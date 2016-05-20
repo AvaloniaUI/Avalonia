@@ -80,7 +80,7 @@ namespace Avalonia.Controls
             return new TreeItemContainerGenerator<TreeViewItem>(
                 this,
                 TreeViewItem.HeaderProperty,
-                null,
+                TreeViewItem.ItemTemplateProperty,
                 TreeViewItem.ItemsProperty,
                 TreeViewItem.IsExpandedProperty,
                 _treeView?.ItemContainerGenerator.Index ?? new TreeContainerIndex());
@@ -91,6 +91,11 @@ namespace Avalonia.Controls
         {
             base.OnAttachedToLogicalTree(e);
             _treeView = this.GetLogicalAncestors().OfType<TreeView>().FirstOrDefault();
+
+            if (ItemTemplate == null && _treeView?.ItemTemplate != null)
+            {
+                ItemTemplate = _treeView.ItemTemplate;
+            }
         }
 
         protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)

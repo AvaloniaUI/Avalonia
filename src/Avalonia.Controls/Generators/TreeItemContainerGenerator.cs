@@ -75,7 +75,7 @@ namespace Avalonia.Controls.Generators
             }
             else
             {
-                var template = GetTreeDataTemplate(item);
+                var template = GetTreeDataTemplate(item, ItemTemplate);
                 var result = new T();
 
                 result.SetValue(ContentProperty, template.Build(item));
@@ -123,9 +123,9 @@ namespace Avalonia.Controls.Generators
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns>The template.</returns>
-        private ITreeDataTemplate GetTreeDataTemplate(object item)
+        private ITreeDataTemplate GetTreeDataTemplate(object item, IDataTemplate primary)
         {
-            var template = Owner.FindDataTemplate(item) ?? FuncDataTemplate.Default;
+            var template = Owner.FindDataTemplate(item, primary) ?? FuncDataTemplate.Default;
             var treeTemplate = template as ITreeDataTemplate ??
                 new FuncTreeDataTemplate(typeof(object), template.Build, x => null);
             return treeTemplate;
