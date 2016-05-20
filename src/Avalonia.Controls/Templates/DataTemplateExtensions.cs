@@ -16,8 +16,15 @@ namespace Avalonia.Controls.Templates
         /// </summary>
         /// <param name="control">The control materializing the data template.</param>
         /// <param name="data">The data.</param>
+        /// <param name="primary">
+        /// An optional primary template that can will be tried before the
+        /// <see cref="IControl.DataTemplates"/> in the tree are searched.
+        /// </param>
         /// <returns>The data materialized as a control.</returns>
-        public static IControl MaterializeDataTemplate(this IControl control, object data)
+        public static IControl MaterializeDataTemplate(
+            this IControl control,
+            object data,
+            IDataTemplate primary = null)
         {
             if (data == null)
             {
@@ -33,7 +40,7 @@ namespace Avalonia.Controls.Templates
                 }
                 else
                 {
-                    IDataTemplate template = control.FindDataTemplate(data);
+                    IDataTemplate template = control.FindDataTemplate(data, primary);
                     IControl result;
 
                     if (template != null)
@@ -57,9 +64,21 @@ namespace Avalonia.Controls.Templates
         /// </summary>
         /// <param name="control">The control searching for the data template.</param>
         /// <param name="data">The data.</param>
+        /// <param name="primary">
+        /// An optional primary template that can will be tried before the
+        /// <see cref="IControl.DataTemplates"/> in the tree are searched.
+        /// </param>
         /// <returns>The data template or null if no matching data template was found.</returns>
-        public static IDataTemplate FindDataTemplate(this IControl control, object data)
+        public static IDataTemplate FindDataTemplate(
+            this IControl control,
+            object data,
+            IDataTemplate primary = null)
         {
+            if (primary?.Match(data) == true)
+            {
+                return primary;
+            }
+
             foreach (var i in control.GetSelfAndLogicalAncestors().OfType<IControl>())
             {
                 foreach (IDataTemplate dt in i.DataTemplates)

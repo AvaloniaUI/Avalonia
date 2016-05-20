@@ -15,6 +15,22 @@ namespace Avalonia.Controls.UnitTests
     public class ItemsControlTests
     {
         [Fact]
+        public void Should_Use_ItemTemplate_To_Create_Control()
+        {
+            var target = new ItemsControl
+            {
+                Template = GetTemplate(),
+                ItemTemplate = new FuncDataTemplate<string>(_ => new Canvas()),
+            };
+
+            target.Items = new[] { "Foo" };
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+
+            Assert.IsType<Canvas>(target.Presenter.Panel.Children[0]);
+        }
+
+        [Fact]
         public void Panel_Should_Have_TemplatedParent_Set_To_ItemsControl()
         {
             var target = new ItemsControl();

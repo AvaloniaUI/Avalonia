@@ -41,7 +41,10 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         protected override IItemContainerGenerator CreateItemContainerGenerator()
         {
-            return new ItemContainerGenerator<ListBoxItem>(this, ListBoxItem.ContentProperty);
+            return new ItemContainerGenerator<ListBoxItem>(
+                this, 
+                ListBoxItem.ContentProperty,
+                ListBoxItem.ContentTemplateProperty);
         }
 
         /// <inheritdoc/>

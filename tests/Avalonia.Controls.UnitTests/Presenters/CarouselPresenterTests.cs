@@ -201,7 +201,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
         {
             protected override IItemContainerGenerator CreateItemContainerGenerator()
             {
-                return new ItemContainerGenerator<TestItem>(this, TestItem.ContentProperty);
+                return new ItemContainerGenerator<TestItem>(this, TestItem.ContentProperty, null);
             }
         }
     }

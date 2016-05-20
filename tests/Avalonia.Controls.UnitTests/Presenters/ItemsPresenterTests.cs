@@ -54,7 +54,8 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
             target.ItemContainerGenerator = new ItemContainerGenerator<ListBoxItem>(
                 target, 
-                ListBoxItem.ContentProperty);
+                ListBoxItem.ContentProperty,
+                null);
             target.ApplyTemplate();
 
             Assert.Equal(2, target.Panel.Children.Count);
@@ -332,7 +333,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
         {
             protected override IItemContainerGenerator CreateItemContainerGenerator()
             {
-                return new ItemContainerGenerator<TestItem>(this, TestItem.ContentProperty);
+                return new ItemContainerGenerator<TestItem>(this, TestItem.ContentProperty, null);
             }
         }
     }

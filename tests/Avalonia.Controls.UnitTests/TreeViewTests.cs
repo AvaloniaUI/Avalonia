@@ -36,6 +36,33 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Items_Should_Be_Created_Using_ItemTemplate_If_Present()
+        {
+            TreeView target;
+
+            var root = new TestRoot
+            {
+                Child = target = new TreeView
+                {
+                    Template = CreateTreeViewTemplate(),
+                    Items = CreateTestTreeData(),
+                    ItemTemplate = new FuncTreeDataTemplate<Node>(
+                        _ => new Canvas(),
+                        x => x.Children),
+                }
+            };
+
+            ApplyTemplates(target);
+
+            var items = target.ItemContainerGenerator.Index.Items
+                .OfType<TreeViewItem>()
+                .ToList();
+
+            Assert.Equal(4, items.Count);
+            Assert.All(items, x => Assert.IsType<Canvas>(x.HeaderPresenter.Child));
+        }
+
+        [Fact]
         public void Root_ItemContainerGenerator_Containers_Should_Be_Root_Containers()
         {
             var target = new TreeView
@@ -302,6 +329,7 @@ namespace Avalonia.Controls.UnitTests
                 control.Template = CreateTreeViewItemTemplate();
                 control.ApplyTemplate();
                 control.Presenter.ApplyTemplate();
+                control.HeaderPresenter.ApplyTemplate();
                 ApplyTemplates(control.Presenter.Panel.Children);
             }
         }
@@ -354,10 +382,21 @@ namespace Avalonia.Controls.UnitTests
 
         private IControlTemplate CreateTreeViewItemTemplate()
         {
-            return new FuncControlTemplate<TreeViewItem>(parent => new ItemsPresenter
+            return new FuncControlTemplate<TreeViewItem>(parent => new Panel
             {
-                Name = "PART_ItemsPresenter",
-                [~ItemsPresenter.ItemsProperty] = parent[~ItemsControl.ItemsProperty],
+                Children = new Controls
+                {
+                    new ContentPresenter
+                    {
+                        Name = "PART_HeaderPresenter",
+                        [~ContentPresenter.ContentProperty] = parent[~TreeViewItem.HeaderProperty],
+                    },
+                    new ItemsPresenter
+                    {
+                        Name = "PART_ItemsPresenter",
+                        [~ItemsPresenter.ItemsProperty] = parent[~ItemsControl.ItemsProperty],
+                    }
+                }
             });
         }
 

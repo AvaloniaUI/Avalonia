@@ -19,21 +19,29 @@ namespace Avalonia.Controls.Generators
         /// </summary>
         /// <param name="owner">The owner control.</param>
         /// <param name="contentProperty">The container's Content property.</param>
+        /// <param name="contentTemplateProperty">The container's ContentTemplate property.</param>
         public ItemContainerGenerator(
             IControl owner, 
-            AvaloniaProperty contentProperty)
+            AvaloniaProperty contentProperty,
+            AvaloniaProperty contentTemplateProperty)
             : base(owner)
         {
             Contract.Requires<ArgumentNullException>(owner != null);
             Contract.Requires<ArgumentNullException>(contentProperty != null);
 
             ContentProperty = contentProperty;
+            ContentTemplateProperty = contentTemplateProperty;
         }
 
         /// <summary>
         /// Gets the container's Content property.
         /// </summary>
         protected AvaloniaProperty ContentProperty { get; }
+
+        /// <summary>
+        /// Gets the container's ContentTemplate property.
+        /// </summary>
+        protected AvaloniaProperty ContentTemplateProperty { get; }
 
         /// <inheritdoc/>
         protected override IControl CreateContainer(object item)
@@ -51,6 +59,12 @@ namespace Avalonia.Controls.Generators
             else
             {
                 var result = new T();
+
+                if (ContentTemplateProperty != null)
+                {
+                    result.SetValue(ContentTemplateProperty, ItemTemplate);
+                }
+
                 result.SetValue(ContentProperty, item);
 
                 if (!(item is IControl))

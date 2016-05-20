@@ -5,6 +5,7 @@
       <ContentPresenter Name="PART_ContentPresenter"
                         Background="{TemplateBinding Background}"
                         Content="{TemplateBinding Content}" 
+                        ContentTemplate="{TemplateBinding ContentTemplate}"
                         Padding="{TemplateBinding Padding}"/>
     </ControlTemplate>
   </Setter>

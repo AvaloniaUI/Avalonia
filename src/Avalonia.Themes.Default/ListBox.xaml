@@ -11,6 +11,7 @@
           <ItemsPresenter Name="PART_ItemsPresenter"
                           Items="{TemplateBinding Items}"
                           ItemsPanel="{TemplateBinding ItemsPanel}"
+                          ItemTemplate="{TemplateBinding ItemTemplate}"
                           Margin="{TemplateBinding Padding}"
                           MemberSelector="{TemplateBinding MemberSelector}"/>
         </ScrollViewer>

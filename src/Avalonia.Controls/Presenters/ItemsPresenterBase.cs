@@ -28,6 +28,12 @@ namespace Avalonia.Controls.Presenters
             ItemsControl.ItemsPanelProperty.AddOwner<ItemsPresenterBase>();
 
         /// <summary>
+        /// Defines the <see cref="ItemTemplate"/> property.
+        /// </summary>
+        public static readonly StyledProperty<IDataTemplate> ItemTemplateProperty =
+            ItemsControl.ItemTemplateProperty.AddOwner<ItemsPresenterBase>();
+
+        /// <summary>
         /// Defines the <see cref="MemberSelector"/> property.
         /// </summary>
         public static readonly StyledProperty<IMemberSelector> MemberSelectorProperty =
@@ -120,6 +126,15 @@ namespace Avalonia.Controls.Presenters
         {
             get { return GetValue(ItemsPanelProperty); }
             set { SetValue(ItemsPanelProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the data template used to display the items in the control.
+        /// </summary>
+        public IDataTemplate ItemTemplate
+        {
+            get { return GetValue(ItemTemplateProperty); }
+            set { SetValue(ItemTemplateProperty, value); }
         }
 
         /// <summary>
