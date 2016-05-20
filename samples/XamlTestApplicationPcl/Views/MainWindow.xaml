@@ -143,14 +143,14 @@
       <TabItem Header="Lists">
         <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
           <ListBox Items="{Binding Items}" SelectionMode="Multiple">
-            <ListBox.DataTemplates>
+            <ListBox.ItemTemplate>
               <DataTemplate DataType="vm:TestItem">
                 <StackPanel>
                   <TextBlock Text="{Binding Header}" FontSize="24" />
                   <TextBlock Text="{Binding SubHeader}" />
                 </StackPanel>
               </DataTemplate>
-            </ListBox.DataTemplates>
+            </ListBox.ItemTemplate>
           </ListBox>
           <DropDown VerticalAlignment="Center" SelectedIndex="0">
             <StackPanel>
@@ -168,14 +168,14 @@
                 <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
               </Style>
             </TreeView.Styles>
-            <TreeView.DataTemplates>
+            <TreeView.ItemTemplate>
               <TreeDataTemplate DataType="vm:TestNode" ItemsSource="{Binding Children}">
                 <StackPanel>
                   <TextBlock Text="{Binding Header}" FontSize="24" />
                   <TextBlock Text="{Binding SubHeader}" />
                 </StackPanel>
               </TreeDataTemplate>
-            </TreeView.DataTemplates>
+            </TreeView.ItemTemplate>
           </TreeView>
           <StackPanel Orientation="Vertical" Gap="4">
             <Button Command="{Binding CollapseNodesCommand}">Collapse Nodes</Button>
