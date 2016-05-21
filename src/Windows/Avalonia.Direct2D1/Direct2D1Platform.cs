@@ -49,9 +49,10 @@ namespace Avalonia.Direct2D1
             double fontSize,
             FontStyle fontStyle,
             TextAlignment textAlignment,
-            FontWeight fontWeight)
+            FontWeight fontWeight,
+            TextWrapping wrapping)
         {
-            return new FormattedTextImpl(text, fontFamily, fontSize, fontStyle, textAlignment, fontWeight);
+            return new FormattedTextImpl(text, fontFamily, fontSize, fontStyle, textAlignment, fontWeight, wrapping);
         }
 
         public IRenderTarget CreateRenderer(IPlatformHandle handle)

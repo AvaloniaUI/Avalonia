@@ -21,13 +21,15 @@ namespace Avalonia.Media
         /// <param name="fontStyle">The font style.</param>
         /// <param name="textAlignment">The text alignment.</param>
         /// <param name="fontWeight">The font weight.</param>
+        /// <param name="wrapping">The text wrapping mode.</param>
         public FormattedText(
             string text,
             string fontFamilyName,
             double fontSize,
-            FontStyle fontStyle,
-            TextAlignment textAlignment,
-            FontWeight fontWeight)
+            FontStyle fontStyle = FontStyle.Normal,
+            TextAlignment textAlignment = TextAlignment.Left,
+            FontWeight fontWeight = FontWeight.Normal,
+            TextWrapping wrapping = TextWrapping.Wrap)
         {
             Contract.Requires<ArgumentNullException>(text != null);
             Contract.Requires<ArgumentNullException>(fontFamilyName != null);
@@ -39,6 +41,7 @@ namespace Avalonia.Media
             FontStyle = fontStyle;
             FontWeight = fontWeight;
             TextAlignment = textAlignment;
+            Wrapping = wrapping;
 
             var platform = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
 
@@ -53,7 +56,8 @@ namespace Avalonia.Media
                 fontSize,
                 fontStyle,
                 textAlignment,
-                fontWeight);
+                fontWeight,
+                wrapping);
         }
 
         /// <summary>
@@ -76,63 +80,42 @@ namespace Avalonia.Media
         /// <summary>
         /// Gets the font family.
         /// </summary>
-        public string FontFamilyName
-        {
-            get;
-            private set;
-        }
+        public string FontFamilyName { get; }
 
         /// <summary>
         /// Gets the font size.
         /// </summary>
-        public double FontSize
-        {
-            get;
-            private set;
-        }
+        public double FontSize { get; }
 
         /// <summary>
         /// Gets the font style.
         /// </summary>
-        public FontStyle FontStyle
-        {
-            get;
-            private set;
-        }
+        public FontStyle FontStyle { get; }
 
         /// <summary>
         /// Gets the font weight.
         /// </summary>
-        public FontWeight FontWeight
-        {
-            get;
-            private set;
-        }
+        public FontWeight FontWeight { get; }
 
         /// <summary>
         /// Gets the text.
         /// </summary>
-        public string Text
-        {
-            get;
-            private set;
-        }
+        public string Text { get; }
 
         /// <summary>
         /// Gets platform-specific platform implementation.
         /// </summary>
-        public IFormattedTextImpl PlatformImpl
-        {
-            get; }
+        public IFormattedTextImpl PlatformImpl { get; }
 
         /// <summary>
         /// Gets the text alignment.
         /// </summary>
-        public TextAlignment TextAlignment
-        {
-            get;
-            private set;
-        }
+        public TextAlignment TextAlignment { get; }
+
+        /// <summary>
+        /// Gets the text wrapping.
+        /// </summary>
+        public TextWrapping Wrapping { get; }
 
         /// <summary>
         /// Disposes of unmanaged resources associated with the formatted text.

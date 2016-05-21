@@ -22,6 +22,12 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<ContentControl, object>(nameof(Content));
 
         /// <summary>
+        /// Defines the <see cref="ContentTemplate"/> property.
+        /// </summary>
+        public static readonly StyledProperty<IDataTemplate> ContentTemplateProperty =
+            AvaloniaProperty.Register<ContentControl, IDataTemplate>(nameof(ContentTemplate));
+
+        /// <summary>
         /// Defines the <see cref="HorizontalContentAlignment"/> property.
         /// </summary>
         public static readonly StyledProperty<HorizontalAlignment> HorizontalContentAlignmentProperty =
@@ -49,6 +55,15 @@ namespace Avalonia.Controls
         {
             get { return GetValue(ContentProperty); }
             set { SetValue(ContentProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the data template used to display the content of the control.
+        /// </summary>
+        public IDataTemplate ContentTemplate
+        {
+            get { return GetValue(ContentTemplateProperty); }
+            set { SetValue(ContentTemplateProperty, value); }
         }
 
         /// <summary>

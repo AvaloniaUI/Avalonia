@@ -38,6 +38,11 @@ namespace Avalonia.Controls.Generators
         public event EventHandler<ItemContainerEventArgs> Dematerialized;
 
         /// <summary>
+        /// Gets or sets the data template used to display the items in the control.
+        /// </summary>
+        public IDataTemplate ItemTemplate { get; set; }
+
+        /// <summary>
         /// Gets the owner control.
         /// </summary>
         public IControl Owner { get; }
@@ -156,7 +161,7 @@ namespace Avalonia.Controls.Generators
         /// <returns>The created container control.</returns>
         protected virtual IControl CreateContainer(object item)
         {
-            var result = Owner.MaterializeDataTemplate(item);
+            var result = Owner.MaterializeDataTemplate(item, ItemTemplate);
 
             if (result != null && !(item is IControl))
             {

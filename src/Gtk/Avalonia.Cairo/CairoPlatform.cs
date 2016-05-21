@@ -44,7 +44,8 @@ namespace Avalonia.Cairo
             double fontSize,
             FontStyle fontStyle,
             TextAlignment textAlignment,
-            Avalonia.Media.FontWeight fontWeight)
+            Avalonia.Media.FontWeight fontWeight,
+            TextWrapping wrapping)
         {
             return new FormattedTextImpl(s_pangoContext, text, fontFamily, fontSize, fontStyle, textAlignment, fontWeight);
         }

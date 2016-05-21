@@ -10,6 +10,7 @@
                           BorderBrush="{TemplateBinding BorderBrush}"
                           BorderThickness="{TemplateBinding BorderThickness}"
                           Content="{TemplateBinding Content}"
+                          ContentTemplate="{TemplateBinding ContentTemplate}"
                           HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                           VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                           Padding="{TemplateBinding Padding}"/>

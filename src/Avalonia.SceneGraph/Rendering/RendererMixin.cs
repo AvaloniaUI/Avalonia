@@ -62,7 +62,8 @@ namespace Avalonia.Rendering
                         var txt = new FormattedText("Frame #" + s_frameNum + " FPS: " + s_fps, "Arial", 18,
                             FontStyle.Normal,
                             TextAlignment.Left,
-                            FontWeight.Normal))
+                            FontWeight.Normal,
+                            TextWrapping.NoWrap))
                     {
                         ctx.FillRectangle(Brushes.White, new Rect(pt, txt.Measure()));
                         ctx.DrawText(Brushes.Black, pt, txt);

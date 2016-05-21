@@ -150,16 +150,20 @@ namespace Avalonia.Collections
                 Validate?.Invoke(value);
 
                 T old = _inner[index];
-                _inner[index] = value;
 
-                if (_collectionChanged != null)
+                if (!object.Equals(old, value))
                 {
-                    var e = new NotifyCollectionChangedEventArgs(
-                        NotifyCollectionChangedAction.Replace,
-                        value,
-                        old,
-                        index);
-                    _collectionChanged(this, e);
+                    _inner[index] = value;
+
+                    if (_collectionChanged != null)
+                    {
+                        var e = new NotifyCollectionChangedEventArgs(
+                            NotifyCollectionChangedAction.Replace,
+                            value,
+                            old,
+                            index);
+                        _collectionChanged(this, e);
+                    }
                 }
             }
         }

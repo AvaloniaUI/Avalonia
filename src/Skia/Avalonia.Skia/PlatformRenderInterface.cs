@@ -18,7 +18,7 @@ namespace Avalonia.Skia
         }
 
         public IFormattedTextImpl CreateFormattedText(string text, string fontFamilyName, double fontSize, FontStyle fontStyle,
-            TextAlignment textAlignment, FontWeight fontWeight)
+            TextAlignment textAlignment, FontWeight fontWeight, TextWrapping wrapping)
         {
             return FormattedTextImpl.Create(text, fontFamilyName, fontSize, fontStyle, textAlignment, fontWeight);
         }

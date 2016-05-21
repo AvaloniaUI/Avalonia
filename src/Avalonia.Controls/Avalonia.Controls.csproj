@@ -167,7 +167,6 @@
     <Compile Include="ToolTip.cs" />
     <Compile Include="UserControl.cs" />
     <Compile Include="Templates\TemplateExtensions.cs" />
-    <Compile Include="TextWrapping.cs" />
     <Compile Include="Utils\AncestorFinder.cs" />
     <Compile Include="Utils\IEnumerableUtils.cs" />
     <Compile Include="Utils\StringUtils.cs" />

@@ -42,6 +42,12 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<ItemsControl, ITemplate<IPanel>>(nameof(ItemsPanel), DefaultPanel);
 
         /// <summary>
+        /// Defines the <see cref="ItemTemplate"/> property.
+        /// </summary>
+        public static readonly StyledProperty<IDataTemplate> ItemTemplateProperty =
+            AvaloniaProperty.Register<ItemsControl, IDataTemplate>(nameof(ItemTemplate));
+
+        /// <summary>
         /// Defines the <see cref="MemberSelector"/> property.
         /// </summary>
         public static readonly StyledProperty<IMemberSelector> MemberSelectorProperty =
@@ -65,6 +71,7 @@ namespace Avalonia.Controls
         {
             PseudoClasses.Add(":empty");
             SubscribeToItems(_items);
+            ItemTemplateProperty.Changed.AddClassHandler<ItemsControl>(x => x.ItemTemplateChanged);
         }
 
         /// <summary>
@@ -80,6 +87,7 @@ namespace Avalonia.Controls
 
                     if (_itemContainerGenerator != null)
                     {
+                        _itemContainerGenerator.ItemTemplate = ItemTemplate;
                         _itemContainerGenerator.Materialized += (_, e) => OnContainersMaterialized(e);
                         _itemContainerGenerator.Dematerialized += (_, e) => OnContainersDematerialized(e);
                     }
@@ -106,6 +114,15 @@ namespace Avalonia.Controls
         {
             get { return GetValue(ItemsPanelProperty); }
             set { SetValue(ItemsPanelProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the data template used to display the items in the control.
+        /// </summary>
+        public IDataTemplate ItemTemplate
+        {
+            get { return GetValue(ItemTemplateProperty); }
+            set { SetValue(ItemTemplateProperty, value); }
         }
 
         /// <summary>
@@ -354,7 +371,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Subscribes to an <see cref="Items"/> collection.
         /// </summary>
-        /// <param name="items"></param>
+        /// <param name="items">The items collection.</param>
         private void SubscribeToItems(IEnumerable items)
         {
             PseudoClasses.Set(":empty", items == null || items.Count() == 0);
@@ -364,6 +381,19 @@ namespace Avalonia.Controls
             if (incc != null)
             {
                 incc.CollectionChanged += ItemsCollectionChanged;
+            }
+        }
+
+        /// <summary>
+        /// Called when the <see cref="ItemTemplate"/> changes.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        private void ItemTemplateChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            if (_itemContainerGenerator != null)
+            {
+                _itemContainerGenerator.ItemTemplate = (IDataTemplate)e.NewValue;
+                // TODO: Rebuild the item containers.
             }
         }
     }

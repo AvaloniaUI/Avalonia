@@ -90,8 +90,6 @@ namespace Avalonia.Win32
                     value *= Scaling;
                     value += BorderThickness;
 
-                    System.Diagnostics.Debug.WriteLine($"Set client size to {value}");
-
                     UnmanagedMethods.SetWindowPos(
                         _hwnd,
                         IntPtr.Zero,
