@@ -18,7 +18,8 @@ namespace Avalonia.Direct2D1.Media
             double fontSize,
             FontStyle fontStyle,
             TextAlignment textAlignment,
-            FontWeight fontWeight)
+            FontWeight fontWeight,
+            TextWrapping wrapping)
         {
             var factory = AvaloniaLocator.Current.GetService<DWrite.Factory>();
 
@@ -29,6 +30,9 @@ namespace Avalonia.Direct2D1.Media
                 (DWrite.FontStyle)fontStyle,
                 (float)fontSize))
             {
+                format.WordWrapping = wrapping == TextWrapping.Wrap ? 
+                    DWrite.WordWrapping.Wrap : DWrite.WordWrapping.NoWrap;
+
                 TextLayout = new DWrite.TextLayout(
                     factory,
                     text ?? string.Empty,

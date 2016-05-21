@@ -99,6 +99,7 @@ namespace Avalonia.Controls
         /// </summary>
         static TextBlock()
         {
+            ClipToBoundsProperty.OverrideDefaultValue<TextBlock>(true);
             AffectsRender(ForegroundProperty);
             AffectsRender(FontWeightProperty);
             AffectsRender(FontSizeProperty);
@@ -355,7 +356,8 @@ namespace Avalonia.Controls
                 FontSize,
                 FontStyle,
                 TextAlignment,
-                FontWeight);
+                FontWeight,
+                TextWrapping);
             result.Constraint = constraint;
             return result;
         }

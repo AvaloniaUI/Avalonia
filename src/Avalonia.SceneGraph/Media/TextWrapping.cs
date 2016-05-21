@@ -1,10 +1,10 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-namespace Avalonia.Controls
+namespace Avalonia.Media
 {
     /// <summary>
-    /// Controls the wrapping mode in a <see cref="TextBlock"/>.
+    /// Controls the wrapping mode of text.
     /// </summary>
     public enum TextWrapping
     {
