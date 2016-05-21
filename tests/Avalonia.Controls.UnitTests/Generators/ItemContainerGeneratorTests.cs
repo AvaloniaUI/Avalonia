@@ -1,8 +1,11 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Controls.Generators;
+using Avalonia.Controls.Templates;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Generators
@@ -15,7 +18,7 @@ namespace Avalonia.Controls.UnitTests.Generators
             var items = new[] { "foo", "bar", "baz" };
             var owner = new Decorator();
             var target = new ItemContainerGenerator(owner);
-            var containers = target.Materialize(0, items, null);
+            var containers = Materialize(target, 0, items);
             var result = containers
                 .Select(x => x.ContainerControl)
                 .OfType<TextBlock>()
@@ -31,11 +34,27 @@ namespace Avalonia.Controls.UnitTests.Generators
             var items = new[] { "foo", "bar", "baz" };
             var owner = new Decorator();
             var target = new ItemContainerGenerator(owner);
-            var containers = target.Materialize(0, items, null).ToList();
+            var containers = Materialize(target, 0, items);
 
             Assert.Equal(containers[0].ContainerControl, target.ContainerFromIndex(0));
             Assert.Equal(containers[1].ContainerControl, target.ContainerFromIndex(1));
             Assert.Equal(containers[2].ContainerControl, target.ContainerFromIndex(2));
+        }
+
+        private IList<ItemContainerInfo> Materialize(
+            IItemContainerGenerator generator,
+            int index,
+            string[] items)
+        {
+            var result = new List<ItemContainerInfo>();
+
+            foreach (var item in items)
+            {
+                var container = generator.Materialize(index++, item, null);
+                result.Add(container);
+            }
+
+            return result;
         }
 
         [Fact]
@@ -44,7 +63,7 @@ namespace Avalonia.Controls.UnitTests.Generators
             var items = new[] { "foo", "bar", "baz" };
             var owner = new Decorator();
             var target = new ItemContainerGenerator(owner);
-            var containers = target.Materialize(0, items, null).ToList();
+            var containers = Materialize(target, 0, items);
 
             Assert.Equal(0, target.IndexFromContainer(containers[0].ContainerControl));
             Assert.Equal(1, target.IndexFromContainer(containers[1].ContainerControl));
@@ -57,7 +76,7 @@ namespace Avalonia.Controls.UnitTests.Generators
             var items = new[] { "foo", "bar", "baz" };
             var owner = new Decorator();
             var target = new ItemContainerGenerator(owner);
-            var containers = target.Materialize(0, items, null).ToList();
+            var containers = Materialize(target, 0, items);
 
             target.Dematerialize(1, 1);
 
@@ -72,7 +91,7 @@ namespace Avalonia.Controls.UnitTests.Generators
             var items = new[] { "foo", "bar", "baz" };
             var owner = new Decorator();
             var target = new ItemContainerGenerator(owner);
-            var containers = target.Materialize(0, items, null);
+            var containers = Materialize(target, 0, items);
             var expected = target.Containers.Take(2).ToList();
             var result = target.Dematerialize(0, 2);
 
@@ -85,7 +104,7 @@ namespace Avalonia.Controls.UnitTests.Generators
             var items = new[] { "foo", "bar", "baz" };
             var owner = new Decorator();
             var target = new ItemContainerGenerator(owner);
-            var containers = target.Materialize(0, items, null).ToList();
+            var containers = Materialize(target, 0, items);
 
             var removed = target.RemoveRange(1, 1).Single();
 

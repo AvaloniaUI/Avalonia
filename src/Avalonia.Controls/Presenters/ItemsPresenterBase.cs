@@ -206,7 +206,7 @@ namespace Avalonia.Controls.Presenters
 
         /// <summary>
         /// Called when the items for the presenter change, either because <see cref="Items"/>
-        /// has been set, or the items collection has been modified.
+        /// has been set, the items collection has been modified, or the panel has been created.
         /// </summary>
         /// <param name="e">A description of the change.</param>
         protected abstract void ItemsChanged(NotifyCollectionChangedEventArgs e);

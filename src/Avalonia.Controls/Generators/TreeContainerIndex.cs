@@ -47,7 +47,7 @@ namespace Avalonia.Controls.Generators
 
             Materialized?.Invoke(
                 this, 
-                new ItemContainerEventArgs(0, new ItemContainer(container, item, 0)));
+                new ItemContainerEventArgs(0, new ItemContainerInfo(container, item, 0)));
         }
 
         /// <summary>
@@ -62,14 +62,14 @@ namespace Avalonia.Controls.Generators
 
             Dematerialized?.Invoke(
                 this, 
-                new ItemContainerEventArgs(0, new ItemContainer(container, item, 0)));
+                new ItemContainerEventArgs(0, new ItemContainerInfo(container, item, 0)));
         }
 
         /// <summary>
         /// Removes a set of containers from the index.
         /// </summary>
         /// <param name="containers">The item containers.</param>
-        public void Remove(IEnumerable<ItemContainer> containers)
+        public void Remove(IEnumerable<ItemContainerInfo> containers)
         {
             foreach (var container in containers)
             {

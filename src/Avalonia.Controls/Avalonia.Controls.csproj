@@ -50,13 +50,14 @@
     <Compile Include="Design.cs" />
     <Compile Include="DockPanel.cs" />
     <Compile Include="Expander.cs" />
-    <Compile Include="Generators\ItemContainer.cs" />
+    <Compile Include="Generators\ItemContainerInfo.cs" />
     <Compile Include="Generators\TreeContainerIndex.cs" />
     <Compile Include="HotkeyManager.cs" />
     <Compile Include="IApplicationLifecycle.cs" />
     <Compile Include="INameScope.cs" />
     <Compile Include="IPseudoClasses.cs" />
     <Compile Include="DropDownItem.cs" />
+    <Compile Include="ItemVirtualizationMode.cs" />
     <Compile Include="IVirtualizingPanel.cs" />
     <Compile Include="LayoutTransformControl.cs" />
     <Compile Include="Mixins\ContentControlMixin.cs" />

@@ -15,7 +15,7 @@ namespace Avalonia.Controls.Generators
     /// </summary>
     public class ItemContainerGenerator : IItemContainerGenerator
     {
-        private List<ItemContainer> _containers = new List<ItemContainer>();
+        private List<ItemContainerInfo> _containers = new List<ItemContainerInfo>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemContainerGenerator"/> class.
@@ -29,7 +29,7 @@ namespace Avalonia.Controls.Generators
         }
 
         /// <inheritdoc/>
-        public IEnumerable<ItemContainer> Containers => _containers.Where(x => x != null);
+        public IEnumerable<ItemContainerInfo> Containers => _containers.Where(x => x != null);
 
         /// <inheritdoc/>
         public event EventHandler<ItemContainerEventArgs> Materialized;
@@ -48,33 +48,24 @@ namespace Avalonia.Controls.Generators
         public IControl Owner { get; }
 
         /// <inheritdoc/>
-        public IEnumerable<ItemContainer> Materialize(
-            int startingIndex,
-            IEnumerable items,
+        public ItemContainerInfo Materialize(
+            int index,
+            object item,
             IMemberSelector selector)
         {
-            Contract.Requires<ArgumentNullException>(items != null);
+            var i = selector != null ? selector.Select(item) : item;
+            var container = new ItemContainerInfo(CreateContainer(i), item, index);
 
-            int index = startingIndex;
-            var result = new List<ItemContainer>();
+            AddContainer(container);
+            Materialized?.Invoke(this, new ItemContainerEventArgs(index, container));
 
-            foreach (var item in items)
-            {
-                var i = selector != null ? selector.Select(item) : item;
-                var container = new ItemContainer(CreateContainer(i), item, index++);
-                result.Add(container);
-            }
-
-            AddContainers(result);
-            Materialized?.Invoke(this, new ItemContainerEventArgs(startingIndex, result));
-
-            return result.Where(x => x != null).ToList();
+            return container;
         }
 
         /// <inheritdoc/>
-        public virtual IEnumerable<ItemContainer> Dematerialize(int startingIndex, int count)
+        public virtual IEnumerable<ItemContainerInfo> Dematerialize(int startingIndex, int count)
         {
-            var result = new List<ItemContainer>();
+            var result = new List<ItemContainerInfo>();
 
             for (int i = startingIndex; i < startingIndex + count; ++i)
             {
@@ -93,13 +84,13 @@ namespace Avalonia.Controls.Generators
         /// <inheritdoc/>
         public virtual void InsertSpace(int index, int count)
         {
-            _containers.InsertRange(index, Enumerable.Repeat<ItemContainer>(null, count));
+            _containers.InsertRange(index, Enumerable.Repeat<ItemContainerInfo>(null, count));
         }
 
         /// <inheritdoc/>
-        public virtual IEnumerable<ItemContainer> RemoveRange(int startingIndex, int count)
+        public virtual IEnumerable<ItemContainerInfo> RemoveRange(int startingIndex, int count)
         {
-            List<ItemContainer> result = new List<ItemContainer>();
+            List<ItemContainerInfo> result = new List<ItemContainerInfo>();
 
             if (startingIndex < _containers.Count)
             {
@@ -112,10 +103,10 @@ namespace Avalonia.Controls.Generators
         }
 
         /// <inheritdoc/>
-        public virtual IEnumerable<ItemContainer> Clear()
+        public virtual IEnumerable<ItemContainerInfo> Clear()
         {
             var result = _containers.Where(x => x != null).ToList();
-            _containers = new List<ItemContainer>();
+            _containers = new List<ItemContainerInfo>();
 
             if (result.Count > 0)
             {
@@ -172,32 +163,29 @@ namespace Avalonia.Controls.Generators
         }
 
         /// <summary>
-        /// Adds a collection of containers to the index.
+        /// Adds a container to the index.
         /// </summary>
-        /// <param name="containers">The containers.</param>
-        protected void AddContainers(IList<ItemContainer> containers)
+        /// <param name="container">The container.</param>
+        protected void AddContainer(ItemContainerInfo container)
         {
-            Contract.Requires<ArgumentNullException>(containers != null);
+            Contract.Requires<ArgumentNullException>(container != null);
 
-            foreach (var c in containers)
+            while (_containers.Count < container.Index)
             {
-                while (_containers.Count < c.Index)
-                {
-                    _containers.Add(null);
-                }
+                _containers.Add(null);
+            }
 
-                if (_containers.Count == c.Index)
-                {
-                    _containers.Add(c);
-                }
-                else if (_containers[c.Index] == null)
-                {
-                    _containers[c.Index] = c;
-                }
-                else
-                {
-                    throw new InvalidOperationException("Container already created.");
-                }
+            if (_containers.Count == container.Index)
+            {
+                _containers.Add(container);
+            }
+            else if (_containers[container.Index] == null)
+            {
+                _containers[container.Index] = container;
+            }
+            else
+            {
+                throw new InvalidOperationException("Container already created.");
             }
         }
 
@@ -207,7 +195,7 @@ namespace Avalonia.Controls.Generators
         /// <param name="index">The first index.</param>
         /// <param name="count">The number of elements in the range.</param>
         /// <returns>The containers.</returns>
-        protected IEnumerable<ItemContainer> GetContainerRange(int index, int count)
+        protected IEnumerable<ItemContainerInfo> GetContainerRange(int index, int count)
         {
             return _containers.GetRange(index, count);
         }
