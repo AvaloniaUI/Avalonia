@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Reactive.Linq;
 using Avalonia.Controls;
 using Avalonia.Diagnostics.ViewModels;
+using Avalonia.Media;
 using Avalonia.Styling;
 using ReactiveUI;
 
@@ -35,14 +36,8 @@ namespace Avalonia.Diagnostics.Views
 
             Content = new ScrollViewer
             {
-                Content = new Grid
+                Content = new SimpleGrid
                 {
-                    ColumnDefinitions = new ColumnDefinitions
-                    {
-                        new ColumnDefinition(GridLength.Auto),
-                        new ColumnDefinition(GridLength.Auto),
-                        new ColumnDefinition(GridLength.Auto),
-                    },
                     Styles = new Styles
                     {
                         new Style(x => x.Is<Control>())
@@ -66,16 +61,19 @@ namespace Avalonia.Diagnostics.Views
             yield return new TextBlock
             {
                 Text = property.Name,
+                TextWrapping = TextWrapping.NoWrap,
                 [!ToolTip.TipProperty] = property.WhenAnyValue(x => x.Diagnostic),
             };
 
             yield return new TextBlock
             {
+                TextWrapping = TextWrapping.NoWrap,
                 [!TextBlock.TextProperty] = property.WhenAnyValue(v => v.Value).Select(v => v?.ToString()),
             };
 
             yield return new TextBlock
             {
+                TextWrapping = TextWrapping.NoWrap,
                 [!TextBlock.TextProperty] = property.WhenAnyValue(x => x.Priority),
             };
         }

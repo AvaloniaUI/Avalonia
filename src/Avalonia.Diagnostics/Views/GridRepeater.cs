@@ -11,10 +11,10 @@ namespace Avalonia.Diagnostics.Views
     internal static class GridRepeater
     {
         public static readonly AttachedProperty<IEnumerable> ItemsProperty =
-            AvaloniaProperty.RegisterAttached<Grid, IEnumerable>("Items", typeof(GridRepeater));
+            AvaloniaProperty.RegisterAttached<SimpleGrid, IEnumerable>("Items", typeof(GridRepeater));
 
         public static readonly AttachedProperty<Func<object, IEnumerable<Control>>> TemplateProperty =
-            AvaloniaProperty.RegisterAttached<Grid, Func<object, IEnumerable<Control>>>("Template", typeof(GridRepeater));
+            AvaloniaProperty.RegisterAttached<SimpleGrid, Func<object, IEnumerable<Control>>>("Template", typeof(GridRepeater));
 
         static GridRepeater()
         {
@@ -23,7 +23,7 @@ namespace Avalonia.Diagnostics.Views
 
         private static void ItemsChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            var grid = (Grid)e.Sender;
+            var grid = (SimpleGrid)e.Sender;
             var items = (IEnumerable)e.NewValue;
             var template = grid.GetValue(TemplateProperty);
 
@@ -32,34 +32,16 @@ namespace Avalonia.Diagnostics.Views
             if (items != null)
             {
                 int count = 0;
-                int cols = grid.ColumnDefinitions.Count;
+                int cols = 3;
 
                 foreach (var item in items)
                 {
                     foreach (var control in template(item))
                     {
                         grid.Children.Add(control);
-                        Grid.SetColumn(control, count % cols);
-                        Grid.SetRow(control, count / cols);
+                        SimpleGrid.SetColumn(control, count % cols);
+                        SimpleGrid.SetRow(control, count / cols);
                         ++count;
-                    }
-                }
-
-                int rows = (int)Math.Ceiling((double)count / cols);
-                int difference = rows - grid.RowDefinitions.Count;
-
-                if (difference > 0)
-                {
-                    for (int i = 0; i < difference; ++i)
-                    {
-                        grid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
-                    }
-                }
-                else if (difference < 0)
-                {
-                    for (int i = 0; i < difference; ++i)
-                    {
-                        grid.RowDefinitions.RemoveAt(grid.RowDefinitions.Count - 1);
                     }
                 }
             }

@@ -20,6 +20,7 @@ namespace Avalonia.Platform
         /// <param name="fontStyle">The font style.</param>
         /// <param name="textAlignment">The text alignment.</param>
         /// <param name="fontWeight">The font weight.</param>
+        /// <param name="wrapping">The text wrapping mode.</param>
         /// <returns>An <see cref="IFormattedTextImpl"/>.</returns>
         IFormattedTextImpl CreateFormattedText(
             string text,
@@ -27,7 +28,8 @@ namespace Avalonia.Platform
             double fontSize,
             FontStyle fontStyle,
             TextAlignment textAlignment,
-            FontWeight fontWeight);
+            FontWeight fontWeight,
+            TextWrapping wrapping);
 
         /// <summary>
         /// Creates a stream geometry implementation.

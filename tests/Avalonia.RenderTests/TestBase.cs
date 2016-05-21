@@ -58,6 +58,11 @@ namespace Avalonia.Direct2D1.RenderTests
 
         protected void RenderToFile(Control target, [CallerMemberName] string testName = "")
         {
+            if (!Directory.Exists(OutputPath))
+            {
+                Directory.CreateDirectory(OutputPath);
+            }
+
             string path = Path.Combine(OutputPath, testName + ".out.png");
 
             using (RenderTargetBitmap bitmap = new RenderTargetBitmap(
