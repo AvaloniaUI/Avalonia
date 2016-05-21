@@ -31,20 +31,26 @@ namespace Avalonia.Controls.Presenters
         {
             get
             {
-                return new Vector(0, _firstIndex * AverageItemSize);
+                return new Vector(0, (_firstIndex * AverageItemSize) + (_panel?.PixelOffset ?? 0));
             }
 
             set
             {
                 var count = _lastIndex - _firstIndex;
-                _firstIndex = (int)(value.Y / AverageItemSize);
+                var firstIndex = (int)(value.Y / AverageItemSize);
+                var firstIndexChanged = _firstIndex != firstIndex;
+                _firstIndex = firstIndex;
                 _lastIndex = _firstIndex + count;
                 _panel.PixelOffset = value.Y % AverageItemSize;
-                Renumber();
+
+                if (firstIndexChanged)
+                {
+                    Renumber();
+                }
             }
         }
 
-        Size IScrollable.Viewport => new Size(1, (_lastIndex - _firstIndex) * AverageItemSize);
+        Size IScrollable.Viewport => new Size(1, _panel?.Bounds.Height ?? 0);
         Size IScrollable.ScrollSize => new Size(0, 1);
         Size IScrollable.PageScrollSize => new Size(0, 1);
 
