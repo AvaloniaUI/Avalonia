@@ -14,6 +14,7 @@ namespace XamlTestApplication
         private Size _viewport;
         private Size _lineSize;
 
+        public bool IsLogicalScrollEnabled => true;
         public Action InvalidateScroll { get; set; }
 
         Size IScrollable.Extent

@@ -9,8 +9,20 @@ namespace Avalonia.Controls.Primitives
     /// Interface implemented by controls that handle their own scrolling when placed inside a 
     /// <see cref="ScrollViewer"/>.
     /// </summary>
+    /// <remarks>
+    /// Controls that implement this interface, when placed inside a <see cref="ScrollViewer"/>
+    /// can override the physical scrolling behavior of the scroll viewer with logical scrolling.
+    /// Physical scrolling means that the scroll viewer is a simple viewport onto a larger canvas
+    /// whereas logical scrolling means that the scrolling is handled by the child control itself
+    /// and it can choose to do handle the scroll information as it sees fit.
+    /// </remarks>
     public interface IScrollable
     {
+        /// <summary>
+        /// Gets a value indicating whether logical scrolling is enabled on the control.
+        /// </summary>
+        bool IsLogicalScrollEnabled { get; }
+
         /// <summary>
         /// Gets or sets the scroll invalidation method.
         /// </summary>

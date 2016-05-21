@@ -23,6 +23,7 @@ namespace Avalonia.Controls.Presenters
 
         public IPanel Panel => _panel;
 
+        bool IScrollable.IsLogicalScrollEnabled => true;
         Action IScrollable.InvalidateScroll { get; set; }
 
         Size IScrollable.Extent => new Size(1, 100 * AverageItemSize );

@@ -5,6 +5,7 @@ using System;
 using System.Reactive.Linq;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
+using Avalonia.Layout;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests
@@ -46,6 +47,27 @@ namespace Avalonia.Controls.UnitTests
             target.Arrange(new Rect(0, 0, 100, 100));
 
             Assert.Equal(new Rect(0, 0, 100, 100), scrollable.Bounds);
+        }
+
+        [Fact]
+        public void Arrange_Should_Offset_IScrollable_Bounds_When_Logical_Scroll_Disabled()
+        {
+            var scrollable = new TestScrollable
+            {
+                IsLogicalScrollEnabled = false,
+            };
+
+            var target = new ScrollContentPresenter
+            {
+                Content = scrollable,
+                Offset = new Vector(25, 25),
+            };
+
+            target.UpdateChild();
+            target.Measure(new Size(100, 100));
+            target.Arrange(new Rect(0, 0, 100, 100));
+
+            Assert.Equal(new Rect(-25, -25, 150, 150), scrollable.Bounds);
         }
 
         [Fact]
@@ -169,12 +191,59 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(new Vector(50, 50), scrollable.Offset);
         }
 
+        [Fact]
+        public void Toggling_IsLogicalScrollEnabled_Should_Update_State()
+        {
+            var scrollable = new TestScrollable
+            {
+                Extent = new Size(100, 100),
+                Offset = new Vector(50, 50),
+                Viewport = new Size(25, 25),
+            };
+
+            var target = new ScrollContentPresenter
+            {
+                Content = scrollable,
+            };
+
+            target.UpdateChild();
+            target.Measure(new Size(100, 100));
+            target.Arrange(new Rect(0, 0, 100, 100));
+
+            Assert.Equal(scrollable.Extent, target.Extent);
+            Assert.Equal(scrollable.Offset, target.Offset);
+            Assert.Equal(scrollable.Viewport, target.Viewport);
+            Assert.Equal(new Rect(0, 0, 100, 100), scrollable.Bounds);
+
+            scrollable.IsLogicalScrollEnabled = false;
+            scrollable.InvalidateScroll();
+            target.Measure(new Size(100, 100));
+            target.Arrange(new Rect(0, 0, 100, 100));
+
+            Assert.Equal(new Size(150, 150), target.Extent);
+            Assert.Equal(new Vector(0, 0), target.Offset);
+            Assert.Equal(new Size(100, 100), target.Viewport);
+            Assert.Equal(new Rect(0, 0, 150, 150), scrollable.Bounds);
+
+            scrollable.IsLogicalScrollEnabled = true;
+            scrollable.InvalidateScroll();
+            target.Measure(new Size(100, 100));
+            target.Arrange(new Rect(0, 0, 100, 100));
+
+            Assert.Equal(scrollable.Extent, target.Extent);
+            Assert.Equal(scrollable.Offset, target.Offset);
+            Assert.Equal(scrollable.Viewport, target.Viewport);
+            Assert.Equal(new Rect(0, 0, 100, 100), scrollable.Bounds);
+        }
+
+
         private class TestScrollable : Control, IScrollable
         {
             private Size _extent;
             private Vector _offset;
             private Size _viewport;
 
+            public bool IsLogicalScrollEnabled { get; set; } = true;
             public Size AvailableSize { get; private set; }
             public Action InvalidateScroll { get; set; }
 
