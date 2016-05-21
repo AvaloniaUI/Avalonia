@@ -99,7 +99,7 @@ namespace Avalonia.Controls.Presenters
             {
                 CreateItems();
             }
-            else if (_panel.OverflowCount > 0)
+            else if (_panel.OverflowCount > 1)
             {
                 RemoveItems();
             }
