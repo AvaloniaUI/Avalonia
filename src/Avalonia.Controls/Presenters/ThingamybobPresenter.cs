@@ -15,7 +15,6 @@ namespace Avalonia.Controls.Presenters
             if (_panel == null)
             {
                 _panel = new VirtualizingStackPanel();
-                _panel.ArrangeCompleted = CheckPanel;
                 Child = _panel;
                 CheckPanel();
             }

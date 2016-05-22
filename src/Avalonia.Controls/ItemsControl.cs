@@ -25,7 +25,6 @@ namespace Avalonia.Controls
         /// <summary>
         /// The default value for the <see cref="ItemsPanel"/> property.
         /// </summary>
-        [SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1202:ElementsMustBeOrderedByAccess", Justification = "Needs to be before or a NullReferenceException is thrown.")]
         private static readonly FuncTemplate<IPanel> DefaultPanel =
             new FuncTemplate<IPanel>(() => new StackPanel());
 

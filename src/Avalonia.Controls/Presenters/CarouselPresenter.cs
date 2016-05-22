@@ -95,9 +95,8 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <inheritdoc/>
-        protected override void CreatePanel()
+        protected override void PanelCreated(IPanel panel)
         {
-            base.CreatePanel();
             var task = MoveToPage(-1, SelectedIndex);
         }
 

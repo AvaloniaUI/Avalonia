@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Avalonia.Collections;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 
@@ -17,6 +18,12 @@ namespace Avalonia.Controls
     public class ListBox : SelectingItemsControl
     {
         /// <summary>
+        /// The default value for the <see cref="ItemsControl.ItemsPanel"/> property.
+        /// </summary>
+        private static readonly FuncTemplate<IPanel> DefaultPanel =
+            new FuncTemplate<IPanel>(() => new VirtualizingStackPanel());
+
+        /// <summary>
         /// Defines the <see cref="SelectedItems"/> property.
         /// </summary>
         public static readonly new AvaloniaProperty<IList> SelectedItemsProperty =
@@ -27,6 +34,14 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly new AvaloniaProperty<SelectionMode> SelectionModeProperty = 
             SelectingItemsControl.SelectionModeProperty;
+
+        /// <summary>
+        /// Initializes static members of the <see cref="ItemsControl"/> class.
+        /// </summary>
+        static ListBox()
+        {
+            ItemsPanelProperty.OverrideDefaultValue<ListBox>(DefaultPanel);
+        }
 
         /// <inheritdoc/>
         public new IList SelectedItems => base.SelectedItems;

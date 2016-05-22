@@ -11,7 +11,5 @@ namespace Avalonia.Controls
         double AverageItemSize { get; }
 
         double PixelOffset { get; set; }
-
-        Action ArrangeCompleted { get; set; }
     }
 }

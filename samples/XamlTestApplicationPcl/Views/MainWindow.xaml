@@ -29,9 +29,8 @@
       <TabItem Header="Virtualization">
         <DockPanel LastChildFill="True">
           <StackPanel DockPanel.Dock="Right" Orientation="Vertical">
-            <Button Name="vadd">Add Item</Button>
           </StackPanel>
-          <Thingamybob></Thingamybob>
+          <ListBox Name="virtualList"/>
         </DockPanel>
       </TabItem>
       

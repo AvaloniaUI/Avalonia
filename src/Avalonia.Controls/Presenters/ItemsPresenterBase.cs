@@ -102,7 +102,13 @@ namespace Avalonia.Controls.Presenters
                 if (_generator == null)
                 {
                     var i = TemplatedParent as ItemsControl;
-                    _generator = (i?.ItemContainerGenerator) ?? new ItemContainerGenerator(this);
+                    _generator = i?.ItemContainerGenerator;
+
+                    if (_generator == null)
+                    {
+                        _generator = new ItemContainerGenerator(this);
+                        _generator.ItemTemplate = ItemTemplate;
+                    }
                 }
 
                 return _generator;
@@ -179,10 +185,25 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <summary>
+        /// Called when the <see cref="Panel"/> is created.
+        /// </summary>
+        /// <param name="panel">The panel.</param>
+        protected virtual void PanelCreated(IPanel panel)
+        {
+        }
+
+        /// <summary>
+        /// Called when the items for the presenter change, either because <see cref="Items"/>
+        /// has been set, the items collection has been modified, or the panel has been created.
+        /// </summary>
+        /// <param name="e">A description of the change.</param>
+        protected abstract void ItemsChanged(NotifyCollectionChangedEventArgs e);
+
+        /// <summary>
         /// Creates the <see cref="Panel"/> when <see cref="ApplyTemplate"/> is called for the first
         /// time.
         /// </summary>
-        protected virtual void CreatePanel()
+        private void CreatePanel()
         {
             Panel = ItemsPanel.Build();
             Panel.SetValue(TemplatedParentProperty, TemplatedParent);
@@ -201,15 +222,10 @@ namespace Avalonia.Controls.Presenters
                 incc.CollectionChanged += ItemsCollectionChanged;
             }
 
+            PanelCreated(Panel);
+
             ItemsChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
         }
-
-        /// <summary>
-        /// Called when the items for the presenter change, either because <see cref="Items"/>
-        /// has been set, the items collection has been modified, or the panel has been created.
-        /// </summary>
-        /// <param name="e">A description of the change.</param>
-        protected abstract void ItemsChanged(NotifyCollectionChangedEventArgs e);
 
         /// <summary>
         /// Called when the <see cref="Items"/> collection changes.

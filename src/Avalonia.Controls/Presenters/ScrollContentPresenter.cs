@@ -213,6 +213,7 @@ namespace Avalonia.Controls.Presenters
             else if (child != null)
             {
                 child.Arrange(new Rect(finalSize));
+                return finalSize;
             }
 
             return new Size();

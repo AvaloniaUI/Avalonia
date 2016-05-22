@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Linq;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Utils;
@@ -55,6 +56,7 @@ namespace Avalonia.Controls.Presenters
         /// <inheritdoc/>
         Action IScrollable.InvalidateScroll { get; set; }
 
+        /// <inheritdoc/>
         Size IScrollable.Extent
         {
             get
@@ -69,39 +71,53 @@ namespace Avalonia.Controls.Presenters
             }
         }
 
+        /// <inheritdoc/>
         Vector IScrollable.Offset { get; set; }
 
+        /// <inheritdoc/>
         Size IScrollable.Viewport
         {
             get
             {
-                throw new NotImplementedException();
-            }
-        }
-
-        Size IScrollable.ScrollSize
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        Size IScrollable.PageScrollSize
-        {
-            get
-            {
-                throw new NotImplementedException();
+                switch (VirtualizationMode)
+                {
+                    case ItemVirtualizationMode.Simple:
+                        return new Size(0, (_virt.LastIndex - _virt.FirstIndex) + 1);
+                    default:
+                        return default(Size);
+                }
             }
         }
 
         /// <inheritdoc/>
-        protected override void CreatePanel()
-        {
-            base.CreatePanel();
+        Size IScrollable.ScrollSize => new Size(0, 1);
 
-            var virtualizingPanel = Panel as IVirtualizingPanel;
-            _virt = virtualizingPanel != null ? new VirtualizationInfo(virtualizingPanel) : null;
+        /// <inheritdoc/>
+        Size IScrollable.PageScrollSize => new Size(0, 1);
+
+        /// <inheritdoc/>
+        protected override Size ArrangeOverride(Size finalSize)
+        {
+            var result = base.ArrangeOverride(finalSize);
+
+            if (_virt != null)
+            {
+                CreateRemoveVirtualizedContainers();
+                ((IScrollable)this).InvalidateScroll();
+
+            }
+
+            return result;
+        }
+
+        /// <inheritdoc/>
+        protected override void PanelCreated(IPanel panel)
+        {
+            if (((IScrollable)this).InvalidateScroll != null)
+            {
+                var virtualizingPanel = Panel as IVirtualizingPanel;
+                _virt = virtualizingPanel != null ? new VirtualizationInfo(virtualizingPanel) : null;
+            }
 
             if (!Panel.IsSet(KeyboardNavigation.DirectionalNavigationProperty))
             {
@@ -115,8 +131,19 @@ namespace Avalonia.Controls.Presenters
                 KeyboardNavigation.GetTabNavigation(this));
         }
 
-        /// <inheritdoc/>
         protected override void ItemsChanged(NotifyCollectionChangedEventArgs e)
+        {
+            if (_virt == null)
+            {
+                ItemsChangedNonVirtualized(e);
+            }
+            else
+            {
+                ItemsChangedVirtualized(e);
+            }
+        }
+
+        private void ItemsChangedNonVirtualized(NotifyCollectionChangedEventArgs e)
         {
             var generator = ItemContainerGenerator;
 
@@ -129,7 +156,7 @@ namespace Avalonia.Controls.Presenters
                         generator.InsertSpace(e.NewStartingIndex, e.NewItems.Count);
                     }
 
-                    AddContainers(e.NewStartingIndex, e.NewItems);
+                    AddContainersNonVirtualized(e.NewStartingIndex, e.NewItems);
                     break;
 
                 case NotifyCollectionChangedAction.Remove:
@@ -138,7 +165,7 @@ namespace Avalonia.Controls.Presenters
 
                 case NotifyCollectionChangedAction.Replace:
                     RemoveContainers(generator.Dematerialize(e.OldStartingIndex, e.OldItems.Count));
-                    var containers = AddContainers(e.NewStartingIndex, e.NewItems);
+                    var containers = AddContainersNonVirtualized(e.NewStartingIndex, e.NewItems);
 
                     var i = e.NewStartingIndex;
 
@@ -156,7 +183,7 @@ namespace Avalonia.Controls.Presenters
 
                     if (Items != null)
                     {
-                        AddContainers(0, Items);
+                        AddContainersNonVirtualized(0, Items);
                     }
 
                     break;
@@ -165,7 +192,11 @@ namespace Avalonia.Controls.Presenters
             InvalidateMeasure();
         }
 
-        private IList<ItemContainerInfo> AddContainers(int index, IEnumerable items)
+        private void ItemsChangedVirtualized(NotifyCollectionChangedEventArgs e)
+        {
+        }
+
+        private IList<ItemContainerInfo> AddContainersNonVirtualized(int index, IEnumerable items)
         {
             var generator = ItemContainerGenerator;
             var result = new List<ItemContainerInfo>();
@@ -193,6 +224,42 @@ namespace Avalonia.Controls.Presenters
             return result;
         }
 
+        private void CreateRemoveVirtualizedContainers()
+        {
+            var generator = ItemContainerGenerator;
+            var panel = _virt.Panel;
+
+            if (!panel.IsFull)
+            {
+                var index = _virt.LastIndex + 1;
+                var items = Items.Cast<object>().Skip(index);
+                var memberSelector = MemberSelector;
+
+                foreach (var item in items)
+                {
+                    var materialized = generator.Materialize(index++, item, memberSelector);
+                    panel.Children.Add(materialized.ContainerControl);
+
+                    if (panel.IsFull)
+                    {
+                        break;
+                    }
+                }
+
+                _virt.LastIndex = index - 1;
+            }
+
+            if (panel.OverflowCount > 0)
+            {
+                var remove = panel.OverflowCount;
+
+                panel.Children.RemoveRange(
+                    panel.Children.Count - remove,
+                    panel.OverflowCount);
+                _virt.LastIndex -= remove;
+            }
+        }
+
         private void RemoveContainers(IEnumerable<ItemContainerInfo> items)
         {
             foreach (var i in items)
@@ -213,7 +280,7 @@ namespace Avalonia.Controls.Presenters
 
             public IVirtualizingPanel Panel { get; }
             public int FirstIndex { get; set; }
-            public int LastIndex { get; set; }
+            public int LastIndex { get; set; } = -1;
         }
     }
 }

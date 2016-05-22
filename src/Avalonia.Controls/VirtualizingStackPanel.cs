@@ -42,8 +42,6 @@ namespace Avalonia.Controls
             }
         }
 
-        Action IVirtualizingPanel.ArrangeCompleted { get; set; }
-
         protected override Size ArrangeOverride(Size finalSize)
         {
             _canBeRemoved = 0;
@@ -51,7 +49,6 @@ namespace Avalonia.Controls
             _averageItemSize = 0;
             _averageCount = 0;
             var result = base.ArrangeOverride(finalSize);
-            ((IVirtualizingPanel)this).ArrangeCompleted?.Invoke();
             return result;
         }
 
