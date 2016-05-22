@@ -251,12 +251,13 @@ namespace Avalonia.Controls.Presenters
 
             if (panel.OverflowCount > 0)
             {
-                var remove = panel.OverflowCount;
+                var count = panel.OverflowCount;
+                var index = panel.Children.Count - count;
 
-                panel.Children.RemoveRange(
-                    panel.Children.Count - remove,
-                    panel.OverflowCount);
-                _virt.LastIndex -= remove;
+                panel.Children.RemoveRange(index, count);
+                generator.Dematerialize(index, count);
+
+                _virt.LastIndex -= count;
             }
         }
 
