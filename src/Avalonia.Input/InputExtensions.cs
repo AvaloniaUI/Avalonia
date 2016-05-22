@@ -27,8 +27,7 @@ namespace Avalonia.Input
             var transformedBounds = BoundsTracker.GetTransformedBounds((Visual)element);
             var geometry = transformedBounds.GetTransformedBoundsGeometry();
 
-            if (geometry.FillContains(p) &&
-                element.IsVisible &&
+            if (element.IsVisible &&
                 element.IsHitTestVisible &&
                 element.IsEnabledCore)
             {
@@ -43,7 +42,10 @@ namespace Avalonia.Input
                     }
                 }
 
-                yield return element;
+                if (geometry.FillContains(p))
+                {
+                    yield return element;
+                }
             }
         }
 

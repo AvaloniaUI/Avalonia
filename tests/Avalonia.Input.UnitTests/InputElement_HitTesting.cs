@@ -158,6 +158,50 @@ namespace Avalonia.Input.UnitTests
             }
         }
 
+        [Fact]
+        public void InputHitTest_Should_Find_Control_Translated_Outside_Parent_Bounds()
+        {
+            using (UnitTestApplication.Start(new TestServices(renderInterface: new MockRenderInterface())))
+            {
+                Border target;
+                var container = new Panel
+                {
+                    Width = 200,
+                    Height = 200,
+                    Children = new Controls.Controls
+                    {
+                        new Border
+                        {
+                            Width = 100,
+                            Height = 100,
+                            ZIndex = 1,
+                            HorizontalAlignment = HorizontalAlignment.Left,
+                            VerticalAlignment = VerticalAlignment.Top,
+                            Child = target = new Border
+                            {
+                                Width = 50,
+                                Height = 50,
+                                HorizontalAlignment = HorizontalAlignment.Left,
+                                VerticalAlignment = VerticalAlignment.Top,
+                                RenderTransform = new TranslateTransform(110, 110),
+                            }
+                        },
+                    }
+                };
+
+                container.Measure(Size.Infinity);
+                container.Arrange(new Rect(container.DesiredSize));
+
+                var context = new DrawingContext(Mock.Of<IDrawingContextImpl>());
+                context.Render(container);
+
+                var result = container.InputHitTest(new Point(120, 120));
+
+                Assert.Equal(target, result);
+            }
+        }
+
+
         class MockRenderInterface : IPlatformRenderInterface
         {
             public IFormattedTextImpl CreateFormattedText(string text, string fontFamilyName, double fontSize, FontStyle fontStyle, TextAlignment textAlignment, FontWeight fontWeight)
