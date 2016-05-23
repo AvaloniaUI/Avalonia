@@ -127,7 +127,8 @@ namespace Avalonia.Media
                 Matrix,
                 Opacity,
                 Clip,
-                MatrixContainer
+                MatrixContainer,
+                GeometryClip
             }
 
             public PushedState(DrawingContext context, PushedStateType type, Matrix matrix = default(Matrix))
@@ -149,10 +150,12 @@ namespace Avalonia.Media
                 _context._states.Pop();
                 if (_type == PushedStateType.Matrix)
                     _context.CurrentTransform = _matrix;
-                else if(_type == PushedStateType.Clip)
+                else if (_type == PushedStateType.Clip)
                     _context._impl.PopClip();
-                else if(_type == PushedStateType.Opacity)
+                else if (_type == PushedStateType.Opacity)
                     _context._impl.PopOpacity();
+                else if (_type == PushedStateType.GeometryClip)
+                    _context._impl.PopGeometryClip();
                 else if (_type == PushedStateType.MatrixContainer)
                 {
                     var cont = _context._transformContainers.Pop();
@@ -172,6 +175,18 @@ namespace Avalonia.Media
         {
             _impl.PushClip(clip);
             return new PushedState(this, PushedState.PushedStateType.Clip);
+        }
+
+        /// <summary>
+        /// Pushes a clip geometry.
+        /// </summary>
+        /// <param name="clip">The clip geometry.</param>
+        /// <returns>A disposable used to undo the clip geometry.</returns>
+        public PushedState PushGeometryClip(Geometry clip)
+        {
+            Contract.Requires<ArgumentNullException>(clip != null);
+            _impl.PushGeometryClip(clip);
+            return new PushedState(this, PushedState.PushedStateType.GeometryClip);
         }
 
         /// <summary>

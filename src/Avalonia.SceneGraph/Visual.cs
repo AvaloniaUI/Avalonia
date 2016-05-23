@@ -40,6 +40,12 @@ namespace Avalonia
             AvaloniaProperty.Register<Visual, bool>(nameof(ClipToBounds));
 
         /// <summary>
+        /// Defines the <see cref="Clip"/> property.
+        /// </summary>
+        public static readonly StyledProperty<Geometry> ClipProperty =
+            AvaloniaProperty.Register<Visual, Geometry>(nameof(Clip));
+
+        /// <summary>
         /// Defines the <see cref="IsVisibleProperty"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> IsVisibleProperty =
@@ -125,6 +131,15 @@ namespace Avalonia
         {
             get { return GetValue(ClipToBoundsProperty); }
             set { SetValue(ClipToBoundsProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the geometry clip for this visual.
+        /// </summary>
+        public Geometry Clip
+        {
+            get { return GetValue(ClipProperty); }
+            set { SetValue(ClipProperty, value); }
         }
 
         /// <summary>
