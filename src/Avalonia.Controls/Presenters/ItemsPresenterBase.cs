@@ -101,14 +101,7 @@ namespace Avalonia.Controls.Presenters
             {
                 if (_generator == null)
                 {
-                    var i = TemplatedParent as ItemsControl;
-                    _generator = i?.ItemContainerGenerator;
-
-                    if (_generator == null)
-                    {
-                        _generator = new ItemContainerGenerator(this);
-                        _generator.ItemTemplate = ItemTemplate;
-                    }
+                    _generator = CreateItemContainerGenerator();
                 }
 
                 return _generator;
@@ -168,6 +161,26 @@ namespace Avalonia.Controls.Presenters
             {
                 CreatePanel();
             }
+        }
+
+        /// <summary>
+        /// Creates the <see cref="ItemContainerGenerator"/> for the control.
+        /// </summary>
+        /// <returns>
+        /// An <see cref="IItemContainerGenerator"/> or null.
+        /// </returns>
+        protected virtual IItemContainerGenerator CreateItemContainerGenerator()
+        {
+            var i = TemplatedParent as ItemsControl;
+            var result = i?.ItemContainerGenerator;
+
+            if (result == null)
+            {
+                result = new ItemContainerGenerator(this);
+                result.ItemTemplate = ItemTemplate;
+            }
+
+            return result;
         }
 
         /// <inheritdoc/>

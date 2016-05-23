@@ -118,6 +118,11 @@ namespace Avalonia.Controls.Generators
             return base.RemoveRange(startingIndex, count);
         }
 
+        public override bool TryRecycle(int oldIndex, int newIndex, object item, IMemberSelector selector)
+        {
+            return false;
+        }
+
         /// <summary>
         /// Gets the data template for the specified item.
         /// </summary>

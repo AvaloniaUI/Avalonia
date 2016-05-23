@@ -53,50 +53,10 @@ namespace Avalonia.Controls.Presenters
                 var scroll = (VirtualizingPanel.ScrollDirection == Orientation.Vertical) ?
                     value.Y : value.X;
                 var delta = (int)(scroll - FirstIndex);
-                var panel = VirtualizingPanel;
 
                 if (delta != 0)
                 {
-                    if (delta >= panel.Children.Count)
-                    {
-                        var index = FirstIndex + delta;
-
-                        foreach (var container in panel.Children)
-                        {
-                            container.DataContext = Items.ElementAt(index++);
-                        }
-                    }
-                    else if (delta > 0)
-                    {
-                        var containers = panel.Children.GetRange(0, delta).ToList();
-                        panel.Children.RemoveRange(0, delta);
-
-                        var index = LastIndex + 1;
-
-                        foreach (var container in containers)
-                        {
-                            container.DataContext = Items.ElementAt(index++);
-                        }
-
-                        panel.Children.AddRange(containers);
-                    }
-                    else
-                    {
-                        var first = panel.Children.Count + delta;
-                        var count = -delta;
-                        var containers = panel.Children.GetRange(first, count).ToList();
-                        panel.Children.RemoveRange(first, count);
-
-                        var index = FirstIndex + delta;
-
-                        foreach (var container in containers)
-                        {
-                            container.DataContext = Items.ElementAt(index++);
-                        }
-
-                        panel.Children.InsertRange(0, containers);
-                    }
-
+                    RecycleContainers(delta);
                     FirstIndex += delta;
                     LastIndex += delta;
                 }
@@ -165,6 +125,43 @@ namespace Avalonia.Controls.Presenters
                 generator.Dematerialize(index, count);
 
                 LastIndex -= count;
+            }
+        }
+
+        private void RecycleContainers(int delta)
+        {
+            var panel = VirtualizingPanel;
+            var generator = Owner.ItemContainerGenerator;
+            var selector = Owner.MemberSelector;
+            var sign = delta < 0 ? -1 : 1;
+            var first = delta < 0 ? panel.Children.Count + delta : 0;
+            var count = Math.Abs(delta);
+            var containers = panel.Children.GetRange(first, count).ToList();
+
+            for (var i = 0; i < containers.Count; ++i)
+            {
+                var oldItemIndex = FirstIndex + first + i;
+                var newItemIndex = oldItemIndex + delta + ((panel.Children.Count - count) * sign);
+                var item = Items.ElementAt(newItemIndex);
+
+                if (!generator.TryRecycle(oldItemIndex, newItemIndex, item, selector))
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            if (delta < panel.Children.Count)
+            {
+                panel.Children.RemoveRange(first, count);
+
+                if (delta > 0)
+                {
+                    panel.Children.AddRange(containers);
+                }
+                else
+                {
+                    panel.Children.InsertRange(0, containers);
+                }
             }
         }
     }

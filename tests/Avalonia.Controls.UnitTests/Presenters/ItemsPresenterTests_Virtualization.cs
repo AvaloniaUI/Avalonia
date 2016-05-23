@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using Avalonia.Controls.Generators;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
@@ -205,7 +206,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
                 Assert.Equal(new Vector(0, 5), ((IScrollable)target).Offset);
                 Assert.Equal(scrolledContainers, target.Panel.Children);
-
+                
                 for (var i = 0; i < target.Panel.Children.Count; ++i)
                 {
                     Assert.Equal(items[i + 5], target.Panel.Children[i].DataContext);
@@ -214,6 +215,8 @@ namespace Avalonia.Controls.UnitTests.Presenters
                 scroller.Offset = new Vector(0, 0);
                 Assert.Equal(new Vector(0, 0), ((IScrollable)target).Offset);
                 Assert.Equal(containers, target.Panel.Children);
+
+                var dcs = target.Panel.Children.Select(x => x.DataContext).ToList();
 
                 for (var i = 0; i < target.Panel.Children.Count; ++i)
                 {
@@ -249,6 +252,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
         private static ItemsPresenter CreateTarget(
             ItemVirtualizationMode mode = ItemVirtualizationMode.Simple,
             Orientation orientation = Orientation.Vertical,
+            bool useContainers = true,
             int itemCount = 20)
         {
             ItemsPresenter result;
@@ -256,7 +260,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
             var scroller = new ScrollContentPresenter
             {
-                Content = result = new ItemsPresenter
+                Content = result = new TestItemsPresenter(useContainers)
                 {
                     Items = items,
                     ItemsPanel = VirtualizingPanelTemplate(orientation),
@@ -286,6 +290,32 @@ namespace Avalonia.Controls.UnitTests.Presenters
             {
                 Orientation = orientation,
             });
+        }
+
+        private class TestItemsPresenter : ItemsPresenter
+        {
+            private bool _useContainers;
+
+            public TestItemsPresenter(bool useContainers)
+            {
+                _useContainers = useContainers;
+            }
+
+            protected override IItemContainerGenerator CreateItemContainerGenerator()
+            {
+                return _useContainers ?
+                    new ItemContainerGenerator<TestContainer>(this, TestContainer.ContentProperty, null) :
+                    new ItemContainerGenerator(this);
+            }
+        }
+
+        private class TestContainer : ContentControl
+        {
+            public TestContainer()
+            {
+                Width = 10;
+                Height = 10;
+            }
         }
     }
 }

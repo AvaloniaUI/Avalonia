@@ -75,5 +75,27 @@ namespace Avalonia.Controls.Generators
                 return result;
             }
         }
+
+        /// <inheritdoc/>
+        public override bool TryRecycle(
+            int oldIndex,
+            int newIndex,
+            object item,
+            IMemberSelector selector)
+        {
+            var container = ContainerFromIndex(oldIndex);
+            var i = selector != null ? selector.Select(item) : item;
+
+            container.SetValue(ContentProperty, i);
+
+            if (!(item is IControl))
+            {
+                container.DataContext = i;
+            }
+
+            MoveContainer(oldIndex, newIndex, i);
+
+            return true;
+        }
     }
 }

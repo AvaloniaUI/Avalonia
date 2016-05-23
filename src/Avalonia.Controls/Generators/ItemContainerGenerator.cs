@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Subjects;
 using Avalonia.Controls.Templates;
+using Avalonia.Controls.Utils;
 
 namespace Avalonia.Controls.Generators
 {
@@ -103,6 +104,16 @@ namespace Avalonia.Controls.Generators
         }
 
         /// <inheritdoc/>
+        public virtual bool TryRecycle(
+            int oldIndex,
+            int newIndex,
+            object item,
+            IMemberSelector selector)
+        {
+            return false;
+        }
+
+        /// <inheritdoc/>
         public virtual IEnumerable<ItemContainerInfo> Clear()
         {
             var result = _containers.Where(x => x != null).ToList();
@@ -187,6 +198,21 @@ namespace Avalonia.Controls.Generators
             {
                 throw new InvalidOperationException("Container already created.");
             }
+        }
+
+        /// <summary>
+        /// Moves a container.
+        /// </summary>
+        /// <param name="oldIndex">The old index.</param>
+        /// <param name="newIndex">The new index.</param>
+        /// <param name="item">The new item.</param>
+        /// <returns>The container info.</returns>
+        protected void MoveContainer(int oldIndex, int newIndex, object item)
+        {
+            var container = _containers[oldIndex];
+            var newContainer = new ItemContainerInfo(container.ContainerControl, item, newIndex);
+            _containers[oldIndex] = null;
+            AddContainer(newContainer);
         }
 
         /// <summary>
