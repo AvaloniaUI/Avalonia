@@ -2,7 +2,10 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections;
+using System.Collections.Specialized;
 using System.Linq;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Utils;
 
 namespace Avalonia.Controls.Presenters
@@ -120,6 +123,12 @@ namespace Avalonia.Controls.Presenters
         public override void Arranging(Size finalSize)
         {
             CreateRemoveContainers();
+        }
+
+        public override void ItemsChanged(IEnumerable items, NotifyCollectionChangedEventArgs e)
+        {
+            base.ItemsChanged(items, e);
+            ((IScrollable)Owner).InvalidateScroll();
         }
 
         private void CreateRemoveContainers()
