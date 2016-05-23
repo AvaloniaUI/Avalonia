@@ -83,6 +83,7 @@ namespace Avalonia.Controls.Presenters
         public override void Arranging(Size finalSize)
         {
             CreateRemoveContainers();
+            ((IScrollable)Owner).InvalidateScroll();
         }
 
         public override void ItemsChanged(IEnumerable items, NotifyCollectionChangedEventArgs e)
