@@ -17,17 +17,22 @@ namespace Avalonia.Controls.Utils
 
         public static int Count(this IEnumerable items)
         {
-            Contract.Requires<ArgumentNullException>(items != null);
-
-            var collection = items as ICollection;
-
-            if (collection != null)
+            if (items != null)
             {
-                return collection.Count;
+                var collection = items as ICollection;
+
+                if (collection != null)
+                {
+                    return collection.Count;
+                }
+                else
+                {
+                    return Enumerable.Count(items.Cast<object>());
+                }
             }
             else
             {
-                return Enumerable.Count(items.Cast<object>());
+                return 0;
             }
         }
 

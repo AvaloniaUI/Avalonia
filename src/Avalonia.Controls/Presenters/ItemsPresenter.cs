@@ -26,7 +26,7 @@ namespace Avalonia.Controls.Presenters
                 nameof(VirtualizationMode),
                 defaultValue: ItemVirtualizationMode.Simple);
 
-        private VirtualizationInfo _virt;
+        private ItemVirtualizer _virtualizer;
 
         /// <summary>
         /// Initializes static members of the <see cref="ItemsPresenter"/> class.
@@ -50,44 +50,20 @@ namespace Avalonia.Controls.Presenters
         /// <inheritdoc/>
         bool IScrollable.IsLogicalScrollEnabled
         {
-            get { return _virt != null && VirtualizationMode != ItemVirtualizationMode.None; }
+            get { return _virtualizer?.IsLogicalScrollEnabled ?? false; }
         }
 
         /// <inheritdoc/>
         Action IScrollable.InvalidateScroll { get; set; }
 
         /// <inheritdoc/>
-        Size IScrollable.Extent
-        {
-            get
-            {
-                switch (VirtualizationMode)
-                {
-                    case ItemVirtualizationMode.Simple:
-                        return new Size(0, Items?.Count() ?? 0);
-                    default:
-                        return default(Size);
-                }
-            }
-        }
+        Size IScrollable.Extent => _virtualizer.Extent;
 
         /// <inheritdoc/>
         Vector IScrollable.Offset { get; set; }
 
         /// <inheritdoc/>
-        Size IScrollable.Viewport
-        {
-            get
-            {
-                switch (VirtualizationMode)
-                {
-                    case ItemVirtualizationMode.Simple:
-                        return new Size(0, (_virt.LastIndex - _virt.FirstIndex) + 1);
-                    default:
-                        return default(Size);
-                }
-            }
-        }
+        Size IScrollable.Viewport => _virtualizer.Viewport;
 
         /// <inheritdoc/>
         Size IScrollable.ScrollSize => new Size(0, 1);
@@ -99,25 +75,14 @@ namespace Avalonia.Controls.Presenters
         protected override Size ArrangeOverride(Size finalSize)
         {
             var result = base.ArrangeOverride(finalSize);
-
-            if (_virt != null)
-            {
-                CreateRemoveVirtualizedContainers();
-                ((IScrollable)this).InvalidateScroll();
-
-            }
-
+            _virtualizer.Arranging(finalSize);
             return result;
         }
 
         /// <inheritdoc/>
         protected override void PanelCreated(IPanel panel)
         {
-            if (((IScrollable)this).InvalidateScroll != null)
-            {
-                var virtualizingPanel = Panel as IVirtualizingPanel;
-                _virt = virtualizingPanel != null ? new VirtualizationInfo(virtualizingPanel) : null;
-            }
+            _virtualizer = ItemVirtualizer.Create(this);
 
             if (!Panel.IsSet(KeyboardNavigation.DirectionalNavigationProperty))
             {
@@ -133,155 +98,7 @@ namespace Avalonia.Controls.Presenters
 
         protected override void ItemsChanged(NotifyCollectionChangedEventArgs e)
         {
-            if (_virt == null)
-            {
-                ItemsChangedNonVirtualized(e);
-            }
-            else
-            {
-                ItemsChangedVirtualized(e);
-            }
-        }
-
-        private void ItemsChangedNonVirtualized(NotifyCollectionChangedEventArgs e)
-        {
-            var generator = ItemContainerGenerator;
-
-            // TODO: Handle Move and Replace etc.
-            switch (e.Action)
-            {
-                case NotifyCollectionChangedAction.Add:
-                    if (e.NewStartingIndex + e.NewItems.Count < Items.Count())
-                    {
-                        generator.InsertSpace(e.NewStartingIndex, e.NewItems.Count);
-                    }
-
-                    AddContainersNonVirtualized(e.NewStartingIndex, e.NewItems);
-                    break;
-
-                case NotifyCollectionChangedAction.Remove:
-                    RemoveContainers(generator.RemoveRange(e.OldStartingIndex, e.OldItems.Count));
-                    break;
-
-                case NotifyCollectionChangedAction.Replace:
-                    RemoveContainers(generator.Dematerialize(e.OldStartingIndex, e.OldItems.Count));
-                    var containers = AddContainersNonVirtualized(e.NewStartingIndex, e.NewItems);
-
-                    var i = e.NewStartingIndex;
-
-                    foreach (var container in containers)
-                    {
-                        Panel.Children[i++] = container.ContainerControl;
-                    }
-
-                    break;
-
-                case NotifyCollectionChangedAction.Move:
-                // TODO: Implement Move in a more efficient manner.
-                case NotifyCollectionChangedAction.Reset:
-                    RemoveContainers(generator.Clear());
-
-                    if (Items != null)
-                    {
-                        AddContainersNonVirtualized(0, Items);
-                    }
-
-                    break;
-            }
-
-            InvalidateMeasure();
-        }
-
-        private void ItemsChangedVirtualized(NotifyCollectionChangedEventArgs e)
-        {
-        }
-
-        private IList<ItemContainerInfo> AddContainersNonVirtualized(int index, IEnumerable items)
-        {
-            var generator = ItemContainerGenerator;
-            var result = new List<ItemContainerInfo>();
-
-            foreach (var item in items)
-            {
-                var i = generator.Materialize(index++, item, MemberSelector);
-
-                if (i.ContainerControl != null)
-                {
-                    if (i.Index < this.Panel.Children.Count)
-                    {
-                        // TODO: This will insert at the wrong place when there are null items.
-                        this.Panel.Children.Insert(i.Index, i.ContainerControl);
-                    }
-                    else
-                    {
-                        this.Panel.Children.Add(i.ContainerControl);
-                    }
-                }
-
-                result.Add(i);
-            }
-
-            return result;
-        }
-
-        private void CreateRemoveVirtualizedContainers()
-        {
-            var generator = ItemContainerGenerator;
-            var panel = _virt.Panel;
-
-            if (!panel.IsFull)
-            {
-                var index = _virt.LastIndex + 1;
-                var items = Items.Cast<object>().Skip(index);
-                var memberSelector = MemberSelector;
-
-                foreach (var item in items)
-                {
-                    var materialized = generator.Materialize(index++, item, memberSelector);
-                    panel.Children.Add(materialized.ContainerControl);
-
-                    if (panel.IsFull)
-                    {
-                        break;
-                    }
-                }
-
-                _virt.LastIndex = index - 1;
-            }
-
-            if (panel.OverflowCount > 0)
-            {
-                var count = panel.OverflowCount;
-                var index = panel.Children.Count - count;
-
-                panel.Children.RemoveRange(index, count);
-                generator.Dematerialize(index, count);
-
-                _virt.LastIndex -= count;
-            }
-        }
-
-        private void RemoveContainers(IEnumerable<ItemContainerInfo> items)
-        {
-            foreach (var i in items)
-            {
-                if (i.ContainerControl != null)
-                {
-                    this.Panel.Children.Remove(i.ContainerControl);
-                }
-            }
-        }
-
-        private class VirtualizationInfo
-        {
-            public VirtualizationInfo(IVirtualizingPanel panel)
-            {
-                Panel = panel;
-            }
-
-            public IVirtualizingPanel Panel { get; }
-            public int FirstIndex { get; set; }
-            public int LastIndex { get; set; } = -1;
+            _virtualizer?.ItemsChanged(Items, e);
         }
     }
 }

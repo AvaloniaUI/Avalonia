@@ -26,6 +26,8 @@ namespace Avalonia.Controls
 
         int IVirtualizingPanel.OverflowCount => _canBeRemoved;
 
+        Orientation IVirtualizingPanel.ScrollDirection => Orientation;
+
         double IVirtualizingPanel.AverageItemSize => _averageItemSize;
 
         double IVirtualizingPanel.PixelOffset

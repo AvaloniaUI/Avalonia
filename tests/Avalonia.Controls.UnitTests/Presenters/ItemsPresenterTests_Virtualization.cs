@@ -6,7 +6,6 @@ using System.Linq;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
-using Moq;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Presenters
@@ -124,7 +123,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
         public class Simple
         {
             [Fact]
-            public void Should_Return_Items_Count_For_Extent()
+            public void Should_Return_Items_Count_For_Extent_Vertical()
             {
                 var target = CreateTarget();
 
@@ -134,7 +133,17 @@ namespace Avalonia.Controls.UnitTests.Presenters
             }
 
             [Fact]
-            public void Should_Have_Number_Of_Visible_Items_As_Viewport()
+            public void Should_Return_Items_Count_For_Extent_Horizontal()
+            {
+                var target = CreateTarget(orientation: Orientation.Horizontal);
+
+                target.ApplyTemplate();
+
+                Assert.Equal(new Size(20, 0), ((IScrollable)target).Extent);
+            }
+
+            [Fact]
+            public void Should_Have_Number_Of_Visible_Items_As_Viewport_Vertical()
             {
                 var target = CreateTarget();
 
@@ -142,7 +151,19 @@ namespace Avalonia.Controls.UnitTests.Presenters
                 target.Measure(new Size(100, 100));
                 target.Arrange(new Rect(0, 0, 100, 100));
 
-                Assert.Equal(10, ((IScrollable)target).Viewport.Height);
+                Assert.Equal(new Size(0, 10), ((IScrollable)target).Viewport);
+            }
+
+            [Fact]
+            public void Should_Have_Number_Of_Visible_Items_As_Viewport_Horizontal()
+            {
+                var target = CreateTarget(orientation: Orientation.Horizontal);
+
+                target.ApplyTemplate();
+                target.Measure(new Size(100, 100));
+                target.Arrange(new Rect(0, 0, 100, 100));
+
+                Assert.Equal(new Size(10, 0), ((IScrollable)target).Viewport);
             }
 
             [Fact]
@@ -165,6 +186,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
         private static ItemsPresenter CreateTarget(
             ItemVirtualizationMode mode = ItemVirtualizationMode.Simple,
+            Orientation orientation = Orientation.Vertical,
             int itemCount = 20)
         {
             ItemsPresenter result;
@@ -175,7 +197,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
                 Content = result = new ItemsPresenter
                 {
                     Items = items,
-                    ItemsPanel = VirtualizingPanelTemplate(),
+                    ItemsPanel = VirtualizingPanelTemplate(orientation),
                     ItemTemplate = ItemTemplate(),
                     VirtualizationMode = mode,
                 }
@@ -190,13 +212,18 @@ namespace Avalonia.Controls.UnitTests.Presenters
         {
             return new FuncDataTemplate<string>(x => new Canvas
             {
+                Width = 10,
                 Height = 10,
             });
         }
 
-        private static ITemplate<IPanel> VirtualizingPanelTemplate()
+        private static ITemplate<IPanel> VirtualizingPanelTemplate(
+            Orientation orientation = Orientation.Vertical)
         {
-            return new FuncTemplate<IPanel>(() => new VirtualizingStackPanel());
+            return new FuncTemplate<IPanel>(() => new VirtualizingStackPanel
+            {
+                Orientation = orientation,
+            });
         }
     }
 }
