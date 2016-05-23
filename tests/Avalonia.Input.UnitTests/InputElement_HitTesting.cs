@@ -204,7 +204,7 @@ namespace Avalonia.Input.UnitTests
 
         class MockRenderInterface : IPlatformRenderInterface
         {
-            public IFormattedTextImpl CreateFormattedText(string text, string fontFamilyName, double fontSize, FontStyle fontStyle, TextAlignment textAlignment, FontWeight fontWeight)
+            public IFormattedTextImpl CreateFormattedText(string text, string fontFamilyName, double fontSize, FontStyle fontStyle, TextAlignment textAlignment, FontWeight fontWeight, TextWrapping wrapping)
             {
                 throw new NotImplementedException();
             }
