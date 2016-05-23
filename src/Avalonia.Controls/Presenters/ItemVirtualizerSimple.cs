@@ -135,8 +135,9 @@ namespace Avalonia.Controls.Presenters
             var generator = Owner.ItemContainerGenerator;
             var selector = Owner.MemberSelector;
             var sign = delta < 0 ? -1 : 1;
-            var first = delta < 0 ? panel.Children.Count + delta : 0;
-            var count = Math.Abs(delta);
+            var move = delta < panel.Children.Count;
+            var first = delta < 0 && move ? panel.Children.Count + delta : 0;
+            var count = Math.Min(Math.Abs(delta), panel.Children.Count);
             var containers = panel.Children.GetRange(first, count).ToList();
 
             for (var i = 0; i < containers.Count; ++i)
@@ -151,7 +152,7 @@ namespace Avalonia.Controls.Presenters
                 }
             }
 
-            if (delta < panel.Children.Count)
+            if (move)
             {
                 panel.Children.RemoveRange(first, count);
 
