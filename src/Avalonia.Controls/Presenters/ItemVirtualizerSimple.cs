@@ -31,6 +31,75 @@ namespace Avalonia.Controls.Presenters
             }
         }
 
+        public override Vector Offset
+        {
+            get
+            {
+                if (VirtualizingPanel.ScrollDirection == Orientation.Vertical)
+                {
+                    return new Vector(0, FirstIndex);
+                }
+                else
+                {
+                    return new Vector(FirstIndex, 0);
+                }
+            }
+
+            set
+            {
+                var scroll = (VirtualizingPanel.ScrollDirection == Orientation.Vertical) ?
+                    value.Y : value.X;
+                var delta = (int)(scroll - FirstIndex);
+                var panel = VirtualizingPanel;
+
+                if (delta != 0)
+                {
+                    if (delta >= panel.Children.Count)
+                    {
+                        var index = FirstIndex + delta;
+
+                        foreach (var container in panel.Children)
+                        {
+                            container.DataContext = Items.ElementAt(index++);
+                        }
+                    }
+                    else if (delta > 0)
+                    {
+                        var containers = panel.Children.GetRange(0, delta).ToList();
+                        panel.Children.RemoveRange(0, delta);
+
+                        var index = LastIndex + 1;
+
+                        foreach (var container in containers)
+                        {
+                            container.DataContext = Items.ElementAt(index++);
+                        }
+
+                        panel.Children.AddRange(containers);
+                    }
+                    else
+                    {
+                        var first = panel.Children.Count + delta;
+                        var count = -delta;
+                        var containers = panel.Children.GetRange(first, count).ToList();
+                        panel.Children.RemoveRange(first, count);
+
+                        var index = FirstIndex + delta;
+
+                        foreach (var container in containers)
+                        {
+                            container.DataContext = Items.ElementAt(index++);
+                        }
+
+                        panel.Children.InsertRange(0, containers);
+                    }
+
+                    FirstIndex += delta;
+                    LastIndex += delta;
+                }
+            }
+        }
+
         public override Size Viewport
         {
             get

@@ -21,18 +21,18 @@ namespace Avalonia.Controls.Presenters
 
         public override Size Extent
         {
-            get
-            {
-                throw new NotSupportedException();
-            }
+            get { throw new NotSupportedException(); }
+        }
+
+        public override Vector Offset
+        {
+            get { throw new NotSupportedException(); }
+            set { throw new NotSupportedException(); }
         }
 
         public override Size Viewport
         {
-            get
-            {
-                throw new NotSupportedException();
-            }
+            get { throw new NotSupportedException(); }
         }
 
         public override void Arranging(Size finalSize)

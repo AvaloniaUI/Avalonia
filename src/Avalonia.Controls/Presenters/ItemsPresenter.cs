@@ -2,14 +2,10 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Linq;
-using Avalonia.Controls.Generators;
 using Avalonia.Controls.Primitives;
-using Avalonia.Controls.Utils;
 using Avalonia.Input;
+using static Avalonia.Utilities.MathUtilities;
 
 namespace Avalonia.Controls.Presenters
 {
@@ -60,7 +56,11 @@ namespace Avalonia.Controls.Presenters
         Size IScrollable.Extent => _virtualizer.Extent;
 
         /// <inheritdoc/>
-        Vector IScrollable.Offset { get; set; }
+        Vector IScrollable.Offset
+        {
+            get { return _virtualizer.Offset; }
+            set { _virtualizer.Offset = CoerceOffset(value); }
+        }
 
         /// <inheritdoc/>
         Size IScrollable.Viewport => _virtualizer.Viewport;
@@ -83,6 +83,7 @@ namespace Avalonia.Controls.Presenters
         protected override void PanelCreated(IPanel panel)
         {
             _virtualizer = ItemVirtualizer.Create(this);
+            ((IScrollable)this).InvalidateScroll?.Invoke();
 
             if (!Panel.IsSet(KeyboardNavigation.DirectionalNavigationProperty))
             {
@@ -99,6 +100,14 @@ namespace Avalonia.Controls.Presenters
         protected override void ItemsChanged(NotifyCollectionChangedEventArgs e)
         {
             _virtualizer?.ItemsChanged(Items, e);
+        }
+
+        private Vector CoerceOffset(Vector value)
+        {
+            var scrollable = (IScrollable)this;
+            var maxX = Math.Max(scrollable.Extent.Width - scrollable.Viewport.Width, 0);
+            var maxY = Math.Max(scrollable.Extent.Height - scrollable.Viewport.Height, 0);
+            return new Vector(Clamp(value.X, 0, maxX), Clamp(value.Y, 0, maxY));
         }
     }
 }

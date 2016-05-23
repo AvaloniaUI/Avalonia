@@ -182,6 +182,68 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
                 Assert.Equal(8, target.Panel.Children.Count);
             }
+
+            [Fact]
+            public void Scrolling_Less_Than_A_Page_Should_Move_Recycled_Items()
+            {
+                var target = CreateTarget();
+                var items = (IList<string>)target.Items;
+
+                target.ApplyTemplate();
+                target.Measure(new Size(100, 100));
+                target.Arrange(new Rect(0, 0, 100, 100));
+
+                var containers = target.Panel.Children.ToList();
+                var scroller = (ScrollContentPresenter)target.Parent;
+
+                scroller.Offset = new Vector(0, 5);
+
+                var scrolledContainers = containers
+                    .Skip(5)
+                    .Take(5)
+                    .Concat(containers.Take(5)).ToList();
+
+                Assert.Equal(new Vector(0, 5), ((IScrollable)target).Offset);
+                Assert.Equal(scrolledContainers, target.Panel.Children);
+
+                for (var i = 0; i < target.Panel.Children.Count; ++i)
+                {
+                    Assert.Equal(items[i + 5], target.Panel.Children[i].DataContext);
+                }
+                 
+                scroller.Offset = new Vector(0, 0);
+                Assert.Equal(new Vector(0, 0), ((IScrollable)target).Offset);
+                Assert.Equal(containers, target.Panel.Children);
+
+                for (var i = 0; i < target.Panel.Children.Count; ++i)
+                {
+                    Assert.Equal(items[i], target.Panel.Children[i].DataContext);
+                }
+            }
+
+            [Fact]
+            public void Scrolling_More_Than_A_Page_Should_Recycle_Items()
+            {
+                var target = CreateTarget();
+                var items = (IList<string>)target.Items;
+
+                target.ApplyTemplate();
+                target.Measure(new Size(100, 100));
+                target.Arrange(new Rect(0, 0, 100, 100));
+
+                var containers = target.Panel.Children.ToList();
+                var scroller = (ScrollContentPresenter)target.Parent;
+
+                scroller.Offset = new Vector(0, 10);
+
+                Assert.Equal(new Vector(0, 10), ((IScrollable)target).Offset);
+                Assert.Equal(containers, target.Panel.Children);
+
+                for (var i = 0; i < target.Panel.Children.Count; ++i)
+                {
+                    Assert.Equal(items[i + 10], target.Panel.Children[i].DataContext);
+                }
+            }
         }
 
         private static ItemsPresenter CreateTarget(

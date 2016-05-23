@@ -23,6 +23,7 @@ namespace Avalonia.Controls.Presenters
 
         public abstract bool IsLogicalScrollEnabled { get; }
         public abstract Size Extent { get; }
+        public abstract Vector Offset { get; set; }
         public abstract Size Viewport { get; }
 
         public static ItemVirtualizer Create(ItemsPresenter owner)
