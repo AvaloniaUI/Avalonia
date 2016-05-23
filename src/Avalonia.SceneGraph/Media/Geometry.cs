@@ -66,5 +66,15 @@ namespace Avalonia.Media
         {
             return PlatformImpl.GetRenderBounds(strokeThickness);
         }
+
+        /// <summary>
+        /// Indicates whether the geometry contains the specified point.
+        /// </summary>
+        /// <param name="point">The point.</param>
+        /// <returns><c>true</c> if the geometry contains the point; otherwise, <c>false</c>.</returns>
+        public bool FillContains(Point point)
+        {
+            return PlatformImpl.FillContains(point);
+        }
     }
 }

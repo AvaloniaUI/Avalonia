@@ -24,5 +24,12 @@ namespace Avalonia.Platform
         /// <param name="strokeThickness">The stroke thickness.</param>
         /// <returns>The bounding rectangle.</returns>
         Rect GetRenderBounds(double strokeThickness);
+
+        /// <summary>
+        /// Indicates whether the geometry contains the specified point.
+        /// </summary>
+        /// <param name="point">The point.</param>
+        /// <returns><c>true</c> if the geometry contains the point; otherwise, <c>false</c>.</returns>
+        bool FillContains(Point point);
     }
 }

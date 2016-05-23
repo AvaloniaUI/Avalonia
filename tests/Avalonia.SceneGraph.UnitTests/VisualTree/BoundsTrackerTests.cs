@@ -8,7 +8,11 @@ using System.Reactive.Linq;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
 using Avalonia.VisualTree;
+using Avalonia.Rendering;
 using Xunit;
+using Avalonia.Media;
+using Moq;
+using Avalonia.UnitTests;
 
 namespace Avalonia.SceneGraph.UnitTests.VisualTree
 {
@@ -17,36 +21,37 @@ namespace Avalonia.SceneGraph.UnitTests.VisualTree
         [Fact]
         public void Should_Track_Bounds()
         {
-            var target = new BoundsTracker();
-            var control = default(Rectangle);
-            var tree = new Decorator
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                Padding = new Thickness(10),
-                Child = new Decorator
+                var target = new BoundsTracker();
+                var control = default(Rectangle);
+                var tree = new Decorator
                 {
-                    Padding = new Thickness(5),
-                    Child = control = new Rectangle
+                    Padding = new Thickness(10),
+                    Child = new Decorator
                     {
-                        Width = 15,
-                        Height = 15,
-                    },
-                }
-            };
+                        Padding = new Thickness(5),
+                        Child = control = new Rectangle
+                        {
+                            Width = 15,
+                            Height = 15,
+                        },
+                    }
+                };
 
-            tree.Measure(Size.Infinity);
-            tree.Arrange(new Rect(0, 0, 100, 100));
+                var context = new DrawingContext(Mock.Of<IDrawingContextImpl>());
 
-            var track = target.Track(control, tree);
-            var results = new List<TransformedBounds>();
-            track.Subscribe(results.Add);
+                tree.Measure(Size.Infinity);
+                tree.Arrange(new Rect(0, 0, 100, 100));
+                context.Render(tree);
 
-            Assert.Equal(new Rect(42, 42, 15, 15), results[0].Bounds);
+                var track = target.Track(control);
+                var results = new List<TransformedBounds>();
+                track.Subscribe(results.Add);
 
-            tree.Padding = new Thickness(15);
-            tree.Measure(Size.Infinity);
-            tree.Arrange(new Rect(0, 0, 100, 100));
-
-            Assert.Equal(new Rect(37, 37, 15, 15), results[1].Bounds);
+                Assert.Equal(new Rect(0, 0, 15, 15), results[0].Bounds);
+                Assert.Equal(Matrix.CreateTranslation(42, 42), results[0].Transform);
+            }
         }
     }
 }
