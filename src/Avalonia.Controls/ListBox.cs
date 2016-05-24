@@ -2,13 +2,10 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System.Collections;
-using System.Collections.Generic;
-using Avalonia.Collections;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
-using Avalonia.Interactivity;
 
 namespace Avalonia.Controls
 {
@@ -42,6 +39,11 @@ namespace Avalonia.Controls
         {
             ItemsPanelProperty.OverrideDefaultValue<ListBox>(DefaultPanel);
         }
+
+        /// <summary>
+        /// Gets the scroll information for the <see cref="ListBox"/>.
+        /// </summary>
+        public IScrollable Scroll { get; set; }
 
         /// <inheritdoc/>
         public new IList SelectedItems => base.SelectedItems;
@@ -89,6 +91,12 @@ namespace Avalonia.Controls
                     (e.InputModifiers & InputModifiers.Shift) != 0,
                     (e.InputModifiers & InputModifiers.Control) != 0);
             }
+        }
+
+        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        {
+            base.OnTemplateApplied(e);
+            Scroll = e.NameScope.Find<IScrollable>("PART_ScrollViewer");
         }
     }
 }
