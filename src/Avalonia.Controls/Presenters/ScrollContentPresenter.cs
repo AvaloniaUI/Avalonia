@@ -50,7 +50,7 @@ namespace Avalonia.Controls.Presenters
         private Size _extent;
         private Size _measuredExtent;
         private Vector _offset;
-        private IDisposable _scrollableSubscription;
+        private IDisposable _logicalScrollSubscription;
         private Size _viewport;
 
         /// <summary>
@@ -176,7 +176,7 @@ namespace Avalonia.Controls.Presenters
             {
                 var measureSize = availableSize;
 
-                if (_scrollableSubscription == null)
+                if (_logicalScrollSubscription == null)
                 {
                     measureSize = new Size(double.PositiveInfinity, double.PositiveInfinity);
 
@@ -201,7 +201,7 @@ namespace Avalonia.Controls.Presenters
         protected override Size ArrangeOverride(Size finalSize)
         {
             var child = this.GetVisualChildren().SingleOrDefault() as ILayoutable;
-            var logicalScroll = _scrollableSubscription != null;
+            var logicalScroll = _logicalScrollSubscription != null;
 
             if (!logicalScroll)
             {
@@ -261,8 +261,8 @@ namespace Avalonia.Controls.Presenters
         {
             var scrollable = child as ILogicalScrollable;
 
-            _scrollableSubscription?.Dispose();
-            _scrollableSubscription = null;
+            _logicalScrollSubscription?.Dispose();
+            _logicalScrollSubscription = null;
 
             if (scrollable != null)
             {
@@ -270,7 +270,7 @@ namespace Avalonia.Controls.Presenters
 
                 if (scrollable?.IsLogicalScrollEnabled == true)
                 {
-                    _scrollableSubscription = new CompositeDisposable(
+                    _logicalScrollSubscription = new CompositeDisposable(
                         this.GetObservable(OffsetProperty).Skip(1).Subscribe(x => scrollable.Offset = x),
                         Disposable.Create(() => scrollable.InvalidateScroll = null));
                     UpdateFromScrollable(scrollable);
@@ -280,7 +280,7 @@ namespace Avalonia.Controls.Presenters
 
         private void UpdateFromScrollable(ILogicalScrollable scrollable)
         {
-            var logicalScroll = _scrollableSubscription != null;
+            var logicalScroll = _logicalScrollSubscription != null;
 
             if (logicalScroll != scrollable.IsLogicalScrollEnabled)
             {
