@@ -73,7 +73,7 @@ namespace Avalonia.Controls.Generators
 
             for (int i = startingIndex; i < startingIndex + count; ++i)
             {
-                if (i < _containers.Count)
+                if (i < _containers.Count &&_containers[i] != null)
                 {
                     result.Add(_containers[i]);
                     _containers[i] = null;
