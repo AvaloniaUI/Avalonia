@@ -5,6 +5,7 @@ using System;
 using System.Collections.Specialized;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
+using Avalonia.VisualTree;
 using static Avalonia.Utilities.MathUtilities;
 
 namespace Avalonia.Controls.Presenters
@@ -70,6 +71,12 @@ namespace Avalonia.Controls.Presenters
 
         /// <inheritdoc/>
         Size IScrollable.PageScrollSize => new Size(0, 1);
+
+        /// <inheritdoc/>
+        bool IScrollable.BringIntoView(IVisual target, Rect targetRect)
+        {
+            return _virtualizer?.BringIntoView(target, targetRect) ?? false;
+        }
 
         /// <inheritdoc/>
         protected override Size ArrangeOverride(Size finalSize)

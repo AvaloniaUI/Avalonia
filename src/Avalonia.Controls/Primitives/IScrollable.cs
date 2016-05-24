@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -62,5 +63,13 @@ namespace Avalonia.Controls.Primitives
         /// Gets the size to page by, in logical units.
         /// </summary>
         Size PageScrollSize { get; }
+
+        /// <summary>
+        /// Attempts to bring a portion of the target visual into view by scrolling the content.
+        /// </summary>
+        /// <param name="target">The target visual.</param>
+        /// <param name="targetRect">The portion of the target visual to bring into view.</param>
+        /// <returns>True if the scroll offset was changed; otherwise false.</returns>
+        bool BringIntoView(IVisual target, Rect targetRect);
     }
 }

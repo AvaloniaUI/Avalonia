@@ -6,6 +6,7 @@ using System.Reactive.Linq;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Layout;
+using Avalonia.VisualTree;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests
@@ -236,7 +237,6 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(new Rect(0, 0, 100, 100), scrollable.Bounds);
         }
 
-
         private class TestScrollable : Control, IScrollable
         {
             private Size _extent;
@@ -291,6 +291,11 @@ namespace Avalonia.Controls.UnitTests
                 {
                     return new Size(double.PositiveInfinity, Viewport.Height);
                 }
+            }
+
+            public bool BringIntoView(IVisual target, Rect targetRect)
+            {
+                throw new NotImplementedException();
             }
 
             protected override Size MeasureOverride(Size availableSize)

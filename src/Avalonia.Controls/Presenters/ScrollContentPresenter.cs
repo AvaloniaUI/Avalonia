@@ -117,6 +117,13 @@ namespace Avalonia.Controls.Presenters
                 return false;
             }
 
+            var scrollable = Child as IScrollable;
+
+            if (scrollable?.IsLogicalScrollEnabled == true)
+            {
+                return scrollable.BringIntoView(target, targetRect);
+            }
+
             var transform = target.TransformToVisual(Child);
 
             if (transform == null)

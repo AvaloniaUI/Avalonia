@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Specialized;
 using Avalonia.Controls.Primitives;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Presenters
 {
@@ -44,6 +45,11 @@ namespace Avalonia.Controls.Presenters
         }
 
         public abstract void Arranging(Size finalSize);
+
+        public virtual bool BringIntoView(IVisual target, Rect targetRect)
+        {
+            return false;
+        }
 
         public virtual void ItemsChanged(IEnumerable items, NotifyCollectionChangedEventArgs e)
         {

@@ -3,6 +3,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Media;
+using Avalonia.VisualTree;
 
 namespace XamlTestApplication
 {
@@ -54,6 +55,31 @@ namespace XamlTestApplication
             }
         }
 
+        public override void Render(DrawingContext context)
+        {
+            var y = 0.0;
+
+            for (var i = (int)_offset.Y; i < itemCount; ++i)
+            {
+                using (var line = new FormattedText(
+                    "Item " + (i + 1),
+                    TextBlock.GetFontFamily(this),
+                    TextBlock.GetFontSize(this),
+                    TextBlock.GetFontStyle(this),
+                    TextAlignment.Left,
+                    TextBlock.GetFontWeight(this)))
+                {
+                    context.DrawText(Brushes.Black, new Point(-_offset.X, y), line);
+                    y += _lineSize.Height;
+                }
+            }
+        }
+
+        public bool BringIntoView(IVisual target, Rect targetRect)
+        {
+            throw new NotImplementedException();
+        }
+
         protected override Size MeasureOverride(Size availableSize)
         {
             using (var line = new FormattedText(
@@ -76,26 +102,6 @@ namespace XamlTestApplication
             _extent = new Size(_lineSize.Width, itemCount + 1);
             InvalidateScroll?.Invoke();
             return finalSize;
-        }
-
-        public override void Render(DrawingContext context)
-        {
-            var y = 0.0;
-
-            for (var i = (int)_offset.Y; i < itemCount; ++i)
-            {
-                using (var line = new FormattedText(
-                    "Item " + (i + 1),
-                    TextBlock.GetFontFamily(this),
-                    TextBlock.GetFontSize(this),
-                    TextBlock.GetFontStyle(this),
-                    TextAlignment.Left,
-                    TextBlock.GetFontWeight(this)))
-                {
-                    context.DrawText(Brushes.Black, new Point(-_offset.X, y), line);
-                    y += _lineSize.Height;
-                }
-            }
         }
     }
 }
