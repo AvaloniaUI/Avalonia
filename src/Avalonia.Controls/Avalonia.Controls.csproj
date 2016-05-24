@@ -72,7 +72,6 @@
     <Compile Include="Presenters\ItemsPresenterBase.cs" />
     <Compile Include="Presenters\ItemVirtualizerNone.cs" />
     <Compile Include="Presenters\ItemVirtualizerSimple.cs" />
-    <Compile Include="Presenters\ThingamybobPresenter.cs" />
     <Compile Include="Presenters\ItemVirtualizer.cs" />
     <Compile Include="Primitives\HeaderedSelectingControl.cs" />
     <Compile Include="Primitives\IScrollable.cs" />
@@ -167,7 +166,6 @@
     <Compile Include="Templates\ITemplate`1.cs" />
     <Compile Include="Templates\ITreeDataTemplate.cs" />
     <Compile Include="Templates\FuncTreeDataTemplate.cs" />
-    <Compile Include="Thingamybob.cs" />
     <Compile Include="ToolTip.cs" />
     <Compile Include="UserControl.cs" />
     <Compile Include="Templates\TemplateExtensions.cs" />
