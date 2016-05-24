@@ -3,6 +3,7 @@
 
 using System.Collections;
 using Avalonia.Controls.Generators;
+using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
@@ -33,6 +34,12 @@ namespace Avalonia.Controls
             SelectingItemsControl.SelectionModeProperty;
 
         /// <summary>
+        /// Defines the <see cref="VirtualizationMode"/> property.
+        /// </summary>
+        public static readonly AvaloniaProperty<ItemVirtualizationMode> VirtualizationModeProperty =
+            ItemsPresenter.VirtualizationModeProperty.AddOwner<ListBox>();
+
+        /// <summary>
         /// Initializes static members of the <see cref="ItemsControl"/> class.
         /// </summary>
         static ListBox()
@@ -53,6 +60,15 @@ namespace Avalonia.Controls
         {
             get { return base.SelectionMode; }
             set { base.SelectionMode = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the virtualization mode for the items.
+        /// </summary>
+        public ItemVirtualizationMode VirtualizationMode
+        {
+            get { return GetValue(VirtualizationModeProperty); }
+            set { SetValue(VirtualizationModeProperty, value); }
         }
 
         /// <inheritdoc/>
