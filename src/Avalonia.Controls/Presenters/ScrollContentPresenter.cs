@@ -15,7 +15,7 @@ namespace Avalonia.Controls.Presenters
     /// <summary>
     /// Presents a scrolling view of content inside a <see cref="ScrollViewer"/>.
     /// </summary>
-    public class ScrollContentPresenter : ContentPresenter, IPresenter
+    public class ScrollContentPresenter : ContentPresenter, IPresenter, IScrollable
     {
         /// <summary>
         /// Defines the <see cref="Extent"/> property.

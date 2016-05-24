@@ -17,7 +17,7 @@ namespace Avalonia.Controls.Primitives
     /// whereas logical scrolling means that the scrolling is handled by the child control itself
     /// and it can choose to do handle the scroll information as it sees fit.
     /// </remarks>
-    public interface ILogicalScrollable
+    public interface ILogicalScrollable : IScrollable
     {
         /// <summary>
         /// Gets a value indicating whether logical scrolling is enabled on the control.
@@ -30,7 +30,8 @@ namespace Avalonia.Controls.Primitives
         /// <remarks>
         /// <para>
         /// This method notifies the attached <see cref="ScrollViewer"/> of a change in 
-        /// the <see cref="Extent"/>, <see cref="Offset"/> or <see cref="Viewport"/> properties.
+        /// the <see cref="IScrollable.Extent"/>, <see cref="IScrollable.Offset"/> or 
+        /// <see cref="IScrollable.Viewport"/> properties.
         /// </para>
         /// <para>
         /// This property is set by the parent <see cref="ScrollViewer"/> when the 
@@ -38,21 +39,6 @@ namespace Avalonia.Controls.Primitives
         /// </para>
         /// </remarks>
         Action InvalidateScroll { get; set; }
-
-        /// <summary>
-        /// Gets the extent of the scrollable content, in logical units
-        /// </summary>
-        Size Extent { get; }
-
-        /// <summary>
-        /// Gets or sets the current scroll offset, in logical units.
-        /// </summary>
-        Vector Offset { get; set; }
-
-        /// <summary>
-        /// Gets the size of the viewport, in logical units.
-        /// </summary>
-        Size Viewport { get; }
 
         /// <summary>
         /// Gets the size to scroll by, in logical units.

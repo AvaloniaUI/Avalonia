@@ -18,12 +18,12 @@ namespace XamlTestApplication
         public bool IsLogicalScrollEnabled => true;
         public Action InvalidateScroll { get; set; }
 
-        Size ILogicalScrollable.Extent
+        Size IScrollable.Extent
         {
             get { return _extent; }
         }
 
-        Vector ILogicalScrollable.Offset
+        Vector IScrollable.Offset
         {
             get { return _offset; }
 
@@ -34,7 +34,7 @@ namespace XamlTestApplication
             }
         }
 
-        Size ILogicalScrollable.Viewport
+        Size IScrollable.Viewport
         {
             get { return _viewport; }
         }

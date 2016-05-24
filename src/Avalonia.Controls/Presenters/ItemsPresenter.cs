@@ -51,20 +51,20 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <inheritdoc/>
-        Action ILogicalScrollable.InvalidateScroll { get; set; }
+        Size IScrollable.Extent => _virtualizer.Extent;
 
         /// <inheritdoc/>
-        Size ILogicalScrollable.Extent => _virtualizer.Extent;
-
-        /// <inheritdoc/>
-        Vector ILogicalScrollable.Offset
+        Vector IScrollable.Offset
         {
             get { return _virtualizer.Offset; }
             set { _virtualizer.Offset = CoerceOffset(value); }
         }
 
         /// <inheritdoc/>
-        Size ILogicalScrollable.Viewport => _virtualizer.Viewport;
+        Size IScrollable.Viewport => _virtualizer.Viewport;
+
+        /// <inheritdoc/>
+        Action ILogicalScrollable.InvalidateScroll { get; set; }
 
         /// <inheritdoc/>
         Size ILogicalScrollable.ScrollSize => new Size(0, 1);
