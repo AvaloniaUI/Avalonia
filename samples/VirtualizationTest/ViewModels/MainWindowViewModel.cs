@@ -50,7 +50,7 @@ namespace VirtualizationTest.ViewModels
             }
             else if (count < Items.Count)
             {
-                Items.RemoveRange(count, Items.Count - count - 1);
+                Items.RemoveRange(count, Items.Count - count);
             }
         }
 
