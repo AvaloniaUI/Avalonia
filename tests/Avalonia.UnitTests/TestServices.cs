@@ -27,6 +27,9 @@ namespace Avalonia.UnitTests
             threadingInterface: Mock.Of<IPlatformThreadingInterface>(x => x.CurrentThreadIsLoopThread == true),
             windowingPlatform: new MockWindowingPlatform());
 
+        public static readonly TestServices MockPlatformRenderInterface = new TestServices(
+            renderInterface: CreateRenderInterfaceMock());
+
         public static readonly TestServices MockPlatformWrapper = new TestServices(
             platformWrapper: Mock.Of<IPclPlatformWrapper>());
 
