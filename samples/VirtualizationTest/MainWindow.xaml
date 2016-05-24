@@ -1,0 +1,18 @@
+<Window xmlns="https://github.com/avaloniaui"
+        Title="Avalonia Virtualization Test">
+    <DockPanel LastChildFill="True" Margin="16">
+        <StackPanel DockPanel.Dock="Right" Margin="16 0 0 0">
+            <TextBox Watermark="Item Count"
+                     UseFloatingWatermark="True"
+                     Text="{Binding ItemCount}"/>
+        </StackPanel>
+
+        <ListBox Items="{Binding Items}">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Header}"/>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </DockPanel>
+</Window>

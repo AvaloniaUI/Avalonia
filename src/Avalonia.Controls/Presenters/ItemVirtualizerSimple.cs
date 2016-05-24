@@ -97,7 +97,7 @@ namespace Avalonia.Controls.Presenters
             var generator = Owner.ItemContainerGenerator;
             var panel = VirtualizingPanel;
 
-            if (!panel.IsFull)
+            if (!panel.IsFull && Items != null)
             {
                 var index = LastIndex + 1;
                 var items = Items.Cast<object>().Skip(index);

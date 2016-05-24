@@ -156,6 +156,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.DesignerSupport.Te
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.DesignerSupport.TestApp", "tests\Avalonia.DesignerSupport.TestApp\Avalonia.DesignerSupport.TestApp.csproj", "{F1381F98-4D24-409A-A6C5-1C5B1E08BB08}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VirtualizationTest", "samples\VirtualizationTest\VirtualizationTest.csproj", "{FBCAF3D0-2808-4934-8E96-3F607594517B}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		src\Shared\RenderHelpers\RenderHelpers.projitems*{fb05ac90-89ba-4f2f-a924-f37875fb547c}*SharedItemsImports = 4
@@ -1899,6 +1901,38 @@ Global
 		{F1381F98-4D24-409A-A6C5-1C5B1E08BB08}.Release|iPhoneSimulator.Build.0 = Release|Any CPU
 		{F1381F98-4D24-409A-A6C5-1C5B1E08BB08}.Release|x86.ActiveCfg = Release|Any CPU
 		{F1381F98-4D24-409A-A6C5-1C5B1E08BB08}.Release|x86.Build.0 = Release|Any CPU
+		{FBCAF3D0-2808-4934-8E96-3F607594517B}.Ad-Hoc|Any CPU.ActiveCfg = Release|Any CPU
+		{FBCAF3D0-2808-4934-8E96-3F607594517B}.Ad-Hoc|Any CPU.Build.0 = Release|Any CPU
+		{FBCAF3D0-2808-4934-8E96-3F607594517B}.Ad-Hoc|iPhone.ActiveCfg = Release|Any CPU
+		{FBCAF3D0-2808-4934-8E96-3F607594517B}.Ad-Hoc|iPhone.Build.0 = Release|Any CPU
+		{FBCAF3D0-2808-4934-8E96-3F607594517B}.Ad-Hoc|iPhoneSimulator.ActiveCfg = Release|Any CPU
+		{FBCAF3D0-2808-4934-8E96-3F607594517B}.Ad-Hoc|iPhoneSimulator.Build.0 = Release|Any CPU
+		{FBCAF3D0-2808-4934-8E96-3F607594517B}.Ad-Hoc|x86.ActiveCfg = Release|Any CPU
+		{FBCAF3D0-2808-4934-8E96-3F607594517B}.Ad-Hoc|x86.Build.0 = Release|Any CPU
+		{FBCAF3D0-2808-4934-8E96-3F607594517B}.AppStore|Any CPU.ActiveCfg = Release|Any CPU
+		{FBCAF3D0-2808-4934-8E96-3F607594517B}.AppStore|Any CPU.Build.0 = Release|Any CPU
+		{FBCAF3D0-2808-4934-8E96-3F607594517B}.AppStore|iPhone.ActiveCfg = Release|Any CPU
+		{FBCAF3D0-2808-4934-8E96-3F607594517B}.AppStore|iPhone.Build.0 = Release|Any CPU
+		{FBCAF3D0-2808-4934-8E96-3F607594517B}.AppStore|iPhoneSimulator.ActiveCfg = Release|Any CPU
+		{FBCAF3D0-2808-4934-8E96-3F607594517B}.AppStore|iPhoneSimulator.Build.0 = Release|Any CPU
+		{FBCAF3D0-2808-4934-8E96-3F607594517B}.AppStore|x86.ActiveCfg = Release|Any CPU
+		{FBCAF3D0-2808-4934-8E96-3F607594517B}.AppStore|x86.Build.0 = Release|Any CPU
+		{FBCAF3D0-2808-4934-8E96-3F607594517B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FBCAF3D0-2808-4934-8E96-3F607594517B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FBCAF3D0-2808-4934-8E96-3F607594517B}.Debug|iPhone.ActiveCfg = Debug|Any CPU
+		{FBCAF3D0-2808-4934-8E96-3F607594517B}.Debug|iPhone.Build.0 = Debug|Any CPU
+		{FBCAF3D0-2808-4934-8E96-3F607594517B}.Debug|iPhoneSimulator.ActiveCfg = Debug|Any CPU
+		{FBCAF3D0-2808-4934-8E96-3F607594517B}.Debug|iPhoneSimulator.Build.0 = Debug|Any CPU
+		{FBCAF3D0-2808-4934-8E96-3F607594517B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{FBCAF3D0-2808-4934-8E96-3F607594517B}.Debug|x86.Build.0 = Debug|Any CPU
+		{FBCAF3D0-2808-4934-8E96-3F607594517B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FBCAF3D0-2808-4934-8E96-3F607594517B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FBCAF3D0-2808-4934-8E96-3F607594517B}.Release|iPhone.ActiveCfg = Release|Any CPU
+		{FBCAF3D0-2808-4934-8E96-3F607594517B}.Release|iPhone.Build.0 = Release|Any CPU
+		{FBCAF3D0-2808-4934-8E96-3F607594517B}.Release|iPhoneSimulator.ActiveCfg = Release|Any CPU
+		{FBCAF3D0-2808-4934-8E96-3F607594517B}.Release|iPhoneSimulator.Build.0 = Release|Any CPU
+		{FBCAF3D0-2808-4934-8E96-3F607594517B}.Release|x86.ActiveCfg = Release|Any CPU
+		{FBCAF3D0-2808-4934-8E96-3F607594517B}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1949,5 +1983,6 @@ Global
 		{D35A9F3D-8BB0-496E-BF72-444038A7DEBB} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
 		{52F55355-D120-42AC-8116-8410A7D602FA} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
 		{F1381F98-4D24-409A-A6C5-1C5B1E08BB08} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
+		{FBCAF3D0-2808-4934-8E96-3F607594517B} = {9B9E3891-2366-4253-A952-D08BCEB71098}
 	EndGlobalSection
 EndGlobal
