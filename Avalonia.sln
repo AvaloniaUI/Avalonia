@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.24720.0
+VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Base", "src\Avalonia.Base\Avalonia.Base.csproj", "{B09B78D8-9B26-48B0-9149-D64A2F120F3F}"
 EndProject
@@ -172,6 +172,8 @@ Global
 		src\Shared\RenderHelpers\RenderHelpers.projitems*{47be08a7-5985-410b-9ffc-2264b8ea595f}*SharedItemsImports = 4
 		src\Skia\Avalonia.Skia\Avalonia.Skia.projitems*{47be08a7-5985-410b-9ffc-2264b8ea595f}*SharedItemsImports = 4
 		samples\TestApplicationShared\TestApplicationShared.projitems*{e3a1060b-50d0-44e8-88b6-f44ef2e5bd72}*SharedItemsImports = 4
+		src\Shared\RenderHelpers\RenderHelpers.projitems*{bd43f7c0-396b-4aa1-bad9-dfde54d51298}*SharedItemsImports = 4
+		src\Skia\Avalonia.Skia\Avalonia.Skia.projitems*{bd43f7c0-396b-4aa1-bad9-dfde54d51298}*SharedItemsImports = 4
 		src\Shared\RenderHelpers\RenderHelpers.projitems*{3e908f67-5543-4879-a1dc-08eace79b3cd}*SharedItemsImports = 4
 		src\Shared\PlatformSupport\PlatformSupport.projitems*{e1aa3dbf-9056-4530-9376-18119a7a3ffe}*SharedItemsImports = 4
 	EndGlobalSection

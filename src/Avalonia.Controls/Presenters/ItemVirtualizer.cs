@@ -30,7 +30,7 @@ namespace Avalonia.Controls.Presenters
         public static ItemVirtualizer Create(ItemsPresenter owner)
         {
             var virtualizingPanel = owner.Panel as IVirtualizingPanel;
-            var scrollable = (IScrollable)owner;
+            var scrollable = (ILogicalScrollable)owner;
 
             if (virtualizingPanel != null && scrollable.InvalidateScroll != null)
             {

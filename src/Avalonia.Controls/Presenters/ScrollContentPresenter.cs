@@ -117,7 +117,7 @@ namespace Avalonia.Controls.Presenters
                 return false;
             }
 
-            var scrollable = Child as IScrollable;
+            var scrollable = Child as ILogicalScrollable;
 
             if (scrollable?.IsLogicalScrollEnabled == true)
             {
@@ -231,7 +231,7 @@ namespace Avalonia.Controls.Presenters
         {
             if (Extent.Height > Viewport.Height)
             {
-                var scrollable = Child as IScrollable;
+                var scrollable = Child as ILogicalScrollable;
 
                 if (scrollable?.IsLogicalScrollEnabled == true)
                 {                    
@@ -259,7 +259,7 @@ namespace Avalonia.Controls.Presenters
 
         private void UpdateScrollableSubscription(IControl child)
         {
-            var scrollable = child as IScrollable;
+            var scrollable = child as ILogicalScrollable;
 
             _scrollableSubscription?.Dispose();
             _scrollableSubscription = null;
@@ -278,7 +278,7 @@ namespace Avalonia.Controls.Presenters
             }
         }
 
-        private void UpdateFromScrollable(IScrollable scrollable)
+        private void UpdateFromScrollable(ILogicalScrollable scrollable)
         {
             var logicalScroll = _scrollableSubscription != null;
 

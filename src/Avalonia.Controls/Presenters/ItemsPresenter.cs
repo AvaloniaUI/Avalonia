@@ -13,7 +13,7 @@ namespace Avalonia.Controls.Presenters
     /// <summary>
     /// Displays items inside an <see cref="ItemsControl"/>.
     /// </summary>
-    public class ItemsPresenter : ItemsPresenterBase, IScrollable
+    public class ItemsPresenter : ItemsPresenterBase, ILogicalScrollable
     {
         /// <summary>
         /// Defines the <see cref="VirtualizationMode"/> property.
@@ -45,35 +45,35 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <inheritdoc/>
-        bool IScrollable.IsLogicalScrollEnabled
+        bool ILogicalScrollable.IsLogicalScrollEnabled
         {
             get { return _virtualizer?.IsLogicalScrollEnabled ?? false; }
         }
 
         /// <inheritdoc/>
-        Action IScrollable.InvalidateScroll { get; set; }
+        Action ILogicalScrollable.InvalidateScroll { get; set; }
 
         /// <inheritdoc/>
-        Size IScrollable.Extent => _virtualizer.Extent;
+        Size ILogicalScrollable.Extent => _virtualizer.Extent;
 
         /// <inheritdoc/>
-        Vector IScrollable.Offset
+        Vector ILogicalScrollable.Offset
         {
             get { return _virtualizer.Offset; }
             set { _virtualizer.Offset = CoerceOffset(value); }
         }
 
         /// <inheritdoc/>
-        Size IScrollable.Viewport => _virtualizer.Viewport;
+        Size ILogicalScrollable.Viewport => _virtualizer.Viewport;
 
         /// <inheritdoc/>
-        Size IScrollable.ScrollSize => new Size(0, 1);
+        Size ILogicalScrollable.ScrollSize => new Size(0, 1);
 
         /// <inheritdoc/>
-        Size IScrollable.PageScrollSize => new Size(0, 1);
+        Size ILogicalScrollable.PageScrollSize => new Size(0, 1);
 
         /// <inheritdoc/>
-        bool IScrollable.BringIntoView(IVisual target, Rect targetRect)
+        bool ILogicalScrollable.BringIntoView(IVisual target, Rect targetRect)
         {
             return _virtualizer?.BringIntoView(target, targetRect) ?? false;
         }
@@ -90,7 +90,7 @@ namespace Avalonia.Controls.Presenters
         protected override void PanelCreated(IPanel panel)
         {
             _virtualizer = ItemVirtualizer.Create(this);
-            ((IScrollable)this).InvalidateScroll?.Invoke();
+            ((ILogicalScrollable)this).InvalidateScroll?.Invoke();
 
             if (!Panel.IsSet(KeyboardNavigation.DirectionalNavigationProperty))
             {
@@ -111,7 +111,7 @@ namespace Avalonia.Controls.Presenters
 
         private Vector CoerceOffset(Vector value)
         {
-            var scrollable = (IScrollable)this;
+            var scrollable = (ILogicalScrollable)this;
             var maxX = Math.Max(scrollable.Extent.Width - scrollable.Viewport.Width, 0);
             var maxY = Math.Max(scrollable.Extent.Height - scrollable.Viewport.Height, 0);
             return new Vector(Clamp(value.X, 0, maxX), Clamp(value.Y, 0, maxY));

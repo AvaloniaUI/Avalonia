@@ -237,7 +237,7 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(new Rect(0, 0, 100, 100), scrollable.Bounds);
         }
 
-        private class TestScrollable : Control, IScrollable
+        private class TestScrollable : Control, ILogicalScrollable
         {
             private Size _extent;
             private Vector _offset;

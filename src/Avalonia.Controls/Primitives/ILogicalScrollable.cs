@@ -17,7 +17,7 @@ namespace Avalonia.Controls.Primitives
     /// whereas logical scrolling means that the scrolling is handled by the child control itself
     /// and it can choose to do handle the scroll information as it sees fit.
     /// </remarks>
-    public interface IScrollable
+    public interface ILogicalScrollable
     {
         /// <summary>
         /// Gets a value indicating whether logical scrolling is enabled on the control.
@@ -34,7 +34,7 @@ namespace Avalonia.Controls.Primitives
         /// </para>
         /// <para>
         /// This property is set by the parent <see cref="ScrollViewer"/> when the 
-        /// <see cref="IScrollable"/> is placed inside it.
+        /// <see cref="ILogicalScrollable"/> is placed inside it.
         /// </para>
         /// </remarks>
         Action InvalidateScroll { get; set; }

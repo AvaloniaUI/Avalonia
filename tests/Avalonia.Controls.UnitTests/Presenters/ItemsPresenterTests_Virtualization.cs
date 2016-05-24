@@ -21,7 +21,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
             target.ApplyTemplate();
 
-            Assert.False(((IScrollable)target).IsLogicalScrollEnabled);
+            Assert.False(((ILogicalScrollable)target).IsLogicalScrollEnabled);
         }
 
         [Fact]
@@ -31,7 +31,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
             target.ApplyTemplate();
 
-            Assert.False(((IScrollable)target).IsLogicalScrollEnabled);
+            Assert.False(((ILogicalScrollable)target).IsLogicalScrollEnabled);
         }
 
         [Fact]
@@ -46,7 +46,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
             target.ApplyTemplate();
 
-            Assert.False(((IScrollable)target).IsLogicalScrollEnabled);
+            Assert.False(((ILogicalScrollable)target).IsLogicalScrollEnabled);
         }
 
         [Fact]
@@ -56,7 +56,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
             target.ApplyTemplate();
 
-            Assert.True(((IScrollable)target).IsLogicalScrollEnabled);
+            Assert.True(((ILogicalScrollable)target).IsLogicalScrollEnabled);
         }
 
         [Fact]
@@ -130,7 +130,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
                 target.ApplyTemplate();
 
-                Assert.Equal(new Size(0, 20), ((IScrollable)target).Extent);
+                Assert.Equal(new Size(0, 20), ((ILogicalScrollable)target).Extent);
             }
 
             [Fact]
@@ -140,7 +140,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
                 target.ApplyTemplate();
 
-                Assert.Equal(new Size(20, 0), ((IScrollable)target).Extent);
+                Assert.Equal(new Size(20, 0), ((ILogicalScrollable)target).Extent);
             }
 
             [Fact]
@@ -152,7 +152,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
                 target.Measure(new Size(100, 100));
                 target.Arrange(new Rect(0, 0, 100, 100));
 
-                Assert.Equal(new Size(0, 10), ((IScrollable)target).Viewport);
+                Assert.Equal(new Size(0, 10), ((ILogicalScrollable)target).Viewport);
             }
 
             [Fact]
@@ -164,7 +164,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
                 target.Measure(new Size(100, 100));
                 target.Arrange(new Rect(0, 0, 100, 100));
 
-                Assert.Equal(new Size(10, 0), ((IScrollable)target).Viewport);
+                Assert.Equal(new Size(10, 0), ((ILogicalScrollable)target).Viewport);
             }
 
             [Fact]
@@ -206,7 +206,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
                         .Take(5)
                         .Concat(containers.Take(5)).ToList();
 
-                    Assert.Equal(new Vector(0, 5), ((IScrollable)target).Offset);
+                    Assert.Equal(new Vector(0, 5), ((ILogicalScrollable)target).Offset);
                     Assert.Equal(scrolledContainers, target.Panel.Children);
 
                     for (var i = 0; i < target.Panel.Children.Count; ++i)
@@ -215,7 +215,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
                     }
 
                     scroller.Offset = new Vector(0, 0);
-                    Assert.Equal(new Vector(0, 0), ((IScrollable)target).Offset);
+                    Assert.Equal(new Vector(0, 0), ((ILogicalScrollable)target).Offset);
                     Assert.Equal(containers, target.Panel.Children);
 
                     var dcs = target.Panel.Children.Select(x => x.DataContext).ToList();
@@ -241,7 +241,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
                     scroller.Offset = new Vector(0, 20);
 
-                    Assert.Equal(new Vector(0, 20), ((IScrollable)target).Offset);
+                    Assert.Equal(new Vector(0, 20), ((ILogicalScrollable)target).Offset);
                     Assert.Equal(containers, target.Panel.Children);
 
                     for (var i = 0; i < target.Panel.Children.Count; ++i)

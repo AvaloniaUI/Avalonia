@@ -7,7 +7,7 @@ using Avalonia.VisualTree;
 
 namespace XamlTestApplication
 {
-    public class TestScrollable : Control, IScrollable
+    public class TestScrollable : Control, ILogicalScrollable
     {
         private int itemCount = 100;
         private Size _extent;
@@ -18,12 +18,12 @@ namespace XamlTestApplication
         public bool IsLogicalScrollEnabled => true;
         public Action InvalidateScroll { get; set; }
 
-        Size IScrollable.Extent
+        Size ILogicalScrollable.Extent
         {
             get { return _extent; }
         }
 
-        Vector IScrollable.Offset
+        Vector ILogicalScrollable.Offset
         {
             get { return _offset; }
 
@@ -34,7 +34,7 @@ namespace XamlTestApplication
             }
         }
 
-        Size IScrollable.Viewport
+        Size ILogicalScrollable.Viewport
         {
             get { return _viewport; }
         }
