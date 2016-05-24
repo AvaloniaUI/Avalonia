@@ -340,5 +340,17 @@ namespace Avalonia.Cairo.Media
 			
 			return SetBrush(pen.Brush, destinationSize);
         }
+
+        public void PushGeometryClip(Geometry clip)
+        {
+            _context.Save();
+            _context.AppendPath(((StreamGeometryImpl)clip.PlatformImpl).Path);
+            _context.Clip();
+        }
+
+        public void PopGeometryClip()
+        {
+            _context.Restore();
+        }
     }
 }

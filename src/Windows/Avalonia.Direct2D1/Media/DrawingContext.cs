@@ -277,6 +277,11 @@ namespace Avalonia.Direct2D1.Media
 
         public void PopOpacity()
         {
+            PopLayer();
+        }
+
+        private void PopLayer()
+        {
             var layer = _layers.Pop();
             if (layer != null)
             {
@@ -323,6 +328,27 @@ namespace Avalonia.Direct2D1.Media
             {
                 return new SolidColorBrushImpl((Avalonia.Media.SolidColorBrush)null, _renderTarget);
             }
+        }
+
+        public void PushGeometryClip(Avalonia.Media.Geometry clip)
+        {
+            var parameters = new LayerParameters
+            {
+                ContentBounds = PrimitiveExtensions.RectangleInfinite,
+                MaskTransform = PrimitiveExtensions.Matrix3x2Identity,
+                Opacity = 1,
+                GeometricMask = ((GeometryImpl)clip.PlatformImpl).Geometry
+            };
+            var layer = _layerPool.Count != 0 ? _layerPool.Pop() : new Layer(_renderTarget);
+            _renderTarget.PushLayer(ref parameters, layer);
+
+            _layers.Push(layer);
+
+        }
+
+        public void PopGeometryClip()
+        {
+            PopLayer();
         }
     }
 }
