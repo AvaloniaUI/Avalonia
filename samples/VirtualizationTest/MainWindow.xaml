@@ -17,6 +17,7 @@
             <TextBox Watermark="Viewport"
                      UseFloatingWatermark="True"
                      Text="{Binding #listBox.Scroll.Viewport, Mode=OneWay}"/>
+            <Button Command="{Binding RecreateCommand}">Recreate</Button>
         </StackPanel>
 
         <ListBox Name="listBox" Items="{Binding Items}">

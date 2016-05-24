@@ -8,13 +8,15 @@ namespace VirtualizationTest.ViewModels
 {
     internal class ItemViewModel : ReactiveObject
     {
+        private string _prefix;
         private int _index;
 
-        public ItemViewModel(int index)
+        public ItemViewModel(int index, string prefix = "Item")
         {
+            _prefix = prefix;
             _index = index;
         }
 
-        public string Header => $"Item {_index}";
+        public string Header => $"{_prefix} {_index}";
     }
 }
