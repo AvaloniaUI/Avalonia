@@ -36,6 +36,14 @@
     <StartupObject />
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Serilog, Version=1.5.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Serilog.1.5.14\lib\net45\Serilog.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Serilog.FullNetFx, Version=1.5.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Serilog.1.5.14\lib\net45\Serilog.FullNetFx.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Splat, Version=1.6.2.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Splat.1.6.2\lib\Net45\Splat.dll</HintPath>
       <Private>True</Private>
@@ -113,6 +121,10 @@
     <ProjectReference Include="..\..\src\Avalonia.Layout\Avalonia.Layout.csproj">
       <Project>{42472427-4774-4c81-8aff-9f27b8e31721}</Project>
       <Name>Avalonia.Layout</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\Avalonia.Logging.Serilog\Avalonia.Logging.Serilog.csproj">
+      <Project>{B61B66A3-B82D-4875-8001-89D3394FE0C9}</Project>
+      <Name>Avalonia.Logging.Serilog</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\Avalonia.ReactiveUI\Avalonia.ReactiveUI.csproj">
       <Project>{6417b24e-49c2-4985-8db2-3ab9d898ec91}</Project>

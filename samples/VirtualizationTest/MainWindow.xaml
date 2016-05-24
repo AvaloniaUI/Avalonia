@@ -1,13 +1,25 @@
 <Window xmlns="https://github.com/avaloniaui"
         Title="Avalonia Virtualization Test">
     <DockPanel LastChildFill="True" Margin="16">
-        <StackPanel DockPanel.Dock="Right" Margin="16 0 0 0">
+        <StackPanel DockPanel.Dock="Right" 
+                    Margin="16 0 0 0" 
+                    MinWidth="150"
+                    Gap="4">
             <TextBox Watermark="Item Count"
                      UseFloatingWatermark="True"
                      Text="{Binding ItemCount}"/>
+            <TextBox Watermark="Extent"
+                     UseFloatingWatermark="True"
+                     Text="{Binding #listBox.Scroll.Extent, Mode=OneWay}"/>
+            <TextBox Watermark="Offset"
+                     UseFloatingWatermark="True"
+                     Text="{Binding #listBox.Scroll.Offset, Mode=OneWay}"/>
+            <TextBox Watermark="Viewport"
+                     UseFloatingWatermark="True"
+                     Text="{Binding #listBox.Scroll.Viewport, Mode=OneWay}"/>
         </StackPanel>
 
-        <ListBox Items="{Binding Items}">
+        <ListBox Name="listBox" Items="{Binding Items}">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <TextBlock Text="{Binding Header}"/>

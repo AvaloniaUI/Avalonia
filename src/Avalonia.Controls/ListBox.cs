@@ -22,6 +22,12 @@ namespace Avalonia.Controls
             new FuncTemplate<IPanel>(() => new VirtualizingStackPanel());
 
         /// <summary>
+        /// Defines the <see cref="Scroll"/> property.
+        /// </summary>
+        public static readonly DirectProperty<ListBox, IScrollable> ScrollProperty =
+            AvaloniaProperty.RegisterDirect<ListBox, IScrollable>(nameof(Scroll), o => o.Scroll);
+
+        /// <summary>
         /// Defines the <see cref="SelectedItems"/> property.
         /// </summary>
         public static readonly new AvaloniaProperty<IList> SelectedItemsProperty =
@@ -39,6 +45,8 @@ namespace Avalonia.Controls
         public static readonly AvaloniaProperty<ItemVirtualizationMode> VirtualizationModeProperty =
             ItemsPresenter.VirtualizationModeProperty.AddOwner<ListBox>();
 
+        private IScrollable _scroll;
+
         /// <summary>
         /// Initializes static members of the <see cref="ItemsControl"/> class.
         /// </summary>
@@ -50,7 +58,11 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the scroll information for the <see cref="ListBox"/>.
         /// </summary>
-        public IScrollable Scroll { get; set; }
+        public IScrollable Scroll
+        {
+            get { return _scroll; }
+            private set { SetAndRaise(ScrollProperty, ref _scroll, value); }
+        }
 
         /// <inheritdoc/>
         public new IList SelectedItems => base.SelectedItems;
