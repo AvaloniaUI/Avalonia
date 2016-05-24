@@ -19,7 +19,7 @@ namespace Avalonia.Controls.UnitTests
         {
             var target = new ListBox
             {
-                Template = new FuncControlTemplate(CreateListBoxTemplate),
+                Template = CreateListBoxTemplate(),
                 ItemTemplate = new FuncDataTemplate<string>(_ => new Canvas()),
             };
 
@@ -40,7 +40,7 @@ namespace Avalonia.Controls.UnitTests
         {
             var target = new ListBox
             {
-                Template = new FuncControlTemplate(CreateListBoxTemplate),
+                Template = CreateListBoxTemplate(),
             };
 
             ApplyTemplate(target);
@@ -54,7 +54,7 @@ namespace Avalonia.Controls.UnitTests
             var items = new[] { "Foo", "Bar", "Baz " };
             var target = new ListBox
             {
-                Template = new FuncControlTemplate(CreateListBoxTemplate),
+                Template = CreateListBoxTemplate(),
                 Items = items,
             };
 
@@ -77,7 +77,7 @@ namespace Avalonia.Controls.UnitTests
         {
             var target = new ListBox
             {
-                Template = new FuncControlTemplate(CreateListBoxTemplate),
+                Template = CreateListBoxTemplate(),
                 Items = new[] { "Foo", "Bar", "Baz " },
             };
 
@@ -104,7 +104,7 @@ namespace Avalonia.Controls.UnitTests
 
             var target = new ListBox
             {
-                Template = new FuncControlTemplate(CreateListBoxTemplate),
+                Template = CreateListBoxTemplate(),
                 DataContext = "Base",
                 DataTemplates = new DataTemplates
                 {
@@ -125,17 +125,19 @@ namespace Avalonia.Controls.UnitTests
                 dataContexts);
         }
 
-        private Control CreateListBoxTemplate(ITemplatedControl parent)
+        private FuncControlTemplate CreateListBoxTemplate()
         {
-            return new ScrollViewer
-            {
-                Template = new FuncControlTemplate(CreateScrollViewerTemplate),
-                Content = new ItemsPresenter
+            return new FuncControlTemplate<ListBox>(parent => 
+                new ScrollViewer
                 {
-                    Name = "PART_ItemsPresenter",
-                    [~ItemsPresenter.ItemsProperty] = parent.GetObservable(ItemsControl.ItemsProperty),
-                }
-            };
+                    Name = "PART_ScrollViewer",
+                    Template = new FuncControlTemplate(CreateScrollViewerTemplate),
+                    Content = new ItemsPresenter
+                    {
+                        Name = "PART_ItemsPresenter",
+                        [~ItemsPresenter.ItemsProperty] = parent.GetObservable(ItemsControl.ItemsProperty),
+                    }
+                });
         }
 
         private FuncControlTemplate ListBoxItemTemplate()
