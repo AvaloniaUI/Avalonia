@@ -394,6 +394,19 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
+        protected override void OnContainersRecycled(ItemContainerEventArgs e)
+        {
+            foreach (var i in e.Containers)
+            {
+                if (i.ContainerControl != null && i.Item != null)
+                {
+                    MarkContainerSelected(
+                        i.ContainerControl,
+                        SelectedItems.Contains(i.Item));
+                }
+            }
+        }
+
         /// <inheritdoc/>
         protected override void OnDataContextChanging()
         {

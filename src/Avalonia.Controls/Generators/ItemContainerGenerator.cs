@@ -38,6 +38,9 @@ namespace Avalonia.Controls.Generators
         /// <inheritdoc/>
         public event EventHandler<ItemContainerEventArgs> Dematerialized;
 
+        /// <inheritdoc/>
+        public event EventHandler<ItemContainerEventArgs> Recycled;
+
         /// <summary>
         /// Gets or sets the data template used to display the items in the control.
         /// </summary>
@@ -58,7 +61,7 @@ namespace Avalonia.Controls.Generators
             var container = new ItemContainerInfo(CreateContainer(i), item, index);
 
             AddContainer(container);
-            Materialized?.Invoke(this, new ItemContainerEventArgs(index, container));
+            Materialized?.Invoke(this, new ItemContainerEventArgs(container));
 
             return container;
         }
@@ -207,12 +210,13 @@ namespace Avalonia.Controls.Generators
         /// <param name="newIndex">The new index.</param>
         /// <param name="item">The new item.</param>
         /// <returns>The container info.</returns>
-        protected void MoveContainer(int oldIndex, int newIndex, object item)
+        protected ItemContainerInfo MoveContainer(int oldIndex, int newIndex, object item)
         {
             var container = _containers[oldIndex];
             var newContainer = new ItemContainerInfo(container.ContainerControl, item, newIndex);
             _containers[oldIndex] = null;
             AddContainer(newContainer);
+            return newContainer;
         }
 
         /// <summary>
@@ -224,6 +228,15 @@ namespace Avalonia.Controls.Generators
         protected IEnumerable<ItemContainerInfo> GetContainerRange(int index, int count)
         {
             return _containers.GetRange(index, count);
+        }
+
+        /// <summary>
+        /// Raises the <see cref="Recycled"/> event.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        protected void RaiseRecycled(ItemContainerEventArgs e)
+        {
+            Recycled?.Invoke(this, e);
         }
     }
 }

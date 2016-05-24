@@ -93,7 +93,8 @@ namespace Avalonia.Controls.Generators
                 container.DataContext = i;
             }
 
-            MoveContainer(oldIndex, newIndex, i);
+            var info = MoveContainer(oldIndex, newIndex, i);
+            RaiseRecycled(new ItemContainerEventArgs(info));
 
             return true;
         }

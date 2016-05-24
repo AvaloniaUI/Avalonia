@@ -20,7 +20,7 @@ namespace Avalonia.Controls.UnitTests
         {
             var target = new ListBox
             {
-                Template = CreateListBoxTemplate(),
+                Template = ListBoxTemplate(),
                 Items = new[] { "Foo" },
                 ItemTemplate = new FuncDataTemplate<string>(_ => new Canvas()),
             };
@@ -36,7 +36,7 @@ namespace Avalonia.Controls.UnitTests
         {
             var target = new ListBox
             {
-                Template = CreateListBoxTemplate(),
+                Template = ListBoxTemplate(),
             };
 
             Prepare(target);
@@ -52,7 +52,7 @@ namespace Avalonia.Controls.UnitTests
                 var items = new[] { "Foo", "Bar", "Baz " };
                 var target = new ListBox
                 {
-                    Template = CreateListBoxTemplate(),
+                    Template = ListBoxTemplate(),
                     Items = items,
                 };
 
@@ -76,7 +76,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 var target = new ListBox
                 {
-                    Template = CreateListBoxTemplate(),
+                    Template = ListBoxTemplate(),
                     Items = new[] { "Foo", "Bar", "Baz " },
                 };
 
@@ -106,7 +106,7 @@ namespace Avalonia.Controls.UnitTests
 
                 var target = new ListBox
                 {
-                    Template = CreateListBoxTemplate(),
+                    Template = ListBoxTemplate(),
                     DataContext = "Base",
                     DataTemplates = new DataTemplates
                 {
@@ -128,13 +128,37 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
-        private FuncControlTemplate CreateListBoxTemplate()
+        [Fact]
+        public void Selection_Should_Be_Cleared_On_Recycled_Items()
+        {
+            var target = new ListBox
+            {
+                Template = ListBoxTemplate(),
+                Items = Enumerable.Range(0, 20).Select(x => $"Item {x}").ToList(),
+                ItemTemplate = new FuncDataTemplate<string>(x => new TextBlock { Height = 10 }),
+                SelectedIndex = 0,
+            };
+
+            Prepare(target);
+
+            // Make sure we're virtualized and first item is selected.
+            Assert.Equal(10, target.Presenter.Panel.Children.Count);
+            Assert.True(((ListBoxItem)target.Presenter.Panel.Children[0]).IsSelected);
+
+            // Scroll down a page.
+            target.Scroll.Offset = new Vector(0, 10);
+
+            // Make sure recycled item isn't now selected.
+            Assert.False(((ListBoxItem)target.Presenter.Panel.Children[0]).IsSelected);
+        }
+
+        private FuncControlTemplate ListBoxTemplate()
         {
             return new FuncControlTemplate<ListBox>(parent => 
                 new ScrollViewer
                 {
                     Name = "PART_ScrollViewer",
-                    Template = new FuncControlTemplate(CreateScrollViewerTemplate),
+                    Template = ScrollViewerTemplate(),
                     Content = new ItemsPresenter
                     {
                         Name = "PART_ItemsPresenter",
@@ -146,21 +170,26 @@ namespace Avalonia.Controls.UnitTests
 
         private FuncControlTemplate ListBoxItemTemplate()
         {
-            return new FuncControlTemplate<ListBoxItem>(parent => new ContentPresenter
-            {
-                Name = "PART_ContentPresenter",
-                [!ContentPresenter.ContentProperty] = parent[!ListBoxItem.ContentProperty],
-                [!ContentPresenter.ContentTemplateProperty] = parent[!ListBoxItem.ContentTemplateProperty],
-            });
+            return new FuncControlTemplate<ListBoxItem>(parent => 
+                new ContentPresenter
+                {
+                    Name = "PART_ContentPresenter",
+                    [!ContentPresenter.ContentProperty] = parent[!ListBoxItem.ContentProperty],
+                    [!ContentPresenter.ContentTemplateProperty] = parent[!ListBoxItem.ContentTemplateProperty],
+                });
         }
 
-        private Control CreateScrollViewerTemplate(ITemplatedControl parent)
+        private FuncControlTemplate ScrollViewerTemplate()
         {
-            return new ScrollContentPresenter
-            {
-                Name = "PART_ContentPresenter",
-                [~ContentPresenter.ContentProperty] = parent.GetObservable(ContentControl.ContentProperty),
-            };
+            return new FuncControlTemplate<ScrollViewer>(parent =>
+                new ScrollContentPresenter
+                {
+                    Name = "PART_ContentPresenter",
+                    [~ScrollContentPresenter.ContentProperty] = parent.GetObservable(ScrollViewer.ContentProperty),
+                    [~~ScrollContentPresenter.ExtentProperty] = parent[~~ScrollViewer.ExtentProperty],
+                    [~~ScrollContentPresenter.OffsetProperty] = parent[~~ScrollViewer.OffsetProperty],
+                    [~~ScrollContentPresenter.ViewportProperty] = parent[~~ScrollViewer.ViewportProperty],
+                });
         }
 
         private void Prepare(ListBox target)

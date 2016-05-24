@@ -47,7 +47,7 @@ namespace Avalonia.Controls.Generators
 
             Materialized?.Invoke(
                 this, 
-                new ItemContainerEventArgs(0, new ItemContainerInfo(container, item, 0)));
+                new ItemContainerEventArgs(new ItemContainerInfo(container, item, 0)));
         }
 
         /// <summary>
@@ -62,7 +62,7 @@ namespace Avalonia.Controls.Generators
 
             Dematerialized?.Invoke(
                 this, 
-                new ItemContainerEventArgs(0, new ItemContainerInfo(container, item, 0)));
+                new ItemContainerEventArgs(new ItemContainerInfo(container, item, 0)));
         }
 
         /// <summary>

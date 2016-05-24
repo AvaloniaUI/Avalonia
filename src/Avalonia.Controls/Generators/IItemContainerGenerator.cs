@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using Avalonia.Controls.Templates;
 
@@ -32,6 +31,11 @@ namespace Avalonia.Controls.Generators
         /// Event raised whenever containers are dematerialized.
         /// </summary>
         event EventHandler<ItemContainerEventArgs> Dematerialized;
+
+        /// <summary>
+        /// Event raised whenever containers are recycled.
+        /// </summary>
+        event EventHandler<ItemContainerEventArgs> Recycled;
 
         /// <summary>
         /// Creates a container control for an item.

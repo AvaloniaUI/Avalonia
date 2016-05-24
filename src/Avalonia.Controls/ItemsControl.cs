@@ -89,6 +89,7 @@ namespace Avalonia.Controls
                         _itemContainerGenerator.ItemTemplate = ItemTemplate;
                         _itemContainerGenerator.Materialized += (_, e) => OnContainersMaterialized(e);
                         _itemContainerGenerator.Dematerialized += (_, e) => OnContainersDematerialized(e);
+                        _itemContainerGenerator.Recycled += (_, e) => OnContainersRecycled(e);
                     }
                 }
 
@@ -248,6 +249,28 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="e">The details of the containers.</param>
         protected virtual void OnContainersDematerialized(ItemContainerEventArgs e)
+        {
+            var toRemove = new List<ILogical>();
+
+            foreach (var container in e.Containers)
+            {
+                // If the item is its own container, then it will be removed from the logical tree
+                // when it is removed from the Items collection.
+                if (container?.ContainerControl != container?.Item)
+                {
+                    toRemove.Add(container.ContainerControl);
+                }
+            }
+
+            LogicalChildren.RemoveAll(toRemove);
+        }
+
+        /// <summary>
+        /// Called when containers are recycled for the <see cref="ItemsControl"/> by its
+        /// <see cref="ItemContainerGenerator"/>.
+        /// </summary>
+        /// <param name="e">The details of the containers.</param>
+        protected virtual void OnContainersRecycled(ItemContainerEventArgs e)
         {
             var toRemove = new List<ILogical>();
 
