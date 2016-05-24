@@ -135,9 +135,9 @@ namespace Avalonia.Controls.Presenters
             var generator = Owner.ItemContainerGenerator;
             var selector = Owner.MemberSelector;
             var sign = delta < 0 ? -1 : 1;
-            var move = delta < panel.Children.Count;
-            var first = delta < 0 && move ? panel.Children.Count + delta : 0;
             var count = Math.Min(Math.Abs(delta), panel.Children.Count);
+            var move = count < panel.Children.Count;
+            var first = delta < 0 && move ? panel.Children.Count + delta : 0;
             var containers = panel.Children.GetRange(first, count).ToList();
 
             for (var i = 0; i < containers.Count; ++i)

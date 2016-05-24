@@ -248,6 +248,16 @@ namespace Avalonia.Controls.UnitTests.Presenters
                     {
                         Assert.Equal(items[i + 20], target.Panel.Children[i].DataContext);
                     }
+
+                    scroller.Offset = new Vector(0, 0);
+
+                    Assert.Equal(new Vector(0, 0), ((ILogicalScrollable)target).Offset);
+                    Assert.Equal(containers, target.Panel.Children);
+
+                    for (var i = 0; i < target.Panel.Children.Count; ++i)
+                    {
+                        Assert.Equal(items[i], target.Panel.Children[i].DataContext);
+                    }
                 }
             }
         }
