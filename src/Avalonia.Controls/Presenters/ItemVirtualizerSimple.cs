@@ -89,6 +89,18 @@ namespace Avalonia.Controls.Presenters
         public override void ItemsChanged(IEnumerable items, NotifyCollectionChangedEventArgs e)
         {
             base.ItemsChanged(items, e);
+
+            if (e.Action == NotifyCollectionChangedAction.Reset)
+            {
+                // We could recycle items here if this proves to be inefficient, but
+                // Reset indicates a large change and should (?) be quite rare.
+                VirtualizingPanel.Children.Clear();
+                Owner.ItemContainerGenerator.Clear();
+                FirstIndex = 0;
+                LastIndex = -1;
+                CreateRemoveContainers();
+            }
+
             ((ILogicalScrollable)Owner).InvalidateScroll();
         }
 

@@ -184,6 +184,20 @@ namespace Avalonia.Controls.UnitTests.Presenters
                 Assert.Equal(8, target.Panel.Children.Count);
             }
 
+            [Fact]
+            public void Should_Update_Containers_When_Items_Changes()
+            {
+                var target = CreateTarget();
+
+                target.ApplyTemplate();
+                target.Measure(new Size(100, 100));
+                target.Arrange(new Rect(0, 0, 100, 100));
+
+                target.Items = new[] { "foo", "bar", "baz" };
+
+                Assert.Equal(3, target.Panel.Children.Count);
+            }
+
             public class WithContainers
             {
                 [Fact]
