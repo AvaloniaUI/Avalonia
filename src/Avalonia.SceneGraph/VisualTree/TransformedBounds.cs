@@ -49,7 +49,7 @@ namespace Avalonia.VisualTree
                 context.LineTo(Bounds.BottomRight * Transform);
                 context.LineTo(Bounds.BottomLeft * Transform);
                 context.LineTo(Bounds.TopLeft * Transform);
-                context.EndFigure(false);
+                context.EndFigure(true);
             }
             return geometry;
         }
