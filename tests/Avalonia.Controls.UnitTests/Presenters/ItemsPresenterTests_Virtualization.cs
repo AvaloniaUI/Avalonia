@@ -198,6 +198,40 @@ namespace Avalonia.Controls.UnitTests.Presenters
                 Assert.Equal(3, target.Panel.Children.Count);
             }
 
+            [Fact]
+            public void Should_Decrease_The_Viewport_Size_By_One_If_There_Is_A_Partial_Item()
+            {
+                var target = CreateTarget();
+
+                target.ApplyTemplate();
+                target.Measure(new Size(100, 95));
+                target.Arrange(new Rect(0, 0, 100, 95));
+
+                Assert.Equal(new Size(0, 9), ((ILogicalScrollable)target).Viewport);
+            }
+
+            [Fact]
+            public void Moving_To_And_From_The_End_With_Partial_Item_Should_Set_Panel_PixelOffset()
+            {
+                var target = CreateTarget();
+
+                target.ApplyTemplate();
+                target.Measure(new Size(100, 95));
+                target.Arrange(new Rect(0, 0, 100, 95));
+
+                ((ILogicalScrollable)target).Offset = new Vector(0, 91);
+
+                var minIndex = target.ItemContainerGenerator.Containers.Min(x => x.Index);
+                Assert.Equal(90, minIndex);
+                Assert.Equal(6, ((IVirtualizingPanel)target.Panel).PixelOffset);
+
+                ((ILogicalScrollable)target).Offset = new Vector(0, 90);
+
+                minIndex = target.ItemContainerGenerator.Containers.Min(x => x.Index);
+                Assert.Equal(90, minIndex);
+                Assert.Equal(0, ((IVirtualizingPanel)target.Panel).PixelOffset);
+            }
+
             public class WithContainers
             {
                 [Fact]
