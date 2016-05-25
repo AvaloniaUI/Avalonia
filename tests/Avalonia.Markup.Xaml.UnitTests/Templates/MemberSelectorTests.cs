@@ -157,6 +157,23 @@ namespace Avalonia.Markup.Xaml.UnitTests.Templates
             Assert.Equal(1, selector.Select(data));
         }
 
+        [Fact]
+        public void Should_Support_Change_Of_Target_Value()
+        {
+            var selector = new MemberSelector() { MemberName = "StringValue" };
+
+            var data = new Item()
+            {
+                StringValue = "Value1"
+            };
+
+            Assert.Same("Value1", selector.Select(data));
+
+            data.StringValue = "Value2";
+
+            Assert.Same("Value2", selector.Select(data));
+        }
+
         private class Item
         {
             public Item Child { get; set; }
