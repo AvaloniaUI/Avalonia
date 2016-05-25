@@ -51,6 +51,8 @@ namespace Avalonia.Markup.Xaml.Templates
 
             object result = _memberValueNode.CurrentValue.Target;
 
+            _expressionNode.Target = null;
+
             if (result == AvaloniaProperty.UnsetValue)
             {
                 return null;
