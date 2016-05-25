@@ -135,7 +135,7 @@ namespace Avalonia.Controls.Presenters
                 var index = panel.Children.Count - count;
 
                 panel.Children.RemoveRange(index, count);
-                generator.Dematerialize(index, count);
+                generator.Dematerialize(FirstIndex + index, count);
 
                 LastIndex -= count;
             }
