@@ -288,6 +288,17 @@ namespace Avalonia.Skia
         {
         }
 
+        public void PushGeometryClip(Geometry clip)
+        {
+            Canvas.Save();
+            Canvas.ClipPath(((StreamGeometryImpl)clip.PlatformImpl).EffectivePath);
+        }
+
+        public void PopGeometryClip()
+        {
+            Canvas.Restore();
+        }
+
         private Matrix _currentTransform = Matrix.Identity;
 
         public Matrix Transform

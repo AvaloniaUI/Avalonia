@@ -42,6 +42,11 @@ namespace Avalonia.VisualTree
         bool ClipToBounds { get; set; }
 
         /// <summary>
+        /// Gets or sets the geometry clip for this visual.
+        /// </summary>
+        Geometry Clip { get; set; }
+
+        /// <summary>
         /// Gets a value indicating whether this scene graph node is attached to a visual root.
         /// </summary>
         bool IsAttachedToVisualTree { get; }

@@ -119,6 +119,7 @@ namespace Avalonia.Rendering
                 using (context.PushPostTransform(m))
                 using (context.PushOpacity(opacity))
                 using (clipToBounds ? context.PushClip(bounds) : default(DrawingContext.PushedState))
+                using (visual.Clip != null ? context.PushGeometryClip(visual.Clip) : default(DrawingContext.PushedState))
                 using (context.PushTransformContainer())
                 {
                     visual.Render(context);
