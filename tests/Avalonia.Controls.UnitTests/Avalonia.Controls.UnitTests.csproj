@@ -91,6 +91,7 @@
   <ItemGroup>
     <Compile Include="ClassesTests.cs" />
     <Compile Include="LayoutTransformControlTests.cs" />
+    <Compile Include="Presenters\ItemsPresenterTests_Virtualization_Simple.cs" />
     <Compile Include="Presenters\ItemsPresenterTests_Virtualization.cs" />
     <Compile Include="TextBoxTests_ValidationState.cs" />
     <Compile Include="UserControlTests.cs" />
