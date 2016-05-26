@@ -19,64 +19,59 @@ namespace Avalonia.Controls.Presenters
 
         public override bool IsLogicalScrollEnabled => true;
 
-        public override Size Extent
-        {
-            get
-            {
-                if (VirtualizingPanel.ScrollDirection == Orientation.Vertical)
-                {
-                    return new Size(0, Items.Count());
-                }
-                else
-                {
-                    return new Size(Items.Count(), 0);
-                }
-            }
-        }
+        public override double ExtentValue => ItemCount;
 
-        public override Vector Offset
+        public override double OffsetValue
         {
             get
             {
-                if (VirtualizingPanel.ScrollDirection == Orientation.Vertical)
-                {
-                    return new Vector(0, FirstIndex);
-                }
-                else
-                {
-                    return new Vector(FirstIndex, 0);
-                }
+                var offset = VirtualizingPanel.PixelOffset > 0 ? 1 : 0;
+                return FirstIndex + offset;
             }
 
             set
             {
-                var scroll = (VirtualizingPanel.ScrollDirection == Orientation.Vertical) ?
-                    value.Y : value.X;
-                var delta = (int)(scroll - FirstIndex);
+                var panel = VirtualizingPanel;
+                var offset = VirtualizingPanel.PixelOffset > 0 ? 1 : 0;
+                var delta = (int)(value - (FirstIndex + offset));
 
                 if (delta != 0)
                 {
-                    RecycleContainers(delta);
-                    FirstIndex += delta;
-                    LastIndex += delta;
+                    if ((NextIndex - 1) + delta < ItemCount)
+                    {
+                        if (panel.PixelOffset > 0)
+                        {
+                            panel.PixelOffset = 0;
+                            delta += 1;                           
+                        }
+
+                        if (delta != 0)
+                        {
+                            RecycleContainers(delta);
+                            FirstIndex += delta;
+                            NextIndex += delta;
+                        }
+                    }
+                    else
+                    {
+                        // We're moving to a partially obscured item at the end of the list.
+                        var firstIndex = ItemCount - panel.Children.Count;
+                        RecycleContainers(firstIndex - FirstIndex);
+                        NextIndex = ItemCount;
+                        FirstIndex = NextIndex - panel.Children.Count;
+                        panel.PixelOffset = VirtualizingPanel.PixelOverflow;
+                    }
                 }
             }
         }
 
-        public override Size Viewport
+        public override double ViewportValue
         {
             get
             {
-                var panel = VirtualizingPanel;
-
-                if (panel.ScrollDirection == Orientation.Vertical)
-                {
-                    return new Size(0, panel.Children.Count);
-                }
-                else
-                {
-                    return new Size(panel.Children.Count, 0);
-                }
+                // If we can't fit the last item in the panel fully, subtract 1 from the viewport.
+                var overflow = VirtualizingPanel.PixelOverflow > 0 ? 1 : 0;
+                return VirtualizingPanel.Children.Count - overflow;
             }
         }
 
@@ -96,8 +91,7 @@ namespace Avalonia.Controls.Presenters
                 // Reset indicates a large change and should (?) be quite rare.
                 VirtualizingPanel.Children.Clear();
                 Owner.ItemContainerGenerator.Clear();
-                FirstIndex = 0;
-                LastIndex = -1;
+                FirstIndex = NextIndex = 0;
                 CreateRemoveContainers();
             }
 
@@ -111,7 +105,7 @@ namespace Avalonia.Controls.Presenters
 
             if (!panel.IsFull && Items != null)
             {
-                var index = LastIndex + 1;
+                var index = NextIndex;
                 var items = Items.Cast<object>().Skip(index);
                 var memberSelector = Owner.MemberSelector;
 
@@ -126,7 +120,7 @@ namespace Avalonia.Controls.Presenters
                     }
                 }
 
-                LastIndex = index - 1;
+                NextIndex = index;
             }
 
             if (panel.OverflowCount > 0)
@@ -137,7 +131,7 @@ namespace Avalonia.Controls.Presenters
                 panel.Children.RemoveRange(index, count);
                 generator.Dematerialize(FirstIndex + index, count);
 
-                LastIndex -= count;
+                NextIndex -= count;
             }
         }
 
@@ -156,6 +150,7 @@ namespace Avalonia.Controls.Presenters
             {
                 var oldItemIndex = FirstIndex + first + i;
                 var newItemIndex = oldItemIndex + delta + ((panel.Children.Count - count) * sign);
+
                 var item = Items.ElementAt(newItemIndex);
 
                 if (!generator.TryRecycle(oldItemIndex, newItemIndex, item, selector))

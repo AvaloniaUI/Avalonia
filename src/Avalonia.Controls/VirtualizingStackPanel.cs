@@ -30,6 +30,16 @@ namespace Avalonia.Controls
 
         double IVirtualizingPanel.AverageItemSize => _averageItemSize;
 
+        double IVirtualizingPanel.PixelOverflow
+        {
+            get
+            {
+                var bounds = Orientation == Orientation.Horizontal ? 
+                    Bounds.Width : Bounds.Height;
+                return Math.Max(0, (_takenSpace - _pixelOffset) - bounds);
+            }
+        }
+
         double IVirtualizingPanel.PixelOffset
         {
             get { return _pixelOffset; }

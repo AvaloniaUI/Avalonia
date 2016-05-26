@@ -213,23 +213,32 @@ namespace Avalonia.Controls.UnitTests.Presenters
             [Fact]
             public void Moving_To_And_From_The_End_With_Partial_Item_Should_Set_Panel_PixelOffset()
             {
-                var target = CreateTarget();
+                var target = CreateTarget(itemCount: 20);
 
                 target.ApplyTemplate();
                 target.Measure(new Size(100, 95));
                 target.Arrange(new Rect(0, 0, 100, 95));
 
-                ((ILogicalScrollable)target).Offset = new Vector(0, 91);
+                ((ILogicalScrollable)target).Offset = new Vector(0, 11);
 
                 var minIndex = target.ItemContainerGenerator.Containers.Min(x => x.Index);
-                Assert.Equal(90, minIndex);
-                Assert.Equal(6, ((IVirtualizingPanel)target.Panel).PixelOffset);
+                Assert.Equal(new Vector(0, 11), ((ILogicalScrollable)target).Offset);
+                Assert.Equal(10, minIndex);
+                Assert.Equal(5, ((IVirtualizingPanel)target.Panel).PixelOffset);
 
-                ((ILogicalScrollable)target).Offset = new Vector(0, 90);
+                ((ILogicalScrollable)target).Offset = new Vector(0, 10);
 
                 minIndex = target.ItemContainerGenerator.Containers.Min(x => x.Index);
-                Assert.Equal(90, minIndex);
+                Assert.Equal(new Vector(0, 10), ((ILogicalScrollable)target).Offset);
+                Assert.Equal(10, minIndex);
                 Assert.Equal(0, ((IVirtualizingPanel)target.Panel).PixelOffset);
+
+                ((ILogicalScrollable)target).Offset = new Vector(0, 11);
+
+                minIndex = target.ItemContainerGenerator.Containers.Min(x => x.Index);
+                Assert.Equal(new Vector(0, 11), ((ILogicalScrollable)target).Offset);
+                Assert.Equal(10, minIndex);
+                Assert.Equal(5, ((IVirtualizingPanel)target.Panel).PixelOffset);
             }
 
             public class WithContainers

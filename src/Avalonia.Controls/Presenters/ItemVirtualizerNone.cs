@@ -19,18 +19,18 @@ namespace Avalonia.Controls.Presenters
 
         public override bool IsLogicalScrollEnabled => false;
 
-        public override Size Extent
+        public override double ExtentValue
         {
             get { throw new NotSupportedException(); }
         }
 
-        public override Vector Offset
+        public override double OffsetValue
         {
             get { throw new NotSupportedException(); }
             set { throw new NotSupportedException(); }
         }
 
-        public override Size Viewport
+        public override double ViewportValue
         {
             get { throw new NotSupportedException(); }
         }
