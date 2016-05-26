@@ -40,6 +40,18 @@ namespace Avalonia.Controls.Primitives
             AvaloniaProperty.Register<Popup, PlacementMode>(nameof(PlacementMode), defaultValue: PlacementMode.Bottom);
 
         /// <summary>
+        /// Defines the <see cref="HorizontalOffset"/> property.
+        /// </summary>
+        public static readonly StyledProperty<double> HorizontalOffsetProperty =
+            AvaloniaProperty.Register<Popup, double>(nameof(HorizontalOffset));
+
+        /// <summary>
+        /// Defines the <see cref="VerticalOffset"/> property.
+        /// </summary>
+        public static readonly StyledProperty<double> VerticalOffsetProperty =
+            AvaloniaProperty.Register<Popup, double>(nameof(VerticalOffset));
+
+        /// <summary>
         /// Defines the <see cref="PlacementTarget"/> property.
         /// </summary>
         public static readonly StyledProperty<Control> PlacementTargetProperty =
@@ -120,6 +132,24 @@ namespace Avalonia.Controls.Primitives
         {
             get { return GetValue(PlacementModeProperty); }
             set { SetValue(PlacementModeProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the Horizontal offset of the popup in relation to the <see cref="PlacementTarget"/>
+        /// </summary>
+        public double HorizontalOffset
+        {
+            get { return GetValue(HorizontalOffsetProperty); }
+            set { SetValue(HorizontalOffsetProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the Vertical offset of the popup in relation to the <see cref="PlacementTarget"/>
+        /// </summary>
+        public double VerticalOffset
+        {
+            get { return GetValue(VerticalOffsetProperty); }
+            set { SetValue(VerticalOffsetProperty, value); }
         }
 
         /// <summary>
@@ -292,13 +322,20 @@ namespace Avalonia.Controls.Primitives
             switch (mode)
             {
                 case PlacementMode.Pointer:
-                    return MouseDevice.Instance?.Position ?? default(Point);
+                    if (MouseDevice.Instance != null)
+                    {
+                        var offset = new Point(HorizontalOffset, VerticalOffset);
+
+                        return new Point(MouseDevice.Instance.Position.X + offset.X, MouseDevice.Instance.Position.Y + offset.Y);
+                    }
+
+                    return default(Point);
 
                 case PlacementMode.Bottom:
-                    return target?.PointToScreen(new Point(0, target.Bounds.Height)) ?? zero;
+                    return target?.PointToScreen(new Point(0 + HorizontalOffset, target.Bounds.Height + VerticalOffset)) ?? zero;
 
                 case PlacementMode.Right:
-                    return target?.PointToScreen(new Point(target.Bounds.Width, 0)) ?? zero;
+                    return target?.PointToScreen(new Point(target.Bounds.Width + HorizontalOffset, 0 + VerticalOffset)) ?? zero;
 
                 default:
                     throw new InvalidOperationException("Invalid value for Popup.PlacementMode");
