@@ -230,8 +230,8 @@ namespace Avalonia
         /// <returns>true if the point is in the bounds of the rectangle; otherwise false.</returns>
         public bool Contains(Point p)
         {
-            return p.X >= _x && p.X < _x + _width &&
-                   p.Y >= _y && p.Y < _y + _height;
+            return p.X >= _x && p.X <= _x + _width &&
+                   p.Y >= _y && p.Y <= _y + _height;
         }
 
         /// <summary>
