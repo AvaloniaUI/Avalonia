@@ -25,7 +25,6 @@ namespace Avalonia.Input
         {
             Contract.Requires<ArgumentNullException>(element != null);
             var transformedBounds = BoundsTracker.GetTransformedBounds((Visual)element);
-            var geometry = transformedBounds.GetTransformedBoundsGeometry();
 
             if (element.IsVisible &&
                 element.IsHitTestVisible &&
@@ -42,7 +41,7 @@ namespace Avalonia.Input
                     }
                 }
 
-                if (geometry.FillContains(p))
+                if (transformedBounds.Contains(p))
                 {
                     yield return element;
                 }
@@ -71,7 +70,6 @@ namespace Avalonia.Input
                 })
                 .OrderBy(x => x, null)
                 .Select(x => x.Element);
-                
         }
 
         private class ZOrderElement : IComparable<ZOrderElement>
