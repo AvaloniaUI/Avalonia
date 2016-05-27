@@ -104,7 +104,7 @@ namespace Avalonia.Rendering
 
                 if (visual.RenderTransform != null)
                 {
-                    var origin = visual.TransformOrigin.ToPixels(new Size(visual.Bounds.Width, visual.Bounds.Height));
+                    var origin = visual.RenderTransformOrigin.ToPixels(new Size(visual.Bounds.Width, visual.Bounds.Height));
                     var offset = Matrix.CreateTranslation(origin);
                     renderTransform = (-offset) * visual.RenderTransform.Value * (offset);
                 }
@@ -171,7 +171,7 @@ namespace Avalonia.Rendering
             }
             else
             {
-                var origin = visual.TransformOrigin.ToPixels(new Size(visual.Bounds.Width, visual.Bounds.Height));
+                var origin = visual.RenderTransformOrigin.ToPixels(new Size(visual.Bounds.Width, visual.Bounds.Height));
                 var offset = Matrix.CreateTranslation(visual.Bounds.Position + origin);
                 var m = (-offset) * visual.RenderTransform.Value * (offset);
                 return visual.Bounds.TransformToAABB(m);
