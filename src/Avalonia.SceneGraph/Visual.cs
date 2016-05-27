@@ -64,10 +64,10 @@ namespace Avalonia
             AvaloniaProperty.Register<Visual, Transform>(nameof(RenderTransform));
 
         /// <summary>
-        /// Defines the <see cref="TransformOrigin"/> property.
+        /// Defines the <see cref="RenderTransformOrigin"/> property.
         /// </summary>
-        public static readonly StyledProperty<RelativePoint> TransformOriginProperty =
-            AvaloniaProperty.Register<Visual, RelativePoint>(nameof(TransformOrigin), defaultValue: RelativePoint.Center);
+        public static readonly StyledProperty<RelativePoint> RenderTransformOriginProperty =
+            AvaloniaProperty.Register<Visual, RelativePoint>(nameof(RenderTransformOrigin), defaultValue: RelativePoint.Center);
 
         /// <summary>
         /// Defines the <see cref="IVisual.VisualParent"/> property.
@@ -180,10 +180,10 @@ namespace Avalonia
         /// <summary>
         /// Gets the transform origin of the scene graph node.
         /// </summary>
-        public RelativePoint TransformOrigin
+        public RelativePoint RenderTransformOrigin
         {
-            get { return GetValue(TransformOriginProperty); }
-            set { SetValue(TransformOriginProperty, value); }
+            get { return GetValue(RenderTransformOriginProperty); }
+            set { SetValue(RenderTransformOriginProperty, value); }
         }
 
         /// <summary>

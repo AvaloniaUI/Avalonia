@@ -38,20 +38,18 @@ namespace Avalonia.VisualTree
         /// </summary>
         public Matrix Transform { get; }
 
-        public Geometry GetTransformedBoundsGeometry()
+        public bool Contains(Point point)
         {
-            StreamGeometry geometry = new StreamGeometry();
-            using (var context = geometry.Open())
+            if (Transform.HasInverse)
             {
-                context.SetFillRule(FillRule.EvenOdd);
-                context.BeginFigure(Bounds.TopLeft * Transform, true);
-                context.LineTo(Bounds.TopRight * Transform);
-                context.LineTo(Bounds.BottomRight * Transform);
-                context.LineTo(Bounds.BottomLeft * Transform);
-                context.LineTo(Bounds.TopLeft * Transform);
-                context.EndFigure(true);
+                Point trPoint = point * Transform.Invert();
+
+                return Bounds.Contains(trPoint);
             }
-            return geometry;
+            else
+            {
+                return Bounds.Contains(point);
+            }
         }
     }
 }

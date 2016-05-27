@@ -60,7 +60,7 @@ namespace Avalonia.Controls.Primitives
                 if (info != null)
                 {
                     child.RenderTransform = new MatrixTransform(info.Bounds.Transform);
-                    child.TransformOrigin = new RelativePoint(new Point(0,0), RelativeUnit.Absolute);
+                    child.RenderTransformOrigin = new RelativePoint(new Point(0,0), RelativeUnit.Absolute);
                     child.Arrange(info.Bounds.Bounds);
                 }
                 else
