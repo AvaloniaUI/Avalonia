@@ -10,6 +10,7 @@ using Avalonia.LogicalTree;
 using Avalonia.Metadata;
 using Avalonia.Rendering;
 using Avalonia.VisualTree;
+using Avalonia.Layout;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -317,21 +318,22 @@ namespace Avalonia.Controls.Primitives
             if (target?.GetVisualRoot() == null)
             {
                 mode = PlacementMode.Pointer;
-            }
+            }            
 
             switch (mode)
             {
                 case PlacementMode.Pointer:
                     if (MouseDevice.Instance != null)
                     {
-                        var offset = new Point(HorizontalOffset, VerticalOffset);
-
-                        return new Point(MouseDevice.Instance.Position.X + offset.X, MouseDevice.Instance.Position.Y + offset.Y);
+                        // Scales the Horizontal and Vertical offset to screen co-ordinates.
+                        var screenOffset = new Point(HorizontalOffset * (PopupRoot as ILayoutRoot).LayoutScaling, VerticalOffset * (PopupRoot as ILayoutRoot).LayoutScaling);
+                        return MouseDevice.Instance.Position + screenOffset;
                     }
 
                     return default(Point);
 
                 case PlacementMode.Bottom:
+
                     return target?.PointToScreen(new Point(0 + HorizontalOffset, target.Bounds.Height + VerticalOffset)) ?? zero;
 
                 case PlacementMode.Right:
