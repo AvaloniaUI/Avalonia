@@ -299,6 +299,16 @@ namespace Avalonia.Skia
             Canvas.Restore();
         }
 
+        public void PushOpacityMask(IBrush mask, Rect bounds)
+        {
+            //TODO: Skia does not support opacity masks
+        }
+
+        public void PopOpacityMask()
+        {
+            //TODO: Skia does not support opacity masks
+        }
+
         private Matrix _currentTransform = Matrix.Identity;
 
         public Matrix Transform
