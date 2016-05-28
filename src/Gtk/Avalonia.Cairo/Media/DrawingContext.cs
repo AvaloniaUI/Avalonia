@@ -15,7 +15,7 @@ namespace Avalonia.Cairo.Media
     using Cairo = global::Cairo;
 
     /// <summary>
-    /// Draws using Direct2D1.
+    /// Draws using Cairo.
     /// </summary>
     public class DrawingContext : IDrawingContextImpl, IDisposable
     {
@@ -23,6 +23,8 @@ namespace Avalonia.Cairo.Media
         /// The cairo context.
         /// </summary>
         private readonly Cairo.Context _context;
+
+        private readonly Stack<BrushImpl> _maskStack = new Stack<BrushImpl>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DrawingContext"/> class.
@@ -273,46 +275,53 @@ namespace Avalonia.Cairo.Media
 
         private IDisposable SetBrush(IBrush brush, Size destinationSize)
         {
-			_context.Save ();
+            _context.Save();
 
+            BrushImpl impl = CreateBrushImpl(brush, destinationSize);
+
+            _context.SetSource(impl.PlatformBrush);
+            return Disposable.Create(() =>
+            {
+                impl.Dispose();
+                _context.Restore();
+            });
+        }
+
+        private BrushImpl CreateBrushImpl(IBrush brush, Size destinationSize)
+        {
             var solid = brush as SolidColorBrush;
             var linearGradientBrush = brush as LinearGradientBrush;
             var radialGradientBrush = brush as RadialGradientBrush;
             var imageBrush = brush as ImageBrush;
             var visualBrush = brush as VisualBrush;
-			BrushImpl impl = null;
+            BrushImpl impl = null;
 
-			if (solid != null) 
-			{
-				impl = new SolidColorBrushImpl(solid, opacityOverride);
-			} 
-			else if (linearGradientBrush != null) 
-			{
-				impl = new LinearGradientBrushImpl(linearGradientBrush, destinationSize);
-			}
+            if (solid != null)
+            {
+                impl = new SolidColorBrushImpl(solid, opacityOverride);
+            }
+            else if (linearGradientBrush != null)
+            {
+                impl = new LinearGradientBrushImpl(linearGradientBrush, destinationSize);
+            }
             else if (radialGradientBrush != null)
             {
                 impl = new RadialGradientBrushImpl(radialGradientBrush, destinationSize);
             }
-            else if (imageBrush != null) 
-			{
-				impl = new ImageBrushImpl(imageBrush, destinationSize);
-			} 
-			else if (visualBrush != null) 
-			{
-				impl = new VisualBrushImpl(visualBrush, destinationSize);
-			} 
-			else 
-			{
-				impl = new SolidColorBrushImpl(null, opacityOverride);
-			}
+            else if (imageBrush != null)
+            {
+                impl = new ImageBrushImpl(imageBrush, destinationSize);
+            }
+            else if (visualBrush != null)
+            {
+                impl = new VisualBrushImpl(visualBrush, destinationSize);
+            }
+            else
+            {
+                impl = new SolidColorBrushImpl(null, opacityOverride);
+            }
 
-			_context.SetSource(impl.PlatformBrush);
-			return Disposable.Create(() => 
-			{
-			    impl.Dispose();
-				_context.Restore();
-			});
+            return impl;
         }
 
         private IDisposable SetPen(Pen pen, Size destinationSize)
@@ -351,6 +360,19 @@ namespace Avalonia.Cairo.Media
         public void PopGeometryClip()
         {
             _context.Restore();
+        }
+
+        public void PushOpacityMask(IBrush mask, Rect bounds)
+        {
+            _context.PushGroup();
+            var impl = CreateBrushImpl(mask, bounds.Size);
+            _maskStack.Push(impl);
+        }
+
+        public void PopOpacityMask()
+        {
+            _context.PopGroupToSource();
+            _context.Mask(_maskStack.Pop().PlatformBrush);
         }
     }
 }
