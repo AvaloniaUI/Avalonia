@@ -350,5 +350,25 @@ namespace Avalonia.Direct2D1.Media
         {
             PopLayer();
         }
+
+        public void PushOpacityMask(IBrush mask, Rect bounds)
+        {
+            var parameters = new LayerParameters
+            {
+                ContentBounds = PrimitiveExtensions.RectangleInfinite,
+                MaskTransform = PrimitiveExtensions.Matrix3x2Identity,
+                Opacity = 1,
+                OpacityBrush = CreateBrush(mask, bounds.Size).PlatformBrush
+            };
+            var layer = _layerPool.Count != 0 ? _layerPool.Pop() : new Layer(_renderTarget);
+            _renderTarget.PushLayer(ref parameters, layer);
+
+            _layers.Push(layer);
+        }
+
+        public void PopOpacityMask()
+        {
+            PopLayer();
+        }
     }
 }

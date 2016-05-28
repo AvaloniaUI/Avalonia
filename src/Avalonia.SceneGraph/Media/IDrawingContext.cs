@@ -81,6 +81,10 @@ namespace Avalonia.Media
 
         void PopOpacity();
 
+        void PushOpacityMask(IBrush mask, Rect bounds);
+
+        void PopOpacityMask();
+
         /// <summary>
         /// Pushes a clip geometry.
         /// </summary>

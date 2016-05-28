@@ -67,6 +67,11 @@ namespace Avalonia.VisualTree
         double Opacity { get; set; }
 
         /// <summary>
+        /// Gets or sets the opacity mask of the scene graph node.
+        /// </summary>
+        IBrush OpacityMask { get; set; }
+
+        /// <summary>
         /// Gets or sets the render transform of the scene graph node.
         /// </summary>
         Transform RenderTransform { get; set; }

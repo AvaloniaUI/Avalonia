@@ -58,6 +58,12 @@ namespace Avalonia
             AvaloniaProperty.Register<Visual, double>(nameof(Opacity), 1);
 
         /// <summary>
+        /// Defines the <see cref="OpacityMask"/> property.
+        /// </summary>
+        public static readonly StyledProperty<IBrush> OpacityMaskProperty =
+            AvaloniaProperty.Register<Visual, IBrush>(nameof(OpacityMask));
+
+        /// <summary>
         /// Defines the <see cref="RenderTransform"/> property.
         /// </summary>
         public static readonly StyledProperty<Transform> RenderTransformProperty =
@@ -166,6 +172,16 @@ namespace Avalonia
         {
             get { return GetValue(OpacityProperty); }
             set { SetValue(OpacityProperty, value); }
+        }
+
+
+        /// <summary>
+        /// Gets the opacity mask of the scene graph node.
+        /// </summary>
+        public IBrush OpacityMask
+        {
+            get { return GetValue(OpacityMaskProperty); }
+            set { SetValue(OpacityMaskProperty, value); }
         }
 
         /// <summary>
