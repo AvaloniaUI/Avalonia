@@ -45,7 +45,7 @@ framework.
 As mentioned above, Avalonia is still in alpha and as such there's not much documentation yet. You can
 take a look at the [getting started page](docs/tutorial/gettingstarted.md) for an
 overview of how to get started but probably the best thing to do for now is to already know a little bit
-about WPF/Silverlight/UWP/XAML and ask questions in our [Gitter room](https://gitter.im/Avalonia/Avalonia).
+about WPF/Silverlight/UWP/XAML and ask questions in our [Gitter room](https://gitter.im/AvaloniaUI/Avalonia).
 
 There's also a high-level [architecture document](docs/spec/architecture.md) that is currently a little bit
 out of date, and I've also started writing blog posts on Avalonia at http://grokys.github.io/.
