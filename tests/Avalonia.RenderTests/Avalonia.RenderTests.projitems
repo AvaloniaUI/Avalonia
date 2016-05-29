@@ -9,6 +9,8 @@
     <Import_RootNamespace>Avalonia.RenderTests</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)GeometryClippingTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)OpacityMaskTests.cs" />
     <Compile Include="Controls\ImageTests.cs" />
     <Compile Include="Controls\BorderTests.cs" />
     <Compile Include="Media\ImageBrushTests.cs" />
@@ -22,6 +24,5 @@
     <Compile Include="Shapes\RectangleTests.cs" />
     <Compile Include="TestBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="GeometryClippingTests.cs" />
   </ItemGroup>
 </Project>
