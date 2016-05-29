@@ -84,6 +84,12 @@ namespace Avalonia.Controls.Generators
             IMemberSelector selector)
         {
             var container = ContainerFromIndex(oldIndex);
+
+            if (container == null)
+            {
+                throw new IndexOutOfRangeException("Could not recycle container: not materialized.");
+            }
+
             var i = selector != null ? selector.Select(item) : item;
 
             container.SetValue(ContentProperty, i);

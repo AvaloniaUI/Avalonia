@@ -105,22 +105,48 @@ namespace Avalonia.Controls.Presenters
 
             if (!panel.IsFull && Items != null)
             {
-                var index = NextIndex;
-                var items = Items.Cast<object>().Skip(index);
                 var memberSelector = Owner.MemberSelector;
+                var index = NextIndex;
+                var step = 1;
 
-                foreach (var item in items)
+                while (!panel.IsFull)
                 {
-                    var materialized = generator.Materialize(index++, item, memberSelector);
-                    panel.Children.Add(materialized.ContainerControl);
-
-                    if (panel.IsFull)
+                    if (index == ItemCount)
                     {
-                        break;
+                        if (FirstIndex == 0)
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            index = FirstIndex - 1;
+                            step = -1;
+                        }
                     }
+
+                    var materialized = generator.Materialize(index, Items.ElementAt(index), memberSelector);
+
+                    if (step == 1)
+                    {
+                        panel.Children.Add(materialized.ContainerControl);
+                    }
+                    else
+                    {
+                        panel.Children.Insert(0, materialized.ContainerControl);
+                    }
+
+                    index += step;
                 }
 
-                NextIndex = index;
+                if (step == 1)
+                {
+                    NextIndex = index;
+                }
+                else
+                {
+                    NextIndex = ItemCount;
+                    FirstIndex = index + 1;
+                }
             }
 
             if (panel.OverflowCount > 0)

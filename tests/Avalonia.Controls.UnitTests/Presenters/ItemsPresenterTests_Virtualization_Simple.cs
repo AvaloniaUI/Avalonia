@@ -75,6 +75,29 @@ namespace Avalonia.Controls.UnitTests.Presenters
         }
 
         [Fact]
+        public void Should_Add_New_Items_At_Top_When_Control_Is_Scrolled_To_Bottom_And_Enlarged()
+        {
+            var target = CreateTarget();
+            var items = (IList<string>)target.Items;
+
+            target.ApplyTemplate();
+            target.Measure(new Size(100, 100));
+            target.Arrange(new Rect(0, 0, 100, 100));
+
+            Assert.Equal(10, target.Panel.Children.Count);
+
+            ((IScrollable)target).Offset = new Vector(0, 10);
+            target.Arrange(new Rect(0, 0, 100, 120));
+
+            Assert.Equal(12, target.Panel.Children.Count);
+
+            for (var i = 0; i < target.Panel.Children.Count; ++i)
+            {
+                Assert.Equal(items[i + 8], target.Panel.Children[i].DataContext);
+            }
+        }
+
+        [Fact]
         public void Should_Update_Containers_When_Items_Changes()
         {
             var target = CreateTarget();
