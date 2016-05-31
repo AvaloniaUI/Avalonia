@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Presenters;
@@ -154,6 +155,32 @@ namespace Avalonia.Controls.UnitTests.Presenters
             Assert.Equal(5, ((IVirtualizingPanel)target.Panel).PixelOffset);
         }
 
+        [Fact]
+        public void Inserting_Items_Should_Update_Containers()
+        {
+            var target = CreateTarget(itemCount: 20);
+
+            target.ApplyTemplate();
+            target.Measure(new Size(100, 95));
+            target.Arrange(new Rect(0, 0, 100, 95));
+
+            ((ILogicalScrollable)target).Offset = new Vector(0, 5);
+
+            var expected = Enumerable.Range(5, 10).Select(x => $"Item {x}").ToList();
+            var items = (ObservableCollection<string>)target.Items;
+
+            Assert.Equal(
+                expected,
+                target.Panel.Children.Select(x => x.DataContext));
+
+            items.Insert(6, "Inserted");
+            expected.Insert(1, "Inserted");
+            expected.RemoveAt(expected.Count - 1);
+
+            var actual = target.Panel.Children.Select(x => x.DataContext).ToList();
+            Assert.Equal(expected, actual);
+        }
+
         public class WithContainers
         {
             [Fact]
@@ -237,7 +264,9 @@ namespace Avalonia.Controls.UnitTests.Presenters
             int itemCount = 20)
         {
             ItemsPresenter result;
-            var items = Enumerable.Range(0, itemCount).Select(x => $"Item {x}").ToList();
+
+            var items = new ObservableCollection<string>(
+                Enumerable.Range(0, itemCount).Select(x => $"Item {x}"));
 
             var scroller = new ScrollContentPresenter
             {

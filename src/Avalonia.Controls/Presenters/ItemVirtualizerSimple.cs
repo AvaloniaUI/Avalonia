@@ -47,7 +47,7 @@ namespace Avalonia.Controls.Presenters
 
                         if (delta != 0)
                         {
-                            RecycleContainers(delta);
+                            RecycleMoveContainers(delta);
                             FirstIndex += delta;
                             NextIndex += delta;
                         }
@@ -56,7 +56,7 @@ namespace Avalonia.Controls.Presenters
                     {
                         // We're moving to a partially obscured item at the end of the list.
                         var firstIndex = ItemCount - panel.Children.Count;
-                        RecycleContainers(firstIndex - FirstIndex);
+                        RecycleMoveContainers(firstIndex - FirstIndex);
                         NextIndex = ItemCount;
                         FirstIndex = NextIndex - panel.Children.Count;
                         panel.PixelOffset = VirtualizingPanel.PixelOverflow;
@@ -85,14 +85,26 @@ namespace Avalonia.Controls.Presenters
         {
             base.ItemsChanged(items, e);
 
-            if (e.Action == NotifyCollectionChangedAction.Reset)
+            switch (e.Action)
             {
-                // We could recycle items here if this proves to be inefficient, but
-                // Reset indicates a large change and should (?) be quite rare.
-                VirtualizingPanel.Children.Clear();
-                Owner.ItemContainerGenerator.Clear();
-                FirstIndex = NextIndex = 0;
-                CreateRemoveContainers();
+                case NotifyCollectionChangedAction.Add:
+                    if (e.NewStartingIndex >= FirstIndex &&
+                        e.NewStartingIndex + e.NewItems.Count < NextIndex)
+                    {
+                        CreateRemoveContainers();
+                        RecycleContainers();
+                    }
+
+                    break;
+
+                case NotifyCollectionChangedAction.Reset:
+                    // We could recycle items here if this proves to be inefficient, but
+                    // Reset indicates a large change and should (?) be quite rare.
+                    VirtualizingPanel.Children.Clear();
+                    Owner.ItemContainerGenerator.Clear();
+                    FirstIndex = NextIndex = 0;
+                    CreateRemoveContainers();
+                    break;
             }
 
             ((ILogicalScrollable)Owner).InvalidateScroll();
@@ -161,7 +173,31 @@ namespace Avalonia.Controls.Presenters
             }
         }
 
-        private void RecycleContainers(int delta)
+        private void RecycleContainers()
+        {
+            var panel = VirtualizingPanel;
+            var generator = Owner.ItemContainerGenerator;
+            var selector = Owner.MemberSelector;
+            var containers = generator.Containers.ToList();
+            var itemIndex = FirstIndex;
+
+            foreach (var container in containers)
+            {
+                var item = Items.ElementAt(itemIndex);
+
+                if (!object.Equals(container.Item, item))
+                {
+                    if (!generator.TryRecycle(itemIndex, itemIndex, item, selector))
+                    {
+                        throw new NotImplementedException();
+                    }
+                }
+
+                ++itemIndex;
+            }
+        }
+
+        private void RecycleMoveContainers(int delta)
         {
             var panel = VirtualizingPanel;
             var generator = Owner.ItemContainerGenerator;

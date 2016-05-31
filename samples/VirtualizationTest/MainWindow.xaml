@@ -17,6 +17,10 @@
             <TextBox Watermark="Viewport"
                      UseFloatingWatermark="True"
                      Text="{Binding #listBox.Scroll.Viewport, Mode=OneWay}"/>
+            <TextBox Watermark="Item to Create"
+                     UseFloatingWatermark="True"
+                     Text="{Binding NewItemString}"/>
+            <Button Command="{Binding NewItemCommand}">Insert Item</Button>
             <Button Command="{Binding RecreateCommand}">Recreate</Button>
         </StackPanel>
 
