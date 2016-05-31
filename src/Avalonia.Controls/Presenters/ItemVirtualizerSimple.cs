@@ -42,7 +42,7 @@ namespace Avalonia.Controls.Presenters
                         if (panel.PixelOffset > 0)
                         {
                             panel.PixelOffset = 0;
-                            delta += 1;                           
+                            delta += 1;
                         }
 
                         if (delta != 0)
@@ -87,6 +87,18 @@ namespace Avalonia.Controls.Presenters
 
             switch (e.Action)
             {
+                case NotifyCollectionChangedAction.Remove:
+                    if (e.OldStartingIndex == ItemCount)
+                    {
+                        NextIndex = ItemCount - 1;
+
+                        throw new NotImplementedException("Remove the last item from the panel.");
+                    }
+
+                    CreateRemoveContainers();
+                    RecycleContainers();
+                    break;
+
                 case NotifyCollectionChangedAction.Add:
                     if (e.NewStartingIndex >= FirstIndex &&
                         e.NewStartingIndex + e.NewItems.Count < NextIndex)
@@ -183,17 +195,25 @@ namespace Avalonia.Controls.Presenters
 
             foreach (var container in containers)
             {
-                var item = Items.ElementAt(itemIndex);
-
-                if (!object.Equals(container.Item, item))
+                if (itemIndex < ItemCount)
                 {
-                    if (!generator.TryRecycle(itemIndex, itemIndex, item, selector))
+                    var item = Items.ElementAt(itemIndex);
+
+                    if (!object.Equals(container.Item, item))
                     {
-                        throw new NotImplementedException();
+                        if (!generator.TryRecycle(itemIndex, itemIndex, item, selector))
+                        {
+                            throw new NotImplementedException();
+                        }
                     }
+                }
+                else
+                {
+                    panel.Children.RemoveAt(panel.Children.Count - 1);
                 }
 
                 ++itemIndex;
+
             }
         }
 
