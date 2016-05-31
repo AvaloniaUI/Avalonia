@@ -10,7 +10,9 @@ namespace VirtualizationTest.ViewModels
     internal class MainWindowViewModel : ReactiveObject
     {
         private int _itemCount = 200;
+        private string _newItemString;
         private IReactiveList<ItemViewModel> _items;
+        private ItemViewModel _selectedItem;
         private string _prefix = "Item";
 
         public MainWindowViewModel()
@@ -18,6 +20,18 @@ namespace VirtualizationTest.ViewModels
             this.WhenAnyValue(x => x.ItemCount).Subscribe(ResizeItems);
             RecreateCommand = ReactiveCommand.Create();
             RecreateCommand.Subscribe(_ => Recreate());
+
+            NewItemCommand = ReactiveCommand.Create();
+            NewItemCommand.Subscribe(_ => Create());
+
+            RemoveItemCommand = ReactiveCommand.Create();
+            RemoveItemCommand.Subscribe(_ => Remove());
+        }
+
+        public string NewItemString
+        {
+            get { return _newItemString; }
+            set { this.RaiseAndSetIfChanged(ref _newItemString, value); }
         }
 
         public int ItemCount
@@ -26,13 +40,23 @@ namespace VirtualizationTest.ViewModels
             set { this.RaiseAndSetIfChanged(ref _itemCount, value); }
         }
 
+        public ItemViewModel SelectedItem
+        {
+            get { return _selectedItem; }
+            set { this.RaiseAndSetIfChanged(ref _selectedItem, value); }
+        }
+
         public IReactiveList<ItemViewModel> Items
         {
             get { return _items; }
             private set { this.RaiseAndSetIfChanged(ref _items, value); }
         }
 
+        public ReactiveCommand<object> NewItemCommand { get; private set; }
+
         public ReactiveCommand<object> RecreateCommand { get; private set; }
+
+        public ReactiveCommand<object> RemoveItemCommand { get; private set; }
 
         private void ResizeItems(int count)
         {
@@ -51,6 +75,19 @@ namespace VirtualizationTest.ViewModels
             else if (count < Items.Count)
             {
                 Items.RemoveRange(count, Items.Count - count);
+            }
+        }
+
+        private void Create()
+        {
+            Items.Add(new ItemViewModel(Items.Count, NewItemString));
+        }
+
+        private void Remove()
+        {
+            if (SelectedItem != null)
+            {
+                Items.Remove(SelectedItem);
             }
         }
 
