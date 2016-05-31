@@ -84,7 +84,7 @@ namespace VirtualizationTest.ViewModels
 
             if (SelectedItem != null)
             {
-                index = Items.IndexOf(SelectedItem);
+                index = Items.IndexOf(SelectedItem) + 1;
             }
 
             Items.Insert(index, new ItemViewModel(index, NewItemString));
