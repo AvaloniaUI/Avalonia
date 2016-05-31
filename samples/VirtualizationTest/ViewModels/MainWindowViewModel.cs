@@ -21,11 +21,8 @@ namespace VirtualizationTest.ViewModels
             RecreateCommand = ReactiveCommand.Create();
             RecreateCommand.Subscribe(_ => Recreate());
 
-            AppendItemCommand = ReactiveCommand.Create();
-            AppendItemCommand.Subscribe(_ => Append());
-
-            PrePendItemCommand = ReactiveCommand.Create();
-            PrePendItemCommand.Subscribe(_ => PrePend());
+            AddItemCommand = ReactiveCommand.Create();
+            AddItemCommand.Subscribe(_ => AddItem());
 
             RemoveItemCommand = ReactiveCommand.Create();
             RemoveItemCommand.Subscribe(_ => Remove());
@@ -55,9 +52,7 @@ namespace VirtualizationTest.ViewModels
             private set { this.RaiseAndSetIfChanged(ref _items, value); }
         }
 
-        public ReactiveCommand<object> AppendItemCommand { get; private set; }
-
-        public ReactiveCommand<object> PrePendItemCommand { get; private set; }
+        public ReactiveCommand<object> AddItemCommand { get; private set; }
 
         public ReactiveCommand<object> RecreateCommand { get; private set; }
 
@@ -83,14 +78,16 @@ namespace VirtualizationTest.ViewModels
             }
         }
 
-        private void Append()
+        private void AddItem()
         {
-            Items.Add(new ItemViewModel(Items.Count, NewItemString));
-        }
+            var index = Items.Count;
 
-        private void PrePend ()
-        {
-            Items.Insert(0, new ItemViewModel(0, NewItemString));
+            if (SelectedItem != null)
+            {
+                index = Items.IndexOf(SelectedItem);
+            }
+
+            Items.Insert(index, new ItemViewModel(index, NewItemString));
         }
 
         private void Remove()
