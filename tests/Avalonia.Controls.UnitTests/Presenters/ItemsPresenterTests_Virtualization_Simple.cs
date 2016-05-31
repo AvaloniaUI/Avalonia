@@ -181,6 +181,31 @@ namespace Avalonia.Controls.UnitTests.Presenters
             Assert.Equal(expected, actual);
         }
 
+        [Fact]
+        public void Removing_last_item_when_visible_should_UpdateContainers()
+        {
+            var target = CreateTarget(itemCount: 20);
+
+            target.ApplyTemplate();
+            target.Measure(new Size(100, 195));
+            target.Arrange(new Rect(0, 0, 100, 195));
+
+            ((ILogicalScrollable)target).Offset = new Vector(0, 5);
+
+            var expected = Enumerable.Range(0, 20).Select(x => $"Item {x}").ToList();
+            var items = (ObservableCollection<string>)target.Items;
+
+            Assert.Equal(
+                expected,
+                target.Panel.Children.Select(x => x.DataContext));
+
+            items.Remove(items.Last());
+            expected.Remove(expected.Last());
+
+            var actual = target.Panel.Children.Select(x => x.DataContext).ToList();
+            Assert.Equal(expected, actual);
+        }
+
         public class WithContainers
         {
             [Fact]
