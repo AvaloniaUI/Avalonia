@@ -20,7 +20,8 @@
             <TextBox Watermark="Item to Create"
                      UseFloatingWatermark="True"
                      Text="{Binding NewItemString}"/>
-            <Button Command="{Binding NewItemCommand}">Insert Item</Button>
+            <Button Command="{Binding PrePendItemCommand}">Pre-Pend Item</Button>
+            <Button Command="{Binding AppendItemCommand}">Append Item</Button>
             <Button Command="{Binding RemoveItemCommand}">Remove Item</Button>
             <Button Command="{Binding RecreateCommand}">Recreate</Button>
         </StackPanel>
