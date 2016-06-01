@@ -88,15 +88,44 @@ namespace Avalonia.Controls.Presenters
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Remove:
-                    if (e.OldStartingIndex == ItemCount)
+                    if(e.OldStartingIndex >= FirstIndex && 
+                       e.OldStartingIndex + e.OldItems.Count <= NextIndex)
                     {
-                        NextIndex = ItemCount - 1;
+                        if (e.OldStartingIndex == FirstIndex)
+                        {
+                            // We are removing the first in the list.
+                            VirtualizingPanel.Children.RemoveAt(e.OldStartingIndex - FirstIndex);
+                            Owner.ItemContainerGenerator.Dematerialize(e.OldStartingIndex - FirstIndex, 1);
+                            FirstIndex++; // This may not be necessary, but cant get to work without this.
 
-                        throw new NotImplementedException("Remove the last item from the panel.");
-                    }
+                            // If all items are visible we need to reduce the NextIndex too.
+                            if(NextIndex > ItemCount)
+                            {
+                                NextIndex = ItemCount;
+                            }
 
-                    CreateRemoveContainers();
-                    RecycleContainers();
+                            CreateRemoveContainers();
+                            RecycleContainers();
+                        }
+                        else if (e.OldStartingIndex + e.OldItems.Count == NextIndex)
+                        {
+                            // We are removing the last one in the list.
+                            VirtualizingPanel.Children.RemoveAt(e.OldStartingIndex - FirstIndex);
+                            Owner.ItemContainerGenerator.Dematerialize(e.OldStartingIndex - FirstIndex, 1);
+                            NextIndex--;
+                        }
+                        else
+                        {
+                            // If all items are visible we need to reduce the NextIndex too.
+                            if (NextIndex > ItemCount)
+                            {
+                                NextIndex = ItemCount;
+                            }
+
+                            CreateRemoveContainers();
+                            RecycleContainers();
+                        }
+                    }           
                     break;
 
                 case NotifyCollectionChangedAction.Add:
