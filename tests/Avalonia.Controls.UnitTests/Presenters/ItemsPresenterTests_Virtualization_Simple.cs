@@ -182,7 +182,63 @@ namespace Avalonia.Controls.UnitTests.Presenters
         }
 
         [Fact]
-        public void Removing_last_item_when_visible_should_UpdateContainers()
+        public void Removing_First_Item_When_Visible_Should_UpdateContainers()
+        {
+            var target = CreateTarget(itemCount: 20);
+
+            target.ApplyTemplate();
+            target.Measure(new Size(100, 195));
+            target.Arrange(new Rect(0, 0, 100, 195));
+
+            ((ILogicalScrollable)target).Offset = new Vector(0, 5);
+
+            var expected = Enumerable.Range(0, 20).Select(x => $"Item {x}").ToList();
+            var items = (ObservableCollection<string>)target.Items;
+
+            Assert.Equal(
+                expected,
+                target.Panel.Children.Select(x => x.DataContext));
+
+            items.Remove(items.First());
+            expected.Remove(expected.First());
+
+            var actual = target.Panel.Children.Select(x => x.DataContext).ToList();
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public void Removing_Items_From_Middle_Should_Update_Containers()
+        {
+            var target = CreateTarget(itemCount: 20);
+
+            target.ApplyTemplate();
+            target.Measure(new Size(100, 195));
+            target.Arrange(new Rect(0, 0, 100, 195));
+
+            ((ILogicalScrollable)target).Offset = new Vector(0, 5);
+
+            var expected = Enumerable.Range(0, 20).Select(x => $"Item {x}").ToList();
+            var items = (ObservableCollection<string>)target.Items;
+
+            Assert.Equal(
+                expected,
+                target.Panel.Children.Select(x => x.DataContext));
+
+            items.RemoveAt(2);
+            expected.RemoveAt(2);
+
+            var actual = target.Panel.Children.Select(x => x.DataContext).ToList();
+            Assert.Equal(expected, actual);
+
+            items.RemoveAt(items.Count - 2);
+            expected.RemoveAt(expected.Count -2);
+
+            actual = target.Panel.Children.Select(x => x.DataContext).ToList();
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public void Removing_Last_Item_When_Visible_Should_UpdateContainers()
         {
             var target = CreateTarget(itemCount: 20);
 
