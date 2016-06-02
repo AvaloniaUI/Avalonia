@@ -35,11 +35,11 @@ namespace Avalonia.Controls.Generators
         /// <summary>
         /// Gets the item that the container represents.
         /// </summary>
-        public object Item { get; }
+        public object Item { get; internal set; }
 
         /// <summary>
         /// Gets the index of the item in the <see cref="ItemsControl.Items"/> collection.
         /// </summary>
-        public int Index { get; }
+        public int Index { get; internal set; }
     }
 }

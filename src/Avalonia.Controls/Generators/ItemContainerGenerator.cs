@@ -16,7 +16,7 @@ namespace Avalonia.Controls.Generators
     /// </summary>
     public class ItemContainerGenerator : IItemContainerGenerator
     {
-        private List<ItemContainerInfo> _containers = new List<ItemContainerInfo>();
+        private Dictionary<int, ItemContainerInfo> _containers = new Dictionary<int, ItemContainerInfo>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemContainerGenerator"/> class.
@@ -30,7 +30,7 @@ namespace Avalonia.Controls.Generators
         }
 
         /// <inheritdoc/>
-        public IEnumerable<ItemContainerInfo> Containers => _containers.Where(x => x != null);
+        public IEnumerable<ItemContainerInfo> Containers => _containers.Values;
 
         /// <inheritdoc/>
         public event EventHandler<ItemContainerEventArgs> Materialized;
@@ -60,7 +60,7 @@ namespace Avalonia.Controls.Generators
             var i = selector != null ? selector.Select(item) : item;
             var container = new ItemContainerInfo(CreateContainer(i), item, index);
 
-            AddContainer(container);
+            _containers.Add(container.Index, container);
             Materialized?.Invoke(this, new ItemContainerEventArgs(container));
 
             return container;
@@ -73,11 +73,8 @@ namespace Avalonia.Controls.Generators
 
             for (int i = startingIndex; i < startingIndex + count; ++i)
             {
-                if (i < _containers.Count &&_containers[i] != null)
-                {
-                    result.Add(_containers[i]);
-                    _containers[i] = null;
-                }
+                result.Add(_containers[i]);
+                _containers.Remove(i);
             }
 
             Dematerialized?.Invoke(this, new ItemContainerEventArgs(startingIndex, result));
@@ -88,18 +85,47 @@ namespace Avalonia.Controls.Generators
         /// <inheritdoc/>
         public virtual void InsertSpace(int index, int count)
         {
-            _containers.InsertRange(index, Enumerable.Repeat<ItemContainerInfo>(null, count));
+            if (count > 0)
+            {
+                var toMove = _containers.Where(x => x.Key >= index).ToList();
+
+                foreach (var i in toMove)
+                {
+                    _containers.Remove(i.Key);
+                    i.Value.Index += count;
+                    _containers[i.Value.Index] = i.Value;
+                }
+            }
         }
 
         /// <inheritdoc/>
         public virtual IEnumerable<ItemContainerInfo> RemoveRange(int startingIndex, int count)
         {
-            List<ItemContainerInfo> result = new List<ItemContainerInfo>();
+            var result = new List<ItemContainerInfo>();
 
-            if (startingIndex < _containers.Count)
+            if (count > 0)
             {
-                result.AddRange(_containers.GetRange(startingIndex, count));
-                _containers.RemoveRange(startingIndex, count);
+                for (var i = startingIndex; i < startingIndex + count; ++i)
+                {
+                    ItemContainerInfo found;
+
+                    if (_containers.TryGetValue(i, out found))
+                    {
+                        result.Add(found);
+                    }
+
+                    _containers.Remove(i);
+                }
+
+                var toMove = _containers.Where(x => x.Key >= startingIndex).ToList();
+
+                foreach (var i in toMove)
+                {
+                    _containers.Remove(i.Key);
+                    i.Value.Index -= count;
+                    _containers.Add(i.Value.Index, i.Value);
+                }
+
                 Dematerialized?.Invoke(this, new ItemContainerEventArgs(startingIndex, result));
             }
 
@@ -119,8 +145,8 @@ namespace Avalonia.Controls.Generators
         /// <inheritdoc/>
         public virtual IEnumerable<ItemContainerInfo> Clear()
         {
-            var result = _containers.Where(x => x != null).ToList();
-            _containers = new List<ItemContainerInfo>();
+            var result = Containers.ToList();
+            _containers.Clear();
 
             if (result.Count > 0)
             {
@@ -133,27 +159,20 @@ namespace Avalonia.Controls.Generators
         /// <inheritdoc/>
         public IControl ContainerFromIndex(int index)
         {
-            if (index < _containers.Count)
-            {
-                return _containers[index]?.ContainerControl;
-            }
-
-            return null;
+            ItemContainerInfo result;
+            _containers.TryGetValue(index, out result);
+            return result?.ContainerControl;
         }
 
         /// <inheritdoc/>
         public int IndexFromContainer(IControl container)
         {
-            var index = 0;
-
             foreach (var i in _containers)
             {
-                if (i?.ContainerControl == container)
+                if (i.Value.ContainerControl == container)
                 {
-                    return index;
+                    return i.Key;
                 }
-
-                ++index;
             }
 
             return -1;
@@ -177,33 +196,6 @@ namespace Avalonia.Controls.Generators
         }
 
         /// <summary>
-        /// Adds a container to the index.
-        /// </summary>
-        /// <param name="container">The container.</param>
-        protected void AddContainer(ItemContainerInfo container)
-        {
-            Contract.Requires<ArgumentNullException>(container != null);
-
-            while (_containers.Count < container.Index)
-            {
-                _containers.Add(null);
-            }
-
-            if (_containers.Count == container.Index)
-            {
-                _containers.Add(container);
-            }
-            else if (_containers[container.Index] == null)
-            {
-                _containers[container.Index] = container;
-            }
-            else
-            {
-                throw new InvalidOperationException("Container already created.");
-            }
-        }
-
-        /// <summary>
         /// Moves a container.
         /// </summary>
         /// <param name="oldIndex">The old index.</param>
@@ -213,10 +205,11 @@ namespace Avalonia.Controls.Generators
         protected ItemContainerInfo MoveContainer(int oldIndex, int newIndex, object item)
         {
             var container = _containers[oldIndex];
-            var newContainer = new ItemContainerInfo(container.ContainerControl, item, newIndex);
-            _containers[oldIndex] = null;
-            AddContainer(newContainer);
-            return newContainer;
+            container.Index = newIndex;
+            container.Item = item;
+            _containers.Remove(oldIndex);
+            _containers.Add(newIndex, container);
+            return container;
         }
 
         /// <summary>
@@ -227,7 +220,7 @@ namespace Avalonia.Controls.Generators
         /// <returns>The containers.</returns>
         protected IEnumerable<ItemContainerInfo> GetContainerRange(int index, int count)
         {
-            return _containers.GetRange(index, count);
+            return _containers.Where(x => x.Key >= index && x.Key <= index + count).Select(x => x.Value);
         }
 
         /// <summary>

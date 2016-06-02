@@ -1,11 +1,9 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Controls.Generators;
-using Avalonia.Controls.Templates;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Generators
@@ -39,22 +37,6 @@ namespace Avalonia.Controls.UnitTests.Generators
             Assert.Equal(containers[0].ContainerControl, target.ContainerFromIndex(0));
             Assert.Equal(containers[1].ContainerControl, target.ContainerFromIndex(1));
             Assert.Equal(containers[2].ContainerControl, target.ContainerFromIndex(2));
-        }
-
-        private IList<ItemContainerInfo> Materialize(
-            IItemContainerGenerator generator,
-            int index,
-            string[] items)
-        {
-            var result = new List<ItemContainerInfo>();
-
-            foreach (var item in items)
-            {
-                var container = generator.Materialize(index++, item, null);
-                result.Add(container);
-            }
-
-            return result;
         }
 
         [Fact]
@@ -99,6 +81,20 @@ namespace Avalonia.Controls.UnitTests.Generators
         }
 
         [Fact]
+        public void InsertSpace_Should_Alter_Successive_Container_Indexes()
+        {
+            var items = new[] { "foo", "bar", "baz" };
+            var owner = new Decorator();
+            var target = new ItemContainerGenerator(owner);
+            var containers = Materialize(target, 0, items);
+
+            target.InsertSpace(1, 3);
+
+            Assert.Equal(3, target.Containers.Count());
+            Assert.Equal(new[] { 0, 4, 5 }, target.Containers.Select(x => x.Index));
+        }
+
+        [Fact]
         public void RemoveRange_Should_Alter_Successive_Container_Indexes()
         {
             var items = new[] { "foo", "bar", "baz" };
@@ -111,6 +107,23 @@ namespace Avalonia.Controls.UnitTests.Generators
             Assert.Equal(containers[0].ContainerControl, target.ContainerFromIndex(0));
             Assert.Equal(containers[2].ContainerControl, target.ContainerFromIndex(1));
             Assert.Equal(containers[1], removed);
+            Assert.Equal(new[] { 0, 1 }, target.Containers.Select(x => x.Index));
+        }
+
+        private IList<ItemContainerInfo> Materialize(
+            IItemContainerGenerator generator,
+            int index,
+            string[] items)
+        {
+            var result = new List<ItemContainerInfo>();
+
+            foreach (var item in items)
+            {
+                var container = generator.Materialize(index++, item, null);
+                result.Add(container);
+            }
+
+            return result;
         }
     }
 }
