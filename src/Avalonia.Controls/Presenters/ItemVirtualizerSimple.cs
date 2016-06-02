@@ -10,17 +10,28 @@ using Avalonia.Controls.Utils;
 
 namespace Avalonia.Controls.Presenters
 {
+    /// <summary>
+    /// Handles virtualization in an <see cref="ItemsPresenter"/> for
+    /// <see cref="ItemVirtualizationMode.Simple"/>.
+    /// </summary>
     internal class ItemVirtualizerSimple : ItemVirtualizer
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ItemVirtualizerSimple"/> class.
+        /// </summary>
+        /// <param name="owner"></param>
         public ItemVirtualizerSimple(ItemsPresenter owner)
             : base(owner)
         {
         }
 
+        /// <inheritdoc/>
         public override bool IsLogicalScrollEnabled => true;
 
+        /// <inheritdoc/>
         public override double ExtentValue => ItemCount;
 
+        /// <inheritdoc/>
         public override double OffsetValue
         {
             get
@@ -61,6 +72,7 @@ namespace Avalonia.Controls.Presenters
             }
         }
 
+        /// <inheritdoc/>
         public override double ViewportValue
         {
             get
@@ -71,12 +83,14 @@ namespace Avalonia.Controls.Presenters
             }
         }
 
+        /// <inheritdoc/>
         public override void Arranging(Size finalSize)
         {
             CreateAndRemoveContainers();
             ((ILogicalScrollable)Owner).InvalidateScroll();
         }
 
+        /// <inheritdoc/>
         public override void ItemsChanged(IEnumerable items, NotifyCollectionChangedEventArgs e)
         {
             base.ItemsChanged(items, e);
@@ -123,6 +137,10 @@ namespace Avalonia.Controls.Presenters
             ((ILogicalScrollable)Owner).InvalidateScroll();
         }
 
+        /// <summary>
+        /// Creates and removes containers such that we have at most enough containers to fill
+        /// the panel.
+        /// </summary>
         private void CreateAndRemoveContainers()
         {
             var generator = Owner.ItemContainerGenerator;
@@ -184,6 +202,14 @@ namespace Avalonia.Controls.Presenters
             }
         }
 
+        /// <summary>
+        /// Updates the containers in the panel to make sure they are displaying the correct item
+        /// based on <see cref="ItemVirtualizer.FirstIndex"/>.
+        /// </summary>
+        /// <remarks>
+        /// This method requires that <see cref="ItemVirtualizer.FirstIndex"/> + the number of
+        /// materialized containers is not more than <see cref="ItemVirtualizer.ItemCount"/>.
+        /// </remarks>
         private void RecycleContainers()
         {
             var panel = VirtualizingPanel;
@@ -208,6 +234,19 @@ namespace Avalonia.Controls.Presenters
             }
         }
 
+        /// <summary>
+        /// Recycles containers when a move occurs.
+        /// </summary>
+        /// <param name="delta">The delta of the move.</param>
+        /// <remarks>
+        /// If the move is less than a page, then this method moves the containers for the items
+        /// that are still visible to the correct place, and recyles and moves the others. For
+        /// example: if there are 20 items and 10 containers visible and the user scrolls 5
+        /// items down, then the bottom 5 containers will be moved to the top and the top 5 will
+        /// be moved to the bottom and recycled to display the newly visible item. Updates 
+        /// <see cref="ItemVirtualizer.FirstIndex"/> and <see cref="ItemVirtualizer.NextIndex"/>
+        /// with their new values.
+        /// </remarks>
         private void RecycleContainersForMove(int delta)
         {
             var panel = VirtualizingPanel;
@@ -250,6 +289,9 @@ namespace Avalonia.Controls.Presenters
             NextIndex += delta;
         }
 
+        /// <summary>
+        /// Recycles containers due to items being removed.
+        /// </summary>
         private void RecycleContainersOnRemove()
         {
             var panel = VirtualizingPanel;
@@ -283,6 +325,11 @@ namespace Avalonia.Controls.Presenters
             }
         }
 
+        /// <summary>
+        /// Removes the specified number of containers from the end of the panel and updates
+        /// <see cref="ItemVirtualizer.NextIndex"/>.
+        /// </summary>
+        /// <param name="count">The number of containers to remove.</param>
         private void RemoveContainers(int count)
         {
             var index = VirtualizingPanel.Children.Count - count;

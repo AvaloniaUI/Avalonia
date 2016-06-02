@@ -10,6 +10,10 @@ using Avalonia.Controls.Utils;
 
 namespace Avalonia.Controls.Presenters
 {
+    /// <summary>
+    /// Represents an item virtualizer for an <see cref="ItemsPresenter"/> that doesn't actually
+    /// virtualize items - it just creates a container for every item.
+    /// </summary>
     internal class ItemVirtualizerNone : ItemVirtualizer
     {
         public ItemVirtualizerNone(ItemsPresenter owner)
@@ -17,29 +21,44 @@ namespace Avalonia.Controls.Presenters
         {
         }
 
+        /// <inheritdoc/>
         public override bool IsLogicalScrollEnabled => false;
 
+        /// <summary>
+        /// This property should never be accessed because <see cref="IsLogicalScrollEnabled"/> is
+        /// false.
+        /// </summary>
         public override double ExtentValue
         {
             get { throw new NotSupportedException(); }
         }
 
+        /// <summary>
+        /// This property should never be accessed because <see cref="IsLogicalScrollEnabled"/> is
+        /// false.
+        /// </summary>
         public override double OffsetValue
         {
             get { throw new NotSupportedException(); }
             set { throw new NotSupportedException(); }
         }
 
+        /// <summary>
+        /// This property should never be accessed because <see cref="IsLogicalScrollEnabled"/> is
+        /// false.
+        /// </summary>
         public override double ViewportValue
         {
             get { throw new NotSupportedException(); }
         }
 
+        /// <inheritdoc/>
         public override void Arranging(Size finalSize)
         {
             // We don't need to do anything here.
         }
 
+        /// <inheritdoc/>
         public override void ItemsChanged(IEnumerable items, NotifyCollectionChangedEventArgs e)
         {
             base.ItemsChanged(items, e);
@@ -47,7 +66,6 @@ namespace Avalonia.Controls.Presenters
             var generator = Owner.ItemContainerGenerator;
             var panel = Owner.Panel;
 
-            // TODO: Handle Move and Replace etc.
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
@@ -77,7 +95,9 @@ namespace Avalonia.Controls.Presenters
                     break;
 
                 case NotifyCollectionChangedAction.Move:
-                // TODO: Implement Move in a more efficient manner.
+                    // TODO: Handle move in a more efficient manner. At the moment we just
+                    // drop through to Reset to recreate all the containers.
+
                 case NotifyCollectionChangedAction.Reset:
                     RemoveContainers(generator.Clear());
 

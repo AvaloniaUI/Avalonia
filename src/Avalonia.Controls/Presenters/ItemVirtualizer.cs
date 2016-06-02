@@ -10,29 +10,88 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Presenters
 {
+    /// <summary>
+    /// Base class for classes which handle virtualization for an <see cref="ItemsPresenter"/>.
+    /// </summary>
     internal abstract class ItemVirtualizer
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ItemVirtualizer"/> class.
+        /// </summary>
+        /// <param name="owner"></param>
         public ItemVirtualizer(ItemsPresenter owner)
         {
             Owner = owner;
         }
 
+        /// <summary>
+        /// Gets the <see cref="ItemsPresenter"/> which owns the virtualizer.
+        /// </summary>
         public ItemsPresenter Owner { get; }
+
+        /// <summary>
+        /// Gets the <see cref="IVirtualizingPanel"/> which will host the items.
+        /// </summary>
         public IVirtualizingPanel VirtualizingPanel => Owner.Panel as IVirtualizingPanel;
+
+        /// <summary>
+        /// Gets the items to display.
+        /// </summary>
         public IEnumerable Items { get; private set; }
+
+        /// <summary>
+        /// Gets the number of items in <see cref="Items"/>.
+        /// </summary>
         public int ItemCount { get; private set; }
-        public int FirstIndex { get; set; }
-        public int NextIndex { get; set; }
+
+        /// <summary>
+        /// Gets or sets the index of the first item displayed in the panel.
+        /// </summary>
+        public int FirstIndex { get; protected set; }
+
+        /// <summary>
+        /// Gets or sets the index of the first item beyond those displayed in the panel.
+        /// </summary>
+        public int NextIndex { get; protected set; }
+
+        /// <summary>
+        /// Gets a value indicating whether the items should be scroll horizontally or vertically.
+        /// </summary>
         public bool Vertical => VirtualizingPanel.ScrollDirection == Orientation.Vertical;
 
+        /// <summary>
+        /// Gets a value indicating whether logical scrolling is enabled.
+        /// </summary>
         public abstract bool IsLogicalScrollEnabled { get; }
+
+        /// <summary>
+        /// Gets the value of the scroll extent.
+        /// </summary>
         public abstract double ExtentValue { get; }
+
+        /// <summary>
+        /// Gets or sets the value of the current scroll offset.
+        /// </summary>
         public abstract double OffsetValue { get; set; }
+
+        /// <summary>
+        /// Gets the value of the scrollable viewport.
+        /// </summary>
         public abstract double ViewportValue { get; }
 
+        /// <summary>
+        /// Gets the <see cref="ExtentValue"/> as a <see cref="Size"/>.
+        /// </summary>
         public Size Extent => Vertical ? new Size(0, ExtentValue) : new Size(ExtentValue, 0);
+
+        /// <summary>
+        /// Gets the <see cref="ViewportValue"/> as a <see cref="Size"/>.
+        /// </summary>
         public Size Viewport => Vertical ? new Size(0, ViewportValue) : new Size(ViewportValue, 0);
 
+        /// <summary>
+        /// Gets or sets the <see cref="OffsetValue"/> as a <see cref="Vector"/>.
+        /// </summary>
         public Vector Offset
         {
             get
@@ -46,6 +105,12 @@ namespace Avalonia.Controls.Presenters
             }
         }
         
+        /// <summary>
+        /// Creates an <see cref="ItemVirtualizer"/> based on an item presenter's 
+        /// <see cref="ItemVirtualizationMode"/>.
+        /// </summary>
+        /// <param name="owner">The items presenter.</param>
+        /// <returns>An <see cref="ItemVirtualizer"/>.</returns>
         public static ItemVirtualizer Create(ItemsPresenter owner)
         {
             var virtualizingPanel = owner.Panel as IVirtualizingPanel;
@@ -63,13 +128,30 @@ namespace Avalonia.Controls.Presenters
             return new ItemVirtualizerNone(owner);
         }
 
+        /// <summary>
+        /// Called by the <see cref="Owner"/> when it carries out an arrange.
+        /// </summary>
+        /// <param name="finalSize">The final size passed to the arrange.</param>
         public abstract void Arranging(Size finalSize);
 
+        /// <summary>
+        /// Called when a request is made to bring an item into view.
+        /// </summary>
+        /// <param name="target">The item to bring into view.</param>
+        /// <param name="targetRect">The rect on the item to bring into view.</param>
+        /// <returns>True if the request was handled; otherwise false.</returns>
         public virtual bool BringIntoView(IVisual target, Rect targetRect)
         {
             return false;
         }
 
+        /// <summary>
+        /// Called when the items for the presenter change, either because 
+        /// <see cref="ItemsPresenterBase.Items"/> has been set, the items collection has been
+        /// modified, or the panel has been created.
+        /// </summary>
+        /// <param name="items">The items.</param>
+        /// <param name="e">A description of the change.</param>
         public virtual void ItemsChanged(IEnumerable items, NotifyCollectionChangedEventArgs e)
         {
             Items = items;
