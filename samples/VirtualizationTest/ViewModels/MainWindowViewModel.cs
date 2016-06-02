@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using Avalonia.Collections;
 using ReactiveUI;
 
 namespace VirtualizationTest.ViewModels
@@ -12,7 +13,6 @@ namespace VirtualizationTest.ViewModels
         private int _itemCount = 200;
         private string _newItemString;
         private IReactiveList<ItemViewModel> _items;
-        private ItemViewModel _selectedItem;
         private string _prefix = "Item";
 
         public MainWindowViewModel()
@@ -40,11 +40,8 @@ namespace VirtualizationTest.ViewModels
             set { this.RaiseAndSetIfChanged(ref _itemCount, value); }
         }
 
-        public ItemViewModel SelectedItem
-        {
-            get { return _selectedItem; }
-            set { this.RaiseAndSetIfChanged(ref _selectedItem, value); }
-        }
+        public AvaloniaList<ItemViewModel> SelectedItems { get; } 
+            = new AvaloniaList<ItemViewModel>();
 
         public IReactiveList<ItemViewModel> Items
         {
@@ -82,9 +79,9 @@ namespace VirtualizationTest.ViewModels
         {
             var index = Items.Count;
 
-            if (SelectedItem != null)
+            if (SelectedItems.Count > 0)
             {
-                index = Items.IndexOf(SelectedItem) + 1;
+                index = Items.IndexOf(SelectedItems[0]) + 1;
             }
 
             Items.Insert(index, new ItemViewModel(index, NewItemString));
@@ -92,9 +89,9 @@ namespace VirtualizationTest.ViewModels
 
         private void Remove()
         {
-            if (SelectedItem != null)
+            if (SelectedItems.Count > 0)
             {
-                Items.Remove(SelectedItem);
+                Items.RemoveAll(SelectedItems);
             }
         }
 

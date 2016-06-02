@@ -25,7 +25,10 @@
             <Button Command="{Binding RecreateCommand}">Recreate</Button>
         </StackPanel>
 
-        <ListBox Name="listBox" Items="{Binding Items}" SelectedItem="{Binding SelectedItem}">
+        <ListBox Name="listBox" 
+                 Items="{Binding Items}" 
+                 SelectedItems="{Binding SelectedItems}"
+                 SelectionMode="Multiple">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <TextBlock Text="{Binding Header}"/>
