@@ -11,7 +11,8 @@ namespace VirtualizationTest.ViewModels
     internal class MainWindowViewModel : ReactiveObject
     {
         private int _itemCount = 200;
-        private string _newItemString;
+        private string _newItemString = "New Item";
+        private int _newItemIndex;
         private IReactiveList<ItemViewModel> _items;
         private string _prefix = "Item";
 
@@ -81,10 +82,10 @@ namespace VirtualizationTest.ViewModels
 
             if (SelectedItems.Count > 0)
             {
-                index = Items.IndexOf(SelectedItems[0]) + 1;
+                index = Items.IndexOf(SelectedItems[0]);
             }
 
-            Items.Insert(index, new ItemViewModel(index, NewItemString));
+            Items.Insert(index, new ItemViewModel(_newItemIndex++, NewItemString));
         }
 
         private void Remove()
