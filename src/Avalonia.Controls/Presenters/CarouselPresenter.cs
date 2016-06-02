@@ -176,6 +176,7 @@ namespace Avalonia.Controls.Presenters
                 var item = Items.Cast<object>().ElementAt(index);
                 var materialized = ItemContainerGenerator.Materialize(index, item, MemberSelector);
                 Panel.Children.Add(materialized.ContainerControl);
+                container = materialized.ContainerControl;
             }
 
             return container;
