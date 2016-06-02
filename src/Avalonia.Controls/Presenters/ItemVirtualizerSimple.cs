@@ -47,18 +47,14 @@ namespace Avalonia.Controls.Presenters
 
                         if (delta != 0)
                         {
-                            RecycleMoveContainers(delta);
-                            FirstIndex += delta;
-                            NextIndex += delta;
+                            RecycleContainersForMove(delta);
                         }
                     }
                     else
                     {
                         // We're moving to a partially obscured item at the end of the list.
                         var firstIndex = ItemCount - panel.Children.Count;
-                        RecycleMoveContainers(firstIndex - FirstIndex);
-                        NextIndex = ItemCount;
-                        FirstIndex = NextIndex - panel.Children.Count;
+                        RecycleContainersForMove(firstIndex - FirstIndex);
                         panel.PixelOffset = VirtualizingPanel.PixelOverflow;
                     }
                 }
@@ -77,7 +73,7 @@ namespace Avalonia.Controls.Presenters
 
         public override void Arranging(Size finalSize)
         {
-            CreateRemoveContainers();
+            CreateAndRemoveContainers();
             ((ILogicalScrollable)Owner).InvalidateScroll();
         }
 
@@ -85,73 +81,44 @@ namespace Avalonia.Controls.Presenters
         {
             base.ItemsChanged(items, e);
 
-            switch (e.Action)
+            if (items != null)
             {
-                case NotifyCollectionChangedAction.Remove:
-                    if(e.OldStartingIndex >= FirstIndex && 
-                       e.OldStartingIndex + e.OldItems.Count <= NextIndex)
-                    {
-                        if (e.OldStartingIndex == FirstIndex)
+                switch (e.Action)
+                {
+                    case NotifyCollectionChangedAction.Add:
+                        if (e.NewStartingIndex >= FirstIndex &&
+                            e.NewStartingIndex + e.NewItems.Count <= NextIndex)
                         {
-                            // We are removing the first in the list.
-                            VirtualizingPanel.Children.RemoveAt(e.OldStartingIndex - FirstIndex);
-                            Owner.ItemContainerGenerator.Dematerialize(e.OldStartingIndex - FirstIndex, 1);
-                            FirstIndex++; // This may not be necessary, but cant get to work without this.
-
-                            // If all items are visible we need to reduce the NextIndex too.
-                            if(NextIndex > ItemCount)
-                            {
-                                NextIndex = ItemCount;
-                            }
-
-                            CreateRemoveContainers();
+                            CreateAndRemoveContainers();
                             RecycleContainers();
                         }
-                        else if (e.OldStartingIndex + e.OldItems.Count == NextIndex)
+
+                        break;
+
+                    case NotifyCollectionChangedAction.Remove:
+                        if (e.OldStartingIndex >= FirstIndex &&
+                            e.OldStartingIndex + e.OldItems.Count <= NextIndex)
                         {
-                            // We are removing the last one in the list.
-                            VirtualizingPanel.Children.RemoveAt(e.OldStartingIndex - FirstIndex);
-                            Owner.ItemContainerGenerator.Dematerialize(e.OldStartingIndex - FirstIndex, 1);
-                            NextIndex--;
+                            RecycleContainersOnRemove();
                         }
-                        else
-                        {
-                            // If all items are visible we need to reduce the NextIndex too.
-                            if (NextIndex > ItemCount)
-                            {
-                                NextIndex = ItemCount;
-                            }
 
-                            CreateRemoveContainers();
-                            RecycleContainers();
-                        }
-                    }           
-                    break;
+                        break;
 
-                case NotifyCollectionChangedAction.Add:
-                    if (e.NewStartingIndex >= FirstIndex &&
-                        e.NewStartingIndex + e.NewItems.Count < NextIndex)
-                    {
-                        CreateRemoveContainers();
-                        RecycleContainers();
-                    }
-
-                    break;
-
-                case NotifyCollectionChangedAction.Reset:
-                    // We could recycle items here if this proves to be inefficient, but
-                    // Reset indicates a large change and should (?) be quite rare.
-                    VirtualizingPanel.Children.Clear();
-                    Owner.ItemContainerGenerator.Clear();
-                    FirstIndex = NextIndex = 0;
-                    CreateRemoveContainers();
-                    break;
+                    case NotifyCollectionChangedAction.Reset:
+                        RecycleContainersOnRemove();
+                        break;
+                }
+            }
+            else
+            {
+                Owner.ItemContainerGenerator.Clear();
+                VirtualizingPanel.Children.Clear();
             }
 
             ((ILogicalScrollable)Owner).InvalidateScroll();
         }
 
-        private void CreateRemoveContainers()
+        private void CreateAndRemoveContainers()
         {
             var generator = Owner.ItemContainerGenerator;
             var panel = VirtualizingPanel;
@@ -164,8 +131,12 @@ namespace Avalonia.Controls.Presenters
 
                 while (!panel.IsFull)
                 {
-                    if (index == ItemCount)
+                    if (index >= ItemCount)
                     {
+                        // We can fit more containers in the panel, but we're at the end of the
+                        // items. If we're scrolled to the top (FirstIndex == 0), then there are
+                        // no more items to create. Otherwise, go backwards adding containers to
+                        // the beginning of the panel.
                         if (FirstIndex == 0)
                         {
                             break;
@@ -204,13 +175,7 @@ namespace Avalonia.Controls.Presenters
 
             if (panel.OverflowCount > 0)
             {
-                var count = panel.OverflowCount;
-                var index = panel.Children.Count - count;
-
-                panel.Children.RemoveRange(index, count);
-                generator.Dematerialize(FirstIndex + index, count);
-
-                NextIndex -= count;
+                RemoveContainers(panel.OverflowCount);
             }
         }
 
@@ -224,29 +189,21 @@ namespace Avalonia.Controls.Presenters
 
             foreach (var container in containers)
             {
-                if (itemIndex < ItemCount)
-                {
-                    var item = Items.ElementAt(itemIndex);
+                var item = Items.ElementAt(itemIndex);
 
-                    if (!object.Equals(container.Item, item))
-                    {
-                        if (!generator.TryRecycle(itemIndex, itemIndex, item, selector))
-                        {
-                            throw new NotImplementedException();
-                        }
-                    }
-                }
-                else
+                if (!object.Equals(container.Item, item))
                 {
-                    panel.Children.RemoveAt(panel.Children.Count - 1);
+                    if (!generator.TryRecycle(itemIndex, itemIndex, item, selector))
+                    {
+                        throw new NotImplementedException();
+                    }
                 }
 
                 ++itemIndex;
-
             }
         }
 
-        private void RecycleMoveContainers(int delta)
+        private void RecycleContainersForMove(int delta)
         {
             var panel = VirtualizingPanel;
             var generator = Owner.ItemContainerGenerator;
@@ -283,6 +240,52 @@ namespace Avalonia.Controls.Presenters
                     panel.Children.InsertRange(0, containers);
                 }
             }
+
+            FirstIndex += delta;
+            NextIndex += delta;
+        }
+
+        private void RecycleContainersOnRemove()
+        {
+            var panel = VirtualizingPanel;
+
+            if (NextIndex <= ItemCount)
+            {
+                // Items have been removed but FirstIndex..NextIndex is still a valid range in the
+                // items, so just recycle the containers to adapt to the new state.
+                RecycleContainers();
+            }
+            else
+            {
+                // Items have been removed and now the range FirstIndex..NextIndex goes out of 
+                // the item bounds. Try to scroll up and then remove any excess containers.
+                var newFirstIndex = Math.Max(0, FirstIndex - (NextIndex - ItemCount));
+                var delta = newFirstIndex - FirstIndex;
+                var newNextIndex = NextIndex + delta;
+
+                if (newNextIndex > ItemCount)
+                {
+                    RemoveContainers(newNextIndex - ItemCount);
+                }
+
+                if (delta != 0)
+                {
+                    RecycleContainersForMove(delta);
+                }
+                else
+                {
+                    RecycleContainers();
+                }
+            }
+        }
+
+        private void RemoveContainers(int count)
+        {
+            var index = VirtualizingPanel.Children.Count - count;
+
+            VirtualizingPanel.Children.RemoveRange(index, count);
+            Owner.ItemContainerGenerator.Dematerialize(FirstIndex + index, count);
+            NextIndex -= count;
         }
     }
 }

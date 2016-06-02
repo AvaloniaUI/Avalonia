@@ -1,9 +1,11 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using Avalonia.Collections;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
@@ -76,7 +78,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
         }
 
         [Fact]
-        public void Should_Add_New_Items_At_Top_When_Control_Is_Scrolled_To_Bottom_And_Enlarged()
+        public void Should_Add_New_Containers_At_Top_When_Control_Is_Scrolled_To_Bottom_And_Enlarged()
         {
             var target = CreateTarget();
             var items = (IList<string>)target.Items;
@@ -161,105 +163,138 @@ namespace Avalonia.Controls.UnitTests.Presenters
             var target = CreateTarget(itemCount: 20);
 
             target.ApplyTemplate();
-            target.Measure(new Size(100, 95));
-            target.Arrange(new Rect(0, 0, 100, 95));
+            target.Measure(new Size(100, 100));
+            target.Arrange(new Rect(0, 0, 100, 100));
 
             ((ILogicalScrollable)target).Offset = new Vector(0, 5);
 
             var expected = Enumerable.Range(5, 10).Select(x => $"Item {x}").ToList();
             var items = (ObservableCollection<string>)target.Items;
+            var actual = target.Panel.Children.Select(x => x.DataContext).ToList();
 
-            Assert.Equal(
-                expected,
-                target.Panel.Children.Select(x => x.DataContext));
+            Assert.Equal(expected, actual);
 
             items.Insert(6, "Inserted");
             expected.Insert(1, "Inserted");
             expected.RemoveAt(expected.Count - 1);
-
-            var actual = target.Panel.Children.Select(x => x.DataContext).ToList();
-            Assert.Equal(expected, actual);
-        }
-
-        [Fact]
-        public void Removing_First_Item_When_Visible_Should_UpdateContainers()
-        {
-            var target = CreateTarget(itemCount: 20);
-
-            target.ApplyTemplate();
-            target.Measure(new Size(100, 195));
-            target.Arrange(new Rect(0, 0, 100, 195));
-
-            ((ILogicalScrollable)target).Offset = new Vector(0, 5);
-
-            var expected = Enumerable.Range(0, 20).Select(x => $"Item {x}").ToList();
-            var items = (ObservableCollection<string>)target.Items;
-
-            Assert.Equal(
-                expected,
-                target.Panel.Children.Select(x => x.DataContext));
-
-            items.Remove(items.First());
-            expected.Remove(expected.First());
-
-            var actual = target.Panel.Children.Select(x => x.DataContext).ToList();
-            Assert.Equal(expected, actual);
-        }
-
-        [Fact]
-        public void Removing_Items_From_Middle_Should_Update_Containers()
-        {
-            var target = CreateTarget(itemCount: 20);
-
-            target.ApplyTemplate();
-            target.Measure(new Size(100, 195));
-            target.Arrange(new Rect(0, 0, 100, 195));
-
-            ((ILogicalScrollable)target).Offset = new Vector(0, 5);
-
-            var expected = Enumerable.Range(0, 20).Select(x => $"Item {x}").ToList();
-            var items = (ObservableCollection<string>)target.Items;
-
-            Assert.Equal(
-                expected,
-                target.Panel.Children.Select(x => x.DataContext));
-
-            items.RemoveAt(2);
-            expected.RemoveAt(2);
-
-            var actual = target.Panel.Children.Select(x => x.DataContext).ToList();
-            Assert.Equal(expected, actual);
-
-            items.RemoveAt(items.Count - 2);
-            expected.RemoveAt(expected.Count -2);
 
             actual = target.Panel.Children.Select(x => x.DataContext).ToList();
             Assert.Equal(expected, actual);
         }
 
         [Fact]
-        public void Removing_Last_Item_When_Visible_Should_UpdateContainers()
+        public void Removing_First_Materialized_Item_Should_Update_Containers()
         {
             var target = CreateTarget(itemCount: 20);
 
             target.ApplyTemplate();
-            target.Measure(new Size(100, 195));
-            target.Arrange(new Rect(0, 0, 100, 195));
+            target.Measure(new Size(100, 100));
+            target.Arrange(new Rect(0, 0, 100, 100));
+
+            var expected = Enumerable.Range(0, 10).Select(x => $"Item {x}").ToList();
+            var items = (ObservableCollection<string>)target.Items;
+            var actual = target.Panel.Children.Select(x => x.DataContext).ToList();
+
+            Assert.Equal(expected, actual);
+
+            items.RemoveAt(0);
+            expected = Enumerable.Range(1, 10).Select(x => $"Item {x}").ToList();
+
+            actual = target.Panel.Children.Select(x => x.DataContext).ToList();
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public void Removing_Items_From_Middle_Should_Update_Containers_When_All_Items_Visible()
+        {
+            var target = CreateTarget(itemCount: 20);
+
+            target.ApplyTemplate();
+            target.Measure(new Size(100, 200));
+            target.Arrange(new Rect(0, 0, 100, 200));
+
+            var items = (ObservableCollection<string>)target.Items;
+            var actual = target.Panel.Children.Select(x => x.DataContext).ToList();
+
+            Assert.Equal(items, actual);
+
+            items.RemoveAt(2);
+
+            actual = target.Panel.Children.Select(x => x.DataContext).ToList();
+            Assert.Equal(items, actual);
+
+            items.RemoveAt(items.Count - 2);
+
+            actual = target.Panel.Children.Select(x => x.DataContext).ToList();
+            Assert.Equal(items, actual);
+        }
+
+        [Fact]
+        public void Removing_Last_Item_Should_Update_Containers_When_All_Items_Visible()
+        {
+            var target = CreateTarget(itemCount: 20);
+
+            target.ApplyTemplate();
+            target.Measure(new Size(100, 200));
+            target.Arrange(new Rect(0, 0, 100, 200));
 
             ((ILogicalScrollable)target).Offset = new Vector(0, 5);
 
             var expected = Enumerable.Range(0, 20).Select(x => $"Item {x}").ToList();
             var items = (ObservableCollection<string>)target.Items;
+            var actual = target.Panel.Children.Select(x => x.DataContext).ToList();
 
-            Assert.Equal(
-                expected,
-                target.Panel.Children.Select(x => x.DataContext));
+            Assert.Equal(expected, actual);
 
             items.Remove(items.Last());
             expected.Remove(expected.Last());
 
-            var actual = target.Panel.Children.Select(x => x.DataContext).ToList();
+            actual = target.Panel.Children.Select(x => x.DataContext).ToList();
             Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public void Removing_Items_When_Scrolled_To_End_Should_Add_Containers_At_Top()
+        {
+            var target = CreateTarget(itemCount: 20, useAvaloniaList: true);
+
+            target.ApplyTemplate();
+            target.Measure(new Size(100, 100));
+            target.Arrange(new Rect(0, 0, 100, 100));
+
+            ((ILogicalScrollable)target).Offset = new Vector(0, 10);
+
+            var expected = Enumerable.Range(10, 10).Select(x => $"Item {x}").ToList();
+            var items = (AvaloniaList<string>)target.Items;
+            var actual = target.Panel.Children.Select(x => x.DataContext).ToList();
+
+            Assert.Equal(expected, actual);
+
+            items.RemoveRange(18, 2);
+            expected = Enumerable.Range(8, 10).Select(x => $"Item {x}").ToList();
+
+            actual = target.Panel.Children.Select(x => x.DataContext).ToList();
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public void Setting_Items_To_Null_Should_Remove_Containers()
+        {
+            var target = CreateTarget(itemCount: 20);
+
+            target.ApplyTemplate();
+            target.Measure(new Size(100, 100));
+            target.Arrange(new Rect(0, 0, 100, 100));
+
+            var expected = Enumerable.Range(0, 10).Select(x => $"Item {x}").ToList();
+            var items = (ObservableCollection<string>)target.Items;
+            var actual = target.Panel.Children.Select(x => x.DataContext).ToList();
+
+            Assert.Equal(expected, actual);
+
+            target.Items = null;
+
+            Assert.Empty(target.Panel.Children);
         }
 
         public class WithContainers
@@ -342,12 +377,14 @@ namespace Avalonia.Controls.UnitTests.Presenters
         private static ItemsPresenter CreateTarget(
             Orientation orientation = Orientation.Vertical,
             bool useContainers = true,
-            int itemCount = 20)
+            int itemCount = 20,
+            bool useAvaloniaList = false)
         {
             ItemsPresenter result;
-
-            var items = new ObservableCollection<string>(
-                Enumerable.Range(0, itemCount).Select(x => $"Item {x}"));
+            var itemsSource = Enumerable.Range(0, itemCount).Select(x => $"Item {x}");
+            var items = useAvaloniaList ?
+                (IEnumerable)new AvaloniaList<string>(itemsSource) :
+                (IEnumerable)new ObservableCollection<string>(itemsSource);
 
             var scroller = new ScrollContentPresenter
             {
