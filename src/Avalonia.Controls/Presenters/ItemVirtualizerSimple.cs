@@ -258,7 +258,8 @@ namespace Avalonia.Controls.Presenters
             else
             {
                 // Items have been removed and now the range FirstIndex..NextIndex goes out of 
-                // the item bounds. Try to scroll up and then remove any excess containers.
+                // the item bounds. Remove any excess containers, try to scroll up and then recycle
+                // the containers to make sure they point to the correct item.
                 var newFirstIndex = Math.Max(0, FirstIndex - (NextIndex - ItemCount));
                 var delta = newFirstIndex - FirstIndex;
                 var newNextIndex = NextIndex + delta;
