@@ -42,7 +42,7 @@ namespace Avalonia.Controls.Presenters
                         if (panel.PixelOffset > 0)
                         {
                             panel.PixelOffset = 0;
-                            delta += 1;                           
+                            delta += 1;
                         }
 
                         if (delta != 0)
@@ -87,6 +87,47 @@ namespace Avalonia.Controls.Presenters
 
             switch (e.Action)
             {
+                case NotifyCollectionChangedAction.Remove:
+                    if(e.OldStartingIndex >= FirstIndex && 
+                       e.OldStartingIndex + e.OldItems.Count <= NextIndex)
+                    {
+                        if (e.OldStartingIndex == FirstIndex)
+                        {
+                            // We are removing the first in the list.
+                            VirtualizingPanel.Children.RemoveAt(e.OldStartingIndex - FirstIndex);
+                            Owner.ItemContainerGenerator.Dematerialize(e.OldStartingIndex - FirstIndex, 1);
+                            FirstIndex++; // This may not be necessary, but cant get to work without this.
+
+                            // If all items are visible we need to reduce the NextIndex too.
+                            if(NextIndex > ItemCount)
+                            {
+                                NextIndex = ItemCount;
+                            }
+
+                            CreateRemoveContainers();
+                            RecycleContainers();
+                        }
+                        else if (e.OldStartingIndex + e.OldItems.Count == NextIndex)
+                        {
+                            // We are removing the last one in the list.
+                            VirtualizingPanel.Children.RemoveAt(e.OldStartingIndex - FirstIndex);
+                            Owner.ItemContainerGenerator.Dematerialize(e.OldStartingIndex - FirstIndex, 1);
+                            NextIndex--;
+                        }
+                        else
+                        {
+                            // If all items are visible we need to reduce the NextIndex too.
+                            if (NextIndex > ItemCount)
+                            {
+                                NextIndex = ItemCount;
+                            }
+
+                            CreateRemoveContainers();
+                            RecycleContainers();
+                        }
+                    }           
+                    break;
+
                 case NotifyCollectionChangedAction.Add:
                     if (e.NewStartingIndex >= FirstIndex &&
                         e.NewStartingIndex + e.NewItems.Count < NextIndex)
@@ -183,17 +224,25 @@ namespace Avalonia.Controls.Presenters
 
             foreach (var container in containers)
             {
-                var item = Items.ElementAt(itemIndex);
-
-                if (!object.Equals(container.Item, item))
+                if (itemIndex < ItemCount)
                 {
-                    if (!generator.TryRecycle(itemIndex, itemIndex, item, selector))
+                    var item = Items.ElementAt(itemIndex);
+
+                    if (!object.Equals(container.Item, item))
                     {
-                        throw new NotImplementedException();
+                        if (!generator.TryRecycle(itemIndex, itemIndex, item, selector))
+                        {
+                            throw new NotImplementedException();
+                        }
                     }
+                }
+                else
+                {
+                    panel.Children.RemoveAt(panel.Children.Count - 1);
                 }
 
                 ++itemIndex;
+
             }
         }
 

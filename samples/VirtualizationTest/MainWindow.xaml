@@ -20,11 +20,12 @@
             <TextBox Watermark="Item to Create"
                      UseFloatingWatermark="True"
                      Text="{Binding NewItemString}"/>
-            <Button Command="{Binding NewItemCommand}">Insert Item</Button>
+            <Button Command="{Binding AddItemCommand}">Add Item</Button>
+            <Button Command="{Binding RemoveItemCommand}">Remove Item</Button>
             <Button Command="{Binding RecreateCommand}">Recreate</Button>
         </StackPanel>
 
-        <ListBox Name="listBox" Items="{Binding Items}">
+        <ListBox Name="listBox" Items="{Binding Items}" SelectedItem="{Binding SelectedItem}">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <TextBlock Text="{Binding Header}"/>
