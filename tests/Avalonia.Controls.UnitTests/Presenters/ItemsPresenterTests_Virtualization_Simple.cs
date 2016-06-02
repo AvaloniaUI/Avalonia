@@ -254,7 +254,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
         }
 
         [Fact]
-        public void Removing_Items_When_Scrolled_To_End_Should_Add_Containers_At_Top()
+        public void Removing_Items_When_Scrolled_To_End_Should_Recyle_Containers_At_Top()
         {
             var target = CreateTarget(itemCount: 20, useAvaloniaList: true);
 
@@ -272,6 +272,32 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
             items.RemoveRange(18, 2);
             expected = Enumerable.Range(8, 10).Select(x => $"Item {x}").ToList();
+
+            actual = target.Panel.Children.Select(x => x.DataContext).ToList();
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public void Removing_Items_When_Scrolled_To_Near_End_Should_Recycle_Containers_At_Bottom_And_Top()
+        {
+            var target = CreateTarget(itemCount: 20, useAvaloniaList: true);
+
+            target.ApplyTemplate();
+            target.Measure(new Size(100, 100));
+            target.Arrange(new Rect(0, 0, 100, 100));
+
+            ((ILogicalScrollable)target).Offset = new Vector(0, 9);
+
+            var expected = Enumerable.Range(9, 10).Select(x => $"Item {x}").ToList();
+            var items = (AvaloniaList<string>)target.Items;
+            var actual = target.Panel.Children.Select(x => x.DataContext).ToList();
+
+            Assert.Equal(expected, actual);
+
+            items.RemoveRange(15, 3);
+            expected = Enumerable.Range(7, 8).Select(x => $"Item {x}")
+                .Concat(Enumerable.Range(18, 2).Select(x => $"Item {x}"))
+                .ToList();
 
             actual = target.Panel.Children.Select(x => x.DataContext).ToList();
             Assert.Equal(expected, actual);

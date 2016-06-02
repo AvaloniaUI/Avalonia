@@ -272,10 +272,8 @@ namespace Avalonia.Controls.Presenters
                 {
                     RecycleContainersForMove(delta);
                 }
-                else
-                {
-                    RecycleContainers();
-                }
+
+                RecycleContainers();
             }
         }
 
