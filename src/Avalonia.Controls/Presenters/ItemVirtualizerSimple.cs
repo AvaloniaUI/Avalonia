@@ -104,6 +104,11 @@ namespace Avalonia.Controls.Presenters
 
                         break;
 
+                    case NotifyCollectionChangedAction.Move:
+                    case NotifyCollectionChangedAction.Replace:
+                        RecycleContainers();
+                        break;
+
                     case NotifyCollectionChangedAction.Reset:
                         RecycleContainersOnRemove();
                         break;
