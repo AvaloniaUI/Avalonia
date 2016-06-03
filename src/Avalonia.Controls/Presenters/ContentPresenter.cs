@@ -80,6 +80,7 @@ namespace Avalonia.Controls.Presenters
 
         private IControl _child;
         private bool _createdChild;
+        private IDataTemplate _dataTemplate;
 
         /// <summary>
         /// Initializes static members of the <see cref="ContentPresenter"/> class.
@@ -200,6 +201,13 @@ namespace Avalonia.Controls.Presenters
             }
         }
 
+        /// <inheritdoc/>
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+            _dataTemplate = null;
+        }
+
         /// <summary>
         /// Updates the <see cref="Child"/> control based on the control's <see cref="Content"/>.
         /// </summary>
@@ -215,32 +223,64 @@ namespace Avalonia.Controls.Presenters
         {
             var old = Child;
             var content = Content;
-            var result = this.MaterializeDataTemplate(content, ContentTemplate);
+            var result = content as IControl;
 
-            if (old != null)
+            if (result == null)
             {
-                VisualChildren.Remove(old);
-            }
+                DataContext = content;
 
-            if (result != null)
-            {
-                if (!(content is IControl))
+                if (content != null)
                 {
-                    result.DataContext = content;
+                    if (old != null && _dataTemplate?.Match(content) == true)
+                    {
+                        result = old;
+                    }
+                    else
+                    {
+                        _dataTemplate = this.FindDataTemplate(content, ContentTemplate) ?? FuncDataTemplate.Default;
+                        result = _dataTemplate.Build(content);
+
+                        var controlResult = result as Control;
+
+                        if (controlResult != null)
+                        {
+                            NameScope.SetNameScope(controlResult, new NameScope());
+                        }
+                    }
                 }
-
-                Child = result;
-
-                if (result.Parent == null)
+                else
                 {
-                    ((ISetLogicalParent)result).SetParent((ILogical)this.TemplatedParent ?? this);
+                    _dataTemplate = null;
                 }
-
-                VisualChildren.Add(result);
             }
             else
             {
-                Child = null;
+                _dataTemplate = null;
+            }
+
+            if (result != old)
+            {
+                if (old != null)
+                {
+                    VisualChildren.Remove(old);
+                }
+
+                if (result != null)
+                {
+                    Child = result;
+
+                    if (result.Parent == null)
+                    {
+                        ((ISetLogicalParent)result).SetParent((ILogical)this.TemplatedParent ?? this);
+                    }
+
+                    ((ISetInheritanceParent)result).SetParent(this);
+                    VisualChildren.Add(result);
+                }
+                else
+                {
+                    Child = null;
+                }
             }
 
             _createdChild = true;

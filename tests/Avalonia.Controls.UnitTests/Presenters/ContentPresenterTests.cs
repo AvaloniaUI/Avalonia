@@ -9,6 +9,7 @@ using Avalonia.Controls.Templates;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Xunit;
+using System;
 
 namespace Avalonia.Controls.UnitTests.Presenters
 {
@@ -150,6 +151,29 @@ namespace Avalonia.Controls.UnitTests.Presenters
             };
 
             Assert.Equal("foo", target.DataContext);
+        }
+
+        [Fact]
+        public void Tries_To_Recycle_DataTemplate()
+        {
+            var target = new ContentPresenter
+            {
+                DataTemplates = new DataTemplates
+                {
+                    new FuncDataTemplate<string>(_ => new Border()),
+                },
+                Content = "foo",
+            };
+
+            target.UpdateChild();
+            var control = target.Child;
+
+            Assert.IsType<Border>(control);
+
+            target.Content = "bar";
+            target.UpdateChild();
+
+            Assert.Same(control, target.Child);
         }
 
         private class TestContentControl : ContentControl

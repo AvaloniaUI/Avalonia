@@ -262,7 +262,7 @@ namespace Avalonia.Controls.UnitTests
 
         private class TestControl : Control
         {
-            public new AvaloniaObject InheritanceParent => base.InheritanceParent;
+            public new IAvaloniaObject InheritanceParent => base.InheritanceParent;
         }
     }
 }

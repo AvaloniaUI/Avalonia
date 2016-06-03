@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Reactive.Linq;
 using System.Reflection;
 
 namespace Avalonia.Controls.Templates
@@ -12,10 +13,25 @@ namespace Avalonia.Controls.Templates
     public class FuncDataTemplate : FuncTemplate<object, IControl>, IDataTemplate
     {
         /// <summary>
-        /// The default data template used in the case where not matching data template is found.
+        /// The default data template used in the case where no matching data template is found.
         /// </summary>
         public static readonly FuncDataTemplate Default =
-           new FuncDataTemplate(typeof(object), o => (o != null) ? new TextBlock { Text = o.ToString() } : null);
+            new FuncDataTemplate<object>(
+                data =>
+                {
+                    if (data != null)
+                    {
+                        var result = new TextBlock();
+                        result.Bind(
+                            TextBlock.TextProperty,
+                            result.GetObservable(Control.DataContextProperty).Select(x => x?.ToString()));
+                        return result;
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                });
 
         /// <summary>
         /// The implementation of the <see cref="Match"/> method.

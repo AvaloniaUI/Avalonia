@@ -58,6 +58,7 @@
     <Compile Include="INameScope.cs" />
     <Compile Include="IPseudoClasses.cs" />
     <Compile Include="DropDownItem.cs" />
+    <Compile Include="ISetInheritanceParent.cs" />
     <Compile Include="ItemVirtualizationMode.cs" />
     <Compile Include="IVirtualizingPanel.cs" />
     <Compile Include="LayoutTransformControl.cs" />

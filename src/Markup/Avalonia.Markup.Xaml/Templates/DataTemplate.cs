@@ -28,11 +28,6 @@ namespace Avalonia.Markup.Xaml.Templates
             }
         }
 
-        public IControl Build(object data)
-        {
-            var visualTreeForItem = Content.Load();
-            visualTreeForItem.DataContext = data;
-            return visualTreeForItem;
-        }
+        public IControl Build(object data) => Content.Load();
     }
 }
