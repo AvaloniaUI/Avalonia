@@ -152,7 +152,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             Assert.Equal("foo", target.DataContext);
         }
 
-        private class TestContentControl : TemplatedControl
+        private class TestContentControl : ContentControl
         {
             public IControl Child { get; set; }
         }
