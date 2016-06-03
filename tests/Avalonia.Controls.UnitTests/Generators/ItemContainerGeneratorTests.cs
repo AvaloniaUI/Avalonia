@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Controls.Generators;
+using Avalonia.Controls.Presenters;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Generators
@@ -19,8 +20,8 @@ namespace Avalonia.Controls.UnitTests.Generators
             var containers = Materialize(target, 0, items);
             var result = containers
                 .Select(x => x.ContainerControl)
-                .OfType<TextBlock>()
-                .Select(x => x.Text)
+                .OfType<ContentPresenter>()
+                .Select(x => x.Content)
                 .ToList();
 
             Assert.Equal(items, result);

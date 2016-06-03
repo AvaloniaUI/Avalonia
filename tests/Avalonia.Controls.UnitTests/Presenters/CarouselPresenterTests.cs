@@ -60,8 +60,8 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
             target.ApplyTemplate();
 
-            Assert.IsType<TextBlock>(target.Panel.Children[0]);
-            Assert.Equal("foo", ((TextBlock)target.Panel.Children[0]).Text);
+            Assert.IsType<ContentPresenter>(target.Panel.Children[0]);
+            Assert.Equal("foo", ((ContentPresenter)target.Panel.Children[0]).Content);
         }
 
         [Fact]
@@ -76,8 +76,8 @@ namespace Avalonia.Controls.UnitTests.Presenters
             target.ApplyTemplate();
             target.SelectedIndex = 1;
 
-            Assert.IsType<TextBlock>(target.Panel.Children[0]);
-            Assert.Equal("bar", ((TextBlock)target.Panel.Children[0]).Text);
+            Assert.IsType<ContentPresenter>(target.Panel.Children[0]);
+            Assert.Equal("bar", ((ContentPresenter)target.Panel.Children[0]).Content);
         }
 
         [Fact]

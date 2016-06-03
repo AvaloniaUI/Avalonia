@@ -50,8 +50,8 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(1, target.GetLogicalChildren().Count());
 
             var child = target.GetLogicalChildren().Single();
-            Assert.IsType<TextBlock>(child);
-            Assert.Equal("Foo", ((TextBlock)child).Text);
+            Assert.IsType<ContentPresenter>(child);
+            Assert.Equal("Foo", ((ContentPresenter)child).Content);
         }
 
         [Fact]

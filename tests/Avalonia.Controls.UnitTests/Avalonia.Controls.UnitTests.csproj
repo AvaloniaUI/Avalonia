@@ -102,7 +102,6 @@
     <Compile Include="HeaderedItemsControlTests .cs" />
     <Compile Include="ControlTests_NameScope.cs" />
     <Compile Include="Generators\ItemContainerGeneratorTests.cs" />
-    <Compile Include="Generators\ItemContainerGeneratorTypedTests.cs" />
     <Compile Include="GridLengthTests.cs" />
     <Compile Include="ImageTests.cs" />
     <Compile Include="Presenters\ContentPresenterTests.cs" />

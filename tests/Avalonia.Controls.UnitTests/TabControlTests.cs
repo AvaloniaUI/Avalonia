@@ -184,23 +184,29 @@ namespace Avalonia.Controls.UnitTests
             ApplyTemplate(target);
             var carousel = (Carousel)target.Pages;
 
-            var dataContext = ((TextBlock)carousel.Presenter.Panel.GetLogicalChildren().Single()).DataContext;
+            var container = (ContentPresenter)carousel.Presenter.Panel.Children.Single();
+            container.UpdateChild();
+            var dataContext = ((TextBlock)container.Child).DataContext;
             Assert.Equal(items[0], dataContext);
 
             target.SelectedIndex = 1;
-            dataContext = ((Button)carousel.Presenter.Panel.GetLogicalChildren().Single()).DataContext;
+            container = (ContentPresenter)carousel.Presenter.Panel.Children.Single();
+            container.UpdateChild();
+            dataContext = ((Button)container.Child).DataContext;
             Assert.Equal(items[1], dataContext);
 
             target.SelectedIndex = 2;
-            dataContext = ((TextBlock)carousel.Presenter.Panel.GetLogicalChildren().Single()).DataContext;
+            dataContext = ((TextBlock)carousel.Presenter.Panel.Children.Single()).DataContext;
             Assert.Equal("Base", dataContext);
 
             target.SelectedIndex = 3;
-            dataContext = ((TextBlock)carousel.Presenter.Panel.GetLogicalChildren().Single()).DataContext;
+            container = (ContentPresenter)carousel.Presenter.Panel.Children[0];
+            container.UpdateChild();
+            dataContext = ((TextBlock)container.Child).DataContext;
             Assert.Equal("Qux", dataContext);
 
             target.SelectedIndex = 4;
-            dataContext = ((TextBlock)carousel.Presenter.Panel.GetLogicalChildren().Single()).DataContext;
+            dataContext = ((TextBlock)carousel.Presenter.Panel.Children.Single()).DataContext;
             Assert.Equal("Base", dataContext);
         }
 

@@ -2,12 +2,10 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reactive.Subjects;
+using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
-using Avalonia.Controls.Utils;
 
 namespace Avalonia.Controls.Generators
 {
@@ -185,11 +183,15 @@ namespace Avalonia.Controls.Generators
         /// <returns>The created container control.</returns>
         protected virtual IControl CreateContainer(object item)
         {
-            var result = Owner.MaterializeDataTemplate(item, ItemTemplate);
+            var result = item as IControl;
 
-            if (result != null && !(item is IControl))
+            if (result == null)
             {
-                result.DataContext = item;
+                result = new ContentPresenter
+                {
+                    ContentTemplate = ItemTemplate,
+                    Content = item,
+                };
             }
 
             return result;
