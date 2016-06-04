@@ -11,10 +11,11 @@ using Avalonia.Skia;
 using System;
 using System.Collections.Generic;
 using Avalonia.Android.Platform.SkiaPlatform;
+using System.IO;
 
 namespace Avalonia.Android
 {
-    public class AndroidPlatform : IPlatformSettings, IWindowingPlatform
+    public class AndroidPlatform : IPlatformSettings, IWindowingPlatform, IPlatformIconLoader
     {
         public static readonly AndroidPlatform Instance = new AndroidPlatform();
         public Size DoubleClickSize => new Size(4, 4);
@@ -65,6 +66,16 @@ namespace Avalonia.Android
         public IPopupImpl CreatePopup()
         {
             throw new NotImplementedException();
+        }
+
+        public IIconImpl LoadIcon(string fileName)
+        {
+            return null;
+        }
+
+        public IIconImpl LoadIcon(Stream stream)
+        {
+            return null;
         }
     }
 }
