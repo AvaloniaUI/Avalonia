@@ -143,6 +143,7 @@
     <Compile Include="TestTemplatedControl.cs" />
     <Compile Include="Utils\AncestorFinderTests.cs" />
     <Compile Include="Utils\HotKeyManagerTests.cs" />
+    <Compile Include="VirtualizingStackPanelTests.cs" />
     <Compile Include="WrapPanelTests.cs" />
   </ItemGroup>
   <ItemGroup>

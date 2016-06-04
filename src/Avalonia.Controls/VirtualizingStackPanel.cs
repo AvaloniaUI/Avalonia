@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Specialized;
+using Avalonia.Layout;
 
 namespace Avalonia.Controls
 {
@@ -19,8 +20,8 @@ namespace Avalonia.Controls
             get
             {
                 return Orientation == Orientation.Horizontal ?
-                    _takenSpace >= Bounds.Width :
-                    _takenSpace >= Bounds.Height;
+                    _takenSpace >= AvailableSpace.Width :
+                    _takenSpace >= AvailableSpace.Height;
             }
         }
 
@@ -53,6 +54,9 @@ namespace Avalonia.Controls
                 }
             }
         }
+
+        // TODO: We need to put a reasonable limit on this, probably based on the max window size.
+        private Size AvailableSpace => ((ILayoutable)this).PreviousMeasure ?? Bounds.Size;
 
         protected override Size ArrangeOverride(Size finalSize)
         {
@@ -99,7 +103,7 @@ namespace Avalonia.Controls
                 rect = new Rect(rect.X, rect.Y - _pixelOffset, rect.Width, rect.Height);
                 child.Arrange(rect);
 
-                if (rect.Y >= panelSize.Height)
+                if (rect.Y >= AvailableSpace.Height)
                 {
                     ++_canBeRemoved;
                 }
@@ -116,7 +120,7 @@ namespace Avalonia.Controls
                 rect = new Rect(rect.X - _pixelOffset, rect.Y, rect.Width, rect.Height);
                 child.Arrange(rect);
 
-                if (rect.X >= panelSize.Width)
+                if (rect.X >= AvailableSpace.Width)
                 {
                     ++_canBeRemoved;
                 }
@@ -135,7 +139,7 @@ namespace Avalonia.Controls
             var bounds = Bounds;
             var gap = Gap;
 
-            child.Measure(bounds.Size);
+            child.Measure(AvailableSpace);
             ++_averageCount;
 
             if (Orientation == Orientation.Vertical)

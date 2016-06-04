@@ -72,6 +72,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
             Assert.Equal(10, target.Panel.Children.Count);
 
+            target.Measure(new Size(100, 80));
             target.Arrange(new Rect(0, 0, 100, 80));
 
             Assert.Equal(8, target.Panel.Children.Count);
@@ -90,6 +91,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             Assert.Equal(10, target.Panel.Children.Count);
 
             ((IScrollable)target).Offset = new Vector(0, 10);
+            target.Measure(new Size(120, 120));
             target.Arrange(new Rect(0, 0, 100, 120));
 
             Assert.Equal(12, target.Panel.Children.Count);
