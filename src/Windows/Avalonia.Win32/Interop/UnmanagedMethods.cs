@@ -532,72 +532,72 @@ namespace Avalonia.Win32.Interop
             WM_DISPATCH_WORK_ITEM = WM_USER,
         }
 
-		public enum BitmapCompressionMode : uint
-		{
-			BI_RGB = 0,
-			BI_RLE8 = 1,
-			BI_RLE4 = 2,
-			BI_BITFIELDS = 3,
-			BI_JPEG = 4,
-			BI_PNG = 5
-		}
+        public enum BitmapCompressionMode : uint
+        {
+            BI_RGB = 0,
+            BI_RLE8 = 1,
+            BI_RLE4 = 2,
+            BI_BITFIELDS = 3,
+            BI_JPEG = 4,
+            BI_PNG = 5
+        }
 
-		public enum DIBColorTable
-		{
-			DIB_RGB_COLORS = 0,     /* color table in RGBs */
-			DIB_PAL_COLORS          /* color table in palette indices */
-		};
+        public enum DIBColorTable
+        {
+            DIB_RGB_COLORS = 0,     /* color table in RGBs */
+            DIB_PAL_COLORS          /* color table in palette indices */
+        };
 
-		[StructLayout(LayoutKind.Sequential)]
-		public struct RGBQUAD
-		{
-			public byte rgbBlue;
-			public byte rgbGreen;
-			public byte rgbRed;
-			public byte rgbReserved;
-		}
+        [StructLayout(LayoutKind.Sequential)]
+        public struct RGBQUAD
+        {
+            public byte rgbBlue;
+            public byte rgbGreen;
+            public byte rgbRed;
+            public byte rgbReserved;
+        }
 
-		[StructLayout(LayoutKind.Sequential)]
-		public struct BITMAPINFO
-		{
-			// C# cannot inlay structs in structs so must expand directly here
-			//
-			//[StructLayout(LayoutKind.Sequential)]
-			//public struct BITMAPINFOHEADER
-			//{
-			public uint biSize;
-			public int biWidth;
-			public int biHeight;
-			public ushort biPlanes;
-			public ushort biBitCount;
-			public BitmapCompressionMode biCompression;
-			public uint biSizeImage;
-			public int biXPelsPerMeter;
-			public int biYPelsPerMeter;
-			public uint biClrUsed;
-			public uint biClrImportant;
-			//}
+        [StructLayout(LayoutKind.Sequential)]
+        public struct BITMAPINFO
+        {
+            // C# cannot inlay structs in structs so must expand directly here
+            //
+            //[StructLayout(LayoutKind.Sequential)]
+            //public struct BITMAPINFOHEADER
+            //{
+            public uint biSize;
+            public int biWidth;
+            public int biHeight;
+            public ushort biPlanes;
+            public ushort biBitCount;
+            public BitmapCompressionMode biCompression;
+            public uint biSizeImage;
+            public int biXPelsPerMeter;
+            public int biYPelsPerMeter;
+            public uint biClrUsed;
+            public uint biClrImportant;
+            //}
 
-			[MarshalAs(UnmanagedType.ByValArray, SizeConst = 256)]
-			public uint[] cols;
-		}
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 256)]
+            public uint[] cols;
+        }
 
-		public const int SizeOf_BITMAPINFOHEADER = 40;
+        public const int SizeOf_BITMAPINFOHEADER = 40;
 
-		[DllImport("user32.dll", SetLastError = true)]
-		public static extern IntPtr GetDC(IntPtr hWnd);
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern IntPtr GetDC(IntPtr hWnd);
 
-		[DllImport("gdi32.dll")]
-		public static extern int SetDIBitsToDevice(IntPtr hdc, int XDest, int YDest,
-			uint dwWidth, uint dwHeight,
-			int XSrc, int YSrc,
-			uint uStartScan, uint cScanLines,
-		   IntPtr lpvBits, [In] ref BITMAPINFO lpbmi, uint fuColorUse);
+        [DllImport("gdi32.dll")]
+        public static extern int SetDIBitsToDevice(IntPtr hdc, int XDest, int YDest,
+            uint dwWidth, uint dwHeight,
+            int XSrc, int YSrc,
+            uint uStartScan, uint cScanLines,
+           IntPtr lpvBits, [In] ref BITMAPINFO lpbmi, uint fuColorUse);
 
-		[DllImport("user32.dll")]
-		public static extern bool ReleaseDC(IntPtr hWnd, IntPtr hDC);
+        [DllImport("user32.dll")]
+        public static extern bool ReleaseDC(IntPtr hWnd, IntPtr hDC);
 
-		[DllImport("user32.dll", SetLastError = true)]
+        [DllImport("user32.dll", SetLastError = true)]
         public static extern bool AdjustWindowRectEx(ref RECT lpRect, uint dwStyle, bool bMenu, uint dwExStyle);
 
         [DllImport("user32.dll")]
@@ -836,6 +836,10 @@ namespace Avalonia.Win32.Interop
         [DllImport("user32.dll")]
         public static extern IntPtr MonitorFromWindow(IntPtr hwnd, MONITOR dwFlags);
 
+        [return: MarshalAs(UnmanagedType.Bool)]
+        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        static extern bool PostMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
+
         public enum MONITOR
         {
             MONITOR_DEFAULTTONULL = 0x00000000,
@@ -997,6 +1001,12 @@ namespace Avalonia.Win32.Interop
             S_OK = 0x0000,
             E_INVALIDARG = 0x80070057,
             E_OUTOFMEMORY = 0x8007000E
+        }
+
+        public enum Icons
+        {
+            ICON_SMALL = 0,
+            ICON_BIG = 1
         }
 
         public const uint SIGDN_FILESYSPATH = 0x80058000;

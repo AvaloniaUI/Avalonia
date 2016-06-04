@@ -593,7 +593,7 @@ namespace Avalonia.Win32
                 hInstance = Marshal.GetHINSTANCE(GetType().Module),
                 hCursor = DefaultCursor,
                 hbrBackground = IntPtr.Zero,
-                lpszClassName = _className,
+                lpszClassName = _className
             };
 
             ushort atom = UnmanagedMethods.RegisterClassEx(ref wndClassEx);
@@ -670,5 +670,12 @@ namespace Avalonia.Win32
             UnmanagedMethods.ShowWindow(_hwnd, command);
         }
 
+        public void SetIcon(IIconImpl icon)
+        {
+            var impl = (IconImpl)icon;
+            var nativeIcon = impl.Icon;
+            UnmanagedMethods.PostMessage(_hwnd, (int)UnmanagedMethods.WindowsMessage.WM_SETICON,
+                new IntPtr((int)UnmanagedMethods.Icons.ICON_BIG), nativeIcon.Handle);
+        }
     }
 }
