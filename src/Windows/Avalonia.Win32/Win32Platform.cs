@@ -16,6 +16,7 @@ using Avalonia.Shared.PlatformSupport;
 using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop;
 using Avalonia.Controls;
+using System.IO;
 
 namespace Avalonia
 {
@@ -31,7 +32,7 @@ namespace Avalonia
 
 namespace Avalonia.Win32
 {
-    public class Win32Platform : IPlatformThreadingInterface, IPlatformSettings, IWindowingPlatform
+    public class Win32Platform : IPlatformThreadingInterface, IPlatformSettings, IWindowingPlatform, IPlatformIconLoader
     {
         private static readonly Win32Platform s_instance = new Win32Platform();
         private static Thread _uiThread;
@@ -66,7 +67,8 @@ namespace Avalonia.Win32
                 .Bind<IPlatformSettings>().ToConstant(s_instance)
                 .Bind<IPlatformThreadingInterface>().ToConstant(s_instance)
                 .Bind<ISystemDialogImpl>().ToSingleton<SystemDialogImpl>()
-                .Bind<IWindowingPlatform>().ToConstant(s_instance);
+                .Bind<IWindowingPlatform>().ToConstant(s_instance)
+                .Bind<IPlatformIconLoader>().ToConstant(s_instance);
 
             SharedPlatform.Register();
             _uiThread = Thread.CurrentThread;
@@ -185,6 +187,18 @@ namespace Avalonia.Win32
         public IPopupImpl CreatePopup()
         {
             return new PopupImpl();
+        }
+
+        public IIconImpl LoadIcon(string fileName)
+        {
+            var icon = new System.Drawing.Icon(fileName);
+            return new IconImpl(icon);
+        }
+
+        public IIconImpl LoadIcon(Stream stream)
+        {
+            var icon = new System.Drawing.Icon(stream);
+            return new IconImpl(icon);
         }
     }
 }
