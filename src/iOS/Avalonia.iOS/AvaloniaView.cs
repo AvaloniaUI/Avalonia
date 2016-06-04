@@ -214,7 +214,9 @@ namespace Avalonia.iOS
             }
         }
 
-
+        public void SetIcon(IIconImpl icon)
+        {
+        }
     }
 
     class AvaloniaViewController : UIViewController

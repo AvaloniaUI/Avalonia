@@ -39,6 +39,7 @@
     <Compile Include="Extensions.cs" />
     <Compile Include="iOSPlatform.cs" />
     <Compile Include="AvaloniaView.cs" />
+    <Compile Include="PlatformIconLoader.cs" />
     <Compile Include="PlatformSettings.cs" />
     <Compile Include="PlatformThreadingInterface.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
