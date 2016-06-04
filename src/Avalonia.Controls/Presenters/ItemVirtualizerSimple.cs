@@ -258,7 +258,7 @@ namespace Avalonia.Controls.Presenters
             var first = delta < 0 && move ? panel.Children.Count + delta : 0;
             var containers = panel.Children.GetRange(first, count).ToList();
 
-            for (var i = 0; i < containers.Count; ++i)
+            for (var i = 0; i < count; ++i)
             {
                 var oldItemIndex = FirstIndex + first + i;
                 var newItemIndex = oldItemIndex + delta + ((panel.Children.Count - count) * sign);
@@ -273,15 +273,13 @@ namespace Avalonia.Controls.Presenters
 
             if (move)
             {
-                panel.Children.RemoveRange(first, count);
-
                 if (delta > 0)
                 {
-                    panel.Children.AddRange(containers);
+                    panel.Children.MoveRange(first, count, panel.Children.Count);
                 }
                 else
                 {
-                    panel.Children.InsertRange(0, containers);
+                    panel.Children.MoveRange(first, count, 0);
                 }
             }
 
