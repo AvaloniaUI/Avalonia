@@ -28,7 +28,7 @@ namespace Avalonia.Gtk
     using System.IO;
     using Gtk = global::Gtk;
 
-    public class GtkPlatform : IPlatformThreadingInterface, IPlatformSettings, IWindowingPlatform, IPlatformIconLoader
+    public class GtkPlatform : IPlatformThreadingInterface, IPlatformSettings, IWindowingPlatform
     {
         private static readonly GtkPlatform s_instance = new GtkPlatform();
         private static Thread _uiThread;
@@ -54,8 +54,7 @@ namespace Avalonia.Gtk
                 .Bind<IMouseDevice>().ToConstant(GtkMouseDevice.Instance)
                 .Bind<IPlatformSettings>().ToConstant(s_instance)
                 .Bind<IPlatformThreadingInterface>().ToConstant(s_instance)
-                .Bind<ISystemDialogImpl>().ToSingleton<SystemDialogImpl>()
-                .Bind<IPlatformIconLoader>().ToConstant(s_instance);
+                .Bind<ISystemDialogImpl>().ToSingleton<SystemDialogImpl>();
             SharedPlatform.Register();
             _uiThread = Thread.CurrentThread;
         }
@@ -113,16 +112,6 @@ namespace Avalonia.Gtk
         public IPopupImpl CreatePopup()
         {
             return new PopupImpl();
-        }
-
-        public IIconImpl LoadIcon(string fileName)
-        {
-            return new IconImpl(new Gdk.Pixbuf(fileName));
-        }
-
-        public IIconImpl LoadIcon(Stream stream)
-        {
-            return new IconImpl(new Gdk.Pixbuf(stream));
         }
     }
 }

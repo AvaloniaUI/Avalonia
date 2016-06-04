@@ -670,12 +670,14 @@ namespace Avalonia.Win32
             UnmanagedMethods.ShowWindow(_hwnd, command);
         }
 
-        public void SetIcon(IIconImpl icon)
+        public void SetIcon(IBitmapImpl bitmap)
         {
-            var impl = (IconImpl)icon;
-            var nativeIcon = impl.Icon;
-            UnmanagedMethods.PostMessage(_hwnd, (int)UnmanagedMethods.WindowsMessage.WM_SETICON,
-                new IntPtr((int)UnmanagedMethods.Icons.ICON_BIG), nativeIcon.Handle);
+            using (var imageStream = bitmap.GetStream())
+            using (var nativeIcon = new System.Drawing.Icon(imageStream))
+            {
+                UnmanagedMethods.SendMessage(_hwnd, (int)UnmanagedMethods.WindowsMessage.WM_SETICON,
+                    new IntPtr((int)UnmanagedMethods.Icons.ICON_BIG), nativeIcon.Handle);
+            }
         }
     }
 }

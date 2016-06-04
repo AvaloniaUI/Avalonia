@@ -32,7 +32,7 @@ namespace Avalonia
 
 namespace Avalonia.Win32
 {
-    public class Win32Platform : IPlatformThreadingInterface, IPlatformSettings, IWindowingPlatform, IPlatformIconLoader
+    public class Win32Platform : IPlatformThreadingInterface, IPlatformSettings, IWindowingPlatform
     {
         private static readonly Win32Platform s_instance = new Win32Platform();
         private static Thread _uiThread;
@@ -67,8 +67,7 @@ namespace Avalonia.Win32
                 .Bind<IPlatformSettings>().ToConstant(s_instance)
                 .Bind<IPlatformThreadingInterface>().ToConstant(s_instance)
                 .Bind<ISystemDialogImpl>().ToSingleton<SystemDialogImpl>()
-                .Bind<IWindowingPlatform>().ToConstant(s_instance)
-                .Bind<IPlatformIconLoader>().ToConstant(s_instance);
+                .Bind<IWindowingPlatform>().ToConstant(s_instance);
 
             SharedPlatform.Register();
             _uiThread = Thread.CurrentThread;
@@ -125,7 +124,7 @@ namespace Avalonia.Win32
 
         public void Signal()
         {
-            UnmanagedMethods.PostMessage(
+            UnmanagedMethods.SendMessage(
                 _hwnd,
                 (int) UnmanagedMethods.WindowsMessage.WM_DISPATCH_WORK_ITEM,
                 new IntPtr(SignalW),
@@ -187,18 +186,6 @@ namespace Avalonia.Win32
         public IPopupImpl CreatePopup()
         {
             return new PopupImpl();
-        }
-
-        public IIconImpl LoadIcon(string fileName)
-        {
-            var icon = new System.Drawing.Icon(fileName);
-            return new IconImpl(icon);
-        }
-
-        public IIconImpl LoadIcon(Stream stream)
-        {
-            var icon = new System.Drawing.Icon(stream);
-            return new IconImpl(icon);
         }
     }
 }

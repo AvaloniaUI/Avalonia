@@ -214,8 +214,9 @@ namespace Avalonia.iOS
             }
         }
 
-        public void SetIcon(IIconImpl icon)
+        public void SetIcon(IBitmapImpl icon)
         {
+            // No window icons for mobile platforms
         }
     }
 

@@ -99,7 +99,6 @@ namespace Avalonia.Direct2D1.Media
                 converter.Initialize(WicImpl, PixelFormat.Format32bppPBGRA);
                 _direct2D = SharpDX.Direct2D1.Bitmap.FromWicBitmap(renderTarget, converter);
             }
-
             return _direct2D;
         }
 
@@ -117,15 +116,27 @@ namespace Avalonia.Direct2D1.Media
 
             using (FileStream s = new FileStream(fileName, FileMode.Create))
             {
-                PngBitmapEncoder encoder = new PngBitmapEncoder(_factory);
-                encoder.Initialize(s);
-
-                BitmapFrameEncode frame = new BitmapFrameEncode(encoder);
-                frame.Initialize();
-                frame.WriteSource(WicImpl);
-                frame.Commit();
-                encoder.Commit();
+                OutputToStream(s);
             }
+        }
+
+        private void OutputToStream(Stream s)
+        {
+            PngBitmapEncoder encoder = new PngBitmapEncoder(_factory);
+            encoder.Initialize(s);
+
+            BitmapFrameEncode frame = new BitmapFrameEncode(encoder);
+            frame.Initialize();
+            frame.WriteSource(WicImpl);
+            frame.Commit();
+            encoder.Commit();
+        }
+
+        public Stream GetStream()
+        {
+            var stream = new MemoryStream();
+            OutputToStream(stream);
+            return stream;
         }
     }
 }

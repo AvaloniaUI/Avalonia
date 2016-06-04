@@ -6,6 +6,7 @@ using Avalonia.Platform;
 
 namespace Avalonia.Cairo.Media.Imaging
 {
+    using System.IO;
     using Cairo = global::Cairo;
 
     public class BitmapImpl : IBitmapImpl
@@ -28,6 +29,11 @@ namespace Avalonia.Cairo.Media.Imaging
         {
             // TODO: Test
             Surface.Save(fileName, "png");
+        }
+
+        public Stream GetStream()
+        {
+            return new MemoryStream(Surface.SaveToBuffer("png"));
         }
     }
 }
