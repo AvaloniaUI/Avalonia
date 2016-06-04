@@ -16,6 +16,8 @@ namespace Avalonia.Markup.Xaml.Templates
         [Content]
         public TemplateContent Content { get; set; }
 
+        public bool SupportsRecycling => true;
+
         public bool Match(object data)
         {
             if (DataType == null)

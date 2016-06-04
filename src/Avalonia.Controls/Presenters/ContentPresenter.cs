@@ -231,7 +231,10 @@ namespace Avalonia.Controls.Presenters
 
                 if (content != null)
                 {
-                    if (old != null && _dataTemplate?.Match(content) == true)
+                    if (old != null && 
+                        _dataTemplate != null &&
+                        _dataTemplate.SupportsRecycling && 
+                        _dataTemplate.Match(content))
                     {
                         result = old;
                     }
@@ -267,6 +270,8 @@ namespace Avalonia.Controls.Presenters
 
                 if (result != null)
                 {
+                    ((ISetInheritanceParent)result).SetParent(this);
+
                     Child = result;
 
                     if (result.Parent == null)
@@ -274,7 +279,6 @@ namespace Avalonia.Controls.Presenters
                         ((ISetLogicalParent)result).SetParent((ILogical)this.TemplatedParent ?? this);
                     }
 
-                    ((ISetInheritanceParent)result).SetParent(this);
                     VisualChildren.Add(result);
                 }
                 else

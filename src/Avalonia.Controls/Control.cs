@@ -435,7 +435,11 @@ namespace Avalonia.Controls
                     OnDetachedFromLogicalTreeCore(e);
                 }
 
-                InheritanceParent = parent as AvaloniaObject;
+                if (InheritanceParent == null || parent == null)
+                {
+                    InheritanceParent = parent as AvaloniaObject;
+                }
+
                 _parent = (IControl)parent;
 
                 if (_parent is IStyleRoot || _parent?.IsAttachedToLogicalTree == true)

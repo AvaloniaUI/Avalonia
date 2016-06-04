@@ -160,7 +160,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             {
                 DataTemplates = new DataTemplates
                 {
-                    new FuncDataTemplate<string>(_ => new Border()),
+                    new FuncDataTemplate<string>(_ => new Border(), true),
                 },
                 Content = "foo",
             };

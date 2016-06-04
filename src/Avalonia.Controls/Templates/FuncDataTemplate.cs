@@ -31,7 +31,8 @@ namespace Avalonia.Controls.Templates
                     {
                         return null;
                     }
-                });
+                },
+                true);
 
         /// <summary>
         /// The implementation of the <see cref="Match"/> method.
@@ -45,8 +46,12 @@ namespace Avalonia.Controls.Templates
         /// <param name="build">
         /// A function which when passed an object of <paramref name="type"/> returns a control.
         /// </param>
-        public FuncDataTemplate(Type type, Func<object, IControl> build)
-            : this(o => IsInstance(o, type), build)
+        /// <param name="supportsRecycling">Whether the control can be recycled.</param>
+        public FuncDataTemplate(
+            Type type, 
+            Func<object, IControl> build,
+            bool supportsRecycling = false)
+            : this(o => IsInstance(o, type), build, supportsRecycling)
         {
         }
 
@@ -59,13 +64,21 @@ namespace Avalonia.Controls.Templates
         /// <param name="build">
         /// A function which returns a control for matching data.
         /// </param>
-        public FuncDataTemplate(Func<object, bool> match, Func<object, IControl> build)
+        /// <param name="supportsRecycling">Whether the control can be recycled.</param>
+        public FuncDataTemplate(
+            Func<object, bool> match,
+            Func<object, IControl> build,
+            bool supportsRecycling = false)
             : base(build)
         {
             Contract.Requires<ArgumentNullException>(match != null);
 
             _match = match;
+            SupportsRecycling = supportsRecycling;
         }
+
+        /// <inheritdoc/>
+        public bool SupportsRecycling { get; }
 
         /// <summary>
         /// Checks to see if this data template matches the specified data.
