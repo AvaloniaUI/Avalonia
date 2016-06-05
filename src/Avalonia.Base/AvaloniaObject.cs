@@ -261,25 +261,12 @@ namespace Avalonia
             }
             else
             {
-                object result = AvaloniaProperty.UnsetValue;
-                PriorityValue value;
-
                 if (!AvaloniaPropertyRegistry.Instance.IsRegistered(this, property))
                 {
                     ThrowNotRegistered(property);
                 }
 
-                if (_values.TryGetValue(property, out value))
-                {
-                    result = value.Value;
-                }
-
-                if (result == AvaloniaProperty.UnsetValue)
-                {
-                    result = GetDefaultValue(property);
-                }
-
-                return result;
+                return GetValueInternal(property);
             }
         }
 
@@ -767,12 +754,38 @@ namespace Avalonia
         {
             if (property.Inherits && _inheritanceParent != null)
             {
-                return _inheritanceParent.GetValue(property);
+                return (_inheritanceParent as AvaloniaObject).GetValueInternal(property);
             }
             else
             {
                 return ((IStyledPropertyAccessor)property).GetDefaultValue(GetType());
             }
+        }
+
+        /// <summary>
+        /// Gets a <see cref="AvaloniaProperty"/> value
+        /// without check for registered as this can slow getting the value
+        /// this method is intended for internal usage in AvaloniaObject only
+        /// it's called only after check the property is registered
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <returns>The value.</returns>
+        private object GetValueInternal(AvaloniaProperty property)
+        {
+            object result = AvaloniaProperty.UnsetValue;
+            PriorityValue value;
+
+            if (_values.TryGetValue(property, out value))
+            {
+                result = value.Value;
+            }
+
+            if (result == AvaloniaProperty.UnsetValue)
+            {
+                result = GetDefaultValue(property);
+            }
+
+            return result;
         }
 
         /// <summary>
