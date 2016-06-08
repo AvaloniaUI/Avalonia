@@ -8,6 +8,7 @@ using Avalonia.Rendering;
 
 namespace Avalonia.Cairo.Media.Imaging
 {
+    using System.IO;
     using Cairo = global::Cairo;
 
     public class RenderTargetBitmapImpl : IRenderTargetBitmapImpl
@@ -42,6 +43,11 @@ namespace Avalonia.Cairo.Media.Imaging
         public Avalonia.Media.DrawingContext CreateDrawingContext()
         {
             return _renderTarget.CreateDrawingContext();
+        }
+
+        public Stream GetStream()
+        {
+            return new MemoryStream(Surface.Data);
         }
     }
 }
