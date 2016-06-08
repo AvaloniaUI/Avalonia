@@ -81,6 +81,52 @@ namespace Avalonia.Controls.UnitTests
             }
 
             [Fact]
+            public void Reports_PixelOverflow_After_Arrange()
+            {
+                var target = (IVirtualizingPanel)new VirtualizingStackPanel();
+
+                target.Children.Add(new Canvas { Width = 50, Height = 50 });
+                target.Children.Add(new Canvas { Width = 50, Height = 52 });
+
+                target.Measure(new Size(100, 100));
+                target.Arrange(new Rect(target.DesiredSize));
+
+                Assert.Equal(2, target.PixelOverflow);
+            }
+
+            [Fact]
+            public void Reports_PixelOverflow_With_PixelOffset()
+            {
+                var target = (IVirtualizingPanel)new VirtualizingStackPanel();
+
+                target.Children.Add(new Canvas { Width = 50, Height = 50 });
+                target.Children.Add(new Canvas { Width = 50, Height = 52 });
+                target.PixelOffset = 2;
+
+                target.Measure(new Size(100, 100));
+                target.Arrange(new Rect(target.DesiredSize));
+
+                Assert.Equal(2, target.PixelOverflow);
+            }
+
+            [Fact]
+            public void PixelOffset_Can_Be_More_Than_Child_Without_Affecting_IsFull()
+            {
+                var target = (IVirtualizingPanel)new VirtualizingStackPanel();
+
+                target.Children.Add(new Canvas { Width = 50, Height = 50 });
+                target.Children.Add(new Canvas { Width = 50, Height = 52 });
+                target.PixelOffset = 55;
+
+                target.Measure(new Size(100, 100));
+                target.Arrange(new Rect(target.DesiredSize));
+
+                Assert.Equal(55, target.PixelOffset);
+                Assert.Equal(2, target.PixelOverflow);
+                Assert.True(target.IsFull);
+            }
+
+            [Fact]
             public void Passes_Navigation_Request_To_ILogicalScrollable_Parent()
             {
                 var presenter = new Mock<ILogical>().As<IControl>();

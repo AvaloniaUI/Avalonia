@@ -41,7 +41,7 @@ namespace Avalonia.Controls
             {
                 var bounds = Orientation == Orientation.Horizontal ? 
                     Bounds.Width : Bounds.Height;
-                return Math.Max(0, (_takenSpace - _pixelOffset) - bounds);
+                return Math.Max(0, _takenSpace - bounds);
             }
         }
 
@@ -82,6 +82,7 @@ namespace Avalonia.Controls
             _averageItemSize = 0;
             _averageCount = 0;
             var result = base.ArrangeOverride(finalSize);
+            _takenSpace += _pixelOffset;
             Controller?.UpdateControls();
             return result;
         }
