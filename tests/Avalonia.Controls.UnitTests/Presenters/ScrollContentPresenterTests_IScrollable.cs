@@ -5,6 +5,7 @@ using System;
 using System.Reactive.Linq;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
+using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.VisualTree;
 using Xunit;
@@ -293,7 +294,7 @@ namespace Avalonia.Controls.UnitTests
                 }
             }
 
-            public bool BringIntoView(IVisual target, Rect targetRect)
+            public bool BringIntoView(IControl target, Rect targetRect)
             {
                 throw new NotImplementedException();
             }
@@ -302,6 +303,11 @@ namespace Avalonia.Controls.UnitTests
             {
                 AvailableSize = availableSize;
                 return new Size(150, 150);
+            }
+
+            public IControl GetControlInDirection(FocusNavigationDirection direction, IControl from)
+            {
+                throw new NotImplementedException();
             }
         }
     }

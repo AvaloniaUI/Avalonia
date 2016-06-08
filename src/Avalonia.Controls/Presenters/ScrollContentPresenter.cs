@@ -118,10 +118,11 @@ namespace Avalonia.Controls.Presenters
             }
 
             var scrollable = Child as ILogicalScrollable;
+            var control = target as IControl;
 
-            if (scrollable?.IsLogicalScrollEnabled == true)
+            if (scrollable?.IsLogicalScrollEnabled == true && control != null)
             {
-                return scrollable.BringIntoView(target, targetRect);
+                return scrollable.BringIntoView(control, targetRect);
             }
 
             var transform = target.TransformToVisual(Child);

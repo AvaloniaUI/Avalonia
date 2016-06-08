@@ -3,6 +3,9 @@
 
 using System;
 using System.Collections.Specialized;
+using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Primitives;
+using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.VisualTree;
 
@@ -104,6 +107,21 @@ namespace Avalonia.Controls
                     }
 
                     break;
+            }
+        }
+
+        protected override IInputElement GetControlInDirection(FocusNavigationDirection direction, IControl from)
+        {
+            var logicalScrollable = Parent as ILogicalScrollable;
+            var fromControl = from as IControl;
+
+            if (logicalScrollable?.IsLogicalScrollEnabled == true && fromControl != null)
+            {
+                return logicalScrollable.GetControlInDirection(direction, fromControl);
+            }
+            else
+            {
+                return base.GetControlInDirection(direction, from);
             }
         }
 

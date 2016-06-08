@@ -5,8 +5,8 @@ using System;
 using System.Collections;
 using System.Collections.Specialized;
 using System.Linq;
-using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Utils;
+using Avalonia.Input;
 
 namespace Avalonia.Controls.Presenters
 {
@@ -87,7 +87,7 @@ namespace Avalonia.Controls.Presenters
         public override void UpdateControls()
         {
             CreateAndRemoveContainers();
-            ((ILogicalScrollable)Owner).InvalidateScroll();
+            InvalidateScroll();
         }
 
         /// <inheritdoc/>
@@ -134,7 +134,47 @@ namespace Avalonia.Controls.Presenters
                 VirtualizingPanel.Children.Clear();
             }
 
-            ((ILogicalScrollable)Owner).InvalidateScroll();
+            InvalidateScroll();
+        }
+
+        public override IControl GetControlInDirection(FocusNavigationDirection direction, IControl from)
+        {
+            var generator = Owner.ItemContainerGenerator;
+            var itemIndex = generator.IndexFromContainer(from);
+
+            if (itemIndex == -1)
+            {
+                return null;
+            }
+
+            var newItemIndex = -1;
+
+            if (VirtualizingPanel.ScrollDirection == Orientation.Vertical)
+            {
+                switch (direction)
+                {
+                    case FocusNavigationDirection.Up:
+                        newItemIndex = itemIndex - 1;
+                        break;
+                    case FocusNavigationDirection.Down:
+                        newItemIndex = itemIndex + 1;
+                        break;
+                }
+            }
+
+            if (newItemIndex >= 0 && newItemIndex < ItemCount)
+            {
+
+                if (newItemIndex < FirstIndex || newItemIndex >= NextIndex)
+                {
+                    OffsetValue += newItemIndex - itemIndex;
+                    InvalidateScroll();
+                }
+
+                return generator.ContainerFromIndex(newItemIndex);
+            }
+
+            return null;
         }
 
         /// <summary>

@@ -1,6 +1,9 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using Avalonia.Controls.Primitives;
+using Avalonia.Input;
+using Avalonia.LogicalTree;
 using Moq;
 using Xunit;
 
@@ -42,6 +45,7 @@ namespace Avalonia.Controls.UnitTests
 
                 target.Measure(new Size(100, 100));
 
+                Assert.Equal(new Size(0, 0), target.DesiredSize);
                 Assert.Equal(new Size(0, 0), target.Bounds.Size);
 
                 Assert.False(target.IsFull);
@@ -74,6 +78,22 @@ namespace Avalonia.Controls.UnitTests
                 target.Arrange(new Rect(target.DesiredSize));
 
                 Assert.Equal(2, target.OverflowCount);
+            }
+
+            [Fact]
+            public void Passes_Navigation_Request_To_ILogicalScrollable_Parent()
+            {
+                var presenter = new Mock<ILogical>().As<IControl>();
+                var scrollable = presenter.As<ILogicalScrollable>();
+                var target = (IVirtualizingPanel)new VirtualizingStackPanel();
+                var from = new Canvas();
+
+                scrollable.Setup(x => x.IsLogicalScrollEnabled).Returns(true);
+
+                ((ISetLogicalParent)target).SetParent(presenter.Object);
+                ((INavigableContainer)target).GetControl(FocusNavigationDirection.Next, from);
+
+                scrollable.Verify(x => x.GetControlInDirection(FocusNavigationDirection.Next, from));
             }
         }
     }

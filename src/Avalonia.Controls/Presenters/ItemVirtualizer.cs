@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Specialized;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Utils;
+using Avalonia.Input;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Presenters
@@ -146,6 +147,17 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <summary>
+        /// Gets the next control in the specified direction.
+        /// </summary>
+        /// <param name="direction">The movement direction.</param>
+        /// <param name="from">The control from which movement begins.</param>
+        /// <returns>The control.</returns>
+        public virtual IControl GetControlInDirection(FocusNavigationDirection direction, IControl from)
+        {
+            return null;
+        }
+
+        /// <summary>
         /// Called when the items for the presenter change, either because 
         /// <see cref="ItemsPresenterBase.Items"/> has been set, the items collection has been
         /// modified, or the panel has been created.
@@ -168,5 +180,10 @@ namespace Avalonia.Controls.Presenters
         {
             return false;
         }
+
+        /// <summary>
+        /// Invalidates the current scroll.
+        /// </summary>
+        protected void InvalidateScroll() => ((ILogicalScrollable)Owner).InvalidateScroll();
     }
 }

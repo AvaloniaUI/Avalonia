@@ -74,6 +74,18 @@ namespace Avalonia.Controls
         /// <returns>The control.</returns>
         IInputElement INavigableContainer.GetControl(FocusNavigationDirection direction, IInputElement from)
         {
+            var fromControl = from as IControl;
+            return (fromControl != null) ? GetControlInDirection(direction, fromControl) : null;
+        }
+
+        /// <summary>
+        /// Gets the next control in the specified direction.
+        /// </summary>
+        /// <param name="direction">The movement direction.</param>
+        /// <param name="from">The control from which movement begins.</param>
+        /// <returns>The control.</returns>
+        protected virtual IInputElement GetControlInDirection(FocusNavigationDirection direction, IControl from)
+        {
             var horiz = Orientation == Orientation.Horizontal;
             int index = Children.IndexOf((IControl)from);
 

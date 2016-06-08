@@ -5,7 +5,6 @@ using System;
 using System.Collections.Specialized;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
-using Avalonia.VisualTree;
 using static Avalonia.Utilities.MathUtilities;
 
 namespace Avalonia.Controls.Presenters
@@ -73,9 +72,15 @@ namespace Avalonia.Controls.Presenters
         Size ILogicalScrollable.PageScrollSize => new Size(0, 1);
 
         /// <inheritdoc/>
-        bool ILogicalScrollable.BringIntoView(IVisual target, Rect targetRect)
+        bool ILogicalScrollable.BringIntoView(IControl target, Rect targetRect)
         {
             return _virtualizer?.BringIntoView(target, targetRect) ?? false;
+        }
+
+        /// <inheritdoc/>
+        IControl ILogicalScrollable.GetControlInDirection(FocusNavigationDirection direction, IControl from)
+        {
+            return _virtualizer?.GetControlInDirection(direction, from);
         }
 
         /// <inheritdoc/>
