@@ -224,7 +224,7 @@ namespace Avalonia.Controls.UnitTests
             // and re-arrange everything.
             foreach (IControl i in target.GetSelfAndVisualDescendents())
             {
-                i.InvalidateArrange();
+                i.InvalidateMeasure();
             }
 
             target.Arrange(new Rect(0, 0, 100, 100));

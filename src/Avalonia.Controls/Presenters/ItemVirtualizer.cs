@@ -13,7 +13,7 @@ namespace Avalonia.Controls.Presenters
     /// <summary>
     /// Base class for classes which handle virtualization for an <see cref="ItemsPresenter"/>.
     /// </summary>
-    internal abstract class ItemVirtualizer
+    internal abstract class ItemVirtualizer : IVirtualizingController
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemVirtualizer"/> class.
@@ -115,34 +115,34 @@ namespace Avalonia.Controls.Presenters
         {
             var virtualizingPanel = owner.Panel as IVirtualizingPanel;
             var scrollable = (ILogicalScrollable)owner;
+            ItemVirtualizer result = null;
 
             if (virtualizingPanel != null && scrollable.InvalidateScroll != null)
             {
                 switch (owner.VirtualizationMode)
                 {
                     case ItemVirtualizationMode.Simple:
-                        return new ItemVirtualizerSimple(owner);
+                        result = new ItemVirtualizerSimple(owner);
+                        break;
                 }
             }
 
-            return new ItemVirtualizerNone(owner);
+            if (result == null)
+            {
+                result = new ItemVirtualizerNone(owner);
+            }
+
+            if (virtualizingPanel != null)
+            {
+                virtualizingPanel.Controller = result;
+            }
+
+            return result;
         }
 
-        /// <summary>
-        /// Called by the <see cref="Owner"/> when it carries out an arrange.
-        /// </summary>
-        /// <param name="finalSize">The final size passed to the arrange.</param>
-        public abstract void Arranging(Size finalSize);
-
-        /// <summary>
-        /// Called when a request is made to bring an item into view.
-        /// </summary>
-        /// <param name="target">The item to bring into view.</param>
-        /// <param name="targetRect">The rect on the item to bring into view.</param>
-        /// <returns>True if the request was handled; otherwise false.</returns>
-        public virtual bool BringIntoView(IVisual target, Rect targetRect)
+        /// <inheritdoc/>
+        public virtual void UpdateControls()
         {
-            return false;
         }
 
         /// <summary>
@@ -156,6 +156,17 @@ namespace Avalonia.Controls.Presenters
         {
             Items = items;
             ItemCount = items.Count();
+        }
+
+        /// <summary>
+        /// Called when a request is made to bring an item into view.
+        /// </summary>
+        /// <param name="target">The item to bring into view.</param>
+        /// <param name="targetRect">The rect on the item to bring into view.</param>
+        /// <returns>True if the request was handled; otherwise false.</returns>
+        public virtual bool BringIntoView(IVisual target, Rect targetRect)
+        {
+            return false;
         }
     }
 }

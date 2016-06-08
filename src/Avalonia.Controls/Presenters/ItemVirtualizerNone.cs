@@ -53,12 +53,6 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <inheritdoc/>
-        public override void Arranging(Size finalSize)
-        {
-            // We don't need to do anything here.
-        }
-
-        /// <inheritdoc/>
         public override void ItemsChanged(IEnumerable items, NotifyCollectionChangedEventArgs e)
         {
             base.ItemsChanged(items, e);

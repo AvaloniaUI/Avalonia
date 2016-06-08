@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using Avalonia.Controls.Primitives;
 
 namespace Avalonia.Controls
 {
@@ -10,6 +11,17 @@ namespace Avalonia.Controls
     /// </summary>
     public interface IVirtualizingPanel : IPanel
     {
+        /// <summary>
+        /// Gets or sets the controller for the virtualizing panel.
+        /// </summary>
+        /// <remarks>
+        /// A virtualizing controller is responsible for maintaing the controls in the virtualizing
+        /// panel. This property will be set by the controller when virtualization is initialized.
+        /// Note that this property may remain null if the panel is added to a control that does
+        /// not act as a virtualizing controller.
+        /// </remarks>
+        IVirtualizingController Controller { get; set; }
+
         /// <summary>
         /// Gets a value indicating whether the panel is full.
         /// </summary>

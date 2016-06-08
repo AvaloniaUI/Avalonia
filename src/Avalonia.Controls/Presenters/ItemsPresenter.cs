@@ -79,14 +79,6 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <inheritdoc/>
-        protected override Size ArrangeOverride(Size finalSize)
-        {
-            var result = base.ArrangeOverride(finalSize);
-            _virtualizer.Arranging(finalSize);
-            return result;
-        }
-
-        /// <inheritdoc/>
         protected override void PanelCreated(IPanel panel)
         {
             _virtualizer = ItemVirtualizer.Create(this);

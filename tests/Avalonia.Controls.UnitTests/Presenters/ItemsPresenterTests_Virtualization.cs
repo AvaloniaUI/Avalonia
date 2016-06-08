@@ -65,9 +65,11 @@ namespace Avalonia.Controls.UnitTests.Presenters
             var target = CreateTarget();
 
             target.ApplyTemplate();
-            target.Measure(new Size(100, 100));
-            target.Arrange(new Rect(0, 0, 100, 100));
 
+            target.Measure(new Size(100, 100));
+            Assert.Equal(10, target.Panel.Children.Count);
+
+            target.Arrange(new Rect(0, 0, 100, 100));
             Assert.Equal(10, target.Panel.Children.Count);
         }
 
@@ -81,6 +83,20 @@ namespace Avalonia.Controls.UnitTests.Presenters
             target.Arrange(new Rect(0, 0, 100, 100));
 
             Assert.Equal(2, target.Panel.Children.Count);
+        }
+
+        [Fact]
+        public void Should_Expand_To_Fit_Containers_When_Flexible_Size()
+        {
+            var target = CreateTarget();
+
+            target.ApplyTemplate();
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(target.DesiredSize));
+
+            Assert.Equal(new Size(10, 200), target.DesiredSize);
+            Assert.Equal(new Size(10, 200), target.Bounds.Size);
+            Assert.Equal(20, target.Panel.Children.Count);
         }
 
         [Fact]

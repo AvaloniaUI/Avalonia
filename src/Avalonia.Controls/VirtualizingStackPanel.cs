@@ -4,11 +4,13 @@
 using System;
 using System.Collections.Specialized;
 using Avalonia.Layout;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
     public class VirtualizingStackPanel : StackPanel, IVirtualizingPanel
     {
+        private Size _availableSpace;
         private double _takenSpace;
         private int _canBeRemoved;
         private double _averageItemSize;
@@ -20,15 +22,14 @@ namespace Avalonia.Controls
             get
             {
                 return Orientation == Orientation.Horizontal ?
-                    _takenSpace >= AvailableSpace.Width :
-                    _takenSpace >= AvailableSpace.Height;
+                    _takenSpace >= _availableSpace.Width :
+                    _takenSpace >= _availableSpace.Height;
             }
         }
 
+        IVirtualizingController IVirtualizingPanel.Controller { get; set; }
         int IVirtualizingPanel.OverflowCount => _canBeRemoved;
-
         Orientation IVirtualizingPanel.ScrollDirection => Orientation;
-
         double IVirtualizingPanel.AverageItemSize => _averageItemSize;
 
         double IVirtualizingPanel.PixelOverflow
@@ -55,16 +56,30 @@ namespace Avalonia.Controls
             }
         }
 
-        // TODO: We need to put a reasonable limit on this, probably based on the max window size.
-        private Size AvailableSpace => ((ILayoutable)this).PreviousMeasure ?? Bounds.Size;
+        private IVirtualizingController Controller => ((IVirtualizingPanel)this).Controller;
+
+        protected override Size MeasureOverride(Size availableSize)
+        {
+            if (availableSize != ((ILayoutable)this).PreviousMeasure)
+            {
+                // TODO: We need to put a reasonable limit on this, probably based on the max
+                // window size.
+                _availableSpace = availableSize;
+                Controller?.UpdateControls();
+            }
+
+            return base.MeasureOverride(availableSize);
+        }
 
         protected override Size ArrangeOverride(Size finalSize)
         {
+            _availableSpace = finalSize;
             _canBeRemoved = 0;
             _takenSpace = 0;
             _averageItemSize = 0;
             _averageCount = 0;
             var result = base.ArrangeOverride(finalSize);
+            Controller?.UpdateControls();
             return result;
         }
 
@@ -103,7 +118,7 @@ namespace Avalonia.Controls
                 rect = new Rect(rect.X, rect.Y - _pixelOffset, rect.Width, rect.Height);
                 child.Arrange(rect);
 
-                if (rect.Y >= AvailableSpace.Height)
+                if (rect.Y >= _availableSpace.Height)
                 {
                     ++_canBeRemoved;
                 }
@@ -120,7 +135,7 @@ namespace Avalonia.Controls
                 rect = new Rect(rect.X - _pixelOffset, rect.Y, rect.Width, rect.Height);
                 child.Arrange(rect);
 
-                if (rect.X >= AvailableSpace.Width)
+                if (rect.X >= _availableSpace.Width)
                 {
                     ++_canBeRemoved;
                 }
@@ -139,7 +154,7 @@ namespace Avalonia.Controls
             var bounds = Bounds;
             var gap = Gap;
 
-            child.Measure(AvailableSpace);
+            child.Measure(_availableSpace);
             ++_averageCount;
 
             if (Orientation == Orientation.Vertical)
@@ -172,6 +187,11 @@ namespace Avalonia.Controls
                 var width = child.DesiredSize.Width;
                 _takenSpace -= width + gap;
                 RemoveFromAverageItemSize(width);
+            }
+
+            if (_canBeRemoved > 0)
+            {
+                --_canBeRemoved;
             }
         }
 

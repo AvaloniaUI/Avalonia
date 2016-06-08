@@ -84,7 +84,7 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <inheritdoc/>
-        public override void Arranging(Size finalSize)
+        public override void UpdateControls()
         {
             CreateAndRemoveContainers();
             ((ILogicalScrollable)Owner).InvalidateScroll();
