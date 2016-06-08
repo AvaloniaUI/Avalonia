@@ -142,7 +142,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             var minIndex = target.ItemContainerGenerator.Containers.Min(x => x.Index);
             Assert.Equal(new Vector(0, 11), ((ILogicalScrollable)target).Offset);
             Assert.Equal(10, minIndex);
-            Assert.Equal(5, ((IVirtualizingPanel)target.Panel).PixelOffset);
+            Assert.Equal(10, ((IVirtualizingPanel)target.Panel).PixelOffset);
 
             ((ILogicalScrollable)target).Offset = new Vector(0, 10);
 
@@ -156,7 +156,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             minIndex = target.ItemContainerGenerator.Containers.Min(x => x.Index);
             Assert.Equal(new Vector(0, 11), ((ILogicalScrollable)target).Offset);
             Assert.Equal(10, minIndex);
-            Assert.Equal(5, ((IVirtualizingPanel)target.Panel).PixelOffset);
+            Assert.Equal(10, ((IVirtualizingPanel)target.Panel).PixelOffset);
         }
 
         [Fact]

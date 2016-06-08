@@ -48,7 +48,9 @@ namespace Avalonia.Controls.Presenters
 
                 if (delta != 0)
                 {
-                    if ((NextIndex - 1) + delta < ItemCount)
+                    var newLastIndex = (NextIndex - 1) + delta;
+
+                    if (newLastIndex < ItemCount)
                     {
                         if (panel.PixelOffset > 0)
                         {
@@ -63,10 +65,11 @@ namespace Avalonia.Controls.Presenters
                     }
                     else
                     {
-                        // We're moving to a partially obscured item at the end of the list.
+                        // We're moving to a partially obscured item at the end of the list so
+                        // offset the panel by the height of the first item.
                         var firstIndex = ItemCount - panel.Children.Count;
                         RecycleContainersForMove(firstIndex - FirstIndex);
-                        panel.PixelOffset = VirtualizingPanel.PixelOverflow;
+                        panel.PixelOffset = panel.Children[0].Bounds.Height;
                     }
                 }
             }
