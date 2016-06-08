@@ -143,6 +143,7 @@ namespace Avalonia.Controls.Presenters
         public override IControl GetControlInDirection(FocusNavigationDirection direction, IControl from)
         {
             var generator = Owner.ItemContainerGenerator;
+            var panel = VirtualizingPanel;
             var itemIndex = generator.IndexFromContainer(from);
 
             if (itemIndex == -1)
@@ -167,8 +168,12 @@ namespace Avalonia.Controls.Presenters
 
             if (newItemIndex >= 0 && newItemIndex < ItemCount)
             {
+                // Get the index of the first and last fully visible items (i.e. excluding any
+                // partially visible item at the beginning or end).
+                var firstIndex = panel.PixelOffset == 0 ? FirstIndex : FirstIndex + 1;
+                var lastIndex = (FirstIndex + ViewportValue) - 1;
 
-                if (newItemIndex < FirstIndex || newItemIndex >= NextIndex)
+                if (newItemIndex < firstIndex || newItemIndex > lastIndex)
                 {
                     OffsetValue += newItemIndex - itemIndex;
                     InvalidateScroll();

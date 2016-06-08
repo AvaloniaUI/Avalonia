@@ -10,6 +10,7 @@ using Avalonia.Controls.Generators;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Input;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Presenters
@@ -131,7 +132,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
         [Fact]
         public void Moving_To_And_From_The_End_With_Partial_Item_Should_Set_Panel_PixelOffset()
         {
-            var target = CreateTarget(itemCount: 20);
+            var target = CreateTarget();
 
             target.ApplyTemplate();
             target.Measure(new Size(100, 95));
@@ -162,7 +163,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
         [Fact]
         public void Inserting_Items_Should_Update_Containers()
         {
-            var target = CreateTarget(itemCount: 20);
+            var target = CreateTarget();
 
             target.ApplyTemplate();
             target.Measure(new Size(100, 100));
@@ -187,7 +188,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
         [Fact]
         public void Removing_First_Materialized_Item_Should_Update_Containers()
         {
-            var target = CreateTarget(itemCount: 20);
+            var target = CreateTarget();
 
             target.ApplyTemplate();
             target.Measure(new Size(100, 100));
@@ -209,7 +210,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
         [Fact]
         public void Removing_Items_From_Middle_Should_Update_Containers_When_All_Items_Visible()
         {
-            var target = CreateTarget(itemCount: 20);
+            var target = CreateTarget();
 
             target.ApplyTemplate();
             target.Measure(new Size(100, 200));
@@ -234,7 +235,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
         [Fact]
         public void Removing_Last_Item_Should_Update_Containers_When_All_Items_Visible()
         {
-            var target = CreateTarget(itemCount: 20);
+            var target = CreateTarget();
 
             target.ApplyTemplate();
             target.Measure(new Size(100, 200));
@@ -258,7 +259,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
         [Fact]
         public void Removing_Items_When_Scrolled_To_End_Should_Recyle_Containers_At_Top()
         {
-            var target = CreateTarget(itemCount: 20, useAvaloniaList: true);
+            var target = CreateTarget(useAvaloniaList: true);
 
             target.ApplyTemplate();
             target.Measure(new Size(100, 100));
@@ -282,7 +283,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
         [Fact]
         public void Removing_Items_When_Scrolled_To_Near_End_Should_Recycle_Containers_At_Bottom_And_Top()
         {
-            var target = CreateTarget(itemCount: 20, useAvaloniaList: true);
+            var target = CreateTarget(useAvaloniaList: true);
 
             target.ApplyTemplate();
             target.Measure(new Size(100, 100));
@@ -308,7 +309,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
         [Fact]
         public void Replacing_Items_Should_Update_Containers()
         {
-            var target = CreateTarget(itemCount: 20);
+            var target = CreateTarget();
 
             target.ApplyTemplate();
             target.Measure(new Size(100, 100));
@@ -329,7 +330,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
         [Fact]
         public void Moving_Items_Should_Update_Containers()
         {
-            var target = CreateTarget(itemCount: 20);
+            var target = CreateTarget();
 
             target.ApplyTemplate();
             target.Measure(new Size(100, 100));
@@ -353,7 +354,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
         [Fact]
         public void Setting_Items_To_Null_Should_Remove_Containers()
         {
-            var target = CreateTarget(itemCount: 20);
+            var target = CreateTarget();
 
             target.ApplyTemplate();
             target.Measure(new Size(100, 100));
@@ -368,6 +369,81 @@ namespace Avalonia.Controls.UnitTests.Presenters
             target.Items = null;
 
             Assert.Empty(target.Panel.Children);
+        }
+
+        public class Vertical
+        {
+            [Fact]
+            public void GetControlInDirection_Down_Should_Return_Existing_Container_If_Materialized()
+            {
+                var target = CreateTarget();
+
+                target.ApplyTemplate();
+                target.Measure(new Size(100, 100));
+                target.Arrange(new Rect(0, 0, 100, 100));
+
+                var from = target.Panel.Children[5];
+                var result = ((ILogicalScrollable)target).GetControlInDirection(
+                    FocusNavigationDirection.Down,
+                    from);
+
+                Assert.Same(target.Panel.Children[6], result);
+            }
+
+            [Fact]
+            public void GetControlInDirection_Down_Should_Scroll_If_Necessary()
+            {
+                var target = CreateTarget();
+
+                target.ApplyTemplate();
+                target.Measure(new Size(100, 100));
+                target.Arrange(new Rect(0, 0, 100, 100));
+
+                var from = target.Panel.Children[9];
+                var result = ((ILogicalScrollable)target).GetControlInDirection(
+                    FocusNavigationDirection.Down,
+                    from);
+
+                Assert.Equal(new Vector(0, 1), ((ILogicalScrollable)target).Offset);
+                Assert.Same(target.Panel.Children[9], result);
+            }
+
+            [Fact]
+            public void GetControlInDirection_Down_Should_Scroll_If_Partially_Visible()
+            {
+                var target = CreateTarget();
+
+                target.ApplyTemplate();
+                target.Measure(new Size(100, 95));
+                target.Arrange(new Rect(0, 0, 100, 95));
+
+                var from = target.Panel.Children[8];
+                var result = ((ILogicalScrollable)target).GetControlInDirection(
+                    FocusNavigationDirection.Down,
+                    from);
+
+                Assert.Equal(new Vector(0, 1), ((ILogicalScrollable)target).Offset);
+                Assert.Same(target.Panel.Children[8], result);
+            }
+
+            [Fact]
+            public void GetControlInDirection_Up_Should_Scroll_If_Partially_Visible_Is_Currently_Shown()
+            {
+                var target = CreateTarget();
+
+                target.ApplyTemplate();
+                target.Measure(new Size(100, 95));
+                target.Arrange(new Rect(0, 0, 100, 95));
+                ((ILogicalScrollable)target).Offset = new Vector(0, 11);
+
+                var from = target.Panel.Children[1];
+                var result = ((ILogicalScrollable)target).GetControlInDirection(
+                    FocusNavigationDirection.Up,
+                    from);
+
+                Assert.Equal(new Vector(0, 10), ((ILogicalScrollable)target).Offset);
+                Assert.Same(target.Panel.Children[0], result);
+            }
         }
 
         public class WithContainers
