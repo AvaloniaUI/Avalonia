@@ -2,8 +2,10 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Collections;
+using Avalonia.Controls;
 using ReactiveUI;
 
 namespace VirtualizationTest.ViewModels
@@ -15,6 +17,7 @@ namespace VirtualizationTest.ViewModels
         private int _newItemIndex;
         private IReactiveList<ItemViewModel> _items;
         private string _prefix = "Item";
+        private ItemVirtualizationMode _virtualizationMode = ItemVirtualizationMode.Simple;
 
         public MainWindowViewModel()
         {
@@ -49,6 +52,15 @@ namespace VirtualizationTest.ViewModels
             get { return _items; }
             private set { this.RaiseAndSetIfChanged(ref _items, value); }
         }
+
+        public ItemVirtualizationMode VirtualizationMode
+        {
+            get { return _virtualizationMode; }
+            set { this.RaiseAndSetIfChanged(ref _virtualizationMode, value); }
+        }
+
+        public IEnumerable<ItemVirtualizationMode> VirtualizationModes => 
+            Enum.GetValues(typeof(ItemVirtualizationMode)).Cast<ItemVirtualizationMode>();
 
         public ReactiveCommand<object> AddItemCommand { get; private set; }
 

@@ -5,6 +5,8 @@
                     Margin="16 0 0 0" 
                     MinWidth="150"
                     Gap="4">
+            <DropDown Items="{Binding VirtualizationModes}"
+                      SelectedItem="{Binding VirtualizationMode}"/>
             <TextBox Watermark="Item Count"
                      UseFloatingWatermark="True"
                      Text="{Binding ItemCount}"/>
@@ -28,7 +30,8 @@
         <ListBox Name="listBox" 
                  Items="{Binding Items}" 
                  SelectedItems="{Binding SelectedItems}"
-                 SelectionMode="Multiple">
+                 SelectionMode="Multiple"
+                 VirtualizationMode="{Binding VirtualizationMode}">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <TextBlock Text="{Binding Header}"/>

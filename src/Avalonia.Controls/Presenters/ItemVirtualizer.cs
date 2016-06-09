@@ -14,8 +14,10 @@ namespace Avalonia.Controls.Presenters
     /// <summary>
     /// Base class for classes which handle virtualization for an <see cref="ItemsPresenter"/>.
     /// </summary>
-    internal abstract class ItemVirtualizer : IVirtualizingController
+    internal abstract class ItemVirtualizer : IVirtualizingController, IDisposable
     {
+        private bool disposedValue;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemVirtualizer"/> class.
         /// </summary>
@@ -179,6 +181,14 @@ namespace Avalonia.Controls.Presenters
         public virtual bool BringIntoView(IVisual target, Rect targetRect)
         {
             return false;
+        }
+
+        /// <inheritdoc/>
+        public virtual void Dispose()
+        {
+            VirtualizingPanel.Controller = null;
+            VirtualizingPanel.Children.Clear();
+            Owner.ItemContainerGenerator.Clear();
         }
 
         /// <summary>

@@ -32,6 +32,9 @@ namespace Avalonia.Controls.Presenters
             KeyboardNavigation.TabNavigationProperty.OverrideDefaultValue(
                 typeof(ItemsPresenter),
                 KeyboardNavigationMode.Once);
+
+            VirtualizationModeProperty.Changed
+                .AddClassHandler<ItemsPresenter>(x => x.VirtualizationModeChanged);
         }
 
         /// <summary>
@@ -112,6 +115,21 @@ namespace Avalonia.Controls.Presenters
             var maxX = Math.Max(scrollable.Extent.Width - scrollable.Viewport.Width, 0);
             var maxY = Math.Max(scrollable.Extent.Height - scrollable.Viewport.Height, 0);
             return new Vector(Clamp(value.X, 0, maxX), Clamp(value.Y, 0, maxY));
+        }
+
+        private void VirtualizationModeChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            _virtualizer?.Dispose();
+            _virtualizer = ItemVirtualizer.Create(this);
+
+            if (Items != null && Panel != null)
+            {
+                _virtualizer.ItemsChanged(
+                    Items,
+                    new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+            }
+
+            ((ILogicalScrollable)this).InvalidateScroll?.Invoke();
         }
     }
 }
