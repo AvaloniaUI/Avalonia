@@ -290,7 +290,21 @@ namespace Avalonia.Skia
                 {
                     AvaloniaFormattedTextLine line = _skiaLines[c];
                     var subString = _text.Substring(line.Start, line.Length);
-                    canvas.DrawText(subString, origin.X, origin.Y + line.Top + LineOffset, paint);
+
+                    float x = 0;
+
+                    //this is a quick fix so we have skia rendering
+                    //properly right and center align
+                    //TODO: find a better implementation including 
+                    //hittesting and text selection working properly
+                    switch (Paint.TextAlign)
+                    {
+                        case SKTextAlign.Left: x = origin.X; break;
+                        case SKTextAlign.Center: x = origin.X + line.Width; break;
+                        case SKTextAlign.Right: x = origin.X + line.Width * 2; break;
+                    }
+
+                    canvas.DrawText(subString, x, origin.Y + line.Top + LineOffset, paint);
                 }
             }
         }
