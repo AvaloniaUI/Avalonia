@@ -1,10 +1,10 @@
+using Avalonia.Media;
+using Avalonia.Platform;
+using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
-using Avalonia.Media;
-using Avalonia.Platform;
-using SkiaSharp;
 
 namespace Avalonia.Skia
 {
@@ -17,6 +17,8 @@ namespace Avalonia.Skia
             _text = text;
             Paint = new SKPaint();
 
+            //currently Skia does not measure properly with Utf8 !!!
+            //Paint.TextEncoding = SKTextEncoding.Utf8;
             Paint.TextEncoding = SKTextEncoding.Utf16;
             Paint.IsStroke = false;
             Paint.IsAntialias = true;
@@ -81,7 +83,6 @@ namespace Avalonia.Skia
                         TextPosition = c,
                         IsTrailing = (point.X - rc.X) > rc.Width / 2
                     };
-
                 }
             }
             bool end = point.X > _size.Width || point.Y > _size.Height;
@@ -125,8 +126,8 @@ namespace Avalonia.Skia
 
             var metrics = Paint.FontMetrics;
             var mTop = metrics.Top;  // The greatest distance above the baseline for any glyph (will be <= 0).
-            var mBottom = metrics.Bottom;  // The greatest distance below the baseline for any glyph (will be >= 0). 
-            var mLeading = metrics.Leading;  // The recommended distance to add between lines of text (will be >= 0). 
+            var mBottom = metrics.Bottom;  // The greatest distance below the baseline for any glyph (will be >= 0).
+            var mLeading = metrics.Leading;  // The recommended distance to add between lines of text (will be >= 0).
 
             // This seems like the best measure of full vertical extent
             float lineHeight = mBottom - mTop;
@@ -135,10 +136,6 @@ namespace Avalonia.Skia
             LineOffset = -metrics.Top;
 
             string subString;
-
-            byte[] bytes;
-            GCHandle pinnedArray;
-            IntPtr pointer;
 
             for (int c = 0; curOff < length; c++)
             {
@@ -157,14 +154,7 @@ namespace Avalonia.Skia
 
                     subString = _text.Substring(curOff);
 
-                    // TODO: This method is not linking into SkiaSharp so we must use the RAW buffer version for now
-                    //measured = (int)Paint.BreakText(subString, constraint, out lineWidth) / 2;
-                    bytes = Encoding.UTF8.GetBytes(subString);
-                    pinnedArray = GCHandle.Alloc(bytes, GCHandleType.Pinned);
-                    pointer = pinnedArray.AddrOfPinnedObject();
-                    // for some reason I have to pass nBytes * 2. I assume under the hood it expects Unicode/WChar??
-                    measured = (int)Paint.BreakText(pointer, (IntPtr)(bytes.Length * 2), constraint, out lineWidth) / 2;
-                    pinnedArray.Free();
+                    measured = (int)Paint.BreakText(subString, constraint, out lineWidth) / 2;
 
                     if (measured == 0)
                     {
@@ -271,7 +261,7 @@ namespace Avalonia.Skia
             /* TODO: This originated from Native code, it might be useful for debugging character positions as
              * we improve the FormattedText support. Will need to port this to C# obviously. Rmove when
              * not needed anymore.
-             
+
                 SkPaint dpaint;
                 ctx->Canvas->save();
                 ctx->Canvas->translate(origin.fX, origin.fY);
