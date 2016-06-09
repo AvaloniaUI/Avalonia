@@ -427,7 +427,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             }
 
             [Fact]
-            public void GetControlInDirection_Up_Should_Scroll_If_Partially_Visible_Is_Currently_Shown()
+            public void GetControlInDirection_Up_Should_Scroll_If_Partially_Visible_Item_Is_Currently_Shown()
             {
                 var target = CreateTarget();
 
@@ -442,6 +442,81 @@ namespace Avalonia.Controls.UnitTests.Presenters
                     from);
 
                 Assert.Equal(new Vector(0, 10), ((ILogicalScrollable)target).Offset);
+                Assert.Same(target.Panel.Children[0], result);
+            }
+        }
+
+        public class Horizontal
+        {
+            [Fact]
+            public void GetControlInDirection_Right_Should_Return_Existing_Container_If_Materialized()
+            {
+                var target = CreateTarget(orientation: Orientation.Horizontal);
+
+                target.ApplyTemplate();
+                target.Measure(new Size(100, 100));
+                target.Arrange(new Rect(0, 0, 100, 100));
+
+                var from = target.Panel.Children[5];
+                var result = ((ILogicalScrollable)target).GetControlInDirection(
+                    FocusNavigationDirection.Right,
+                    from);
+
+                Assert.Same(target.Panel.Children[6], result);
+            }
+
+            [Fact]
+            public void GetControlInDirection_Right_Should_Scroll_If_Necessary()
+            {
+                var target = CreateTarget(orientation: Orientation.Horizontal);
+
+                target.ApplyTemplate();
+                target.Measure(new Size(100, 100));
+                target.Arrange(new Rect(0, 0, 100, 100));
+
+                var from = target.Panel.Children[9];
+                var result = ((ILogicalScrollable)target).GetControlInDirection(
+                    FocusNavigationDirection.Right,
+                    from);
+
+                Assert.Equal(new Vector(1, 0), ((ILogicalScrollable)target).Offset);
+                Assert.Same(target.Panel.Children[9], result);
+            }
+
+            [Fact]
+            public void GetControlInDirection_Right_Should_Scroll_If_Partially_Visible()
+            {
+                var target = CreateTarget(orientation: Orientation.Horizontal);
+
+                target.ApplyTemplate();
+                target.Measure(new Size(95, 100));
+                target.Arrange(new Rect(0, 0, 95, 100));
+
+                var from = target.Panel.Children[8];
+                var result = ((ILogicalScrollable)target).GetControlInDirection(
+                    FocusNavigationDirection.Right,
+                    from);
+
+                Assert.Equal(new Vector(1, 0), ((ILogicalScrollable)target).Offset);
+                Assert.Same(target.Panel.Children[8], result);
+            }
+
+            [Fact]
+            public void GetControlInDirection_Left_Should_Scroll_If_Partially_Visible_Item_Is_Currently_Shown()
+            {
+                var target = CreateTarget(orientation: Orientation.Horizontal);
+
+                target.ApplyTemplate();
+                target.Measure(new Size(95, 100));
+                target.Arrange(new Rect(0, 0, 95, 100));
+                ((ILogicalScrollable)target).Offset = new Vector(11, 0);
+
+                var from = target.Panel.Children[1];
+                var result = ((ILogicalScrollable)target).GetControlInDirection(
+                    FocusNavigationDirection.Left,
+                    from);
+
+                Assert.Equal(new Vector(10, 0), ((ILogicalScrollable)target).Offset);
                 Assert.Same(target.Panel.Children[0], result);
             }
         }

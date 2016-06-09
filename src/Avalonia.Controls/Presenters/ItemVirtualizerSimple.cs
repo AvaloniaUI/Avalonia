@@ -165,6 +165,18 @@ namespace Avalonia.Controls.Presenters
                         break;
                 }
             }
+            else
+            {
+                switch (direction)
+                {
+                    case FocusNavigationDirection.Left:
+                        newItemIndex = itemIndex - 1;
+                        break;
+                    case FocusNavigationDirection.Right:
+                        newItemIndex = itemIndex + 1;
+                        break;
+                }
+            }
 
             if (newItemIndex >= 0 && newItemIndex < ItemCount)
             {
