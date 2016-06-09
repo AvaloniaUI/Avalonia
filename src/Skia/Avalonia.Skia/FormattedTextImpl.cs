@@ -12,9 +12,10 @@ namespace Avalonia.Skia
     {
         public SKPaint Paint { get; private set; }
 
-        public FormattedTextImpl(string text)
+        public FormattedTextImpl(string text, TextWrapping wrapping = TextWrapping.NoWrap)
         {
             _text = text;
+            _wrapping = wrapping;
             Paint = new SKPaint();
 
             //currently Skia does not measure properly with Utf8 !!!
@@ -26,14 +27,16 @@ namespace Avalonia.Skia
 
             // Replace 0 characters with zero-width spaces (200B)
             _text = _text.Replace((char)0, (char)0x200B);
+
+            _text = _text.Replace("\r\n", "\r").Replace('\n','\r');
         }
 
         public static FormattedTextImpl Create(string text, string fontFamilyName, double fontSize, FontStyle fontStyle,
-            TextAlignment textAlignment, FontWeight fontWeight)
+            TextAlignment textAlignment, FontWeight fontWeight, TextWrapping wrapping)
         {
             var typeface = TypefaceCache.GetTypeface(fontFamilyName, fontStyle, fontWeight);
 
-            FormattedTextImpl instance = new FormattedTextImpl(text);
+            FormattedTextImpl instance = new FormattedTextImpl(text, wrapping);
             instance.Paint.Typeface = typeface;
             instance.Paint.TextSize = (float)fontSize;
             instance.Paint.TextAlign = textAlignment.ToSKTextAlign();
@@ -54,6 +57,7 @@ namespace Avalonia.Skia
         const float MAX_LINE_WIDTH = 10000;
         float LineOffset;
         float WidthConstraint = -1;
+        TextWrapping _wrapping;
 
         struct AvaloniaFormattedTextLine
         {
@@ -154,7 +158,21 @@ namespace Avalonia.Skia
 
                     subString = _text.Substring(curOff);
 
-                    measured = (int)Paint.BreakText(subString, constraint, out lineWidth) / 2;
+                    if (_wrapping == TextWrapping.NoWrap)
+                    {
+                        measured = length - curOff;
+                    }
+                    else
+                    {
+                        measured = (int)Paint.BreakText(subString, constraint, out lineWidth) / 2;
+                    }
+
+                    int newLineIndex = subString.IndexOf('\r');
+
+                    if (newLineIndex > -1 && measured >= newLineIndex)
+                    {
+                        measured = newLineIndex > 0 ? newLineIndex + 1 : 0;
+                    }
 
                     if (measured == 0)
                     {
@@ -166,7 +184,7 @@ namespace Avalonia.Skia
                     if (curOff + measured < length)
                         nextChar = _text[curOff + measured];
 
-                    if (nextChar != ' ')
+                    if (nextChar != ' ' && nextChar != '\r')
                     {
                         // Perform scan for the last space and end the line there
                         for (int si = curOff + measured - 1; si > curOff; si--)
