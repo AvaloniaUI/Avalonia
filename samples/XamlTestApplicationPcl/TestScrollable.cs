@@ -2,6 +2,7 @@ using System;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.VisualTree;
 
@@ -75,7 +76,12 @@ namespace XamlTestApplication
             }
         }
 
-        public bool BringIntoView(IVisual target, Rect targetRect)
+        public bool BringIntoView(IControl target, Rect targetRect)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IControl GetControlInDirection(FocusNavigationDirection direction, IControl from)
         {
             throw new NotImplementedException();
         }
