@@ -59,6 +59,7 @@ namespace Avalonia.Controls.Presenters
         static ScrollContentPresenter()
         {
             ClipToBoundsProperty.OverrideDefaultValue(typeof(ScrollContentPresenter), true);
+            ChildProperty.Changed.AddClassHandler<ScrollContentPresenter>(x => x.ChildChanged);
             AffectsArrange(OffsetProperty);
         }
 
@@ -258,6 +259,16 @@ namespace Avalonia.Controls.Presenters
             e.Handled = BringDescendentIntoView(e.TargetObject, e.TargetRect);
         }
 
+        private void ChildChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            UpdateScrollableSubscription((IControl)e.NewValue);
+
+            if (e.OldValue != null)
+            {
+                Offset = default(Vector);
+            }
+        }
+
         private void UpdateScrollableSubscription(IControl child)
         {
             var scrollable = child as ILogicalScrollable;
@@ -286,12 +297,7 @@ namespace Avalonia.Controls.Presenters
             if (logicalScroll != scrollable.IsLogicalScrollEnabled)
             {
                 UpdateScrollableSubscription(Child);
-
-                if (!scrollable.IsLogicalScrollEnabled)
-                {
-                    Offset = default(Vector);
-                }
-
+                Offset = default(Vector);
                 InvalidateMeasure();
             }
 

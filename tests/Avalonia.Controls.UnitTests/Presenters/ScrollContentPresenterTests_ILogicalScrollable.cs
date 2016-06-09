@@ -236,6 +236,56 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(new Rect(0, 0, 100, 100), scrollable.Bounds);
         }
 
+        [Fact]
+        public void Changing_Content_Should_Update_State()
+        {
+            var logicalScrollable = new TestScrollable
+            {
+                Extent = new Size(100, 100),
+                Offset = new Vector(50, 50),
+                Viewport = new Size(25, 25),
+            };
+
+            var nonLogicalScrollable = new TestScrollable
+            {
+                IsLogicalScrollEnabled = false,
+            };
+
+            var target = new ScrollContentPresenter
+            {
+                Content = logicalScrollable,
+            };
+
+            target.UpdateChild();
+            target.Measure(new Size(100, 100));
+            target.Arrange(new Rect(0, 0, 100, 100));
+
+            Assert.Equal(logicalScrollable.Extent, target.Extent);
+            Assert.Equal(logicalScrollable.Offset, target.Offset);
+            Assert.Equal(logicalScrollable.Viewport, target.Viewport);
+            Assert.Equal(new Rect(0, 0, 100, 100), logicalScrollable.Bounds);
+
+            target.Content = nonLogicalScrollable;
+            target.UpdateChild();
+            target.Measure(new Size(100, 100));
+            target.Arrange(new Rect(0, 0, 100, 100));
+
+            Assert.Equal(new Size(150, 150), target.Extent);
+            Assert.Equal(new Vector(0, 0), target.Offset);
+            Assert.Equal(new Size(100, 100), target.Viewport);
+            Assert.Equal(new Rect(0, 0, 150, 150), nonLogicalScrollable.Bounds);
+
+            target.Content = logicalScrollable;
+            target.UpdateChild();
+            target.Measure(new Size(100, 100));
+            target.Arrange(new Rect(0, 0, 100, 100));
+
+            Assert.Equal(logicalScrollable.Extent, target.Extent);
+            Assert.Equal(logicalScrollable.Offset, target.Offset);
+            Assert.Equal(logicalScrollable.Viewport, target.Viewport);
+            Assert.Equal(new Rect(0, 0, 100, 100), logicalScrollable.Bounds);
+        }
+
         private class TestScrollable : Control, ILogicalScrollable
         {
             private Size _extent;
