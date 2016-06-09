@@ -6,13 +6,11 @@ using System.Reactive.Linq;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
-using Avalonia.Layout;
-using Avalonia.VisualTree;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class ScrollContentPresenterTests_IScrollable
+    public class ScrollContentPresenterTests_ILogicalScrollable
     {
         [Fact]
         public void Measure_Should_Pass_Unchanged_Bounds_To_IScrollable()
