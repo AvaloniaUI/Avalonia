@@ -121,14 +121,6 @@ namespace Avalonia.Controls.Presenters
         {
             _virtualizer?.Dispose();
             _virtualizer = ItemVirtualizer.Create(this);
-
-            if (Items != null && Panel != null)
-            {
-                _virtualizer.ItemsChanged(
-                    Items,
-                    new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
-            }
-
             ((ILogicalScrollable)this).InvalidateScroll?.Invoke();
         }
     }

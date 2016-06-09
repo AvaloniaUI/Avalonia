@@ -290,8 +290,9 @@ namespace Avalonia.Controls.Presenters
                 if (!scrollable.IsLogicalScrollEnabled)
                 {
                     Offset = default(Vector);
-                    InvalidateMeasure();
                 }
+
+                InvalidateMeasure();
             }
 
             if (scrollable.IsLogicalScrollEnabled)

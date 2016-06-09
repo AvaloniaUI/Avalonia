@@ -25,6 +25,8 @@ namespace Avalonia.Controls.Presenters
         public ItemVirtualizer(ItemsPresenter owner)
         {
             Owner = owner;
+            Items = owner.Items;
+            ItemCount = owner.Items.Count();
         }
 
         /// <summary>

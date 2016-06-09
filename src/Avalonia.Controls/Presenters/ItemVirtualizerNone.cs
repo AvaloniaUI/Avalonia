@@ -19,6 +19,10 @@ namespace Avalonia.Controls.Presenters
         public ItemVirtualizerNone(ItemsPresenter owner)
             : base(owner)
         {
+            if (Items != null && owner.Panel != null)
+            {
+                AddContainers(0, Items);
+            }
         }
 
         /// <inheritdoc/>

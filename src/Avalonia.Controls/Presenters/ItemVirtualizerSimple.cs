@@ -23,6 +23,10 @@ namespace Avalonia.Controls.Presenters
         public ItemVirtualizerSimple(ItemsPresenter owner)
             : base(owner)
         {
+            if (Items != null && VirtualizingPanel != null)
+            {
+                CreateAndRemoveContainers();
+            }
         }
 
         /// <inheritdoc/>

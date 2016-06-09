@@ -153,7 +153,30 @@ namespace Avalonia.Controls.UnitTests.Presenters
         }
 
         [Fact]
-        public void Changing_VirtualizationMode_Simple_To_None_Should_Update_Scroll_Properties()
+        public void Changing_VirtualizationMode_None_To_Simple_Should_Update_Control()
+        {
+            var target = CreateTarget(mode: ItemVirtualizationMode.None);
+            var scroll = (ScrollContentPresenter)target.Parent;
+
+            target.ApplyTemplate();
+            scroll.Measure(new Size(100, 100));
+            scroll.Arrange(new Rect(0, 0, 100, 100));
+
+            Assert.Equal(20, target.Panel.Children.Count);
+            Assert.Equal(new Size(10, 200), scroll.Extent);
+            Assert.Equal(new Size(100, 100), scroll.Viewport);
+
+            target.VirtualizationMode = ItemVirtualizationMode.Simple;
+            scroll.Measure(new Size(100, 100));
+            scroll.Arrange(new Rect(0, 0, 100, 100));
+
+            Assert.Equal(10, target.Panel.Children.Count);
+            Assert.Equal(new Size(0, 20), scroll.Extent);
+            Assert.Equal(new Size(0, 10), scroll.Viewport);
+        }
+
+        [Fact]
+        public void Changing_VirtualizationMode_Simple_To_None_Should_Update_Control()
         {
             var target = CreateTarget();
 
@@ -167,10 +190,12 @@ namespace Avalonia.Controls.UnitTests.Presenters
             Assert.Equal(new Size(0, 10), scroll.Viewport);
 
             target.VirtualizationMode = ItemVirtualizationMode.None;
+            scroll.Measure(new Size(100, 100));
+            scroll.Arrange(new Rect(0, 0, 100, 100));
 
             Assert.Equal(20, target.Panel.Children.Count);
-            Assert.Equal(new Size(0, 200), scroll.Extent);
-            Assert.Equal(new Size(0, 100), scroll.Viewport);
+            Assert.Equal(new Size(10, 200), scroll.Extent);
+            Assert.Equal(new Size(100, 100), scroll.Viewport);
         }
 
         private static ItemsPresenter CreateTarget(
