@@ -40,7 +40,7 @@ namespace Avalonia.Controls
             get
             {
                 var bounds = Orientation == Orientation.Horizontal ? 
-                    Bounds.Width : Bounds.Height;
+                    _availableSpace.Width : _availableSpace.Height;
                 return Math.Max(0, _takenSpace - bounds);
             }
         }

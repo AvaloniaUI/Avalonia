@@ -81,6 +81,30 @@ namespace Avalonia.Controls.UnitTests
             }
 
             [Fact]
+            public void Reports_Correct_Overflow_During_Arrange()
+            {
+                var target = (IVirtualizingPanel)new VirtualizingStackPanel();
+                var controller = new Mock<IVirtualizingController>();
+                var called = false;
+
+                target.Children.Add(new Canvas { Width = 50, Height = 50 });
+                target.Children.Add(new Canvas { Width = 50, Height = 52 });
+                target.Measure(new Size(100, 100));
+
+                controller.Setup(x => x.UpdateControls()).Callback(() =>
+                {
+                    Assert.Equal(2, target.PixelOverflow);
+                    Assert.Equal(0, target.OverflowCount);
+                    called = true;
+                });
+
+                target.Controller = controller.Object;
+                target.Arrange(new Rect(target.DesiredSize));
+
+                Assert.True(called);
+            }
+
+            [Fact]
             public void Reports_PixelOverflow_After_Arrange()
             {
                 var target = (IVirtualizingPanel)new VirtualizingStackPanel();
