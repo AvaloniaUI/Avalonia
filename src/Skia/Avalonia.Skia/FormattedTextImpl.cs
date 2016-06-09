@@ -254,7 +254,7 @@ namespace Avalonia.Skia
             }
         }
 
-        internal void Draw(SKCanvas canvas, SKPoint origin)
+        internal void Draw(SKCanvas canvas, SKPoint origin, DrawingContextImpl.PaintWrapper foreground)
         {
             SKPaint paint = Paint;
 
@@ -284,11 +284,14 @@ namespace Avalonia.Skia
                 ctx->Canvas->restore();
             */
 
-            for (int c = 0; c < _skiaLines.Count; c++)
+            using (foreground.ApplyTo(paint))
             {
-                AvaloniaFormattedTextLine line = _skiaLines[c];
-                var subString = _text.Substring(line.Start, line.Length);
-                canvas.DrawText(subString, origin.X, origin.Y + line.Top + LineOffset, paint);
+                for (int c = 0; c < _skiaLines.Count; c++)
+                {
+                    AvaloniaFormattedTextLine line = _skiaLines[c];
+                    var subString = _text.Substring(line.Start, line.Length);
+                    canvas.DrawText(subString, origin.X, origin.Y + line.Top + LineOffset, paint);
+                }
             }
         }
 

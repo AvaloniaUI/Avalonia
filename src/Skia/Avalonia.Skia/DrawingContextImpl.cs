@@ -1,10 +1,10 @@
-using System;
-using System.Collections.Generic;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
-using SkiaSharp;
-using System.Linq;
 using Avalonia.RenderHelpers;
+using SkiaSharp;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Avalonia.Skia
 {
@@ -53,13 +53,46 @@ namespace Avalonia.Skia
             }
         }
 
-        struct PaintWrapper : IDisposable
+        private struct PaintDisposable : IDisposable
+        {
+            private Action _action;
+
+            public PaintDisposable(Action action)
+            {
+                _action = action;
+            }
+
+            public void Dispose()
+            {
+                _action?.Invoke();
+            }
+        }
+
+        internal struct PaintWrapper : IDisposable
         {
             //We are saving memory allocations there
             //TODO: add more disposable fields if needed
-
             public readonly SKPaint Paint;
             private IDisposable _disposable1;
+
+            private Func<SKPaint, SKPaint, IDisposable> _applyToAction;
+
+            public void SetApplyToAction<T>(Func<SKPaint, T> get, 
+                                            Action<SKPaint, SKPaint> apply, 
+                                            Action<SKPaint, T> revert)
+            {
+                _applyToAction = (from, to) =>
+                {
+                    T state = get(to);
+                    apply(from, to);
+                    return new PaintDisposable(() => revert(to, state));
+                };
+            }
+
+            public IDisposable ApplyTo(SKPaint paint)
+            {
+                return _applyToAction != null ? _applyToAction(Paint, paint) : default(PaintDisposable);
+            }
 
             public void AddDisposable(IDisposable disposable)
             {
@@ -73,6 +106,7 @@ namespace Avalonia.Skia
             {
                 Paint = paint;
                 _disposable1 = null;
+                _applyToAction = null;
             }
 
             public void Dispose()
@@ -95,13 +129,20 @@ namespace Avalonia.Skia
 
             SKColor color = new SKColor(255, 255, 255, 255);
 
-            var solid = brush as SolidColorBrush;
+            var solid = brush as ISolidColorBrush;
             if (solid != null)
                 color = solid.Color.ToSKColor();
 
-            paint.Color = (new SKColor(color.Red, color.Green, color.Blue, (byte) (color.Alpha*opacity)));
+            paint.Color = (new SKColor(color.Red, color.Green, color.Blue, (byte)(color.Alpha * opacity)));
+
             if (solid != null)
+            {
+                rv.SetApplyToAction(p => p.Color,
+                                    (from, to) => to.Color = from.Color,
+                                    (p, v) => p.Color = v);
                 return rv;
+            }
+
 
 
             var gradient = brush as GradientBrush;
@@ -140,6 +181,9 @@ namespace Avalonia.Skia
                     }
                 }
 
+                rv.SetApplyToAction(p => p.Shader,
+                                    (from, to) => to.Shader = from.Shader,
+                                    (p, v) => p.Shader = v);
                 return rv;
             }
 
@@ -150,7 +194,7 @@ namespace Avalonia.Skia
                 var bitmap = new BitmapImpl((int)helper.IntermediateSize.Width, (int)helper.IntermediateSize.Height);
                 rv.AddDisposable(bitmap);
                 using (var ctx = bitmap.CreateDrawingContext())
-                	helper.DrawIntermediate(ctx);
+                    helper.DrawIntermediate(ctx);
                 SKMatrix translation = SKMatrix.MakeTranslation(-(float)helper.DestinationRect.X, -(float)helper.DestinationRect.Y);
                 SKShaderTileMode tileX =
                     tileBrush.TileMode == TileMode.None
@@ -167,6 +211,10 @@ namespace Avalonia.Skia
                             : SKShaderTileMode.Repeat;
                 paint.Shader = SKShader.CreateBitmap(bitmap.Bitmap, tileX, tileY, translation);
                 paint.Shader.Dispose();
+
+                rv.SetApplyToAction(p => p.Shader,
+                                    (from, to) => to.Shader = from.Shader,
+                                    (p, v) => p.Shader = v);
             }
 
             return rv;
@@ -255,7 +303,7 @@ namespace Avalonia.Skia
             using (var paint = CreatePaint(foreground, text.Measure()))
             {
                 var textImpl = text.PlatformImpl as FormattedTextImpl;
-                textImpl.Draw(this.Canvas, origin.ToSKPoint());
+                textImpl.Draw(this.Canvas, origin.ToSKPoint(), paint);
             }
         }
 
@@ -270,7 +318,7 @@ namespace Avalonia.Skia
             Canvas.Restore();
         }
 
-        double _currentOpacity = 1.0f;
+        private double _currentOpacity = 1.0f;
         private readonly Stack<double> _opacityStack = new Stack<double>();
 
         public void PushOpacity(double opacity)
