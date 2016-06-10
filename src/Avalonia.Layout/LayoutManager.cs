@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Avalonia.Logging;
 using Avalonia.Threading;
 
@@ -13,8 +14,8 @@ namespace Avalonia.Layout
     /// </summary>
     public class LayoutManager : ILayoutManager
     {
-        private readonly Queue<ILayoutable> _toMeasure = new Queue<ILayoutable>();
-        private readonly Queue<ILayoutable> _toArrange = new Queue<ILayoutable>();
+        private readonly HashSet<ILayoutable> _toMeasure = new HashSet<ILayoutable>();
+        private readonly HashSet<ILayoutable> _toArrange = new HashSet<ILayoutable>();
         private bool _queued;
         private bool _running;
 
@@ -29,8 +30,8 @@ namespace Avalonia.Layout
             Contract.Requires<ArgumentNullException>(control != null);
             Dispatcher.UIThread.VerifyAccess();
 
-            _toMeasure.Enqueue(control);
-            _toArrange.Enqueue(control);
+            _toMeasure.Add(control);
+            _toArrange.Add(control);
             QueueLayoutPass();
         }
 
@@ -40,7 +41,7 @@ namespace Avalonia.Layout
             Contract.Requires<ArgumentNullException>(control != null);
             Dispatcher.UIThread.VerifyAccess();
 
-            _toArrange.Enqueue(control);
+            _toArrange.Add(control);
             QueueLayoutPass();
         }
 
@@ -107,7 +108,7 @@ namespace Avalonia.Layout
         {
             while (_toMeasure.Count > 0)
             {
-                var next = _toMeasure.Dequeue();
+                var next = _toMeasure.First();
                 Measure(next);
             }
         }
@@ -116,7 +117,7 @@ namespace Avalonia.Layout
         {
             while (_toArrange.Count > 0 && _toMeasure.Count == 0)
             {
-                var next = _toArrange.Dequeue();
+                var next = _toArrange.First();
                 Arrange(next);
             }
         }
@@ -124,29 +125,45 @@ namespace Avalonia.Layout
         private void Measure(ILayoutable control)
         {
             var root = control as ILayoutRoot;
+            var parent = control.VisualParent as ILayoutable;
 
             if (root != null)
             {
                 root.Measure(root.MaxClientSize);
             }
-            else if (control.PreviousMeasure.HasValue)
+            else if (parent != null)
+            {
+                Measure(parent);
+            }
+
+            if (!control.IsMeasureValid)
             {
                 control.Measure(control.PreviousMeasure.Value);
             }
+
+            _toMeasure.Remove(control);
         }
 
         private void Arrange(ILayoutable control)
         {
             var root = control as ILayoutRoot;
+            var parent = control.VisualParent as ILayoutable;
 
             if (root != null)
             {
                 root.Arrange(new Rect(root.DesiredSize));
             }
-            else if (control.PreviousArrange.HasValue)
+            else if (parent != null)
+            {
+                Measure(parent);
+            }
+
+            if (control.PreviousArrange.HasValue)
             {
                 control.Arrange(control.PreviousArrange.Value);
             }
+
+            _toArrange.Remove(control);
         }
 
         private void QueueLayoutPass()
