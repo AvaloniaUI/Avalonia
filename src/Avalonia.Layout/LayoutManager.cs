@@ -155,7 +155,7 @@ namespace Avalonia.Layout
             }
             else if (parent != null)
             {
-                Measure(parent);
+                Arrange(parent);
             }
 
             if (control.PreviousArrange.HasValue)
