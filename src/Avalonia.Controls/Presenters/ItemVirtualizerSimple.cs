@@ -7,6 +7,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using Avalonia.Controls.Utils;
 using Avalonia.Input;
+using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Presenters
 {
@@ -165,6 +166,12 @@ namespace Avalonia.Controls.Presenters
                     case NavigationDirection.Down:
                         newItemIndex = itemIndex + 1;
                         break;
+                    case NavigationDirection.PageUp:
+                        newItemIndex = Math.Max(0, itemIndex - (int)ViewportValue);
+                        break;
+                    case NavigationDirection.PageDown:
+                        newItemIndex = Math.Min(ItemCount - 1, itemIndex + (int)ViewportValue);
+                        break;
                 }
             }
             else
@@ -176,6 +183,12 @@ namespace Avalonia.Controls.Presenters
                         break;
                     case NavigationDirection.Right:
                         newItemIndex = itemIndex + 1;
+                        break;
+                    case NavigationDirection.PageUp:
+                        newItemIndex = Math.Max(0, itemIndex - (int)ViewportValue);
+                        break;
+                    case NavigationDirection.PageDown:
+                        newItemIndex = Math.Min(ItemCount - 1, itemIndex + (int)ViewportValue);
                         break;
                 }
             }
@@ -189,7 +202,8 @@ namespace Avalonia.Controls.Presenters
 
                 if (newItemIndex < firstIndex || newItemIndex > lastIndex)
                 {
-                    OffsetValue += newItemIndex - itemIndex;
+                    var newOffset = OffsetValue + (newItemIndex - itemIndex);
+                    OffsetValue = CoerceOffset(newOffset);
                     InvalidateScroll();
                 }
 
@@ -397,6 +411,17 @@ namespace Avalonia.Controls.Presenters
             VirtualizingPanel.Children.RemoveRange(index, count);
             Owner.ItemContainerGenerator.Dematerialize(FirstIndex + index, count);
             NextIndex -= count;
+        }
+
+        /// <summary>
+        /// Ensures an offset value is within the value range.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns>The coerced value.</returns>
+        private double CoerceOffset(double value)
+        {
+            var max = Math.Max(ExtentValue - ViewportValue, 0);
+            return MathUtilities.Clamp(value, 0, max);
         }
     }
 }

@@ -35,7 +35,6 @@ namespace Avalonia.Input.Navigation
 
             if (container != null)
             {
-                var isForward = IsForward(direction);
                 var mode = KeyboardNavigation.GetDirectionalNavigation((InputElement)container);
 
                 switch (mode)

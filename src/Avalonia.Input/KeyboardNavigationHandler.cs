@@ -117,6 +117,12 @@ namespace Avalonia.Input
                     case Key.Right:
                         direction = NavigationDirection.Right;
                         break;
+                    case Key.PageUp:
+                        direction = NavigationDirection.PageUp;
+                        break;
+                    case Key.PageDown:
+                        direction = NavigationDirection.PageDown;
+                        break;
                 }
 
                 if (direction.HasValue)
