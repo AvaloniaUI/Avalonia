@@ -280,7 +280,7 @@ namespace Avalonia.Controls.Presenters
             {
                 scrollable.InvalidateScroll = () => UpdateFromScrollable(scrollable);
 
-                if (scrollable?.IsLogicalScrollEnabled == true)
+                if (scrollable.IsLogicalScrollEnabled == true)
                 {
                     _logicalScrollSubscription = new CompositeDisposable(
                         this.GetObservable(OffsetProperty).Skip(1).Subscribe(x => scrollable.Offset = x),
@@ -300,8 +300,7 @@ namespace Avalonia.Controls.Presenters
                 Offset = default(Vector);
                 InvalidateMeasure();
             }
-
-            if (scrollable.IsLogicalScrollEnabled)
+            else if (scrollable.IsLogicalScrollEnabled)
             {
                 Viewport = scrollable.Viewport;
                 Extent = scrollable.Extent;
