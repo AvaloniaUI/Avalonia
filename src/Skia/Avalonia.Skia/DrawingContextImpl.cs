@@ -184,9 +184,9 @@ namespace Avalonia.Skia
                     }
                 }
 
-                rv.SetApplyToAction(p => p.Shader,
-                                    (from, to) => to.Shader = from.Shader,
-                                    (p, v) => p.Shader = v);
+                rv.SetApplyToAction(p => new Tuple<SKColor, SKShader>(p.Color, p.Shader),
+                                    (from, to) => { to.Color = from.Color; to.Shader = from.Shader; },
+                                    (p, v) => { p.Color = v.Item1; p.Shader = v.Item2; });
                 return rv;
             }
 
@@ -215,9 +215,9 @@ namespace Avalonia.Skia
                 paint.Shader = SKShader.CreateBitmap(bitmap.Bitmap, tileX, tileY, translation);
                 paint.Shader.Dispose();
 
-                rv.SetApplyToAction(p => p.Shader,
-                                    (from, to) => to.Shader = from.Shader,
-                                    (p, v) => p.Shader = v);
+                rv.SetApplyToAction(p => new Tuple<SKColor, SKShader>(p.Color, p.Shader),
+                                    (from, to) => { to.Color = from.Color; to.Shader = from.Shader; },
+                                    (p, v) => { p.Color = v.Item1; p.Shader = v.Item2; });
             }
 
             return rv;
