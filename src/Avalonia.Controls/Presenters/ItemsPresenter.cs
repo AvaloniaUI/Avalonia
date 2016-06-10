@@ -81,7 +81,7 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <inheritdoc/>
-        IControl ILogicalScrollable.GetControlInDirection(FocusNavigationDirection direction, IControl from)
+        IControl ILogicalScrollable.GetControlInDirection(NavigationDirection direction, IControl from)
         {
             return _virtualizer?.GetControlInDirection(direction, from);
         }

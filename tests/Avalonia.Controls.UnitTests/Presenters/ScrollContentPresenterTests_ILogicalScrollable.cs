@@ -353,7 +353,7 @@ namespace Avalonia.Controls.UnitTests
                 return new Size(150, 150);
             }
 
-            public IControl GetControlInDirection(FocusNavigationDirection direction, IControl from)
+            public IControl GetControlInDirection(NavigationDirection direction, IControl from)
             {
                 throw new NotImplementedException();
             }

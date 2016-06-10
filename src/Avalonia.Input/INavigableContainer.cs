@@ -14,6 +14,6 @@ namespace Avalonia.Input
         /// <param name="direction">The movement direction.</param>
         /// <param name="from">The control from which movement begins.</param>
         /// <returns>The control.</returns>
-        IInputElement GetControl(FocusNavigationDirection direction, IInputElement from);
+        IInputElement GetControl(NavigationDirection direction, IInputElement from);
     }
 }

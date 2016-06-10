@@ -142,7 +142,7 @@ namespace Avalonia.Controls.Presenters
             InvalidateScroll();
         }
 
-        public override IControl GetControlInDirection(FocusNavigationDirection direction, IControl from)
+        public override IControl GetControlInDirection(NavigationDirection direction, IControl from)
         {
             var generator = Owner.ItemContainerGenerator;
             var panel = VirtualizingPanel;
@@ -159,10 +159,10 @@ namespace Avalonia.Controls.Presenters
             {
                 switch (direction)
                 {
-                    case FocusNavigationDirection.Up:
+                    case NavigationDirection.Up:
                         newItemIndex = itemIndex - 1;
                         break;
-                    case FocusNavigationDirection.Down:
+                    case NavigationDirection.Down:
                         newItemIndex = itemIndex + 1;
                         break;
                 }
@@ -171,10 +171,10 @@ namespace Avalonia.Controls.Presenters
             {
                 switch (direction)
                 {
-                    case FocusNavigationDirection.Left:
+                    case NavigationDirection.Left:
                         newItemIndex = itemIndex - 1;
                         break;
-                    case FocusNavigationDirection.Right:
+                    case NavigationDirection.Right:
                         newItemIndex = itemIndex + 1;
                         break;
                 }

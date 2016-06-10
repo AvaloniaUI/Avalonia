@@ -136,7 +136,7 @@ namespace Avalonia.Controls
         /// <param name="direction">The movement direction.</param>
         /// <param name="from">The control from which movement begins.</param>
         /// <returns>The control.</returns>
-        IInputElement INavigableContainer.GetControl(FocusNavigationDirection direction, IInputElement from)
+        IInputElement INavigableContainer.GetControl(NavigationDirection direction, IInputElement from)
         {
             // TODO: Implement this
             return null;

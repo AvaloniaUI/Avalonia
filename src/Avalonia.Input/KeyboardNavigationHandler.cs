@@ -48,11 +48,11 @@ namespace Avalonia.Input
         /// </returns>
         public static IInputElement GetNext(
             IInputElement element,
-            FocusNavigationDirection direction)
+            NavigationDirection direction)
         {
             Contract.Requires<ArgumentNullException>(element != null);
 
-            if (direction == FocusNavigationDirection.Next || direction == FocusNavigationDirection.Previous)
+            if (direction == NavigationDirection.Next || direction == NavigationDirection.Previous)
             {
                 return TabNavigation.GetNextInTabOrder(element, direction);
             }
@@ -70,7 +70,7 @@ namespace Avalonia.Input
         /// <param name="modifiers">Any input modifiers active at the time of focus.</param>
         public void Move(
             IInputElement element, 
-            FocusNavigationDirection direction,
+            NavigationDirection direction,
             InputModifiers modifiers = InputModifiers.None)
         {
             Contract.Requires<ArgumentNullException>(element != null);
@@ -79,8 +79,8 @@ namespace Avalonia.Input
 
             if (next != null)
             {
-                var method = direction == FocusNavigationDirection.Next ||
-                             direction == FocusNavigationDirection.Previous ?
+                var method = direction == NavigationDirection.Next ||
+                             direction == NavigationDirection.Previous ?
                              NavigationMethod.Tab : NavigationMethod.Directional;
                 FocusManager.Instance.Focus(next, method, modifiers);
             }
@@ -97,25 +97,25 @@ namespace Avalonia.Input
 
             if (current != null)
             {
-                FocusNavigationDirection? direction = null;
+                NavigationDirection? direction = null;
 
                 switch (e.Key)
                 {
                     case Key.Tab:
                         direction = (e.Modifiers & InputModifiers.Shift) == 0 ?
-                            FocusNavigationDirection.Next : FocusNavigationDirection.Previous;
+                            NavigationDirection.Next : NavigationDirection.Previous;
                         break;
                     case Key.Up:
-                        direction = FocusNavigationDirection.Up;
+                        direction = NavigationDirection.Up;
                         break;
                     case Key.Down:
-                        direction = FocusNavigationDirection.Down;
+                        direction = NavigationDirection.Down;
                         break;
                     case Key.Left:
-                        direction = FocusNavigationDirection.Left;
+                        direction = NavigationDirection.Left;
                         break;
                     case Key.Right:
-                        direction = FocusNavigationDirection.Right;
+                        direction = NavigationDirection.Right;
                         break;
                 }
 

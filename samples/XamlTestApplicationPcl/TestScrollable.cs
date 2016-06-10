@@ -81,7 +81,7 @@ namespace XamlTestApplication
             throw new NotImplementedException();
         }
 
-        public IControl GetControlInDirection(FocusNavigationDirection direction, IControl from)
+        public IControl GetControlInDirection(NavigationDirection direction, IControl from)
         {
             throw new NotImplementedException();
         }

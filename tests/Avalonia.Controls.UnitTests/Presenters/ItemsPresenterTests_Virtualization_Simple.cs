@@ -384,7 +384,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
                 var from = target.Panel.Children[5];
                 var result = ((ILogicalScrollable)target).GetControlInDirection(
-                    FocusNavigationDirection.Down,
+                    NavigationDirection.Down,
                     from);
 
                 Assert.Same(target.Panel.Children[6], result);
@@ -401,7 +401,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
                 var from = target.Panel.Children[9];
                 var result = ((ILogicalScrollable)target).GetControlInDirection(
-                    FocusNavigationDirection.Down,
+                    NavigationDirection.Down,
                     from);
 
                 Assert.Equal(new Vector(0, 1), ((ILogicalScrollable)target).Offset);
@@ -419,7 +419,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
                 var from = target.Panel.Children[8];
                 var result = ((ILogicalScrollable)target).GetControlInDirection(
-                    FocusNavigationDirection.Down,
+                    NavigationDirection.Down,
                     from);
 
                 Assert.Equal(new Vector(0, 1), ((ILogicalScrollable)target).Offset);
@@ -438,7 +438,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
                 var from = target.Panel.Children[1];
                 var result = ((ILogicalScrollable)target).GetControlInDirection(
-                    FocusNavigationDirection.Up,
+                    NavigationDirection.Up,
                     from);
 
                 Assert.Equal(new Vector(0, 10), ((ILogicalScrollable)target).Offset);
@@ -459,7 +459,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
                 var from = target.Panel.Children[5];
                 var result = ((ILogicalScrollable)target).GetControlInDirection(
-                    FocusNavigationDirection.Right,
+                    NavigationDirection.Right,
                     from);
 
                 Assert.Same(target.Panel.Children[6], result);
@@ -476,7 +476,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
                 var from = target.Panel.Children[9];
                 var result = ((ILogicalScrollable)target).GetControlInDirection(
-                    FocusNavigationDirection.Right,
+                    NavigationDirection.Right,
                     from);
 
                 Assert.Equal(new Vector(1, 0), ((ILogicalScrollable)target).Offset);
@@ -494,7 +494,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
                 var from = target.Panel.Children[8];
                 var result = ((ILogicalScrollable)target).GetControlInDirection(
-                    FocusNavigationDirection.Right,
+                    NavigationDirection.Right,
                     from);
 
                 Assert.Equal(new Vector(1, 0), ((ILogicalScrollable)target).Offset);
@@ -513,7 +513,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
                 var from = target.Panel.Children[1];
                 var result = ((ILogicalScrollable)target).GetControlInDirection(
-                    FocusNavigationDirection.Left,
+                    NavigationDirection.Left,
                     from);
 
                 Assert.Equal(new Vector(10, 0), ((ILogicalScrollable)target).Offset);

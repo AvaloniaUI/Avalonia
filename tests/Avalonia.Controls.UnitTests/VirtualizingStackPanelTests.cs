@@ -161,9 +161,9 @@ namespace Avalonia.Controls.UnitTests
                 scrollable.Setup(x => x.IsLogicalScrollEnabled).Returns(true);
 
                 ((ISetLogicalParent)target).SetParent(presenter.Object);
-                ((INavigableContainer)target).GetControl(FocusNavigationDirection.Next, from);
+                ((INavigableContainer)target).GetControl(NavigationDirection.Next, from);
 
-                scrollable.Verify(x => x.GetControlInDirection(FocusNavigationDirection.Next, from));
+                scrollable.Verify(x => x.GetControlInDirection(NavigationDirection.Next, from));
             }
         }
     }

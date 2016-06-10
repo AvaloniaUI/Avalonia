@@ -156,7 +156,7 @@ namespace Avalonia.Controls.Presenters
         /// <param name="direction">The movement direction.</param>
         /// <param name="from">The control from which movement begins.</param>
         /// <returns>The control.</returns>
-        public virtual IControl GetControlInDirection(FocusNavigationDirection direction, IControl from)
+        public virtual IControl GetControlInDirection(NavigationDirection direction, IControl from)
         {
             return null;
         }
