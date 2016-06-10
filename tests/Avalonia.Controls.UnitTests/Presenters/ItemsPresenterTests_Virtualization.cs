@@ -7,6 +7,8 @@ using Avalonia.Controls.Generators;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Layout;
+using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Presenters
@@ -158,7 +160,6 @@ namespace Avalonia.Controls.UnitTests.Presenters
             var target = CreateTarget(mode: ItemVirtualizationMode.None);
             var scroll = (ScrollContentPresenter)target.Parent;
 
-            target.ApplyTemplate();
             scroll.Measure(new Size(100, 100));
             scroll.Arrange(new Rect(0, 0, 100, 100));
 
@@ -167,8 +168,8 @@ namespace Avalonia.Controls.UnitTests.Presenters
             Assert.Equal(new Size(100, 100), scroll.Viewport);
 
             target.VirtualizationMode = ItemVirtualizationMode.Simple;
-            scroll.Measure(new Size(100, 100));
-            scroll.Arrange(new Rect(0, 0, 100, 100));
+            target.Measure(new Size(100, 100));
+            target.Arrange(new Rect(0, 0, 100, 100));
 
             Assert.Equal(10, target.Panel.Children.Count);
             Assert.Equal(new Size(0, 20), scroll.Extent);
@@ -176,20 +177,51 @@ namespace Avalonia.Controls.UnitTests.Presenters
         }
 
         [Fact]
+        public void Changing_VirtualizationMode_None_To_Simple_Should_Add_Correct_Number_Of_Controls()
+        {
+            using (UnitTestApplication.Start(TestServices.RealLayoutManager))
+            {
+                var target = CreateTarget(mode: ItemVirtualizationMode.None);
+                var scroll = (ScrollContentPresenter)target.Parent;
+
+                scroll.Measure(new Size(100, 100));
+                scroll.Arrange(new Rect(0, 0, 100, 100));
+
+                // Ensure than an intermediate measure pass doesn't add more controls than it
+                // should. This can happen if target gets measured with Size.Infinity which
+                // is what the available size should be when VirtualizationMode == None but not
+                // what it should after VirtualizationMode is changed to Simple.
+                target.Panel.Children.CollectionChanged += (s, e) =>
+                {
+                    Assert.InRange(target.Panel.Children.Count, 0, 10);
+                };
+
+                target.VirtualizationMode = ItemVirtualizationMode.Simple;
+                LayoutManager.Instance.ExecuteLayoutPass();
+
+                Assert.Equal(10, target.Panel.Children.Count);
+            }
+        }
+
+        [Fact]
         public void Changing_VirtualizationMode_Simple_To_None_Should_Update_Control()
         {
             var target = CreateTarget();
-
-            target.ApplyTemplate();
-            target.Measure(new Size(100, 100));
-            target.Arrange(new Rect(0, 0, 100, 100));
-
             var scroll = (ScrollContentPresenter)target.Parent;
+
+            scroll.Measure(new Size(100, 100));
+            scroll.Arrange(new Rect(0, 0, 100, 100));
+
             Assert.Equal(10, target.Panel.Children.Count);
             Assert.Equal(new Size(0, 20), scroll.Extent);
             Assert.Equal(new Size(0, 10), scroll.Viewport);
 
             target.VirtualizationMode = ItemVirtualizationMode.None;
+            target.Measure(new Size(100, 100));
+            target.Arrange(new Rect(0, 0, 100, 100));
+
+            // Here - unlike changing the other way - we need to do a layout pass on the scroll
+            // content presenter as non-logical scroll values are only updated on arrange.
             scroll.Measure(new Size(100, 100));
             scroll.Arrange(new Rect(0, 0, 100, 100));
 
