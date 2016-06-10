@@ -23,7 +23,11 @@ namespace Avalonia.Skia
             var impl = (BitmapImpl)source.PlatformImpl;
             var s = sourceRect.ToSKRect();
             var d = destRect.ToSKRect();
-            Canvas.DrawBitmap(impl.Bitmap, s, d);
+            using (var paint = new SKPaint()
+                    { Color = new SKColor(255, 255, 255, (byte)(255 * opacity)) })
+            {
+                Canvas.DrawBitmap(impl.Bitmap, s, d, paint);
+            }
         }
 
         public void DrawLine(Pen pen, Point p1, Point p2)
@@ -73,12 +77,13 @@ namespace Avalonia.Skia
             //We are saving memory allocations there
             //TODO: add more disposable fields if needed
             public readonly SKPaint Paint;
+
             private IDisposable _disposable1;
 
             private Func<SKPaint, SKPaint, IDisposable> _applyToAction;
 
-            public void SetApplyToAction<T>(Func<SKPaint, T> get, 
-                                            Action<SKPaint, SKPaint> apply, 
+            public void SetApplyToAction<T>(Func<SKPaint, T> get,
+                                            Action<SKPaint, SKPaint> apply,
                                             Action<SKPaint, T> revert)
             {
                 _applyToAction = (from, to) =>
@@ -142,8 +147,6 @@ namespace Avalonia.Skia
                                     (p, v) => p.Color = v);
                 return rv;
             }
-
-
 
             var gradient = brush as GradientBrush;
             if (gradient != null)
