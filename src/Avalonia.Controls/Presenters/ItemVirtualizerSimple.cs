@@ -7,6 +7,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using Avalonia.Controls.Utils;
 using Avalonia.Input;
+using Avalonia.Layout;
 using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Presenters
@@ -210,7 +211,19 @@ namespace Avalonia.Controls.Presenters
                     InvalidateScroll();
                 }
 
-                return generator.ContainerFromIndex(newItemIndex);
+                var container = generator.ContainerFromIndex(newItemIndex);
+
+                // We need to do a layout here because it's possible that the container we moved to
+                // is only partially visible due to differing item sizes. If the container is only 
+                // partially visible, scroll again.
+                LayoutManager.Instance?.ExecuteLayoutPass();
+
+                if (!new Rect(panel.Bounds.Size).Contains(container.Bounds))
+                {
+                    OffsetValue += newItemIndex > itemIndex ? 1 : -1;
+                }
+
+                return container;
             }
 
             return null;
