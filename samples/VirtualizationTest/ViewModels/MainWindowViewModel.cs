@@ -17,6 +17,7 @@ namespace VirtualizationTest.ViewModels
         private int _newItemIndex;
         private IReactiveList<ItemViewModel> _items;
         private string _prefix = "Item";
+        private Orientation _orientation;
         private ItemVirtualizationMode _virtualizationMode = ItemVirtualizationMode.Simple;
 
         public MainWindowViewModel()
@@ -52,6 +53,15 @@ namespace VirtualizationTest.ViewModels
             get { return _items; }
             private set { this.RaiseAndSetIfChanged(ref _items, value); }
         }
+
+        public Orientation Orientation
+        {
+            get { return _orientation; }
+            set { this.RaiseAndSetIfChanged(ref _orientation, value); }
+        }
+
+        public IEnumerable<Orientation> Orientations =>
+            Enum.GetValues(typeof(Orientation)).Cast<Orientation>();
 
         public ItemVirtualizationMode VirtualizationMode
         {

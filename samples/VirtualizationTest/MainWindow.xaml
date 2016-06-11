@@ -7,6 +7,8 @@
                     Gap="4">
             <DropDown Items="{Binding VirtualizationModes}"
                       SelectedItem="{Binding VirtualizationMode}"/>
+            <DropDown Items="{Binding Orientations}"
+                      SelectedItem="{Binding Orientation}"/>
             <TextBox Watermark="Item Count"
                      UseFloatingWatermark="True"
                      Text="{Binding ItemCount}"/>
@@ -32,6 +34,11 @@
                  SelectedItems="{Binding SelectedItems}"
                  SelectionMode="Multiple"
                  VirtualizationMode="{Binding VirtualizationMode}">
+            <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <VirtualizingStackPanel Orientation="{Binding Orientation}"/>
+                </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <TextBlock Text="{Binding Header}"/>

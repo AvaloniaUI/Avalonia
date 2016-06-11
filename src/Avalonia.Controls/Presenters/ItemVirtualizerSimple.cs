@@ -72,7 +72,10 @@ namespace Avalonia.Controls.Presenters
                         // offset the panel by the height of the first item.
                         var firstIndex = ItemCount - panel.Children.Count;
                         RecycleContainersForMove(firstIndex - FirstIndex);
-                        panel.PixelOffset = panel.Children[0].Bounds.Height;
+
+                        panel.PixelOffset = VirtualizingPanel.ScrollDirection == Orientation.Vertical ?
+                            panel.Children[0].Bounds.Height :
+                            panel.Children[0].Bounds.Width;
                     }
                 }
             }
