@@ -124,10 +124,10 @@ namespace Avalonia.Input
                         direction = NavigationDirection.PageDown;
                         break;
                     case Key.Home:
-                        direction = NavigationDirection.Home;
+                        direction = NavigationDirection.First;
                         break;
                     case Key.End:
-                        direction = NavigationDirection.End;
+                        direction = NavigationDirection.Last;
                         break;
                 }
 

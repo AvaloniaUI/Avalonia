@@ -115,6 +115,9 @@ namespace Avalonia.Controls
                 case NavigationDirection.Down:
                     index = horiz ? -1 : index + 1;
                     break;
+                default:
+                    index = -1;
+                    break;
             }
 
             if (index >= 0 && index < Children.Count)

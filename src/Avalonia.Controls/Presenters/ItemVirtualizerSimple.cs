@@ -163,6 +163,14 @@ namespace Avalonia.Controls.Presenters
 
             switch (direction)
             {
+                case NavigationDirection.First:
+                    newItemIndex = 0;
+                    break;
+
+                case NavigationDirection.Last:
+                    newItemIndex = ItemCount - 1;
+                    break;
+
                 case NavigationDirection.Up:
                     if (vertical)
                     {
@@ -198,14 +206,6 @@ namespace Avalonia.Controls.Presenters
 
                 case NavigationDirection.PageDown:
                     newItemIndex = Math.Min(ItemCount - 1, itemIndex + (int)ViewportValue);
-                    break;
-
-                case NavigationDirection.Home:
-                    newItemIndex = 0;
-                    break;
-
-                case NavigationDirection.End:
-                    newItemIndex = ItemCount - 1;
                     break;
             }
 

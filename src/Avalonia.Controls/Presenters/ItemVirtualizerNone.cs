@@ -110,6 +110,21 @@ namespace Avalonia.Controls.Presenters
             Owner.InvalidateMeasure();
         }
 
+        /// <summary>
+        /// Scrolls the specified item into view.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        public override void ScrollIntoView(object item)
+        {
+            var index = Items.IndexOf(item);
+
+            if (index != -1)
+            {
+                var container = Owner.ItemContainerGenerator.ContainerFromIndex(index);
+                container.BringIntoView();
+            }
+        }
+
         private IList<ItemContainerInfo> AddContainers(int index, IEnumerable items)
         {
             var generator = Owner.ItemContainerGenerator;
