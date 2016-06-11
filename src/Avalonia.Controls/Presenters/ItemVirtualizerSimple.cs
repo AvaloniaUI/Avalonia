@@ -212,15 +212,20 @@ namespace Avalonia.Controls.Presenters
                 }
 
                 var container = generator.ContainerFromIndex(newItemIndex);
+                var layoutManager = LayoutManager.Instance;
 
                 // We need to do a layout here because it's possible that the container we moved to
                 // is only partially visible due to differing item sizes. If the container is only 
-                // partially visible, scroll again.
-                LayoutManager.Instance?.ExecuteLayoutPass();
-
-                if (!new Rect(panel.Bounds.Size).Contains(container.Bounds))
+                // partially visible, scroll again. Don't do this if there's no layout manager:
+                // it means we're running a unit test.
+                if (layoutManager != null)
                 {
-                    OffsetValue += newItemIndex > itemIndex ? 1 : -1;
+                    layoutManager.ExecuteLayoutPass();
+
+                    if (!new Rect(panel.Bounds.Size).Contains(container.Bounds))
+                    {
+                        OffsetValue += newItemIndex > itemIndex ? 1 : -1;
+                    }
                 }
 
                 return container;

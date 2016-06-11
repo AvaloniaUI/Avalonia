@@ -11,6 +11,7 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
+using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Presenters
