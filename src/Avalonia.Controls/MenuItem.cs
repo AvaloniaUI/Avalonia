@@ -208,7 +208,7 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         protected override IItemContainerGenerator CreateItemContainerGenerator()
         {
-            return new ItemContainerGenerator<MenuItem>(this, MenuItem.HeaderProperty, null);
+            return new MenuItemContainerGenerator(this);
         }
 
         /// <summary>

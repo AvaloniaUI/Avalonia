@@ -51,6 +51,7 @@
     <Compile Include="DockPanel.cs" />
     <Compile Include="Expander.cs" />
     <Compile Include="Generators\ItemContainerInfo.cs" />
+    <Compile Include="Generators\MenuItemContainerGenerator.cs" />
     <Compile Include="Generators\TreeContainerIndex.cs" />
     <Compile Include="HotkeyManager.cs" />
     <Compile Include="IApplicationLifecycle.cs" />
