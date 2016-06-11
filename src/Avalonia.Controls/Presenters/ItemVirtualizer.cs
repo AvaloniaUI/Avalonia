@@ -175,14 +175,11 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <summary>
-        /// Called when a request is made to bring an item into view.
+        /// Scrolls the specified item into view.
         /// </summary>
-        /// <param name="target">The item to bring into view.</param>
-        /// <param name="targetRect">The rect on the item to bring into view.</param>
-        /// <returns>True if the request was handled; otherwise false.</returns>
-        public virtual bool BringIntoView(IVisual target, Rect targetRect)
+        /// <param name="item">The item.</param>
+        public virtual void ScrollIntoView(object item)
         {
-            return false;
         }
 
         /// <inheritdoc/>

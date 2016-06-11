@@ -27,6 +27,8 @@
             <Button Command="{Binding AddItemCommand}">Add Item</Button>
             <Button Command="{Binding RemoveItemCommand}">Remove Item</Button>
             <Button Command="{Binding RecreateCommand}">Recreate</Button>
+            <Button Command="{Binding SelectFirstCommand}">Select First</Button>
+            <Button Command="{Binding SelectLastCommand}">Select Last</Button>
         </StackPanel>
 
         <ListBox Name="listBox" 

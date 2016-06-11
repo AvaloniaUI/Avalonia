@@ -281,6 +281,12 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <summary>
+        /// Scrolls the specified item into view.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        public void ScrollIntoView(object item) => Presenter?.ScrollIntoView(item);
+
+        /// <summary>
         /// Tries to get the container that was the source of an event.
         /// </summary>
         /// <param name="eventSource">The control that raised the event.</param>
@@ -723,6 +729,12 @@ namespace Avalonia.Controls.Primitives
             {
                 case NotifyCollectionChangedAction.Add:
                     SelectedItemsAdded(e.NewItems.Cast<object>().ToList());
+
+                    if (AutoScrollToSelectedItem)
+                    {
+                        ScrollIntoView(e.NewItems[0]);
+                    }
+
                     added = e.NewItems;
                     break;
 

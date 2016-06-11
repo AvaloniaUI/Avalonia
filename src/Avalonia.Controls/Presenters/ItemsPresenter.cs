@@ -77,13 +77,18 @@ namespace Avalonia.Controls.Presenters
         /// <inheritdoc/>
         bool ILogicalScrollable.BringIntoView(IControl target, Rect targetRect)
         {
-            return _virtualizer?.BringIntoView(target, targetRect) ?? false;
+            return false;
         }
 
         /// <inheritdoc/>
         IControl ILogicalScrollable.GetControlInDirection(NavigationDirection direction, IControl from)
         {
             return _virtualizer?.GetControlInDirection(direction, from);
+        }
+
+        public override void ScrollIntoView(object item)
+        {
+            _virtualizer?.ScrollIntoView(item);
         }
 
         /// <inheritdoc/>

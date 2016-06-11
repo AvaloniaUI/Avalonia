@@ -412,38 +412,44 @@ namespace Avalonia.Controls.UnitTests.Presenters
             [Fact]
             public void GetControlInDirection_Down_Should_Scroll_If_Partially_Visible()
             {
-                var target = CreateTarget();
+                using (UnitTestApplication.Start(TestServices.RealLayoutManager))
+                {
+                    var target = CreateTarget();
+                    var scroller = (ScrollContentPresenter)target.Parent;
 
-                target.ApplyTemplate();
-                target.Measure(new Size(100, 95));
-                target.Arrange(new Rect(0, 0, 100, 95));
+                    scroller.Measure(new Size(100, 95));
+                    scroller.Arrange(new Rect(0, 0, 100, 95));
 
-                var from = target.Panel.Children[8];
-                var result = ((ILogicalScrollable)target).GetControlInDirection(
-                    NavigationDirection.Down,
-                    from);
+                    var from = target.Panel.Children[8];
+                    var result = ((ILogicalScrollable)target).GetControlInDirection(
+                        NavigationDirection.Down,
+                        from);
 
-                Assert.Equal(new Vector(0, 1), ((ILogicalScrollable)target).Offset);
-                Assert.Same(target.Panel.Children[8], result);
+                    Assert.Equal(new Vector(0, 1), ((ILogicalScrollable)target).Offset);
+                    Assert.Same(target.Panel.Children[8], result);
+                }
             }
 
             [Fact]
             public void GetControlInDirection_Up_Should_Scroll_If_Partially_Visible_Item_Is_Currently_Shown()
             {
-                var target = CreateTarget();
+                using (UnitTestApplication.Start(TestServices.RealLayoutManager))
+                {
+                    var target = CreateTarget();
+                    var scroller = (ScrollContentPresenter)target.Parent;
 
-                target.ApplyTemplate();
-                target.Measure(new Size(100, 95));
-                target.Arrange(new Rect(0, 0, 100, 95));
-                ((ILogicalScrollable)target).Offset = new Vector(0, 11);
+                    scroller.Measure(new Size(100, 95));
+                    scroller.Arrange(new Rect(0, 0, 100, 95));
+                    ((ILogicalScrollable)target).Offset = new Vector(0, 11);
 
-                var from = target.Panel.Children[1];
-                var result = ((ILogicalScrollable)target).GetControlInDirection(
-                    NavigationDirection.Up,
-                    from);
+                    var from = target.Panel.Children[1];
+                    var result = ((ILogicalScrollable)target).GetControlInDirection(
+                        NavigationDirection.Up,
+                        from);
 
-                Assert.Equal(new Vector(0, 10), ((ILogicalScrollable)target).Offset);
-                Assert.Same(target.Panel.Children[0], result);
+                    Assert.Equal(new Vector(0, 10), ((ILogicalScrollable)target).Offset);
+                    Assert.Same(target.Panel.Children[0], result);
+                }
             }
         }
 
@@ -487,19 +493,22 @@ namespace Avalonia.Controls.UnitTests.Presenters
             [Fact]
             public void GetControlInDirection_Right_Should_Scroll_If_Partially_Visible()
             {
-                var target = CreateTarget(orientation: Orientation.Horizontal);
+                using (UnitTestApplication.Start(TestServices.RealLayoutManager))
+                {
+                    var target = CreateTarget(orientation: Orientation.Horizontal);
+                    var scroller = (ScrollContentPresenter)target.Parent;
 
-                target.ApplyTemplate();
-                target.Measure(new Size(95, 100));
-                target.Arrange(new Rect(0, 0, 95, 100));
+                    scroller.Measure(new Size(95, 100));
+                    scroller.Arrange(new Rect(0, 0, 95, 100));
 
-                var from = target.Panel.Children[8];
-                var result = ((ILogicalScrollable)target).GetControlInDirection(
-                    NavigationDirection.Right,
-                    from);
+                    var from = target.Panel.Children[8];
+                    var result = ((ILogicalScrollable)target).GetControlInDirection(
+                        NavigationDirection.Right,
+                        from);
 
-                Assert.Equal(new Vector(1, 0), ((ILogicalScrollable)target).Offset);
-                Assert.Same(target.Panel.Children[8], result);
+                    Assert.Equal(new Vector(1, 0), ((ILogicalScrollable)target).Offset);
+                    Assert.Same(target.Panel.Children[8], result);
+                }
             }
 
             [Fact]

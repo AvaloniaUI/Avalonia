@@ -197,41 +197,18 @@ namespace Avalonia.Controls.Presenters
                 }
             }
 
-            if (newItemIndex >= 0 && newItemIndex < ItemCount)
+            return ScrollIntoView(newItemIndex);
+        }
+
+        /// <inheritdoc/>
+        public override void ScrollIntoView(object item)
+        {
+            var index = Items.IndexOf(item);
+
+            if (index != -1)
             {
-                // Get the index of the first and last fully visible items (i.e. excluding any
-                // partially visible item at the beginning or end).
-                var firstIndex = panel.PixelOffset == 0 ? FirstIndex : FirstIndex + 1;
-                var lastIndex = (FirstIndex + ViewportValue) - 1;
-
-                if (newItemIndex < firstIndex || newItemIndex > lastIndex)
-                {
-                    var newOffset = OffsetValue + (newItemIndex - itemIndex);
-                    OffsetValue = CoerceOffset(newOffset);
-                    InvalidateScroll();
-                }
-
-                var container = generator.ContainerFromIndex(newItemIndex);
-                var layoutManager = LayoutManager.Instance;
-
-                // We need to do a layout here because it's possible that the container we moved to
-                // is only partially visible due to differing item sizes. If the container is only 
-                // partially visible, scroll again. Don't do this if there's no layout manager:
-                // it means we're running a unit test.
-                if (layoutManager != null)
-                {
-                    layoutManager.ExecuteLayoutPass();
-
-                    if (!new Rect(panel.Bounds.Size).Contains(container.Bounds))
-                    {
-                        OffsetValue += newItemIndex > itemIndex ? 1 : -1;
-                    }
-                }
-
-                return container;
+                ScrollIntoView(index);
             }
-
-            return null;
         }
 
         /// <summary>
@@ -432,6 +409,60 @@ namespace Avalonia.Controls.Presenters
             VirtualizingPanel.Children.RemoveRange(index, count);
             Owner.ItemContainerGenerator.Dematerialize(FirstIndex + index, count);
             NextIndex -= count;
+        }
+
+        /// <summary>
+        /// Scrolls the item with the specified index into view.
+        /// </summary>
+        /// <param name="index">The item index.</param>
+        /// <returns>The container that was brought into view.</returns>
+        private IControl ScrollIntoView(int index)
+        {
+            var panel = VirtualizingPanel;
+            var generator = Owner.ItemContainerGenerator;
+            var newOffset = -1.0;
+
+            if (index >= 0 && index < ItemCount)
+            {
+                if (index < FirstIndex)
+                {
+                    newOffset = index;
+                }
+                else if (index >= NextIndex)
+                {
+                    newOffset = index - Math.Ceiling(ViewportValue - 1);
+                }
+                else if (OffsetValue + ViewportValue >= ItemCount)
+                {
+                    newOffset = OffsetValue - 1;
+                }
+
+                if (newOffset != -1)
+                {
+                    OffsetValue = newOffset;
+                }
+
+                var container = generator.ContainerFromIndex(index);
+                var layoutManager = LayoutManager.Instance;
+
+                // We need to do a layout here because it's possible that the container we moved to
+                // is only partially visible due to differing item sizes. If the container is only 
+                // partially visible, scroll again. Don't do this if there's no layout manager:
+                // it means we're running a unit test.
+                if (layoutManager != null)
+                {
+                    layoutManager.ExecuteLayoutPass();
+
+                    if (!new Rect(panel.Bounds.Size).Contains(container.Bounds))
+                    {
+                        OffsetValue += 1;
+                    }
+                }
+
+                return container;
+            }
+
+            return null;
         }
 
         /// <summary>

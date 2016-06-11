@@ -31,6 +31,12 @@ namespace VirtualizationTest.ViewModels
 
             RemoveItemCommand = ReactiveCommand.Create();
             RemoveItemCommand.Subscribe(_ => Remove());
+
+            SelectFirstCommand = ReactiveCommand.Create();
+            SelectFirstCommand.Subscribe(_ => SelectItem(0));
+
+            SelectLastCommand = ReactiveCommand.Create();
+            SelectLastCommand.Subscribe(_ => SelectItem(Items.Count - 1));
         }
 
         public string NewItemString
@@ -73,10 +79,10 @@ namespace VirtualizationTest.ViewModels
             Enum.GetValues(typeof(ItemVirtualizationMode)).Cast<ItemVirtualizationMode>();
 
         public ReactiveCommand<object> AddItemCommand { get; private set; }
-
         public ReactiveCommand<object> RecreateCommand { get; private set; }
-
         public ReactiveCommand<object> RemoveItemCommand { get; private set; }
+        public ReactiveCommand<object> SelectFirstCommand { get; private set; }
+        public ReactiveCommand<object> SelectLastCommand { get; private set; }
 
         private void ResizeItems(int count)
         {
@@ -124,6 +130,12 @@ namespace VirtualizationTest.ViewModels
             var items = Enumerable.Range(0, _itemCount)
                 .Select(x => new ItemViewModel(x, _prefix));
             Items = new ReactiveList<ItemViewModel>(items);
+        }
+
+        private void SelectItem(int index)
+        {
+            SelectedItems.Clear();
+            SelectedItems.Add(Items[index]);
         }
     }
 }
