@@ -152,6 +152,7 @@ namespace Avalonia.Controls.Presenters
             var generator = Owner.ItemContainerGenerator;
             var panel = VirtualizingPanel;
             var itemIndex = generator.IndexFromContainer(from);
+            var vertical = VirtualizingPanel.ScrollDirection == Orientation.Vertical;
 
             if (itemIndex == -1)
             {
@@ -160,41 +161,52 @@ namespace Avalonia.Controls.Presenters
 
             var newItemIndex = -1;
 
-            if (VirtualizingPanel.ScrollDirection == Orientation.Vertical)
+            switch (direction)
             {
-                switch (direction)
-                {
-                    case NavigationDirection.Up:
+                case NavigationDirection.Up:
+                    if (vertical)
+                    {
                         newItemIndex = itemIndex - 1;
-                        break;
-                    case NavigationDirection.Down:
+                    }
+
+                    break;
+                case NavigationDirection.Down:
+                    if (vertical)
+                    {
                         newItemIndex = itemIndex + 1;
-                        break;
-                    case NavigationDirection.PageUp:
-                        newItemIndex = Math.Max(0, itemIndex - (int)ViewportValue);
-                        break;
-                    case NavigationDirection.PageDown:
-                        newItemIndex = Math.Min(ItemCount - 1, itemIndex + (int)ViewportValue);
-                        break;
-                }
-            }
-            else
-            {
-                switch (direction)
-                {
-                    case NavigationDirection.Left:
+                    }
+
+                    break;
+
+                case NavigationDirection.Left:
+                    if (!vertical)
+                    {
                         newItemIndex = itemIndex - 1;
-                        break;
-                    case NavigationDirection.Right:
+                    }
+                    break;
+
+                case NavigationDirection.Right:
+                    if (!vertical)
+                    {
                         newItemIndex = itemIndex + 1;
-                        break;
-                    case NavigationDirection.PageUp:
-                        newItemIndex = Math.Max(0, itemIndex - (int)ViewportValue);
-                        break;
-                    case NavigationDirection.PageDown:
-                        newItemIndex = Math.Min(ItemCount - 1, itemIndex + (int)ViewportValue);
-                        break;
-                }
+                    }
+                    break;
+
+                case NavigationDirection.PageUp:
+                    newItemIndex = Math.Max(0, itemIndex - (int)ViewportValue);
+                    break;
+
+                case NavigationDirection.PageDown:
+                    newItemIndex = Math.Min(ItemCount - 1, itemIndex + (int)ViewportValue);
+                    break;
+
+                case NavigationDirection.Home:
+                    newItemIndex = 0;
+                    break;
+
+                case NavigationDirection.End:
+                    newItemIndex = ItemCount - 1;
+                    break;
             }
 
             return ScrollIntoView(newItemIndex);

@@ -123,6 +123,12 @@ namespace Avalonia.Input
                     case Key.PageDown:
                         direction = NavigationDirection.PageDown;
                         break;
+                    case Key.Home:
+                        direction = NavigationDirection.Home;
+                        break;
+                    case Key.End:
+                        direction = NavigationDirection.End;
+                        break;
                 }
 
                 if (direction.HasValue)

@@ -57,5 +57,15 @@ namespace Avalonia.Input
         /// Move the focus down a page.
         /// </summary>
         PageDown,
+
+        /// <summary>
+        /// Move the focus to the first item.
+        /// </summary>
+        Home,
+
+        /// <summary>
+        /// Move the focus to the last item.
+        /// </summary>
+        End,
     }
 }
