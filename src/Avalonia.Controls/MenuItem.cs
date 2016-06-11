@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using System.Windows.Input;
+using Avalonia.Controls.Generators;
 using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
@@ -202,6 +203,12 @@ namespace Avalonia.Controls
         {
             base.OnGotFocus(e);
             IsSelected = true;
+        }
+
+        /// <inheritdoc/>
+        protected override IItemContainerGenerator CreateItemContainerGenerator()
+        {
+            return new ItemContainerGenerator<MenuItem>(this, MenuItem.HeaderProperty, null);
         }
 
         /// <summary>
