@@ -182,6 +182,8 @@ namespace Avalonia.Skia
                     if (curOff + measured < length)
                         nextChar = _text[curOff + measured];
 
+                    var b2 = char.IsWhiteSpace(' ');
+                    var b1 = char.IsWhiteSpace('\u200B');
                     if (nextChar != ' ' && nextChar != '\u200B' && nextChar != '\r')
                     {
                         // Perform scan for the last space or zero width space and end the line there
@@ -313,12 +315,25 @@ namespace Avalonia.Skia
                     //properly right and center align
                     //TODO: find a better implementation including 
                     //hittesting and text selection working properly
-                    switch (Paint.TextAlign)
+
+                    paint.TextAlign = SKTextAlign.Right;
+                    if(paint.TextAlign == SKTextAlign.Left)
                     {
-                        case SKTextAlign.Left: x = origin.X; break;
-                        case SKTextAlign.Center: x = origin.X + line.Width; break;
-                        case SKTextAlign.Right: x = origin.X + line.Width * 2; break;
+                        x = origin.X;
                     }
+                    else
+                    {
+                        double width = Constraint.Width > 0 && !double.IsPositiveInfinity(Constraint.Width) ?
+                                        Constraint.Width :
+                                        _size.Width;
+
+                        switch (Paint.TextAlign)
+                        {
+                            case SKTextAlign.Center: x = origin.X + (float)width/2; break;
+                            case SKTextAlign.Right: x = origin.X + (float) width; break;
+                        }
+                    }
+
 
                     canvas.DrawText(subString, x, origin.Y + line.Top + LineOffset, paint);
                 }
