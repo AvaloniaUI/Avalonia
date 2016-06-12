@@ -28,7 +28,9 @@ namespace Avalonia.Skia
             // Replace 0 characters with zero-width spaces (200B)
             _text = _text.Replace((char)0, (char)0x200B);
 
-            _text = _text.Replace("\r\n", "\r").Replace('\n','\r');
+            //Replace \r\n with \r zero width space and \n with \r
+            //as in Skia looks like only \r is rendered properly
+            _text = _text.Replace("\r\n", "\r\u200B").Replace('\n', '\r');
         }
 
         public static FormattedTextImpl Create(string text, string fontFamilyName, double fontSize, FontStyle fontStyle,
@@ -146,50 +148,46 @@ namespace Avalonia.Skia
                 float lineWidth = -1;
                 int measured;
                 int extraSkip = 0;
-                if (WidthConstraint <= 0)
+
+                subString = _text.Substring(curOff);
+
+                if (_wrapping == TextWrapping.NoWrap)
                 {
-                    measured = length;
+                    measured = length - curOff;
                 }
                 else
                 {
-                    float constraint = WidthConstraint;
+                    float constraint = WidthConstraint <= 0 ? MAX_LINE_WIDTH : WidthConstraint;
                     if (constraint > MAX_LINE_WIDTH)
                         constraint = MAX_LINE_WIDTH;
+                    measured = (int)Paint.BreakText(subString, constraint, out lineWidth) / 2;
+                }
 
-                    subString = _text.Substring(curOff);
+                int newLineIndex = subString.IndexOf('\r');
 
-                    if (_wrapping == TextWrapping.NoWrap)
-                    {
-                        measured = length - curOff;
-                    }
-                    else
-                    {
-                        measured = (int)Paint.BreakText(subString, constraint, out lineWidth) / 2;
-                    }
+                if (newLineIndex > -1 && measured >= newLineIndex)
+                {
+                    measured = newLineIndex > 0 ? newLineIndex + 1 : 0;
+                }
 
-                    int newLineIndex = subString.IndexOf('\r');
+                if (measured == 0)
+                {
+                    measured = 1;
+                    lineWidth = -1;
+                }
 
-                    if (newLineIndex > -1 && measured >= newLineIndex)
-                    {
-                        measured = newLineIndex > 0 ? newLineIndex + 1 : 0;
-                    }
-
-                    if (measured == 0)
-                    {
-                        measured = 1;
-                        lineWidth = -1;
-                    }
-
+                if (_wrapping == TextWrapping.Wrap)
+                {
                     char nextChar = ' ';
                     if (curOff + measured < length)
                         nextChar = _text[curOff + measured];
 
-                    if (nextChar != ' ' && nextChar != '\r')
+                    if (nextChar != ' ' && nextChar != '\u200B' && nextChar != '\r')
                     {
-                        // Perform scan for the last space and end the line there
+                        // Perform scan for the last space or zero width space and end the line there
                         for (int si = curOff + measured - 1; si > curOff; si--)
                         {
-                            if (_text[si] == ' ')
+                            if (_text[si] == ' ' || _text[si] == '\u200B')
                             {
                                 measured = si - curOff;
                                 extraSkip = 1;
