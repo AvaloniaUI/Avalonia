@@ -8,6 +8,7 @@ using System.Linq;
 using Avalonia.Media;
 using Xunit;
 using Avalonia.Platform;
+using System.Globalization;
 
 #if AVALONIA_CAIRO
 namespace Avalonia.Cairo.RenderTests.Media
@@ -113,7 +114,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                     fmt.Constraint = new Size(widthConstraint, 10000);
                 }
 
-                var lines = fmt.GetLines();
+                var lines = fmt.GetLines().ToArray();
                 Assert.Equal(linesCount, lines.Count());
             }
         }
@@ -136,6 +137,45 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 Assert.Equal(isInside, htRes.IsInside);
                 Assert.Equal(isTrailing, htRes.IsTrailing);
                 Assert.Equal(pos, htRes.TextPosition);
+            }
+        }
+
+
+        [Theory]
+        [InlineData("x", 0, 1, "0,0,7.20,13.59")]
+        [InlineData(stringword, 0, 4, "0,0,28.80,13.59")]
+        [InlineData(stringmiddlenewlines, 10, 10, "0,13.59,57.61,13.59")]
+        [InlineData(stringmiddlenewlines, 10, 20, "0,13.59,57.61,13.59;0,27.19,64.81,13.59")]
+        [InlineData(stringmiddlenewlines, 10, 15, "0,13.59,57.61,13.59;0,27.19,36.01,13.59")]
+        [InlineData(stringmiddlenewlines, 15, 15, "36.01,13.59,21.60,13.59;0,27.19,64.81,13.59")]
+        public void Should_HitTestRange_Correctly(string input,
+                            int index, int length,
+                            string expectedRects)
+        {
+            //parse expected result
+            var rects = expectedRects.Split(';').Select(s =>
+            {
+                double[] v = s.Split(',')
+                .Select(sd => double.Parse(sd, CultureInfo.InvariantCulture)).ToArray();
+                return new Rect(v[0], v[1], v[2], v[3]);
+            }).ToArray();
+
+            using (var fmt = Create(input, FontSize))
+            {
+                var htRes = fmt.HitTestTextRange(index, length).ToArray();
+
+                Assert.Equal(rects.Length, htRes.Length);
+
+                for (int i = 0; i < rects.Length; i++)
+                {
+                    var exr = rects[i];
+                    var r = htRes[i];
+
+                    Assert.Equal(exr.X, r.X, 2);
+                    Assert.Equal(exr.Y, r.Y, 2);
+                    Assert.Equal(exr.Width, r.Width, 2);
+                    Assert.Equal(exr.Height, r.Height, 2);
+                }
             }
         }
 
