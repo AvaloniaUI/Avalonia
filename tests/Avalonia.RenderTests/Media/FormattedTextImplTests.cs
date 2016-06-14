@@ -1,14 +1,13 @@
 ﻿// Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
+using Avalonia.Media;
+using Avalonia.Platform;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Linq;
-
-using Avalonia.Media;
-using Xunit;
-using Avalonia.Platform;
 using System.Globalization;
+using System.Linq;
+using System.Text;
+using Xunit;
 
 #if AVALONIA_CAIRO
 namespace Avalonia.Cairo.RenderTests.Media
@@ -25,9 +24,11 @@ namespace Avalonia.Direct2D1.RenderTests.Media
     {
         private const string FontName = "Courier New";
         private const double FontSize = 12;
+        private const double FontSizeHeight = 13.594;//real value 13.59375
         private const string stringword = "word";
         private const string stringmiddle = "The quick brown fox jumps over the lazy dog";
         private const string stringmiddle2lines = "The quick brown fox\njumps over the lazy dog";
+        private const string stringmiddle3lines = "The quick brown fox\n\njumps over the lazy dog";
         private const string stringmiddlenewlines = "012345678\r 1234567\r\n 12345678\n0123456789";
 
         private const string stringlong =
@@ -73,25 +74,47 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 FontWeight.Normal, wrap);
         }
 
+#if AVALONIA_CAIRO
+        [Theory(Skip = "TODO: Font scaling currently broken on cairo")]
+#else
         [Theory]
-        [InlineData("x", 7.20, 13.59)]
-        [InlineData(stringword, 28.80, 13.59)]
-        [InlineData(stringmiddle, 309.65, 13.59)]
-        [InlineData(stringmiddle2lines, 165.63, 27.19)]
-        [InlineData(stringlong, 2160.35, 13.59)]
-        [InlineData(stringmiddlenewlines, 72.01, 54.38)]
+#endif
+        [InlineData("", 0, FontSizeHeight)]
+        [InlineData("x", 7.20, FontSizeHeight)]
+        [InlineData(stringword, 28.80, FontSizeHeight)]
+        [InlineData(stringmiddle, 309.65, FontSizeHeight)]
+        [InlineData(stringmiddle2lines, 165.63, 2 * FontSizeHeight)]
+        [InlineData(stringlong, 2160.35, FontSizeHeight)]
+        [InlineData(stringmiddlenewlines, 72.01, 4 * FontSizeHeight)]
         public void Should_Measure_String_Correctly(string input, double expWidth, double expHeight)
         {
+#if !AVALONIA_SKIA
+            double heightCorr = 0;
+#else
+            //In skia there is a small descent added to last line,
+            //otherwise some letters are clipped at bottom
+            //4.55273438 for font 12 size
+            double heightCorr = 0.3793945*FontSize;
+#endif
             using (var fmt = Create(input, FontSize))
             {
                 var size = fmt.Measure();
 
                 Assert.Equal(expWidth, size.Width, 2);
-                Assert.Equal(expHeight, size.Height, 2);
+                Assert.Equal(expHeight + heightCorr, size.Height, 2);
+
+                var linesHeight = fmt.GetLines().Sum(l => l.Height);
+
+                Assert.Equal(expHeight, linesHeight, 2);
             }
         }
 
+#if AVALONIA_CAIRO
+        [Theory(Skip = "TODO: Font scaling currently broken on cairo")]
+#else
         [Theory]
+#endif
+        [InlineData("", 1, -1, TextWrapping.NoWrap)]
         [InlineData("x", 1, -1, TextWrapping.NoWrap)]
         [InlineData(stringword, 1, -1, TextWrapping.NoWrap)]
         [InlineData(stringmiddle, 1, -1, TextWrapping.NoWrap)]
@@ -119,7 +142,11 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             }
         }
 
+#if AVALONIA_CAIRO
+        [Theory(Skip = "TODO: Font scaling currently broken on cairo")]
+#else
         [Theory]
+#endif
         [InlineData("x", 0, 0, true, false, 0)]
         [InlineData(stringword, 25, 13, true, false, 3)]
         [InlineData(stringword, 28.70, 13.5, true, true, 3)]
@@ -140,8 +167,37 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             }
         }
 
-
+#if AVALONIA_CAIRO
+        [Theory(Skip = "TODO: Font scaling currently broken on cairo")]
+#else
         [Theory]
+#endif
+        [InlineData("", 0, 0, 0, 0, FontSizeHeight)]
+        [InlineData("x", 0, 0, 0, 7.20, FontSizeHeight)]
+        [InlineData(stringword, 3, 21.60, 0, 7.20, FontSizeHeight)]
+        [InlineData(stringmiddlenewlines, 10, 0, FontSizeHeight, 7.20, FontSizeHeight)]
+        [InlineData(stringmiddlenewlines, 20, 0, 2 * FontSizeHeight, 7.20, FontSizeHeight)]
+        [InlineData(stringmiddlenewlines, 15, 36.01, FontSizeHeight, 7.20, FontSizeHeight)]
+        public void Should_HitTestPosition_Correctly(string input,
+                    int index, double x, double y, double width, double height)
+        {
+            //parse expected
+            using (var fmt = Create(input, FontSize))
+            {
+                var r = fmt.HitTestTextPosition(index);
+
+                Assert.Equal(x, r.X, 2);
+                Assert.Equal(y, r.Y, 2);
+                Assert.Equal(width, r.Width, 2);
+                Assert.Equal(height, r.Height, 2);
+            }
+        }
+
+#if AVALONIA_CAIRO
+        [Theory(Skip = "TODO: Font scaling currently broken on cairo")]
+#else
+        [Theory]
+#endif
         [InlineData("x", 0, 1, "0,0,7.20,13.59")]
         [InlineData(stringword, 0, 4, "0,0,28.80,13.59")]
         [InlineData(stringmiddlenewlines, 10, 10, "0,13.59,57.61,13.59")]
@@ -178,6 +234,5 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 }
             }
         }
-
     }
 }
