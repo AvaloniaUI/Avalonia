@@ -143,14 +143,12 @@ namespace Avalonia.Controls.UnitTests.Presenters
         }
 
         [Fact]
-        public void Assigning_NonControl_To_Content_Should_Set_DataContext_On_UpdateChild()
+        public void Assigning_NonControl_To_Content_Should_Set_DataContext()
         {
             var target = new ContentPresenter
             {
                 Content = "foo",
             };
-
-            target.UpdateChild();
 
             Assert.Equal("foo", target.DataContext);
         }

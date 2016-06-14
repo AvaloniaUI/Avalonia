@@ -96,6 +96,10 @@ namespace Avalonia.Controls.Presenters
         /// </summary>
         public ContentPresenter()
         {
+            var dataContext = this.GetObservable(ContentProperty)
+                .Select(x => x is IControl ? AvaloniaProperty.UnsetValue : x);
+
+            Bind(Control.DataContextProperty, dataContext);
         }
 
         /// <summary>
@@ -217,36 +221,39 @@ namespace Avalonia.Controls.Presenters
         /// </remarks>
         public void UpdateChild()
         {
+            var old = Child;
             var content = Content;
-            var oldChild = Child;
-            var newChild = content as IControl;
+            var result = content as IControl;
 
-            if (content != null && newChild == null)
+            if (result == null)
             {
-                // We have content and it isn't a control, so first try to recycle the existing
-                // child control to display the new data by querying if the template that created
-                // the child can recycle items and that it also matches the new data.
-                if (oldChild != null && 
-                    _dataTemplate != null &&
-                    _dataTemplate.SupportsRecycling && 
-                    _dataTemplate.Match(content))
+                DataContext = content;
+
+                if (content != null)
                 {
-                    newChild = oldChild;
+                    if (old != null && 
+                        _dataTemplate != null &&
+                        _dataTemplate.SupportsRecycling && 
+                        _dataTemplate.Match(content))
+                    {
+                        result = old;
+                    }
+                    else
+                    {
+                        _dataTemplate = this.FindDataTemplate(content, ContentTemplate) ?? FuncDataTemplate.Default;
+                        result = _dataTemplate.Build(content);
+
+                        var controlResult = result as Control;
+
+                        if (controlResult != null)
+                        {
+                            NameScope.SetNameScope(controlResult, new NameScope());
+                        }
+                    }
                 }
                 else
                 {
-                    // We couldn't recycle an existing control so find a data template for the data
-                    // and use it to create a control.
-                    _dataTemplate = this.FindDataTemplate(content, ContentTemplate) ?? FuncDataTemplate.Default;
-                    newChild = _dataTemplate.Build(content);
-
-                    // Try to give the new control its own name scope.
-                    var controlResult = newChild as Control;
-
-                    if (controlResult != null)
-                    {
-                        NameScope.SetNameScope(controlResult, new NameScope());
-                    }
+                    _dataTemplate = null;
                 }
             }
             else
@@ -254,35 +261,30 @@ namespace Avalonia.Controls.Presenters
                 _dataTemplate = null;
             }
 
-            // Remove the old child if we're not recycling it.
-            if (oldChild != null && newChild != oldChild)
+            if (result != old)
             {
-                VisualChildren.Remove(oldChild);
-            }
-
-            // Set the DataContext if the data isn't a control.
-            if (!(content is IControl))
-            {
-                DataContext = content;
-            }
-
-            // Update the Child.
-            if (newChild == null)
-            {
-                Child = null;
-            }
-            else if (newChild != oldChild)
-            {
-                ((ISetInheritanceParent)newChild).SetParent(this);
-
-                Child = newChild;
-
-                if (newChild.Parent == null)
+                if (old != null)
                 {
-                    ((ISetLogicalParent)newChild).SetParent((ILogical)this.TemplatedParent ?? this);
+                    VisualChildren.Remove(old);
                 }
 
-                VisualChildren.Add(newChild);
+                if (result != null)
+                {
+                    ((ISetInheritanceParent)result).SetParent(this);
+
+                    Child = result;
+
+                    if (result.Parent == null)
+                    {
+                        ((ISetLogicalParent)result).SetParent((ILogical)this.TemplatedParent ?? this);
+                    }
+
+                    VisualChildren.Add(result);
+                }
+                else
+                {
+                    Child = null;
+                }
             }
 
             _createdChild = true;
