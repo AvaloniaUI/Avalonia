@@ -165,9 +165,21 @@ namespace Avalonia.Direct2D1.RenderTests.Media
         [InlineData(stringword, 25, 13, true, false, 3)]
         [InlineData(stringword, 28.70, 13.5, true, true, 3)]
         [InlineData(stringword, 30, 13, false, true, 3)]
+        [InlineData(stringword + "\r\n", 30, 13, false, false, 4)]
+        [InlineData(stringword + "\r\nnext", 30, 13, false, false, 4)]
+        [InlineData(stringword, 300, 13, false, true, 3)]
+        [InlineData(stringword + "\r\n", 300, 13, false, false, 4)]
+        [InlineData(stringword + "\r\nnext", 300, 13, false, false, 4)]
+        [InlineData(stringword, 300, 300, false, true, 3)]
+        //TODO: Direct2D implementation return textposition 6
+        //but the text is 6 length, can't find the logic for me it should be 5
+        //[InlineData(stringword + "\r\n", 300, 300, false, false, 6)]
+        [InlineData(stringword + "\r\nnext", 300, 300, false, true, 9)]
+        [InlineData(stringword + "\r\nnext", 300, 25, false, true, 9)]
         [InlineData(stringword, 28, 15, false, true, 3)]
         [InlineData(stringword, 30, 15, false, true, 3)]
         [InlineData(stringmiddle3lines, 30, 15, false, false, 9)]
+        [InlineData(stringmiddle3lines, 500, 13, false, false, 8)]
         [InlineData(stringmiddle3lines, 30, 25, false, false, 9)]
         [InlineData(stringmiddle3lines, -1, 30, false, false, 10)]
         public void Should_HitTestPoint_Correctly(string input,
@@ -178,9 +190,9 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             {
                 var htRes = fmt.HitTestPoint(new Point(x, y));
 
+                Assert.Equal(pos, htRes.TextPosition);
                 Assert.Equal(isInside, htRes.IsInside);
                 Assert.Equal(isTrailing, htRes.IsTrailing);
-                Assert.Equal(pos, htRes.TextPosition);
             }
         }
 
@@ -191,15 +203,16 @@ namespace Avalonia.Direct2D1.RenderTests.Media
 #endif
         [InlineData("", 0, 0, 0, 0, FontSizeHeight)]
         [InlineData("x", 0, 0, 0, 7.20, FontSizeHeight)]
+        [InlineData("x", -1, 7.20, 0, 0, FontSizeHeight)]
         [InlineData(stringword, 3, 21.60, 0, 7.20, FontSizeHeight)]
         [InlineData(stringword, 4, 21.60 + 7.20, 0, 0, FontSizeHeight)]
         [InlineData(stringmiddlenewlines, 10, 0, FontSizeHeight, 7.20, FontSizeHeight)]
-        [InlineData(stringmiddlenewlines, 20, 0, 2 * FontSizeHeight, 7.20, FontSizeHeight)]
         [InlineData(stringmiddlenewlines, 15, 36.01, FontSizeHeight, 7.20, FontSizeHeight)]
+        [InlineData(stringmiddlenewlines, 20, 0, 2 * FontSizeHeight, 7.20, FontSizeHeight)]
+        [InlineData(stringmiddlenewlines, -1, 72.01, 3 * FontSizeHeight, 0, FontSizeHeight)]
         public void Should_HitTestPosition_Correctly(string input,
                     int index, double x, double y, double width, double height)
         {
-            //parse expected
             using (var fmt = Create(input, FontSize))
             {
                 var r = fmt.HitTestTextPosition(index);
