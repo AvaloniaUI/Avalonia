@@ -1,11 +1,13 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using Moq;
+using System;
+using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Markup.Data;
 using Avalonia.Markup.Xaml.Data;
+using Moq;
 using ReactiveUI;
 using Xunit;
 
@@ -113,6 +115,24 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
         }
 
         [Fact]
+        public void Broken_Binding_Should_Use_Default_Value_Instead_Of_Inherited_Value()
+        {
+            var parent = new InheritanceTest()
+            {
+                Baz = 9,
+                DataContext = "data",
+            };
+
+            var child = new InheritanceTest();
+            var bazBinding = new Binding("Missing");
+            parent.Child = child;
+            
+            child.Bind(InheritanceTest.BazProperty, bazBinding);
+
+            Assert.Equal(6, child.Baz);
+        }
+
+        [Fact]
         public void DataContext_Binding_Should_Use_Parent_DataContext()
         {
             var parentDataContext = Mock.Of<IHeadered>(x => x.Header == (object)"Foo");
@@ -157,6 +177,26 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
             Assert.Null(child.DataContext);
             parent.Child = child;
             Assert.Equal("foo", child.DataContext);
+        }
+
+        [Fact]
+        public void DataContext_Binding_Should_Produce_Correct_Results()
+        {
+            var root = new Decorator
+            {
+                DataContext = new { Foo = "bar" },
+            };
+
+            var child = new Control();
+            var dataContextBinding = new Binding("Foo");
+            var values = new List<object>();
+
+            child.GetObservable(Border.DataContextProperty).Subscribe(x => values.Add(x));
+            child.Bind(ContentControl.DataContextProperty, dataContextBinding);
+
+            root.Child = child;
+
+            Assert.Equal(new[] { null, "bar" }, values);
         }
 
         [Fact]
@@ -335,6 +375,18 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
             public OldDataContextTest()
             {
                 Bind(BarProperty, this.GetObservable(FooProperty));
+            }
+        }
+
+        private class InheritanceTest : Decorator
+        {
+            public static readonly StyledProperty<int> BazProperty =
+                AvaloniaProperty.Register<InheritanceTest, int>("Baz", defaultValue: 6, inherits: true);
+
+            public int Baz
+            {
+                get { return GetValue(BazProperty); }
+                set { SetValue(BazProperty, value); }
             }
         }
     }
