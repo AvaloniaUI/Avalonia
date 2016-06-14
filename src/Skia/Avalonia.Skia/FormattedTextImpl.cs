@@ -3,15 +3,14 @@ using Avalonia.Platform;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Linq;
 
 namespace Avalonia.Skia
 {
     unsafe class FormattedTextImpl : IFormattedTextImpl
     {
-
         public FormattedTextImpl(string text, TextWrapping wrapping = TextWrapping.NoWrap)
         {
             _text = text ?? string.Empty;
@@ -100,7 +99,6 @@ namespace Avalonia.Skia
                 {
                     offset = line.TextLength > line.Length ?
                                     line.Length : line.Length - 1;
-
                 }
 
                 return new TextHitTestResult
@@ -131,7 +129,6 @@ namespace Avalonia.Skia
                 return new Rect(r.X + r.Width, r.Y, 0, LineHeight);
             }
 
-
             if (rects.Count == 0)
             {
                 //empty text
@@ -149,10 +146,25 @@ namespace Avalonia.Skia
 
         public IEnumerable<Rect> HitTestTextRange(int index, int length)
         {
+            List<Rect> result = new List<Rect>();
+
             var rects = GetRects();
 
-            for (var c = 0; c < length; c++)
-                yield return rects[c + index];
+            int lastIndex = index + length - 1;
+
+            foreach (var line in _skiaLines.Where(l =>
+                                                    (l.Start + l.Length) > index &&
+                                                    lastIndex >= l.Start))
+            {
+                int lineEndIndex = line.Start + (line.Length > 0 ? line.Length - 1 : 0);
+
+                double left = rects[line.Start > index ? line.Start : index].X;
+                double right = rects[lineEndIndex > lastIndex ? lastIndex : lineEndIndex].Right;
+
+                result.Add(new Rect(left, line.Top, right - left, line.Height));
+            }
+
+            return result;
         }
 
         public Size Measure()
@@ -344,7 +356,7 @@ namespace Avalonia.Skia
 
                     //this is a quick fix so we have skia rendering
                     //properly right and center align
-                    //TODO: find a better implementation including 
+                    //TODO: find a better implementation including
                     //hittesting and text selection working properly
 
                     //paint.TextAlign = SKTextAlign.Right;
@@ -364,7 +376,6 @@ namespace Avalonia.Skia
                             case SKTextAlign.Right: x = origin.X + (float)width; break;
                         }
                     }
-
 
                     canvas.DrawText(subString, x, origin.Y + line.Top + LineOffset, paint);
                 }
