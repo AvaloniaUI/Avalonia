@@ -28,7 +28,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
         private const string stringword = "word";
         private const string stringmiddle = "The quick brown fox jumps over the lazy dog";
         private const string stringmiddle2lines = "The quick brown fox\njumps over the lazy dog";
-        private const string stringmiddle3lines = "The quick brown fox\n\njumps over the lazy dog";
+        private const string stringmiddle3lines = "01234567\n\n0123456789";
         private const string stringmiddlenewlines = "012345678\r 1234567\r\n 12345678\n0123456789";
 
         private const string stringlong =
@@ -64,6 +64,13 @@ namespace Avalonia.Direct2D1.RenderTests.Media
         {
             return Create(text, FontName, fontSize,
                 FontStyle.Normal, TextAlignment.Left,
+                FontWeight.Normal, TextWrapping.NoWrap);
+        }
+
+        private IFormattedTextImpl Create(string text, double fontSize, TextAlignment alignment)
+        {
+            return Create(text, FontName, fontSize,
+                FontStyle.Normal, alignment,
                 FontWeight.Normal, TextWrapping.NoWrap);
         }
 
@@ -153,6 +160,9 @@ namespace Avalonia.Direct2D1.RenderTests.Media
         [InlineData(stringword, 30, 13, false, true, 3)]
         [InlineData(stringword, 28, 15, false, true, 3)]
         [InlineData(stringword, 30, 15, false, true, 3)]
+        [InlineData(stringmiddle3lines, 30, 15, false, false, 9)]
+        [InlineData(stringmiddle3lines, 30, 25, false, false, 9)]
+        [InlineData(stringmiddle3lines, -1, 30, false, false, 10)]
         public void Should_HitTestPoint_Correctly(string input,
                                     double x, double y,
                                     bool isInside, bool isTrailing, int pos)
@@ -175,6 +185,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
         [InlineData("", 0, 0, 0, 0, FontSizeHeight)]
         [InlineData("x", 0, 0, 0, 7.20, FontSizeHeight)]
         [InlineData(stringword, 3, 21.60, 0, 7.20, FontSizeHeight)]
+        [InlineData(stringword, 4, 21.60 + 7.20, 0, 0, FontSizeHeight)]
         [InlineData(stringmiddlenewlines, 10, 0, FontSizeHeight, 7.20, FontSizeHeight)]
         [InlineData(stringmiddlenewlines, 20, 0, 2 * FontSizeHeight, 7.20, FontSizeHeight)]
         [InlineData(stringmiddlenewlines, 15, 36.01, FontSizeHeight, 7.20, FontSizeHeight)]
@@ -184,6 +195,58 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             //parse expected
             using (var fmt = Create(input, FontSize))
             {
+                var r = fmt.HitTestTextPosition(index);
+
+                Assert.Equal(x, r.X, 2);
+                Assert.Equal(y, r.Y, 2);
+                Assert.Equal(width, r.Width, 2);
+                Assert.Equal(height, r.Height, 2);
+            }
+        }
+
+#if AVALONIA_CAIRO
+        [Theory(Skip = "TODO: Font scaling currently broken on cairo")]
+#else
+        [Theory]
+#endif
+        [InlineData("x", 0, 200, 200 - 7.20, 0, 7.20, FontSizeHeight)]
+        [InlineData(stringword, 0, 200, 171.20, 0, 7.20, FontSizeHeight)]
+        [InlineData(stringword, 3, 200, 200 - 7.20, 0, 7.20, FontSizeHeight)]
+        public void Should_HitTestPosition_RigthAlign_Correctly(
+                                                    string input, int index, double widthConstraint,
+                                                    double x, double y, double width, double height)
+        {
+            //parse expected
+            using (var fmt = Create(input, FontSize, TextAlignment.Right))
+            {
+                fmt.Constraint = new Size(widthConstraint, 100);
+
+                var r = fmt.HitTestTextPosition(index);
+
+                Assert.Equal(x, r.X, 2);
+                Assert.Equal(y, r.Y, 2);
+                Assert.Equal(width, r.Width, 2);
+                Assert.Equal(height, r.Height, 2);
+            }
+        }
+
+#if AVALONIA_CAIRO
+        [Theory(Skip = "TODO: Font scaling currently broken on cairo")]
+#else
+        [Theory]
+#endif
+        [InlineData("x", 0, 200, 100 - 7.20 / 2, 0, 7.20, FontSizeHeight)]
+        [InlineData(stringword, 0, 200, 85.6, 0, 7.20, FontSizeHeight)]
+        [InlineData(stringword, 3, 200, 100 + 7.20, 0, 7.20, FontSizeHeight)]
+        public void Should_HitTestPosition_CenterAlign_Correctly(
+                                                    string input, int index, double widthConstraint,
+                                                    double x, double y, double width, double height)
+        {
+            //parse expected
+            using (var fmt = Create(input, FontSize, TextAlignment.Center))
+            {
+                fmt.Constraint = new Size(widthConstraint, 100);
+
                 var r = fmt.HitTestTextPosition(index);
 
                 Assert.Equal(x, r.X, 2);
