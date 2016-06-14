@@ -100,21 +100,22 @@ namespace Avalonia.Skia
                     return new TextHitTestResult
                     {
                         IsInside = false,
-                        TextPosition = line.Start + line.Length > 0 ? line.Length - 1 : 0,
-                        IsTrailing = true
+                        TextPosition = line.Start + (line.Length > 0 ? line.Length - 1 : 0),
+                        IsTrailing = line.Length > 0
                     };
                 }
                 else
                 {
                     return new TextHitTestResult
                     {
-                        IsInside = line.Length > 0,
+                        IsInside = false,
                         TextPosition = line.Start,
                         IsTrailing = false
                     };
                 }
             }
-            bool end = point.X > _size.Width || point.Y > _size.Height;
+
+            bool end = point.X > _size.Width || point.Y > _lines.Sum(l => l.Height);
             return new TextHitTestResult() { IsTrailing = end, TextPosition = end ? _text.Length - 1 : 0 };
         }
 
@@ -175,6 +176,7 @@ namespace Avalonia.Skia
             var mLeading = metrics.Leading;  // The recommended distance to add between lines of text (will be >= 0).
             var mDescent = metrics.Descent;
             var mAscent = metrics.Ascent;
+            var lastLineDescent = mBottom - mDescent;
             // This seems like the best measure of full vertical extent
             LineHeight = mDescent - mAscent;
 
@@ -246,15 +248,14 @@ namespace Avalonia.Skia
 
             if (_skiaLines.Count == 0)
             {
-                _size = new Size();
+                _lines.Add(new FormattedTextLine(0, LineHeight));
+                _size = new Size(0, LineHeight + lastLineDescent);
             }
             else
             {
                 var lastLine = _skiaLines[_skiaLines.Count - 1];
-                _size = new Size(maxX, lastLine.Top + lastLine.Height + mBottom - mDescent);
+                _size = new Size(maxX, lastLine.Top + lastLine.Height + lastLineDescent);
             }
-
-            BuildRects();
         }
 
         private List<Rect> GetRects()
