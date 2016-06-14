@@ -76,55 +76,61 @@ namespace Avalonia.Skia
             float y = (float)point.Y;
             var line = _skiaLines.Find(l => l.Top <= y && (l.Top + l.Height) > y);
 
-            var rects = GetRects();
-
             if (!line.Equals(default(AvaloniaFormattedTextLine)))
             {
+                var rects = GetRects();
+
                 for (int c = line.Start; c < line.Start + line.TextLength; c++)
                 {
-                    //TODO: Detect line first
                     var rc = rects[c];
                     if (rc.Contains(point))
                     {
                         return new TextHitTestResult
                         {
-                            IsInside = true,
+                            IsInside = !(line.TextLength > line.Length),
                             TextPosition = c,
                             IsTrailing = (point.X - rc.X) > rc.Width / 2
                         };
                     }
                 }
 
-                if (point.X >= line.Width)
+                int offset = 0;
+
+                if (point.X >= line.Width / 2 && line.Length > 0)
                 {
-                    return new TextHitTestResult
-                    {
-                        IsInside = false,
-                        TextPosition = line.Start + (line.Length > 0 ? line.Length - 1 : 0),
-                        IsTrailing = line.Length > 0
-                    };
+                    offset = line.TextLength > line.Length ?
+                                    line.Length : line.Length - 1;
+
                 }
-                else
+
+                return new TextHitTestResult
                 {
-                    return new TextHitTestResult
-                    {
-                        IsInside = false,
-                        TextPosition = line.Start,
-                        IsTrailing = false
-                    };
-                }
+                    IsInside = false,
+                    TextPosition = line.Start + offset,
+                    IsTrailing = _text.Length == (line.Start + offset + 1)
+                };
             }
 
             bool end = point.X > _size.Width || point.Y > _lines.Sum(l => l.Height);
-            return new TextHitTestResult() { IsTrailing = end, TextPosition = end ? _text.Length - 1 : 0 };
+
+            return new TextHitTestResult()
+            {
+                IsInside = false,
+                IsTrailing = end,
+                TextPosition = end ? _text.Length - 1 : 0
+            };
         }
 
         public Rect HitTestTextPosition(int index)
         {
             var rects = GetRects();
 
-            if (index < 0 || index > rects.Count)
-                return new Rect();
+            if (index < 0 || index >= rects.Count)
+            {
+                var r = rects.LastOrDefault();
+                return new Rect(r.X + r.Width, r.Y, 0, LineHeight);
+            }
+
 
             if (rects.Count == 0)
             {
@@ -243,7 +249,7 @@ namespace Avalonia.Skia
                 if (maxX < w)
                     maxX = w;
 
-                _lines.Add(new FormattedTextLine(_skiaLines[c].Length, _skiaLines[c].Height));
+                _lines.Add(new FormattedTextLine(_skiaLines[c].TextLength, _skiaLines[c].Height));
             }
 
             if (_skiaLines.Count == 0)
