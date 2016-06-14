@@ -24,6 +24,8 @@ namespace Avalonia.Direct2D1.RenderTests.Media
     {
         private const string FontName = "Courier New";
         private const double FontSize = 12;
+        private const double MediumFontSize = 18;
+        private const double BigFontSize = 32;
         private const double FontSizeHeight = 13.594;//real value 13.59375
         private const string stringword = "word";
         private const string stringmiddle = "The quick brown fox jumps over the lazy dog";
@@ -86,14 +88,18 @@ namespace Avalonia.Direct2D1.RenderTests.Media
 #else
         [Theory]
 #endif
-        [InlineData("", 0, FontSizeHeight)]
-        [InlineData("x", 7.20, FontSizeHeight)]
-        [InlineData(stringword, 28.80, FontSizeHeight)]
-        [InlineData(stringmiddle, 309.65, FontSizeHeight)]
-        [InlineData(stringmiddle2lines, 165.63, 2 * FontSizeHeight)]
-        [InlineData(stringlong, 2160.35, FontSizeHeight)]
-        [InlineData(stringmiddlenewlines, 72.01, 4 * FontSizeHeight)]
-        public void Should_Measure_String_Correctly(string input, double expWidth, double expHeight)
+        [InlineData("", FontSize, 0, FontSizeHeight)]
+        [InlineData("x", FontSize, 7.20, FontSizeHeight)]
+        [InlineData(stringword, FontSize, 28.80, FontSizeHeight)]
+        [InlineData(stringmiddle, FontSize, 309.65, FontSizeHeight)]
+        [InlineData(stringmiddle, MediumFontSize, 464.48, 20.391)]
+        [InlineData(stringmiddle, BigFontSize, 825.73, 36.25)]
+        [InlineData(stringmiddle2lines, FontSize, 165.63, 2 * FontSizeHeight)]
+        [InlineData(stringmiddle2lines, MediumFontSize, 248.44, 2 * 20.391)]
+        [InlineData(stringmiddle2lines, BigFontSize, 441.67, 2 * 36.25)]
+        [InlineData(stringlong, FontSize, 2160.35, FontSizeHeight)]
+        [InlineData(stringmiddlenewlines, FontSize, 72.01, 4 * FontSizeHeight)]
+        public void Should_Measure_String_Correctly(string input, double fontSize, double expWidth, double expHeight)
         {
 #if !AVALONIA_SKIA
             double heightCorr = 0;
@@ -101,9 +107,9 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             //In skia there is a small descent added to last line,
             //otherwise some letters are clipped at bottom
             //4.55273438 for font 12 size
-            double heightCorr = 0.3793945*FontSize;
+            double heightCorr = 0.3793945*fontSize;
 #endif
-            using (var fmt = Create(input, FontSize))
+            using (var fmt = Create(input, fontSize))
             {
                 var size = fmt.Measure();
 
@@ -155,6 +161,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
         [Theory]
 #endif
         [InlineData("x", 0, 0, true, false, 0)]
+        [InlineData(stringword, -1, -1, false, false, 0)]
         [InlineData(stringword, 25, 13, true, false, 3)]
         [InlineData(stringword, 28.70, 13.5, true, true, 3)]
         [InlineData(stringword, 30, 13, false, true, 3)]
