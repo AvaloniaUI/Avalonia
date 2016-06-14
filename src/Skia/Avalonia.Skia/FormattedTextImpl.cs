@@ -290,10 +290,22 @@ namespace Avalonia.Skia
         {
             // Build character rects
             var fm = _paint.FontMetrics;
+
+            float width = (float)(Constraint.Width > 0 && !double.IsPositiveInfinity(Constraint.Width) ?
+                                            Constraint.Width :
+                                            _size.Width);
+
             for (int li = 0; li < _skiaLines.Count; li++)
             {
                 var line = _skiaLines[li];
                 float prevRight = 0;
+
+                switch (_paint.TextAlign)
+                {
+                    case SKTextAlign.Center: prevRight = (width - line.Width) / 2; break;
+                    case SKTextAlign.Right: prevRight = width - line.Width; break;
+                }
+
                 double nextTop = line.Top + line.Height;
 
                 if (li + 1 < _skiaLines.Count)
