@@ -14,7 +14,7 @@ namespace Avalonia.Skia
 
         public FormattedTextImpl(string text, TextWrapping wrapping = TextWrapping.NoWrap)
         {
-            _text = text;
+            _text = text ?? string.Empty;
             _wrapping = wrapping;
             _paint = new SKPaint();
 
@@ -174,8 +174,9 @@ namespace Avalonia.Skia
             var mBottom = metrics.Bottom;  // The greatest distance below the baseline for any glyph (will be >= 0).
             var mLeading = metrics.Leading;  // The recommended distance to add between lines of text (will be >= 0).
             var mDescent = metrics.Descent;
+            var mAscent = metrics.Ascent;
             // This seems like the best measure of full vertical extent
-            LineHeight = mBottom - mTop;
+            LineHeight = mDescent - mAscent;
 
             // Rendering is relative to baseline
             LineOffset = -metrics.Top;
@@ -220,7 +221,7 @@ namespace Avalonia.Skia
 
                 _skiaLines.Add(line);
 
-                curY += LineHeight - mDescent;
+                curY += LineHeight;
 
                 // TODO: We may want to consider adding Leading to the vertical line spacing but for now
                 // it appears to make no difference. Revisit as part of FormattedText improvements.
@@ -250,7 +251,7 @@ namespace Avalonia.Skia
             else
             {
                 var lastLine = _skiaLines[_skiaLines.Count - 1];
-                _size = new Size(maxX, lastLine.Top + lastLine.Height);
+                _size = new Size(maxX, lastLine.Top + lastLine.Height + mBottom - mDescent);
             }
 
             BuildRects();
