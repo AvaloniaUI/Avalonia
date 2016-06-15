@@ -35,8 +35,7 @@ namespace TestApplication
             var app = new App();
 
             AppBuilder.Configure(app)
-                .UseWin32()
-                .UseDirect2D1()
+                .UsePlatformDetect()
                 .SetupWithoutStarting();
 
             app.Run();

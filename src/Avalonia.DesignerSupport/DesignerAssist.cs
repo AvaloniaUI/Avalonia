@@ -60,8 +60,8 @@ namespace Avalonia.DesignerSupport
             }
 
             AppBuilder.Configure(app == null ? new DesignerApp() : (Application) Activator.CreateInstance(app.AsType()))
-                .WithWindowingSubsystem(Application.InitializeWin32Subsystem)
-                .WithRenderingSubsystem(() => { })
+                .UseWindowingSubsystem("Avalonia.Win32")
+                .UseRenderingSubsystem("Avalonia.Direct2D1")
                 .SetupWithoutStarting();
         }
 
