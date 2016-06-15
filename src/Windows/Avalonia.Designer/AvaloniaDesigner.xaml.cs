@@ -18,7 +18,6 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Avalonia.Designer.AppHost;
 using Avalonia.Designer.Comm;
-using Avalonia.Designer.Metadata;
 
 namespace Avalonia.Designer
 {
@@ -53,8 +52,7 @@ namespace Avalonia.Designer
             get { return (string) GetValue(XamlProperty); }
             set { SetValue(XamlProperty, value); }
         }
-
-        public AvaloniaDesignerMetadata Metadata { get; private set; }
+        
         
         private readonly ProcessHost _host = new ProcessHost();
         
@@ -66,24 +64,28 @@ namespace Avalonia.Designer
                 new Binding(nameof(ProcessHost.State)) {Source = _host, Mode = BindingMode.OneWay});
 
             _host.PropertyChanged += _host_PropertyChanged;
-            _host.MetadataArrived += data => Metadata = data;
         }
 
         private void _host_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(ProcessHost.WindowHandle))
             {
-                if (NativeContainer.Child != null)
-                {
-                    var child = NativeContainer.Child;
-                    NativeContainer.Child = null;
-                    child.Dispose();
-                }
+                ResetNativeContainer();
+                if(_host.WindowHandle == IntPtr.Zero)
+                    return;
                 NativeContainer.Child = new WindowHost(false);
                 var wndHost = ((WindowHost) NativeContainer.Child);
                 wndHost.SetWindow(_host.WindowHandle);
+            }
+        }
 
-
+        void ResetNativeContainer()
+        {
+            if (NativeContainer.Child != null)
+            {
+                var child = NativeContainer.Child;
+                NativeContainer.Child = null;
+                child.Dispose();
             }
         }
 
@@ -91,6 +93,7 @@ namespace Avalonia.Designer
         public void KillProcess()
         {
             _host.Kill();
+            ResetNativeContainer();
         }
 
         bool CheckTargetExeOrSetError()

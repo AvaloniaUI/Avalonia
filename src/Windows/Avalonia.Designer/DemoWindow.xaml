@@ -10,11 +10,12 @@
         <DockPanel Dock="Bottom" LastChildFill="True">
             <TextBlock Margin="5,0">Target Exe: </TextBlock>
             <Button DockPanel.Dock="Right">Load XAML</Button>
-            <Button Margin="5,0"  DockPanel.Dock="Right">Select EXE</Button>
+            <Button Margin="5,0"  DockPanel.Dock="Right" Click="SelectExeClicked">Select EXE</Button>
+            <Button Margin="5,0" DockPanel.Dock="Right" Click="RestartClicked">Restart</Button>
             <TextBlock x:Name="TargetExe"/>
         </DockPanel>
         <UniformGrid Columns="1" Rows="2">
-            <local:AvaloniaDesigner 
+            <local:AvaloniaDesigner x:Name="Designer"
                 TargetExe="{Binding ElementName=TargetExe, Path=Text, Mode=OneWay}"
                 Xaml="{Binding ElementName=Xaml, Path=Text, Mode=OneWay}"/>
             <TextBox x:Name="Xaml"/>

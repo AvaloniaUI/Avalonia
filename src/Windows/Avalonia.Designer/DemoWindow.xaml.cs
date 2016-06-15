@@ -13,6 +13,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Microsoft.Win32;
 
 namespace Avalonia.Designer
 {
@@ -29,6 +30,26 @@ namespace Avalonia.Designer
             TargetExe.Text = targetExe;
             if (targetExe != null)
                 Xaml.Text = File.ReadAllText(targetPath);
+        }
+
+        static string OpenFile(string filter)
+        {
+            var dlg = new OpenFileDialog {Filter = filter};
+            if (dlg.ShowDialog() == true)
+                return dlg.FileName;
+            return null;
+        }
+
+        private void SelectExeClicked(object sender, RoutedEventArgs e)
+        {
+            var exe = OpenFile("exe|*.exe");
+            if (exe != null)
+                TargetExe.Text = exe;
+        }
+
+        private void RestartClicked(object sender, RoutedEventArgs e)
+        {
+            Designer.RestartProcess();
         }
     }
 }
