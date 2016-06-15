@@ -156,7 +156,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.DesignerSupport.Te
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.DesignerSupport.TestApp", "tests\Avalonia.DesignerSupport.TestApp\Avalonia.DesignerSupport.TestApp.csproj", "{F1381F98-4D24-409A-A6C5-1C5B1E08BB08}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Avalonia.RenderTests", "tests\Avalonia.RenderTests\Avalonia.RenderTests.shproj", "{48840EDD-24BF-495D-911E-2EB12AE75D3B}"
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Aval+onia.RenderTests", "tests\Avalonia.RenderTests\Avalonia.RenderTests.shproj", "{48840EDD-24BF-495D-911E-2EB12AE75D3B}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VirtualizationTest", "samples\VirtualizationTest\VirtualizationTest.csproj", "{FBCAF3D0-2808-4934-8E96-3F607594517B}"
 EndProject
 Global
