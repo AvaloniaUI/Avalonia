@@ -115,24 +115,6 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
         }
 
         [Fact]
-        public void Broken_Binding_Should_Use_Default_Value_Instead_Of_Inherited_Value()
-        {
-            var parent = new InheritanceTest()
-            {
-                Baz = 9,
-                DataContext = "data",
-            };
-
-            var child = new InheritanceTest();
-            var bazBinding = new Binding("Missing");
-            parent.Child = child;
-            
-            child.Bind(InheritanceTest.BazProperty, bazBinding);
-
-            Assert.Equal(6, child.Baz);
-        }
-
-        [Fact]
         public void DataContext_Binding_Should_Use_Parent_DataContext()
         {
             var parentDataContext = Mock.Of<IHeadered>(x => x.Header == (object)"Foo");
