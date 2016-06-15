@@ -26,6 +26,7 @@ namespace Avalonia
         private readonly Subject<AvaloniaPropertyChangedEventArgs> _changed;
         private readonly PropertyMetadata _defaultMetadata;
         private readonly Dictionary<Type, PropertyMetadata> _metadata;
+        private readonly Dictionary<Type, PropertyMetadata> _metadataCache = new Dictionary<Type, PropertyMetadata>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AvaloniaProperty"/> class.
@@ -73,8 +74,8 @@ namespace Avalonia
         /// <param name="ownerType">The new owner type.</param>
         /// <param name="metadata">Optional overridden metadata.</param>
         protected AvaloniaProperty(
-            AvaloniaProperty source, 
-            Type ownerType, 
+            AvaloniaProperty source,
+            Type ownerType,
             PropertyMetadata metadata)
         {
             Contract.Requires<ArgumentNullException>(source != null);
@@ -163,11 +164,11 @@ namespace Avalonia
         /// object.
         /// </summary>
         /// <remarks>
-        /// When a property changes, change notifications are sent to all property subscribers; 
-        /// for example via the <see cref="AvaloniaProperty.Changed"/> observable and and the 
+        /// When a property changes, change notifications are sent to all property subscribers;
+        /// for example via the <see cref="AvaloniaProperty.Changed"/> observable and and the
         /// <see cref="AvaloniaObject.PropertyChanged"/> event. If this callback is set for a property,
         /// then it will be called before and after these notifications take place. The bool argument
-        /// will be true before the property change notifications are sent and false afterwards. This 
+        /// will be true before the property change notifications are sent and false afterwards. This
         /// callback is intended to support Control.IsDataContextChanging.
         /// </remarks>
         public Action<IAvaloniaObject, bool> Notifying { get; }
@@ -273,8 +274,8 @@ namespace Avalonia
                 defaultBindingMode: defaultBindingMode);
 
             var result = new StyledProperty<TValue>(
-                name, 
-                typeof(TOwner), 
+                name,
+                typeof(TOwner),
                 metadata,
                 inherits,
                 notifying);
@@ -423,23 +424,8 @@ namespace Avalonia
         /// </returns>
         public PropertyMetadata GetMetadata<T>() where T : IAvaloniaObject
         {
-            var type = typeof(T);
-
-            while (type != null)
-            {
-                PropertyMetadata result;
-
-                if (_metadata.TryGetValue(type, out result))
-                {
-                    return result;
-                }
-
-                type = type.GetTypeInfo().BaseType;
-            }
-
-            return _defaultMetadata;
+            return GetMetadata(typeof(T));
         }
-
 
         /// <summary>
         /// Gets the property metadata for the specified type.
@@ -448,21 +434,32 @@ namespace Avalonia
         /// <returns>
         /// The property metadata.
         /// </returns>
+        ///
         public PropertyMetadata GetMetadata(Type type)
         {
             Contract.Requires<ArgumentNullException>(type != null);
 
-            while (type != null)
-            {
-                PropertyMetadata result;
+            PropertyMetadata result;
+            Type currentType = type;
 
-                if (_metadata.TryGetValue(type, out result))
+            if (_metadataCache.TryGetValue(type, out result))
+            {
+                return result;
+            }
+
+            while (currentType != null)
+            {
+                if (_metadata.TryGetValue(currentType, out result))
                 {
+                    _metadataCache[type] = result;
+
                     return result;
                 }
 
-                type = type.GetTypeInfo().BaseType;
+                currentType = currentType.GetTypeInfo().BaseType;
             }
+
+            _metadataCache[type] = _defaultMetadata;
 
             return _defaultMetadata;
         }
@@ -523,6 +520,7 @@ namespace Avalonia
             var baseMetadata = GetMetadata(type);
             metadata.Merge(baseMetadata, this);
             _metadata.Add(type, metadata);
+            _metadataCache.Clear();
         }
 
         [DebuggerHidden]

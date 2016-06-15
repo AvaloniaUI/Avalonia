@@ -21,6 +21,12 @@ namespace Avalonia
             new Dictionary<Type, Dictionary<int, AvaloniaProperty>>();
 
         /// <summary>
+        /// The registered properties by type cached values to increase performance.
+        /// </summary>
+        private readonly Dictionary<Type, Dictionary<int, AvaloniaProperty>> _registeredCache =
+            new Dictionary<Type, Dictionary<int, AvaloniaProperty>>();
+
+        /// <summary>
         /// The registered attached properties by owner type.
         /// </summary>
         private readonly Dictionary<Type, Dictionary<int, AvaloniaProperty>> _attached =
@@ -103,21 +109,38 @@ namespace Avalonia
         /// </remarks>
         public AvaloniaProperty FindRegistered(Type type, AvaloniaProperty property)
         {
-            while (type != null)
+            Type currentType = type;
+            Dictionary<int, AvaloniaProperty> cache;
+            AvaloniaProperty result;
+
+            if (_registeredCache.TryGetValue(type, out cache))
+            {
+                if (cache.TryGetValue(property.Id, out result))
+                {
+                    return result;
+                }
+            }
+
+            while (currentType != null)
             {
                 Dictionary<int, AvaloniaProperty> inner;
 
-                if (_registered.TryGetValue(type, out inner))
+                if (_registered.TryGetValue(currentType, out inner))
                 {
-                    AvaloniaProperty result;
-
                     if (inner.TryGetValue(property.Id, out result))
                     {
+                        if (cache == null)
+                        {
+                            _registeredCache[type] = cache = new Dictionary<int, AvaloniaProperty>();
+                        }
+
+                        cache[property.Id] = result;
+
                         return result;
                     }
                 }
 
-                type = type.GetTypeInfo().BaseType;
+                currentType = currentType.GetTypeInfo().BaseType;
             }
 
             return null;
@@ -130,7 +153,7 @@ namespace Avalonia
         /// <param name="property">The property.</param>
         /// <returns>The registered property or null if not found.</returns>
         /// <remarks>
-        /// Calling AddOwner on a AvaloniaProperty creates a new AvaloniaProperty that is a 
+        /// Calling AddOwner on a AvaloniaProperty creates a new AvaloniaProperty that is a
         /// different object but is equal according to <see cref="object.Equals(object)"/>.
         /// </remarks>
         public AvaloniaProperty FindRegistered(object o, AvaloniaProperty property)
@@ -143,7 +166,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="type">The type.</param>
         /// <param name="name">
-        /// The property name. If an attached property it should be in the form 
+        /// The property name. If an attached property it should be in the form
         /// "OwnerType.PropertyName".
         /// </param>
         /// <returns>
@@ -183,13 +206,12 @@ namespace Avalonia
             return results.FirstOrDefault(x => x.Name == propertyName);
         }
 
-
         /// <summary>
         /// Finds a registered property on an object by name.
         /// </summary>
         /// <param name="o">The object.</param>
         /// <param name="name">
-        /// The property name. If an attached property it should be in the form 
+        /// The property name. If an attached property it should be in the form
         /// "OwnerType.PropertyName".
         /// </param>
         /// <returns>
@@ -276,6 +298,8 @@ namespace Avalonia
                     inner.Add(property.Id, property);
                 }
             }
+
+            _registeredCache.Clear();
         }
     }
 }
