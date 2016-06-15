@@ -116,12 +116,15 @@ namespace Avalonia.Controls.Presenters
         /// <param name="item">The item.</param>
         public override void ScrollIntoView(object item)
         {
-            var index = Items.IndexOf(item);
-
-            if (index != -1)
+            if (Items != null)
             {
-                var container = Owner.ItemContainerGenerator.ContainerFromIndex(index);
-                container.BringIntoView();
+                var index = Items.IndexOf(item);
+
+                if (index != -1)
+                {
+                    var container = Owner.ItemContainerGenerator.ContainerFromIndex(index);
+                    container.BringIntoView();
+                }
             }
         }
 
