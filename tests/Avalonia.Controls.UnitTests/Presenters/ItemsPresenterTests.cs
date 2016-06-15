@@ -312,6 +312,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
             var dataContexts = target.Panel.Children
                 .Cast<ContentPresenter>()
+                .Do(x => x.UpdateChild())
                 .Select(x => x.DataContext)
                 .ToList();
 
