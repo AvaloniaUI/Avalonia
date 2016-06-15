@@ -1,20 +1,27 @@
+// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
 using Avalonia.Media;
 using Avalonia.Platform;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
 
 namespace Avalonia.Skia
 {
-    unsafe class FormattedTextImpl : IFormattedTextImpl
+    public class FormattedTextImpl : IFormattedTextImpl
     {
-        public FormattedTextImpl(string text, TextWrapping wrapping = TextWrapping.NoWrap)
+        public FormattedTextImpl(string text, string fontFamilyName, double fontSize, FontStyle fontStyle,
+                    TextAlignment textAlignment, FontWeight fontWeight, TextWrapping wrapping)
         {
             _text = text ?? string.Empty;
-            _wrapping = wrapping;
+
+            // Replace 0 characters with zero-width spaces (200B)
+            _text = _text.Replace((char)0, (char)0x200B);
+
+            var typeface = TypefaceCache.GetTypeface(fontFamilyName, fontStyle, fontWeight);
+
             _paint = new SKPaint();
 
             //currently Skia does not measure properly with Utf8 !!!
@@ -22,48 +29,32 @@ namespace Avalonia.Skia
             _paint.TextEncoding = SKTextEncoding.Utf16;
             _paint.IsStroke = false;
             _paint.IsAntialias = true;
-            LineOffset = 0;
+            _paint.Typeface = typeface;
+            _paint.TextSize = (float)fontSize;
+            _paint.TextAlign = textAlignment.ToSKTextAlign();
 
-            // Replace 0 characters with zero-width spaces (200B)
-            _text = _text.Replace((char)0, (char)0x200B);
+            _wrapping = wrapping;
+
+            Rebuild();
         }
 
-        public static FormattedTextImpl Create(string text, string fontFamilyName, double fontSize, FontStyle fontStyle,
-            TextAlignment textAlignment, FontWeight fontWeight, TextWrapping wrapping)
+        public Size Constraint
         {
-            var typeface = TypefaceCache.GetTypeface(fontFamilyName, fontStyle, fontWeight);
+            get { return _constraint; }
+            set
+            {
+                if (_constraint == value)
+                    return;
 
-            FormattedTextImpl instance = new FormattedTextImpl(text, wrapping);
-            instance._paint.Typeface = typeface;
-            instance._paint.TextSize = (float)fontSize;
-            instance._paint.TextAlign = textAlignment.ToSKTextAlign();
-            instance.Rebuild();
-            return instance;
+                _constraint = value;
+
+                Rebuild();
+            }
         }
 
-        private readonly SKPaint _paint;
-        private readonly string _text;
-        private readonly TextWrapping _wrapping;
-
-        private readonly List<FormattedTextLine> _lines = new List<FormattedTextLine>();
-        private readonly List<Rect> _rects = new List<Rect>();
-
-        private List<AvaloniaFormattedTextLine> _skiaLines;
-        private Size _size;
-
-        const float MAX_LINE_WIDTH = 10000;
-        private float LineOffset;
-        private float LineHeight;
-
-        struct AvaloniaFormattedTextLine
+        public void Dispose()
         {
-            public float Top;
-            public int Start;
-            public int Length;
-            public int TextLength;
-            public float Height;
-            public float Width;
-        };
+        }
 
         public IEnumerable<FormattedTextLine> GetLines()
         {
@@ -95,10 +86,10 @@ namespace Avalonia.Skia
 
                 int offset = 0;
 
-                if (point.X >= line.Width / 2 && line.Length > 0)
+                if (point.X >= (rects[line.Start].X + line.Width) / 2 && line.Length > 0)
                 {
                     offset = line.TextLength > line.Length ?
-                                    line.Length : line.Length - 1;
+                                    line.Length : (line.Length - 1);
                 }
 
                 return new TextHitTestResult
@@ -126,13 +117,12 @@ namespace Avalonia.Skia
             if (index < 0 || index >= rects.Count)
             {
                 var r = rects.LastOrDefault();
-                return new Rect(r.X + r.Width, r.Y, 0, LineHeight);
+                return new Rect(r.X + r.Width, r.Y, 0, _lineHeight);
             }
 
             if (rects.Count == 0)
             {
-                //empty text
-                return new Rect(0, 0, 1, LineHeight);
+                return new Rect(0, 0, 1, _lineHeight);
             }
 
             if (index == rects.Count)
@@ -174,163 +164,27 @@ namespace Avalonia.Skia
 
         public void SetForegroundBrush(IBrush brush, int startIndex, int length)
         {
-            // TODO: we need an implementation here to properly support FormattedText
-        }
-
-        void Rebuild()
-        {
-            var length = _text.Length;
-
-            _lines.Clear();
-            _rects.Clear();
-            _skiaLines = new List<AvaloniaFormattedTextLine>();
-
-            int curOff = 0;
-            float curY = 0;
-
-            var metrics = _paint.FontMetrics;
-            var mTop = metrics.Top;  // The greatest distance above the baseline for any glyph (will be <= 0).
-            var mBottom = metrics.Bottom;  // The greatest distance below the baseline for any glyph (will be >= 0).
-            var mLeading = metrics.Leading;  // The recommended distance to add between lines of text (will be >= 0).
-            var mDescent = metrics.Descent;
-            var mAscent = metrics.Ascent;
-            var lastLineDescent = mBottom - mDescent;
-            // This seems like the best measure of full vertical extent
-            LineHeight = mDescent - mAscent;
-
-            // Rendering is relative to baseline
-            LineOffset = -metrics.Top;
-
-            string subString;
-
-            float widthConstraint = (_constraint.Width != double.PositiveInfinity)
-                                        ? (float)_constraint.Width
-                                        : -1;
-
-            for (int c = 0; curOff < length; c++)
+            var key = new FBrushRange(startIndex, length);
+            if (brush == null)
             {
-                float lineWidth = -1;
-                int measured;
-                int trailingnumber = 0;
-
-                subString = _text.Substring(curOff);
-
-                float constraint = -1;
-
-                if (_wrapping == TextWrapping.Wrap)
-                {
-                    constraint = widthConstraint <= 0 ? MAX_LINE_WIDTH : widthConstraint;
-                    if (constraint > MAX_LINE_WIDTH)
-                        constraint = MAX_LINE_WIDTH;
-                }
-
-                measured = LineBreak(_text, curOff, length, _paint, constraint, out trailingnumber);
-
-                AvaloniaFormattedTextLine line = new AvaloniaFormattedTextLine();
-                line.TextLength = measured;
-
-                subString = _text.Substring(line.Start, line.TextLength);
-                lineWidth = _paint.MeasureText(subString);
-
-                // lineHeight = hh;
-                line.Start = curOff;
-                line.Length = measured - trailingnumber;
-                line.Width = lineWidth;
-                line.Height = LineHeight;
-                line.Top = curY;
-
-                _skiaLines.Add(line);
-
-                curY += LineHeight;
-
-                // TODO: We may want to consider adding Leading to the vertical line spacing but for now
-                // it appears to make no difference. Revisit as part of FormattedText improvements.
-                //
-                //curY += mLeading;
-
-                curOff += measured;
-            }
-
-            // Now convert to Avalonia data formats
-            _lines.Clear();
-            float maxX = 0;
-
-            for (var c = 0; c < _skiaLines.Count; c++)
-            {
-                var w = _skiaLines[c].Width;
-                if (maxX < w)
-                    maxX = w;
-
-                _lines.Add(new FormattedTextLine(_skiaLines[c].TextLength, _skiaLines[c].Height));
-            }
-
-            if (_skiaLines.Count == 0)
-            {
-                _lines.Add(new FormattedTextLine(0, LineHeight));
-                _size = new Size(0, LineHeight + lastLineDescent);
+                if (_foregroundBrushes.ContainsKey(key))
+                    _foregroundBrushes.Remove(key);
             }
             else
             {
-                var lastLine = _skiaLines[_skiaLines.Count - 1];
-                _size = new Size(maxX, lastLine.Top + lastLine.Height + lastLineDescent);
+                _foregroundBrushes[key] = brush;
             }
         }
 
-        private List<Rect> GetRects()
+        public override string ToString()
         {
-            if (_text.Length > _rects.Count)
-            {
-                BuildRects();
-            }
-
-            return _rects;
+            return _text;
         }
 
-        private void BuildRects()
+        internal void Draw(SKCanvas canvas, SKPoint origin,
+                            DrawingContextImpl.PaintWrapper foreground,
+                            Func<IBrush, Size, DrawingContextImpl.PaintWrapper> brushFactory)
         {
-            // Build character rects
-            var fm = _paint.FontMetrics;
-
-            float width = (float)(Constraint.Width > 0 && !double.IsPositiveInfinity(Constraint.Width) ?
-                                            Constraint.Width :
-                                            _size.Width);
-
-            for (int li = 0; li < _skiaLines.Count; li++)
-            {
-                var line = _skiaLines[li];
-                float prevRight = 0;
-
-                switch (_paint.TextAlign)
-                {
-                    case SKTextAlign.Center: prevRight = (width - line.Width) / 2; break;
-                    case SKTextAlign.Right: prevRight = width - line.Width; break;
-                }
-
-                double nextTop = line.Top + line.Height;
-
-                if (li + 1 < _skiaLines.Count)
-                {
-                    nextTop = _skiaLines[li + 1].Top;
-                }
-
-                for (int i = line.Start; i < line.Start + line.TextLength; i++)
-                {
-                    float w = _paint.MeasureText(_text[i].ToString());
-
-                    _rects.Add(new Rect(
-                        prevRight,
-                        line.Top,
-                        w,
-                        nextTop - line.Top));
-                    prevRight += w;
-                }
-            }
-        }
-
-        internal void Draw(SKCanvas canvas, SKPoint origin, DrawingContextImpl.PaintWrapper foreground)
-        {
-            SKPaint paint = _paint;
-
             /* TODO: This originated from Native code, it might be useful for debugging character positions as
              * we improve the FormattedText support. Will need to port this to C# obviously. Rmove when
              * not needed anymore.
@@ -356,67 +210,90 @@ namespace Avalonia.Skia
                 }
                 ctx->Canvas->restore();
             */
+            SKPaint paint = _paint;
+            IDisposable currd = null;
+            var currentWrapper = foreground;
 
-            using (foreground.ApplyTo(paint))
+            try
             {
+                SKPaint currFGPaint = ApplyWrapperTo(ref foreground, ref currd, paint);
+                bool hasCusomFGBrushes = _foregroundBrushes.Any();
+
                 for (int c = 0; c < _skiaLines.Count; c++)
                 {
                     AvaloniaFormattedTextLine line = _skiaLines[c];
-                    var subString = _text.Substring(line.Start, line.Length);
 
-                    float x = 0;
+                    float x = TransformX(origin.X, 0, paint.TextAlign);
 
-                    //this is a quick fix so we have skia rendering
-                    //properly right and center align
-                    //TODO: find a better implementation including
-                    //hittesting and text selection working properly
-
-                    //paint.TextAlign = SKTextAlign.Right;
-                    if (paint.TextAlign == SKTextAlign.Left)
+                    if (!hasCusomFGBrushes)
                     {
-                        x = origin.X;
+                        var subString = _text.Substring(line.Start, line.Length);
+                        canvas.DrawText(subString, x, origin.Y + line.Top + _lineOffset, paint);
                     }
                     else
                     {
-                        double width = Constraint.Width > 0 && !double.IsPositiveInfinity(Constraint.Width) ?
-                                        Constraint.Width :
-                                        _size.Width;
+                        float currX = x;
+                        string subStr;
+                        int len;
 
-                        switch (_paint.TextAlign)
+                        for (int i = line.Start; i < line.Start + line.Length;)
                         {
-                            case SKTextAlign.Center: x = origin.X + (float)width / 2; break;
-                            case SKTextAlign.Right: x = origin.X + (float)width; break;
+                            var fb = GetNextForegroundBrush(ref line, i, out len);
+
+                            if (fb != null)
+                            {
+                                //TODO: figure out how to get the brush size
+                                currentWrapper = brushFactory(fb, new Size());
+                            }
+                            else
+                            {
+                                if (!currentWrapper.Equals(foreground)) currentWrapper.Dispose();
+                                currentWrapper = foreground;
+                            }
+
+                            subStr = _text.Substring(i, len);
+
+                            if (currFGPaint != currentWrapper.Paint)
+                            {
+                                currFGPaint = ApplyWrapperTo(ref currentWrapper, ref currd, paint);
+                            }
+
+                            canvas.DrawText(subStr, currX, origin.Y + line.Top + _lineOffset, paint);
+
+                            i += len;
+                            currX += paint.MeasureText(subStr);
                         }
                     }
-
-                    canvas.DrawText(subString, x, origin.Y + line.Top + LineOffset, paint);
                 }
             }
-        }
-
-        Size _constraint = new Size(double.PositiveInfinity, double.PositiveInfinity);
-
-        public Size Constraint
-        {
-            get { return _constraint; }
-            set
+            finally
             {
-                if (_constraint == value)
-                    return;
-
-                _constraint = value;
-
-                Rebuild();
+                if (!currentWrapper.Equals(foreground)) currentWrapper.Dispose();
+                currd?.Dispose();
             }
         }
 
-        public override string ToString()
-        {
-            return _text;
-        }
+        private const float MAX_LINE_WIDTH = 10000;
 
-        public void Dispose()
+        private readonly Dictionary<FBrushRange, IBrush> _foregroundBrushes =
+                                                new Dictionary<FBrushRange, IBrush>();
+        private readonly List<FormattedTextLine> _lines = new List<FormattedTextLine>();
+        private readonly SKPaint _paint;
+        private readonly List<Rect> _rects = new List<Rect>();
+        private readonly string _text;
+        private readonly TextWrapping _wrapping;
+        private Size _constraint = new Size(double.PositiveInfinity, double.PositiveInfinity);
+        private float _lineHeight = 0;
+        private float _lineOffset = 0;
+        private Size _size;
+        private List<AvaloniaFormattedTextLine> _skiaLines;
+
+        private static SKPaint ApplyWrapperTo(ref DrawingContextImpl.PaintWrapper wrapper,
+                                                ref IDisposable curr, SKPaint paint)
         {
+            curr?.Dispose();
+            curr = wrapper.ApplyTo(paint);
+            return wrapper.Paint;
         }
 
         private static bool IsBreakChar(char c)
@@ -532,6 +409,229 @@ namespace Avalonia.Skia
             }
 
             return index - startIndex;
+        }
+
+        private void BuildRects()
+        {
+            // Build character rects
+            var fm = _paint.FontMetrics;
+            SKTextAlign align = _paint.TextAlign;
+
+            for (int li = 0; li < _skiaLines.Count; li++)
+            {
+                var line = _skiaLines[li];
+                float prevRight = TransformX(0, line.Width, align);
+                double nextTop = line.Top + line.Height;
+
+                if (li + 1 < _skiaLines.Count)
+                {
+                    nextTop = _skiaLines[li + 1].Top;
+                }
+
+                for (int i = line.Start; i < line.Start + line.TextLength; i++)
+                {
+                    float w = _paint.MeasureText(_text[i].ToString());
+
+                    _rects.Add(new Rect(
+                        prevRight,
+                        line.Top,
+                        w,
+                        nextTop - line.Top));
+                    prevRight += w;
+                }
+            }
+        }
+
+        private IBrush GetNextForegroundBrush(ref AvaloniaFormattedTextLine line, int index, out int length)
+        {
+            IBrush result = null;
+            int len = length = line.Start + line.Length - index;
+
+            if (_foregroundBrushes.Any())
+            {
+                var cbi = _foregroundBrushes.FirstOrDefault(b => b.Key.Intersects(index, len));
+
+                if (cbi.Value != null)
+                {
+                    var r = cbi.Key;
+
+                    if (r.StartIndex > index)
+                    {
+                        len = r.StartIndex - index;
+                    }
+                    else
+                    {
+                        len = r.EndIndex - index + 1;
+                        result = cbi.Value;
+                    }
+
+                    if (len > 0 && len < length)
+                    {
+                        length = len;
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        private List<Rect> GetRects()
+        {
+            if (_text.Length > _rects.Count)
+            {
+                BuildRects();
+            }
+
+            return _rects;
+        }
+
+        private void Rebuild()
+        {
+            var length = _text.Length;
+
+            _lines.Clear();
+            _rects.Clear();
+            _skiaLines = new List<AvaloniaFormattedTextLine>();
+
+            int curOff = 0;
+            float curY = 0;
+
+            var metrics = _paint.FontMetrics;
+            var mTop = metrics.Top;  // The greatest distance above the baseline for any glyph (will be <= 0).
+            var mBottom = metrics.Bottom;  // The greatest distance below the baseline for any glyph (will be >= 0).
+            var mLeading = metrics.Leading;  // The recommended distance to add between lines of text (will be >= 0).
+            var mDescent = metrics.Descent;  //The recommended distance below the baseline. Will be >= 0.
+            var mAscent = metrics.Ascent;    //The recommended distance above the baseline. Will be <= 0.
+            var lastLineDescent = mBottom - mDescent;
+
+            // This seems like the best measure of full vertical extent
+            // matches Direct2D line height
+            _lineHeight = mDescent - mAscent;
+
+            // Rendering is relative to baseline
+            _lineOffset = -metrics.Top;
+
+            string subString;
+
+            float widthConstraint = (_constraint.Width != double.PositiveInfinity)
+                                        ? (float)_constraint.Width
+                                        : -1;
+
+            for (int c = 0; curOff < length; c++)
+            {
+                float lineWidth = -1;
+                int measured;
+                int trailingnumber = 0;
+
+                subString = _text.Substring(curOff);
+
+                float constraint = -1;
+
+                if (_wrapping == TextWrapping.Wrap)
+                {
+                    constraint = widthConstraint <= 0 ? MAX_LINE_WIDTH : widthConstraint;
+                    if (constraint > MAX_LINE_WIDTH)
+                        constraint = MAX_LINE_WIDTH;
+                }
+
+                measured = LineBreak(_text, curOff, length, _paint, constraint, out trailingnumber);
+
+                AvaloniaFormattedTextLine line = new AvaloniaFormattedTextLine();
+                line.TextLength = measured;
+
+                subString = _text.Substring(line.Start, line.TextLength);
+                lineWidth = _paint.MeasureText(subString);
+                line.Start = curOff;
+                line.Length = measured - trailingnumber;
+                line.Width = lineWidth;
+                line.Height = _lineHeight;
+                line.Top = curY;
+
+                _skiaLines.Add(line);
+
+                curY += _lineHeight;
+
+                curY += mLeading;
+
+                curOff += measured;
+            }
+
+            // Now convert to Avalonia data formats
+            _lines.Clear();
+            float maxX = 0;
+
+            for (var c = 0; c < _skiaLines.Count; c++)
+            {
+                var w = _skiaLines[c].Width;
+                if (maxX < w)
+                    maxX = w;
+
+                _lines.Add(new FormattedTextLine(_skiaLines[c].TextLength, _skiaLines[c].Height));
+            }
+
+            if (_skiaLines.Count == 0)
+            {
+                _lines.Add(new FormattedTextLine(0, _lineHeight));
+                _size = new Size(0, _lineHeight + lastLineDescent);
+            }
+            else
+            {
+                var lastLine = _skiaLines[_skiaLines.Count - 1];
+                _size = new Size(maxX, lastLine.Top + lastLine.Height + lastLineDescent);
+            }
+        }
+
+        private float TransformX(float originX, float lineWidth, SKTextAlign align)
+        {
+            float x = 0;
+
+            if (align == SKTextAlign.Left)
+            {
+                x = originX;
+            }
+            else
+            {
+                double width = Constraint.Width > 0 && !double.IsPositiveInfinity(Constraint.Width) ?
+                                Constraint.Width :
+                                _size.Width;
+
+                switch (align)
+                {
+                    case SKTextAlign.Center: x = originX + (float)(width - lineWidth) / 2; break;
+                    case SKTextAlign.Right: x = originX + (float)(width - lineWidth); break;
+                }
+            }
+
+            return x;
+        }
+
+        private struct AvaloniaFormattedTextLine
+        {
+            public float Height;
+            public int Length;
+            public int Start;
+            public int TextLength;
+            public float Top;
+            public float Width;
+        };
+
+        private struct FBrushRange
+        {
+            public FBrushRange(int startIndex, int length)
+            {
+                StartIndex = startIndex;
+                Length = length;
+            }
+
+            public int EndIndex => StartIndex + Length - 1;
+
+            public int Length { get; private set; }
+
+            public int StartIndex { get; private set; }
+
+            public bool Intersects(int index, int len) =>
+                (index + len) > StartIndex &&
+                (StartIndex + Length) > index;
         }
     }
 }

@@ -306,7 +306,7 @@ namespace Avalonia.Skia
             using (var paint = CreatePaint(foreground, text.Measure()))
             {
                 var textImpl = text.PlatformImpl as FormattedTextImpl;
-                textImpl.Draw(this.Canvas, origin.ToSKPoint(), paint);
+                textImpl.Draw(Canvas, origin.ToSKPoint(), paint, CreatePaint);
             }
         }
 
