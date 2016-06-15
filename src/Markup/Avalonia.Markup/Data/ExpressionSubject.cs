@@ -41,16 +41,36 @@ namespace Avalonia.Markup.Data
         /// <param name="converterParameter">
         /// A parameter to pass to <paramref name="converter"/>.
         /// </param>
+        /// <param name="priority">The binding priority.</param>
+        public ExpressionSubject(
+            ExpressionObserver inner,
+            Type targetType,
+            IValueConverter converter,
+            object converterParameter = null,
+            BindingPriority priority = BindingPriority.LocalValue)
+            : this(inner, targetType, AvaloniaProperty.UnsetValue, converter, converterParameter, priority)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ExpressionObserver"/> class.
+        /// </summary>
+        /// <param name="inner">The <see cref="ExpressionObserver"/>.</param>
+        /// <param name="targetType">The type to convert the value to.</param>
         /// <param name="fallbackValue">
         /// The value to use when the binding is unable to produce a value.
+        /// </param>
+        /// <param name="converter">The value converter to use.</param>
+        /// <param name="converterParameter">
+        /// A parameter to pass to <paramref name="converter"/>.
         /// </param>
         /// <param name="priority">The binding priority.</param>
         public ExpressionSubject(
             ExpressionObserver inner, 
-            Type targetType, 
+            Type targetType,
+            object fallbackValue,
             IValueConverter converter,
             object converterParameter = null,
-            object fallbackValue = null,
             BindingPriority priority = BindingPriority.LocalValue)
         {
             Contract.Requires<ArgumentNullException>(inner != null);
@@ -117,7 +137,7 @@ namespace Avalonia.Markup.Data
                         _inner.Expression,
                         error.Exception.Message);
 
-                    if (_fallbackValue != null)
+                    if (_fallbackValue != AvaloniaProperty.UnsetValue)
                     {
                         if (TypeUtilities.TryConvert(
                             type, 
@@ -162,7 +182,7 @@ namespace Avalonia.Markup.Data
                     ConverterParameter,
                     CultureInfo.CurrentUICulture);
 
-            if (_fallbackValue != null &&
+            if (_fallbackValue != AvaloniaProperty.UnsetValue &&
                 (converted == AvaloniaProperty.UnsetValue ||
                  converted is BindingError))
             {

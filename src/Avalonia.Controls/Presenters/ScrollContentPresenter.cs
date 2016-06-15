@@ -15,7 +15,7 @@ namespace Avalonia.Controls.Presenters
     /// <summary>
     /// Presents a scrolling view of content inside a <see cref="ScrollViewer"/>.
     /// </summary>
-    public class ScrollContentPresenter : ContentPresenter, IPresenter
+    public class ScrollContentPresenter : ContentPresenter, IPresenter, IScrollable
     {
         /// <summary>
         /// Defines the <see cref="Extent"/> property.
@@ -50,7 +50,7 @@ namespace Avalonia.Controls.Presenters
         private Size _extent;
         private Size _measuredExtent;
         private Vector _offset;
-        private IDisposable _scrollableSubscription;
+        private IDisposable _logicalScrollSubscription;
         private Size _viewport;
 
         /// <summary>
@@ -59,6 +59,7 @@ namespace Avalonia.Controls.Presenters
         static ScrollContentPresenter()
         {
             ClipToBoundsProperty.OverrideDefaultValue(typeof(ScrollContentPresenter), true);
+            ChildProperty.Changed.AddClassHandler<ScrollContentPresenter>(x => x.ChildChanged);
             AffectsArrange(OffsetProperty);
         }
 
@@ -69,7 +70,7 @@ namespace Avalonia.Controls.Presenters
         {
             AddHandler(RequestBringIntoViewEvent, BringIntoViewRequested);
 
-            this.GetObservable(ChildProperty).Subscribe(ChildChanged);
+            this.GetObservable(ChildProperty).Subscribe(UpdateScrollableSubscription);
         }
 
         /// <summary>
@@ -115,6 +116,14 @@ namespace Avalonia.Controls.Presenters
             if (Child == null)
             {
                 return false;
+            }
+
+            var scrollable = Child as ILogicalScrollable;
+            var control = target as IControl;
+
+            if (scrollable?.IsLogicalScrollEnabled == true && control != null)
+            {
+                return scrollable.BringIntoView(control, targetRect);
             }
 
             var transform = target.TransformToVisual(Child);
@@ -169,7 +178,7 @@ namespace Avalonia.Controls.Presenters
             {
                 var measureSize = availableSize;
 
-                if (_scrollableSubscription == null)
+                if (_logicalScrollSubscription == null)
                 {
                     measureSize = new Size(double.PositiveInfinity, double.PositiveInfinity);
 
@@ -194,21 +203,25 @@ namespace Avalonia.Controls.Presenters
         protected override Size ArrangeOverride(Size finalSize)
         {
             var child = this.GetVisualChildren().SingleOrDefault() as ILayoutable;
-            var offset = default(Vector);
+            var logicalScroll = _logicalScrollSubscription != null;
 
-            if (_scrollableSubscription == null)
+            if (!logicalScroll)
             {
                 Viewport = finalSize;
                 Extent = _measuredExtent;
-                offset = Offset;
-            }
 
-            if (child != null)
-            {
-                var size = new Size(
+                if (child != null)
+                {
+                    var size = new Size(
                     Math.Max(finalSize.Width, child.DesiredSize.Width),
                     Math.Max(finalSize.Height, child.DesiredSize.Height));
-                child.Arrange(new Rect((Point)(-offset), size));
+                    child.Arrange(new Rect((Point)(-Offset), size));
+                    return finalSize;
+                }
+            }
+            else if (child != null)
+            {
+                child.Arrange(new Rect(finalSize));
                 return finalSize;
             }
 
@@ -220,9 +233,9 @@ namespace Avalonia.Controls.Presenters
         {
             if (Extent.Height > Viewport.Height)
             {
-                var scrollable = Child as IScrollable;
+                var scrollable = Child as ILogicalScrollable;
 
-                if (scrollable != null)
+                if (scrollable?.IsLogicalScrollEnabled == true)
                 {                    
                     var y = Offset.Y + (-e.Delta.Y * scrollable.ScrollSize.Height);
                     y = Math.Max(y, 0);
@@ -246,28 +259,53 @@ namespace Avalonia.Controls.Presenters
             e.Handled = BringDescendentIntoView(e.TargetObject, e.TargetRect);
         }
 
-        private void ChildChanged(IControl child)
+        private void ChildChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            var scrollable = child as IScrollable;
+            UpdateScrollableSubscription((IControl)e.NewValue);
 
-            _scrollableSubscription?.Dispose();
-            _scrollableSubscription = null;
+            if (e.OldValue != null)
+            {
+                Offset = default(Vector);
+            }
+        }
+
+        private void UpdateScrollableSubscription(IControl child)
+        {
+            var scrollable = child as ILogicalScrollable;
+
+            _logicalScrollSubscription?.Dispose();
+            _logicalScrollSubscription = null;
 
             if (scrollable != null)
             {
                 scrollable.InvalidateScroll = () => UpdateFromScrollable(scrollable);
-                _scrollableSubscription = new CompositeDisposable(
-                    this.GetObservable(OffsetProperty).Skip(1).Subscribe(x => scrollable.Offset = x),
-                    Disposable.Create(() => scrollable.InvalidateScroll = null));
-                UpdateFromScrollable(scrollable);
+
+                if (scrollable.IsLogicalScrollEnabled == true)
+                {
+                    _logicalScrollSubscription = new CompositeDisposable(
+                        this.GetObservable(OffsetProperty).Skip(1).Subscribe(x => scrollable.Offset = x),
+                        Disposable.Create(() => scrollable.InvalidateScroll = null));
+                    UpdateFromScrollable(scrollable);
+                }
             }
         }
 
-        private void UpdateFromScrollable(IScrollable scrollable)
+        private void UpdateFromScrollable(ILogicalScrollable scrollable)
         {
-            Viewport = scrollable.Viewport;
-            Extent = scrollable.Extent;
-            Offset = scrollable.Offset;
+            var logicalScroll = _logicalScrollSubscription != null;
+
+            if (logicalScroll != scrollable.IsLogicalScrollEnabled)
+            {
+                UpdateScrollableSubscription(Child);
+                Offset = default(Vector);
+                InvalidateMeasure();
+            }
+            else if (scrollable.IsLogicalScrollEnabled)
+            {
+                Viewport = scrollable.Viewport;
+                Extent = scrollable.Extent;
+                Offset = scrollable.Offset;
+            }
         }
     }
 }

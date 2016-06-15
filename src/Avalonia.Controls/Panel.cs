@@ -80,11 +80,27 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Renders the visual to a <see cref="DrawingContext"/>.
+        /// </summary>
+        /// <param name="context">The drawing context.</param>
+        public override void Render(DrawingContext context)
+        {
+            var background = Background;
+            if (background != null)
+            {
+                var renderSize = Bounds.Size;
+                context.FillRectangle(background, new Rect(renderSize));
+            }
+
+            base.Render(context);
+        }
+
+        /// <summary>
         /// Called when the <see cref="Children"/> collection changes.
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event args.</param>
-        private void ChildrenChanged(object sender, NotifyCollectionChangedEventArgs e)
+        protected virtual void ChildrenChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             List<Control> controls;
 
@@ -121,22 +137,6 @@ namespace Avalonia.Controls
             }
 
             InvalidateMeasure();
-        }
-
-        /// <summary>
-        /// Renders the visual to a <see cref="DrawingContext"/>.
-        /// </summary>
-        /// <param name="context">The drawing context.</param>
-        public override void Render(DrawingContext context)
-        {
-            var background = Background;
-            if (background != null)
-            {
-                var renderSize = Bounds.Size;
-                context.FillRectangle(background, new Rect(renderSize));
-            }
-
-            base.Render(context);
         }
     }
 }

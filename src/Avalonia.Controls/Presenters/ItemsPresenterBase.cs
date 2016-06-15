@@ -101,8 +101,7 @@ namespace Avalonia.Controls.Presenters
             {
                 if (_generator == null)
                 {
-                    var i = TemplatedParent as ItemsControl;
-                    _generator = (i?.ItemContainerGenerator) ?? new ItemContainerGenerator(this);
+                    _generator = CreateItemContainerGenerator();
                 }
 
                 return _generator;
@@ -165,6 +164,31 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <inheritdoc/>
+        public virtual void ScrollIntoView(object item)
+        {
+        }
+
+        /// <summary>
+        /// Creates the <see cref="ItemContainerGenerator"/> for the control.
+        /// </summary>
+        /// <returns>
+        /// An <see cref="IItemContainerGenerator"/> or null.
+        /// </returns>
+        protected virtual IItemContainerGenerator CreateItemContainerGenerator()
+        {
+            var i = TemplatedParent as ItemsControl;
+            var result = i?.ItemContainerGenerator;
+
+            if (result == null)
+            {
+                result = new ItemContainerGenerator(this);
+                result.ItemTemplate = ItemTemplate;
+            }
+
+            return result;
+        }
+
+        /// <inheritdoc/>
         protected override Size MeasureOverride(Size availableSize)
         {
             Panel.Measure(availableSize);
@@ -179,10 +203,25 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <summary>
+        /// Called when the <see cref="Panel"/> is created.
+        /// </summary>
+        /// <param name="panel">The panel.</param>
+        protected virtual void PanelCreated(IPanel panel)
+        {
+        }
+
+        /// <summary>
+        /// Called when the items for the presenter change, either because <see cref="Items"/>
+        /// has been set, the items collection has been modified, or the panel has been created.
+        /// </summary>
+        /// <param name="e">A description of the change.</param>
+        protected abstract void ItemsChanged(NotifyCollectionChangedEventArgs e);
+
+        /// <summary>
         /// Creates the <see cref="Panel"/> when <see cref="ApplyTemplate"/> is called for the first
         /// time.
         /// </summary>
-        protected virtual void CreatePanel()
+        private void CreatePanel()
         {
             Panel = ItemsPanel.Build();
             Panel.SetValue(TemplatedParentProperty, TemplatedParent);
@@ -201,15 +240,10 @@ namespace Avalonia.Controls.Presenters
                 incc.CollectionChanged += ItemsCollectionChanged;
             }
 
+            PanelCreated(Panel);
+
             ItemsChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
         }
-
-        /// <summary>
-        /// Called when the items for the presenter change, either because <see cref="Items"/>
-        /// has been set, or the items collection has been modified.
-        /// </summary>
-        /// <param name="e">A description of the change.</param>
-        protected abstract void ItemsChanged(NotifyCollectionChangedEventArgs e);
 
         /// <summary>
         /// Called when the <see cref="Items"/> collection changes.

@@ -33,7 +33,7 @@ namespace Avalonia.Controls
     /// - Implements <see cref="IStyleable"/> to allow styling to work on the control.
     /// - Implements <see cref="ILogical"/> to form part of a logical tree.
     /// </remarks>
-    public class Control : InputElement, IControl, INamed, ISetLogicalParent, ISupportInitialize
+    public class Control : InputElement, IControl, INamed, ISetInheritanceParent, ISetLogicalParent, ISupportInitialize
     {
         /// <summary>
         /// Defines the <see cref="DataContext"/> property.
@@ -435,7 +435,11 @@ namespace Avalonia.Controls
                     OnDetachedFromLogicalTreeCore(e);
                 }
 
-                InheritanceParent = parent as AvaloniaObject;
+                if (InheritanceParent == null || parent == null)
+                {
+                    InheritanceParent = parent as AvaloniaObject;
+                }
+
                 _parent = (IControl)parent;
 
                 if (_parent is IStyleRoot || _parent?.IsAttachedToLogicalTree == true)
@@ -453,6 +457,15 @@ namespace Avalonia.Controls
 
                 RaisePropertyChanged(ParentProperty, old, _parent, BindingPriority.LocalValue);
             }
+        }
+
+        /// <summary>
+        /// Sets the control's inheritance parent.
+        /// </summary>
+        /// <param name="parent">The parent.</param>
+        void ISetInheritanceParent.SetParent(IAvaloniaObject parent)
+        {
+            InheritanceParent = parent;
         }
 
         /// <summary>

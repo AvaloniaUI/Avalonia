@@ -15,13 +15,10 @@ namespace Avalonia.Controls.Generators
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemContainerEventArgs"/> class.
         /// </summary>
-        /// <param name="startingIndex">The index of the first container in the source items.</param>
         /// <param name="container">The container.</param>
-        public ItemContainerEventArgs(
-            int startingIndex,
-            ItemContainer container)
+        public ItemContainerEventArgs(ItemContainerInfo container)
         {
-            StartingIndex = startingIndex;
+            StartingIndex = container.Index;
             Containers = new[] { container };
         }
 
@@ -32,7 +29,7 @@ namespace Avalonia.Controls.Generators
         /// <param name="containers">The containers.</param>
         public ItemContainerEventArgs(
             int startingIndex, 
-            IList<ItemContainer> containers)
+            IList<ItemContainerInfo> containers)
         {
             StartingIndex = startingIndex;
             Containers = containers;
@@ -41,7 +38,7 @@ namespace Avalonia.Controls.Generators
         /// <summary>
         /// Gets the containers.
         /// </summary>
-        public IList<ItemContainer> Containers { get; }
+        public IList<ItemContainerInfo> Containers { get; }
 
         /// <summary>
         /// Gets the index of the first container in the source items.

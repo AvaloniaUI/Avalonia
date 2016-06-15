@@ -51,22 +51,7 @@ namespace Avalonia.Controls.Mixins
 
                 if (sender != null)
                 {
-                    var itemsControl = sender.Parent as SelectingItemsControl;
-
-                    if ((bool)x.NewValue)
-                    {
-                        ((IPseudoClasses)sender.Classes).Add(":selected");
-
-                        if (((IVisual)sender).IsAttachedToVisualTree && 
-                            itemsControl?.AutoScrollToSelectedItem == true)
-                        {
-                            sender.BringIntoView();
-                        }
-                    }
-                    else
-                    {
-                        ((IPseudoClasses)sender.Classes).Remove(":selected");
-                    }
+                    ((IPseudoClasses)sender.Classes).Set(":selected", (bool)x.NewValue);
 
                     sender.RaiseEvent(new RoutedEventArgs
                     {

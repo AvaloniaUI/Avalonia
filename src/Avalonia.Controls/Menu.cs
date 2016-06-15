@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using System.Reactive.Disposables;
+using Avalonia.Controls.Generators;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
@@ -129,6 +130,12 @@ namespace Avalonia.Controls
         {
             base.OnDetachedFromVisualTree(e);
             _subscription.Dispose();
+        }
+
+        /// <inheritdoc/>
+        protected override IItemContainerGenerator CreateItemContainerGenerator()
+        {
+            return new ItemContainerGenerator<MenuItem>(this, MenuItem.HeaderProperty, null);
         }
 
         /// <summary>

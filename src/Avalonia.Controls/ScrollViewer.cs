@@ -12,7 +12,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// A control scrolls its content if the content is bigger than the space available.
     /// </summary>
-    public class ScrollViewer : ContentControl
+    public class ScrollViewer : ContentControl, IScrollable
     {
         /// <summary>
         /// Defines the <see cref="CanScrollHorizontally"/> property.

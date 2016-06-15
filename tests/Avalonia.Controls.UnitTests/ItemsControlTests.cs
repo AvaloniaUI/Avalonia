@@ -27,7 +27,10 @@ namespace Avalonia.Controls.UnitTests
             target.ApplyTemplate();
             target.Presenter.ApplyTemplate();
 
-            Assert.IsType<Canvas>(target.Presenter.Panel.Children[0]);
+            var container = (ContentPresenter)target.Presenter.Panel.Children[0];
+            container.UpdateChild();
+
+            Assert.IsType<Canvas>(container.Child);
         }
 
         [Fact]
@@ -44,7 +47,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Item_Should_Have_TemplatedParent_Set_To_Null()
+        public void Container_Should_Have_TemplatedParent_Set_To_Null()
         {
             var target = new ItemsControl();
 
@@ -53,9 +56,9 @@ namespace Avalonia.Controls.UnitTests
             target.ApplyTemplate();
             target.Presenter.ApplyTemplate();
 
-            var item = (TextBlock)target.Presenter.Panel.GetVisualChildren().First();
+            var container = (ContentPresenter)target.Presenter.Panel.Children[0];
 
-            Assert.Null(item.TemplatedParent);
+            Assert.Null(container.TemplatedParent);
         }
 
         [Fact]
@@ -135,7 +138,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Adding_String_Item_Should_Make_TextBlock_Appear_In_LogicalChildren()
+        public void Adding_String_Item_Should_Make_ContentPresenter_Appear_In_LogicalChildren()
         {
             var target = new ItemsControl();
             var child = new Control();
@@ -147,7 +150,7 @@ namespace Avalonia.Controls.UnitTests
 
             var logical = (ILogical)target;
             Assert.Equal(1, logical.LogicalChildren.Count);
-            Assert.IsType<TextBlock>(logical.LogicalChildren[0]);
+            Assert.IsType<ContentPresenter>(logical.LogicalChildren[0]);
         }
 
         [Fact]
@@ -367,6 +370,7 @@ namespace Avalonia.Controls.UnitTests
             target.Presenter.ApplyTemplate();
 
             var dataContexts = target.Presenter.Panel.Children
+                .Do(x => (x as ContentPresenter)?.UpdateChild())
                 .Cast<Control>()
                 .Select(x => x.DataContext)
                 .ToList();
@@ -390,8 +394,8 @@ namespace Avalonia.Controls.UnitTests
             target.Presenter.ApplyTemplate();
 
             var text = target.Presenter.Panel.Children
-                .Cast<TextBlock>()
-                .Select(x => x.Text)
+                .Cast<ContentPresenter>()
+                .Select(x => x.Content)
                 .ToList();
 
             Assert.Equal(new[] { "Foo", "Bar" }, text);
@@ -419,7 +423,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void DataTemplate_Created_Item_Should_Be_NameScope()
+        public void DataTemplate_Created_Content_Should_Be_NameScope()
         {
             var items = new object[]
             {
@@ -435,8 +439,10 @@ namespace Avalonia.Controls.UnitTests
             target.ApplyTemplate();
             target.Presenter.ApplyTemplate();
 
-            var item = target.Presenter.Panel.LogicalChildren[0];
-            Assert.NotNull(NameScope.GetNameScope((TextBlock)item));
+            var container = (ContentPresenter)target.Presenter.Panel.LogicalChildren[0];
+            container.UpdateChild();
+
+            Assert.NotNull(NameScope.GetNameScope((TextBlock)container.Child));
         }
 
         private class Item

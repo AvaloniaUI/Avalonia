@@ -1,6 +1,8 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System.Collections.Generic;
+using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Diagnostics;
@@ -25,6 +27,9 @@ namespace XamlTestApplication.Views
             AvaloniaXamlLoader.Load(this);
             _exitMenu = this.FindControl<MenuItem>("exitMenu");
             _exitMenu.Click += (s, e) => Application.Current.Exit();
+
+            var virtualList = this.FindControl<ListBox>("virtualList");
+            virtualList.Items = Enumerable.Range(0, 200).Select(x => $"Item {x}").ToList();
         }
     }
 }

@@ -17,8 +17,9 @@ namespace Avalonia.Controls.Templates
         /// <param name="build">
         /// A function which when passed an object of <typeparamref name="T"/> returns a control.
         /// </param>
-        public FuncDataTemplate(Func<T, IControl> build)
-            : base(typeof(T), CastBuild(build))
+        /// <param name="supportsRecycling">Whether the control can be recycled.</param>
+        public FuncDataTemplate(Func<T, IControl> build, bool supportsRecycling = false)
+            : base(typeof(T), CastBuild(build), supportsRecycling)
         {
         }
 
@@ -31,8 +32,12 @@ namespace Avalonia.Controls.Templates
         /// <param name="build">
         /// A function which when passed an object of <typeparamref name="T"/> returns a control.
         /// </param>
-        public FuncDataTemplate(Func<T, bool> match, Func<T, IControl> build)
-            : base(CastMatch(match), CastBuild(build))
+        /// <param name="supportsRecycling">Whether the control can be recycled.</param>
+        public FuncDataTemplate(
+            Func<T, bool> match,
+            Func<T, IControl> build,
+            bool supportsRecycling = false)
+            : base(CastMatch(match), CastBuild(build), supportsRecycling)
         {
         }
 
