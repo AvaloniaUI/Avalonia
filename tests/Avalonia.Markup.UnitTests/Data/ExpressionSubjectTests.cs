@@ -123,8 +123,8 @@ namespace Avalonia.Markup.UnitTests.Data
             var target = new ExpressionSubject(
                 new ExpressionObserver(data, "DoubleValue"),
                 typeof(string),
-                DefaultValueConverter.Instance,
-                fallbackValue: "9.8");
+                "9.8",
+                DefaultValueConverter.Instance);
 
             target.OnNext("foo");
 
@@ -162,7 +162,7 @@ namespace Avalonia.Markup.UnitTests.Data
                 new ExpressionObserver(data, "DoubleValue"),
                 typeof(string),
                 converter.Object,
-                "foo");
+                converterParameter: "foo");
 
             target.Subscribe(_ => { });
 
@@ -178,7 +178,7 @@ namespace Avalonia.Markup.UnitTests.Data
                 new ExpressionObserver(data, "DoubleValue"), 
                 typeof(string),
                 converter.Object,
-                "foo");
+                converterParameter: "foo");
 
             target.OnNext("bar");
 
