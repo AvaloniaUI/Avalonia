@@ -82,7 +82,7 @@ namespace Avalonia.DesignerSupport
         {
             var xamlInfo = new DesignerApiXamlFileInfo(dic);
             Window window;
-            Control original;
+            Control control;
 
             using (PlatformManager.DesignerMode())
             {
@@ -99,12 +99,37 @@ namespace Avalonia.DesignerSupport
                         new Uri("resm:Fake.xaml?assembly=" + Path.GetFileNameWithoutExtension(xamlInfo.AssemblyPath));
                 }
 
-                original = (Control)loader.Load(stream, null, baseUri);
-                window = original as Window;
+                var loaded = loader.Load(stream, null, baseUri);
+                var styles = loaded as Styles;
+                if (styles != null)
+                {
+                    var substitute = Design.GetPreviewWith(styles) ??
+                                     styles.Select(Design.GetPreviewWith).FirstOrDefault(s => s != null);
+                    if (substitute != null)
+                    {
+                        substitute.Styles.AddRange(styles);
+                        control = substitute;
+                    }
+                    else
+                        control = new StackPanel
+                        {
+                            Children =
+                            {
+                                new TextBlock {Text = "Styles can't be edited without Design.PreviewWith. Add"},
+                                new TextBlock {Text = "<Design.PreviewWith>"},
+                                new TextBlock {Text = "    <Border Padding=20><!-- YOUR CONTROL FOR PREVIEW HERE--></Border>"},
+                                new TextBlock {Text = "<Design.PreviewWith>"},
+                                new TextBlock {Text = "before setters in your first Style"}
+                            }
+                        };
+                }
+                else
+                    control = (Control) loaded;
 
+                window = control as Window;
                 if (window == null)
                 {
-                    window = new Window() {Content = original};
+                    window = new Window() {Content = (Control)control};
                 }
 
                 if (!window.IsSet(Window.SizeToContentProperty))
@@ -114,7 +139,7 @@ namespace Avalonia.DesignerSupport
             s_currentWindow?.Close();
             s_currentWindow = window;
             window.Show();
-            Design.ApplyDesignerProperties(window, original);
+            Design.ApplyDesignerProperties(window, control);
             Api.OnWindowCreated?.Invoke(window.PlatformImpl.Handle.Handle);
             Api.OnResize?.Invoke();
         }
