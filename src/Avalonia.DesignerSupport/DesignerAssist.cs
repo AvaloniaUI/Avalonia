@@ -115,7 +115,7 @@ namespace Avalonia.DesignerSupport
                         {
                             Children =
                             {
-                                new TextBlock {Text = "Styles can't be edited without Design.PreviewWith. Add"},
+                                new TextBlock {Text = "Styles can't be previewed without Design.PreviewWith. Add"},
                                 new TextBlock {Text = "<Design.PreviewWith>"},
                                 new TextBlock {Text = "    <Border Padding=20><!-- YOUR CONTROL FOR PREVIEW HERE--></Border>"},
                                 new TextBlock {Text = "<Design.PreviewWith>"},
@@ -123,6 +123,8 @@ namespace Avalonia.DesignerSupport
                             }
                         };
                 }
+                if (loaded is Application)
+                    control = new TextBlock {Text = "Application can't be previewed in design view"};
                 else
                     control = (Control) loaded;
 
