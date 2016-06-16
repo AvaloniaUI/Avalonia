@@ -43,7 +43,7 @@ namespace Avalonia.Markup.Xaml.Templates
             if (ItemsSource != null)
             {
                 var obs = new ExpressionObserver(item, ItemsSource.Path);
-                return new InstancedBinding(obs);
+                return new InstancedBinding(obs, BindingPriority.Style);
             }
 
             return null;

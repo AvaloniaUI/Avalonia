@@ -5,6 +5,7 @@ using System;
 using System.Linq.Expressions;
 using System.Reflection;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
 
 namespace Avalonia.Controls.Generators
 {
@@ -62,10 +63,10 @@ namespace Avalonia.Controls.Generators
 
                 if (ContentTemplateProperty != null)
                 {
-                    result.SetValue(ContentTemplateProperty, ItemTemplate);
+                    result.SetValue(ContentTemplateProperty, ItemTemplate, BindingPriority.Style);
                 }
 
-                result.SetValue(ContentProperty, item);
+                result.SetValue(ContentProperty, item, BindingPriority.Style);
 
                 if (!(item is IControl))
                 {

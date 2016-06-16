@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
 
 namespace Avalonia.Controls.Generators
 {
@@ -187,11 +188,16 @@ namespace Avalonia.Controls.Generators
 
             if (result == null)
             {
-                result = new ContentPresenter
+                result = new ContentPresenter();
+                result.SetValue(ContentPresenter.ContentProperty, item, BindingPriority.Style);
+
+                if (ItemTemplate != null)
                 {
-                    ContentTemplate = ItemTemplate,
-                    Content = item,
-                };
+                    result.SetValue(
+                        ContentPresenter.ContentTemplateProperty,
+                        ItemTemplate,
+                        BindingPriority.TemplatedParent);
+                }
             }
 
             return result;
