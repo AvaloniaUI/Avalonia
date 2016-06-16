@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Base", "src\Avalonia.Base\Avalonia.Base.csproj", "{B09B78D8-9B26-48B0-9149-D64A2F120F3F}"
 EndProject
@@ -15,6 +15,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Direct2D1", "src\Windows\Avalonia.Direct2D1\Avalonia.Direct2D1.csproj", "{3E908F67-5543-4879-A1DC-08EACE79B3CD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Designer", "src\Windows\Avalonia.Designer\Avalonia.Designer.csproj", "{EC42600F-049B-43FF-AED1-8314D61B2749}"
+	ProjectSection(ProjectDependencies) = postProject
+		{2B888490-D14A-4BCA-AB4B-48676FA93C9B} = {2B888490-D14A-4BCA-AB4B-48676FA93C9B}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Input", "src\Avalonia.Input\Avalonia.Input.csproj", "{62024B2D-53EB-4638-B26B-85EEAA54866E}"
 EndProject
@@ -156,7 +159,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.DesignerSupport.Te
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.DesignerSupport.TestApp", "tests\Avalonia.DesignerSupport.TestApp\Avalonia.DesignerSupport.TestApp.csproj", "{F1381F98-4D24-409A-A6C5-1C5B1E08BB08}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Aval+onia.RenderTests", "tests\Avalonia.RenderTests\Avalonia.RenderTests.shproj", "{48840EDD-24BF-495D-911E-2EB12AE75D3B}"
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Avalonia.RenderTests", "tests\Avalonia.RenderTests\Avalonia.RenderTests.shproj", "{48840EDD-24BF-495D-911E-2EB12AE75D3B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VirtualizationTest", "samples\VirtualizationTest\VirtualizationTest.csproj", "{FBCAF3D0-2808-4934-8E96-3F607594517B}"
 EndProject

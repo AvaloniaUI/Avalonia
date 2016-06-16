@@ -25,11 +25,15 @@ namespace Avalonia.Designer
             InitializeComponent();
         }
 
-        public DemoWindow(string targetExe, string targetPath) : this()
+        public DemoWindow(string targetExe, string targetPath, string sourceAssembly) : this()
         {
-            TargetExe.Text = targetExe;
-            if (targetExe != null)
+            
+            if (targetPath != null)
+            {
                 Xaml.Text = File.ReadAllText(targetPath);
+            }
+            SourceAssembly.Text = sourceAssembly ?? targetExe;
+            TargetExe.Text = targetExe;
         }
 
         static string OpenFile(string filter)
@@ -50,6 +54,13 @@ namespace Avalonia.Designer
         private void RestartClicked(object sender, RoutedEventArgs e)
         {
             Designer.RestartProcess();
+        }
+
+        private void SelectSourceClicked(object sender, RoutedEventArgs e)
+        {
+            var exe = OpenFile("assembly|*.exe,*.dll");
+            if (exe != null)
+                SourceAssembly.Text = exe;
         }
     }
 }

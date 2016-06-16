@@ -36,7 +36,7 @@ namespace Avalonia.DesignerSupport
         public static void Init(Dictionary<string, object> shared)
         {
             Design.IsDesignMode = true;
-            Api = new DesignerApi(shared) {UpdateXaml = UpdateXaml, SetScalingFactor = SetScalingFactor};
+            Api = new DesignerApi(shared) {UpdateXaml = UpdateXaml, UpdateXaml2 = UpdateXaml2, SetScalingFactor = SetScalingFactor};
             var plat = (IPclPlatformWrapper) Activator.CreateInstance(Assembly.Load(new AssemblyName("Avalonia.Win32"))
                 .DefinedTypes.First(typeof (IPclPlatformWrapper).GetTypeInfo().IsAssignableFrom).AsType());
             
@@ -58,7 +58,6 @@ namespace Avalonia.DesignerSupport
                     //Ignore, Assembly.DefinedTypes threw an exception, we can't do anything about that
                 }
             }
-
             AppBuilder.Configure(app == null ? new DesignerApp() : (Application) Activator.CreateInstance(app.AsType()))
                 .UseWindowingSubsystem("Avalonia.Win32")
                 .UseRenderingSubsystem("Avalonia.Direct2D1")
@@ -74,17 +73,33 @@ namespace Avalonia.DesignerSupport
 
         static Window s_currentWindow;
 
-        private static void UpdateXaml(string xaml)
+        private static void UpdateXaml(string xaml) => UpdateXaml2(new DesignerApiXamlFileInfo
         {
+            Xaml = xaml
+        }.Dictionary);
+
+        private static void UpdateXaml2(Dictionary<string, object> dic)
+        {
+            var xamlInfo = new DesignerApiXamlFileInfo(dic);
             Window window;
             Control original;
 
             using (PlatformManager.DesignerMode())
             {
                 var loader = new AvaloniaXamlLoader();
-                var stream = new MemoryStream(Encoding.UTF8.GetBytes(xaml));
+                var stream = new MemoryStream(Encoding.UTF8.GetBytes(xamlInfo.Xaml));
 
-                original = (Control)loader.Load(stream);
+
+                
+                Uri baseUri = null;
+                if (xamlInfo.AssemblyPath != null)
+                {
+                    //Fabricate fake Uri
+                    baseUri =
+                        new Uri("resm:Fake.xaml?assembly=" + Path.GetFileNameWithoutExtension(xamlInfo.AssemblyPath));
+                }
+
+                original = (Control)loader.Load(stream, null, baseUri);
                 window = original as Window;
 
                 if (window == null)

@@ -14,10 +14,16 @@
             <Button Margin="5,0" DockPanel.Dock="Right" Click="RestartClicked">Restart</Button>
             <TextBlock x:Name="TargetExe"/>
         </DockPanel>
+        <DockPanel Dock="Bottom" LastChildFill="True" Margin="0,5">
+            <TextBlock Margin="5,0">Source Assembly:</TextBlock>
+            <Button DockPanel.Dock="Right" Click="SelectSourceClicked">Select Source Assembly</Button>
+            <TextBlock x:Name="SourceAssembly"/>
+        </DockPanel>
         <UniformGrid Columns="1" Rows="2">
             <local:AvaloniaDesigner x:Name="Designer"
                 TargetExe="{Binding ElementName=TargetExe, Path=Text, Mode=OneWay}"
-                Xaml="{Binding ElementName=Xaml, Path=Text, Mode=OneWay}"/>
+                Xaml="{Binding ElementName=Xaml, Path=Text, Mode=OneWay}"
+                                    SourceAssembly="{Binding ElementName=SourceAssembly, Path=Text, Mode=OneWay}"/>
             <TextBox x:Name="Xaml"/>
         </UniformGrid>
     </DockPanel>

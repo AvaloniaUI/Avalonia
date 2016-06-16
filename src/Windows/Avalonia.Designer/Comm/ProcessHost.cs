@@ -80,7 +80,7 @@ namespace Avalonia.Designer.Comm
             State = "Designer process crashed";
         }
 
-        public void Start(string targetExe, string initialXaml)
+        public void Start(string targetExe, string initialXaml, string sourceAssembly)
         {
             if (_proc != null)
             {
@@ -95,7 +95,7 @@ namespace Avalonia.Designer.Comm
                 State = "Restarting...";
             }
 
-            var msg = new InitMessage(Path.GetFullPath(targetExe), initialXaml);
+            var msg = new InitMessage(Path.GetFullPath(targetExe), initialXaml, sourceAssembly);
             var exe = typeof (ProcessHost).Assembly.GetModules()[0].FullyQualifiedName;
             _proc = new Process()
             {
@@ -128,9 +128,9 @@ namespace Avalonia.Designer.Comm
 
         }
 
-        public void UpdateXaml(string xaml)
+        public void UpdateXaml(string xaml, string sourceAssembly)
         {
-            _comm?.SendMessage(new UpdateXamlMessage(xaml));
+            _comm?.SendMessage(new UpdateXamlMessage(xaml, sourceAssembly));
         }
 
         private void OnMessage(object obj)

@@ -21,6 +21,7 @@ namespace Avalonia.Designer.AppHost
         private readonly CommChannel _comm;
         private string _lastXaml;
         private string _currentXaml;
+        private string _currentSourceAssembly;
         private bool _initSuccess;
         private readonly HostedAppModel _appModel;
         private Control _window;
@@ -47,7 +48,10 @@ namespace Avalonia.Designer.AppHost
             }
             var updateXaml = obj as UpdateXamlMessage;
             if (updateXaml != null)
+            {
                 _currentXaml = updateXaml.Xaml;
+                _currentSourceAssembly = updateXaml.AssemblyPath;
+            }
         }
 
         void UpdateState(string state)
@@ -183,7 +187,16 @@ namespace Avalonia.Designer.AppHost
             }
             try
             {
-                Api.UpdateXaml(_currentXaml);
+                if (Api.UpdateXaml2 != null)
+                {
+                    Api.UpdateXaml2(new DesignerApiXamlFileInfo
+                    {
+                        AssemblyPath = _currentSourceAssembly,
+                        Xaml = _currentXaml
+                    }.Dictionary);
+                }
+                else
+                    Api.UpdateXaml(_currentXaml);
 
                 _appModel.SetError(null);
             }

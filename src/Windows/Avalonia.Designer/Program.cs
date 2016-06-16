@@ -58,10 +58,12 @@ namespace Avalonia.Designer
             var app =  new App();
             const string targetExe = "--exe=";
             const string xaml = "--xaml=";
-            
+            const string source = "--source=";
+
             app.Run(new DemoWindow(
                 args.Where(a => a.StartsWith(targetExe)).Select(a => a.Substring(targetExe.Length)).FirstOrDefault(),
-                args.Where(a => a.StartsWith(xaml)).Select(a => a.Substring(xaml.Length)).FirstOrDefault()));
+                args.Where(a => a.StartsWith(xaml)).Select(a => a.Substring(xaml.Length)).FirstOrDefault(),
+                args.Where(a => a.StartsWith(source)).Select(a => a.Substring(source.Length)).FirstOrDefault()));
         }
     }
 }

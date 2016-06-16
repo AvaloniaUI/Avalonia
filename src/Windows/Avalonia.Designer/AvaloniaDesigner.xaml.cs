@@ -52,7 +52,15 @@ namespace Avalonia.Designer
             get { return (string) GetValue(XamlProperty); }
             set { SetValue(XamlProperty, value); }
         }
-        
+
+        public static readonly DependencyProperty SourceAssemblyProperty = DependencyProperty.Register(
+            "SourceAssembly", typeof (string), typeof (AvaloniaDesigner), new FrameworkPropertyMetadata(XamlChanged));
+
+        public string SourceAssembly
+        {
+            get { return (string) GetValue(SourceAssemblyProperty); }
+            set { SetValue(SourceAssemblyProperty, value); }
+        }
         
         private readonly ProcessHost _host = new ProcessHost();
         
@@ -117,7 +125,7 @@ namespace Avalonia.Designer
                 return;
             if(string.IsNullOrEmpty(Xaml))
                 return;
-            _host.Start(TargetExe, Xaml);
+            _host.Start(TargetExe, Xaml, SourceAssembly);
         }
 
         private void OnXamlChanged()
@@ -125,9 +133,9 @@ namespace Avalonia.Designer
             if (!CheckTargetExeOrSetError())
                 return;
             if (!_host.IsAlive)
-                _host.Start(TargetExe, Xaml);
+                _host.Start(TargetExe, Xaml, SourceAssembly);
             else
-                _host.UpdateXaml(Xaml ?? "");
+                _host.UpdateXaml(Xaml ?? "", SourceAssembly);
         }
 
     }
