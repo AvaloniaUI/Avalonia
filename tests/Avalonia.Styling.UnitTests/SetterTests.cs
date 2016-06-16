@@ -6,11 +6,21 @@ using Moq;
 using Avalonia.Controls;
 using Avalonia.Data;
 using Xunit;
+using System;
+using Avalonia.Controls.Templates;
 
 namespace Avalonia.Styling.UnitTests
 {
     public class SetterTests
     {
+        [Fact]
+        public void Cannot_Assign_Control_To_Value()
+        {
+            var target = new Setter();
+
+            Assert.Throws<ArgumentException>(() => target.Value = new Border());
+        }
+
         [Fact]
         public void Setter_Should_Apply_Binding_To_Property()
         {
@@ -24,6 +34,19 @@ namespace Avalonia.Styling.UnitTests
             setter.Apply(style, control, null);
 
             Assert.Equal("foo", control.Text);
+        }
+
+        [Fact]
+        public void Setter_Should_Materialize_Template_To_Property()
+        {
+            var control = new Decorator();
+            var template = new FuncTemplate<Canvas>(() => new Canvas());
+            var style = Mock.Of<IStyle>();
+            var setter = new Setter(Decorator.ChildProperty, template);
+
+            setter.Apply(style, control, null);
+
+            Assert.IsType<Canvas>(control.Child);
         }
     }
 }

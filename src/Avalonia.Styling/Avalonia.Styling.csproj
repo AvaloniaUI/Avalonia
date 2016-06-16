@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -49,6 +49,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Styling\ActivatedSubject.cs" />
     <Compile Include="Styling\ActivatedValue.cs" />
+    <Compile Include="Styling\ITemplate.cs" />
     <Compile Include="Styling\TemplateSelector.cs" />
     <Compile Include="Styling\DescendentSelector.cs" />
     <Compile Include="Styling\ChildSelector.cs" />
