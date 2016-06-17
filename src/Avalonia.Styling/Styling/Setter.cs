@@ -4,6 +4,7 @@
 using System;
 using System.Reactive.Disposables;
 using System.Reactive.Subjects;
+using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Metadata;
 using Avalonia.Reactive;
@@ -100,7 +101,9 @@ namespace Avalonia.Styling
 
                 if (template != null)
                 {
-                    value = template.Build();
+                    var materialized = template.Build();
+                    NameScope.SetNameScope((Visual)materialized, new NameScope());
+                    value = materialized;
                 }
 
                 if (activator == null)

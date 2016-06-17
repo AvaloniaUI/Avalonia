@@ -48,5 +48,18 @@ namespace Avalonia.Styling.UnitTests
 
             Assert.IsType<Canvas>(control.Child);
         }
+
+        [Fact]
+        public void Materializes_Template_Should_Be_NameScope()
+        {
+            var control = new Decorator();
+            var template = new FuncTemplate<Canvas>(() => new Canvas());
+            var style = Mock.Of<IStyle>();
+            var setter = new Setter(Decorator.ChildProperty, template);
+
+            setter.Apply(style, control, null);
+
+            Assert.NotNull(NameScope.GetNameScope((Control)control.Child));
+        }
     }
 }
