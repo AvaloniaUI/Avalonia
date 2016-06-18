@@ -24,11 +24,11 @@ namespace Avalonia.Input
         public static IEnumerable<IInputElement> GetInputElementsAt(this IInputElement element, Point p)
         {
             Contract.Requires<ArgumentNullException>(element != null);
-            var transformedBounds = BoundsTracker.GetTransformedBounds((Visual)element);
 
             if (element.IsVisible &&
                 element.IsHitTestVisible &&
-                element.IsEnabledCore)
+                element.IsEnabledCore &&
+                BoundsTracker.GetTransformedBounds((Visual)element).Contains(p))
             {
                 if (element.VisualChildren.Any())
                 {
@@ -41,10 +41,7 @@ namespace Avalonia.Input
                     }
                 }
 
-                if (transformedBounds.Contains(p))
-                {
-                    yield return element;
-                }
+                yield return element;
             }
         }
 
