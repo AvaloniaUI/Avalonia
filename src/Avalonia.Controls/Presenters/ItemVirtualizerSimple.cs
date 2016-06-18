@@ -135,6 +135,7 @@ namespace Avalonia.Controls.Presenters
 
                     case NotifyCollectionChangedAction.Reset:
                         RecycleContainersOnRemove();
+                        CreateAndRemoveContainers();
                         break;
                 }
             }

@@ -372,6 +372,50 @@ namespace Avalonia.Controls.UnitTests.Presenters
             Assert.Empty(target.Panel.Children);
         }
 
+        [Fact]
+        public void Reassigning_Items_Should_Create_Containers()
+        {
+            var target = CreateTarget(itemCount: 5);
+
+            target.ApplyTemplate();
+            target.Measure(new Size(100, 100));
+            target.Arrange(new Rect(0, 0, 100, 100));
+
+            var expected = Enumerable.Range(0, 5).Select(x => $"Item {x}").ToList();
+            var items = (ObservableCollection<string>)target.Items;
+            var actual = target.Panel.Children.Select(x => x.DataContext).ToList();
+
+            Assert.Equal(expected, actual);
+
+            expected = Enumerable.Range(0, 6).Select(x => $"Item {x}").ToList();
+            target.Items = expected;
+
+            actual = target.Panel.Children.Select(x => x.DataContext).ToList();
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public void Reassigning_Items_Should_Remove_Containers()
+        {
+            var target = CreateTarget(itemCount: 5);
+
+            target.ApplyTemplate();
+            target.Measure(new Size(100, 100));
+            target.Arrange(new Rect(0, 0, 100, 100));
+
+            var expected = Enumerable.Range(0, 5).Select(x => $"Item {x}").ToList();
+            var items = (ObservableCollection<string>)target.Items;
+            var actual = target.Panel.Children.Select(x => x.DataContext).ToList();
+
+            Assert.Equal(expected, actual);
+
+            expected = Enumerable.Range(0, 4).Select(x => $"Item {x}").ToList();
+            target.Items = expected;
+
+            actual = target.Panel.Children.Select(x => x.DataContext).ToList();
+            Assert.Equal(expected, actual);
+        }
+
         public class Vertical
         {
             [Fact]
