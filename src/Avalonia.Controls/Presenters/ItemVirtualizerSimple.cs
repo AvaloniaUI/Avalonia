@@ -143,6 +143,7 @@ namespace Avalonia.Controls.Presenters
             {
                 Owner.ItemContainerGenerator.Clear();
                 VirtualizingPanel.Children.Clear();
+                FirstIndex = NextIndex = 0;
             }
 
             InvalidateScroll();

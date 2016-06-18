@@ -397,19 +397,42 @@ namespace Avalonia.Controls.UnitTests.Presenters
         [Fact]
         public void Reassigning_Items_Should_Remove_Containers()
         {
-            var target = CreateTarget(itemCount: 5);
+            var target = CreateTarget(itemCount: 6);
 
             target.ApplyTemplate();
             target.Measure(new Size(100, 100));
             target.Arrange(new Rect(0, 0, 100, 100));
 
-            var expected = Enumerable.Range(0, 5).Select(x => $"Item {x}").ToList();
+            var expected = Enumerable.Range(0, 6).Select(x => $"Item {x}").ToList();
             var items = (ObservableCollection<string>)target.Items;
             var actual = target.Panel.Children.Select(x => x.DataContext).ToList();
 
             Assert.Equal(expected, actual);
 
-            expected = Enumerable.Range(0, 4).Select(x => $"Item {x}").ToList();
+            expected = Enumerable.Range(0, 5).Select(x => $"Item {x}").ToList();
+            target.Items = expected;
+
+            actual = target.Panel.Children.Select(x => x.DataContext).ToList();
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public void Clearing_Items_And_ReAdding_Should_Remove_Containers()
+        {
+            var target = CreateTarget(itemCount: 6);
+
+            target.ApplyTemplate();
+            target.Measure(new Size(100, 100));
+            target.Arrange(new Rect(0, 0, 100, 100));
+
+            var expected = Enumerable.Range(0, 6).Select(x => $"Item {x}").ToList();
+            var items = (ObservableCollection<string>)target.Items;
+            var actual = target.Panel.Children.Select(x => x.DataContext).ToList();
+
+            Assert.Equal(expected, actual);
+
+            expected = Enumerable.Range(0, 5).Select(x => $"Item {x}").ToList();
+            target.Items = null;
             target.Items = expected;
 
             actual = target.Panel.Children.Select(x => x.DataContext).ToList();
