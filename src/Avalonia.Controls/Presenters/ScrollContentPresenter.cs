@@ -231,26 +231,32 @@ namespace Avalonia.Controls.Presenters
         /// <inheritdoc/>
         protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
         {
-            if (Extent.Height > Viewport.Height)
+            if (Extent.Height > Viewport.Height || Extent.Width > Viewport.Width)
             {
                 var scrollable = Child as ILogicalScrollable;
+                bool isLogical = scrollable?.IsLogicalScrollEnabled == true;
 
-                if (scrollable?.IsLogicalScrollEnabled == true)
-                {                    
-                    var y = Offset.Y + (-e.Delta.Y * scrollable.ScrollSize.Height);
-                    y = Math.Max(y, 0);
-                    y = Math.Min(y, Extent.Height - Viewport.Height);
-                    Offset = new Vector(Offset.X, y);
-                    e.Handled = true;
-                }
-                else
+                double x = Offset.X;
+                double y = Offset.Y;
+
+                if (Extent.Height > Viewport.Height)
                 {
-                    var y = Offset.Y + (-e.Delta.Y * 50);
+                    double height = isLogical ? scrollable.ScrollSize.Height : 50;
+                    y += -e.Delta.Y * height;
                     y = Math.Max(y, 0);
                     y = Math.Min(y, Extent.Height - Viewport.Height);
-                    Offset = new Vector(Offset.X, y);
-                    e.Handled = true;
                 }
+
+                if (Extent.Width > Viewport.Width)
+                {
+                    double width = isLogical ? scrollable.ScrollSize.Width : 50;
+                    x += -e.Delta.X * width;
+                    x = Math.Max(x, 0);
+                    x = Math.Min(x, Extent.Width - Viewport.Width);
+                }
+
+                Offset = new Vector(x, y);
+                e.Handled = true;
             }
         }
 
