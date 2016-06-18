@@ -27,10 +27,11 @@ namespace Avalonia.Input
 
             if (element.IsVisible &&
                 element.IsHitTestVisible &&
-                element.IsEnabledCore &&
-                BoundsTracker.GetTransformedBounds((Visual)element).Contains(p))
+                element.IsEnabledCore)
             {
-                if (element.VisualChildren.Any())
+                bool containsPoint = BoundsTracker.GetTransformedBounds((Visual)element).Contains(p);
+
+                if ((containsPoint || !element.ClipToBounds) && element.VisualChildren.Any())
                 {
                     foreach (var child in ZSort(element.VisualChildren.OfType<IInputElement>()))
                     {
@@ -41,7 +42,10 @@ namespace Avalonia.Input
                     }
                 }
 
-                yield return element;
+                if (containsPoint)
+                {
+                    yield return element;
+                }
             }
         }
 
