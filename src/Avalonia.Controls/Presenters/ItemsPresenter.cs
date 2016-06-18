@@ -69,7 +69,7 @@ namespace Avalonia.Controls.Presenters
         Action ILogicalScrollable.InvalidateScroll { get; set; }
 
         /// <inheritdoc/>
-        Size ILogicalScrollable.ScrollSize => new Size(0, 1);
+        Size ILogicalScrollable.ScrollSize => new Size(1, 1);
 
         /// <inheritdoc/>
         Size ILogicalScrollable.PageScrollSize => new Size(0, 1);
