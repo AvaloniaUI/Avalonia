@@ -85,31 +85,31 @@ namespace Avalonia.Cairo.Media
             _context.Scale(scale.X, scale.Y);
             destRect /= scale;
 
-			if (opacityOverride < 1.0f) {
-				_context.PushGroup ();
-				Gdk.CairoHelper.SetSourcePixbuf (
-					_context, 
-					impl.Surface, 
-					-sourceRect.X + destRect.X, 
-					-sourceRect.Y + destRect.Y);
+            if (opacityOverride < 1.0f) {
+                _context.PushGroup ();
+                Gdk.CairoHelper.SetSourcePixbuf (
+                    _context, 
+                    impl.Surface, 
+                    -sourceRect.X + destRect.X, 
+                    -sourceRect.Y + destRect.Y);
 
-				_context.Rectangle (destRect.ToCairo ());
-				_context.Fill ();
-				_context.PopGroupToSource ();
-				_context.PaintWithAlpha (opacityOverride);
-			} else {
-				_context.PushGroup ();
-				Gdk.CairoHelper.SetSourcePixbuf (
-					_context, 
-					impl.Surface, 
-					-sourceRect.X + destRect.X, 
-					-sourceRect.Y + destRect.Y);
+                _context.Rectangle (destRect.ToCairo ());
+                _context.Fill ();
+                _context.PopGroupToSource ();
+                _context.PaintWithAlpha (opacityOverride);
+            } else {
+                _context.PushGroup ();
+                Gdk.CairoHelper.SetSourcePixbuf (
+                    _context, 
+                    impl.Surface, 
+                    -sourceRect.X + destRect.X, 
+                    -sourceRect.Y + destRect.Y);
 
-				_context.Rectangle (destRect.ToCairo ());
-				_context.Fill ();
-				_context.PopGroupToSource ();
-				_context.PaintWithAlpha (opacityOverride);			
-			}
+                _context.Rectangle (destRect.ToCairo ());
+                _context.Fill ();
+                _context.PopGroupToSource ();
+                _context.PaintWithAlpha (opacityOverride);			
+            }
             _context.Restore();
         }
 
@@ -123,12 +123,12 @@ namespace Avalonia.Cairo.Media
         {
             var size = new Rect(p1, p2).Size;
             
-			using (var p = SetPen(pen, size)) 
-			{
-				_context.MoveTo(p1.ToCairo());
-				_context.LineTo(p2.ToCairo());
-				_context.Stroke();
-			}
+            using (var p = SetPen(pen, size)) 
+            {
+                _context.MoveTo(p1.ToCairo());
+                _context.LineTo(p2.ToCairo());
+                _context.Stroke();
+            }
         }
 
         /// <summary>
@@ -179,11 +179,11 @@ namespace Avalonia.Cairo.Media
         /// <param name="rect">The rectangle bounds.</param>
         public void DrawRectangle(Pen pen, Rect rect, float cornerRadius)
         {
-			using (var p = SetPen(pen, rect.Size)) 
-			{
-				_context.Rectangle(rect.ToCairo ());
-				_context.Stroke();
-			}
+            using (var p = SetPen(pen, rect.Size)) 
+            {
+                _context.Rectangle(rect.ToCairo ());
+                _context.Stroke();
+            }
         }
 
         /// <summary>
@@ -197,10 +197,10 @@ namespace Avalonia.Cairo.Media
             var layout = ((FormattedTextImpl)text.PlatformImpl).Layout;
             _context.MoveTo(origin.X, origin.Y);
 
-			using (var b = SetBrush(foreground, new Size(0, 0))) 
-			{
-				Pango.CairoHelper.ShowLayout(_context, layout);
-			}
+            using (var b = SetBrush(foreground, new Size(0, 0))) 
+            {
+                Pango.CairoHelper.ShowLayout(_context, layout);
+            }
         }
 
         /// <summary>
@@ -210,11 +210,11 @@ namespace Avalonia.Cairo.Media
         /// <param name="rect">The rectangle bounds.</param>
         public void FillRectangle(IBrush brush, Rect rect, float cornerRadius)
         {
-			using (var b = SetBrush(brush, rect.Size)) 
-			{
-				_context.Rectangle(rect.ToCairo ());
-				_context.Fill();
-			}
+            using (var b = SetBrush(brush, rect.Size)) 
+            {
+                _context.Rectangle(rect.ToCairo ());
+                _context.Fill();
+            }
         }
 
         /// <summary>
@@ -271,7 +271,7 @@ namespace Avalonia.Cairo.Media
             });
         }
         
-		private double opacityOverride = 1.0f;
+        private double opacityOverride = 1.0f;
 
         private IDisposable SetBrush(IBrush brush, Size destinationSize)
         {
@@ -344,10 +344,10 @@ namespace Avalonia.Cairo.Media
             _context.LineJoin = Cairo.LineJoin.Miter;
             _context.LineCap = Cairo.LineCap.Butt;
 
-			if (pen.Brush == null)
-				return Disposable.Empty;
-			
-			return SetBrush(pen.Brush, destinationSize);
+            if (pen.Brush == null)
+                return Disposable.Empty;
+            
+            return SetBrush(pen.Brush, destinationSize);
         }
 
         public void PushGeometryClip(Geometry clip)
