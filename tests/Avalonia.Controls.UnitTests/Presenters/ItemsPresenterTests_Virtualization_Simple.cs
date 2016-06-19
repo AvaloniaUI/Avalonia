@@ -63,6 +63,23 @@ namespace Avalonia.Controls.UnitTests.Presenters
         }
 
         [Fact]
+        public void Should_Add_Containers_When_Panel_Is_Not_Full()
+        {
+            var target = CreateTarget(itemCount: 5);
+            var items = (IList<string>)target.Items;
+
+            target.ApplyTemplate();
+            target.Measure(new Size(100, 100));
+            target.Arrange(new Rect(0, 0, 100, 100));
+
+            Assert.Equal(5, target.Panel.Children.Count);
+
+            items.Add("New Item");
+
+            Assert.Equal(6, target.Panel.Children.Count);
+        }
+
+        [Fact]
         public void Should_Remove_Items_When_Control_Is_Shrank()
         {
             var target = CreateTarget();

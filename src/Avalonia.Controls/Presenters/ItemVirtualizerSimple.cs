@@ -110,10 +110,11 @@ namespace Avalonia.Controls.Presenters
                 switch (e.Action)
                 {
                     case NotifyCollectionChangedAction.Add:
+                        CreateAndRemoveContainers();
+
                         if (e.NewStartingIndex >= FirstIndex &&
                             e.NewStartingIndex + e.NewItems.Count <= NextIndex)
                         {
-                            CreateAndRemoveContainers();
                             RecycleContainers();
                         }
 
