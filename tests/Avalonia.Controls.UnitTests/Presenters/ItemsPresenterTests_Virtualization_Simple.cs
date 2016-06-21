@@ -456,6 +456,32 @@ namespace Avalonia.Controls.UnitTests.Presenters
             Assert.Equal(expected, actual);
         }
 
+        [Fact]
+        public void Scrolling_To_Partial_Last_Item_Then_Adding_Item_Updates_Containers()
+        {
+            var target = CreateTarget(itemCount: 10);
+            var items = (IList<string>)target.Items;
+
+            target.ApplyTemplate();
+            target.Measure(new Size(100, 95));
+            target.Arrange(new Rect(0, 0, 100, 95));
+
+            ((ILogicalScrollable)target).Offset = new Vector(0, 1);
+            Assert.Equal(new Vector(0, 1), ((ILogicalScrollable)target).Offset);
+
+            var expected = Enumerable.Range(0, 10).Select(x => $"Item {x}").ToList();
+            var actual = target.Panel.Children.Select(x => x.DataContext).ToList();
+            Assert.Equal(expected, actual);
+            Assert.Equal(10, ((IVirtualizingPanel)target.Panel).PixelOffset);
+
+            items.Add("Item 10");
+
+            expected = Enumerable.Range(1, 10).Select(x => $"Item {x}").ToList();
+            actual = target.Panel.Children.Select(x => x.DataContext).ToList();
+            Assert.Equal(expected, actual);
+            Assert.Equal(0, ((IVirtualizingPanel)target.Panel).PixelOffset);
+        }
+
         public class Vertical
         {
             [Fact]

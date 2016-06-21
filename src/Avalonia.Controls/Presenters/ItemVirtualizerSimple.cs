@@ -105,6 +105,8 @@ namespace Avalonia.Controls.Presenters
         {
             base.ItemsChanged(items, e);
 
+            var panel = VirtualizingPanel;
+
             if (items != null)
             {
                 switch (e.Action)
@@ -145,6 +147,14 @@ namespace Avalonia.Controls.Presenters
                 Owner.ItemContainerGenerator.Clear();
                 VirtualizingPanel.Children.Clear();
                 FirstIndex = NextIndex = 0;
+            }
+
+            // If we are scrolled to view a partially visible last item but controls were added
+            // then we need to return to a non-offset scroll position.
+            if (panel.PixelOffset != 0 && FirstIndex + panel.Children.Count < ItemCount)
+            {
+                panel.PixelOffset = 0;
+                RecycleContainersForMove(1);
             }
 
             InvalidateScroll();
