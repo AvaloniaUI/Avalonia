@@ -236,7 +236,7 @@ namespace Avalonia.Controls.Presenters
                 var scrollable = Child as ILogicalScrollable;
 
                 if (scrollable?.IsLogicalScrollEnabled == true)
-                {                    
+                {
                     var y = Offset.Y + (-e.Delta.Y * scrollable.ScrollSize.Height);
                     y = Math.Max(y, 0);
                     y = Math.Min(y, Extent.Height - Viewport.Height);
@@ -249,6 +249,27 @@ namespace Avalonia.Controls.Presenters
                     y = Math.Max(y, 0);
                     y = Math.Min(y, Extent.Height - Viewport.Height);
                     Offset = new Vector(Offset.X, y);
+                    e.Handled = true;
+                }
+            }
+            else if (Extent.Width > Viewport.Width)
+            {
+                var scrollable = Child as ILogicalScrollable;
+
+                if (scrollable?.IsLogicalScrollEnabled == true)
+                {
+                    var x = Offset.X + (-e.Delta.X * scrollable.ScrollSize.Width);
+                    x = Math.Max(x, 0);
+                    x = Math.Min(x, Extent.Width - Viewport.Width);
+                    Offset = new Vector(x, Offset.Y);
+                    e.Handled = true;
+                }
+                else
+                {
+                    var x = Offset.X + (-e.Delta.X * 50);
+                    x = Math.Max(x, 0);
+                    x = Math.Min(x, Extent.Width - Viewport.Width);
+                    Offset = new Vector(x, Offset.Y);
                     e.Handled = true;
                 }
             }
