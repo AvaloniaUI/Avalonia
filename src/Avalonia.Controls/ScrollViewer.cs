@@ -370,7 +370,7 @@ namespace Avalonia.Controls
         private static double Max(double x, double y)
         {
             var result = Math.Max(x, y);
-            return double.IsNaN(result) ? 0 : Math.Round(result);
+            return double.IsNaN(result) ? 0 : result;
         }
 
         private static Vector ValidateOffset(AvaloniaObject o, Vector value)
