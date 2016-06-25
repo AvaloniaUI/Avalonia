@@ -10,16 +10,14 @@ namespace Avalonia.Skia
 {
     internal class DrawingContextImpl : IDrawingContextImpl
     {
-        private Stack<SKSurface> surfaceStack = new Stack<SKSurface>();
-        private Stack<MaskWrapper> maskStack = new Stack<MaskWrapper>();
-        private SKCanvas initialCanvas;
-
-        public SKCanvas CurrentCanvas => surfaceStack.Count == 0 ? initialCanvas : surfaceStack.Peek().Canvas;
+        private Stack<PaintWrapper> maskStack = new Stack<PaintWrapper>();
+        
+        public SKCanvas CurrentCanvas { get; private set; }
 
         public DrawingContextImpl(SKCanvas canvas)
         {
-            initialCanvas = canvas;
-            initialCanvas.Clear();
+            CurrentCanvas = canvas;
+            CurrentCanvas.Clear();
         }
 
         public void DrawImage(IBitmap source, double opacity, Rect sourceRect, Rect destRect)
@@ -56,18 +54,6 @@ namespace Avalonia.Skia
                 }
             }
         }
-
-        struct MaskWrapper : IDisposable
-        {
-            public PaintWrapper Mask { get; set; }
-            public Rect Bounds { get; set; }
-
-            public void Dispose()
-            {
-                Mask.Dispose();
-            }
-        }
-
 
         struct PaintWrapper : IDisposable
         {
@@ -317,37 +303,19 @@ namespace Avalonia.Skia
 
         public void PushOpacityMask(IBrush mask, Rect bounds)
         {
-            surfaceStack.Push(SKSurface.Create((int)bounds.Width, (int)bounds.Height, SKColorType.N_32, SKAlphaType.Premul));
-            surfaceStack.Peek().Canvas.Clear();
-            var paint = new MaskWrapper { Mask = CreatePaint(mask, bounds.Size), Bounds = bounds };
-            maskStack.Push(paint);
+            CurrentCanvas.SaveLayer(new SKPaint());
+            maskStack.Push(CreatePaint(mask, bounds.Size));
         }
 
         public void PopOpacityMask()
         {
-            using (var surface = surfaceStack.Pop())
-            using (var mask = maskStack.Pop())
-            using (var combindingPaint = new SKPaint())
-            using (var surfaceImage = surface.Snapshot())
+            CurrentCanvas.SaveLayer(new SKPaint { XferMode = SKXferMode.DstIn });
+            using (var paintWrapper = maskStack.Pop())
             {
-                using (var maskSurface = SKSurface.Create((int)mask.Bounds.Width, (int)mask.Bounds.Height, SKColorType.N_32, SKAlphaType.Premul))
-                {
-                    maskSurface.Canvas.Clear(SKColors.Transparent);
-                    maskSurface.Canvas.DrawRect(SKRect.Create((float)mask.Bounds.Width, (float)mask.Bounds.Height), mask.Mask.Paint);
-                    using (var maskImage = maskSurface.Snapshot())
-                    using (var combindingSurface = SKSurface.Create((int)mask.Bounds.Width, (int)mask.Bounds.Height, SKColorType.N_32, SKAlphaType.Premul))
-                    {
-                        combindingSurface.Canvas.Clear(SKColors.Transparent);
-                        combindingSurface.Canvas.DrawImage(surfaceImage, 0, 0, combindingPaint);
-                        combindingPaint.XferMode = SKXferMode.DstIn;
-                        combindingSurface.Canvas.DrawImage(maskImage, 0, 0, combindingPaint);
-                        using (var maskedImage = combindingSurface.Snapshot())
-                        {
-                            CurrentCanvas.DrawImage(maskedImage, mask.Bounds.ToSKRect());
-                        }
-                    } 
-                }
+                CurrentCanvas.DrawPaint(paintWrapper.Paint);
             }
+            CurrentCanvas.Restore();
+            CurrentCanvas.Restore();
         }
 
         private Matrix _currentTransform = Matrix.Identity;

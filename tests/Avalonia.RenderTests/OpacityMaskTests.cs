@@ -21,11 +21,7 @@ namespace Avalonia.Direct2D1.RenderTests
         {
         }
 
-#if AVALONIA_SKIA
-        [Fact(Skip = "Opacity Masks on Skia are currently bugged.")]
-#else
         [Fact]
-#endif
         public void Opacity_Mask_Masks_Element()
         {
             var target = new Canvas
