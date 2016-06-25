@@ -279,12 +279,21 @@ namespace Avalonia.Controls.Presenters
 
                 if (oldChild?.LogicalParent == this)
                 {
-                    ((ISetLogicalParent)oldChild).SetParent(null);
+                    LogicalChildren.Remove(oldChild);
                 }
 
                 if (newChild.Parent == null)
                 {
-                    ((ISetLogicalParent)newChild).SetParent((ILogical)this.TemplatedParent ?? this);
+                    var templatedLogicalParent = TemplatedParent as ILogical;
+
+                    if (templatedLogicalParent != null)
+                    {
+                        ((ISetLogicalParent)newChild).SetParent(templatedLogicalParent);
+                    }
+                    else
+                    {
+                        LogicalChildren.Add(newChild);
+                    }
                 }
 
                 VisualChildren.Add(newChild);
