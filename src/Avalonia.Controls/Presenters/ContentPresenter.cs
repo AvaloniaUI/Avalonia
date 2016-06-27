@@ -277,7 +277,7 @@ namespace Avalonia.Controls.Presenters
 
                 Child = newChild;
 
-                if (oldChild?.LogicalParent == this)
+                if (oldChild?.Parent == this)
                 {
                     LogicalChildren.Remove(oldChild);
                 }
