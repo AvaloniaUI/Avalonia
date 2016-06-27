@@ -499,6 +499,7 @@ namespace Avalonia.Win32
                         ScreenToClient(DipFromLParam(lParam)),
                         new Vector(0, ((int)wParam >> 16) / wheelDelta), GetMouseModifiers(wParam));
                     break;
+
                 case UnmanagedMethods.WindowsMessage.WM_MOUSEHWHEEL:
                     e = new RawMouseWheelEventArgs(
                         WindowsMouseDevice.Instance,
