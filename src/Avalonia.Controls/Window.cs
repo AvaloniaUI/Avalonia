@@ -89,7 +89,16 @@ namespace Avalonia.Controls
         /// Initializes a new instance of the <see cref="Window"/> class.
         /// </summary>
         public Window()
-            : base(PlatformManager.CreateWindow())
+            : this(PlatformManager.CreateWindow())
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Window"/> class.
+        /// </summary>
+        /// <param name="impl">The window implementation.</param>
+        public Window(IWindowImpl impl)
+            : base(impl)
         {
             _maxPlatformClientSize = this.PlatformImpl.MaxClientSize;
         }
