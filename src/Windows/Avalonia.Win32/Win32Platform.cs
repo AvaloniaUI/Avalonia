@@ -16,6 +16,7 @@ using Avalonia.Shared.PlatformSupport;
 using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop;
 using Avalonia.Controls;
+using System.IO;
 
 namespace Avalonia
 {
@@ -123,7 +124,7 @@ namespace Avalonia.Win32
 
         public void Signal()
         {
-            UnmanagedMethods.PostMessage(
+            UnmanagedMethods.SendMessage(
                 _hwnd,
                 (int) UnmanagedMethods.WindowsMessage.WM_DISPATCH_WORK_ITEM,
                 new IntPtr(SignalW),

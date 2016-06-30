@@ -53,11 +53,11 @@ namespace Avalonia.Gtk
             Realize();
         }
 
-		protected override void OnRealized ()
-		{
-			base.OnRealized ();
-			_imContext.ClientWindow = this.GdkWindow;
-		}
+        protected override void OnRealized ()
+        {
+            base.OnRealized ();
+            _imContext.ClientWindow = this.GdkWindow;
+        }
 
         public Size ClientSize
         {
@@ -382,6 +382,11 @@ namespace Avalonia.Gtk
                 position, GetModifierKeys(evnt.State));
             Input(e);
             return true;
+        }
+
+        public void SetIcon(IBitmapImpl bitmap)
+        {
+            Icon = new Pixbuf(bitmap.GetStream());
         }
     }
 }

@@ -11,6 +11,7 @@ using Avalonia.Skia;
 using System;
 using System.Collections.Generic;
 using Avalonia.Android.Platform.SkiaPlatform;
+using System.IO;
 
 namespace Avalonia.Android
 {

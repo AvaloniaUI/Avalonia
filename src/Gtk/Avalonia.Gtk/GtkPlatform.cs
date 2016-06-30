@@ -25,6 +25,7 @@ namespace Avalonia
 
 namespace Avalonia.Gtk
 {
+    using System.IO;
     using Gtk = global::Gtk;
 
     public class GtkPlatform : IPlatformThreadingInterface, IPlatformSettings, IWindowingPlatform

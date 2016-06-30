@@ -23,5 +23,11 @@ namespace Avalonia.Platform
         /// </summary>
         /// <param name="fileName">The filename.</param>
         void Save(string fileName);
+
+        /// <summary>
+        /// Gets a stream that contains the bitmap data.
+        /// </summary>
+        /// <returns>A stream that contains the bitmap data.</returns>
+        System.IO.Stream GetStream();
     }
 }

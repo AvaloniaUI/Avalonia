@@ -214,7 +214,10 @@ namespace Avalonia.iOS
             }
         }
 
-
+        public void SetIcon(IBitmapImpl icon)
+        {
+            // No window icons for mobile platforms
+        }
     }
 
     class AvaloniaViewController : UIViewController

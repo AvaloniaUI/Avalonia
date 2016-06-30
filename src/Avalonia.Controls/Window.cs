@@ -11,6 +11,7 @@ using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Styling;
 using System.Collections.Generic;
+using Avalonia.Media.Imaging;
 
 namespace Avalonia.Controls
 {
@@ -70,6 +71,9 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<string> TitleProperty =
             AvaloniaProperty.Register<Window, string>(nameof(Title), "Window");
 
+        public static readonly StyledProperty<IBitmap> IconProperty =
+            AvaloniaProperty.Register<Window, IBitmap>(nameof(Icon));
+
         private readonly NameScope _nameScope = new NameScope();
         private object _dialogResult;
         private readonly Size _maxPlatformClientSize;
@@ -83,6 +87,7 @@ namespace Avalonia.Controls
             TitleProperty.Changed.AddClassHandler<Window>((s, e) => s.PlatformImpl.SetTitle((string)e.NewValue));
             HasSystemDecorationsProperty.Changed.AddClassHandler<Window>(
                 (s, e) => s.PlatformImpl.SetSystemDecorations((bool) e.NewValue));
+            IconProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl.SetIcon(((IBitmap)e.NewValue).PlatformImpl));
         }
 
         /// <summary>
@@ -115,6 +120,12 @@ namespace Avalonia.Controls
         {
             add { _nameScope.Unregistered += value; }
             remove { _nameScope.Unregistered -= value; }
+        }
+
+        public IBitmap Icon
+        {
+            get { return GetValue(IconProperty); }
+            set { SetValue(IconProperty, value); }
         }
 
         /// <summary>
