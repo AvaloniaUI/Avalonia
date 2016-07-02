@@ -12,12 +12,12 @@ namespace Avalonia.Skia
     {
         private Stack<PaintWrapper> maskStack = new Stack<PaintWrapper>();
         
-        public SKCanvas CurrentCanvas { get; private set; }
+        public SKCanvas Canvas { get; private set; }
 
         public DrawingContextImpl(SKCanvas canvas)
         {
-            CurrentCanvas = canvas;
-            CurrentCanvas.Clear();
+            Canvas = canvas;
+            Canvas.Clear();
         }
 
         public void DrawImage(IBitmap source, double opacity, Rect sourceRect, Rect destRect)
@@ -25,14 +25,14 @@ namespace Avalonia.Skia
             var impl = (BitmapImpl)source.PlatformImpl;
             var s = sourceRect.ToSKRect();
             var d = destRect.ToSKRect();
-            CurrentCanvas.DrawBitmap(impl.Bitmap, s, d);
+            Canvas.DrawBitmap(impl.Bitmap, s, d);
         }
 
         public void DrawLine(Pen pen, Point p1, Point p2)
         {
             using (var paint = CreatePaint(pen, new Size(Math.Abs(p2.X - p1.X), Math.Abs(p2.Y - p1.Y))))
             {
-                CurrentCanvas.DrawLine((float)p1.X, (float)p1.Y, (float)p2.X, (float)p2.Y, paint.Paint);
+                Canvas.DrawLine((float)p1.X, (float)p1.Y, (float)p2.X, (float)p2.Y, paint.Paint);
             }
         }
 
@@ -46,11 +46,11 @@ namespace Avalonia.Skia
             {
                 if (fill.Paint != null)
                 {
-                    CurrentCanvas.DrawPath(impl.EffectivePath, fill.Paint);
+                    Canvas.DrawPath(impl.EffectivePath, fill.Paint);
                 }
                 if (stroke.Paint != null)
                 {
-                    CurrentCanvas.DrawPath(impl.EffectivePath, stroke.Paint);
+                    Canvas.DrawPath(impl.EffectivePath, stroke.Paint);
                 }
             }
         }
@@ -227,11 +227,11 @@ namespace Avalonia.Skia
                 var rc = rect.ToSKRect();
                 if (cornerRadius == 0)
                 {
-                    CurrentCanvas.DrawRect(rc, paint.Paint);
+                    Canvas.DrawRect(rc, paint.Paint);
                 }
                 else
                 {
-                    CurrentCanvas.DrawRoundRect(rc, cornerRadius, cornerRadius, paint.Paint);
+                    Canvas.DrawRoundRect(rc, cornerRadius, cornerRadius, paint.Paint);
                 }
             }
         }
@@ -243,11 +243,11 @@ namespace Avalonia.Skia
                 var rc = rect.ToSKRect();
                 if (cornerRadius == 0)
                 {
-                    CurrentCanvas.DrawRect(rc, paint.Paint);
+                    Canvas.DrawRect(rc, paint.Paint);
                 }
                 else
                 {
-                    CurrentCanvas.DrawRoundRect(rc, cornerRadius, cornerRadius, paint.Paint);
+                    Canvas.DrawRoundRect(rc, cornerRadius, cornerRadius, paint.Paint);
                 }
             }
         }
@@ -257,19 +257,19 @@ namespace Avalonia.Skia
             using (var paint = CreatePaint(foreground, text.Measure()))
             {
                 var textImpl = text.PlatformImpl as FormattedTextImpl;
-                textImpl.Draw(this.CurrentCanvas, origin.ToSKPoint());
+                textImpl.Draw(this.Canvas, origin.ToSKPoint());
             }
         }
 
         public void PushClip(Rect clip)
         {
-            CurrentCanvas.Save();
-            CurrentCanvas.ClipRect(clip.ToSKRect());
+            Canvas.Save();
+            Canvas.ClipRect(clip.ToSKRect());
         }
 
         public void PopClip()
         {
-            CurrentCanvas.Restore();
+            Canvas.Restore();
         }
 
         double _currentOpacity = 1.0f;
@@ -292,30 +292,30 @@ namespace Avalonia.Skia
 
         public void PushGeometryClip(Geometry clip)
         {
-            CurrentCanvas.Save();
-            CurrentCanvas.ClipPath(((StreamGeometryImpl)clip.PlatformImpl).EffectivePath);
+            Canvas.Save();
+            Canvas.ClipPath(((StreamGeometryImpl)clip.PlatformImpl).EffectivePath);
         }
 
         public void PopGeometryClip()
         {
-            CurrentCanvas.Restore();
+            Canvas.Restore();
         }
 
         public void PushOpacityMask(IBrush mask, Rect bounds)
         {
-            CurrentCanvas.SaveLayer(new SKPaint());
+            Canvas.SaveLayer(new SKPaint());
             maskStack.Push(CreatePaint(mask, bounds.Size));
         }
 
         public void PopOpacityMask()
         {
-            CurrentCanvas.SaveLayer(new SKPaint { XferMode = SKXferMode.DstIn });
+            Canvas.SaveLayer(new SKPaint { XferMode = SKXferMode.DstIn });
             using (var paintWrapper = maskStack.Pop())
             {
-                CurrentCanvas.DrawPaint(paintWrapper.Paint);
+                Canvas.DrawPaint(paintWrapper.Paint);
             }
-            CurrentCanvas.Restore();
-            CurrentCanvas.Restore();
+            Canvas.Restore();
+            Canvas.Restore();
         }
 
         private Matrix _currentTransform = Matrix.Identity;
@@ -329,7 +329,7 @@ namespace Avalonia.Skia
                     return;
 
                 _currentTransform = value;
-                CurrentCanvas.SetMatrix(value.ToSKMatrix());
+                Canvas.SetMatrix(value.ToSKMatrix());
             }
         }
     }
