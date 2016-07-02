@@ -6,28 +6,30 @@ using Avalonia.Platform;
 
 namespace Avalonia.Cairo.Media.Imaging
 {
+    using System.IO;
     using Cairo = global::Cairo;
 
-    public class BitmapImpl : IBitmapImpl
+    public class BitmapImpl : Gdk.Pixbuf, IBitmapImpl
     {
         public BitmapImpl(Gdk.Pixbuf pixbuf)
+            :base(pixbuf, 0, 0, pixbuf.Width, pixbuf.Height)
         {
-            Surface = pixbuf;
         }
 
-        public int PixelWidth => Surface.Width;
+        public int PixelWidth => Width;
 
-        public int PixelHeight => Surface.Height;
-
-        public Gdk.Pixbuf Surface
-        {
-            get;
-        }
+        public int PixelHeight => Height;
 
         public void Save(string fileName)
         {
             // TODO: Test
-            Surface.Save(fileName, "png");
+            Save(fileName, "png");
+        }
+
+        public void Save(Stream stream)
+        {
+            var buffer = SaveToBuffer("png");
+            stream.Write(buffer, 0, buffer.Length);
         }
     }
 }

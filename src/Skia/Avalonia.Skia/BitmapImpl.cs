@@ -80,5 +80,14 @@ namespace Avalonia.Skia
             return new DrawingContext(new BitmapDrawingContext(Bitmap));
         }
 
+        public void Save(Stream stream)
+        {
+            IntPtr length;
+            using (var image = SKImage.FromPixels(Bitmap.Info, Bitmap.GetPixels(out length), Bitmap.RowBytes))
+            using (var data = image.Encode())
+            {
+                data.SaveTo(stream);
+            }
+        }
     }
 }

@@ -124,5 +124,21 @@ namespace Avalonia.Gtk
         {
             return new IconImpl(new Gdk.Pixbuf(stream));
         }
+
+        public IIconImpl LoadIcon(IBitmapImpl bitmap)
+        {
+            if (bitmap is Gdk.Pixbuf)
+            {
+                return new IconImpl((Gdk.Pixbuf)bitmap);
+            }
+            else
+            {
+                using (var memoryStream = new MemoryStream())
+                {
+                    bitmap.Save(memoryStream);
+                    return new IconImpl(new Gdk.Pixbuf(memoryStream));
+                } 
+            }
+        }
     }
 }

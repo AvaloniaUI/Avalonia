@@ -76,5 +76,10 @@ namespace Avalonia.Android
         {
             return null;
         }
+
+        public IIconImpl LoadIcon(IBitmapImpl bitmap)
+        {
+            return null;
+        }
     }
 }

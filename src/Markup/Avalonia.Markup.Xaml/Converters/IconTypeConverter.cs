@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using OmniXaml.TypeConversion;
 
@@ -14,7 +16,7 @@ namespace Avalonia.Markup.Xaml.Converters
     {
         public bool CanConvertFrom(IValueContext context, Type sourceType)
         {
-            return sourceType == typeof(string);
+            return sourceType == typeof(string) || typeof(IBitmap).GetTypeInfo().IsAssignableFrom(sourceType.GetTypeInfo());
         }
 
         public bool CanConvertTo(IValueContext context, Type destinationType)
@@ -24,14 +26,34 @@ namespace Avalonia.Markup.Xaml.Converters
 
         public object ConvertFrom(IValueContext context, CultureInfo culture, object value)
         {
-            var uri = new Uri((string)value, UriKind.RelativeOrAbsolute);
+            var path = value as string;
+            if (path != null)
+            {
+                return CreateIconFromPath(context, path); 
+            }
+            var bitmap = value as IBitmap;
+            if (bitmap != null)
+            {
+                return CreateIconFromBitmap(bitmap);
+            }
+            throw new NotSupportedException();
+        }
+
+        private Icon CreateIconFromBitmap(IBitmap bitmap)
+        {
+            return new Icon(bitmap);
+        }
+
+        private Icon CreateIconFromPath(IValueContext context, string path)
+        {
+            var uri = new Uri(path, UriKind.RelativeOrAbsolute);
             var baseUri = GetBaseUri(context);
             var scheme = uri.IsAbsoluteUri ? uri.Scheme : "file";
 
             switch (scheme)
             {
                 case "file":
-                    return new Icon((string)value);
+                    return new Icon(path);
                 default:
                     var assets = AvaloniaLocator.Current.GetService<IAssetLoader>();
                     return new Icon(assets.Open(uri, baseUri));

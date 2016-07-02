@@ -200,5 +200,14 @@ namespace Avalonia.Win32
             var icon = new System.Drawing.Bitmap(stream);
             return new IconImpl(icon);
         }
+
+        public IIconImpl LoadIcon(IBitmapImpl bitmap)
+        {
+            using (var memoryStream = new MemoryStream())
+            {
+                bitmap.Save(memoryStream);
+                return new IconImpl(new System.Drawing.Bitmap(memoryStream));
+            }
+        }
     }
 }

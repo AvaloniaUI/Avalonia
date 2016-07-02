@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Avalonia.Media.Imaging;
 
 namespace Avalonia.Platform
 {
@@ -11,5 +12,6 @@ namespace Avalonia.Platform
     {
         IIconImpl LoadIcon(string fileName);
         IIconImpl LoadIcon(Stream stream);
+        IIconImpl LoadIcon(IBitmapImpl bitmap);
     }
 }

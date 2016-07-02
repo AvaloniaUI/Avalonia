@@ -117,15 +117,20 @@ namespace Avalonia.Direct2D1.Media
 
             using (FileStream s = new FileStream(fileName, FileMode.Create))
             {
-                PngBitmapEncoder encoder = new PngBitmapEncoder(_factory);
-                encoder.Initialize(s);
-
-                BitmapFrameEncode frame = new BitmapFrameEncode(encoder);
-                frame.Initialize();
-                frame.WriteSource(WicImpl);
-                frame.Commit();
-                encoder.Commit();
+                Save(s);
             }
+        }
+
+        public void Save(Stream stream)
+        {
+            PngBitmapEncoder encoder = new PngBitmapEncoder(_factory);
+            encoder.Initialize(stream);
+
+            BitmapFrameEncode frame = new BitmapFrameEncode(encoder);
+            frame.Initialize();
+            frame.WriteSource(WicImpl);
+            frame.Commit();
+            encoder.Commit();
         }
     }
 }

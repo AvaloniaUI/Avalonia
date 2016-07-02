@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Avalonia.Media.Imaging;
 
 namespace Avalonia.Controls
 {
@@ -13,6 +14,11 @@ namespace Avalonia.Controls
     /// </summary>
     public class Icon
     {
+        public Icon(IBitmap bitmap)
+        {
+            PlatformImpl = AvaloniaLocator.Current.GetService<IPlatformIconLoader>().LoadIcon(bitmap.PlatformImpl);
+        }
+
         public Icon(string fileName)
         {
             PlatformImpl = AvaloniaLocator.Current.GetService<IPlatformIconLoader>().LoadIcon(fileName);
