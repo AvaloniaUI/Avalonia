@@ -9,11 +9,11 @@ namespace Avalonia.Win32
 {
     class IconImpl : IIconImpl
     {
-        public IconImpl(System.Drawing.Icon icon)
+        public IconImpl(System.Drawing.Bitmap iconBitmap)
         {
-            Icon = icon;
+            IconBitmap = iconBitmap;
         }
 
-        public System.Drawing.Icon Icon { get; }
+        public System.Drawing.Bitmap IconBitmap { get; }
     }
 }

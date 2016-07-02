@@ -62,6 +62,7 @@
     <Compile Include="Converters\DateTimeTypeConverter.cs" />
     <Compile Include="Converters\GeometryTypeConverter.cs" />
     <Compile Include="Converters\GridLengthTypeConverter.cs" />
+    <Compile Include="Converters\IconTypeConverter.cs" />
     <Compile Include="Converters\KeyGestureConverter.cs" />
     <Compile Include="Converters\MemberSelectorTypeConverter.cs" />
     <Compile Include="Converters\AvaloniaListTypeConverter.cs" />

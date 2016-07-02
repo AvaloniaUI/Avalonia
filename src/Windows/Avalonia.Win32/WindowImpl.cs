@@ -684,9 +684,9 @@ namespace Avalonia.Win32
         public void SetIcon(IIconImpl icon)
         {
             var impl = (IconImpl)icon;
-            var nativeIcon = impl.Icon;
+            var nativeIcon = impl.IconBitmap;
             UnmanagedMethods.PostMessage(_hwnd, (int)UnmanagedMethods.WindowsMessage.WM_SETICON,
-                new IntPtr((int)UnmanagedMethods.Icons.ICON_BIG), nativeIcon.Handle);
+                new IntPtr((int)UnmanagedMethods.Icons.ICON_BIG), nativeIcon.GetHicon());
         }
     }
 }

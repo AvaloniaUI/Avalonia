@@ -57,7 +57,6 @@
     <Compile Include="IApplicationLifecycle.cs" />
     <Compile Include="IScrollable.cs" />
     <Compile Include="Icon.cs" />
-    <Compile Include="INameScope.cs" />
     <Compile Include="IPseudoClasses.cs" />
     <Compile Include="DropDownItem.cs" />
     <Compile Include="ISetInheritanceParent.cs" />
@@ -66,9 +65,6 @@
     <Compile Include="IVirtualizingPanel.cs" />
     <Compile Include="LayoutTransformControl.cs" />
     <Compile Include="Mixins\ContentControlMixin.cs" />
-    <Compile Include="NameScope.cs" />
-    <Compile Include="NameScopeEventArgs.cs" />
-    <Compile Include="NameScopeExtensions.cs" />
     <Compile Include="Platform\IIconImpl.cs" />
     <Compile Include="Platform\IPlatformIconLoader.cs" />
     <Compile Include="Platform\ITopLevelRenderer.cs" />
