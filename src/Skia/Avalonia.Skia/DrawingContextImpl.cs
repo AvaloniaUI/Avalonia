@@ -57,18 +57,23 @@ namespace Avalonia.Skia
             }
         }
 
-        private struct PaintDisposable : IDisposable
+        private struct PaintState : IDisposable
         {
-            private Action _action;
+            private readonly SKColor _color;
+            private readonly SKShader _shader;
+            private readonly SKPaint _paint;
 
-            public PaintDisposable(Action action)
+            public PaintState(SKPaint paint, SKColor color, SKShader shader)
             {
-                _action = action;
+                _paint = paint;
+                _color = color;
+                _shader = shader;
             }
 
             public void Dispose()
             {
-                _action?.Invoke();
+                _paint.Color = _color;
+                _paint.Shader = _shader;
             }
         }
 
@@ -80,23 +85,14 @@ namespace Avalonia.Skia
 
             private IDisposable _disposable1;
 
-            private Func<SKPaint, SKPaint, IDisposable> _applyToAction;
-
-            public void SetApplyToAction<T>(Func<SKPaint, T> get,
-                                            Action<SKPaint, SKPaint> apply,
-                                            Action<SKPaint, T> revert)
-            {
-                _applyToAction = (from, to) =>
-                {
-                    T state = get(to);
-                    apply(from, to);
-                    return new PaintDisposable(() => revert(to, state));
-                };
-            }
-
             public IDisposable ApplyTo(SKPaint paint)
             {
-                return _applyToAction != null ? _applyToAction(Paint, paint) : default(PaintDisposable);
+                var state = new PaintState(paint, paint.Color, paint.Shader);
+
+                paint.Color = Paint.Color;
+                paint.Shader = Paint.Shader;
+
+                return state;
             }
 
             public void AddDisposable(IDisposable disposable)
@@ -111,7 +107,6 @@ namespace Avalonia.Skia
             {
                 Paint = paint;
                 _disposable1 = null;
-                _applyToAction = null;
             }
 
             public void Dispose()
@@ -142,9 +137,6 @@ namespace Avalonia.Skia
 
             if (solid != null)
             {
-                rv.SetApplyToAction(p => p.Color,
-                                    (from, to) => to.Color = from.Color,
-                                    (p, v) => p.Color = v);
                 return rv;
             }
 
@@ -184,9 +176,6 @@ namespace Avalonia.Skia
                     }
                 }
 
-                rv.SetApplyToAction(p => new Tuple<SKColor, SKShader>(p.Color, p.Shader),
-                                    (from, to) => { to.Color = from.Color; to.Shader = from.Shader; },
-                                    (p, v) => { p.Color = v.Item1; p.Shader = v.Item2; });
                 return rv;
             }
 
@@ -214,10 +203,6 @@ namespace Avalonia.Skia
                             : SKShaderTileMode.Repeat;
                 paint.Shader = SKShader.CreateBitmap(bitmap.Bitmap, tileX, tileY, translation);
                 paint.Shader.Dispose();
-
-                rv.SetApplyToAction(p => new Tuple<SKColor, SKShader>(p.Color, p.Shader),
-                                    (from, to) => { to.Color = from.Color; to.Shader = from.Shader; },
-                                    (p, v) => { p.Color = v.Item1; p.Shader = v.Item2; });
             }
 
             return rv;
