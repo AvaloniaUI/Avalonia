@@ -121,7 +121,7 @@ namespace Avalonia.Skia
             }
         }
 
-        private PaintWrapper CreatePaint(IBrush brush, Size targetSize)
+        internal PaintWrapper CreatePaint(IBrush brush, Size targetSize)
         {
             SKPaint paint = new SKPaint();
             var rv = new PaintWrapper(paint);
@@ -306,7 +306,7 @@ namespace Avalonia.Skia
             using (var paint = CreatePaint(foreground, text.Measure()))
             {
                 var textImpl = text.PlatformImpl as FormattedTextImpl;
-                textImpl.Draw(Canvas, origin.ToSKPoint(), paint, CreatePaint);
+                textImpl.Draw(this, Canvas, origin.ToSKPoint(), paint);
             }
         }
 

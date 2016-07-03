@@ -181,9 +181,9 @@ namespace Avalonia.Skia
             return _text;
         }
 
-        internal void Draw(SKCanvas canvas, SKPoint origin,
-                            DrawingContextImpl.PaintWrapper foreground,
-                            Func<IBrush, Size, DrawingContextImpl.PaintWrapper> brushFactory)
+        internal void Draw(DrawingContextImpl context,
+                           SKCanvas canvas, SKPoint origin,
+                           DrawingContextImpl.PaintWrapper foreground)
         {
             /* TODO: This originated from Native code, it might be useful for debugging character positions as
              * we improve the FormattedText support. Will need to port this to C# obviously. Rmove when
@@ -243,7 +243,7 @@ namespace Avalonia.Skia
                             if (fb != null)
                             {
                                 //TODO: figure out how to get the brush size
-                                currentWrapper = brushFactory(fb, new Size());
+                                currentWrapper = context.CreatePaint(fb, new Size());
                             }
                             else
                             {
