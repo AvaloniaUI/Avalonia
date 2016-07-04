@@ -65,8 +65,6 @@ namespace Avalonia.Controls
         {
             if (availableSize != ((ILayoutable)this).PreviousMeasure)
             {
-                // TODO: We need to put a reasonable limit on this, probably based on the max
-                // window size.
                 _availableSpace = availableSize;
                 Controller?.UpdateControls();
             }
