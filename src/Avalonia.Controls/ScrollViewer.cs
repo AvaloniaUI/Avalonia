@@ -12,7 +12,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// A control scrolls its content if the content is bigger than the space available.
     /// </summary>
-    public class ScrollViewer : ContentControl
+    public class ScrollViewer : ContentControl, IScrollable
     {
         /// <summary>
         /// Defines the <see cref="CanScrollHorizontally"/> property.
@@ -370,7 +370,7 @@ namespace Avalonia.Controls
         private static double Max(double x, double y)
         {
             var result = Math.Max(x, y);
-            return double.IsNaN(result) ? 0 : Math.Round(result);
+            return double.IsNaN(result) ? 0 : result;
         }
 
         private static Vector ValidateOffset(AvaloniaObject o, Vector value)

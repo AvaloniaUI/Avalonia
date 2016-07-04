@@ -10,6 +10,7 @@ using Avalonia.LogicalTree;
 using Avalonia.Metadata;
 using Avalonia.Rendering;
 using Avalonia.VisualTree;
+using Avalonia.Layout;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -38,6 +39,18 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public static readonly StyledProperty<PlacementMode> PlacementModeProperty =
             AvaloniaProperty.Register<Popup, PlacementMode>(nameof(PlacementMode), defaultValue: PlacementMode.Bottom);
+
+        /// <summary>
+        /// Defines the <see cref="HorizontalOffset"/> property.
+        /// </summary>
+        public static readonly StyledProperty<double> HorizontalOffsetProperty =
+            AvaloniaProperty.Register<Popup, double>(nameof(HorizontalOffset));
+
+        /// <summary>
+        /// Defines the <see cref="VerticalOffset"/> property.
+        /// </summary>
+        public static readonly StyledProperty<double> VerticalOffsetProperty =
+            AvaloniaProperty.Register<Popup, double>(nameof(VerticalOffset));
 
         /// <summary>
         /// Defines the <see cref="PlacementTarget"/> property.
@@ -120,6 +133,24 @@ namespace Avalonia.Controls.Primitives
         {
             get { return GetValue(PlacementModeProperty); }
             set { SetValue(PlacementModeProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the Horizontal offset of the popup in relation to the <see cref="PlacementTarget"/>
+        /// </summary>
+        public double HorizontalOffset
+        {
+            get { return GetValue(HorizontalOffsetProperty); }
+            set { SetValue(HorizontalOffsetProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the Vertical offset of the popup in relation to the <see cref="PlacementTarget"/>
+        /// </summary>
+        public double VerticalOffset
+        {
+            get { return GetValue(VerticalOffsetProperty); }
+            set { SetValue(VerticalOffsetProperty, value); }
         }
 
         /// <summary>
@@ -287,18 +318,26 @@ namespace Avalonia.Controls.Primitives
             if (target?.GetVisualRoot() == null)
             {
                 mode = PlacementMode.Pointer;
-            }
+            }            
 
             switch (mode)
             {
                 case PlacementMode.Pointer:
-                    return MouseDevice.Instance?.Position ?? default(Point);
+                    if (MouseDevice.Instance != null)
+                    {
+                        // Scales the Horizontal and Vertical offset to screen co-ordinates.
+                        var screenOffset = new Point(HorizontalOffset * (PopupRoot as ILayoutRoot).LayoutScaling, VerticalOffset * (PopupRoot as ILayoutRoot).LayoutScaling);
+                        return MouseDevice.Instance.Position + screenOffset;
+                    }
+
+                    return default(Point);
 
                 case PlacementMode.Bottom:
-                    return target?.PointToScreen(new Point(0, target.Bounds.Height)) ?? zero;
+
+                    return target?.PointToScreen(new Point(0 + HorizontalOffset, target.Bounds.Height + VerticalOffset)) ?? zero;
 
                 case PlacementMode.Right:
-                    return target?.PointToScreen(new Point(target.Bounds.Width, 0)) ?? zero;
+                    return target?.PointToScreen(new Point(target.Bounds.Width + HorizontalOffset, 0 + VerticalOffset)) ?? zero;
 
                 default:
                     throw new InvalidOperationException("Invalid value for Popup.PlacementMode");

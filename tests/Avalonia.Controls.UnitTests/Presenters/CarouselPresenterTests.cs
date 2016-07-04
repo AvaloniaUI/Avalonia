@@ -60,8 +60,8 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
             target.ApplyTemplate();
 
-            Assert.IsType<TextBlock>(target.Panel.Children[0]);
-            Assert.Equal("foo", ((TextBlock)target.Panel.Children[0]).Text);
+            Assert.IsType<ContentPresenter>(target.Panel.Children[0]);
+            Assert.Equal("foo", ((ContentPresenter)target.Panel.Children[0]).Content);
         }
 
         [Fact]
@@ -76,8 +76,8 @@ namespace Avalonia.Controls.UnitTests.Presenters
             target.ApplyTemplate();
             target.SelectedIndex = 1;
 
-            Assert.IsType<TextBlock>(target.Panel.Children[0]);
-            Assert.Equal("bar", ((TextBlock)target.Panel.Children[0]).Text);
+            Assert.IsType<ContentPresenter>(target.Panel.Children[0]);
+            Assert.Equal("bar", ((ContentPresenter)target.Panel.Children[0]).Content);
         }
 
         [Fact]
@@ -155,7 +155,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
         }
 
         [Fact]
-        public void Should_have_correct_index_itemscontainer()
+        public void Should_Have_Correct_ItemsContainer_Index()
         {
             ObservableCollection<string> items = new ObservableCollection<string>();
 
@@ -186,7 +186,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             items.Remove(items[0]);
             Assert.Equal(1, target.ItemContainerGenerator.Containers.Count());
             Assert.Equal(1, target.Panel.Children.Count);
-            Assert.Equal(1, target.ItemContainerGenerator.Containers.First().Index);
+            Assert.Equal(0, target.ItemContainerGenerator.Containers.First().Index);
 
             items.Remove(items[0]);
             Assert.Equal(0, target.ItemContainerGenerator.Containers.Count());

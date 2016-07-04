@@ -25,7 +25,7 @@ namespace Avalonia.Input
         /// <param name="modifiers">Any input modifiers active at the time of focus.</param>
         void Move(
             IInputElement element, 
-            FocusNavigationDirection direction,
+            NavigationDirection direction,
             InputModifiers modifiers = InputModifiers.None);
     }
 }

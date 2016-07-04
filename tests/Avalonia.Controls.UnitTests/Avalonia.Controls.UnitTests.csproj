@@ -91,6 +91,8 @@
   <ItemGroup>
     <Compile Include="ClassesTests.cs" />
     <Compile Include="LayoutTransformControlTests.cs" />
+    <Compile Include="Presenters\ItemsPresenterTests_Virtualization_Simple.cs" />
+    <Compile Include="Presenters\ItemsPresenterTests_Virtualization.cs" />
     <Compile Include="TextBoxTests_ValidationState.cs" />
     <Compile Include="UserControlTests.cs" />
     <Compile Include="DockPanelTests.cs" />
@@ -100,7 +102,6 @@
     <Compile Include="HeaderedItemsControlTests .cs" />
     <Compile Include="ControlTests_NameScope.cs" />
     <Compile Include="Generators\ItemContainerGeneratorTests.cs" />
-    <Compile Include="Generators\ItemContainerGeneratorTypedTests.cs" />
     <Compile Include="GridLengthTests.cs" />
     <Compile Include="ImageTests.cs" />
     <Compile Include="Presenters\ContentPresenterTests.cs" />
@@ -108,7 +109,7 @@
     <Compile Include="ListBoxTests_Single.cs" />
     <Compile Include="NameScopeTests.cs" />
     <Compile Include="Primitives\SelectingItemsControlTests_Multiple.cs" />
-    <Compile Include="Presenters\ScrollContentPresenterTests_IScrollable.cs" />
+    <Compile Include="Presenters\ScrollContentPresenterTests_ILogicalScrollable.cs" />
     <Compile Include="TextBoxTests.cs" />
     <Compile Include="TextBlockTests.cs" />
     <Compile Include="WindowingPlatformMock.cs" />
@@ -142,6 +143,7 @@
     <Compile Include="TestTemplatedControl.cs" />
     <Compile Include="Utils\AncestorFinderTests.cs" />
     <Compile Include="Utils\HotKeyManagerTests.cs" />
+    <Compile Include="VirtualizingStackPanelTests.cs" />
     <Compile Include="WrapPanelTests.cs" />
   </ItemGroup>
   <ItemGroup>

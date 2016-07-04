@@ -224,5 +224,35 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 Assert.Equal(0xffff0000, borderBrush.Color.ToUint32());
             }
         }
+
+        [Fact]
+        public void Setter_Can_Contain_Template()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Window.Styles>
+        <Style Selector='ContentControl'>
+            <Setter Property='Content'>
+                <Template>
+                    <TextBlock>Hello World!</TextBlock>
+                </Template>
+            </Setter>
+        </Style>
+    </Window.Styles>
+
+    <ContentControl Name='target'/>    
+</Window>";
+
+                var loader = new AvaloniaXamlLoader();
+                var window = (Window)loader.Load(xaml);
+                var target = window.Find<ContentControl>("target");
+
+                Assert.IsType<TextBlock>(target.Content);
+                Assert.Equal("Hello World!", ((TextBlock)target.Content).Text);
+            }
+        }
     }
 }

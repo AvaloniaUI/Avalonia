@@ -38,10 +38,10 @@ namespace Avalonia.Controls.UnitTests.Presenters
             target.ApplyTemplate();
 
             Assert.Equal(2, target.Panel.Children.Count);
-            Assert.IsType<TextBlock>(target.Panel.Children[0]);
-            Assert.IsType<TextBlock>(target.Panel.Children[1]);
-            Assert.Equal("foo", ((TextBlock)target.Panel.Children[0]).Text);
-            Assert.Equal("bar", ((TextBlock)target.Panel.Children[1]).Text);
+            Assert.IsType<ContentPresenter>(target.Panel.Children[0]);
+            Assert.IsType<ContentPresenter>(target.Panel.Children[1]);
+            Assert.Equal("foo", ((ContentPresenter)target.Panel.Children[0]).Content);
+            Assert.Equal("bar", ((ContentPresenter)target.Panel.Children[1]).Content);
         }
 
         [Fact]
@@ -88,8 +88,8 @@ namespace Avalonia.Controls.UnitTests.Presenters
             items.RemoveAt(0);
 
             Assert.Equal(1, target.Panel.Children.Count);
-            Assert.Equal("bar", ((TextBlock)target.Panel.Children[0]).Text);
-            Assert.Equal("bar", ((TextBlock)target.ItemContainerGenerator.ContainerFromIndex(0)).Text);
+            Assert.Equal("bar", ((ContentPresenter)target.Panel.Children[0]).Content);
+            Assert.Equal("bar", ((ContentPresenter)target.ItemContainerGenerator.ContainerFromIndex(0)).Content);
         }
 
         [Fact]
@@ -121,8 +121,8 @@ namespace Avalonia.Controls.UnitTests.Presenters
             items[1] = "baz";
 
             var text = target.Panel.Children
-                .OfType<TextBlock>()
-                .Select(x => x.Text)
+                .OfType<ContentPresenter>()
+                .Select(x => x.Content)
                 .ToList();
 
             Assert.Equal(new[] { "foo", "baz", "baz" }, text);
@@ -141,8 +141,8 @@ namespace Avalonia.Controls.UnitTests.Presenters
             items.Move(2, 1);
 
             var text = target.Panel.Children
-                .OfType<TextBlock>()
-                .Select(x => x.Text)
+                .OfType<ContentPresenter>()
+                .Select(x => x.Content)
                 .ToList();
 
             Assert.Equal(new[] { "foo", "baz", "bar" }, text);
@@ -161,8 +161,8 @@ namespace Avalonia.Controls.UnitTests.Presenters
             items.Insert(2, "insert");
 
             var text = target.Panel.Children
-                .OfType<TextBlock>()
-                .Select(x => x.Text)
+                .OfType<ContentPresenter>()
+                .Select(x => x.Content)
                 .ToList();
 
             Assert.Equal(new[] { "foo", "bar", "insert", "baz" }, text);
@@ -195,16 +195,16 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
             target.ApplyTemplate();
 
-            var text = target.Panel.Children.Cast<TextBlock>().Select(x => x.Text).ToList();
+            var text = target.Panel.Children.Cast<ContentPresenter>().Select(x => x.Content).ToList();
 
-            Assert.Equal(new[] { "foo", "bar" }, text);
+            Assert.Equal(new[] { "foo", null, "bar" }, text);
             Assert.NotNull(target.ItemContainerGenerator.ContainerFromIndex(0));
-            Assert.Null(target.ItemContainerGenerator.ContainerFromIndex(1));
+            Assert.NotNull(target.ItemContainerGenerator.ContainerFromIndex(1));
             Assert.NotNull(target.ItemContainerGenerator.ContainerFromIndex(2));
 
             items.RemoveAt(1);
 
-            text = target.Panel.Children.Cast<TextBlock>().Select(x => x.Text).ToList();
+            text = target.Panel.Children.Cast<ContentPresenter>().Select(x => x.Content).ToList();
 
             Assert.Equal(new[] { "foo", "bar" }, text);
             Assert.NotNull(target.ItemContainerGenerator.ContainerFromIndex(0));
@@ -224,8 +224,11 @@ namespace Avalonia.Controls.UnitTests.Presenters
             target.ApplyTemplate();
             items.RemoveAt(2);
 
-            var text = target.Panel.Children.OfType<TextBlock>().Select(x => x.Text);
-            Assert.Equal(new[] { "1", "2" }, text);
+            var numbers = target.Panel.Children
+                .OfType<ContentPresenter>()
+                .Select(x => x.Content)
+                .Cast<int>();
+            Assert.Equal(new[] { 1, 2 }, numbers);
         }
 
         [Fact]
@@ -288,8 +291,8 @@ namespace Avalonia.Controls.UnitTests.Presenters
             target.ApplyTemplate();
 
             var text = target.Panel.Children
-                .Cast<TextBlock>()
-                .Select(x => x.Text)
+                .Cast<ContentPresenter>()
+                .Select(x => x.Content)
                 .ToList();
 
             Assert.Equal(new[] { "Foo", "Bar" }, text);
@@ -308,7 +311,8 @@ namespace Avalonia.Controls.UnitTests.Presenters
             target.ApplyTemplate();
 
             var dataContexts = target.Panel.Children
-                .Cast<TextBlock>()
+                .Cast<ContentPresenter>()
+                .Do(x => x.UpdateChild())
                 .Select(x => x.DataContext)
                 .ToList();
 

@@ -10,7 +10,6 @@ using System.Windows.Forms.Integration;
 using System.Xml;
 using Avalonia.Designer.Comm;
 using Avalonia.Designer.InProcDesigner;
-using Avalonia.Designer.Metadata;
 using Timer = System.Windows.Forms.Timer;
 using Avalonia.DesignerSupport;
 
@@ -22,6 +21,7 @@ namespace Avalonia.Designer.AppHost
         private readonly CommChannel _comm;
         private string _lastXaml;
         private string _currentXaml;
+        private string _currentSourceAssembly;
         private bool _initSuccess;
         private readonly HostedAppModel _appModel;
         private Control _window;
@@ -48,7 +48,10 @@ namespace Avalonia.Designer.AppHost
             }
             var updateXaml = obj as UpdateXamlMessage;
             if (updateXaml != null)
+            {
                 _currentXaml = updateXaml.Xaml;
+                _currentSourceAssembly = updateXaml.AssemblyPath;
+            }
         }
 
         void UpdateState(string state)
@@ -91,88 +94,7 @@ namespace Avalonia.Designer.AppHost
             }
         }
 
-        AvaloniaDesignerMetadata BuildMetadata(List<Assembly> asms, Type xmlNsAttr)
-        {
-            var rv = new AvaloniaDesignerMetadata()
-            {
-                
-                NamespaceAliases = new List<MetadataNamespaceAlias>(),
-                Types = new List<MetadataType>()
-            };
-
-
-            foreach (var asm in asms)
-            {
-                foreach (dynamic xmlns in asm.GetCustomAttributes().Where(a => a.GetType() == xmlNsAttr))
-                {
-                    rv.NamespaceAliases.Add(new MetadataNamespaceAlias
-                    {
-                        Namespace = (string)xmlns.ClrNamespace,
-                        XmlNamespace = (string)xmlns.XmlNamespace
-                    });
-                }
-
-                try
-                {
-                    foreach (var type in asm.GetTypes())
-                    {
-                        try
-                        {
-                            if (!type.IsPublic || type.IsAbstract)
-                                continue;
-                            var t = new MetadataType()
-                            {
-                                Name = type.Name,
-                                Namespace = type.Namespace,
-                                Properties = new List<MetadataProperty>()
-                            };
-                            rv.Types.Add(t);
-                            foreach (var prop in type.GetProperties())
-                            {
-                                if (prop.GetMethod?.IsPublic != true)
-                                    continue;
-                                var p = new MetadataProperty()
-                                {
-                                    Name = prop.Name,
-                                    Type =
-                                        prop.PropertyType == typeof (string) ||
-                                        (prop.PropertyType.IsValueType &&
-                                         prop.PropertyType.Assembly == typeof (int).Assembly)
-                                            ? MetadataPropertyType.BasicType
-                                            : prop.PropertyType.IsEnum
-                                                ? MetadataPropertyType.Enum
-                                                : MetadataPropertyType.MetadataType
-
-                                };
-                                if (p.Type == MetadataPropertyType.Enum)
-                                    p.EnumValues = Enum.GetNames(prop.PropertyType);
-                                if (p.Type == MetadataPropertyType.MetadataType)
-                                    p.MetadataFullTypeName = prop.PropertyType.Namespace + "." + prop.PropertyType.Name;
-                                t.Properties.Add(p);
-                            }
-                        }
-                        catch
-                        {
-                            //
-                        }
-                    }
-                }
-                catch
-                {
-                    //
-                }
-            }
-            return rv;
-        }
-
-        void BuildMetadataAndSendMessageAsync(List<Assembly> asms)
-        {
-            var xmlNsAttr = LookupType("Avalonia.Metadata.XmlnsDefinitionAttribute");
-            new Thread(() =>
-            {
-                _comm.SendMessage(new UpdateMetadataMessage(BuildMetadata(asms, xmlNsAttr)));
-            }).Start();
-        }
+        
 
         private void DoInit(string targetExe, StringBuilder logger)
         {
@@ -196,9 +118,6 @@ namespace Avalonia.Designer.AppHost
                     logger.AppendLine(e.ToString());
                 }
             
-            log("Looking up Avalonia types");
-            BuildMetadataAndSendMessageAsync(asms);
-
             log("Initializing built-in designer");
             var dic = new Dictionary<string, object>();
             Api = new DesignerApi(dic) {OnResize = OnResize, OnWindowCreated = OnWindowCreated};
@@ -268,7 +187,16 @@ namespace Avalonia.Designer.AppHost
             }
             try
             {
-                Api.UpdateXaml(_currentXaml);
+                if (Api.UpdateXaml2 != null)
+                {
+                    Api.UpdateXaml2(new DesignerApiXamlFileInfo
+                    {
+                        AssemblyPath = _currentSourceAssembly,
+                        Xaml = _currentXaml
+                    }.Dictionary);
+                }
+                else
+                    Api.UpdateXaml(_currentXaml);
 
                 _appModel.SetError(null);
             }

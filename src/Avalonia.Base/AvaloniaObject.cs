@@ -26,7 +26,7 @@ namespace Avalonia
         /// <summary>
         /// The parent object that inherited values are inherited from.
         /// </summary>
-        private AvaloniaObject _inheritanceParent;
+        private IAvaloniaObject _inheritanceParent;
 
         /// <summary>
         /// The set values/bindings on this object.
@@ -120,7 +120,7 @@ namespace Avalonia
         /// <value>
         /// The inheritance parent.
         /// </value>
-        protected AvaloniaObject InheritanceParent
+        protected IAvaloniaObject InheritanceParent
         {
             get
             {

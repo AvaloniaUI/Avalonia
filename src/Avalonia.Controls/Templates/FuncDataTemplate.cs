@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Reactive.Linq;
 using System.Reflection;
 
 namespace Avalonia.Controls.Templates
@@ -12,10 +13,26 @@ namespace Avalonia.Controls.Templates
     public class FuncDataTemplate : FuncTemplate<object, IControl>, IDataTemplate
     {
         /// <summary>
-        /// The default data template used in the case where not matching data template is found.
+        /// The default data template used in the case where no matching data template is found.
         /// </summary>
         public static readonly FuncDataTemplate Default =
-           new FuncDataTemplate(typeof(object), o => (o != null) ? new TextBlock { Text = o.ToString() } : null);
+            new FuncDataTemplate<object>(
+                data =>
+                {
+                    if (data != null)
+                    {
+                        var result = new TextBlock();
+                        result.Bind(
+                            TextBlock.TextProperty,
+                            result.GetObservable(Control.DataContextProperty).Select(x => x?.ToString()));
+                        return result;
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                },
+                true);
 
         /// <summary>
         /// The implementation of the <see cref="Match"/> method.
@@ -29,8 +46,12 @@ namespace Avalonia.Controls.Templates
         /// <param name="build">
         /// A function which when passed an object of <paramref name="type"/> returns a control.
         /// </param>
-        public FuncDataTemplate(Type type, Func<object, IControl> build)
-            : this(o => IsInstance(o, type), build)
+        /// <param name="supportsRecycling">Whether the control can be recycled.</param>
+        public FuncDataTemplate(
+            Type type, 
+            Func<object, IControl> build,
+            bool supportsRecycling = false)
+            : this(o => IsInstance(o, type), build, supportsRecycling)
         {
         }
 
@@ -43,13 +64,21 @@ namespace Avalonia.Controls.Templates
         /// <param name="build">
         /// A function which returns a control for matching data.
         /// </param>
-        public FuncDataTemplate(Func<object, bool> match, Func<object, IControl> build)
+        /// <param name="supportsRecycling">Whether the control can be recycled.</param>
+        public FuncDataTemplate(
+            Func<object, bool> match,
+            Func<object, IControl> build,
+            bool supportsRecycling = false)
             : base(build)
         {
             Contract.Requires<ArgumentNullException>(match != null);
 
             _match = match;
+            SupportsRecycling = supportsRecycling;
         }
+
+        /// <inheritdoc/>
+        public bool SupportsRecycling { get; }
 
         /// <summary>
         /// Checks to see if this data template matches the specified data.

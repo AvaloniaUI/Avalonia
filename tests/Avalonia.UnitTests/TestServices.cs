@@ -27,6 +27,9 @@ namespace Avalonia.UnitTests
             threadingInterface: Mock.Of<IPlatformThreadingInterface>(x => x.CurrentThreadIsLoopThread == true),
             windowingPlatform: new MockWindowingPlatform());
 
+        public static readonly TestServices MockPlatformRenderInterface = new TestServices(
+            renderInterface: CreateRenderInterfaceMock());
+
         public static readonly TestServices MockPlatformWrapper = new TestServices(
             platformWrapper: Mock.Of<IPclPlatformWrapper>());
 
@@ -40,6 +43,9 @@ namespace Avalonia.UnitTests
             focusManager: new FocusManager(),
             keyboardDevice: () => new KeyboardDevice(),
             inputManager: new InputManager());
+
+        public static readonly TestServices RealLayoutManager = new TestServices(
+            layoutManager: new LayoutManager());
 
         public static readonly TestServices RealStyler = new TestServices(
             styler: new Styler());

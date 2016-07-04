@@ -20,7 +20,7 @@ namespace Avalonia.Skia
         public IFormattedTextImpl CreateFormattedText(string text, string fontFamilyName, double fontSize, FontStyle fontStyle,
             TextAlignment textAlignment, FontWeight fontWeight, TextWrapping wrapping)
         {
-            return FormattedTextImpl.Create(text, fontFamilyName, fontSize, fontStyle, textAlignment, fontWeight);
+            return new FormattedTextImpl(text, fontFamilyName, fontSize, fontStyle, textAlignment, fontWeight, wrapping);
         }
 
         public IStreamGeometryImpl CreateStreamGeometry()

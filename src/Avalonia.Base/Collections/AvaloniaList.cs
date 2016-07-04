@@ -320,6 +320,57 @@ namespace Avalonia.Collections
         }
 
         /// <summary>
+        /// Moves an item to a new index.
+        /// </summary>
+        /// <param name="oldIndex">The index of the item to move.</param>
+        /// <param name="newIndex">The index to move the item to.</param>
+        public void Move(int oldIndex, int newIndex)
+        {
+            var item = this[oldIndex];
+            _inner.RemoveAt(oldIndex);
+            _inner.Insert(newIndex, item);
+
+            if (_collectionChanged != null)
+            {
+                var e = new NotifyCollectionChangedEventArgs(
+                    NotifyCollectionChangedAction.Move,
+                    item,
+                    newIndex,
+                    oldIndex);
+                _collectionChanged(this, e);
+            }
+        }
+
+        /// <summary>
+        /// Moves multiple items to a new index.
+        /// </summary>
+        /// <param name="oldIndex">The first index of the items to move.</param>
+        /// <param name="count">The number of items to move.</param>
+        /// <param name="newIndex">The index to move the items to.</param>
+        public void MoveRange(int oldIndex, int count, int newIndex)
+        {
+            var items = _inner.GetRange(oldIndex, count);
+            _inner.RemoveRange(oldIndex, count);
+
+            if (newIndex > oldIndex)
+            {
+                newIndex -= count;
+            }
+
+            _inner.InsertRange(newIndex, items);
+
+            if (_collectionChanged != null)
+            {
+                var e = new NotifyCollectionChangedEventArgs(
+                    NotifyCollectionChangedAction.Move,
+                    items,
+                    newIndex,
+                    oldIndex);
+                _collectionChanged(this, e);
+            }
+        }
+
+        /// <summary>
         /// Removes an item from the collection.
         /// </summary>
         /// <param name="item">The item.</param>

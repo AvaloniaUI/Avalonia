@@ -1,19 +1,29 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using System.Collections.Generic;
+using System;
 using System.Collections.Specialized;
-using Avalonia.Controls.Generators;
-using Avalonia.Controls.Utils;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
+using static Avalonia.Utilities.MathUtilities;
 
 namespace Avalonia.Controls.Presenters
 {
     /// <summary>
     /// Displays items inside an <see cref="ItemsControl"/>.
     /// </summary>
-    public class ItemsPresenter : ItemsPresenterBase
+    public class ItemsPresenter : ItemsPresenterBase, ILogicalScrollable
     {
+        /// <summary>
+        /// Defines the <see cref="VirtualizationMode"/> property.
+        /// </summary>
+        public static readonly StyledProperty<ItemVirtualizationMode> VirtualizationModeProperty =
+            AvaloniaProperty.Register<ItemsPresenter, ItemVirtualizationMode>(
+                nameof(VirtualizationMode),
+                defaultValue: ItemVirtualizationMode.Simple);
+
+        private ItemVirtualizer _virtualizer;
+
         /// <summary>
         /// Initializes static members of the <see cref="ItemsPresenter"/> class.
         /// </summary>
@@ -22,12 +32,70 @@ namespace Avalonia.Controls.Presenters
             KeyboardNavigation.TabNavigationProperty.OverrideDefaultValue(
                 typeof(ItemsPresenter),
                 KeyboardNavigationMode.Once);
+
+            VirtualizationModeProperty.Changed
+                .AddClassHandler<ItemsPresenter>(x => x.VirtualizationModeChanged);
+        }
+
+        /// <summary>
+        /// Gets or sets the virtualization mode for the items.
+        /// </summary>
+        public ItemVirtualizationMode VirtualizationMode
+        {
+            get { return GetValue(VirtualizationModeProperty); }
+            set { SetValue(VirtualizationModeProperty, value); }
         }
 
         /// <inheritdoc/>
-        protected override void CreatePanel()
+        bool ILogicalScrollable.IsLogicalScrollEnabled
         {
-            base.CreatePanel();
+            get { return _virtualizer?.IsLogicalScrollEnabled ?? false; }
+        }
+
+        /// <inheritdoc/>
+        Size IScrollable.Extent => _virtualizer.Extent;
+
+        /// <inheritdoc/>
+        Vector IScrollable.Offset
+        {
+            get { return _virtualizer.Offset; }
+            set { _virtualizer.Offset = CoerceOffset(value); }
+        }
+
+        /// <inheritdoc/>
+        Size IScrollable.Viewport => _virtualizer.Viewport;
+
+        /// <inheritdoc/>
+        Action ILogicalScrollable.InvalidateScroll { get; set; }
+
+        /// <inheritdoc/>
+        Size ILogicalScrollable.ScrollSize => new Size(1, 1);
+
+        /// <inheritdoc/>
+        Size ILogicalScrollable.PageScrollSize => new Size(0, 1);
+
+        /// <inheritdoc/>
+        bool ILogicalScrollable.BringIntoView(IControl target, Rect targetRect)
+        {
+            return false;
+        }
+
+        /// <inheritdoc/>
+        IControl ILogicalScrollable.GetControlInDirection(NavigationDirection direction, IControl from)
+        {
+            return _virtualizer?.GetControlInDirection(direction, from);
+        }
+
+        public override void ScrollIntoView(object item)
+        {
+            _virtualizer?.ScrollIntoView(item);
+        }
+
+        /// <inheritdoc/>
+        protected override void PanelCreated(IPanel panel)
+        {
+            _virtualizer = ItemVirtualizer.Create(this);
+            ((ILogicalScrollable)this).InvalidateScroll?.Invoke();
 
             if (!Panel.IsSet(KeyboardNavigation.DirectionalNavigationProperty))
             {
@@ -41,108 +109,24 @@ namespace Avalonia.Controls.Presenters
                 KeyboardNavigation.GetTabNavigation(this));
         }
 
-        /// <inheritdoc/>
         protected override void ItemsChanged(NotifyCollectionChangedEventArgs e)
         {
-            var generator = ItemContainerGenerator;
-
-            // TODO: Handle Move and Replace etc.
-            switch (e.Action)
-            {
-                case NotifyCollectionChangedAction.Add:
-                    if (e.NewStartingIndex + e.NewItems.Count < Items.Count())
-                    {
-                        generator.InsertSpace(e.NewStartingIndex, e.NewItems.Count);
-                    }
-
-                    AddContainers(generator.Materialize(e.NewStartingIndex, e.NewItems, MemberSelector));
-                    break;
-
-                case NotifyCollectionChangedAction.Remove:
-                    RemoveContainers(generator.RemoveRange(e.OldStartingIndex, e.OldItems.Count));
-                    break;
-
-                case NotifyCollectionChangedAction.Replace:
-                    RemoveContainers(generator.Dematerialize(e.OldStartingIndex, e.OldItems.Count));
-                    var containers = generator.Materialize(e.NewStartingIndex, e.NewItems, MemberSelector);
-                    AddContainers(containers);
-
-                    var i = e.NewStartingIndex;
-
-                    foreach (var container in containers)
-                    {
-                        Panel.Children[i++] = container.ContainerControl;
-                    }
-
-                    break;
-
-                case NotifyCollectionChangedAction.Move:
-                // TODO: Implement Move in a more efficient manner.
-                case NotifyCollectionChangedAction.Reset:
-                    RemoveContainers(generator.Clear());
-
-                    if (Items != null)
-                    {
-                        AddContainers(generator.Materialize(0, Items, MemberSelector));
-                    }
-
-                    break;
-            }
-
-            InvalidateMeasure();
+            _virtualizer?.ItemsChanged(Items, e);
         }
 
-        private void AddContainersToPanel(IEnumerable<ItemContainer> items)
+        private Vector CoerceOffset(Vector value)
         {
-            foreach (var i in items)
-            {
-                if (i.ContainerControl != null)
-                {
-                    if (i.Index < this.Panel.Children.Count)
-                    {
-                        // HACK: This will insert at the wrong place when there are null items,
-                        // but all of this will need to be rewritten when we implement 
-                        // virtualization so hope no-one notices until then :)
-                        this.Panel.Children.Insert(i.Index, i.ContainerControl);
-                    }
-                    else
-                    {
-                        this.Panel.Children.Add(i.ContainerControl);
-                    }
-                }
-            }
+            var scrollable = (ILogicalScrollable)this;
+            var maxX = Math.Max(scrollable.Extent.Width - scrollable.Viewport.Width, 0);
+            var maxY = Math.Max(scrollable.Extent.Height - scrollable.Viewport.Height, 0);
+            return new Vector(Clamp(value.X, 0, maxX), Clamp(value.Y, 0, maxY));
         }
 
-        private void AddContainers(IEnumerable<ItemContainer> items)
+        private void VirtualizationModeChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            foreach (var i in items)
-            {
-                if (i.ContainerControl != null)
-                {
-                    if (i.Index < this.Panel.Children.Count)
-                    {
-                        // HACK: This will insert at the wrong place when there are null items,
-                        // but all of this will need to be rewritten when we implement 
-                        // virtualization so hope no-one notices until then :)
-                        this.Panel.Children.Insert(i.Index, i.ContainerControl);
-                    }
-                    else
-                    {
-                        this.Panel.Children.Add(i.ContainerControl);
-                    }
-                }
-            }
-        }
-
-        private void RemoveContainers(IEnumerable<ItemContainer> items)
-        {
-            foreach (var i in items)
-            {
-                if (i.ContainerControl != null)
-                {
-                    this.Panel.Children.Remove(i.ContainerControl);
-                }
-            }
+            _virtualizer?.Dispose();
+            _virtualizer = ItemVirtualizer.Create(this);
+            ((ILogicalScrollable)this).InvalidateScroll?.Invoke();
         }
     }
 }

@@ -24,18 +24,17 @@ namespace Avalonia.Input.Navigation
         /// </returns>
         public static IInputElement GetNext(
             IInputElement element,
-            FocusNavigationDirection direction)
+            NavigationDirection direction)
         {
             Contract.Requires<ArgumentNullException>(element != null);
             Contract.Requires<ArgumentException>(
-                direction != FocusNavigationDirection.Next &&
-                direction != FocusNavigationDirection.Previous);
+                direction != NavigationDirection.Next &&
+                direction != NavigationDirection.Previous);
 
             var container = element.GetVisualParent<IInputElement>();
 
             if (container != null)
             {
-                var isForward = IsForward(direction);
                 var mode = KeyboardNavigation.GetDirectionalNavigation((InputElement)container);
 
                 switch (mode)
@@ -63,12 +62,12 @@ namespace Avalonia.Input.Navigation
         /// </summary>
         /// <param name="direction">The direction.</param>
         /// <returns>True if the direction is forward.</returns>
-        private static bool IsForward(FocusNavigationDirection direction)
+        private static bool IsForward(NavigationDirection direction)
         {
-            return direction == FocusNavigationDirection.Next ||
-                   direction == FocusNavigationDirection.Last ||
-                   direction == FocusNavigationDirection.Right ||
-                   direction == FocusNavigationDirection.Down;
+            return direction == NavigationDirection.Next ||
+                   direction == NavigationDirection.Last ||
+                   direction == NavigationDirection.Right ||
+                   direction == NavigationDirection.Down;
         }
 
         /// <summary>
@@ -77,7 +76,7 @@ namespace Avalonia.Input.Navigation
         /// <param name="container">The element.</param>
         /// <param name="direction">The direction to search.</param>
         /// <returns>The element or null if not found.##</returns>
-        private static IInputElement GetFocusableDescendent(IInputElement container, FocusNavigationDirection direction)
+        private static IInputElement GetFocusableDescendent(IInputElement container, NavigationDirection direction)
         {
             return IsForward(direction) ?
                 GetFocusableDescendents(container).FirstOrDefault() :
@@ -121,9 +120,9 @@ namespace Avalonia.Input.Navigation
         private static IInputElement GetNextInContainer(
             IInputElement element,
             IInputElement container,
-            FocusNavigationDirection direction)
+            NavigationDirection direction)
         {
-            if (direction == FocusNavigationDirection.Down)
+            if (direction == NavigationDirection.Down)
             {
                 var descendent = GetFocusableDescendents(element).FirstOrDefault();
 
@@ -156,7 +155,7 @@ namespace Avalonia.Input.Navigation
                     element = null;
                 }
 
-                if (element != null && direction == FocusNavigationDirection.Up)
+                if (element != null && direction == NavigationDirection.Up)
                 {
                     var descendent = GetFocusableDescendents(element).LastOrDefault();
 
@@ -180,7 +179,7 @@ namespace Avalonia.Input.Navigation
         /// <returns>The first element, or null if there are no more elements.</returns>
         private static IInputElement GetFirstInNextContainer(
             IInputElement container,
-            FocusNavigationDirection direction)
+            NavigationDirection direction)
         {
             var parent = container.GetVisualParent<IInputElement>();
             var isForward = IsForward(direction);

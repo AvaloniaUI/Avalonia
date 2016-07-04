@@ -77,9 +77,9 @@ namespace Avalonia.VisualTree
         Transform RenderTransform { get; set; }
 
         /// <summary>
-        /// Gets or sets the transform origin of the scene graph node.
+        /// Gets or sets the render transform origin of the scene graph node.
         /// </summary>
-        RelativePoint TransformOrigin { get; set; }
+        RelativePoint RenderTransformOrigin { get; set; }
 
         /// <summary>
         /// Gets the scene graph node's child nodes.

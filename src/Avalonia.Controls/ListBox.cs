@@ -2,12 +2,11 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System.Collections;
-using System.Collections.Generic;
-using Avalonia.Collections;
 using Avalonia.Controls.Generators;
+using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Templates;
 using Avalonia.Input;
-using Avalonia.Interactivity;
 
 namespace Avalonia.Controls
 {
@@ -16,6 +15,18 @@ namespace Avalonia.Controls
     /// </summary>
     public class ListBox : SelectingItemsControl
     {
+        /// <summary>
+        /// The default value for the <see cref="ItemsControl.ItemsPanel"/> property.
+        /// </summary>
+        private static readonly FuncTemplate<IPanel> DefaultPanel =
+            new FuncTemplate<IPanel>(() => new VirtualizingStackPanel());
+
+        /// <summary>
+        /// Defines the <see cref="Scroll"/> property.
+        /// </summary>
+        public static readonly DirectProperty<ListBox, IScrollable> ScrollProperty =
+            AvaloniaProperty.RegisterDirect<ListBox, IScrollable>(nameof(Scroll), o => o.Scroll);
+
         /// <summary>
         /// Defines the <see cref="SelectedItems"/> property.
         /// </summary>
@@ -28,6 +39,31 @@ namespace Avalonia.Controls
         public static readonly new AvaloniaProperty<SelectionMode> SelectionModeProperty = 
             SelectingItemsControl.SelectionModeProperty;
 
+        /// <summary>
+        /// Defines the <see cref="VirtualizationMode"/> property.
+        /// </summary>
+        public static readonly AvaloniaProperty<ItemVirtualizationMode> VirtualizationModeProperty =
+            ItemsPresenter.VirtualizationModeProperty.AddOwner<ListBox>();
+
+        private IScrollable _scroll;
+
+        /// <summary>
+        /// Initializes static members of the <see cref="ItemsControl"/> class.
+        /// </summary>
+        static ListBox()
+        {
+            ItemsPanelProperty.OverrideDefaultValue<ListBox>(DefaultPanel);
+        }
+
+        /// <summary>
+        /// Gets the scroll information for the <see cref="ListBox"/>.
+        /// </summary>
+        public IScrollable Scroll
+        {
+            get { return _scroll; }
+            private set { SetAndRaise(ScrollProperty, ref _scroll, value); }
+        }
+
         /// <inheritdoc/>
         public new IList SelectedItems => base.SelectedItems;
 
@@ -36,6 +72,15 @@ namespace Avalonia.Controls
         {
             get { return base.SelectionMode; }
             set { base.SelectionMode = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the virtualization mode for the items.
+        /// </summary>
+        public ItemVirtualizationMode VirtualizationMode
+        {
+            get { return GetValue(VirtualizationModeProperty); }
+            set { SetValue(VirtualizationModeProperty, value); }
         }
 
         /// <inheritdoc/>
@@ -74,6 +119,12 @@ namespace Avalonia.Controls
                     (e.InputModifiers & InputModifiers.Shift) != 0,
                     (e.InputModifiers & InputModifiers.Control) != 0);
             }
+        }
+
+        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        {
+            base.OnTemplateApplied(e);
+            Scroll = e.NameScope.Find<IScrollable>("PART_ScrollViewer");
         }
     }
 }

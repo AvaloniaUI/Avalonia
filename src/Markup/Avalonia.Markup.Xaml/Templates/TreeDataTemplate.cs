@@ -24,6 +24,8 @@ namespace Avalonia.Markup.Xaml.Templates
         [AssignBinding]
         public Binding ItemsSource { get; set; }
 
+        public bool SupportsRecycling => true;
+
         public bool Match(object data)
         {
             if (DataType == null)
@@ -41,7 +43,7 @@ namespace Avalonia.Markup.Xaml.Templates
             if (ItemsSource != null)
             {
                 var obs = new ExpressionObserver(item, ItemsSource.Path);
-                return new InstancedBinding(obs);
+                return new InstancedBinding(obs, BindingMode.OneWay, BindingPriority.Style);
             }
 
             return null;

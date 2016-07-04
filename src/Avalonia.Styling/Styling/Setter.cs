@@ -4,6 +4,7 @@
 using System;
 using System.Reactive.Disposables;
 using System.Reactive.Subjects;
+using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Metadata;
 using Avalonia.Reactive;
@@ -19,6 +20,8 @@ namespace Avalonia.Styling
     /// </remarks>
     public class Setter : ISetter
     {
+        private object _value;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Setter"/> class.
         /// </summary>
@@ -54,8 +57,22 @@ namespace Avalonia.Styling
         [DependsOn(nameof(Property))]
         public object Value
         {
-            get;
-            set;
+            get
+            {
+                return _value;
+            }
+
+            set
+            {
+                if (value is IStyleable)
+                {
+                    throw new ArgumentException(
+                        "Cannot assign a control to Style.Value. Wrap the control in a <Template>.",
+                        "value");
+                }
+
+                _value = value;
+            }
         }
 
         /// <summary>
@@ -75,17 +92,27 @@ namespace Avalonia.Styling
                 throw new InvalidOperationException("Setter.Property must be set.");
             }
 
-            var binding = Value as IBinding;
+            var value = Value;
+            var binding = value as IBinding;
 
             if (binding == null)
             {
+                var template = value as ITemplate;
+
+                if (template != null)
+                {
+                    var materialized = template.Build();
+                    NameScope.SetNameScope((Visual)materialized, new NameScope());
+                    value = materialized;
+                }
+
                 if (activator == null)
                 {
-                    return control.Bind(Property, ObservableEx.SingleValue(Value), BindingPriority.Style);
+                    return control.Bind(Property, ObservableEx.SingleValue(value), BindingPriority.Style);
                 }
                 else
                 {
-                    var activated = new ActivatedValue(activator, Value, description);
+                    var activated = new ActivatedValue(activator, value, description);
                     return control.Bind(Property, activated, BindingPriority.StyleTrigger);
                 }
             }

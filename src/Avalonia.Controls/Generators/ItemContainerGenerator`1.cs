@@ -5,6 +5,7 @@ using System;
 using System.Linq.Expressions;
 using System.Reflection;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
 
 namespace Avalonia.Controls.Generators
 {
@@ -62,10 +63,10 @@ namespace Avalonia.Controls.Generators
 
                 if (ContentTemplateProperty != null)
                 {
-                    result.SetValue(ContentTemplateProperty, ItemTemplate);
+                    result.SetValue(ContentTemplateProperty, ItemTemplate, BindingPriority.Style);
                 }
 
-                result.SetValue(ContentProperty, item);
+                result.SetValue(ContentProperty, item, BindingPriority.Style);
 
                 if (!(item is IControl))
                 {
@@ -74,6 +75,35 @@ namespace Avalonia.Controls.Generators
 
                 return result;
             }
+        }
+
+        /// <inheritdoc/>
+        public override bool TryRecycle(
+            int oldIndex,
+            int newIndex,
+            object item,
+            IMemberSelector selector)
+        {
+            var container = ContainerFromIndex(oldIndex);
+
+            if (container == null)
+            {
+                throw new IndexOutOfRangeException("Could not recycle container: not materialized.");
+            }
+
+            var i = selector != null ? selector.Select(item) : item;
+
+            container.SetValue(ContentProperty, i);
+
+            if (!(item is IControl))
+            {
+                container.DataContext = i;
+            }
+
+            var info = MoveContainer(oldIndex, newIndex, i);
+            RaiseRecycled(new ItemContainerEventArgs(info));
+
+            return true;
         }
     }
 }

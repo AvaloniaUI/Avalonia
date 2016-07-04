@@ -1,10 +1,10 @@
-using System;
-using System.Collections.Generic;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
-using SkiaSharp;
-using System.Linq;
 using Avalonia.RenderHelpers;
+using SkiaSharp;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Avalonia.Skia
 {
@@ -25,7 +25,11 @@ namespace Avalonia.Skia
             var impl = (BitmapImpl)source.PlatformImpl;
             var s = sourceRect.ToSKRect();
             var d = destRect.ToSKRect();
-            Canvas.DrawBitmap(impl.Bitmap, s, d);
+            using (var paint = new SKPaint()
+                    { Color = new SKColor(255, 255, 255, (byte)(255 * opacity)) })
+            {
+                Canvas.DrawBitmap(impl.Bitmap, s, d, paint);
+            }
         }
 
         public void DrawLine(Pen pen, Point p1, Point p2)
@@ -55,13 +59,43 @@ namespace Avalonia.Skia
             }
         }
 
-        struct PaintWrapper : IDisposable
+        private struct PaintState : IDisposable
+        {
+            private readonly SKColor _color;
+            private readonly SKShader _shader;
+            private readonly SKPaint _paint;
+
+            public PaintState(SKPaint paint, SKColor color, SKShader shader)
+            {
+                _paint = paint;
+                _color = color;
+                _shader = shader;
+            }
+
+            public void Dispose()
+            {
+                _paint.Color = _color;
+                _paint.Shader = _shader;
+            }
+        }
+
+        internal struct PaintWrapper : IDisposable
         {
             //We are saving memory allocations there
             //TODO: add more disposable fields if needed
-
             public readonly SKPaint Paint;
+
             private IDisposable _disposable1;
+
+            public IDisposable ApplyTo(SKPaint paint)
+            {
+                var state = new PaintState(paint, paint.Color, paint.Shader);
+
+                paint.Color = Paint.Color;
+                paint.Shader = Paint.Shader;
+
+                return state;
+            }
 
             public void AddDisposable(IDisposable disposable)
             {
@@ -84,7 +118,7 @@ namespace Avalonia.Skia
             }
         }
 
-        private PaintWrapper CreatePaint(IBrush brush, Size targetSize)
+        internal PaintWrapper CreatePaint(IBrush brush, Size targetSize)
         {
             SKPaint paint = new SKPaint();
             var rv = new PaintWrapper(paint);
@@ -97,14 +131,16 @@ namespace Avalonia.Skia
 
             SKColor color = new SKColor(255, 255, 255, 255);
 
-            var solid = brush as SolidColorBrush;
+            var solid = brush as ISolidColorBrush;
             if (solid != null)
                 color = solid.Color.ToSKColor();
 
-            paint.Color = (new SKColor(color.Red, color.Green, color.Blue, (byte) (color.Alpha*opacity)));
-            if (solid != null)
-                return rv;
+            paint.Color = (new SKColor(color.Red, color.Green, color.Blue, (byte)(color.Alpha * opacity)));
 
+            if (solid != null)
+            {
+                return rv;
+            }
 
             var gradient = brush as GradientBrush;
             if (gradient != null)
@@ -152,7 +188,7 @@ namespace Avalonia.Skia
                 var bitmap = new BitmapImpl((int)helper.IntermediateSize.Width, (int)helper.IntermediateSize.Height);
                 rv.AddDisposable(bitmap);
                 using (var ctx = bitmap.CreateDrawingContext())
-                	helper.DrawIntermediate(ctx);
+                    helper.DrawIntermediate(ctx);
                 SKMatrix translation = SKMatrix.MakeTranslation(-(float)helper.DestinationRect.X, -(float)helper.DestinationRect.Y);
                 SKShaderTileMode tileX =
                     tileBrush.TileMode == TileMode.None
@@ -257,7 +293,7 @@ namespace Avalonia.Skia
             using (var paint = CreatePaint(foreground, text.Measure()))
             {
                 var textImpl = text.PlatformImpl as FormattedTextImpl;
-                textImpl.Draw(this.Canvas, origin.ToSKPoint());
+                textImpl.Draw(this, Canvas, origin.ToSKPoint(), paint);
             }
         }
 
@@ -272,7 +308,7 @@ namespace Avalonia.Skia
             Canvas.Restore();
         }
 
-        double _currentOpacity = 1.0f;
+        private double _currentOpacity = 1.0f;
         private readonly Stack<double> _opacityStack = new Stack<double>();
 
         public void PushOpacity(double opacity)

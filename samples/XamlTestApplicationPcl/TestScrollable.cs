@@ -2,11 +2,13 @@ using System;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Input;
 using Avalonia.Media;
+using Avalonia.VisualTree;
 
 namespace XamlTestApplication
 {
-    public class TestScrollable : Control, IScrollable
+    public class TestScrollable : Control, ILogicalScrollable
     {
         private int itemCount = 100;
         private Size _extent;
@@ -14,6 +16,7 @@ namespace XamlTestApplication
         private Size _viewport;
         private Size _lineSize;
 
+        public bool IsLogicalScrollEnabled => true;
         public Action InvalidateScroll { get; set; }
 
         Size IScrollable.Extent
@@ -53,6 +56,36 @@ namespace XamlTestApplication
             }
         }
 
+        public override void Render(DrawingContext context)
+        {
+            var y = 0.0;
+
+            for (var i = (int)_offset.Y; i < itemCount; ++i)
+            {
+                using (var line = new FormattedText(
+                    "Item " + (i + 1),
+                    TextBlock.GetFontFamily(this),
+                    TextBlock.GetFontSize(this),
+                    TextBlock.GetFontStyle(this),
+                    TextAlignment.Left,
+                    TextBlock.GetFontWeight(this)))
+                {
+                    context.DrawText(Brushes.Black, new Point(-_offset.X, y), line);
+                    y += _lineSize.Height;
+                }
+            }
+        }
+
+        public bool BringIntoView(IControl target, Rect targetRect)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IControl GetControlInDirection(NavigationDirection direction, IControl from)
+        {
+            throw new NotImplementedException();
+        }
+
         protected override Size MeasureOverride(Size availableSize)
         {
             using (var line = new FormattedText(
@@ -75,26 +108,6 @@ namespace XamlTestApplication
             _extent = new Size(_lineSize.Width, itemCount + 1);
             InvalidateScroll?.Invoke();
             return finalSize;
-        }
-
-        public override void Render(DrawingContext context)
-        {
-            var y = 0.0;
-
-            for (var i = (int)_offset.Y; i < itemCount; ++i)
-            {
-                using (var line = new FormattedText(
-                    "Item " + (i + 1),
-                    TextBlock.GetFontFamily(this),
-                    TextBlock.GetFontSize(this),
-                    TextBlock.GetFontStyle(this),
-                    TextAlignment.Left,
-                    TextBlock.GetFontWeight(this)))
-                {
-                    context.DrawText(Brushes.Black, new Point(-_offset.X, y), line);
-                    y += _lineSize.Height;
-                }
-            }
         }
     }
 }

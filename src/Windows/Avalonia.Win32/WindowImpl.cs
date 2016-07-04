@@ -500,6 +500,15 @@ namespace Avalonia.Win32
                         new Vector(0, ((int)wParam >> 16) / wheelDelta), GetMouseModifiers(wParam));
                     break;
 
+                case UnmanagedMethods.WindowsMessage.WM_MOUSEHWHEEL:
+                    e = new RawMouseWheelEventArgs(
+                        WindowsMouseDevice.Instance,
+                        timestamp,
+                        _owner,
+                        ScreenToClient(DipFromLParam(lParam)),
+                        new Vector(-((int)wParam >> 16) / wheelDelta,0), GetMouseModifiers(wParam));
+                    break;
+
                 case UnmanagedMethods.WindowsMessage.WM_MOUSELEAVE:
                     _trackingMouse = false;
                     e = new RawMouseEventArgs(

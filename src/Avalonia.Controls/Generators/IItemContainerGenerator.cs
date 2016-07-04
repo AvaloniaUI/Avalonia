@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using Avalonia.Controls.Templates;
 
@@ -16,7 +15,7 @@ namespace Avalonia.Controls.Generators
         /// <summary>
         /// Gets the currently realized containers.
         /// </summary>
-        IEnumerable<ItemContainer> Containers { get; }
+        IEnumerable<ItemContainerInfo> Containers { get; }
 
         /// <summary>
         /// Gets or sets the data template used to display the items in the control.
@@ -34,28 +33,33 @@ namespace Avalonia.Controls.Generators
         event EventHandler<ItemContainerEventArgs> Dematerialized;
 
         /// <summary>
-        /// Creates container controls for a collection of items.
+        /// Event raised whenever containers are recycled.
         /// </summary>
-        /// <param name="startingIndex">
-        /// The index of the first item of the data in the containing collection.
+        event EventHandler<ItemContainerEventArgs> Recycled;
+
+        /// <summary>
+        /// Creates a container control for an item.
+        /// </summary>
+        /// <param name="index">
+        /// The index of the item of data in the control's items.
         /// </param>
-        /// <param name="items">The items.</param>
+        /// <param name="item">The item.</param>
         /// <param name="selector">An optional member selector.</param>
         /// <returns>The created controls.</returns>
-        IEnumerable<ItemContainer> Materialize(
-            int startingIndex,
-            IEnumerable items,
+        ItemContainerInfo Materialize(
+            int index,
+            object item,
             IMemberSelector selector);
 
         /// <summary>
         /// Removes a set of created containers.
         /// </summary>
         /// <param name="startingIndex">
-        /// The index of the first item of the data in the containing collection.
+        /// The index of the first item in the control's items.
         /// </param>
         /// <param name="count">The the number of items to remove.</param>
         /// <returns>The removed containers.</returns>
-        IEnumerable<ItemContainer> Dematerialize(int startingIndex, int count);
+        IEnumerable<ItemContainerInfo> Dematerialize(int startingIndex, int count);
 
         /// <summary>
         /// Inserts space for newly inserted containers in the index.
@@ -69,17 +73,23 @@ namespace Avalonia.Controls.Generators
         /// the gap.
         /// </summary>
         /// <param name="startingIndex">
-        /// The index of the first item of the data in the containing collection.
+        /// The index of the first item in the control's items.
         /// </param>
         /// <param name="count">The the number of items to remove.</param>
         /// <returns>The removed containers.</returns>
-        IEnumerable<ItemContainer> RemoveRange(int startingIndex, int count);
+        IEnumerable<ItemContainerInfo> RemoveRange(int startingIndex, int count);
+
+        bool TryRecycle(
+            int oldIndex,
+            int newIndex,
+            object item,
+            IMemberSelector selector);
 
         /// <summary>
         /// Clears all created containers and returns the removed controls.
         /// </summary>
         /// <returns>The removed controls.</returns>
-        IEnumerable<ItemContainer> Clear();
+        IEnumerable<ItemContainerInfo> Clear();
 
         /// <summary>
         /// Gets the container control representing the item with the specified index.

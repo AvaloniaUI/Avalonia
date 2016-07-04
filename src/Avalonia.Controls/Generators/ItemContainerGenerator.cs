@@ -2,11 +2,11 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reactive.Subjects;
+using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
 
 namespace Avalonia.Controls.Generators
 {
@@ -15,7 +15,7 @@ namespace Avalonia.Controls.Generators
     /// </summary>
     public class ItemContainerGenerator : IItemContainerGenerator
     {
-        private List<ItemContainer> _containers = new List<ItemContainer>();
+        private Dictionary<int, ItemContainerInfo> _containers = new Dictionary<int, ItemContainerInfo>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemContainerGenerator"/> class.
@@ -29,13 +29,16 @@ namespace Avalonia.Controls.Generators
         }
 
         /// <inheritdoc/>
-        public IEnumerable<ItemContainer> Containers => _containers.Where(x => x != null);
+        public IEnumerable<ItemContainerInfo> Containers => _containers.Values;
 
         /// <inheritdoc/>
         public event EventHandler<ItemContainerEventArgs> Materialized;
 
         /// <inheritdoc/>
         public event EventHandler<ItemContainerEventArgs> Dematerialized;
+
+        /// <inheritdoc/>
+        public event EventHandler<ItemContainerEventArgs> Recycled;
 
         /// <summary>
         /// Gets or sets the data template used to display the items in the control.
@@ -48,41 +51,29 @@ namespace Avalonia.Controls.Generators
         public IControl Owner { get; }
 
         /// <inheritdoc/>
-        public IEnumerable<ItemContainer> Materialize(
-            int startingIndex,
-            IEnumerable items,
+        public ItemContainerInfo Materialize(
+            int index,
+            object item,
             IMemberSelector selector)
         {
-            Contract.Requires<ArgumentNullException>(items != null);
+            var i = selector != null ? selector.Select(item) : item;
+            var container = new ItemContainerInfo(CreateContainer(i), item, index);
 
-            int index = startingIndex;
-            var result = new List<ItemContainer>();
+            _containers.Add(container.Index, container);
+            Materialized?.Invoke(this, new ItemContainerEventArgs(container));
 
-            foreach (var item in items)
-            {
-                var i = selector != null ? selector.Select(item) : item;
-                var container = new ItemContainer(CreateContainer(i), item, index++);
-                result.Add(container);
-            }
-
-            AddContainers(result);
-            Materialized?.Invoke(this, new ItemContainerEventArgs(startingIndex, result));
-
-            return result.Where(x => x != null).ToList();
+            return container;
         }
 
         /// <inheritdoc/>
-        public virtual IEnumerable<ItemContainer> Dematerialize(int startingIndex, int count)
+        public virtual IEnumerable<ItemContainerInfo> Dematerialize(int startingIndex, int count)
         {
-            var result = new List<ItemContainer>();
+            var result = new List<ItemContainerInfo>();
 
             for (int i = startingIndex; i < startingIndex + count; ++i)
             {
-                if (i < _containers.Count)
-                {
-                    result.Add(_containers[i]);
-                    _containers[i] = null;
-                }
+                result.Add(_containers[i]);
+                _containers.Remove(i);
             }
 
             Dematerialized?.Invoke(this, new ItemContainerEventArgs(startingIndex, result));
@@ -93,18 +84,47 @@ namespace Avalonia.Controls.Generators
         /// <inheritdoc/>
         public virtual void InsertSpace(int index, int count)
         {
-            _containers.InsertRange(index, Enumerable.Repeat<ItemContainer>(null, count));
+            if (count > 0)
+            {
+                var toMove = _containers.Where(x => x.Key >= index).ToList();
+
+                foreach (var i in toMove)
+                {
+                    _containers.Remove(i.Key);
+                    i.Value.Index += count;
+                    _containers[i.Value.Index] = i.Value;
+                }
+            }
         }
 
         /// <inheritdoc/>
-        public virtual IEnumerable<ItemContainer> RemoveRange(int startingIndex, int count)
+        public virtual IEnumerable<ItemContainerInfo> RemoveRange(int startingIndex, int count)
         {
-            List<ItemContainer> result = new List<ItemContainer>();
+            var result = new List<ItemContainerInfo>();
 
-            if (startingIndex < _containers.Count)
+            if (count > 0)
             {
-                result.AddRange(_containers.GetRange(startingIndex, count));
-                _containers.RemoveRange(startingIndex, count);
+                for (var i = startingIndex; i < startingIndex + count; ++i)
+                {
+                    ItemContainerInfo found;
+
+                    if (_containers.TryGetValue(i, out found))
+                    {
+                        result.Add(found);
+                    }
+
+                    _containers.Remove(i);
+                }
+
+                var toMove = _containers.Where(x => x.Key >= startingIndex).ToList();
+
+                foreach (var i in toMove)
+                {
+                    _containers.Remove(i.Key);
+                    i.Value.Index -= count;
+                    _containers.Add(i.Value.Index, i.Value);
+                }
+
                 Dematerialized?.Invoke(this, new ItemContainerEventArgs(startingIndex, result));
             }
 
@@ -112,10 +132,20 @@ namespace Avalonia.Controls.Generators
         }
 
         /// <inheritdoc/>
-        public virtual IEnumerable<ItemContainer> Clear()
+        public virtual bool TryRecycle(
+            int oldIndex,
+            int newIndex,
+            object item,
+            IMemberSelector selector)
         {
-            var result = _containers.Where(x => x != null).ToList();
-            _containers = new List<ItemContainer>();
+            return false;
+        }
+
+        /// <inheritdoc/>
+        public virtual IEnumerable<ItemContainerInfo> Clear()
+        {
+            var result = Containers.ToList();
+            _containers.Clear();
 
             if (result.Count > 0)
             {
@@ -128,27 +158,20 @@ namespace Avalonia.Controls.Generators
         /// <inheritdoc/>
         public IControl ContainerFromIndex(int index)
         {
-            if (index < _containers.Count)
-            {
-                return _containers[index]?.ContainerControl;
-            }
-
-            return null;
+            ItemContainerInfo result;
+            _containers.TryGetValue(index, out result);
+            return result?.ContainerControl;
         }
 
         /// <inheritdoc/>
         public int IndexFromContainer(IControl container)
         {
-            var index = 0;
-
             foreach (var i in _containers)
             {
-                if (i?.ContainerControl == container)
+                if (i.Value.ContainerControl == container)
                 {
-                    return index;
+                    return i.Key;
                 }
-
-                ++index;
             }
 
             return -1;
@@ -161,44 +184,40 @@ namespace Avalonia.Controls.Generators
         /// <returns>The created container control.</returns>
         protected virtual IControl CreateContainer(object item)
         {
-            var result = Owner.MaterializeDataTemplate(item, ItemTemplate);
+            var result = item as IControl;
 
-            if (result != null && !(item is IControl))
+            if (result == null)
             {
-                result.DataContext = item;
+                result = new ContentPresenter();
+                result.SetValue(ContentPresenter.ContentProperty, item, BindingPriority.Style);
+
+                if (ItemTemplate != null)
+                {
+                    result.SetValue(
+                        ContentPresenter.ContentTemplateProperty,
+                        ItemTemplate,
+                        BindingPriority.TemplatedParent);
+                }
             }
 
             return result;
         }
 
         /// <summary>
-        /// Adds a collection of containers to the index.
+        /// Moves a container.
         /// </summary>
-        /// <param name="containers">The containers.</param>
-        protected void AddContainers(IList<ItemContainer> containers)
+        /// <param name="oldIndex">The old index.</param>
+        /// <param name="newIndex">The new index.</param>
+        /// <param name="item">The new item.</param>
+        /// <returns>The container info.</returns>
+        protected ItemContainerInfo MoveContainer(int oldIndex, int newIndex, object item)
         {
-            Contract.Requires<ArgumentNullException>(containers != null);
-
-            foreach (var c in containers)
-            {
-                while (_containers.Count < c.Index)
-                {
-                    _containers.Add(null);
-                }
-
-                if (_containers.Count == c.Index)
-                {
-                    _containers.Add(c);
-                }
-                else if (_containers[c.Index] == null)
-                {
-                    _containers[c.Index] = c;
-                }
-                else
-                {
-                    throw new InvalidOperationException("Container already created.");
-                }
-            }
+            var container = _containers[oldIndex];
+            container.Index = newIndex;
+            container.Item = item;
+            _containers.Remove(oldIndex);
+            _containers.Add(newIndex, container);
+            return container;
         }
 
         /// <summary>
@@ -207,9 +226,18 @@ namespace Avalonia.Controls.Generators
         /// <param name="index">The first index.</param>
         /// <param name="count">The number of elements in the range.</param>
         /// <returns>The containers.</returns>
-        protected IEnumerable<ItemContainer> GetContainerRange(int index, int count)
+        protected IEnumerable<ItemContainerInfo> GetContainerRange(int index, int count)
         {
-            return _containers.GetRange(index, count);
+            return _containers.Where(x => x.Key >= index && x.Key <= index + count).Select(x => x.Value);
+        }
+
+        /// <summary>
+        /// Raises the <see cref="Recycled"/> event.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        protected void RaiseRecycled(ItemContainerEventArgs e)
+        {
+            Recycled?.Invoke(this, e);
         }
     }
 }

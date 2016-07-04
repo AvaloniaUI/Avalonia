@@ -78,7 +78,7 @@ namespace Avalonia.Controls.Generators
                 var template = GetTreeDataTemplate(item, ItemTemplate);
                 var result = new T();
 
-                result.SetValue(ContentProperty, template.Build(item));
+                result.SetValue(ContentProperty, template.Build(item), BindingPriority.Style);
 
                 var itemsSelector = template.ItemsSelector(item);
 
@@ -99,23 +99,28 @@ namespace Avalonia.Controls.Generators
             }
         }
 
-        public override IEnumerable<ItemContainer> Clear()
+        public override IEnumerable<ItemContainerInfo> Clear()
         {
             var items = base.Clear();
             Index.Remove(items);
             return items;
         }
 
-        public override IEnumerable<ItemContainer> Dematerialize(int startingIndex, int count)
+        public override IEnumerable<ItemContainerInfo> Dematerialize(int startingIndex, int count)
         {
             Index.Remove(GetContainerRange(startingIndex, count));
             return base.Dematerialize(startingIndex, count);
         }
 
-        public override IEnumerable<ItemContainer> RemoveRange(int startingIndex, int count)
+        public override IEnumerable<ItemContainerInfo> RemoveRange(int startingIndex, int count)
         {
             Index.Remove(GetContainerRange(startingIndex, count));
             return base.RemoveRange(startingIndex, count);
+        }
+
+        public override bool TryRecycle(int oldIndex, int newIndex, object item, IMemberSelector selector)
+        {
+            return false;
         }
 
         /// <summary>

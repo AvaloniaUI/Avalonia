@@ -24,14 +24,14 @@ namespace Avalonia.Input
         public static IEnumerable<IInputElement> GetInputElementsAt(this IInputElement element, Point p)
         {
             Contract.Requires<ArgumentNullException>(element != null);
-            var transformedBounds = BoundsTracker.GetTransformedBounds((Visual)element);
-            var geometry = transformedBounds.GetTransformedBoundsGeometry();
 
             if (element.IsVisible &&
                 element.IsHitTestVisible &&
                 element.IsEnabledCore)
             {
-                if (element.VisualChildren.Any())
+                bool containsPoint = BoundsTracker.GetTransformedBounds((Visual)element).Contains(p);
+
+                if ((containsPoint || !element.ClipToBounds) && element.VisualChildren.Any())
                 {
                     foreach (var child in ZSort(element.VisualChildren.OfType<IInputElement>()))
                     {
@@ -42,7 +42,7 @@ namespace Avalonia.Input
                     }
                 }
 
-                if (geometry.FillContains(p))
+                if (containsPoint)
                 {
                     yield return element;
                 }
@@ -71,7 +71,6 @@ namespace Avalonia.Input
                 })
                 .OrderBy(x => x, null)
                 .Select(x => x.Element);
-                
         }
 
         private class ZOrderElement : IComparable<ZOrderElement>

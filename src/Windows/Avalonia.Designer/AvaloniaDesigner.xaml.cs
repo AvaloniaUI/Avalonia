@@ -18,7 +18,6 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Avalonia.Designer.AppHost;
 using Avalonia.Designer.Comm;
-using Avalonia.Designer.Metadata;
 
 namespace Avalonia.Designer
 {
@@ -54,7 +53,14 @@ namespace Avalonia.Designer
             set { SetValue(XamlProperty, value); }
         }
 
-        public AvaloniaDesignerMetadata Metadata { get; private set; }
+        public static readonly DependencyProperty SourceAssemblyProperty = DependencyProperty.Register(
+            "SourceAssembly", typeof (string), typeof (AvaloniaDesigner), new FrameworkPropertyMetadata(XamlChanged));
+
+        public string SourceAssembly
+        {
+            get { return (string) GetValue(SourceAssemblyProperty); }
+            set { SetValue(SourceAssemblyProperty, value); }
+        }
         
         private readonly ProcessHost _host = new ProcessHost();
         
@@ -66,24 +72,28 @@ namespace Avalonia.Designer
                 new Binding(nameof(ProcessHost.State)) {Source = _host, Mode = BindingMode.OneWay});
 
             _host.PropertyChanged += _host_PropertyChanged;
-            _host.MetadataArrived += data => Metadata = data;
         }
 
         private void _host_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(ProcessHost.WindowHandle))
             {
-                if (NativeContainer.Child != null)
-                {
-                    var child = NativeContainer.Child;
-                    NativeContainer.Child = null;
-                    child.Dispose();
-                }
+                ResetNativeContainer();
+                if(_host.WindowHandle == IntPtr.Zero)
+                    return;
                 NativeContainer.Child = new WindowHost(false);
                 var wndHost = ((WindowHost) NativeContainer.Child);
                 wndHost.SetWindow(_host.WindowHandle);
+            }
+        }
 
-
+        void ResetNativeContainer()
+        {
+            if (NativeContainer.Child != null)
+            {
+                var child = NativeContainer.Child;
+                NativeContainer.Child = null;
+                child.Dispose();
             }
         }
 
@@ -91,6 +101,7 @@ namespace Avalonia.Designer
         public void KillProcess()
         {
             _host.Kill();
+            ResetNativeContainer();
         }
 
         bool CheckTargetExeOrSetError()
@@ -114,7 +125,7 @@ namespace Avalonia.Designer
                 return;
             if(string.IsNullOrEmpty(Xaml))
                 return;
-            _host.Start(TargetExe, Xaml);
+            _host.Start(TargetExe, Xaml, SourceAssembly);
         }
 
         private void OnXamlChanged()
@@ -122,9 +133,9 @@ namespace Avalonia.Designer
             if (!CheckTargetExeOrSetError())
                 return;
             if (!_host.IsAlive)
-                _host.Start(TargetExe, Xaml);
+                _host.Start(TargetExe, Xaml, SourceAssembly);
             else
-                _host.UpdateXaml(Xaml ?? "");
+                _host.UpdateXaml(Xaml ?? "", SourceAssembly);
         }
 
     }

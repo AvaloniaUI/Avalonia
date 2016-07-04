@@ -10,7 +10,7 @@ namespace Avalonia.Designer.Comm
     class InitMessage : UpdateXamlMessage
     {
         public string TargetExe { get; private set; }
-        public InitMessage(string targetExe, string xaml) : base(xaml)
+        public InitMessage(string targetExe, string xaml, string sourceAssembly) : base(xaml, sourceAssembly)
         {
             TargetExe = targetExe;
         }

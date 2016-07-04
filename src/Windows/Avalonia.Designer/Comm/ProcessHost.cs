@@ -7,9 +7,6 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
-using System.Windows.Threading;
-using Avalonia.Designer.Metadata;
 
 namespace Avalonia.Designer.Comm
 {
@@ -28,9 +25,7 @@ namespace Avalonia.Designer.Comm
                 OnPropertyChanged();
             }
         }
-
-        public event Action<AvaloniaDesignerMetadata> MetadataArrived;
-
+        
         private bool _isAlive;
         private readonly SynchronizationContext _dispatcher;
         private Process _proc;
@@ -67,6 +62,8 @@ namespace Avalonia.Designer.Comm
 
         void OnExited(object sender, EventArgs eventArgs)
         {
+            if(_proc != sender)
+                return;
             _proc = null;
             _dispatcher.Post(_ =>
             {
@@ -83,13 +80,14 @@ namespace Avalonia.Designer.Comm
             State = "Designer process crashed";
         }
 
-        public void Start(string targetExe, string initialXaml)
+        public void Start(string targetExe, string initialXaml, string sourceAssembly)
         {
             if (_proc != null)
             {
                 _proc.Exited -= OnExited;
                 try
                 {
+                    _comm?.Dispose();
                     _proc.Kill();
                 }
                 catch { }
@@ -97,7 +95,7 @@ namespace Avalonia.Designer.Comm
                 State = "Restarting...";
             }
 
-            var msg = new InitMessage(Path.GetFullPath(targetExe), initialXaml);
+            var msg = new InitMessage(Path.GetFullPath(targetExe), initialXaml, sourceAssembly);
             var exe = typeof (ProcessHost).Assembly.GetModules()[0].FullyQualifiedName;
             _proc = new Process()
             {
@@ -130,9 +128,9 @@ namespace Avalonia.Designer.Comm
 
         }
 
-        public void UpdateXaml(string xaml)
+        public void UpdateXaml(string xaml, string sourceAssembly)
         {
-            _comm?.SendMessage(new UpdateXamlMessage(xaml));
+            _comm?.SendMessage(new UpdateXamlMessage(xaml, sourceAssembly));
         }
 
         private void OnMessage(object obj)
@@ -143,9 +141,6 @@ namespace Avalonia.Designer.Comm
             var windowMessage = obj as WindowCreatedMessage;
             if (windowMessage != null)
                 WindowHandle = windowMessage.Handle;
-            var metadata = obj as UpdateMetadataMessage;
-            if (metadata != null)
-                _dispatcher.Post(_ => MetadataArrived?.Invoke(metadata.Metadata), null);
         }
 
         public void Kill()

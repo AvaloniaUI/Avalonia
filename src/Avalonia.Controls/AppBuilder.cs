@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Reflection;
 
 namespace Avalonia.Controls
 {
@@ -98,20 +99,61 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="initializer">The method to call to initialize the windowing subsystem.</param>
         /// <returns>An <see cref="AppBuilder"/> instance.</returns>
-        public AppBuilder WithWindowingSubsystem(Action initializer)
+        public AppBuilder UseWindowingSubsystem(Action initializer)
         {
             WindowingSubsystem = initializer;
             return this;
         }
 
         /// <summary>
+        /// Specifies a windowing subsystem to use.
+        /// </summary>
+        /// <param name="dll">The dll in which to look for subsystem.</param>
+        /// <returns>An <see cref="AppBuilder"/> instance.</returns>
+        public AppBuilder UseWindowingSubsystem(string dll) => UseWindowingSubsystem(GetInitializer(dll));
+
+        /// <summary>
         /// Specifies a rendering subsystem to use.
         /// </summary>
         /// <param name="initializer">The method to call to initialize the rendering subsystem.</param>
         /// <returns>An <see cref="AppBuilder"/> instance.</returns>
-        public AppBuilder WithRenderingSubsystem(Action initializer)
+        public AppBuilder UseRenderingSubsystem(Action initializer)
         {
             RenderingSubsystem = initializer;
+            return this;
+        }
+
+        /// <summary>
+        /// Specifies a rendering subsystem to use.
+        /// </summary>
+        /// <param name="dll">The dll in which to look for subsystem.</param>
+        /// <returns>An <see cref="AppBuilder"/> instance.</returns>
+        public AppBuilder UseRenderingSubsystem(string dll) => UseRenderingSubsystem(GetInitializer(dll));
+
+        static Action GetInitializer(string assemblyName) => () =>
+        {
+            var assembly = Assembly.Load(new AssemblyName(assemblyName));
+            var platformClassName = assemblyName.Replace("Avalonia.", string.Empty) + "Platform";
+            var platformClassFullName = assemblyName + "." + platformClassName;
+            var platformClass = assembly.GetType(platformClassFullName);
+            var init = platformClass.GetRuntimeMethod("Initialize", new Type[0]);
+            init.Invoke(null, null);
+        };
+
+        public AppBuilder UsePlatformDetect()
+        {
+            var platformId = (int)
+                ((dynamic) Type.GetType("System.Environment").GetRuntimeProperty("OSVersion").GetValue(null)).Platform;
+            if (platformId == 4 || platformId == 6)
+            {
+                UseRenderingSubsystem("Avalonia.Cairo");
+                UseWindowingSubsystem("Avalonia.Gtk");
+            }
+            else
+            {
+                UseRenderingSubsystem("Avalonia.Direct2D1");
+                UseWindowingSubsystem("Avalonia.Win32");
+            }
             return this;
         }
 
