@@ -552,7 +552,9 @@ namespace Avalonia.Win32
                     return IntPtr.Zero;
 
                 case UnmanagedMethods.WindowsMessage.WM_SIZE:
-                    if (Resized != null)
+                    if (Resized != null &&
+                        (wParam == (IntPtr)UnmanagedMethods.SizeCommand.Restored ||
+                         wParam == (IntPtr)UnmanagedMethods.SizeCommand.Maximized))
                     {
                         var clientSize = new Size((int)lParam & 0xffff, (int)lParam >> 16);
                         Resized(clientSize / Scaling);
