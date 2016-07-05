@@ -3,6 +3,8 @@
 
 [![Build status](https://ci.appveyor.com/api/projects/status/hubk3k0w9idyibfg/branch/master?svg=true)](https://ci.appveyor.com/project/AvaloniaUI/Avalonia/branch/master)
 
+[![Build Status](https://travis-ci.org/AvaloniaUI/Avalonia.svg?branch=master)](https://travis-ci.org/AvaloniaUI/Avalonia)
+
 A multi-platform .NET UI framework. It can run on Windows, Linux, Mac OS X, iOS and Android.
 
 ![](docs/images/screen.png)
