@@ -17,3 +17,11 @@ script:
   - mono ./testrunner/xunit.runner.console.2.1.0/tools/xunit.console.exe ./tests/Avalonia.Layout.UnitTests/bin/Release/Avalonia.Layout.UnitTests.dll
   - mono ./testrunner/xunit.runner.console.2.1.0/tools/xunit.console.exe ./tests/Avalonia.Markup.UnitTests/bin/Release/Avalonia.Markup.UnitTests.dll
   - mono ./testrunner/xunit.runner.console.2.1.0/tools/xunit.console.exe ./tests/Avalonia.Styling.UnitTests/bin/Release/Avalonia.Styling.UnitTests.dll
+notifications:
+  email: false
+  webhooks:
+    urls:
+      - https://webhooks.gitter.im/e/98f653320ef2b7506c05
+    on_success: change
+    on_failure: always
+    on_start: never
