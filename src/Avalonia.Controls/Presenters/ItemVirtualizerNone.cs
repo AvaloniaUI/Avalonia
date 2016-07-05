@@ -123,7 +123,7 @@ namespace Avalonia.Controls.Presenters
                 if (index != -1)
                 {
                     var container = Owner.ItemContainerGenerator.ContainerFromIndex(index);
-                    container.BringIntoView();
+                    container?.BringIntoView();
                 }
             }
         }
