@@ -385,6 +385,16 @@ namespace Avalonia
         }
 
         /// <summary>
+        /// Called when the control's visual parent changes.
+        /// </summary>
+        /// <param name="oldParent">The old visual parent.</param>
+        /// <param name="newParent">The new visual parent.</param>
+        protected virtual void OnVisualParentChanged(IVisual oldParent, IVisual newParent)
+        {
+            RaisePropertyChanged(VisualParentProperty, oldParent, newParent, BindingPriority.LocalValue);
+        }
+
+        /// <summary>
         /// Called when a property changes that should invalidate the visual.
         /// </summary>
         /// <param name="e">The event args.</param>
@@ -499,7 +509,7 @@ namespace Avalonia
                 OnAttachedToVisualTreeCore(e);
             }
 
-            RaisePropertyChanged(VisualParentProperty, old, value, BindingPriority.LocalValue);
+            OnVisualParentChanged(old, value);
         }
 
         /// <summary>

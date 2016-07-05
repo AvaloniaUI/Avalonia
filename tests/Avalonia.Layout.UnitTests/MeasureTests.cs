@@ -45,6 +45,23 @@ namespace Avalonia.Layout.UnitTests
         }
 
         [Fact]
+        public void Removing_From_Parent_Should_Invalidate_Measure_Of_Control_And_Descendents()
+        {
+            var panel = new StackPanel();
+            var child2 = new Border();
+            var child1 = new Border { Child = child2 };
+            panel.Children.Add(child1);
+
+            panel.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+            Assert.True(child1.IsMeasureValid);
+            Assert.True(child2.IsMeasureValid);
+
+            panel.Children.Remove(child1);
+            Assert.False(child1.IsMeasureValid);
+            Assert.False(child2.IsMeasureValid);
+        }
+
+        [Fact]
         public void Negative_Margin_Larger_Than_Constraint_Should_Request_Width_0()
         {
             Control target;

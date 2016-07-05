@@ -603,6 +603,17 @@ namespace Avalonia.Layout
             return finalSize;
         }
 
+        /// <inheritdoc/>
+        protected override sealed void OnVisualParentChanged(IVisual oldParent, IVisual newParent)
+        {
+            foreach (ILayoutable i in this.GetSelfAndVisualDescendents())
+            {
+                i.InvalidateMeasure();
+            }
+
+            base.OnVisualParentChanged(oldParent, newParent);
+        }
+
         /// <summary>
         /// Calls <see cref="InvalidateMeasure"/> on the control on which a property changed.
         /// </summary>
