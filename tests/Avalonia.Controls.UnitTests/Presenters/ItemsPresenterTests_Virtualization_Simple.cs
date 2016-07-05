@@ -1,6 +1,7 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -11,6 +12,7 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
+using Avalonia.Rendering;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -730,7 +732,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
                 (IEnumerable)new AvaloniaList<string>(itemsSource) :
                 (IEnumerable)new ObservableCollection<string>(itemsSource);
 
-            var scroller = new ScrollContentPresenter
+            var scroller = new TestScroller
             {
                 Content = result = new TestItemsPresenter(useContainers)
                 {
@@ -762,6 +764,21 @@ namespace Avalonia.Controls.UnitTests.Presenters
             {
                 Orientation = orientation,
             });
+        }
+
+        private class TestScroller : ScrollContentPresenter, IRenderRoot
+        {
+            public IRenderQueueManager RenderQueueManager { get; }
+
+            public Point PointToClient(Point point)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Point PointToScreen(Point point)
+            {
+                throw new NotImplementedException();
+            }
         }
 
         private class TestItemsPresenter : ItemsPresenter

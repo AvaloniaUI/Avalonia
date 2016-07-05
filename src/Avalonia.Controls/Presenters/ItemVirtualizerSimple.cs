@@ -9,6 +9,7 @@ using Avalonia.Controls.Utils;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Utilities;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Presenters
 {
@@ -245,7 +246,7 @@ namespace Avalonia.Controls.Presenters
             var generator = Owner.ItemContainerGenerator;
             var panel = VirtualizingPanel;
 
-            if (!panel.IsFull && Items != null)
+            if (!panel.IsFull && Items != null && panel.IsAttachedToVisualTree)
             {
                 var memberSelector = Owner.MemberSelector;
                 var index = NextIndex;

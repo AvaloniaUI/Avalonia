@@ -194,6 +194,10 @@ namespace Avalonia.Controls.UnitTests
 
         private void Prepare(ListBox target)
         {
+            // The ListBox needs to be part of a rooted visual tree.
+            var root = new TestRoot();
+            root.Child = target;
+
             // Apply the template to the ListBox itself.
             target.ApplyTemplate();
 

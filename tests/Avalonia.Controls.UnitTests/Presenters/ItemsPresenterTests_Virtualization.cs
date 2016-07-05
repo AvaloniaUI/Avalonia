@@ -1,6 +1,7 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Controls.Generators;
@@ -8,6 +9,7 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Layout;
+using Avalonia.Rendering;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -15,6 +17,43 @@ namespace Avalonia.Controls.UnitTests.Presenters
 {
     public class ItemsPresenterTests_Virtualization
     {
+        [Fact]
+        public void Should_Not_Create_Items_Before_Added_To_Visual_Tree()
+        {
+            var items = Enumerable.Range(0, 10).Select(x => $"Item {x}").ToList();
+            var target = new TestItemsPresenter(true)
+            {
+                Items = items,
+                ItemsPanel = VirtualizingPanelTemplate(Orientation.Vertical),
+                ItemTemplate = ItemTemplate(),
+                VirtualizationMode = ItemVirtualizationMode.Simple,
+            };
+
+            var scroller = new ScrollContentPresenter
+            {
+                Content = target,
+            };
+
+            scroller.UpdateChild();
+            target.ApplyTemplate();
+            target.Measure(new Size(100, 100));
+            target.Arrange(new Rect(0, 0, 100, 100));
+
+            Assert.Empty(target.Panel.Children);
+
+            var root = new TestRoot
+            {
+                Child = scroller,
+            };
+
+            target.InvalidateMeasure();
+            target.Panel.InvalidateMeasure();
+            target.Measure(new Size(100, 100));
+            target.Arrange(new Rect(0, 0, 100, 100));
+
+            Assert.Equal(10, target.Panel.Children.Count);
+        }
+
         [Fact]
         public void Should_Return_IsLogicalScrollEnabled_False_When_Has_No_Virtualizing_Panel()
         {
@@ -239,7 +278,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             ItemsPresenter result;
             var items = Enumerable.Range(0, itemCount).Select(x => $"Item {x}").ToList();
 
-            var scroller = new ScrollContentPresenter
+            var scroller = new TestScroller
             {
                 Content = result = new TestItemsPresenter(useContainers)
                 {
@@ -271,6 +310,21 @@ namespace Avalonia.Controls.UnitTests.Presenters
             {
                 Orientation = orientation,
             });
+        }
+
+        private class TestScroller : ScrollContentPresenter, IRenderRoot
+        {
+            public IRenderQueueManager RenderQueueManager { get; }
+
+            public Point PointToClient(Point point)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Point PointToScreen(Point point)
+            {
+                throw new NotImplementedException();
+            }
         }
 
         private class TestItemsPresenter : ItemsPresenter
