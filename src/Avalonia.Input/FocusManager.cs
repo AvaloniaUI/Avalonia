@@ -79,7 +79,7 @@ namespace Avalonia.Input
                 {
                     IInputElement element;
 
-                    if (_focusScopes.TryGetValue(scope, out element))
+                    if (_focusScopes.TryGetValue(scope, out element) && element != null)
                     {
                         Focus(element, method);
                         return;
