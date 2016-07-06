@@ -7,31 +7,40 @@ using System.Threading.Tasks;
 
 namespace Avalonia.DesignerSupport
 {
-    class DesignerApi
+    class DesignerApiDictionary
     {
-        private readonly Dictionary<string, object> _inner;
+        public Dictionary<string, object> Dictionary { get; set; }
 
-        public DesignerApi(Dictionary<string, object> inner)
+        public DesignerApiDictionary(Dictionary<string, object> dictionary)
         {
-            _inner = inner;
+            Dictionary = dictionary;
         }
 
-        object Get([CallerMemberName] string name = null)
+        protected object Get([CallerMemberName] string name = null)
         {
             object rv;
-            _inner.TryGetValue(name, out rv);
+            Dictionary.TryGetValue(name, out rv);
             return rv;
         }
 
-        void Set(object value, [CallerMemberName] string name = null)
+        protected void Set(object value, [CallerMemberName] string name = null)
         {
-            _inner[name] = value;
+            Dictionary[name] = value;
         }
+    }
 
+    class DesignerApi : DesignerApiDictionary
+    {
         public Action<string> UpdateXaml
         {
             get { return (Action<string>) Get(); }
             set {Set(value); }
+        }
+
+        public Action<Dictionary<string, object>> UpdateXaml2
+        {
+            get { return (Action<Dictionary<string, object>>)Get(); }
+            set { Set(value); }
         }
 
         public Action OnResize
@@ -52,5 +61,32 @@ namespace Avalonia.DesignerSupport
             get { return (Action<double>) Get(); }
         }
 
+        public DesignerApi(Dictionary<string, object> dictionary) : base(dictionary)
+        {
+        }
+    }
+
+    class DesignerApiXamlFileInfo : DesignerApiDictionary
+    {
+        public string Xaml
+        {
+            get { return (string)Get(); }
+            set { Set(value); }
+        }
+
+        public string AssemblyPath
+        {
+            get { return (string) Get(); }
+            set { Set(value); }
+        }
+
+        public DesignerApiXamlFileInfo(Dictionary<string, object> dictionary) : base(dictionary)
+        {
+        }
+
+        public DesignerApiXamlFileInfo(): base(new Dictionary<string, object>())
+        {
+            
+        }
     }
 }

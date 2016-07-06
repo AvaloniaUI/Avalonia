@@ -15,7 +15,7 @@ namespace Avalonia.Cairo.Media
     using Cairo = global::Cairo;
 
     /// <summary>
-    /// Draws using Direct2D1.
+    /// Draws using Cairo.
     /// </summary>
     public class DrawingContext : IDrawingContextImpl, IDisposable
     {
@@ -23,6 +23,8 @@ namespace Avalonia.Cairo.Media
         /// The cairo context.
         /// </summary>
         private readonly Cairo.Context _context;
+
+        private readonly Stack<BrushImpl> _maskStack = new Stack<BrushImpl>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DrawingContext"/> class.
@@ -83,31 +85,31 @@ namespace Avalonia.Cairo.Media
             _context.Scale(scale.X, scale.Y);
             destRect /= scale;
 
-			if (opacityOverride < 1.0f) {
-				_context.PushGroup ();
-				Gdk.CairoHelper.SetSourcePixbuf (
-					_context, 
-					impl.Surface, 
-					-sourceRect.X + destRect.X, 
-					-sourceRect.Y + destRect.Y);
+            if (opacityOverride < 1.0f) {
+                _context.PushGroup ();
+                Gdk.CairoHelper.SetSourcePixbuf (
+                    _context, 
+                    impl.Surface, 
+                    -sourceRect.X + destRect.X, 
+                    -sourceRect.Y + destRect.Y);
 
-				_context.Rectangle (destRect.ToCairo ());
-				_context.Fill ();
-				_context.PopGroupToSource ();
-				_context.PaintWithAlpha (opacityOverride);
-			} else {
-				_context.PushGroup ();
-				Gdk.CairoHelper.SetSourcePixbuf (
-					_context, 
-					impl.Surface, 
-					-sourceRect.X + destRect.X, 
-					-sourceRect.Y + destRect.Y);
+                _context.Rectangle (destRect.ToCairo ());
+                _context.Fill ();
+                _context.PopGroupToSource ();
+                _context.PaintWithAlpha (opacityOverride);
+            } else {
+                _context.PushGroup ();
+                Gdk.CairoHelper.SetSourcePixbuf (
+                    _context, 
+                    impl.Surface, 
+                    -sourceRect.X + destRect.X, 
+                    -sourceRect.Y + destRect.Y);
 
-				_context.Rectangle (destRect.ToCairo ());
-				_context.Fill ();
-				_context.PopGroupToSource ();
-				_context.PaintWithAlpha (opacityOverride);			
-			}
+                _context.Rectangle (destRect.ToCairo ());
+                _context.Fill ();
+                _context.PopGroupToSource ();
+                _context.PaintWithAlpha (opacityOverride);			
+            }
             _context.Restore();
         }
 
@@ -121,12 +123,12 @@ namespace Avalonia.Cairo.Media
         {
             var size = new Rect(p1, p2).Size;
             
-			using (var p = SetPen(pen, size)) 
-			{
-				_context.MoveTo(p1.ToCairo());
-				_context.LineTo(p2.ToCairo());
-				_context.Stroke();
-			}
+            using (var p = SetPen(pen, size)) 
+            {
+                _context.MoveTo(p1.ToCairo());
+                _context.LineTo(p2.ToCairo());
+                _context.Stroke();
+            }
         }
 
         /// <summary>
@@ -177,11 +179,11 @@ namespace Avalonia.Cairo.Media
         /// <param name="rect">The rectangle bounds.</param>
         public void DrawRectangle(Pen pen, Rect rect, float cornerRadius)
         {
-			using (var p = SetPen(pen, rect.Size)) 
-			{
-				_context.Rectangle(rect.ToCairo ());
-				_context.Stroke();
-			}
+            using (var p = SetPen(pen, rect.Size)) 
+            {
+                _context.Rectangle(rect.ToCairo ());
+                _context.Stroke();
+            }
         }
 
         /// <summary>
@@ -195,10 +197,10 @@ namespace Avalonia.Cairo.Media
             var layout = ((FormattedTextImpl)text.PlatformImpl).Layout;
             _context.MoveTo(origin.X, origin.Y);
 
-			using (var b = SetBrush(foreground, new Size(0, 0))) 
-			{
-				Pango.CairoHelper.ShowLayout(_context, layout);
-			}
+            using (var b = SetBrush(foreground, new Size(0, 0))) 
+            {
+                Pango.CairoHelper.ShowLayout(_context, layout);
+            }
         }
 
         /// <summary>
@@ -208,11 +210,11 @@ namespace Avalonia.Cairo.Media
         /// <param name="rect">The rectangle bounds.</param>
         public void FillRectangle(IBrush brush, Rect rect, float cornerRadius)
         {
-			using (var b = SetBrush(brush, rect.Size)) 
-			{
-				_context.Rectangle(rect.ToCairo ());
-				_context.Fill();
-			}
+            using (var b = SetBrush(brush, rect.Size)) 
+            {
+                _context.Rectangle(rect.ToCairo ());
+                _context.Fill();
+            }
         }
 
         /// <summary>
@@ -269,50 +271,57 @@ namespace Avalonia.Cairo.Media
             });
         }
         
-		private double opacityOverride = 1.0f;
+        private double opacityOverride = 1.0f;
 
         private IDisposable SetBrush(IBrush brush, Size destinationSize)
         {
-			_context.Save ();
+            _context.Save();
 
+            BrushImpl impl = CreateBrushImpl(brush, destinationSize);
+
+            _context.SetSource(impl.PlatformBrush);
+            return Disposable.Create(() =>
+            {
+                impl.Dispose();
+                _context.Restore();
+            });
+        }
+
+        private BrushImpl CreateBrushImpl(IBrush brush, Size destinationSize)
+        {
             var solid = brush as SolidColorBrush;
             var linearGradientBrush = brush as LinearGradientBrush;
             var radialGradientBrush = brush as RadialGradientBrush;
             var imageBrush = brush as ImageBrush;
             var visualBrush = brush as VisualBrush;
-			BrushImpl impl = null;
+            BrushImpl impl = null;
 
-			if (solid != null) 
-			{
-				impl = new SolidColorBrushImpl(solid, opacityOverride);
-			} 
-			else if (linearGradientBrush != null) 
-			{
-				impl = new LinearGradientBrushImpl(linearGradientBrush, destinationSize);
-			}
+            if (solid != null)
+            {
+                impl = new SolidColorBrushImpl(solid, opacityOverride);
+            }
+            else if (linearGradientBrush != null)
+            {
+                impl = new LinearGradientBrushImpl(linearGradientBrush, destinationSize);
+            }
             else if (radialGradientBrush != null)
             {
                 impl = new RadialGradientBrushImpl(radialGradientBrush, destinationSize);
             }
-            else if (imageBrush != null) 
-			{
-				impl = new ImageBrushImpl(imageBrush, destinationSize);
-			} 
-			else if (visualBrush != null) 
-			{
-				impl = new VisualBrushImpl(visualBrush, destinationSize);
-			} 
-			else 
-			{
-				impl = new SolidColorBrushImpl(null, opacityOverride);
-			}
+            else if (imageBrush != null)
+            {
+                impl = new ImageBrushImpl(imageBrush, destinationSize);
+            }
+            else if (visualBrush != null)
+            {
+                impl = new VisualBrushImpl(visualBrush, destinationSize);
+            }
+            else
+            {
+                impl = new SolidColorBrushImpl(null, opacityOverride);
+            }
 
-			_context.SetSource(impl.PlatformBrush);
-			return Disposable.Create(() => 
-			{
-			    impl.Dispose();
-				_context.Restore();
-			});
+            return impl;
         }
 
         private IDisposable SetPen(Pen pen, Size destinationSize)
@@ -335,10 +344,35 @@ namespace Avalonia.Cairo.Media
             _context.LineJoin = Cairo.LineJoin.Miter;
             _context.LineCap = Cairo.LineCap.Butt;
 
-			if (pen.Brush == null)
-				return Disposable.Empty;
-			
-			return SetBrush(pen.Brush, destinationSize);
+            if (pen.Brush == null)
+                return Disposable.Empty;
+            
+            return SetBrush(pen.Brush, destinationSize);
+        }
+
+        public void PushGeometryClip(Geometry clip)
+        {
+            _context.Save();
+            _context.AppendPath(((StreamGeometryImpl)clip.PlatformImpl).Path);
+            _context.Clip();
+        }
+
+        public void PopGeometryClip()
+        {
+            _context.Restore();
+        }
+
+        public void PushOpacityMask(IBrush mask, Rect bounds)
+        {
+            _context.PushGroup();
+            var impl = CreateBrushImpl(mask, bounds.Size);
+            _maskStack.Push(impl);
+        }
+
+        public void PopOpacityMask()
+        {
+            _context.PopGroupToSource();
+            _context.Mask(_maskStack.Pop().PlatformBrush);
         }
     }
 }

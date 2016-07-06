@@ -34,6 +34,12 @@ namespace Avalonia.Media
             { 'z', Command.Close },
         };
 
+        private static readonly Dictionary<char, FillRule> FillRules = new Dictionary<char, FillRule>
+        {
+            {'0', FillRule.EvenOdd },
+            {'1', FillRule.NonZero }
+        };
+
         private StreamGeometry _geometry;
 
         private readonly StreamGeometryContext _context;
@@ -90,8 +96,7 @@ namespace Avalonia.Media
                     switch (command)
                     {
                         case Command.FillRule:
-                            // TODO: Implement.
-                            reader.Read();
+                            _context.SetFillRule(ReadFillRule(reader));
                             break;
 
                         case Command.Move:
@@ -226,6 +231,24 @@ namespace Avalonia.Media
             }
         }
 
+        private static FillRule ReadFillRule(StringReader reader)
+        {
+            int i = reader.Read();
+            if (i == -1)
+            {
+                throw new InvalidDataException("Invalid fill rule");
+            }
+            char c = (char)i;
+            FillRule rule;
+
+            if (!FillRules.TryGetValue(c, out rule))
+            {
+                throw new InvalidDataException("Invalid fill rule");
+            }
+
+            return rule;
+        }
+
         private static double ReadDouble(StringReader reader)
         {
             ReadWhitespace(reader);
@@ -248,8 +271,16 @@ namespace Avalonia.Media
                 {
                     b.Append(c);
                     reader.Read();
-                    readSign = c == '+' || c == '-';
-                    readPoint = c == '.';
+
+                    if (!readSign)
+                    {
+                        readSign = c == '+' || c == '-';
+                    }
+
+                    if (!readPoint)
+                    {
+                        readPoint = c == '.';
+                    }
 
                     if (c == 'E')
                     {

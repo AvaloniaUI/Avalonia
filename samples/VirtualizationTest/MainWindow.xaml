@@ -5,6 +5,10 @@
                     Margin="16 0 0 0" 
                     MinWidth="150"
                     Gap="4">
+            <DropDown Items="{Binding VirtualizationModes}"
+                      SelectedItem="{Binding VirtualizationMode}"/>
+            <DropDown Items="{Binding Orientations}"
+                      SelectedItem="{Binding Orientation}"/>
             <TextBox Watermark="Item Count"
                      UseFloatingWatermark="True"
                      Text="{Binding ItemCount}"/>
@@ -23,12 +27,20 @@
             <Button Command="{Binding AddItemCommand}">Add Item</Button>
             <Button Command="{Binding RemoveItemCommand}">Remove Item</Button>
             <Button Command="{Binding RecreateCommand}">Recreate</Button>
+            <Button Command="{Binding SelectFirstCommand}">Select First</Button>
+            <Button Command="{Binding SelectLastCommand}">Select Last</Button>
         </StackPanel>
 
         <ListBox Name="listBox" 
                  Items="{Binding Items}" 
                  SelectedItems="{Binding SelectedItems}"
-                 SelectionMode="Multiple">
+                 SelectionMode="Multiple"
+                 VirtualizationMode="{Binding VirtualizationMode}">
+            <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <VirtualizingStackPanel Orientation="{Binding Orientation}"/>
+                </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <TextBlock Text="{Binding Header}"/>

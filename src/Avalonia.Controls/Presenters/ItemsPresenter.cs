@@ -5,7 +5,6 @@ using System;
 using System.Collections.Specialized;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
-using Avalonia.VisualTree;
 using static Avalonia.Utilities.MathUtilities;
 
 namespace Avalonia.Controls.Presenters
@@ -33,6 +32,9 @@ namespace Avalonia.Controls.Presenters
             KeyboardNavigation.TabNavigationProperty.OverrideDefaultValue(
                 typeof(ItemsPresenter),
                 KeyboardNavigationMode.Once);
+
+            VirtualizationModeProperty.Changed
+                .AddClassHandler<ItemsPresenter>(x => x.VirtualizationModeChanged);
         }
 
         /// <summary>
@@ -67,23 +69,46 @@ namespace Avalonia.Controls.Presenters
         Action ILogicalScrollable.InvalidateScroll { get; set; }
 
         /// <inheritdoc/>
-        Size ILogicalScrollable.ScrollSize => new Size(0, 1);
+        Size ILogicalScrollable.ScrollSize => new Size(1, 1);
 
         /// <inheritdoc/>
         Size ILogicalScrollable.PageScrollSize => new Size(0, 1);
 
         /// <inheritdoc/>
-        bool ILogicalScrollable.BringIntoView(IVisual target, Rect targetRect)
+        bool ILogicalScrollable.BringIntoView(IControl target, Rect targetRect)
         {
-            return _virtualizer?.BringIntoView(target, targetRect) ?? false;
+            return false;
         }
 
         /// <inheritdoc/>
-        protected override Size ArrangeOverride(Size finalSize)
+        IControl ILogicalScrollable.GetControlInDirection(NavigationDirection direction, IControl from)
         {
-            var result = base.ArrangeOverride(finalSize);
-            _virtualizer.Arranging(finalSize);
-            return result;
+            return _virtualizer?.GetControlInDirection(direction, from);
+        }
+
+        public override void ScrollIntoView(object item)
+        {
+            _virtualizer?.ScrollIntoView(item);
+        }
+
+        protected override Size MeasureOverride(Size availableSize)
+        {
+            // If infinity is passed as the available size and we're virtualized then we need to
+            // fill the available space, but to do that we *don't* want to materialize all our
+            // items! Take a look at the root of the tree for a MaxClientSize and use that as
+            // the available size.
+            if (availableSize == Size.Infinity && VirtualizationMode != ItemVirtualizationMode.None)
+            {
+                var window = VisualRoot as Window;
+
+                if (window != null)
+                {
+                    availableSize = window.PlatformImpl.MaxClientSize;
+                }
+            }
+
+            Panel.Measure(availableSize);
+            return Panel.DesiredSize;
         }
 
         /// <inheritdoc/>
@@ -115,6 +140,13 @@ namespace Avalonia.Controls.Presenters
             var maxX = Math.Max(scrollable.Extent.Width - scrollable.Viewport.Width, 0);
             var maxY = Math.Max(scrollable.Extent.Height - scrollable.Viewport.Height, 0);
             return new Vector(Clamp(value.X, 0, maxX), Clamp(value.Y, 0, maxY));
+        }
+
+        private void VirtualizationModeChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            _virtualizer?.Dispose();
+            _virtualizer = ItemVirtualizer.Create(this);
+            ((ILogicalScrollable)this).InvalidateScroll?.Invoke();
         }
     }
 }

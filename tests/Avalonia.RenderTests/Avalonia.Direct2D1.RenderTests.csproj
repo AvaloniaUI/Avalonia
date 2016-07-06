@@ -73,22 +73,6 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
-    <Compile Include="Controls\TextBlockTests.cs" />
-    <Compile Include="Media\ImageBrushTests.cs" />
-    <Compile Include="Media\VisualBrushTests.cs" />
-    <Compile Include="Controls\ImageTests.cs" />
-    <Compile Include="Controls\BorderTests.cs" />
-    <Compile Include="Media\LinearGradientBrushTests.cs" />
-    <Compile Include="Shapes\LineTests.cs" />
-    <Compile Include="Shapes\PathTests.cs" />
-    <Compile Include="Shapes\EllipseTests.cs" />
-    <Compile Include="Shapes\PolygonTests.cs" />
-    <Compile Include="Shapes\PolylineTests.cs" />
-    <Compile Include="Shapes\RectangleTests.cs" />
-    <Compile Include="TestBase.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\..\src\Avalonia.Animation\Avalonia.Animation.csproj">
       <Project>{D211E587-D8BC-45B9-95A4-F297C8FA5200}</Project>
       <Name>Avalonia.Animation</Name>
@@ -133,6 +117,7 @@
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
+  <Import Project="Avalonia.RenderTests.projitems" Label="Shared" />
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
       <ItemGroup>

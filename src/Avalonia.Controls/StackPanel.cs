@@ -72,36 +72,51 @@ namespace Avalonia.Controls
         /// <param name="direction">The movement direction.</param>
         /// <param name="from">The control from which movement begins.</param>
         /// <returns>The control.</returns>
-        IInputElement INavigableContainer.GetControl(FocusNavigationDirection direction, IInputElement from)
+        IInputElement INavigableContainer.GetControl(NavigationDirection direction, IInputElement from)
+        {
+            var fromControl = from as IControl;
+            return (fromControl != null) ? GetControlInDirection(direction, fromControl) : null;
+        }
+
+        /// <summary>
+        /// Gets the next control in the specified direction.
+        /// </summary>
+        /// <param name="direction">The movement direction.</param>
+        /// <param name="from">The control from which movement begins.</param>
+        /// <returns>The control.</returns>
+        protected virtual IInputElement GetControlInDirection(NavigationDirection direction, IControl from)
         {
             var horiz = Orientation == Orientation.Horizontal;
             int index = Children.IndexOf((IControl)from);
 
             switch (direction)
             {
-                case FocusNavigationDirection.First:
+                case NavigationDirection.First:
                     index = 0;
                     break;
-                case FocusNavigationDirection.Last:
+                case NavigationDirection.Last:
                     index = Children.Count - 1;
                     break;
-                case FocusNavigationDirection.Next:
+                case NavigationDirection.Next:
                     ++index;
                     break;
-                case FocusNavigationDirection.Previous:
+                case NavigationDirection.Previous:
                     --index;
                     break;
-                case FocusNavigationDirection.Left:
+                case NavigationDirection.Left:
                     index = horiz ? index - 1 : -1;
                     break;
-                case FocusNavigationDirection.Right:
+                case NavigationDirection.Right:
                     index = horiz ? index + 1 : -1;
                     break;
-                case FocusNavigationDirection.Up:
+                case NavigationDirection.Up:
                     index = horiz ? -1 : index - 1;
                     break;
-                case FocusNavigationDirection.Down:
+                case NavigationDirection.Down:
                     index = horiz ? -1 : index + 1;
+                    break;
+                default:
+                    index = -1;
                     break;
             }
 

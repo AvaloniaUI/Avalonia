@@ -16,8 +16,8 @@ namespace Avalonia.Skia
         public BitmapImpl(SKBitmap bm)
         {
             Bitmap = bm;
-            PixelHeight = bm.Width;
-            PixelWidth = bm.Height;
+            PixelHeight = bm.Height;
+            PixelWidth = bm.Width;
         }
 
         public BitmapImpl(int width, int height)

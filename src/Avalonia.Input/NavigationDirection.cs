@@ -4,9 +4,9 @@
 namespace Avalonia.Input
 {
     /// <summary>
-    /// Describes how focus should be moved.
+    /// Describes how focus should be moved by directional or tab keys.
     /// </summary>
-    public enum FocusNavigationDirection
+    public enum NavigationDirection
     {
         /// <summary>
         /// Move the focus to the next control in the tab order.
@@ -47,5 +47,15 @@ namespace Avalonia.Input
         /// Move the focus down.
         /// </summary>
         Down,
+
+        /// <summary>
+        /// Move the focus up a page.
+        /// </summary>
+        PageUp,
+
+        /// <summary>
+        /// Move the focus down a page.
+        /// </summary>
+        PageDown,
     }
 }

@@ -1,4 +1,6 @@
 
+using System.Runtime.CompilerServices;
+
 namespace Avalonia.Controls
 {
     public static class Design
@@ -43,7 +45,25 @@ namespace Avalonia.Controls
         {
             return control.GetValue(DataContextProperty);
         }
-        
+
+        static readonly ConditionalWeakTable<object, Control> Substitutes = new ConditionalWeakTable<object, Control>();
+
+        public static readonly AttachedProperty<Control> PreviewWithProperty = AvaloniaProperty
+            .RegisterAttached<AvaloniaObject, Control>("PreviewWith", typeof (Design));
+
+        public static void SetPreviewWith(object target, Control control)
+        {
+            Substitutes.Remove(target);
+            Substitutes.Add(target, control);
+        }
+
+        public static Control GetPreviewWith(object target)
+        {
+            Control rv;
+            Substitutes.TryGetValue(target, out rv);
+            return rv;
+        }
+
         internal static void ApplyDesignerProperties(Control target, Control source)
         {
             if (source.IsSet(WidthProperty))

@@ -42,7 +42,7 @@ namespace Avalonia.Input.UnitTests
                 }
             };
 
-            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Next);
+            var result = KeyboardNavigationHandler.GetNext(current, NavigationDirection.Next);
 
             Assert.Equal(next, result);
         }
@@ -79,7 +79,7 @@ namespace Avalonia.Input.UnitTests
                 }
             };
 
-            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Next);
+            var result = KeyboardNavigationHandler.GetNext(current, NavigationDirection.Next);
 
             Assert.Equal(next, result);
         }
@@ -123,7 +123,7 @@ namespace Avalonia.Input.UnitTests
                 }
             };
 
-            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Next);
+            var result = KeyboardNavigationHandler.GetNext(current, NavigationDirection.Next);
 
             Assert.Equal(next, result);
         }
@@ -152,7 +152,7 @@ namespace Avalonia.Input.UnitTests
                 }
             };
 
-            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Next);
+            var result = KeyboardNavigationHandler.GetNext(current, NavigationDirection.Next);
 
             Assert.Equal(next, result);
         }
@@ -195,7 +195,7 @@ namespace Avalonia.Input.UnitTests
                 }
             };
 
-            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Next);
+            var result = KeyboardNavigationHandler.GetNext(current, NavigationDirection.Next);
 
             Assert.Equal(next, result);
         }
@@ -213,7 +213,7 @@ namespace Avalonia.Input.UnitTests
                 }
             };
 
-            var result = KeyboardNavigationHandler.GetNext(top, FocusNavigationDirection.Next);
+            var result = KeyboardNavigationHandler.GetNext(top, NavigationDirection.Next);
 
             Assert.Equal(next, result);
         }
@@ -256,7 +256,7 @@ namespace Avalonia.Input.UnitTests
                 }
             };
 
-            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Next);
+            var result = KeyboardNavigationHandler.GetNext(current, NavigationDirection.Next);
 
             Assert.Equal(next, result);
         }
@@ -294,7 +294,7 @@ namespace Avalonia.Input.UnitTests
                 }
             };
 
-            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Next);
+            var result = KeyboardNavigationHandler.GetNext(current, NavigationDirection.Next);
 
             Assert.Equal(next, result);
         }
@@ -332,7 +332,7 @@ namespace Avalonia.Input.UnitTests
                 }
             };
 
-            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Next);
+            var result = KeyboardNavigationHandler.GetNext(current, NavigationDirection.Next);
 
             Assert.Equal(next, result);
         }
@@ -370,7 +370,7 @@ namespace Avalonia.Input.UnitTests
                 }
             };
 
-            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Next);
+            var result = KeyboardNavigationHandler.GetNext(current, NavigationDirection.Next);
 
             Assert.Equal(next, result);
         }
@@ -408,7 +408,7 @@ namespace Avalonia.Input.UnitTests
                 }
             };
 
-            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Next);
+            var result = KeyboardNavigationHandler.GetNext(current, NavigationDirection.Next);
 
             Assert.Null(result);
         }
@@ -446,7 +446,7 @@ namespace Avalonia.Input.UnitTests
                 }
             };
 
-            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Next);
+            var result = KeyboardNavigationHandler.GetNext(current, NavigationDirection.Next);
 
             Assert.Equal(next, result);
         }
@@ -486,7 +486,7 @@ namespace Avalonia.Input.UnitTests
 
             KeyboardNavigation.SetTabOnceActiveElement(container, next);
 
-            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Next);
+            var result = KeyboardNavigationHandler.GetNext(current, NavigationDirection.Next);
 
             Assert.Equal(next, result);
         }
@@ -524,7 +524,7 @@ namespace Avalonia.Input.UnitTests
                 }
             };
 
-            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Next);
+            var result = KeyboardNavigationHandler.GetNext(current, NavigationDirection.Next);
 
             Assert.Equal(next, result);
         }
@@ -564,7 +564,7 @@ namespace Avalonia.Input.UnitTests
 
             KeyboardNavigation.SetTabOnceActiveElement(container, next);
 
-            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Next);
+            var result = KeyboardNavigationHandler.GetNext(current, NavigationDirection.Next);
 
             Assert.Equal(next, result);
         }
@@ -601,7 +601,7 @@ namespace Avalonia.Input.UnitTests
                 }
             };
 
-            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Previous);
+            var result = KeyboardNavigationHandler.GetNext(current, NavigationDirection.Previous);
 
             Assert.Equal(next, result);
         }
@@ -638,7 +638,7 @@ namespace Avalonia.Input.UnitTests
                 }
             };
 
-            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Previous);
+            var result = KeyboardNavigationHandler.GetNext(current, NavigationDirection.Previous);
 
             Assert.Equal(next, result);
         }
@@ -667,7 +667,7 @@ namespace Avalonia.Input.UnitTests
                 }
             };
 
-            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Previous);
+            var result = KeyboardNavigationHandler.GetNext(current, NavigationDirection.Previous);
 
             Assert.Equal(next, result);
         }
@@ -710,7 +710,7 @@ namespace Avalonia.Input.UnitTests
                 }
             };
 
-            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Previous);
+            var result = KeyboardNavigationHandler.GetNext(current, NavigationDirection.Previous);
 
             Assert.Equal(next, result);
         }
@@ -753,7 +753,7 @@ namespace Avalonia.Input.UnitTests
                 }
             };
 
-            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Previous);
+            var result = KeyboardNavigationHandler.GetNext(current, NavigationDirection.Previous);
 
             Assert.Equal(next, result);
         }
@@ -772,7 +772,7 @@ namespace Avalonia.Input.UnitTests
                 }
             };
 
-            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Previous);
+            var result = KeyboardNavigationHandler.GetNext(current, NavigationDirection.Previous);
 
             Assert.Equal(top, result);
         }
@@ -810,7 +810,7 @@ namespace Avalonia.Input.UnitTests
                 }
             };
 
-            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Previous);
+            var result = KeyboardNavigationHandler.GetNext(current, NavigationDirection.Previous);
 
             Assert.Equal(next, result);
         }
@@ -848,7 +848,7 @@ namespace Avalonia.Input.UnitTests
                 }
             };
 
-            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Previous);
+            var result = KeyboardNavigationHandler.GetNext(current, NavigationDirection.Previous);
 
             Assert.Equal(next, result);
         }
@@ -886,7 +886,7 @@ namespace Avalonia.Input.UnitTests
                 }
             };
 
-            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Previous);
+            var result = KeyboardNavigationHandler.GetNext(current, NavigationDirection.Previous);
 
             Assert.Equal(next, result);
         }
@@ -924,7 +924,7 @@ namespace Avalonia.Input.UnitTests
                 }
             };
 
-            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Previous);
+            var result = KeyboardNavigationHandler.GetNext(current, NavigationDirection.Previous);
 
             Assert.Null(result);
         }
@@ -962,7 +962,7 @@ namespace Avalonia.Input.UnitTests
                 }
             };
 
-            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Previous);
+            var result = KeyboardNavigationHandler.GetNext(current, NavigationDirection.Previous);
 
             Assert.Equal(next, result);
         }
@@ -1002,7 +1002,7 @@ namespace Avalonia.Input.UnitTests
 
             KeyboardNavigation.SetTabOnceActiveElement(container, next);
 
-            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Previous);
+            var result = KeyboardNavigationHandler.GetNext(current, NavigationDirection.Previous);
 
             Assert.Equal(next, result);
         }
@@ -1040,7 +1040,7 @@ namespace Avalonia.Input.UnitTests
                 }
             };
 
-            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Previous);
+            var result = KeyboardNavigationHandler.GetNext(current, NavigationDirection.Previous);
 
             Assert.Equal(next, result);
         }
@@ -1063,7 +1063,7 @@ namespace Avalonia.Input.UnitTests
                 }
             };
 
-            var result = KeyboardNavigationHandler.GetNext(current, FocusNavigationDirection.Previous);
+            var result = KeyboardNavigationHandler.GetNext(current, NavigationDirection.Previous);
 
             Assert.Null(result);
         }

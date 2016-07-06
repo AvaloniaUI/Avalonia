@@ -67,5 +67,10 @@ namespace Avalonia.Cairo.Media
         {
             return _impl;
         }
+
+        public bool FillContains(Point point)
+        {
+            return _impl.FillContains(point);
+        }
     }
 }

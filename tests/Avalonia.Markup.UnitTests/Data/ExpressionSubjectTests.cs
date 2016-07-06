@@ -9,6 +9,7 @@ using Moq;
 using Avalonia.Data;
 using Avalonia.Markup.Data;
 using Xunit;
+using System.Threading;
 
 namespace Avalonia.Markup.UnitTests.Data
 {
@@ -38,7 +39,7 @@ namespace Avalonia.Markup.UnitTests.Data
         [Fact]
         public async void Should_Convert_Get_String_To_Double()
         {
-            CultureInfo.CurrentUICulture = CultureInfo.InvariantCulture;
+            Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
 
             var data = new Class1 { StringValue = "5.6" };
             var target = new ExpressionSubject(new ExpressionObserver(data, "StringValue"), typeof(double));
@@ -70,7 +71,7 @@ namespace Avalonia.Markup.UnitTests.Data
         [Fact]
         public void Should_Convert_Set_String_To_Double()
         {
-            CultureInfo.CurrentUICulture = CultureInfo.InvariantCulture;
+            Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
 
             var data = new Class1 { StringValue = (5.6).ToString() };
             var target = new ExpressionSubject(new ExpressionObserver(data, "StringValue"), typeof(double));
@@ -83,7 +84,7 @@ namespace Avalonia.Markup.UnitTests.Data
         [Fact]
         public async void Should_Convert_Get_Double_To_String()
         {
-            CultureInfo.CurrentUICulture = CultureInfo.InvariantCulture;
+            Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
 
             var data = new Class1 { DoubleValue = 5.6 };
             var target = new ExpressionSubject(new ExpressionObserver(data, "DoubleValue"), typeof(string));
@@ -95,7 +96,7 @@ namespace Avalonia.Markup.UnitTests.Data
         [Fact]
         public void Should_Convert_Set_Double_To_String()
         {
-            CultureInfo.CurrentUICulture = CultureInfo.InvariantCulture;
+            Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
 
             var data = new Class1 { DoubleValue = 5.6 };
             var target = new ExpressionSubject(new ExpressionObserver(data, "DoubleValue"), typeof(string));
@@ -123,8 +124,8 @@ namespace Avalonia.Markup.UnitTests.Data
             var target = new ExpressionSubject(
                 new ExpressionObserver(data, "DoubleValue"),
                 typeof(string),
-                DefaultValueConverter.Instance,
-                fallbackValue: "9.8");
+                "9.8",
+                DefaultValueConverter.Instance);
 
             target.OnNext("foo");
 
@@ -162,7 +163,7 @@ namespace Avalonia.Markup.UnitTests.Data
                 new ExpressionObserver(data, "DoubleValue"),
                 typeof(string),
                 converter.Object,
-                "foo");
+                converterParameter: "foo");
 
             target.Subscribe(_ => { });
 
@@ -178,7 +179,7 @@ namespace Avalonia.Markup.UnitTests.Data
                 new ExpressionObserver(data, "DoubleValue"), 
                 typeof(string),
                 converter.Object,
-                "foo");
+                converterParameter: "foo");
 
             target.OnNext("bar");
 

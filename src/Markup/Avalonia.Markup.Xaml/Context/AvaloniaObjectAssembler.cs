@@ -23,6 +23,7 @@ namespace Avalonia.Markup.Xaml.Context
             Settings settings = null)
         {
             var mapping = new DeferredLoaderMapping();
+            mapping.Map<Template>(x => x.Content, new TemplateLoader());
             mapping.Map<ControlTemplate>(x => x.Content, new TemplateLoader());
             mapping.Map<DataTemplate>(x => x.Content, new TemplateLoader());
             mapping.Map<FocusAdornerTemplate>(x => x.Content, new TemplateLoader());

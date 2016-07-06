@@ -19,6 +19,10 @@ namespace Avalonia.Controls.Presenters
         public ItemVirtualizerNone(ItemsPresenter owner)
             : base(owner)
         {
+            if (Items != null && owner.Panel != null)
+            {
+                AddContainers(0, Items);
+            }
         }
 
         /// <inheritdoc/>
@@ -50,12 +54,6 @@ namespace Avalonia.Controls.Presenters
         public override double ViewportValue
         {
             get { throw new NotSupportedException(); }
-        }
-
-        /// <inheritdoc/>
-        public override void Arranging(Size finalSize)
-        {
-            // We don't need to do anything here.
         }
 
         /// <inheritdoc/>
@@ -110,6 +108,24 @@ namespace Avalonia.Controls.Presenters
             }
 
             Owner.InvalidateMeasure();
+        }
+
+        /// <summary>
+        /// Scrolls the specified item into view.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        public override void ScrollIntoView(object item)
+        {
+            if (Items != null)
+            {
+                var index = Items.IndexOf(item);
+
+                if (index != -1)
+                {
+                    var container = Owner.ItemContainerGenerator.ContainerFromIndex(index);
+                    container?.BringIntoView();
+                }
+            }
         }
 
         private IList<ItemContainerInfo> AddContainers(int index, IEnumerable items)

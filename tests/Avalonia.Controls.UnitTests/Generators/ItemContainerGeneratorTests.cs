@@ -3,8 +3,10 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Linq;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Presenters;
+using Avalonia.Data;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Generators
@@ -109,6 +111,40 @@ namespace Avalonia.Controls.UnitTests.Generators
             Assert.Equal(containers[2].ContainerControl, target.ContainerFromIndex(1));
             Assert.Equal(containers[1], removed);
             Assert.Equal(new[] { 0, 1 }, target.Containers.Select(x => x.Index));
+        }
+
+        [Fact]
+        public void Style_Binding_Should_Be_Able_To_Override_Content()
+        {
+            var owner = new Decorator();
+            var target = new ItemContainerGenerator(owner);
+            var container = (ContentPresenter)target.Materialize(0, "foo", null).ContainerControl;
+
+            Assert.Equal("foo", container.Content);
+
+            container.Bind(
+                ContentPresenter.ContentProperty,
+                Observable.Never<object>().StartWith("bar"),
+                BindingPriority.Style);
+
+            Assert.Equal("bar", container.Content);
+        }
+
+        [Fact]
+        public void Style_Binding_Should_Be_Able_To_Override_Content_Typed()
+        {
+            var owner = new Decorator();
+            var target = new ItemContainerGenerator<ListBoxItem>(owner, ListBoxItem.ContentProperty, null);
+            var container = (ListBoxItem)target.Materialize(0, "foo", null).ContainerControl;
+
+            Assert.Equal("foo", container.Content);
+
+            container.Bind(
+                ContentPresenter.ContentProperty,
+                Observable.Never<object>().StartWith("bar"),
+                BindingPriority.Style);
+
+            Assert.Equal("bar", container.Content);
         }
 
         private IList<ItemContainerInfo> Materialize(

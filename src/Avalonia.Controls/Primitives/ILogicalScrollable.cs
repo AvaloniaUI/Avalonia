@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using Avalonia.VisualTree;
+using Avalonia.Input;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -56,6 +56,14 @@ namespace Avalonia.Controls.Primitives
         /// <param name="target">The target visual.</param>
         /// <param name="targetRect">The portion of the target visual to bring into view.</param>
         /// <returns>True if the scroll offset was changed; otherwise false.</returns>
-        bool BringIntoView(IVisual target, Rect targetRect);
+        bool BringIntoView(IControl target, Rect targetRect);
+
+        /// <summary>
+        /// Gets the next control in the specified direction.
+        /// </summary>
+        /// <param name="direction">The movement direction.</param>
+        /// <param name="from">The control from which movement begins.</param>
+        /// <returns>The control.</returns>
+        IControl GetControlInDirection(NavigationDirection direction, IControl from);
     }
 }

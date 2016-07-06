@@ -224,14 +224,24 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Determines whether a points in in the bounds of the rectangle.
+        /// Determines whether a point in in the bounds of the rectangle.
         /// </summary>
         /// <param name="p">The point.</param>
         /// <returns>true if the point is in the bounds of the rectangle; otherwise false.</returns>
         public bool Contains(Point p)
         {
-            return p.X >= _x && p.X < _x + _width &&
-                   p.Y >= _y && p.Y < _y + _height;
+            return p.X >= _x && p.X <= _x + _width &&
+                   p.Y >= _y && p.Y <= _y + _height;
+        }
+
+        /// <summary>
+        /// Determines whether the rectangle fully contains another rectangle.
+        /// </summary>
+        /// <param name="r">The rectangle.</param>
+        /// <returns>true if the rectangle is fully contained; otherwise false.</returns>
+        public bool Contains(Rect r)
+        {
+            return Contains(r.TopLeft) && Contains(r.BottomRight);
         }
 
         /// <summary>

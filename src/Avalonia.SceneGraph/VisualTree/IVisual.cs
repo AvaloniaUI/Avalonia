@@ -42,6 +42,11 @@ namespace Avalonia.VisualTree
         bool ClipToBounds { get; set; }
 
         /// <summary>
+        /// Gets or sets the geometry clip for this visual.
+        /// </summary>
+        Geometry Clip { get; set; }
+
+        /// <summary>
         /// Gets a value indicating whether this scene graph node is attached to a visual root.
         /// </summary>
         bool IsAttachedToVisualTree { get; }
@@ -62,14 +67,19 @@ namespace Avalonia.VisualTree
         double Opacity { get; set; }
 
         /// <summary>
+        /// Gets or sets the opacity mask of the scene graph node.
+        /// </summary>
+        IBrush OpacityMask { get; set; }
+
+        /// <summary>
         /// Gets or sets the render transform of the scene graph node.
         /// </summary>
         Transform RenderTransform { get; set; }
 
         /// <summary>
-        /// Gets or sets the transform origin of the scene graph node.
+        /// Gets or sets the render transform origin of the scene graph node.
         /// </summary>
-        RelativePoint TransformOrigin { get; set; }
+        RelativePoint RenderTransformOrigin { get; set; }
 
         /// <summary>
         /// Gets the scene graph node's child nodes.

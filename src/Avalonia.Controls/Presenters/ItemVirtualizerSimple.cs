@@ -5,8 +5,11 @@ using System;
 using System.Collections;
 using System.Collections.Specialized;
 using System.Linq;
-using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Utils;
+using Avalonia.Input;
+using Avalonia.Layout;
+using Avalonia.Utilities;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Presenters
 {
@@ -23,6 +26,8 @@ namespace Avalonia.Controls.Presenters
         public ItemVirtualizerSimple(ItemsPresenter owner)
             : base(owner)
         {
+            // Don't need to add children here as UpdateControls should be called by the panel
+            // measure/arrange.
         }
 
         /// <inheritdoc/>
@@ -48,7 +53,9 @@ namespace Avalonia.Controls.Presenters
 
                 if (delta != 0)
                 {
-                    if ((NextIndex - 1) + delta < ItemCount)
+                    var newLastIndex = (NextIndex - 1) + delta;
+
+                    if (newLastIndex < ItemCount)
                     {
                         if (panel.PixelOffset > 0)
                         {
@@ -63,10 +70,14 @@ namespace Avalonia.Controls.Presenters
                     }
                     else
                     {
-                        // We're moving to a partially obscured item at the end of the list.
+                        // We're moving to a partially obscured item at the end of the list so
+                        // offset the panel by the height of the first item.
                         var firstIndex = ItemCount - panel.Children.Count;
                         RecycleContainersForMove(firstIndex - FirstIndex);
-                        panel.PixelOffset = VirtualizingPanel.PixelOverflow;
+
+                        panel.PixelOffset = VirtualizingPanel.ScrollDirection == Orientation.Vertical ?
+                            panel.Children[0].Bounds.Height :
+                            panel.Children[0].Bounds.Width;
                     }
                 }
             }
@@ -84,10 +95,10 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <inheritdoc/>
-        public override void Arranging(Size finalSize)
+        public override void UpdateControls()
         {
             CreateAndRemoveContainers();
-            ((ILogicalScrollable)Owner).InvalidateScroll();
+            InvalidateScroll();
         }
 
         /// <inheritdoc/>
@@ -95,15 +106,18 @@ namespace Avalonia.Controls.Presenters
         {
             base.ItemsChanged(items, e);
 
+            var panel = VirtualizingPanel;
+
             if (items != null)
             {
                 switch (e.Action)
                 {
                     case NotifyCollectionChangedAction.Add:
+                        CreateAndRemoveContainers();
+
                         if (e.NewStartingIndex >= FirstIndex &&
                             e.NewStartingIndex + e.NewItems.Count <= NextIndex)
                         {
-                            CreateAndRemoveContainers();
                             RecycleContainers();
                         }
 
@@ -125,6 +139,7 @@ namespace Avalonia.Controls.Presenters
 
                     case NotifyCollectionChangedAction.Reset:
                         RecycleContainersOnRemove();
+                        CreateAndRemoveContainers();
                         break;
                 }
             }
@@ -132,9 +147,94 @@ namespace Avalonia.Controls.Presenters
             {
                 Owner.ItemContainerGenerator.Clear();
                 VirtualizingPanel.Children.Clear();
+                FirstIndex = NextIndex = 0;
             }
 
-            ((ILogicalScrollable)Owner).InvalidateScroll();
+            // If we are scrolled to view a partially visible last item but controls were added
+            // then we need to return to a non-offset scroll position.
+            if (panel.PixelOffset != 0 && FirstIndex + panel.Children.Count < ItemCount)
+            {
+                panel.PixelOffset = 0;
+                RecycleContainersForMove(1);
+            }
+
+            InvalidateScroll();
+        }
+
+        public override IControl GetControlInDirection(NavigationDirection direction, IControl from)
+        {
+            var generator = Owner.ItemContainerGenerator;
+            var panel = VirtualizingPanel;
+            var itemIndex = generator.IndexFromContainer(from);
+            var vertical = VirtualizingPanel.ScrollDirection == Orientation.Vertical;
+
+            if (itemIndex == -1)
+            {
+                return null;
+            }
+
+            var newItemIndex = -1;
+
+            switch (direction)
+            {
+                case NavigationDirection.First:
+                    newItemIndex = 0;
+                    break;
+
+                case NavigationDirection.Last:
+                    newItemIndex = ItemCount - 1;
+                    break;
+
+                case NavigationDirection.Up:
+                    if (vertical)
+                    {
+                        newItemIndex = itemIndex - 1;
+                    }
+
+                    break;
+                case NavigationDirection.Down:
+                    if (vertical)
+                    {
+                        newItemIndex = itemIndex + 1;
+                    }
+
+                    break;
+
+                case NavigationDirection.Left:
+                    if (!vertical)
+                    {
+                        newItemIndex = itemIndex - 1;
+                    }
+                    break;
+
+                case NavigationDirection.Right:
+                    if (!vertical)
+                    {
+                        newItemIndex = itemIndex + 1;
+                    }
+                    break;
+
+                case NavigationDirection.PageUp:
+                    newItemIndex = Math.Max(0, itemIndex - (int)ViewportValue);
+                    break;
+
+                case NavigationDirection.PageDown:
+                    newItemIndex = Math.Min(ItemCount - 1, itemIndex + (int)ViewportValue);
+                    break;
+            }
+
+            return ScrollIntoView(newItemIndex);
+        }
+
+        /// <inheritdoc/>
+        public override void ScrollIntoView(object item)
+        {
+            var index = Items.IndexOf(item);
+
+            if (index != -1)
+            {
+                ScrollIntoView(index);
+            }
         }
 
         /// <summary>
@@ -146,7 +246,7 @@ namespace Avalonia.Controls.Presenters
             var generator = Owner.ItemContainerGenerator;
             var panel = VirtualizingPanel;
 
-            if (!panel.IsFull && Items != null)
+            if (!panel.IsFull && Items != null && panel.IsAttachedToVisualTree)
             {
                 var memberSelector = Owner.MemberSelector;
                 var index = NextIndex;
@@ -335,6 +435,71 @@ namespace Avalonia.Controls.Presenters
             VirtualizingPanel.Children.RemoveRange(index, count);
             Owner.ItemContainerGenerator.Dematerialize(FirstIndex + index, count);
             NextIndex -= count;
+        }
+
+        /// <summary>
+        /// Scrolls the item with the specified index into view.
+        /// </summary>
+        /// <param name="index">The item index.</param>
+        /// <returns>The container that was brought into view.</returns>
+        private IControl ScrollIntoView(int index)
+        {
+            var panel = VirtualizingPanel;
+            var generator = Owner.ItemContainerGenerator;
+            var newOffset = -1.0;
+
+            if (index >= 0 && index < ItemCount)
+            {
+                if (index < FirstIndex)
+                {
+                    newOffset = index;
+                }
+                else if (index >= NextIndex)
+                {
+                    newOffset = index - Math.Ceiling(ViewportValue - 1);
+                }
+                else if (OffsetValue + ViewportValue >= ItemCount)
+                {
+                    newOffset = OffsetValue - 1;
+                }
+
+                if (newOffset != -1)
+                {
+                    OffsetValue = newOffset;
+                }
+
+                var container = generator.ContainerFromIndex(index);
+                var layoutManager = LayoutManager.Instance;
+
+                // We need to do a layout here because it's possible that the container we moved to
+                // is only partially visible due to differing item sizes. If the container is only 
+                // partially visible, scroll again. Don't do this if there's no layout manager:
+                // it means we're running a unit test.
+                if (layoutManager != null)
+                {
+                    layoutManager.ExecuteLayoutPass();
+
+                    if (!new Rect(panel.Bounds.Size).Contains(container.Bounds))
+                    {
+                        OffsetValue += 1;
+                    }
+                }
+
+                return container;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Ensures an offset value is within the value range.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns>The coerced value.</returns>
+        private double CoerceOffset(double value)
+        {
+            var max = Math.Max(ExtentValue - ViewportValue, 0);
+            return MathUtilities.Clamp(value, 0, max);
         }
     }
 }

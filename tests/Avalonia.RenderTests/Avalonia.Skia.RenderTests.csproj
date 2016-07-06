@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\..\packages\xunit.runner.visualstudio.2.1.0\build\net20\xunit.runner.visualstudio.props" Condition="Exists('..\..\packages\xunit.runner.visualstudio.2.1.0\build\net20\xunit.runner.visualstudio.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
@@ -69,20 +69,6 @@
     <Folder Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Controls\BorderTests.cs" />
-    <Compile Include="Controls\ImageTests.cs" />
-    <Compile Include="Media\ImageBrushTests.cs" />
-    <Compile Include="Media\LinearGradientBrushTests.cs" />
-    <Compile Include="Media\VisualBrushTests.cs" />
-    <Compile Include="Shapes\EllipseTests.cs" />
-    <Compile Include="Shapes\LineTests.cs" />
-    <Compile Include="Shapes\PathTests.cs" />
-    <Compile Include="Shapes\PolygonTests.cs" />
-    <Compile Include="Shapes\PolylineTests.cs" />
-    <Compile Include="Shapes\RectangleTests.cs" />
-    <Compile Include="TestBase.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\..\src\Avalonia.Animation\Avalonia.Animation.csproj">
       <Project>{d211e587-d8bc-45b9-95a4-f297c8fa5200}</Project>
       <Name>Avalonia.Animation</Name>
@@ -126,6 +112,7 @@
   <ItemGroup>
     <None Include="packages.Avalonia.Skia.RenderTests.config" />
   </ItemGroup>
+  <Import Project="Avalonia.RenderTests.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

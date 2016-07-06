@@ -1,6 +1,7 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using Avalonia.VisualTree;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,14 +25,13 @@ namespace Avalonia.Input
         {
             Contract.Requires<ArgumentNullException>(element != null);
 
-            if (element.Bounds.Contains(p) &&
-                element.IsVisible &&
+            if (element.IsVisible &&
                 element.IsHitTestVisible &&
                 element.IsEnabledCore)
             {
-                p -= element.Bounds.Position;
+                bool containsPoint = BoundsTracker.GetTransformedBounds((Visual)element).Contains(p);
 
-                if (element.VisualChildren.Any())
+                if ((containsPoint || !element.ClipToBounds) && element.VisualChildren.Any())
                 {
                     foreach (var child in ZSort(element.VisualChildren.OfType<IInputElement>()))
                     {
@@ -42,7 +42,10 @@ namespace Avalonia.Input
                     }
                 }
 
-                yield return element;
+                if (containsPoint)
+                {
+                    yield return element;
+                }
             }
         }
 
@@ -68,7 +71,6 @@ namespace Avalonia.Input
                 })
                 .OrderBy(x => x, null)
                 .Select(x => x.Element);
-                
         }
 
         private class ZOrderElement : IComparable<ZOrderElement>

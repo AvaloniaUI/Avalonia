@@ -163,6 +163,11 @@ namespace Avalonia.Controls.Presenters
             }
         }
 
+        /// <inheritdoc/>
+        public virtual void ScrollIntoView(object item)
+        {
+        }
+
         /// <summary>
         /// Creates the <see cref="ItemContainerGenerator"/> for the control.
         /// </summary>

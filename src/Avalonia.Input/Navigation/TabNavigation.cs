@@ -24,12 +24,12 @@ namespace Avalonia.Input.Navigation
         /// </returns>
         public static IInputElement GetNextInTabOrder(
             IInputElement element,
-            FocusNavigationDirection direction)
+            NavigationDirection direction)
         {
             Contract.Requires<ArgumentNullException>(element != null);
             Contract.Requires<ArgumentException>(
-                direction == FocusNavigationDirection.Next ||
-                direction == FocusNavigationDirection.Previous);
+                direction == NavigationDirection.Next ||
+                direction == NavigationDirection.Previous);
 
             var container = element.GetVisualParent<IInputElement>();
 
@@ -63,9 +63,9 @@ namespace Avalonia.Input.Navigation
         /// <param name="container">The element.</param>
         /// <param name="direction">The direction to search.</param>
         /// <returns>The element or null if not found.##</returns>
-        private static IInputElement GetFocusableDescendent(IInputElement container, FocusNavigationDirection direction)
+        private static IInputElement GetFocusableDescendent(IInputElement container, NavigationDirection direction)
         {
-            return direction == FocusNavigationDirection.Next ?
+            return direction == NavigationDirection.Next ?
                 GetFocusableDescendents(container).FirstOrDefault() :
                 GetFocusableDescendents(container).LastOrDefault();
         }
@@ -128,9 +128,9 @@ namespace Avalonia.Input.Navigation
         private static IInputElement GetNextInContainer(
             IInputElement element,
             IInputElement container,
-            FocusNavigationDirection direction)
+            NavigationDirection direction)
         {
-            if (direction == FocusNavigationDirection.Next)
+            if (direction == NavigationDirection.Next)
             {
                 var descendent = GetFocusableDescendents(element).FirstOrDefault();
 
@@ -165,7 +165,7 @@ namespace Avalonia.Input.Navigation
                     element = null;
                 }
 
-                if (element != null && direction == FocusNavigationDirection.Previous)
+                if (element != null && direction == NavigationDirection.Previous)
                 {
                     var descendent = GetFocusableDescendents(element).LastOrDefault();
 
@@ -189,14 +189,14 @@ namespace Avalonia.Input.Navigation
         /// <returns>The first element, or null if there are no more elements.</returns>
         private static IInputElement GetFirstInNextContainer(
             IInputElement container,
-            FocusNavigationDirection direction)
+            NavigationDirection direction)
         {
             var parent = container.GetVisualParent<IInputElement>();
             IInputElement next = null;
 
             if (parent != null)
             {
-                if (direction == FocusNavigationDirection.Previous && parent.CanFocus())
+                if (direction == NavigationDirection.Previous && parent.CanFocus())
                 {
                     return parent;
                 }
@@ -204,7 +204,7 @@ namespace Avalonia.Input.Navigation
                 var siblings = parent.GetVisualChildren()
                     .OfType<IInputElement>()
                     .Where(FocusExtensions.CanFocusDescendents);
-                var sibling = direction == FocusNavigationDirection.Next ? 
+                var sibling = direction == NavigationDirection.Next ? 
                     siblings.SkipWhile(x => x != container).Skip(1).FirstOrDefault() : 
                     siblings.TakeWhile(x => x != container).LastOrDefault();
 
@@ -216,7 +216,7 @@ namespace Avalonia.Input.Navigation
                     }
                     else
                     {
-                        next = direction == FocusNavigationDirection.Next ?
+                        next = direction == NavigationDirection.Next ?
                             GetFocusableDescendents(sibling).FirstOrDefault() :
                             GetFocusableDescendents(sibling).LastOrDefault();
                     }
@@ -229,7 +229,7 @@ namespace Avalonia.Input.Navigation
             }
             else
             {
-                next = direction == FocusNavigationDirection.Next ?
+                next = direction == NavigationDirection.Next ?
                     GetFocusableDescendents(container).FirstOrDefault() :
                     GetFocusableDescendents(container).LastOrDefault();
             }

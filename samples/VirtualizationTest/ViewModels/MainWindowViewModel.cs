@@ -2,8 +2,10 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Collections;
+using Avalonia.Controls;
 using ReactiveUI;
 
 namespace VirtualizationTest.ViewModels
@@ -15,6 +17,8 @@ namespace VirtualizationTest.ViewModels
         private int _newItemIndex;
         private IReactiveList<ItemViewModel> _items;
         private string _prefix = "Item";
+        private Orientation _orientation;
+        private ItemVirtualizationMode _virtualizationMode = ItemVirtualizationMode.Simple;
 
         public MainWindowViewModel()
         {
@@ -27,6 +31,12 @@ namespace VirtualizationTest.ViewModels
 
             RemoveItemCommand = ReactiveCommand.Create();
             RemoveItemCommand.Subscribe(_ => Remove());
+
+            SelectFirstCommand = ReactiveCommand.Create();
+            SelectFirstCommand.Subscribe(_ => SelectItem(0));
+
+            SelectLastCommand = ReactiveCommand.Create();
+            SelectLastCommand.Subscribe(_ => SelectItem(Items.Count - 1));
         }
 
         public string NewItemString
@@ -50,11 +60,29 @@ namespace VirtualizationTest.ViewModels
             private set { this.RaiseAndSetIfChanged(ref _items, value); }
         }
 
+        public Orientation Orientation
+        {
+            get { return _orientation; }
+            set { this.RaiseAndSetIfChanged(ref _orientation, value); }
+        }
+
+        public IEnumerable<Orientation> Orientations =>
+            Enum.GetValues(typeof(Orientation)).Cast<Orientation>();
+
+        public ItemVirtualizationMode VirtualizationMode
+        {
+            get { return _virtualizationMode; }
+            set { this.RaiseAndSetIfChanged(ref _virtualizationMode, value); }
+        }
+
+        public IEnumerable<ItemVirtualizationMode> VirtualizationModes => 
+            Enum.GetValues(typeof(ItemVirtualizationMode)).Cast<ItemVirtualizationMode>();
+
         public ReactiveCommand<object> AddItemCommand { get; private set; }
-
         public ReactiveCommand<object> RecreateCommand { get; private set; }
-
         public ReactiveCommand<object> RemoveItemCommand { get; private set; }
+        public ReactiveCommand<object> SelectFirstCommand { get; private set; }
+        public ReactiveCommand<object> SelectLastCommand { get; private set; }
 
         private void ResizeItems(int count)
         {
@@ -102,6 +130,12 @@ namespace VirtualizationTest.ViewModels
             var items = Enumerable.Range(0, _itemCount)
                 .Select(x => new ItemViewModel(x, _prefix));
             Items = new ReactiveList<ItemViewModel>(items);
+        }
+
+        private void SelectItem(int index)
+        {
+            SelectedItems.Clear();
+            SelectedItems.Add(Items[index]);
         }
     }
 }

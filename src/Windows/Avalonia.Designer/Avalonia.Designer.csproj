@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -82,7 +82,6 @@
     <Compile Include="Comm\InitMessage.cs" />
     <Compile Include="Comm\ProcessHost.cs" />
     <Compile Include="Comm\StateMessage.cs" />
-    <Compile Include="Comm\UpdateMetadata.cs" />
     <Compile Include="Comm\UpdateXamlMessage.cs" />
     <Compile Include="Comm\WindowCreatedMessage.cs" />
     <Compile Include="DemoWindow.xaml.cs">
@@ -91,7 +90,6 @@
     <Compile Include="InProcDesigner\InProcDesignerView.xaml.cs">
       <DependentUpon>InProcDesignerView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Metadata\AvaloniaDesignerMetadata.cs" />
     <Compile Include="AvaloniaDesigner.xaml.cs">
       <DependentUpon>AvaloniaDesigner.xaml</DependentUpon>
     </Compile>
@@ -125,6 +123,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="README.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Metadata\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

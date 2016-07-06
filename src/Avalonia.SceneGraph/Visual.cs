@@ -40,6 +40,12 @@ namespace Avalonia
             AvaloniaProperty.Register<Visual, bool>(nameof(ClipToBounds));
 
         /// <summary>
+        /// Defines the <see cref="Clip"/> property.
+        /// </summary>
+        public static readonly StyledProperty<Geometry> ClipProperty =
+            AvaloniaProperty.Register<Visual, Geometry>(nameof(Clip));
+
+        /// <summary>
         /// Defines the <see cref="IsVisibleProperty"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> IsVisibleProperty =
@@ -52,16 +58,22 @@ namespace Avalonia
             AvaloniaProperty.Register<Visual, double>(nameof(Opacity), 1);
 
         /// <summary>
+        /// Defines the <see cref="OpacityMask"/> property.
+        /// </summary>
+        public static readonly StyledProperty<IBrush> OpacityMaskProperty =
+            AvaloniaProperty.Register<Visual, IBrush>(nameof(OpacityMask));
+
+        /// <summary>
         /// Defines the <see cref="RenderTransform"/> property.
         /// </summary>
         public static readonly StyledProperty<Transform> RenderTransformProperty =
             AvaloniaProperty.Register<Visual, Transform>(nameof(RenderTransform));
 
         /// <summary>
-        /// Defines the <see cref="TransformOrigin"/> property.
+        /// Defines the <see cref="RenderTransformOrigin"/> property.
         /// </summary>
-        public static readonly StyledProperty<RelativePoint> TransformOriginProperty =
-            AvaloniaProperty.Register<Visual, RelativePoint>(nameof(TransformOrigin), defaultValue: RelativePoint.Center);
+        public static readonly StyledProperty<RelativePoint> RenderTransformOriginProperty =
+            AvaloniaProperty.Register<Visual, RelativePoint>(nameof(RenderTransformOrigin), defaultValue: RelativePoint.Center);
 
         /// <summary>
         /// Defines the <see cref="IVisual.VisualParent"/> property.
@@ -128,6 +140,15 @@ namespace Avalonia
         }
 
         /// <summary>
+        /// Gets or sets the geometry clip for this visual.
+        /// </summary>
+        public Geometry Clip
+        {
+            get { return GetValue(ClipProperty); }
+            set { SetValue(ClipProperty, value); }
+        }
+
+        /// <summary>
         /// Gets a value indicating whether this scene graph node and all its parents are visible.
         /// </summary>
         public bool IsEffectivelyVisible
@@ -153,6 +174,16 @@ namespace Avalonia
             set { SetValue(OpacityProperty, value); }
         }
 
+
+        /// <summary>
+        /// Gets the opacity mask of the scene graph node.
+        /// </summary>
+        public IBrush OpacityMask
+        {
+            get { return GetValue(OpacityMaskProperty); }
+            set { SetValue(OpacityMaskProperty, value); }
+        }
+
         /// <summary>
         /// Gets the render transform of the scene graph node.
         /// </summary>
@@ -165,10 +196,10 @@ namespace Avalonia
         /// <summary>
         /// Gets the transform origin of the scene graph node.
         /// </summary>
-        public RelativePoint TransformOrigin
+        public RelativePoint RenderTransformOrigin
         {
-            get { return GetValue(TransformOriginProperty); }
-            set { SetValue(TransformOriginProperty, value); }
+            get { return GetValue(RenderTransformOriginProperty); }
+            set { SetValue(RenderTransformOriginProperty, value); }
         }
 
         /// <summary>
@@ -354,6 +385,16 @@ namespace Avalonia
         }
 
         /// <summary>
+        /// Called when the control's visual parent changes.
+        /// </summary>
+        /// <param name="oldParent">The old visual parent.</param>
+        /// <param name="newParent">The new visual parent.</param>
+        protected virtual void OnVisualParentChanged(IVisual oldParent, IVisual newParent)
+        {
+            RaisePropertyChanged(VisualParentProperty, oldParent, newParent, BindingPriority.LocalValue);
+        }
+
+        /// <summary>
         /// Called when a property changes that should invalidate the visual.
         /// </summary>
         /// <param name="e">The event args.</param>
@@ -468,7 +509,7 @@ namespace Avalonia
                 OnAttachedToVisualTreeCore(e);
             }
 
-            RaisePropertyChanged(VisualParentProperty, old, value, BindingPriority.LocalValue);
+            OnVisualParentChanged(old, value);
         }
 
         /// <summary>

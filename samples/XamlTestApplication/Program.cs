@@ -21,8 +21,7 @@ namespace XamlTestApplication
             InitializeLogging();
 
             AppBuilder.Configure<XamlTestApp>()
-                .UseWin32()
-                .UseDirect2D1()
+                .UsePlatformDetect()
                 .Start<Views.MainWindow>();
         }
 

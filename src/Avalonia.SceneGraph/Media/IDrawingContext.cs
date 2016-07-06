@@ -69,7 +69,6 @@ namespace Avalonia.Media
         /// Pushes a clip rectange.
         /// </summary>
         /// <param name="clip">The clip rectangle.</param>
-        /// <returns>A disposable used to undo the clip rectangle.</returns>
         void PushClip(Rect clip);
 
         void PopClip();
@@ -78,9 +77,20 @@ namespace Avalonia.Media
         /// Pushes an opacity value.
         /// </summary>
         /// <param name="opacity">The opacity.</param>
-        /// <returns>A disposable used to undo the opacity.</returns>
         void PushOpacity(double opacity);
 
         void PopOpacity();
+
+        void PushOpacityMask(IBrush mask, Rect bounds);
+
+        void PopOpacityMask();
+
+        /// <summary>
+        /// Pushes a clip geometry.
+        /// </summary>
+        /// <param name="clip">The clip geometry.</param>
+        void PushGeometryClip(Geometry clip);
+
+        void PopGeometryClip();
     }
 }

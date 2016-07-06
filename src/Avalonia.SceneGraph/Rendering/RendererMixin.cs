@@ -104,7 +104,7 @@ namespace Avalonia.Rendering
 
                 if (visual.RenderTransform != null)
                 {
-                    var origin = visual.TransformOrigin.ToPixels(new Size(visual.Bounds.Width, visual.Bounds.Height));
+                    var origin = visual.RenderTransformOrigin.ToPixels(new Size(visual.Bounds.Width, visual.Bounds.Height));
                     var offset = Matrix.CreateTranslation(origin);
                     renderTransform = (-offset) * visual.RenderTransform.Value * (offset);
                 }
@@ -119,9 +119,17 @@ namespace Avalonia.Rendering
                 using (context.PushPostTransform(m))
                 using (context.PushOpacity(opacity))
                 using (clipToBounds ? context.PushClip(bounds) : default(DrawingContext.PushedState))
+                using (visual.Clip != null ? context.PushGeometryClip(visual.Clip) : default(DrawingContext.PushedState))
+                using (visual.OpacityMask != null ? context.PushOpacityMask(visual.OpacityMask, bounds) : default(DrawingContext.PushedState))
                 using (context.PushTransformContainer())
                 {
                     visual.Render(context);
+                    var transformed =
+                        new TransformedBounds(bounds, new Rect(), context.CurrentContainerTransform);
+                    if (visual is Visual)
+                    {
+                        BoundsTracker.SetTransformedBounds((Visual)visual, transformed);
+                    }
 
                     var lst = GetSortedVisualList(visual.VisualChildren);
 
@@ -164,7 +172,7 @@ namespace Avalonia.Rendering
             }
             else
             {
-                var origin = visual.TransformOrigin.ToPixels(new Size(visual.Bounds.Width, visual.Bounds.Height));
+                var origin = visual.RenderTransformOrigin.ToPixels(new Size(visual.Bounds.Width, visual.Bounds.Height));
                 var offset = Matrix.CreateTranslation(visual.Bounds.Position + origin);
                 var m = (-offset) * visual.RenderTransform.Value * (offset);
                 return visual.Bounds.TransformToAABB(m);

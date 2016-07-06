@@ -139,7 +139,7 @@ namespace Avalonia.Controls
             if (null != TransformRoot)
             {
                 TransformRoot.RenderTransform = _matrixTransform;
-                TransformRoot.TransformOrigin = new RelativePoint(0, 0, RelativeUnit.Absolute);
+                TransformRoot.RenderTransformOrigin = new RelativePoint(0, 0, RelativeUnit.Absolute);
             }
 
             ApplyLayoutTransform();

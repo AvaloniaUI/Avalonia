@@ -27,9 +27,6 @@ namespace XamlTestApplication.Views
             AvaloniaXamlLoader.Load(this);
             _exitMenu = this.FindControl<MenuItem>("exitMenu");
             _exitMenu.Click += (s, e) => Application.Current.Exit();
-
-            var virtualList = this.FindControl<ListBox>("virtualList");
-            virtualList.Items = Enumerable.Range(0, 200).Select(x => $"Item {x}").ToList();
         }
     }
 }

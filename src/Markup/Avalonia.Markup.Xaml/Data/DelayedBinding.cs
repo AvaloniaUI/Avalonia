@@ -14,11 +14,11 @@ namespace Avalonia.Markup.Xaml.Data
     /// </summary>
     /// <remarks>
     /// The XAML engine applies its bindings in a delayed manner where bindings are only applied
-    /// when a control has finished initializing. This was done because applying bindings as soon
+    /// when a control has finished initializing. This is done because applying bindings as soon
     /// as controls are created means that long-form bindings (i.e. bindings that don't use the
-    /// `{Binding}` markup extension) don't work as the binding is applied to the property before
-    /// the binding properties are set, and looking at WPF it uses a similar mechanism for bindings
-    /// that come from XAML.
+    /// `{Binding}` markup extension but instead use `&lt;Binding&gt;`) don't work, as the binding
+    /// is applied to the property before the properties on the `Binding` object are set. Looking 
+    /// at WPF it uses a similar mechanism for bindings that come from XAML.
     /// </remarks>
     public static class DelayedBinding
     {

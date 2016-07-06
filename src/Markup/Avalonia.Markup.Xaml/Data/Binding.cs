@@ -20,6 +20,7 @@ namespace Avalonia.Markup.Xaml.Data
         /// </summary>
         public Binding()
         {
+            FallbackValue = AvaloniaProperty.UnsetValue;
         }
 
         /// <summary>
@@ -27,6 +28,7 @@ namespace Avalonia.Markup.Xaml.Data
         /// </summary>
         /// <param name="path">The binding path.</param>
         public Binding(string path)
+            : this()
         {
             Path = path;
         }
@@ -122,12 +124,23 @@ namespace Avalonia.Markup.Xaml.Data
                 throw new NotSupportedException();
             }
 
+            var fallback = FallbackValue;
+
+            // If we're binding to DataContext and our fallback is UnsetValue then override
+            // the fallback value to null, as broken bindings to DataContext must reset the
+            // DataContext in order to not propagate incorrect DataContexts to child controls.
+            // See Avalonia.Markup.Xaml.UnitTests.Data.DataContext_Binding_Should_Produce_Correct_Results.
+            if (targetProperty == Control.DataContextProperty && fallback == AvaloniaProperty.UnsetValue)
+            {
+                fallback = null;
+            }
+
             var subject = new ExpressionSubject(
                 observer,
                 targetProperty?.PropertyType ?? typeof(object),
+                fallback,
                 Converter ?? DefaultValueConverter.Instance,
                 ConverterParameter,
-                FallbackValue,
                 Priority);
 
             return new InstancedBinding(subject, Mode, Priority);

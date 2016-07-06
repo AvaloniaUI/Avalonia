@@ -38,7 +38,6 @@ namespace Avalonia.Android
                 .Bind<IWindowingPlatform>().ToConstant(this);
 
             SkiaPlatform.Initialize();
-            Application.RegisterPlatformCallback(() => { });
 
             _scalingFactor = global::Android.App.Application.Context.Resources.DisplayMetrics.ScaledDensity;
 

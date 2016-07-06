@@ -136,7 +136,14 @@ namespace Avalonia.Markup.Xaml.Context
 
             if (control != null)
             {
-                DelayedBinding.Add(control, property, binding);
+                if (property != Control.DataContextProperty)
+                {
+                    DelayedBinding.Add(control, property, binding);
+                }
+                else
+                {
+                    control.Bind(property, binding);
+                }
             }
             else
             {

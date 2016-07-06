@@ -36,7 +36,7 @@ namespace Avalonia.DesignerSupport
         public static void Init(Dictionary<string, object> shared)
         {
             Design.IsDesignMode = true;
-            Api = new DesignerApi(shared) {UpdateXaml = UpdateXaml, SetScalingFactor = SetScalingFactor};
+            Api = new DesignerApi(shared) {UpdateXaml = UpdateXaml, UpdateXaml2 = UpdateXaml2, SetScalingFactor = SetScalingFactor};
             var plat = (IPclPlatformWrapper) Activator.CreateInstance(Assembly.Load(new AssemblyName("Avalonia.Win32"))
                 .DefinedTypes.First(typeof (IPclPlatformWrapper).GetTypeInfo().IsAssignableFrom).AsType());
             
@@ -58,10 +58,9 @@ namespace Avalonia.DesignerSupport
                     //Ignore, Assembly.DefinedTypes threw an exception, we can't do anything about that
                 }
             }
-
             AppBuilder.Configure(app == null ? new DesignerApp() : (Application) Activator.CreateInstance(app.AsType()))
-                .WithWindowingSubsystem(Application.InitializeWin32Subsystem)
-                .WithRenderingSubsystem(() => { })
+                .UseWindowingSubsystem("Avalonia.Win32")
+                .UseRenderingSubsystem("Avalonia.Direct2D1")
                 .SetupWithoutStarting();
         }
 
@@ -74,22 +73,65 @@ namespace Avalonia.DesignerSupport
 
         static Window s_currentWindow;
 
-        private static void UpdateXaml(string xaml)
+        private static void UpdateXaml(string xaml) => UpdateXaml2(new DesignerApiXamlFileInfo
         {
+            Xaml = xaml
+        }.Dictionary);
+
+        private static void UpdateXaml2(Dictionary<string, object> dic)
+        {
+            var xamlInfo = new DesignerApiXamlFileInfo(dic);
             Window window;
-            Control original;
+            Control control;
 
             using (PlatformManager.DesignerMode())
             {
                 var loader = new AvaloniaXamlLoader();
-                var stream = new MemoryStream(Encoding.UTF8.GetBytes(xaml));
+                var stream = new MemoryStream(Encoding.UTF8.GetBytes(xamlInfo.Xaml));
 
-                original = (Control)loader.Load(stream);
-                window = original as Window;
 
+                
+                Uri baseUri = null;
+                if (xamlInfo.AssemblyPath != null)
+                {
+                    //Fabricate fake Uri
+                    baseUri =
+                        new Uri("resm:Fake.xaml?assembly=" + Path.GetFileNameWithoutExtension(xamlInfo.AssemblyPath));
+                }
+
+                var loaded = loader.Load(stream, null, baseUri);
+                var styles = loaded as Styles;
+                if (styles != null)
+                {
+                    var substitute = Design.GetPreviewWith(styles) ??
+                                     styles.Select(Design.GetPreviewWith).FirstOrDefault(s => s != null);
+                    if (substitute != null)
+                    {
+                        substitute.Styles.AddRange(styles);
+                        control = substitute;
+                    }
+                    else
+                        control = new StackPanel
+                        {
+                            Children =
+                            {
+                                new TextBlock {Text = "Styles can't be previewed without Design.PreviewWith. Add"},
+                                new TextBlock {Text = "<Design.PreviewWith>"},
+                                new TextBlock {Text = "    <Border Padding=20><!-- YOUR CONTROL FOR PREVIEW HERE--></Border>"},
+                                new TextBlock {Text = "<Design.PreviewWith>"},
+                                new TextBlock {Text = "before setters in your first Style"}
+                            }
+                        };
+                }
+                if (loaded is Application)
+                    control = new TextBlock {Text = "Application can't be previewed in design view"};
+                else
+                    control = (Control) loaded;
+
+                window = control as Window;
                 if (window == null)
                 {
-                    window = new Window() {Content = original};
+                    window = new Window() {Content = (Control)control};
                 }
 
                 if (!window.IsSet(Window.SizeToContentProperty))
@@ -99,7 +141,7 @@ namespace Avalonia.DesignerSupport
             s_currentWindow?.Close();
             s_currentWindow = window;
             window.Show();
-            Design.ApplyDesignerProperties(window, original);
+            Design.ApplyDesignerProperties(window, control);
             Api.OnWindowCreated?.Invoke(window.PlatformImpl.Handle.Handle);
             Api.OnResize?.Invoke();
         }

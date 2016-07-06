@@ -55,7 +55,8 @@ namespace Avalonia.Media.Imaging
         /// </summary>
         public IBitmapImpl PlatformImpl
         {
-            get; }
+            get;
+        }
 
         /// <summary>
         /// Saves the bitmap to a file.

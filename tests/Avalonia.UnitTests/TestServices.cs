@@ -44,6 +44,9 @@ namespace Avalonia.UnitTests
             keyboardDevice: () => new KeyboardDevice(),
             inputManager: new InputManager());
 
+        public static readonly TestServices RealLayoutManager = new TestServices(
+            layoutManager: new LayoutManager());
+
         public static readonly TestServices RealStyler = new TestServices(
             styler: new Styler());
 

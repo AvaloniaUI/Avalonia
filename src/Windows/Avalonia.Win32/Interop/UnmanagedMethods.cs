@@ -75,6 +75,15 @@ namespace Avalonia.Win32.Interop
             SWP_RESIZE = SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOZORDER
         }
 
+        public enum SizeCommand
+        {
+            Restored,
+            Minimized,
+            Maximized,
+            MaxShow,
+            MaxHide,
+        }
+
         public enum ShowWindowCommand
         {
             Hide = 0,

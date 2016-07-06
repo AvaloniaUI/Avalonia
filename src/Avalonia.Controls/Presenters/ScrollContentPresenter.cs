@@ -59,6 +59,7 @@ namespace Avalonia.Controls.Presenters
         static ScrollContentPresenter()
         {
             ClipToBoundsProperty.OverrideDefaultValue(typeof(ScrollContentPresenter), true);
+            ChildProperty.Changed.AddClassHandler<ScrollContentPresenter>(x => x.ChildChanged);
             AffectsArrange(OffsetProperty);
         }
 
@@ -118,10 +119,11 @@ namespace Avalonia.Controls.Presenters
             }
 
             var scrollable = Child as ILogicalScrollable;
+            var control = target as IControl;
 
-            if (scrollable?.IsLogicalScrollEnabled == true)
+            if (scrollable?.IsLogicalScrollEnabled == true && control != null)
             {
-                return scrollable.BringIntoView(target, targetRect);
+                return scrollable.BringIntoView(control, targetRect);
             }
 
             var transform = target.TransformToVisual(Child);
@@ -229,32 +231,48 @@ namespace Avalonia.Controls.Presenters
         /// <inheritdoc/>
         protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
         {
-            if (Extent.Height > Viewport.Height)
+            if (Extent.Height > Viewport.Height || Extent.Width > Viewport.Width)
             {
                 var scrollable = Child as ILogicalScrollable;
+                bool isLogical = scrollable?.IsLogicalScrollEnabled == true;
 
-                if (scrollable?.IsLogicalScrollEnabled == true)
-                {                    
-                    var y = Offset.Y + (-e.Delta.Y * scrollable.ScrollSize.Height);
-                    y = Math.Max(y, 0);
-                    y = Math.Min(y, Extent.Height - Viewport.Height);
-                    Offset = new Vector(Offset.X, y);
-                    e.Handled = true;
-                }
-                else
+                double x = Offset.X;
+                double y = Offset.Y;
+
+                if (Extent.Height > Viewport.Height)
                 {
-                    var y = Offset.Y + (-e.Delta.Y * 50);
+                    double height = isLogical ? scrollable.ScrollSize.Height : 50;
+                    y += -e.Delta.Y * height;
                     y = Math.Max(y, 0);
                     y = Math.Min(y, Extent.Height - Viewport.Height);
-                    Offset = new Vector(Offset.X, y);
-                    e.Handled = true;
                 }
+
+                if (Extent.Width > Viewport.Width)
+                {
+                    double width = isLogical ? scrollable.ScrollSize.Width : 50;
+                    x += -e.Delta.X * width;
+                    x = Math.Max(x, 0);
+                    x = Math.Min(x, Extent.Width - Viewport.Width);
+                }
+
+                Offset = new Vector(x, y);
+                e.Handled = true;
             }
         }
 
         private void BringIntoViewRequested(object sender, RequestBringIntoViewEventArgs e)
         {
             e.Handled = BringDescendentIntoView(e.TargetObject, e.TargetRect);
+        }
+
+        private void ChildChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            UpdateScrollableSubscription((IControl)e.NewValue);
+
+            if (e.OldValue != null)
+            {
+                Offset = default(Vector);
+            }
         }
 
         private void UpdateScrollableSubscription(IControl child)
@@ -268,7 +286,7 @@ namespace Avalonia.Controls.Presenters
             {
                 scrollable.InvalidateScroll = () => UpdateFromScrollable(scrollable);
 
-                if (scrollable?.IsLogicalScrollEnabled == true)
+                if (scrollable.IsLogicalScrollEnabled == true)
                 {
                     _logicalScrollSubscription = new CompositeDisposable(
                         this.GetObservable(OffsetProperty).Skip(1).Subscribe(x => scrollable.Offset = x),
@@ -285,15 +303,10 @@ namespace Avalonia.Controls.Presenters
             if (logicalScroll != scrollable.IsLogicalScrollEnabled)
             {
                 UpdateScrollableSubscription(Child);
-
-                if (!scrollable.IsLogicalScrollEnabled)
-                {
-                    Offset = default(Vector);
-                    InvalidateMeasure();
-                }
+                Offset = default(Vector);
+                InvalidateMeasure();
             }
-
-            if (scrollable.IsLogicalScrollEnabled)
+            else if (scrollable.IsLogicalScrollEnabled)
             {
                 Viewport = scrollable.Viewport;
                 Extent = scrollable.Extent;

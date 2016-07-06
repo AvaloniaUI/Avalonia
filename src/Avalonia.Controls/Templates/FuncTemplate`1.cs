@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using Avalonia.Styling;
 
 namespace Avalonia.Controls.Templates
 {
@@ -34,5 +35,7 @@ namespace Avalonia.Controls.Templates
         {
             return _func();
         }
+
+        object ITemplate.Build() => Build();
     }
 }

@@ -500,6 +500,15 @@ namespace Avalonia.Win32
                         new Vector(0, ((int)wParam >> 16) / wheelDelta), GetMouseModifiers(wParam));
                     break;
 
+                case UnmanagedMethods.WindowsMessage.WM_MOUSEHWHEEL:
+                    e = new RawMouseWheelEventArgs(
+                        WindowsMouseDevice.Instance,
+                        timestamp,
+                        _owner,
+                        ScreenToClient(DipFromLParam(lParam)),
+                        new Vector(-((int)wParam >> 16) / wheelDelta,0), GetMouseModifiers(wParam));
+                    break;
+
                 case UnmanagedMethods.WindowsMessage.WM_MOUSELEAVE:
                     _trackingMouse = false;
                     e = new RawMouseEventArgs(
@@ -543,7 +552,9 @@ namespace Avalonia.Win32
                     return IntPtr.Zero;
 
                 case UnmanagedMethods.WindowsMessage.WM_SIZE:
-                    if (Resized != null)
+                    if (Resized != null &&
+                        (wParam == (IntPtr)UnmanagedMethods.SizeCommand.Restored ||
+                         wParam == (IntPtr)UnmanagedMethods.SizeCommand.Maximized))
                     {
                         var clientSize = new Size((int)lParam & 0xffff, (int)lParam >> 16);
                         Resized(clientSize / Scaling);

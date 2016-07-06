@@ -20,6 +20,8 @@ namespace Avalonia.Controls
         /// <param name="control">The control.</param>
         public static void BringIntoView(this IControl control)
         {
+            Contract.Requires<ArgumentNullException>(control != null);
+
             control.BringIntoView(new Rect(control.Bounds.Size));
         }
 
@@ -30,6 +32,8 @@ namespace Avalonia.Controls
         /// <param name="rect">The area of the control to being into view.</param>
         public static void BringIntoView(this IControl control, Rect rect)
         {
+            Contract.Requires<ArgumentNullException>(control != null);
+
             var ev = new RequestBringIntoViewEventArgs
             {
                 RoutedEvent = Control.RequestBringIntoViewEvent,
@@ -49,6 +53,9 @@ namespace Avalonia.Controls
         /// <returns>The control or null if not found.</returns>
         public static T FindControl<T>(this IControl control, string name) where T : class, IControl
         {
+            Contract.Requires<ArgumentNullException>(control != null);
+            Contract.Requires<ArgumentNullException>(name != null);
+
             var nameScope = control.FindNameScope();
 
             if (nameScope == null)
@@ -66,6 +73,8 @@ namespace Avalonia.Controls
         /// <returns>The control's name scope, or null if not found.</returns>
         public static INameScope FindNameScope(this IControl control)
         {
+            Contract.Requires<ArgumentNullException>(control != null);
+
             return control.GetSelfAndLogicalAncestors()
                 .OfType<Control>()
                 .Select(x => (x as INameScope) ?? NameScope.GetNameScope(x))
@@ -80,6 +89,8 @@ namespace Avalonia.Controls
         /// <param name="value">True to add the pseudoclass or false to remove.</param>
         public static void Set(this IPseudoClasses classes, string name, bool value)
         {
+            Contract.Requires<ArgumentNullException>(classes != null);
+
             if (value)
             {
                 classes.Add(name);
@@ -99,6 +110,8 @@ namespace Avalonia.Controls
         /// <returns>A disposable used to cancel the subscription.</returns>
         public static IDisposable Set(this IPseudoClasses classes, string name, IObservable<bool> trigger)
         {
+            Contract.Requires<ArgumentNullException>(classes != null);
+
             return trigger.Subscribe(x => classes.Set(name, x));
         }
     }

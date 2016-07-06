@@ -3,17 +3,11 @@
 
 using Avalonia.Controls;
 using Avalonia.Metadata;
+using Avalonia.Styling;
 
 namespace Avalonia.Markup.Xaml.Templates
 {
-    public class FocusAdornerTemplate : ITemplate<IControl>
+    public class FocusAdornerTemplate : Template
     {
-        [Content]
-        public TemplateContent Content { get; set; }
-
-        public IControl Build()
-        {
-            return Content.Load();
-        }
     }
 }

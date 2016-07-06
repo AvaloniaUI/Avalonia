@@ -26,16 +26,12 @@ namespace Avalonia
     /// - A global set of <see cref="Styles"/>.
     /// - A <see cref="FocusManager"/>.
     /// - An <see cref="InputManager"/>.
-    /// - Loads and initializes rendering and windowing subsystems with
-    /// <see cref="InitializeSubsystems(int)"/> and <see cref="InitializeSubsystem(string)"/>.
     /// - Registers services needed by the rest of Avalonia in the <see cref="RegisterServices"/>
     /// method.
     /// - Tracks the lifetime of the application.
     /// </remarks>
     public class Application : IGlobalDataTemplates, IGlobalStyles, IStyleRoot, IApplicationLifecycle
     {
-        static Action _platformInitializationCallback;
-
         /// <summary>
         /// The application-global data templates.
         /// </summary>
@@ -121,11 +117,6 @@ namespace Avalonia
         /// </summary>
         IStyleHost IStyleHost.StylingParent => null;
 
-        public static void RegisterPlatformCallback(Action cb)
-        {
-            _platformInitializationCallback = cb;
-        }
-
         /// <summary>
         /// Initializes the application by loading XAML etc.
         /// </summary>
@@ -188,48 +179,6 @@ namespace Avalonia
                 .Bind<ILayoutManager>().ToSingleton<LayoutManager>()
                 .Bind<IRenderQueueManager>().ToTransient<RenderQueueManager>()
                 .Bind<IApplicationLifecycle>().ToConstant(this);
-        }
-
-        /// <summary>
-        /// Initializes the rendering and windowing subsystems according to platform.
-        /// </summary>
-        /// <param name="platformID">The value of Environment.OSVersion.Platform.</param>
-        protected void InitializeSubsystems(int platformID)
-        {
-            if (_platformInitializationCallback != null)
-            {
-                _platformInitializationCallback();
-            }
-            else if (platformID == 4 || platformID == 6)
-            {
-                InitializeSubsystem("Avalonia.Cairo");
-                InitializeSubsystem("Avalonia.Gtk");
-            }
-            else
-            {
-                InitializeSubsystem("Avalonia.Direct2D1");
-                InitializeSubsystem("Avalonia.Win32");
-            }
-        }
-
-        /// <summary>
-        /// Initializes the rendering or windowing subsystem defined by the specified assemblt.
-        /// </summary>
-        /// <param name="assemblyName">The name of the assembly.</param>
-        protected static void InitializeSubsystem(string assemblyName)
-        {
-            var assembly = Assembly.Load(new AssemblyName(assemblyName));
-            var platformClassName = assemblyName.Replace("Avalonia.", string.Empty) + "Platform";
-            var platformClassFullName = assemblyName + "." + platformClassName;
-            var platformClass = assembly.GetType(platformClassFullName);
-            var init = platformClass.GetRuntimeMethod("Initialize", new Type[0]);
-            init.Invoke(null, null);
-        }
-
-        internal static void InitializeWin32Subsystem()
-        {
-            InitializeSubsystem("Avalonia.Direct2D1");
-            InitializeSubsystem("Avalonia.Win32");
         }
     }
 }
