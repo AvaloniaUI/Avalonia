@@ -81,6 +81,7 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
+    <Compile Include="Media\PathMarkupParserTests.cs" />
     <Compile Include="RelativeRectComparer.cs" />
     <Compile Include="RelativeRectTests.cs" />
     <Compile Include="ThicknessTests.cs" />
