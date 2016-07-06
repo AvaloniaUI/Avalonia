@@ -92,6 +92,7 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
+    <Compile Include="Context\AvaloniaNamespaceRegistryTest.cs" />
     <Compile Include="Data\BindingTests_Source.cs" />
     <Compile Include="Data\BindingTests_ElementName.cs" />
     <Compile Include="Data\BindingTests_Validation.cs" />
