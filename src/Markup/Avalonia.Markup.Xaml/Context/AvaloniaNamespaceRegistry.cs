@@ -68,10 +68,14 @@ namespace Avalonia.Markup.Xaml.Context
             }
             else
             {
-                result = _clrNamespaces.FirstOrDefault(x => x.Name == name);
+                var nsAndAssembly = ParseClrNameSpace(name);
+
+                result = _clrNamespaces.FirstOrDefault(x =>
+                    x.Name == nsAndAssembly.Item1 &&
+                    x.Assembly.GetName().Name == nsAndAssembly.Item2);
 
                 if (result == null)
-                {
+                { 
                     var clr = CreateClrNamespace(name);
                     _clrNamespaces.Add(clr);
                     result = clr;
@@ -105,29 +109,34 @@ namespace Avalonia.Markup.Xaml.Context
 
         private static ClrNamespace CreateClrNamespace(string formattedClrString)
         {
-            var startOfNamespace = formattedClrString.IndexOf(":", StringComparison.Ordinal) + 1;
-            var endOfNamespace = formattedClrString.IndexOf(";", startOfNamespace, StringComparison.Ordinal);
+            var nsAndAssembly = ParseClrNameSpace(formattedClrString);
+            var assembly = GetAssembly(nsAndAssembly.Item2);
+
+            return new ClrNamespace(assembly, nsAndAssembly.Item1);
+        }
+
+        private static Tuple<string, string> ParseClrNameSpace(string clrNamespace)
+        {
+            var startOfNamespace = clrNamespace.IndexOf(":", StringComparison.Ordinal) + 1;
+            var endOfNamespace = clrNamespace.IndexOf(";", startOfNamespace, StringComparison.Ordinal);
 
             if (endOfNamespace < 0)
             {
-                endOfNamespace = formattedClrString.Length - startOfNamespace;
+                endOfNamespace = clrNamespace.Length - startOfNamespace;
             }
 
-            var ns = formattedClrString.Substring(startOfNamespace, endOfNamespace - startOfNamespace);
+            var ns = clrNamespace.Substring(startOfNamespace, endOfNamespace - startOfNamespace);
 
             var remainingPartStart = startOfNamespace + ns.Length + 1;
-            var remainingPartLenght = formattedClrString.Length - remainingPartStart;
-            var assemblyPart = formattedClrString.Substring(remainingPartStart, remainingPartLenght);
+            var remainingPartLenght = clrNamespace.Length - remainingPartStart;
+            var assemblyPart = clrNamespace.Substring(remainingPartStart, remainingPartLenght);
 
-            var assembly = GetAssembly(assemblyPart);
-
-            return new ClrNamespace(assembly, ns);
+            return Tuple.Create(ns, assemblyPart.Dicotomize('=').Item2);
         }
 
-        private static Assembly GetAssembly(string assemblyPart)
+        private static Assembly GetAssembly(string assemblyName)
         {
-            var dicotomize = assemblyPart.Dicotomize('=');
-            return Assembly.Load(new AssemblyName(dicotomize.Item2));
+            return Assembly.Load(new AssemblyName(assemblyName));
         }
 
         private void ScanAssemblies(IEnumerable<Assembly> assemblies)

@@ -1,18 +1,7 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using Avalonia.Collections;
-using Avalonia.Controls;
 using Avalonia.Markup.Xaml.Context;
-using Avalonia.Markup.Xaml.Converters;
-using Avalonia.Styling;
-using Moq;
-using OmniXaml;
-using OmniXaml.ObjectAssembler.Commands;
-using OmniXaml.TypeConversion;
-using OmniXaml.Typing;
-using System;
-using System.Reactive;
 using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Context
