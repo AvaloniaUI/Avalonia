@@ -271,8 +271,16 @@ namespace Avalonia.Media
                 {
                     b.Append(c);
                     reader.Read();
-                    readSign = c == '+' || c == '-';
-                    readPoint = c == '.';
+
+                    if (!readSign)
+                    {
+                        readSign = c == '+' || c == '-';
+                    }
+
+                    if (!readPoint)
+                    {
+                        readPoint = c == '.';
+                    }
 
                     if (c == 'E')
                     {
