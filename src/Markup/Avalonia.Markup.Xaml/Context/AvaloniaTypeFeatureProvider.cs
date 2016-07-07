@@ -5,11 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using OmniXaml;
-using OmniXaml.Builder;
-using OmniXaml.TypeConversion;
-using OmniXaml.TypeConversion.BuiltInConverters;
-using OmniXaml.Typing;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
@@ -19,13 +14,18 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Metadata;
 using Avalonia.Styling;
+using OmniXaml;
+using OmniXaml.Builder;
+using OmniXaml.TypeConversion;
+using OmniXaml.TypeConversion.BuiltInConverters;
+using OmniXaml.Typing;
 using OmniMetadata = OmniXaml.Typing.Metadata;
 
 namespace Avalonia.Markup.Xaml.Context
 {
     public class AvaloniaTypeFeatureProvider : ITypeFeatureProvider
     {
-        private Dictionary<Type, OmniMetadata> _metadata = 
+        private Dictionary<Type, OmniMetadata> _metadata =
             new Dictionary<Type, OmniMetadata>();
 
         private Dictionary<Type, TypeConverterRegistration> _typeConverters =
@@ -100,7 +100,7 @@ namespace Avalonia.Markup.Xaml.Context
 
                     result = property.Name;
                 }
-                
+
                 if (result != null)
                 {
                     return result;
@@ -154,6 +154,7 @@ namespace Avalonia.Markup.Xaml.Context
             RegisterTypeConverter(typeof(Color), new ColorTypeConverter());
             RegisterTypeConverter(typeof(Classes), new ClassesTypeConverter());
             RegisterTypeConverter(typeof(ColumnDefinitions), new ColumnDefinitionsTypeConverter());
+            RegisterTypeConverter(typeof(DateTime), new DateTimeTypeConverter());
             RegisterTypeConverter(typeof(Geometry), new GeometryTypeConverter());
             RegisterTypeConverter(typeof(GridLength), new GridLengthTypeConverter());
             RegisterTypeConverter(typeof(KeyGesture), new KeyGestureConverter());
