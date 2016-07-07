@@ -1,6 +1,10 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
@@ -15,10 +19,6 @@ using OmniXaml.Builder;
 using OmniXaml.TypeConversion;
 using OmniXaml.TypeConversion.BuiltInConverters;
 using OmniXaml.Typing;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using OmniMetadata = OmniXaml.Typing.Metadata;
 
 namespace Avalonia.Markup.Xaml.Context
