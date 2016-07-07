@@ -94,7 +94,7 @@ namespace Avalonia.Controls.Primitives
                 "TemplateApplied", 
                 RoutingStrategies.Direct);
 
-        private bool _templateApplied;
+        private IControlTemplate _appliedTemplate;
 
         /// <summary>
         /// Initializes static members of the <see cref="TemplatedControl"/> class.
@@ -234,7 +234,16 @@ namespace Avalonia.Controls.Primitives
         /// <inheritdoc/>
         public sealed override void ApplyTemplate()
         {
-            if (!_templateApplied)
+            var template = Template;
+            var logical = (ILogical)this;
+
+            // Apply the template if it is not the same as the template already applied - except
+            // for in the case that the template is null and we're not attached to the logical 
+            // tree. In that case, the template has probably been cleared because the style setting
+            // the template has been detached, so we want to wait until it's re-attached to the 
+            // logical tree as if it's re-attached to the same tree the template will be the same
+            // and we don't need to do anything.
+            if (_appliedTemplate != template && (template != null || logical.IsAttachedToLogicalTree))
             {
                 if (VisualChildren.Count > 0)
                 {
@@ -246,11 +255,11 @@ namespace Avalonia.Controls.Primitives
                     VisualChildren.Clear();
                 }
 
-                if (Template != null)
+                if (template != null)
                 {
                     Logger.Verbose(LogArea.Control, this, "Creating control template");
 
-                    var child = Template.Build(this);
+                    var child = template.Build(this);
                     var nameScope = new NameScope();
                     NameScope.SetNameScope((Control)child, nameScope);
                     child.SetValue(TemplatedParentProperty, this);
@@ -261,7 +270,7 @@ namespace Avalonia.Controls.Primitives
                     OnTemplateApplied(new TemplateAppliedEventArgs(nameScope));
                 }
 
-                _templateApplied = true;
+                _appliedTemplate = template;
             }
         }
 
@@ -322,12 +331,6 @@ namespace Avalonia.Controls.Primitives
         /// <param name="e">The event args.</param>
         protected virtual void OnTemplateChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            if (_templateApplied && VisualChildren.Count > 0)
-            {
-                _templateApplied = false;
-            }
-
-            _templateApplied = false;
             InvalidateMeasure();
         }
 

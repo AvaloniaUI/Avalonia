@@ -390,6 +390,143 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.True(raised);
         }
 
+        [Fact]
+        public void Removing_From_LogicalTree_Should_Not_Remove_Child()
+        {
+            using (UnitTestApplication.Start(TestServices.RealStyler))
+            {
+                Border templateChild = new Border();
+                TestTemplatedControl target;
+                var root = new TestRoot
+                {
+                    Styles = new Styles
+                    {
+                        new Style(x => x.OfType<TestTemplatedControl>())
+                        {
+                            Setters = new[]
+                            {
+                                new Setter(
+                                    TemplatedControl.TemplateProperty,
+                                    new FuncControlTemplate(_ => new Decorator
+                                    {
+                                        Child = new Border(),
+                                    }))
+                            }
+                        }
+                    },
+                    Child = target = new TestTemplatedControl()
+                };
+
+                Assert.NotNull(target.Template);
+                target.ApplyTemplate();
+
+                root.Child = null;
+
+                Assert.Null(target.Template);
+                Assert.IsType<Decorator>(target.GetVisualChildren().Single());
+            }
+        }
+
+        [Fact]
+        public void Re_adding_To_Same_LogicalTree_Should_Not_Recreate_Template()
+        {
+            using (UnitTestApplication.Start(TestServices.RealStyler))
+            {
+                TestTemplatedControl target;
+                var root = new TestRoot
+                {
+                    Styles = new Styles
+                    {
+                        new Style(x => x.OfType<TestTemplatedControl>())
+                        {
+                            Setters = new[]
+                            {
+                                new Setter(
+                                    TemplatedControl.TemplateProperty,
+                                    new FuncControlTemplate(_ => new Decorator
+                                    {
+                                        Child = new Border(),
+                                    }))
+                            }
+                        }
+                    },
+                    Child = target = new TestTemplatedControl()
+                };
+
+                Assert.NotNull(target.Template);
+                target.ApplyTemplate();
+                var expected = (Decorator)target.GetVisualChildren().Single();
+
+                root.Child = null;
+                root.Child = target;
+                target.ApplyTemplate();
+
+                Assert.Same(expected, target.GetVisualChildren().Single());
+            }
+        }
+
+        [Fact]
+        public void Re_adding_To_Different_LogicalTree_Should_Recreate_Template()
+        {
+            using (UnitTestApplication.Start(TestServices.RealStyler))
+            {
+                TestTemplatedControl target;
+
+                var root = new TestRoot
+                {
+                    Styles = new Styles
+                    {
+                        new Style(x => x.OfType<TestTemplatedControl>())
+                        {
+                            Setters = new[]
+                            {
+                                new Setter(
+                                    TemplatedControl.TemplateProperty,
+                                    new FuncControlTemplate(_ => new Decorator
+                                    {
+                                        Child = new Border(),
+                                    }))
+                            }
+                        }
+                    },
+                    Child = target = new TestTemplatedControl()
+                };
+
+                var root2 = new TestRoot
+                {
+                    Styles = new Styles
+                    {
+                        new Style(x => x.OfType<TestTemplatedControl>())
+                        {
+                            Setters = new[]
+                            {
+                                new Setter(
+                                    TemplatedControl.TemplateProperty,
+                                    new FuncControlTemplate(_ => new Decorator
+                                    {
+                                        Child = new Border(),
+                                    }))
+                            }
+                        }
+                    },
+                };
+
+                Assert.NotNull(target.Template);
+                target.ApplyTemplate();
+
+                var expected = (Decorator)target.GetVisualChildren().Single();
+
+                root.Child = null;
+                root2.Child = target;
+                target.ApplyTemplate();
+
+                var child = target.GetVisualChildren().Single();
+                Assert.NotNull(target.Template);
+                Assert.NotNull(child);
+                Assert.NotSame(expected, child);
+            }
+        }
+
         private static IControl ScrollingContentControlTemplate(ContentControl control)
         {
             return new Border
