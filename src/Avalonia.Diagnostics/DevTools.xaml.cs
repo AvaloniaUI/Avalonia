@@ -108,7 +108,8 @@ namespace Avalonia.Diagnostics
             if ((e.Modifiers) == modifiers)
             {
                 var point = MouseDevice.Instance.GetPosition(Root);
-                var control = Root.GetVisualsAt(point).FirstOrDefault(x => !(x is AdornerLayer));
+                var control = Root.GetVisualsAt(point, x => (!(x is AdornerLayer) && x.IsVisible))
+                    .FirstOrDefault();
 
                 if (control != null)
                 {
