@@ -219,40 +219,7 @@ namespace Avalonia.Controls.Presenters
         {
             var content = Content;
             var oldChild = Child;
-            var newChild = content as IControl;
-
-            if (content != null && newChild == null)
-            {
-                // We have content and it isn't a control, so first try to recycle the existing
-                // child control to display the new data by querying if the template that created
-                // the child can recycle items and that it also matches the new data.
-                if (oldChild != null && 
-                    _dataTemplate != null &&
-                    _dataTemplate.SupportsRecycling && 
-                    _dataTemplate.Match(content))
-                {
-                    newChild = oldChild;
-                }
-                else
-                {
-                    // We couldn't recycle an existing control so find a data template for the data
-                    // and use it to create a control.
-                    _dataTemplate = this.FindDataTemplate(content, ContentTemplate) ?? FuncDataTemplate.Default;
-                    newChild = _dataTemplate.Build(content);
-
-                    // Try to give the new control its own name scope.
-                    var controlResult = newChild as Control;
-
-                    if (controlResult != null)
-                    {
-                        NameScope.SetNameScope(controlResult, new NameScope());
-                    }
-                }
-            }
-            else
-            {
-                _dataTemplate = null;
-            }
+            var newChild = CreateChild();            
 
             // Remove the old child if we're not recycling it.
             if (oldChild != null && newChild != oldChild)
@@ -328,6 +295,52 @@ namespace Avalonia.Controls.Presenters
             {
                 context.DrawRectangle(new Pen(borderBrush, borderThickness), rect, cornerRadius);
             }
+        }
+
+        /// <summary>
+        /// Creates the child control.
+        /// </summary>
+        /// <returns>The child control or null.</returns>
+        protected virtual IControl CreateChild()
+        {
+            var content = Content;
+            var oldChild = Child;
+            var newChild = content as IControl;
+
+            if (content != null && newChild == null)
+            {
+                // We have content and it isn't a control, so first try to recycle the existing
+                // child control to display the new data by querying if the template that created
+                // the child can recycle items and that it also matches the new data.
+                if (oldChild != null &&
+                    _dataTemplate != null &&
+                    _dataTemplate.SupportsRecycling &&
+                    _dataTemplate.Match(content))
+                {
+                    newChild = oldChild;
+                }
+                else
+                {
+                    // We couldn't recycle an existing control so find a data template for the data
+                    // and use it to create a control.
+                    _dataTemplate = this.FindDataTemplate(content, ContentTemplate) ?? FuncDataTemplate.Default;
+                    newChild = _dataTemplate.Build(content);
+
+                    // Try to give the new control its own name scope.
+                    var controlResult = newChild as Control;
+
+                    if (controlResult != null)
+                    {
+                        NameScope.SetNameScope(controlResult, new NameScope());
+                    }
+                }
+            }
+            else
+            {
+                _dataTemplate = null;
+            }
+
+            return newChild;
         }
 
         /// <inheritdoc/>
