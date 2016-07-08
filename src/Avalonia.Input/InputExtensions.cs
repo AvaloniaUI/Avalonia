@@ -25,28 +25,7 @@ namespace Avalonia.Input
         {
             Contract.Requires<ArgumentNullException>(element != null);
 
-            if (element.IsVisible &&
-                element.IsHitTestVisible &&
-                element.IsEnabledCore)
-            {
-                bool containsPoint = BoundsTracker.GetTransformedBounds((Visual)element).Contains(p);
-
-                if ((containsPoint || !element.ClipToBounds) && element.VisualChildren.Any())
-                {
-                    foreach (var child in ZSort(element.VisualChildren.OfType<IInputElement>()))
-                    {
-                        foreach (var result in child.GetInputElementsAt(p))
-                        {
-                            yield return result;
-                        }
-                    }
-                }
-
-                if (containsPoint)
-                {
-                    yield return element;
-                }
-            }
+            return element.GetVisualsAt(p, IsHitTestVisible).Cast<IInputElement>();
         }
 
         /// <summary>
@@ -60,38 +39,13 @@ namespace Avalonia.Input
             return element.GetInputElementsAt(p).FirstOrDefault();
         }
 
-        private static IEnumerable<IInputElement> ZSort(IEnumerable<IInputElement> elements)
+        private static bool IsHitTestVisible(IVisual visual)
         {
-            return elements
-                .Select((element, index) => new ZOrderElement
-                {
-                    Element = element,
-                    Index = index,
-                    ZIndex = element.ZIndex,
-                })
-                .OrderBy(x => x, null)
-                .Select(x => x.Element);
-        }
-
-        private class ZOrderElement : IComparable<ZOrderElement>
-        {
-            public IInputElement Element { get; set; }
-            public int Index { get; set; }
-            public int ZIndex { get; set; }
-
-            public int CompareTo(ZOrderElement other)
-            {
-                var z = other.ZIndex - ZIndex;
-
-                if (z != 0)
-                {
-                    return z;
-                }
-                else
-                {
-                    return other.Index - Index;
-                }
-            }
+            var element = visual as IInputElement;
+            return element != null &&
+                   element.IsVisible &&
+                   element.IsHitTestVisible &&
+                   element.IsEnabledCore;
         }
     }
 }
