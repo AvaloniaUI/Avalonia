@@ -71,31 +71,56 @@ namespace Avalonia.VisualTree
         }
 
         /// <summary>
-        /// Enumerates the visuals in the visual tree whose bounds contain a point.
+        /// Enumerates the visible visuals in the visual tree whose bounds contain a point.
         /// </summary>
         /// <param name="visual">The root visual to test.</param>
         /// <param name="p">The point.</param>
         /// <returns>The visuals at the requested point.</returns>
-        public static IEnumerable<IVisual> GetVisualsAt(this IVisual visual, Point p)
+        public static IEnumerable<IVisual> GetVisualsAt(
+            this IVisual visual,
+            Point p)
         {
             Contract.Requires<ArgumentNullException>(visual != null);
 
-            if (visual.Bounds.Contains(p))
-            {
-                p -= visual.Bounds.Position;
+            return visual.GetVisualsAt(p, x => x.IsVisible);
+        }
 
-                if (visual.VisualChildren.Any())
+        /// <summary>
+        /// Enumerates the visuals in the visual tree whose bounds contain a point.
+        /// </summary>
+        /// <param name="visual">The root visual to test.</param>
+        /// <param name="p">The point.</param>
+        /// <param name="filter">
+        /// A filter predicate. If the predicate returns false then the visual and all its
+        /// children will be excluded from the results.
+        /// </param>
+        /// <returns>The visuals at the requested point.</returns>
+        public static IEnumerable<IVisual> GetVisualsAt(
+            this IVisual visual,
+            Point p,
+            Func<IVisual, bool> filter)
+        {
+            Contract.Requires<ArgumentNullException>(visual != null);
+
+            if (filter?.Invoke(visual) != false)
+            {
+                bool containsPoint = BoundsTracker.GetTransformedBounds((Visual)visual).Contains(p);
+
+                if ((containsPoint || !visual.ClipToBounds) && visual.VisualChildren.Any())
                 {
-                    foreach (IVisual child in visual.VisualChildren)
+                    foreach (var child in visual.VisualChildren.SortByZIndex())
                     {
-                        foreach (IVisual v in child.GetVisualsAt(p))
+                        foreach (var result in child.GetVisualsAt(p, filter))
                         {
-                            yield return v;
+                            yield return result;
                         }
                     }
                 }
 
-                yield return visual;
+                if (containsPoint)
+                {
+                    yield return visual;
+                }
             }
         }
 
@@ -191,6 +216,40 @@ namespace Avalonia.VisualTree
         public static bool IsVisualAncestorOf(this IVisual visual, IVisual target)
         {
             return target.GetVisualAncestors().Any(x => x == visual);
+        }
+
+        public static IEnumerable<IVisual> SortByZIndex(this IEnumerable<IVisual> elements)
+        {
+            return elements
+                .Select((element, index) => new ZOrderElement
+                {
+                    Element = element,
+                    Index = index,
+                    ZIndex = element.ZIndex,
+                })
+                .OrderBy(x => x, null)
+                .Select(x => x.Element);
+        }
+
+        private class ZOrderElement : IComparable<ZOrderElement>
+        {
+            public IVisual Element { get; set; }
+            public int Index { get; set; }
+            public int ZIndex { get; set; }
+
+            public int CompareTo(ZOrderElement other)
+            {
+                var z = other.ZIndex - ZIndex;
+
+                if (z != 0)
+                {
+                    return z;
+                }
+                else
+                {
+                    return other.Index - Index;
+                }
+            }
         }
     }
 }

@@ -94,6 +94,8 @@
     <Compile Include="VisualTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="VisualTree\BoundsTrackerTests.cs" />
+    <Compile Include="VisualTree\MockRenderInterface.cs" />
+    <Compile Include="VisualTree\VisualExtensionsTests_GetVisualsAt.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Avalonia.Animation\Avalonia.Animation.csproj">
