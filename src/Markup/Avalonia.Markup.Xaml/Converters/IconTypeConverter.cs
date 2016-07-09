@@ -39,12 +39,12 @@ namespace Avalonia.Markup.Xaml.Converters
             throw new NotSupportedException();
         }
 
-        private Icon CreateIconFromBitmap(IBitmap bitmap)
+        private WindowIcon CreateIconFromBitmap(IBitmap bitmap)
         {
-            return new Icon(bitmap);
+            return new WindowIcon(bitmap);
         }
 
-        private Icon CreateIconFromPath(IValueContext context, string path)
+        private WindowIcon CreateIconFromPath(IValueContext context, string path)
         {
             var uri = new Uri(path, UriKind.RelativeOrAbsolute);
             var baseUri = GetBaseUri(context);
@@ -53,10 +53,10 @@ namespace Avalonia.Markup.Xaml.Converters
             switch (scheme)
             {
                 case "file":
-                    return new Icon(path);
+                    return new WindowIcon(path);
                 default:
                     var assets = AvaloniaLocator.Current.GetService<IAssetLoader>();
-                    return new Icon(assets.Open(uri, baseUri));
+                    return new WindowIcon(assets.Open(uri, baseUri));
             }
         }
 
