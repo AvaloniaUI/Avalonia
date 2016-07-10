@@ -12,7 +12,7 @@ namespace Avalonia.Cairo.Media.Imaging
     public class BitmapImpl : Gdk.Pixbuf, IBitmapImpl
     {
         public BitmapImpl(Gdk.Pixbuf pixbuf)
-            :base(pixbuf, 0, 0, pixbuf.Width, pixbuf.Height)
+            :base(pixbuf.SaveToBuffer("png"))
         {
         }
 
