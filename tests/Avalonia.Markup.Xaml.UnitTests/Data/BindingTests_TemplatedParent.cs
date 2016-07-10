@@ -10,6 +10,7 @@ using Avalonia.Data;
 using Avalonia.Markup.Xaml.Data;
 using Avalonia.Styling;
 using Xunit;
+using System.Reactive.Disposables;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Data
 {
@@ -64,6 +65,8 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
             result.Setup(x => x.GetValue(Control.TemplatedParentProperty)).Returns(templatedParent);
             result.Setup(x => x.GetValue((AvaloniaProperty)Control.TemplatedParentProperty)).Returns(templatedParent);
             result.Setup(x => x.GetValue((AvaloniaProperty)TextBox.TextProperty)).Returns(text);
+            result.Setup(x => x.Bind(It.IsAny<AvaloniaProperty>(), It.IsAny<IObservable<object>>(), It.IsAny<BindingPriority>()))
+                .Returns(Disposable.Empty);
             return result;
         }
     }

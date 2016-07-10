@@ -1,6 +1,7 @@
 using Foundation;
 using UIKit;
 using Avalonia;
+using Avalonia.Controls;
 
 namespace ControlCatalog
 {
