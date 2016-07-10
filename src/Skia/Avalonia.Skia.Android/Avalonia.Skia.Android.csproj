@@ -15,7 +15,7 @@
     <AndroidResgenFile>Resources\Resource.Designer.cs</AndroidResgenFile>
     <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
     <AndroidUseLatestPlatformSdk>False</AndroidUseLatestPlatformSdk>
-    <TargetFrameworkVersion>v5.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.4</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -40,7 +40,7 @@
     <Reference Include="Mono.Android" />
     <Reference Include="mscorlib" />
     <Reference Include="SkiaSharp, Version=1.49.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\SkiaSharp.1.49.3.0-beta\lib\MonoAndroid\SkiaSharp.dll</HintPath>
+      <HintPath>..\..\..\packages\SkiaSharp.1.49.4-beta\lib\MonoAndroid\SkiaSharp.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />

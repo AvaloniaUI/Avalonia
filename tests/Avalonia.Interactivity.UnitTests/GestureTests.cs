@@ -13,10 +13,10 @@ namespace Avalonia.Interactivity.UnitTests
         [Fact]
         public void Tapped_Should_Follow_Pointer_Pressed_Released()
         {
-            Border border;
+            Border border = new Border();
             var decorator = new Decorator
             {
-                Child = border = new Border()
+                Child = border
             };
             var result = new List<string>();
 
@@ -36,10 +36,10 @@ namespace Avalonia.Interactivity.UnitTests
         [Fact]
         public void Tapped_Should_Be_Raised_Even_When_PointerPressed_Handled()
         {
-            Border border;
+            Border border = new Border();
             var decorator = new Decorator
             {
-                Child = border = new Border()
+                Child = border
             };
             var result = new List<string>();
 
@@ -56,10 +56,10 @@ namespace Avalonia.Interactivity.UnitTests
         [Fact]
         public void DoubleTapped_Should_Follow_Pointer_Pressed_Released_Pressed()
         {
-            Border border;
+            Border border = new Border();
             var decorator = new Decorator
             {
-                Child = border = new Border()
+                Child = border
             };
             var result = new List<string>();
 

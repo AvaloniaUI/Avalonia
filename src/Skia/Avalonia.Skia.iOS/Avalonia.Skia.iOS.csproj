@@ -41,7 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="SkiaSharp, Version=1.49.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\SkiaSharp.1.49.3.0-beta\lib\XamariniOS\SkiaSharp.dll</HintPath>
+      <HintPath>..\..\..\packages\SkiaSharp.1.49.4-beta\lib\XamariniOS\SkiaSharp.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />

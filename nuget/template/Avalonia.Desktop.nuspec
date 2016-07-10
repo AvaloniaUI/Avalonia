@@ -16,11 +16,11 @@
       <dependency id="Serilog" version="1.5.14" />
       <dependency id="Splat" version="1.6.2" />
       <dependency id="Sprache" version="2.0.0.50" />
-      <dependency id="Rx-Core" version="2.2.5" />
-      <dependency id="Rx-Interfaces" version="2.2.5" />
-      <dependency id="Rx-Linq" version="2.2.5" />
-      <dependency id="Rx-Main" version="2.2.5" />
-      <dependency id="Rx-PlatformServices" version="2.2.5" />
+      <dependency id="System.Reactive" version="3.0.0" />
+      <dependency id="System.Reactive.Core" version="3.0.0" />
+      <dependency id="System.Reactive.Interfaces" version="3.0.0" />
+      <dependency id="System.Reactive.Linq" version="3.0.0" />
+      <dependency id="System.Reactive.PlatformServices" version="3.0.0" />
       <dependency id="SharpDX" version="3.0.2"/>
       <dependency id="SharpDX.Direct2D1" version="3.0.2"/>
       <dependency id="SharpDX.DXGI" version="3.0.2"/>
