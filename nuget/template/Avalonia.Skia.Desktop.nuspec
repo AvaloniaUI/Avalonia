@@ -13,7 +13,7 @@
     <copyright>Copyright 2015</copyright>
     <tags>Avalonia</tags>
     <dependencies>
-      <dependency id="SkiaSharp" version="1.49.3.0-beta"/>
+      <dependency id="SkiaSharp" version="1.49.4.0-beta"/>
       <dependency id="Avalonia" version="#VERSION#" />
     </dependencies>
   </metadata>
