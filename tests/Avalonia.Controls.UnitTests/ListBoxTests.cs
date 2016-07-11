@@ -234,6 +234,43 @@ namespace Avalonia.Controls.UnitTests
             target.Arrange(new Rect(0, 0, 100, 100));
         }
 
+        [Fact]
+        public void ListBox_Set_SelectedItem_Should_Not_Crash_bug589_bug591()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var items = new[] { "Foo", "Bar", "Baz " };
+                var target = new ListBox
+                {
+                    Template = ListBoxTemplate()
+                };
+
+                Prepare(target);
+
+                //emulate control is not in foreground or not visible
+                //also control can be child of  parent with size 0,0
+                //that's real case scenario although it looks bit unreal
+                target.Measure(new Size(0, 0));
+                target.Arrange(new Rect(0, 0, 0, 0));
+
+                target.Items = items;
+
+                //bug #591 in ItemVirtualizerSimple.cs:line 471
+                //var container = generator.ContainerFromIndex(index); <- here container is null
+                //and NullReferenceException will be raised if LayoutManager is not null
+                //line 482 
+                //if (!new Rect(panel.Bounds.Size).Contains(container.Bounds)) <- this check will fail
+
+                //bug #589 - currently this unit test is failing with
+                //IndexOutOfRangeException 
+                // in CreateAndRemoveContainers() ItemVirtualizerSimple.cs:line 274
+                //generator.Materialize(index, Items.ElementAt(index), memberSelector); <- index is -1
+                target.SelectedItem = items.First();
+
+                Assert.Equal(items.First(), target.SelectedItem);
+            }
+        }
+
         private class Item
         {
             public Item(string value)
