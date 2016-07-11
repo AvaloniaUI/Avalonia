@@ -12,13 +12,10 @@ For the moment under windows, you must have [gtk-sharp](http://www.mono-project.
 
     git clone https://github.com/AvaloniaUI/Avalonia.git
 
-We currently need to build our own private version of ReactiveUI as it doesn't work on mono. This
-is linked as a submodule in the git repository, so run:
+We currently need to build our own private version of some libraries. These are linked as submodules in the git repository, so run:
 
     git submodule update --init
     
-The next step is to download the Skia native libraries. Run ```getnatives.ps1``` PowerShell script which can be found under the folder ```src\Skia\```.
-
 ## Linux
 
 This guide Written for Ubuntu 15.04 - I'm not sure how well it applies to other distributions, but
