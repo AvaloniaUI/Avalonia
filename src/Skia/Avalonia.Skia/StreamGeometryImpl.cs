@@ -141,10 +141,8 @@ namespace Avalonia.Skia
 
             public void SetFillRule(FillRule fillRule)
             {
-                _geometryImpl.FillRule = fillRule;
+                _path.FillType = fillRule == FillRule.EvenOdd ? SKPathFillType.EvenOdd : SKPathFillType.Winding;
             }
         }
-
-        public FillRule FillRule { get; set; }
     }
 }
