@@ -1,4 +1,7 @@
 language: csharp
+os:
+  - linux
+  - osx
 mono:
   - nightly
 solution: Avalonia.mono.sln
@@ -6,7 +9,7 @@ before_install:
   - mkdir -p .nuget
   - wget -O .nuget/nuget.exe https://dist.nuget.org/win-x86-commandline/latest/nuget.exe
 install:
-  - sudo apt-get install -y gtk-sharp2
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install -y gtk-sharp2 ; fi
   - mono .nuget/nuget.exe restore Avalonia.mono.sln
   - mono .nuget/nuget.exe install xunit.runner.console -Version 2.1.0 -OutputDirectory testrunner
 script:
