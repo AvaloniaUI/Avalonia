@@ -252,7 +252,7 @@ namespace Avalonia.Controls.Presenters
                 var index = NextIndex;
                 var step = 1;
 
-                while (!panel.IsFull)
+                while (!panel.IsFull && index >= 0)
                 {
                     if (index >= ItemCount)
                     {

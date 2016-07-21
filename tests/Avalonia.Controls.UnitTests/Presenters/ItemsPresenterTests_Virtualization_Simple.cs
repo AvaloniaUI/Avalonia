@@ -327,6 +327,27 @@ namespace Avalonia.Controls.UnitTests.Presenters
         }
 
         [Fact]
+        public void Measuring_To_Infinity_When_Scrolled_To_End_Should_Not_Throw()
+        {
+            var target = CreateTarget(useAvaloniaList: true);
+
+            target.ApplyTemplate();
+            target.Measure(new Size(100, 100));
+            target.Arrange(new Rect(0, 0, 100, 100));
+
+            ((ILogicalScrollable)target).Offset = new Vector(0, 10);
+
+            // Check for issue #589: this should not throw.
+            target.Measure(Size.Infinity);
+
+            var expected = Enumerable.Range(0, 20).Select(x => $"Item {x}").ToList();
+            var items = (AvaloniaList<string>)target.Items;
+            var actual = target.Panel.Children.Select(x => x.DataContext).ToList();
+
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
         public void Replacing_Items_Should_Update_Containers()
         {
             var target = CreateTarget();
