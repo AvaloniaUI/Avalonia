@@ -3,7 +3,7 @@ os:
   - linux
   - osx
 mono:
-  - nightly
+  - latest
 solution: Avalonia.mono.sln
 before_install:
   - mkdir -p .nuget
