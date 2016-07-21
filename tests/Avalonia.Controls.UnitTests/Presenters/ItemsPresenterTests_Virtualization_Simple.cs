@@ -327,6 +327,27 @@ namespace Avalonia.Controls.UnitTests.Presenters
         }
 
         [Fact]
+        public void Measuring_To_Infinity_When_Scrolled_To_End_Should_Not_Throw()
+        {
+            var target = CreateTarget(useAvaloniaList: true);
+
+            target.ApplyTemplate();
+            target.Measure(new Size(100, 100));
+            target.Arrange(new Rect(0, 0, 100, 100));
+
+            ((ILogicalScrollable)target).Offset = new Vector(0, 10);
+
+            // Check for issue #589: this should not throw.
+            target.Measure(Size.Infinity);
+
+            var expected = Enumerable.Range(0, 20).Select(x => $"Item {x}").ToList();
+            var items = (AvaloniaList<string>)target.Items;
+            var actual = target.Panel.Children.Select(x => x.DataContext).ToList();
+
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
         public void Replacing_Items_Should_Update_Containers()
         {
             var target = CreateTarget();
@@ -482,6 +503,23 @@ namespace Avalonia.Controls.UnitTests.Presenters
             actual = target.Panel.Children.Select(x => x.DataContext).ToList();
             Assert.Equal(expected, actual);
             Assert.Equal(0, ((IVirtualizingPanel)target.Panel).PixelOffset);
+        }
+
+        [Fact]
+        public void Scrolling_To_Item_In_Zero_Sized_Presenter_Doesnt_Throw()
+        {
+            using (UnitTestApplication.Start(TestServices.RealLayoutManager))
+            {
+                var target = CreateTarget(itemCount: 10);
+                var items = (IList<string>)target.Items;
+
+                target.ApplyTemplate();
+                target.Measure(Size.Empty);
+                target.Arrange(Rect.Empty);
+
+                // Check for issue #591: this should not throw.
+                target.ScrollIntoView(items[0]);
+            }
         }
 
         public class Vertical
