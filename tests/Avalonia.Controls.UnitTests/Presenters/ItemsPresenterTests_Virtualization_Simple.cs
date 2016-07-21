@@ -505,6 +505,23 @@ namespace Avalonia.Controls.UnitTests.Presenters
             Assert.Equal(0, ((IVirtualizingPanel)target.Panel).PixelOffset);
         }
 
+        [Fact]
+        public void Scrolling_To_Item_In_Zero_Sized_Presenter_Doesnt_Throw()
+        {
+            using (UnitTestApplication.Start(TestServices.RealLayoutManager))
+            {
+                var target = CreateTarget(itemCount: 10);
+                var items = (IList<string>)target.Items;
+
+                target.ApplyTemplate();
+                target.Measure(Size.Empty);
+                target.Arrange(Rect.Empty);
+
+                // Check for issue #591: this should not throw.
+                target.ScrollIntoView(items[0]);
+            }
+        }
+
         public class Vertical
         {
             [Fact]
