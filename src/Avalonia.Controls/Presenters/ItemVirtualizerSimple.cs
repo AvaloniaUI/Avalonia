@@ -252,7 +252,7 @@ namespace Avalonia.Controls.Presenters
                 var index = NextIndex;
                 var step = 1;
 
-                while (!panel.IsFull)
+                while (!panel.IsFull && index >= 0)
                 {
                     if (index >= ItemCount)
                     {
@@ -475,7 +475,7 @@ namespace Avalonia.Controls.Presenters
                 // is only partially visible due to differing item sizes. If the container is only 
                 // partially visible, scroll again. Don't do this if there's no layout manager:
                 // it means we're running a unit test.
-                if (layoutManager != null)
+                if (container != null && layoutManager != null)
                 {
                     layoutManager.ExecuteLayoutPass();
 

@@ -254,5 +254,36 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 Assert.Equal("Hello World!", ((TextBlock)target.Content).Text);
             }
         }
+
+        [Fact]
+        public void Setter_Value_Is_Bound_Directly_If_The_Target_Type_Derives_From_ITemplate()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Window.Styles>
+        <Style Selector=':is(Control)'>
+		  <Setter Property='FocusAdorner'>
+			<FocusAdornerTemplate>
+			  <Rectangle Stroke='Black'
+						 StrokeThickness='1'
+						 StrokeDashArray='1,2'/>
+			</FocusAdornerTemplate>
+		  </Setter>
+		</Style>
+	</Window.Styles>
+
+    <TextBlock Name='target'/>    
+</Window>";
+
+                var loader = new AvaloniaXamlLoader();
+                var window = (Window)loader.Load(xaml);
+                var target = window.Find<TextBlock>("target");
+
+                Assert.NotNull(target.FocusAdorner);
+            }
+        }
     }
 }
