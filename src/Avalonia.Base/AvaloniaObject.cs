@@ -379,12 +379,11 @@ namespace Avalonia
                 }
 
                 subscription = source
-                    .Where(x =>  !(x is IValidationStatus))
                     .Select(x => CastOrDefault(x, property.PropertyType))
                     .Do(_ => { }, () => _directBindings.Remove(subscription))
                     .Subscribe(x => DirectBindingSet(property, x));
                 validationSubcription = source
-                    .OfType<IValidationStatus>()
+                    .OfType<BindingNotification>()
                     .Subscribe(x => DataValidationChanged(property, x));
 
                 _directBindings.Add(subscription);
@@ -487,7 +486,7 @@ namespace Avalonia
         }
 
         /// <inheritdoc/>
-        void IPriorityValueOwner.DataValidationChanged(PriorityValue sender, IValidationStatus status)
+        void IPriorityValueOwner.DataValidationChanged(PriorityValue sender, BindingNotification status)
         {
             var property = sender.Property;
             DataValidationChanged(property, status);
@@ -623,14 +622,14 @@ namespace Avalonia
 
         /// <summary>
         /// Tries to cast a value to a type, taking into account that the value may be a
-        /// <see cref="BindingError"/>.
+        /// <see cref="BindingNotification"/>.
         /// </summary>
         /// <param name="value">The value.</param>
         /// <param name="type">The type.</param>
-        /// <returns>The cast value, or a <see cref="BindingError"/>.</returns>
+        /// <returns>The cast value, or a <see cref="BindingNotification"/>.</returns>
         private static object CastOrDefault(object value, Type type)
         {
-            var error = value as BindingError;
+            var error = value as BindingNotification;
 
             if (error == null)
             {
@@ -674,26 +673,29 @@ namespace Avalonia
         /// <returns></returns>
         private void DirectBindingSet(AvaloniaProperty property, object value)
         {
-            var error = value as BindingError;
+            var notification = value as BindingNotification;
 
-            if (error == null)
+            if (notification == null)
             {
                 SetValue(property, value);
             }
             else
             {
-                if (error.UseFallbackValue)
+                if (notification.HasValue)
                 {
-                    SetValue(property, error.FallbackValue);
+                    SetValue(property, notification.Value);
                 }
 
-                Logger.Error(
-                    LogArea.Binding,
-                    this,
-                    "Error binding to {Target}.{Property}: {Message}",
-                    this,
-                    property,
-                    error.Exception.Message);
+                if (notification.ErrorType == BindingErrorType.Error)
+                {
+                    Logger.Error(
+                        LogArea.Binding,
+                        this,
+                        "Error binding to {Target}.{Property}: {Message}",
+                        this,
+                        property,
+                        notification.Error.Message);
+                }
             }
         }
 

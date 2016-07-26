@@ -8,13 +8,13 @@ namespace Avalonia.Markup.Data.Plugins
     /// </summary>
     public class PropertyError : IPropertyAccessor
     {
-        private BindingError _error;
+        private BindingNotification _error;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PropertyError"/> class.
         /// </summary>
         /// <param name="error">The error to report.</param>
-        public PropertyError(BindingError error)
+        public PropertyError(BindingNotification error)
         {
             _error = error;
         }

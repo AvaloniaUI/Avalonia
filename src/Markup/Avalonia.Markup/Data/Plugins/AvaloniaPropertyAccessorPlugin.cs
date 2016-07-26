@@ -56,7 +56,7 @@ namespace Avalonia.Markup.Data.Plugins
             {
                 var message = $"Could not find AvaloniaProperty '{propertyName}' on '{instance}'";
                 var exception = new MissingMemberException(message);
-                return new PropertyError(new BindingError(exception));
+                return new PropertyError(new BindingNotification(exception, BindingErrorType.Error));
             }
             else
             {

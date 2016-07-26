@@ -61,7 +61,7 @@ namespace Avalonia.Markup.Data.Plugins
             {
                 var message = $"Could not find CLR property '{propertyName}' on '{instance}'";
                 var exception = new MissingMemberException(message);
-                return new PropertyError(new BindingError(exception));
+                return new PropertyError(new BindingNotification(exception, BindingErrorType.Error));
             }
         }
 

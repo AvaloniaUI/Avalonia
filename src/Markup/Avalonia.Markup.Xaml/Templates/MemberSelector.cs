@@ -57,7 +57,7 @@ namespace Avalonia.Markup.Xaml.Templates
             {
                 return null;
             }
-            else if (result is BindingError)
+            else if (result is BindingNotification)
             {
                 return null;
             }

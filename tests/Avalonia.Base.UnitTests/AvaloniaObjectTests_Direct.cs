@@ -406,7 +406,7 @@ namespace Avalonia.Base.UnitTests
 
             target.Bind(Class1.FooProperty, source);
             source.OnNext("initial");
-            source.OnNext(new BindingError(new InvalidOperationException("Foo")));
+            source.OnNext(new BindingNotification(new InvalidOperationException("Foo"), BindingErrorType.Error));
 
             Assert.Equal("initial", target.GetValue(Class1.FooProperty));
         }
@@ -419,7 +419,10 @@ namespace Avalonia.Base.UnitTests
 
             target.Bind(Class1.FooProperty, source);
             source.OnNext("initial");
-            source.OnNext(new BindingError(new InvalidOperationException("Foo"), "fallback"));
+            source.OnNext(new BindingNotification(
+                new InvalidOperationException("Foo"),
+                BindingErrorType.Error,
+                "fallback"));
 
             Assert.Equal("fallback", target.GetValue(Class1.FooProperty));
         }
@@ -449,7 +452,7 @@ namespace Avalonia.Base.UnitTests
             {
                 target.Bind(Class1.FooProperty, source);
                 source.OnNext("baz");
-                source.OnNext(new BindingError(new InvalidOperationException("Binding Error Message")));
+                source.OnNext(new BindingNotification(new InvalidOperationException("Binding Error Message"), BindingErrorType.Error));
             }
 
             Assert.True(called);

@@ -159,7 +159,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="entry">The entry that completed.</param>
         /// <param name="error">The error.</param>
-        public void Error(PriorityBindingEntry entry, BindingError error)
+        public void Error(PriorityBindingEntry entry, BindingNotification error)
         {
             _owner.LevelError(this, error);
         }
@@ -169,7 +169,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="entry">The entry that completed.</param>
         /// <param name="validationStatus">The validation status.</param>
-        public void Validation(PriorityBindingEntry entry, IValidationStatus validationStatus)
+        public void Validation(PriorityBindingEntry entry, BindingNotification validationStatus)
         {
             _owner.LevelValidation(this, validationStatus);
         }

@@ -81,11 +81,11 @@ namespace Avalonia.Markup.UnitTests.Data
             var target = new ExpressionObserver(data, "Foo.Bar.Baz");
             var result = await target.Take(1);
 
-            Assert.IsType<BindingError>(result);
+            Assert.IsType<BindingNotification>(result);
 
-            var error = result as BindingError;
-            Assert.IsType<MissingMemberException>(error.Exception);
-            Assert.Equal("Could not find CLR property 'Baz' on '1'", error.Exception.Message);
+            var error = result as BindingNotification;
+            Assert.IsType<MissingMemberException>(error.Error);
+            Assert.Equal("Could not find CLR property 'Baz' on '1'", error.Error.Message);
         }
 
         [Fact]
@@ -216,7 +216,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
             Assert.Equal(3, result.Count);
             Assert.Equal("bar", result[0]);
-            Assert.IsType<BindingError>(result[1]);
+            Assert.IsType<BindingNotification>(result[1]);
             Assert.Equal("baz", result[2]);
 
             sub.Dispose();

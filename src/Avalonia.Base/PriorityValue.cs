@@ -184,7 +184,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="priorityLevel">The priority level of the changed entry.</param>
         /// <param name="validationStatus">The validation status.</param>
-        public void LevelValidation(PriorityLevel priorityLevel, IValidationStatus validationStatus)
+        public void LevelValidation(PriorityLevel priorityLevel, BindingNotification validationStatus)
         {
             _owner.DataValidationChanged(this, validationStatus);
         }
@@ -194,7 +194,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="level">The priority level of the changed entry.</param>
         /// <param name="error">The binding error.</param>
-        public void LevelError(PriorityLevel level, BindingError error)
+        public void LevelError(PriorityLevel level, BindingNotification error)
         {
             Logger.Log(
                 LogEventLevel.Error,
@@ -203,7 +203,7 @@ namespace Avalonia
                 "Error binding to {Target}.{Property}: {Message}",
                 _owner,
                 Property,
-                error.Exception.Message);
+                error.Error.Message);
         }
 
         /// <summary>

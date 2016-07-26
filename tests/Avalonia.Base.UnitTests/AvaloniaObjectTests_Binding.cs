@@ -273,26 +273,31 @@ namespace Avalonia.Base.UnitTests
 
             target.Bind(Class1.QuxProperty, source);
             source.OnNext(6.7);
-            source.OnNext(new BindingError(new InvalidOperationException("Foo")));
+            source.OnNext(new BindingNotification(
+                new InvalidOperationException("Foo"),
+                BindingErrorType.Error));
 
             Assert.Equal(6.7, target.GetValue(Class1.QuxProperty));
         }
 
         [Fact]
-        public void BindingError_With_FallbackValue_Causes_Target_Update()
+        public void BindingNotification_With_FallbackValue_Causes_Target_Update()
         {
             var target = new Class1();
             var source = new Subject<object>();
 
             target.Bind(Class1.QuxProperty, source);
             source.OnNext(6.7);
-            source.OnNext(new BindingError(new InvalidOperationException("Foo"), 8.9));
+            source.OnNext(new BindingNotification(
+                new InvalidOperationException("Foo"),
+                BindingErrorType.Error,
+                8.9));
 
             Assert.Equal(8.9, target.GetValue(Class1.QuxProperty));
         }
 
         [Fact]
-        public void Bind_Logs_BindingError()
+        public void Bind_Logs_Binding_Error()
         {
             var target = new Class1();
             var source = new Subject<object>();
@@ -313,7 +318,9 @@ namespace Avalonia.Base.UnitTests
             {
                 target.Bind(Class1.QuxProperty, source);
                 source.OnNext(6.7);
-                source.OnNext(new BindingError(new InvalidOperationException("Foo")));
+                source.OnNext(new BindingNotification(
+                    new InvalidOperationException("Foo"),
+                    BindingErrorType.Error));
 
                 Assert.Equal(6.7, target.GetValue(Class1.QuxProperty));
                 Assert.True(called);

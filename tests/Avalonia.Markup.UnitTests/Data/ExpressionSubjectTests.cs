@@ -55,7 +55,7 @@ namespace Avalonia.Markup.UnitTests.Data
             var target = new ExpressionSubject(new ExpressionObserver(data, "StringValue"), typeof(double));
             var result = await target.Take(1);
 
-            Assert.IsType<BindingError>(result);
+            Assert.IsType<BindingNotification>(result);
         }
 
         [Fact]

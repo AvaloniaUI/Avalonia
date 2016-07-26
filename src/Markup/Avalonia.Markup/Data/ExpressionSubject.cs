@@ -126,16 +126,16 @@ namespace Avalonia.Markup.Data
                     converted = TypeUtilities.Default(type);
                     _inner.SetValue(converted, _priority);
                 }
-                else if (converted is BindingError)
+                else if (converted is BindingNotification)
                 {
-                    var error = converted as BindingError;
+                    var error = converted as BindingNotification;
 
                     Logger.Error(
                         LogArea.Binding,
                         this,
                         "Error binding to {Expression}: {Message}",
                         _inner.Expression,
-                        error.Exception.Message);
+                        error.Error.Message);
 
                     if (_fallbackValue != AvaloniaProperty.UnsetValue)
                     {
@@ -174,7 +174,7 @@ namespace Avalonia.Markup.Data
         private object ConvertValue(object value)
         {
             var converted = 
-                value as BindingError ??
+                value as BindingNotification ??
                 value as IValidationStatus ??
                 Converter.Convert(
                     value,
@@ -184,9 +184,9 @@ namespace Avalonia.Markup.Data
 
             if (_fallbackValue != AvaloniaProperty.UnsetValue &&
                 (converted == AvaloniaProperty.UnsetValue ||
-                 converted is BindingError))
+                 converted is BindingNotification))
             {
-                var error = converted as BindingError;
+                var error = converted as BindingNotification;
                 
                 if (TypeUtilities.TryConvert(
                     _targetType, 
@@ -196,14 +196,15 @@ namespace Avalonia.Markup.Data
                 {
                     if (error != null)
                     {
-                        converted = new BindingError(error.Exception, converted);
+                        converted = new BindingNotification(error.Error, BindingErrorType.Error, converted);
                     }
                 }
                 else
                 {
-                    converted = new BindingError(
+                    converted = new BindingNotification(
                         new InvalidCastException(
-                            $"Could not convert FallbackValue '{_fallbackValue}' to '{_targetType}'"));
+                            $"Could not convert FallbackValue '{_fallbackValue}' to '{_targetType}'"),
+                        BindingErrorType.Error);
                 }
             }
 
