@@ -157,11 +157,9 @@ namespace Avalonia.Controls
         /// <returns>The index of the item or -1 if the item was not found.</returns>
         protected static object ElementAt(IEnumerable items, int index)
         {
-            var typedItems = items?.Cast<object>();
-
-            if (index != -1 && typedItems != null && index < typedItems.Count())
+            if (index != -1 && index < items.Count())
             {
-                return typedItems.ElementAt(index) ?? null;
+                return items.ElementAt(index) ?? null;
             }
             else
             {
