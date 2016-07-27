@@ -681,7 +681,7 @@ namespace Avalonia.Win32
             UnmanagedMethods.ShowWindow(_hwnd, command);
         }
 
-        public void SetIcon(IIconImpl icon)
+        public void SetIcon(IWindowIconImpl icon)
         {
             var impl = (IconImpl)icon;
             var nativeIcon = impl.IconBitmap;

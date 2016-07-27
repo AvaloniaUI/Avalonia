@@ -29,6 +29,6 @@ namespace Avalonia.Controls
             PlatformImpl = AvaloniaLocator.Current.GetService<IPlatformIconLoader>().LoadIcon(stream);
         }
 
-        public IIconImpl PlatformImpl { get; }
+        public IWindowIconImpl PlatformImpl { get; }
     }
 }

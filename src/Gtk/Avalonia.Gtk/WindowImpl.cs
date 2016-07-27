@@ -384,7 +384,7 @@ namespace Avalonia.Gtk
             return true;
         }
 
-        public void SetIcon(IIconImpl icon)
+        public void SetIcon(IWindowIconImpl icon)
         {
             Icon = ((IconImpl)icon).Pixbuf;
         }

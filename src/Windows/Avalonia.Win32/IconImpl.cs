@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Avalonia.Win32
 {
-    class IconImpl : IIconImpl
+    class IconImpl : IWindowIconImpl
     {
         public IconImpl(System.Drawing.Bitmap iconBitmap)
         {

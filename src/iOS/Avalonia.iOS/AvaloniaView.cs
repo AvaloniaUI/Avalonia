@@ -214,7 +214,7 @@ namespace Avalonia.iOS
             }
         }
 
-        public void SetIcon(IIconImpl icon)
+        public void SetIcon(IWindowIconImpl icon)
         {
         }
     }

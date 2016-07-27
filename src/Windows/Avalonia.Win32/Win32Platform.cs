@@ -189,19 +189,19 @@ namespace Avalonia.Win32
             return new PopupImpl();
         }
 
-        public IIconImpl LoadIcon(string fileName)
+        public IWindowIconImpl LoadIcon(string fileName)
         {
             var icon = new System.Drawing.Bitmap(fileName);
             return new IconImpl(icon);
         }
 
-        public IIconImpl LoadIcon(Stream stream)
+        public IWindowIconImpl LoadIcon(Stream stream)
         {
             var icon = new System.Drawing.Bitmap(stream);
             return new IconImpl(icon);
         }
 
-        public IIconImpl LoadIcon(IBitmapImpl bitmap)
+        public IWindowIconImpl LoadIcon(IBitmapImpl bitmap)
         {
             using (var memoryStream = new MemoryStream())
             {

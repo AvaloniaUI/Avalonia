@@ -115,17 +115,17 @@ namespace Avalonia.Gtk
             return new PopupImpl();
         }
 
-        public IIconImpl LoadIcon(string fileName)
+        public IWindowIconImpl LoadIcon(string fileName)
         {
             return new IconImpl(new Gdk.Pixbuf(fileName));
         }
 
-        public IIconImpl LoadIcon(Stream stream)
+        public IWindowIconImpl LoadIcon(Stream stream)
         {
             return new IconImpl(new Gdk.Pixbuf(stream));
         }
 
-        public IIconImpl LoadIcon(IBitmapImpl bitmap)
+        public IWindowIconImpl LoadIcon(IBitmapImpl bitmap)
         {
             if (bitmap is Gdk.Pixbuf)
             {

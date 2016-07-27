@@ -67,17 +67,17 @@ namespace Avalonia.Android
             throw new NotImplementedException();
         }
 
-        public IIconImpl LoadIcon(string fileName)
+        public IWindowIconImpl LoadIcon(string fileName)
         {
             return null;
         }
 
-        public IIconImpl LoadIcon(Stream stream)
+        public IWindowIconImpl LoadIcon(Stream stream)
         {
             return null;
         }
 
-        public IIconImpl LoadIcon(IBitmapImpl bitmap)
+        public IWindowIconImpl LoadIcon(IBitmapImpl bitmap)
         {
             return null;
         }

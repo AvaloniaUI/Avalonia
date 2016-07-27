@@ -43,6 +43,6 @@ namespace Avalonia.Platform
         /// <summary>
         /// Sets the icon of this window.
         /// </summary>
-        void SetIcon(IIconImpl icon);
+        void SetIcon(IWindowIconImpl icon);
     }
 }

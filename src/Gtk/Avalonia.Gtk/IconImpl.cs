@@ -8,7 +8,7 @@ using Gdk;
 
 namespace Avalonia.Gtk
 {
-    class IconImpl : IIconImpl
+    class IconImpl : IWindowIconImpl
     {
         public IconImpl(Pixbuf pixbuf)
         {

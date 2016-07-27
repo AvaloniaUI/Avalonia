@@ -8,17 +8,17 @@ namespace Avalonia.iOS
 {
     class PlatformIconLoader : IPlatformIconLoader
     {
-        public IIconImpl LoadIcon(IBitmapImpl bitmap)
+        public IWindowIconImpl LoadIcon(IBitmapImpl bitmap)
         {
             return null;
         }
 
-        public IIconImpl LoadIcon(Stream stream)
+        public IWindowIconImpl LoadIcon(Stream stream)
         {
             return null;
         }
 
-        public IIconImpl LoadIcon(string fileName)
+        public IWindowIconImpl LoadIcon(string fileName)
         {
             return null;
         }

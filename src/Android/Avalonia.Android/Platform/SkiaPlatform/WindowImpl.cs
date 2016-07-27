@@ -181,7 +181,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             Paint?.Invoke(new Rect(new Point(0, 0), ClientSize));
         }
 
-        public void SetIcon(IIconImpl icon)
+        public void SetIcon(IWindowIconImpl icon)
         {
             // No window icons for mobile platforms
         }
