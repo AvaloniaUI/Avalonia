@@ -27,7 +27,7 @@ namespace Avalonia.Platform
         void Save(string fileName);
 
         /// <summary>
-        /// Saves the bitmap to a stream.
+        /// Saves the bitmap to a stream in png format.
         /// </summary>
         /// <param name="stream">The stream.</param>
         void Save(Stream stream);
