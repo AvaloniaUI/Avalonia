@@ -14,9 +14,9 @@ namespace Avalonia.DesignerSupport.Tests
         private string _appDir;
         private IntPtr _window;
 
-        public void DoCheck(string outputDir, string xamlText)
+        public void DoCheck(string baseAsset, string xamlText)
         {
-            _appDir = Path.GetFullPath(outputDir);
+            _appDir = new FileInfo(baseAsset).Directory.FullName;
             AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
             foreach (var asm in Directory.GetFiles(_appDir).Where(f => f.ToLower().EndsWith(".dll") || f.ToLower().EndsWith(".exe")))
                 try
@@ -29,8 +29,12 @@ namespace Avalonia.DesignerSupport.Tests
             var dic = new Dictionary<string, object>();
             var api = new DesignerApi(dic) { OnResize = OnResize, OnWindowCreated = OnWindowCreated };
             LookupStaticMethod("Avalonia.DesignerSupport.DesignerAssist", "Init").Invoke(null, new object[] { dic });
-
-            api.UpdateXaml(xamlText);
+            
+            api.UpdateXaml2(new DesignerApiXamlFileInfo
+            {
+                Xaml = xamlText,
+                AssemblyPath = baseAsset
+            }.Dictionary);
             if (_window == IntPtr.Zero)
                 throw new Exception("Something went wrong");
 

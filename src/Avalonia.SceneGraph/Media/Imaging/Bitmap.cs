@@ -1,6 +1,7 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
 using System.IO;
 using Avalonia.Platform;
 
@@ -65,6 +66,11 @@ namespace Avalonia.Media.Imaging
         public void Save(string fileName)
         {
             PlatformImpl.Save(fileName);
+        }
+
+        public void Save(Stream stream)
+        {
+            PlatformImpl.Save(stream);
         }
     }
 }

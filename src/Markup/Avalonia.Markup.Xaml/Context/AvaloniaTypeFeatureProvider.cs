@@ -173,6 +173,7 @@ namespace Avalonia.Markup.Xaml.Context
             RegisterTypeConverter(typeof(TimeSpan), new TimeSpanTypeConverter());
             RegisterTypeConverter(typeof(Uri), new UriTypeConverter());
             RegisterTypeConverter(typeof(Cursor), new CursorTypeConverter());
+            RegisterTypeConverter(typeof(WindowIcon), new IconTypeConverter());
         }
     }
 }

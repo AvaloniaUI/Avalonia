@@ -61,7 +61,8 @@ namespace Avalonia.iOS
                 .Bind<IKeyboardDevice>().ToConstant(KeyboardDevice)
                 .Bind<IMouseDevice>().ToConstant(MouseDevice)
                 .Bind<IPlatformSettings>().ToSingleton<PlatformSettings>()
-                .Bind<IPlatformThreadingInterface>().ToConstant(PlatformThreadingInterface.Instance);
+                .Bind<IPlatformThreadingInterface>().ToConstant(PlatformThreadingInterface.Instance)
+                .Bind<IPlatformIconLoader>().ToSingleton<PlatformIconLoader>();
         }
     }
 }

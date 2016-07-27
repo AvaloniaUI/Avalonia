@@ -46,6 +46,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ClipboardImpl.cs" />
+    <Compile Include="IconImpl.cs" />
     <Compile Include="SystemDialogImpl.cs" />
     <Compile Include="CursorFactory.cs" />
     <Compile Include="GtkExtensions.cs" />
