@@ -18,38 +18,52 @@ We currently need to build our own private version of some libraries. These are 
     
 ## Linux
 
-This guide Written for Ubuntu 15.04 - I'm not sure how well it applies to other distributions, but
-please submit a PR if you have anything to add.
+### Install the latest version of Mono
 
-### Install Latest Mono
+To build Avalonia under Linux, you need to have a recent version of Mono installed. 
+Mono is a cross-platform, open source .Net platform. 
+There is a very good chance that the version of Mono that came with your Linux distribution
+is too old, so you want to install a more up-to-date version. The most convenient way to to this
+is through your package manager. The Mono project has great 
+[installation instructions for many popular Linux 
+distros](http://www.mono-project.com/docs/getting-started/install/linux).
 
-That the time of writing, mono 4.2 aplha was needed to build. Add mono package sources by following
-instructions below for the stable channel and then add the alpha channel as well.
+This will make the most up-to-date Mono release available through
+your package manager, and offer you updates as they become available.
 
-http://www.mono-project.com/docs/getting-started/install/linux/#debian-ubuntu-and-derivatives
-
-Then install the needed packages:
-
-    sudo apt-get install git mono-devel referenceassemblies-pcl monodevelop
+Once you have your package manager configured for the Mono repository, install the required 
+packages:
+* mono-devel 
+* referenceassemblies-pcl 
+* monodevelop
 
 ### Clone the Avalonia repository
 
     git clone https://github.com/AvaloniaUI/Avalonia.git
 
-We currently need to build our own private version of ReactiveUI as it doesn't work on mono. This
-is linked as a submodule in the git repository, so run:
+### Update the submodules
+
+The Avalonia repository contains a few submodules, which need to be manually updated.
 
     git submodule update --init
-    
-The next step is to download the Skia native libraries. Run ```getnatives.sh``` script which can be found under the folder ```src\Skia\```.
-   
-### Load the Project in MonoDevelop
 
-Start MonoDevelop and open the `Avalonia.sln` solution. Wait for MonoDevelop to install the
-project's NuGet packages.
+### Restore nuget packages
 
-Set the TestApplication project as the startup project and click Run.
+Unless you have a very current version of monodevelop (6.1.x or newer), it is necessary to manually
+restore the Nuget depdendencies:
 
-There will be some compile errors in the tests, but ignore them for now. 
+    cd Avalonia
+    mkdir -p .nuget
+    wget -O .nuget/nuget.exe https://dist.nuget.org/win-x86-commandline/latest/nuget.exe
+    mono .nuget/nuget.exe restore Avalonia.mono.sln
 
-You can track the Linux version's progress in the [Linux issue](https://github.com/AvaloniaUI/Avalonia/issues/78).
+### Build Avalonia
+
+Start MonoDevelop and open the `Avalonia.sln` solution. Set the Samples/TestApplication 
+project as the startup project and click Run.
+
+There will be some compile errors in tests for the Windows platform, which can be safely
+ignored.
+
+Enjoy playing with Avalonia! You may want to explore some of the other Samples for a 
+flavor of the Platform
