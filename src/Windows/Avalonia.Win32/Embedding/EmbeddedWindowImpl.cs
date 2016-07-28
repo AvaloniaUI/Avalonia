@@ -8,10 +8,14 @@ namespace Avalonia.Win32
 {
     public class EmbeddedWindowImpl : WindowImpl
     {
+#if NOT_NETSTANDARD
         private static readonly System.Windows.Forms.UserControl WinFormsControl = new System.Windows.Forms.UserControl();
-
+#endif
         protected override IntPtr CreateWindowOverride(ushort atom)
         {
+#if !NOT_NETSTANDARD
+            throw new NotImplementedException();
+#else
             var hWnd = UnmanagedMethods.CreateWindowEx(
                 0,
                 atom,
@@ -26,6 +30,7 @@ namespace Avalonia.Win32
                 IntPtr.Zero,
                 IntPtr.Zero);
             return hWnd;
+#endif
         }
     }
 }

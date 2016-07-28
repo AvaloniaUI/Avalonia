@@ -177,7 +177,11 @@ namespace Avalonia.Win32
                             {
                                 try
                                 {
+#if NOT_NETSTANDARD
                                     result = Marshal.PtrToStringAuto(pszString);
+#else
+                                    result = Marshal.PtrToStringAnsi(pszString);
+#endif
                                 }
                                 finally
                                 {

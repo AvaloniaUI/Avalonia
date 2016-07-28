@@ -9,11 +9,13 @@ namespace Avalonia.Win32
 {
     class IconImpl : IWindowIconImpl
     {
+#if NOT_NETSTANDARD
         public IconImpl(System.Drawing.Bitmap iconBitmap)
         {
             IconBitmap = iconBitmap;
         }
 
         public System.Drawing.Bitmap IconBitmap { get; }
+#endif
     }
 }

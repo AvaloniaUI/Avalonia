@@ -12,8 +12,19 @@ namespace Avalonia.Shared.PlatformSupport
 {
     internal class PclPlatformWrapper : IPclPlatformWrapper
     {
+#if NOT_NETSTANDARD
         public Assembly[] GetLoadedAssemblies() => AppDomain.CurrentDomain.GetAssemblies();
-        public void PostThreadPoolItem(Action cb) => ThreadPool.UnsafeQueueUserWorkItem(_ => cb(), null);
+#else
+        public Assembly[] GetLoadedAssemblies()
+        {
+            Type appDomainType = Type.GetType("AppDomain");
+            var currentDomainProperty = appDomainType.GetTypeInfo().GetProperty("CurrentDomain");
+            var currentDomain = currentDomainProperty.GetMethod.Invoke(null, null);
+            var getAssembliesMethod = appDomainType.GetTypeInfo().GetMethod("GetAssemblies");
+            return (Assembly[])getAssembliesMethod.Invoke(currentDomain, null);
+        }
+#endif
+        public void PostThreadPoolItem(Action cb) => ThreadPool.QueueUserWorkItem(_ => cb(), null);
         public IDisposable StartSystemTimer(TimeSpan interval, Action tick)
         {
             var timer = new Timer(delegate

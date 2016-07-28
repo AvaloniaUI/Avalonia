@@ -754,7 +754,11 @@ namespace Avalonia.Win32.Interop
         [DllImport("user32.dll")]
         public static extern bool UnregisterClass(string lpClassName, IntPtr hInstance);
 
+#if !NOT_NETSTANDARD
+        [DllImport("user32.dll", SetLastError = true)]
+#else
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+#endif
         public static extern bool SetWindowText(IntPtr hwnd, string lpString);
 
         public enum ClassLongIndex : int
@@ -778,8 +782,12 @@ namespace Avalonia.Win32.Interop
 
             return SetClassLong64(hWnd, nIndex, dwNewLong);
         }
-        
+
+#if !NOT_NETSTANDARD
+        [ComImport, ClassInterface(ClassInterfaceType.None), Guid("DC1C5A9C-E88A-4DDE-A5A1-60F82A20AEF7")]
+#else
         [ComImport, ClassInterface(ClassInterfaceType.None), TypeLibType(TypeLibTypeFlags.FCanCreate), Guid("DC1C5A9C-E88A-4DDE-A5A1-60F82A20AEF7")]
+#endif
         internal class FileOpenDialogRCW { }
 
         
@@ -801,16 +809,32 @@ namespace Avalonia.Win32.Interop
         [DllImport("user32.dll")]
         public static extern IntPtr SetClipboardData(ClipboardFormat uFormat, IntPtr hMem);
 
+#if !NOT_NETSTANDARD
+        [DllImport("kernel32.dll", ExactSpelling = true)]
+#else
         [DllImport("kernel32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
+#endif
         public static extern IntPtr GlobalLock(IntPtr handle);
 
+#if !NOT_NETSTANDARD
+        [DllImport("kernel32.dll", ExactSpelling = true)]
+#else
         [DllImport("kernel32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
+#endif
         public static extern bool GlobalUnlock(IntPtr handle);
 
+#if !NOT_NETSTANDARD
+        [DllImport("kernel32.dll", ExactSpelling = true)]
+#else
         [DllImport("kernel32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
+#endif
         public static extern IntPtr GlobalAlloc(int uFlags, int dwBytes);
 
+#if !NOT_NETSTANDARD
+        [DllImport("kernel32.dll", ExactSpelling = true)]
+#else
         [DllImport("kernel32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
+#endif
         public static extern IntPtr GlobalFree(IntPtr hMem);
 
         [DllImport("kernel32.dll", SetLastError = true)]
@@ -843,7 +867,11 @@ namespace Avalonia.Win32.Interop
         public static extern IntPtr MonitorFromWindow(IntPtr hwnd, MONITOR dwFlags);
 
         [return: MarshalAs(UnmanagedType.Bool)]
+#if !NOT_NETSTANDARD
+        [DllImport("user32.dll", SetLastError = true)]
+#else
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+#endif
         public static extern bool PostMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
 
         public enum MONITOR
@@ -1074,78 +1102,174 @@ namespace Avalonia.Win32.Interop
     [ComImport(), Guid("42F85136-DB7E-439C-85F1-E4075D135FC8"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     internal interface IFileDialog
     {
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+#if !NOT_NETSTANDARD
+        [MethodImpl(MethodImplOptionsEx.InternalCall)]
+#else
+        [MethodImpl(MethodImplOptionsEx.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+#endif
         [PreserveSig()]
         uint Show([In, Optional] IntPtr hwndOwner); //IModalWindow 
 
 
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+#if !NOT_NETSTANDARD
+        [MethodImpl(MethodImplOptionsEx.InternalCall)]
+#else
+        [MethodImpl(MethodImplOptionsEx.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+#endif
         uint SetFileTypes([In] uint cFileTypes, [In, MarshalAs(UnmanagedType.LPArray)] IntPtr rgFilterSpec);
 
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+#if !NOT_NETSTANDARD
+        [MethodImpl(MethodImplOptionsEx.InternalCall)]
+#else
+        [MethodImpl(MethodImplOptionsEx.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+#endif
         uint SetFileTypeIndex([In] uint iFileType);
 
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+#if !NOT_NETSTANDARD
+        [MethodImpl(MethodImplOptionsEx.InternalCall)]
+#else
+        [MethodImpl(MethodImplOptionsEx.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+#endif
         uint GetFileTypeIndex(out uint piFileType);
 
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+#if !NOT_NETSTANDARD
+        [MethodImpl(MethodImplOptionsEx.InternalCall)]
+#else
+        [MethodImpl(MethodImplOptionsEx.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+#endif
         uint Advise([In, MarshalAs(UnmanagedType.Interface)] IntPtr pfde, out uint pdwCookie);
 
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+#if !NOT_NETSTANDARD
+        [MethodImpl(MethodImplOptionsEx.InternalCall)]
+#else
+        [MethodImpl(MethodImplOptionsEx.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+#endif
         uint Unadvise([In] uint dwCookie);
 
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+#if !NOT_NETSTANDARD
+        [MethodImpl(MethodImplOptionsEx.InternalCall)]
+#else
+        [MethodImpl(MethodImplOptionsEx.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+#endif
         uint SetOptions([In] uint fos);
 
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+#if !NOT_NETSTANDARD
+        [MethodImpl(MethodImplOptionsEx.InternalCall)]
+#else
+        [MethodImpl(MethodImplOptionsEx.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+#endif
         uint GetOptions(out uint fos);
 
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+#if !NOT_NETSTANDARD
+        [MethodImpl(MethodImplOptionsEx.InternalCall)]
+#else
+        [MethodImpl(MethodImplOptionsEx.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+#endif
         void SetDefaultFolder([In, MarshalAs(UnmanagedType.Interface)] IShellItem psi);
 
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+#if !NOT_NETSTANDARD
+        [MethodImpl(MethodImplOptionsEx.InternalCall)]
+#else
+        [MethodImpl(MethodImplOptionsEx.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+#endif
         uint SetFolder([In, MarshalAs(UnmanagedType.Interface)] IShellItem psi);
 
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+#if !NOT_NETSTANDARD
+        [MethodImpl(MethodImplOptionsEx.InternalCall)]
+#else
+        [MethodImpl(MethodImplOptionsEx.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+#endif
         uint GetFolder([MarshalAs(UnmanagedType.Interface)] out IShellItem ppsi);
 
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+#if !NOT_NETSTANDARD
+        [MethodImpl(MethodImplOptionsEx.InternalCall)]
+#else
+        [MethodImpl(MethodImplOptionsEx.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+#endif
         uint GetCurrentSelection([MarshalAs(UnmanagedType.Interface)] out IShellItem ppsi);
 
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+#if !NOT_NETSTANDARD
+        [MethodImpl(MethodImplOptionsEx.InternalCall)]
+#else
+        [MethodImpl(MethodImplOptionsEx.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+#endif
         uint SetFileName([In, MarshalAs(UnmanagedType.LPWStr)] string pszName);
 
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+#if !NOT_NETSTANDARD
+        [MethodImpl(MethodImplOptionsEx.InternalCall)]
+#else
+        [MethodImpl(MethodImplOptionsEx.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+#endif
         uint GetFileName([MarshalAs(UnmanagedType.LPWStr)] out string pszName);
 
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+#if !NOT_NETSTANDARD
+        [MethodImpl(MethodImplOptionsEx.InternalCall)]
+#else
+        [MethodImpl(MethodImplOptionsEx.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+#endif
         uint SetTitle([In, MarshalAs(UnmanagedType.LPWStr)] string pszTitle);
 
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+#if !NOT_NETSTANDARD
+        [MethodImpl(MethodImplOptionsEx.InternalCall)]
+#else
+        [MethodImpl(MethodImplOptionsEx.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+#endif
         uint SetOkButtonLabel([In, MarshalAs(UnmanagedType.LPWStr)] string pszText);
 
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+#if !NOT_NETSTANDARD
+        [MethodImpl(MethodImplOptionsEx.InternalCall)]
+#else
+        [MethodImpl(MethodImplOptionsEx.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+#endif
         uint SetFileNameLabel([In, MarshalAs(UnmanagedType.LPWStr)] string pszLabel);
 
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+#if !NOT_NETSTANDARD
+        [MethodImpl(MethodImplOptionsEx.InternalCall)]
+#else
+        [MethodImpl(MethodImplOptionsEx.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+#endif
         uint GetResult([MarshalAs(UnmanagedType.Interface)] out IShellItem ppsi);
 
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+#if !NOT_NETSTANDARD
+        [MethodImpl(MethodImplOptionsEx.InternalCall)]
+#else
+        [MethodImpl(MethodImplOptionsEx.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+#endif
         uint AddPlace([In, MarshalAs(UnmanagedType.Interface)] IShellItem psi, uint fdap);
 
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+#if !NOT_NETSTANDARD
+        [MethodImpl(MethodImplOptionsEx.InternalCall)]
+#else
+        [MethodImpl(MethodImplOptionsEx.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+#endif
         uint SetDefaultExtension([In, MarshalAs(UnmanagedType.LPWStr)] string pszDefaultExtension);
 
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+#if !NOT_NETSTANDARD
+        [MethodImpl(MethodImplOptionsEx.InternalCall)]
+#else
+        [MethodImpl(MethodImplOptionsEx.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+#endif
         uint Close([MarshalAs(UnmanagedType.Error)] uint hr);
 
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+#if !NOT_NETSTANDARD
+        [MethodImpl(MethodImplOptionsEx.InternalCall)]
+#else
+        [MethodImpl(MethodImplOptionsEx.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+#endif
         uint SetClientGuid([In] ref Guid guid);
 
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+#if !NOT_NETSTANDARD
+        [MethodImpl(MethodImplOptionsEx.InternalCall)]
+#else
+        [MethodImpl(MethodImplOptionsEx.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+#endif
         uint ClearClientData();
 
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+#if !NOT_NETSTANDARD
+        [MethodImpl(MethodImplOptionsEx.InternalCall)]
+#else
+        [MethodImpl(MethodImplOptionsEx.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+#endif
         uint SetFilter([MarshalAs(UnmanagedType.Interface)] IntPtr pFilter);
     }
 
@@ -1153,19 +1277,52 @@ namespace Avalonia.Win32.Interop
     [ComImport, Guid("43826D1E-E718-42EE-BC55-A1E261C37BFE"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     internal interface IShellItem
     {
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+#if !NOT_NETSTANDARD
+        [MethodImpl(MethodImplOptionsEx.InternalCall)]
+#else
+        [MethodImpl(MethodImplOptionsEx.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+#endif
         uint BindToHandler([In] IntPtr pbc, [In] ref Guid rbhid, [In] ref Guid riid, [Out, MarshalAs(UnmanagedType.Interface)] out IntPtr ppvOut);
 
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+#if !NOT_NETSTANDARD
+        [MethodImpl(MethodImplOptionsEx.InternalCall)]
+#else
+        [MethodImpl(MethodImplOptionsEx.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+#endif
         uint GetParent([MarshalAs(UnmanagedType.Interface)] out IShellItem ppsi);
 
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+#if !NOT_NETSTANDARD
+        [MethodImpl(MethodImplOptionsEx.InternalCall)]
+#else
+        [MethodImpl(MethodImplOptionsEx.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+#endif
         uint GetDisplayName([In] uint sigdnName, out IntPtr ppszName);
 
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+#if !NOT_NETSTANDARD
+        [MethodImpl(MethodImplOptionsEx.InternalCall)]
+#else
+        [MethodImpl(MethodImplOptionsEx.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+#endif
         uint GetAttributes([In] uint sfgaoMask, out uint psfgaoAttribs);
 
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+#if !NOT_NETSTANDARD
+        [MethodImpl(MethodImplOptionsEx.InternalCall)]
+#else
+        [MethodImpl(MethodImplOptionsEx.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+#endif
         uint Compare([In, MarshalAs(UnmanagedType.Interface)] IShellItem psi, [In] uint hint, out int piOrder);
     }
+
+    // NETStandard stubs
+    internal static class MethodImplOptionsEx
+    {
+        internal const MethodImplOptions InternalCall = (MethodImplOptions)4096;
+    }
+
+#if !NOT_NETSTANDARD
+    internal class TypeLibTypeAttribute
+    {
+
+    }
+#endif
 }

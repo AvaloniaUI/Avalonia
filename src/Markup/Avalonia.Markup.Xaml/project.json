@@ -3,9 +3,12 @@
   "dependencies": {
     "Microsoft.NETCore.Portable.Compatibility": "1.0.1",
     "NETStandard.Library": "1.6.0",
+    "Sprache": "2.0.0.52",
     "System.Reactive": "3.0.0"
   },
   "frameworks": {
-    "netstandard1.1": {}
+    "netstandard1.1": {
+      "imports": "portable-net4+netcore45+win8+wp8+sl5+MonoAndroid+Xamarin.iOS10+MonoTouch"
+    }
   }
 }

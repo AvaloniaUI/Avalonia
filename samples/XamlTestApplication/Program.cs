@@ -3,7 +3,9 @@
 
 using System.Linq;
 using System.Diagnostics;
+#if NOT_NETSTANDARD
 using System.Windows.Threading;
+#endif
 using Avalonia;
 using Serilog;
 using Avalonia.Logging.Serilog;
@@ -15,8 +17,10 @@ namespace XamlTestApplication
     {
         private static void Main(string[] args)
         {
+#if NOT_NETSTANDARD
             // this sucks. Can we fix this? Do we even need it anymore?
             var foo = Dispatcher.CurrentDispatcher;
+#endif
 
             InitializeLogging();
 
@@ -27,7 +31,7 @@ namespace XamlTestApplication
 
         private static void InitializeLogging()
         {
-#if DEBUG
+#if DEBUG && NOT_NETSTANDARD
             SerilogLogger.Initialize(new LoggerConfiguration()
                 .MinimumLevel.Warning()
                 .WriteTo.Trace(outputTemplate: "{Area}: {Message}")

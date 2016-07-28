@@ -130,7 +130,16 @@ namespace Avalonia.Shared.PlatformSupport
             AssemblyDescriptor rv;
             if (!AssemblyNameCache.TryGetValue(name, out rv))
             {
+#if NOT_NETSTANDARD
                 var loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies();
+#else
+                Type appDomainType = Type.GetType("AppDomain");
+                var currentDomainProperty = appDomainType.GetTypeInfo().GetProperty("CurrentDomain");
+                var currentDomain = currentDomainProperty.GetMethod.Invoke(null, null);
+                var getAssembliesMethod = appDomainType.GetTypeInfo().GetMethod("GetAssemblies");
+                var loadedAssemblies = (Assembly[])getAssembliesMethod.Invoke(currentDomain, null);
+
+#endif
                 var match = loadedAssemblies.FirstOrDefault(a => a.GetName().Name == name);
                 if (match != null)
                 {
@@ -141,7 +150,7 @@ namespace Avalonia.Shared.PlatformSupport
                     // iOS does not support loading assemblies dynamically!
                     //
 #if !__IOS__
-                    AssemblyNameCache[name] = rv = new AssemblyDescriptor(Assembly.Load(name));
+                    AssemblyNameCache[name] = rv = new AssemblyDescriptor(Assembly.Load(new AssemblyName(name)));
 #endif
                 }
             }
