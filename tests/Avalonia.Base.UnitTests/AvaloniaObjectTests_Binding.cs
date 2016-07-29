@@ -227,14 +227,14 @@ namespace Avalonia.Base.UnitTests
         public void this_Operator_Binds_One_Way()
         {
             Class1 target1 = new Class1();
-            Class1 target2 = new Class1();
-            IndexerDescriptor binding = Class1.FooProperty.Bind().WithMode(BindingMode.OneWay);
+            Class2 target2 = new Class2();
+            IndexerDescriptor binding = Class2.BarProperty.Bind().WithMode(BindingMode.OneWay);
 
             target1.SetValue(Class1.FooProperty, "first");
             target2[binding] = target1[!Class1.FooProperty];
             target1.SetValue(Class1.FooProperty, "second");
 
-            Assert.Equal("second", target2.GetValue(Class1.FooProperty));
+            Assert.Equal("second", target2.GetValue(Class2.BarProperty));
         }
 
         [Fact]
@@ -242,10 +242,9 @@ namespace Avalonia.Base.UnitTests
         {
             Class1 target1 = new Class1();
             Class1 target2 = new Class1();
-            IndexerDescriptor binding = Class1.FooProperty.Bind().WithMode(BindingMode.TwoWay);
 
             target1.SetValue(Class1.FooProperty, "first");
-            target2[binding] = target1[!Class1.FooProperty];
+            target2[!Class1.FooProperty] = target1[!!Class1.FooProperty];
             Assert.Equal("first", target2.GetValue(Class1.FooProperty));
             target1.SetValue(Class1.FooProperty, "second");
             Assert.Equal("second", target2.GetValue(Class1.FooProperty));
@@ -258,10 +257,9 @@ namespace Avalonia.Base.UnitTests
         {
             Class1 target1 = new Class1();
             Class1 target2 = new Class1();
-            IndexerDescriptor binding = Class1.FooProperty.Bind().WithMode(BindingMode.OneTime);
 
             target1.SetValue(Class1.FooProperty, "first");
-            target2[binding] = target1[!Class1.FooProperty];
+            target2[!Class1.FooProperty] = target1[Class1.FooProperty.Bind().WithMode(BindingMode.OneTime)];
             target1.SetValue(Class1.FooProperty, "second");
 
             Assert.Equal("first", target2.GetValue(Class1.FooProperty));

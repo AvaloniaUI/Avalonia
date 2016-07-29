@@ -315,6 +315,19 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
             Assert.Equal(2, vm.Bar);
         }
 
+        [Fact]
+        public void AvaloniaObject_this_Operator_Accepts_Binding()
+        {
+            var target = new ContentControl
+            {
+                DataContext = new { Foo = "foo" }
+            };
+
+            target[!ContentControl.ContentProperty] = new Binding("Foo");
+
+            Assert.Equal("foo", target.Content);
+        }
+
         private class TwoWayBindingTest : Control
         {
             public static readonly StyledProperty<string> TwoWayProperty =

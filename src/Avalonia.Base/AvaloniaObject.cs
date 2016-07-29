@@ -178,57 +178,20 @@ namespace Avalonia
         /// Gets or sets a binding for a <see cref="AvaloniaProperty"/>.
         /// </summary>
         /// <param name="binding">The binding information.</param>
-        public IObservable<object> this[IndexerDescriptor binding]
+        public IBinding this[IndexerDescriptor binding]
         {
             get
             {
-                return CreateBindingDescriptor(binding);
+                return new IndexerBinding(this, binding.Property, binding.Mode);
             }
 
             set
             {
                 var metadata = binding.Property.GetMetadata(GetType());
+                var sourceBinding = value as IBinding;
 
-                var mode = (binding.Mode == BindingMode.Default) ?
-                    metadata.DefaultBindingMode :
-                    binding.Mode;
-                var sourceBinding = value as IndexerDescriptor;
-
-                if (sourceBinding == null && mode > BindingMode.OneWay)
-                {
-                    mode = BindingMode.OneWay;
-                }
-
-                switch (mode)
-                {
-                    case BindingMode.Default:
-                    case BindingMode.OneWay:
-                        Bind(binding.Property, value, binding.Priority);
-                        break;
-                    case BindingMode.OneTime:
-                        SetValue(binding.Property, sourceBinding.Source.GetValue(sourceBinding.Property), binding.Priority);
-                        break;
-                    case BindingMode.OneWayToSource:
-                        sourceBinding.Source.Bind(sourceBinding.Property, this.GetObservable(binding.Property), binding.Priority);
-                        break;
-                    case BindingMode.TwoWay:
-                        var subject = sourceBinding.Source.GetSubject(sourceBinding.Property, sourceBinding.Priority);
-                        var instanced = new InstancedBinding(subject, BindingMode.TwoWay, sourceBinding.Priority);
-                        BindingOperations.Apply(this, binding.Property, instanced, null);
-                        break;
-                }
+                this.Bind(binding.Property, sourceBinding);
             }
-        }
-
-        protected virtual IndexerDescriptor CreateBindingDescriptor(IndexerDescriptor source)
-        {
-            return new IndexerDescriptor
-            {
-                Mode = source.Mode,
-                Priority = source.Priority,
-                Property = source.Property,
-                Source = this,
-            };
         }
 
         public bool CheckAccess() => Dispatcher.UIThread.CheckAccess();
@@ -389,6 +352,8 @@ namespace Avalonia
             BindingPriority priority = BindingPriority.LocalValue)
         {
             Contract.Requires<ArgumentNullException>(property != null);
+            Contract.Requires<ArgumentNullException>(source != null);
+
             VerifyAccess();
 
             if (property.IsDirect)
