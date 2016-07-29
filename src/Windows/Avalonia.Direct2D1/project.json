@@ -1,0 +1,15 @@
+﻿{
+  "supports": {},
+  "dependencies": {
+    "NETStandard.Library": "1.6.0",
+    "SharpDX": "3.0.2",
+    "SharpDX.DXGI": "3.0.2",
+    "SharpDX.Direct2D1": "3.0.2",
+    "System.Runtime.InteropServices": "4.1.0"
+  },
+  "frameworks": {
+    "netstandard1.3": {
+      "imports": "portable-net45+win8+wpa81"
+    }
+  }
+}
