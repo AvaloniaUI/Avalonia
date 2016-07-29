@@ -12,7 +12,7 @@
           <Grid ColumnDefinitions="*,Auto">
             <ContentPresenter Content="{TemplateBinding SelectionBoxItem}"
                               Margin="{TemplateBinding Padding}"
-                              HorizontalAlignment="Center"
+                              HorizontalAlignment="Left"
                               VerticalAlignment="Center"/>
             <ToggleButton Name="toggle"
                           BorderThickness="0"
