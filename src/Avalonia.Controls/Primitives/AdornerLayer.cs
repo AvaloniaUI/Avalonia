@@ -120,7 +120,7 @@ namespace Avalonia.Controls.Primitives
 
                 info.Subscription = _tracker.Track(adorned).Subscribe(x =>
                 {
-                    info.Bounds = x;
+                    info.Bounds = x.Value;
                     InvalidateArrange();
                 });
             }
