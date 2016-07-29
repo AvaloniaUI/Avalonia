@@ -104,7 +104,7 @@ namespace Avalonia.VisualTree
 
             if (filter?.Invoke(visual) != false)
             {
-                bool containsPoint = BoundsTracker.GetTransformedBounds((Visual)visual).Contains(p);
+                bool containsPoint = BoundsTracker.GetTransformedBounds((Visual)visual)?.Contains(p) == true;
 
                 if ((containsPoint || !visual.ClipToBounds) && visual.VisualChildren.Any())
                 {
