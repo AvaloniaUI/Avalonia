@@ -164,6 +164,7 @@ namespace Avalonia.Controls.UnitTests
                         Name = "PART_ItemsPresenter",
                         [~ItemsPresenter.ItemsProperty] = parent.GetObservable(ItemsControl.ItemsProperty).AsBinding(),
                         [~ItemsPresenter.ItemsPanelProperty] = parent.GetObservable(ItemsControl.ItemsPanelProperty).AsBinding(),
+                        [~ItemsPresenter.VirtualizationModeProperty] = parent.GetObservable(ListBox.VirtualizationModeProperty).AsBinding(),
                     }
                 });
         }
