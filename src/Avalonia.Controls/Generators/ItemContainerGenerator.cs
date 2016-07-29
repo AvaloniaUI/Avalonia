@@ -228,7 +228,7 @@ namespace Avalonia.Controls.Generators
         /// <returns>The containers.</returns>
         protected IEnumerable<ItemContainerInfo> GetContainerRange(int index, int count)
         {
-            return _containers.Where(x => x.Key >= index && x.Key <= index + count).Select(x => x.Value);
+            return _containers.Where(x => x.Key >= index && x.Key < index + count).Select(x => x.Value);
         }
 
         /// <summary>
