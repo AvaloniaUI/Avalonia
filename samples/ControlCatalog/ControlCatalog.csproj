@@ -127,6 +127,9 @@
     <Compile Include="Pages\SliderPage.xaml.cs">
       <DependentUpon>SliderPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Pages\TreeViewPage.xaml.cs">
+      <DependentUpon>TreeViewPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Pages\TextBoxPage.xaml.cs">
       <DependentUpon>TextBoxPage.xaml</DependentUpon>
     </Compile>
@@ -206,6 +209,11 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Assets\test_icon.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Pages\TreeViewPage.xaml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

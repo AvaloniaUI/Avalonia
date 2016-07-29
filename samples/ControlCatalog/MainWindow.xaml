@@ -20,5 +20,6 @@
     <TabItem Header="Slider"><pages:SliderPage/></TabItem>
     <TabItem Header="TextBox"><pages:TextBoxPage/></TabItem>
     <TabItem Header="ToolTip"><pages:ToolTipPage/></TabItem>
+    <TabItem Header="TreeView"><pages:TreeViewPage/></TabItem>
   </TabControl>
 </Window>
