@@ -3,7 +3,7 @@
 
 using System;
 using System.Runtime.CompilerServices;
-using JetBrains.Annotations;
+////using JetBrains.Annotations;
 
 namespace Avalonia
 {
@@ -25,7 +25,7 @@ namespace Avalonia
         /// </typeparam>
         /// <param name="condition">The precondition.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [ContractAnnotation("condition:false=>stop")]
+        ////[ContractAnnotation("condition:false=>stop")]
         public static void Requires<TException>(bool condition) where TException : Exception, new()
         {
             if (!condition)
