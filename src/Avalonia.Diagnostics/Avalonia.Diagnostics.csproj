@@ -137,7 +137,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
     <None Include="packages.config" />
     <EmbeddedResource Include="DevTools.xaml">
       <SubType>Designer</SubType>

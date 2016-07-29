@@ -277,7 +277,6 @@
     <Compile Include="Templates\TreeDataTemplate.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
     <None Include="glass\Glass.Core\Glass.Core.nuspec" />
     <None Include="packages.config" />
   </ItemGroup>
