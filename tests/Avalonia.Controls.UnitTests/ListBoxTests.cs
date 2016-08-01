@@ -187,6 +187,38 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(items.Count, target.Presenter.Panel.Children.Count);
         }
 
+        [Fact]
+        public void ListBox_Virt_None_Should_Sync_Items_When_Inserted_AtSameIndex_Or_Removed()
+        {
+            var items = new AvaloniaList<string>(Enumerable.Range(0, 5).Select(x => $"Item {x}"));
+            var toAdd = Enumerable.Range(0, 3).Select(x => $"Added Item {x}").ToArray();
+            var target = new ListBox
+            {
+                Template = ListBoxTemplate(),
+                VirtualizationMode = ItemVirtualizationMode.None,
+                Items = items,
+                ItemTemplate = new FuncDataTemplate<string>(x => new TextBlock { Height = 10 }),
+                SelectedIndex = 0,
+            };
+
+            Prepare(target);
+
+            Assert.Equal(items.Count, target.Presenter.Panel.Children.Count);
+
+            foreach (var item in toAdd)
+            {
+                items.Insert(1, item);
+            }
+
+            Assert.Equal(items.Count, target.Presenter.Panel.Children.Count);
+
+            foreach (var item in toAdd)
+            {
+                items.Remove(item);
+            }
+
+            Assert.Equal(items.Count, target.Presenter.Panel.Children.Count);
+        }
         private FuncControlTemplate ListBoxTemplate()
         {
             return new FuncControlTemplate<ListBox>(parent => 
