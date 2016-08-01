@@ -30,8 +30,8 @@ namespace Avalonia.Skia
 
         IBitmapImpl LoadBitmap(byte[] data)
         {
-            var bitmap = new SKBitmap();
-            if (!SKImageDecoder.DecodeMemory(data, bitmap))
+            var bitmap = SKBitmap.Decode(data);
+            if (bitmap == null)
             {
                 throw new ArgumentException("Unable to load bitmap from provided data");
             }
