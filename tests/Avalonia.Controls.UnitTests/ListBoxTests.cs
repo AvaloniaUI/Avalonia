@@ -170,6 +170,56 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(new Size(100, 10), target.Scroll.Viewport);
         }
 
+        [Fact]
+        public void ListBox_Virt_None_Should_Add_Horizontal_Scroll_When_Needed()
+        {
+            var items = new AvaloniaList<string>(Enumerable.Range(0, 10).Select(x => $"Item {x}"));
+            var target = new ListBox
+            {
+                Template = ListBoxTemplate(),
+                VirtualizationMode = ItemVirtualizationMode.None,
+                Items = items,
+                ItemTemplate = new FuncDataTemplate<string>(x => new TextBlock { Height = 10, Width = 200 }),
+                SelectedIndex = 0,
+            };
+
+            Prepare(target);
+
+            Assert.Equal(items.Count, target.Presenter.Panel.Children.Count);
+
+            Assert.Equal(100, target.DesiredSize.Width);
+            Assert.Equal(200, target.Presenter.Panel.DesiredSize.Width);
+            Assert.Equal(200, target.Presenter.Panel.Bounds.Width);
+
+            Assert.Equal(100, target.Scroll.Viewport.Width);
+            Assert.Equal(200, target.Scroll.Extent.Width);
+        }
+
+        [Fact]
+        public void ListBox_Virt_Simple_Should_Add_Horizontal_Scroll_When_Needed()
+        {
+            var items = new AvaloniaList<string>(Enumerable.Range(0, 10).Select(x => $"Item {x}"));
+            var target = new ListBox
+            {
+                Template = ListBoxTemplate(),
+                VirtualizationMode = ItemVirtualizationMode.Simple,
+                Items = items,
+                ItemTemplate = new FuncDataTemplate<string>(x => new TextBlock { Height = 10, Width=200 }),
+                SelectedIndex = 0,
+            };
+
+            Prepare(target);
+
+            Assert.Equal(items.Count, target.Presenter.Panel.Children.Count);
+
+            Assert.Equal(100, target.DesiredSize.Width);
+            Assert.Equal(200, target.Presenter.Panel.DesiredSize.Width);
+            Assert.Equal(200, target.Presenter.Panel.Bounds.Width);
+
+            Assert.Equal(100, target.Scroll.Viewport.Width);
+            Assert.Equal(200, target.Scroll.Extent.Width);
+        }
+
         private FuncControlTemplate ListBoxTemplate()
         {
             return new FuncControlTemplate<ListBox>(parent => 
