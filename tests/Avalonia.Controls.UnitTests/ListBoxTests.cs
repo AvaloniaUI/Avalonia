@@ -10,6 +10,7 @@ using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Xunit;
+using Avalonia.Collections;
 
 namespace Avalonia.Controls.UnitTests
 {
@@ -150,6 +151,40 @@ namespace Avalonia.Controls.UnitTests
 
             // Make sure recycled item isn't now selected.
             Assert.False(((ListBoxItem)target.Presenter.Panel.Children[0]).IsSelected);
+        }
+
+        [Fact]
+        public void ListBox_Virt_None_Should_Sync_Items_When_Inserted_Or_Removed()
+        {
+            var items = new AvaloniaList<string>(Enumerable.Range(0, 5).Select(x => $"Item {x}"));
+            var toAdd = Enumerable.Range(0, 3).Select(x => $"Added Item {x}").ToArray();
+            var target = new ListBox
+            {
+                Template = ListBoxTemplate(),
+                VirtualizationMode = ItemVirtualizationMode.None,
+                Items = items,
+                ItemTemplate = new FuncDataTemplate<string>(x => new TextBlock { Height = 10 }),
+                SelectedIndex = 0,
+            };
+
+            Prepare(target);
+
+            Assert.Equal(items.Count, target.Presenter.Panel.Children.Count);
+
+            int addIndex = 1;
+            foreach(var item in toAdd)
+            {
+                items.Insert(addIndex++, item);
+            }
+
+            Assert.Equal(items.Count, target.Presenter.Panel.Children.Count);
+
+            foreach (var item in toAdd)
+            {
+                items.Remove(item);
+            }
+
+            Assert.Equal(items.Count, target.Presenter.Panel.Children.Count);
         }
 
         private FuncControlTemplate ListBoxTemplate()
