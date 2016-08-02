@@ -435,6 +435,38 @@ namespace Avalonia.Controls.UnitTests.Presenters
         }
 
         [Fact]
+        public void Inserting_Then_Removing_Should_Add_Remove_Containers()
+        {
+            var items = new AvaloniaList<string>(Enumerable.Range(0, 5).Select(x => $"Item {x}"));
+            var toAdd = Enumerable.Range(0, 3).Select(x => $"Added Item {x}").ToArray();
+            var target = new ItemsPresenter
+            {
+                VirtualizationMode = ItemVirtualizationMode.None,
+                Items = items,
+                ItemTemplate = new FuncDataTemplate<string>(x => new TextBlock { Height = 10 }),
+            };
+
+            target.ApplyTemplate();
+
+            Assert.Equal(items.Count, target.Panel.Children.Count);
+
+            int addIndex = 1;
+            foreach (var item in toAdd)
+            {
+                items.Insert(addIndex++, item);
+            }
+
+            Assert.Equal(items.Count, target.Panel.Children.Count);
+
+            foreach (var item in toAdd)
+            {
+                items.Remove(item);
+            }
+
+            Assert.Equal(items.Count, target.Panel.Children.Count);
+        }
+
+        [Fact]
         public void Reassigning_Items_Should_Remove_Containers()
         {
             var target = CreateTarget(itemCount: 6);

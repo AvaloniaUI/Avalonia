@@ -87,7 +87,8 @@ namespace Avalonia.Controls.Generators
             if (count > 0)
             {
                 var toMove = _containers.Where(x => x.Key >= index)
-                                .OrderByDescending(x => x.Key).ToList();
+                    .OrderByDescending(x => x.Key)
+                    .ToList();
 
                 foreach (var i in toMove)
                 {
