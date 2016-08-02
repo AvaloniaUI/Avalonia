@@ -497,7 +497,7 @@ namespace Avalonia.Win32
                         timestamp,
                         _owner,
                         ScreenToClient(DipFromLParam(lParam)),
-                        new Vector(0, ((int)wParam >> 16) / wheelDelta), GetMouseModifiers(wParam));
+                        new Vector(0, ((long)wParam >> 16) / wheelDelta), GetMouseModifiers(wParam));
                     break;
 
                 case UnmanagedMethods.WindowsMessage.WM_MOUSEHWHEEL:
@@ -506,7 +506,7 @@ namespace Avalonia.Win32
                         timestamp,
                         _owner,
                         ScreenToClient(DipFromLParam(lParam)),
-                        new Vector(-((int)wParam >> 16) / wheelDelta,0), GetMouseModifiers(wParam));
+                        new Vector(-((long)wParam >> 16) / wheelDelta,0), GetMouseModifiers(wParam));
                     break;
 
                 case UnmanagedMethods.WindowsMessage.WM_MOUSELEAVE:
@@ -578,7 +578,7 @@ namespace Avalonia.Win32
 
         static InputModifiers GetMouseModifiers(IntPtr wParam)
         {
-            var keys = (UnmanagedMethods.ModifierKeys)wParam.ToInt32();
+            var keys = (UnmanagedMethods.ModifierKeys)wParam.ToInt64();
             var modifiers = WindowsKeyboardDevice.Instance.Modifiers;
             if (keys.HasFlag(UnmanagedMethods.ModifierKeys.MK_LBUTTON))
                 modifiers |= InputModifiers.LeftMouseButton;
