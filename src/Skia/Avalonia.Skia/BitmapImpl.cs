@@ -24,7 +24,7 @@ namespace Avalonia.Skia
         {
             PixelHeight = height;
             PixelWidth = width;
-            Bitmap = new SKBitmap(width, height, SKColorType.N_32, SKAlphaType.Premul);
+            Bitmap = new SKBitmap(width, height, SKImageInfo.PlatformColorType, SKAlphaType.Premul);
         }
 
         public void Dispose()

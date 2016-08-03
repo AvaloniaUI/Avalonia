@@ -87,7 +87,7 @@ namespace Avalonia.Skia
                 _bitmap.Dispose();
             }
 
-            _bitmap = new SKBitmap(width, height, SKColorType.N_32, SKAlphaType.Premul);
+            _bitmap = new SKBitmap(width, height, SKImageInfo.PlatformColorType, SKAlphaType.Premul);
 
             IntPtr length;
             var pixels = _bitmap.GetPixels(out length);
