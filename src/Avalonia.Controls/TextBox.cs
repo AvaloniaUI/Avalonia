@@ -362,8 +362,7 @@ namespace Avalonia.Controls
                 case Key.Back:
                     if (!DeleteSelection() && CaretIndex > 0)
                     {
-                        Text = text.Substring(0, caretIndex - 1) + text.Substring(caretIndex);
-                        --CaretIndex;
+                        CaretIndex -= DeleteCharacter(CaretIndex - 1);
                     }
 
                     break;
@@ -371,7 +370,7 @@ namespace Avalonia.Controls
                 case Key.Delete:
                     if (!DeleteSelection() && caretIndex < text.Length)
                     {
-                        Text = text.Substring(0, caretIndex) + text.Substring(caretIndex + 1);
+                        DeleteCharacter(CaretIndex);
                     }
 
                     break;
@@ -473,27 +472,84 @@ namespace Avalonia.Controls
         {
             var text = Text;
             var length = text?.Length ?? 0;
-            return Math.Max(0, Math.Min(length, value));
+
+            if (value < 0)
+            {
+                return 0;
+            }
+            else if (value > length)
+            {
+                return length;
+            }
+            else if (value > 0 && text[value - 1] == '\r' && text[value] == '\n')
+            {
+                return value + 1;
+            }
+            else
+            {
+                return value;
+            }
         }
 
-        private void MoveHorizontal(int count, InputModifiers modifiers)
+        private int DeleteCharacter(int index)
+        {
+            var start = index + 1;
+            var text = Text;
+            var c = text[index];
+            var result = 1;
+
+            if (c == '\n' && index > 0 && text[index - 1] == '\r')
+            {
+                --index;
+                ++result;
+            }
+            else if (c == '\r' && index < text.Length - 1 && text[index + 1] == '\n')
+            {
+                ++start;
+                ++result;
+            }
+
+            Text = text.Substring(0, index) + text.Substring(start);
+
+            return result;
+        }
+
+        private void MoveHorizontal(int direction, InputModifiers modifiers)
         {
             var text = Text ?? string.Empty;
             var caretIndex = CaretIndex;
 
-            if ((modifiers & InputModifiers.Control) != 0)
+            if ((modifiers & InputModifiers.Control) == 0)
             {
-                if (count > 0)
+                var index = caretIndex + direction;
+
+                if (index < 0 || index >= text.Length)
                 {
-                    count = StringUtils.NextWord(text, caretIndex, false) - caretIndex;
+                    return;
+                }
+
+                var c = text[index];
+
+                if (direction > 0)
+                {
+                    CaretIndex += (c == '\r' && index < text.Length - 1 && text[index + 1] == '\n') ? 2 : 1;
                 }
                 else
                 {
-                    count = StringUtils.PreviousWord(text, caretIndex, false) - caretIndex;
+                    CaretIndex -= (c == '\n' && index > 0 && text[index - 1] == '\r') ? 2 : 1;
                 }
             }
-
-            CaretIndex = caretIndex += count;
+            else
+            {
+                if (direction > 0)
+                {
+                    CaretIndex += StringUtils.NextWord(text, caretIndex, false) - caretIndex;
+                }
+                else
+                {
+                    CaretIndex += StringUtils.PreviousWord(text, caretIndex, false) - caretIndex;
+                }
+            }
         }
 
         private void MoveVertical(int count, InputModifiers modifiers)
