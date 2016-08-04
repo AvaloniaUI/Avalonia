@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Avalonia.Collections;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
@@ -267,41 +268,6 @@ namespace Avalonia.Controls.UnitTests.Presenters
             Assert.Equal(20, target.Panel.Children.Count);
             Assert.Equal(new Size(10, 200), scroll.Extent);
             Assert.Equal(new Size(100, 100), scroll.Viewport);
-        }
-
-        [Fact]
-        public void Should_Add_Items_After_Clear()
-        {
-            var target = CreateTarget(itemCount: 10);
-            var defaultItems = (IList<string>)target.Items;
-            var items = new Avalonia.Collections.AvaloniaList<string>(defaultItems);
-            target.Items = items;
-
-            target.ApplyTemplate();
-            target.Measure(new Size(100, 100));
-            target.Arrange(new Rect(target.DesiredSize));
-
-            Assert.Equal(10, target.Panel.Children.Count);
-
-            items.Clear();
-
-            target.Panel.Measure(new Size(100, 100));
-            target.Panel.Arrange(new Rect(target.Panel.DesiredSize));
-
-            target.Measure(new Size(100, 100));
-            target.Arrange(new Rect(target.DesiredSize));
-
-            Assert.Equal(0, target.Panel.Children.Count);
-
-            items.AddRange(defaultItems.Select(s => s + " new"));
-
-            target.Panel.Measure(new Size(100, 100));
-            target.Panel.Arrange(new Rect(target.Panel.DesiredSize));
-
-            target.Measure(new Size(100, 100));
-            target.Arrange(new Rect(target.DesiredSize));
-
-            Assert.Equal(10, target.Panel.Children.Count);
         }
 
         private static ItemsPresenter CreateTarget(
