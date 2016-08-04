@@ -118,7 +118,7 @@ namespace Avalonia.Cairo.Media
         /// </summary>
         /// <param name="pen">The stroke pen.</param>
         /// <param name="p1">The first point of the line.</param>
-        /// <param name="p1">The second point of the line.</param>
+        /// <param name="p2">The second point of the line.</param>
         public void DrawLine(Pen pen, Point p1, Point p2)
         {
             var size = new Rect(p1, p2).Size;
