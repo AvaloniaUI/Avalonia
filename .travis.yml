@@ -15,6 +15,7 @@ install:
 script:
   - xbuild /p:Configuration=Release Avalonia.travis-mono.sln
   - ./tests/run-tests.sh
+  - mono ./packages/JetBrains.dotMemoryUnit.2.1.20150828.125449/tools/dotMemoryUnit.exe -targetExecutable="./testrunner/xunit.runner.console.2.1.0/tools/xunit.console.exe" -returnTargetExitCode  --"tests/Avalonia.LeakTests/bin/Release/Avalonia.LeakTests.dll"
 notifications:
   email: false
   webhooks:
