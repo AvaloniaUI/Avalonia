@@ -125,7 +125,7 @@ namespace Avalonia.Controls.Presenters
 
                     case NotifyCollectionChangedAction.Remove:
                         if (e.OldStartingIndex >= FirstIndex &&
-                            e.OldStartingIndex + e.OldItems.Count <= NextIndex)
+                            e.OldStartingIndex < NextIndex)
                         {
                             RecycleContainersOnRemove();
                         }
