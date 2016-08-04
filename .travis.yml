@@ -4,6 +4,12 @@ os:
   - osx
 mono:
   - latest
+  - 4.4.2
+  - 4.4.1
+  - 4.4.0
+  - alpha
+  - beta
+  - weekly
 solution: Avalonia.mono.sln
 before_install:
   - mkdir -p .nuget
