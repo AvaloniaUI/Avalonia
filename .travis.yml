@@ -1,10 +1,7 @@
 language: csharp
-matrix:
-  include:
-  - os: linux
-    dist: trusty
-  - os: osx
-    osx_image: xcode7.2
+os:
+  - linux
+  - osx
 mono:
   - latest
 solution: Avalonia.mono.sln
