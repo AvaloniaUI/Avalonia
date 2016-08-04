@@ -1,6 +1,6 @@
 language: csharp
 matrix:
-  include
+  include:
   - os: linux
     dist: trusty
     sudo: required
