@@ -608,6 +608,56 @@ namespace Avalonia.Controls.UnitTests.Presenters
             Assert.Equal(expected, actual);
         }
 
+        [Fact]
+        public void RemoveRange_Items_Should_Update_Containers()
+        {
+            var target = CreateTarget(useAvaloniaList: true);
+
+            target.ApplyTemplate();
+            target.Measure(new Size(100, 100));
+            target.Arrange(new Rect(0, 0, 100, 100));
+
+            var expected = Enumerable.Range(0, 13).Select(x => $"Item {x}").ToList();
+            var items = (AvaloniaList<string>)target.Items;
+            var actual = target.Panel.Children.Select(x => x.DataContext).ToList();
+
+            Assert.Equal(expected.Take(10), actual);
+
+            int index = 5;
+            int count = 3;
+
+            items.RemoveRange(index, count);
+            expected.RemoveRange(index, count);
+
+            actual = target.Panel.Children.Select(x => x.DataContext).ToList();
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public void RemoveRange_Items_Before_Last_Should_Update_Containers()
+        {
+            var target = CreateTarget(useAvaloniaList: true);
+
+            target.ApplyTemplate();
+            target.Measure(new Size(100, 100));
+            target.Arrange(new Rect(0, 0, 100, 100));
+
+            var expected = Enumerable.Range(0, 13).Select(x => $"Item {x}").ToList();
+            var items = (AvaloniaList<string>)target.Items;
+            var actual = target.Panel.Children.Select(x => x.DataContext).ToList();
+
+            Assert.Equal(expected.Take(10), actual);
+
+            int index = 8;
+            int count = 3;
+
+            items.RemoveRange(index, count);
+            expected.RemoveRange(index, count);
+
+            actual = target.Panel.Children.Select(x => x.DataContext).ToList();
+            Assert.Equal(expected, actual);
+        }
+
         public class Vertical
         {
             [Fact]
