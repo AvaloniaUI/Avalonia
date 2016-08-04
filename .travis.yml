@@ -1,15 +1,13 @@
 language: csharp
-os:
-  - linux
-  - osx
+matrix:
+  include
+  - os: linux
+    dist: trusty
+    sudo: required
+  - os: osx
+    osx_image: xcode8
 mono:
   - latest
-  - 4.4.2
-  - 4.4.1
-  - 4.4.0
-  - alpha
-  - beta
-  - weekly
 solution: Avalonia.mono.sln
 before_install:
   - mkdir -p .nuget
