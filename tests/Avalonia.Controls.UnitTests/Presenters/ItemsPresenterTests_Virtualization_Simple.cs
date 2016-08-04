@@ -554,6 +554,60 @@ namespace Avalonia.Controls.UnitTests.Presenters
             }
         }
 
+        [Fact]
+        public void InsertRange_Items_Should_Update_Containers()
+        {
+            var target = CreateTarget(useAvaloniaList: true);
+
+            target.ApplyTemplate();
+            target.Measure(new Size(100, 100));
+            target.Arrange(new Rect(0, 0, 100, 100));
+
+            var expected = Enumerable.Range(0, 10).Select(x => $"Item {x}").ToList();
+            var items = (AvaloniaList<string>)target.Items;
+            var actual = target.Panel.Children.Select(x => x.DataContext).ToList();
+
+            Assert.Equal(expected, actual);
+
+            var toAdd = Enumerable.Range(0, 3).Select(x => $"New Item {x}").ToList();
+
+            int index = 1;
+
+            items.InsertRange(index, toAdd);
+            expected.InsertRange(index, toAdd);
+            expected.RemoveRange(10, toAdd.Count);
+
+            actual = target.Panel.Children.Select(x => x.DataContext).ToList();
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public void InsertRange_Items_Before_Last_Should_Update_Containers()
+        {
+            var target = CreateTarget(useAvaloniaList: true);
+
+            target.ApplyTemplate();
+            target.Measure(new Size(100, 100));
+            target.Arrange(new Rect(0, 0, 100, 100));
+
+            var expected = Enumerable.Range(0, 10).Select(x => $"Item {x}").ToList();
+            var items = (AvaloniaList<string>)target.Items;
+            var actual = target.Panel.Children.Select(x => x.DataContext).ToList();
+
+            Assert.Equal(expected, actual);
+
+            var toAdd = Enumerable.Range(0, 3).Select(x => $"New Item {x}").ToList();
+
+            int index = 8;
+
+            items.InsertRange(index, toAdd);
+            expected.InsertRange(index, toAdd);
+            expected.RemoveRange(10, toAdd.Count);
+
+            actual = target.Panel.Children.Select(x => x.DataContext).ToList();
+            Assert.Equal(expected, actual);
+        }
+
         public class Vertical
         {
             [Fact]
