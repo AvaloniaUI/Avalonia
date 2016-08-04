@@ -116,7 +116,7 @@ namespace Avalonia.Controls.Presenters
                         CreateAndRemoveContainers();
 
                         if (e.NewStartingIndex >= FirstIndex &&
-                            e.NewStartingIndex + e.NewItems.Count <= NextIndex)
+                            e.NewStartingIndex < NextIndex)
                         {
                             RecycleContainers();
                         }
