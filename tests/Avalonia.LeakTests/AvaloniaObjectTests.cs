@@ -1,11 +1,18 @@
 ﻿using System;
 using System.Reactive.Subjects;
+using JetBrains.dotMemoryUnit;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Avalonia.LeakTests
 {
     public class AvaloniaObjectTests
     {
+        public AvaloniaObjectTests(ITestOutputHelper atr)
+        {
+            DotMemoryUnitTestOutput.SetOutputMethod(atr.WriteLine);
+        }
+
         [Fact]
         public void Binding_To_Direct_Property_Does_Not_Get_Collected()
         {
