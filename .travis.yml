@@ -14,12 +14,7 @@ install:
   - mono .nuget/nuget.exe install xunit.runner.console -Version 2.1.0 -OutputDirectory testrunner
 script:
   - xbuild /p:Configuration=Release Avalonia.travis-mono.sln
-  - mono ./testrunner/xunit.runner.console.2.1.0/tools/xunit.console.exe ./tests/Avalonia.Base.UnitTests/bin/Release/Avalonia.Base.UnitTests.dll
-  - mono ./testrunner/xunit.runner.console.2.1.0/tools/xunit.console.exe ./tests/Avalonia.Input.UnitTests/bin/Release/Avalonia.Input.UnitTests.dll
-  - mono ./testrunner/xunit.runner.console.2.1.0/tools/xunit.console.exe ./tests/Avalonia.Interactivity.UnitTests/bin/Release/Avalonia.Interactivity.UnitTests.dll
-  - mono ./testrunner/xunit.runner.console.2.1.0/tools/xunit.console.exe ./tests/Avalonia.Layout.UnitTests/bin/Release/Avalonia.Layout.UnitTests.dll
-  - mono ./testrunner/xunit.runner.console.2.1.0/tools/xunit.console.exe ./tests/Avalonia.Markup.UnitTests/bin/Release/Avalonia.Markup.UnitTests.dll
-  - mono ./testrunner/xunit.runner.console.2.1.0/tools/xunit.console.exe ./tests/Avalonia.Styling.UnitTests/bin/Release/Avalonia.Styling.UnitTests.dll
+  - ./tests/run-tests.sh
 notifications:
   email: false
   webhooks:
