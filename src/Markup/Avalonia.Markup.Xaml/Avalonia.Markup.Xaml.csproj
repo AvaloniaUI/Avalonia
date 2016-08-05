@@ -94,6 +94,8 @@
     <Compile Include="glass\Glass.Core\ReflectionExtensions.cs" />
     <Compile Include="glass\Glass.Core\StackingLinkedList.cs" />
     <Compile Include="glass\Glass.Core\StackingLinkedListMixin.cs" />
+    <Compile Include="MarkupExtensions\Standard\StaticExtension.cs" />
+    <Compile Include="MarkupExtensions\Standard\TypeExtension.cs" />
     <Compile Include="MarkupExtensions\StyleResourceExtension.cs" />
     <Compile Include="MarkupExtensions\BindingExtension.cs" />
     <Compile Include="MarkupExtensions\RelativeSourceExtension.cs" />
