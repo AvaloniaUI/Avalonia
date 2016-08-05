@@ -1,7 +1,8 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:pages="clr-namespace:ControlCatalog.Pages;assembly=ControlCatalog"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Avalonia Control Gallery"
-        Icon="resm:ControlCatalog.Assets.test_icon.ico">
+        Icon="resm:ControlCatalog.Assets.test_icon.ico?assembly=ControlCatalog">
   <TabControl Classes="sidebar">
     <TabControl.Transition>
       <CrossFade Duration="0.25"/>
