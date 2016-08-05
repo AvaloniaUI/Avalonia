@@ -20,7 +20,7 @@ git submodule update --init
 ### Open in Visual Studio
 
 Open the `Avalonia.sln` solution in Visual Studio 2015 or newer. The free Visual Studio Community
-edition works fine.
+edition works fine. Run the `Samples\ControlCatalog.Desktop` project to see the sample application.
 
 ## Linux
 
@@ -57,9 +57,6 @@ git submodule update --init
 
 ### Restore nuget packages
 
-Unless you have a very current version of monodevelop (6.1.x or newer), it is necessary to manually
-restore the Nuget depdendencies:
-
 ```
 cd Avalonia
 mkdir -p .nuget
@@ -67,21 +64,26 @@ wget -O .nuget/nuget.exe https://dist.nuget.org/win-x86-commandline/latest/nuget
 mono .nuget/nuget.exe restore Avalonia.sln
 ```
 
-### Build Avalonia
+### Build and Run Avalonia
 
-Build avalonia with `xbuild`:
+To build Avalonia in the `Debug` configuration:
 
 ```
-xbuild /p:Configuration=Release Avalonia.travis-mono.sln
+xbuild /p:Platform=Mono /p:Configuration=Debug Avalonia.sln
 ```
 
-### Open Avalonia in MonoDevelop
+You should now be able to run the ControlCatalog sample:
 
-Start MonoDevelop and open the `Avalonia.sln` solution. Set the Samples/TestApplication
-project as the startup project and click Run.
+```
+mono ./samples/ControlCatalog/bin/Debug/ControlCatalog.exe
+```
 
-There will be some compile errors in tests for the Windows platform, which can be safely
-ignored.
+### Building Avalonia in MonoDevelop
 
-Enjoy playing with Avalonia! You may want to explore some of the other Samples for a
-flavor of the Platform
+Unless you have a very current version of monodevelop (6.1.x or newer), it is necessary to manually
+restore the Nuget depdendencies as [mentioned above](#restore-nuget-packages). You must then
+disable MonoDevelop's inbuilt NuGet package manager add-in by going to `Tools -> Add-in Manager` or
+it will complain that a newer version of NuGet is needed.
+
+Finally, select the `Debug | Mono` or `Release | Mono` build configuration and you should be good to
+go!
