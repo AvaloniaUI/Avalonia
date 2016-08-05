@@ -4,3 +4,6 @@
 using System.Reflection;
 
 [assembly: AssemblyTitle("Avalonia.Layout.UnitTests")]
+
+// Don't run tests in parallel.
+[assembly: CollectionBehavior(DisableTestParallelization = true)]
