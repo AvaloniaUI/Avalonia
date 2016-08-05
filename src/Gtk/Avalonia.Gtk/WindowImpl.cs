@@ -20,8 +20,8 @@ namespace Avalonia.Gtk
     public class WindowImpl : Gtk.Window, IWindowImpl, IPlatformHandle
     {
         private IInputRoot _inputRoot;
-        
-        private Size _clientSize;
+
+        private Size _lastClientSize;
 
         private Gtk.IMContext _imContext;
 
@@ -51,6 +51,7 @@ namespace Avalonia.Gtk
             _imContext.Commit += ImContext_Commit;
             DoubleBuffered = false;
             Realize();
+            _lastClientSize = ClientSize;
         }
 
         protected override void OnRealized ()
@@ -61,8 +62,18 @@ namespace Avalonia.Gtk
 
         public Size ClientSize
         {
-            get;
-            set;
+            get
+            {
+                int width;
+                int height;
+                GetSize(out width, out height);
+                return new Size(width, height);
+            }
+
+            set
+            {
+                Resize((int)value.Width, (int)value.Height);
+            }
         }
 
         public Size MaxClientSize
@@ -321,9 +332,10 @@ namespace Avalonia.Gtk
         {
             var newSize = new Size(evnt.Width, evnt.Height);
 
-            if (newSize != _clientSize)
+            if (newSize != _lastClientSize)
             {
                 Resized(newSize);
+                _lastClientSize = newSize;
             }
 
             return true;
