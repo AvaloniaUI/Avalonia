@@ -304,7 +304,7 @@ namespace Avalonia.Controls
                     break;
 
                 case Key.X:
-                    if(modifiers == InputModifiers.Control)
+                    if (modifiers == InputModifiers.Control)
                     {
                         Copy();
                         DeleteSelection();
@@ -360,6 +360,11 @@ namespace Avalonia.Controls
                     break;
 
                 case Key.Back:
+                    if (modifiers == InputModifiers.Control && SelectionStart == SelectionEnd)
+                    {
+                        SetSelectionForControlBackspace(modifiers);
+                    }
+
                     if (!DeleteSelection() && CaretIndex > 0)
                     {
                         CaretIndex -= DeleteCharacter(CaretIndex - 1);
@@ -368,6 +373,11 @@ namespace Avalonia.Controls
                     break;
 
                 case Key.Delete:
+                    if (modifiers == InputModifiers.Control && SelectionStart == SelectionEnd)
+                    {
+                        SetSelectionForControlDelete(modifiers);
+                    }
+
                     if (!DeleteSelection() && caretIndex < text.Length)
                     {
                         DeleteCharacter(CaretIndex);
@@ -698,6 +708,26 @@ namespace Avalonia.Controls
             }
 
             return i;
+        }
+
+        private void SetSelectionForControlBackspace(InputModifiers modifiers)
+        {
+            SelectionStart = CaretIndex;
+            MoveHorizontal(-1, modifiers);
+            SelectionEnd = CaretIndex;
+        }
+
+        private void SetSelectionForControlDelete(InputModifiers modifiers)
+        {
+            SelectionStart = CaretIndex;
+            MoveHorizontal(1, modifiers);
+            SelectionEnd = CaretIndex;
+
+            string selection = GetSelection();
+            if (selection != " " && selection.EndsWith(" "))
+            {
+                SelectionEnd = CaretIndex - 1;
+            }
         }
 
         UndoRedoState UndoRedoHelper<UndoRedoState>.IUndoRedoHost.UndoRedoState
