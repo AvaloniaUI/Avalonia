@@ -165,14 +165,16 @@ namespace Avalonia.Skia
         public void SetForegroundBrush(IBrush brush, int startIndex, int length)
         {
             var key = new FBrushRange(startIndex, length);
-            if (brush == null)
+            int index = _foregroundBrushes.FindIndex(v => v.Key.Equals(key));
+
+            if (index > -1)
             {
-                if (_foregroundBrushes.ContainsKey(key))
-                    _foregroundBrushes.Remove(key);
+                _foregroundBrushes.RemoveAt(index);
             }
-            else
+
+            if (brush != null)
             {
-                _foregroundBrushes[key] = brush;
+                _foregroundBrushes.Insert(0, new KeyValuePair<FBrushRange, IBrush>(key, brush));
             }
         }
 
@@ -275,8 +277,8 @@ namespace Avalonia.Skia
 
         private const float MAX_LINE_WIDTH = 10000;
 
-        private readonly Dictionary<FBrushRange, IBrush> _foregroundBrushes =
-                                                new Dictionary<FBrushRange, IBrush>();
+        private readonly List<KeyValuePair<FBrushRange, IBrush>> _foregroundBrushes =
+                                                new List<KeyValuePair<FBrushRange, IBrush>>();
         private readonly List<FormattedTextLine> _lines = new List<FormattedTextLine>();
         private readonly SKPaint _paint;
         private readonly List<Rect> _rects = new List<Rect>();
@@ -449,29 +451,35 @@ namespace Avalonia.Skia
 
             if (_foregroundBrushes.Any())
             {
-                var cbi = _foregroundBrushes
-                                .Where(b => b.Key.Intersects(index, len))
-                                .OrderBy(b => b.Key.Length)
-                                .FirstOrDefault();
+                var bi = _foregroundBrushes.FindIndex(b =>
+                                                        b.Key.StartIndex <= index &&
+                                                        b.Key.EndIndex > index
+                                                        );
 
-                if (cbi.Value != null)
+                if (bi > -1)
                 {
-                    var r = cbi.Key;
+                    var match = _foregroundBrushes[bi];
 
-                    if (r.StartIndex > index)
-                    {
-                        len = r.StartIndex - index;
-                    }
-                    else
-                    {
-                        len = r.EndIndex - index + 1;
-                        result = cbi.Value;
-                    }
+                    len = match.Key.EndIndex - index + 1;
+                    result = match.Value;
 
                     if (len > 0 && len < length)
                     {
                         length = len;
                     }
+                }
+
+                int endIndex = index + length;
+                int max = bi == -1 ? _foregroundBrushes.Count : bi;
+                var next = _foregroundBrushes.Take(max)
+                                                .Where(b => b.Key.StartIndex < endIndex &&
+                                                            b.Key.StartIndex > index)
+                                                .OrderBy(b => b.Key.StartIndex)
+                                                .FirstOrDefault();
+
+                if (next.Value != null)
+                {
+                    length = next.Key.StartIndex - index;
                 }
             }
 
@@ -635,6 +643,11 @@ namespace Avalonia.Skia
             public bool Intersects(int index, int len) =>
                 (index + len) > StartIndex &&
                 (StartIndex + Length) > index;
+
+            public override string ToString()
+            {
+                return $"{StartIndex}-{EndIndex}";
+            }
         }
     }
 }
