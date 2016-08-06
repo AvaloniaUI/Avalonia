@@ -449,7 +449,10 @@ namespace Avalonia.Skia
 
             if (_foregroundBrushes.Any())
             {
-                var cbi = _foregroundBrushes.FirstOrDefault(b => b.Key.Intersects(index, len));
+                var cbi = _foregroundBrushes
+                                .Where(b => b.Key.Intersects(index, len))
+                                .OrderBy(b => b.Key.Length)
+                                .FirstOrDefault();
 
                 if (cbi.Value != null)
                 {
