@@ -46,7 +46,9 @@ namespace Avalonia.Controls.Platform
                 {
                     Logging.Logger.Error("Renderer", this, "Render target was corrupted. Exception: {0}", ex);
                     viewport.Dispose();
+                    resources.Remove(viewport);
                     viewport = PlatformManager.CreateRenderTarget(topLevel.PlatformImpl);
+                    resources.Add(viewport);
                     topLevel.PlatformImpl.Paint(rect); // Retry painting
                 }
                 queueManager.RenderFinished();
