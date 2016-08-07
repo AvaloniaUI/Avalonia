@@ -51,29 +51,6 @@ namespace Avalonia
         private EventHandler<AvaloniaPropertyChangedEventArgs> _propertyChanged;
 
         /// <summary>
-        /// Defines the <see cref="ValidationStatus"/> property.
-        /// </summary>
-        public static readonly DirectProperty<AvaloniaObject, ObjectValidationStatus> ValidationStatusProperty =
-            AvaloniaProperty.RegisterDirect<AvaloniaObject, ObjectValidationStatus>(nameof(ValidationStatus), c => c.ValidationStatus);
-
-        private ObjectValidationStatus validationStatus;
-
-        /// <summary>
-        /// The current validation status of the control.
-        /// </summary>
-        public ObjectValidationStatus ValidationStatus
-        {
-            get
-            {
-                return validationStatus;
-            }
-            private set
-            {
-                SetAndRaise(ValidationStatusProperty, ref validationStatus, value);
-            }
-        }
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="AvaloniaObject"/> class.
         /// </summary>
         public AvaloniaObject()
@@ -497,7 +474,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="property">The property whose validation state changed.</param>
         /// <param name="status">The new validation state.</param>
-        protected virtual void DataValidationChanged(AvaloniaProperty property, IValidationStatus status)
+        protected virtual void DataValidationChanged(AvaloniaProperty property, BindingNotification status)
         {
         }
 
@@ -505,9 +482,8 @@ namespace Avalonia
         /// Updates the validation status of the current object.
         /// </summary>
         /// <param name="status">The new validation status.</param>
-        protected void UpdateValidationState(IValidationStatus status)
+        protected void UpdateValidationState(BindingNotification status)
         {
-            ValidationStatus = ValidationStatus.UpdateValidationStatus(status);
         }
 
         /// <inheritdoc/>

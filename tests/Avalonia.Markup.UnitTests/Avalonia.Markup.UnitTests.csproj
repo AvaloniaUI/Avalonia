@@ -85,7 +85,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ControlLocatorTests.cs" />
-    <Compile Include="Data\ExceptionValidatorTests.cs" />
+    <Compile Include="Data\Plugins\IndeiValidationPluginTests.cs" />
+    <Compile Include="Data\Plugins\ExceptionValidationPluginTests.cs" />
     <Compile Include="Data\ExpressionNodeBuilderTests.cs" />
     <Compile Include="Data\ExpressionNodeBuilderTests_Errors.cs" />
     <Compile Include="Data\ExpressionObserverTests_Lifetime.cs" />
@@ -97,7 +98,7 @@
     <Compile Include="Data\ExpressionObserverTests_Property.cs" />
     <Compile Include="Data\ExpressionObserverTests_SetValue.cs" />
     <Compile Include="Data\ExpressionObserverTests_Task.cs" />
-    <Compile Include="Data\ExpressionObserverTests_Validation.cs" />
+    <Compile Include="Data\ExpressionObserverTests_DataValidation.cs" />
     <Compile Include="Data\ExpressionSubjectTests.cs" />
     <Compile Include="Data\IndeiValidatorTests.cs" />
     <Compile Include="DefaultValueConverterTests.cs" />

@@ -175,7 +175,7 @@ namespace Avalonia.Markup.Data
         {
             var converted = 
                 value as BindingNotification ??
-                value as IValidationStatus ??
+                ////value as IValidationStatus ??
                 Converter.Convert(
                     value,
                     _targetType,

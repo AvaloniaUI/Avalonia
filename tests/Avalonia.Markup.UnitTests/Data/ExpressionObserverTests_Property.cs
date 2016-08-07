@@ -75,7 +75,7 @@ namespace Avalonia.Markup.UnitTests.Data
         }
 
         [Fact]
-        public async void Should_Return_BindingError_For_Broken_Chain()
+        public async void Should_Return_BindingNotification_Error_For_Broken_Chain()
         {
             var data = new { Foo = new { Bar = 1 } };
             var target = new ExpressionObserver(data, "Foo.Bar.Baz");

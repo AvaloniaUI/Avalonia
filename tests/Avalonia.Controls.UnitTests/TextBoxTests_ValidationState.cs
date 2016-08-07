@@ -24,11 +24,12 @@ namespace Avalonia.Controls.UnitTests
                 binding.EnableValidation = true;
                 target.Bind(TextBox.TextProperty, binding);
 
-                Assert.True(target.ValidationStatus.IsValid);
-                target.Text = "20";
-                Assert.False(target.ValidationStatus.IsValid);
-                target.Text = "1";
-                Assert.True(target.ValidationStatus.IsValid);
+                Assert.True(false);
+                //Assert.True(target.ValidationStatus.IsValid);
+                //target.Text = "20";
+                //Assert.False(target.ValidationStatus.IsValid);
+                //target.Text = "1";
+                //Assert.True(target.ValidationStatus.IsValid);
             }
         }
 
@@ -43,11 +44,12 @@ namespace Avalonia.Controls.UnitTests
                 binding.EnableValidation = true;
                 target.Bind(TextBox.TextProperty, binding);
 
-                Assert.True(target.ValidationStatus.IsValid);
-                target.Text = "foo";
-                Assert.False(target.ValidationStatus.IsValid);
-                target.Text = "1";
-                Assert.True(target.ValidationStatus.IsValid);
+                Assert.True(false);
+                //Assert.True(target.ValidationStatus.IsValid);
+                //target.Text = "foo";
+                //Assert.False(target.ValidationStatus.IsValid);
+                //target.Text = "1";
+                //Assert.True(target.ValidationStatus.IsValid);
             }
         }
 
@@ -62,11 +64,12 @@ namespace Avalonia.Controls.UnitTests
                 binding.EnableValidation = true;
                 target.Bind(TextBox.TextProperty, binding);
 
-                Assert.True(target.ValidationStatus.IsValid);
-                target.Text = "20";
-                Assert.False(target.ValidationStatus.IsValid);
-                target.Text = "1";
-                Assert.True(target.ValidationStatus.IsValid);
+                Assert.True(false);
+                //Assert.True(target.ValidationStatus.IsValid);
+                //target.Text = "20";
+                //Assert.False(target.ValidationStatus.IsValid);
+                //target.Text = "1";
+                //Assert.True(target.ValidationStatus.IsValid);
             }
         }
 

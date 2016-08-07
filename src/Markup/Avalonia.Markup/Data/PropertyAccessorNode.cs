@@ -9,11 +9,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Avalonia.Data;
+using Avalonia.Logging;
 using Avalonia.Markup.Data.Plugins;
 
 namespace Avalonia.Markup.Data
 {
-    internal class PropertyAccessorNode : ExpressionNode
+    internal class PropertyAccessorNode : ExpressionNode, IObserver<object>
     {
         private IPropertyAccessor _accessor;
         private IDisposable _subscription;
@@ -39,11 +40,26 @@ namespace Avalonia.Markup.Data
             {
                 if (_accessor != null)
                 {
-                    return _accessor.SetValue(value, priority);
+                    try { return _accessor.SetValue(value, priority); } catch { }
                 }
 
                 return false;
             }
+        }
+
+        void IObserver<object>.OnCompleted()
+        {
+            // Should not be called by IPropertyAccessor.
+        }
+
+        void IObserver<object>.OnError(Exception error)
+        {
+            // Should not be called by IPropertyAccessor.
+        }
+
+        void IObserver<object>.OnNext(object value)
+        {
+            SetCurrentValue(value);
         }
 
         protected override void SubscribeAndUpdate(WeakReference reference)
@@ -52,36 +68,27 @@ namespace Avalonia.Markup.Data
 
             if (instance != null && instance != AvaloniaProperty.UnsetValue)
             {
-                var accessorPlugin = ExpressionObserver.PropertyAccessors.FirstOrDefault(x => x.Match(reference));
+                var plugin = ExpressionObserver.PropertyAccessors.FirstOrDefault(x => x.Match(reference));
+                var accessor = plugin?.Start(reference, PropertyName);
 
-                if (accessorPlugin != null)
+                if (_enableValidation)
                 {
-                    _accessor = ExceptionValidationPlugin.Instance.Start(
-                        reference,
-                        PropertyName,
-                        accessorPlugin.Start(reference, PropertyName, SetCurrentValue),
-                        SendValidationStatus);
-
-                    if (_enableValidation)
+                    foreach (var validator in ExpressionObserver.DataValidators)
                     {
-                        foreach (var validationPlugin in ExpressionObserver.ValidationCheckers)
+                        if (validator.Match(reference))
                         {
-                            if (validationPlugin.Match(reference))
-                            {
-                                _accessor = validationPlugin.Start(reference, PropertyName, _accessor, SendValidationStatus);
-                            }
+                            accessor = validator.Start(reference, PropertyName, accessor);
                         }
                     }
-
-                    if (_accessor != null)
-                    {
-                        SetCurrentValue(_accessor.Value);
-                        return;
-                    }
                 }
-            }
 
-            CurrentValue = UnsetReference;
+                _accessor = accessor;
+                _accessor.Subscribe(this);
+            }
+            else
+            {
+                CurrentValue = UnsetReference;
+            }
         }
 
         protected override void Unsubscribe(object target)

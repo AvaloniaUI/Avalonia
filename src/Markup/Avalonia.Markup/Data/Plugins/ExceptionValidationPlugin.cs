@@ -10,23 +10,26 @@ namespace Avalonia.Markup.Data.Plugins
     /// <summary>
     /// Validates properties that report errors by throwing exceptions.
     /// </summary>
-    public class ExceptionValidationPlugin : IValidationPlugin
+    public class ExceptionValidationPlugin : IDataValidationPlugin
     {
+        /// <summary>
+        /// Gets the default instance of the <see cref="ExceptionValidationPlugin"/>/
+        /// </summary>
         public static ExceptionValidationPlugin Instance { get; } = new ExceptionValidationPlugin();
 
         /// <inheritdoc/>
         public bool Match(WeakReference reference) => true;
 
         /// <inheritdoc/>
-        public IPropertyAccessor Start(WeakReference reference, string name, IPropertyAccessor accessor, Action<IValidationStatus> callback)
+        public IPropertyAccessor Start(WeakReference reference, string name, IPropertyAccessor inner)
         {
-            return new ExceptionValidationChecker(reference, name, accessor, callback);
+            return new Validator(reference, name, inner);
         }
 
-        private class ExceptionValidationChecker : ValidatingPropertyAccessorBase
+        private class Validator : DataValidatiorBase
         {
-            public ExceptionValidationChecker(WeakReference reference, string name, IPropertyAccessor accessor, Action<IValidationStatus> callback)
-                : base(reference, name, accessor, callback)
+            public Validator(WeakReference reference, string name, IPropertyAccessor inner)
+                : base(inner)
             {
             }
 
@@ -34,39 +37,19 @@ namespace Avalonia.Markup.Data.Plugins
             {
                 try
                 {
-                    var success = base.SetValue(value, priority);
-                    SendValidationCallback(new ExceptionValidationStatus(null));
-                    return success;
+                    return base.SetValue(value, priority);
                 }
                 catch (TargetInvocationException ex)
                 {
-                    SendValidationCallback(new ExceptionValidationStatus(ex.InnerException));
+                    Observer.OnNext(new BindingNotification(ex.InnerException, BindingErrorType.DataValidationError));
                 }
                 catch (Exception ex)
                 {
-                    SendValidationCallback(new ExceptionValidationStatus(ex));
+                    Observer.OnNext(new BindingNotification(ex, BindingErrorType.DataValidationError));
                 }
+
                 return false;
             }
-        }
-
-        /// <summary>
-        /// Describes the current validation status after setting a property value.
-        /// </summary>
-        public class ExceptionValidationStatus : IValidationStatus
-        {
-            internal ExceptionValidationStatus(Exception exception)
-            {
-                Exception = exception;
-            }
-
-            /// <summary>
-            /// The thrown exception. If there was no thrown exception, null.
-            /// </summary>
-            public Exception Exception { get; }
-            
-            /// <inheritdoc/>
-            public bool IsValid => Exception == null;
         }
     }
 }

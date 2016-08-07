@@ -1,4 +1,5 @@
 using System;
+using System.Reactive.Disposables;
 using Avalonia.Data;
 
 namespace Avalonia.Markup.Data.Plugins
@@ -34,6 +35,12 @@ namespace Avalonia.Markup.Data.Plugins
         public bool SetValue(object value, BindingPriority priority)
         {
             return false;
+        }
+
+        public IDisposable Subscribe(IObserver<object> observer)
+        {
+            observer.OnNext(_error);
+            return Disposable.Empty;
         }
     }
 }

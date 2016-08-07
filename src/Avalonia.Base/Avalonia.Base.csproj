@@ -45,8 +45,6 @@
     </Compile>
     <Compile Include="Data\BindingNotification.cs" />
     <Compile Include="Data\IndexerBinding.cs" />
-    <Compile Include="Data\IValidationStatus.cs" />
-    <Compile Include="Data\ObjectValidationStatus.cs" />
     <Compile Include="Diagnostics\INotifyCollectionChangedDebug.cs" />
     <Compile Include="Data\AssignBindingAttribute.cs" />
     <Compile Include="Data\BindingOperations.cs" />

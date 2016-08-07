@@ -108,7 +108,7 @@ namespace Avalonia.Controls
             PseudoClass(IsEnabledCoreProperty, x => !x, ":disabled");
             PseudoClass(IsFocusedProperty, ":focus");
             PseudoClass(IsPointerOverProperty, ":pointerover");
-            PseudoClass(ValidationStatusProperty, status => !status.IsValid, ":invalid");
+            ////PseudoClass(ValidationStatusProperty, status => !status.IsValid, ":invalid");
         }
 
         /// <summary>
@@ -401,10 +401,10 @@ namespace Avalonia.Controls
         protected IPseudoClasses PseudoClasses => Classes;
 
         /// <inheritdoc/>
-        protected override void DataValidationChanged(AvaloniaProperty property, IValidationStatus status)
+        protected override void DataValidationChanged(AvaloniaProperty property, BindingNotification status)
         {
             base.DataValidationChanged(property, status);
-            ValidationStatus.UpdateValidationStatus(status);
+            ////ValidationStatus.UpdateValidationStatus(status);
         }
 
         /// <summary>

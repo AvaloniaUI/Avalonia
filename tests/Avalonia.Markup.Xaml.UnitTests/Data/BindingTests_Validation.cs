@@ -26,7 +26,8 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
 
             target.ValidationTest = -5;
 
-            Assert.False(target.ValidationStatus.IsValid);
+            Assert.True(false);
+            //Assert.False(target.ValidationStatus.IsValid);
         }
 
         [Fact]
@@ -44,7 +45,8 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
             target.Bind(TestControl.ValidationTestProperty, binding);
 
             target.ValidationTest = -5;
-            Assert.False(target.ValidationStatus.IsValid);
+            Assert.True(false);
+            //Assert.False(target.ValidationStatus.IsValid);
         }
 
 
@@ -123,7 +125,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
                 }
             }
 
-            protected override void DataValidationChanged(AvaloniaProperty property, IValidationStatus status)
+            protected override void DataValidationChanged(AvaloniaProperty property, BindingNotification status)
             {
                 if (property == ValidationTestProperty)
                 {

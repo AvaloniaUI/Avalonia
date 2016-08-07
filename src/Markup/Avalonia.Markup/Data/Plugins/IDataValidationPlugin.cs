@@ -1,34 +1,36 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
+﻿// Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using Avalonia.Data;
 
 namespace Avalonia.Markup.Data.Plugins
 {
     /// <summary>
-    /// Defines how a member is read, written and observed by an
-    /// <see cref="ExpressionObserver"/>.
+    /// Defines how data validation is observed by an <see cref="ExpressionObserver"/>.
     /// </summary>
-    public interface IPropertyAccessorPlugin
+    public interface IDataValidationPlugin
     {
         /// <summary>
-        /// Checks whether this plugin can handle accessing the properties of the specified object.
+        /// Checks whether this plugin can handle data validation on the specified object.
         /// </summary>
         /// <param name="reference">A weak reference to the object.</param>
         /// <returns>True if the plugin can handle the object; otherwise false.</returns>
         bool Match(WeakReference reference);
 
         /// <summary>
-        /// Starts monitoring the value of a property on an object.
+        /// Starts monitoring the data validation state of a property on an object.
         /// </summary>
         /// <param name="reference">A weak reference to the object.</param>
         /// <param name="propertyName">The property name.</param>
+        /// <param name="inner">The inner property accessor used to aceess the property.</param>
         /// <returns>
         /// An <see cref="IPropertyAccessor"/> interface through which future interactions with the 
         /// property will be made.
         /// </returns>
         IPropertyAccessor Start(
-            WeakReference reference, 
-            string propertyName);
+            WeakReference reference,
+            string propertyName,
+            IPropertyAccessor inner);
     }
 }

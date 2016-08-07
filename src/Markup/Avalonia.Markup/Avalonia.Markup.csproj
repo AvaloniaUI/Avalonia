@@ -48,7 +48,7 @@
     <Compile Include="ControlLocator.cs" />
     <Compile Include="Data\Plugins\ExceptionValidationPlugin.cs" />
     <Compile Include="Data\Plugins\IndeiValidationPlugin.cs" />
-    <Compile Include="Data\Plugins\IValidationPlugin.cs" />
+    <Compile Include="Data\Plugins\IDataValidationPlugin.cs" />
     <Compile Include="Data\Plugins\AvaloniaPropertyAccessorPlugin.cs" />
     <Compile Include="Data\Plugins\InpcPropertyAccessorPlugin.cs" />
     <Compile Include="Data\Plugins\IPropertyAccessor.cs" />
@@ -59,8 +59,9 @@
     <Compile Include="Data\Parsers\IdentifierParser.cs" />
     <Compile Include="Data\Parsers\ExpressionParser.cs" />
     <Compile Include="Data\Parsers\Reader.cs" />
+    <Compile Include="Data\Plugins\PropertyAccessorBase.cs" />
     <Compile Include="Data\Plugins\PropertyError.cs" />
-    <Compile Include="Data\Plugins\ValidatingPropertyAccessorBase.cs" />
+    <Compile Include="Data\Plugins\DataValidatiorBase.cs" />
     <Compile Include="Data\PropertyAccessorNode.cs" />
     <Compile Include="Data\ExpressionNode.cs" />
     <Compile Include="Data\ExpressionObserver.cs" />

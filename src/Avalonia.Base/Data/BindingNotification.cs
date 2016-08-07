@@ -30,7 +30,7 @@ namespace Avalonia.Data
     /// Represents a binding notification that can be a valid binding value, or a binding or
     /// data validation error.
     /// </summary>
-    public class BindingNotification : IValidationStatus
+    public class BindingNotification
     {
         /// <summary>
         /// A binding notification representing the null value.
@@ -77,7 +77,7 @@ namespace Avalonia.Data
         /// <param name="errorType">The type of the binding error.</param>
         /// <param name="fallbackValue">The fallback value.</param>
         public BindingNotification(Exception error, BindingErrorType errorType, object fallbackValue)
-            : this(error)
+            : this(error, errorType)
         {
             Value = fallbackValue;
             HasValue = true;
@@ -104,8 +104,6 @@ namespace Avalonia.Data
         /// </summary>
         public BindingErrorType ErrorType { get; }
 
-        bool IValidationStatus.IsValid => ErrorType == BindingErrorType.None;
-
         public static bool operator ==(BindingNotification a, BindingNotification b)
         {
             if (object.ReferenceEquals(a, b))
@@ -121,7 +119,7 @@ namespace Avalonia.Data
             return a.HasValue == b.HasValue &&
                    a.ErrorType == b.ErrorType &&
                    (!a.HasValue || object.Equals(a.Value, b.Value)) &&
-                   (a.ErrorType == BindingErrorType.None || object.Equals(a.Error, b.Error));
+                   (a.ErrorType == BindingErrorType.None || ExceptionEquals(a.Error, b.Error));
         }
 
         public static bool operator !=(BindingNotification a, BindingNotification b)
@@ -164,6 +162,12 @@ namespace Avalonia.Data
             {
                 return new BindingNotification(e, BindingErrorType.Error, Value);
             }
+        }
+
+        private static bool ExceptionEquals(Exception a, Exception b)
+        {
+            return a?.GetType() == b?.GetType() &&
+                   a.Message == b.Message;
         }
     }
 }

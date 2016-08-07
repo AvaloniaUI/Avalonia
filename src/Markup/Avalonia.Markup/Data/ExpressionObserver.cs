@@ -31,10 +31,11 @@ namespace Avalonia.Markup.Data
         /// An ordered collection of validation checker plugins that can be used to customize
         /// the validation of view model and model data.
         /// </summary>
-        public static readonly IList<IValidationPlugin> ValidationCheckers =
-            new List<IValidationPlugin>
+        public static readonly IList<IDataValidationPlugin> DataValidators =
+            new List<IDataValidationPlugin>
             {
                 new IndeiValidationPlugin(),
+                ExceptionValidationPlugin.Instance,
             };
 
         private readonly WeakReference _root;
@@ -45,24 +46,24 @@ namespace Avalonia.Markup.Data
         private IDisposable _updateSubscription;
         private int _count;
         private readonly ExpressionNode _node;
-        private bool _enableValidation;
+        private bool _enableDataValidation;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ExpressionObserver"/> class.
         /// </summary>
         /// <param name="root">The root object.</param>
         /// <param name="expression">The expression.</param>
-        /// <param name="enableValidation">Whether property validation should be enabled.</param>
-        public ExpressionObserver(object root, string expression, bool enableValidation = false)
+        /// <param name="enableDataValidation">Whether data validation should be enabled.</param>
+        public ExpressionObserver(object root, string expression, bool enableDataValidation = false)
         {
             Contract.Requires<ArgumentNullException>(expression != null);
 
             _root = new WeakReference(root);
-            _enableValidation = enableValidation;
+            _enableDataValidation = enableDataValidation;
 
             if (!string.IsNullOrWhiteSpace(expression))
             {
-                _node = ExpressionNodeBuilder.Build(expression, enableValidation);
+                _node = ExpressionNodeBuilder.Build(expression, enableDataValidation);
             }
 
             Expression = expression;
@@ -73,21 +74,21 @@ namespace Avalonia.Markup.Data
         /// </summary>
         /// <param name="rootObservable">An observable which provides the root object.</param>
         /// <param name="expression">The expression.</param>
-        /// <param name="enableValidation">Whether property validation should be enabled.</param>
+        /// <param name="enableDataValidation">Whether data validation should be enabled.</param>
         public ExpressionObserver(
             IObservable<object> rootObservable,
             string expression,
-            bool enableValidation = false)
+            bool enableDataValidation = false)
         {
             Contract.Requires<ArgumentNullException>(rootObservable != null);
             Contract.Requires<ArgumentNullException>(expression != null);
 
             _rootObservable = rootObservable;
-            _enableValidation = enableValidation;
+            _enableDataValidation = enableDataValidation;
 
             if (!string.IsNullOrWhiteSpace(expression))
             {
-                _node = ExpressionNodeBuilder.Build(expression, enableValidation);
+                _node = ExpressionNodeBuilder.Build(expression, enableDataValidation);
             }
 
             Expression = expression;
@@ -99,12 +100,12 @@ namespace Avalonia.Markup.Data
         /// <param name="rootGetter">A function which gets the root object.</param>
         /// <param name="expression">The expression.</param>
         /// <param name="update">An observable which triggers a re-read of the getter.</param>
-        /// <param name="enableValidation">Whether property validation should be enabled.</param>
+        /// <param name="enableDataValidation">Whether data validation should be enabled.</param>
         public ExpressionObserver(
             Func<object> rootGetter,
             string expression,
             IObservable<Unit> update,
-            bool enableValidation = false)
+            bool enableDataValidation = false)
         {
             Contract.Requires<ArgumentNullException>(rootGetter != null);
             Contract.Requires<ArgumentNullException>(expression != null);
@@ -112,11 +113,11 @@ namespace Avalonia.Markup.Data
 
             _rootGetter = rootGetter;
             _update = update;
-            _enableValidation = enableValidation;
+            _enableDataValidation = enableDataValidation;
 
             if (!string.IsNullOrWhiteSpace(expression))
             {
-                _node = ExpressionNodeBuilder.Build(expression, enableValidation);
+                _node = ExpressionNodeBuilder.Build(expression, enableDataValidation);
             }
 
             Expression = expression;

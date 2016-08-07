@@ -235,7 +235,7 @@ namespace Avalonia.Controls
             HandleTextInput(e.Text);
         }
 
-        protected override void DataValidationChanged(AvaloniaProperty property, IValidationStatus status)
+        protected override void DataValidationChanged(AvaloniaProperty property, BindingNotification status)
         {
             if (property == TextProperty)
             {
