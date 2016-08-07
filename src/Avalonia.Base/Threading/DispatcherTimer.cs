@@ -210,7 +210,10 @@ namespace Avalonia.Threading
         /// </summary>
         private void InternalTick()
         {
-            Dispatcher.UIThread.InvokeAsync(_raiseTickAction, _priority);
+			if (IsEnabled) 
+			{
+				Dispatcher.UIThread.InvokeAsync (_raiseTickAction, _priority);
+			}
         }
 
         /// <summary>
