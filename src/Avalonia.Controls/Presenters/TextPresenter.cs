@@ -243,7 +243,15 @@ namespace Avalonia.Controls.Presenters
 
         private void CaretTimerTick(object sender, EventArgs e)
         {
-            _caretBlink = !_caretBlink;
+			if (!_caretTimer.IsEnabled) 
+			{
+				_caretBlink = false;
+			} 
+			else 
+			{
+				_caretBlink = !_caretBlink;
+			}
+			
             InvalidateVisual();
         }
     }
