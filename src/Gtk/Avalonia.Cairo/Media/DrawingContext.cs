@@ -88,7 +88,7 @@ namespace Avalonia.Cairo.Media
 				impl, 
 				-sourceRect.X + destRect.X, 
 				-sourceRect.Y + destRect.Y);
-			impl.Scale (impl, 0, 0, (int)destRect.Width, (int)destRect.Height, 0, 0, scale.X, scale.Y, Gdk.InterpType.Bilinear);
+			impl.Scale (impl, (int)destRect.X, (int)destRect.Y, (int)destRect.Width, (int)destRect.Height, 0, 0, scale.X, scale.Y, Gdk.InterpType.Bilinear);
 
 			_context.PushGroup ();
 			_context.Rectangle (destRect.ToCairo ());
