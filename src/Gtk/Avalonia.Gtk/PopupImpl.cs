@@ -12,5 +12,20 @@ namespace Avalonia.Gtk
             : base(WindowType.Popup)
         {
         }
+
+		public override Size ClientSize
+		{
+			get
+			{
+				int width;
+				int height;
+				GetSize(out width, out height);
+				return new Size(width, height);
+			}	
+			set
+			{
+				Resize((int)value.Width, (int)value.Height);
+			}
+		}
     }
 }
