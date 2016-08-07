@@ -21,6 +21,7 @@
       <dependency id="System.Reactive.Interfaces" version="3.0.0" />
       <dependency id="System.Reactive.Linq" version="3.0.0" />
       <dependency id="System.Reactive.PlatformServices" version="3.0.0" />
+      <dependency id="SkiaSharp" version="1.53.0"/>
       <dependency id="Avalonia" version="#VERSION#" />
     </dependencies>
   </metadata>
