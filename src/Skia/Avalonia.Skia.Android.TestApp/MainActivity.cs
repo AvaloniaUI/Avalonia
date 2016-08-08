@@ -1,15 +1,9 @@
-using System;
 using Android.App;
-using Android.Content;
-using Android.Graphics;
-using Android.Runtime;
-using Android.Views;
-using Android.Widget;
 using Android.OS;
-using Android.Util;
-using Avalonia.Media;
-using Avalonia.Platform;
+using Android.Views;
 using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Media;
 
 namespace Avalonia.Skia.Android.TestApp
 {
@@ -20,6 +14,19 @@ namespace Avalonia.Skia.Android.TestApp
         protected override void OnCreate(Bundle bundle)
         {
             base.OnCreate(bundle);
+
+            App app;
+            if (Avalonia.Application.Current != null)
+                app = (App)Avalonia.Application.Current;
+            else
+            {
+                app = new App();
+                AppBuilder.Configure(app)
+                    .UseAndroid()
+                    .UseSkia()
+                    .SetupWithoutStarting();
+            }
+
             SetContentView(new MainView(this));
         }
 
