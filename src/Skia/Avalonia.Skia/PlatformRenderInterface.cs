@@ -71,7 +71,7 @@ namespace Avalonia.Skia
 
         public IRenderTarget CreateRenderer(IPlatformHandle handle)
         {
-            return new WindowRenderTarget(handle.Handle);
+            return new WindowRenderTarget(handle);
         }
     }
 }
