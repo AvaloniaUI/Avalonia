@@ -1,7 +1,5 @@
 using System;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using System.Text;
+
 using Avalonia.Media;
 using Avalonia.Platform;
 using SkiaSharp;
@@ -13,6 +11,9 @@ using CoreGraphics;
 using UIKit;
 #elif WIN32
 using Avalonia.Win32.Interop;
+#elif __ANDROID__
+using Android.Graphics;
+using Android.Views;
 #endif
 
 namespace Avalonia.Skia
@@ -36,13 +37,13 @@ namespace Avalonia.Skia
 
     internal class WindowRenderTarget : RenderTarget
     {
-        private readonly IntPtr _hwnd;
+        private readonly IPlatformHandle _hwnd;
         SKBitmap _bitmap;
 
         int Width { get; set; }
         int Height { get; set; }
 
-        public WindowRenderTarget(IntPtr hwnd)
+        public WindowRenderTarget(IPlatformHandle hwnd)
         {
             _hwnd = hwnd;
             FixSize();
@@ -70,7 +71,7 @@ namespace Avalonia.Skia
         private void FixSize()
         {
             int width, height;
-            GetPlatformWindowSize(_hwnd, out width, out height);
+            GetPlatformWindowSize(out width, out height);
             if (Width == width && Height == height)
                 return;
 
@@ -96,7 +97,7 @@ namespace Avalonia.Skia
             Surface = SKSurface.Create(_bitmap.Info, pixels, _bitmap.RowBytes);
         }
 
-        private void GetPlatformWindowSize(IntPtr hwnd, out int w, out int h)
+        private void GetPlatformWindowSize(out int w, out int h)
         {
 #if __IOS__
             var bounds = GetApplicationFrame();
@@ -105,9 +106,13 @@ namespace Avalonia.Skia
 
 #elif WIN32
             UnmanagedMethods.RECT rc;
-            UnmanagedMethods.GetClientRect(_hwnd, out rc);
+            UnmanagedMethods.GetClientRect(_hwnd.Handle, out rc);
             w = rc.right - rc.left;
             h = rc.bottom - rc.top;
+#elif __ANDROID__
+            var surfaceView = _hwnd as SurfaceView;
+            w = surfaceView.Width;
+            h = surfaceView.Height;
 #else
 			throw new NotImplementedException();
 #endif
@@ -134,6 +139,9 @@ namespace Avalonia.Skia
                     new WindowDrawingContextImpl(this));
         }
 
+#if __ANDROID__
+        private Bitmap bitmap;
+#endif
         public void Present()
         {
             _bitmap.LockPixels();
@@ -166,7 +174,7 @@ namespace Avalonia.Skia
             bmi.biCompression = (uint)UnmanagedMethods.BitmapCompressionMode.BI_RGB;
             bmi.biSizeImage = 0;
 
-            IntPtr hdc = UnmanagedMethods.GetDC(_hwnd);
+            IntPtr hdc = UnmanagedMethods.GetDC(_hwnd.Handle);
 
             int ret = UnmanagedMethods.SetDIBitsToDevice(hdc,
                 0, 0,
@@ -177,7 +185,47 @@ namespace Avalonia.Skia
                 ref bmi,
                 (uint)UnmanagedMethods.DIBColorTable.DIB_RGB_COLORS);
 
-            UnmanagedMethods.ReleaseDC(_hwnd, hdc);
+            UnmanagedMethods.ReleaseDC(_hwnd.Handle, hdc);
+#elif __ANDROID__
+            var surfaceView = _hwnd as SurfaceView;
+            Canvas canvas = null;
+            try
+            {
+                canvas = surfaceView.Holder.LockCanvas(null);
+
+                if (bitmap == null || bitmap.Width != canvas.Width || bitmap.Height != canvas.Height)
+                {
+                    if (bitmap != null)
+                        bitmap.Dispose();
+
+                    bitmap = Bitmap.CreateBitmap(canvas.Width, canvas.Height, Bitmap.Config.Argb8888);
+                }
+
+                try
+                {
+                    using (var surface = SKSurface.Create(canvas.Width, canvas.Height, SKImageInfo.PlatformColorType, SKAlphaType.Premul, bitmap.LockPixels(), canvas.Width * 4))
+                    {
+                        var skCanvas = surface.Canvas;
+                        skCanvas.Scale(((float)canvas.Width) / (float)surfaceView.Width, ((float)canvas.Height) / (float)surfaceView.Height);
+
+                        skCanvas.DrawRect(SKRect.Create(100, 100, 300, 300), new SKPaint() { Color = SKColors.Red });
+                    }
+                }
+                finally
+                {
+                    bitmap.UnlockPixels();
+                }
+
+                canvas.DrawBitmap(bitmap, 0, 0, null);
+            }
+            catch (Exception)
+            {
+            }
+            finally
+            {
+                if (canvas != null)
+                    surfaceView.Holder.UnlockCanvasAndPost(canvas);
+            }
 #endif
 
             _bitmap.UnlockPixels();
