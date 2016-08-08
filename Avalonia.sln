@@ -190,7 +190,6 @@ Global
 		samples\TestApplicationShared\TestApplicationShared.projitems*{e3a1060b-50d0-44e8-88b6-f44ef2e5bd72}*SharedItemsImports = 4
 		src\Shared\PlatformSupport\PlatformSupport.projitems*{e4d9629c-f168-4224-3f51-a5e482ffbc42}*SharedItemsImports = 13
 		src\Shared\RenderHelpers\RenderHelpers.projitems*{fb05ac90-89ba-4f2f-a924-f37875fb547c}*SharedItemsImports = 4
-		samples\TestApplicationShared\TestApplicationShared.projitems*{ff69b927-c545-49ae-8e16-3d14d621aa12}*SharedItemsImports = 4
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Ad-Hoc|Any CPU = Ad-Hoc|Any CPU

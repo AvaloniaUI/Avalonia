@@ -1,16 +1,14 @@
+using System;
 using Android.App;
 using Android.Content.PM;
 using Android.OS;
-using Android.Views;
-using Avalonia.Android;
 using Avalonia.Android.Platform.Specific;
-using Avalonia.Android.Platform.Specific.Helpers;
 using Avalonia.Controls;
-using Avalonia.Controls.Platform;
+using Avalonia.Controls.Templates;
+using Avalonia.Markup.Xaml;
 using Avalonia.Media;
-using Avalonia.Platform;
-using Avalonia.Skia.Android;
-using TestApplication;
+using Avalonia.Styling;
+using Avalonia.Themes.Default;
 
 namespace Avalonia.AndroidTestApplication
 {
@@ -30,23 +28,6 @@ namespace Avalonia.AndroidTestApplication
         {
             base.OnCreate(savedInstanceState);
 
-            /*
-            App app;
-            if (Avalonia.Application.Current != null)
-                app = (App)Avalonia.Application.Current;
-            else
-                app = new App();
-           
-
-            MainWindow.RootNamespace = "Avalonia.AndroidTestApplication";
-            var window = MainWindow.Create();
-
-            window.Show();
-            app.Run(window);
-            */
-
-
-
             App app;
             if (Avalonia.Application.Current != null)
                 app = (App)Avalonia.Application.Current;
@@ -59,67 +40,63 @@ namespace Avalonia.AndroidTestApplication
                     .SetupWithoutStarting();
             }
 
-            SetContentView(new MainView(this));
-
-
+            app.Run();
         }
+    }
 
-
-
-
-
-        class MainView : SkiaRenderView
+    public class App : Application
+    {
+        public void Run()
         {
-            float _radians = 0;
-            public MainView(Activity context) : base(context)
-            {
-            }
+            Styles.Add(new DefaultTheme());
 
-            protected override void OnRender(DrawingContext ctx)
-            {
-                ctx.FillRectangle(Brushes.Green, new Rect(0, 0, Width, Height));
+            var loader = new AvaloniaXamlLoader();
+            var baseLight = (IStyle)loader.Load(
+                new Uri("resm:Avalonia.Themes.Default.Accents.BaseLight.xaml?assembly=Avalonia.Themes.Default"));
+            Styles.Add(baseLight);
 
-                var rc = new Rect(0, 0, Width / 3, Height / 3);
-                using (ctx.PushPostTransform(
-                    Avalonia.Matrix.CreateTranslation(-Width / 6, -Width / 6) *
-                    Avalonia.Matrix.CreateRotation(_radians) *
-                                             Avalonia.Matrix.CreateTranslation(Width / 2, Height / 2)))
-                {
-                    ctx.FillRectangle(new LinearGradientBrush()
-                    {
-                        GradientStops =
-                        {
-                            new GradientStop() {Color = Colors.Blue},
-                            new GradientStop(Colors.Red, 1)
-                        }
-                    }, rc, 5);
-                }
+            var wnd = App.CreateSimpleWindow();
+            wnd.AttachDevTools();
 
-
-            }
-
-            public override bool OnTouchEvent(MotionEvent e)
-            {
-                if (e.Action == MotionEventActions.Down)
-                    return true;
-                if (e.Action == MotionEventActions.Move)
-                {
-                    _radians = (e.RawY + e.RawY) / 100;
-                    Invalidate();
-                    return true;
-                }
-                return base.OnTouchEvent(e);
-            }
+            Run(wnd);
         }
 
+        // This provides a simple UI tree for testing input handling, drawing, etc
+        public static Window CreateSimpleWindow()
+        {
+            Window window = new Window
+            {
+                Title = "Avalonia Test Application",
+                Background = Brushes.Red,
+                Content = new StackPanel
+                {
+                    Margin = new Thickness(30),
+                    Background = Brushes.Yellow,
+                    Children = new Avalonia.Controls.Controls
+                    {
+                        new TextBlock
+                        {
+                            Text = "TEXT BLOCK",
+                            Width = 300,
+                            Height = 40,
+                            Background = Brushes.White,
+                            Foreground = Brushes.Black
+                        },
 
+                        new Button
+                        {
+                            Content = "BUTTON",
+                            Width = 150,
+                            Height = 40,
+                            Background = Brushes.LightGreen,
+                            Foreground = Brushes.Black
+                        }
 
+                    }
+                }
+            };
 
-
-
-
-
-
-
+            return window;
+        }
     }
 }
