@@ -38,8 +38,11 @@ namespace Avalonia.Skia
     internal class WindowRenderTarget : RenderTarget
     {
         private readonly IPlatformHandle _hwnd;
+#if __ANDROID__
+        Bitmap _bitmap;
+#else
         SKBitmap _bitmap;
-
+#endif
         int Width { get; set; }
         int Height { get; set; }
 
@@ -88,6 +91,10 @@ namespace Avalonia.Skia
                 _bitmap.Dispose();
             }
 
+#if __ANDROID__
+            _bitmap = Bitmap.CreateBitmap(width, height, Bitmap.Config.Argb8888);
+            Surface = SKSurface.Create(width, height, SKImageInfo.PlatformColorType, SKAlphaType.Premul, _bitmap.LockPixels(), width * 4);
+#else
             _bitmap = new SKBitmap(width, height, SKImageInfo.PlatformColorType, SKAlphaType.Premul);
 
             IntPtr length;
@@ -95,6 +102,7 @@ namespace Avalonia.Skia
 
             // Wrap the bitmap in a Surface and keep it cached
             Surface = SKSurface.Create(_bitmap.Info, pixels, _bitmap.RowBytes);
+#endif
         }
 
         private void GetPlatformWindowSize(out int w, out int h)
@@ -139,14 +147,13 @@ namespace Avalonia.Skia
                     new WindowDrawingContextImpl(this));
         }
 
-#if __ANDROID__
-        private Bitmap bitmap;
-#endif
         public void Present()
         {
+#if !__ANDROID__
             _bitmap.LockPixels();
             IntPtr length;
             var pixels = _bitmap.GetPixels(out length);
+#endif
 
 #if __IOS__
             const int bitmapInfo = ((int)CGBitmapFlags.ByteOrder32Big) | ((int)CGImageAlphaInfo.PremultipliedLast);
@@ -192,31 +199,8 @@ namespace Avalonia.Skia
             try
             {
                 canvas = surfaceView.Holder.LockCanvas(null);
-
-                if (bitmap == null || bitmap.Width != canvas.Width || bitmap.Height != canvas.Height)
-                {
-                    if (bitmap != null)
-                        bitmap.Dispose();
-
-                    bitmap = Bitmap.CreateBitmap(canvas.Width, canvas.Height, Bitmap.Config.Argb8888);
-                }
-
-                try
-                {
-                    using (var surface = SKSurface.Create(canvas.Width, canvas.Height, SKImageInfo.PlatformColorType, SKAlphaType.Premul, bitmap.LockPixels(), canvas.Width * 4))
-                    {
-                        var skCanvas = surface.Canvas;
-                        skCanvas.Scale(((float)canvas.Width) / (float)surfaceView.Width, ((float)canvas.Height) / (float)surfaceView.Height);
-
-                        skCanvas.DrawRect(SKRect.Create(100, 100, 300, 300), new SKPaint() { Color = SKColors.Red });
-                    }
-                }
-                finally
-                {
-                    bitmap.UnlockPixels();
-                }
-
-                canvas.DrawBitmap(bitmap, 0, 0, null);
+                _bitmap.UnlockPixels();
+                canvas.DrawBitmap(_bitmap, 0, 0, null);
             }
             catch (Exception)
             {
