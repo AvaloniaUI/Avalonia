@@ -1,11 +1,10 @@
 using System;
-
 using Avalonia.Media;
 using Avalonia.Platform;
 using SkiaSharp;
 
 // TODO: I'm not sure the best way to bring in the platform specific rendering
-//
+
 #if __IOS__
 using CoreGraphics;
 using UIKit;
