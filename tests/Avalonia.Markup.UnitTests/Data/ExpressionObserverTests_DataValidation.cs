@@ -55,7 +55,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
             observer.Subscribe(_ => { });
 
-            Assert.Equal(0, data.PropertyChangedSubscriptionCount);
+            Assert.Equal(0, data.ErrorsChangedSubscriptionCount);
         }
 
         [Fact]
@@ -65,9 +65,9 @@ namespace Avalonia.Markup.UnitTests.Data
             var observer = new ExpressionObserver(data, nameof(data.MustBePositive), true);
             var sub = observer.Subscribe(_ => { });
 
-            Assert.Equal(1, data.PropertyChangedSubscriptionCount);
+            Assert.Equal(1, data.ErrorsChangedSubscriptionCount);
             sub.Dispose();
-            Assert.Equal(0, data.PropertyChangedSubscriptionCount);
+            Assert.Equal(0, data.ErrorsChangedSubscriptionCount);
         }
 
         [Fact]
@@ -126,11 +126,10 @@ namespace Avalonia.Markup.UnitTests.Data
             }
         }
 
-        private class IndeiTest : NotifyingBase, INotifyDataErrorInfo
+        private class IndeiTest : IndeiBase
         {
             private int _mustBePositive;
             private Dictionary<string, IList<string>> _errors = new Dictionary<string, IList<string>>();
-            private EventHandler<DataErrorsChangedEventArgs> _errorsChanged;
 
             public int MustBePositive
             {
@@ -143,27 +142,19 @@ namespace Avalonia.Markup.UnitTests.Data
                     if (value >= 0)
                     {
                         _errors.Remove(nameof(MustBePositive));
-                        _errorsChanged?.Invoke(this, new DataErrorsChangedEventArgs(nameof(MustBePositive)));
+                        RaiseErrorsChanged(nameof(MustBePositive));
                     }
                     else
                     {
                         _errors[nameof(MustBePositive)] = new[] { "Must be positive" };
-                        _errorsChanged?.Invoke(this, new DataErrorsChangedEventArgs(nameof(MustBePositive)));
+                        RaiseErrorsChanged(nameof(MustBePositive));
                     }
                 }
             }
 
-            public bool HasErrors => _mustBePositive >= 0;
+            public override bool HasErrors => _mustBePositive >= 0;
 
-            public int ErrorsChangedSubscriptionCount { get; private set; }
-
-            public event EventHandler<DataErrorsChangedEventArgs> ErrorsChanged
-            {
-                add { _errorsChanged += value; ++ErrorsChangedSubscriptionCount; }
-                remove { _errorsChanged -= value; --ErrorsChangedSubscriptionCount; }
-            }
-
-            public IEnumerable GetErrors(string propertyName)
+            public override IEnumerable GetErrors(string propertyName)
             {
                 IList<string> result;
                 _errors.TryGetValue(propertyName, out result);

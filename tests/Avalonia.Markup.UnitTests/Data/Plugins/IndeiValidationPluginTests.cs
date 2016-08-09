@@ -4,11 +4,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Reactive.Linq;
 using Avalonia.Data;
 using Avalonia.Markup.Data.Plugins;
-using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Markup.UnitTests.Data.Plugins
@@ -59,22 +57,20 @@ namespace Avalonia.Markup.UnitTests.Data.Plugins
             var accessor = inpcAccessorPlugin.Start(new WeakReference(data), nameof(data.Value));
             var validator = validatorPlugin.Start(new WeakReference(data), nameof(data.Value), accessor);
 
-            Assert.Equal(0, data.SubscriptionCount);
+            Assert.Equal(0, data.ErrorsChangedSubscriptionCount);
             var sub = validator.Subscribe(_ => { });
-            Assert.Equal(1, data.SubscriptionCount);
+            Assert.Equal(1, data.ErrorsChangedSubscriptionCount);
             sub.Dispose();
-            Assert.Equal(0, data.SubscriptionCount);
+            Assert.Equal(0, data.ErrorsChangedSubscriptionCount);
         }
 
-        public class Data : NotifyingBase, INotifyDataErrorInfo
+        internal class Data : IndeiBase
         {
             private int _value;
             private int _maximum;
             private string _error;
-            private EventHandler<DataErrorsChangedEventArgs> _errorsChanged;
 
-            public bool HasErrors => _error != null;
-            public int SubscriptionCount { get; private set; }
+            public override bool HasErrors => _error != null;
 
             public int Value
             {
@@ -97,13 +93,7 @@ namespace Avalonia.Markup.UnitTests.Data.Plugins
                 }
             }
 
-            public event EventHandler<DataErrorsChangedEventArgs> ErrorsChanged
-            {
-                add { _errorsChanged += value; ++SubscriptionCount; }
-                remove { _errorsChanged -= value; --SubscriptionCount; }
-            }
-
-            public IEnumerable GetErrors(string propertyName)
+            public override IEnumerable GetErrors(string propertyName)
             {
                 if (propertyName == nameof(Value) && _error != null)
                 {
@@ -120,7 +110,7 @@ namespace Avalonia.Markup.UnitTests.Data.Plugins
                     if (_error != null)
                     {
                         _error = null;
-                        _errorsChanged?.Invoke(this, new DataErrorsChangedEventArgs(nameof(Value)));
+                        RaiseErrorsChanged(nameof(Value));
                     }
                 }
                 else
@@ -128,7 +118,7 @@ namespace Avalonia.Markup.UnitTests.Data.Plugins
                     if (_error == null)
                     {
                         _error = "Must be less than Maximum";
-                        _errorsChanged?.Invoke(this, new DataErrorsChangedEventArgs(nameof(Value)));
+                        RaiseErrorsChanged(nameof(Value));
                     }
                 }
             }
