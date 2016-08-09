@@ -3,11 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Reactive.Linq;
-using System.Runtime.CompilerServices;
 using Avalonia.Data;
 using Avalonia.Markup.Data.Plugins;
+using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Markup.UnitTests.Data.Plugins
@@ -38,7 +37,7 @@ namespace Avalonia.Markup.UnitTests.Data.Plugins
             }, result);
         }
 
-        public class Data : INotifyPropertyChanged
+        public class Data : NotifyingBase
         {
             private int _mustBePositive;
 
@@ -55,16 +54,9 @@ namespace Avalonia.Markup.UnitTests.Data.Plugins
                     if (value != _mustBePositive)
                     {
                         _mustBePositive = value;
-                        NotifyPropertyChanged();
+                        RaisePropertyChanged();
                     }
                 }
-            }
-
-            public event PropertyChangedEventHandler PropertyChanged;
-
-            private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
-            {
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
             }
         }
     }

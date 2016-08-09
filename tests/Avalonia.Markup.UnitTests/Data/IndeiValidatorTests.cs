@@ -8,6 +8,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Avalonia.Data;
 using Avalonia.Markup.Data.Plugins;
+using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Markup.UnitTests.Data
@@ -77,14 +78,14 @@ namespace Avalonia.Markup.UnitTests.Data
                 }, results);
         }
 
-        public class Data : INotifyPropertyChanged, INotifyDataErrorInfo
+        public class Data : NotifyingBase, INotifyDataErrorInfo
         {
             private int nonValidated;
 
             public int NonValidated
             {
                 get { return nonValidated; }
-                set { nonValidated = value; NotifyPropertyChanged(); }
+                set { nonValidated = value; RaisePropertyChanged(); }
             }
 
             private int mustBePositive;
@@ -92,28 +93,12 @@ namespace Avalonia.Markup.UnitTests.Data
             public int MustBePositive
             {
                 get { return mustBePositive; }
-                set
-                {
-                    mustBePositive = value;
-                    NotifyErrorsChanged();
-                }
+                set { mustBePositive = value; RaisePropertyChanged(); }
             }
 
-            public bool HasErrors
-            {
-                get
-                {
-                    return MustBePositive > 0;
-                }
-            }
+            public bool HasErrors => MustBePositive > 0;
 
-            public event PropertyChangedEventHandler PropertyChanged;
             public event EventHandler<DataErrorsChangedEventArgs> ErrorsChanged;
-
-            private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
-            {
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-            }
 
             private void NotifyErrorsChanged([CallerMemberName] string propertyName = "")
             {

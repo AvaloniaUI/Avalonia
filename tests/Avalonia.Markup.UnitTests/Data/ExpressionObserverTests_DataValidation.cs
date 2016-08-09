@@ -10,6 +10,7 @@ using System.Reactive.Linq;
 using System.Runtime.CompilerServices;
 using Avalonia.Data;
 using Avalonia.Markup.Data;
+using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Markup.UnitTests.Data
@@ -54,7 +55,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
             observer.Subscribe(_ => { });
 
-            Assert.Equal(0, data.SubscriptionCount);
+            Assert.Equal(0, data.PropertyChangedSubscriptionCount);
         }
 
         [Fact]
@@ -64,9 +65,9 @@ namespace Avalonia.Markup.UnitTests.Data
             var observer = new ExpressionObserver(data, nameof(data.MustBePositive), true);
             var sub = observer.Subscribe(_ => { });
 
-            Assert.Equal(1, data.SubscriptionCount);
+            Assert.Equal(1, data.PropertyChangedSubscriptionCount);
             sub.Dispose();
-            Assert.Equal(0, data.SubscriptionCount);
+            Assert.Equal(0, data.PropertyChangedSubscriptionCount);
         }
 
         [Fact]
@@ -105,7 +106,7 @@ namespace Avalonia.Markup.UnitTests.Data
             }, result);
         }
 
-        public class ExceptionTest : INotifyPropertyChanged
+        public class ExceptionTest : NotifyingBase
         {
             private int _mustBePositive;
 
@@ -118,19 +119,14 @@ namespace Avalonia.Markup.UnitTests.Data
                     {
                         throw new ArgumentOutOfRangeException(nameof(value));
                     }
+
                     _mustBePositive = value;
+                    RaisePropertyChanged();
                 }
-            }
-
-            public event PropertyChangedEventHandler PropertyChanged;
-
-            private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
-            {
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
             }
         }
 
-        private class IndeiTest : INotifyDataErrorInfo, INotifyPropertyChanged
+        private class IndeiTest : NotifyingBase, INotifyDataErrorInfo
         {
             private int _mustBePositive;
             private Dictionary<string, IList<string>> _errors = new Dictionary<string, IList<string>>();
@@ -142,7 +138,7 @@ namespace Avalonia.Markup.UnitTests.Data
                 set
                 {
                     _mustBePositive = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MustBePositive)));
+                    RaisePropertyChanged();
 
                     if (value >= 0)
                     {
@@ -159,23 +155,13 @@ namespace Avalonia.Markup.UnitTests.Data
 
             public bool HasErrors => _mustBePositive >= 0;
 
-            public int SubscriptionCount { get; private set; }
+            public int ErrorsChangedSubscriptionCount { get; private set; }
 
             public event EventHandler<DataErrorsChangedEventArgs> ErrorsChanged
             {
-                add
-                {
-                    _errorsChanged += value;
-                    ++SubscriptionCount;
-                }
-                remove
-                {
-                    _errorsChanged -= value;
-                    --SubscriptionCount;
-                }
+                add { _errorsChanged += value; ++ErrorsChangedSubscriptionCount; }
+                remove { _errorsChanged -= value; --ErrorsChangedSubscriptionCount; }
             }
-
-            public event PropertyChangedEventHandler PropertyChanged;
 
             public IEnumerable GetErrors(string propertyName)
             {

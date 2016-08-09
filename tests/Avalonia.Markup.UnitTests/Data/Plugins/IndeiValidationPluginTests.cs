@@ -8,6 +8,7 @@ using System.ComponentModel;
 using System.Reactive.Linq;
 using Avalonia.Data;
 using Avalonia.Markup.Data.Plugins;
+using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Markup.UnitTests.Data.Plugins
@@ -65,7 +66,7 @@ namespace Avalonia.Markup.UnitTests.Data.Plugins
             Assert.Equal(0, data.SubscriptionCount);
         }
 
-        public class Data : INotifyDataErrorInfo, INotifyPropertyChanged
+        public class Data : NotifyingBase, INotifyDataErrorInfo
         {
             private int _value;
             private int _maximum;
@@ -81,7 +82,7 @@ namespace Avalonia.Markup.UnitTests.Data.Plugins
                 set
                 {
                     _value = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Value)));
+                    RaisePropertyChanged();
                     UpdateError();
                 }
             }
@@ -101,8 +102,6 @@ namespace Avalonia.Markup.UnitTests.Data.Plugins
                 add { _errorsChanged += value; ++SubscriptionCount; }
                 remove { _errorsChanged -= value; --SubscriptionCount; }
             }
-
-            public event PropertyChangedEventHandler PropertyChanged;
 
             public IEnumerable GetErrors(string propertyName)
             {

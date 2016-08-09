@@ -189,7 +189,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
             var expected = new[] { "bar", "bar2" };
             Assert.Equal(expected, result);
-            Assert.Equal(0, data.Foo.SubscriptionCount);
+            Assert.Equal(0, data.Foo.PropertyChangedSubscriptionCount);
         }
 
         [Fact]

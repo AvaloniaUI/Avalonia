@@ -47,7 +47,7 @@ namespace Avalonia.Markup.UnitTests.Data
                 Assert.Equal(new[] { AvaloniaProperty.UnsetValue, "foo" }, result);
 
                 sub.Dispose();
-                Assert.Equal(0, data.SubscriptionCount);
+                Assert.Equal(0, data.PropertyChangedSubscriptionCount);
             }
         }
 

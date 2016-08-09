@@ -111,7 +111,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
             sub.Dispose();
 
-            Assert.Equal(0, data.SubscriptionCount);
+            Assert.Equal(0, data.PropertyChangedSubscriptionCount);
         }
 
         [Fact]
@@ -139,7 +139,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
             sub.Dispose();
 
-            Assert.Equal(0, data.SubscriptionCount);
+            Assert.Equal(0, data.PropertyChangedSubscriptionCount);
         }
 
         [Fact]
@@ -156,8 +156,8 @@ namespace Avalonia.Markup.UnitTests.Data
 
             sub.Dispose();
 
-            Assert.Equal(0, data.SubscriptionCount);
-            Assert.Equal(0, data.Next.SubscriptionCount);
+            Assert.Equal(0, data.PropertyChangedSubscriptionCount);
+            Assert.Equal(0, data.Next.PropertyChangedSubscriptionCount);
         }
 
         [Fact]
@@ -175,9 +175,9 @@ namespace Avalonia.Markup.UnitTests.Data
 
             sub.Dispose();
 
-            Assert.Equal(0, data.SubscriptionCount);
-            Assert.Equal(0, data.Next.SubscriptionCount);
-            Assert.Equal(0, old.SubscriptionCount);
+            Assert.Equal(0, data.PropertyChangedSubscriptionCount);
+            Assert.Equal(0, data.Next.PropertyChangedSubscriptionCount);
+            Assert.Equal(0, old.PropertyChangedSubscriptionCount);
         }
 
         [Fact]
@@ -196,9 +196,9 @@ namespace Avalonia.Markup.UnitTests.Data
 
             sub.Dispose();
 
-            Assert.Equal(0, data.SubscriptionCount);
-            Assert.Equal(0, data.Next.SubscriptionCount);
-            Assert.Equal(0, old.SubscriptionCount);
+            Assert.Equal(0, data.PropertyChangedSubscriptionCount);
+            Assert.Equal(0, data.Next.PropertyChangedSubscriptionCount);
+            Assert.Equal(0, old.PropertyChangedSubscriptionCount);
         }
 
         [Fact]
@@ -221,10 +221,10 @@ namespace Avalonia.Markup.UnitTests.Data
 
             sub.Dispose();
 
-            Assert.Equal(0, data.SubscriptionCount);
-            Assert.Equal(0, data.Next.SubscriptionCount);
-            Assert.Equal(0, breaking.SubscriptionCount);
-            Assert.Equal(0, old.SubscriptionCount);
+            Assert.Equal(0, data.PropertyChangedSubscriptionCount);
+            Assert.Equal(0, data.Next.PropertyChangedSubscriptionCount);
+            Assert.Equal(0, breaking.PropertyChangedSubscriptionCount);
+            Assert.Equal(0, old.PropertyChangedSubscriptionCount);
         }
 
         [Fact]
@@ -327,8 +327,8 @@ namespace Avalonia.Markup.UnitTests.Data
 
             Assert.Equal(new[] { "foo", "bar", AvaloniaProperty.UnsetValue }, result);
 
-            Assert.Equal(0, first.SubscriptionCount);
-            Assert.Equal(0, second.SubscriptionCount);
+            Assert.Equal(0, first.PropertyChangedSubscriptionCount);
+            Assert.Equal(0, second.PropertyChangedSubscriptionCount);
         }
 
         [Fact]
@@ -351,7 +351,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
         private interface INext
         {
-            int SubscriptionCount { get; }
+            int PropertyChangedSubscriptionCount { get; }
         }
 
         private class Class1 : NotifyingBase
