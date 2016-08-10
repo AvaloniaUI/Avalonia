@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using Avalonia.Data;
 using Avalonia.Markup.Data.Plugins;
 
@@ -38,15 +39,11 @@ namespace Avalonia.Markup.Data
                 ExceptionValidationPlugin.Instance,
             };
 
-        private readonly WeakReference _root;
-        private readonly Func<object> _rootGetter;
-        private readonly IObservable<object> _rootObservable;
-        private readonly IObservable<Unit> _update;
-        private IDisposable _rootObserverSubscription;
-        private IDisposable _updateSubscription;
-        private int _count;
+        private static readonly object UninitializedValue = new object();
         private readonly ExpressionNode _node;
-        private bool _enableDataValidation;
+        private readonly Subject<Unit> _finished;
+        private readonly object _root;
+        private IObservable<object> _result;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ExpressionObserver"/> class.
@@ -58,15 +55,9 @@ namespace Avalonia.Markup.Data
         {
             Contract.Requires<ArgumentNullException>(expression != null);
 
-            _root = new WeakReference(root);
-            _enableDataValidation = enableDataValidation;
-
-            if (!string.IsNullOrWhiteSpace(expression))
-            {
-                _node = ExpressionNodeBuilder.Build(expression, enableDataValidation);
-            }
-
             Expression = expression;
+            _node = Parse(expression, enableDataValidation);
+            _root = new WeakReference(root);
         }
 
         /// <summary>
@@ -83,15 +74,10 @@ namespace Avalonia.Markup.Data
             Contract.Requires<ArgumentNullException>(rootObservable != null);
             Contract.Requires<ArgumentNullException>(expression != null);
 
-            _rootObservable = rootObservable;
-            _enableDataValidation = enableDataValidation;
-
-            if (!string.IsNullOrWhiteSpace(expression))
-            {
-                _node = ExpressionNodeBuilder.Build(expression, enableDataValidation);
-            }
-
             Expression = expression;
+            _node = Parse(expression, enableDataValidation);
+            _finished = new Subject<Unit>();
+            _root = rootObservable;
         }
 
         /// <summary>
@@ -111,16 +97,12 @@ namespace Avalonia.Markup.Data
             Contract.Requires<ArgumentNullException>(expression != null);
             Contract.Requires<ArgumentNullException>(update != null);
 
-            _rootGetter = rootGetter;
-            _update = update;
-            _enableDataValidation = enableDataValidation;
-
-            if (!string.IsNullOrWhiteSpace(expression))
-            {
-                _node = ExpressionNodeBuilder.Build(expression, enableDataValidation);
-            }
-
             Expression = expression;
+            _node = Parse(expression, enableDataValidation);
+            _finished = new Subject<Unit>();
+
+            _node.Target = new WeakReference(rootGetter());
+            _root = update.Select(x => rootGetter());
         }
 
         /// <summary>
@@ -134,21 +116,7 @@ namespace Avalonia.Markup.Data
         /// </returns>
         public bool SetValue(object value, BindingPriority priority = BindingPriority.LocalValue)
         {
-            IncrementCount();
-
-            if (_rootGetter != null && _node != null)
-            {
-                _node.Target = new WeakReference(_rootGetter());
-            }
-
-            try
-            {
-                return _node?.SetValue(value, priority) ?? false;
-            }
-            finally
-            {
-                DecrementCount();
-            }
+            return (Leaf as PropertyAccessorNode)?.SetTargetValue(value, priority) ?? false;
         }
 
         /// <summary>
@@ -160,41 +128,10 @@ namespace Avalonia.Markup.Data
         /// Gets the type of the expression result or null if the expression could not be 
         /// evaluated.
         /// </summary>
-        public Type ResultType
-        {
-            get
-            {
-                IncrementCount();
-
-                try
-                {
-                    if (_node != null)
-                    {
-                        return (Leaf as PropertyAccessorNode)?.PropertyType;
-                    }
-                    else if (_rootGetter != null)
-                    {
-                        return _rootGetter()?.GetType();
-                    }
-                    else
-                    {
-                        return _root.Target?.GetType();
-                    }
-                }
-                finally
-                {
-                    DecrementCount();
-                }
-            }
-        }
+        public Type ResultType => (Leaf as PropertyAccessorNode)?.PropertyType;
 
         /// <inheritdoc/>
         string IDescription.Description => Expression;
-
-        /// <summary>
-        /// Gets the root expression node. Used for testing.
-        /// </summary>
-        internal ExpressionNode Node => _node;
 
         /// <summary>
         /// Gets the leaf node.
@@ -212,94 +149,51 @@ namespace Avalonia.Markup.Data
         /// <inheritdoc/>
         protected override IDisposable SubscribeCore(IObserver<object> observer)
         {
-            IncrementCount();
-
-            if (_node != null)
+            if (_result == null)
             {
-                IObservable<object> source = _node;
+                var source = (IObservable<object>)_node;
 
-                if (_rootObservable != null)
+                if (_finished != null)
                 {
-                    source = source.TakeUntil(_rootObservable.LastOrDefaultAsync());
-                }
-                else if (_update != null)
-                {
-                    source = source.TakeUntil(_update.LastOrDefaultAsync());
+                    source = source.TakeUntil(_finished);
                 }
 
-                var subscription = source.Subscribe(observer);
-
-                return Disposable.Create(() =>
-                {
-                    DecrementCount();
-                    subscription.Dispose();
-                });
+                _result = Observable.Using(StartRoot, _ => source)
+                    .Publish(UninitializedValue)
+                    .RefCount()
+                    .Where(x => x != UninitializedValue);
             }
-            else if (_rootObservable != null)
+
+            return _result.Subscribe(observer);
+        }
+
+        private static ExpressionNode Parse(string expression, bool enableDataValidation)
+        {
+            if (!string.IsNullOrWhiteSpace(expression))
             {
-                return _rootObservable.Subscribe(observer);
+                return ExpressionNodeBuilder.Build(expression, enableDataValidation);
             }
             else
             {
-                if (_update == null)
-                {
-                    return Observable.Never<object>()
-                        .StartWith(_root.Target)
-                        .Subscribe(observer);
-                }
-                else
-                {
-                    return _update
-                        .Select(_ => _rootGetter())
-                        .StartWith(_rootGetter())
-                        .Subscribe(observer);
-                }
+                return new EmptyExpressionNode();
             }
         }
 
-        private void IncrementCount()
+        private IDisposable StartRoot()
         {
-            if (_count++ == 0 && _node != null)
-            {
-                if (_rootGetter != null)
-                {
-                    _node.Target = new WeakReference(_rootGetter());
+            var observable = _root as IObservable<object>;
 
-                    if (_update != null)
-                    {
-                        _updateSubscription = _update.Subscribe(x =>
-                            _node.Target = new WeakReference(_rootGetter()));
-                    }
-                }
-                else if (_rootObservable != null)
-                {
-                    _rootObserverSubscription = _rootObservable.Subscribe(x =>
-                        _node.Target = new WeakReference(x));
-                }
-                else
-                {
-                    _node.Target = _root;
-                }
+            if (observable != null)
+            {
+                return observable.Subscribe(
+                    x => _node.Target = new WeakReference(x),
+                    _ => _finished.OnNext(Unit.Default),
+                    () => _finished.OnNext(Unit.Default));
             }
-        }
-
-        private void DecrementCount()
-        {
-            if (--_count == 0 && _node != null)
+            else
             {
-                if (_rootObserverSubscription != null)
-                {
-                    _rootObserverSubscription.Dispose();
-                    _rootObserverSubscription = null;
-                }
-
-                if (_updateSubscription != null)
-                {
-                    _updateSubscription.Dispose();
-                    _updateSubscription = null;
-                }
-
-                _node.Target = null;
+                _node.Target = (WeakReference)_root;
+                return Disposable.Empty;
             }
         }
     }

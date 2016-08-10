@@ -215,7 +215,7 @@ namespace Avalonia.Markup.UnitTests.Data
         {
             Func<Tuple<ExpressionObserver, WeakReference>> run = () =>
             {
-                var source = new NonIntegerIndexer();
+                var source = new { Foo = new NonIntegerIndexer() };
                 var target = new ExpressionObserver(source, "Foo");
                 return Tuple.Create(target, new WeakReference(source));
             };

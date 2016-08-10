@@ -28,6 +28,19 @@ namespace Avalonia.Markup.UnitTests.Data
         }
 
         [Fact]
+        public void Should_Complete_When_Source_Observable_Errors()
+        {
+            var source = new BehaviorSubject<object>(1);
+            var target = new ExpressionObserver(source, "Foo");
+            var completed = false;
+
+            target.Subscribe(_ => { }, () => completed = true);
+            source.OnError(new Exception());
+
+            Assert.True(completed);
+        }
+
+        [Fact]
         public void Should_Complete_When_Update_Observable_Completes()
         {
             var update = new Subject<Unit>();
@@ -36,6 +49,19 @@ namespace Avalonia.Markup.UnitTests.Data
 
             target.Subscribe(_ => { }, () => completed = true);
             update.OnCompleted();
+
+            Assert.True(completed);
+        }
+
+        [Fact]
+        public void Should_Complete_When_Update_Observable_Errors()
+        {
+            var update = new Subject<Unit>();
+            var target = new ExpressionObserver(() => 1, "Foo", update);
+            var completed = false;
+
+            target.Subscribe(_ => { }, () => completed = true);
+            update.OnError(new Exception());
 
             Assert.True(completed);
         }
@@ -55,7 +81,7 @@ namespace Avalonia.Markup.UnitTests.Data
                 scheduler.Start();
             }
 
-            Assert.Equal(new[] { AvaloniaProperty.UnsetValue, "foo" }, result);
+            Assert.Equal(new[] { "foo" }, result);
             Assert.All(source.Subscriptions, x => Assert.NotEqual(Subscription.Infinite, x.Unsubscribe));
         }
 
@@ -75,22 +101,6 @@ namespace Avalonia.Markup.UnitTests.Data
 
             Assert.Equal(new[] { "foo" }, result);
             Assert.All(update.Subscriptions, x => Assert.NotEqual(Subscription.Infinite, x.Unsubscribe));
-        }
-
-        [Fact]
-        public void Should_Set_Node_Target_To_Null_On_Unsubscribe()
-        {
-            var target = new ExpressionObserver(new { Foo = "foo" }, "Foo");
-            var result = new List<object>();
-
-            using (target.Subscribe(x => result.Add(x)))
-            using (target.Subscribe(_ => { }))
-            {
-                Assert.NotNull(target.Node.Target);
-            }
-
-            Assert.Equal(new[] { "foo" }, result);
-            Assert.Null(target.Node.Target);
         }
 
         private Recorded<Notification<object>> OnNext(long time, object value)

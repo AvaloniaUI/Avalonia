@@ -18,7 +18,10 @@ namespace Avalonia.Markup.UnitTests.Data
             var data = new { Foo = "foo" };
             var target = new ExpressionObserver(data, "Foo");
 
-            target.SetValue("bar");
+            using (target.Subscribe(_ => { }))
+            {
+                target.SetValue("bar");
+            }
 
             Assert.Equal("foo", data.Foo);
         }
@@ -29,7 +32,10 @@ namespace Avalonia.Markup.UnitTests.Data
             var data = new Class1 { Foo = new Class2 { Bar = "bar" } };
             var target = new ExpressionObserver(data, "Foo.Bar");
 
-            target.SetValue("foo");
+            using (target.Subscribe(_ => { }))
+            {
+                target.SetValue("foo");
+            }
 
             Assert.Equal("foo", data.Foo.Bar);
         }

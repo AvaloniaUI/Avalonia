@@ -4,10 +4,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Reactive.Linq;
-using System.Runtime.CompilerServices;
 using Avalonia.Data;
 using Avalonia.Markup.Data;
 using Avalonia.UnitTests;
@@ -106,6 +104,48 @@ namespace Avalonia.Markup.UnitTests.Data
             }, result);
         }
 
+        [Fact]
+        public void Doesnt_Subscribe_To_Indei_Of_Intermediate_Object_In_Chain()
+        {
+            var data = new Container
+            {
+                Inner = new IndeiTest()
+            };
+
+            var observer = new ExpressionObserver(
+                data,
+                $"{nameof(Container.Inner)}.{nameof(IndeiTest.MustBePositive)}",
+                true);
+
+            observer.Subscribe(_ => { });
+
+            // We may want to change this but I've never seen an example of data validation on an
+            // intermediate object in a chain so for the moment I'm not sure what the result of 
+            // validating such a thing should look like.
+            Assert.Equal(0, data.ErrorsChangedSubscriptionCount);
+            Assert.Equal(1, ((IndeiTest)data.Inner).ErrorsChangedSubscriptionCount);
+        }
+
+        [Fact]
+        public void Sends_Correct_Notifications_With_Property_Chain()
+        {
+            var container = new Container();
+            var inner = new IndeiTest();
+
+            var observer = new ExpressionObserver(
+                container,
+                $"{nameof(Container.Inner)}.{nameof(IndeiTest.MustBePositive)}",
+                true);
+            var result = new List<object>();
+
+            observer.Subscribe(x => result.Add(x));
+
+            Assert.Equal(new[]
+            {
+                new BindingNotification(new NullReferenceException(), BindingErrorType.Error),
+            }, result);
+        }
+
         public class ExceptionTest : NotifyingBase
         {
             private int _mustBePositive;
@@ -160,6 +200,20 @@ namespace Avalonia.Markup.UnitTests.Data
                 _errors.TryGetValue(propertyName, out result);
                 return result;
             }
+        }
+
+        private class Container : IndeiBase
+        {
+            private object _inner;
+
+            public object Inner
+            {
+                get { return _inner; }
+                set { _inner = value; RaisePropertyChanged(); }
+            }
+
+            public override bool HasErrors => false;
+            public override IEnumerable GetErrors(string propertyName) => null;
         }
     }
 }

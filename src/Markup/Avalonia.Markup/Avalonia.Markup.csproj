@@ -42,6 +42,7 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="Data\CommonPropertyNames.cs" />
+    <Compile Include="Data\EmptyExpressionNode.cs" />
     <Compile Include="Data\ExpressionNodeBuilder.cs" />
     <Compile Include="Data\ExpressionParseException.cs" />
     <Compile Include="Data\ExpressionSubject.cs" />

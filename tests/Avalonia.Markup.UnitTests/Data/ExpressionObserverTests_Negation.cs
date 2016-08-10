@@ -3,6 +3,7 @@
 
 using System;
 using System.Reactive.Linq;
+using Avalonia.Data;
 using Avalonia.Markup.Data;
 using Xunit;
 
@@ -61,23 +62,31 @@ namespace Avalonia.Markup.UnitTests.Data
         }
 
         [Fact]
-        public async void Should_Return_UnsetValue_For_String_Not_Convertible_To_Boolean()
+        public async void Should_Return_BindingNotification_For_String_Not_Convertible_To_Boolean()
         {
             var data = new { Foo = "foo" };
             var target = new ExpressionObserver(data, "!Foo");
             var result = await target.Take(1);
 
-            Assert.Equal(AvaloniaProperty.UnsetValue, result);
+            Assert.Equal(
+                new BindingNotification(
+                    new InvalidCastException($"Unable to convert 'foo' to bool."),
+                    BindingErrorType.Error), 
+                result);
         }
 
         [Fact]
-        public async void Should_Return_Empty_For_Value_Not_Convertible_To_Boolean()
+        public async void Should_Return_BindingNotification_For_Value_Not_Convertible_To_Boolean()
         {
             var data = new { Foo = new object() };
             var target = new ExpressionObserver(data, "!Foo");
             var result = await target.Take(1);
 
-            Assert.Equal(AvaloniaProperty.UnsetValue, result);
+            Assert.Equal(
+                new BindingNotification(
+                    new InvalidCastException($"Unable to convert 'System.Object' to bool."),
+                    BindingErrorType.Error),
+                result);
         }
 
         [Fact]

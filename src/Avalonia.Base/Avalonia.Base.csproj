@@ -117,6 +117,7 @@
     <Compile Include="Utilities\IWeakSubscriber.cs" />
     <Compile Include="Utilities\MathUtilities.cs" />
     <Compile Include="Utilities\TypeUtilities.cs" />
+    <Compile Include="Utilities\WeakObservable.cs" />
     <Compile Include="Utilities\WeakSubscriptionManager.cs" />
     <Compile Include="Utilities\WeakTimer.cs" />
   </ItemGroup>

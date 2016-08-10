@@ -3,21 +3,15 @@
 
 using System;
 using System.Globalization;
-using System.Reactive.Linq;
 using Avalonia.Data;
 
 namespace Avalonia.Markup.Data
 {
     internal class LogicalNotNode : ExpressionNode
     {
-        public override bool SetValue(object value, BindingPriority priority)
+        protected override void NextValueChanged(object value)
         {
-            return false;
-        }
-
-        public override IDisposable Subscribe(IObserver<object> observer)
-        {
-            return Next.Select(Negate).Subscribe(observer);
+            base.NextValueChanged(Negate(value));
         }
 
         private static object Negate(object v)
@@ -34,6 +28,12 @@ namespace Avalonia.Markup.Data
                     {
                         return !result;
                     }
+                    else
+                    {
+                        return new BindingNotification(
+                            new InvalidCastException($"Unable to convert '{s}' to bool."), 
+                            BindingErrorType.Error);
+                    }
                 }
                 else
                 {
@@ -42,9 +42,17 @@ namespace Avalonia.Markup.Data
                         var boolean = Convert.ToBoolean(v, CultureInfo.InvariantCulture);
                         return !boolean;
                     }
-                    catch
+                    catch (InvalidCastException)
                     {
-                        // TODO: Maybe should log something here.
+                        // The error message here is "Unable to cast object of type 'System.Object'
+                        // to type 'System.IConvertible'" which is kinda useless so provide our own.
+                        return new BindingNotification(
+                            new InvalidCastException($"Unable to convert '{v}' to bool."),
+                            BindingErrorType.Error);
+                    }
+                    catch (Exception e)
+                    {
+                        return new BindingNotification(e, BindingErrorType.Error);
                     }
                 }
             }

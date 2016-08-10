@@ -30,39 +30,40 @@ namespace Avalonia.Markup.Xaml.Templates
 
         public object Select(object o)
         {
-            if (string.IsNullOrEmpty(MemberName))
-            {
-                return o;
-            }
+            throw new NotImplementedException();
+            ////if (string.IsNullOrEmpty(MemberName))
+            ////{
+            ////    return o;
+            ////}
 
-            if (_expressionNode == null)
-            {
-                _expressionNode = ExpressionNodeBuilder.Build(MemberName);
+            ////if (_expressionNode == null)
+            ////{
+            ////    _expressionNode = ExpressionNodeBuilder.Build(MemberName);
 
-                _memberValueNode = _expressionNode;
+            ////    _memberValueNode = _expressionNode;
 
-                while (_memberValueNode.Next != null)
-                {
-                    _memberValueNode = _memberValueNode.Next;
-                }
-            }
+            ////    while (_memberValueNode.Next != null)
+            ////    {
+            ////        _memberValueNode = _memberValueNode.Next;
+            ////    }
+            ////}
 
-            _expressionNode.Target = new WeakReference(o);
+            ////_expressionNode.Target = new WeakReference(o);
 
-            object result = _memberValueNode.CurrentValue.Target;
+            ////object result = _memberValueNode.CurrentValue.Target;
 
-            _expressionNode.Target = null;
+            ////_expressionNode.Target = null;
 
-            if (result == AvaloniaProperty.UnsetValue)
-            {
-                return null;
-            }
-            else if (result is BindingNotification)
-            {
-                return null;
-            }
+            ////if (result == AvaloniaProperty.UnsetValue)
+            ////{
+            ////    return null;
+            ////}
+            ////else if (result is BindingNotification)
+            ////{
+            ////    return null;
+            ////}
 
-            return result;
+            ////return result;
         }
     }
 }
