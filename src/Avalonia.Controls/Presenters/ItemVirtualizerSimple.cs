@@ -97,8 +97,14 @@ namespace Avalonia.Controls.Presenters
         /// <inheritdoc/>
         public override void UpdateControls()
         {
-            CreateAndRemoveContainers();
-            InvalidateScroll();
+            //sometimes controls been tried to be updated 
+            //but panel is not in the visual tree
+            //causing NullReferenceException
+            if (VirtualizingPanel.IsAttachedToVisualTree == true)
+            {
+                CreateAndRemoveContainers();
+                InvalidateScroll();
+            }
         }
 
         /// <inheritdoc/>
@@ -313,24 +319,27 @@ namespace Avalonia.Controls.Presenters
         private void RecycleContainers()
         {
             var panel = VirtualizingPanel;
-            var generator = Owner.ItemContainerGenerator;
-            var selector = Owner.MemberSelector;
-            var containers = generator.Containers.ToList();
-            var itemIndex = FirstIndex;
-
-            foreach (var container in containers)
+            if (panel.IsAttachedToVisualTree)
             {
-                var item = Items.ElementAt(itemIndex);
+                var generator = Owner.ItemContainerGenerator;
+                var selector = Owner.MemberSelector;
+                var containers = generator.Containers.ToList();
+                var itemIndex = FirstIndex;
 
-                if (!object.Equals(container.Item, item))
+                foreach (var container in containers)
                 {
-                    if (!generator.TryRecycle(itemIndex, itemIndex, item, selector))
-                    {
-                        throw new NotImplementedException();
-                    }
-                }
+                    var item = Items.ElementAt(itemIndex);
 
-                ++itemIndex;
+                    if (!object.Equals(container.Item, item))
+                    {
+                        if (!generator.TryRecycle(itemIndex, itemIndex, item, selector))
+                        {
+                            throw new NotImplementedException();
+                        }
+                    }
+
+                    ++itemIndex;
+                }
             }
         }
 
@@ -351,40 +360,46 @@ namespace Avalonia.Controls.Presenters
         {
             var panel = VirtualizingPanel;
             var generator = Owner.ItemContainerGenerator;
-            var selector = Owner.MemberSelector;
-            var sign = delta < 0 ? -1 : 1;
-            var count = Math.Min(Math.Abs(delta), panel.Children.Count);
-            var move = count < panel.Children.Count;
-            var first = delta < 0 && move ? panel.Children.Count + delta : 0;
-            var containers = panel.Children.GetRange(first, count).ToList();
 
-            for (var i = 0; i < count; ++i)
+            //a problem sometimes method called but containers are empty!!!
+            //or panel is not attached to visual tree
+            if (panel.IsAttachedToVisualTree && generator.Containers.Any())
             {
-                var oldItemIndex = FirstIndex + first + i;
-                var newItemIndex = oldItemIndex + delta + ((panel.Children.Count - count) * sign);
+                var selector = Owner.MemberSelector;
+                var sign = delta < 0 ? -1 : 1;
+                var count = Math.Min(Math.Abs(delta), panel.Children.Count);
+                var move = count < panel.Children.Count;
+                var first = delta < 0 && move ? panel.Children.Count + delta : 0;
+                var containers = panel.Children.GetRange(first, count).ToList();
 
-                var item = Items.ElementAt(newItemIndex);
-
-                if (!generator.TryRecycle(oldItemIndex, newItemIndex, item, selector))
+                for (var i = 0; i < count; ++i)
                 {
-                    throw new NotImplementedException();
+                    var oldItemIndex = FirstIndex + first + i;
+                    var newItemIndex = oldItemIndex + delta + ((panel.Children.Count - count) * sign);
+
+                    var item = Items.ElementAt(newItemIndex);
+
+                    if (!generator.TryRecycle(oldItemIndex, newItemIndex, item, selector))
+                    {
+                        throw new NotImplementedException();
+                    }
                 }
+
+                if (move)
+                {
+                    if (delta > 0)
+                    {
+                        panel.Children.MoveRange(first, count, panel.Children.Count);
+                    }
+                    else
+                    {
+                        panel.Children.MoveRange(first, count, 0);
+                    }
+                }
+
+                FirstIndex += delta;
+                NextIndex += delta;
             }
-
-            if (move)
-            {
-                if (delta > 0)
-                {
-                    panel.Children.MoveRange(first, count, panel.Children.Count);
-                }
-                else
-                {
-                    panel.Children.MoveRange(first, count, 0);
-                }
-            }
-
-            FirstIndex += delta;
-            NextIndex += delta;
         }
 
         /// <summary>
