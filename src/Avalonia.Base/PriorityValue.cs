@@ -77,7 +77,6 @@ namespace Avalonia
         /// </summary>
         /// <param name="binding">The binding.</param>
         /// <param name="priority">The binding priority.</param>
-        /// <param name="validation">Validation settings for the binding.</param>
         /// <returns>
         /// A disposable that will remove the binding.
         /// </returns>

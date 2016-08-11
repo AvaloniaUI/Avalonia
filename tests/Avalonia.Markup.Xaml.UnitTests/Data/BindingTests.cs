@@ -170,11 +170,16 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
             };
 
             var child = new Control();
-            var dataContextBinding = new Binding("Foo");
             var values = new List<object>();
 
             child.GetObservable(Border.DataContextProperty).Subscribe(x => values.Add(x));
-            child.Bind(ContentControl.DataContextProperty, dataContextBinding);
+            child.Bind(Control.DataContextProperty, new Binding("Foo"));
+
+            // When binding to DataContext and the target isn't found, the binding should produce
+            // null rather than UnsetValue in order to not propagate incorrect DataContexts from
+            // parent controls while things are being set up. This logic is implemented in 
+            // `Avalonia.Markup.Xaml.Binding.Initiate`.
+            Assert.True(child.IsSet(Control.DataContextProperty));
 
             root.Child = child;
 

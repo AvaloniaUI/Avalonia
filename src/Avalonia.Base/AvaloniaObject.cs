@@ -228,6 +228,10 @@ namespace Avalonia
         /// </summary>
         /// <param name="property">The property.</param>
         /// <returns>True if the property is set, otherwise false.</returns>
+        /// <remarks>
+        /// Checks whether a value is assigned to the property, or that there is a binding to the
+        /// property that is producing a value other than <see cref="AvaloniaProperty.UnsetValue"/>.
+        /// </remarks>
         public bool IsSet(AvaloniaProperty property)
         {
             Contract.Requires<ArgumentNullException>(property != null);
