@@ -97,19 +97,15 @@ namespace Avalonia
 
             if (notification != null)
             {
-                if (notification.ErrorType == BindingErrorType.Error)
-                {
-                    _owner.Error(this, notification);
-                }
-                else if (notification.ErrorType == BindingErrorType.DataValidationError)
-                {
-                    _owner.Validation(this, notification);
-                }
-
                 if (notification.HasValue)
                 {
                     Value = notification.Value;
                     _owner.Changed(this);
+                }
+
+                if (notification.ErrorType != BindingErrorType.None)
+                {
+                    _owner.Error(this, notification);
                 }
             }
             else

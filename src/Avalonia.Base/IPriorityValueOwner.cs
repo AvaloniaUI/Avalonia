@@ -17,12 +17,5 @@ namespace Avalonia
         /// <param name="oldValue">The old value.</param>
         /// <param name="newValue">The new value.</param>
         void Changed(PriorityValue sender, object oldValue, object newValue);
-
-        /// <summary>
-        /// Called when the validation state of a <see cref="PriorityValue"/> changes.
-        /// </summary>
-        /// <param name="sender">The source of the change.</param>
-        /// <param name="status">The validation status.</param>
-        void DataValidationChanged(PriorityValue sender, BindingNotification status);
     }
 }

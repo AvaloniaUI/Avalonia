@@ -124,14 +124,6 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
                     SetValue(ValidationTestProperty, value);
                 }
             }
-
-            protected override void DataValidationChanged(AvaloniaProperty property, BindingNotification status)
-            {
-                if (property == ValidationTestProperty)
-                {
-                    UpdateValidationState(status);
-                }
-            }
         }
         
         private class ValidationTestModel

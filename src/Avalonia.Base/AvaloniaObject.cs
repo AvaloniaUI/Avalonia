@@ -352,7 +352,6 @@ namespace Avalonia
                     GetDescription(source));
 
                 IDisposable subscription = null;
-                IDisposable validationSubcription = null;
 
                 if (_directBindings == null)
                 {
@@ -363,15 +362,11 @@ namespace Avalonia
                     .Select(x => CastOrDefault(x, property.PropertyType))
                     .Do(_ => { }, () => _directBindings.Remove(subscription))
                     .Subscribe(x => DirectBindingSet(property, x));
-                validationSubcription = source
-                    .OfType<BindingNotification>()
-                    .Subscribe(x => DataValidationChanged(property, x));
 
                 _directBindings.Add(subscription);
 
                 return Disposable.Create(() =>
                 {
-                    validationSubcription.Dispose();
                     subscription.Dispose();
                     _directBindings.Remove(subscription);
                 });
@@ -464,30 +459,6 @@ namespace Avalonia
                     newValue,
                     priority);
             }
-        }
-
-        /// <inheritdoc/>
-        void IPriorityValueOwner.DataValidationChanged(PriorityValue sender, BindingNotification status)
-        {
-            var property = sender.Property;
-            DataValidationChanged(property, status);
-        }
-
-        /// <summary>
-        /// Called when the validation state on a tracked property is changed.
-        /// </summary>
-        /// <param name="property">The property whose validation state changed.</param>
-        /// <param name="status">The new validation state.</param>
-        protected virtual void DataValidationChanged(AvaloniaProperty property, BindingNotification status)
-        {
-        }
-
-        /// <summary>
-        /// Updates the validation status of the current object.
-        /// </summary>
-        /// <param name="status">The new validation status.</param>
-        protected void UpdateValidationState(BindingNotification status)
-        {
         }
 
         /// <inheritdoc/>
