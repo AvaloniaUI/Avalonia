@@ -44,8 +44,8 @@ http://cakebuild.net
 Param(
     [string]$Script = "build.cake",
     [string]$Target = "Default",
-    [ValidateSet("AnyCPU", "x86", "x64")]
-    [string]$Platform = "AnyCPU",
+    [ValidateSet("Any CPU", "x86", "x64", "Mono", "iPhone")]
+    [string]$Platform = "Any CPU",
     [ValidateSet("Release", "Debug")]
     [string]$Configuration = "Release",
     [ValidateSet("Quiet", "Minimal", "Normal", "Verbose", "Diagnostic")]
