@@ -5,14 +5,13 @@ using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Markup.Data;
 using System;
+using System.Reactive.Linq;
 
 namespace Avalonia.Markup.Xaml.Templates
 {
     public class MemberSelector : IMemberSelector
     {
-        private ExpressionNode _expressionNode;
         private string _memberName;
-        private ExpressionNode _memberValueNode;
 
         public string MemberName
         {
@@ -22,48 +21,22 @@ namespace Avalonia.Markup.Xaml.Templates
                 if (_memberName != value)
                 {
                     _memberName = value;
-                    _expressionNode = null;
-                    _memberValueNode = null;
                 }
             }
         }
 
         public object Select(object o)
         {
-            throw new NotImplementedException();
-            ////if (string.IsNullOrEmpty(MemberName))
-            ////{
-            ////    return o;
-            ////}
+            if (string.IsNullOrEmpty(MemberName))
+            {
+                return o;
+            }
 
-            ////if (_expressionNode == null)
-            ////{
-            ////    _expressionNode = ExpressionNodeBuilder.Build(MemberName);
+            var expression = new ExpressionObserver(o, MemberName);
+            object result = AvaloniaProperty.UnsetValue;
 
-            ////    _memberValueNode = _expressionNode;
-
-            ////    while (_memberValueNode.Next != null)
-            ////    {
-            ////        _memberValueNode = _memberValueNode.Next;
-            ////    }
-            ////}
-
-            ////_expressionNode.Target = new WeakReference(o);
-
-            ////object result = _memberValueNode.CurrentValue.Target;
-
-            ////_expressionNode.Target = null;
-
-            ////if (result == AvaloniaProperty.UnsetValue)
-            ////{
-            ////    return null;
-            ////}
-            ////else if (result is BindingNotification)
-            ////{
-            ////    return null;
-            ////}
-
-            ////return result;
+            expression.Subscribe(x => result = x);
+            return (result == AvaloniaProperty.UnsetValue || result is BindingNotification) ? null : result;
         }
     }
 }
