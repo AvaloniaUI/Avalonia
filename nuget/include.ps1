@@ -1,1 +1,0 @@
-$Packages = @("Avalonia", "Avalonia.Desktop",  "Avalonia.Skia.Desktop", "Avalonia.Android", "Avalonia.iOS")
