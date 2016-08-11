@@ -17,10 +17,14 @@ namespace Avalonia
         /// The value to use when the property is set to <see cref="AvaloniaProperty.UnsetValue"/>
         /// </param>
         /// <param name="defaultBindingMode">The default binding mode.</param>
+        /// <param name="enableDataValidation">
+        /// Whether the property is interested in data validation.
+        /// </param>
         public DirectPropertyMetadata(
             TValue unsetValue = default(TValue),
-            BindingMode defaultBindingMode = BindingMode.Default)
-                : base(defaultBindingMode)
+            BindingMode defaultBindingMode = BindingMode.Default,
+            bool enableDataValidation = false)
+                : base(defaultBindingMode, enableDataValidation)
         {
             UnsetValue = unsetValue;
         }

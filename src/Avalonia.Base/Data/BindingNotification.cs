@@ -87,7 +87,7 @@ namespace Avalonia.Data
         /// Gets the value that should be passed to the target when <see cref="HasValue"/>
         /// is true.
         /// </summary>
-        public object Value { get; }
+        public object Value { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether <see cref="Value"/> should be pushed to the target.
@@ -97,13 +97,19 @@ namespace Avalonia.Data
         /// <summary>
         /// Gets the error that occurred on the source, if any.
         /// </summary>
-        public Exception Error { get; }
+        public Exception Error { get; private set; }
 
         /// <summary>
         /// Gets the type of error that <see cref="Error"/> represents, if any.
         /// </summary>
-        public BindingErrorType ErrorType { get; }
+        public BindingErrorType ErrorType { get; private set; }
 
+        /// <summary>
+        /// Compares two instances of <see cref="BindingNotification"/> for equality.
+        /// </summary>
+        /// <param name="a">The first instance.</param>
+        /// <param name="b">The second instance.</param>
+        /// <returns>true if the two instances are equal; otherwise false.</returns>
         public static bool operator ==(BindingNotification a, BindingNotification b)
         {
             if (object.ReferenceEquals(a, b))
@@ -122,45 +128,68 @@ namespace Avalonia.Data
                    (a.ErrorType == BindingErrorType.None || ExceptionEquals(a.Error, b.Error));
         }
 
+        /// <summary>
+        /// Compares two instances of <see cref="BindingNotification"/> for inequality.
+        /// </summary>
+        /// <param name="a">The first instance.</param>
+        /// <param name="b">The second instance.</param>
+        /// <returns>true if the two instances are unequal; otherwise false.</returns>
         public static bool operator !=(BindingNotification a, BindingNotification b)
         {
             return !(a == b);
         }
 
+        /// <summary>
+        /// Compares an object to an instance of <see cref="BindingNotification"/> for equality.
+        /// </summary>
+        /// <param name="obj">The object to compare.</param>
+        /// <returns>true if the two instances are equal; otherwise false.</returns>
         public override bool Equals(object obj)
         {
             return Equals(obj as BindingNotification);
         }
 
+        /// <summary>
+        /// Compares a value to an instance of <see cref="BindingNotification"/> for equality.
+        /// </summary>
+        /// <param name="other">The value to compare.</param>
+        /// <returns>true if the two instances are equal; otherwise false.</returns>
         public bool Equals(BindingNotification other)
         {
             return this == other;
         }
 
+        /// <summary>
+        /// Gets the hash code for this instance of <see cref="BindingNotification"/>. 
+        /// </summary>
+        /// <returns>A hash code.</returns>
         public override int GetHashCode()
         {
             return base.GetHashCode();
         }
 
-        public BindingNotification WithError(Exception e)
+        /// <summary>
+        /// Adds an error to the <see cref="BindingNotification"/>.
+        /// </summary>
+        /// <param name="e">The error to add.</param>
+        /// <param name="type">The error type.</param>
+        public void AddError(Exception e, BindingErrorType type)
         {
-            if (e == null)
-            {
-                return this;
-            }
+            Contract.Requires<ArgumentNullException>(e != null);
+            Contract.Requires<ArgumentException>(type != BindingErrorType.None);
 
             if (Error != null)
             {
-                e = new AggregateException(Error, e);
-            }
-
-            if (HasValue)
-            {
-                return new BindingNotification(e, BindingErrorType.Error, Value);
+                Error = new AggregateException(Error, e);
             }
             else
             {
-                return new BindingNotification(e, BindingErrorType.Error, Value);
+                Error = e;
+            }
+
+            if (type == BindingErrorType.Error || ErrorType == BindingErrorType.Error)
+            {
+                ErrorType = BindingErrorType.Error;
             }
         }
 

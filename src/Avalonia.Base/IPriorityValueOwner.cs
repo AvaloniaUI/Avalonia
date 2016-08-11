@@ -17,5 +17,13 @@ namespace Avalonia
         /// <param name="oldValue">The old value.</param>
         /// <param name="newValue">The new value.</param>
         void Changed(PriorityValue sender, object oldValue, object newValue);
+
+        /// <summary>
+        /// Called when a <see cref="BindingNotification"/> is received by a 
+        /// <see cref="PriorityValue"/>.
+        /// </summary>
+        /// <param name="sender">The source of the change.</param>
+        /// <param name="notification">The notification.</param>
+        void BindingNotificationReceived(PriorityValue sender, BindingNotification notification);
     }
 }

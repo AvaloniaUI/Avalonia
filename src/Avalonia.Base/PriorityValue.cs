@@ -237,7 +237,13 @@ namespace Avalonia
         /// <param name="priority">The priority level that the value came from.</param>
         private void UpdateValue(object value, int priority)
         {
+            var notification = value as BindingNotification;
             object castValue;
+
+            if (notification != null)
+            {
+                value = (notification.HasValue) ? notification.Value : null;
+            }
 
             if (TypeUtilities.TryCast(_valueType, value, out castValue))
             {
@@ -250,7 +256,21 @@ namespace Avalonia
 
                 ValuePriority = priority;
                 _value = castValue;
-                _owner?.Changed(this, old, _value);
+
+                if (notification?.HasValue == true)
+                {
+                    notification.Value = castValue;
+                }
+
+                if (notification == null || notification.HasValue)
+                {
+                    _owner?.Changed(this, old, _value);
+                }
+
+                if (notification != null)
+                {
+                    _owner?.BindingNotificationReceived(this, notification);
+                }
             }
             else
             {

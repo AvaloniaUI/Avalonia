@@ -462,6 +462,12 @@ namespace Avalonia
         }
 
         /// <inheritdoc/>
+        void IPriorityValueOwner.BindingNotificationReceived(PriorityValue sender, BindingNotification notification)
+        {
+            BindingNotificationReceived(sender.Property, notification);
+        }
+
+        /// <inheritdoc/>
         Delegate[] IAvaloniaObjectDebug.GetPropertyChangedSubscribers()
         {
             return _propertyChanged?.GetInvocationList();
@@ -490,6 +496,18 @@ namespace Avalonia
                     e.Sender.Revalidate(p);
                 }
             });
+        }
+
+        /// <summary>
+        /// Occurs when a <see cref="BindingNotification"/> is received for a property which has
+        /// data validation enabled.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <param name="notification">The binding notification.</param>
+        protected virtual void BindingNotificationReceived(
+            AvaloniaProperty property,
+            BindingNotification notification)
+        {
         }
 
         /// <summary>
@@ -580,15 +598,20 @@ namespace Avalonia
         /// <returns>The cast value, or a <see cref="BindingNotification"/>.</returns>
         private static object CastOrDefault(object value, Type type)
         {
-            var error = value as BindingNotification;
+            var notification = value as BindingNotification;
 
-            if (error == null)
+            if (notification == null)
             {
                 return TypeUtilities.CastOrDefault(value, type);
             }
             else
             {
-                return error;
+                if (notification.HasValue)
+                {
+                    notification.Value = TypeUtilities.CastOrDefault(value, type);
+                }
+
+                return notification;
             }
         }
 
@@ -636,6 +659,8 @@ namespace Avalonia
                 {
                     SetValue(property, notification.Value);
                 }
+
+                BindingNotificationReceived(property, notification);
 
                 if (notification.ErrorType == BindingErrorType.Error)
                 {
