@@ -10,6 +10,8 @@ using Avalonia.Data;
 using Avalonia.Markup.Data;
 using Xunit;
 using System.Threading;
+using System.Collections.Generic;
+using Avalonia.UnitTests;
 
 namespace Avalonia.Markup.UnitTests.Data
 {
@@ -186,13 +188,48 @@ namespace Avalonia.Markup.UnitTests.Data
             converter.Verify(x => x.ConvertBack("bar", typeof(double), "foo", CultureInfo.CurrentUICulture));
         }
 
-        private class Class1 : INotifyPropertyChanged
+        [Fact]
+        public void Should_Handle_DataValidation()
         {
-            public event PropertyChangedEventHandler PropertyChanged;
+            var data = new Class1 { DoubleValue = 5.6 };
+            var converter = new Mock<IValueConverter>();
+            var target = new ExpressionSubject(new ExpressionObserver(data, "DoubleValue", true), typeof(string));
+            var result = new List<object>();
 
-            public string StringValue { get; set; }
+            target.Subscribe(x => result.Add(x));
+            target.OnNext(1.2);
+            target.OnNext("3.4");
+            target.OnNext("bar");
 
-            public double DoubleValue { get; set; }
+            Assert.Equal(
+                new[]
+                {
+                    new BindingNotification("5.6"),
+                    new BindingNotification("1.2"),
+                    new BindingNotification("3.4"),
+                    new BindingNotification(
+                        new InvalidCastException("Error setting 'DoubleValue': Could not convert 'bar' to 'System.Double'"),
+                        BindingErrorType.Error)
+                },
+                result);
+        }
+
+        private class Class1 : NotifyingBase
+        {
+            private string _stringValue;
+            private double _doubleValue;
+
+            public string StringValue
+            {
+                get { return _stringValue; }
+                set { _stringValue = value; RaisePropertyChanged(); }
+            }
+
+            public double DoubleValue
+            {
+                get { return _doubleValue; }
+                set { _doubleValue = value; RaisePropertyChanged(); }
+            }
         }
     }
 }

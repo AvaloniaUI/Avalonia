@@ -21,6 +21,7 @@ namespace Avalonia.Markup.Data
         private readonly Type _targetType;
         private readonly object _fallbackValue;
         private readonly BindingPriority _priority;
+        private readonly Subject<object> _errors = new Subject<object>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ExpressionObserver"/> class.
@@ -130,14 +131,18 @@ namespace Avalonia.Markup.Data
                     }
                     else if (converted is BindingNotification)
                     {
-                        var error = converted as BindingNotification;
+                        var notification = converted as BindingNotification;
 
-                        Logger.Error(
-                            LogArea.Binding,
-                            this,
-                            "Error binding to {Expression}: {Message}",
-                            _inner.Expression,
-                            error.Error.Message);
+                        if (notification.ErrorType == BindingErrorType.None)
+                        {
+                            throw new AvaloniaInternalException(
+                                "IValueConverter should not return non-errored BindingNotification.");
+                        }
+
+                        notification.Error = new InvalidCastException(
+                            $"Error setting '{_inner.Expression}': {notification.Error.Message}");
+                        notification.ErrorType = BindingErrorType.Error;
+                        _errors.OnNext(notification);
 
                         if (_fallbackValue != AvaloniaProperty.UnsetValue)
                         {
@@ -171,19 +176,23 @@ namespace Avalonia.Markup.Data
         /// <inheritdoc/>
         public IDisposable Subscribe(IObserver<object> observer)
         {
-            return _inner.Select(ConvertValue).Subscribe(observer);
+            return _inner.Select(ConvertValue).Merge(_errors).Subscribe(observer);
         }
 
         private object ConvertValue(object value)
         {
-            var converted = 
-                value as BindingNotification ??
-                ////value as IValidationStatus ??
-                Converter.Convert(
-                    value,
-                    _targetType,
-                    ConverterParameter,
-                    CultureInfo.CurrentUICulture);
+            var notification = value as BindingNotification;
+
+            if (notification?.HasValue == true)
+            {
+                value = notification.Value;
+            }
+
+            var converted = Converter.Convert(
+                value,
+                _targetType,
+                ConverterParameter,
+                CultureInfo.CurrentUICulture);
 
             if (_fallbackValue != AvaloniaProperty.UnsetValue &&
                 (converted == AvaloniaProperty.UnsetValue ||
@@ -211,7 +220,19 @@ namespace Avalonia.Markup.Data
                 }
             }
 
-            return converted;
+            if (notification == null)
+            {
+                return converted;
+            }
+            else
+            {
+                if (notification.HasValue)
+                {
+                    notification.Value = converted;
+                }
+
+                return notification;
+            }
         }
     }
 }

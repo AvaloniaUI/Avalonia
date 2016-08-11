@@ -97,12 +97,12 @@ namespace Avalonia.Data
         /// <summary>
         /// Gets the error that occurred on the source, if any.
         /// </summary>
-        public Exception Error { get; private set; }
+        public Exception Error { get; set; }
 
         /// <summary>
         /// Gets the type of error that <see cref="Error"/> represents, if any.
         /// </summary>
-        public BindingErrorType ErrorType { get; private set; }
+        public BindingErrorType ErrorType { get; set; }
 
         /// <summary>
         /// Compares two instances of <see cref="BindingNotification"/> for equality.
