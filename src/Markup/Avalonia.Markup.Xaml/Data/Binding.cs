@@ -78,16 +78,12 @@ namespace Avalonia.Markup.Xaml.Data
         /// </summary>
         public object Source { get; set; }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether the property should be validated.
-        /// </summary>
-        public bool EnableValidation { get; set; }
-
         /// <inheritdoc/>
         public InstancedBinding Initiate(
             IAvaloniaObject target,
             AvaloniaProperty targetProperty,
-            object anchor = null)
+            object anchor = null,
+            bool enableDataValidation = false)
         {
             Contract.Requires<ArgumentNullException>(target != null);
 
@@ -105,7 +101,7 @@ namespace Avalonia.Markup.Xaml.Data
             }
             else if (Source != null)
             {
-                observer = CreateSourceObserver(Source, pathInfo.Path);
+                observer = CreateSourceObserver(Source, pathInfo.Path, enableDataValidation);
             }
             else if (RelativeSource == null || RelativeSource.Mode == RelativeSourceMode.DataContext)
             {
@@ -113,7 +109,8 @@ namespace Avalonia.Markup.Xaml.Data
                     target,
                     pathInfo.Path,
                     targetProperty == Control.DataContextProperty,
-                    anchor);
+                    anchor,
+                    enableDataValidation);
             }
             else if (RelativeSource.Mode == RelativeSourceMode.TemplatedParent)
             {
@@ -197,7 +194,8 @@ namespace Avalonia.Markup.Xaml.Data
             IAvaloniaObject target,
             string path,
             bool targetIsDataContext,
-            object anchor)
+            object anchor,
+            bool enableDataValidation)
         {
             Contract.Requires<ArgumentNullException>(target != null);
 
@@ -220,7 +218,7 @@ namespace Avalonia.Markup.Xaml.Data
                     () => target.GetValue(Control.DataContextProperty),
                     path,
                     update,
-                    EnableValidation);
+                    enableDataValidation);
 
                 return result;
             }
@@ -229,7 +227,7 @@ namespace Avalonia.Markup.Xaml.Data
                 return new ExpressionObserver(
                     GetParentDataContext(target),
                     path,
-                    EnableValidation);
+                    enableDataValidation);
             }
         }
 
@@ -240,15 +238,18 @@ namespace Avalonia.Markup.Xaml.Data
             var result = new ExpressionObserver(
                 ControlLocator.Track(target, elementName),
                 path,
-                EnableValidation);
+                false);
             return result;
         }
 
-        private ExpressionObserver CreateSourceObserver(object source, string path)
+        private ExpressionObserver CreateSourceObserver(
+            object source,
+            string path,
+            bool enabledDataValidation)
         {
             Contract.Requires<ArgumentNullException>(source != null);
 
-            return new ExpressionObserver(source, path, EnableValidation);
+            return new ExpressionObserver(source, path, enabledDataValidation);
         }
 
         private ExpressionObserver CreateTemplatedParentObserver(

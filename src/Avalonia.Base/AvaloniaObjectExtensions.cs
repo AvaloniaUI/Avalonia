@@ -216,7 +216,11 @@ namespace Avalonia
             Contract.Requires<ArgumentNullException>(property != null);
             Contract.Requires<ArgumentNullException>(binding != null);
 
-            var result = binding.Initiate(target, property, anchor);
+            var result = binding.Initiate(
+                target,
+                property,
+                anchor, 
+                property.GetMetadata(target.GetType()).EnabledDataValidation);
 
             if (result != null)
             {
@@ -311,7 +315,8 @@ namespace Avalonia
             public InstancedBinding Initiate(
                 IAvaloniaObject target,
                 AvaloniaProperty targetProperty,
-                object anchor = null)
+                object anchor = null,
+                bool enableDataValidation = false)
             {
                 return new InstancedBinding(_source);
             }

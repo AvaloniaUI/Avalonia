@@ -275,7 +275,8 @@ namespace Avalonia
             var metadata = new StyledPropertyMetadata<TValue>(
                 defaultValue,
                 validate: Cast(validate),
-                defaultBindingMode: defaultBindingMode);
+                defaultBindingMode: defaultBindingMode,
+                enableDataValidation: enableDataValidation);
 
             var result = new StyledProperty<TValue>(
                 name,
@@ -316,7 +317,8 @@ namespace Avalonia
             var metadata = new StyledPropertyMetadata<TValue>(
                 defaultValue,
                 validate: Cast(validate),
-                defaultBindingMode: defaultBindingMode);
+                defaultBindingMode: defaultBindingMode,
+                enableDataValidation: enableDataValidation);
 
             var result = new AttachedProperty<TValue>(name, typeof(TOwner), metadata, inherits);
             AvaloniaPropertyRegistry.Instance.Register(typeof(THost), result);
@@ -353,7 +355,8 @@ namespace Avalonia
             var metadata = new StyledPropertyMetadata<TValue>(
                 defaultValue,
                 validate: Cast(validate),
-                defaultBindingMode: defaultBindingMode);
+                defaultBindingMode: defaultBindingMode,
+                enableDataValidation: enableDataValidation);
 
             var result = new AttachedProperty<TValue>(name, ownerType, metadata, inherits);
             AvaloniaPropertyRegistry.Instance.Register(typeof(THost), result);
@@ -389,7 +392,8 @@ namespace Avalonia
 
             var metadata = new DirectPropertyMetadata<TValue>(
                 unsetValue: unsetValue,
-                defaultBindingMode: defaultBindingMode);
+                defaultBindingMode: defaultBindingMode,
+                enableDataValidation: enableDataValidation);
 
             var result = new DirectProperty<TOwner, TValue>(name, getter, setter, metadata);
             AvaloniaPropertyRegistry.Instance.Register(typeof(TOwner), result);

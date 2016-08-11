@@ -25,15 +25,15 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
         }
 
         [Fact]
-        public void Validated_Property_Does_Not_Receive_BindingNotifications()
+        public void Validated_Property_Receives_BindingNotifications()
         {
             var source = new ValidationTestModel { MustBePositive = 5 };
             var target = new TestControl
             {
                 DataContext = source,
-                [!TestControl.ValidatedProperty] = new Binding(nameof(source.MustBePositive)),
             };
 
+            target.Bind(TestControl.ValidatedProperty, new Binding(nameof(source.MustBePositive)));
             source.MustBePositive = 6;
 
             Assert.Equal(

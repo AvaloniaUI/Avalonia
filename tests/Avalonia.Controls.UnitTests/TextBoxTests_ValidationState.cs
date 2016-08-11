@@ -21,7 +21,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new TextBox();
                 var binding = new Binding(nameof(ExceptionTest.LessThan10));
                 binding.Source = new ExceptionTest();
-                binding.EnableValidation = true;
+                ////binding.EnableValidation = true;
                 target.Bind(TextBox.TextProperty, binding);
 
                 Assert.True(false);
@@ -41,7 +41,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new TextBox();
                 var binding = new Binding(nameof(ExceptionTest.LessThan10));
                 binding.Source = new ExceptionTest();
-                binding.EnableValidation = true;
+                ////binding.EnableValidation = true;
                 target.Bind(TextBox.TextProperty, binding);
 
                 Assert.True(false);
@@ -61,7 +61,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new TextBox();
                 var binding = new Binding(nameof(ExceptionTest.LessThan10));
                 binding.Source = new IndeiTest();
-                binding.EnableValidation = true;
+                ////binding.EnableValidation = true;
                 target.Bind(TextBox.TextProperty, binding);
 
                 Assert.True(false);

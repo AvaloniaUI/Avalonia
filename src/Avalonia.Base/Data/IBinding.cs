@@ -19,12 +19,14 @@ namespace Avalonia.Data
         /// order to locate named controls or resources. The <paramref name="anchor"/> parameter 
         /// can be used to provice this context.
         /// </param>
+        /// <param name="enableDataValidation">Whether data validation should be enabled.</param>
         /// <returns>
         /// A <see cref="InstancedBinding"/> or null if the binding could not be resolved.
         /// </returns>
         InstancedBinding Initiate(
             IAvaloniaObject target, 
             AvaloniaProperty targetProperty,
-            object anchor = null);
+            object anchor = null,
+            bool enableDataValidation = false);
     }
 }
