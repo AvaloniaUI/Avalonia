@@ -111,56 +111,59 @@ namespace Avalonia.Markup.Data
         /// <inheritdoc/>
         public void OnNext(object value)
         {
-            var type = _inner.ResultType;
-
-            if (type != null)
+            using (_inner.Subscribe(_ => { }))
             {
-                var converted = Converter.ConvertBack(
-                    value, 
-                    type, 
-                    ConverterParameter, 
-                    CultureInfo.CurrentUICulture);
+                var type = _inner.ResultType;
 
-                if (converted == AvaloniaProperty.UnsetValue)
+                if (type != null)
                 {
-                    converted = TypeUtilities.Default(type);
-                    _inner.SetValue(converted, _priority);
-                }
-                else if (converted is BindingNotification)
-                {
-                    var error = converted as BindingNotification;
+                    var converted = Converter.ConvertBack(
+                        value,
+                        type,
+                        ConverterParameter,
+                        CultureInfo.CurrentUICulture);
 
-                    Logger.Error(
-                        LogArea.Binding,
-                        this,
-                        "Error binding to {Expression}: {Message}",
-                        _inner.Expression,
-                        error.Error.Message);
-
-                    if (_fallbackValue != AvaloniaProperty.UnsetValue)
+                    if (converted == AvaloniaProperty.UnsetValue)
                     {
-                        if (TypeUtilities.TryConvert(
-                            type, 
-                            _fallbackValue, 
-                            CultureInfo.InvariantCulture, 
-                            out converted))
+                        converted = TypeUtilities.Default(type);
+                        _inner.SetValue(converted, _priority);
+                    }
+                    else if (converted is BindingNotification)
+                    {
+                        var error = converted as BindingNotification;
+
+                        Logger.Error(
+                            LogArea.Binding,
+                            this,
+                            "Error binding to {Expression}: {Message}",
+                            _inner.Expression,
+                            error.Error.Message);
+
+                        if (_fallbackValue != AvaloniaProperty.UnsetValue)
                         {
-                            _inner.SetValue(converted, _priority);
-                        }
-                        else
-                        {
-                            Logger.Error(
-                                LogArea.Binding,
-                                this,
-                                "Could not convert FallbackValue {FallbackValue} to {Type}",
+                            if (TypeUtilities.TryConvert(
+                                type,
                                 _fallbackValue,
-                                type);
+                                CultureInfo.InvariantCulture,
+                                out converted))
+                            {
+                                _inner.SetValue(converted, _priority);
+                            }
+                            else
+                            {
+                                Logger.Error(
+                                    LogArea.Binding,
+                                    this,
+                                    "Could not convert FallbackValue {FallbackValue} to {Type}",
+                                    _fallbackValue,
+                                    type);
+                            }
                         }
                     }
-                }
-                else
-                {
-                    _inner.SetValue(converted, _priority);
+                    else
+                    {
+                        _inner.SetValue(converted, _priority);
+                    }
                 }
             }
         }

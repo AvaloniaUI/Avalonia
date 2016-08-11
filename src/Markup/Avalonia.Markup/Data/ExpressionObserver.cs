@@ -123,7 +123,9 @@ namespace Avalonia.Markup.Data
         /// <param name="priority">The binding priority to use.</param>
         /// <returns>
         /// True if the value could be set; false if the expression does not evaluate to a 
-        /// property.
+        /// property. Note that the <see cref="ExpressionObserver"/> must be subscribed to
+        /// before setting the target value can work, as setting the value requires the
+        /// expression to be evaluated.
         /// </returns>
         public bool SetValue(object value, BindingPriority priority = BindingPriority.LocalValue)
         {
