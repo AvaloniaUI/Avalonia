@@ -60,6 +60,9 @@
     <Compile Include="Data\Parsers\IdentifierParser.cs" />
     <Compile Include="Data\Parsers\ExpressionParser.cs" />
     <Compile Include="Data\Parsers\Reader.cs" />
+    <Compile Include="Data\Plugins\ObservableValuePlugin.cs" />
+    <Compile Include="Data\Plugins\TaskValuePlugin.cs" />
+    <Compile Include="Data\Plugins\IValuePlugin.cs" />
     <Compile Include="Data\Plugins\PropertyAccessorBase.cs" />
     <Compile Include="Data\Plugins\PropertyError.cs" />
     <Compile Include="Data\Plugins\DataValidatiorBase.cs" />

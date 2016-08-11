@@ -12,11 +12,6 @@ namespace Avalonia.Markup.Data.Plugins
     /// </summary>
     public class ExceptionValidationPlugin : IDataValidationPlugin
     {
-        /// <summary>
-        /// Gets the default instance of the <see cref="ExceptionValidationPlugin"/>/
-        /// </summary>
-        public static ExceptionValidationPlugin Instance { get; } = new ExceptionValidationPlugin();
-
         /// <inheritdoc/>
         public bool Match(WeakReference reference) => true;
 

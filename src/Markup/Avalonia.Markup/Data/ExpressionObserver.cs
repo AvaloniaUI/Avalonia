@@ -36,7 +36,18 @@ namespace Avalonia.Markup.Data
             new List<IDataValidationPlugin>
             {
                 new IndeiValidationPlugin(),
-                ExceptionValidationPlugin.Instance,
+                new ExceptionValidationPlugin(),
+            };
+
+        /// <summary>
+        /// An ordered collection of value handlers that can be used to customize the handling
+        /// of certain values.
+        /// </summary>
+        public static readonly IList<IValuePlugin> ValueHandlers =
+            new List<IValuePlugin>
+            {
+                new TaskValuePlugin(),
+                new ObservableValuePlugin(),
             };
 
         private static readonly object UninitializedValue = new object();
