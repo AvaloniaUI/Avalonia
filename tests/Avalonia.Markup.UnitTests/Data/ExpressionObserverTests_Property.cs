@@ -58,6 +58,66 @@ namespace Avalonia.Markup.UnitTests.Data
         }
 
         [Fact]
+        public async void Should_Return_BindingNotification_Error_For_Root_Null()
+        {
+            var data = new Class3 { Foo = "foo" };
+            var target = new ExpressionObserver(default(object), "Foo");
+            var result = await target.Take(1);
+
+            Assert.Equal(
+                new BindingNotification(
+                    new NullReferenceException(), 
+                    BindingErrorType.Error,
+                    AvaloniaProperty.UnsetValue),
+                result);
+        }
+
+        [Fact]
+        public async void Should_Return_BindingNotification_Error_For_Root_UnsetValue()
+        {
+            var data = new Class3 { Foo = "foo" };
+            var target = new ExpressionObserver(AvaloniaProperty.UnsetValue, "Foo");
+            var result = await target.Take(1);
+
+            Assert.Equal(
+                new BindingNotification(
+                    new NullReferenceException(),
+                    BindingErrorType.Error,
+                    AvaloniaProperty.UnsetValue),
+                result);
+        }
+
+        [Fact]
+        public async void Should_Return_BindingNotification_Error_For_Observable_Root_Null()
+        {
+            var data = new Class3 { Foo = "foo" };
+            var target = new ExpressionObserver(Observable.Return(default(object)), "Foo");
+            var result = await target.Take(1);
+
+            Assert.Equal(
+                new BindingNotification(
+                    new NullReferenceException(),
+                    BindingErrorType.Error,
+                    AvaloniaProperty.UnsetValue),
+                result);
+        }
+
+        [Fact]
+        public async void Should_Return_BindingNotification_Error_For_Observable_Root_UnsetValue()
+        {
+            var data = new Class3 { Foo = "foo" };
+            var target = new ExpressionObserver(Observable.Return(AvaloniaProperty.UnsetValue), "Foo");
+            var result = await target.Take(1);
+
+            Assert.Equal(
+                new BindingNotification(
+                    new NullReferenceException(),
+                    BindingErrorType.Error,
+                    AvaloniaProperty.UnsetValue),
+                result);
+        }
+
+        [Fact]
         public async void Should_Get_Simple_Property_Chain()
         {
             var data = new { Foo = new { Bar = new { Baz = "baz" } }  };
@@ -87,9 +147,10 @@ namespace Avalonia.Markup.UnitTests.Data
 
             Assert.IsType<BindingNotification>(result);
 
-            var error = result as BindingNotification;
-            Assert.IsType<MissingMemberException>(error.Error);
-            Assert.Equal("Could not find CLR property 'Baz' on '1'", error.Error.Message);
+            Assert.Equal(
+                new BindingNotification(
+                    new MissingMemberException("Could not find CLR property 'Baz' on '1'"), BindingErrorType.Error),
+                result);
         }
 
         [Fact]
@@ -101,12 +162,15 @@ namespace Avalonia.Markup.UnitTests.Data
 
             target.Subscribe(x => result.Add(x));
 
-            Assert.Equal(1, result.Count);
-            Assert.IsType<BindingNotification>(result[0]);
-
-            var error = result[0] as BindingNotification;
-            Assert.IsType<NullReferenceException>(error.Error);
-            Assert.Equal("Object reference not set to an instance of an object.", error.Error.Message);
+            Assert.Equal(
+                new[]
+                {
+                    new BindingNotification(
+                        new NullReferenceException(), 
+                        BindingErrorType.Error,
+                        AvaloniaProperty.UnsetValue),
+                },
+                result);
         }
 
         [Fact]
@@ -219,7 +283,10 @@ namespace Avalonia.Markup.UnitTests.Data
                 new object[] 
                 {
                     "bar",
-                    new BindingNotification(new NullReferenceException(), BindingErrorType.Error),
+                    new BindingNotification(
+                        new NullReferenceException(),
+                        BindingErrorType.Error,
+                        AvaloniaProperty.UnsetValue),
                     "baz"
                 }, 
                 result);
@@ -388,7 +455,12 @@ namespace Avalonia.Markup.UnitTests.Data
             var target = new ExpressionObserver((object)null, "Foo");
             var result = await target.Take(1);
 
-            Assert.Equal(new BindingNotification(new NullReferenceException(), BindingErrorType.Error), result);
+            Assert.Equal(
+                new BindingNotification(
+                    new NullReferenceException(),
+                    BindingErrorType.Error,
+                    AvaloniaProperty.UnsetValue),
+                result);
         }
 
         [Fact]
@@ -412,7 +484,10 @@ namespace Avalonia.Markup.UnitTests.Data
                 {
                     "foo",
                     "bar",
-                    new BindingNotification(new NullReferenceException(), BindingErrorType.Error)
+                    new BindingNotification(
+                        new NullReferenceException(),
+                        BindingErrorType.Error,
+                        AvaloniaProperty.UnsetValue),
                 }, 
                 result);
 

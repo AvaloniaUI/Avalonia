@@ -142,7 +142,10 @@ namespace Avalonia.Markup.UnitTests.Data
 
             Assert.Equal(new[]
             {
-                new BindingNotification(new NullReferenceException(), BindingErrorType.Error),
+                new BindingNotification(
+                    new NullReferenceException(),
+                    BindingErrorType.Error,
+                    AvaloniaProperty.UnsetValue),
             }, result);
         }
 

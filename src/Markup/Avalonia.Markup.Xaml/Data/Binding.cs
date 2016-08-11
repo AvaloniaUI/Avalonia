@@ -227,10 +227,7 @@ namespace Avalonia.Markup.Xaml.Data
             else
             {
                 return new ExpressionObserver(
-                    target.GetObservable(Visual.VisualParentProperty)
-                          .OfType<IAvaloniaObject>()
-                          .Select(x => x.GetObservable(Control.DataContextProperty))
-                          .Switch(),
+                    GetParentDataContext(target),
                     path,
                     EnableValidation);
             }
@@ -270,6 +267,16 @@ namespace Avalonia.Markup.Xaml.Data
                 update);
 
             return result;
+        }
+
+        private IObservable<object> GetParentDataContext(IAvaloniaObject target)
+        {
+            return target.GetObservable(Control.ParentProperty)
+                .Select(x =>
+                {
+                    return (x as IAvaloniaObject)?.GetObservable(Control.DataContextProperty) ?? 
+                           Observable.Return((object)null);
+                }).Switch();
         }
 
         private class PathInfo

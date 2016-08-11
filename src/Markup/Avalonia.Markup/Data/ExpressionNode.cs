@@ -178,7 +178,7 @@ namespace Avalonia.Markup.Data
         private BindingNotification TargetNullNotification()
         {
             // TODO: Work out a way to give a more useful error message here.
-            return new BindingNotification(new NullReferenceException(), BindingErrorType.Error);
+            return new BindingNotification(new NullReferenceException(), BindingErrorType.Error, AvaloniaProperty.UnsetValue);
         }
     }
 }

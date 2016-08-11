@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reactive.Linq;
 using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Markup.Data;
@@ -272,7 +274,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
         /// </summary>
         /// <remarks>
         /// - Items is bound to DataContext first, followed by say SelectedIndex
-        /// - When the ListBox is removed from the visual tree, DataContext becomes null (as it's
+        /// - When the ListBox is removed from the logical tree, DataContext becomes null (as it's
         ///   inherited)
         /// - This changes Items to null, which changes SelectedIndex to null as there are no
         ///   longer any items
@@ -299,12 +301,12 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
 
             // Bind Foo and Bar to the VM.
             target.Bind(OldDataContextTest.FooProperty, fooBinding);
-            target.Bind(OldDataContextTest.BarProperty, barBinding);
+            //target.Bind(OldDataContextTest.BarProperty, barBinding);
             target.DataContext = vm;
 
             // Make sure the control's Foo and Bar properties are read from the VM
             Assert.Equal(1, target.GetValue(OldDataContextTest.FooProperty));
-            Assert.Equal(2, target.GetValue(OldDataContextTest.BarProperty));
+            //Assert.Equal(2, target.GetValue(OldDataContextTest.BarProperty));
 
             // Set DataContext to null.
             target.DataContext = null;

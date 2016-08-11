@@ -66,6 +66,11 @@ namespace Avalonia.Markup.Data
         {
             Contract.Requires<ArgumentNullException>(expression != null);
 
+            if (root == AvaloniaProperty.UnsetValue)
+            {
+                root = null;
+            }
+
             Expression = expression;
             _node = Parse(expression, enableDataValidation);
             _root = new WeakReference(root);
@@ -199,7 +204,7 @@ namespace Avalonia.Markup.Data
             if (observable != null)
             {
                 return observable.Subscribe(
-                    x => _node.Target = new WeakReference(x),
+                    x => _node.Target = new WeakReference(x != AvaloniaProperty.UnsetValue ? x : null),
                     _ => _finished.OnNext(Unit.Default),
                     () => _finished.OnNext(Unit.Default));
             }
