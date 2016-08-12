@@ -101,15 +101,15 @@ var buildDirs =
     GetDirectories("./src/iOS/**/bin/" + dirSuffixIOS) + 
     GetDirectories("./src/iOS/**/obj/" + dirSuffixIOS) + 
     (DirectoryPath)Directory("./src/Skia/Avalonia.Skia.Android/bin/" + dirSuffix) + 
-    (DirectoryPath)Directory("./obj/Skia/Avalonia.Skia.Android/obj/" + dirSuffix) + 
+    (DirectoryPath)Directory("./src/Skia/Avalonia.Skia.Android/obj/" + dirSuffix) + 
     (DirectoryPath)Directory("./src/Skia/Avalonia.Skia.Android.TestApp/bin/" + dirSuffix) + 
-    (DirectoryPath)Directory("./obj/Skia/Avalonia.Skia.Android.TestApp/obj/" + dirSuffix) + 
+    (DirectoryPath)Directory("./src/Skia/Avalonia.Skia.Android.TestApp/obj/" + dirSuffix) + 
     (DirectoryPath)Directory("./src/Skia/Avalonia.Skia.Desktop/bin/" + dirSuffixSkia) + 
-    (DirectoryPath)Directory("./obj/Skia/Avalonia.Skia.Desktop/obj/" + dirSuffixSkia) + 
+    (DirectoryPath)Directory("./src/Skia/Avalonia.Skia.Desktop/obj/" + dirSuffixSkia) + 
     (DirectoryPath)Directory("./src/Skia/Avalonia.Skia.iOS/bin/" + dirSuffixIOS) + 
-    (DirectoryPath)Directory("./obj/Skia/Avalonia.Skia.iOS/obj/" + dirSuffixIOS) + 
+    (DirectoryPath)Directory("./src/Skia/Avalonia.Skia.iOS/obj/" + dirSuffixIOS) + 
     (DirectoryPath)Directory("./src/Skia/Avalonia.Skia.iOS.TestApp/bin/" + dirSuffixIOS) + 
-    (DirectoryPath)Directory("./obj/Skia/Avalonia.Skia.iOS.TestApp/obj/" + dirSuffixIOS) + 
+    (DirectoryPath)Directory("./src/Skia/Avalonia.Skia.iOS.TestApp/obj/" + dirSuffixIOS) + 
     GetDirectories("./src/Windows/**/bin/" + dirSuffix) + 
     GetDirectories("./src/Windows/**/obj/" + dirSuffix) + 
     GetDirectories("./tests/**/bin/" + dirSuffix) + 
