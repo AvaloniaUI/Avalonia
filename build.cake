@@ -903,7 +903,7 @@ Task("Run-Unit-Tests")
                            GetFiles("./tests/Avalonia.LeakTests/bin/" + dirSuffix + "/*Tests.dll") + 
                            GetFiles("./tests/Avalonia.RenderTests/bin/" + dirSuffix + "/*Tests.dll");
 
-        unitTests += windowsTests
+        unitTests += windowsTests;
     }
 
     if (platform == "x86")
