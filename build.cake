@@ -889,17 +889,23 @@ Task("Run-Unit-Tests")
 
     if (platform == "x86")
     {
-        XUnit2(files, new XUnit2Settings { 
-            ToolPath = "./tools/xunit.runner.console/tools/xunit.console.x86.exe",
-            Parallelism = ParallelismOption.None
-        });
+        foreach (var file in files)
+        {
+            XUnit2(file.FullPath, new XUnit2Settings { 
+                ToolPath = "./tools/xunit.runner.console/tools/xunit.console.x86.exe",
+                Parallelism = ParallelismOption.None
+            });
+        }
     }
     else
     {
-        XUnit2(files, new XUnit2Settings { 
-            ToolPath = "./tools/xunit.runner.console/tools/xunit.console.exe",
-            Parallelism = ParallelismOption.None
-        });
+        foreach (var file in files)
+        {
+            XUnit2(file.FullPath, new XUnit2Settings { 
+                ToolPath = "./tools/xunit.runner.console/tools/xunit.console.exe",
+                Parallelism = ParallelismOption.None
+            });
+        }
     }
 });
 
