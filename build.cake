@@ -121,9 +121,9 @@ var buildDirs =
 // NUGET NUSPECS
 ///////////////////////////////////////////////////////////////////////////////
 
-var SerilogVersion = "1.5.14";
+var SerilogVersion = "2.1.0";
 var SplatVersion = "1.6.2";
-var SpracheVersion = "2.0.0.50";
+var SpracheVersion = "2.0.0.52";
 var SystemReactiveVersion = "3.0.0";
 var SkiaSharpVersion = "1.53.0";
 var SharpDXVersion = "3.0.2";
