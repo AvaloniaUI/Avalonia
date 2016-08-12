@@ -72,10 +72,10 @@ To build Avalonia in the `Debug` configuration:
 xbuild /p:Platform=Mono /p:Configuration=Debug Avalonia.sln
 ```
 
-You should now be able to run the ControlCatalog sample:
+You should now be able to run the ControlCatalog.Desktop sample:
 
 ```
-mono ./samples/ControlCatalog/bin/Debug/ControlCatalog.exe
+mono ./samples/ControlCatalog.Desktop/bin/Debug/ControlCatalog.Desktop.exe
 ```
 
 ### Building Avalonia in MonoDevelop
