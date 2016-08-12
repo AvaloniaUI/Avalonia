@@ -27,10 +27,12 @@ namespace Avalonia.Markup.Xaml.Data
         /// Initializes a new instance of the <see cref="Binding"/> class.
         /// </summary>
         /// <param name="path">The binding path.</param>
-        public Binding(string path)
+        /// <param name="mode">The binding mode.</param>
+        public Binding(string path, BindingMode mode = BindingMode.Default)
             : this()
         {
             Path = path;
+            Mode = mode;
         }
 
         /// <summary>
