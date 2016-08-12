@@ -182,7 +182,6 @@ var coreLibrariesFiles = coreLibraries.Select((lib) => {
 }).ToList();
 
 var coreLibrariesNuSpecContent = coreLibrariesFiles.Select((file) => {
-    Information("FILE : " + file);
     return new NuSpecContent { 
         Source = file.FullPath, Target = "lib/portable-windows8+net45" 
     };
