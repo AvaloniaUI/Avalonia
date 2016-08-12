@@ -220,7 +220,7 @@ namespace Avalonia
                 target,
                 property,
                 anchor, 
-                property.GetMetadata(target.GetType()).EnabledDataValidation);
+                property.GetMetadata(target.GetType()).EnableDataValidation);
 
             if (result != null)
             {

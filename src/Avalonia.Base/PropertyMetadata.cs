@@ -25,7 +25,7 @@ namespace Avalonia
             bool enableDataValidation = false)
         {
             _defaultBindingMode = defaultBindingMode;
-            EnabledDataValidation = enableDataValidation;
+            EnableDataValidation = enableDataValidation;
         }
 
         /// <summary>
@@ -49,7 +49,7 @@ namespace Avalonia
         /// control (such as a TextBox's Text property) will be interested in recieving data
         /// validation messages so this feature must be explicitly enabled by setting this flag.
         /// </remarks>
-        public bool EnabledDataValidation { get; }
+        public bool EnableDataValidation { get; }
 
         /// <summary>
         /// Merges the metadata with the base metadata.
