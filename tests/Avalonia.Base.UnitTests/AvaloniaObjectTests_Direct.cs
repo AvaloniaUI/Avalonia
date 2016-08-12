@@ -284,7 +284,6 @@ namespace Avalonia.Base.UnitTests
             Assert.Equal("newvalue", target.Foo);
         }
 
-
         [Fact]
         public void UnsetValue_Is_Used_On_AddOwnered_Property()
         {

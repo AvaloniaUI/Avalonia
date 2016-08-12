@@ -92,7 +92,7 @@ namespace Avalonia.Data
         /// <summary>
         /// Gets a value indicating whether <see cref="Value"/> should be pushed to the target.
         /// </summary>
-        public bool HasValue { get; }
+        public bool HasValue { get; set; }
 
         /// <summary>
         /// Gets the error that occurred on the source, if any.

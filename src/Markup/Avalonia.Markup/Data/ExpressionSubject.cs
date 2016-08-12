@@ -183,56 +183,121 @@ namespace Avalonia.Markup.Data
         {
             var notification = value as BindingNotification;
 
-            if (notification?.HasValue == true)
-            {
-                value = notification.Value;
-            }
-
-            var converted = Converter.Convert(
-                value,
-                _targetType,
-                ConverterParameter,
-                CultureInfo.CurrentUICulture);
-
-            if (_fallbackValue != AvaloniaProperty.UnsetValue &&
-                (converted == AvaloniaProperty.UnsetValue ||
-                 converted is BindingNotification))
-            {
-                var error = converted as BindingNotification;
-                
-                if (TypeUtilities.TryConvert(
-                    _targetType, 
-                    _fallbackValue,
-                    CultureInfo.InvariantCulture,
-                    out converted))
-                {
-                    if (error != null)
-                    {
-                        converted = new BindingNotification(error.Error, BindingErrorType.Error, converted);
-                    }
-                }
-                else
-                {
-                    converted = new BindingNotification(
-                        new InvalidCastException(
-                            $"Could not convert FallbackValue '{_fallbackValue}' to '{_targetType}'"),
-                        BindingErrorType.Error);
-                }
-            }
-
             if (notification == null)
             {
+                var converted = Converter.Convert(
+                    value,
+                    _targetType,
+                    ConverterParameter,
+                    CultureInfo.CurrentUICulture);
+
+                notification = converted as BindingNotification;
+
+                if (notification?.ErrorType == BindingErrorType.None)
+                {
+                    converted = notification.Value;
+                }
+
+                if (_fallbackValue != AvaloniaProperty.UnsetValue &&
+                    (converted == AvaloniaProperty.UnsetValue || converted is BindingNotification))
+                {
+                    var fallback = ConvertFallback();
+                    converted = Merge(converted, fallback);
+                }
+
                 return converted;
             }
             else
             {
-                if (notification.HasValue)
-                {
-                    notification.Value = converted;
-                }
-
-                return notification;
+                return ConvertValue(notification);
             }
+        }
+
+        private BindingNotification ConvertValue(BindingNotification notification)
+        {
+            if (notification.HasValue)
+            {
+                var converted = ConvertValue(notification.Value);
+                notification = Merge(notification, converted);
+            }
+            else if (_fallbackValue != AvaloniaProperty.UnsetValue)
+            {
+                var fallback = ConvertFallback();
+                notification = Merge(notification, fallback);
+            }
+
+            return notification;
+        }
+
+        private BindingNotification ConvertFallback()
+        {
+            object converted;
+
+            if (_fallbackValue == AvaloniaProperty.UnsetValue)
+            {
+                throw new AvaloniaInternalException("Cannot call ConvertFallback with no fallback value");
+            }
+
+            if (TypeUtilities.TryConvert(
+                _targetType,
+                _fallbackValue,
+                CultureInfo.InvariantCulture,
+                out converted))
+            {
+                return new BindingNotification(converted);
+            }
+            else
+            { 
+                return new BindingNotification(
+                    new InvalidCastException(
+                        $"Could not convert FallbackValue '{_fallbackValue}' to '{_targetType}'"),
+                    BindingErrorType.Error);
+            }
+        }
+
+        private BindingNotification Merge(object a, BindingNotification b)
+        {
+            var an = a as BindingNotification;
+
+            if (an != null)
+            {
+                Merge(an, b);
+                return an;
+            }
+            else
+            {
+                return b;
+            }
+        }
+
+        private BindingNotification Merge(BindingNotification a, object b)
+        {
+            var bn = b as BindingNotification;
+
+            if (bn != null)
+            {
+                Merge(a, bn);
+            }
+            else
+            {
+                a.Value = b;
+                a.HasValue = true;
+            }
+
+            return a;
+        }
+
+        private BindingNotification Merge(BindingNotification a, BindingNotification b)
+        {
+            a.Value = b.Value;
+            a.HasValue = b.HasValue;
+
+            if (b.Error != null)
+            {
+                a.AddError(b.Error, b.ErrorType);
+            }
+
+            return a;
         }
     }
 }

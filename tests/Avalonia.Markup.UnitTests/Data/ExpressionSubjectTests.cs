@@ -109,6 +109,92 @@ namespace Avalonia.Markup.UnitTests.Data
         }
 
         [Fact]
+        public async void Should_Return_BindingNotification_With_FallbackValue_For_NonConvertibe_Target_Value()
+        {
+            Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
+
+            var data = new Class1 { StringValue = "foo" };
+            var target = new ExpressionSubject(
+                new ExpressionObserver(data, "StringValue"),
+                typeof(int),
+                42,
+                DefaultValueConverter.Instance);
+            var result = await target.Take(1);
+
+            Assert.Equal(
+                new BindingNotification(
+                    new InvalidCastException("Could not convert 'foo' to 'System.Int32'"),
+                    BindingErrorType.Error,
+                    42),
+                result);
+        }
+
+        [Fact]
+        public async void Should_Return_BindingNotification_With_FallbackValue_For_NonConvertibe_Target_Value_With_Data_Validation()
+        {
+            Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
+
+            var data = new Class1 { StringValue = "foo" };
+            var target = new ExpressionSubject(
+                new ExpressionObserver(data, "StringValue", true),
+                typeof(int),
+                42,
+                DefaultValueConverter.Instance);
+            var result = await target.Take(1);
+
+            Assert.Equal(
+                new BindingNotification(
+                    new InvalidCastException("Could not convert 'foo' to 'System.Int32'"),
+                    BindingErrorType.Error,
+                    42),
+                result);
+        }
+
+        [Fact]
+        public async void Should_Return_BindingNotification_For_Invalid_FallbackValue()
+        {
+            Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
+
+            var data = new Class1 { StringValue = "foo" };
+            var target = new ExpressionSubject(
+                new ExpressionObserver(data, "StringValue"),
+                typeof(int),
+                "bar",
+                DefaultValueConverter.Instance);
+            var result = await target.Take(1);
+
+            Assert.Equal(
+                new BindingNotification(
+                    new AggregateException(
+                        new InvalidCastException("Could not convert 'foo' to 'System.Int32'"),
+                        new InvalidCastException("Could not convert FallbackValue 'bar' to 'System.Int32'")),
+                    BindingErrorType.Error),
+                result);
+        }
+
+        [Fact]
+        public async void Should_Return_BindingNotification_For_Invalid_FallbackValue_With_Data_Validation()
+        {
+            Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
+
+            var data = new Class1 { StringValue = "foo" };
+            var target = new ExpressionSubject(
+                new ExpressionObserver(data, "StringValue", true),
+                typeof(int),
+                "bar",
+                DefaultValueConverter.Instance);
+            var result = await target.Take(1);
+
+            Assert.Equal(
+                new BindingNotification(
+                    new AggregateException(
+                        new InvalidCastException("Could not convert 'foo' to 'System.Int32'"),
+                        new InvalidCastException("Could not convert FallbackValue 'bar' to 'System.Int32'")),
+                    BindingErrorType.Error),
+                result);
+        }
+
+        [Fact]
         public void Setting_Invalid_Double_String_Should_Not_Change_Target()
         {
             var data = new Class1 { DoubleValue = 5.6 };
