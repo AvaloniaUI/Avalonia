@@ -3,196 +3,84 @@
 Avalonia is divided into several `NuGet` packages. 
 
 * The `Avalonia` package contains core portable class libraries.
-* The `Android`, `iOS`, `Gtk`, `Skia` and `Windows` packages contain platform specific windowing and rendering back-ends.
-* The `Avalonia.Desktop` package is intended to be used by the end users targeting desktop platforms. 
-* The `Avalonia.Skia.Desktop` together with `Avalonia.Desktop` package is intended to be used by the end users targeting desktop platforms using `Skia` rendering back-ends. 
-* The `Avalonia.iOS` and `Avalonia.Android` packages are intended to be used by the end users targeting mobile platforms. 
+* The `Dekstop` and `Mobile` packages contain platform specific windowing and rendering back-ends.
+* The `Avalonia.Desktop` package is intended to be used by the end users targeting multiple desktop platforms (`Windows`, `Linux` and `OSX`).
+* The `Avalonia.iOS` and `Avalonia.Android` packages are intended to be used by the end users targeting specific mobile platforms. 
+* The `Avalonia.Mobile` package is intended to be used by the end users targeting multiple mobile platforms (`Android` and `iOS`).
 
 ## Core
 
-* Avalonia.Animation
-  - Avalonia.Base
-  - System.Reactive
-* Avalonia.Base
-  - System.Reactive
-* Avalonia.Controls
-  - Avalonia.Animation
-  - Avalonia.Base
-  - Avalonia.Input
-  - Avalonia.Interactivity
-  - Avalonia.Layout
-  - Avalonia.SceneGraph
-  - Avalonia.Styling
-  - System.Reactive
-* Avalonia.DesignerSupport
-  - Avalonia.Animation
-  - Avalonia.Base
-  - Avalonia.Controls
-  - Avalonia.Input
-  - Avalonia.Interactivity
-  - Avalonia.Layout
-  - Avalonia.Markup
-  - Avalonia.Markup.Xaml
-  - Avalonia.SceneGraph
-  - Avalonia.Styling
-  - Avalonia.Themes.Default
-  - System.Reactive
-* Avalonia.Diagnostics
-  - Avalonia.Animation
-  - Avalonia.Base
-  - Avalonia.Controls
-  - Avalonia.Input
-  - Avalonia.Interactivity
-  - Avalonia.Layout
-  - Avalonia.Markup
-  - Avalonia.Markup.Xaml
-  - Avalonia.ReactiveUI
-  - Avalonia.SceneGraph
-  - Avalonia.Styling
-  - Avalonia.Themes.Default
-  - System.Reactive
-  - Splat
-* Avalonia.HtmlRenderer
-  - Avalonia.Animation
-  - Avalonia.Base
-  - Avalonia.Controls
-  - Avalonia.Input
-  - Avalonia.Interactivity
-  - Avalonia.Layout
-  - Avalonia.SceneGraph
-  - Avalonia.Styling
-  - System.Reactive.Core
-  - System.Reactive.Interfaces
-* Avalonia.Input
-  - Avalonia.Animation
-  - Avalonia.Base
-  - Avalonia.Interactivity
-  - Avalonia.Layout
-  - Avalonia.SceneGraph
-  - System.Reactive
-* Avalonia.Interactivity
-  - Avalonia.Animation
-  - Avalonia.Base
-  - Avalonia.Layout
-  - Avalonia.SceneGraph
-  - System.Reactive
-* Avalonia.Layout
-  - Avalonia.Animation
-  - Avalonia.Base
-  - Avalonia.SceneGraph
-  - System.Reactive
-* Avalonia.Logging.Serilog
-  - Avalonia.Base
-  - Serilog
-* Avalonia.ReactiveUI
-  - System.Reactive
-  - Splat
-* Avalonia.SceneGraph
-  - Avalonia.Animation
-  - Avalonia.Base
-  - System.Reactive
-* Avalonia.Styling
-  - Avalonia.Animation
-  - Avalonia.Base
-  - Avalonia.SceneGraph
-  - System.Reactive
-* Avalonia.Themes.Default
-  - Avalonia.Animation
-  - Avalonia.Base
-  - Avalonia.Controls
-  - Avalonia.Input
-  - Avalonia.Interactivity
-  - Avalonia.Layout
-  - Avalonia.Markup.Xaml
-  - Avalonia.SceneGraph
-  - Avalonia.Styling
-  - System.Reactive
+* Avalonia (.nupkg)
+  - Avalonia.Animation (.dll)
+  - Avalonia.Base (.dll)
+  - Avalonia.Controls (.dll)
+  - Avalonia.DesignerSupport (.dll)
+  - Avalonia.Diagnostics (.dll)
+  - Avalonia.Input (.dll)
+  - Avalonia.Interactivity (.dll)
+  - Avalonia.Layout (.dll)
+  - Avalonia.Logging.Serilog (.dll)
+  - Avalonia.SceneGraph (.dll)
+  - Avalonia.Styling (.dll)
+  - Avalonia.ReactiveUI (.dll)
+  - Avalonia.Themes.Default (.dll)
+  - Avalonia.Markup (.dll)
+  - Avalonia.Markup.Xaml (.dll)
+  - Serilog (.nupkg)
+  - Splat (.nupkg)
+  - Sprache (.nupkg)
+  - System.Reactive (.nupkg)
 
-## Markup
+* Avalonia.HtmlRenderer (.nupkg)
+  - Avalonia (.nupkg)
 
-* Avalonia.Markup
-  - Avalonia.Base
-  - Avalonia.Controls
-  - Avalonia.Input
-  - Avalonia.Interactivity
-  - Avalonia.Layout
-  - Avalonia.SceneGraph
-  - Avalonia.Styling
-  - System.Reactive
-* Avalonia.Markup.Xaml
-  - Avalonia.Animation
-  - Avalonia.Base
-  - Avalonia.Controls
-  - Avalonia.Input
-  - Avalonia.Interactivity
-  - Avalonia.Layout
-  - Avalonia.Markup
-  - Avalonia.SceneGraph
-  - Avalonia.Styling
-  - System.Reactive
-  - Sprache
+## Desktop
 
-## Android
+* Avalonia.Win32 (.nupkg)
+  - Avalonia.Win32 (.dll)
+  - Avalonia (.nupkg)
 
-* Avalonia.Android
-  - Avalonia
-  - Avalonia.Skia.Android
+* Avalonia.Direct2D1 (.nupkg)
+  - Avalonia.Direct2D1 (.dll)
+  - Avalonia (.nupkg)
+  - SharpDX (.nupkg)
+  - SharpDX.Direct2D1 (.nupkg)
+  - SharpDX.DXGI (.nupkg)
 
-## Gtk
+* Avalonia.Gtk (.nupkg)
+  - Avalonia.Gtk (.dll)
+  - Avalonia (.nupkg)
 
-* Avalonia.Cairo
-  - Avalonia
-* Avalonia.Gtk
-  - Avalonia
+* Avalonia.Cairo (.nupkg)
+  - Avalonia.Cairo (.dll)
+  - Avalonia (.nupkg)
 
-## iOS
+* Avalonia.Skia.Desktop (.nupkg)
+  - Avalonia.Skia.Desktop (.dll)
+  - Avalonia (.nupkg)
+  - SkiaSharp (.nupkg)
 
-* Avalonia.iOS
-  - Avalonia
-  - Avalonia.Skia.iOS
+* Avalonia.Desktop (.nupkg)
+  - Avalonia.Win32 (.nupkg)
+  - Avalonia.Direct2D1 (.nupkg)
+  - Avalonia.Gtk (.nupkg)
+  - Avalonia.Cairo (.nupkg)
+  - Avalonia.Skia.Desktop (.nupkg)
 
-## Skia
+## Mobile
 
-* Avalonia.Skia.Android
-  - Avalonia
-  - SkiaSharp
-* Avalonia.Skia.Desktop
-  - Avalonia
-  - SkiaSharp
-* Avalonia.Skia.iOS
-  - Avalonia
-  - SkiaSharp
+* Avalonia.Android (.nupkg)
+  - Avalonia.Android (.dll)
+  - Avalonia.Skia.Android (.dll)
+  - Avalonia (.nupkg)
+  - SkiaSharp (.nupkg)
 
-## Windows
+* Avalonia.iOS (.nupkg)
+  - Avalonia.iOS (.dll)
+  - Avalonia.Skia.iOS (.dll)
+  - Avalonia (.nupkg)
+  - SkiaSharp (.nupkg)
 
-* Avalonia.Direct2D1
-  - Avalonia
-  - SharpDX
-  - SharpDX.Direct2D1
-  - SharpDX.DXGI
-* Avalonia.Win32
-  - Avalonia
-
-## Main
-
-* Avalonia
-  - Avalonia.Animation
-  - Avalonia.Base
-  - Avalonia.Controls
-  - Avalonia.DesignerSupport
-  - Avalonia.Diagnostics
-  - Avalonia.HtmlRenderer
-  - Avalonia.Input
-  - Avalonia.Interactivity
-  - Avalonia.Layout
-  - Avalonia.Logging.Serilog
-  - Avalonia.ReactiveUI
-  - Avalonia.SceneGraph
-  - Avalonia.Styling
-  - Avalonia.Themes.Default
-
-* Avalonia.Desktop
-  - Avalonia.Win32
-  - Avalonia.Direct2D1
-  - Avalonia.Gtk
-  - Avalonia.Cairo
+* Avalonia.Mobile (.nupkg)
+  - Avalonia.Android (.nupkg)
+  - Avalonia.iOS (.nupkg)
