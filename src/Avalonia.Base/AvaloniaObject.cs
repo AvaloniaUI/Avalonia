@@ -608,7 +608,7 @@ namespace Avalonia
             {
                 if (notification.HasValue)
                 {
-                    notification.Value = TypeUtilities.CastOrDefault(value, type);
+                    notification.Value = TypeUtilities.CastOrDefault(notification.Value, type);
                 }
 
                 return notification;
