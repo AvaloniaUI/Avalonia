@@ -895,11 +895,20 @@ Task("Run-Unit-Tests")
         return !(i.Path.FullPath.IndexOf("Direct2D", StringComparison.OrdinalIgnoreCase) >= 0);
     };
 
-    var files = isRunningOnWindows ? GetFiles(pattern) : GetFiles(pattern, ExcludeWindowsTests);
+    var unitTests = isRunningOnWindows ? GetFiles(pattern) : GetFiles(pattern, ExcludeWindowsTests);
+
+    if (isRunningOnWindows)
+    {
+        var windowsTests = GetFiles("./tests/Avalonia.DesignerSupport.Tests/bin/" + dirSuffix + "/*Tests.dll") + 
+                           GetFiles("./tests/Avalonia.LeakTests/bin/" + dirSuffix + "/*Tests.dll") + 
+                           GetFiles("./tests/Avalonia.RenderTests/bin/" + dirSuffix + "/*Tests.dll");
+
+        unitTests += windowsTests
+    }
 
     if (platform == "x86")
     {
-        foreach (var file in files)
+        foreach (var file in unitTests)
         {
             Information("Running test " + file.GetFilenameWithoutExtension());
             XUnit2(file.FullPath, new XUnit2Settings { 
@@ -910,7 +919,7 @@ Task("Run-Unit-Tests")
     }
     else
     {
-        foreach (var file in files)
+        foreach (var file in unitTests)
         {
             Information("Running test " + file.GetFilenameWithoutExtension());
             XUnit2(file.FullPath, new XUnit2Settings { 
