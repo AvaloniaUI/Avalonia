@@ -732,6 +732,11 @@ var nuspecNuGetSettingsMain = new []
             new NuSpecDependency() { Id = "Avalonia.Markup", Version = version },
             new NuSpecDependency() { Id = "Avalonia.Markup.Xaml", Version = version }
         },
+        Files = new NuSpecContent[]
+        {
+            new NuSpecContent { Source = "licence.md", Target = "" }
+        },
+        BasePath = Directory("./"),
         OutputDirectory = nugetRoot.Combine("Avalonia")
     },
     ///////////////////////////////////////////////////////////////////////////////
@@ -747,6 +752,11 @@ var nuspecNuGetSettingsMain = new []
             new NuSpecDependency() { Id = "Avalonia.Gtk", Version = version },
             new NuSpecDependency() { Id = "Avalonia.Cairo", Version = version }
         },
+        Files = new NuSpecContent[]
+        {
+            new NuSpecContent { Source = "licence.md", Target = "" }
+        },
+        BasePath = Directory("./"),
         OutputDirectory = nugetRoot.Combine("Avalonia.Desktop")
     }
 };
