@@ -83,7 +83,6 @@ if (isRunningOnAppVeyor)
 ///////////////////////////////////////////////////////////////////////////////
 
 var artifactsDir = (DirectoryPath)Directory("./artifacts");
-var testResultsDir = artifactsDir.Combine("test-results");
 var nugetRoot = artifactsDir.Combine("nuget");
 
 var dirSuffix = configuration;
@@ -822,7 +821,6 @@ Task("Clean")
 {
     CleanDirectories(buildDirs);
     CleanDirectory(artifactsDir);
-    CleanDirectory(testResultsDir);
     CleanDirectory(nugetRoot);
     CleanDirectories(nupkgNuGetDirs);
 });
@@ -902,8 +900,6 @@ Task("Run-Unit-Tests")
     {
         XUnit2(files, new XUnit2Settings { 
             ToolPath = "./tools/xunit.runner.console/tools/xunit.console.x86.exe",
-            OutputDirectory = testResultsDir,
-            XmlReportV1 = true,
             Parallelism = ParallelismOption.None
         });
     }
@@ -911,8 +907,6 @@ Task("Run-Unit-Tests")
     {
         XUnit2(files, new XUnit2Settings { 
             ToolPath = "./tools/xunit.runner.console/tools/xunit.console.exe",
-            OutputDirectory = testResultsDir,
-            XmlReportV1 = true,
             Parallelism = ParallelismOption.None
         });
     }
