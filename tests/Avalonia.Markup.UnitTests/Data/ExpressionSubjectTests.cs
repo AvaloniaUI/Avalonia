@@ -288,11 +288,11 @@ namespace Avalonia.Markup.UnitTests.Data
             target.OnNext("bar");
 
             Assert.Equal(
-                new[]
+                new object[]
                 {
-                    new BindingNotification("5.6"),
-                    new BindingNotification("1.2"),
-                    new BindingNotification("3.4"),
+                    "5.6",
+                    "1.2",
+                    "3.4",
                     new BindingNotification(
                         new InvalidCastException("Error setting 'DoubleValue': Could not convert 'bar' to 'System.Double'"),
                         BindingErrorType.Error)

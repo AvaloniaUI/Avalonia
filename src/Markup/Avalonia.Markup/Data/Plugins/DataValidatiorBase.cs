@@ -68,13 +68,11 @@ namespace Avalonia.Markup.Data.Plugins
         /// </summary>
         /// <param name="value">The value.</param>
         /// <remarks>
-        /// Notifies the observer that the value has changed. The value will be wrapped in a
-        /// <see cref="BindingNotification"/> if it is not already a binding notification.
+        /// Notifies the observer that the value has changed.
         /// </remarks>
         protected virtual void InnerValueChanged(object value)
         {
-            var notification = value as BindingNotification ?? new BindingNotification(value);
-            Observer.OnNext(notification);
+            Observer.OnNext(value);
         }
     }
 }

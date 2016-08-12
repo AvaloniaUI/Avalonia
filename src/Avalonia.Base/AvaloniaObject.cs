@@ -464,7 +464,7 @@ namespace Avalonia
         /// <inheritdoc/>
         void IPriorityValueOwner.BindingNotificationReceived(PriorityValue sender, BindingNotification notification)
         {
-            BindingNotificationReceived(sender.Property, notification);
+            UpdateDataValidation(sender.Property, notification);
         }
 
         /// <inheritdoc/>
@@ -499,14 +499,16 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Occurs when a <see cref="BindingNotification"/> is received for a property which has
-        /// data validation enabled.
+        /// Called to update the validation state for properties for which data validation is
+        /// enabled.
         /// </summary>
         /// <param name="property">The property.</param>
-        /// <param name="notification">The binding notification.</param>
-        protected virtual void BindingNotificationReceived(
+        /// <param name="status">
+        /// The new validation status. A value of null indicates no validation error.
+        /// </param>
+        protected virtual void UpdateDataValidation(
             AvaloniaProperty property,
-            BindingNotification notification)
+            BindingNotification status)
         {
         }
 
@@ -647,20 +649,12 @@ namespace Avalonia
         /// <returns></returns>
         private void DirectBindingSet(AvaloniaProperty property, object value)
         {
+            var validated = property.GetMetadata(GetType()).EnableDataValidation;
             var notification = value as BindingNotification;
 
-            if (notification == null)
+            if (notification != null)
             {
-                SetValue(property, value);
-            }
-            else
-            {
-                if (notification.HasValue)
-                {
-                    SetValue(property, notification.Value);
-                }
-
-                BindingNotificationReceived(property, notification);
+                value = notification.Value;
 
                 if (notification.ErrorType == BindingErrorType.Error)
                 {
@@ -672,6 +666,16 @@ namespace Avalonia
                         property,
                         ExceptionUtilities.GetMessage(notification.Error));
                 }
+            }
+
+            if (notification?.HasValue != false)
+            {
+                SetValue(property, value);
+            }
+
+            if (validated)
+            {
+                UpdateDataValidation(property, notification);
             }
         }
 

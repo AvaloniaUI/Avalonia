@@ -81,16 +81,16 @@ namespace Avalonia.Markup.UnitTests.Data
             observer.SetValue("foo");
             observer.SetValue(5);
 
-            Assert.Equal(new[]
+            Assert.Equal(new object[]
             {
-                new BindingNotification(0),
+                0,
 
                 // Value is notified twice as ErrorsChanged is always called by IndeiTest.
-                new BindingNotification(5),
-                new BindingNotification(5),
+                5,
+                5,
 
                 // Value is first signalled without an error as validation hasn't been updated.
-                new BindingNotification(-5),
+                -5,
                 new BindingNotification(new Exception("Must be positive"), BindingErrorType.DataValidationError, -5),
 
                 // Exception is thrown by trying to set value to "foo".
@@ -100,7 +100,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
                 // Value is set then validation is updated.
                 new BindingNotification(new Exception("Must be positive"), BindingErrorType.DataValidationError, 5),
-                new BindingNotification(5),
+                5,
             }, result);
         }
 

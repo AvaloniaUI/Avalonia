@@ -45,10 +45,10 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
             Assert.Equal(
                 new[]
                 {
-                    new BindingNotification(5),
-                    new BindingNotification(6),
+                    null, // 5
+                    null, // 6
                     new BindingNotification(new ArgumentOutOfRangeException("value"), BindingErrorType.DataValidationError),
-                    new BindingNotification(7),
+                    null, // 7
                 },
                 target.Notifications.AsEnumerable());
         }
@@ -94,7 +94,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
 
             public IList<BindingNotification> Notifications { get; } = new List<BindingNotification>();
 
-            protected override void BindingNotificationReceived(AvaloniaProperty property, BindingNotification notification)
+            protected override void UpdateDataValidation(AvaloniaProperty property, BindingNotification notification)
             {
                 Notifications.Add(notification);
             }

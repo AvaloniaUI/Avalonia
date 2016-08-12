@@ -14,7 +14,7 @@ namespace Avalonia.Markup.UnitTests.Data.Plugins
     public class ExceptionValidationPluginTests
     {
         [Fact]
-        public void Produces_BindingNotifications()
+        public void Produces_Correct_Results()
         {
             var inpcAccessorPlugin = new InpcPropertyAccessorPlugin();
             var validatorPlugin = new ExceptionValidationPlugin();
@@ -28,12 +28,12 @@ namespace Avalonia.Markup.UnitTests.Data.Plugins
             validator.SetValue(-2, BindingPriority.LocalValue);
             validator.SetValue(6, BindingPriority.LocalValue);
 
-            Assert.Equal(new[]
+            Assert.Equal(new object[]
             {
-                new BindingNotification(0),
-                new BindingNotification(5),
+                0,
+                5,
                 new BindingNotification(new ArgumentOutOfRangeException("value"), BindingErrorType.DataValidationError),
-                new BindingNotification(6),
+                6,
             }, result);
         }
 

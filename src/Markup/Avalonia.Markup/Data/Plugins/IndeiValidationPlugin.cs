@@ -40,7 +40,7 @@ namespace Avalonia.Markup.Data.Plugins
             {
                 if (e.PropertyName == _name || string.IsNullOrEmpty(e.PropertyName))
                 {
-                    Observer.OnNext(CreateBindingNotification(Value));
+                    Observer.OnNext(BuildResult(Value));
                 }
             }
 
@@ -76,10 +76,10 @@ namespace Avalonia.Markup.Data.Plugins
 
             protected override void InnerValueChanged(object value)
             {
-                base.InnerValueChanged(CreateBindingNotification(value));
+                base.InnerValueChanged(BuildResult(value));
             }
 
-            private BindingNotification CreateBindingNotification(object value)
+            private object BuildResult(object value)
             {
                 var target = (INotifyDataErrorInfo)_reference.Target;
 
@@ -98,7 +98,7 @@ namespace Avalonia.Markup.Data.Plugins
                     }
                 }
 
-                return new BindingNotification(value);
+                return value;
             }
 
             private Exception GenerateException(IList<string> errors)
