@@ -144,148 +144,78 @@ var SetNuGetNuspecCommonProperties = new Action<NuGetPackSettings> ((nuspec) => 
     nuspec.Tags = new [] { "Avalonia" };
 });
 
+var coreLibraries = new string[][]
+{
+    new [] { "./src/", "Avalonia.Animation", ".dll" },
+    new [] { "./src/", "Avalonia.Animation", ".xml" },
+    new [] { "./src/", "Avalonia.Base", ".dll" },
+    new [] { "./src/", "Avalonia.Base", ".xml" },
+    new [] { "./src/", "Avalonia.Controls", ".dll" },
+    new [] { "./src/", "Avalonia.Controls", ".xml" },
+    new [] { "./src/", "Avalonia.DesignerSupport", ".dll" },
+    new [] { "./src/", "Avalonia.DesignerSupport", ".xml" },
+    new [] { "./src/", "Avalonia.Diagnostics", ".dll" },
+    new [] { "./src/", "Avalonia.Diagnostics", ".xml" },
+    new [] { "./src/", "Avalonia.Input", ".dll" },
+    new [] { "./src/", "Avalonia.Input", ".xml" },
+    new [] { "./src/", "Avalonia.Interactivity", ".dll" },
+    new [] { "./src/", "Avalonia.Interactivity", ".xml" },
+    new [] { "./src/", "Avalonia.Layout", ".dll" },
+    new [] { "./src/", "Avalonia.Layout", ".xml" },
+    new [] { "./src/", "Avalonia.Logging.Serilog", ".dll" },
+    new [] { "./src/", "Avalonia.Logging.Serilog", ".xml" },
+    new [] { "./src/", "Avalonia.SceneGraph", ".dll" },
+    new [] { "./src/", "Avalonia.SceneGraph", ".xml" },
+    new [] { "./src/", "Avalonia.Styling", ".dll" },
+    new [] { "./src/", "Avalonia.Styling", ".xml" },
+    new [] { "./src/", "Avalonia.ReactiveUI", ".dll" },
+    new [] { "./src/", "Avalonia.Themes.Default", ".dll" },
+    new [] { "./src/", "Avalonia.Themes.Default", ".xml" },
+    new [] { "./src/Markup/", "Avalonia.Markup", ".dll" },
+    new [] { "./src/Markup/", "Avalonia.Markup", ".xml" },
+    new [] { "./src/Markup/", "Avalonia.Markup.Xaml", ".dll" },
+    new [] { "./src/Markup/", "Avalonia.Markup.Xaml", ".xml" }
+};
+
+var coreLibrariesFiles = coreLibraries.Select((lib) => {
+    return (FilePath)File(lib[0] + lib[1] + "/bin/" + dirSuffix + "/" + lib[1] + lib[2]);
+}).ToList();
+
+var coreLibrariesNuSpecContent = coreLibrariesFiles.Select((file) => {
+    Information("FILE : " + file);
+    return new NuSpecContent { 
+        Source = file.FullPath, Target = "lib/portable-windows8+net45" 
+    };
+});
+
 var nuspecNuGetSettingsCore = new []
 {
     ///////////////////////////////////////////////////////////////////////////////
-    // src: Avalonia.Animation
+    // Avalonia
     ///////////////////////////////////////////////////////////////////////////////
     new NuGetPackSettings()
     {
-        Id = "Avalonia.Animation",
+        Id = "Avalonia",
         Dependencies = new []
         {
-            new NuSpecDependency() { Id = "Avalonia.Base", Version = version },
-            new NuSpecDependency() { Id = "System.Reactive", Version = SystemReactiveVersion }
-        },
-        Files = new []
-        {
-            new NuSpecContent { Source = "Avalonia.Animation.dll", Target = "lib/portable-windows8+net45" },
-            new NuSpecContent { Source = "Avalonia.Animation.xml", Target = "lib/portable-windows8+net45" }
-        },
-        BasePath = Directory("./src/Avalonia.Animation/bin/" + dirSuffix),
-        OutputDirectory = nugetRoot.Combine("Avalonia.Animation")
-    },
-    ///////////////////////////////////////////////////////////////////////////////
-    // src: Avalonia.Base
-    ///////////////////////////////////////////////////////////////////////////////
-    new NuGetPackSettings()
-    {
-        Id = "Avalonia.Base",
-        Dependencies = new []
-        {
-            new NuSpecDependency() { Id = "System.Reactive", Version = SystemReactiveVersion }
-        },
-        Files = new []
-        {
-            new NuSpecContent { Source = "Avalonia.Base.dll", Target = "lib/portable-windows8+net45" },
-            new NuSpecContent { Source = "Avalonia.Base.xml", Target = "lib/portable-windows8+net45" }
-        },
-        BasePath = Directory("./src/Avalonia.Base/bin/" + dirSuffix),
-        OutputDirectory = nugetRoot.Combine("Avalonia.Base")
-    },
-    ///////////////////////////////////////////////////////////////////////////////
-    // src: Avalonia.Controls
-    ///////////////////////////////////////////////////////////////////////////////
-    new NuGetPackSettings()
-    {
-        Id = "Avalonia.Controls",
-        Dependencies = new []
-        {
-            new NuSpecDependency() { Id = "Avalonia.Animation", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Base", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Input", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Interactivity", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Layout", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.SceneGraph", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Styling", Version = version },
-            new NuSpecDependency() { Id = "System.Reactive", Version = SystemReactiveVersion }
-        },
-        Files = new []
-        {
-            new NuSpecContent { Source = "Avalonia.Controls.dll", Target = "lib/portable-windows8+net45" },
-            new NuSpecContent { Source = "Avalonia.Controls.xml", Target = "lib/portable-windows8+net45" }
-        },
-        BasePath = Directory("./src/Avalonia.Controls/bin/" + dirSuffix),
-        OutputDirectory = nugetRoot.Combine("Avalonia.Controls")
-    },
-    ///////////////////////////////////////////////////////////////////////////////
-    // src: Avalonia.DesignerSupport
-    ///////////////////////////////////////////////////////////////////////////////
-    new NuGetPackSettings()
-    {
-        Id = "Avalonia.DesignerSupport",
-        Dependencies = new []
-        {
-            new NuSpecDependency() { Id = "Avalonia.Animation", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Base", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Controls", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Input", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Interactivity", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Layout", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Markup", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Markup.Xaml", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.SceneGraph", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Styling", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Themes.Default", Version = version },
-            new NuSpecDependency() { Id = "System.Reactive", Version = SystemReactiveVersion }
-        },
-        Files = new []
-        {
-            new NuSpecContent { Source = "Avalonia.DesignerSupport.dll", Target = "lib/portable-windows8+net45" },
-            new NuSpecContent { Source = "Avalonia.DesignerSupport.xml", Target = "lib/portable-windows8+net45" }
-        },
-        BasePath = Directory("./src/Avalonia.DesignerSupport/bin/" + dirSuffix),
-        OutputDirectory = nugetRoot.Combine("Avalonia.DesignerSupport")
-    },
-    ///////////////////////////////////////////////////////////////////////////////
-    // src: Avalonia.Diagnostics
-    ///////////////////////////////////////////////////////////////////////////////
-    new NuGetPackSettings()
-    {
-        Id = "Avalonia.Diagnostics",
-        Dependencies = new []
-        {
-            new NuSpecDependency() { Id = "Avalonia.Animation", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Base", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Controls", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Input", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Interactivity", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Layout", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Markup", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Markup.Xaml", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.ReactiveUI", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.SceneGraph", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Styling", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Themes.Default", Version = version },
+            new NuSpecDependency() { Id = "Serilog", Version = SerilogVersion },
             new NuSpecDependency() { Id = "Splat", Version = SplatVersion },
+            new NuSpecDependency() { Id = "Sprache", Version = SpracheVersion },
             new NuSpecDependency() { Id = "System.Reactive", Version = SystemReactiveVersion }
         },
-        Files = new []
-        {
-            new NuSpecContent { Source = "Avalonia.Diagnostics.dll", Target = "lib/portable-windows8+net45" },
-            new NuSpecContent { Source = "Avalonia.Diagnostics.xml", Target = "lib/portable-windows8+net45" }
-        },
-        BasePath = Directory("./src/Avalonia.Diagnostics/bin/" + dirSuffix),
-        OutputDirectory = nugetRoot.Combine("Avalonia.Diagnostics")
+        Files = coreLibrariesNuSpecContent.ToList(),
+        BasePath = Directory("./"),
+        OutputDirectory = nugetRoot.Combine("Avalonia")
     },
     ///////////////////////////////////////////////////////////////////////////////
-    // src: Avalonia.HtmlRenderer
+    // Avalonia.HtmlRenderer
     ///////////////////////////////////////////////////////////////////////////////
     new NuGetPackSettings()
     {
         Id = "Avalonia.HtmlRenderer",
         Dependencies = new []
         {
-            new NuSpecDependency() { Id = "Avalonia.Animation", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Base", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Controls", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Input", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Interactivity", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Layout", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.SceneGraph", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Styling", Version = version },
-            new NuSpecDependency() { Id = "System.Reactive.Core", Version = SystemReactiveVersion },
-            new NuSpecDependency() { Id = "System.Reactive.Interfaces", Version = SystemReactiveVersion }
+            new NuSpecDependency() { Id = "Avalonia", Version = version }
         },
         Files = new []
         {
@@ -293,241 +223,13 @@ var nuspecNuGetSettingsCore = new []
         },
         BasePath = Directory("./src/Avalonia.HtmlRenderer/bin/" + dirSuffix),
         OutputDirectory = nugetRoot.Combine("Avalonia.HtmlRenderer")
-    },
-    ///////////////////////////////////////////////////////////////////////////////
-    // src: Avalonia.Input
-    ///////////////////////////////////////////////////////////////////////////////
-    new NuGetPackSettings()
-    {
-        Id = "Avalonia.Input",
-        Dependencies = new []
-        {
-            new NuSpecDependency() { Id = "Avalonia.Animation", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Base", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Interactivity", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Layout", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.SceneGraph", Version = version },
-            new NuSpecDependency() { Id = "System.Reactive", Version = SystemReactiveVersion }
-        },
-        Files = new []
-        {
-            new NuSpecContent { Source = "Avalonia.Input.dll", Target = "lib/portable-windows8+net45" },
-            new NuSpecContent { Source = "Avalonia.Input.xml", Target = "lib/portable-windows8+net45" }
-        },
-        BasePath = Directory("./src/Avalonia.Input/bin/" + dirSuffix),
-        OutputDirectory = nugetRoot.Combine("Avalonia.Input")
-    },
-    ///////////////////////////////////////////////////////////////////////////////
-    // src: Avalonia.Interactivity
-    ///////////////////////////////////////////////////////////////////////////////
-    new NuGetPackSettings()
-    {
-        Id = "Avalonia.Interactivity",
-        Dependencies = new []
-        {
-            new NuSpecDependency() { Id = "Avalonia.Animation", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Base", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Layout", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.SceneGraph", Version = version },
-            new NuSpecDependency() { Id = "System.Reactive", Version = SystemReactiveVersion }
-        },
-        Files = new []
-        {
-            new NuSpecContent { Source = "Avalonia.Interactivity.dll", Target = "lib/portable-windows8+net45" },
-            new NuSpecContent { Source = "Avalonia.Interactivity.xml", Target = "lib/portable-windows8+net45" }
-        },
-        BasePath = Directory("./src/Avalonia.Interactivity/bin/" + dirSuffix),
-        OutputDirectory = nugetRoot.Combine("Avalonia.Interactivity")
-    },
-    ///////////////////////////////////////////////////////////////////////////////
-    // src: Avalonia.Layout
-    ///////////////////////////////////////////////////////////////////////////////
-    new NuGetPackSettings()
-    {
-        Id = "Avalonia.Layout",
-        Dependencies = new []
-        {
-            new NuSpecDependency() { Id = "Avalonia.Animation", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Base", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.SceneGraph", Version = version },
-            new NuSpecDependency() { Id = "System.Reactive", Version = SystemReactiveVersion }
-        },
-        Files = new []
-        {
-            new NuSpecContent { Source = "Avalonia.Layout.dll", Target = "lib/portable-windows8+net45" },
-            new NuSpecContent { Source = "Avalonia.Layout.xml", Target = "lib/portable-windows8+net45" }
-        },
-        BasePath = Directory("./src/Avalonia.Layout/bin/" + dirSuffix),
-        OutputDirectory = nugetRoot.Combine("Avalonia.Layout")
-    },
-    ///////////////////////////////////////////////////////////////////////////////
-    // src: Avalonia.Logging.Serilog
-    ///////////////////////////////////////////////////////////////////////////////
-    new NuGetPackSettings()
-    {
-        Id = "Avalonia.Logging.Serilog",
-        Dependencies = new []
-        {
-            new NuSpecDependency() { Id = "Avalonia.Base", Version = version },
-            new NuSpecDependency() { Id = "Serilog", Version = SerilogVersion }
-        },
-        Files = new []
-        {
-            new NuSpecContent { Source = "Avalonia.Logging.Serilog.dll", Target = "lib/portable-windows8+net45" },
-            new NuSpecContent { Source = "Avalonia.Logging.Serilog.xml", Target = "lib/portable-windows8+net45" },
-        },
-        BasePath = Directory("./src/Avalonia.Logging.Serilog/bin/" + dirSuffix),
-        OutputDirectory = nugetRoot.Combine("Avalonia.Logging.Serilog")
-    },
-    ///////////////////////////////////////////////////////////////////////////////
-    // src: Avalonia.ReactiveUI
-    ///////////////////////////////////////////////////////////////////////////////
-    new NuGetPackSettings()
-    {
-        Id = "Avalonia.ReactiveUI",
-        Dependencies = new []
-        {
-            new NuSpecDependency() { Id = "Splat", Version = SplatVersion },
-            new NuSpecDependency() { Id = "System.Reactive", Version = SystemReactiveVersion }
-        },
-        Files = new []
-        {
-            new NuSpecContent { Source = "Avalonia.ReactiveUI.dll", Target = "lib/portable-windows8+net45" }
-        },
-        BasePath = Directory("./src/Avalonia.ReactiveUI/bin/" + dirSuffix),
-        OutputDirectory = nugetRoot.Combine("Avalonia.ReactiveUI")
-    },
-    ///////////////////////////////////////////////////////////////////////////////
-    // src: Avalonia.SceneGraph
-    ///////////////////////////////////////////////////////////////////////////////
-    new NuGetPackSettings()
-    {
-        Id = "Avalonia.SceneGraph",
-        Dependencies = new []
-        {
-            new NuSpecDependency() { Id = "Avalonia.Animation", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Base", Version = version },
-            new NuSpecDependency() { Id = "System.Reactive", Version = SystemReactiveVersion }
-        },
-        Files = new []
-        {
-            new NuSpecContent { Source = "Avalonia.SceneGraph.dll", Target = "lib/portable-windows8+net45" },
-            new NuSpecContent { Source = "Avalonia.SceneGraph.xml", Target = "lib/portable-windows8+net45" }
-        },
-        BasePath = Directory("./src/Avalonia.SceneGraph/bin/" + dirSuffix),
-        OutputDirectory = nugetRoot.Combine("Avalonia.SceneGraph")
-    },
-    ///////////////////////////////////////////////////////////////////////////////
-    // src: Avalonia.Styling
-    ///////////////////////////////////////////////////////////////////////////////
-    new NuGetPackSettings()
-    {
-        Id = "Avalonia.Styling",
-        Dependencies = new []
-        {
-            new NuSpecDependency() { Id = "Avalonia.Animation", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Base", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.SceneGraph", Version = version },
-            new NuSpecDependency() { Id = "System.Reactive", Version = SystemReactiveVersion }
-        },
-        Files = new []
-        {
-            new NuSpecContent { Source = "Avalonia.Styling.dll", Target = "lib/portable-windows8+net45" },
-            new NuSpecContent { Source = "Avalonia.Styling.xml", Target = "lib/portable-windows8+net45" }
-        },
-        BasePath = Directory("./src/Avalonia.Styling/bin/" + dirSuffix),
-        OutputDirectory = nugetRoot.Combine("Avalonia.Styling")
-    },
-    ///////////////////////////////////////////////////////////////////////////////
-    // src: Avalonia.Themes.Default
-    ///////////////////////////////////////////////////////////////////////////////
-    new NuGetPackSettings()
-    {
-        Id = "Avalonia.Themes.Default",
-        Dependencies = new []
-        {
-            new NuSpecDependency() { Id = "Avalonia.Animation", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Base", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Controls", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Input", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Interactivity", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Layout", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Markup.Xaml", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.SceneGraph", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Styling", Version = version },
-            new NuSpecDependency() { Id = "System.Reactive", Version = SystemReactiveVersion }
-        },
-        Files = new []
-        {
-            new NuSpecContent { Source = "Avalonia.Themes.Default.dll", Target = "lib/portable-windows8+net45" },
-            new NuSpecContent { Source = "Avalonia.Themes.Default.xml", Target = "lib/portable-windows8+net45" }
-        },
-        BasePath = Directory("./src/Avalonia.Themes.Default/bin/" + dirSuffix),
-        OutputDirectory = nugetRoot.Combine("Avalonia.Themes.Default")
     }
 };
 
-var nuspecNuGetSettingsMarkup = new []
+var nuspecNuGetSettingsMobile = new []
 {
     ///////////////////////////////////////////////////////////////////////////////
-    // src/Markup: Avalonia.Markup
-    ///////////////////////////////////////////////////////////////////////////////
-    new NuGetPackSettings()
-    {
-        Id = "Avalonia.Markup",
-        Dependencies = new []
-        {
-            new NuSpecDependency() { Id = "Avalonia.Base", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Controls", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Input", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Interactivity", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Layout", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.SceneGraph", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Styling", Version = version },
-            new NuSpecDependency() { Id = "System.Reactive", Version = SystemReactiveVersion }
-        },
-        Files = new []
-        {
-            new NuSpecContent { Source = "Avalonia.Markup.dll", Target = "lib/portable-windows8+net45" },
-            new NuSpecContent { Source = "Avalonia.Markup.xml", Target = "lib/portable-windows8+net45" }
-        },
-        BasePath = Directory("./src/Markup/Avalonia.Markup/bin/" + dirSuffix),
-        OutputDirectory = nugetRoot.Combine("Avalonia.Markup")
-    },
-    ///////////////////////////////////////////////////////////////////////////////
-    // src/Markup: Avalonia.Markup.Xaml
-    ///////////////////////////////////////////////////////////////////////////////
-    new NuGetPackSettings()
-    {
-        Id = "Avalonia.Markup.Xaml",
-        Dependencies = new []
-        {
-            new NuSpecDependency() { Id = "Avalonia.Animation", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Base", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Controls", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Input", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Interactivity", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Layout", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Markup", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.SceneGraph", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Styling", Version = version },
-            new NuSpecDependency() { Id = "Sprache", Version = SpracheVersion },
-            new NuSpecDependency() { Id = "System.Reactive", Version = SystemReactiveVersion }
-        },
-        Files = new []
-        {
-            new NuSpecContent { Source = "Avalonia.Markup.Xaml.dll", Target = "lib/portable-windows8+net45" },
-            new NuSpecContent { Source = "Avalonia.Markup.Xaml.xml", Target = "lib/portable-windows8+net45" }
-        },
-        BasePath = Directory("./src/Markup/Avalonia.Markup.Xaml/bin/" + dirSuffix),
-        OutputDirectory = nugetRoot.Combine("Avalonia.Markup.Xaml")
-    }
-};
-
-var nuspecNuGetSettingsAndroid = new []
-{
-    ///////////////////////////////////////////////////////////////////////////////
-    // src/Android: Avalonia.Android
+    // Avalonia.Android
     ///////////////////////////////////////////////////////////////////////////////
     new NuGetPackSettings()
     {
@@ -543,73 +245,9 @@ var nuspecNuGetSettingsAndroid = new []
         },
         BasePath = Directory("./src/Android/Avalonia.Android/bin/" + dirSuffix),
         OutputDirectory = nugetRoot.Combine("Avalonia.Android")
-    }
-};
-
-var nuspecNuGetSettingsGtk = new []
-{
-    ///////////////////////////////////////////////////////////////////////////////
-    // src/Gtk: Avalonia.Cairo
-    ///////////////////////////////////////////////////////////////////////////////
-    new NuGetPackSettings()
-    {
-        Id = "Avalonia.Cairo",
-        Dependencies = new []
-        {
-            new NuSpecDependency() { Id = "Avalonia", Version = version }
-        },
-        Files = new []
-        {
-            new NuSpecContent { Source = "Avalonia.Cairo.dll", Target = "lib/net45" }
-        },
-        BasePath = Directory("./src/Gtk/Avalonia.Cairo/bin/" + dirSuffix),
-        OutputDirectory = nugetRoot.Combine("Avalonia.Cairo")
     },
     ///////////////////////////////////////////////////////////////////////////////
-    // src/Gtk: Avalonia.Gtk
-    ///////////////////////////////////////////////////////////////////////////////
-    new NuGetPackSettings()
-    {
-        Id = "Avalonia.Gtk",
-        Dependencies = new []
-        {
-            new NuSpecDependency() { Id = "Avalonia", Version = version }
-        },
-        Files = new []
-        {
-            new NuSpecContent { Source = "Avalonia.Gtk.dll", Target = "lib/net45" }
-        },
-        BasePath = Directory("./src/Gtk/Avalonia.Gtk/bin/" + dirSuffix),
-        OutputDirectory = nugetRoot.Combine("Avalonia.Gtk")
-    },
-};
-
-var nuspecNuGetSettingsiOS = new []
-{
-    ///////////////////////////////////////////////////////////////////////////////
-    // src/iOS: Avalonia.iOS
-    ///////////////////////////////////////////////////////////////////////////////
-    new NuGetPackSettings()
-    {
-        Id = "Avalonia.iOS",
-        Dependencies = new []
-        {
-            new NuSpecDependency() { Id = "Avalonia", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Skia.iOS", Version = version }
-        },
-        Files = new []
-        {
-            new NuSpecContent { Source = "Avalonia.iOS.dll", Target = "lib/Xamarin.iOS10" }
-        },
-        BasePath = Directory("./src/iOS/Avalonia.iOS/bin/" + dirSuffixIOS),
-        OutputDirectory = nugetRoot.Combine("Avalonia.iOS")
-    }
-};
-
-var nuspecNuGetSettingsSkia = new []
-{
-    ///////////////////////////////////////////////////////////////////////////////
-    // src/Skia: Avalonia.Skia.Android
+    // Avalonia.Skia.Android
     ///////////////////////////////////////////////////////////////////////////////
     new NuGetPackSettings()
     {
@@ -627,25 +265,25 @@ var nuspecNuGetSettingsSkia = new []
         OutputDirectory = nugetRoot.Combine("Avalonia.Skia.Android")
     },
     ///////////////////////////////////////////////////////////////////////////////
-    // src/Skia: Avalonia.Skia.Desktop
+    // Avalonia.iOS
     ///////////////////////////////////////////////////////////////////////////////
     new NuGetPackSettings()
     {
-        Id = "Avalonia.Skia.Desktop",
+        Id = "Avalonia.iOS",
         Dependencies = new []
         {
             new NuSpecDependency() { Id = "Avalonia", Version = version },
-            new NuSpecDependency() { Id = "SkiaSharp", Version = SkiaSharpVersion }
+            new NuSpecDependency() { Id = "Avalonia.Skia.iOS", Version = version }
         },
         Files = new []
         {
-            new NuSpecContent { Source = "Avalonia.Skia.Desktop.dll", Target = "lib/net45" }
+            new NuSpecContent { Source = "Avalonia.iOS.dll", Target = "lib/Xamarin.iOS10" }
         },
-        BasePath = Directory("./src/Skia/Avalonia.Skia.Desktop/bin/" + dirSuffixSkia),
-        OutputDirectory = nugetRoot.Combine("Avalonia.Skia.Desktop")
+        BasePath = Directory("./src/iOS/Avalonia.iOS/bin/" + dirSuffixIOS),
+        OutputDirectory = nugetRoot.Combine("Avalonia.iOS")
     },
     ///////////////////////////////////////////////////////////////////////////////
-    // src/Skia: Avalonia.Skia.iOS
+    // Avalonia.Skia.iOS
     ///////////////////////////////////////////////////////////////////////////////
     new NuGetPackSettings()
     {
@@ -661,13 +299,48 @@ var nuspecNuGetSettingsSkia = new []
         },
         BasePath = Directory("./src/Skia/Avalonia.Skia.iOS/bin/" + dirSuffixIOS),
         OutputDirectory = nugetRoot.Combine("Avalonia.Skia.iOS")
+    },
+    ///////////////////////////////////////////////////////////////////////////////
+    // Avalonia.Mobile
+    ///////////////////////////////////////////////////////////////////////////////
+    new NuGetPackSettings()
+    {
+        Id = "Avalonia.Mobile",
+        Dependencies = new []
+        {
+            new NuSpecDependency() { Id = "Avalonia.Android", Version = version },
+            new NuSpecDependency() { Id = "Avalonia.iOS", Version = version }
+        },
+        Files = new NuSpecContent[]
+        {
+            new NuSpecContent { Source = "licence.md", Target = "" }
+        },
+        BasePath = Directory("./"),
+        OutputDirectory = nugetRoot.Combine("Avalonia.Mobile")
     }
 };
 
-var nuspecNuGetSettingsWindows = new []
+var nuspecNuGetSettingsDesktop = new []
 {
     ///////////////////////////////////////////////////////////////////////////////
-    // src/Windows: Avalonia.Direct2D1
+    // Avalonia.Win32
+    ///////////////////////////////////////////////////////////////////////////////
+    new NuGetPackSettings()
+    {
+        Id = "Avalonia.Win32",
+        Dependencies = new []
+        {
+            new NuSpecDependency() { Id = "Avalonia", Version = version }
+        },
+        Files = new []
+        {
+            new NuSpecContent { Source = "Avalonia.Win32.dll", Target = "lib/net45" }
+        },
+        BasePath = Directory("./src/Windows/Avalonia.Win32/bin/" + dirSuffix),
+        OutputDirectory = nugetRoot.Combine("Avalonia.Win32")
+    },
+    ///////////////////////////////////////////////////////////////////////////////
+    // Avalonia.Direct2D1
     ///////////////////////////////////////////////////////////////////////////////
     new NuGetPackSettings()
     {
@@ -687,57 +360,56 @@ var nuspecNuGetSettingsWindows = new []
         OutputDirectory = nugetRoot.Combine("Avalonia.Direct2D1")
     },
     ///////////////////////////////////////////////////////////////////////////////
-    // src/Windows: Avalonia.Win32
+    // Avalonia.Gtk
     ///////////////////////////////////////////////////////////////////////////////
     new NuGetPackSettings()
     {
-        Id = "Avalonia.Win32",
+        Id = "Avalonia.Gtk",
         Dependencies = new []
         {
             new NuSpecDependency() { Id = "Avalonia", Version = version }
         },
         Files = new []
         {
-            new NuSpecContent { Source = "Avalonia.Win32.dll", Target = "lib/net45" }
+            new NuSpecContent { Source = "Avalonia.Gtk.dll", Target = "lib/net45" }
         },
-        BasePath = Directory("./src/Windows/Avalonia.Win32/bin/" + dirSuffix),
-        OutputDirectory = nugetRoot.Combine("Avalonia.Win32")
+        BasePath = Directory("./src/Gtk/Avalonia.Gtk/bin/" + dirSuffix),
+        OutputDirectory = nugetRoot.Combine("Avalonia.Gtk")
     },
-};
-
-var nuspecNuGetSettingsMain = new []
-{
     ///////////////////////////////////////////////////////////////////////////////
-    // Avalonia
+    // Avalonia.Cairo
     ///////////////////////////////////////////////////////////////////////////////
     new NuGetPackSettings()
     {
-        Id = "Avalonia",
+        Id = "Avalonia.Cairo",
         Dependencies = new []
         {
-            new NuSpecDependency() { Id = "Avalonia.Animation", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Base", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Controls", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.DesignerSupport", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Diagnostics", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.HtmlRenderer", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Input", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Interactivity", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Layout", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Logging.Serilog", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.ReactiveUI", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.SceneGraph", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Styling", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Themes.Default", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Markup", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Markup.Xaml", Version = version }
+            new NuSpecDependency() { Id = "Avalonia", Version = version }
         },
-        Files = new NuSpecContent[]
+        Files = new []
         {
-            new NuSpecContent { Source = "licence.md", Target = "" }
+            new NuSpecContent { Source = "Avalonia.Cairo.dll", Target = "lib/net45" }
         },
-        BasePath = Directory("./"),
-        OutputDirectory = nugetRoot.Combine("Avalonia")
+        BasePath = Directory("./src/Gtk/Avalonia.Cairo/bin/" + dirSuffix),
+        OutputDirectory = nugetRoot.Combine("Avalonia.Cairo")
+    },
+    ///////////////////////////////////////////////////////////////////////////////
+    // Avalonia.Skia.Desktop
+    ///////////////////////////////////////////////////////////////////////////////
+    new NuGetPackSettings()
+    {
+        Id = "Avalonia.Skia.Desktop",
+        Dependencies = new []
+        {
+            new NuSpecDependency() { Id = "Avalonia", Version = version },
+            new NuSpecDependency() { Id = "SkiaSharp", Version = SkiaSharpVersion }
+        },
+        Files = new []
+        {
+            new NuSpecContent { Source = "Avalonia.Skia.Desktop.dll", Target = "lib/net45" }
+        },
+        BasePath = Directory("./src/Skia/Avalonia.Skia.Desktop/bin/" + dirSuffixSkia),
+        OutputDirectory = nugetRoot.Combine("Avalonia.Skia.Desktop")
     },
     ///////////////////////////////////////////////////////////////////////////////
     // Avalonia.Desktop
@@ -750,7 +422,8 @@ var nuspecNuGetSettingsMain = new []
             new NuSpecDependency() { Id = "Avalonia.Win32", Version = version },
             new NuSpecDependency() { Id = "Avalonia.Direct2D1", Version = version },
             new NuSpecDependency() { Id = "Avalonia.Gtk", Version = version },
-            new NuSpecDependency() { Id = "Avalonia.Cairo", Version = version }
+            new NuSpecDependency() { Id = "Avalonia.Cairo", Version = version },
+            new NuSpecDependency() { Id = "Avalonia.Skia.Desktop", Version = version }
         },
         Files = new NuSpecContent[]
         {
@@ -764,14 +437,8 @@ var nuspecNuGetSettingsMain = new []
 var nuspecNuGetSettings = new List<NuGetPackSettings>();
 
 nuspecNuGetSettings.AddRange(nuspecNuGetSettingsCore);
-nuspecNuGetSettings.AddRange(nuspecNuGetSettingsMarkup);
-
-nuspecNuGetSettings.AddRange(nuspecNuGetSettingsAndroid);
-nuspecNuGetSettings.AddRange(nuspecNuGetSettingsGtk);
-nuspecNuGetSettings.AddRange(nuspecNuGetSettingsiOS);
-nuspecNuGetSettings.AddRange(nuspecNuGetSettingsSkia);
-nuspecNuGetSettings.AddRange(nuspecNuGetSettingsWindows);
-nuspecNuGetSettings.AddRange(nuspecNuGetSettingsMain);
+nuspecNuGetSettings.AddRange(nuspecNuGetSettingsDesktop);
+nuspecNuGetSettings.AddRange(nuspecNuGetSettingsMobile);
 
 nuspecNuGetSettings.ForEach((nuspec) => SetNuGetNuspecCommonProperties(nuspec));
 
