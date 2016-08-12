@@ -161,7 +161,7 @@ var nuspecNuGetSettingsCore = new []
         Files = new []
         {
             new NuSpecContent { Source = "Avalonia.Animation.dll", Target = "lib/portable-windows8+net45" },
-            new NuSpecContent { Source = "Avalonia.Animation.xml", Target = "lib/portable-windows8+net45" },
+            new NuSpecContent { Source = "Avalonia.Animation.xml", Target = "lib/portable-windows8+net45" }
         },
         BasePath = Directory("./src/Avalonia.Animation/bin/" + dirSuffix),
         OutputDirectory = nugetRoot.Combine("Avalonia.Animation")
@@ -179,7 +179,7 @@ var nuspecNuGetSettingsCore = new []
         Files = new []
         {
             new NuSpecContent { Source = "Avalonia.Base.dll", Target = "lib/portable-windows8+net45" },
-            new NuSpecContent { Source = "Avalonia.Base.xml", Target = "lib/portable-windows8+net45" },
+            new NuSpecContent { Source = "Avalonia.Base.xml", Target = "lib/portable-windows8+net45" }
         },
         BasePath = Directory("./src/Avalonia.Base/bin/" + dirSuffix),
         OutputDirectory = nugetRoot.Combine("Avalonia.Base")
@@ -204,7 +204,7 @@ var nuspecNuGetSettingsCore = new []
         Files = new []
         {
             new NuSpecContent { Source = "Avalonia.Controls.dll", Target = "lib/portable-windows8+net45" },
-            new NuSpecContent { Source = "Avalonia.Controls.xml", Target = "lib/portable-windows8+net45" },
+            new NuSpecContent { Source = "Avalonia.Controls.xml", Target = "lib/portable-windows8+net45" }
         },
         BasePath = Directory("./src/Avalonia.Controls/bin/" + dirSuffix),
         OutputDirectory = nugetRoot.Combine("Avalonia.Controls")
@@ -233,7 +233,7 @@ var nuspecNuGetSettingsCore = new []
         Files = new []
         {
             new NuSpecContent { Source = "Avalonia.DesignerSupport.dll", Target = "lib/portable-windows8+net45" },
-            new NuSpecContent { Source = "Avalonia.DesignerSupport.xml", Target = "lib/portable-windows8+net45" },
+            new NuSpecContent { Source = "Avalonia.DesignerSupport.xml", Target = "lib/portable-windows8+net45" }
         },
         BasePath = Directory("./src/Avalonia.DesignerSupport/bin/" + dirSuffix),
         OutputDirectory = nugetRoot.Combine("Avalonia.DesignerSupport")
@@ -264,7 +264,7 @@ var nuspecNuGetSettingsCore = new []
         Files = new []
         {
             new NuSpecContent { Source = "Avalonia.Diagnostics.dll", Target = "lib/portable-windows8+net45" },
-            new NuSpecContent { Source = "Avalonia.Diagnostics.xml", Target = "lib/portable-windows8+net45" },
+            new NuSpecContent { Source = "Avalonia.Diagnostics.xml", Target = "lib/portable-windows8+net45" }
         },
         BasePath = Directory("./src/Avalonia.Diagnostics/bin/" + dirSuffix),
         OutputDirectory = nugetRoot.Combine("Avalonia.Diagnostics")
@@ -290,8 +290,7 @@ var nuspecNuGetSettingsCore = new []
         },
         Files = new []
         {
-            new NuSpecContent { Source = "Avalonia.HtmlRenderer.dll", Target = "lib/portable-windows8+net45" },
-            new NuSpecContent { Source = "Avalonia.HtmlRenderer.xml", Target = "lib/portable-windows8+net45" },
+            new NuSpecContent { Source = "Avalonia.HtmlRenderer.dll", Target = "lib/portable-windows8+net45" }
         },
         BasePath = Directory("./src/Avalonia.HtmlRenderer/bin/" + dirSuffix),
         OutputDirectory = nugetRoot.Combine("Avalonia.HtmlRenderer")
@@ -314,7 +313,7 @@ var nuspecNuGetSettingsCore = new []
         Files = new []
         {
             new NuSpecContent { Source = "Avalonia.Input.dll", Target = "lib/portable-windows8+net45" },
-            new NuSpecContent { Source = "Avalonia.Input.xml", Target = "lib/portable-windows8+net45" },
+            new NuSpecContent { Source = "Avalonia.Input.xml", Target = "lib/portable-windows8+net45" }
         },
         BasePath = Directory("./src/Avalonia.Input/bin/" + dirSuffix),
         OutputDirectory = nugetRoot.Combine("Avalonia.Input")
@@ -336,7 +335,7 @@ var nuspecNuGetSettingsCore = new []
         Files = new []
         {
             new NuSpecContent { Source = "Avalonia.Interactivity.dll", Target = "lib/portable-windows8+net45" },
-            new NuSpecContent { Source = "Avalonia.Interactivity.xml", Target = "lib/portable-windows8+net45" },
+            new NuSpecContent { Source = "Avalonia.Interactivity.xml", Target = "lib/portable-windows8+net45" }
         },
         BasePath = Directory("./src/Avalonia.Interactivity/bin/" + dirSuffix),
         OutputDirectory = nugetRoot.Combine("Avalonia.Interactivity")
@@ -357,7 +356,7 @@ var nuspecNuGetSettingsCore = new []
         Files = new []
         {
             new NuSpecContent { Source = "Avalonia.Layout.dll", Target = "lib/portable-windows8+net45" },
-            new NuSpecContent { Source = "Avalonia.Layout.xml", Target = "lib/portable-windows8+net45" },
+            new NuSpecContent { Source = "Avalonia.Layout.xml", Target = "lib/portable-windows8+net45" }
         },
         BasePath = Directory("./src/Avalonia.Layout/bin/" + dirSuffix),
         OutputDirectory = nugetRoot.Combine("Avalonia.Layout")
@@ -394,8 +393,7 @@ var nuspecNuGetSettingsCore = new []
         },
         Files = new []
         {
-            new NuSpecContent { Source = "Avalonia.ReactiveUI.dll", Target = "lib/portable-windows8+net45" },
-            new NuSpecContent { Source = "Avalonia.ReactiveUI.xml", Target = "lib/portable-windows8+net45" },
+            new NuSpecContent { Source = "Avalonia.ReactiveUI.dll", Target = "lib/portable-windows8+net45" }
         },
         BasePath = Directory("./src/Avalonia.ReactiveUI/bin/" + dirSuffix),
         OutputDirectory = nugetRoot.Combine("Avalonia.ReactiveUI")
@@ -415,7 +413,7 @@ var nuspecNuGetSettingsCore = new []
         Files = new []
         {
             new NuSpecContent { Source = "Avalonia.SceneGraph.dll", Target = "lib/portable-windows8+net45" },
-            new NuSpecContent { Source = "Avalonia.SceneGraph.xml", Target = "lib/portable-windows8+net45" },
+            new NuSpecContent { Source = "Avalonia.SceneGraph.xml", Target = "lib/portable-windows8+net45" }
         },
         BasePath = Directory("./src/Avalonia.SceneGraph/bin/" + dirSuffix),
         OutputDirectory = nugetRoot.Combine("Avalonia.SceneGraph")
@@ -436,7 +434,7 @@ var nuspecNuGetSettingsCore = new []
         Files = new []
         {
             new NuSpecContent { Source = "Avalonia.Styling.dll", Target = "lib/portable-windows8+net45" },
-            new NuSpecContent { Source = "Avalonia.Styling.xml", Target = "lib/portable-windows8+net45" },
+            new NuSpecContent { Source = "Avalonia.Styling.xml", Target = "lib/portable-windows8+net45" }
         },
         BasePath = Directory("./src/Avalonia.Styling/bin/" + dirSuffix),
         OutputDirectory = nugetRoot.Combine("Avalonia.Styling")
@@ -463,7 +461,7 @@ var nuspecNuGetSettingsCore = new []
         Files = new []
         {
             new NuSpecContent { Source = "Avalonia.Themes.Default.dll", Target = "lib/portable-windows8+net45" },
-            new NuSpecContent { Source = "Avalonia.Themes.Default.xml", Target = "lib/portable-windows8+net45" },
+            new NuSpecContent { Source = "Avalonia.Themes.Default.xml", Target = "lib/portable-windows8+net45" }
         },
         BasePath = Directory("./src/Avalonia.Themes.Default/bin/" + dirSuffix),
         OutputDirectory = nugetRoot.Combine("Avalonia.Themes.Default")
@@ -492,7 +490,7 @@ var nuspecNuGetSettingsMarkup = new []
         Files = new []
         {
             new NuSpecContent { Source = "Avalonia.Markup.dll", Target = "lib/portable-windows8+net45" },
-            new NuSpecContent { Source = "Avalonia.Markup.xml", Target = "lib/portable-windows8+net45" },
+            new NuSpecContent { Source = "Avalonia.Markup.xml", Target = "lib/portable-windows8+net45" }
         },
         BasePath = Directory("./src/Markup/Avalonia.Markup/bin/" + dirSuffix),
         OutputDirectory = nugetRoot.Combine("Avalonia.Markup")
@@ -520,7 +518,7 @@ var nuspecNuGetSettingsMarkup = new []
         Files = new []
         {
             new NuSpecContent { Source = "Avalonia.Markup.Xaml.dll", Target = "lib/portable-windows8+net45" },
-            new NuSpecContent { Source = "Avalonia.Markup.Xaml.xml", Target = "lib/portable-windows8+net45" },
+            new NuSpecContent { Source = "Avalonia.Markup.Xaml.xml", Target = "lib/portable-windows8+net45" }
         },
         BasePath = Directory("./src/Markup/Avalonia.Markup.Xaml/bin/" + dirSuffix),
         OutputDirectory = nugetRoot.Combine("Avalonia.Markup.Xaml")
@@ -543,7 +541,7 @@ var nuspecNuGetSettingsAndroid = new []
         Files = new []
         {
             new NuSpecContent { Source = "Avalonia.Android.dll", Target = "lib/MonoAndroid10" },
-            new NuSpecContent { Source = "Avalonia.Android.xml", Target = "lib/MonoAndroid10" },
+            new NuSpecContent { Source = "Avalonia.Android.xml", Target = "lib/MonoAndroid10" }
         },
         BasePath = Directory("./src/Android/Avalonia.Android/bin/" + dirSuffix),
         OutputDirectory = nugetRoot.Combine("Avalonia.Android")
@@ -565,7 +563,7 @@ var nuspecNuGetSettingsGtk = new []
         Files = new []
         {
             new NuSpecContent { Source = "Avalonia.Cairo.dll", Target = "lib/net45" },
-            new NuSpecContent { Source = "Avalonia.Cairo.xml", Target = "lib/net45" },
+            new NuSpecContent { Source = "Avalonia.Cairo.xml", Target = "lib/net45" }
         },
         BasePath = Directory("./src/Gtk/Avalonia.Cairo/bin/" + dirSuffix),
         OutputDirectory = nugetRoot.Combine("Avalonia.Cairo")
@@ -583,7 +581,7 @@ var nuspecNuGetSettingsGtk = new []
         Files = new []
         {
             new NuSpecContent { Source = "Avalonia.Gtk.dll", Target = "lib/net45" },
-            new NuSpecContent { Source = "Avalonia.Gtk.xml", Target = "lib/net45" },
+            new NuSpecContent { Source = "Avalonia.Gtk.xml", Target = "lib/net45" }
         },
         BasePath = Directory("./src/Gtk/Avalonia.Gtk/bin/" + dirSuffix),
         OutputDirectory = nugetRoot.Combine("Avalonia.Gtk")
@@ -606,7 +604,7 @@ var nuspecNuGetSettingsiOS = new []
         Files = new []
         {
             new NuSpecContent { Source = "Avalonia.iOS.dll", Target = "lib/Xamarin.iOS10" },
-            new NuSpecContent { Source = "Avalonia.iOS.xml", Target = "lib/Xamarin.iOS10" },
+            new NuSpecContent { Source = "Avalonia.iOS.xml", Target = "lib/Xamarin.iOS10" }
         },
         BasePath = Directory("./src/iOS/Avalonia.iOS/bin/" + dirSuffixIOS),
         OutputDirectory = nugetRoot.Combine("Avalonia.iOS")
@@ -629,7 +627,7 @@ var nuspecNuGetSettingsSkia = new []
         Files = new []
         {
             new NuSpecContent { Source = "Avalonia.Skia.Android.dll", Target = "lib/MonoAndroid10" },
-            new NuSpecContent { Source = "Avalonia.Skia.Android.xml", Target = "lib/MonoAndroid10" },
+            new NuSpecContent { Source = "Avalonia.Skia.Android.xml", Target = "lib/MonoAndroid10" }
         },
         BasePath = Directory("./src/Skia/Avalonia.Skia.Android/bin/" + dirSuffix),
         OutputDirectory = nugetRoot.Combine("Avalonia.Skia.Android")
@@ -648,7 +646,7 @@ var nuspecNuGetSettingsSkia = new []
         Files = new []
         {
             new NuSpecContent { Source = "Avalonia.Skia.Desktop.dll", Target = "lib/net45" },
-            new NuSpecContent { Source = "Avalonia.Skia.Desktop.xml", Target = "lib/net45" },
+            new NuSpecContent { Source = "Avalonia.Skia.Desktop.xml", Target = "lib/net45" }
         },
         BasePath = Directory("./src/Skia/Avalonia.Skia.Desktop/bin/" + dirSuffixSkia),
         OutputDirectory = nugetRoot.Combine("Avalonia.Skia.Desktop")
@@ -667,7 +665,7 @@ var nuspecNuGetSettingsSkia = new []
         Files = new []
         {
             new NuSpecContent { Source = "Avalonia.Skia.iOS.dll", Target = "lib/Xamarin.iOS10" },
-            new NuSpecContent { Source = "Avalonia.Skia.iOS.xml", Target = "lib/Xamarin.iOS10" },
+            new NuSpecContent { Source = "Avalonia.Skia.iOS.xml", Target = "lib/Xamarin.iOS10" }
         },
         BasePath = Directory("./src/Skia/Avalonia.Skia.iOS/bin/" + dirSuffixIOS),
         OutputDirectory = nugetRoot.Combine("Avalonia.Skia.iOS")
@@ -692,7 +690,7 @@ var nuspecNuGetSettingsWindows = new []
         Files = new []
         {
             new NuSpecContent { Source = "Avalonia.Direct2D1.dll", Target = "lib/net45" },
-            new NuSpecContent { Source = "Avalonia.Direct2D1.xml", Target = "lib/net45" },
+            new NuSpecContent { Source = "Avalonia.Direct2D1.xml", Target = "lib/net45" }
         },
         BasePath = Directory("./src/Windows/Avalonia.Direct2D1/bin/" + dirSuffix),
         OutputDirectory = nugetRoot.Combine("Avalonia.Direct2D1")
@@ -710,7 +708,7 @@ var nuspecNuGetSettingsWindows = new []
         Files = new []
         {
             new NuSpecContent { Source = "Avalonia.Win32.dll", Target = "lib/net45" },
-            new NuSpecContent { Source = "Avalonia.Win32.xml", Target = "lib/net45" },
+            new NuSpecContent { Source = "Avalonia.Win32.xml", Target = "lib/net45" }
         },
         BasePath = Directory("./src/Windows/Avalonia.Win32/bin/" + dirSuffix),
         OutputDirectory = nugetRoot.Combine("Avalonia.Win32")
