@@ -34,7 +34,7 @@ var configuration = Argument("configuration", "Release");
 var MainRepo = "AvaloniaUI/Avalonia";
 var MasterBranch = "master";
 var AssemblyInfoPath = File("./src/Shared/SharedAssemblyInfo.cs");
-var ReleasePlatform = "AnyCPU";
+var ReleasePlatform = "Any CPU";
 var ReleaseConfiguration = "Release";
 var MSBuildSolution = "./Avalonia.sln";
 var XBuildSolution = "./Avalonia.sln";
@@ -56,7 +56,7 @@ var isReleasable = StringComparer.OrdinalIgnoreCase.Equals(ReleasePlatform, plat
                    && StringComparer.OrdinalIgnoreCase.Equals(ReleaseConfiguration, configuration);
 var isMyGetRelease = !isTagged && isReleasable;
 var isNuGetRelease = isTagged && isReleasable;
-var isAnyCPU = StringComparer.OrdinalIgnoreCase.Equals(platform, "AnyCPU");
+var isAnyCPU = StringComparer.OrdinalIgnoreCase.Equals(platform, "Any CPU");
 
 ///////////////////////////////////////////////////////////////////////////////
 // VERSION
