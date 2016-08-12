@@ -43,7 +43,8 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                     pv.Length == 3 &&
                     pv[0] is ProgressBar &&
                     object.ReferenceEquals(pv[1], ProgressBar.ValueProperty) &&
-                    (string)pv[2] == "Could not convert FallbackValue 'bar' to 'System.Double'")
+                    (string)pv[2] == "Object reference not set to an instance of an object. | " + 
+                                     "Could not convert FallbackValue 'bar' to 'System.Double'")
                 {
                     called = true;
                 }

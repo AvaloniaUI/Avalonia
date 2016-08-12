@@ -670,7 +670,7 @@ namespace Avalonia
                         "Error binding to {Target}.{Property}: {Message}",
                         this,
                         property,
-                        notification.Error.Message);
+                        ExceptionUtilities.GetMessage(notification.Error));
                 }
             }
         }
