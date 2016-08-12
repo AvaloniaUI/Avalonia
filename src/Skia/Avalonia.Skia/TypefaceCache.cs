@@ -20,7 +20,27 @@ namespace Avalonia.Skia
                 Slant  = slant;
                 Weight = weight;
             }
-            
+
+            public override int GetHashCode()
+            {
+                int hash = 17;
+                hash = hash * 31 + (int)Slant;
+                hash = hash * 31 + (int)Weight;
+
+                return hash;
+            }
+
+            public override bool Equals(object other)
+            {
+                return other is FontKey ? Equals((FontKey)other) : false;
+            }
+
+            public bool Equals(FontKey other)
+            {
+                return Slant == other.Slant &&
+                    Weight == other.Weight;
+            }
+
             // Equals and GetHashCode ommitted
         }
 
