@@ -906,7 +906,6 @@ Task("Run-Unit-Tests")
             ToolPath = "./tools/xunit.runner.console/tools/xunit.console.x86.exe",
             OutputDirectory = testResultsDir,
             XmlReportV1 = true,
-            NoAppDomain = true,
             Parallelism = ParallelismOption.None
         });
     }
@@ -916,7 +915,6 @@ Task("Run-Unit-Tests")
             ToolPath = "./tools/xunit.runner.console/tools/xunit.console.exe",
             OutputDirectory = testResultsDir,
             XmlReportV1 = true,
-            NoAppDomain = true,
             Parallelism = ParallelismOption.None
         });
     }
