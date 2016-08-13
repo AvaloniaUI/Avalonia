@@ -70,6 +70,10 @@
     <AndroidResource Include="Resources\layout\Main.axml" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Android\Avalonia.Android\Avalonia.Android.csproj">
+      <Project>{7b92af71-6287-4693-9dcb-bd5b6e927e23}</Project>
+      <Name>Avalonia.Android</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Avalonia.Animation\Avalonia.Animation.csproj">
       <Project>{d211e587-d8bc-45b9-95a4-f297c8fa5200}</Project>
       <Name>Avalonia.Animation</Name>

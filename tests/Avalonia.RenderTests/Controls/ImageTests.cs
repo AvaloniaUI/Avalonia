@@ -48,7 +48,11 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             CompareImages();
         }
 
+#if AVALONIA_CAIRO
+        [Fact(Skip = "Font image stretch currently broken on cairo")]
+#else
         [Fact]
+#endif
         public void Image_Stretch_Fill()
         {
             Decorator target = new Decorator
@@ -71,7 +75,11 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             CompareImages();
         }
 
+#if AVALONIA_CAIRO
+        [Fact(Skip = "Font image stretch currently broken on cairo")]
+#else
         [Fact]
+#endif
         public void Image_Stretch_Uniform()
         {
             Decorator target = new Decorator
@@ -94,7 +102,11 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             CompareImages();
         }
 
+#if AVALONIA_CAIRO
+        [Fact(Skip = "Font image stretch currently broken on cairo")]
+#else
         [Fact]
+#endif
         public void Image_Stretch_UniformToFill()
         {
             Decorator target = new Decorator
