@@ -43,6 +43,9 @@ var XBuildSolution = "./Avalonia.sln";
 // PARAMETERS
 ///////////////////////////////////////////////////////////////////////////////
 
+var isPlatformAnyCPU = StringComparer.OrdinalIgnoreCase.Equals(platform, "Any CPU");
+var isPlatformX86 = StringComparer.OrdinalIgnoreCase.Equals(platform, "x86");
+var isPlatformX64 = StringComparer.OrdinalIgnoreCase.Equals(platform, "x64");
 var isLocalBuild = BuildSystem.IsLocalBuild;
 var isRunningOnUnix = IsRunningOnUnix();
 var isRunningOnWindows = IsRunningOnWindows();
@@ -54,9 +57,8 @@ var isTagged = BuildSystem.AppVeyor.Environment.Repository.Tag.IsTag
                && !string.IsNullOrWhiteSpace(BuildSystem.AppVeyor.Environment.Repository.Tag.Name);
 var isReleasable = StringComparer.OrdinalIgnoreCase.Equals(ReleasePlatform, platform) 
                    && StringComparer.OrdinalIgnoreCase.Equals(ReleaseConfiguration, configuration);
-var isMyGetRelease = !isTagged && isReleasable;
-var isNuGetRelease = isTagged && isReleasable;
-var isAnyCPU = StringComparer.OrdinalIgnoreCase.Equals(platform, "Any CPU");
+var isMyGetRelease = !isTagged && isReleasable && isPlatformAnyCPU;
+var isNuGetRelease = isTagged && isReleasable && isPlatformAnyCPU;
 
 ///////////////////////////////////////////////////////////////////////////////
 // VERSION
@@ -86,7 +88,7 @@ var artifactsDir = (DirectoryPath)Directory("./artifacts");
 var nugetRoot = artifactsDir.Combine("nuget");
 
 var dirSuffix = configuration;
-var dirSuffixSkia = (isAnyCPU ? "x86" : platform) + "/" + configuration;
+var dirSuffixSkia = (isPlatformAnyCPU ? "x86" : platform) + "/" + configuration;
 var dirSuffixIOS = "iPhone" + "/" + configuration;
 
 var buildDirs = 
@@ -572,7 +574,7 @@ Task("Run-Unit-Tests")
         unitTests += windowsTests;
     }
 
-    if (platform == "x86")
+    if (isPlatformAnyCPU || isPlatformX86)
     {
         foreach (var file in unitTests)
         {
