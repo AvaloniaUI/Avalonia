@@ -57,8 +57,8 @@ var isTagged = BuildSystem.AppVeyor.Environment.Repository.Tag.IsTag
                && !string.IsNullOrWhiteSpace(BuildSystem.AppVeyor.Environment.Repository.Tag.Name);
 var isReleasable = StringComparer.OrdinalIgnoreCase.Equals(ReleasePlatform, platform) 
                    && StringComparer.OrdinalIgnoreCase.Equals(ReleaseConfiguration, configuration);
-var isMyGetRelease = !isTagged && isReleasable && isPlatformAnyCPU;
-var isNuGetRelease = isTagged && isReleasable && isPlatformAnyCPU;
+var isMyGetRelease = !isTagged && isReleasable;
+var isNuGetRelease = isTagged && isReleasable;
 
 ///////////////////////////////////////////////////////////////////////////////
 // VERSION
