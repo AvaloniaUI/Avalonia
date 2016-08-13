@@ -581,7 +581,8 @@ Task("Run-Unit-Tests")
             Information("Running test " + file.GetFilenameWithoutExtension());
             XUnit2(file.FullPath, new XUnit2Settings { 
                 ToolPath = "./tools/xunit.runner.console/tools/xunit.console.x86.exe",
-                Parallelism = ParallelismOption.None
+                Parallelism = ParallelismOption.None,
+                NoAppDomain = isRunningOnUnix ? true : false
             });
         }
     }
@@ -592,7 +593,8 @@ Task("Run-Unit-Tests")
             Information("Running test " + file.GetFilenameWithoutExtension());
             XUnit2(file.FullPath, new XUnit2Settings { 
                 ToolPath = "./tools/xunit.runner.console/tools/xunit.console.exe",
-                Parallelism = ParallelismOption.None
+                Parallelism = ParallelismOption.None,
+                NoAppDomain = isRunningOnUnix ? true : false
             });
         }
     }
