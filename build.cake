@@ -206,7 +206,7 @@ var nuspecNuGetSettingsCore = new []
         },
         Files = coreLibrariesNuSpecContent.ToList(),
         BasePath = Directory("./"),
-        OutputDirectory = nugetRoot.Combine("Avalonia")
+        OutputDirectory = nugetRoot
     },
     ///////////////////////////////////////////////////////////////////////////////
     // Avalonia.HtmlRenderer
@@ -223,7 +223,7 @@ var nuspecNuGetSettingsCore = new []
             new NuSpecContent { Source = "Avalonia.HtmlRenderer.dll", Target = "lib/portable-windows8+net45" }
         },
         BasePath = Directory("./src/Avalonia.HtmlRenderer/bin/" + dirSuffix),
-        OutputDirectory = nugetRoot.Combine("Avalonia.HtmlRenderer")
+        OutputDirectory = nugetRoot
     }
 };
 
@@ -245,7 +245,7 @@ var nuspecNuGetSettingsMobile = new []
             new NuSpecContent { Source = "Avalonia.Android.dll", Target = "lib/MonoAndroid10" }
         },
         BasePath = Directory("./src/Android/Avalonia.Android/bin/" + dirSuffix),
-        OutputDirectory = nugetRoot.Combine("Avalonia.Android")
+        OutputDirectory = nugetRoot
     },
     ///////////////////////////////////////////////////////////////////////////////
     // Avalonia.Skia.Android
@@ -263,7 +263,7 @@ var nuspecNuGetSettingsMobile = new []
             new NuSpecContent { Source = "Avalonia.Skia.Android.dll", Target = "lib/MonoAndroid10" }
         },
         BasePath = Directory("./src/Skia/Avalonia.Skia.Android/bin/" + dirSuffix),
-        OutputDirectory = nugetRoot.Combine("Avalonia.Skia.Android")
+        OutputDirectory = nugetRoot
     },
     ///////////////////////////////////////////////////////////////////////////////
     // Avalonia.iOS
@@ -281,7 +281,7 @@ var nuspecNuGetSettingsMobile = new []
             new NuSpecContent { Source = "Avalonia.iOS.dll", Target = "lib/Xamarin.iOS10" }
         },
         BasePath = Directory("./src/iOS/Avalonia.iOS/bin/" + dirSuffixIOS),
-        OutputDirectory = nugetRoot.Combine("Avalonia.iOS")
+        OutputDirectory = nugetRoot
     },
     ///////////////////////////////////////////////////////////////////////////////
     // Avalonia.Skia.iOS
@@ -299,7 +299,7 @@ var nuspecNuGetSettingsMobile = new []
             new NuSpecContent { Source = "Avalonia.Skia.iOS.dll", Target = "lib/Xamarin.iOS10" }
         },
         BasePath = Directory("./src/Skia/Avalonia.Skia.iOS/bin/" + dirSuffixIOS),
-        OutputDirectory = nugetRoot.Combine("Avalonia.Skia.iOS")
+        OutputDirectory = nugetRoot
     },
     ///////////////////////////////////////////////////////////////////////////////
     // Avalonia.Mobile
@@ -317,7 +317,7 @@ var nuspecNuGetSettingsMobile = new []
             new NuSpecContent { Source = "licence.md", Target = "" }
         },
         BasePath = Directory("./"),
-        OutputDirectory = nugetRoot.Combine("Avalonia.Mobile")
+        OutputDirectory = nugetRoot
     }
 };
 
@@ -338,7 +338,7 @@ var nuspecNuGetSettingsDesktop = new []
             new NuSpecContent { Source = "Avalonia.Win32.dll", Target = "lib/net45" }
         },
         BasePath = Directory("./src/Windows/Avalonia.Win32/bin/" + dirSuffix),
-        OutputDirectory = nugetRoot.Combine("Avalonia.Win32")
+        OutputDirectory = nugetRoot
     },
     ///////////////////////////////////////////////////////////////////////////////
     // Avalonia.Direct2D1
@@ -358,7 +358,7 @@ var nuspecNuGetSettingsDesktop = new []
             new NuSpecContent { Source = "Avalonia.Direct2D1.dll", Target = "lib/net45" }
         },
         BasePath = Directory("./src/Windows/Avalonia.Direct2D1/bin/" + dirSuffix),
-        OutputDirectory = nugetRoot.Combine("Avalonia.Direct2D1")
+        OutputDirectory = nugetRoot
     },
     ///////////////////////////////////////////////////////////////////////////////
     // Avalonia.Gtk
@@ -375,7 +375,7 @@ var nuspecNuGetSettingsDesktop = new []
             new NuSpecContent { Source = "Avalonia.Gtk.dll", Target = "lib/net45" }
         },
         BasePath = Directory("./src/Gtk/Avalonia.Gtk/bin/" + dirSuffix),
-        OutputDirectory = nugetRoot.Combine("Avalonia.Gtk")
+        OutputDirectory = nugetRoot
     },
     ///////////////////////////////////////////////////////////////////////////////
     // Avalonia.Cairo
@@ -392,7 +392,7 @@ var nuspecNuGetSettingsDesktop = new []
             new NuSpecContent { Source = "Avalonia.Cairo.dll", Target = "lib/net45" }
         },
         BasePath = Directory("./src/Gtk/Avalonia.Cairo/bin/" + dirSuffix),
-        OutputDirectory = nugetRoot.Combine("Avalonia.Cairo")
+        OutputDirectory = nugetRoot
     },
     ///////////////////////////////////////////////////////////////////////////////
     // Avalonia.Skia.Desktop
@@ -410,7 +410,7 @@ var nuspecNuGetSettingsDesktop = new []
             new NuSpecContent { Source = "Avalonia.Skia.Desktop.dll", Target = "lib/net45" }
         },
         BasePath = Directory("./src/Skia/Avalonia.Skia.Desktop/bin/" + dirSuffixSkia),
-        OutputDirectory = nugetRoot.Combine("Avalonia.Skia.Desktop")
+        OutputDirectory = nugetRoot
     },
     ///////////////////////////////////////////////////////////////////////////////
     // Avalonia.Desktop
@@ -431,7 +431,7 @@ var nuspecNuGetSettingsDesktop = new []
             new NuSpecContent { Source = "licence.md", Target = "" }
         },
         BasePath = Directory("./"),
-        OutputDirectory = nugetRoot.Combine("Avalonia.Desktop")
+        OutputDirectory = nugetRoot
     }
 };
 
@@ -446,8 +446,6 @@ nuspecNuGetSettings.ForEach((nuspec) => SetNuGetNuspecCommonProperties(nuspec));
 var nugetPackages = nuspecNuGetSettings.Select(nuspec => {
     return nuspec.OutputDirectory.CombineWithFilePath(string.Concat(nuspec.Id, ".", nuspec.Version, ".nupkg"));
 }).ToArray();
-
-var nupkgNuGetDirs = nuspecNuGetSettings.Select(nuspec => nuspec.OutputDirectory);
 
 ///////////////////////////////////////////////////////////////////////////////
 // INFORMATION
@@ -491,7 +489,6 @@ Task("Clean")
     CleanDirectories(buildDirs);
     CleanDirectory(artifactsDir);
     CleanDirectory(nugetRoot);
-    CleanDirectories(nupkgNuGetDirs);
 });
 
 Task("Restore-NuGet-Packages")
