@@ -274,7 +274,13 @@ namespace Avalonia.Markup.Xaml.Data
 
         private IObservable<object> GetParentDataContext(IAvaloniaObject target)
         {
-            return target.GetObservable(Control.ParentProperty)
+            // The DataContext is based on the visual parent and not the logical parent: this may
+            // seem unintuitive considering the fact that property inheritance works on the logical
+            // tree, but consider a ContentControl with a ContentPresenter. The ContentControl's
+            // Content property is bound to a value which becomes the ContentPresenter's 
+            // DataContext - it is from this that the child hosted by the ContentPresenter needs to
+            // inherit its DataContext.
+            return target.GetObservable(Visual.VisualParentProperty)
                 .Select(x =>
                 {
                     return (x as IAvaloniaObject)?.GetObservable(Control.DataContextProperty) ?? 
