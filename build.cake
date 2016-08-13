@@ -574,29 +574,25 @@ Task("Run-Unit-Tests")
         unitTests += windowsTests;
     }
 
-    if (isPlatformAnyCPU || isPlatformX86)
+    var toolPath = (isPlatformAnyCPU || isPlatformX86) ? 
+        "./tools/xunit.runner.console/tools/xunit.console.x86.exe" :
+        "./tools/xunit.runner.console/tools/xunit.console.exe";
+
+    var settings = new XUnit2Settings 
+    { 
+        ToolPath = toolPath,
+        Parallelism = ParallelismOption.None 
+    };
+
+    if (isRunningOnWindows)
     {
-        foreach (var file in unitTests)
-        {
-            Information("Running test " + file.GetFilenameWithoutExtension());
-            XUnit2(file.FullPath, new XUnit2Settings { 
-                ToolPath = "./tools/xunit.runner.console/tools/xunit.console.x86.exe",
-                Parallelism = ParallelismOption.None,
-                NoAppDomain = isRunningOnUnix ? true : false
-            });
-        }
+        settings.NoAppDomain = false;
     }
-    else
+
+    foreach (var file in unitTests)
     {
-        foreach (var file in unitTests)
-        {
-            Information("Running test " + file.GetFilenameWithoutExtension());
-            XUnit2(file.FullPath, new XUnit2Settings { 
-                ToolPath = "./tools/xunit.runner.console/tools/xunit.console.exe",
-                Parallelism = ParallelismOption.None,
-                NoAppDomain = isRunningOnUnix ? true : false
-            });
-        }
+        Information("Running test " + file.GetFilenameWithoutExtension());
+        XUnit2(file.FullPath, settings);
     }
 });
 
