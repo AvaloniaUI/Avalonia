@@ -68,6 +68,11 @@ namespace Avalonia.Platform
         Action<double> ScalingChanged { get; set; }
 
         /// <summary>
+        /// Gets or sets a method called when the window's position changes.
+        /// </summary>
+        Action<Point> PositionChanged { get; set; }
+
+        /// <summary>
         /// Activates the window.
         /// </summary>
         void Activate();

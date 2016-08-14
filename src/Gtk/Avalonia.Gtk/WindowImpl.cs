@@ -23,6 +23,8 @@ namespace Avalonia.Gtk
 
         private Size _lastClientSize;
 
+        private Point _lastPosition;
+
         private Gtk.IMContext _imContext;
 
         private uint _lastKeyEventTimestamp;
@@ -52,6 +54,7 @@ namespace Avalonia.Gtk
             DoubleBuffered = false;
             Realize();
             _lastClientSize = ClientSize;
+            _lastPosition = Position;
         }
 
         protected override void OnRealized ()
@@ -174,6 +177,8 @@ namespace Avalonia.Gtk
         public Action<Size> Resized { get; set; }
 
         public Action<double> ScalingChanged { get; set; }
+
+        public Action<Point> PositionChanged { get; set; }
 
         public IPopupImpl CreatePopup()
         {
@@ -336,6 +341,14 @@ namespace Avalonia.Gtk
             {
                 Resized(newSize);
                 _lastClientSize = newSize;
+            }
+
+            var newPosition = new Point(evnt.X, evnt.Y);
+
+            if (newPosition != _lastPosition)
+            {
+                PositionChanged(newPosition);
+                _lastPosition = newPosition;
             }
 
             return true;

@@ -27,6 +27,7 @@ namespace Avalonia.iOS
         private readonly UIViewController _controller;
         private IInputRoot _inputRoot;
         private readonly KeyboardEventsHelper<AvaloniaView> _keyboardHelper;
+        private Point _position;
 
         public AvaloniaView(UIWindow window, UIViewController controller) : base(onFrame => PlatformThreadingInterface.Instance.Render = onFrame)
         {
@@ -72,6 +73,7 @@ namespace Avalonia.iOS
         public Action<Rect> Paint { get; set; }
         public Action<Size> Resized { get; set; }
         public Action<double> ScalingChanged { get; set; }
+        public Action<Point> PositionChanged { get; set; }
 
         public IPlatformHandle Handle => AvaloniaPlatformHandle;
 
@@ -136,7 +138,15 @@ namespace Avalonia.iOS
             //Not supported
         }
 
-        public Point Position { get; set; }
+        public Point Position
+        {
+            get { return _position; }
+            set
+            {
+                _position = value;
+                PositionChanged?.Invoke(_position);
+            }
+        }
 
         public Size MaxClientSize => Bounds.Size.ToAvalonia();
         public void SetTitle(string title)

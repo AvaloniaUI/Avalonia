@@ -87,6 +87,8 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public Action<double> ScalingChanged { get; set; }
 
+        public Action<Point> PositionChanged { get; set; }
+
         public View View => this;
 
         Action ITopLevelImpl.Activated { get; set; }
