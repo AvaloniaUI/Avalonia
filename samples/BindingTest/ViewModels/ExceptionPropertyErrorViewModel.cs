@@ -21,7 +21,7 @@ namespace BindingTest.ViewModels
                 }
                 else
                 {
-                    throw new InvalidOperationException("Value must be less than 10.");
+                    throw new ArgumentOutOfRangeException("Value must be less than 10.");
                 }
             }
         }

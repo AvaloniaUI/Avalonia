@@ -72,7 +72,7 @@
       <StackPanel Orientation="Horizontal">
         <StackPanel Margin="18" Gap="4" Width="200" DataContext="{Binding ExceptionPropertyValidation}">
           <TextBlock FontSize="16" Text="Exception Validation"/>
-          <TextBox Watermark="Less Than 10" UseFloatingWatermark="True" Text="{Binding Path=LessThan10, EnableValidation=True}"/>
+          <TextBox Watermark="Less Than 10" UseFloatingWatermark="True" Text="{Binding Path=LessThan10}"/>
         </StackPanel>
       </StackPanel>
     </TabItem>
