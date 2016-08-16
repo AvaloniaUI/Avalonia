@@ -693,7 +693,7 @@ namespace Avalonia
                 accessor.SetValue(this, finalValue);
             }
 
-            if (metadata.EnableDataValidation)
+            if (metadata.EnableDataValidation && notification != null)
             {
                 UpdateDataValidation(property, notification);
             }

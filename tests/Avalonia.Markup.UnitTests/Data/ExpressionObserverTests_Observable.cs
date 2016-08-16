@@ -85,7 +85,7 @@ namespace Avalonia.Markup.UnitTests.Data
                 data.Next.OnNext(new Class2("foo"));
                 sync.ExecutePostedCallbacks();
 
-                Assert.Equal(new[] { "foo" }, result);
+                Assert.Equal(new[] { new BindingNotification("foo") }, result);
 
                 sub.Dispose();
                 Assert.Equal(0, data.PropertyChangedSubscriptionCount);

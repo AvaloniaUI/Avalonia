@@ -14,11 +14,10 @@ namespace Avalonia.Base.UnitTests
         {
             var target = new Class1();
 
-            target.SetValue(Class1.NonValidatedProperty, 6);
+            target.SetValue(Class1.NonValidatedProperty, new BindingNotification(6));
             target.SetValue(Class1.NonValidatedProperty, new BindingNotification(new Exception(), BindingErrorType.Error));
             target.SetValue(Class1.NonValidatedProperty, new BindingNotification(new Exception(), BindingErrorType.DataValidationError));
             target.SetValue(Class1.NonValidatedProperty, new BindingNotification(7));
-            target.SetValue(Class1.NonValidatedProperty, 8);
 
             Assert.Empty(target.Notifications);
         }
@@ -28,11 +27,10 @@ namespace Avalonia.Base.UnitTests
         {
             var target = new Class1();
 
-            target.SetValue(Class1.NonValidatedDirectProperty, 6);
+            target.SetValue(Class1.NonValidatedDirectProperty, new BindingNotification(6));
             target.SetValue(Class1.NonValidatedDirectProperty, new BindingNotification(new Exception(), BindingErrorType.Error));
             target.SetValue(Class1.NonValidatedDirectProperty, new BindingNotification(new Exception(), BindingErrorType.DataValidationError));
             target.SetValue(Class1.NonValidatedDirectProperty, new BindingNotification(7));
-            target.SetValue(Class1.NonValidatedDirectProperty, 8);
 
             Assert.Empty(target.Notifications);
         }
@@ -42,20 +40,18 @@ namespace Avalonia.Base.UnitTests
         {
             var target = new Class1();
 
-            target.SetValue(Class1.ValidatedDirectProperty, 6);
+            target.SetValue(Class1.ValidatedDirectProperty, new BindingNotification(6));
             target.SetValue(Class1.ValidatedDirectProperty, new BindingNotification(new Exception(), BindingErrorType.Error));
             target.SetValue(Class1.ValidatedDirectProperty, new BindingNotification(new Exception(), BindingErrorType.DataValidationError));
             target.SetValue(Class1.ValidatedDirectProperty, new BindingNotification(7));
-            target.SetValue(Class1.ValidatedDirectProperty, 8);
 
             Assert.Equal(
                 new[]
                 {
-                    null, // 6
+                    new BindingNotification(6),
                     new BindingNotification(new Exception(), BindingErrorType.Error),
                     new BindingNotification(new Exception(), BindingErrorType.DataValidationError),
-                    new BindingNotification(7), // 7
-                    null, // 8
+                    new BindingNotification(7),
                 },
                 target.Notifications.AsEnumerable());
         }
@@ -69,11 +65,10 @@ namespace Avalonia.Base.UnitTests
                 [!Class1.NonValidatedProperty] = source.AsBinding(),
             };
 
-            source.OnNext(6);
+            source.OnNext(new BindingNotification(6));
             source.OnNext(new BindingNotification(new Exception(), BindingErrorType.Error));
             source.OnNext(new BindingNotification(new Exception(), BindingErrorType.DataValidationError));
             source.OnNext(new BindingNotification(7));
-            source.OnNext(8);
 
             Assert.Empty(target.Notifications);
         }
@@ -87,20 +82,18 @@ namespace Avalonia.Base.UnitTests
                 [!Class1.ValidatedDirectProperty] = source.AsBinding(),
             };
 
-            source.OnNext(6);
+            source.OnNext(new BindingNotification(6));
             source.OnNext(new BindingNotification(new Exception(), BindingErrorType.Error));
             source.OnNext(new BindingNotification(new Exception(), BindingErrorType.DataValidationError));
             source.OnNext(new BindingNotification(7));
-            source.OnNext(8);
 
             Assert.Equal(
                 new[]
                 {
-                    null, // 6
+                    new BindingNotification(6),
                     new BindingNotification(new Exception(), BindingErrorType.Error),
                     new BindingNotification(new Exception(), BindingErrorType.DataValidationError),
-                    new BindingNotification(7), // 7
-                    null, // 8
+                    new BindingNotification(7),
                 },
                 target.Notifications.AsEnumerable());
         }

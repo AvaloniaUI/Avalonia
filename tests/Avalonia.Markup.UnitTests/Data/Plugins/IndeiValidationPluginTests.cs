@@ -14,7 +14,7 @@ namespace Avalonia.Markup.UnitTests.Data.Plugins
     public class IndeiValidationPluginTests
     {
         [Fact]
-        public void Produces_Correct_Results()
+        public void Produces_BindingNotifications()
         {
             var inpcAccessorPlugin = new InpcPropertyAccessorPlugin();
             var validatorPlugin = new IndeiValidationPlugin();
@@ -29,19 +29,19 @@ namespace Avalonia.Markup.UnitTests.Data.Plugins
             data.Maximum = 10;
             data.Maximum = 5;
 
-            Assert.Equal(new object[]
+            Assert.Equal(new[]
             {
-                0,
-                5,
+                new BindingNotification(0),
+                new BindingNotification(5),
 
                 // Value is first signalled without an error as validation hasn't been updated.
-                6,
+                new BindingNotification(6),
                 
                 // Then the ErrorsChanged event is fired.
                 new BindingNotification(new Exception("Must be less than Maximum"), BindingErrorType.DataValidationError, 6),
 
                 // Maximum is changed to 10 so value is now valid.
-                6,
+                new BindingNotification(6),
 
                 // And Maximum is changed back to 5.
                 new BindingNotification(new Exception("Must be less than Maximum"), BindingErrorType.DataValidationError, 6),
