@@ -54,6 +54,7 @@ namespace Avalonia.Markup.Data.Plugins
         {
             private readonly WeakReference _reference;
             private readonly PropertyInfo _property;
+            private bool _eventRaised;
 
             public Accessor(WeakReference reference,  PropertyInfo property)
             {
@@ -79,7 +80,14 @@ namespace Avalonia.Markup.Data.Plugins
             {
                 if (_property.CanWrite)
                 {
+                    _eventRaised = false;
                     _property.SetValue(_reference.Target, value);
+
+                    if (!_eventRaised)
+                    {
+                        SendCurrentValue();
+                    }
+
                     return true;
                 }
 
@@ -90,6 +98,7 @@ namespace Avalonia.Markup.Data.Plugins
             {
                 if (e.PropertyName == _property.Name || string.IsNullOrEmpty(e.PropertyName))
                 {
+                    _eventRaised = true;
                     SendCurrentValue();
                 }
             }
@@ -133,16 +142,6 @@ namespace Avalonia.Markup.Data.Plugins
                         inpc,
                         nameof(inpc.PropertyChanged),
                         this);
-                }
-                else
-                {
-                    Logger.Information(
-                        LogArea.Binding,
-                        this,
-                        "Bound to property {Property} on {Source} which does not implement INotifyPropertyChanged",
-                        _property.Name,
-                        _reference.Target,
-                        _reference.Target.GetType());
                 }
             }
         }
