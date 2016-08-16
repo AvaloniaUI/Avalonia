@@ -23,20 +23,6 @@ namespace Avalonia.Base.UnitTests
             Assert.Empty(target.Notifications);
         }
 
-        [Fact(Skip = "Data validation not yet implemented for non-direct properties")]
-        public void Setting_Validated_Property_Calls_UpdateDataValidation()
-        {
-            var target = new Class1();
-
-            target.SetValue(Class1.ValidatedProperty, 6);
-            target.SetValue(Class1.ValidatedProperty, new BindingNotification(new Exception(), BindingErrorType.Error));
-            target.SetValue(Class1.ValidatedProperty, new BindingNotification(new Exception(), BindingErrorType.DataValidationError));
-            target.SetValue(Class1.ValidatedProperty, new BindingNotification(7));
-            target.SetValue(Class1.ValidatedProperty, 8);
-
-            Assert.Empty(target.Notifications);
-        }
-
         [Fact]
         public void Setting_Non_Validated_Direct_Property_Does_Not_Call_UpdateDataValidation()
         {
@@ -92,33 +78,6 @@ namespace Avalonia.Base.UnitTests
             Assert.Empty(target.Notifications);
         }
 
-        [Fact(Skip = "Data validation not yet implemented for non-direct properties")]
-        public void Binding_Validated_Property_Calls_UpdateDataValidation()
-        {
-            var source = new Subject<object>();
-            var target = new Class1
-            {
-                [!Class1.ValidatedProperty] = source.AsBinding(),
-            };
-
-            source.OnNext(6);
-            source.OnNext(new BindingNotification(new Exception(), BindingErrorType.Error));
-            source.OnNext(new BindingNotification(new Exception(), BindingErrorType.DataValidationError));
-            source.OnNext(new BindingNotification(7));
-            source.OnNext(8);
-
-            Assert.Equal(
-                new[]
-                {
-                    null, // 6
-                    new BindingNotification(new Exception(), BindingErrorType.Error),
-                    new BindingNotification(new Exception(), BindingErrorType.DataValidationError),
-                    new BindingNotification(7), // 7
-                    null, // 8
-                },
-                target.Notifications.AsEnumerable());
-        }
-
         [Fact]
         public void Binding_Validated_Direct_Property_Calls_UpdateDataValidation()
         {
@@ -150,13 +109,7 @@ namespace Avalonia.Base.UnitTests
         {
             public static readonly StyledProperty<int> NonValidatedProperty =
                 AvaloniaProperty.Register<Class1, int>(
-                    nameof(Validated),
-                    enableDataValidation: false);
-
-            public static readonly StyledProperty<int> ValidatedProperty =
-                AvaloniaProperty.Register<Class1, int>(
-                    nameof(Validated),
-                    enableDataValidation: true);
+                    nameof(NonValidated));
 
             public static readonly DirectProperty<Class1, int> NonValidatedDirectProperty =
                 AvaloniaProperty.RegisterDirect<Class1, int>(
@@ -166,7 +119,7 @@ namespace Avalonia.Base.UnitTests
 
             public static readonly DirectProperty<Class1, int> ValidatedDirectProperty =
                 AvaloniaProperty.RegisterDirect<Class1, int>(
-                    nameof(Validated),
+                    nameof(ValidatedDirect),
                     o => o.ValidatedDirect,
                     (o, v) => o.ValidatedDirect = v,
                     enableDataValidation: true);
@@ -178,12 +131,6 @@ namespace Avalonia.Base.UnitTests
             {
                 get { return GetValue(NonValidatedProperty); }
                 set { SetValue(NonValidatedProperty, value); }
-            }
-
-            public int Validated
-            {
-                get { return GetValue(ValidatedProperty); }
-                set { SetValue(ValidatedProperty, value); }
             }
 
             public int NonValidatedDirect

@@ -216,11 +216,13 @@ namespace Avalonia
             Contract.Requires<ArgumentNullException>(property != null);
             Contract.Requires<ArgumentNullException>(binding != null);
 
+            var metadata = property.GetMetadata(target.GetType()) as IDirectPropertyMetadata;
+
             var result = binding.Initiate(
                 target,
                 property,
                 anchor, 
-                property.GetMetadata(target.GetType()).EnableDataValidation);
+                metadata?.EnableDataValidation ?? false);
 
             if (result != null)
             {

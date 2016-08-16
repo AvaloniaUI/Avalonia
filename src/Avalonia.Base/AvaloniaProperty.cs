@@ -251,9 +251,6 @@ namespace Avalonia
         /// <param name="inherits">Whether the property inherits its value.</param>
         /// <param name="defaultBindingMode">The default binding mode for the property.</param>
         /// <param name="validate">A validation function.</param>
-        /// <param name="enableDataValidation">
-        /// Whether the property is interested in data validation.
-        /// </param>
         /// <param name="notifying">
         /// A method that gets called before and after the property starts being notified on an
         /// object; the bool argument will be true before and false afterwards. This callback is
@@ -266,7 +263,6 @@ namespace Avalonia
             bool inherits = false,
             BindingMode defaultBindingMode = BindingMode.OneWay,
             Func<TOwner, TValue, TValue> validate = null,
-            bool enableDataValidation = false,
             Action<IAvaloniaObject, bool> notifying = null)
                 where TOwner : IAvaloniaObject
         {
@@ -275,8 +271,7 @@ namespace Avalonia
             var metadata = new StyledPropertyMetadata<TValue>(
                 defaultValue,
                 validate: Cast(validate),
-                defaultBindingMode: defaultBindingMode,
-                enableDataValidation: enableDataValidation);
+                defaultBindingMode: defaultBindingMode);
 
             var result = new StyledProperty<TValue>(
                 name,
@@ -299,17 +294,13 @@ namespace Avalonia
         /// <param name="inherits">Whether the property inherits its value.</param>
         /// <param name="defaultBindingMode">The default binding mode for the property.</param>
         /// <param name="validate">A validation function.</param>
-        /// <param name="enableDataValidation">
-        /// Whether the property is interested in data validation.
-        /// </param>
         /// <returns>A <see cref="AvaloniaProperty{TValue}"/></returns>
         public static AttachedProperty<TValue> RegisterAttached<TOwner, THost, TValue>(
             string name,
             TValue defaultValue = default(TValue),
             bool inherits = false,
             BindingMode defaultBindingMode = BindingMode.OneWay,
-            Func<THost, TValue, TValue> validate = null,
-            bool enableDataValidation = false)
+            Func<THost, TValue, TValue> validate = null)
                 where THost : IAvaloniaObject
         {
             Contract.Requires<ArgumentNullException>(name != null);
@@ -317,8 +308,7 @@ namespace Avalonia
             var metadata = new StyledPropertyMetadata<TValue>(
                 defaultValue,
                 validate: Cast(validate),
-                defaultBindingMode: defaultBindingMode,
-                enableDataValidation: enableDataValidation);
+                defaultBindingMode: defaultBindingMode);
 
             var result = new AttachedProperty<TValue>(name, typeof(TOwner), metadata, inherits);
             AvaloniaPropertyRegistry.Instance.Register(typeof(THost), result);
@@ -336,9 +326,6 @@ namespace Avalonia
         /// <param name="inherits">Whether the property inherits its value.</param>
         /// <param name="defaultBindingMode">The default binding mode for the property.</param>
         /// <param name="validate">A validation function.</param>
-        /// <param name="enableDataValidation">
-        /// Whether the property is interested in data validation.
-        /// </param>
         /// <returns>A <see cref="AvaloniaProperty{TValue}"/></returns>
         public static AttachedProperty<TValue> RegisterAttached<THost, TValue>(
             string name,
@@ -346,8 +333,7 @@ namespace Avalonia
             TValue defaultValue = default(TValue),
             bool inherits = false,
             BindingMode defaultBindingMode = BindingMode.OneWay,
-            Func<THost, TValue, TValue> validate = null,
-            bool enableDataValidation = false)
+            Func<THost, TValue, TValue> validate = null)
                 where THost : IAvaloniaObject
         {
             Contract.Requires<ArgumentNullException>(name != null);
@@ -355,8 +341,7 @@ namespace Avalonia
             var metadata = new StyledPropertyMetadata<TValue>(
                 defaultValue,
                 validate: Cast(validate),
-                defaultBindingMode: defaultBindingMode,
-                enableDataValidation: enableDataValidation);
+                defaultBindingMode: defaultBindingMode);
 
             var result = new AttachedProperty<TValue>(name, ownerType, metadata, inherits);
             AvaloniaPropertyRegistry.Instance.Register(typeof(THost), result);

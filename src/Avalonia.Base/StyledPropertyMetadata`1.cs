@@ -18,15 +18,11 @@ namespace Avalonia
         /// <param name="defaultValue">The default value of the property.</param>
         /// <param name="validate">A validation function.</param>
         /// <param name="defaultBindingMode">The default binding mode.</param>
-        /// <param name="enableDataValidation">
-        /// Whether the property is interested in data validation.
-        /// </param>
         public StyledPropertyMetadata(
             TValue defaultValue = default(TValue),
             Func<IAvaloniaObject, TValue, TValue> validate = null,
-            BindingMode defaultBindingMode = BindingMode.Default,
-            bool enableDataValidation = false)
-                : base(defaultBindingMode, enableDataValidation)
+            BindingMode defaultBindingMode = BindingMode.Default)
+                : base(defaultBindingMode)
         {
             DefaultValue = defaultValue;
             Validate = validate;

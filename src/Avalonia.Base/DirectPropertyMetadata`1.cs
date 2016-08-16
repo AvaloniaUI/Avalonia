@@ -24,15 +24,27 @@ namespace Avalonia
             TValue unsetValue = default(TValue),
             BindingMode defaultBindingMode = BindingMode.Default,
             bool enableDataValidation = false)
-                : base(defaultBindingMode, enableDataValidation)
+                : base(defaultBindingMode)
         {
             UnsetValue = unsetValue;
+            EnableDataValidation = enableDataValidation;
         }
 
         /// <summary>
-        /// Gets the to use when the property is set to <see cref="AvaloniaProperty.UnsetValue"/>.
+        /// Gets the value to use when the property is set to <see cref="AvaloniaProperty.UnsetValue"/>.
         /// </summary>
         public TValue UnsetValue { get; private set; }
+
+        /// <summary>
+        /// Gets a value indicating whether the property is interested in data validation.
+        /// </summary>
+        /// <remarks>
+        /// Data validation is validation performed at the target of a binding, for example in a
+        /// view model using the INotifyDataErrorInfo interface. Only certain properties on a
+        /// control (such as a TextBox's Text property) will be interested in recieving data
+        /// validation messages so this feature must be explicitly enabled by setting this flag.
+        /// </remarks>
+        public bool EnableDataValidation { get; }
 
         /// <inheritdoc/>
         object IDirectPropertyMetadata.UnsetValue => UnsetValue;

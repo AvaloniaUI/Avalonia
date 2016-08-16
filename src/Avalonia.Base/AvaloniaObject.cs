@@ -660,7 +660,7 @@ namespace Avalonia
         /// <param name="value">The value.</param>
         private void SetDirectValue(AvaloniaProperty property, object value)
         {
-            var metadata = property.GetMetadata(GetType());
+            var metadata = (IDirectPropertyMetadata)property.GetMetadata(GetType());
             var notification = value as BindingNotification;
 
             if (notification != null)
@@ -686,7 +686,7 @@ namespace Avalonia
             {
                 var accessor = (IDirectPropertyAccessor)GetRegistered(property);
                 var finalValue = value == AvaloniaProperty.UnsetValue ? 
-                    ((IDirectPropertyMetadata)metadata).UnsetValue : value;
+                    metadata.UnsetValue : value;
 
                 LogPropertySet(property, value, BindingPriority.LocalValue);
 
