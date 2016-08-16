@@ -35,6 +35,9 @@ namespace Avalonia.Controls
                 o => o.CaretIndex,
                 (o, v) => o.CaretIndex = v);
 
+        public static readonly StyledProperty<bool> IsReadOnlyProperty =
+            AvaloniaProperty.Register<TextBox, bool>(nameof(IsReadOnly));
+
         public static readonly DirectProperty<TextBox, int> SelectionStartProperty =
             AvaloniaProperty.RegisterDirect<TextBox, int>(
                 nameof(SelectionStart),
@@ -51,7 +54,8 @@ namespace Avalonia.Controls
             TextBlock.TextProperty.AddOwner<TextBox>(
                 o => o.Text,
                 (o, v) => o.Text = v,
-                defaultBindingMode: BindingMode.TwoWay);
+                defaultBindingMode: BindingMode.TwoWay,
+                enableDataValidation: true);
 
         public static readonly StyledProperty<TextAlignment> TextAlignmentProperty =
             TextBlock.TextAlignmentProperty.AddOwner<TextBox>();
@@ -64,9 +68,6 @@ namespace Avalonia.Controls
 
         public static readonly StyledProperty<bool> UseFloatingWatermarkProperty =
             AvaloniaProperty.Register<TextBox, bool>("UseFloatingWatermark");
-
-        public static readonly StyledProperty<bool> IsReadOnlyProperty =
-            AvaloniaProperty.Register<TextBox, bool>(nameof(IsReadOnly));
 
         struct UndoRedoState : IEquatable<UndoRedoState>
         {
@@ -145,6 +146,12 @@ namespace Avalonia.Controls
             }
         }
 
+        public bool IsReadOnly
+        {
+            get { return GetValue(IsReadOnlyProperty); }
+            set { SetValue(IsReadOnlyProperty, value); }
+        }
+
         public int SelectionStart
         {
             get
@@ -196,12 +203,6 @@ namespace Avalonia.Controls
         {
             get { return GetValue(UseFloatingWatermarkProperty); }
             set { SetValue(UseFloatingWatermarkProperty, value); }
-        }
-
-        public bool IsReadOnly
-        {
-            get { return GetValue(IsReadOnlyProperty); }
-            set { SetValue(IsReadOnlyProperty, value); }
         }
 
         public TextWrapping TextWrapping
@@ -459,6 +460,11 @@ namespace Avalonia.Controls
             {
                 e.Device.Capture(null);
             }
+        }
+
+        protected override void UpdateDataValidation(AvaloniaProperty property, BindingNotification status)
+        {
+            ((IPseudoClasses)Classes).Set(":error", status != null && status.ErrorType != BindingErrorType.None);
         }
 
         private int CoerceCaretIndex(int value)

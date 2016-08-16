@@ -5,8 +5,13 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.Markup.Xaml.Data;
+using Avalonia.Platform;
 using Avalonia.UnitTests;
+using Moq;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests
@@ -14,63 +19,44 @@ namespace Avalonia.Controls.UnitTests
     public class TextBoxTests_ValidationState
     {
         [Fact]
-        public void Setter_Exceptions_Should_Set_ValidationState()
+        public void Setter_Exceptions_Should_Set_Error_Pseudoclass()
         {
-            using (UnitTestApplication.Start(TestServices.MockThreadingInterface))
+            using (UnitTestApplication.Start(Services))
             {
-                var target = new TextBox();
-                var binding = new Binding(nameof(ExceptionTest.LessThan10));
-                binding.Source = new ExceptionTest();
-                ////binding.EnableValidation = true;
-                target.Bind(TextBox.TextProperty, binding);
+                var target = new TextBox
+                {
+                    DataContext = new ExceptionTest(),
+                    [!TextBox.TextProperty] = new Binding(nameof(ExceptionTest.LessThan10), BindingMode.TwoWay),
+                    Template = CreateTemplate(),
+                };
 
-                Assert.True(false);
-                //Assert.True(target.ValidationStatus.IsValid);
-                //target.Text = "20";
-                //Assert.False(target.ValidationStatus.IsValid);
-                //target.Text = "1";
-                //Assert.True(target.ValidationStatus.IsValid);
+                target.ApplyTemplate();
+
+                Assert.False(target.Classes.Contains(":error"));
+                target.Text = "20";
+                Assert.True(target.Classes.Contains(":error"));
+                target.Text = "1";
+                Assert.False(target.Classes.Contains(":error"));
             }
         }
 
-        [Fact(Skip = "TODO: Not yet passing")]
-        public void Unconvertable_Value_Should_Set_ValidationState()
+        private static TestServices Services => TestServices.MockThreadingInterface.With(
+            standardCursorFactory: Mock.Of<IStandardCursorFactory>());
+
+        private IControlTemplate CreateTemplate()
         {
-            using (UnitTestApplication.Start(TestServices.MockThreadingInterface))
-            {
-                var target = new TextBox();
-                var binding = new Binding(nameof(ExceptionTest.LessThan10));
-                binding.Source = new ExceptionTest();
-                ////binding.EnableValidation = true;
-                target.Bind(TextBox.TextProperty, binding);
-
-                Assert.True(false);
-                //Assert.True(target.ValidationStatus.IsValid);
-                //target.Text = "foo";
-                //Assert.False(target.ValidationStatus.IsValid);
-                //target.Text = "1";
-                //Assert.True(target.ValidationStatus.IsValid);
-            }
-        }
-
-        [Fact]
-        public void Indei_Should_Set_ValidationState()
-        {
-            using (UnitTestApplication.Start(TestServices.MockThreadingInterface))
-            {
-                var target = new TextBox();
-                var binding = new Binding(nameof(ExceptionTest.LessThan10));
-                binding.Source = new IndeiTest();
-                ////binding.EnableValidation = true;
-                target.Bind(TextBox.TextProperty, binding);
-
-                Assert.True(false);
-                //Assert.True(target.ValidationStatus.IsValid);
-                //target.Text = "20";
-                //Assert.False(target.ValidationStatus.IsValid);
-                //target.Text = "1";
-                //Assert.True(target.ValidationStatus.IsValid);
-            }
+            return new FuncControlTemplate<TextBox>(control =>
+                new TextPresenter
+                {
+                    Name = "PART_TextPresenter",
+                    [!!TextPresenter.TextProperty] = new Binding
+                    {
+                        Path = "Text",
+                        Mode = BindingMode.TwoWay,
+                        Priority = BindingPriority.TemplatedParent,
+                        RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent),
+                    },
+                });
         }
 
         private class ExceptionTest
