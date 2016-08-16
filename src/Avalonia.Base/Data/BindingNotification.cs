@@ -66,6 +66,7 @@ namespace Avalonia.Data
                 throw new ArgumentException($"'errorType' may not be None");
             }
 
+            Value = AvaloniaProperty.UnsetValue;
             Error = error;
             ErrorType = errorType;
         }

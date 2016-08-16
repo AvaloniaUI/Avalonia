@@ -38,6 +38,20 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
+        public void Setting_Non_Validated_Direct_Property_Does_Not_Call_UpdateDataValidation()
+        {
+            var target = new Class1();
+
+            target.SetValue(Class1.NonValidatedDirectProperty, 6);
+            target.SetValue(Class1.NonValidatedDirectProperty, new BindingNotification(new Exception(), BindingErrorType.Error));
+            target.SetValue(Class1.NonValidatedDirectProperty, new BindingNotification(new Exception(), BindingErrorType.DataValidationError));
+            target.SetValue(Class1.NonValidatedDirectProperty, new BindingNotification(7));
+            target.SetValue(Class1.NonValidatedDirectProperty, 8);
+
+            Assert.Empty(target.Notifications);
+        }
+
+        [Fact]
         public void Setting_Validated_Direct_Property_Calls_UpdateDataValidation()
         {
             var target = new Class1();
@@ -48,7 +62,16 @@ namespace Avalonia.Base.UnitTests
             target.SetValue(Class1.ValidatedDirectProperty, new BindingNotification(7));
             target.SetValue(Class1.ValidatedDirectProperty, 8);
 
-            Assert.Empty(target.Notifications);
+            Assert.Equal(
+                new[]
+                {
+                    null, // 6
+                    new BindingNotification(new Exception(), BindingErrorType.Error),
+                    new BindingNotification(new Exception(), BindingErrorType.DataValidationError),
+                    new BindingNotification(7), // 7
+                    null, // 8
+                },
+                target.Notifications.AsEnumerable());
         }
 
         [Fact]
@@ -135,6 +158,12 @@ namespace Avalonia.Base.UnitTests
                     nameof(Validated),
                     enableDataValidation: true);
 
+            public static readonly DirectProperty<Class1, int> NonValidatedDirectProperty =
+                AvaloniaProperty.RegisterDirect<Class1, int>(
+                    nameof(NonValidatedDirect),
+                    o => o.NonValidatedDirect,
+                    (o, v) => o.NonValidatedDirect = v);
+
             public static readonly DirectProperty<Class1, int> ValidatedDirectProperty =
                 AvaloniaProperty.RegisterDirect<Class1, int>(
                     nameof(Validated),
@@ -142,6 +171,7 @@ namespace Avalonia.Base.UnitTests
                     (o, v) => o.ValidatedDirect = v,
                     enableDataValidation: true);
 
+            private int _nonValidatedDirect;
             private int _direct;
 
             public int NonValidated
@@ -154,6 +184,12 @@ namespace Avalonia.Base.UnitTests
             {
                 get { return GetValue(ValidatedProperty); }
                 set { SetValue(ValidatedProperty, value); }
+            }
+
+            public int NonValidatedDirect
+            {
+                get { return _direct; }
+                set { SetAndRaise(NonValidatedDirectProperty, ref _nonValidatedDirect, value); }
             }
 
             public int ValidatedDirect

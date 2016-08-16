@@ -262,42 +262,11 @@ namespace Avalonia
 
             if (property.IsDirect)
             {
-                var accessor = (IDirectPropertyAccessor)GetRegistered(property);
-                LogPropertySet(property, value, priority);
-                accessor.SetValue(this, DirectUnsetToDefault(value, property));
+                SetDirectValue(property, value);
             }
             else
             {
-                PriorityValue v;
-                var originalValue = value;
-
-                if (!AvaloniaPropertyRegistry.Instance.IsRegistered(this, property))
-                {
-                    ThrowNotRegistered(property);
-                }
-
-                if (!TypeUtilities.TryCast(property.PropertyType, value, out value))
-                {
-                    throw new ArgumentException(string.Format(
-                        "Invalid value for Property '{0}': '{1}' ({2})",
-                        property.Name,
-                        originalValue,
-                        originalValue?.GetType().FullName ?? "(null)"));
-                }
-
-                if (!_values.TryGetValue(property, out v))
-                {
-                    if (value == AvaloniaProperty.UnsetValue)
-                    {
-                        return;
-                    }
-
-                    v = CreatePriorityValue(property);
-                    _values.Add(property, v);
-                }
-
-                LogPropertySet(property, value, priority);
-                v.SetValue(value, (int)priority);
+                SetStyledValue(property, value, priority);
             }
         }
 
@@ -361,7 +330,7 @@ namespace Avalonia
                 subscription = source
                     .Select(x => CastOrDefault(x, property.PropertyType))
                     .Do(_ => { }, () => _directBindings.Remove(subscription))
-                    .Subscribe(x => DirectBindingSet(property, x));
+                    .Subscribe(x => SetDirectValue(property, x));
 
                 _directBindings.Add(subscription);
 
@@ -642,57 +611,6 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Sets a property value for a direct property binding.
-        /// </summary>
-        /// <param name="property">The property.</param>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        private void DirectBindingSet(AvaloniaProperty property, object value)
-        {
-            var validated = property.GetMetadata(GetType()).EnableDataValidation;
-            var notification = value as BindingNotification;
-
-            if (notification != null)
-            {
-                value = notification.Value;
-
-                if (notification.ErrorType == BindingErrorType.Error)
-                {
-                    Logger.Error(
-                        LogArea.Binding,
-                        this,
-                        "Error binding to {Target}.{Property}: {Message}",
-                        this,
-                        property,
-                        ExceptionUtilities.GetMessage(notification.Error));
-                }
-            }
-
-            if (notification?.HasValue != false)
-            {
-                SetValue(property, value);
-            }
-
-            if (validated)
-            {
-                UpdateDataValidation(property, notification);
-            }
-        }
-
-        /// <summary>
-        /// Converts an unset value to the default value for a direct property.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <param name="property">The property.</param>
-        /// <returns>The value.</returns>
-        private object DirectUnsetToDefault(object value, AvaloniaProperty property)
-        {
-            return value == AvaloniaProperty.UnsetValue ?
-                ((IDirectPropertyMetadata)property.GetMetadata(GetType())).UnsetValue :
-                value;
-        }
-
-        /// <summary>
         /// Gets the default value for a property.
         /// </summary>
         /// <param name="property">The property.</param>
@@ -733,6 +651,109 @@ namespace Avalonia
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Sets the value of a direct property.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <param name="value">The value.</param>
+        private void SetDirectValue(AvaloniaProperty property, object value)
+        {
+            var metadata = property.GetMetadata(GetType());
+            var notification = value as BindingNotification;
+
+            if (notification != null)
+            {
+                if (notification.ErrorType == BindingErrorType.Error)
+                {
+                    Logger.Error(
+                        LogArea.Binding,
+                        this,
+                        "Error binding to {Target}.{Property}: {Message}",
+                        this,
+                        property,
+                        ExceptionUtilities.GetMessage(notification.Error));
+                }
+
+                if (notification.HasValue)
+                {
+                    value = notification.Value;
+                }
+            }
+
+            if (notification == null || notification.HasValue)
+            {
+                var accessor = (IDirectPropertyAccessor)GetRegistered(property);
+                var finalValue = value == AvaloniaProperty.UnsetValue ? 
+                    ((IDirectPropertyMetadata)metadata).UnsetValue : value;
+
+                LogPropertySet(property, value, BindingPriority.LocalValue);
+
+                accessor.SetValue(this, finalValue);
+            }
+
+            if (metadata.EnableDataValidation)
+            {
+                UpdateDataValidation(property, notification);
+            }
+        }
+
+        /// <summary>
+        /// Sets the value of a styled property.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="priority">The priority of the value.</param>
+        private void SetStyledValue(AvaloniaProperty property, object value, BindingPriority priority)
+        {
+            var notification = value as BindingNotification;
+
+            // We currently accept BindingNotifications for non-direct properties but we just
+            // strip them to their underlying value.
+            if (notification != null)
+            {
+                if (!notification.HasValue)
+                {
+                    return;
+                }
+                else
+                {
+                    value = notification.Value;
+                }
+            }
+
+            var originalValue = value;
+
+            if (!AvaloniaPropertyRegistry.Instance.IsRegistered(this, property))
+            {
+                ThrowNotRegistered(property);
+            }
+
+            if (!TypeUtilities.TryCast(property.PropertyType, value, out value))
+            {
+                throw new ArgumentException(string.Format(
+                    "Invalid value for Property '{0}': '{1}' ({2})",
+                    property.Name,
+                    originalValue,
+                    originalValue?.GetType().FullName ?? "(null)"));
+            }
+
+            PriorityValue v;
+
+            if (!_values.TryGetValue(property, out v))
+            {
+                if (value == AvaloniaProperty.UnsetValue)
+                {
+                    return;
+                }
+
+                v = CreatePriorityValue(property);
+                _values.Add(property, v);
+            }
+
+            LogPropertySet(property, value, priority);
+            v.SetValue(value, (int)priority);
         }
 
         /// <summary>
