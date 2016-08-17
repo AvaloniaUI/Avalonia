@@ -12,7 +12,7 @@ namespace Avalonia.Markup.Data
 {
     internal class PropertyAccessorNode : ExpressionNode
     {
-        private bool _enableValidation;
+        private readonly bool _enableValidation;
         private IPropertyAccessor _accessor;
 
         public PropertyAccessorNode(string propertyName, bool enableValidation)
