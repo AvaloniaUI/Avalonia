@@ -472,9 +472,7 @@ namespace Avalonia
         /// enabled.
         /// </summary>
         /// <param name="property">The property.</param>
-        /// <param name="status">
-        /// The new validation status. A value of null indicates no validation error.
-        /// </param>
+        /// <param name="status">The new validation status.</param>
         protected virtual void UpdateDataValidation(
             AvaloniaProperty property,
             BindingNotification status)
