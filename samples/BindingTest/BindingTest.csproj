@@ -80,7 +80,8 @@
     <Compile Include="TestItemView.xaml.cs">
       <DependentUpon>TestItemView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ViewModels\ExceptionPropertyErrorViewModel.cs" />
+    <Compile Include="ViewModels\IndeiErrorViewModel.cs" />
+    <Compile Include="ViewModels\ExceptionErrorViewModel.cs" />
     <Compile Include="ViewModels\MainWindowViewModel.cs" />
     <Compile Include="ViewModels\TestItem.cs" />
   </ItemGroup>

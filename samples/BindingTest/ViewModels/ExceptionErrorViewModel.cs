@@ -6,7 +6,7 @@ using System;
 
 namespace BindingTest.ViewModels
 {
-    public class ExceptionPropertyErrorViewModel : ReactiveObject
+    public class ExceptionErrorViewModel : ReactiveObject
     {
         private int _lessThan10;
 
