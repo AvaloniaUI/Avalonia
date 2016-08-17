@@ -90,6 +90,7 @@ namespace Avalonia.Controls
         private bool _canScrollHorizontally;
         private TextPresenter _presenter;
         private UndoRedoHelper<UndoRedoState> _undoRedoHelper;
+        private bool _ignoreTextChanges;
 
         static TextBox()
         {
@@ -184,7 +185,13 @@ namespace Avalonia.Controls
         public string Text
         {
             get { return _text; }
-            set { SetAndRaise(TextProperty, ref _text, value); }
+            set
+            {
+                if (!_ignoreTextChanges)
+                {
+                    SetAndRaise(TextProperty, ref _text, value);
+                }
+            }
         }
 
         public TextAlignment TextAlignment
@@ -247,7 +254,7 @@ namespace Avalonia.Controls
                     DeleteSelection();
                     caretIndex = CaretIndex;
                     text = Text ?? string.Empty;
-                    Text = text.Substring(0, caretIndex) + input + text.Substring(caretIndex);
+                    SetTextInternal(text.Substring(0, caretIndex) + input + text.Substring(caretIndex));
                     CaretIndex += input.Length;
                     SelectionStart = SelectionEnd = CaretIndex;
                     _undoRedoHelper.DiscardRedo();
@@ -355,7 +362,7 @@ namespace Avalonia.Controls
                 case Key.Back:
                     if (!DeleteSelection() && CaretIndex > 0)
                     {
-                        Text = text.Substring(0, caretIndex - 1) + text.Substring(caretIndex);
+                        SetTextInternal(text.Substring(0, caretIndex - 1) + text.Substring(caretIndex));
                         --CaretIndex;
                     }
 
@@ -364,7 +371,7 @@ namespace Avalonia.Controls
                 case Key.Delete:
                     if (!DeleteSelection() && caretIndex < text.Length)
                     {
-                        Text = text.Substring(0, caretIndex) + text.Substring(caretIndex + 1);
+                        SetTextInternal(text.Substring(0, caretIndex) + text.Substring(caretIndex + 1));
                     }
 
                     break;
@@ -598,7 +605,7 @@ namespace Avalonia.Controls
                     var start = Math.Min(selectionStart, selectionEnd);
                     var end = Math.Max(selectionStart, selectionEnd);
                     var text = Text;
-                    Text = text.Substring(0, start) + text.Substring(end);
+                    SetTextInternal(text.Substring(0, start) + text.Substring(end));
                     SelectionStart = SelectionEnd = CaretIndex = start;
                     return true;
                 }
@@ -643,6 +650,19 @@ namespace Avalonia.Controls
             }
 
             return i;
+        }
+
+        private void SetTextInternal(string value)
+        {
+            try
+            {
+                _ignoreTextChanges = true;
+                SetAndRaise(TextProperty, ref _text, value);
+            }
+            finally
+            {
+                _ignoreTextChanges = false;
+            }
         }
 
         UndoRedoState UndoRedoHelper<UndoRedoState>.IUndoRedoHost.UndoRedoState
