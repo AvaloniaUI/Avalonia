@@ -14,10 +14,7 @@ namespace Avalonia.Base.UnitTests
         {
             var target = new Class1();
 
-            target.SetValue(Class1.NonValidatedProperty, new BindingNotification(6));
-            target.SetValue(Class1.NonValidatedProperty, new BindingNotification(new Exception(), BindingErrorType.Error));
-            target.SetValue(Class1.NonValidatedProperty, new BindingNotification(new Exception(), BindingErrorType.DataValidationError));
-            target.SetValue(Class1.NonValidatedProperty, new BindingNotification(7));
+            target.SetValue(Class1.NonValidatedDirectProperty, 6);
 
             Assert.Empty(target.Notifications);
         }
@@ -27,10 +24,7 @@ namespace Avalonia.Base.UnitTests
         {
             var target = new Class1();
 
-            target.SetValue(Class1.NonValidatedDirectProperty, new BindingNotification(6));
-            target.SetValue(Class1.NonValidatedDirectProperty, new BindingNotification(new Exception(), BindingErrorType.Error));
-            target.SetValue(Class1.NonValidatedDirectProperty, new BindingNotification(new Exception(), BindingErrorType.DataValidationError));
-            target.SetValue(Class1.NonValidatedDirectProperty, new BindingNotification(7));
+            target.SetValue(Class1.NonValidatedDirectProperty, 6);
 
             Assert.Empty(target.Notifications);
         }

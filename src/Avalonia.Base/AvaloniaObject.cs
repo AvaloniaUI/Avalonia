@@ -658,7 +658,6 @@ namespace Avalonia
         /// <param name="value">The value.</param>
         private void SetDirectValue(AvaloniaProperty property, object value)
         {
-            var metadata = (IDirectPropertyMetadata)property.GetMetadata(GetType());
             var notification = value as BindingNotification;
 
             if (notification != null)
@@ -682,6 +681,7 @@ namespace Avalonia
 
             if (notification == null || notification.HasValue)
             {
+                var metadata = (IDirectPropertyMetadata)property.GetMetadata(GetType());
                 var accessor = (IDirectPropertyAccessor)GetRegistered(property);
                 var finalValue = value == AvaloniaProperty.UnsetValue ? 
                     metadata.UnsetValue : value;
@@ -691,7 +691,7 @@ namespace Avalonia
                 accessor.SetValue(this, finalValue);
             }
 
-            if (metadata.EnableDataValidation && notification != null)
+            if (notification != null)
             {
                 UpdateDataValidation(property, notification);
             }
