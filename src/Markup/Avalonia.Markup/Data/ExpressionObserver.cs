@@ -177,9 +177,11 @@ namespace Avalonia.Markup.Data
                 }
 
                 _result = Observable.Using(StartRoot, _ => source)
+                    .Select(ToWeakReference)
                     .Publish(UninitializedValue)
                     .RefCount()
-                    .Where(x => x != UninitializedValue);
+                    .Where(x => x != UninitializedValue)
+                    .Select(FromWeakReference);
             }
 
             return _result.Subscribe(observer);
@@ -195,6 +197,16 @@ namespace Avalonia.Markup.Data
             {
                 return new EmptyExpressionNode();
             }
+        }
+
+        private static object ToWeakReference(object o)
+        {
+            return o is BindingNotification ? o : new WeakReference(o);
+        }
+
+        private static object FromWeakReference(object o)
+        {
+            return o is WeakReference ? ((WeakReference)o).Target : o;
         }
 
         private IDisposable StartRoot()
