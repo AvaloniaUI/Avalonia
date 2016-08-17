@@ -57,7 +57,7 @@
   <Style Selector="TextBox:focus /template/ Border#border">
     <Setter Property="BorderBrush" Value="{StyleResource ThemeBorderDarkBrush}"/>
   </Style>
-  <Style Selector="TextBox:invalid /template/ Border#border">
+  <Style Selector="TextBox:error /template/ Border#border">
     <Setter Property="BorderBrush" Value="Red"/>
   </Style>
 </Styles>
