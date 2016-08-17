@@ -464,7 +464,7 @@ namespace Avalonia.Controls
 
         protected override void UpdateDataValidation(AvaloniaProperty property, BindingNotification status)
         {
-            ((IPseudoClasses)Classes).Set(":error", status != null && status.ErrorType != BindingErrorType.None);
+            ((IPseudoClasses)Classes).Set(":error", status.ErrorType != BindingErrorType.None);
         }
 
         private int CoerceCaretIndex(int value)
