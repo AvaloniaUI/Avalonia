@@ -91,6 +91,7 @@ namespace Avalonia.Markup.Xaml.Data
 
             var pathInfo = ParsePath(Path);
             ValidateState(pathInfo);
+            enableDataValidation = enableDataValidation && Priority == BindingPriority.LocalValue;
 
             ExpressionObserver observer;
 
