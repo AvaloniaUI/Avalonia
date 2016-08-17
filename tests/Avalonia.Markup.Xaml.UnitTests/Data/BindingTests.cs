@@ -166,15 +166,16 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
         [Fact]
         public void DataContext_Binding_Should_Produce_Correct_Results()
         {
+            var viewModel = new { Foo = "bar" };
             var root = new Decorator
             {
-                DataContext = new { Foo = "bar" },
+                DataContext = viewModel,
             };
 
             var child = new Control();
             var values = new List<object>();
 
-            child.GetObservable(Border.DataContextProperty).Subscribe(x => values.Add(x));
+            child.GetObservable(Control.DataContextProperty).Subscribe(x => values.Add(x));
             child.Bind(Control.DataContextProperty, new Binding("Foo"));
 
             // When binding to DataContext and the target isn't found, the binding should produce

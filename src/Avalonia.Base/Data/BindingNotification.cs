@@ -44,14 +44,19 @@ namespace Avalonia.Data
         public static readonly BindingNotification UnsetValue =
             new BindingNotification(AvaloniaProperty.UnsetValue);
 
+        // Null cannot be held in WeakReference as it's indistinguishable from an expired value so
+        // use this value in its place.
+        private static readonly object NullValue = new object();
+
+        private WeakReference<object> _value;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="BindingNotification"/> class.
         /// </summary>
         /// <param name="value">The binding value.</param>
         public BindingNotification(object value)
         {
-            Value = value;
-            HasValue = true;
+            _value = new WeakReference<object>(value ?? NullValue);
         }
 
         /// <summary>
@@ -66,7 +71,6 @@ namespace Avalonia.Data
                 throw new ArgumentException($"'errorType' may not be None");
             }
 
-            Value = AvaloniaProperty.UnsetValue;
             Error = error;
             ErrorType = errorType;
         }
@@ -80,20 +84,42 @@ namespace Avalonia.Data
         public BindingNotification(Exception error, BindingErrorType errorType, object fallbackValue)
             : this(error, errorType)
         {
-            Value = fallbackValue;
-            HasValue = true;
+            _value = new WeakReference<object>(fallbackValue ?? NullValue);
         }
 
         /// <summary>
         /// Gets the value that should be passed to the target when <see cref="HasValue"/>
         /// is true.
         /// </summary>
-        public object Value { get; set; }
+        /// <remarks>
+        /// If this property is read when <see cref="HasValue"/> is false then it will return
+        /// <see cref="AvaloniaProperty.UnsetValue"/>.
+        /// </remarks>
+        public object Value
+        {
+            get
+            {
+                if (_value != null)
+                {
+                    object result;
+
+                    if (_value.TryGetTarget(out result))
+                    {
+                        return result == NullValue ? null : result;
+                    }
+                }
+
+                // There's the possibility of a race condition in that HasValue can return true,
+                // and then the value is GC'd before Value is read. We should be ok though as
+                // we return UnsetValue which should be a safe alternative.
+                return AvaloniaProperty.UnsetValue;
+            }
+        }
 
         /// <summary>
         /// Gets a value indicating whether <see cref="Value"/> should be pushed to the target.
         /// </summary>
-        public bool HasValue { get; set; }
+        public bool HasValue => _value != null;
 
         /// <summary>
         /// Gets the error that occurred on the source, if any.
@@ -179,14 +205,7 @@ namespace Avalonia.Data
             Contract.Requires<ArgumentNullException>(e != null);
             Contract.Requires<ArgumentException>(type != BindingErrorType.None);
 
-            if (Error != null)
-            {
-                Error = new AggregateException(Error, e);
-            }
-            else
-            {
-                Error = e;
-            }
+            Error = Error != null ? new AggregateException(Error, e) : e;
 
             if (type == BindingErrorType.Error || ErrorType == BindingErrorType.Error)
             {
@@ -194,10 +213,26 @@ namespace Avalonia.Data
             }
         }
 
+        /// <summary>
+        /// Removes the <see cref="Value"/> and makes <see cref="HasValue"/> return null.
+        /// </summary>
+        public void ClearValue()
+        {
+            _value = null;
+        }
+
+        /// <summary>
+        /// Sets the <see cref="Value"/>.
+        /// </summary>
+        public void SetValue(object value)
+        {
+            _value = new WeakReference<object>(value ?? NullValue);
+        }
+
         private static bool ExceptionEquals(Exception a, Exception b)
         {
             return a?.GetType() == b?.GetType() &&
-                   a.Message == b.Message;
+                   a?.Message == b?.Message;
         }
     }
 }

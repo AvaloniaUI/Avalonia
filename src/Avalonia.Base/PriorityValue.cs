@@ -259,7 +259,7 @@ namespace Avalonia
 
                 if (notification?.HasValue == true)
                 {
-                    notification.Value = castValue;
+                    notification.SetValue(castValue);
                 }
 
                 if (notification == null || notification.HasValue)

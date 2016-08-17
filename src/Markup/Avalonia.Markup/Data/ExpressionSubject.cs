@@ -255,7 +255,7 @@ namespace Avalonia.Markup.Data
             }
         }
 
-        private BindingNotification Merge(object a, BindingNotification b)
+        private static BindingNotification Merge(object a, BindingNotification b)
         {
             var an = a as BindingNotification;
 
@@ -270,7 +270,7 @@ namespace Avalonia.Markup.Data
             }
         }
 
-        private BindingNotification Merge(BindingNotification a, object b)
+        private static BindingNotification Merge(BindingNotification a, object b)
         {
             var bn = b as BindingNotification;
 
@@ -280,17 +280,22 @@ namespace Avalonia.Markup.Data
             }
             else
             {
-                a.Value = b;
-                a.HasValue = true;
+                a.SetValue(b);
             }
 
             return a;
         }
 
-        private BindingNotification Merge(BindingNotification a, BindingNotification b)
+        private static BindingNotification Merge(BindingNotification a, BindingNotification b)
         {
-            a.Value = b.Value;
-            a.HasValue = b.HasValue;
+            if (b.HasValue)
+            {
+                a.SetValue(b.Value);
+            }
+            else
+            {
+                a.ClearValue();
+            }
 
             if (b.Error != null)
             {

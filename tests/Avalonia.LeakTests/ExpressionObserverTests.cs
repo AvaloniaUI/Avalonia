@@ -36,6 +36,24 @@ namespace Avalonia.LeakTests
         }
 
         [Fact]
+        public void Should_Not_Keep_Source_Alive_ObservableCollection_With_DataValidation()
+        {
+            Func<ExpressionObserver> run = () =>
+            {
+                var source = new { Foo = new AvaloniaList<string> { "foo", "bar" } };
+                var target = new ExpressionObserver(source, "Foo", true);
+
+                target.Subscribe(_ => { });
+                return target;
+            };
+
+            var result = run();
+
+            dotMemory.Check(memory =>
+                Assert.Equal(0, memory.GetObjects(where => where.Type.Is<AvaloniaList<string>>()).ObjectsCount));
+        }
+
+        [Fact]
         public void Should_Not_Keep_Source_Alive_NonIntegerIndexer()
         {
             Func<ExpressionObserver> run = () =>
