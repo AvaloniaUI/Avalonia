@@ -287,17 +287,6 @@ namespace Avalonia.Controls
             LogicalChildren.RemoveAll(toRemove);
         }
 
-        /// <inheritdoc/>
-        protected override void OnTemplateChanged(AvaloniaPropertyChangedEventArgs e)
-        {
-            base.OnTemplateChanged(e);
-
-            if (e.NewValue == null)
-            {
-                ItemContainerGenerator?.Clear();
-            }
-        }
-
         /// <summary>
         /// Caled when the <see cref="Items"/> property changes.
         /// </summary>
