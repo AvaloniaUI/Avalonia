@@ -244,6 +244,20 @@ namespace Avalonia.Data
             _value = new WeakReference<object>(value ?? NullValue);
         }
 
+        /// <inheritdoc/>
+        public override string ToString()
+        {
+            switch (ErrorType)
+            {
+                case BindingErrorType.None:
+                    return $"{{Value: {Value}}}";
+                default:
+                    return HasValue ? 
+                        $"{{{ErrorType}: {Error}, Fallback: {Value}}}" : 
+                        $"{{{ErrorType}: {Error}}}";
+            }
+        }
+
         private static bool ExceptionEquals(Exception a, Exception b)
         {
             return a?.GetType() == b?.GetType() &&
