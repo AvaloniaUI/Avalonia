@@ -18,6 +18,7 @@
     <SolidColorBrush x:Key="ThemeAccentBrush2">#99119EDA</SolidColorBrush>
     <SolidColorBrush x:Key="ThemeAccentBrush3">#66119EDA</SolidColorBrush>
     <SolidColorBrush x:Key="ThemeAccentBrush4">#33119EDA</SolidColorBrush>
+    <SolidColorBrush x:Key="ErrorBrush">Red</SolidColorBrush>
 
     <sys:Double x:Key="ThemeBorderThickness">2</sys:Double>
     <sys:Double x:Key="ThemeDisabledOpacity">0.5</sys:Double>

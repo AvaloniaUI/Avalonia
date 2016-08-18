@@ -35,6 +35,11 @@ namespace Avalonia.Controls
                 o => o.CaretIndex,
                 (o, v) => o.CaretIndex = v);
 
+        public static readonly DirectProperty<TextBox, IEnumerable<Exception>> DataValidationErrorsProperty =
+            AvaloniaProperty.RegisterDirect<TextBox, IEnumerable<Exception>>(
+                nameof(DataValidationErrors),
+                o => o.DataValidationErrors);
+
         public static readonly StyledProperty<bool> IsReadOnlyProperty =
             AvaloniaProperty.Register<TextBox, bool>(nameof(IsReadOnly));
 
@@ -91,6 +96,7 @@ namespace Avalonia.Controls
         private TextPresenter _presenter;
         private UndoRedoHelper<UndoRedoState> _undoRedoHelper;
         private bool _ignoreTextChanges;
+        private IEnumerable<Exception> _dataValidationErrors;
 
         static TextBox()
         {
@@ -145,6 +151,12 @@ namespace Avalonia.Controls
                 if (_undoRedoHelper.IsLastState && _undoRedoHelper.LastState.Text == Text)
                     _undoRedoHelper.UpdateLastState();
             }
+        }
+
+        public IEnumerable<Exception> DataValidationErrors
+        {
+            get { return _dataValidationErrors; }
+            private set { SetAndRaise(DataValidationErrorsProperty, ref _dataValidationErrors, value); }
         }
 
         public bool IsReadOnly
@@ -473,7 +485,18 @@ namespace Avalonia.Controls
         {
             if (property == TextProperty)
             {
-                ((IPseudoClasses)Classes).Set(":error", status.ErrorType != BindingErrorType.None);
+                var classes = (IPseudoClasses)Classes;
+
+                if (status.ErrorType == BindingErrorType.None)
+                {
+                    classes.Remove(":error");
+                    DataValidationErrors = null;
+                }
+                else
+                {
+                    classes.Add(":error");
+                    DataValidationErrors = new[] { status.Error };
+                }
             }
         }
 

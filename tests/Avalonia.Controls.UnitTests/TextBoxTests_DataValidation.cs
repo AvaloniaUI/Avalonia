@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
@@ -16,7 +17,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class TextBoxTests_ValidationState
+    public class TextBoxTests_DataValidation
     {
         [Fact]
         public void Setter_Exceptions_Should_Set_Error_Pseudoclass()
@@ -37,6 +38,29 @@ namespace Avalonia.Controls.UnitTests
                 Assert.True(target.Classes.Contains(":error"));
                 target.Text = "1";
                 Assert.False(target.Classes.Contains(":error"));
+            }
+        }
+
+        [Fact]
+        public void Setter_Exceptions_Should_Set_DataValidationErrors()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    DataContext = new ExceptionTest(),
+                    [!TextBox.TextProperty] = new Binding(nameof(ExceptionTest.LessThan10), BindingMode.TwoWay),
+                    Template = CreateTemplate(),
+                };
+
+                target.ApplyTemplate();
+
+                Assert.Null(target.DataValidationErrors);
+                target.Text = "20";
+                Assert.Equal(1, target.DataValidationErrors.Count());
+                Assert.IsType<InvalidOperationException>(target.DataValidationErrors.Single());
+                target.Text = "1";
+                Assert.Null(target.DataValidationErrors);
             }
         }
 

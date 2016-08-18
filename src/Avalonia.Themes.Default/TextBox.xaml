@@ -36,13 +36,24 @@
                            Opacity="0.5"
                            Text="{TemplateBinding Watermark}"
                            IsVisible="{TemplateBinding Path=Text, Converter={Static StringConverters.NullOrEmpty}}"/>
-                <TextPresenter Name="PART_TextPresenter"
-                               CaretIndex="{TemplateBinding CaretIndex}"
-                               SelectionStart="{TemplateBinding SelectionStart}"
-                               SelectionEnd="{TemplateBinding SelectionEnd}"
-                               Text="{TemplateBinding Text, Mode=TwoWay}"
-                               TextAlignment="{TemplateBinding TextAlignment}"
-                               TextWrapping="{TemplateBinding TextWrapping}"/>
+                <DockPanel LastChildFill="True">
+                  <Panel Name="error" DockPanel.Dock="Right">
+                    <ToolTip.Tip>
+                      <ItemsControl Items="{TemplateBinding DataValidationErrors}" MemberSelector="Message"/>
+                    </ToolTip.Tip>
+                    <!-- TODO: Draw as a path -->
+                    <Ellipse Width="14" Height="14" Stroke="{StyleResource ErrorBrush}" StrokeThickness="1"/>
+                    <Path Data="M7,4l0,5" Stroke="{StyleResource ErrorBrush}" StrokeThickness="2"/>
+                    <Path Data="M7,10l0,2" Stroke="{StyleResource ErrorBrush}" StrokeThickness="2"/>
+                  </Panel>
+                  <TextPresenter Name="PART_TextPresenter"
+                                 CaretIndex="{TemplateBinding CaretIndex}"
+                                 SelectionStart="{TemplateBinding SelectionStart}"
+                                 SelectionEnd="{TemplateBinding SelectionEnd}"
+                                 Text="{TemplateBinding Text, Mode=TwoWay}"
+                                 TextAlignment="{TemplateBinding TextAlignment}"
+                                 TextWrapping="{TemplateBinding TextWrapping}"/>
+                </DockPanel>
               </Panel>
             </ScrollViewer>
             
@@ -58,6 +69,15 @@
     <Setter Property="BorderBrush" Value="{StyleResource ThemeBorderDarkBrush}"/>
   </Style>
   <Style Selector="TextBox:error /template/ Border#border">
+    <Setter Property="BorderBrush" Value="{StyleResource ErrorBrush}"/>
+  </Style>
+  <Style Selector="TextBox /template/ Panel#error">
+    <Setter Property="IsVisible" Value="False"/>
+  </Style>
+  <Style Selector="TextBox:error /template/ Panel#error">
+    <Setter Property="IsVisible" Value="True"/>
+  </Style>
+  <Style Selector="TextBox /template/ ToolTip">
     <Setter Property="BorderBrush" Value="Red"/>
   </Style>
 </Styles>
