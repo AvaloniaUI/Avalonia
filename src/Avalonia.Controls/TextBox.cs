@@ -503,7 +503,9 @@ namespace Avalonia.Controls
         private static IEnumerable<Exception> UnpackException(Exception exception)
         {
             var aggregate = exception as AggregateException;
-            return aggregate == null ? Enumerable.Repeat(exception, 1) : aggregate.InnerExceptions;
+            return aggregate == null ? 
+                (IEnumerable<Exception>)new[] { exception } :
+                aggregate.InnerExceptions;
         }
 
         private int CoerceCaretIndex(int value)
