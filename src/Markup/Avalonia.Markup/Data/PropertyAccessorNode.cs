@@ -21,8 +21,8 @@ namespace Avalonia.Markup.Data
             _enableValidation = enableValidation;
         }
 
+        public override string Description => PropertyName;
         public string PropertyName { get; }
-
         public Type PropertyType => _accessor?.PropertyType;
 
         public bool SetTargetValue(object value, BindingPriority priority)

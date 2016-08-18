@@ -182,6 +182,21 @@ namespace Avalonia.Data
         }
 
         /// <summary>
+        /// Gets an exception from an object that may be a <see cref="BindingNotification"/>.
+        /// </summary>
+        /// <param name="o">The object.</param>
+        /// <returns>The value.</returns>
+        /// <remarks>
+        /// If <paramref name="o"/> is a <see cref="BindingNotification"/> then returns the binding
+        /// notification's <see cref="Error"/>. If not, returns the object unchanged.
+        /// </remarks>
+        public static object ExtractError(object o)
+        {
+            var notification = o as BindingNotification;
+            return notification != null ? notification.Error : o;
+        }
+
+        /// <summary>
         /// Compares an object to an instance of <see cref="BindingNotification"/> for equality.
         /// </summary>
         /// <param name="obj">The object to compare.</param>

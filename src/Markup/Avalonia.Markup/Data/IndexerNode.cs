@@ -21,6 +21,8 @@ namespace Avalonia.Markup.Data
             Arguments = arguments;
         }
 
+        public override string Description => "[" + string.Join(",", Arguments) + "]";
+
         protected override IObservable<object> StartListening(WeakReference reference)
         {
             var target = reference.Target;

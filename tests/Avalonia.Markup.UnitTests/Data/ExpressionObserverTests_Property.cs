@@ -66,7 +66,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
             Assert.Equal(
                 new BindingNotification(
-                    new NullReferenceException(), 
+                    new MarkupBindingBrokenException("'Foo' is null in expression 'Foo'."),
                     BindingErrorType.Error,
                     AvaloniaProperty.UnsetValue),
                 result);
@@ -81,7 +81,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
             Assert.Equal(
                 new BindingNotification(
-                    new NullReferenceException(),
+                    new MarkupBindingBrokenException("'Foo' is null in expression 'Foo'."),
                     BindingErrorType.Error,
                     AvaloniaProperty.UnsetValue),
                 result);
@@ -96,7 +96,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
             Assert.Equal(
                 new BindingNotification(
-                    new NullReferenceException(),
+                    new MarkupBindingBrokenException("'Foo' is null in expression 'Foo'."),
                     BindingErrorType.Error,
                     AvaloniaProperty.UnsetValue),
                 result);
@@ -111,7 +111,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
             Assert.Equal(
                 new BindingNotification(
-                    new NullReferenceException(),
+                    new MarkupBindingBrokenException("'Foo' is null in expression 'Foo'."),
                     BindingErrorType.Error,
                     AvaloniaProperty.UnsetValue),
                 result);
@@ -166,7 +166,7 @@ namespace Avalonia.Markup.UnitTests.Data
                 new[]
                 {
                     new BindingNotification(
-                        new NullReferenceException(), 
+                        new MarkupBindingBrokenException("'Foo' is null in expression 'Foo.Bar.Baz'."),
                         BindingErrorType.Error,
                         AvaloniaProperty.UnsetValue),
                 },
@@ -284,7 +284,7 @@ namespace Avalonia.Markup.UnitTests.Data
                 {
                     "bar",
                     new BindingNotification(
-                        new NullReferenceException(),
+                        new MarkupBindingBrokenException("'Next' is null in expression 'Next.Bar'."),
                         BindingErrorType.Error,
                         AvaloniaProperty.UnsetValue),
                     "baz"
@@ -483,7 +483,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
             Assert.Equal(
                 new BindingNotification(
-                    new NullReferenceException(),
+                    new MarkupBindingBrokenException("'Foo' is null in expression 'Foo'."),
                     BindingErrorType.Error,
                     AvaloniaProperty.UnsetValue),
                 result);
@@ -511,7 +511,7 @@ namespace Avalonia.Markup.UnitTests.Data
                     "foo",
                     "bar",
                     new BindingNotification(
-                        new NullReferenceException(),
+                    new MarkupBindingBrokenException("'Foo' is null in expression 'Foo'."),
                         BindingErrorType.Error,
                         AvaloniaProperty.UnsetValue),
                 }, 

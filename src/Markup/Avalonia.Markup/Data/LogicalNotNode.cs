@@ -9,6 +9,8 @@ namespace Avalonia.Markup.Data
 {
     internal class LogicalNotNode : ExpressionNode
     {
+        public override string Description => "!";
+
         protected override void NextValueChanged(object value)
         {
             base.NextValueChanged(Negate(value));

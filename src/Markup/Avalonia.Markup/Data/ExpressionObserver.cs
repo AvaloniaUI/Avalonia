@@ -182,7 +182,7 @@ namespace Avalonia.Markup.Data
                     .Publish(UninitializedValue)
                     .RefCount()
                     .Where(x => x != UninitializedValue)
-                    .Select(FromWeakReference);
+                    .Select(Translate);
             }
 
             return _result.Subscribe(observer);
@@ -205,9 +205,26 @@ namespace Avalonia.Markup.Data
             return o is BindingNotification ? o : new WeakReference(o);
         }
 
-        private static object FromWeakReference(object o)
+        private object Translate(object o)
         {
-            return o is WeakReference ? ((WeakReference)o).Target : o;
+            var weak = o as WeakReference;
+
+            if (weak != null)
+            {
+                return weak.Target;
+            }
+            else
+            {
+                var notification = o as BindingNotification;
+                var broken = notification.Error as MarkupBindingBrokenException;
+
+                if (broken != null)
+                {
+                    broken.Expression = Expression;
+                }
+
+                return notification;
+            }
         }
 
         private IDisposable StartRoot()

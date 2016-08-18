@@ -8,6 +8,8 @@ namespace Avalonia.Markup.Data
 {
     internal class EmptyExpressionNode : ExpressionNode
     {
+        public override string Description => ".";
+
         protected override IObservable<object> StartListening(WeakReference reference)
         {
             return Observable.Return(reference.Target);

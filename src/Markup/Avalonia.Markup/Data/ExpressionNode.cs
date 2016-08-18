@@ -19,6 +19,7 @@ namespace Avalonia.Markup.Data
         private IObserver<object> _observer;
         private IDisposable _valuePluginSubscription;
 
+        public abstract string Description { get; }
         public ExpressionNode Next { get; set; }
 
         public WeakReference Target
@@ -91,6 +92,8 @@ namespace Avalonia.Markup.Data
 
         protected virtual void NextValueChanged(object value)
         {
+            var bindingBroken = BindingNotification.ExtractError(value) as MarkupBindingBrokenException;
+            bindingBroken?.Nodes.Add(Description);
             _observer.OnNext(value);
         }
 
@@ -177,8 +180,10 @@ namespace Avalonia.Markup.Data
 
         private BindingNotification TargetNullNotification()
         {
-            // TODO: Work out a way to give a more useful error message here.
-            return new BindingNotification(new NullReferenceException(), BindingErrorType.Error, AvaloniaProperty.UnsetValue);
+            return new BindingNotification(
+                new MarkupBindingBrokenException(this),
+                BindingErrorType.Error,
+                AvaloniaProperty.UnsetValue);
         }
     }
 }
