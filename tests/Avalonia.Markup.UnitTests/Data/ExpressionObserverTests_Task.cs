@@ -95,7 +95,7 @@ namespace Avalonia.Markup.UnitTests.Data
         {
             using (var sync = UnitTestSynchronizationContext.Begin())
             {
-                var data = new { Foo = Task.FromException(new NotSupportedException()) };
+                var data = new { Foo = TaskFromException(new NotSupportedException()) };
                 var target = new ExpressionObserver(data, "Foo");
                 var result = new List<object>();
 
@@ -130,6 +130,13 @@ namespace Avalonia.Markup.UnitTests.Data
                 // hard to know what to do here so for the moment the value is returned.
                 Assert.Equal(new [] { "foo" }, result);
             }
+        }
+
+        private Task TaskFromException(Exception e)
+        {
+            var tcs = new TaskCompletionSource<object>();
+            tcs.SetException(e);
+            return tcs.Task;
         }
 
         private class Class1 : NotifyingBase
