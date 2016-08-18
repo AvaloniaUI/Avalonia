@@ -16,7 +16,7 @@ namespace Avalonia.Markup.Data.Plugins
     public class IndeiValidationPlugin : IDataValidationPlugin
     {
         /// <inheritdoc/>
-        public bool Match(WeakReference reference) => reference.Target is INotifyDataErrorInfo;
+        public bool Match(WeakReference reference, string memberName) => reference.Target is INotifyDataErrorInfo;
 
         /// <inheritdoc/>
         public IPropertyAccessor Start(WeakReference reference, string name, IPropertyAccessor accessor)

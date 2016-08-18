@@ -79,6 +79,10 @@
           <TextBox Watermark="Maximum" UseFloatingWatermark="True" Text="{Binding Path=Maximum}"/>
           <TextBox Watermark="Value" UseFloatingWatermark="True" Text="{Binding Path=Value}"/>
         </StackPanel>
+        <StackPanel Margin="18" Gap="4" MinWidth="200" DataContext="{Binding DataAnnotationsValidation}">
+          <TextBlock FontSize="16" Text="Data Annotations Validation"/>
+          <TextBox Watermark="Phone #" UseFloatingWatermark="True" Text="{Binding PhoneNumber}"/>
+        </StackPanel>
       </StackPanel>
     </TabItem>
     <TabItem Header="Commands">

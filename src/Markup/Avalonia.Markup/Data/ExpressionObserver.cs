@@ -35,6 +35,7 @@ namespace Avalonia.Markup.Data
         public static readonly IList<IDataValidationPlugin> DataValidators =
             new List<IDataValidationPlugin>
             {
+                new DataAnnotationsValidationPlugin(),
                 new IndeiValidationPlugin(),
                 new ExceptionValidationPlugin(),
             };

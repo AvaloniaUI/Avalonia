@@ -44,7 +44,7 @@ namespace Avalonia.Markup.Data
             {
                 foreach (var validator in ExpressionObserver.DataValidators)
                 {
-                    if (validator.Match(reference))
+                    if (validator.Match(reference, PropertyName))
                     {
                         accessor = validator.Start(reference, PropertyName, accessor);
                     }

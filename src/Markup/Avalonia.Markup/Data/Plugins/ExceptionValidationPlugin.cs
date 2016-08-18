@@ -13,7 +13,7 @@ namespace Avalonia.Markup.Data.Plugins
     public class ExceptionValidationPlugin : IDataValidationPlugin
     {
         /// <inheritdoc/>
-        public bool Match(WeakReference reference) => true;
+        public bool Match(WeakReference reference, string memberName) => true;
 
         /// <inheritdoc/>
         public IPropertyAccessor Start(WeakReference reference, string name, IPropertyAccessor inner)

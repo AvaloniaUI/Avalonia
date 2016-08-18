@@ -44,6 +44,10 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Annotations">
+      <HintPath>C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETPortable\v4.5\Profile\Profile7\System.ComponentModel.Annotations.dll</HintPath>
+    </Reference>
+    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
     <Reference Include="System.Reactive.Core, Version=3.0.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
       <HintPath>..\..\packages\System.Reactive.Core.3.0.0\lib\net45\System.Reactive.Core.dll</HintPath>
@@ -92,6 +96,7 @@
   <ItemGroup>
     <Compile Include="ControlLocatorTests.cs" />
     <Compile Include="Data\IndeiBase.cs" />
+    <Compile Include="Data\Plugins\DataAnnotationsValidationPluginTests.cs" />
     <Compile Include="Data\Plugins\IndeiValidationPluginTests.cs" />
     <Compile Include="Data\Plugins\ExceptionValidationPluginTests.cs" />
     <Compile Include="Data\ExpressionNodeBuilderTests.cs" />

@@ -15,8 +15,9 @@ namespace Avalonia.Markup.Data.Plugins
         /// Checks whether this plugin can handle data validation on the specified object.
         /// </summary>
         /// <param name="reference">A weak reference to the object.</param>
+        /// <param name="memberName">The name of the member to validate.</param>
         /// <returns>True if the plugin can handle the object; otherwise false.</returns>
-        bool Match(WeakReference reference);
+        bool Match(WeakReference reference, string memberName);
 
         /// <summary>
         /// Starts monitoring the data validation state of a property on an object.
