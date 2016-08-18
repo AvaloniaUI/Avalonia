@@ -55,6 +55,36 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
+        public void OneTime_Binding_Ignores_UnsetValue()
+        {
+            var target = new Class1();
+            var source = new Subject<object>();
+
+            target.Bind(Class1.QuxProperty, new TestOneTimeBinding(source));
+
+            source.OnNext(AvaloniaProperty.UnsetValue);
+            Assert.Equal(5.6, target.GetValue(Class1.QuxProperty));
+
+            source.OnNext(6.7);
+            Assert.Equal(6.7, target.GetValue(Class1.QuxProperty));
+        }
+
+        [Fact]
+        public void OneTime_Binding_Ignores_Binding_Errors()
+        {
+            var target = new Class1();
+            var source = new Subject<object>();
+
+            target.Bind(Class1.QuxProperty, new TestOneTimeBinding(source));
+
+            source.OnNext(new BindingNotification(new Exception(), BindingErrorType.Error));
+            Assert.Equal(5.6, target.GetValue(Class1.QuxProperty));
+
+            source.OnNext(6.7);
+            Assert.Equal(6.7, target.GetValue(Class1.QuxProperty));
+        }
+
+        [Fact]
         public void Bind_Throws_Exception_For_Unregistered_Property()
         {
             Class1 target = new Class1();
@@ -351,6 +381,25 @@ namespace Avalonia.Base.UnitTests
         {
             public static readonly StyledProperty<string> BarProperty =
                 AvaloniaProperty.Register<Class2, string>("Bar", "bardefault");
+        }
+
+        private class TestOneTimeBinding : IBinding
+        {
+            private IObservable<object> _source;
+
+            public TestOneTimeBinding(IObservable<object> source)
+            {
+                _source = source;
+            }
+
+            public InstancedBinding Initiate(
+                IAvaloniaObject target,
+                AvaloniaProperty targetProperty,
+                object anchor = null,
+                bool enableDataValidation = false)
+            {
+                return new InstancedBinding(_source, BindingMode.OneTime);
+            }
         }
     }
 }
