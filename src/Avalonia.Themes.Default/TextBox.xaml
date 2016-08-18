@@ -78,6 +78,7 @@
     <Setter Property="IsVisible" Value="True"/>
   </Style>
   <Style Selector="TextBox /template/ ToolTip">
-    <Setter Property="BorderBrush" Value="Red"/>
+    <Setter Property="Background" Value="{StyleResource ErrorBrushLight}"/>
+    <Setter Property="BorderBrush" Value="{StyleResource ErrorBrush}"/>
   </Style>
 </Styles>
