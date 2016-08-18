@@ -27,37 +27,39 @@
                 </MultiBinding>
               </TextBlock.IsVisible>
             </TextBlock>
-            
-            <ScrollViewer CanScrollHorizontally="{TemplateBinding CanScrollHorizontally}"
-                          HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
-                          VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}">
+
+            <DockPanel LastChildFill="True">
+              <Panel Name="error" DockPanel.Dock="Right" Margin="4 0 0 0">
+                <ToolTip.Tip>
+                  <ItemsControl Items="{TemplateBinding DataValidationErrors}" MemberSelector="Message"/>
+                </ToolTip.Tip>
+                <!-- TODO: Draw as a path -->
+                <Ellipse Width="14" Height="14" Stroke="{StyleResource ErrorBrush}" StrokeThickness="1"/>
+                <Path Data="M7,4l0,5" Stroke="{StyleResource ErrorBrush}" StrokeThickness="2"/>
+                <Path Data="M7,10l0,2" Stroke="{StyleResource ErrorBrush}" StrokeThickness="2"/>
+              </Panel>
+              
+              <ScrollViewer CanScrollHorizontally="{TemplateBinding CanScrollHorizontally}"
+                            HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
+                            VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}">
+                
               <Panel>
                 <TextBlock Name="watermark"
                            Opacity="0.5"
                            Text="{TemplateBinding Watermark}"
                            IsVisible="{TemplateBinding Path=Text, Converter={Static StringConverters.NullOrEmpty}}"/>
-                <DockPanel LastChildFill="True">
-                  <Panel Name="error" DockPanel.Dock="Right">
-                    <ToolTip.Tip>
-                      <ItemsControl Items="{TemplateBinding DataValidationErrors}" MemberSelector="Message"/>
-                    </ToolTip.Tip>
-                    <!-- TODO: Draw as a path -->
-                    <Ellipse Width="14" Height="14" Stroke="{StyleResource ErrorBrush}" StrokeThickness="1"/>
-                    <Path Data="M7,4l0,5" Stroke="{StyleResource ErrorBrush}" StrokeThickness="2"/>
-                    <Path Data="M7,10l0,2" Stroke="{StyleResource ErrorBrush}" StrokeThickness="2"/>
-                  </Panel>
-                  <TextPresenter Name="PART_TextPresenter"
-                                 CaretIndex="{TemplateBinding CaretIndex}"
-                                 SelectionStart="{TemplateBinding SelectionStart}"
-                                 SelectionEnd="{TemplateBinding SelectionEnd}"
-                                 Text="{TemplateBinding Text, Mode=TwoWay}"
-                                 TextAlignment="{TemplateBinding TextAlignment}"
-                                 TextWrapping="{TemplateBinding TextWrapping}"/>
-                </DockPanel>
+                <TextPresenter Name="PART_TextPresenter"
+                               CaretIndex="{TemplateBinding CaretIndex}"
+                               SelectionStart="{TemplateBinding SelectionStart}"
+                               SelectionEnd="{TemplateBinding SelectionEnd}"
+                               Text="{TemplateBinding Text, Mode=TwoWay}"
+                               TextAlignment="{TemplateBinding TextAlignment}"
+                               TextWrapping="{TemplateBinding TextWrapping}"/>
               </Panel>
             </ScrollViewer>
-            
           </DockPanel>
+
+        </DockPanel>
         </Border>
       </ControlTemplate>
     </Setter>
