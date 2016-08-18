@@ -721,7 +721,6 @@ namespace Avalonia.Controls
 
                 _isAttachedToLogicalTree = false;
                 _styleDetach.OnNext(this);
-                this.TemplatedParent = null;
                 OnDetachedFromLogicalTree(e);
 
                 foreach (var child in LogicalChildren.OfType<Control>())
