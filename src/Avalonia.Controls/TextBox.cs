@@ -495,9 +495,15 @@ namespace Avalonia.Controls
                 else
                 {
                     classes.Add(":error");
-                    DataValidationErrors = new[] { status.Error };
+                    DataValidationErrors = UnpackException(status.Error);
                 }
             }
+        }
+
+        private static IEnumerable<Exception> UnpackException(Exception exception)
+        {
+            var aggregate = exception as AggregateException;
+            return aggregate == null ? Enumerable.Repeat(exception, 1) : aggregate.InnerExceptions;
         }
 
         private int CoerceCaretIndex(int value)
