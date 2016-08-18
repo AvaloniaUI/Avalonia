@@ -486,26 +486,28 @@ namespace Avalonia.Controls
             if (property == TextProperty)
             {
                 var classes = (IPseudoClasses)Classes;
-
-                if (status.ErrorType == BindingErrorType.None)
-                {
-                    classes.Remove(":error");
-                    DataValidationErrors = null;
-                }
-                else
-                {
-                    classes.Add(":error");
-                    DataValidationErrors = UnpackException(status.Error);
-                }
+                DataValidationErrors = UnpackException(status.Error);
+                classes.Set(":error", DataValidationErrors != null);
             }
         }
 
         private static IEnumerable<Exception> UnpackException(Exception exception)
         {
-            var aggregate = exception as AggregateException;
-            return aggregate == null ? 
-                (IEnumerable<Exception>)new[] { exception } :
-                aggregate.InnerExceptions;
+            if (exception != null)
+            {
+                var aggregate = exception as AggregateException;
+                var exceptions = aggregate == null ?
+                    (IEnumerable<Exception>)new[] { exception } :
+                    aggregate.InnerExceptions;
+                var filtered = exceptions.Where(x => !(x is BindingBrokenException)).ToList();
+
+                if (filtered.Count > 0)
+                {
+                    return filtered;
+                }
+            }
+
+            return null;
         }
 
         private int CoerceCaretIndex(int value)
