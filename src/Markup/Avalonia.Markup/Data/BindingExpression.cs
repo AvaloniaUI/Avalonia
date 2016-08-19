@@ -12,10 +12,10 @@ using Avalonia.Utilities;
 namespace Avalonia.Markup.Data
 {
     /// <summary>
-    /// Turns an <see cref="ExpressionObserver"/> into a subject that can be bound two-way with
-    /// a value converter.
+    /// Binds to an expression on an object using a type value converter to convert the values
+    /// that are send and received.
     /// </summary>
-    public class ExpressionSubject : ISubject<object>, IDescription
+    public class BindingExpression : ISubject<object>, IDescription
     {
         private readonly ExpressionObserver _inner;
         private readonly Type _targetType;
@@ -28,7 +28,7 @@ namespace Avalonia.Markup.Data
         /// </summary>
         /// <param name="inner">The <see cref="ExpressionObserver"/>.</param>
         /// <param name="targetType">The type to convert the value to.</param>
-        public ExpressionSubject(ExpressionObserver inner, Type targetType)
+        public BindingExpression(ExpressionObserver inner, Type targetType)
             : this(inner, targetType, DefaultValueConverter.Instance)
         {
         }
@@ -43,7 +43,7 @@ namespace Avalonia.Markup.Data
         /// A parameter to pass to <paramref name="converter"/>.
         /// </param>
         /// <param name="priority">The binding priority.</param>
-        public ExpressionSubject(
+        public BindingExpression(
             ExpressionObserver inner,
             Type targetType,
             IValueConverter converter,
@@ -66,7 +66,7 @@ namespace Avalonia.Markup.Data
         /// A parameter to pass to <paramref name="converter"/>.
         /// </param>
         /// <param name="priority">The binding priority.</param>
-        public ExpressionSubject(
+        public BindingExpression(
             ExpressionObserver inner, 
             Type targetType,
             object fallbackValue,

@@ -46,7 +46,7 @@
     <Compile Include="Data\EmptyExpressionNode.cs" />
     <Compile Include="Data\ExpressionNodeBuilder.cs" />
     <Compile Include="Data\ExpressionParseException.cs" />
-    <Compile Include="Data\ExpressionSubject.cs" />
+    <Compile Include="Data\BindingExpression.cs" />
     <Compile Include="ControlLocator.cs" />
     <Compile Include="Data\Plugins\DataAnnotationsValidationPlugin.cs" />
     <Compile Include="Data\Plugins\ExceptionValidationPlugin.cs" />

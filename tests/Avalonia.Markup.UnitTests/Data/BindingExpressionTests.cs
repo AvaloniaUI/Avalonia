@@ -2,26 +2,25 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.ComponentModel;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Reactive.Linq;
-using Moq;
+using System.Threading;
 using Avalonia.Data;
 using Avalonia.Markup.Data;
-using Xunit;
-using System.Threading;
-using System.Collections.Generic;
 using Avalonia.UnitTests;
+using Moq;
+using Xunit;
 
 namespace Avalonia.Markup.UnitTests.Data
 {
-    public class ExpressionSubjectTests
+    public class BindingExpressionTests
     {
         [Fact]
         public async void Should_Get_Simple_Property_Value()
         {
             var data = new Class1 { StringValue = "foo" };
-            var target = new ExpressionSubject(new ExpressionObserver(data, "StringValue"), typeof(string));
+            var target = new BindingExpression(new ExpressionObserver(data, "StringValue"), typeof(string));
             var result = await target.Take(1);
 
             Assert.Equal("foo", result);
@@ -31,7 +30,7 @@ namespace Avalonia.Markup.UnitTests.Data
         public void Should_Set_Simple_Property_Value()
         {
             var data = new Class1 { StringValue = "foo" };
-            var target = new ExpressionSubject(new ExpressionObserver(data, "StringValue"), typeof(string));
+            var target = new BindingExpression(new ExpressionObserver(data, "StringValue"), typeof(string));
 
             target.OnNext("bar");
 
@@ -44,7 +43,7 @@ namespace Avalonia.Markup.UnitTests.Data
             Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
 
             var data = new Class1 { StringValue = "5.6" };
-            var target = new ExpressionSubject(new ExpressionObserver(data, "StringValue"), typeof(double));
+            var target = new BindingExpression(new ExpressionObserver(data, "StringValue"), typeof(double));
             var result = await target.Take(1);
 
             Assert.Equal(5.6, result);
@@ -54,7 +53,7 @@ namespace Avalonia.Markup.UnitTests.Data
         public async void Getting_Invalid_Double_String_Should_Return_BindingError()
         {
             var data = new Class1 { StringValue = "foo" };
-            var target = new ExpressionSubject(new ExpressionObserver(data, "StringValue"), typeof(double));
+            var target = new BindingExpression(new ExpressionObserver(data, "StringValue"), typeof(double));
             var result = await target.Take(1);
 
             Assert.IsType<BindingNotification>(result);
@@ -64,7 +63,7 @@ namespace Avalonia.Markup.UnitTests.Data
         public async void Should_Coerce_Get_Null_Double_String_To_UnsetValue()
         {
             var data = new Class1 { StringValue = null };
-            var target = new ExpressionSubject(new ExpressionObserver(data, "StringValue"), typeof(double));
+            var target = new BindingExpression(new ExpressionObserver(data, "StringValue"), typeof(double));
             var result = await target.Take(1);
 
             Assert.Equal(AvaloniaProperty.UnsetValue, result);
@@ -76,7 +75,7 @@ namespace Avalonia.Markup.UnitTests.Data
             Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
 
             var data = new Class1 { StringValue = (5.6).ToString() };
-            var target = new ExpressionSubject(new ExpressionObserver(data, "StringValue"), typeof(double));
+            var target = new BindingExpression(new ExpressionObserver(data, "StringValue"), typeof(double));
 
             target.OnNext(6.7);
 
@@ -89,7 +88,7 @@ namespace Avalonia.Markup.UnitTests.Data
             Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
 
             var data = new Class1 { DoubleValue = 5.6 };
-            var target = new ExpressionSubject(new ExpressionObserver(data, "DoubleValue"), typeof(string));
+            var target = new BindingExpression(new ExpressionObserver(data, "DoubleValue"), typeof(string));
             var result = await target.Take(1);
 
             Assert.Equal((5.6).ToString(), result);
@@ -101,7 +100,7 @@ namespace Avalonia.Markup.UnitTests.Data
             Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
 
             var data = new Class1 { DoubleValue = 5.6 };
-            var target = new ExpressionSubject(new ExpressionObserver(data, "DoubleValue"), typeof(string));
+            var target = new BindingExpression(new ExpressionObserver(data, "DoubleValue"), typeof(string));
 
             target.OnNext("6.7");
 
@@ -114,7 +113,7 @@ namespace Avalonia.Markup.UnitTests.Data
             Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
 
             var data = new Class1 { StringValue = "foo" };
-            var target = new ExpressionSubject(
+            var target = new BindingExpression(
                 new ExpressionObserver(data, "StringValue"),
                 typeof(int),
                 42,
@@ -135,7 +134,7 @@ namespace Avalonia.Markup.UnitTests.Data
             Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
 
             var data = new Class1 { StringValue = "foo" };
-            var target = new ExpressionSubject(
+            var target = new BindingExpression(
                 new ExpressionObserver(data, "StringValue", true),
                 typeof(int),
                 42,
@@ -156,7 +155,7 @@ namespace Avalonia.Markup.UnitTests.Data
             Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
 
             var data = new Class1 { StringValue = "foo" };
-            var target = new ExpressionSubject(
+            var target = new BindingExpression(
                 new ExpressionObserver(data, "StringValue"),
                 typeof(int),
                 "bar",
@@ -178,7 +177,7 @@ namespace Avalonia.Markup.UnitTests.Data
             Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
 
             var data = new Class1 { StringValue = "foo" };
-            var target = new ExpressionSubject(
+            var target = new BindingExpression(
                 new ExpressionObserver(data, "StringValue", true),
                 typeof(int),
                 "bar",
@@ -198,7 +197,7 @@ namespace Avalonia.Markup.UnitTests.Data
         public void Setting_Invalid_Double_String_Should_Not_Change_Target()
         {
             var data = new Class1 { DoubleValue = 5.6 };
-            var target = new ExpressionSubject(new ExpressionObserver(data, "DoubleValue"), typeof(string));
+            var target = new BindingExpression(new ExpressionObserver(data, "DoubleValue"), typeof(string));
 
             target.OnNext("foo");
 
@@ -209,7 +208,7 @@ namespace Avalonia.Markup.UnitTests.Data
         public void Setting_Invalid_Double_String_Should_Use_FallbackValue()
         {
             var data = new Class1 { DoubleValue = 5.6 };
-            var target = new ExpressionSubject(
+            var target = new BindingExpression(
                 new ExpressionObserver(data, "DoubleValue"),
                 typeof(string),
                 "9.8",
@@ -224,7 +223,7 @@ namespace Avalonia.Markup.UnitTests.Data
         public void Should_Coerce_Setting_Null_Double_To_Default_Value()
         {
             var data = new Class1 { DoubleValue = 5.6 };
-            var target = new ExpressionSubject(new ExpressionObserver(data, "DoubleValue"), typeof(string));
+            var target = new BindingExpression(new ExpressionObserver(data, "DoubleValue"), typeof(string));
 
             target.OnNext(null);
 
@@ -235,7 +234,7 @@ namespace Avalonia.Markup.UnitTests.Data
         public void Should_Coerce_Setting_UnsetValue_Double_To_Default_Value()
         {
             var data = new Class1 { DoubleValue = 5.6 };
-            var target = new ExpressionSubject(new ExpressionObserver(data, "DoubleValue"), typeof(string));
+            var target = new BindingExpression(new ExpressionObserver(data, "DoubleValue"), typeof(string));
 
             target.OnNext(AvaloniaProperty.UnsetValue);
 
@@ -247,7 +246,7 @@ namespace Avalonia.Markup.UnitTests.Data
         {
             var data = new Class1 { DoubleValue = 5.6 };
             var converter = new Mock<IValueConverter>();
-            var target = new ExpressionSubject(
+            var target = new BindingExpression(
                 new ExpressionObserver(data, "DoubleValue"),
                 typeof(string),
                 converter.Object,
@@ -263,7 +262,7 @@ namespace Avalonia.Markup.UnitTests.Data
         {
             var data = new Class1 { DoubleValue = 5.6 };
             var converter = new Mock<IValueConverter>();
-            var target = new ExpressionSubject(
+            var target = new BindingExpression(
                 new ExpressionObserver(data, "DoubleValue"), 
                 typeof(string),
                 converter.Object,
@@ -279,7 +278,7 @@ namespace Avalonia.Markup.UnitTests.Data
         {
             var data = new Class1 { DoubleValue = 5.6 };
             var converter = new Mock<IValueConverter>();
-            var target = new ExpressionSubject(new ExpressionObserver(data, "DoubleValue", true), typeof(string));
+            var target = new BindingExpression(new ExpressionObserver(data, "DoubleValue", true), typeof(string));
             var result = new List<object>();
 
             target.Subscribe(x => result.Add(x));

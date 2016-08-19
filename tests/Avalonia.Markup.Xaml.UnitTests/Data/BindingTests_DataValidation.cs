@@ -2,15 +2,11 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reactive.Linq;
 using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Markup.Data;
 using Avalonia.Markup.Xaml.Data;
-using Moq;
-using ReactiveUI;
 using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Data
@@ -27,7 +23,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
 
             var target = new Binding(nameof(Class1.Foo));
             var instanced = target.Initiate(textBlock, TextBlock.TextProperty, enableDataValidation: false);
-            var subject = (ExpressionSubject)instanced.Subject;
+            var subject = (BindingExpression)instanced.Subject;
             object result = null;
 
             subject.Subscribe(x => result = x);
@@ -45,7 +41,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
 
             var target = new Binding(nameof(Class1.Foo));
             var instanced = target.Initiate(textBlock, TextBlock.TextProperty, enableDataValidation: true);
-            var subject = (ExpressionSubject)instanced.Subject;
+            var subject = (BindingExpression)instanced.Subject;
             object result = null;
 
             subject.Subscribe(x => result = x);
@@ -63,7 +59,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
 
             var target = new Binding(nameof(Class1.Foo)) { Priority = BindingPriority.TemplatedParent };
             var instanced = target.Initiate(textBlock, TextBlock.TextProperty, enableDataValidation: true);
-            var subject = (ExpressionSubject)instanced.Subject;
+            var subject = (BindingExpression)instanced.Subject;
             object result = null;
 
             subject.Subscribe(x => result = x);

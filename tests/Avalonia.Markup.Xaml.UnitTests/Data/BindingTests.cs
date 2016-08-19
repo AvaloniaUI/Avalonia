@@ -200,7 +200,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
 
             var result = binding.Initiate(target, TextBox.TextProperty).Subject;
 
-            Assert.IsType<DefaultValueConverter>(((ExpressionSubject)result).Converter);
+            Assert.IsType<DefaultValueConverter>(((BindingExpression)result).Converter);
         }
 
         [Fact]
@@ -216,7 +216,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
 
             var result = binding.Initiate(target, TextBox.TextProperty).Subject;
 
-            Assert.Same(converter.Object, ((ExpressionSubject)result).Converter);
+            Assert.Same(converter.Object, ((BindingExpression)result).Converter);
         }
 
         [Fact]
@@ -233,7 +233,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
 
             var result = binding.Initiate(target, TextBox.TextProperty).Subject;
 
-            Assert.Same("foo", ((ExpressionSubject)result).ConverterParameter);
+            Assert.Same("foo", ((BindingExpression)result).ConverterParameter);
         }
 
         [Fact]

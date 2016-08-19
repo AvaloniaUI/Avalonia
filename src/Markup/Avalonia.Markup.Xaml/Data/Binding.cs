@@ -135,7 +135,7 @@ namespace Avalonia.Markup.Xaml.Data
                 fallback = null;
             }
 
-            var subject = new ExpressionSubject(
+            var subject = new BindingExpression(
                 observer,
                 targetProperty?.PropertyType ?? typeof(object),
                 fallback,
