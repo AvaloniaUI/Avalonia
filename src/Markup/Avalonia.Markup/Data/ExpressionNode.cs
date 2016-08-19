@@ -92,8 +92,8 @@ namespace Avalonia.Markup.Data
 
         protected virtual void NextValueChanged(object value)
         {
-            var bindingBroken = BindingNotification.ExtractError(value) as MarkupBindingBrokenException;
-            bindingBroken?.Nodes.Add(Description);
+            var bindingBroken = BindingNotification.ExtractError(value) as MarkupBindingChainNullException;
+            bindingBroken?.AddNode(Description);
             _observer.OnNext(value);
         }
 
@@ -181,7 +181,7 @@ namespace Avalonia.Markup.Data
         private BindingNotification TargetNullNotification()
         {
             return new BindingNotification(
-                new MarkupBindingBrokenException(this),
+                new MarkupBindingChainNullException(),
                 BindingErrorType.Error,
                 AvaloniaProperty.UnsetValue);
         }

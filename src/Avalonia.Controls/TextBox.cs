@@ -499,7 +499,7 @@ namespace Avalonia.Controls
                 var exceptions = aggregate == null ?
                     (IEnumerable<Exception>)new[] { exception } :
                     aggregate.InnerExceptions;
-                var filtered = exceptions.Where(x => !(x is BindingBrokenException)).ToList();
+                var filtered = exceptions.Where(x => !(x is BindingChainNullException)).ToList();
 
                 if (filtered.Count > 0)
                 {

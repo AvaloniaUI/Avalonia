@@ -267,7 +267,7 @@ namespace Avalonia.Data
                 case BindingErrorType.None:
                     return $"{{Value: {Value}}}";
                 default:
-                    return HasValue ? 
+                    return HasValue ?
                         $"{{{ErrorType}: {Error}, Fallback: {Value}}}" : 
                         $"{{{ErrorType}: {Error}}}";
             }

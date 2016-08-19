@@ -143,7 +143,7 @@ namespace Avalonia.Markup.UnitTests.Data
             Assert.Equal(new[]
             {
                 new BindingNotification(
-                    new MarkupBindingBrokenException("'Inner' is null in expression 'Inner.MustBePositive'."),
+                    new MarkupBindingChainNullException("Inner.MustBePositive", "Inner"),
                     BindingErrorType.Error,
                     AvaloniaProperty.UnsetValue),
             }, result);

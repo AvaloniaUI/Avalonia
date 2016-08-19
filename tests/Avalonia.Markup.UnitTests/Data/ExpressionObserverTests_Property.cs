@@ -58,63 +58,43 @@ namespace Avalonia.Markup.UnitTests.Data
         }
 
         [Fact]
-        public async void Should_Return_BindingNotification_Error_For_Root_Null()
+        public async void Should_Return_UnsetValue_For_Root_Null()
         {
             var data = new Class3 { Foo = "foo" };
             var target = new ExpressionObserver(default(object), "Foo");
             var result = await target.Take(1);
 
-            Assert.Equal(
-                new BindingNotification(
-                    new MarkupBindingBrokenException("'Foo' is null in expression 'Foo'."),
-                    BindingErrorType.Error,
-                    AvaloniaProperty.UnsetValue),
-                result);
+            Assert.Equal(AvaloniaProperty.UnsetValue, result);
         }
 
         [Fact]
-        public async void Should_Return_BindingNotification_Error_For_Root_UnsetValue()
+        public async void Should_Return_UnsetValue_For_Root_UnsetValue()
         {
             var data = new Class3 { Foo = "foo" };
             var target = new ExpressionObserver(AvaloniaProperty.UnsetValue, "Foo");
             var result = await target.Take(1);
 
-            Assert.Equal(
-                new BindingNotification(
-                    new MarkupBindingBrokenException("'Foo' is null in expression 'Foo'."),
-                    BindingErrorType.Error,
-                    AvaloniaProperty.UnsetValue),
-                result);
+            Assert.Equal(AvaloniaProperty.UnsetValue, result);
         }
 
         [Fact]
-        public async void Should_Return_BindingNotification_Error_For_Observable_Root_Null()
+        public async void Should_Return_UnsetValue_For_Observable_Root_Null()
         {
             var data = new Class3 { Foo = "foo" };
             var target = new ExpressionObserver(Observable.Return(default(object)), "Foo");
             var result = await target.Take(1);
 
-            Assert.Equal(
-                new BindingNotification(
-                    new MarkupBindingBrokenException("'Foo' is null in expression 'Foo'."),
-                    BindingErrorType.Error,
-                    AvaloniaProperty.UnsetValue),
-                result);
+            Assert.Equal(AvaloniaProperty.UnsetValue, result);
         }
 
         [Fact]
-        public async void Should_Return_BindingNotification_Error_For_Observable_Root_UnsetValue()
+        public async void Should_Return_UnsetValue_For_Observable_Root_UnsetValue()
         {
             var data = new Class3 { Foo = "foo" };
             var target = new ExpressionObserver(Observable.Return(AvaloniaProperty.UnsetValue), "Foo");
             var result = await target.Take(1);
 
-            Assert.Equal(
-                new BindingNotification(
-                    new MarkupBindingBrokenException("'Foo' is null in expression 'Foo'."),
-                    BindingErrorType.Error,
-                    AvaloniaProperty.UnsetValue),
-                result);
+            Assert.Equal(AvaloniaProperty.UnsetValue, result);
         }
 
         [Fact]
@@ -166,7 +146,7 @@ namespace Avalonia.Markup.UnitTests.Data
                 new[]
                 {
                     new BindingNotification(
-                        new MarkupBindingBrokenException("'Foo' is null in expression 'Foo.Bar.Baz'."),
+                    new MarkupBindingChainNullException("Foo.Bar.Baz", "Foo"),
                         BindingErrorType.Error,
                         AvaloniaProperty.UnsetValue),
                 },
@@ -270,24 +250,34 @@ namespace Avalonia.Markup.UnitTests.Data
         [Fact]
         public void Should_Track_Property_Chain_Breaking_With_Null_Then_Mending()
         {
-            var data = new Class1 { Next = new Class2 { Bar = "bar" } };
-            var target = new ExpressionObserver(data, "Next.Bar");
+            var data = new Class1
+            {
+                Next = new Class2
+                {
+                    Next = new Class2
+                    {
+                        Bar = "bar"
+                    }
+                }
+            };
+
+            var target = new ExpressionObserver(data, "Next.Next.Bar");
             var result = new List<object>();
 
             var sub = target.Subscribe(x => result.Add(x));
             var old = data.Next;
-            data.Next = null;
             data.Next = new Class2 { Bar = "baz" };
+            data.Next = old;
 
             Assert.Equal(
                 new object[] 
                 {
                     "bar",
                     new BindingNotification(
-                        new MarkupBindingBrokenException("'Next' is null in expression 'Next.Bar'."),
+                        new MarkupBindingChainNullException("Next.Next.Bar", "Next.Next"),
                         BindingErrorType.Error,
                         AvaloniaProperty.UnsetValue),
-                    "baz"
+                    "bar"
                 }, 
                 result);
 
@@ -299,7 +289,7 @@ namespace Avalonia.Markup.UnitTests.Data
         }
 
         [Fact]
-        public void Should_Track_Property_Chain_Breaking_With_Object_Then_Mending()
+        public void Should_Track_Property_Chain_Breaking_With_Missing_Member_Then_Mending()
         {
             var data = new Class1 { Next = new Class2 { Bar = "bar" } };
             var target = new ExpressionObserver(data, "Next.Bar");
@@ -311,10 +301,16 @@ namespace Avalonia.Markup.UnitTests.Data
             data.Next = breaking;
             data.Next = new Class2 { Bar = "baz" };
 
-            Assert.Equal(3, result.Count);
-            Assert.Equal("bar", result[0]);
-            Assert.IsType<BindingNotification>(result[1]);
-            Assert.Equal("baz", result[2]);
+            Assert.Equal(
+                new object[]
+                {
+                    "bar",
+                    new BindingNotification(
+                        new MissingMemberException("Could not find CLR property 'Bar' on 'Avalonia.Markup.UnitTests.Data.ExpressionObserverTests_Property+WithoutBar'"),
+                        BindingErrorType.Error),
+                    "baz",
+                },
+                result);
 
             sub.Dispose();
 
@@ -476,20 +472,6 @@ namespace Avalonia.Markup.UnitTests.Data
         }
 
         [Fact]
-        public async void Should_Handle_Null_Root()
-        {
-            var target = new ExpressionObserver((object)null, "Foo");
-            var result = await target.Take(1);
-
-            Assert.Equal(
-                new BindingNotification(
-                    new MarkupBindingBrokenException("'Foo' is null in expression 'Foo'."),
-                    BindingErrorType.Error,
-                    AvaloniaProperty.UnsetValue),
-                result);
-        }
-
-        [Fact]
         public void Can_Replace_Root()
         {
             var first = new Class1 { Foo = "foo" };
@@ -510,10 +492,7 @@ namespace Avalonia.Markup.UnitTests.Data
                 {
                     "foo",
                     "bar",
-                    new BindingNotification(
-                    new MarkupBindingBrokenException("'Foo' is null in expression 'Foo'."),
-                        BindingErrorType.Error,
-                        AvaloniaProperty.UnsetValue),
+                    AvaloniaProperty.UnsetValue,
                 }, 
                 result);
 
@@ -580,6 +559,7 @@ namespace Avalonia.Markup.UnitTests.Data
         private class Class2 : NotifyingBase, INext
         {
             private string _bar;
+            private INext _next;
 
             public string Bar
             {
@@ -588,6 +568,16 @@ namespace Avalonia.Markup.UnitTests.Data
                 {
                     _bar = value;
                     RaisePropertyChanged(nameof(Bar));
+                }
+            }
+
+            public INext Next
+            {
+                get { return _next; }
+                set
+                {
+                    _next = value;
+                    RaisePropertyChanged(nameof(Next));
                 }
             }
         }

@@ -63,7 +63,14 @@ namespace Avalonia.Markup.Data
         /// <param name="root">The root object.</param>
         /// <param name="expression">The expression.</param>
         /// <param name="enableDataValidation">Whether data validation should be enabled.</param>
-        public ExpressionObserver(object root, string expression, bool enableDataValidation = false)
+        /// <param name="description">
+        /// A description of the expression. If null, <paramref name="expression"/> will be used.
+        /// </param>
+        public ExpressionObserver(
+            object root,
+            string expression,
+            bool enableDataValidation = false,
+            string description = null)
         {
             Contract.Requires<ArgumentNullException>(expression != null);
 
@@ -73,6 +80,7 @@ namespace Avalonia.Markup.Data
             }
 
             Expression = expression;
+            Description = description ?? expression;
             _node = Parse(expression, enableDataValidation);
             _root = new WeakReference(root);
         }
@@ -83,15 +91,20 @@ namespace Avalonia.Markup.Data
         /// <param name="rootObservable">An observable which provides the root object.</param>
         /// <param name="expression">The expression.</param>
         /// <param name="enableDataValidation">Whether data validation should be enabled.</param>
+        /// <param name="description">
+        /// A description of the expression. If null, <paramref name="expression"/> will be used.
+        /// </param>
         public ExpressionObserver(
             IObservable<object> rootObservable,
             string expression,
-            bool enableDataValidation = false)
+            bool enableDataValidation = false,
+            string description = null)
         {
             Contract.Requires<ArgumentNullException>(rootObservable != null);
             Contract.Requires<ArgumentNullException>(expression != null);
 
             Expression = expression;
+            Description = description ?? expression;
             _node = Parse(expression, enableDataValidation);
             _finished = new Subject<Unit>();
             _root = rootObservable;
@@ -104,17 +117,22 @@ namespace Avalonia.Markup.Data
         /// <param name="expression">The expression.</param>
         /// <param name="update">An observable which triggers a re-read of the getter.</param>
         /// <param name="enableDataValidation">Whether data validation should be enabled.</param>
+        /// <param name="description">
+        /// A description of the expression. If null, <paramref name="expression"/> will be used.
+        /// </param>
         public ExpressionObserver(
             Func<object> rootGetter,
             string expression,
             IObservable<Unit> update,
-            bool enableDataValidation = false)
+            bool enableDataValidation = false,
+            string description = null)
         {
             Contract.Requires<ArgumentNullException>(rootGetter != null);
             Contract.Requires<ArgumentNullException>(expression != null);
             Contract.Requires<ArgumentNullException>(update != null);
 
             Expression = expression;
+            Description = description ?? expression;
             _node = Parse(expression, enableDataValidation);
             _finished = new Subject<Unit>();
 
@@ -139,6 +157,11 @@ namespace Avalonia.Markup.Data
         }
 
         /// <summary>
+        /// Gets a description of the expression being observed.
+        /// </summary>
+        public string Description { get; }
+
+        /// <summary>
         /// Gets the expression being observed.
         /// </summary>
         public string Expression { get; }
@@ -148,9 +171,6 @@ namespace Avalonia.Markup.Data
         /// evaluated.
         /// </summary>
         public Type ResultType => (Leaf as PropertyAccessorNode)?.PropertyType;
-
-        /// <inheritdoc/>
-        string IDescription.Description => Expression;
 
         /// <summary>
         /// Gets the leaf node.
@@ -215,15 +235,23 @@ namespace Avalonia.Markup.Data
             }
             else
             {
-                var notification = o as BindingNotification;
-                var broken = notification.Error as MarkupBindingBrokenException;
+                var broken = BindingNotification.ExtractError(o) as MarkupBindingChainNullException;
 
                 if (broken != null)
                 {
-                    broken.Expression = Expression;
+                    // We've received notification of a broken expression due to a null value
+                    // somewhere in the chain. If this null value occurs at the first node then we
+                    // ignore it, as its likely that e.g. the DataContext has not yet been set up.
+                    if (broken.HasNodes)
+                    {
+                        broken.Commit(Description);
+                    }
+                    else
+                    {
+                        o = AvaloniaProperty.UnsetValue;
+                    }
                 }
-
-                return notification;
+                return o;
             }
         }
 

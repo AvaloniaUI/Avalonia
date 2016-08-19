@@ -238,10 +238,12 @@ namespace Avalonia.Markup.Xaml.Data
         {
             Contract.Requires<ArgumentNullException>(target != null);
 
+            var description = $"#{elementName}.{path}";
             var result = new ExpressionObserver(
                 ControlLocator.Track(target, elementName),
                 path,
-                false);
+                false,
+                description);
             return result;
         }
 
