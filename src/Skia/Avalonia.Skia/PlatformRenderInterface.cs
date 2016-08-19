@@ -28,28 +28,35 @@ namespace Avalonia.Skia
             return new StreamGeometryImpl();
         }
 
-        IBitmapImpl LoadBitmap(byte[] data)
-        {
-            var bitmap = new SKBitmap();
-            if (!SKImageDecoder.DecodeMemory(data, bitmap))
-            {
-                throw new ArgumentException("Unable to load bitmap from provided data");
-            }
-
-            return new BitmapImpl(bitmap);
-        }
-
         public IBitmapImpl LoadBitmap(System.IO.Stream stream)
         {
-            using (var sr = new BinaryReader(stream))
+            using (var s = new SKManagedStream(stream))
             {
-                return LoadBitmap(sr.ReadBytes((int)stream.Length));
+                using (var codec = SKCodec.Create(s))
+                {
+                    var info = codec.Info;
+                    var bitmap = new SKBitmap(info.Width, info.Height, SKImageInfo.PlatformColorType, info.IsOpaque ? SKAlphaType.Opaque : SKAlphaType.Premul);
+
+                    IntPtr length;
+                    var result = codec.GetPixels(bitmap.Info, bitmap.GetPixels(out length));
+                    if (result == SKCodecResult.Success || result == SKCodecResult.IncompleteInput)
+                    {
+                        return new BitmapImpl(bitmap);
+                    }
+                    else
+                    {
+                        throw new ArgumentException("Unable to load bitmap from provided data");
+                    }
+                }
             }
         }
 
         public IBitmapImpl LoadBitmap(string fileName)
         {
-            return LoadBitmap(File.ReadAllBytes(fileName));
+            using (var stream = File.OpenRead(fileName))
+            {
+                return LoadBitmap(stream);
+            }
         }
 
         public IRenderTargetBitmapImpl CreateRenderTargetBitmap(int width, int height)

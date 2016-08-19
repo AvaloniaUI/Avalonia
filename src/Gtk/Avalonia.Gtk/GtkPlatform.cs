@@ -25,9 +25,10 @@ namespace Avalonia
 
 namespace Avalonia.Gtk
 {
+    using System.IO;
     using Gtk = global::Gtk;
 
-    public class GtkPlatform : IPlatformThreadingInterface, IPlatformSettings, IWindowingPlatform
+    public class GtkPlatform : IPlatformThreadingInterface, IPlatformSettings, IWindowingPlatform, IPlatformIconLoader
     {
         private static readonly GtkPlatform s_instance = new GtkPlatform();
         private static Thread _uiThread;
@@ -53,7 +54,8 @@ namespace Avalonia.Gtk
                 .Bind<IMouseDevice>().ToConstant(GtkMouseDevice.Instance)
                 .Bind<IPlatformSettings>().ToConstant(s_instance)
                 .Bind<IPlatformThreadingInterface>().ToConstant(s_instance)
-                .Bind<ISystemDialogImpl>().ToSingleton<SystemDialogImpl>();
+                .Bind<ISystemDialogImpl>().ToSingleton<SystemDialogImpl>()
+                .Bind<IPlatformIconLoader>().ToConstant(s_instance);
             SharedPlatform.Register();
             _uiThread = Thread.CurrentThread;
         }
@@ -111,6 +113,32 @@ namespace Avalonia.Gtk
         public IPopupImpl CreatePopup()
         {
             return new PopupImpl();
+        }
+
+        public IWindowIconImpl LoadIcon(string fileName)
+        {
+            return new IconImpl(new Gdk.Pixbuf(fileName));
+        }
+
+        public IWindowIconImpl LoadIcon(Stream stream)
+        {
+            return new IconImpl(new Gdk.Pixbuf(stream));
+        }
+
+        public IWindowIconImpl LoadIcon(IBitmapImpl bitmap)
+        {
+            if (bitmap is Gdk.Pixbuf)
+            {
+                return new IconImpl((Gdk.Pixbuf)bitmap);
+            }
+            else
+            {
+                using (var memoryStream = new MemoryStream())
+                {
+                    bitmap.Save(memoryStream);
+                    return new IconImpl(new Gdk.Pixbuf(memoryStream));
+                } 
+            }
         }
     }
 }

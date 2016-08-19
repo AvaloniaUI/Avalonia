@@ -212,6 +212,37 @@ namespace Avalonia.Controls.UnitTests.Presenters
         }
 
         [Fact]
+        public void Inserting_Then_Removing_Should_Add_Remove_Containers()
+        {
+            var items = new AvaloniaList<string>(Enumerable.Range(0, 5).Select(x => $"Item {x}"));
+            var toAdd = Enumerable.Range(0, 3).Select(x => $"Added Item {x}").ToArray();
+            var target = new ItemsPresenter
+            {
+                VirtualizationMode = ItemVirtualizationMode.None,
+                Items = items,
+                ItemTemplate = new FuncDataTemplate<string>(x => new TextBlock { Height = 10 }),
+            };
+
+            target.ApplyTemplate();
+
+            Assert.Equal(items.Count, target.Panel.Children.Count);
+
+            foreach (var item in toAdd)
+            {
+                items.Insert(1, item);
+            }
+
+            Assert.Equal(items.Count, target.Panel.Children.Count);
+
+            foreach (var item in toAdd)
+            {
+                items.Remove(item);
+            }
+
+            Assert.Equal(items.Count, target.Panel.Children.Count);
+        }
+
+        [Fact]
         public void Should_Handle_Duplicate_Items()
         {
             var items = new AvaloniaList<int>(new[] { 1, 2, 1 });

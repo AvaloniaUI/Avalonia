@@ -46,11 +46,11 @@ namespace Avalonia.SceneGraph.UnitTests.VisualTree
                 context.Render(tree);
 
                 var track = target.Track(control);
-                var results = new List<TransformedBounds>();
+                var results = new List<TransformedBounds?>();
                 track.Subscribe(results.Add);
 
-                Assert.Equal(new Rect(0, 0, 15, 15), results[0].Bounds);
-                Assert.Equal(Matrix.CreateTranslation(42, 42), results[0].Transform);
+                Assert.Equal(new Rect(0, 0, 15, 15), results[0].Value.Bounds);
+                Assert.Equal(Matrix.CreateTranslation(42, 42), results[0].Value.Transform);
             }
         }
     }

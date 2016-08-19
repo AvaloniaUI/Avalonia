@@ -1,6 +1,8 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:pages="clr-namespace:ControlCatalog.Pages;assembly=ControlCatalog"
-        Title="Avalonia Control Gallery">
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Avalonia Control Gallery"
+        Icon="resm:ControlCatalog.Assets.test_icon.ico?assembly=ControlCatalog">
   <TabControl Classes="sidebar">
     <TabControl.Transition>
       <CrossFade Duration="0.25"/>
@@ -19,5 +21,6 @@
     <TabItem Header="Slider"><pages:SliderPage/></TabItem>
     <TabItem Header="TextBox"><pages:TextBoxPage/></TabItem>
     <TabItem Header="ToolTip"><pages:ToolTipPage/></TabItem>
+    <TabItem Header="TreeView"><pages:TreeViewPage/></TabItem>
   </TabControl>
 </Window>

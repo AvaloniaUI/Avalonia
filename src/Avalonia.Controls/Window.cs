@@ -70,6 +70,12 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<string> TitleProperty =
             AvaloniaProperty.Register<Window, string>(nameof(Title), "Window");
 
+        /// <summary>
+        /// Defines the <see cref="Icon"/> property.
+        /// </summary>
+        public static readonly StyledProperty<WindowIcon> IconProperty =
+            AvaloniaProperty.Register<Window, WindowIcon>(nameof(Icon));
+
         private readonly NameScope _nameScope = new NameScope();
         private object _dialogResult;
         private readonly Size _maxPlatformClientSize;
@@ -83,6 +89,7 @@ namespace Avalonia.Controls
             TitleProperty.Changed.AddClassHandler<Window>((s, e) => s.PlatformImpl.SetTitle((string)e.NewValue));
             HasSystemDecorationsProperty.Changed.AddClassHandler<Window>(
                 (s, e) => s.PlatformImpl.SetSystemDecorations((bool) e.NewValue));
+            IconProperty.Changed.AddClassHandler<Window>((s, e) => s.PlatformImpl.SetIcon(((WindowIcon)e.NewValue).PlatformImpl));
         }
 
         /// <summary>
@@ -157,6 +164,15 @@ namespace Avalonia.Controls
         {
             get { return this.PlatformImpl.WindowState; }
             set { this.PlatformImpl.WindowState = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the icon of the window.
+        /// </summary>
+        public WindowIcon Icon
+        {
+            get { return GetValue(IconProperty); }
+            set { SetValue(IconProperty, value); }
         }
 
         /// <inheritdoc/>

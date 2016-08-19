@@ -1,0 +1,19 @@
+<UserControl xmlns="https://github.com/avaloniaui">
+  <StackPanel Orientation="Vertical" Gap="4">
+    <TextBlock Classes="h1">TreeView</TextBlock>
+    <TextBlock Classes="h2">Displays a hierachical tree of data.</TextBlock>
+
+    <StackPanel Orientation="Horizontal"
+              Margin="0,16,0,0"
+              HorizontalAlignment="Center"
+              Gap="16">
+      <TreeView Items="{Binding}" Width="250" Height="350">
+        <TreeView.ItemTemplate>
+          <TreeDataTemplate ItemsSource="{Binding Children}">
+            <TextBlock Text="{Binding Header}"/>
+          </TreeDataTemplate>
+        </TreeView.ItemTemplate>
+      </TreeView>
+    </StackPanel>
+  </StackPanel>
+</UserControl>

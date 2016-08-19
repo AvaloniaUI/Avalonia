@@ -7,7 +7,7 @@ Push-Location $dir
 sv version $env:APPVEYOR_BUILD_NUMBER
 #sv version "1-debug"
 
-sv version 0.2.0.$version-alpha
+sv version 0.4.1-build$version-alpha
 sv key $env:myget_key
 
 . ".\include.ps1"

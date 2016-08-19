@@ -20,7 +20,7 @@ namespace Avalonia.Controls.Presenters
         public static readonly StyledProperty<ItemVirtualizationMode> VirtualizationModeProperty =
             AvaloniaProperty.Register<ItemsPresenter, ItemVirtualizationMode>(
                 nameof(VirtualizationMode),
-                defaultValue: ItemVirtualizationMode.Simple);
+                defaultValue: ItemVirtualizationMode.None);
 
         private ItemVirtualizer _virtualizer;
 

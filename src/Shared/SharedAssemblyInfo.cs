@@ -6,13 +6,13 @@ using System.Resources;
 
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCopyright("Copyright \u00A9 2015")]
+[assembly: AssemblyCopyright("Copyright AvaloniaUI 2016")]
 [assembly: AssemblyCulture("")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyProduct("Avalonia")]
 [assembly: AssemblyTrademark("")]
 [assembly: NeutralResourcesLanguage("en")]
 
-[assembly: AssemblyVersion("0.0.0.1")]
-[assembly: AssemblyFileVersion("0.0.0.1")]
-[assembly: AssemblyInformationalVersion("0.0.1-alpha")]
+[assembly: AssemblyVersion("0.4.0")]
+[assembly: AssemblyFileVersion("0.4.0")]
+[assembly: AssemblyInformationalVersion("0.4.0")]

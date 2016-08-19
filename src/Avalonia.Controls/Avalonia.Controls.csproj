@@ -56,6 +56,7 @@
     <Compile Include="HotkeyManager.cs" />
     <Compile Include="IApplicationLifecycle.cs" />
     <Compile Include="IScrollable.cs" />
+    <Compile Include="WindowIcon.cs" />
     <Compile Include="IPseudoClasses.cs" />
     <Compile Include="DropDownItem.cs" />
     <Compile Include="ISetInheritanceParent.cs" />
@@ -64,6 +65,8 @@
     <Compile Include="IVirtualizingPanel.cs" />
     <Compile Include="LayoutTransformControl.cs" />
     <Compile Include="Mixins\ContentControlMixin.cs" />
+    <Compile Include="Platform\IWindowIconImpl.cs" />
+    <Compile Include="Platform\IPlatformIconLoader.cs" />
     <Compile Include="Platform\ITopLevelRenderer.cs" />
     <Compile Include="Platform\IWindowingPlatform.cs" />
     <Compile Include="Platform\PlatformManager.cs" />
@@ -225,7 +228,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

@@ -24,7 +24,7 @@ namespace Avalonia.Skia
         {
             PixelHeight = height;
             PixelWidth = width;
-            Bitmap = new SKBitmap(width, height, SKColorType.N_32, SKAlphaType.Premul);
+            Bitmap = new SKBitmap(width, height, SKImageInfo.PlatformColorType, SKAlphaType.Premul);
         }
 
         public void Dispose()
@@ -80,5 +80,14 @@ namespace Avalonia.Skia
             return new DrawingContext(new BitmapDrawingContext(Bitmap));
         }
 
+        public void Save(Stream stream)
+        {
+            IntPtr length;
+            using (var image = SKImage.FromPixels(Bitmap.Info, Bitmap.GetPixels(out length), Bitmap.RowBytes))
+            using (var data = image.Encode())
+            {
+                data.SaveTo(stream);
+            }
+        }
     }
 }

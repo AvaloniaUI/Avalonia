@@ -31,7 +31,7 @@ namespace Avalonia.Controls.UnitTests
             ApplyTemplates(target);
 
             Assert.Equal(new[] { "Root" }, ExtractItemHeader(target, 0));
-            Assert.Equal(new[] { "Child1", "Child2" }, ExtractItemHeader(target, 1));
+            Assert.Equal(new[] { "Child1", "Child2", "Child3" }, ExtractItemHeader(target, 1));
             Assert.Equal(new[] { "Grandchild2a" }, ExtractItemHeader(target, 2));
         }
 
@@ -58,7 +58,7 @@ namespace Avalonia.Controls.UnitTests
                 .OfType<TreeViewItem>()
                 .ToList();
 
-            Assert.Equal(4, items.Count);
+            Assert.Equal(5, items.Count);
             Assert.All(items, x => Assert.IsType<Canvas>(x.HeaderPresenter.Child));
         }
 
@@ -199,11 +199,11 @@ namespace Avalonia.Controls.UnitTests
             root.Child = target;
             ApplyTemplates(target);
 
-            Assert.Equal(4, target.ItemContainerGenerator.Index.Items.Count());
+            Assert.Equal(5, target.ItemContainerGenerator.Index.Items.Count());
 
             tree[0].Children.RemoveAt(1);
 
-            Assert.Equal(2, target.ItemContainerGenerator.Index.Items.Count());
+            Assert.Equal(3, target.ItemContainerGenerator.Index.Items.Count());
         }
 
         [Fact]
@@ -297,7 +297,7 @@ namespace Avalonia.Controls.UnitTests
             ApplyTemplates(target);
 
             Assert.Equal(new[] { "Root" }, ExtractItemHeader(target, 0));
-            Assert.Equal(new[] { "Child1", "Child2" }, ExtractItemHeader(target, 1));
+            Assert.Equal(new[] { "Child1", "Child2", "Child3" }, ExtractItemHeader(target, 1));
             Assert.Equal(new[] { "Grandchild2a" }, ExtractItemHeader(target, 2));
 
             // Make sure that the binding to Node.Children does not get collected.
@@ -357,6 +357,10 @@ namespace Avalonia.Controls.UnitTests
                                     Value = "Grandchild2a",
                                 },
                             },
+                        },
+                        new Node
+                        {
+                            Value = "Child3",
                         },
                     }
                 }

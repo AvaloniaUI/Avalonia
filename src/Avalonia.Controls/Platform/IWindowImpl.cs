@@ -39,5 +39,10 @@ namespace Avalonia.Platform
         /// Enables of disables system window decorations (title bar, buttons, etc)
         /// </summary>
         void SetSystemDecorations(bool enabled);
+
+        /// <summary>
+        /// Sets the icon of this window.
+        /// </summary>
+        void SetIcon(IWindowIconImpl icon);
     }
 }

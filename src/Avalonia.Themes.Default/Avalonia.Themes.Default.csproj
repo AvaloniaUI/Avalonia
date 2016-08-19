@@ -89,7 +89,6 @@
     <EmbeddedResource Include="Accents\BaseLight.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <None Include="app.config" />
     <EmbeddedResource Include="Button.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>

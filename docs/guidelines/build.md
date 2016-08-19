@@ -1,55 +1,89 @@
-# Building Avalonia 
+# Building Avalonia
 
 ## Windows
 
-Avalonia requires Visual Studio 2015 to build on Windows.
+Avalonia requires at least Visual Studio 2015 to build on Windows.
 
 ### Install GTK Sharp
 
-For the moment under windows, you must have [gtk-sharp](http://www.mono-project.com/download/#download-win) installed. Note that after installing the package your machine may require a restart before GTK# is added to your path. We hope to remove or make this dependency optional at some point in the future.
+For the moment under windows, you must have [gtk-sharp](http://www.mono-project.com/download/#download-win)
+installed. Note that after installing the package your machine may require a restart before GTK# is
+added to your path. We hope to remove or make this dependency optional at some point in the future.
 
 ### Clone the Avalonia repository
 
-    git clone https://github.com/AvaloniaUI/Avalonia.git
+```
+git clone https://github.com/AvaloniaUI/Avalonia.git
+git submodule update --init
+```
 
-We currently need to build our own private version of some libraries. These are linked as submodules in the git repository, so run:
+### Open in Visual Studio
 
-    git submodule update --init
-    
+Open the `Avalonia.sln` solution in Visual Studio 2015 or newer. The free Visual Studio Community
+edition works fine. Run the `Samples\ControlCatalog.Desktop` project to see the sample application.
+
 ## Linux
 
-This guide Written for Ubuntu 15.04 - I'm not sure how well it applies to other distributions, but
-please submit a PR if you have anything to add.
+### Install the latest version of Mono
 
-### Install Latest Mono
+To build Avalonia under Linux, you need to have a recent version of Mono installed. Mono is a cross-
+platform, open source .Net platform. There is a very good chance that the version of Mono that came
+with your Linux distribution is too old, so you want to install a more up-to-date version. The most
+convenient way to to this is through your package manager. The Mono project has great [installation
+instructions for many popular Linux distros](http://www.mono-project.com/docs/getting-started/install/linux).
 
-That the time of writing, mono 4.2 aplha was needed to build. Add mono package sources by following
-instructions below for the stable channel and then add the alpha channel as well.
+This will make the most up-to-date Mono release available through your package manager, and offer
+you updates as they become available.
 
-http://www.mono-project.com/docs/getting-started/install/linux/#debian-ubuntu-and-derivatives
+Once you have your package manager configured for the Mono repository, install the `mono-devel`
+package, for example on ubuntu:
 
-Then install the needed packages:
+```
+sudo apt-get install mono-devel
+```
 
-    sudo apt-get install git mono-devel referenceassemblies-pcl monodevelop
+Once installed, check the version of mono to ensure it's at least 4.4.2:
+
+```
+mono --version
+```
 
 ### Clone the Avalonia repository
 
-    git clone https://github.com/AvaloniaUI/Avalonia.git
+```
+git clone https://github.com/AvaloniaUI/Avalonia.git
+git submodule update --init
+```
 
-We currently need to build our own private version of ReactiveUI as it doesn't work on mono. This
-is linked as a submodule in the git repository, so run:
+### Restore nuget packages
 
-    git submodule update --init
-    
-The next step is to download the Skia native libraries. Run ```getnatives.sh``` script which can be found under the folder ```src\Skia\```.
-   
-### Load the Project in MonoDevelop
+```
+cd Avalonia
+mkdir -p .nuget
+wget -O .nuget/nuget.exe https://dist.nuget.org/win-x86-commandline/latest/nuget.exe
+mono .nuget/nuget.exe restore Avalonia.sln
+```
 
-Start MonoDevelop and open the `Avalonia.sln` solution. Wait for MonoDevelop to install the
-project's NuGet packages.
+### Build and Run Avalonia
 
-Set the TestApplication project as the startup project and click Run.
+To build Avalonia in the `Debug` configuration:
 
-There will be some compile errors in the tests, but ignore them for now. 
+```
+xbuild /p:Platform=Mono /p:Configuration=Debug Avalonia.sln
+```
 
-You can track the Linux version's progress in the [Linux issue](https://github.com/AvaloniaUI/Avalonia/issues/78).
+You should now be able to run the ControlCatalog.Desktop sample:
+
+```
+mono ./samples/ControlCatalog.Desktop/bin/Debug/ControlCatalog.Desktop.exe
+```
+
+### Building Avalonia in MonoDevelop
+
+Unless you have a very current version of monodevelop (6.1.x or newer), it is necessary to manually
+restore the Nuget depdendencies as [mentioned above](#restore-nuget-packages). You must then
+disable MonoDevelop's inbuilt NuGet package manager add-in by going to `Tools -> Add-in Manager` or
+it will complain that a newer version of NuGet is needed.
+
+Finally, select the `Debug | Mono` or `Release | Mono` build configuration and you should be good to
+go!

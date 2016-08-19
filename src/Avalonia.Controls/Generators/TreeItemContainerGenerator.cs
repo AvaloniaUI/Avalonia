@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 
@@ -102,19 +103,19 @@ namespace Avalonia.Controls.Generators
         public override IEnumerable<ItemContainerInfo> Clear()
         {
             var items = base.Clear();
-            Index.Remove(items);
+            Index.Remove(0, items);
             return items;
         }
 
         public override IEnumerable<ItemContainerInfo> Dematerialize(int startingIndex, int count)
         {
-            Index.Remove(GetContainerRange(startingIndex, count));
+            Index.Remove(startingIndex, GetContainerRange(startingIndex, count));
             return base.Dematerialize(startingIndex, count);
         }
 
         public override IEnumerable<ItemContainerInfo> RemoveRange(int startingIndex, int count)
         {
-            Index.Remove(GetContainerRange(startingIndex, count));
+            Index.Remove(startingIndex, GetContainerRange(startingIndex, count));
             return base.RemoveRange(startingIndex, count);
         }
 

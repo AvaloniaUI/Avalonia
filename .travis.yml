@@ -4,22 +4,17 @@ os:
   - osx
 mono:
   - latest
-solution: Avalonia.mono.sln
+solution: Avalonia.travis-mono.sln
 before_install:
   - mkdir -p .nuget
   - wget -O .nuget/nuget.exe https://dist.nuget.org/win-x86-commandline/latest/nuget.exe
 install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install -y gtk-sharp2 ; fi
-  - mono .nuget/nuget.exe restore Avalonia.mono.sln
+  - mono .nuget/nuget.exe restore Avalonia.sln
   - mono .nuget/nuget.exe install xunit.runner.console -Version 2.1.0 -OutputDirectory testrunner
 script:
-  - xbuild /p:Configuration=Release Avalonia.mono.sln
-  - mono ./testrunner/xunit.runner.console.2.1.0/tools/xunit.console.exe ./tests/Avalonia.Base.UnitTests/bin/Release/Avalonia.Base.UnitTests.dll
-  - mono ./testrunner/xunit.runner.console.2.1.0/tools/xunit.console.exe ./tests/Avalonia.Input.UnitTests/bin/Release/Avalonia.Input.UnitTests.dll
-  - mono ./testrunner/xunit.runner.console.2.1.0/tools/xunit.console.exe ./tests/Avalonia.Interactivity.UnitTests/bin/Release/Avalonia.Interactivity.UnitTests.dll
-  - mono ./testrunner/xunit.runner.console.2.1.0/tools/xunit.console.exe ./tests/Avalonia.Layout.UnitTests/bin/Release/Avalonia.Layout.UnitTests.dll
-  - mono ./testrunner/xunit.runner.console.2.1.0/tools/xunit.console.exe ./tests/Avalonia.Markup.UnitTests/bin/Release/Avalonia.Markup.UnitTests.dll
-  - mono ./testrunner/xunit.runner.console.2.1.0/tools/xunit.console.exe ./tests/Avalonia.Styling.UnitTests/bin/Release/Avalonia.Styling.UnitTests.dll
+  - xbuild /p:Platform=Mono /p:Configuration=Release Avalonia.sln
+  - ./tests/run-tests.sh
 notifications:
   email: false
   webhooks:

@@ -29,6 +29,12 @@ namespace Avalonia.Controls
                 (o, v) => o.IsDropDownOpen = v);
 
         /// <summary>
+        /// Defines the <see cref="MaxDropDownHeight"/> property.
+        /// </summary>
+        public static readonly StyledProperty<double> MaxDropDownHeightProperty =
+            AvaloniaProperty.Register<DropDown, double>(nameof(MaxDropDownHeight), 200);
+
+        /// <summary>
         /// Defines the <see cref="SelectionBoxItem"/> property.
         /// </summary>
         public static readonly DirectProperty<DropDown, object> SelectionBoxItemProperty =
@@ -54,6 +60,15 @@ namespace Avalonia.Controls
         {
             get { return _isDropDownOpen; }
             set { SetAndRaise(IsDropDownOpenProperty, ref _isDropDownOpen, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the maximum height for the dropdown list.
+        /// </summary>
+        public double MaxDropDownHeight
+        {
+            get { return GetValue(MaxDropDownHeightProperty); }
+            set { SetValue(MaxDropDownHeightProperty, value); }
         }
 
         /// <summary>

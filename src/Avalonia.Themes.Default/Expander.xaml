@@ -90,7 +90,11 @@
                       VerticalAlignment="Center"
                       Data="M 0 2 L 4 6 L 0 10 Z" />
             </Border>
-            <ContentPresenter Grid.Column="1" Content="{TemplateBinding Content}" VerticalAlignment="Center" />
+            <ContentPresenter Name="PART_ContentPresenter"
+                              Grid.Column="1" 
+                              Background="Transparent" 
+                              Content="{TemplateBinding Content}" 
+                              VerticalAlignment="Center" />
           </Grid>
         </Border>
       </ControlTemplate>

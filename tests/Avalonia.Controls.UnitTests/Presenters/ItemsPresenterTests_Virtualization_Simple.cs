@@ -435,6 +435,38 @@ namespace Avalonia.Controls.UnitTests.Presenters
         }
 
         [Fact]
+        public void Inserting_Then_Removing_Should_Add_Remove_Containers()
+        {
+            var items = new AvaloniaList<string>(Enumerable.Range(0, 5).Select(x => $"Item {x}"));
+            var toAdd = Enumerable.Range(0, 3).Select(x => $"Added Item {x}").ToArray();
+            var target = new ItemsPresenter
+            {
+                VirtualizationMode = ItemVirtualizationMode.None,
+                Items = items,
+                ItemTemplate = new FuncDataTemplate<string>(x => new TextBlock { Height = 10 }),
+            };
+
+            target.ApplyTemplate();
+
+            Assert.Equal(items.Count, target.Panel.Children.Count);
+
+            int addIndex = 1;
+            foreach (var item in toAdd)
+            {
+                items.Insert(addIndex++, item);
+            }
+
+            Assert.Equal(items.Count, target.Panel.Children.Count);
+
+            foreach (var item in toAdd)
+            {
+                items.Remove(item);
+            }
+
+            Assert.Equal(items.Count, target.Panel.Children.Count);
+        }
+
+        [Fact]
         public void Reassigning_Items_Should_Remove_Containers()
         {
             var target = CreateTarget(itemCount: 6);
@@ -520,6 +552,144 @@ namespace Avalonia.Controls.UnitTests.Presenters
                 // Check for issue #591: this should not throw.
                 target.ScrollIntoView(items[0]);
             }
+        }
+
+        [Fact]
+        public void InsertRange_Items_Should_Update_Containers()
+        {
+            var target = CreateTarget(useAvaloniaList: true);
+
+            target.ApplyTemplate();
+            target.Measure(new Size(100, 100));
+            target.Arrange(new Rect(0, 0, 100, 100));
+
+            var expected = Enumerable.Range(0, 10).Select(x => $"Item {x}").ToList();
+            var items = (AvaloniaList<string>)target.Items;
+            var actual = target.Panel.Children.Select(x => x.DataContext).ToList();
+
+            Assert.Equal(expected, actual);
+
+            var toAdd = Enumerable.Range(0, 3).Select(x => $"New Item {x}").ToList();
+
+            int index = 1;
+
+            items.InsertRange(index, toAdd);
+            expected.InsertRange(index, toAdd);
+            expected.RemoveRange(10, toAdd.Count);
+
+            actual = target.Panel.Children.Select(x => x.DataContext).ToList();
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public void InsertRange_Items_Before_Last_Should_Update_Containers()
+        {
+            var target = CreateTarget(useAvaloniaList: true);
+
+            target.ApplyTemplate();
+            target.Measure(new Size(100, 100));
+            target.Arrange(new Rect(0, 0, 100, 100));
+
+            var expected = Enumerable.Range(0, 10).Select(x => $"Item {x}").ToList();
+            var items = (AvaloniaList<string>)target.Items;
+            var actual = target.Panel.Children.Select(x => x.DataContext).ToList();
+
+            Assert.Equal(expected, actual);
+
+            var toAdd = Enumerable.Range(0, 3).Select(x => $"New Item {x}").ToList();
+
+            int index = 8;
+
+            items.InsertRange(index, toAdd);
+            expected.InsertRange(index, toAdd);
+            expected.RemoveRange(10, toAdd.Count);
+
+            actual = target.Panel.Children.Select(x => x.DataContext).ToList();
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public void RemoveRange_Items_Should_Update_Containers()
+        {
+            var target = CreateTarget(useAvaloniaList: true);
+
+            target.ApplyTemplate();
+            target.Measure(new Size(100, 100));
+            target.Arrange(new Rect(0, 0, 100, 100));
+
+            var expected = Enumerable.Range(0, 13).Select(x => $"Item {x}").ToList();
+            var items = (AvaloniaList<string>)target.Items;
+            var actual = target.Panel.Children.Select(x => x.DataContext).ToList();
+
+            Assert.Equal(expected.Take(10), actual);
+
+            int index = 5;
+            int count = 3;
+
+            items.RemoveRange(index, count);
+            expected.RemoveRange(index, count);
+
+            actual = target.Panel.Children.Select(x => x.DataContext).ToList();
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public void RemoveRange_Items_Before_Last_Should_Update_Containers()
+        {
+            var target = CreateTarget(useAvaloniaList: true);
+
+            target.ApplyTemplate();
+            target.Measure(new Size(100, 100));
+            target.Arrange(new Rect(0, 0, 100, 100));
+
+            var expected = Enumerable.Range(0, 13).Select(x => $"Item {x}").ToList();
+            var items = (AvaloniaList<string>)target.Items;
+            var actual = target.Panel.Children.Select(x => x.DataContext).ToList();
+
+            Assert.Equal(expected.Take(10), actual);
+
+            int index = 8;
+            int count = 3;
+
+            items.RemoveRange(index, count);
+            expected.RemoveRange(index, count);
+
+            actual = target.Panel.Children.Select(x => x.DataContext).ToList();
+            Assert.Equal(expected, actual);
+        }
+
+        public void Should_Add_Containers_For_Items_After_Clear()
+        {
+            var target = CreateTarget(itemCount: 10);
+            var defaultItems = (IList<string>)target.Items;
+            var items = new AvaloniaList<string>(defaultItems);
+            target.Items = items;
+
+            target.ApplyTemplate();
+            target.Measure(new Size(100, 100));
+            target.Arrange(new Rect(target.DesiredSize));
+
+            Assert.Equal(10, target.Panel.Children.Count);
+
+            items.Clear();
+
+            target.Panel.Measure(new Size(100, 100));
+            target.Panel.Arrange(new Rect(target.Panel.DesiredSize));
+
+            target.Measure(new Size(100, 100));
+            target.Arrange(new Rect(target.DesiredSize));
+
+            Assert.Equal(0, target.Panel.Children.Count);
+
+            items.AddRange(defaultItems.Select(s => s + " new"));
+
+            target.Panel.Measure(new Size(100, 100));
+            target.Panel.Arrange(new Rect(target.Panel.DesiredSize));
+
+            target.Measure(new Size(100, 100));
+            target.Arrange(new Rect(target.DesiredSize));
+
+            Assert.Equal(10, target.Panel.Children.Count);
         }
 
         public class Vertical

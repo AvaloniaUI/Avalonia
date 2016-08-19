@@ -10,6 +10,7 @@ using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Xunit;
+using Avalonia.Collections;
 
 namespace Avalonia.Controls.UnitTests
 {
@@ -164,6 +165,7 @@ namespace Avalonia.Controls.UnitTests
                         Name = "PART_ItemsPresenter",
                         [~ItemsPresenter.ItemsProperty] = parent.GetObservable(ItemsControl.ItemsProperty).AsBinding(),
                         [~ItemsPresenter.ItemsPanelProperty] = parent.GetObservable(ItemsControl.ItemsPanelProperty).AsBinding(),
+                        [~ItemsPresenter.VirtualizationModeProperty] = parent.GetObservable(ListBox.VirtualizationModeProperty).AsBinding(),
                     }
                 });
         }

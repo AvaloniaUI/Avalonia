@@ -86,13 +86,15 @@ namespace Avalonia.Controls.Generators
         {
             if (count > 0)
             {
-                var toMove = _containers.Where(x => x.Key >= index).ToList();
+                var toMove = _containers.Where(x => x.Key >= index)
+                    .OrderByDescending(x => x.Key)
+                    .ToList();
 
                 foreach (var i in toMove)
                 {
                     _containers.Remove(i.Key);
                     i.Value.Index += count;
-                    _containers[i.Value.Index] = i.Value;
+                    _containers.Add(i.Value.Index, i.Value);
                 }
             }
         }
@@ -116,7 +118,8 @@ namespace Avalonia.Controls.Generators
                     _containers.Remove(i);
                 }
 
-                var toMove = _containers.Where(x => x.Key >= startingIndex).ToList();
+                var toMove = _containers.Where(x => x.Key >= startingIndex)
+                                        .OrderBy(x => x.Key).ToList();
 
                 foreach (var i in toMove)
                 {
@@ -228,7 +231,7 @@ namespace Avalonia.Controls.Generators
         /// <returns>The containers.</returns>
         protected IEnumerable<ItemContainerInfo> GetContainerRange(int index, int count)
         {
-            return _containers.Where(x => x.Key >= index && x.Key <= index + count).Select(x => x.Value);
+            return _containers.Where(x => x.Key >= index && x.Key < index + count).Select(x => x.Value);
         }
 
         /// <summary>

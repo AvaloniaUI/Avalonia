@@ -376,7 +376,7 @@ namespace Avalonia.Win32
             switch ((UnmanagedMethods.WindowsMessage)msg)
             {
                 case UnmanagedMethods.WindowsMessage.WM_ACTIVATE:
-                    var wa = (UnmanagedMethods.WindowActivate)((int)wParam & 0xffff);
+                    var wa = (UnmanagedMethods.WindowActivate)(ToInt32(wParam) & 0xffff);
 
                     switch (wa)
                     {
@@ -404,7 +404,7 @@ namespace Avalonia.Win32
                     return IntPtr.Zero;
 
                 case UnmanagedMethods.WindowsMessage.WM_DPICHANGED:
-                    var dpi = (int)wParam & 0xffff;
+                    var dpi = ToInt32(wParam) & 0xffff;
                     var newDisplayRect = (UnmanagedMethods.RECT)Marshal.PtrToStructure(lParam, typeof(UnmanagedMethods.RECT));
                     Position = new Point(newDisplayRect.left, newDisplayRect.top);
                     _scaling = dpi / 96.0;
@@ -417,7 +417,7 @@ namespace Avalonia.Win32
                             WindowsKeyboardDevice.Instance,
                             timestamp,
                             RawKeyEventType.KeyDown,
-                            KeyInterop.KeyFromVirtualKey((int)wParam), WindowsKeyboardDevice.Instance.Modifiers);
+                            KeyInterop.KeyFromVirtualKey(ToInt32(wParam)), WindowsKeyboardDevice.Instance.Modifiers);
                     break;
 
                 case UnmanagedMethods.WindowsMessage.WM_KEYUP:
@@ -426,14 +426,14 @@ namespace Avalonia.Win32
                             WindowsKeyboardDevice.Instance,
                             timestamp,
                             RawKeyEventType.KeyUp,
-                            KeyInterop.KeyFromVirtualKey((int)wParam), WindowsKeyboardDevice.Instance.Modifiers);
+                            KeyInterop.KeyFromVirtualKey(ToInt32(wParam)), WindowsKeyboardDevice.Instance.Modifiers);
                     break;
                 case UnmanagedMethods.WindowsMessage.WM_CHAR:
                     // Ignore control chars
-                    if (wParam.ToInt32() >= 32)
+                    if (ToInt32(wParam) >= 32)
                     {
                         e = new RawTextInputEventArgs(WindowsKeyboardDevice.Instance, timestamp,
-                            new string((char)wParam.ToInt32(), 1));
+                            new string((char)ToInt32(wParam), 1));
                     }
 
                     break;
@@ -497,7 +497,7 @@ namespace Avalonia.Win32
                         timestamp,
                         _owner,
                         ScreenToClient(DipFromLParam(lParam)),
-                        new Vector(0, ((int)wParam >> 16) / wheelDelta), GetMouseModifiers(wParam));
+                        new Vector(0, (ToInt32(wParam) >> 16) / wheelDelta), GetMouseModifiers(wParam));
                     break;
 
                 case UnmanagedMethods.WindowsMessage.WM_MOUSEHWHEEL:
@@ -506,7 +506,7 @@ namespace Avalonia.Win32
                         timestamp,
                         _owner,
                         ScreenToClient(DipFromLParam(lParam)),
-                        new Vector(-((int)wParam >> 16) / wheelDelta,0), GetMouseModifiers(wParam));
+                        new Vector(-(ToInt32(wParam) >> 16) / wheelDelta,0), GetMouseModifiers(wParam));
                     break;
 
                 case UnmanagedMethods.WindowsMessage.WM_MOUSELEAVE:
@@ -556,7 +556,7 @@ namespace Avalonia.Win32
                         (wParam == (IntPtr)UnmanagedMethods.SizeCommand.Restored ||
                          wParam == (IntPtr)UnmanagedMethods.SizeCommand.Maximized))
                     {
-                        var clientSize = new Size((int)lParam & 0xffff, (int)lParam >> 16);
+                        var clientSize = new Size(ToInt32(lParam) & 0xffff, ToInt32(lParam) >> 16);
                         Resized(clientSize / Scaling);
                     }
 
@@ -578,7 +578,7 @@ namespace Avalonia.Win32
 
         static InputModifiers GetMouseModifiers(IntPtr wParam)
         {
-            var keys = (UnmanagedMethods.ModifierKeys)wParam.ToInt32();
+            var keys = (UnmanagedMethods.ModifierKeys)ToInt32(wParam);
             var modifiers = WindowsKeyboardDevice.Instance.Modifiers;
             if (keys.HasFlag(UnmanagedMethods.ModifierKeys.MK_LBUTTON))
                 modifiers |= InputModifiers.LeftMouseButton;
@@ -604,7 +604,7 @@ namespace Avalonia.Win32
                 hInstance = Marshal.GetHINSTANCE(GetType().Module),
                 hCursor = DefaultCursor,
                 hbrBackground = IntPtr.Zero,
-                lpszClassName = _className,
+                lpszClassName = _className
             };
 
             ushort atom = UnmanagedMethods.RegisterClassEx(ref wndClassEx);
@@ -644,12 +644,12 @@ namespace Avalonia.Win32
 
         private Point DipFromLParam(IntPtr lParam)
         {
-            return new Point((short)((int)lParam & 0xffff), (short)((int)lParam >> 16)) / Scaling;
+            return new Point((short)(ToInt32(lParam) & 0xffff), (short)(ToInt32(lParam) >> 16)) / Scaling;
         }
 
         private Point PointFromLParam(IntPtr lParam)
         {
-            return new Point((short)((int)lParam & 0xffff), (short)((int)lParam >> 16));
+            return new Point((short)(ToInt32(lParam) & 0xffff), (short)(ToInt32(lParam) >> 16));
         }
 
         private Point ScreenToClient(Point point)
@@ -681,5 +681,19 @@ namespace Avalonia.Win32
             UnmanagedMethods.ShowWindow(_hwnd, command);
         }
 
+        public void SetIcon(IWindowIconImpl icon)
+        {
+            var impl = (IconImpl)icon;
+            var nativeIcon = impl.IconBitmap;
+            UnmanagedMethods.PostMessage(_hwnd, (int)UnmanagedMethods.WindowsMessage.WM_SETICON,
+                new IntPtr((int)UnmanagedMethods.Icons.ICON_BIG), nativeIcon.GetHicon());
+        }
+
+        private static int ToInt32(IntPtr ptr)
+        {
+            if (IntPtr.Size == 4) return ptr.ToInt32();
+
+            return (int)(ptr.ToInt64() & 0xffffffff);
+        }
     }
 }

@@ -100,6 +100,7 @@
     <Compile Include="Media\FormattedText.cs" />
     <Compile Include="Media\Geometry.cs" />
     <Compile Include="Media\IDrawingContext.cs" />
+    <Compile Include="RenderTargetCorruptedException.cs" />
     <Compile Include="VisualTree\IVisual.cs" />
     <Compile Include="Media\Imaging\Bitmap.cs" />
     <Compile Include="Media\Imaging\IBitmap.cs" />
@@ -152,7 +153,6 @@
     <Compile Include="VisualTree\VisualExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

@@ -57,7 +57,14 @@ namespace Avalonia.Direct2D1.Media
         {
             foreach (var layer in _layerPool)
                 layer.Dispose();
-            _renderTarget.EndDraw();
+            try
+            {
+                _renderTarget.EndDraw();
+            }
+            catch (SharpDXException ex) when((uint)ex.HResult == 0x8899000C) // D2DERR_RECREATE_TARGET
+            {
+                throw new RenderTargetCorruptedException(ex);
+            }
         }
 
         /// <summary>

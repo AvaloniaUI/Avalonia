@@ -185,8 +185,12 @@ namespace Avalonia.Controls.Presenters
         /// <inheritdoc/>
         public virtual void Dispose()
         {
-            VirtualizingPanel.Controller = null;
-            VirtualizingPanel.Children.Clear();
+            if (VirtualizingPanel != null)
+            {
+                VirtualizingPanel.Controller = null;
+                VirtualizingPanel.Children.Clear();
+            }
+
             Owner.ItemContainerGenerator.Clear();
         }
 

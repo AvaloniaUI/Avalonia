@@ -62,6 +62,7 @@
     <Compile Include="Converters\DateTimeTypeConverter.cs" />
     <Compile Include="Converters\GeometryTypeConverter.cs" />
     <Compile Include="Converters\GridLengthTypeConverter.cs" />
+    <Compile Include="Converters\IconTypeConverter.cs" />
     <Compile Include="Converters\KeyGestureConverter.cs" />
     <Compile Include="Converters\MemberSelectorTypeConverter.cs" />
     <Compile Include="Converters\AvaloniaListTypeConverter.cs" />
@@ -93,6 +94,8 @@
     <Compile Include="glass\Glass.Core\ReflectionExtensions.cs" />
     <Compile Include="glass\Glass.Core\StackingLinkedList.cs" />
     <Compile Include="glass\Glass.Core\StackingLinkedListMixin.cs" />
+    <Compile Include="MarkupExtensions\Standard\StaticExtension.cs" />
+    <Compile Include="MarkupExtensions\Standard\TypeExtension.cs" />
     <Compile Include="MarkupExtensions\StyleResourceExtension.cs" />
     <Compile Include="MarkupExtensions\BindingExtension.cs" />
     <Compile Include="MarkupExtensions\RelativeSourceExtension.cs" />
@@ -276,7 +279,6 @@
     <Compile Include="Templates\TreeDataTemplate.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
     <None Include="glass\Glass.Core\Glass.Core.nuspec" />
     <None Include="packages.config" />
   </ItemGroup>

@@ -104,7 +104,15 @@ namespace Avalonia.Skia
 
             public void ArcTo(Point point, Size size, double rotationAngle, bool isLargeArc, SweepDirection sweepDirection)
             {
-                ArcToHelper.ArcTo(this, _currentPoint, point, size, rotationAngle, isLargeArc, sweepDirection);
+                _path.ArcTo(
+                    (float)size.Width,
+                    (float)size.Height,
+                    (float)rotationAngle,
+                    isLargeArc ? SKPathArcSize.Large : SKPathArcSize.Small,
+                    sweepDirection == SweepDirection.Clockwise ? SKPathDirection.Clockwise : SKPathDirection.CounterClockwise,
+                    (float)point.X,
+                    (float)point.Y);
+                _currentPoint = point;
             }
 
             public void BeginFigure(Point startPoint, bool isFilled)

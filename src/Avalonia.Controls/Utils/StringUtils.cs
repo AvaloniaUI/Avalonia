@@ -190,6 +190,12 @@ namespace Avalonia.Controls.Utils
             {
                 i = cursor;
 
+                // skip any whitespace before the word
+                while (i < cr && char.IsWhiteSpace(text[i]))
+                {
+                    i++;
+                }
+
                 // skip to the end of the current word
                 while (i < cr && !char.IsWhiteSpace(text[i]))
                 {
