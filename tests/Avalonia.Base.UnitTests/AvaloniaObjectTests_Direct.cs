@@ -437,7 +437,7 @@ namespace Avalonia.Base.UnitTests
             {
                 if (level == LogEventLevel.Error &&
                     area == LogArea.Binding &&
-                    mt == "Error binding to {Target}.{Property}: {Message}" &&
+                    mt == "Error in binding to {Target}.{Property}: {Message}" &&
                     pv.Length == 3 &&
                     pv[0] is Class1 &&
                     object.ReferenceEquals(pv[1], Class1.FooProperty) &&

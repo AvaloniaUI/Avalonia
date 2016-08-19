@@ -139,9 +139,6 @@ namespace Avalonia.Markup.Data
                                 "IValueConverter should not return non-errored BindingNotification.");
                         }
 
-                        notification.Error = new InvalidCastException(
-                            $"Error setting '{_inner.Expression}': {notification.Error.Message}");
-                        notification.ErrorType = BindingErrorType.Error;
                         _errors.OnNext(notification);
 
                         if (_fallbackValue != AvaloniaProperty.UnsetValue)

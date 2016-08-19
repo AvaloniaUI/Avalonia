@@ -82,6 +82,7 @@
         <StackPanel Margin="18" Gap="4" MinWidth="200" DataContext="{Binding DataAnnotationsValidation}">
           <TextBlock FontSize="16" Text="Data Annotations Validation"/>
           <TextBox Watermark="Phone #" UseFloatingWatermark="True" Text="{Binding PhoneNumber}"/>
+          <TextBox Watermark="Less Than 10" UseFloatingWatermark="True" Text="{Binding Path=LessThan10}"/>
         </StackPanel>
       </StackPanel>
     </TabItem>

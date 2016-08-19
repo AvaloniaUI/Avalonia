@@ -667,7 +667,7 @@ namespace Avalonia
                     Logger.Error(
                         LogArea.Binding,
                         this,
-                        "Error binding to {Target}.{Property}: {Message}",
+                        "Error in binding to {Target}.{Property}: {Message}",
                         this,
                         property,
                         ExceptionUtilities.GetMessage(notification.Error));

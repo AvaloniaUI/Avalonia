@@ -189,7 +189,7 @@ namespace Avalonia
                 LogEventLevel.Error,
                 LogArea.Binding,
                 _owner,
-                "Error binding to {Target}.{Property}: {Message}",
+                "Error in binding to {Target}.{Property}: {Message}",
                 _owner,
                 Property,
                 error.Error.Message);

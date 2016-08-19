@@ -123,7 +123,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
             Assert.Equal(
                 new BindingNotification(
-                    new InvalidCastException("Could not convert 'foo' to 'System.Int32'"),
+                    new InvalidCastException("'foo' is not a valid number."),
                     BindingErrorType.Error,
                     42),
                 result);
@@ -144,7 +144,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
             Assert.Equal(
                 new BindingNotification(
-                    new InvalidCastException("Could not convert 'foo' to 'System.Int32'"),
+                    new InvalidCastException("'foo' is not a valid number."),
                     BindingErrorType.Error,
                     42),
                 result);
@@ -294,7 +294,7 @@ namespace Avalonia.Markup.UnitTests.Data
                     new BindingNotification("1.2"),
                     new BindingNotification("3.4"),
                     new BindingNotification(
-                        new InvalidCastException("Error setting 'DoubleValue': Could not convert 'bar' to 'System.Double'"),
+                        new InvalidCastException("'bar' is not a valid number."),
                         BindingErrorType.Error)
                 },
                 result);

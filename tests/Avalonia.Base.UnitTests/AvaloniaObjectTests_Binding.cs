@@ -332,7 +332,7 @@ namespace Avalonia.Base.UnitTests
             var target = new Class1();
             var source = new Subject<object>();
             var called = false;
-            var expectedMessageTemplate = "Error binding to {Target}.{Property}: {Message}";
+            var expectedMessageTemplate = "Error in binding to {Target}.{Property}: {Message}";
 
             LogCallback checkLogMessage = (level, area, src, mt, pv) =>
             {
