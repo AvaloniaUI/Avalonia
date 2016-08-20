@@ -3,10 +3,11 @@
     <TextBlock Classes="h1">TabControl</TextBlock>
     <TextBlock Classes="h2">A tab control that displays a tab strip along with the content of the selected tab</TextBlock>
 
-    <StackPanel Orientation="Horizontal"
+    <StackPanel Orientation="Vertical"
               Margin="0,16,0,0"
               HorizontalAlignment="Center"
               Gap="16">
+      
       <TabControl>
         <TabItem Header="Arch" Padding="8">
           <StackPanel Orientation="Vertical" Gap="8">
@@ -24,6 +25,15 @@
           <TextBlock>You should not see this.</TextBlock>
         </TabItem>
       </TabControl>
+
+      <TabControl Items="{Binding}">
+        <TabControl.ItemTemplate>
+          <DataTemplate>
+            <TextBlock Text="{Binding Header}"/>
+          </DataTemplate>
+        </TabControl.ItemTemplate>
+      </TabControl>
+      
     </StackPanel>
   </StackPanel>
 </UserControl>
