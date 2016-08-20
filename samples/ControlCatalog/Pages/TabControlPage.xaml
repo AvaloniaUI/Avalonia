@@ -11,13 +11,13 @@
         <TabItem Header="Arch" Padding="8">
           <StackPanel Orientation="Vertical" Gap="8">
             <TextBlock>This is the first page in the TabControl.</TextBlock>
-            <Image Source="resm:ControlCatalog.Assets.delicate-arch-896885_640.jpg"/>
+            <Image Source="resm:ControlCatalog.Assets.delicate-arch-896885_640.jpg" Width="300"/>
           </StackPanel>
         </TabItem>
         <TabItem Header="Leaf" Padding="8">
           <StackPanel Orientation="Vertical" Gap="8">
             <TextBlock>This is the second page in the TabControl.</TextBlock>
-            <Image Source="resm:ControlCatalog.Assets.maple-leaf-888807_640.jpg"/>
+            <Image Source="resm:ControlCatalog.Assets.maple-leaf-888807_640.jpg" Width="300"/>
           </StackPanel>
         </TabItem>
         <TabItem Header="Disabled" IsEnabled="False">
