@@ -85,7 +85,7 @@ namespace Avalonia.Controls
             {
                 Size sourceSize = new Size(source.PixelWidth, source.PixelHeight);
 
-                if (double.IsInfinity(availableSize.Width) || double.IsInfinity(availableSize.Height))
+                if (double.IsInfinity(availableSize.Width) && double.IsInfinity(availableSize.Height))
                 {
                     return sourceSize;
                 }
