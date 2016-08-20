@@ -5,6 +5,7 @@ using Avalonia.Animation;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Input;
 
 namespace Avalonia.Controls
 {
@@ -24,12 +25,6 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly IMemberSelector ContentSelector =
             new FuncMemberSelector<object, object>(SelectContent);
-
-        /// <summary>
-        /// Defines an <see cref="IMemberSelector"/> that selects the header of a <see cref="TabItem"/>.
-        /// </summary>
-        public static readonly IMemberSelector HeaderSelector =
-            new FuncMemberSelector<object, object>(SelectHeader);
 
         /// <summary>
         /// Defines the <see cref="TabStripPlacement"/> property.
@@ -57,15 +52,6 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets the tab strip portion of the <see cref="TabControl"/>'s template.
-        /// </summary>
-        public IControl TabStrip
-        {
-            get;
-            private set;
-        }
-
-        /// <summary>
         /// Gets or sets the transition to use when switching tabs.
         /// </summary>
         public IPageTransition Transition
@@ -83,20 +69,49 @@ namespace Avalonia.Controls
             set { SetValue(TabStripPlacementProperty, value); }
         }
 
+        /// <inheritdoc/>
         protected override IItemContainerGenerator CreateItemContainerGenerator()
         {
-            // TabControl doesn't actually create items - instead its TabStrip and Carousel
-            // children create the items. However we want it to be a SelectingItemsControl
-            // so that it has the Items/SelectedItem etc properties. In this case, we can
-            // return a null ItemContainerGenerator to disable the creation of item containers.
-            return null;
+            return new ItemContainerGenerator<TabItem>(
+                this,
+                TabItem.ContentProperty,
+                TabItem.ContentTemplateProperty);
         }
 
+        /// <inheritdoc/>
+        protected override void OnGotFocus(GotFocusEventArgs e)
+        {
+            base.OnGotFocus(e);
+
+            if (e.NavigationMethod == NavigationMethod.Directional)
+            {
+                e.Handled = UpdateSelectionFromEventSource(
+                    e.Source,
+                    true,
+                    (e.InputModifiers & InputModifiers.Shift) != 0);
+            }
+        }
+
+        /// <inheritdoc/>
+        protected override void OnPointerPressed(PointerPressedEventArgs e)
+        {
+            base.OnPointerPressed(e);
+
+            if (e.MouseButton == MouseButton.Left || e.MouseButton == MouseButton.Right)
+            {
+                e.Handled = UpdateSelectionFromEventSource(
+                    e.Source,
+                    true,
+                    (e.InputModifiers & InputModifiers.Shift) != 0,
+                    (e.InputModifiers & InputModifiers.Control) != 0);
+            }
+        }
+
+        /// <inheritdoc/>
         protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
         {
             base.OnTemplateApplied(e);
 
-            TabStrip = e.NameScope.Find<IControl>("PART_TabStrip");
             Pages = e.NameScope.Find<IControl>("PART_Content");
         }
 

@@ -6,28 +6,40 @@
                 BorderBrush="{TemplateBinding BorderBrush}"
                 BorderThickness="{TemplateBinding BorderThickness}">
           <DockPanel>
-            <TabStrip Name="PART_TabStrip"
-                      MemberSelector="{Static TabControl.HeaderSelector}"
-                      Items="{TemplateBinding Items}"
-                      SelectedIndex="{TemplateBinding Path=SelectedIndex, Mode=TwoWay}"/>
+            <ItemsPresenter Name="PART_ItemsPresenter"
+                            Items="{TemplateBinding Items}"
+                            ItemTemplate="{TemplateBinding ItemTemplate}"
+                            Margin="{TemplateBinding Padding}">
+              <ItemsPresenter.ItemsPanel>
+                <ItemsPanelTemplate>
+                  <WrapPanel Orientation="Horizontal"/>
+                </ItemsPanelTemplate>
+              </ItemsPresenter.ItemsPanel>
+            </ItemsPresenter>
             <Carousel Name="PART_Content"
-                      MemberSelector="{Static TabControl.ContentSelector}"
                       Items="{TemplateBinding Items}"
+                      MemberSelector="{Static TabControl.ContentSelector}"
                       SelectedIndex="{TemplateBinding Path=SelectedIndex}"
                       Transition="{TemplateBinding Transition}"
-                      Grid.Row="1"/>
+                      Grid.Row="1">
+              <Carousel.ItemTemplate>
+                <DataTemplate>
+                  <ContentControl Content="{Binding Content}"/>
+                </DataTemplate>
+              </Carousel.ItemTemplate>
+            </Carousel>
           </DockPanel>
         </Border>
       </ControlTemplate>
     </Setter>
   </Style>
-  <Style Selector="TabControl[TabStripPlacement=Top] /template/ TabStrip">
+  <Style Selector="TabControl[TabStripPlacement=Top] /template/ ItemsPresenter">
     <Setter Property="DockPanel.Dock" Value="Top"/>
   </Style>
-  <Style Selector="TabControl[TabStripPlacement=Bottom] /template/ TabStrip">
+  <Style Selector="TabControl[TabStripPlacement=Bottom] /template/ ItemsPresenter">
     <Setter Property="DockPanel.Dock" Value="Bottom"/>
   </Style>
-  <Style Selector="TabControl[TabStripPlacement=Left] /template/ TabStrip">
+  <Style Selector="TabControl[TabStripPlacement=Left] /template/ ItemsPresenter">
     <Setter Property="DockPanel.Dock" Value="Left"/>
     <Setter Property="ItemsPanel">
       <Setter.Value>
@@ -37,7 +49,7 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <Style Selector="TabControl[TabStripPlacement=Right] /template/ TabStrip">
+  <Style Selector="TabControl[TabStripPlacement=Right] /template/ ItemsPresenter">
     <Setter Property="DockPanel.Dock" Value="Right"/>
     <Setter Property="ItemsPanel">
       <Setter.Value>
