@@ -17,4 +17,7 @@
   <Style Selector="TabStripItem:selected">
     <Setter Property="Foreground" Value="{StyleResource ThemeForegroundBrush}"/>
   </Style>
+  <Style Selector="TabStripItem:disabled">
+    <Setter Property="Opacity" Value="{StyleResource ThemeDisabledOpacity}"/>
+  </Style>
 </Styles>
