@@ -27,14 +27,14 @@
     </Setter>
   </Style>
 
-  <Style Selector="TabControl.sidebar TabStripItem">
+  <Style Selector="TabControl.sidebar /template/ TabStripItem">
     <Setter Property="Foreground" Value="White"/>
     <Setter Property="FontSize" Value="14"/>
     <Setter Property="Margin" Value="0"/>
     <Setter Property="Padding" Value="16"/>
   </Style>
 
-  <Style Selector="TabControl.sidebar TabStripItem:selected">
+  <Style Selector="TabControl.sidebar /template/ TabStripItem:selected">
     <Setter Property="Background" Value="{StyleResource ThemeAccentBrush2}"/>
   </Style>
 </Styles>

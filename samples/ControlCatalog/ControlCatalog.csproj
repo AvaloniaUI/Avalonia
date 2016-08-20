@@ -127,6 +127,9 @@
     <Compile Include="Pages\SliderPage.xaml.cs">
       <DependentUpon>SliderPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Pages\TabControlPage.xaml.cs">
+      <DependentUpon>TabControlPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Pages\TreeViewPage.xaml.cs">
       <DependentUpon>TreeViewPage.xaml</DependentUpon>
     </Compile>
@@ -212,6 +215,11 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Pages\TreeViewPage.xaml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Pages\TabControlPage.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
