@@ -24,7 +24,11 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
         {
         }
 
+#if AVALONIA_CAIRO
+        [Fact(Skip = "Broken in Cairo: waiting for Skia")]
+#else
         [Fact]
+#endif
         public void Line_Absolute()
         {
             Decorator target = new Decorator
@@ -45,7 +49,11 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
             CompareImages();
         }
 
+#if AVALONIA_CAIRO
+        [Fact(Skip = "Broken in Cairo: waiting for Skia")]
+#else
         [Fact]
+#endif
         public void Line_Relative()
         {
             Decorator target = new Decorator
@@ -66,7 +74,11 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
             CompareImages();
         }
 
+#if AVALONIA_CAIRO
+        [Fact(Skip = "Broken in Cairo: waiting for Skia")]
+#else
         [Fact]
+#endif
         public void HorizontalLine_Absolute()
         {
             Decorator target = new Decorator
@@ -87,7 +99,11 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
             CompareImages();
         }
 
+#if AVALONIA_CAIRO
+        [Fact(Skip = "Broken in Cairo: waiting for Skia")]
+#else
         [Fact]
+#endif
         public void HorizontalLine_Relative()
         {
             Decorator target = new Decorator
@@ -108,7 +124,11 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
             CompareImages();
         }
 
+#if AVALONIA_CAIRO
+        [Fact(Skip = "Broken in Cairo: waiting for Skia")]
+#else
         [Fact]
+#endif
         public void VerticalLine_Absolute()
         {
             Decorator target = new Decorator
@@ -129,7 +149,11 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
             CompareImages();
         }
 
+#if AVALONIA_CAIRO
+        [Fact(Skip = "Broken in Cairo: waiting for Skia")]
+#else
         [Fact]
+#endif
         public void VerticalLine_Relative()
         {
             Decorator target = new Decorator
@@ -150,7 +174,11 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
             CompareImages();
         }
 
+#if AVALONIA_CAIRO
+        [Fact(Skip = "Broken in Cairo: waiting for Skia")]
+#else
         [Fact]
+#endif
         public void CubicBezier_Absolute()
         {
             Decorator target = new Decorator
@@ -172,7 +200,11 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
             CompareImages();
         }
 
+#if AVALONIA_CAIRO
+        [Fact(Skip = "Broken in Cairo: waiting for Skia")]
+#else
         [Fact]
+#endif
         public void CubicBezier_Relative()
         {
             Decorator target = new Decorator
@@ -194,7 +226,11 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
             CompareImages();
         }
 
+#if AVALONIA_CAIRO
+        [Fact(Skip = "Broken in Cairo: waiting for Skia")]
+#else
         [Fact]
+#endif
         public void Arc_Absolute()
         {
             Decorator target = new Decorator
@@ -216,7 +252,11 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
             CompareImages();
         }
 
+#if AVALONIA_CAIRO
+        [Fact(Skip = "Broken in Cairo: waiting for Skia")]
+#else
         [Fact]
+#endif
         public void Arc_Relative()
         {
             Decorator target = new Decorator
