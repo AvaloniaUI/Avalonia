@@ -22,11 +22,6 @@
                       SelectedIndex="{TemplateBinding Path=SelectedIndex}"
                       Transition="{TemplateBinding Transition}"
                       Grid.Row="1">
-              <Carousel.ItemTemplate>
-                <DataTemplate>
-                  <ContentControl Content="{Binding Content}"/>
-                </DataTemplate>
-              </Carousel.ItemTemplate>
             </Carousel>
           </DockPanel>
         </Border>
