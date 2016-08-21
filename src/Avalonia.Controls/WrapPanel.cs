@@ -12,18 +12,30 @@ using static System.Math;
 namespace Avalonia.Controls
 {
     /// <summary>
-    /// Positions child elements in sequential position from left to right, 
-    /// breaking content to the next line at the edge of the containing box. 
-    /// Subsequent ordering happens sequentially from top to bottom or from right to left, 
-    /// depending on the value of the Orientation property.
+    /// Arranges children horizontally or vertically, wrapping to a new line when the edge is
+    /// reached.
     /// </summary>
-    internal class WrapPanel : Panel, INavigableContainer
+    public class WrapPanel : Panel, INavigableContainer
     {
+        /// <summary>
+        /// Defines the <see cref="CrossAxisGap"/> property.
+        /// </summary>
+        public static readonly StyledProperty<double> CrossAxisGapProperty =
+            AvaloniaProperty.Register<WrapPanel, double>(nameof(CrossAxisGap));
+
+        /// <summary>
+        /// Defines the <see cref="Gap"/> property.
+        /// </summary>
+        public static readonly StyledProperty<double> GapProperty =
+            StackPanel.GapProperty.AddOwner<WrapPanel>();
+
         /// <summary>
         /// Defines the <see cref="Orientation"/> property.
         /// </summary>
         public static readonly StyledProperty<Orientation> OrientationProperty =
-            AvaloniaProperty.Register<WrapPanel, Orientation>(nameof(Orientation), defaultValue: Orientation.Horizontal);
+            AvaloniaProperty.Register<WrapPanel, Orientation>(
+                nameof(Orientation),
+                defaultValue: Orientation.Horizontal);
 
         /// <summary>
         /// Initializes static members of the <see cref="WrapPanel"/> class.
@@ -31,6 +43,24 @@ namespace Avalonia.Controls
         static WrapPanel()
         {
             AffectsMeasure(OrientationProperty);
+        }
+
+        /// <summary>
+        /// Gets or sets the size of the gap to place between child controls on different lines.
+        /// </summary>
+        public double CrossAxisGap
+        {
+            get { return GetValue(CrossAxisGapProperty); }
+            set { SetValue(CrossAxisGapProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the size of the gap to place between child controls on the same line.
+        /// </summary>
+        public double Gap
+        {
+            get { return GetValue(GapProperty); }
+            set { SetValue(GapProperty, value); }
         }
 
         /// <summary>
@@ -98,26 +128,31 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         protected override Size MeasureOverride(Size availableSize)
         {
+            var gap = Gap;
             var desiredSize = CreateUVSize();
             var lineSize = CreateUVSize();
             var uvAvailableSize = CreateUVSize(availableSize);
+            var crossAxisGap = CrossAxisGap;
 
             foreach (var child in Children)
             {
                 child.Measure(availableSize);
+
                 var childSize = CreateUVSize(child.DesiredSize);
+
                 if (lineSize.U + childSize.U <= uvAvailableSize.U) // same line
                 {
-                    lineSize.U += childSize.U;
+                    lineSize.U += childSize.U + gap;
                     lineSize.V = Max(lineSize.V, childSize.V);
                 }
                 else // moving to next line
                 {
                     desiredSize.U = Max(lineSize.U, uvAvailableSize.U);
-                    desiredSize.V += lineSize.V;
+                    desiredSize.V += lineSize.V + crossAxisGap;
                     lineSize = childSize;
                 }
             }
+
             // last element
             desiredSize.U = Max(lineSize.U, desiredSize.U);
             desiredSize.V += lineSize.V;
@@ -132,20 +167,24 @@ namespace Avalonia.Controls
             var uvFinalSize = CreateUVSize(finalSize);
             var lineSize = CreateUVSize();
             int firstChildInLineindex = 0;
+            var gap = Gap;
+            var crossAxisGap = CrossAxisGap;
+
             for (int index = 0; index < Children.Count; index++)
             {
                 var child = Children[index];
                 var childSize = CreateUVSize(child.DesiredSize);
+
                 if (lineSize.U + childSize.U <= uvFinalSize.U) // same line
                 {
-                    lineSize.U += childSize.U;
+                    lineSize.U += childSize.U + gap;
                     lineSize.V = Max(lineSize.V, childSize.V);
                 }
                 else // moving to next line
                 {
                     var controlsInLine = GetContolsBetween(firstChildInLineindex, index);
                     ArrangeLine(accumulatedV, lineSize.V, controlsInLine);
-                    accumulatedV += lineSize.V;
+                    accumulatedV += lineSize.V + crossAxisGap;
                     lineSize = childSize;
                     firstChildInLineindex = index;
                 }
@@ -156,6 +195,7 @@ namespace Avalonia.Controls
                 var controlsInLine = GetContolsBetween(firstChildInLineindex, Children.Count);
                 ArrangeLine(accumulatedV, lineSize.V, controlsInLine);
             }
+
             return finalSize;
         }
 
@@ -168,6 +208,8 @@ namespace Avalonia.Controls
         {
             double u = 0;
             bool isHorizontal = (Orientation == Orientation.Horizontal);
+            var gap = Gap;
+
             foreach (var child in contols)
             {
                 var childSize = CreateUVSize(child.DesiredSize);
@@ -176,7 +218,7 @@ namespace Avalonia.Controls
                 var width = isHorizontal ? childSize.U : lineV;
                 var height = isHorizontal ? lineV : childSize.U;
                 child.Arrange(new Rect(x, y, width, height));
-                u += childSize.U;
+                u += childSize.U + gap;
             }
         }
         /// <summary>

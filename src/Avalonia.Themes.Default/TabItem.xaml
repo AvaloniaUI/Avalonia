@@ -1,7 +1,6 @@
 <Styles xmlns="https://github.com/avaloniaui">
   <Style Selector="TabItem">
     <Setter Property="Foreground" Value="{StyleResource ThemeForegroundLightBrush}"/>
-    <Setter Property="Margin" Value="16"/>
     <Setter Property="Template">
       <ControlTemplate>
         <ContentPresenter Name="PART_ContentPresenter"

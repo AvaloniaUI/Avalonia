@@ -11,7 +11,7 @@
       <StackPanel>
         <TextBlock Classes="h1">From Inline TabItems</TextBlock>
 
-        <TabControl>
+        <TabControl Margin="0 16">
           <TabItem Header="Arch" Padding="8">
             <StackPanel Orientation="Vertical" Gap="8">
               <TextBlock>This is the first page in the TabControl.</TextBlock>
@@ -33,7 +33,7 @@
       <StackPanel>
         <TextBlock Classes="h1">From DataTemplate</TextBlock>
 
-        <TabControl Items="{Binding}">
+        <TabControl Items="{Binding}" Margin="0 16">
           <TabControl.ItemTemplate>
             <DataTemplate>
               <TextBlock Text="{Binding Header}"/>

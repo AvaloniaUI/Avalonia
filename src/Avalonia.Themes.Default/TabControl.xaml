@@ -9,10 +9,10 @@
             <ItemsPresenter Name="PART_ItemsPresenter"
                             Items="{TemplateBinding Items}"
                             ItemTemplate="{TemplateBinding ItemTemplate}"
-                            Margin="{TemplateBinding Padding}">
+                            Margin="0 16">
               <ItemsPresenter.ItemsPanel>
                 <ItemsPanelTemplate>
-                  <WrapPanel Orientation="Horizontal"/>
+                  <WrapPanel Orientation="Horizontal" Gap="16"/>
                 </ItemsPanelTemplate>
               </ItemsPresenter.ItemsPanel>
             </ItemsPresenter>
