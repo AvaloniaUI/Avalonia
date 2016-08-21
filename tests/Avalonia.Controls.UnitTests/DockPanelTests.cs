@@ -58,5 +58,28 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(new Rect(50, 350, 500, 50), target.Children[3].Bounds);
             Assert.Equal(new Rect(50, 50, 500, 300), target.Children[4].Bounds);
         }
+
+        [Fact]
+        public void Changing_Child_Dock_Property_Should_Invalidate_Measure()
+        {
+            var target = new DockPanel
+            {
+                Children = new Controls
+                {
+                    new Border { Width = 50, Height = 50 }
+                }
+            };
+
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(target.DesiredSize));
+
+            Assert.True(target.IsMeasureValid);
+            Assert.True(target.IsArrangeValid);
+
+            DockPanel.SetDock((Control)target.Children[0], Dock.Bottom);
+
+            Assert.False(target.IsMeasureValid);
+            Assert.False(target.IsArrangeValid);
+        }
     }
 }
