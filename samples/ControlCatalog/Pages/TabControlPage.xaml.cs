@@ -4,6 +4,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Media.Imaging;
 using Avalonia;
 using Avalonia.Platform;
+using ReactiveUI;
 
 namespace ControlCatalog.Pages
 {
@@ -13,26 +14,30 @@ namespace ControlCatalog.Pages
         {
             this.InitializeComponent();
 
-            DataContext = new[]
+            DataContext = new PageViewModel
             {
-                new TabItemViewModel
+                Tabs = new[]
                 {
-                    Header = "Arch",
-                    Text = "This is the first templated tab page.",
-                    Image = LoadBitmap("resm:ControlCatalog.Assets.delicate-arch-896885_640.jpg?assembly=ControlCatalog"),
+                    new TabItemViewModel
+                    {
+                        Header = "Arch",
+                        Text = "This is the first templated tab page.",
+                        Image = LoadBitmap("resm:ControlCatalog.Assets.delicate-arch-896885_640.jpg?assembly=ControlCatalog"),
+                    },
+                    new TabItemViewModel
+                    {
+                        Header = "Leaf",
+                        Text = "This is the second templated tab page.",
+                        Image = LoadBitmap("resm:ControlCatalog.Assets.maple-leaf-888807_640.jpg?assembly=ControlCatalog"),
+                    },
+                    new TabItemViewModel
+                    {
+                        Header = "Disabled",
+                        Text = "You should not see this.",
+                        IsEnabled = false,
+                    },
                 },
-                new TabItemViewModel
-                {
-                    Header = "Leaf",
-                    Text = "This is the second templated tab page.",
-                    Image = LoadBitmap("resm:ControlCatalog.Assets.maple-leaf-888807_640.jpg?assembly=ControlCatalog"),
-                },
-                new TabItemViewModel
-                {
-                    Header = "Disabled",
-                    Text = "You should not see this.",
-                    IsEnabled = false,
-                },
+                TabPlacement = Dock.Top,
             };
         }
 
@@ -45,6 +50,19 @@ namespace ControlCatalog.Pages
         {
             var assets = AvaloniaLocator.Current.GetService<IAssetLoader>();
             return new Bitmap(assets.Open(new Uri(uri)));
+        }
+
+        private class PageViewModel : ReactiveObject
+        {
+            Dock _tabPlacement;
+
+            public TabItemViewModel[] Tabs { get; set; }
+
+            public Dock TabPlacement
+            {
+                get { return _tabPlacement; }
+                set { this.RaiseAndSetIfChanged(ref _tabPlacement, value); }
+            }
         }
 
         private class TabItemViewModel

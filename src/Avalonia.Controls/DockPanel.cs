@@ -1,5 +1,6 @@
 namespace Avalonia.Controls
 {
+    using Layout;
     using System;
 
     /// <summary>
@@ -7,10 +8,10 @@ namespace Avalonia.Controls
     /// </summary>
     public enum Dock
     {
-        Left = 0,
-        Bottom,
+        Left,
+        Top,
         Right,
-        Top
+        Bottom,
     }
 
     /// <summary>
@@ -37,7 +38,7 @@ namespace Avalonia.Controls
         /// </summary>
         static DockPanel()
         {
-            AffectsArrange(DockProperty);
+            AffectsPanelMeasure<DockPanel>(DockProperty);
         }
 
         /// <summary>

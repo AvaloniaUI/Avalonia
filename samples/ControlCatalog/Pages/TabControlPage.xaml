@@ -4,14 +4,14 @@
     <TextBlock Classes="h2">A tab control that displays a tab strip along with the content of the selected tab</TextBlock>
 
     <StackPanel Orientation="Horizontal"
-              Margin="0,16,0,0"
-              HorizontalAlignment="Center"
-              Gap="8">
+                Margin="0,16,0,0"
+                HorizontalAlignment="Center"
+                Gap="8">
 
       <StackPanel>
         <TextBlock Classes="h1">From Inline TabItems</TextBlock>
 
-        <TabControl Margin="0 16">
+        <TabControl Margin="0 16" TabStripPlacement="{Binding TabPlacement}">
           <TabItem Header="Arch" Padding="8">
             <StackPanel Orientation="Vertical" Gap="8">
               <TextBlock>This is the first page in the TabControl.</TextBlock>
@@ -33,7 +33,7 @@
       <StackPanel>
         <TextBlock Classes="h1">From DataTemplate</TextBlock>
 
-        <TabControl Items="{Binding}" Margin="0 16">
+        <TabControl Items="{Binding Tabs}" Margin="0 16" TabStripPlacement="{Binding TabPlacement}">
           <TabControl.ItemTemplate>
             <DataTemplate>
               <TextBlock Text="{Binding Header}"/>
@@ -55,6 +55,16 @@
         </TabControl>
       </StackPanel>
 
+    </StackPanel>
+
+    <StackPanel Orientation="Horizontal" Gap="8" HorizontalAlignment="Center">
+      <TextBlock VerticalAlignment="Center">Tab Placement:</TextBlock>
+      <DropDown SelectedIndex="{Binding TabPlacement, Mode=TwoWay}">
+        <DropDownItem>Left</DropDownItem>
+        <DropDownItem>Top</DropDownItem>
+        <DropDownItem>Right</DropDownItem>
+        <DropDownItem>Bottom</DropDownItem>
+      </DropDown>
     </StackPanel>
   </StackPanel>
 </UserControl>

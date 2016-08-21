@@ -40,7 +40,7 @@
     <Setter Property="ItemsPanel">
       <Setter.Value>
         <ItemsPanelTemplate>
-          <StackPanel Orientation="Vertical"/>
+          <WrapPanel Orientation="Vertical" Gap="16"/>
         </ItemsPanelTemplate>
       </Setter.Value>
     </Setter>
@@ -50,7 +50,7 @@
     <Setter Property="ItemsPanel">
       <Setter.Value>
         <ItemsPanelTemplate>
-          <StackPanel Orientation="Vertical"/>
+          <WrapPanel Orientation="Vertical" Gap="16"/>
         </ItemsPanelTemplate>
       </Setter.Value>
     </Setter>

@@ -7,6 +7,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using Avalonia.Media;
 using Avalonia.Metadata;
+using Avalonia.Layout;
 
 namespace Avalonia.Controls
 {
@@ -96,6 +97,34 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Marks a property on a child as affecting the parent panel's measure if the parent
+        /// is a <typeparamref name="T"/>.
+        /// </summary>
+        /// <typeparam name="T">The type of the parent panel.</typeparam>
+        /// <param name="properties">The properties.</param>
+        protected static void AffectsPanelMeasure<T>(params AvaloniaProperty[] properties) where T : Panel
+        {
+            foreach (var property in properties)
+            {
+                property.Changed.Subscribe(AffectsPanelMeasureInvalidate<T>);
+            }
+        }
+
+        /// <summary>
+        /// Marks a property on a child as affecting the parent panel's measure if the parent
+        /// is a <typeparamref name="T"/>.
+        /// </summary>
+        /// <typeparam name="T">The type of the parent panel.</typeparam>
+        /// <param name="properties">The properties.</param>
+        protected static void AffectsPanelArrange<T>(params AvaloniaProperty[] properties) where T : Panel
+        {
+            foreach (var property in properties)
+            {
+                property.Changed.Subscribe(AffectsPanelArrangeInvalidate<T>);
+            }
+        }
+
+        /// <summary>
         /// Called when the <see cref="Children"/> collection changes.
         /// </summary>
         /// <param name="sender">The event sender.</param>
@@ -137,6 +166,32 @@ namespace Avalonia.Controls
             }
 
             InvalidateMeasure();
+        }
+
+        /// <summary>
+        /// Calls <see cref="Layoutable.InvalidateMeasure"/> on the parent of the control whose
+        /// property changed, if that parent is of the correct type.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        private static void AffectsPanelMeasureInvalidate<T>(AvaloniaPropertyChangedEventArgs e)
+            where T : Panel
+        {
+            var control = e.Sender as IControl;
+            var canvas = control?.VisualParent as T;
+            canvas?.InvalidateMeasure();
+        }
+
+        /// <summary>
+        /// Calls <see cref="Layoutable.InvalidateArrange"/> on the parent of the control whose
+        /// property changed, if that parent is of the correct type.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        private static void AffectsPanelArrangeInvalidate<T>(AvaloniaPropertyChangedEventArgs e)
+            where T : Panel
+        {
+            var control = e.Sender as IControl;
+            var canvas = control?.VisualParent as T;
+            canvas?.InvalidateArrange();
         }
     }
 }
