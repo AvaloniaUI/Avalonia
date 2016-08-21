@@ -47,6 +47,11 @@
               </StackPanel>
             </DataTemplate>
           </TabControl.ContentTemplate>
+          <TabControl.Styles>
+            <Style Selector="TabItem">
+              <Setter Property="IsEnabled" Value="{Binding IsEnabled}"/>
+            </Style>
+          </TabControl.Styles>
         </TabControl>
       </StackPanel>
 
