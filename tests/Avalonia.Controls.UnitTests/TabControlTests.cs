@@ -285,9 +285,60 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(new[] { items[0], null }, headers);
         }
 
+        [Fact]
+        public void ItemTemplate_Should_Be_Used_For_DataTemplate_Generated_Items()
+        {
+            var items = new object[]
+            {
+                new TabViewModel("Foo", "foocontent"),
+                new TabViewModel("Bar", "barcontent"),
+                new TextBlock { Text = "Baz" },
+            };
+
+            TabControl target = new TabControl
+            {
+                Template = TabControlTemplate(),
+                Items = items,
+                ItemTemplate = new FuncDataTemplate<TabViewModel>(x => new Canvas { Tag = x.Header }),
+            };
+
+            ApplyTemplate(target);
+
+            var tabItems = target.GetLogicalChildren().OfType<TabItem>().ToList();
+            Assert.IsType<Canvas>(tabItems[0].Presenter.Child);
+            Assert.IsType<Canvas>(tabItems[1].Presenter.Child);
+            Assert.Null(tabItems[2].Presenter.Child);
+        }
+
+        [Fact]
+        public void ContentTemplate_Should_Be_Used_For_DataTemplate_Generated_Content()
+        {
+            var items = new object[]
+            {
+                new TabViewModel("Foo", "foocontent"),
+                new TabViewModel("Bar", "barcontent"),
+                new TextBlock { Text = "Baz" },
+            };
+
+            TabControl target = new TabControl
+            {
+                Template = TabControlTemplate(),
+                Items = items,
+                ContentTemplate = new FuncDataTemplate<TabViewModel>(x => new Canvas { Tag = x.Header }),
+            };
+
+            ApplyTemplate(target);
+
+            var carousel = (Carousel)target.Pages;
+            var container = (ContentPresenter)carousel.Presenter.Panel.Children.Single();
+            container.UpdateChild();
+
+            Assert.IsType<Canvas>(container.Child);
+        }
+
         private IControlTemplate TabControlTemplate()
         {
-            return new FuncControlTemplate<TabControl>(parent => 
+            return new FuncControlTemplate<TabControl>(parent =>
                 new StackPanel
                 {
                     Children = new Controls
@@ -304,6 +355,7 @@ namespace Avalonia.Controls.UnitTests
                             Template = new FuncControlTemplate<Carousel>(CreateCarouselTemplate),
                             MemberSelector = TabControl.ContentSelector,
                             [!Carousel.ItemsProperty] = parent[!TabControl.ItemsProperty],
+                            [!Carousel.ItemTemplateProperty] = parent[!TabControl.ContentTemplateProperty],
                             [!Carousel.SelectedIndexProperty] = parent[!TabControl.SelectedIndexProperty],
                         }
                     }

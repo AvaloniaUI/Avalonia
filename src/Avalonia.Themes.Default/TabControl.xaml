@@ -18,6 +18,7 @@
             </ItemsPresenter>
             <Carousel Name="PART_Content"
                       Items="{TemplateBinding Items}"
+                      ItemTemplate="{TemplateBinding ContentTemplate}"
                       MemberSelector="{Static TabControl.ContentSelector}"
                       SelectedIndex="{TemplateBinding Path=SelectedIndex}"
                       Transition="{TemplateBinding Transition}"

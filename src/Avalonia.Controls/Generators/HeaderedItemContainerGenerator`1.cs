@@ -22,30 +22,22 @@ namespace Avalonia.Controls.Generators
         /// <param name="contentProperty">The container's Content property.</param>
         /// <param name="contentTemplateProperty">The container's ContentTemplate property.</param>
         /// <param name="headerProperty">The container's Header property.</param>
-        /// <param name="headerTemplateProperty">The container's HeaderTemplate property.</param>
         public HeaderedItemContainerGenerator(
             IControl owner, 
             AvaloniaProperty contentProperty,
             AvaloniaProperty contentTemplateProperty,
-            AvaloniaProperty headerProperty,
-            AvaloniaProperty headerTemplateProperty)
+            AvaloniaProperty headerProperty)
             : base(owner, contentProperty, contentTemplateProperty)
         {
             Contract.Requires<ArgumentNullException>(headerProperty != null);
 
             HeaderProperty = headerProperty;
-            HeaderTemplateProperty = headerTemplateProperty;
         }
 
         /// <summary>
         /// Gets the container's Content property.
         /// </summary>
         protected AvaloniaProperty HeaderProperty { get; }
-
-        /// <summary>
-        /// Gets the container's HeaderTemplate property.
-        /// </summary>
-        protected AvaloniaProperty HeaderTemplateProperty { get; }
 
         /// <inheritdoc/>
         protected override IControl CreateContainer(object item)
@@ -66,11 +58,6 @@ namespace Avalonia.Controls.Generators
 
                 if (!(item is IControl))
                 {
-                    if (HeaderTemplateProperty != null)
-                    {
-                        result.SetValue(HeaderTemplateProperty, ItemTemplate, BindingPriority.Style);
-                    }
-
                     result.SetValue(HeaderProperty, item, BindingPriority.Style);
                 }
 

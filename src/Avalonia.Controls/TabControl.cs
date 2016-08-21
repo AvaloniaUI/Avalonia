@@ -15,6 +15,18 @@ namespace Avalonia.Controls
     public class TabControl : SelectingItemsControl
     {
         /// <summary>
+        /// Defines the <see cref="ContentTemplate"/> property.
+        /// </summary>
+        public static readonly StyledProperty<IDataTemplate> ContentTemplateProperty =
+            ContentControl.ContentTemplateProperty.AddOwner<TabControl>();
+
+        /// <summary>
+        /// Defines the <see cref="TabStripPlacement"/> property.
+        /// </summary>
+        public static readonly StyledProperty<Dock> TabStripPlacementProperty =
+            AvaloniaProperty.Register<TabControl, Dock>(nameof(TabStripPlacement), defaultValue: Dock.Top);
+
+        /// <summary>
         /// Defines the <see cref="Transition"/> property.
         /// </summary>
         public static readonly StyledProperty<IPageTransition> TransitionProperty =
@@ -27,12 +39,6 @@ namespace Avalonia.Controls
             new FuncMemberSelector<object, object>(SelectContent);
 
         /// <summary>
-        /// Defines the <see cref="TabStripPlacement"/> property.
-        /// </summary>
-        public static readonly StyledProperty<Dock> TabStripPlacementProperty =
-            AvaloniaProperty.Register<TabControl, Dock>(nameof(TabStripPlacement), defaultValue: Dock.Top);
-
-        /// <summary>
         /// Initializes static members of the <see cref="TabControl"/> class.
         /// </summary>
         static TabControl()
@@ -40,6 +46,24 @@ namespace Avalonia.Controls
             SelectionModeProperty.OverrideDefaultValue<TabControl>(SelectionMode.AlwaysSelected);
             FocusableProperty.OverrideDefaultValue<TabControl>(false);
             AffectsMeasure(TabStripPlacementProperty);
+        }
+
+        /// <summary>
+        /// Gets or sets the data template used to display the content of a tab.
+        /// </summary>
+        public IDataTemplate ContentTemplate
+        {
+            get { return GetValue(ContentTemplateProperty); }
+            set { SetValue(ContentTemplateProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the tabstrip placement of the tabcontrol.
+        /// </summary>
+        public Dock TabStripPlacement
+        {
+            get { return GetValue(TabStripPlacementProperty); }
+            set { SetValue(TabStripPlacementProperty, value); }
         }
 
         /// <summary>
@@ -60,15 +84,6 @@ namespace Avalonia.Controls
             set { SetValue(TransitionProperty, value); }
         }
 
-        /// <summary>
-        /// Gets or sets the tabstrip placement of the tabcontrol.
-        /// </summary>
-        public Dock TabStripPlacement
-        {
-            get { return GetValue(TabStripPlacementProperty); }
-            set { SetValue(TabStripPlacementProperty, value); }
-        }
-
         /// <inheritdoc/>
         protected override IItemContainerGenerator CreateItemContainerGenerator()
         {
@@ -76,8 +91,7 @@ namespace Avalonia.Controls
                 this,
                 TabItem.ContentProperty,
                 TabItem.ContentTemplateProperty,
-                TabItem.HeaderProperty,
-                null);
+                TabItem.HeaderProperty);
         }
 
         /// <inheritdoc/>
