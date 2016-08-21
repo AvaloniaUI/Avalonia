@@ -234,6 +234,32 @@ namespace Avalonia.Controls.UnitTests
             Assert.Null(page.Content);
         }
 
+        [Fact]
+        public void Content_And_Header_Should_Be_Set_For_DataTemplate_Generated_Items()
+        {
+            var data = new[]
+            {
+                new TabViewModel("Foo", "foocontent"),
+                new TabViewModel("Bar", "barcontent"),
+                new TabViewModel("Baz", "bazcontent"),
+            };
+
+            TabControl target = new TabControl
+            {
+                Template = TabControlTemplate(),
+                Items = data,
+            };
+
+            ApplyTemplate(target);
+
+            var items = target.GetLogicalChildren().OfType<TabItem>().ToList();
+            var content = items.Select(x => x.Content).ToList();
+            var headers = items.Select(x => x.Header).ToList();
+
+            Assert.Equal(data, content);
+            Assert.Equal(data, headers);
+        }
+
         private IControlTemplate TabControlTemplate()
         {
             return new FuncControlTemplate<TabControl>(parent => 
@@ -286,6 +312,8 @@ namespace Avalonia.Controls.UnitTests
         private void ApplyTemplate(TabControl target)
         {
             target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+
             var carousel = (Carousel)target.Pages;
             carousel.ApplyTemplate();
             carousel.Presenter.ApplyTemplate();

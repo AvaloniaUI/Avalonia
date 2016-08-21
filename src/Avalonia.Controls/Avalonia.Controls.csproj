@@ -50,6 +50,7 @@
     <Compile Include="Design.cs" />
     <Compile Include="DockPanel.cs" />
     <Compile Include="Expander.cs" />
+    <Compile Include="Generators\HeaderedItemContainerGenerator`1.cs" />
     <Compile Include="Generators\ItemContainerInfo.cs" />
     <Compile Include="Generators\MenuItemContainerGenerator.cs" />
     <Compile Include="Generators\TreeContainerIndex.cs" />

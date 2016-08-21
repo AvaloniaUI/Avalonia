@@ -72,10 +72,12 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         protected override IItemContainerGenerator CreateItemContainerGenerator()
         {
-            return new ItemContainerGenerator<TabItem>(
+            return new HeaderedItemContainerGenerator<TabItem>(
                 this,
                 TabItem.ContentProperty,
-                TabItem.ContentTemplateProperty);
+                TabItem.ContentTemplateProperty,
+                TabItem.HeaderProperty,
+                null);
         }
 
         /// <inheritdoc/>
