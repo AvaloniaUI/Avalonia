@@ -188,9 +188,9 @@ namespace Avalonia.Controls.Presenters
             if (VirtualizingPanel != null)
             {
                 VirtualizingPanel.Controller = null;
-                VirtualizingPanel.Children.Clear();
             }
 
+            Owner.Panel?.Children.Clear();
             Owner.ItemContainerGenerator.Clear();
         }
 

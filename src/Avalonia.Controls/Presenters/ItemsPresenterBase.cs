@@ -48,6 +48,7 @@ namespace Avalonia.Controls.Presenters
         /// </summary>
         static ItemsPresenterBase()
         {
+            ItemsPanelProperty.Changed.AddClassHandler<ItemsPresenterBase>(x => x.ItemsPanelChanged);
             TemplatedParentProperty.Changed.AddClassHandler<ItemsPresenterBase>(x => x.TemplatedParentChanged);
         }
 
@@ -216,6 +217,16 @@ namespace Avalonia.Controls.Presenters
         /// </summary>
         /// <param name="e">A description of the change.</param>
         protected abstract void ItemsChanged(NotifyCollectionChangedEventArgs e);
+
+        /// <summary>
+        /// Called when the <see cref="ItemsPanel"/> property changes.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        protected virtual void ItemsPanelChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            _createdPanel = false;
+            InvalidateMeasure();
+        }
 
         /// <summary>
         /// Creates the <see cref="Panel"/> when <see cref="ApplyTemplate"/> is called for the first

@@ -134,6 +134,13 @@ namespace Avalonia.Controls.Presenters
             _virtualizer?.ItemsChanged(Items, e);
         }
 
+        protected override void ItemsPanelChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            base.ItemsPanelChanged(e);
+            _virtualizer?.Dispose();
+            _virtualizer = null;
+        }
+
         private Vector CoerceOffset(Vector value)
         {
             var scrollable = (ILogicalScrollable)this;

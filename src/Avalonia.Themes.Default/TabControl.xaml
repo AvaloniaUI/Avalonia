@@ -8,14 +8,7 @@
           <DockPanel>
             <ItemsPresenter Name="PART_ItemsPresenter"
                             Items="{TemplateBinding Items}"
-                            ItemTemplate="{TemplateBinding ItemTemplate}"
-                            Margin="0 16">
-              <ItemsPresenter.ItemsPanel>
-                <ItemsPanelTemplate>
-                  <WrapPanel Orientation="Horizontal" Gap="16"/>
-                </ItemsPanelTemplate>
-              </ItemsPresenter.ItemsPanel>
-            </ItemsPresenter>
+                            ItemTemplate="{TemplateBinding ItemTemplate}"/>
             <Carousel Name="PART_Content"
                       Items="{TemplateBinding Items}"
                       ItemTemplate="{TemplateBinding ContentTemplate}"
@@ -31,9 +24,25 @@
   </Style>
   <Style Selector="TabControl[TabStripPlacement=Top] /template/ ItemsPresenter">
     <Setter Property="DockPanel.Dock" Value="Top"/>
+    <Setter Property="ItemsPanel">
+      <Setter.Value>
+        <ItemsPanelTemplate>
+          <WrapPanel Orientation="Horizontal" Gap="16"/>
+        </ItemsPanelTemplate>
+      </Setter.Value>
+    </Setter>
+    <Setter Property="Margin" Value="0,16"/>
   </Style>
   <Style Selector="TabControl[TabStripPlacement=Bottom] /template/ ItemsPresenter">
     <Setter Property="DockPanel.Dock" Value="Bottom"/>
+    <Setter Property="ItemsPanel">
+      <Setter.Value>
+        <ItemsPanelTemplate>
+          <WrapPanel Orientation="Horizontal" Gap="16"/>
+        </ItemsPanelTemplate>
+      </Setter.Value>
+    </Setter>
+    <Setter Property="Margin" Value="0,16"/>
   </Style>
   <Style Selector="TabControl[TabStripPlacement=Left] /template/ ItemsPresenter">
     <Setter Property="DockPanel.Dock" Value="Left"/>
@@ -44,6 +53,7 @@
         </ItemsPanelTemplate>
       </Setter.Value>
     </Setter>
+    <Setter Property="Margin" Value="16,0"/>
   </Style>
   <Style Selector="TabControl[TabStripPlacement=Right] /template/ ItemsPresenter">
     <Setter Property="DockPanel.Dock" Value="Right"/>
@@ -54,5 +64,6 @@
         </ItemsPanelTemplate>
       </Setter.Value>
     </Setter>
+    <Setter Property="Margin" Value="16,0"/>
   </Style>
 </Styles>

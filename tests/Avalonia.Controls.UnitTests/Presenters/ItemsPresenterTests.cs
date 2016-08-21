@@ -311,6 +311,27 @@ namespace Avalonia.Controls.UnitTests.Presenters
         }
 
         [Fact]
+        public void Panel_Can_Be_Changed()
+        {
+            var target = new ItemsPresenter
+            {
+                Items = new[] { "foo", "bar" }
+            };
+
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(target.DesiredSize));
+            Assert.True(target.IsMeasureValid);
+
+            var panel = new Canvas();
+            target.ItemsPanel = new FuncTemplate<IPanel>(() => panel);
+            Assert.False(target.IsMeasureValid);
+
+            target.ApplyTemplate();
+            Assert.Same(panel, target.Panel);
+            Assert.Same(target, target.Panel.Parent);
+        }
+
+        [Fact]
         public void MemberSelector_Should_Select_Member()
         {
             var target = new ItemsPresenter
