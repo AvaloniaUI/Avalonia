@@ -237,7 +237,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Content_And_Header_Should_Be_Set_For_DataTemplate_Generated_Items()
         {
-            var data = new[]
+            var items = new[]
             {
                 new TabViewModel("Foo", "foocontent"),
                 new TabViewModel("Bar", "barcontent"),
@@ -247,17 +247,42 @@ namespace Avalonia.Controls.UnitTests
             TabControl target = new TabControl
             {
                 Template = TabControlTemplate(),
-                Items = data,
+                Items = items,
             };
 
             ApplyTemplate(target);
 
-            var items = target.GetLogicalChildren().OfType<TabItem>().ToList();
-            var content = items.Select(x => x.Content).ToList();
-            var headers = items.Select(x => x.Header).ToList();
+            var tabItems = target.GetLogicalChildren().OfType<TabItem>().ToList();
+            var content = tabItems.Select(x => x.Content).ToList();
+            var headers = tabItems.Select(x => x.Header).ToList();
 
-            Assert.Equal(data, content);
-            Assert.Equal(data, headers);
+            Assert.Equal(items, content);
+            Assert.Equal(items, headers);
+        }
+
+        [Fact]
+        public void Control_In_Items_Should_Set_TabItem_Content_Not_Header()
+        {
+            var items = new object[]
+            {
+                new TabViewModel("Foo", "foocontent"),
+                new TextBlock { Text = "Bar" },
+            };
+
+            var target = new TabControl
+            {
+                Template = TabControlTemplate(),
+                Items = items,
+            };
+
+            ApplyTemplate(target);
+
+            var tabItems = target.GetLogicalChildren().OfType<TabItem>().ToList();
+            var content = tabItems.Select(x => x.Content).ToList();
+            var headers = tabItems.Select(x => x.Header).ToList();
+
+            Assert.Equal(items, content);
+            Assert.Equal(new[] { items[0], null }, headers);
         }
 
         private IControlTemplate TabControlTemplate()
@@ -291,7 +316,7 @@ namespace Avalonia.Controls.UnitTests
                 new ContentPresenter
                 {
                     Name = "PART_ContentPresenter",
-                    [!ContentPresenter.ContentProperty] = parent[!TabItem.ContentProperty],
+                    [!ContentPresenter.ContentProperty] = parent[!TabItem.HeaderProperty],
                     [!ContentPresenter.ContentTemplateProperty] = parent[!TabItem.ContentTemplateProperty],
                 });
         }
@@ -313,6 +338,13 @@ namespace Avalonia.Controls.UnitTests
         {
             target.ApplyTemplate();
             target.Presenter.ApplyTemplate();
+
+            foreach (var tabItem in target.GetLogicalChildren().OfType<TabItem>())
+            {
+                tabItem.Template = TabItemTemplate();
+                tabItem.ApplyTemplate();
+                ((ContentPresenter)tabItem.Presenter).UpdateChild();
+            }
 
             var carousel = (Carousel)target.Pages;
             carousel.ApplyTemplate();

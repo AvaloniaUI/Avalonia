@@ -64,12 +64,15 @@ namespace Avalonia.Controls.Generators
             {
                 var result = base.CreateContainer(item);
 
-                if (HeaderTemplateProperty != null)
+                if (!(item is IControl))
                 {
-                    result.SetValue(HeaderTemplateProperty, ItemTemplate, BindingPriority.Style);
-                }
+                    if (HeaderTemplateProperty != null)
+                    {
+                        result.SetValue(HeaderTemplateProperty, ItemTemplate, BindingPriority.Style);
+                    }
 
-                result.SetValue(HeaderProperty, item, BindingPriority.Style);
+                    result.SetValue(HeaderProperty, item, BindingPriority.Style);
+                }
 
                 return result;
             }
