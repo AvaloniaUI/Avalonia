@@ -57,6 +57,7 @@
     <Compile Include="IApplicationLifecycle.cs" />
     <Compile Include="IScrollable.cs" />
     <Compile Include="EmbeddableControl.cs" />
+    <Compile Include="Platform\IEmbeddableWindowImpl.cs" />
     <Compile Include="WindowIcon.cs" />
     <Compile Include="IPseudoClasses.cs" />
     <Compile Include="DropDownItem.cs" />

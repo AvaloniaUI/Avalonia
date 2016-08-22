@@ -11,12 +11,14 @@ using Avalonia.Styling;
 
 namespace Avalonia.Controls
 {
-    public class EmbeddableControl : TopLevel, IStyleable, IFocusScope, ILayoutRoot, INameScope
+    public class EmbeddableControl : TopLevel, IStyleable, IFocusScope, INameScope
     {
         public EmbeddableControl() : base(PlatformManager.CreateEmbeddableWindow())
         {
             PlatformImpl.Show();
         }
+
+        public new IEmbeddableWindowImpl PlatformImpl => (IEmbeddableWindowImpl) base.PlatformImpl;
 
         public void Prepare()
         {
