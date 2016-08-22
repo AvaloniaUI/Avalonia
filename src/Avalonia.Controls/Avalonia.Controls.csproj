@@ -56,6 +56,7 @@
     <Compile Include="HotkeyManager.cs" />
     <Compile Include="IApplicationLifecycle.cs" />
     <Compile Include="IScrollable.cs" />
+    <Compile Include="EmbeddableControl.cs" />
     <Compile Include="WindowIcon.cs" />
     <Compile Include="IPseudoClasses.cs" />
     <Compile Include="DropDownItem.cs" />

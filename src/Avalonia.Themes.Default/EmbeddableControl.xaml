@@ -1,0 +1,17 @@
+<Style xmlns="https://github.com/avaloniaui" Selector="EmbeddableControl">
+  <Setter Property="Background" Value="{StyleResource ThemeBackgroundBrush}"/>
+  <Setter Property="FontFamily" Value="Segoe UI"/>
+  <Setter Property="FontSize" Value="{StyleResource FontSizeNormal}"/>
+  <Setter Property="Template">
+    <ControlTemplate>
+      <Border Background="{TemplateBinding Background}">
+        <AdornerDecorator>
+          <ContentPresenter Name="PART_ContentPresenter" 
+                            Content="{TemplateBinding Content}" 
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            Margin="{TemplateBinding Padding}"/>
+        </AdornerDecorator>
+      </Border>
+    </ControlTemplate>
+  </Setter>
+</Style>

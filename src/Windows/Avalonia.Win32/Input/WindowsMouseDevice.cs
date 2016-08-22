@@ -8,7 +8,7 @@ using Avalonia.Win32.Interop;
 
 namespace Avalonia.Win32.Input
 {
-    public class WindowsMouseDevice : MouseDevice
+    class WindowsMouseDevice : MouseDevice
     {
         public new static WindowsMouseDevice Instance { get; } = new WindowsMouseDevice();
 

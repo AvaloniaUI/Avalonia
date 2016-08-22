@@ -6,9 +6,11 @@ using Avalonia.Win32.Interop;
 
 namespace Avalonia.Win32
 {
-    public class EmbeddedWindowImpl : WindowImpl
+    class EmbeddedWindowImpl : WindowImpl
     {
         private static readonly System.Windows.Forms.UserControl WinFormsControl = new System.Windows.Forms.UserControl();
+
+        public static IntPtr DefaultParentWindow => WinFormsControl.Handle;
 
         protected override IntPtr CreateWindowOverride(ushort atom)
         {
