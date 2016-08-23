@@ -11,9 +11,9 @@ using Avalonia.Styling;
 
 namespace Avalonia.Controls
 {
-    public class EmbeddableControl : TopLevel, IStyleable, IFocusScope, INameScope
+    public class EmbeddableControlRoot : TopLevel, IStyleable, IFocusScope, INameScope, IDisposable
     {
-        public EmbeddableControl() : base(PlatformManager.CreateEmbeddableWindow())
+        public EmbeddableControlRoot() : base(PlatformManager.CreateEmbeddableWindow())
         {
             PlatformImpl.Show();
         }
@@ -63,6 +63,10 @@ namespace Avalonia.Controls
 
         public void Unregister(string name) => _nameScope.Unregister(name);
 
-        Type IStyleable.StyleKey => typeof(EmbeddableControl);
+        Type IStyleable.StyleKey => typeof(EmbeddableControlRoot);
+        public void Dispose()
+        {
+            PlatformImpl.Dispose();
+        }
     }
 }

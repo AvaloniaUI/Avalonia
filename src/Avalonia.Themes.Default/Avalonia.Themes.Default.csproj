@@ -209,7 +209,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="EmbeddableControl.xaml">
+    <EmbeddedResource Include="EmbeddableControlRoot.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>

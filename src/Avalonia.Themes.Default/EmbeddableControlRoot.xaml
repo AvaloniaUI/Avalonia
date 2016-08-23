@@ -1,4 +1,4 @@
-<Style xmlns="https://github.com/avaloniaui" Selector="EmbeddableControl">
+<Style xmlns="https://github.com/avaloniaui" Selector="EmbeddableControlRoot">
   <Setter Property="Background" Value="{StyleResource ThemeBackgroundBrush}"/>
   <Setter Property="FontFamily" Value="Segoe UI"/>
   <Setter Property="FontSize" Value="{StyleResource FontSizeNormal}"/>

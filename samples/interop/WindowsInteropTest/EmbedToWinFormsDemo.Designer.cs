@@ -85,7 +85,7 @@ namespace WindowsInteropTest
             this.avaloniaHost.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.avaloniaHost.Child = null;
+            this.avaloniaHost.Content = null;
             this.avaloniaHost.Location = new System.Drawing.Point(6, 19);
             this.avaloniaHost.Name = "avaloniaHost";
             this.avaloniaHost.Size = new System.Drawing.Size(489, 393);

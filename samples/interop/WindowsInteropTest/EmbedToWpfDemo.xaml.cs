@@ -25,7 +25,7 @@ namespace WindowsInteropTest
         public EmbedToWpfDemo()
         {
             InitializeComponent();
-            Host.Child = new EmbeddableControl {Content = new ControlCatalogControl()};
+            Host.Content =  new ControlCatalogControl();
         }
     }
 }

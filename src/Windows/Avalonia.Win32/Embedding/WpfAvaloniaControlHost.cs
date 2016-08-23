@@ -16,16 +16,16 @@ namespace Avalonia.Win32.Embedding
     public class WpfAvaloniaControlHost : HwndHost
     {
         private WinFormsAvaloniaControlHost _host;
-        private EmbeddableControl _child;
+        private Avalonia.Controls.Control _content;
 
-        public EmbeddableControl Child
+        public Avalonia.Controls.Control Content
         {
-            get { return _child; }
+            get { return _content; }
             set
             {
                 if (_host != null)
-                    _host.Child = value;
-                _child = value;
+                    _host.Content = value;
+                _content = value;
                 
             }
         }
@@ -39,7 +39,7 @@ namespace Avalonia.Win32.Embedding
         protected override HandleRef BuildWindowCore(HandleRef hwndParent)
         {
             DestroyHost();
-            _host = new WinFormsAvaloniaControlHost {Child = _child};
+            _host = new WinFormsAvaloniaControlHost {Content = _content};
             UnmanagedMethods.SetParent(_host.Handle, hwndParent.Handle);
             return new HandleRef(this, _host.Handle);
         }

@@ -17,10 +17,7 @@ namespace WindowsInteropTest
         public EmbedToWinFormsDemo()
         {
             InitializeComponent();
-            var ctrl = new EmbeddableControl();
-            ctrl.Content = new ControlCatalogControl();
-            ctrl.ApplyTemplate();
-            avaloniaHost.Child = ctrl;
+            avaloniaHost.Content = new ControlCatalogControl();
         }
     }
 }
