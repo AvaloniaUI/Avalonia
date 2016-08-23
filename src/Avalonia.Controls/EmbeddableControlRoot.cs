@@ -13,6 +13,11 @@ namespace Avalonia.Controls
 {
     public class EmbeddableControlRoot : TopLevel, IStyleable, IFocusScope, INameScope, IDisposable
     {
+        public EmbeddableControlRoot(IEmbeddableWindowImpl impl) : base(impl)
+        {
+            PlatformImpl.Show();
+        }
+
         public EmbeddableControlRoot() : base(PlatformManager.CreateEmbeddableWindow())
         {
             PlatformImpl.Show();
@@ -24,8 +29,8 @@ namespace Avalonia.Controls
         {
             EnsureInitialized();
             ApplyTemplate();
-            LayoutManager.Instance.ExecuteInitialLayoutPass(this);
             PlatformImpl.Show();
+            LayoutManager.Instance.ExecuteInitialLayoutPass(this);
         }
 
 

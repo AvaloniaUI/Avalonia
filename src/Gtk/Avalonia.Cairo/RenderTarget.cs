@@ -7,6 +7,7 @@ using Avalonia.Cairo.Media;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Gtk;
 using DrawingContext = Avalonia.Media.DrawingContext;
 
 namespace Avalonia.Cairo
@@ -20,6 +21,7 @@ namespace Avalonia.Cairo
     {
         private readonly Surface _surface;
         private readonly Gtk.Window _window;
+        private readonly Gtk.DrawingArea _area;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RenderTarget"/> class.
@@ -37,17 +39,25 @@ namespace Avalonia.Cairo
             _surface = surface;
         }
 
+        public RenderTarget(DrawingArea area)
+        {
+            _area = area;
+        }
 
         /// <summary>
         /// Creates a cairo surface that targets a platform-specific resource.
         /// </summary>
         /// <returns>A surface wrapped in an <see cref="Avalonia.Media.DrawingContext"/>.</returns>
-        public DrawingContext CreateDrawingContext()
+        public DrawingContext CreateDrawingContext() => new DrawingContext(CreateMediaDrawingContext());
+        public IDrawingContextImpl CreateMediaDrawingContext()
         {
-            var ctx = _surface != null
-                ? new Media.DrawingContext(_surface)
-                : new Media.DrawingContext(_window.GdkWindow);
-            return new DrawingContext(ctx);
+            if(_window!=null)
+                return new Media.DrawingContext(_window.GdkWindow);
+            if (_surface != null)
+                return new Media.DrawingContext(_surface);
+            if(_area!=null)
+                return new Media.DrawingContext(_area.GdkWindow);
+            throw new InvalidOperationException();
         }
         
         public void Dispose() => _surface?.Dispose();

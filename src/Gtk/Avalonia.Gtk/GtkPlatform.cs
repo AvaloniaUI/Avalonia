@@ -105,10 +105,7 @@ namespace Avalonia.Gtk
             return new WindowImpl();
         }
 
-        public IEmbeddableWindowImpl CreateEmbeddableWindow()
-        {
-            throw new NotSupportedException();
-        }
+        public IEmbeddableWindowImpl CreateEmbeddableWindow() => new EmbeddableImpl();
 
         public IPopupImpl CreatePopup()
         {
