@@ -5,7 +5,7 @@ configuration:
 - Release
 environment:
   NUGET_API_KEY:
-    secure: ADD_SECURE_NUGET_API_KEY_HERE
+    secure: Xv89dlP2MSBZKhl1nrWSxqcDgCXB0HRhOd4SWQ+jRJ7QoLxQel5mLTipXM++J3G5
   NUGET_API_URL: https://www.nuget.org/api/v2/package
   MYGET_API_KEY:
     secure: XOgD5bJUKNOS2kDDgb+affS4pDcslxALh+xvvnr1Koy0PjXlhILsBdNhxRe0KcNm
