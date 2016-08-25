@@ -91,6 +91,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Avalonia.DotNetFrameworkRuntime\Avalonia.DotNetFrameworkRuntime.csproj">
+      <Project>{4a1abb09-9047-4bd5-a4ad-a055e52c5ee0}</Project>
+      <Name>Avalonia.DotNetFrameworkRuntime</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\Markup\Avalonia.Markup\Avalonia.Markup.csproj">
       <Project>{6417e941-21bc-467b-a771-0de389353ce6}</Project>
       <Name>Avalonia.Markup</Name>

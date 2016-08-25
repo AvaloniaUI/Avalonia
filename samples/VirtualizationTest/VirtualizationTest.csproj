@@ -83,6 +83,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Avalonia.DotNetFrameworkRuntime\Avalonia.DotNetFrameworkRuntime.csproj">
+      <Project>{4a1abb09-9047-4bd5-a4ad-a055e52c5ee0}</Project>
+      <Name>Avalonia.DotNetFrameworkRuntime</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\Avalonia.Animation\Avalonia.Animation.csproj">
       <Project>{d211e587-d8bc-45b9-95a4-f297c8fa5200}</Project>
       <Name>Avalonia.Animation</Name>

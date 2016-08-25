@@ -3,14 +3,25 @@
 
 using System;
 using System.Reflection;
+using Avalonia.Platform;
 
 namespace Avalonia.Controls
 {
     /// <summary>
     /// Initializes up platform-specific services for an <see cref="Application"/>.
     /// </summary>
-    public class AppBuilder
+    public abstract class AppBuilderBase<AppBuilder> where AppBuilder : AppBuilderBase<AppBuilder>, new()
     {
+        /// <summary>
+        /// Gets or sets the <see cref="IRuntimePlatform"/> instance.
+        /// </summary>
+        public IRuntimePlatform RuntimePlatform { get; set; }
+
+        /// <summary>
+        /// Gets or sets a method to call the initialize the runtime platform services (e. g. AssetLoader)
+        /// </summary>
+        public Action RuntimePlatformServices { get; set; }
+
         /// <summary>
         /// Gets or sets the <see cref="Application"/> instance being initialized.
         /// </summary>
@@ -31,6 +42,12 @@ namespace Avalonia.Controls
         /// <see cref="Application"/>.
         /// </summary>
         public Action<AppBuilder> BeforeStartCallback { get; set; }
+
+        protected AppBuilderBase(IRuntimePlatform platform, Action platformSevices)
+        {
+            RuntimePlatform = platform;
+            RuntimePlatformServices = platformSevices;
+        }
 
         /// <summary>
         /// Begin configuring an <see cref="Application"/>.
@@ -57,6 +74,8 @@ namespace Avalonia.Controls
             };
         }
 
+        protected AppBuilder Self => (AppBuilder) this;
+
         /// <summary>
         /// Registers a callback to call before <see cref="Start{TMainWindow}"/> is called on the
         /// <see cref="Application"/>.
@@ -66,7 +85,7 @@ namespace Avalonia.Controls
         public AppBuilder BeforeStarting(Action<AppBuilder> callback)
         {
             BeforeStartCallback = callback;
-            return this;
+            return Self;
         }
 
         /// <summary>
@@ -77,7 +96,7 @@ namespace Avalonia.Controls
             where TMainWindow : Window, new()
         {
             Setup();
-            BeforeStartCallback?.Invoke(this);
+            BeforeStartCallback?.Invoke(Self);
 
             var window = new TMainWindow();
             window.Show();
@@ -91,7 +110,7 @@ namespace Avalonia.Controls
         public AppBuilder SetupWithoutStarting()
         {
             Setup();
-            return this;
+            return Self;
         }
 
         /// <summary>
@@ -102,7 +121,7 @@ namespace Avalonia.Controls
         public AppBuilder UseWindowingSubsystem(Action initializer)
         {
             WindowingSubsystem = initializer;
-            return this;
+            return Self;
         }
 
         /// <summary>
@@ -120,7 +139,7 @@ namespace Avalonia.Controls
         public AppBuilder UseRenderingSubsystem(Action initializer)
         {
             RenderingSubsystem = initializer;
-            return this;
+            return Self;
         }
 
         /// <summary>
@@ -140,23 +159,6 @@ namespace Avalonia.Controls
             init.Invoke(null, null);
         };
 
-        public AppBuilder UsePlatformDetect()
-        {
-            var platformId = (int)
-                ((dynamic) Type.GetType("System.Environment").GetRuntimeProperty("OSVersion").GetValue(null)).Platform;
-            if (platformId == 4 || platformId == 6)
-            {
-                UseRenderingSubsystem("Avalonia.Cairo");
-                UseWindowingSubsystem("Avalonia.Gtk");
-            }
-            else
-            {
-                UseRenderingSubsystem("Avalonia.Direct2D1");
-                UseWindowingSubsystem("Avalonia.Win32");
-            }
-            return this;
-        }
-
         /// <summary>
         /// Sets up the platform-speciic services for the <see cref="Application"/>.
         /// </summary>
@@ -165,6 +167,11 @@ namespace Avalonia.Controls
             if (Instance == null)
             {
                 throw new InvalidOperationException("No App instance configured.");
+            }
+
+            if (RuntimePlatformServices == null)
+            {
+                throw new InvalidOperationException("No runtime platform services configured.");
             }
 
             if (WindowingSubsystem == null)
@@ -178,6 +185,7 @@ namespace Avalonia.Controls
             }
 
             Instance.RegisterServices();
+            RuntimePlatformServices();
             WindowingSubsystem();
             RenderingSubsystem();
             Instance.Initialize();

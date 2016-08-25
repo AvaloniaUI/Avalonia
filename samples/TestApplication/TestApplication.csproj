@@ -83,6 +83,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Avalonia.DotNetFrameworkRuntime\Avalonia.DotNetFrameworkRuntime.csproj">
+      <Project>{4a1abb09-9047-4bd5-a4ad-a055e52c5ee0}</Project>
+      <Name>Avalonia.DotNetFrameworkRuntime</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\Gtk\Avalonia.Cairo\Avalonia.Cairo.csproj">
       <Project>{FB05AC90-89BA-4F2F-A924-F37875FB547C}</Project>
       <Name>Avalonia.Cairo</Name>

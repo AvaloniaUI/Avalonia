@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Avalonia.Platform
 {
-    public interface IPclPlatformWrapper
+    public interface IRuntimePlatform
     {
         Assembly[] GetLoadedAssemblies();
         void PostThreadPoolItem(Action cb);
