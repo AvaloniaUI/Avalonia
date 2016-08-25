@@ -21,5 +21,7 @@ build_script:
 after_build:
 - .\packages\JetBrains.dotMemoryUnit.2.1.20150828.125449\tools\dotMemoryUnit.exe -targetExecutable="%xunit20%\xunit.console.x86.exe" -returnTargetExitCode  --"tests\Avalonia.LeakTests\bin\Release\Avalonia.LeakTests.dll"
 test: off
+artifacts:
+  - path: artifacts\nuget\*.nupkg
 cache:
   - gtk-sharp-2.12.26.msi

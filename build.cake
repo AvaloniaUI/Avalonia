@@ -86,8 +86,6 @@ if (isRunningOnAppVeyor)
 
 var artifactsDir = (DirectoryPath)Directory("./artifacts");
 var nugetRoot = artifactsDir.Combine("nuget");
-var binRoot = artifactsDir.Combine("bin");
-var zipBinArtifacts = artifactsDir.CombineWithFilePath("Avalonia-" + version + ".zip");
 
 var dirSuffix = configuration;
 var dirSuffixSkia = (isPlatformAnyCPU ? "x86" : platform) + "/" + configuration;
@@ -449,12 +447,6 @@ var nugetPackages = nuspecNuGetSettings.Select(nuspec => {
     return nuspec.OutputDirectory.CombineWithFilePath(string.Concat(nuspec.Id, ".", nuspec.Version, ".nupkg"));
 }).ToArray();
 
-var binFiles = nuspecNuGetSettings.SelectMany(nuspec => {
-    return nuspec.Files.Select(file => {
-        return ((DirectoryPath)nuspec.BasePath).CombineWithFilePath(file.Source);
-    });
-}).GroupBy(f => f.FullPath).Select(g => g.First());
-
 ///////////////////////////////////////////////////////////////////////////////
 // INFORMATION
 ///////////////////////////////////////////////////////////////////////////////
@@ -602,20 +594,6 @@ Task("Run-Unit-Tests")
     }
 });
 
-Task("Copy-Files")
-    .IsDependentOn("Run-Unit-Tests")
-    .Does(() =>
-{
-    CopyFiles(binFiles, binRoot);
-});
-
-Task("Zip-Files")
-    .IsDependentOn("Copy-Files")
-    .Does(() =>
-{
-    Zip(binRoot, zipBinArtifacts);
-});
-
 Task("Create-NuGet-Packages")
     .IsDependentOn("Run-Unit-Tests")
     .Does(() =>
@@ -623,20 +601,6 @@ Task("Create-NuGet-Packages")
     foreach(var nuspec in nuspecNuGetSettings)
     {
         NuGetPack(nuspec);
-    }
-});
-
-Task("Upload-AppVeyor-Artifacts")
-    .IsDependentOn("Zip-Files")
-    .IsDependentOn("Create-NuGet-Packages")
-    .WithCriteria(() => isRunningOnAppVeyor)
-    .Does(() =>
-{
-    AppVeyor.UploadArtifact(zipBinArtifacts.FullPath);
-
-    foreach(var nupkg in nugetPackages)
-    {
-        AppVeyor.UploadArtifact(nupkg.FullPath);
     }
 });
 
@@ -719,7 +683,6 @@ Task("Default")
   .IsDependentOn("Package");
 
 Task("AppVeyor")
-  .IsDependentOn("Upload-AppVeyor-Artifacts")
   .IsDependentOn("Publish-MyGet")
   .IsDependentOn("Publish-NuGet");
 
