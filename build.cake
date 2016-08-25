@@ -173,10 +173,8 @@ Information("Checking installed NuGet package dependencies versions:");
 
 packageVersions.ToList().ForEach(package =>
 {
-    var version = package.Value.First().Item1;
-    var config = package.Value.First().Item1;
-    bool isValidVersion = package.Value.All(x => x.Item1 == version);
-
+    var packageVersion = package.Value.First().Item1;
+    bool isValidVersion = package.Value.All(x => x.Item1 == packageVersion);
     if (!isValidVersion)
     {
         Information("Error: package {0} has multiple versions installed:", package.Key);
