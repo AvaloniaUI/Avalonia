@@ -60,6 +60,7 @@
     <Compile Include="Converters\ColumnDefinitionsTypeConverter.cs" />
     <Compile Include="Converters\CursorTypeConverter.cs" />
     <Compile Include="Converters\DateTimeTypeConverter.cs" />
+    <Compile Include="Converters\FontWeightConverter.cs" />
     <Compile Include="Converters\GeometryTypeConverter.cs" />
     <Compile Include="Converters\GridLengthTypeConverter.cs" />
     <Compile Include="Converters\IconTypeConverter.cs" />
