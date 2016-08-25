@@ -3,6 +3,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #addin "nuget:?package=Polly&version=4.2.0"
+#addin "nuget:?package=NuGet.Core&version=2.12.0"
 
 ///////////////////////////////////////////////////////////////////////////////
 // TOOLS
@@ -15,9 +16,11 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Polly;
+using NuGet;
 
 ///////////////////////////////////////////////////////////////////////////////
 // ARGUMENTS
@@ -123,14 +126,87 @@ var buildDirs =
 // NUGET NUSPECS
 ///////////////////////////////////////////////////////////////////////////////
 
-var SerilogVersion = "1.5.14";
-var SplatVersion = "1.6.2";
-var SpracheVersion = "2.0.0.50";
-var SystemReactiveVersion = "3.0.0";
-var SkiaSharpVersion = "1.53.0";
-var SharpDXVersion = "3.0.2";
-var SharpDXDirect2D1Version = "3.0.2";
-var SharpDXDXGIVersion = "3.0.2";
+Information("Getting git modules:");
+
+IEnumerable<string> subModules;
+var gitSettings = new ProcessSettings { Arguments = "config --file .gitmodules --get-regexp path", RedirectStandardOutput = true };
+var exitCode = StartProcess("git", gitSettings, out subModules);
+if (exitCode != 0)
+{
+    throw new Exception("Failed to retrieve git submodule paths.");
+}
+
+var ignoredSubModulesPaths = subModules.Select(m => 
+{
+    var path = m.Split(' ')[1];
+    Information(path);
+    return ((DirectoryPath)Directory(path)).FullPath;
+}).ToList();
+
+var normalizePath = new Func<string, string>(
+    path => path.TrimEnd(System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar).ToUpperInvariant());
+
+// Key: Package Id
+// Value is Tuple where Item1: Package Version, Item2: The packages.config file path.
+var packageVersions = new Dictionary<string, IList<Tuple<string,string>>>();
+
+System.IO.Directory.EnumerateFiles(((DirectoryPath)Directory("./src")).FullPath, "packages.config", SearchOption.AllDirectories).ToList().ForEach(fileName =>
+{
+    if (!ignoredSubModulesPaths.Any(i => normalizePath(fileName).Contains(normalizePath(i))))
+    {
+        var file = new PackageReferenceFile(fileName);
+        foreach (PackageReference packageReference in file.GetPackageReferences())
+        {
+            IList<Tuple<string, string>> versions;
+            packageVersions.TryGetValue(packageReference.Id, out versions);
+            if (versions == null)
+            {
+                versions = new List<Tuple<string, string>>();
+                packageVersions[packageReference.Id] = versions;
+            }
+            versions.Add(Tuple.Create(packageReference.Version.ToString(), fileName));
+        }
+    }
+});
+
+Information("Checking installed NuGet package dependencies versions:");
+
+packageVersions.ToList().ForEach(package =>
+{
+    var version = package.Value.First().Item1;
+    var config = package.Value.First().Item1;
+    bool isValidVersion = package.Value.All(x => x.Item1 == version);
+
+    if (!isValidVersion)
+    {
+        Information("Error: package {0} has multiple versions installed:", package.Key);
+        foreach (var v in package.Value)
+        {
+            Information("{0}, file: {1}", v.Item1, v.Item2);
+        }
+        throw new Exception("Detected multiple NuGet package version installed for different projects.");
+    }
+});
+
+Information("Setting NuGet package dependencies versions:");
+
+var SerilogVersion = packageVersions["Serilog"].FirstOrDefault().Item1;
+var SplatVersion = packageVersions["Splat"].FirstOrDefault().Item1;
+var SpracheVersion = packageVersions["Sprache"].FirstOrDefault().Item1;
+var SystemReactiveVersion = packageVersions["System.Reactive"].FirstOrDefault().Item1;
+var SkiaSharpVersion = packageVersions["SkiaSharp"].FirstOrDefault().Item1;
+var SharpDXVersion = packageVersions["SharpDX"].FirstOrDefault().Item1;
+var SharpDXDirect2D1Version = packageVersions["SharpDX.Direct2D1"].FirstOrDefault().Item1;
+var SharpDXDXGIVersion = packageVersions["SharpDX.DXGI"].FirstOrDefault().Item1;
+
+Information("Package: Serilog, version: {0}", SerilogVersion);
+Information("Package: Splat, version: {0}", SplatVersion);
+Information("Package: Sprache, version: {0}", SpracheVersion);
+Information("Package: System.Reactive, version: {0}", SystemReactiveVersion);
+Information("Package: SkiaSharp, version: {0}", SkiaSharpVersion);
+Information("Package: SharpDX, version: {0}", SharpDXVersion);
+Information("Package: SharpDX.Direct2D1, version: {0}", SharpDXDirect2D1Version);
+Information("Package: SharpDX.DXGI, version: {0}", SharpDXDXGIVersion);
 
 var SetNuGetNuspecCommonProperties = new Action<NuGetPackSettings> ((nuspec) => {
     nuspec.Version = version;
