@@ -489,7 +489,6 @@ Task("Clean")
     CleanDirectories(buildDirs);
     CleanDirectory(artifactsDir);
     CleanDirectory(nugetRoot);
-    CleanDirectory(binRoot);
 });
 
 Task("Restore-NuGet-Packages")
