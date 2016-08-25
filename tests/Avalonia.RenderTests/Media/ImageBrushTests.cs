@@ -129,9 +129,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
-#if AVALONIA_CAIRO
-        [Fact(Skip = "Font image stretch currently broken on cairo")]
-#elif AVALONIA_SKIA_SKIP_FAIL
+#if AVALONIA_SKIA_SKIP_FAIL
         [Fact(Skip = "FIXME")]
 #else
         [Fact]
@@ -158,9 +156,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
-#if AVALONIA_CAIRO
-        [Fact(Skip = "Font image stretch currently broken on cairo")]
-#elif AVALONIA_SKIA_SKIP_FAIL
+#if AVALONIA_SKIA_SKIP_FAIL
         [Fact(Skip = "FIXME")]
 #else
         [Fact]

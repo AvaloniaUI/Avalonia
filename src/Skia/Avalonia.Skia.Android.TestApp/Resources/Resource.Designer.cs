@@ -26,8 +26,6 @@ namespace Avalonia.Skia.Android.TestApp
 		
 		public static void UpdateIdValues()
 		{
-			global::Avalonia.Android.Resource.String.ApplicationName = global::Avalonia.Skia.Android.TestApp.Resource.String.ApplicationName;
-			global::Avalonia.Android.Resource.String.Hello = global::Avalonia.Skia.Android.TestApp.Resource.String.Hello;
 		}
 		
 		public partial class Attribute

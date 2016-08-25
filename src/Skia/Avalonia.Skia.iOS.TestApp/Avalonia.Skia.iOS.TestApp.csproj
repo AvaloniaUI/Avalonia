@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -131,12 +131,6 @@
     <ProjectReference Include="..\..\Avalonia.Styling\Avalonia.Styling.csproj">
       <Project>{f1baa01a-f176-4c6a-b39d-5b40bb1b148f}</Project>
       <Name>Avalonia.Styling</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\iOS\Avalonia.iOS\Avalonia.iOS.csproj">
-      <Project>{4488ad85-1495-4809-9aa4-ddfe0a48527e}</Project>
-      <Name>Avalonia.iOS</Name>
-      <IsAppExtension>false</IsAppExtension>
-      <IsWatchApp>false</IsWatchApp>
     </ProjectReference>
     <ProjectReference Include="..\Avalonia.Skia.iOS\Avalonia.Skia.iOS.csproj">
       <Project>{47be08a7-5985-410b-9ffc-2264b8ea595f}</Project>
