@@ -144,7 +144,7 @@ var ignoredSubModulesPaths = subModules.Select(m =>
 }).ToList();
 
 var normalizePath = new Func<string, string>(
-    path => path.TrimEnd(System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar).ToUpperInvariant());
+    path => path.Replace(System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar).ToUpperInvariant());
 
 // Key: Package Id
 // Value is Tuple where Item1: Package Version, Item2: The packages.config file path.
