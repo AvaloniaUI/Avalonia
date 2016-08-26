@@ -128,9 +128,7 @@ var buildDirs =
 
 Information("Getting git modules:");
 
-var gitSettings = System.IO.File.ReadAllLines(".git/config");
-
-var ignoredSubModulesPaths = gitSettings.Where(m=>m.StartsWith("[submodule ")).Select(m => 
+var ignoredSubModulesPaths = System.IO.File.ReadAllLines(".git/config").Where(m=>m.StartsWith("[submodule ")).Select(m => 
 {
     var path = m.Split(' ')[1].Trim("\"[] \t".ToArray());
     Information(path);
