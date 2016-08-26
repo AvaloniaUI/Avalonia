@@ -10,7 +10,7 @@ using Avalonia.Platform;
 
 namespace Avalonia.Shared.PlatformSupport
 {
-    internal class StandardRuntimePlatform : IRuntimePlatform
+    internal partial class StandardRuntimePlatform : IRuntimePlatform
     {
         public Assembly[] GetLoadedAssemblies() => AppDomain.CurrentDomain.GetAssemblies();
         public void PostThreadPoolItem(Action cb) => ThreadPool.UnsafeQueueUserWorkItem(_ => cb(), null);

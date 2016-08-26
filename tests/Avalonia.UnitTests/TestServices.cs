@@ -19,7 +19,7 @@ namespace Avalonia.UnitTests
         public static readonly TestServices StyledWindow = new TestServices(
             assetLoader: new AssetLoader(),
             layoutManager: new LayoutManager(),
-            platform: new StandardRuntimePlatform(),
+            platform: new AppBuilder().RuntimePlatform,
             renderInterface: CreateRenderInterfaceMock(),
             standardCursorFactory: Mock.Of<IStandardCursorFactory>(),
             styler: new Styler(),
