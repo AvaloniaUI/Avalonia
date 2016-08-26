@@ -32,6 +32,8 @@ No tasks will be executed.
 Tells Cake to use the Mono scripting engine.
 .PARAMETER SkipToolPackageRestore
 Skips restoring of packages.
+.PARAMETER SkipTests
+Skips unit tests
 .PARAMETER ScriptArgs
 Remaining arguments are added here.
 
@@ -117,6 +119,12 @@ if($WhatIf.IsPresent) {
     $UseDryRun = "-dryrun"
 }
 
+# Is this a dry run?
+$UseSkipTests = "";
+if($SkipTests.IsPresent) {
+    $UseSkipTests = "-skip-tests"
+}
+
 # Make sure tools folder exists
 if ((Test-Path $PSScriptRoot) -and !(Test-Path $TOOLS_DIR)) {
     Write-Verbose -Message "Creating tools directory..."
@@ -189,5 +197,5 @@ if (!(Test-Path $CAKE_EXE)) {
 
 # Start Cake
 Write-Host "Running build script..."
-Invoke-Expression "& `"$CAKE_EXE`" `"$Script`" -target=`"$Target`" -platform=`"$Platform`" -configuration=`"$Configuration`" -verbosity=`"$Verbosity`" $UseMono $UseDryRun $UseExperimental $ScriptArgs"
+Invoke-Expression "& `"$CAKE_EXE`" `"$Script`" -target=`"$Target`" -platform=`"$Platform`" -configuration=`"$Configuration`" -verbosity=`"$Verbosity`" $UseSkipTests $UseMono $UseDryRun $UseExperimental $ScriptArgs"
 exit $LASTEXITCODE

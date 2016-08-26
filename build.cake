@@ -29,7 +29,7 @@ using NuGet;
 var target = Argument("target", "Default");
 var platform = Argument("platform", "Any CPU");
 var configuration = Argument("configuration", "Release");
-
+var skipTests = HasArgument("skip-tests");
 ///////////////////////////////////////////////////////////////////////////////
 // CONFIGURATION
 ///////////////////////////////////////////////////////////////////////////////
@@ -623,6 +623,11 @@ Task("Run-Unit-Tests")
     .IsDependentOn("Build")
     .Does(() =>
 {
+	if(skipTests)
+	{
+		Information("Skipping unit tests because of -skip-tests");
+		return;
+	}
     var pattern = "./tests/Avalonia.*.UnitTests/bin/" + dirSuffix + "/Avalonia.*.UnitTests.dll";
 
     Func<IFileSystemInfo, bool> ExcludeWindowsTests = i => {

@@ -29,6 +29,7 @@ CONFIGURATION="Release"
 PLATFORM="Any CPU"
 VERBOSITY="verbose"
 DRYRUN=
+SKIP_TESTS=
 SHOW_VERSION=false
 SCRIPT_ARGUMENTS=()
 
@@ -39,6 +40,7 @@ for i in "$@"; do
         -t|--target) TARGET="$2"; shift ;;
         -p|--platform) PLATFORM="$2"; shift ;;
         -c|--configuration) CONFIGURATION="$2"; shift ;;
+        --skip-tests) SKIP_TESTS="-skip-tests"; shift ;;
         -v|--verbosity) VERBOSITY="$2"; shift ;;
         -d|--dryrun) DRYRUN="-dryrun" ;;
         --version) SHOW_VERSION=true ;;
@@ -99,5 +101,5 @@ fi
 if $SHOW_VERSION; then
     exec mono "$CAKE_EXE" -version
 else
-    exec mono "$CAKE_EXE" $SCRIPT -verbosity=$VERBOSITY -platform="$PLATFORM" -configuration="$CONFIGURATION" -target=$TARGET $DRYRUN "${SCRIPT_ARGUMENTS[@]}"
+    exec mono "$CAKE_EXE" $SCRIPT -verbosity=$VERBOSITY -platform="$PLATFORM" -configuration="$CONFIGURATION" -target=$TARGET $DRYRUN SKIP_TESTS "${SCRIPT_ARGUMENTS[@]}"
 fi
