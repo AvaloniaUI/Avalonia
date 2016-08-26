@@ -163,7 +163,7 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Avalonia.RenderTests", "tes
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VirtualizationTest", "samples\VirtualizationTest\VirtualizationTest.csproj", "{FBCAF3D0-2808-4934-8E96-3F607594517B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.DotNetFrameworkRuntime", "Avalonia.DotNetFrameworkRuntime\Avalonia.DotNetFrameworkRuntime.csproj", "{4A1ABB09-9047-4BD5-A4AD-A055E52C5EE0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.DotNetFrameworkRuntime", "src\Avalonia.DotNetFrameworkRuntime\Avalonia.DotNetFrameworkRuntime.csproj", "{4A1ABB09-9047-4BD5-A4AD-A055E52C5EE0}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
