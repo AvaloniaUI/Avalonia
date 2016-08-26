@@ -101,5 +101,5 @@ fi
 if $SHOW_VERSION; then
     exec mono "$CAKE_EXE" -version
 else
-    exec mono "$CAKE_EXE" $SCRIPT -verbosity=$VERBOSITY -platform="$PLATFORM" -configuration="$CONFIGURATION" -target=$TARGET $DRYRUN $SKIP_TESTS "${SCRIPT_ARGUMENTS[@]}"
+    exec mono "$CAKE_EXE" $SCRIPT -mono=false -verbosity=$VERBOSITY -platform="$PLATFORM" -configuration="$CONFIGURATION" -target=$TARGET $DRYRUN $SKIP_TESTS "${SCRIPT_ARGUMENTS[@]}"
 fi
