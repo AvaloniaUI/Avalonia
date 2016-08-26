@@ -261,8 +261,13 @@ var win32CoreLibrariesNuSpecContent = coreLibrariesFiles.Select((file) => {
     };
 });
 
-var net45RuntimePlatform = new [] {".xml", ".dll"}.Select(libSuffix => 
-            new NuSpecContent { Source = ((FilePath)File("./src/Avalonia.DotNetFrameworkRuntime/bin/"+dirSuffix+"/Avalonia.DotNetFrameworkRuntime" + libSuffix)).FullPath, Target = "lib/net45" });
+var net45RuntimePlatformExtensions = new [] {".xml", ".dll"};
+var net45RuntimePlatform = net45RuntimePlatformExtensions.Select(libSuffix => {
+    return new NuSpecContent {
+        Source = ((FilePath)File("./src/Avalonia.DotNetFrameworkRuntime/bin/" + dirSuffix + "/Avalonia.DotNetFrameworkRuntime" + libSuffix)).FullPath, 
+        Target = "lib/net45" 
+    };
+});
 
 var nuspecNuGetSettingsCore = new []
 {
