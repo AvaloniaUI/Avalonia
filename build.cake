@@ -258,6 +258,15 @@ var coreLibrariesNuSpecContent = coreLibrariesFiles.Select((file) => {
     };
 });
 
+var win32CoreLibrariesNuSpecContent = coreLibrariesFiles.Select((file) => {
+    return new NuSpecContent { 
+        Source = file.FullPath, Target = "lib/net45" 
+    };
+});
+
+var net45RuntimePlatform = new [] {".xml", ".dll"}.Select(libSuffix => 
+            new NuSpecContent { Source = ((FilePath)File("./src/Avalonia.DotNetFrameworkRuntime/bin/"+dirSuffix+"/Avalonia.DotNetFrameworkRuntime" + libSuffix)).FullPath, Target = "lib/net45" });
+
 var nuspecNuGetSettingsCore = new []
 {
     ///////////////////////////////////////////////////////////////////////////////
@@ -273,7 +282,7 @@ var nuspecNuGetSettingsCore = new []
             new NuSpecDependency() { Id = "Sprache", Version = SpracheVersion },
             new NuSpecDependency() { Id = "System.Reactive", Version = SystemReactiveVersion }
         },
-        Files = coreLibrariesNuSpecContent.ToList(),
+        Files = coreLibrariesNuSpecContent.Concat(win32CoreLibrariesNuSpecContent).Concat(net45RuntimePlatform).ToList(),
         BasePath = Directory("./"),
         OutputDirectory = nugetRoot
     },
