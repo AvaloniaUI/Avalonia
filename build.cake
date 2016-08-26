@@ -29,7 +29,7 @@ using NuGet;
 var target = Argument("target", "Default");
 var platform = Argument("platform", "Any CPU");
 var configuration = Argument("configuration", "Release");
-
+var skipTests = HasArgument("skip-tests");
 ///////////////////////////////////////////////////////////////////////////////
 // CONFIGURATION
 ///////////////////////////////////////////////////////////////////////////////
@@ -129,16 +129,11 @@ var buildDirs =
 Information("Getting git modules:");
 
 IEnumerable<string> subModules;
-var gitSettings = new ProcessSettings { Arguments = "config --file .gitmodules --get-regexp path", RedirectStandardOutput = true };
-var exitCode = StartProcess("git", gitSettings, out subModules);
-if (exitCode != 0)
-{
-    throw new Exception("Failed to retrieve git submodule paths.");
-}
+var gitSettings = System.IO.File.ReadAllLines(".git/config");
 
-var ignoredSubModulesPaths = subModules.Select(m => 
+var ignoredSubModulesPaths = gitSettings.Where(m=>m.StartsWith("[submodule ")).Select(m => 
 {
-    var path = m.Split(' ')[1];
+    var path = m.Split(' ')[1].Trim("\"[] \t".ToArray());
     Information(path);
     return ((DirectoryPath)Directory(path)).FullPath;
 }).ToList();
@@ -628,6 +623,11 @@ Task("Run-Unit-Tests")
     .IsDependentOn("Build")
     .Does(() =>
 {
+	if(skipTests)
+	{
+		Information("Skipping unit tests because of -skip-tests");
+		return;
+	}
     var pattern = "./tests/Avalonia.*.UnitTests/bin/" + dirSuffix + "/Avalonia.*.UnitTests.dll";
 
     Func<IFileSystemInfo, bool> ExcludeWindowsTests = i => {
