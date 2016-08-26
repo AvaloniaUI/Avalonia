@@ -128,7 +128,6 @@ var buildDirs =
 
 Information("Getting git modules:");
 
-IEnumerable<string> subModules;
 var gitSettings = System.IO.File.ReadAllLines(".git/config");
 
 var ignoredSubModulesPaths = gitSettings.Where(m=>m.StartsWith("[submodule ")).Select(m => 
