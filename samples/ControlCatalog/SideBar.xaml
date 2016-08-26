@@ -4,16 +4,17 @@
       <ControlTemplate>
         <DockPanel>
           <ScrollViewer MinWidth="190" Background="{StyleResource ThemeAccentBrush}" DockPanel.Dock="Left">
-            <TabStrip Name="PART_TabStrip"
-                      MemberSelector="{Static TabControl.HeaderSelector}"
-                      Items="{TemplateBinding Items}"
-                      SelectedIndex="{TemplateBinding Path=SelectedIndex, Mode=TwoWay}">
-              <TabStrip.ItemsPanel>
+            <ItemsPresenter Name="PART_ItemsPresenter"
+                            Items="{TemplateBinding Items}"
+                            ItemTemplate="{TemplateBinding ItemTemplate}"
+                            Margin="{TemplateBinding Padding}"
+                            VirtualizationMode="{TemplateBinding VirtualizationMode}">
+              <ItemsPresenter.ItemsPanel>
                 <ItemsPanelTemplate>
                   <StackPanel Orientation="Vertical"/>
                 </ItemsPanelTemplate>
-              </TabStrip.ItemsPanel>
-            </TabStrip>
+              </ItemsPresenter.ItemsPanel>
+            </ItemsPresenter>
           </ScrollViewer>
           <Carousel Name="PART_Content"
                     Margin="8 0 0 0"
@@ -27,14 +28,17 @@
     </Setter>
   </Style>
 
-  <Style Selector="TabControl.sidebar TabStripItem">
-    <Setter Property="Foreground" Value="White"/>
-    <Setter Property="FontSize" Value="14"/>
+  <Style Selector="TabControl.sidebar > TabItem">
     <Setter Property="Margin" Value="0"/>
+  </Style>
+
+  <Style Selector="TabControl.sidebar > TabItem /template/ ContentPresenter">
+    <Setter Property="TextBlock.Foreground" Value="White"/>
+    <Setter Property="TextBlock.FontSize" Value="14"/>
     <Setter Property="Padding" Value="16"/>
   </Style>
 
-  <Style Selector="TabControl.sidebar TabStripItem:selected">
+  <Style Selector="TabControl.sidebar > TabItem:selected /template/ ContentPresenter">
     <Setter Property="Background" Value="{StyleResource ThemeAccentBrush2}"/>
   </Style>
 </Styles>

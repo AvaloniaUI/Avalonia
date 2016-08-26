@@ -99,7 +99,6 @@ namespace TestApplication
                                 Name = "PART_TabStrip",
                                 ItemsPanel = new FuncTemplate<IPanel>(() => new StackPanel { Orientation = Orientation.Vertical, Gap = 4 }),
                                 Margin = new Thickness(0, 10, 0, 0),
-                                MemberSelector = TabControl.HeaderSelector,
                                 [!ItemsControl.ItemsProperty] = control[!ItemsControl.ItemsProperty],
                                 [!!SelectingItemsControl.SelectedItemProperty] = control[!!SelectingItemsControl.SelectedItemProperty],
                             }

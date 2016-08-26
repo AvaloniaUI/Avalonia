@@ -5,6 +5,7 @@ using Avalonia.Animation;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Input;
 
 namespace Avalonia.Controls
 {
@@ -13,6 +14,18 @@ namespace Avalonia.Controls
     /// </summary>
     public class TabControl : SelectingItemsControl
     {
+        /// <summary>
+        /// Defines the <see cref="ContentTemplate"/> property.
+        /// </summary>
+        public static readonly StyledProperty<IDataTemplate> ContentTemplateProperty =
+            ContentControl.ContentTemplateProperty.AddOwner<TabControl>();
+
+        /// <summary>
+        /// Defines the <see cref="TabStripPlacement"/> property.
+        /// </summary>
+        public static readonly StyledProperty<Dock> TabStripPlacementProperty =
+            AvaloniaProperty.Register<TabControl, Dock>(nameof(TabStripPlacement), defaultValue: Dock.Top);
+
         /// <summary>
         /// Defines the <see cref="Transition"/> property.
         /// </summary>
@@ -26,18 +39,6 @@ namespace Avalonia.Controls
             new FuncMemberSelector<object, object>(SelectContent);
 
         /// <summary>
-        /// Defines an <see cref="IMemberSelector"/> that selects the header of a <see cref="TabItem"/>.
-        /// </summary>
-        public static readonly IMemberSelector HeaderSelector =
-            new FuncMemberSelector<object, object>(SelectHeader);
-
-        /// <summary>
-        /// Defines the <see cref="TabStripPlacement"/> property.
-        /// </summary>
-        public static readonly StyledProperty<Dock> TabStripPlacementProperty =
-            AvaloniaProperty.Register<TabControl, Dock>(nameof(TabStripPlacement), defaultValue: Dock.Top);
-
-        /// <summary>
         /// Initializes static members of the <see cref="TabControl"/> class.
         /// </summary>
         static TabControl()
@@ -48,18 +49,27 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets the pages portion of the <see cref="TabControl"/>'s template.
+        /// Gets or sets the data template used to display the content of a tab.
         /// </summary>
-        public IControl Pages
+        public IDataTemplate ContentTemplate
         {
-            get;
-            private set;
+            get { return GetValue(ContentTemplateProperty); }
+            set { SetValue(ContentTemplateProperty, value); }
         }
 
         /// <summary>
-        /// Gets the tab strip portion of the <see cref="TabControl"/>'s template.
+        /// Gets or sets the tabstrip placement of the tabcontrol.
         /// </summary>
-        public IControl TabStrip
+        public Dock TabStripPlacement
+        {
+            get { return GetValue(TabStripPlacementProperty); }
+            set { SetValue(TabStripPlacementProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets the pages portion of the <see cref="TabControl"/>'s template.
+        /// </summary>
+        public IControl Pages
         {
             get;
             private set;
@@ -74,29 +84,50 @@ namespace Avalonia.Controls
             set { SetValue(TransitionProperty, value); }
         }
 
-        /// <summary>
-        /// Gets or sets the tabstrip placement of the tabcontrol.
-        /// </summary>
-        public Dock TabStripPlacement
-        {
-            get { return GetValue(TabStripPlacementProperty); }
-            set { SetValue(TabStripPlacementProperty, value); }
-        }
-
+        /// <inheritdoc/>
         protected override IItemContainerGenerator CreateItemContainerGenerator()
         {
-            // TabControl doesn't actually create items - instead its TabStrip and Carousel
-            // children create the items. However we want it to be a SelectingItemsControl
-            // so that it has the Items/SelectedItem etc properties. In this case, we can
-            // return a null ItemContainerGenerator to disable the creation of item containers.
-            return null;
+            return new HeaderedItemContainerGenerator<TabItem>(
+                this,
+                TabItem.ContentProperty,
+                TabItem.ContentTemplateProperty,
+                TabItem.HeaderProperty);
         }
 
+        /// <inheritdoc/>
+        protected override void OnGotFocus(GotFocusEventArgs e)
+        {
+            base.OnGotFocus(e);
+
+            if (e.NavigationMethod == NavigationMethod.Directional)
+            {
+                e.Handled = UpdateSelectionFromEventSource(
+                    e.Source,
+                    true,
+                    (e.InputModifiers & InputModifiers.Shift) != 0);
+            }
+        }
+
+        /// <inheritdoc/>
+        protected override void OnPointerPressed(PointerPressedEventArgs e)
+        {
+            base.OnPointerPressed(e);
+
+            if (e.MouseButton == MouseButton.Left || e.MouseButton == MouseButton.Right)
+            {
+                e.Handled = UpdateSelectionFromEventSource(
+                    e.Source,
+                    true,
+                    (e.InputModifiers & InputModifiers.Shift) != 0,
+                    (e.InputModifiers & InputModifiers.Control) != 0);
+            }
+        }
+
+        /// <inheritdoc/>
         protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
         {
             base.OnTemplateApplied(e);
 
-            TabStrip = e.NameScope.Find<IControl>("PART_TabStrip");
             Pages = e.NameScope.Find<IControl>("PART_Content");
         }
 
