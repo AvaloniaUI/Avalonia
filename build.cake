@@ -629,13 +629,9 @@ Task("Build")
 
 Task("Run-Unit-Tests")
     .IsDependentOn("Build")
+    .WithCriteria(() => !skipTests)
     .Does(() =>
 {
-	if(skipTests)
-	{
-		Information("Skipping unit tests because of -skip-tests");
-		return;
-	}
     var pattern = "./tests/Avalonia.*.UnitTests/bin/" + dirSuffix + "/Avalonia.*.UnitTests.dll";
 
     Func<IFileSystemInfo, bool> ExcludeWindowsTests = i => {
