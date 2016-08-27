@@ -142,7 +142,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Fired when the window position is changed.
         /// </summary>
-        public event EventHandler<PositionChangedEventArgs> PositionChanged;
+        public event EventHandler<PointEventArgs> PositionChanged;
 
         /// <summary>
         /// Gets or sets the client size of the window.
@@ -408,7 +408,7 @@ namespace Avalonia.Controls
         /// <param name="pos">The window position.</param>
         private void HandlePositionChanged(Point pos)
         {
-            PositionChanged?.Invoke(this, new PositionChangedEventArgs(pos));
+            PositionChanged?.Invoke(this, new PointEventArgs(pos));
         }
 
         /// <summary>

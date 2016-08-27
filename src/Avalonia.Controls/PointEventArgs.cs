@@ -6,15 +6,15 @@ using System;
 namespace Avalonia.Controls
 {
     /// <summary>
-    /// Provides data for the <see cref="TopLevel.PositionChanged"/> event.
+    /// Provides <see cref="Point"/> data for events.
     /// </summary>
-    public class PositionChangedEventArgs : EventArgs
+    public class PointEventArgs : EventArgs
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="PositionChangedEventArgs"/> class.
+        /// Initializes a new instance of the <see cref="PointEventArgs"/> class.
         /// </summary>
         /// <param name="newPos">The new window position.</param>
-        public PositionChangedEventArgs(Point newPos)
+        public PointEventArgs(Point newPos)
         {
             NewPosition = newPos;
         }
