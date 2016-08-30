@@ -31,7 +31,7 @@ namespace Avalonia
 
 namespace Avalonia.Win32
 {
-    public class Win32Platform : IPlatformThreadingInterface, IPlatformSettings, IWindowingPlatform, IPlatformIconLoader
+    class Win32Platform : IPlatformThreadingInterface, IPlatformSettings, IWindowingPlatform, IPlatformIconLoader
     {
         private static readonly Win32Platform s_instance = new Win32Platform();
         private static Thread _uiThread;
@@ -177,7 +177,7 @@ namespace Avalonia.Win32
             return new WindowImpl();
         }
 
-        public IWindowImpl CreateEmbeddableWindow()
+        public IEmbeddableWindowImpl CreateEmbeddableWindow()
         {
             return new EmbeddedWindowImpl();
         }
