@@ -29,8 +29,6 @@ namespace Avalonia.Gtk
         private uint _lastKeyEventTimestamp;
 
         private static readonly Gdk.Cursor DefaultCursor = new Gdk.Cursor(CursorType.LeftPtr);
-        
-
 
         protected WindowImplBase(Gtk.Widget window)
         {
@@ -113,10 +111,6 @@ namespace Avalonia.Gtk
 
         public double Scaling => 1;
 
-
-
-
-
         public Action Activated { get; set; }
 
         public Action Closed { get; set; }
@@ -155,7 +149,6 @@ namespace Avalonia.Gtk
         {
             int x, y;
             _window.GdkWindow.GetDeskrelativeOrigin(out x, out y);
-
             return new Point(point.X + x, point.Y + y);
         }
 
@@ -181,7 +174,6 @@ namespace Avalonia.Gtk
         public abstract void BeginMoveDrag();
         public abstract void BeginResizeDrag(WindowEdge edge);
         public abstract Point Position { get; set; }
-
 
         void ITopLevelImpl.Activate()
         {
@@ -251,8 +243,6 @@ namespace Avalonia.Gtk
             Input(e);
         }
 
-
-
         void OnDestroyed(object sender, EventArgs eventArgs)
         {
             Closed();
@@ -277,7 +267,6 @@ namespace Avalonia.Gtk
             args.RetVal = true;
             ProcessKeyEvent(args.Event);
         }
-
 
         void OnKeyReleaseEvent(object o, Gtk.KeyReleaseEventArgs args)
         {
@@ -312,8 +301,6 @@ namespace Avalonia.Gtk
             Input(e);
             args.RetVal = true;
         }
-
-
 
         public void Dispose()
         {

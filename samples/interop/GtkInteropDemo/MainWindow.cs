@@ -19,7 +19,9 @@ namespace GtkInteropDemo
             left.Add(new Button("I'm GTK button"));
             left.Add(new Calendar());
             root.PackEnd(left, false, false, 0);
-            root.PackStart(new GtkAvaloniaControlHost() {Content = new ControlCatalogControl()}, true, true, 0);
+            var host = new GtkAvaloniaControlHost() {Content = new MainView()};
+            host.SetSizeRequest(600, 600);
+            root.PackStart(host, true, true, 0);
             Add(root);
             
             ShowAll();

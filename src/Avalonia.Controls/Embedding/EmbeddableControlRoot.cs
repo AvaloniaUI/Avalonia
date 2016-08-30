@@ -1,15 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Platform;
 using Avalonia.Styling;
 
-namespace Avalonia.Controls
+namespace Avalonia.Controls.Embedding
 {
     public class EmbeddableControlRoot : TopLevel, IStyleable, IFocusScope, INameScope, IDisposable
     {
@@ -32,7 +28,6 @@ namespace Avalonia.Controls
             PlatformImpl.Show();
             LayoutManager.Instance.ExecuteInitialLayoutPass(this);
         }
-
 
         private void EnsureInitialized()
         {

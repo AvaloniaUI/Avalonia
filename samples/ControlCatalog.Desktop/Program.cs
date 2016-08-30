@@ -16,8 +16,8 @@ namespace ControlCatalog
 
             // TODO: Make this work with GTK/Skia/Cairo depending on command-line args
             // again.
-            AppBuilder.Configure<App>().UseGtk().UseCairo()
-                //.UsePlatformDetect()
+            AppBuilder.Configure<App>()
+                .UsePlatformDetect()
                 .Start<MainWindow>();
         }
 

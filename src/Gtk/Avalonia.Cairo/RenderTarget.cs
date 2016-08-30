@@ -49,17 +49,18 @@ namespace Avalonia.Cairo
         /// </summary>
         /// <returns>A surface wrapped in an <see cref="Avalonia.Media.DrawingContext"/>.</returns>
         public DrawingContext CreateDrawingContext() => new DrawingContext(CreateMediaDrawingContext());
+
         public IDrawingContextImpl CreateMediaDrawingContext()
         {
-            if(_window!=null)
+            if (_window != null)
                 return new Media.DrawingContext(_window.GdkWindow);
             if (_surface != null)
                 return new Media.DrawingContext(_surface);
-            if(_area!=null)
+            if (_area != null)
                 return new Media.DrawingContext(_area.GdkWindow);
-            throw new InvalidOperationException();
+            throw new InvalidOperationException("Unspecified render target");
         }
-        
+
         public void Dispose() => _surface?.Dispose();
     }
 }

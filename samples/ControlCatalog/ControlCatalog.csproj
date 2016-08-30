@@ -38,7 +38,7 @@
     <EmbeddedResource Include="App.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="ControlCatalogControl.xaml">
+    <EmbeddedResource Include="MainView.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Pages\BorderPage.xaml">
@@ -88,8 +88,8 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ControlCatalogControl.xaml.cs">
-      <DependentUpon>ControlCatalogControl.xaml</DependentUpon>
+    <Compile Include="MainView.xaml.cs">
+      <DependentUpon>MainView.xaml</DependentUpon>
     </Compile>
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>

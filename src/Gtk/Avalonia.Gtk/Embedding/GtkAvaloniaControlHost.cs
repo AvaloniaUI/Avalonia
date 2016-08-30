@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.Controls.Embedding;
 using Avalonia.Diagnostics;
 using Avalonia.Layout;
 using Avalonia.Platform;
@@ -37,14 +38,6 @@ namespace Avalonia.Gtk.Embedding
                 }
             }
         }
-
-        protected override void OnSizeRequested(ref Requisition requisition)
-        {
-            requisition.Width = 700;
-            requisition.Height = 500;
-           
-        }
-
 
         IntPtr IPlatformHandle.Handle => PlatformHandleAwareWindow.GetNativeWindow(GdkWindow);
 

@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Windows.Forms;
 using Avalonia.Controls;
+using Avalonia.Controls.Embedding;
 using Avalonia.Input;
 using Avalonia.VisualTree;
 using Avalonia.Win32.Interop;

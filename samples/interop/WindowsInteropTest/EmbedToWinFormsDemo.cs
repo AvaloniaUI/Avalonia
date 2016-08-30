@@ -17,7 +17,7 @@ namespace WindowsInteropTest
         public EmbedToWinFormsDemo()
         {
             InitializeComponent();
-            avaloniaHost.Content = new ControlCatalogControl();
+            avaloniaHost.Content = new MainView();
         }
     }
 }

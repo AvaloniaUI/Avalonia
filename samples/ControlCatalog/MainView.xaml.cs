@@ -4,9 +4,9 @@ using Avalonia.Markup.Xaml;
 
 namespace ControlCatalog
 {
-    public class ControlCatalogControl : UserControl
+    public class MainView : UserControl
     {
-        public ControlCatalogControl()
+        public MainView()
         {
             this.InitializeComponent();
         }

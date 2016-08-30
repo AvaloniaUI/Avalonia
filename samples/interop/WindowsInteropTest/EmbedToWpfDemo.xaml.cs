@@ -25,7 +25,7 @@ namespace WindowsInteropTest
         public EmbedToWpfDemo()
         {
             InitializeComponent();
-            Host.Content =  new ControlCatalogControl();
+            Host.Content =  new MainView();
         }
     }
 }

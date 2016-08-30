@@ -24,7 +24,6 @@ namespace Avalonia.Gtk
 
         public EmbeddableImpl() : this(new PlatformHandleAwareDrawingArea())
         {
-            
         }
 
         private void Plug_SizeAllocated(object o, SizeAllocatedArgs args)
@@ -35,45 +34,37 @@ namespace Avalonia.Gtk
         public override Size ClientSize
         {
             get { return new Size(Widget.Allocation.Width, Widget.Allocation.Height); }
-            set { }
+            set {}
         }
 
 
         //Stubs are needed for future GTK designer embedding support
         public override void SetTitle(string title)
         {
-            
         }
 
         public override IDisposable ShowDialog() => Disposable.Create(() => { });
 
         public override void SetSystemDecorations(bool enabled)
         {
-            
         }
 
         public override void SetIcon(IWindowIconImpl icon)
         {
-            
         }
 
         public override void BeginMoveDrag()
         {
-            
         }
 
         public override void BeginResizeDrag(WindowEdge edge)
         {
-            
         }
 
         public override Point Position
         {
             get { return new Point(); } 
-            set
-            {
-                
-            }
+            set {}
         }
     }
 }
