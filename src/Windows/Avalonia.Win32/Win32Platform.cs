@@ -23,7 +23,7 @@ namespace Avalonia
     {
         public static T UseWin32<T>(this T builder) where T : AppBuilderBase<T>, new()
         {
-            builder.WindowingSubsystemInitializer = Win32.Win32Platform.Initialize;
+            builder.UseWindowingSubsystem(Win32.Win32Platform.Initialize);
             builder.WindowingSubsystemName = "Win32";
             return builder;
         }

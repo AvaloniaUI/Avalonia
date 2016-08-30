@@ -15,7 +15,7 @@ namespace Avalonia
     {
         public static T UseiOS<T>(this T builder) where T : AppBuilderBase<T>, new()
         {
-            builder.WindowingSubsystemInitializer = iOSPlatform.Initialize;
+            builder.UseWindowingSubsystem(iOSPlatform.Initialize);
             builder.WindowingSubsystemName = "iOS";
             return builder;
         }

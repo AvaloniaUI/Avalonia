@@ -14,7 +14,7 @@ namespace Avalonia
     {
         public static T UseCairo<T>(this T builder) where T : AppBuilderBase<T>, new()
         {
-            builder.RenderingSubsystemInitializer = Cairo.CairoPlatform.Initialize;
+            builder.UseRenderingSubsystem(Cairo.CairoPlatform.Initialize);
             builder.RenderingSubsystemName = "Cairo";
             return builder;
         }

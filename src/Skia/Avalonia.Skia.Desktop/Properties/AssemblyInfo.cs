@@ -1,3 +1,5 @@
+using Avalonia.Platform;
+using Avalonia.Skia;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -34,3 +36,5 @@ using System.Runtime.InteropServices;
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
+
+[assembly: ExportRenderingSubsystem(OperatingSystemType.WinNT, 3, "Skia", typeof(SkiaPlatform), nameof(SkiaPlatform.Initialize))]

@@ -17,7 +17,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the <see cref="IRuntimePlatform"/> instance.
         /// </summary>
-        public IRuntimePlatform RuntimePlatform { get; private set; }
+        public IRuntimePlatform RuntimePlatform { get; set; }
 
         /// <summary>
         /// Gets or sets a method to call the initialize the runtime platform services (e. g. AssetLoader)
@@ -105,7 +105,7 @@ namespace Avalonia.Controls
             return Self;
         }
 
-        public AppBuilder AfterSetup(Action<TAppBuilder> callback)
+        public TAppBuilder AfterSetup(Action<TAppBuilder> callback)
         {
             AfterSetupCallback = (Action<TAppBuilder>)Delegate.Combine(AfterSetupCallback, callback);
             return Self;

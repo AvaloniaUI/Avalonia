@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Platform;
 using Avalonia.Shared.PlatformSupport;
+using System.IO;
 
 namespace Avalonia
 {
@@ -23,22 +24,47 @@ namespace Avalonia
 
         public AppBuilder UsePlatformDetect()
         {
-            var platformId = (int)Environment.OSVersion.Platform;
-            if (platformId == 4 || platformId == 6)
-            {
-                UseRenderingSubsystem("Avalonia.Cairo");
-                UseWindowingSubsystem("Avalonia.Gtk");
-                WindowingSubsystemName = "Gtk";
-                RenderingSubsystemName = "Cairo";
-            }
-            else
-            {
-                UseRenderingSubsystem("Avalonia.Direct2D1");
-                UseWindowingSubsystem("Avalonia.Win32");
-                WindowingSubsystemName = "Win32";
-                RenderingSubsystemName = "Direct2D1";
-            }
+            var os = RuntimePlatform.GetRuntimeInfo().OperatingSystem;
+
+            LoadAssembliesInDirectory();
+
+            var windowingSubsystemAttribute = (from assembly in RuntimePlatform.GetLoadedAssemblies()
+                                               from attribute in assembly.GetCustomAttributes<ExportWindowingSubsystemAttribute>()
+                                               where attribute.RequiredOS == os
+                                               orderby attribute.Priority ascending
+                                               select attribute).First();
+
+            var renderingSubsystemAttribute = (from assembly in RuntimePlatform.GetLoadedAssemblies()
+                                               from attribute in assembly.GetCustomAttributes<ExportRenderingSubsystemAttribute>()
+                                               where attribute.RequiredOS == os
+                                               where attribute.RequiresWindowingSubsystem == null
+                                                || attribute.RequiresWindowingSubsystem == windowingSubsystemAttribute.Name
+                                               orderby attribute.Priority ascending
+                                               select attribute).First();
+
+            UseWindowingSubsystem(() => windowingSubsystemAttribute.InitializationType
+                .GetRuntimeMethod(windowingSubsystemAttribute.InitializationMethod, Type.EmptyTypes).Invoke(null, null));
+            WindowingSubsystemName = windowingSubsystemAttribute.Name;
+
+            UseRenderingSubsystem(() => renderingSubsystemAttribute.InitializationType
+                .GetRuntimeMethod(renderingSubsystemAttribute.InitializationMethod, Type.EmptyTypes).Invoke(null, null));
+            RenderingSubsystemName = renderingSubsystemAttribute.Name;
+            
             return this;
+        }
+
+        private void LoadAssembliesInDirectory()
+        {
+            foreach (var file in new FileInfo(Assembly.GetEntryAssembly().Location).Directory.EnumerateFiles("*.dll"))
+            {
+                try
+                {
+                    Assembly.LoadFile(file.FullName);
+                }
+                catch (Exception)
+                {
+                }
+            }
         }
     }
 }
