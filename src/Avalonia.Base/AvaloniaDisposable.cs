@@ -20,7 +20,7 @@ namespace Avalonia
         {
             IsDisposed = true;
 #if DEBUG_DISPOSE
-            DisposedAt = AvaloniaLocator.Current.GetService<IPclPlatformWrapper>().GetStackTrace();
+            DisposedAt = AvaloniaLocator.Current.GetService<IRuntimePlatform>().GetStackTrace();
 #endif
             DoDispose();
         }

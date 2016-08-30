@@ -12,7 +12,6 @@ using System.Threading;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Platform;
-using Avalonia.Shared.PlatformSupport;
 using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop;
 using Avalonia.Controls;
@@ -22,7 +21,7 @@ namespace Avalonia
 {
     public static class Win32ApplicationExtensions
     {
-        public static AppBuilder UseWin32(this AppBuilder builder)
+        public static T UseWin32<T>(this T builder) where T : AppBuilderBase<T>, new()
         {
             builder.WindowingSubsystem = Avalonia.Win32.Win32Platform.Initialize;
             return builder;
@@ -69,8 +68,7 @@ namespace Avalonia.Win32
                 .Bind<ISystemDialogImpl>().ToSingleton<SystemDialogImpl>()
                 .Bind<IWindowingPlatform>().ToConstant(s_instance)
                 .Bind<IPlatformIconLoader>().ToConstant(s_instance);
-
-            SharedPlatform.Register();
+            
             _uiThread = Thread.CurrentThread;
         }
 

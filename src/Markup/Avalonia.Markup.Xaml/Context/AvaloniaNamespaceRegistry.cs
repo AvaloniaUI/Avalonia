@@ -168,7 +168,7 @@ namespace Avalonia.Markup.Xaml.Context
         private void ScanNewAssemblies()
         {
             IEnumerable<Assembly> assemblies = AvaloniaLocator.Current
-                .GetService<IPclPlatformWrapper>()
+                .GetService<IRuntimePlatform>()
                 ?.GetLoadedAssemblies();
 
             if (assemblies != null)

@@ -149,7 +149,7 @@ namespace Avalonia.Layout.UnitTests
                 .Bind<IInputManager>().ToConstant(new Mock<IInputManager>().Object)
                 .Bind<IGlobalStyles>().ToConstant(globalStyles.Object)
                 .Bind<ILayoutManager>().ToConstant(new LayoutManager())
-                .Bind<IPclPlatformWrapper>().ToConstant(new PclPlatformWrapper())
+                .Bind<IRuntimePlatform>().ToConstant(new AppBuilder().RuntimePlatform)
                 .Bind<IPlatformRenderInterface>().ToConstant(renderInterface)
                 .Bind<IRenderQueueManager>().ToConstant(renderManager)
                 .Bind<IStyler>().ToConstant(new Styler())

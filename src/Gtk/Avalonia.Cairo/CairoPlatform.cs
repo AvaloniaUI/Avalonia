@@ -12,7 +12,7 @@ namespace Avalonia
 {
     public static class GtkApplicationExtensions
     {
-        public static AppBuilder UseCairo(this AppBuilder builder)
+        public static T UseCairo<T>(this T builder) where T : AppBuilderBase<T>, new()
         {
             builder.RenderingSubsystem = Avalonia.Cairo.CairoPlatform.Initialize;
             return builder;
