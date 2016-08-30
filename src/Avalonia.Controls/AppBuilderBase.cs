@@ -3,6 +3,7 @@
 
 using System;
 using System.Reflection;
+using System.Linq;
 using Avalonia.Platform;
 
 namespace Avalonia.Controls
@@ -16,22 +17,22 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the <see cref="IRuntimePlatform"/> instance.
         /// </summary>
-        public IRuntimePlatform RuntimePlatform { get; set; }
+        public IRuntimePlatform RuntimePlatform { get; private set; }
 
         /// <summary>
         /// Gets or sets a method to call the initialize the runtime platform services (e. g. AssetLoader)
         /// </summary>
-        public Action RuntimePlatformServicesInitializer { get; set; }
+        public Action RuntimePlatformServicesInitializer { get; private set; }
 
         /// <summary>
         /// Gets or sets the <see cref="Application"/> instance being initialized.
         /// </summary>
-        public Application Instance { get; set; }
+        public Application Instance { get; protected set; }
 
         /// <summary>
         /// Gets or sets a method to call the initialize the windowing subsystem.
         /// </summary>
-        public Action WindowingSubsystemInitializer { get; set; }
+        public Action WindowingSubsystemInitializer { get; private set; }
 
         /// <summary>
         /// Gets or sets the name of the windowing subsystem to use.
@@ -41,7 +42,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets a method to call the initialize the windowing subsystem.
         /// </summary>
-        public Action RenderingSubsystemInitializer { get; set; }
+        public Action RenderingSubsystemInitializer { get; private set; }
 
         /// <summary>
         /// Gets or sets the name of the rendering subsystem to use.
@@ -49,10 +50,15 @@ namespace Avalonia.Controls
         public string RenderingSubsystemName { get; set; }
 
         /// <summary>
+        /// Gets or sets a method to call after the <see cref="Application"/> is setup.
+        /// </summary>
+        public Action<TAppBuilder> AfterSetupCallback { get; private set; } = builder => { };
+
+        /// <summary>
         /// Gets or sets a method to call before <see cref="Start{TMainWindow}"/> is called on the
         /// <see cref="Application"/>.
         /// </summary>
-        public Action<TAppBuilder> BeforeStartCallback { get; set; }
+        public Action<TAppBuilder> BeforeStartCallback { get; private set; } = builder => { };
 
         protected AppBuilderBase(IRuntimePlatform platform, Action platformSevices)
         {
@@ -95,12 +101,13 @@ namespace Avalonia.Controls
         /// <returns>An <typeparamref name="TAppBuilder"/> instance.</returns>
         public TAppBuilder BeforeStarting(Action<TAppBuilder> callback)
         {
-            var oldCallback = BeforeStartCallback;
-            BeforeStartCallback = builder =>
-            {
-                oldCallback?.Invoke(builder);
-                callback(builder);
-            };
+            BeforeStartCallback = (Action<TAppBuilder>)Delegate.Combine(BeforeStartCallback, callback);
+            return Self;
+        }
+
+        public AppBuilder AfterSetup(Action<TAppBuilder> callback)
+        {
+            AfterSetupCallback = (Action<TAppBuilder>)Delegate.Combine(AfterSetupCallback, callback);
             return Self;
         }
 
@@ -112,7 +119,7 @@ namespace Avalonia.Controls
             where TMainWindow : Window, new()
         {
             Setup();
-            BeforeStartCallback?.Invoke(Self);
+            BeforeStartCallback(Self);
 
             var window = new TMainWindow();
             window.Show();
@@ -175,6 +182,28 @@ namespace Avalonia.Controls
             init.Invoke(null, null);
         };
 
+        public TAppBuilder UseAvaloniaModules() => AfterSetup(builder => SetupAvaloniaModules());
+
+        private void SetupAvaloniaModules()
+        {
+            var moduleInitializers = from assembly in AvaloniaLocator.Current.GetService<IRuntimePlatform>().GetLoadedAssemblies()
+                                          from attribute in assembly.GetCustomAttributes<ExportAvaloniaModuleAttribute>()
+                                          where attribute.RequiredWindowingSubsystem == ""
+                                           || attribute.RequiredWindowingSubsystem == WindowingSubsystemName
+                                          where attribute.RequiredRenderingSubsystem == ""
+                                           || attribute.RequiredRenderingSubsystem == RenderingSubsystemName
+                                          group attribute by attribute.Name into exports
+                                          select (from export in exports
+                                                  orderby export.RequiredWindowingSubsystem.Length descending
+                                                  orderby export.RequiredRenderingSubsystem.Length descending
+                                                  select export).First().ModuleType into moduleType
+                                          select (from constructor in moduleType.GetTypeInfo().DeclaredConstructors
+                                                  where constructor.GetParameters().Length == 0 && !constructor.IsStatic
+                                                  select constructor).Single() into constructor
+                                          select (Action)(() => constructor.Invoke(new object[0]));
+            Delegate.Combine(moduleInitializers.ToArray()).DynamicInvoke();
+        }
+
         /// <summary>
         /// Sets up the platform-speciic services for the <see cref="Application"/>.
         /// </summary>
@@ -205,6 +234,7 @@ namespace Avalonia.Controls
             WindowingSubsystemInitializer();
             RenderingSubsystemInitializer();
             Instance.Initialize();
+            AfterSetupCallback(Self);
         }
     }
 }

@@ -58,6 +58,7 @@
     <Compile Include="IScrollable.cs" />
     <Compile Include="Embedding\EmbeddableControlRoot.cs" />
     <Compile Include="Platform\IEmbeddableWindowImpl.cs" />
+    <Compile Include="Platform\ExportAvaloniaModuleAttribute.cs" />
     <Compile Include="WindowIcon.cs" />
     <Compile Include="IPseudoClasses.cs" />
     <Compile Include="DropDownItem.cs" />
