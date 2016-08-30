@@ -46,6 +46,7 @@ namespace Avalonia.Controls
 
         protected override Size MeasureOverride(Size availableSize)
         {
+            base.MeasureOverride(PlatformImpl.ClientSize);
             return PlatformImpl.ClientSize;
         }
 
