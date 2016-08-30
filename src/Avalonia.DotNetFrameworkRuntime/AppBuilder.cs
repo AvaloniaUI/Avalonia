@@ -28,11 +28,15 @@ namespace Avalonia
             {
                 UseRenderingSubsystem("Avalonia.Cairo");
                 UseWindowingSubsystem("Avalonia.Gtk");
+                WindowingSubsystemName = "Gtk";
+                RenderingSubsystemName = "Cairo";
             }
             else
             {
                 UseRenderingSubsystem("Avalonia.Direct2D1");
                 UseWindowingSubsystem("Avalonia.Win32");
+                WindowingSubsystemName = "Win32";
+                RenderingSubsystemName = "Direct2D1";
             }
             return this;
         }

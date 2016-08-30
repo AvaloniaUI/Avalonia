@@ -21,7 +21,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets a method to call the initialize the runtime platform services (e. g. AssetLoader)
         /// </summary>
-        public Action RuntimePlatformServices { get; set; }
+        public Action RuntimePlatformServicesInitializer { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="Application"/> instance being initialized.
@@ -31,12 +31,22 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets a method to call the initialize the windowing subsystem.
         /// </summary>
-        public Action WindowingSubsystem { get; set; }
+        public Action WindowingSubsystemInitializer { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the windowing subsystem to use.
+        /// </summary>
+        public string WindowingSubsystemName { get; set; }
 
         /// <summary>
         /// Gets or sets a method to call the initialize the windowing subsystem.
         /// </summary>
-        public Action RenderingSubsystem { get; set; }
+        public Action RenderingSubsystemInitializer { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the rendering subsystem to use.
+        /// </summary>
+        public string RenderingSubsystemName { get; set; }
 
         /// <summary>
         /// Gets or sets a method to call before <see cref="Start{TMainWindow}"/> is called on the
@@ -47,7 +57,7 @@ namespace Avalonia.Controls
         protected AppBuilderBase(IRuntimePlatform platform, Action platformSevices)
         {
             RuntimePlatform = platform;
-            RuntimePlatformServices = platformSevices;
+            RuntimePlatformServicesInitializer = platformSevices;
         }
 
         /// <summary>
@@ -85,7 +95,12 @@ namespace Avalonia.Controls
         /// <returns>An <typeparamref name="TAppBuilder"/> instance.</returns>
         public TAppBuilder BeforeStarting(Action<TAppBuilder> callback)
         {
-            BeforeStartCallback = callback;
+            var oldCallback = BeforeStartCallback;
+            BeforeStartCallback = builder =>
+            {
+                oldCallback?.Invoke(builder);
+                callback(builder);
+            };
             return Self;
         }
 
@@ -121,7 +136,7 @@ namespace Avalonia.Controls
         /// <returns>An <typeparamref name="TAppBuilder"/> instance.</returns>
         public TAppBuilder UseWindowingSubsystem(Action initializer)
         {
-            WindowingSubsystem = initializer;
+            WindowingSubsystemInitializer = initializer;
             return Self;
         }
 
@@ -139,7 +154,7 @@ namespace Avalonia.Controls
         /// <returns>An <typeparamref name="TAppBuilder"/> instance.</returns>
         public TAppBuilder UseRenderingSubsystem(Action initializer)
         {
-            RenderingSubsystem = initializer;
+            RenderingSubsystemInitializer = initializer;
             return Self;
         }
 
@@ -170,25 +185,25 @@ namespace Avalonia.Controls
                 throw new InvalidOperationException("No App instance configured.");
             }
 
-            if (RuntimePlatformServices == null)
+            if (RuntimePlatformServicesInitializer == null)
             {
                 throw new InvalidOperationException("No runtime platform services configured.");
             }
 
-            if (WindowingSubsystem == null)
+            if (WindowingSubsystemInitializer == null)
             {
                 throw new InvalidOperationException("No windowing system configured.");
             }
 
-            if (RenderingSubsystem == null)
+            if (RenderingSubsystemInitializer == null)
             {
                 throw new InvalidOperationException("No rendering system configured.");
             }
 
             Instance.RegisterServices();
-            RuntimePlatformServices();
-            WindowingSubsystem();
-            RenderingSubsystem();
+            RuntimePlatformServicesInitializer();
+            WindowingSubsystemInitializer();
+            RenderingSubsystemInitializer();
             Instance.Initialize();
         }
     }

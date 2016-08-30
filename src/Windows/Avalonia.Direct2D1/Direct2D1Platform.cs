@@ -14,7 +14,8 @@ namespace Avalonia
     {
         public static T UseDirect2D1<T>(this T builder) where T : AppBuilderBase<T>, new()
         {
-            builder.RenderingSubsystem = Avalonia.Direct2D1.Direct2D1Platform.Initialize;
+            builder.RenderingSubsystemInitializer = Avalonia.Direct2D1.Direct2D1Platform.Initialize;
+            builder.RenderingSubsystemName = "Direct2D1";
             return builder;
         }
     }
