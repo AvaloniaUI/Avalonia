@@ -6,8 +6,11 @@ using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.Embedding;
 using Avalonia.Diagnostics;
+using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Platform;
+using Avalonia.VisualTree;
 using Gdk;
 using Gtk;
 
@@ -21,6 +24,34 @@ namespace Avalonia.Gtk.Embedding
         {
             _root = new EmbeddableControlRoot(new EmbeddableImpl(this));
             _root.Prepare();
+            if (_root.IsFocused)
+                Unfocus();
+            _root.GotFocus += RootGotFocus;
+            CanFocus = true;
+        }
+
+        void Unfocus()
+        {
+            var focused = (IVisual)FocusManager.Instance.Current;
+            if (focused == null)
+                return;
+            while (focused.VisualParent != null)
+                focused = focused.VisualParent;
+
+            if (focused == _root)
+                KeyboardDevice.Instance.SetFocusedElement(null, NavigationMethod.Unspecified, InputModifiers.None);
+        }
+
+        protected override bool OnFocusOutEvent(EventFocus evnt)
+        {
+            Unfocus();
+            return false;
+        }
+
+        private void RootGotFocus(object sender, RoutedEventArgs e)
+        {
+            this.HasFocus = true;
+            GdkWindow.Focus(0);
         }
 
         private Control _content;
