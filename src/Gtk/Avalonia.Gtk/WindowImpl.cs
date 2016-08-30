@@ -60,7 +60,7 @@ namespace Avalonia.Gtk
             _imContext.ClientWindow = this.GdkWindow;
         }
 
-        public Size ClientSize
+        public virtual Size ClientSize
         {
             get
             {
@@ -68,12 +68,10 @@ namespace Avalonia.Gtk
                 int height;
                 GetSize(out width, out height);
                 return new Size(width, height);
-            }
-
-            set
-            {
-                Resize((int)value.Width, (int)value.Height);
-            }
+            }	
+            set 
+			{
+			}
         }
 
         public Size MaxClientSize
