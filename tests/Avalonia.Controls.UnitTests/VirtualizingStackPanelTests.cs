@@ -22,7 +22,51 @@ namespace Avalonia.Controls.UnitTests
                 target.Controller = controller.Object;
                 target.Measure(new Size(100, 100));
 
-                controller.Verify(x => x.UpdateControls());
+                controller.Verify(x => x.UpdateControls(), Times.Once());
+            }
+
+            [Fact]
+            public void Measure_Invokes_Controller_UpdateControls_If_AvailableSize_Changes()
+            {
+                var target = (IVirtualizingPanel)new VirtualizingStackPanel();
+                var controller = new Mock<IVirtualizingController>();
+
+                target.Controller = controller.Object;
+                target.Measure(new Size(100, 100));
+                target.InvalidateMeasure();
+                target.Measure(new Size(100, 100));
+                target.InvalidateMeasure();
+                target.Measure(new Size(100, 101));
+
+                controller.Verify(x => x.UpdateControls(), Times.Exactly(2));
+            }
+
+            [Fact]
+            public void Measure_Does_Not_Invoke_Controller_UpdateControls_If_AvailableSize_Is_The_Same()
+            {
+                var target = (IVirtualizingPanel)new VirtualizingStackPanel();
+                var controller = new Mock<IVirtualizingController>();
+
+                target.Controller = controller.Object;
+                target.Measure(new Size(100, 100));
+                target.InvalidateMeasure();
+                target.Measure(new Size(100, 100));
+
+                controller.Verify(x => x.UpdateControls(), Times.Once());
+            }
+
+            [Fact]
+            public void Measure_Invokes_Controller_UpdateControls_If_AvailableSize_Is_The_Same_After_ForceInvalidateMeasure()
+            {
+                var target = (IVirtualizingPanel)new VirtualizingStackPanel();
+                var controller = new Mock<IVirtualizingController>();
+
+                target.Controller = controller.Object;
+                target.Measure(new Size(100, 100));
+                target.ForceInvalidateMeasure();
+                target.Measure(new Size(100, 100));
+
+                controller.Verify(x => x.UpdateControls(), Times.Exactly(2));
             }
 
             [Fact]
@@ -35,7 +79,7 @@ namespace Avalonia.Controls.UnitTests
                 target.Measure(new Size(100, 100));
                 target.Arrange(new Rect(0, 0, 110, 110));
 
-                controller.Verify(x => x.UpdateControls());
+                controller.Verify(x => x.UpdateControls(), Times.Exactly(2));
             }
 
             [Fact]

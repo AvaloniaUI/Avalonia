@@ -19,6 +19,7 @@ namespace Avalonia.Controls
         private double _averageItemSize;
         private int _averageCount;
         private double _pixelOffset;
+        private bool _forceRemeasure;
 
         bool IVirtualizingPanel.IsFull
         {
@@ -61,10 +62,17 @@ namespace Avalonia.Controls
 
         private IVirtualizingController Controller => ((IVirtualizingPanel)this).Controller;
 
+        void IVirtualizingPanel.ForceInvalidateMeasure()
+        {
+            InvalidateMeasure();
+            _forceRemeasure = true;
+        }
+
         protected override Size MeasureOverride(Size availableSize)
         {
-            if (availableSize != ((ILayoutable)this).PreviousMeasure)
+            if (_forceRemeasure || availableSize != ((ILayoutable)this).PreviousMeasure)
             {
+                _forceRemeasure = false;
                 _availableSpace = availableSize;
                 Controller?.UpdateControls();
             }
