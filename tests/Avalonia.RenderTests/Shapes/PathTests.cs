@@ -24,6 +24,260 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
         {
         }
 
+#if AVALONIA_CAIRO
+        [Fact(Skip = "Broken in Cairo: waiting for Skia")]
+#else
+        [Fact]
+#endif
+        public void Line_Absolute()
+        {
+            Decorator target = new Decorator
+            {
+                Width = 200,
+                Height = 200,
+                Child = new Path
+                {
+                    Stroke = Brushes.Red,
+                    StrokeThickness = 1,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Data = StreamGeometry.Parse("M 10,190 L 190,10 M0,0M200,200"),
+                }
+            };
+
+            RenderToFile(target);
+            CompareImages();
+        }
+
+#if AVALONIA_CAIRO
+        [Fact(Skip = "Broken in Cairo: waiting for Skia")]
+#else
+        [Fact]
+#endif
+        public void Line_Relative()
+        {
+            Decorator target = new Decorator
+            {
+                Width = 200,
+                Height = 200,
+                Child = new Path
+                {
+                    Stroke = Brushes.Red,
+                    StrokeThickness = 1,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Data = StreamGeometry.Parse("M10,190 l190,-190 M0,0M200,200"),
+                }
+            };
+
+            RenderToFile(target);
+            CompareImages();
+        }
+
+#if AVALONIA_CAIRO
+        [Fact(Skip = "Broken in Cairo: waiting for Skia")]
+#else
+        [Fact]
+#endif
+        public void HorizontalLine_Absolute()
+        {
+            Decorator target = new Decorator
+            {
+                Width = 200,
+                Height = 200,
+                Child = new Path
+                {
+                    Stroke = Brushes.Red,
+                    StrokeThickness = 1,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Data = StreamGeometry.Parse("M190,100 H10 M0,0M200,200"),
+                }
+            };
+
+            RenderToFile(target);
+            CompareImages();
+        }
+
+#if AVALONIA_CAIRO
+        [Fact(Skip = "Broken in Cairo: waiting for Skia")]
+#else
+        [Fact]
+#endif
+        public void HorizontalLine_Relative()
+        {
+            Decorator target = new Decorator
+            {
+                Width = 200,
+                Height = 200,
+                Child = new Path
+                {
+                    Stroke = Brushes.Red,
+                    StrokeThickness = 1,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Data = StreamGeometry.Parse("M190,100 h-180 M0,0M200,200"),
+                }
+            };
+
+            RenderToFile(target);
+            CompareImages();
+        }
+
+#if AVALONIA_CAIRO
+        [Fact(Skip = "Broken in Cairo: waiting for Skia")]
+#else
+        [Fact]
+#endif
+        public void VerticalLine_Absolute()
+        {
+            Decorator target = new Decorator
+            {
+                Width = 200,
+                Height = 200,
+                Child = new Path
+                {
+                    Stroke = Brushes.Red,
+                    StrokeThickness = 1,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Data = StreamGeometry.Parse("M100,190 V10 M0,0M200,200"),
+                }
+            };
+
+            RenderToFile(target);
+            CompareImages();
+        }
+
+#if AVALONIA_CAIRO
+        [Fact(Skip = "Broken in Cairo: waiting for Skia")]
+#else
+        [Fact]
+#endif
+        public void VerticalLine_Relative()
+        {
+            Decorator target = new Decorator
+            {
+                Width = 200,
+                Height = 200,
+                Child = new Path
+                {
+                    Stroke = Brushes.Red,
+                    StrokeThickness = 1,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Data = StreamGeometry.Parse("M100,190 V-180 M0,0M200,200"),
+                }
+            };
+
+            RenderToFile(target);
+            CompareImages();
+        }
+
+#if AVALONIA_CAIRO
+        [Fact(Skip = "Broken in Cairo: waiting for Skia")]
+#else
+        [Fact]
+#endif
+        public void CubicBezier_Absolute()
+        {
+            Decorator target = new Decorator
+            {
+                Width = 200,
+                Height = 200,
+                Child = new Path
+                {
+                    Fill = Brushes.Gray,
+                    Stroke = Brushes.Red,
+                    StrokeThickness = 1,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Data = StreamGeometry.Parse("M190,0 C10,10 190,190 10,190 M0,0M200,200"),
+                }
+            };
+
+            RenderToFile(target);
+            CompareImages();
+        }
+
+#if AVALONIA_CAIRO
+        [Fact(Skip = "Broken in Cairo: waiting for Skia")]
+#else
+        [Fact]
+#endif
+        public void CubicBezier_Relative()
+        {
+            Decorator target = new Decorator
+            {
+                Width = 200,
+                Height = 200,
+                Child = new Path
+                {
+                    Fill = Brushes.Gray,
+                    Stroke = Brushes.Red,
+                    StrokeThickness = 1,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Data = StreamGeometry.Parse("M190,0 c-180,10 0,190 -180,190 M0,0M200,200"),
+                }
+            };
+
+            RenderToFile(target);
+            CompareImages();
+        }
+
+#if AVALONIA_CAIRO
+        [Fact(Skip = "Broken in Cairo: waiting for Skia")]
+#else
+        [Fact]
+#endif
+        public void Arc_Absolute()
+        {
+            Decorator target = new Decorator
+            {
+                Width = 200,
+                Height = 200,
+                Child = new Path
+                {
+                    Fill = Brushes.Gray,
+                    Stroke = Brushes.Red,
+                    StrokeThickness = 1,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Data = StreamGeometry.Parse("M190,100 A90,90 0 1,0 10,100  M0,0M200,200"),
+                }
+            };
+
+            RenderToFile(target);
+            CompareImages();
+        }
+
+#if AVALONIA_CAIRO
+        [Fact(Skip = "Broken in Cairo: waiting for Skia")]
+#else
+        [Fact]
+#endif
+        public void Arc_Relative()
+        {
+            Decorator target = new Decorator
+            {
+                Width = 200,
+                Height = 200,
+                Child = new Path
+                {
+                    Fill = Brushes.Gray,
+                    Stroke = Brushes.Red,
+                    StrokeThickness = 1,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Data = StreamGeometry.Parse("M190,100 a90,90 0 1,0 -180,0  M0,0M200,200"),
+                }
+            };
+
+            RenderToFile(target);
+            CompareImages();
+        }
+
         [Fact]
         public void Path_100px_Triangle_Centered()
         {
