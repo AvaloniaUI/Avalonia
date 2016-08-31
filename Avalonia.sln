@@ -168,6 +168,7 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WindowsInteropTest", "samples\interop\WindowsInteropTest\WindowsInteropTest.csproj", "{C7A69145-60B6-4882-97D6-A3921DD43978}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GtkInteropDemo", "samples\interop\GtkInteropDemo\GtkInteropDemo.csproj", "{BD7F352C-6DC1-4740-BAF2-2D34A038728C}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.DotNetFrameworkRuntime", "src\Avalonia.DotNetFrameworkRuntime\Avalonia.DotNetFrameworkRuntime.csproj", "{4A1ABB09-9047-4BD5-A4AD-A055E52C5EE0}"
 EndProject
 Global
@@ -2252,7 +2253,6 @@ Global
 		{C7A69145-60B6-4882-97D6-A3921DD43978}.Ad-Hoc|iPhoneSimulator.ActiveCfg = Release|Any CPU
 		{C7A69145-60B6-4882-97D6-A3921DD43978}.Ad-Hoc|iPhoneSimulator.Build.0 = Release|Any CPU
 		{C7A69145-60B6-4882-97D6-A3921DD43978}.Ad-Hoc|Mono.ActiveCfg = Release|Any CPU
-		{C7A69145-60B6-4882-97D6-A3921DD43978}.Ad-Hoc|Mono.Build.0 = Release|Any CPU
 		{C7A69145-60B6-4882-97D6-A3921DD43978}.Ad-Hoc|x86.ActiveCfg = Release|Any CPU
 		{C7A69145-60B6-4882-97D6-A3921DD43978}.Ad-Hoc|x86.Build.0 = Release|Any CPU
 		{C7A69145-60B6-4882-97D6-A3921DD43978}.AppStore|Any CPU.ActiveCfg = Release|Any CPU
@@ -2262,7 +2262,6 @@ Global
 		{C7A69145-60B6-4882-97D6-A3921DD43978}.AppStore|iPhoneSimulator.ActiveCfg = Release|Any CPU
 		{C7A69145-60B6-4882-97D6-A3921DD43978}.AppStore|iPhoneSimulator.Build.0 = Release|Any CPU
 		{C7A69145-60B6-4882-97D6-A3921DD43978}.AppStore|Mono.ActiveCfg = Release|Any CPU
-		{C7A69145-60B6-4882-97D6-A3921DD43978}.AppStore|Mono.Build.0 = Release|Any CPU
 		{C7A69145-60B6-4882-97D6-A3921DD43978}.AppStore|x86.ActiveCfg = Release|Any CPU
 		{C7A69145-60B6-4882-97D6-A3921DD43978}.AppStore|x86.Build.0 = Release|Any CPU
 		{C7A69145-60B6-4882-97D6-A3921DD43978}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -2272,7 +2271,6 @@ Global
 		{C7A69145-60B6-4882-97D6-A3921DD43978}.Debug|iPhoneSimulator.ActiveCfg = Debug|Any CPU
 		{C7A69145-60B6-4882-97D6-A3921DD43978}.Debug|iPhoneSimulator.Build.0 = Debug|Any CPU
 		{C7A69145-60B6-4882-97D6-A3921DD43978}.Debug|Mono.ActiveCfg = Debug|Any CPU
-		{C7A69145-60B6-4882-97D6-A3921DD43978}.Debug|Mono.Build.0 = Debug|Any CPU
 		{C7A69145-60B6-4882-97D6-A3921DD43978}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{C7A69145-60B6-4882-97D6-A3921DD43978}.Debug|x86.Build.0 = Debug|Any CPU
 		{C7A69145-60B6-4882-97D6-A3921DD43978}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -2282,7 +2280,6 @@ Global
 		{C7A69145-60B6-4882-97D6-A3921DD43978}.Release|iPhoneSimulator.ActiveCfg = Release|Any CPU
 		{C7A69145-60B6-4882-97D6-A3921DD43978}.Release|iPhoneSimulator.Build.0 = Release|Any CPU
 		{C7A69145-60B6-4882-97D6-A3921DD43978}.Release|Mono.ActiveCfg = Release|Any CPU
-		{C7A69145-60B6-4882-97D6-A3921DD43978}.Release|Mono.Build.0 = Release|Any CPU
 		{C7A69145-60B6-4882-97D6-A3921DD43978}.Release|x86.ActiveCfg = Release|Any CPU
 		{C7A69145-60B6-4882-97D6-A3921DD43978}.Release|x86.Build.0 = Release|Any CPU
 		{BD7F352C-6DC1-4740-BAF2-2D34A038728C}.Ad-Hoc|Any CPU.ActiveCfg = Release|Any CPU
