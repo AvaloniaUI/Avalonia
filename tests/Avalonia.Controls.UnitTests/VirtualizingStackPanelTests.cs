@@ -119,6 +119,20 @@ namespace Avalonia.Controls.UnitTests
             }
 
             [Fact]
+            public void Reports_PixelOverflow_After_Arrange_Smaller_Than_Measure()
+            {
+                var target = (IVirtualizingPanel)new VirtualizingStackPanel();
+
+                target.Children.Add(new Canvas { Width = 50, Height = 50 });
+                target.Children.Add(new Canvas { Width = 50, Height = 52 });
+
+                target.Measure(new Size(100, 100));
+                target.Arrange(new Rect(0, 0, 50, 50));
+
+                Assert.Equal(52, target.PixelOverflow);
+            }
+
+            [Fact]
             public void Reports_PixelOverflow_With_PixelOffset()
             {
                 var target = (IVirtualizingPanel)new VirtualizingStackPanel();
