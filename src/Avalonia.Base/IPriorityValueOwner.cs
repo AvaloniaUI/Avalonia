@@ -19,10 +19,11 @@ namespace Avalonia
         void Changed(PriorityValue sender, object oldValue, object newValue);
 
         /// <summary>
-        /// Called when the validation state of a <see cref="PriorityValue"/> changes.
+        /// Called when a <see cref="BindingNotification"/> is received by a 
+        /// <see cref="PriorityValue"/>.
         /// </summary>
         /// <param name="sender">The source of the change.</param>
-        /// <param name="status">The validation status.</param>
-        void DataValidationChanged(PriorityValue sender, IValidationStatus status);
+        /// <param name="notification">The notification.</param>
+        void BindingNotificationReceived(PriorityValue sender, BindingNotification notification);
     }
 }

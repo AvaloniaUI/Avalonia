@@ -85,19 +85,26 @@ namespace Avalonia
         /// The value to use when the property is set to <see cref="AvaloniaProperty.UnsetValue"/>
         /// </param>
         /// <param name="defaultBindingMode">The default binding mode for the property.</param>
+        /// <param name="enableDataValidation">
+        /// Whether the property is interested in data validation.
+        /// </param>
         /// <returns>The property.</returns>
         public DirectProperty<TNewOwner, TValue> AddOwner<TNewOwner>(
             Func<TNewOwner, TValue> getter,
             Action<TNewOwner, TValue> setter = null,
             TValue unsetValue = default(TValue),
-            BindingMode defaultBindingMode = BindingMode.OneWay)
+            BindingMode defaultBindingMode = BindingMode.OneWay,
+            bool enableDataValidation = false)
                 where TNewOwner : AvaloniaObject
         {
             var result = new DirectProperty<TNewOwner, TValue>(
                 this,
                 getter,
                 setter,
-                new DirectPropertyMetadata<TValue>(unsetValue, defaultBindingMode));
+                new DirectPropertyMetadata<TValue>(
+                    unsetValue: unsetValue,
+                    defaultBindingMode: defaultBindingMode,
+                    enableDataValidation: enableDataValidation));
 
             AvaloniaPropertyRegistry.Instance.Register(typeof(TNewOwner), result);
             return result;

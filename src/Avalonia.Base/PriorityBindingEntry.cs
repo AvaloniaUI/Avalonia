@@ -93,22 +93,24 @@ namespace Avalonia
 
         private void ValueChanged(object value)
         {
-            var bindingError = value as BindingError;
+            var notification = value as BindingNotification;
 
-            if (bindingError != null)
+            if (notification != null)
             {
-                _owner.Error(this, bindingError);
+                if (notification.HasValue)
+                {
+                    Value = notification.Value;
+                    _owner.Changed(this);
+                }
+
+                if (notification.ErrorType != BindingErrorType.None)
+                {
+                    _owner.Error(this, notification);
+                }
             }
-
-            var validationStatus = value as IValidationStatus;
-
-            if (validationStatus != null)
+            else
             {
-                _owner.Validation(this, validationStatus);
-            }
-            else if (bindingError == null || bindingError.UseFallbackValue)
-            {
-                Value = bindingError == null ? value : bindingError.FallbackValue;
+                Value = value;
                 _owner.Changed(this);
             }
         }

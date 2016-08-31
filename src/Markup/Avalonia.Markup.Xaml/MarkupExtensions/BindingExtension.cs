@@ -29,7 +29,6 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
                 Mode = Mode,
                 Path = Path,
                 Priority = Priority,
-                EnableValidation = EnableValidation,
             };
         }
 
@@ -41,6 +40,5 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
         public string Path { get; set; }
         public BindingPriority Priority { get; set; } = BindingPriority.LocalValue;
         public object Source { get; set; }
-        public bool EnableValidation { get; set; }
     }
 }

@@ -43,8 +43,18 @@ namespace Avalonia.Markup
 
             if (value != null)
             {
-                var message = $"Could not convert '{value}' to '{targetType}'";
-                return new BindingError(new InvalidCastException(message));
+                string message;
+
+                if (TypeUtilities.IsNumeric(targetType))
+                {
+                    message = $"'{value}' is not a valid number.";
+                }
+                else
+                {
+                    message = $"Could not convert '{value}' to '{targetType.Name}'.";
+                }
+
+                return new BindingNotification(new InvalidCastException(message), BindingErrorType.Error);
             }
 
             return AvaloniaProperty.UnsetValue;

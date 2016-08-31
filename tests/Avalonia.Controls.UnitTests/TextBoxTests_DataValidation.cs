@@ -5,69 +5,82 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
+using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.Markup.Xaml.Data;
+using Avalonia.Platform;
 using Avalonia.UnitTests;
+using Moq;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class TextBoxTests_ValidationState
+    public class TextBoxTests_DataValidation
     {
         [Fact]
-        public void Setter_Exceptions_Should_Set_ValidationState()
+        public void Setter_Exceptions_Should_Set_Error_Pseudoclass()
         {
-            using (UnitTestApplication.Start(TestServices.MockThreadingInterface))
+            using (UnitTestApplication.Start(Services))
             {
-                var target = new TextBox();
-                var binding = new Binding(nameof(ExceptionTest.LessThan10));
-                binding.Source = new ExceptionTest();
-                binding.EnableValidation = true;
-                target.Bind(TextBox.TextProperty, binding);
+                var target = new TextBox
+                {
+                    DataContext = new ExceptionTest(),
+                    [!TextBox.TextProperty] = new Binding(nameof(ExceptionTest.LessThan10), BindingMode.TwoWay),
+                    Template = CreateTemplate(),
+                };
 
-                Assert.True(target.ValidationStatus.IsValid);
+                target.ApplyTemplate();
+
+                Assert.False(target.Classes.Contains(":error"));
                 target.Text = "20";
-                Assert.False(target.ValidationStatus.IsValid);
+                Assert.True(target.Classes.Contains(":error"));
                 target.Text = "1";
-                Assert.True(target.ValidationStatus.IsValid);
-            }
-        }
-
-        [Fact(Skip = "TODO: Not yet passing")]
-        public void Unconvertable_Value_Should_Set_ValidationState()
-        {
-            using (UnitTestApplication.Start(TestServices.MockThreadingInterface))
-            {
-                var target = new TextBox();
-                var binding = new Binding(nameof(ExceptionTest.LessThan10));
-                binding.Source = new ExceptionTest();
-                binding.EnableValidation = true;
-                target.Bind(TextBox.TextProperty, binding);
-
-                Assert.True(target.ValidationStatus.IsValid);
-                target.Text = "foo";
-                Assert.False(target.ValidationStatus.IsValid);
-                target.Text = "1";
-                Assert.True(target.ValidationStatus.IsValid);
+                Assert.False(target.Classes.Contains(":error"));
             }
         }
 
         [Fact]
-        public void Indei_Should_Set_ValidationState()
+        public void Setter_Exceptions_Should_Set_DataValidationErrors()
         {
-            using (UnitTestApplication.Start(TestServices.MockThreadingInterface))
+            using (UnitTestApplication.Start(Services))
             {
-                var target = new TextBox();
-                var binding = new Binding(nameof(ExceptionTest.LessThan10));
-                binding.Source = new IndeiTest();
-                binding.EnableValidation = true;
-                target.Bind(TextBox.TextProperty, binding);
+                var target = new TextBox
+                {
+                    DataContext = new ExceptionTest(),
+                    [!TextBox.TextProperty] = new Binding(nameof(ExceptionTest.LessThan10), BindingMode.TwoWay),
+                    Template = CreateTemplate(),
+                };
 
-                Assert.True(target.ValidationStatus.IsValid);
+                target.ApplyTemplate();
+
+                Assert.Null(target.DataValidationErrors);
                 target.Text = "20";
-                Assert.False(target.ValidationStatus.IsValid);
+                Assert.Equal(1, target.DataValidationErrors.Count());
+                Assert.IsType<InvalidOperationException>(target.DataValidationErrors.Single());
                 target.Text = "1";
-                Assert.True(target.ValidationStatus.IsValid);
+                Assert.Null(target.DataValidationErrors);
             }
+        }
+
+        private static TestServices Services => TestServices.MockThreadingInterface.With(
+            standardCursorFactory: Mock.Of<IStandardCursorFactory>());
+
+        private IControlTemplate CreateTemplate()
+        {
+            return new FuncControlTemplate<TextBox>(control =>
+                new TextPresenter
+                {
+                    Name = "PART_TextPresenter",
+                    [!!TextPresenter.TextProperty] = new Binding
+                    {
+                        Path = "Text",
+                        Mode = BindingMode.TwoWay,
+                        Priority = BindingPriority.TemplatedParent,
+                        RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent),
+                    },
+                });
         }
 
         private class ExceptionTest

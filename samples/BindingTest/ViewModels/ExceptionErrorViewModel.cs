@@ -6,7 +6,7 @@ using System;
 
 namespace BindingTest.ViewModels
 {
-    public class ExceptionPropertyErrorViewModel : ReactiveObject
+    public class ExceptionErrorViewModel : ReactiveObject
     {
         private int _lessThan10;
 
@@ -21,7 +21,7 @@ namespace BindingTest.ViewModels
                 }
                 else
                 {
-                    throw new InvalidOperationException("Value must be less than 10.");
+                    throw new ArgumentOutOfRangeException("Value must be less than 10.");
                 }
             }
         }

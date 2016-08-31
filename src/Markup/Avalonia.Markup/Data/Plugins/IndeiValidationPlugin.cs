@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Collections;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using Avalonia.Data;
@@ -13,43 +13,43 @@ namespace Avalonia.Markup.Data.Plugins
     /// <summary>
     /// Validates properties on objects that implement <see cref="INotifyDataErrorInfo"/>.
     /// </summary>
-    public class IndeiValidationPlugin : IValidationPlugin
+    public class IndeiValidationPlugin : IDataValidationPlugin
     {
         /// <inheritdoc/>
-        public bool Match(WeakReference reference)
-        {
-            return reference.Target is INotifyDataErrorInfo;
-        }
+        public bool Match(WeakReference reference, string memberName) => reference.Target is INotifyDataErrorInfo;
 
         /// <inheritdoc/>
-        public IPropertyAccessor Start(WeakReference reference, string name, IPropertyAccessor accessor, Action<IValidationStatus> callback)
+        public IPropertyAccessor Start(WeakReference reference, string name, IPropertyAccessor accessor)
         {
-            return new IndeiValidationChecker(reference, name, accessor, callback);
+            return new Validator(reference, name, accessor);
         }
 
-        private class IndeiValidationChecker : ValidatingPropertyAccessorBase, IWeakSubscriber<DataErrorsChangedEventArgs>
+        private class Validator : DataValidatiorBase, IWeakSubscriber<DataErrorsChangedEventArgs>
         {
-            public IndeiValidationChecker(WeakReference reference, string name, IPropertyAccessor accessor, Action<IValidationStatus> callback)
-                : base(reference, name, accessor, callback)
+            WeakReference _reference;
+            string _name;
+
+            public Validator(WeakReference reference, string name, IPropertyAccessor inner)
+                : base(inner)
             {
-                var target = reference.Target as INotifyDataErrorInfo;
-                if (target != null)
+                _reference = reference;
+                _name = name;
+            }
+
+            void IWeakSubscriber<DataErrorsChangedEventArgs>.OnEvent(object sender, DataErrorsChangedEventArgs e)
+            {
+                if (e.PropertyName == _name || string.IsNullOrEmpty(e.PropertyName))
                 {
-                    if (target.HasErrors)
-                    {
-                        SendValidationCallback(new IndeiValidationStatus(target.GetErrors(name)));
-                    }
-                    WeakSubscriptionManager.Subscribe(
-                        target,
-                        nameof(target.ErrorsChanged),
-                        this);
+                    Observer.OnNext(CreateBindingNotification(Value));
                 }
             }
 
-            public override void Dispose()
+            protected override void Dispose(bool disposing)
             {
-                base.Dispose();
+                base.Dispose(disposing);
+
                 var target = _reference.Target as INotifyDataErrorInfo;
+
                 if (target != null)
                 {
                     WeakSubscriptionManager.Unsubscribe(
@@ -59,33 +59,60 @@ namespace Avalonia.Markup.Data.Plugins
                 }
             }
 
-            public void OnEvent(object sender, DataErrorsChangedEventArgs e)
+            protected override void SubscribeCore(IObserver<object> observer)
             {
-                if (e.PropertyName == _name || string.IsNullOrEmpty(e.PropertyName))
+                var target = _reference.Target as INotifyDataErrorInfo;
+
+                if (target != null)
                 {
-                    var indei = _reference.Target as INotifyDataErrorInfo;
-                    SendValidationCallback(new IndeiValidationStatus(indei.GetErrors(e.PropertyName)));
+                    WeakSubscriptionManager.Subscribe(
+                        target,
+                        nameof(target.ErrorsChanged),
+                        this);
+                }
+
+                base.SubscribeCore(observer);
+            }
+
+            protected override void InnerValueChanged(object value)
+            {
+                base.InnerValueChanged(CreateBindingNotification(value));
+            }
+
+            private BindingNotification CreateBindingNotification(object value)
+            {
+                var target = (INotifyDataErrorInfo)_reference.Target;
+
+                if (target != null)
+                {
+                    var errors = target.GetErrors(_name)?
+                        .Cast<String>()
+                        .Where(x => x != null).ToList();
+
+                    if (errors?.Count > 0)
+                    {
+                        return new BindingNotification(
+                            GenerateException(errors),
+                            BindingErrorType.DataValidationError,
+                            value);
+                    }
+                }
+
+                return new BindingNotification(value);
+            }
+
+            private Exception GenerateException(IList<string> errors)
+            {
+                if (errors.Count == 1)
+                {
+                    return new Exception(errors[0]);
+                }
+                else
+                {
+                    return new AggregateException(
+                        errors.Select(x => new Exception(x)));
                 }
             }
-        }
-
-        /// <summary>
-        /// Describes the current validation status of a property as reported by an object that implements <see cref="INotifyDataErrorInfo"/>.
-        /// </summary>
-        public class IndeiValidationStatus : IValidationStatus
-        {
-            internal IndeiValidationStatus(IEnumerable errors)
-            {
-                Errors = errors;
-            }
-
-            /// <inheritdoc/>
-            public bool IsValid => !Errors?.OfType<object>().Any() ?? true;
-
-            /// <summary>
-            /// The errors on the given property and on the object as a whole.
-            /// </summary>
-            public IEnumerable Errors { get; }
         }
     }
 }

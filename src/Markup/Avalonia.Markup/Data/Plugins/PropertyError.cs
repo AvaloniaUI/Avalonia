@@ -1,4 +1,5 @@
 using System;
+using System.Reactive.Disposables;
 using Avalonia.Data;
 
 namespace Avalonia.Markup.Data.Plugins
@@ -8,13 +9,13 @@ namespace Avalonia.Markup.Data.Plugins
     /// </summary>
     public class PropertyError : IPropertyAccessor
     {
-        private BindingError _error;
+        private BindingNotification _error;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PropertyError"/> class.
         /// </summary>
         /// <param name="error">The error to report.</param>
-        public PropertyError(BindingError error)
+        public PropertyError(BindingNotification error)
         {
             _error = error;
         }
@@ -34,6 +35,12 @@ namespace Avalonia.Markup.Data.Plugins
         public bool SetValue(object value, BindingPriority priority)
         {
             return false;
+        }
+
+        public IDisposable Subscribe(IObserver<object> observer)
+        {
+            observer.OnNext(_error);
+            return Disposable.Empty;
         }
     }
 }
