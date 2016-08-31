@@ -249,12 +249,16 @@ namespace Avalonia.Controls.UnitTests.Primitives
             var globalStyles = new Mock<IGlobalStyles>();
             globalStyles.Setup(x => x.Styles).Returns(styles);
 
+            var renderInterface = new Mock<IPlatformRenderInterface>();
+            renderInterface.Setup(x => x.CreateRenderer(It.IsAny<IPlatformHandle>())).Returns(() => new Mock<IRenderTarget>().Object);
+
             AvaloniaLocator.CurrentMutable
                 .Bind<ILayoutManager>().ToTransient<LayoutManager>()
                 .Bind<IGlobalStyles>().ToFunc(() => globalStyles.Object)
                 .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformMock())
-                .Bind<IStyler>().ToTransient<Styler>();
-
+                .Bind<IStyler>().ToTransient<Styler>()
+                .Bind<IPlatformRenderInterface>().ToFunc(() => renderInterface.Object);
+            
             return result;
         }
 
