@@ -6,12 +6,12 @@ using Avalonia.Platform;
 
 namespace Avalonia.Shared.PlatformSupport
 {
-    static class SharedPlatform
+    static class StandardRuntimePlatformServices
     {
         public static void Register(Assembly assembly = null)
         {
             AvaloniaLocator.CurrentMutable
-                .Bind<IPclPlatformWrapper>().ToSingleton<PclPlatformWrapper>()
+                .Bind<IRuntimePlatform>().ToSingleton<StandardRuntimePlatform>()
                 .Bind<IAssetLoader>().ToConstant(new AssetLoader(assembly));
         }
     }

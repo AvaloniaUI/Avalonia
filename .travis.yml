@@ -4,17 +4,8 @@ os:
   - osx
 mono:
   - latest
-solution: Avalonia.travis-mono.sln
-before_install:
-  - mkdir -p .nuget
-  - wget -O .nuget/nuget.exe https://dist.nuget.org/win-x86-commandline/latest/nuget.exe
-install:
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install -y gtk-sharp2 ; fi
-  - mono .nuget/nuget.exe restore Avalonia.sln
-  - mono .nuget/nuget.exe install xunit.runner.console -Version 2.1.0 -OutputDirectory testrunner
 script:
-  - xbuild /p:Platform=Mono /p:Configuration=Release Avalonia.sln
-  - ./tests/run-tests.sh
+  - ./build.sh --target "Travis" --platform "Mono" --configuration "Release"
 notifications:
   email: false
   webhooks:

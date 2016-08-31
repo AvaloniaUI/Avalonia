@@ -43,7 +43,7 @@
     <Compile Include="..\Shared\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="AppBuilder.cs" />
+    <Compile Include="AppBuilderBase.cs" />
     <Compile Include="Application.cs" />
     <Compile Include="Classes.cs" />
     <Compile Include="ContextMenu.cs" />
@@ -56,6 +56,8 @@
     <Compile Include="HotkeyManager.cs" />
     <Compile Include="IApplicationLifecycle.cs" />
     <Compile Include="IScrollable.cs" />
+    <Compile Include="Embedding\EmbeddableControlRoot.cs" />
+    <Compile Include="Platform\IEmbeddableWindowImpl.cs" />
     <Compile Include="WindowIcon.cs" />
     <Compile Include="IPseudoClasses.cs" />
     <Compile Include="DropDownItem.cs" />

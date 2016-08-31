@@ -20,7 +20,7 @@ namespace Avalonia.iOS
             return _window;
         }
 
-        public IWindowImpl CreateEmbeddableWindow()
+        public IEmbeddableWindowImpl CreateEmbeddableWindow()
         {
             throw new NotImplementedException();
         }

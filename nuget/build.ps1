@@ -1,1 +1,0 @@
-.\build-version.ps1 0.4.1

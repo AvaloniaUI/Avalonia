@@ -84,7 +84,7 @@
     <Compile Include="AvaloniaPropertyRegistry.cs" />
     <Compile Include="AvaloniaProperty`1.cs" />
     <Compile Include="Platform\IAssetLoader.cs" />
-    <Compile Include="Platform\IPclPlatformWrapper.cs" />
+    <Compile Include="Platform\IRuntimePlatform.cs" />
     <Compile Include="Data\BindingPriority.cs" />
     <Compile Include="PriorityBindingEntry.cs" />
     <Compile Include="Collections\IAvaloniaList.cs" />

@@ -46,6 +46,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ClipboardImpl.cs" />
+    <Compile Include="EmbeddableImpl.cs" />
+    <Compile Include="Embedding\GtkAvaloniaControlHost.cs" />
     <Compile Include="IconImpl.cs" />
     <Compile Include="SystemDialogImpl.cs" />
     <Compile Include="CursorFactory.cs" />
@@ -54,8 +56,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="GtkPlatform.cs" />
     <Compile Include="WindowImpl.cs" />
+    <Compile Include="WindowImplBase.cs" />
     <Compile Include="Input\GtkKeyboardDevice.cs" />
     <Compile Include="Input\GtkMouseDevice.cs" />
+    <Compile Include="Windows.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -66,6 +70,10 @@
     <ProjectReference Include="..\..\Avalonia.Base\Avalonia.Base.csproj">
       <Project>{B09B78D8-9B26-48B0-9149-D64A2F120F3F}</Project>
       <Name>Avalonia.Base</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Avalonia.Diagnostics\Avalonia.Diagnostics.csproj">
+      <Project>{7062ae20-5dcc-4442-9645-8195bdece63e}</Project>
+      <Name>Avalonia.Diagnostics</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Avalonia.Input\Avalonia.Input.csproj">
       <Project>{62024B2D-53EB-4638-B26B-85EEAA54866E}</Project>
@@ -95,5 +103,4 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
-  <Import Project="..\..\Shared\PlatformSupport\PlatformSupport.projitems" Label="Shared" />
 </Project>

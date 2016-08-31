@@ -3,14 +3,26 @@
 
 using System;
 using System.Reflection;
+using Avalonia.Platform;
 
 namespace Avalonia.Controls
 {
     /// <summary>
     /// Initializes up platform-specific services for an <see cref="Application"/>.
     /// </summary>
-    public class AppBuilder
+    /// <typeparam name="TAppBuilder"></typeparam>
+    public abstract class AppBuilderBase<TAppBuilder> where TAppBuilder : AppBuilderBase<TAppBuilder>, new()
     {
+        /// <summary>
+        /// Gets or sets the <see cref="IRuntimePlatform"/> instance.
+        /// </summary>
+        public IRuntimePlatform RuntimePlatform { get; set; }
+
+        /// <summary>
+        /// Gets or sets a method to call the initialize the runtime platform services (e. g. AssetLoader)
+        /// </summary>
+        public Action RuntimePlatformServices { get; set; }
+
         /// <summary>
         /// Gets or sets the <see cref="Application"/> instance being initialized.
         /// </summary>
@@ -30,14 +42,20 @@ namespace Avalonia.Controls
         /// Gets or sets a method to call before <see cref="Start{TMainWindow}"/> is called on the
         /// <see cref="Application"/>.
         /// </summary>
-        public Action<AppBuilder> BeforeStartCallback { get; set; }
+        public Action<TAppBuilder> BeforeStartCallback { get; set; }
+
+        protected AppBuilderBase(IRuntimePlatform platform, Action platformSevices)
+        {
+            RuntimePlatform = platform;
+            RuntimePlatformServices = platformSevices;
+        }
 
         /// <summary>
         /// Begin configuring an <see cref="Application"/>.
         /// </summary>
         /// <typeparam name="TApp">The subclass of <see cref="Application"/> to configure.</typeparam>
-        /// <returns>An <see cref="AppBuilder"/> instance.</returns>
-        public static AppBuilder Configure<TApp>()
+        /// <returns>An <typeparamref name="TAppBuilder"/> instance.</returns>
+        public static TAppBuilder Configure<TApp>()
             where TApp : Application, new()
         {
             return Configure(new TApp());
@@ -46,27 +64,29 @@ namespace Avalonia.Controls
         /// <summary>
         /// Begin configuring an <see cref="Application"/>.
         /// </summary>
-        /// <returns>An <see cref="AppBuilder"/> instance.</returns>
-        public static AppBuilder Configure(Application app)
+        /// <returns>An <typeparamref name="TAppBuilder"/> instance.</returns>
+        public static TAppBuilder Configure(Application app)
         {
             AvaloniaLocator.CurrentMutable.BindToSelf(app);
 
-            return new AppBuilder()
+            return new TAppBuilder()
             {
                 Instance = app,
             };
         }
+
+        protected TAppBuilder Self => (TAppBuilder) this;
 
         /// <summary>
         /// Registers a callback to call before <see cref="Start{TMainWindow}"/> is called on the
         /// <see cref="Application"/>.
         /// </summary>
         /// <param name="callback">The callback.</param>
-        /// <returns>An <see cref="AppBuilder"/> instance.</returns>
-        public AppBuilder BeforeStarting(Action<AppBuilder> callback)
+        /// <returns>An <typeparamref name="TAppBuilder"/> instance.</returns>
+        public TAppBuilder BeforeStarting(Action<TAppBuilder> callback)
         {
             BeforeStartCallback = callback;
-            return this;
+            return Self;
         }
 
         /// <summary>
@@ -77,7 +97,7 @@ namespace Avalonia.Controls
             where TMainWindow : Window, new()
         {
             Setup();
-            BeforeStartCallback?.Invoke(this);
+            BeforeStartCallback?.Invoke(Self);
 
             var window = new TMainWindow();
             window.Show();
@@ -88,47 +108,47 @@ namespace Avalonia.Controls
         /// Sets up the platform-specific services for the application, but does not run it.
         /// </summary>
         /// <returns></returns>
-        public AppBuilder SetupWithoutStarting()
+        public TAppBuilder SetupWithoutStarting()
         {
             Setup();
-            return this;
+            return Self;
         }
 
         /// <summary>
         /// Specifies a windowing subsystem to use.
         /// </summary>
         /// <param name="initializer">The method to call to initialize the windowing subsystem.</param>
-        /// <returns>An <see cref="AppBuilder"/> instance.</returns>
-        public AppBuilder UseWindowingSubsystem(Action initializer)
+        /// <returns>An <typeparamref name="TAppBuilder"/> instance.</returns>
+        public TAppBuilder UseWindowingSubsystem(Action initializer)
         {
             WindowingSubsystem = initializer;
-            return this;
+            return Self;
         }
 
         /// <summary>
         /// Specifies a windowing subsystem to use.
         /// </summary>
         /// <param name="dll">The dll in which to look for subsystem.</param>
-        /// <returns>An <see cref="AppBuilder"/> instance.</returns>
-        public AppBuilder UseWindowingSubsystem(string dll) => UseWindowingSubsystem(GetInitializer(dll));
+        /// <returns>An <typeparamref name="TAppBuilder"/> instance.</returns>
+        public TAppBuilder UseWindowingSubsystem(string dll) => UseWindowingSubsystem(GetInitializer(dll));
 
         /// <summary>
         /// Specifies a rendering subsystem to use.
         /// </summary>
         /// <param name="initializer">The method to call to initialize the rendering subsystem.</param>
-        /// <returns>An <see cref="AppBuilder"/> instance.</returns>
-        public AppBuilder UseRenderingSubsystem(Action initializer)
+        /// <returns>An <typeparamref name="TAppBuilder"/> instance.</returns>
+        public TAppBuilder UseRenderingSubsystem(Action initializer)
         {
             RenderingSubsystem = initializer;
-            return this;
+            return Self;
         }
 
         /// <summary>
         /// Specifies a rendering subsystem to use.
         /// </summary>
         /// <param name="dll">The dll in which to look for subsystem.</param>
-        /// <returns>An <see cref="AppBuilder"/> instance.</returns>
-        public AppBuilder UseRenderingSubsystem(string dll) => UseRenderingSubsystem(GetInitializer(dll));
+        /// <returns>An <typeparamref name="TAppBuilder"/> instance.</returns>
+        public TAppBuilder UseRenderingSubsystem(string dll) => UseRenderingSubsystem(GetInitializer(dll));
 
         static Action GetInitializer(string assemblyName) => () =>
         {
@@ -140,23 +160,6 @@ namespace Avalonia.Controls
             init.Invoke(null, null);
         };
 
-        public AppBuilder UsePlatformDetect()
-        {
-            var platformId = (int)
-                ((dynamic) Type.GetType("System.Environment").GetRuntimeProperty("OSVersion").GetValue(null)).Platform;
-            if (platformId == 4 || platformId == 6)
-            {
-                UseRenderingSubsystem("Avalonia.Cairo");
-                UseWindowingSubsystem("Avalonia.Gtk");
-            }
-            else
-            {
-                UseRenderingSubsystem("Avalonia.Direct2D1");
-                UseWindowingSubsystem("Avalonia.Win32");
-            }
-            return this;
-        }
-
         /// <summary>
         /// Sets up the platform-speciic services for the <see cref="Application"/>.
         /// </summary>
@@ -165,6 +168,11 @@ namespace Avalonia.Controls
             if (Instance == null)
             {
                 throw new InvalidOperationException("No App instance configured.");
+            }
+
+            if (RuntimePlatformServices == null)
+            {
+                throw new InvalidOperationException("No runtime platform services configured.");
             }
 
             if (WindowingSubsystem == null)
@@ -178,6 +186,7 @@ namespace Avalonia.Controls
             }
 
             Instance.RegisterServices();
+            RuntimePlatformServices();
             WindowingSubsystem();
             RenderingSubsystem();
             Instance.Initialize();

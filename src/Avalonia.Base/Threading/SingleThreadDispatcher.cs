@@ -33,7 +33,7 @@ namespace Avalonia.Threading
             }
 
             public IDisposable StartTimer(TimeSpan interval, Action tick)
-                => AvaloniaLocator.Current.GetService<IPclPlatformWrapper>().StartSystemTimer(interval,
+                => AvaloniaLocator.Current.GetService<IRuntimePlatform>().StartSystemTimer(interval,
                     () => _timerJobRunner.Post(tick, DispatcherPriority.Normal));
 
             public void Signal() => _evnt.Set();
@@ -50,7 +50,7 @@ namespace Avalonia.Threading
         public static Dispatcher StartNew(CancellationToken token)
         {
             var dispatcher = new SingleThreadDispatcher();
-            AvaloniaLocator.Current.GetService<IPclPlatformWrapper>().PostThreadPoolItem(() =>
+            AvaloniaLocator.Current.GetService<IRuntimePlatform>().PostThreadPoolItem(() =>
             {
                 dispatcher.MainLoop(token);
             });

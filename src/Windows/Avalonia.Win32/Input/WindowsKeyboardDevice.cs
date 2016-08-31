@@ -8,7 +8,7 @@ using Avalonia.Win32.Interop;
 
 namespace Avalonia.Win32.Input
 {
-    public class WindowsKeyboardDevice : KeyboardDevice
+    class WindowsKeyboardDevice : KeyboardDevice
     {
         private readonly byte[] _keyStates = new byte[256];
 
