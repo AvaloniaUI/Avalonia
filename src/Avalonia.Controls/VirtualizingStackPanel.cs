@@ -74,6 +74,7 @@ namespace Avalonia.Controls
 
         protected override Size ArrangeOverride(Size finalSize)
         {
+            _availableSpace = finalSize;
             _canBeRemoved = 0;
             _takenSpace = 0;
             _averageItemSize = 0;
