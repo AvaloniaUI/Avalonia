@@ -42,7 +42,7 @@ namespace Avalonia.Markup.Data
 
                     if (running)
                     {
-                        _valueSubscription = StartListeningCore();
+                        _valueSubscription = StartListening();
                     }
                 }
             }
@@ -57,7 +57,7 @@ namespace Avalonia.Markup.Data
 
             _observer = observer;
             var nextSubscription = Next?.Subscribe(this);
-            _valueSubscription = StartListeningCore();
+            _valueSubscription = StartListening();
 
             return Disposable.Create(() =>
             {
@@ -85,7 +85,7 @@ namespace Avalonia.Markup.Data
             NextValueChanged(value);
         }
 
-        protected virtual IObservable<object> StartListening(WeakReference reference)
+        protected virtual IObservable<object> StartListeningCore(WeakReference reference)
         {
             return Observable.Return(reference.Target);
         }
@@ -97,7 +97,7 @@ namespace Avalonia.Markup.Data
             _observer.OnNext(value);
         }
 
-        private IDisposable StartListeningCore()
+        private IDisposable StartListening()
         {
             var target = _target.Target;
             IObservable<object> source;
@@ -112,7 +112,7 @@ namespace Avalonia.Markup.Data
             }
             else
             {
-                source = StartListening(_target);
+                source = StartListeningCore(_target);
             }
 
             return source.Subscribe(TargetValueChanged);

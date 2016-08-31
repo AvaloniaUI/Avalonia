@@ -35,7 +35,7 @@ namespace Avalonia.Markup.Data
             return false;
         }
 
-        protected override IObservable<object> StartListening(WeakReference reference)
+        protected override IObservable<object> StartListeningCore(WeakReference reference)
         {
             var plugin = ExpressionObserver.PropertyAccessors.FirstOrDefault(x => x.Match(reference));
             var accessor = plugin?.Start(reference, PropertyName);

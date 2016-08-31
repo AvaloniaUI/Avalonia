@@ -10,7 +10,7 @@ namespace Avalonia.Markup.Data
     {
         public override string Description => ".";
 
-        protected override IObservable<object> StartListening(WeakReference reference)
+        protected override IObservable<object> StartListeningCore(WeakReference reference)
         {
             return Observable.Return(reference.Target);
         }

@@ -23,7 +23,7 @@ namespace Avalonia.Markup.Data
 
         public override string Description => "[" + string.Join(",", Arguments) + "]";
 
-        protected override IObservable<object> StartListening(WeakReference reference)
+        protected override IObservable<object> StartListeningCore(WeakReference reference)
         {
             var target = reference.Target;
             var incc = target as INotifyCollectionChanged;
