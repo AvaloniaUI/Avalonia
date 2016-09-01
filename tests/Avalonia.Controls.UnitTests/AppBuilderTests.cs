@@ -61,52 +61,61 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void LoadsDefaultModule()
         {
-            ResetModuleLoadStates();
-            AppBuilder.Configure<App>()
-                .UseWindowingSubsystem(() => { })
-                .UseRenderingSubsystem(() => { })
-                .UseAvaloniaModules()
-                .SetupWithoutStarting();
+            using (AvaloniaLocator.EnterScope())
+            {
+                ResetModuleLoadStates();
+                AppBuilder.Configure<App>()
+                    .UseWindowingSubsystem(() => { })
+                    .UseRenderingSubsystem(() => { })
+                    .UseAvaloniaModules()
+                    .SetupWithoutStarting();
 
-            Assert.True(DefaultModule.IsLoaded);
+                Assert.True(DefaultModule.IsLoaded); 
+            }
         }
 
         [Fact]
         public void LoadsRenderingModuleWithMatchingRenderingSubsystem()
         {
-            ResetModuleLoadStates();
-            var builder = AppBuilder.Configure<App>()
-                .UseWindowingSubsystem(() => { })
-                .UseRenderingSubsystem(() => { });
-            builder.RenderingSubsystemName = "Direct2D1";
-            builder.UseAvaloniaModules().SetupWithoutStarting();
-            Assert.False(DefaultRenderingModule.IsLoaded);
-            Assert.True(Direct2DModule.IsLoaded);
-            Assert.False(SkiaModule.IsLoaded);
+            using (AvaloniaLocator.EnterScope())
+            {
+                ResetModuleLoadStates();
+                var builder = AppBuilder.Configure<App>()
+                    .UseWindowingSubsystem(() => { })
+                    .UseRenderingSubsystem(() => { });
+                builder.RenderingSubsystemName = "Direct2D1";
+                builder.UseAvaloniaModules().SetupWithoutStarting();
+                Assert.False(DefaultRenderingModule.IsLoaded);
+                Assert.True(Direct2DModule.IsLoaded);
+                Assert.False(SkiaModule.IsLoaded);
 
-            ResetModuleLoadStates();
-            builder = AppBuilder.Configure<App>()
-                .UseWindowingSubsystem(() => { })
-                .UseRenderingSubsystem(() => { });
-            builder.RenderingSubsystemName = "Skia";
-            builder.UseAvaloniaModules().SetupWithoutStarting();
-            Assert.False(DefaultRenderingModule.IsLoaded);
-            Assert.False(Direct2DModule.IsLoaded);
-            Assert.True(SkiaModule.IsLoaded);
+                ResetModuleLoadStates();
+                builder = AppBuilder.Configure<App>()
+                    .UseWindowingSubsystem(() => { })
+                    .UseRenderingSubsystem(() => { });
+                builder.RenderingSubsystemName = "Skia";
+                builder.UseAvaloniaModules().SetupWithoutStarting();
+                Assert.False(DefaultRenderingModule.IsLoaded);
+                Assert.False(Direct2DModule.IsLoaded);
+                Assert.True(SkiaModule.IsLoaded); 
+            }
         }
 
         [Fact]
         public void LoadsRenderingModuleWithoutDependenciesWhenNoModuleMatches()
         {
-            ResetModuleLoadStates();
-            var builder = AppBuilder.Configure<App>()
-                .UseWindowingSubsystem(() => { })
-                .UseRenderingSubsystem(() => { });
-            builder.RenderingSubsystemName = "Cairo";
-            builder.UseAvaloniaModules().SetupWithoutStarting();
-            Assert.True(DefaultRenderingModule.IsLoaded);
-            Assert.False(Direct2DModule.IsLoaded);
-            Assert.False(SkiaModule.IsLoaded);
+            using (AvaloniaLocator.EnterScope())
+            {
+                ResetModuleLoadStates();
+                var builder = AppBuilder.Configure<App>()
+                    .UseWindowingSubsystem(() => { })
+                    .UseRenderingSubsystem(() => { });
+                builder.RenderingSubsystemName = "Cairo";
+                builder.UseAvaloniaModules().SetupWithoutStarting();
+                Assert.True(DefaultRenderingModule.IsLoaded);
+                Assert.False(Direct2DModule.IsLoaded);
+                Assert.False(SkiaModule.IsLoaded); 
+            }
         }
 
         private static void ResetModuleLoadStates()
