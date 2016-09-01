@@ -268,8 +268,13 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnDetachedFromLogicalTree(e);
             _topLevel = null;
-            _popupRoot?.Dispose();
-            _popupRoot = null;
+            
+            if (_popupRoot != null)
+            {
+                ((ISetLogicalParent)_popupRoot).SetParent(null);
+                _popupRoot.Dispose();
+                _popupRoot = null;
+            }
         }
 
         /// <summary>
