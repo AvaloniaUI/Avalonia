@@ -182,6 +182,8 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         IVisual IVisualTreeHost.Root => _popupRoot;
 
+        bool _ignoreIsOpenChanged = false;
+
         /// <summary>
         /// Opens the popup.
         /// </summary>
@@ -220,7 +222,11 @@ namespace Avalonia.Controls.Primitives
             PopupRootCreated?.Invoke(this, EventArgs.Empty);
 
             _popupRoot.Show();
+
+            _ignoreIsOpenChanged = true;
             IsOpen = true;
+            _ignoreIsOpenChanged = false;
+
             Opened?.Invoke(this, EventArgs.Empty);
         }
 
@@ -283,13 +289,16 @@ namespace Avalonia.Controls.Primitives
         /// <param name="e">The event args.</param>
         private void IsOpenChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            if ((bool)e.NewValue)
+            if (!_ignoreIsOpenChanged)
             {
-                Open();
-            }
-            else
-            {
-                Close();
+                if ((bool)e.NewValue)
+                {
+                    Open();
+                }
+                else
+                {
+                    Close();
+                }
             }
         }
 
