@@ -68,6 +68,7 @@ namespace Avalonia.Controls.Primitives
         private PopupRoot _popupRoot;
         private TopLevel _topLevel;
         private IDisposable _nonClientListener;
+        bool _ignoreIsOpenChanged = false;
 
         /// <summary>
         /// Initializes static members of the <see cref="Popup"/> class.
@@ -181,8 +182,6 @@ namespace Avalonia.Controls.Primitives
         /// Gets the root of the popup window.
         /// </summary>
         IVisual IVisualTreeHost.Root => _popupRoot;
-
-        bool _ignoreIsOpenChanged = false;
 
         /// <summary>
         /// Opens the popup.
