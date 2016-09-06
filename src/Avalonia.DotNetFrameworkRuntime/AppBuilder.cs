@@ -43,12 +43,12 @@ namespace Avalonia
                                                select attribute).First();
 
             UseWindowingSubsystem(() => windowingSubsystemAttribute.InitializationType
-                .GetRuntimeMethod(windowingSubsystemAttribute.InitializationMethod, Type.EmptyTypes).Invoke(null, null));
-            WindowingSubsystemName = windowingSubsystemAttribute.Name;
+                .GetRuntimeMethod(windowingSubsystemAttribute.InitializationMethod, Type.EmptyTypes).Invoke(null, null),
+                windowingSubsystemAttribute.Name);
 
             UseRenderingSubsystem(() => renderingSubsystemAttribute.InitializationType
-                .GetRuntimeMethod(renderingSubsystemAttribute.InitializationMethod, Type.EmptyTypes).Invoke(null, null));
-            RenderingSubsystemName = renderingSubsystemAttribute.Name;
+                .GetRuntimeMethod(renderingSubsystemAttribute.InitializationMethod, Type.EmptyTypes).Invoke(null, null),
+                renderingSubsystemAttribute.Name);
             
             return this;
         }

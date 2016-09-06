@@ -10,8 +10,7 @@ namespace Avalonia
     {
         public static T UseSkia<T>(this T builder) where T : AppBuilderBase<T>, new()
         {
-            builder.UseRenderingSubsystem(Skia.SkiaPlatform.Initialize);
-            builder.RenderingSubsystemName = "Skia";
+            builder.UseRenderingSubsystem(Skia.SkiaPlatform.Initialize, "Skia");
             return builder;
         }
     }

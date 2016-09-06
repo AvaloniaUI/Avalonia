@@ -8,8 +8,8 @@ using Avalonia.Controls.UnitTests;
 using Avalonia.Platform;
 
 [assembly: ExportAvaloniaModule("DefaultModule", typeof(AppBuilderTests.DefaultModule))]
-[assembly: ExportAvaloniaModule("RenderingModule", typeof(AppBuilderTests.Direct2DModule), RequiredRenderingSubsystem = "Direct2D1")]
-[assembly: ExportAvaloniaModule("RenderingModule", typeof(AppBuilderTests.SkiaModule), RequiredRenderingSubsystem = "Skia")]
+[assembly: ExportAvaloniaModule("RenderingModule", typeof(AppBuilderTests.Direct2DModule), ForRenderingSubsystem = "Direct2D1")]
+[assembly: ExportAvaloniaModule("RenderingModule", typeof(AppBuilderTests.SkiaModule), ForRenderingSubsystem = "Skia")]
 [assembly: ExportAvaloniaModule("RenderingModule", typeof(AppBuilderTests.DefaultRenderingModule))]
 
 
@@ -82,8 +82,7 @@ namespace Avalonia.Controls.UnitTests
                 ResetModuleLoadStates();
                 var builder = AppBuilder.Configure<App>()
                     .UseWindowingSubsystem(() => { })
-                    .UseRenderingSubsystem(() => { });
-                builder.RenderingSubsystemName = "Direct2D1";
+                    .UseRenderingSubsystem(() => { }, "Direct2D1");
                 builder.UseAvaloniaModules().SetupWithoutStarting();
                 Assert.False(DefaultRenderingModule.IsLoaded);
                 Assert.True(Direct2DModule.IsLoaded);
@@ -92,8 +91,7 @@ namespace Avalonia.Controls.UnitTests
                 ResetModuleLoadStates();
                 builder = AppBuilder.Configure<App>()
                     .UseWindowingSubsystem(() => { })
-                    .UseRenderingSubsystem(() => { });
-                builder.RenderingSubsystemName = "Skia";
+                    .UseRenderingSubsystem(() => { }, "Skia");
                 builder.UseAvaloniaModules().SetupWithoutStarting();
                 Assert.False(DefaultRenderingModule.IsLoaded);
                 Assert.False(Direct2DModule.IsLoaded);
@@ -109,8 +107,7 @@ namespace Avalonia.Controls.UnitTests
                 ResetModuleLoadStates();
                 var builder = AppBuilder.Configure<App>()
                     .UseWindowingSubsystem(() => { })
-                    .UseRenderingSubsystem(() => { });
-                builder.RenderingSubsystemName = "Cairo";
+                    .UseRenderingSubsystem(() => { }, "Cairo");
                 builder.UseAvaloniaModules().SetupWithoutStarting();
                 Assert.True(DefaultRenderingModule.IsLoaded);
                 Assert.False(Direct2DModule.IsLoaded);

@@ -16,8 +16,7 @@ namespace Avalonia
     {
         public static T UseGtk<T>(this T builder) where T : AppBuilderBase<T>, new()
         {
-            builder.UseWindowingSubsystem(Gtk.GtkPlatform.Initialize);
-            builder.WindowingSubsystemName = "Gtk";
+            builder.UseWindowingSubsystem(Gtk.GtkPlatform.Initialize, "Gtk");
             return builder;
         }
     }

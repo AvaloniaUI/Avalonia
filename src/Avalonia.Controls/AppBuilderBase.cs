@@ -35,9 +35,9 @@ namespace Avalonia.Controls
         public Action WindowingSubsystemInitializer { get; private set; }
 
         /// <summary>
-        /// Gets or sets the name of the windowing subsystem to use.
+        /// Gets the name of the currently selected windowing subsystem.
         /// </summary>
-        public string WindowingSubsystemName { get; set; }
+        public string WindowingSubsystemName { get; private set; }
 
         /// <summary>
         /// Gets or sets a method to call the initialize the windowing subsystem.
@@ -45,9 +45,9 @@ namespace Avalonia.Controls
         public Action RenderingSubsystemInitializer { get; private set; }
 
         /// <summary>
-        /// Gets or sets the name of the rendering subsystem to use.
+        /// Gets the name of the currently selected rendering subsystem.
         /// </summary>
-        public string RenderingSubsystemName { get; set; }
+        public string RenderingSubsystemName { get; private set; }
 
         /// <summary>
         /// Gets or sets a method to call after the <see cref="Application"/> is setup.
@@ -141,9 +141,10 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="initializer">The method to call to initialize the windowing subsystem.</param>
         /// <returns>An <typeparamref name="TAppBuilder"/> instance.</returns>
-        public TAppBuilder UseWindowingSubsystem(Action initializer)
+        public TAppBuilder UseWindowingSubsystem(Action initializer, string name = "")
         {
             WindowingSubsystemInitializer = initializer;
+            WindowingSubsystemName = name;
             return Self;
         }
 
@@ -152,16 +153,17 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="dll">The dll in which to look for subsystem.</param>
         /// <returns>An <typeparamref name="TAppBuilder"/> instance.</returns>
-        public TAppBuilder UseWindowingSubsystem(string dll) => UseWindowingSubsystem(GetInitializer(dll));
+        public TAppBuilder UseWindowingSubsystem(string dll) => UseWindowingSubsystem(GetInitializer(dll), dll.Replace("Avalonia.", string.Empty));
 
         /// <summary>
         /// Specifies a rendering subsystem to use.
         /// </summary>
         /// <param name="initializer">The method to call to initialize the rendering subsystem.</param>
         /// <returns>An <typeparamref name="TAppBuilder"/> instance.</returns>
-        public TAppBuilder UseRenderingSubsystem(Action initializer)
+        public TAppBuilder UseRenderingSubsystem(Action initializer, string name = "")
         {
             RenderingSubsystemInitializer = initializer;
+            RenderingSubsystemName = name;
             return Self;
         }
 
@@ -188,14 +190,14 @@ namespace Avalonia.Controls
         {
             var moduleInitializers = from assembly in AvaloniaLocator.Current.GetService<IRuntimePlatform>().GetLoadedAssemblies()
                                           from attribute in assembly.GetCustomAttributes<ExportAvaloniaModuleAttribute>()
-                                          where attribute.RequiredWindowingSubsystem == ""
-                                           || attribute.RequiredWindowingSubsystem == WindowingSubsystemName
-                                          where attribute.RequiredRenderingSubsystem == ""
-                                           || attribute.RequiredRenderingSubsystem == RenderingSubsystemName
+                                          where attribute.ForWindowingSubsystem == ""
+                                           || attribute.ForWindowingSubsystem == WindowingSubsystemName
+                                          where attribute.ForRenderingSubsystem == ""
+                                           || attribute.ForRenderingSubsystem == RenderingSubsystemName
                                           group attribute by attribute.Name into exports
                                           select (from export in exports
-                                                  orderby export.RequiredWindowingSubsystem.Length descending
-                                                  orderby export.RequiredRenderingSubsystem.Length descending
+                                                  orderby export.ForWindowingSubsystem.Length descending
+                                                  orderby export.ForRenderingSubsystem.Length descending
                                                   select export).First().ModuleType into moduleType
                                           select (from constructor in moduleType.GetTypeInfo().DeclaredConstructors
                                                   where constructor.GetParameters().Length == 0 && !constructor.IsStatic
