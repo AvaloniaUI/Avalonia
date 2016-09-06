@@ -28,7 +28,7 @@ namespace Avalonia
     {
         private readonly IPriorityValueOwner _owner;
         private readonly Type _valueType;
-        private readonly Dictionary<int, PriorityLevel> _levels = new Dictionary<int, PriorityLevel>();
+        private readonly SingleOrDictionary<int, PriorityLevel> _levels = new SingleOrDictionary<int, PriorityLevel>();
         private object _value;
         private readonly Func<object, object> _validate;
 
