@@ -14,43 +14,40 @@ namespace Avalonia.Utilities
     /// <typeparam name="TValue">The type of the value.</typeparam>
     public class SingleOrDictionary<TKey, TValue> : IEnumerable<KeyValuePair<TKey, TValue>>
     {
-        private KeyValuePair<TKey, TValue>? singleValue;
+        private KeyValuePair<TKey, TValue>? _singleValue;
         private Dictionary<TKey, TValue> dictionary;
 
-        private bool useDictionary = false;
-        
         public void Add(TKey key, TValue value)
         {
-            if (singleValue != null)
+            if (_singleValue != null)
             {
                 dictionary = new Dictionary<TKey, TValue>();
-                ((ICollection<KeyValuePair<TKey, TValue>>)dictionary).Add(singleValue.Value);
-                useDictionary = true;
-                singleValue = null;
+                ((ICollection<KeyValuePair<TKey, TValue>>)dictionary).Add(_singleValue.Value);
+                _singleValue = null;
             }
 
-            if (useDictionary)
+            if (dictionary != null)
             {
                 dictionary.Add(key, value);
             }
             else
             {
-                singleValue = new KeyValuePair<TKey, TValue>(key, value);
+                _singleValue = new KeyValuePair<TKey, TValue>(key, value);
             }
         }
 
         public bool TryGetValue(TKey key, out TValue value)
         {
-            if (!useDictionary)
+            if (dictionary == null)
             {
-                if (!singleValue.HasValue || !singleValue.Value.Key.Equals(key))
+                if (!_singleValue.HasValue || !_singleValue.Value.Key.Equals(key))
                 {
                     value = default(TValue);
                     return false;
                 }
                 else
                 {
-                    value = singleValue.Value.Value;
+                    value = _singleValue.Value.Value;
                     return true;
                 }
             }
@@ -62,11 +59,11 @@ namespace Avalonia.Utilities
 
         public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
         {
-            if (!useDictionary)
+            if (dictionary == null)
             {
-                if (singleValue.HasValue)
+                if (_singleValue.HasValue)
                 {
-                    return new SingleEnumerator<KeyValuePair<TKey, TValue>>(singleValue.Value);
+                    return new SingleEnumerator<KeyValuePair<TKey, TValue>>(_singleValue.Value);
                 }
             }
             else
@@ -85,11 +82,11 @@ namespace Avalonia.Utilities
         {
             get
             {
-                if(!useDictionary)
+                if(dictionary == null)
                 {
-                    if (singleValue.HasValue)
+                    if (_singleValue.HasValue)
                     {
-                        return new[] { singleValue.Value.Value };
+                        return new[] { _singleValue.Value.Value };
                     }
                 }
                 else
