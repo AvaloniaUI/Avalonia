@@ -23,6 +23,11 @@ namespace Avalonia.Platform
         Size ClientSize { get; set; }
 
         /// <summary>
+        /// Gets the maximum size of a window on the system.
+        /// </summary>
+        Size MaxClientSize { get; }
+
+        /// <summary>
         /// Gets the scaling factor for the window.
         /// </summary>
         double Scaling { get; }
