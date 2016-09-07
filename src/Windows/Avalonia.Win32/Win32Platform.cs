@@ -189,14 +189,15 @@ namespace Avalonia.Win32
 
         public IWindowIconImpl LoadIcon(string fileName)
         {
-            var icon = new System.Drawing.Bitmap(fileName);
-            return new IconImpl(icon);
+            using (var stream = File.OpenRead(fileName))
+            {
+                return CreateImpl(stream); 
+            }
         }
 
         public IWindowIconImpl LoadIcon(Stream stream)
         {
-            var icon = new System.Drawing.Bitmap(stream);
-            return new IconImpl(icon);
+            return CreateImpl(stream);
         }
 
         public IWindowIconImpl LoadIcon(IBitmapImpl bitmap)
@@ -205,6 +206,18 @@ namespace Avalonia.Win32
             {
                 bitmap.Save(memoryStream);
                 return new IconImpl(new System.Drawing.Bitmap(memoryStream));
+            }
+        }
+
+        private static IconImpl CreateImpl(Stream stream)
+        {
+            try
+            {
+                return new IconImpl(new System.Drawing.Icon(stream));
+            }
+            catch (ArgumentException)
+            {
+                return new IconImpl(new System.Drawing.Bitmap(stream));
             }
         }
     }
