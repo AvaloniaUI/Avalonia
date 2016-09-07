@@ -27,6 +27,21 @@ namespace Avalonia.Utilities
             { typeof(short), new List<Type> { typeof(byte) } }
         };
 
+        private static readonly Type[] NumericTypes = new[]
+        {
+            typeof(Byte),
+            typeof(Decimal),
+            typeof(Double),
+            typeof(Int16),
+            typeof(Int32),
+            typeof(Int64),
+            typeof(SByte),
+            typeof(Single),
+            typeof(UInt16),
+            typeof(UInt32),
+            typeof(UInt64),
+        };
+
         /// <summary>
         /// Returns a value indicating whether null can be assigned to the specified type.
         /// </summary>
@@ -206,6 +221,32 @@ namespace Avalonia.Utilities
             else
             {
                 return null;
+            }
+        }
+
+        /// <summary>
+        /// Determines if a type is numeric.  Nullable numeric types are considered numeric.
+        /// </summary>
+        /// <returns>
+        /// True if the type is numberic; otherwise false.
+        /// </returns>
+        /// <remarks>
+        /// Boolean is not considered numeric.
+        /// </remarks>
+        public static bool IsNumeric(Type type)
+        {
+            if (type == null)
+            {
+                return false;
+            }
+
+            if (type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
+            {
+                return IsNumeric(Nullable.GetUnderlyingType(type));
+            }
+            else
+            {
+                return NumericTypes.Contains(type);
             }
         }
     }

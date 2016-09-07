@@ -17,7 +17,8 @@ namespace Avalonia
         /// Initializes a new instance of the <see cref="PropertyMetadata"/> class.
         /// </summary>
         /// <param name="defaultBindingMode">The default binding mode.</param>
-        public PropertyMetadata(BindingMode defaultBindingMode = BindingMode.Default)
+        public PropertyMetadata(
+            BindingMode defaultBindingMode = BindingMode.Default)
         {
             _defaultBindingMode = defaultBindingMode;
         }

@@ -2,13 +2,16 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using Avalonia.Platform;
 using Avalonia.Win32.Interop;
 
 namespace Avalonia.Win32
 {
-    public class EmbeddedWindowImpl : WindowImpl
+    class EmbeddedWindowImpl : WindowImpl, IEmbeddableWindowImpl
     {
         private static readonly System.Windows.Forms.UserControl WinFormsControl = new System.Windows.Forms.UserControl();
+
+        public static IntPtr DefaultParentWindow = WinFormsControl.Handle;
 
         protected override IntPtr CreateWindowOverride(ushort atom)
         {
@@ -21,11 +24,20 @@ namespace Avalonia.Win32
                 0,
                 640,
                 480,
-                WinFormsControl.Handle,
+                DefaultParentWindow,
                 IntPtr.Zero,
                 IntPtr.Zero,
                 IntPtr.Zero);
             return hWnd;
         }
+
+        protected override IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
+        {
+            if(msg == (uint)UnmanagedMethods.WindowsMessage.WM_KILLFOCUS)
+                LostFocus?.Invoke();
+            return base.WndProc(hWnd, msg, wParam, lParam);
+        }
+
+        public event Action LostFocus;
     }
 }

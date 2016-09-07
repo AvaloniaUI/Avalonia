@@ -43,10 +43,9 @@
     <Compile Include="..\Shared\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="Data\BindingError.cs" />
+    <Compile Include="Data\BindingChainNullException.cs" />
+    <Compile Include="Data\BindingNotification.cs" />
     <Compile Include="Data\IndexerBinding.cs" />
-    <Compile Include="Data\IValidationStatus.cs" />
-    <Compile Include="Data\ObjectValidationStatus.cs" />
     <Compile Include="Diagnostics\INotifyCollectionChangedDebug.cs" />
     <Compile Include="Data\AssignBindingAttribute.cs" />
     <Compile Include="Data\BindingOperations.cs" />
@@ -116,9 +115,11 @@
     <Compile Include="Threading\AvaloniaScheduler.cs" />
     <Compile Include="Threading\AvaloniaSynchronizationContext.cs" />
     <Compile Include="Threading\SingleThreadDispatcher.cs" />
+    <Compile Include="Utilities\ExceptionUtilities.cs" />
     <Compile Include="Utilities\IWeakSubscriber.cs" />
     <Compile Include="Utilities\MathUtilities.cs" />
     <Compile Include="Utilities\TypeUtilities.cs" />
+    <Compile Include="Utilities\WeakObservable.cs" />
     <Compile Include="Utilities\WeakSubscriptionManager.cs" />
     <Compile Include="Utilities\WeakTimer.cs" />
   </ItemGroup>

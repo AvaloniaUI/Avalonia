@@ -8,7 +8,7 @@ using Avalonia.Win32.Interop;
 
 namespace Avalonia.Win32.Input
 {
-    public static class KeyInterop
+    static class KeyInterop
     {
         private static readonly Dictionary<Key, int> s_virtualKeyFromKey = new Dictionary<Key, int>
         {

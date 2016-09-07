@@ -57,7 +57,7 @@ namespace Avalonia.Android
             return new WindowImpl();
         }
 
-        public IWindowImpl CreateEmbeddableWindow()
+        public IEmbeddableWindowImpl CreateEmbeddableWindow()
         {
             throw new NotImplementedException();
         }

@@ -4,8 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Reactive.Linq;
-using System.Threading;
 using System.Threading.Tasks;
+using Avalonia.Data;
 using Avalonia.Markup.Data;
 using Avalonia.UnitTests;
 using Xunit;
@@ -28,7 +28,7 @@ namespace Avalonia.Markup.UnitTests.Data
                 tcs.SetResult("foo");
                 sync.ExecutePostedCallbacks();
 
-                Assert.Equal(new object[] { AvaloniaProperty.UnsetValue, "foo" }, result.ToArray());
+                Assert.Equal(new[] { "foo" }, result);
             }
         }
 
@@ -43,7 +43,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
                 var sub = target.Subscribe(x => result.Add(x));
 
-                Assert.Equal(new object[] { "foo" }, result.ToArray());
+                Assert.Equal(new[] { "foo" }, result);
             }
         }
 
@@ -61,8 +61,82 @@ namespace Avalonia.Markup.UnitTests.Data
                 tcs.SetResult(new Class2("foo"));
                 sync.ExecutePostedCallbacks();
 
-                Assert.Equal(new object[] { AvaloniaProperty.UnsetValue, "foo" }, result.ToArray());
+                Assert.Equal(new[] { "foo" }, result);
             }
+        }
+
+        [Fact]
+        public void Should_Return_BindingNotification_Error_On_Task_Exception()
+        {
+            using (var sync = UnitTestSynchronizationContext.Begin())
+            {
+                var tcs = new TaskCompletionSource<string>();
+                var data = new { Foo = tcs.Task };
+                var target = new ExpressionObserver(data, "Foo");
+                var result = new List<object>();
+
+                var sub = target.Subscribe(x => result.Add(x));
+                tcs.SetException(new NotSupportedException());
+                sync.ExecutePostedCallbacks();
+
+                Assert.Equal(
+                    new[] 
+                    {
+                        new BindingNotification(
+                            new AggregateException(new NotSupportedException()),
+                            BindingErrorType.Error)
+                    }, 
+                    result);
+            }
+        }
+
+        [Fact]
+        public void Should_Return_BindingNotification_Error_For_Faulted_Task()
+        {
+            using (var sync = UnitTestSynchronizationContext.Begin())
+            {
+                var data = new { Foo = TaskFromException(new NotSupportedException()) };
+                var target = new ExpressionObserver(data, "Foo");
+                var result = new List<object>();
+
+                var sub = target.Subscribe(x => result.Add(x));
+
+                Assert.Equal(
+                    new[]
+                    {
+                        new BindingNotification(
+                            new AggregateException(new NotSupportedException()),
+                            BindingErrorType.Error)
+                    },
+                    result);
+            }
+        }
+
+        [Fact]
+        public void Should_Get_Simple_Task_Value_With_Data_DataValidation_Enabled()
+        {
+            using (var sync = UnitTestSynchronizationContext.Begin())
+            {
+                var tcs = new TaskCompletionSource<string>();
+                var data = new { Foo = tcs.Task };
+                var target = new ExpressionObserver(data, "Foo", true);
+                var result = new List<object>();
+
+                var sub = target.Subscribe(x => result.Add(x));
+                tcs.SetResult("foo");
+                sync.ExecutePostedCallbacks();
+
+                // What does it mean to have data validation on a Task? Without a use-case it's
+                // hard to know what to do here so for the moment the value is returned.
+                Assert.Equal(new [] { "foo" }, result);
+            }
+        }
+
+        private Task TaskFromException(Exception e)
+        {
+            var tcs = new TaskCompletionSource<object>();
+            tcs.SetException(e);
+            return tcs.Task;
         }
 
         private class Class1 : NotifyingBase

@@ -13,7 +13,7 @@
           </LinearGradientBrush>
         </Rectangle.OpacityMask>      </Rectangle>
       <Ellipse Fill="Green" Width="58" Height="58" Canvas.Left="88" Canvas.Top="100"/>
-      <Path Fill="Orange" Data="M 0,0 c 50,0 50,-50 c 50,0 50,50 h -50 v 50 l -50,-50 Z" Canvas.Left="30" Canvas.Top="250"/>
+      <Path Fill="Orange" Data="M 0,0 c 0,0 50,0 50,-50 c 0,0 50,0 50,50 h -50 v 50 l -50,-50 Z" Canvas.Left="30" Canvas.Top="250"/>
       <Path Fill="OrangeRed" Canvas.Left="180" Canvas.Top="250">
         <Path.Data>
           <PathGeometry>
