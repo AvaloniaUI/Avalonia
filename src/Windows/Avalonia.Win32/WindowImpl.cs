@@ -565,7 +565,7 @@ namespace Avalonia.Win32
                     return IntPtr.Zero;
 
                 case UnmanagedMethods.WindowsMessage.WM_MOVE:
-                    PositionChanged?.Invoke(new Point(ToInt32(lParam) & 0xffff, ToInt32(lParam) >> 16));
+                    PositionChanged?.Invoke(new Point((short)(ToInt32(lParam) & 0xffff), (short)(ToInt32(lParam) >> 16)));
                     return IntPtr.Zero;
             }
 
