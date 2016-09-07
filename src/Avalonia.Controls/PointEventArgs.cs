@@ -13,15 +13,15 @@ namespace Avalonia.Controls
         /// <summary>
         /// Initializes a new instance of the <see cref="PointEventArgs"/> class.
         /// </summary>
-        /// <param name="data">The <see cref="Point"/> data.</param>
-        public PointEventArgs(Point data)
+        /// <param name="point">The <see cref="Point"/> data.</param>
+        public PointEventArgs(Point point)
         {
-            Data = data;
+            Point = point;
         }
 
         /// <summary>
         /// Gets the <see cref="Point"/> data.
         /// </summary>
-        public Point Data { get; }
+        public Point Point { get; }
     }
 }
