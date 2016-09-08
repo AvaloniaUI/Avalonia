@@ -118,6 +118,7 @@
     <Compile Include="Utilities\ExceptionUtilities.cs" />
     <Compile Include="Utilities\IWeakSubscriber.cs" />
     <Compile Include="Utilities\MathUtilities.cs" />
+    <Compile Include="Utilities\SingleOrDictionary.cs" />
     <Compile Include="Utilities\TypeUtilities.cs" />
     <Compile Include="Utilities\WeakObservable.cs" />
     <Compile Include="Utilities\WeakSubscriptionManager.cs" />
