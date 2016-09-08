@@ -20,8 +20,6 @@ namespace ControlCatalog
             var theme = new Avalonia.Themes.Default.DefaultTheme();
             theme.FindResource("Button");
             AvaloniaXamlLoader.Load(this);
-
-            PointerPressed += delegate { Measure(new Size(1, 1)); };
         }
     }
 }
