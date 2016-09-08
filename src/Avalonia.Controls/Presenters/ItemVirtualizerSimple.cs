@@ -121,6 +121,7 @@ namespace Avalonia.Controls.Presenters
                             RecycleContainers();
                         }
 
+                        panel.ForceInvalidateMeasure();
                         break;
 
                     case NotifyCollectionChangedAction.Remove:
@@ -130,6 +131,7 @@ namespace Avalonia.Controls.Presenters
                             RecycleContainersOnRemove();
                         }
 
+                        panel.ForceInvalidateMeasure();
                         break;
 
                     case NotifyCollectionChangedAction.Move:
@@ -140,6 +142,7 @@ namespace Avalonia.Controls.Presenters
                     case NotifyCollectionChangedAction.Reset:
                         RecycleContainersOnRemove();
                         CreateAndRemoveContainers();
+                        panel.ForceInvalidateMeasure();
                         break;
                 }
             }

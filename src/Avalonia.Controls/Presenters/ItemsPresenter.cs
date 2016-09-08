@@ -99,7 +99,7 @@ namespace Avalonia.Controls.Presenters
             // the available size.
             if (availableSize == Size.Infinity && VirtualizationMode != ItemVirtualizationMode.None)
             {
-                var window = VisualRoot as Window;
+                var window = VisualRoot as TopLevel;
 
                 if (window != null)
                 {
