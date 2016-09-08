@@ -123,7 +123,7 @@ namespace Avalonia.Gtk
 
         public Action<Size> Resized { get; set; }
 		
-		public Action<Point> PositionChanged { get; set; }
+        public Action<Point> PositionChanged { get; set; }
 
         public Action<double> ScalingChanged { get; set; }
 

@@ -115,9 +115,9 @@ namespace Avalonia.Gtk
 
             return Disposable.Empty;
         }
-		
+
         public override void SetSystemDecorations(bool enabled) => Window.Decorated = enabled;
-		
+
         public override void SetIcon(IWindowIconImpl icon)
         {
             Window.Icon = ((IconImpl)icon).Pixbuf;
