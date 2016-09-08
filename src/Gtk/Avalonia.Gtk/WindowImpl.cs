@@ -10,9 +10,7 @@ namespace Avalonia.Gtk
     {
         private Gtk.Window _window;
         private Gtk.Window Window => _window ?? (_window = (Gtk.Window) Widget);
-
-
-
+		
         public WindowImpl(Gtk.WindowType type) : base(new PlatformHandleAwareWindow(type))
         {
             Init();
@@ -29,8 +27,10 @@ namespace Avalonia.Gtk
             Window.FocusActivated += OnFocusActivated;
             Window.ConfigureEvent += OnConfigureEvent;
             _lastClientSize = ClientSize;
+            _lastPosition = Position;
         }
         private Size _lastClientSize;
+        private Point _lastPosition;
         void OnConfigureEvent(object o, Gtk.ConfigureEventArgs args)
         {
             var evnt = args.Event;
@@ -41,6 +41,14 @@ namespace Avalonia.Gtk
             {
                 Resized(newSize);
                 _lastClientSize = newSize;
+            }
+
+            var newPosition = new Point(evnt.X, evnt.Y);
+            
+            if (newPosition != _lastPosition)
+            {
+                PositionChanged(newPosition);
+                _lastPosition = newPosition;
             }
         }
 
@@ -107,9 +115,9 @@ namespace Avalonia.Gtk
 
             return Disposable.Empty;
         }
-
+		
         public override void SetSystemDecorations(bool enabled) => Window.Decorated = enabled;
-
+		
         public override void SetIcon(IWindowIconImpl icon)
         {
             Window.Icon = ((IconImpl)icon).Pixbuf;

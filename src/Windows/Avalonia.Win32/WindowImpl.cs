@@ -55,6 +55,8 @@ namespace Avalonia.Win32
 
         public Action<double> ScalingChanged { get; set; }
 
+        public Action<Point> PositionChanged { get; set; }
+
         public Thickness BorderThickness
         {
             get
@@ -560,6 +562,10 @@ namespace Avalonia.Win32
                         Resized(clientSize / Scaling);
                     }
 
+                    return IntPtr.Zero;
+
+                case UnmanagedMethods.WindowsMessage.WM_MOVE:
+                    PositionChanged?.Invoke(new Point((short)(ToInt32(lParam) & 0xffff), (short)(ToInt32(lParam) >> 16)));
                     return IntPtr.Zero;
             }
 

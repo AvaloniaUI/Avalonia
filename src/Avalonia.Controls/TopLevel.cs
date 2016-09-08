@@ -105,6 +105,7 @@ namespace Avalonia.Controls
             PlatformImpl.Input = HandleInput;
             PlatformImpl.Resized = HandleResized;
             PlatformImpl.ScalingChanged = HandleScalingChanged;
+            PlatformImpl.PositionChanged = HandlePositionChanged;
 
             _keyboardNavigationHandler?.SetOwner(this);
             _accessKeyHandler?.SetOwner(this);
@@ -137,6 +138,11 @@ namespace Avalonia.Controls
         /// Fired when the window is deactivated.
         /// </summary>
         public event EventHandler Deactivated;
+
+        /// <summary>
+        /// Fired when the window position is changed.
+        /// </summary>
+        public event EventHandler<PointEventArgs> PositionChanged;
 
         /// <summary>
         /// Gets or sets the client size of the window.
@@ -393,6 +399,16 @@ namespace Avalonia.Controls
         private void HandleInput(RawInputEventArgs e)
         {
             _inputManager.ProcessInput(e);
+        }
+
+        /// <summary>
+        /// Handles a window position change notification from 
+        /// <see cref="ITopLevelImpl.PositionChanged"/>.
+        /// </summary>
+        /// <param name="pos">The window position.</param>
+        private void HandlePositionChanged(Point pos)
+        {
+            PositionChanged?.Invoke(this, new PointEventArgs(pos));
         }
 
         /// <summary>
