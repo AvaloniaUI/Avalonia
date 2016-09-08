@@ -95,5 +95,4 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
-  <Import Project="..\..\Shared\PlatformSupport\PlatformSupport.projitems" Label="Shared" />
 </Project>

@@ -1,17 +1,16 @@
-using System.Reflection;
+﻿using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using Xunit;
 
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Avalonia.Markup.UnitTests")]
+[assembly: AssemblyTitle("Avalonia.DotNetFrameworkRuntime")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Avalonia.Markup.UnitTests")]
-[assembly: AssemblyCopyright("Copyright ©  2015")]
+[assembly: AssemblyProduct("Avalonia.DotNetFrameworkRuntime")]
+[assembly: AssemblyCopyright("Copyright ©  2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -21,7 +20,7 @@ using Xunit;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("8ef392d5-1416-45aa-9956-7cbbc3229e8a")]
+[assembly: Guid("4a1abb09-9047-4bd5-a4ad-a055e52c5ee0")]
 
 // Version information for an assembly consists of the following four values:
 //
@@ -35,6 +34,3 @@ using Xunit;
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
-
-// Don't run tests in parallel.
-[assembly: CollectionBehavior(DisableTestParallelization = true)]

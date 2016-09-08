@@ -77,25 +77,40 @@ namespace Avalonia.Cairo.Media
         /// <param name="destRect">The rect in the output to draw to.</param>
         public void DrawImage(IBitmap bitmap, double opacity, Rect sourceRect, Rect destRect)
         {
-			var impl = bitmap.PlatformImpl as BitmapImpl;
-			var size = new Size(impl.PixelWidth, impl.PixelHeight);
-			var scale = new Vector(destRect.Width / sourceRect.Width, destRect.Height / sourceRect.Height);
+            var impl = bitmap.PlatformImpl as BitmapImpl;
+            var size = new Size(impl.PixelWidth, impl.PixelHeight);
+            var scale = new Vector(destRect.Width / sourceRect.Width, destRect.Height / sourceRect.Height);
 
-			_context.Save();
+            _context.Save();
+            _context.Scale(scale.X, scale.Y);
+            destRect /= scale;
 
-			Gdk.CairoHelper.SetSourcePixbuf (
-				_context, 
-				impl, 
-				-sourceRect.X + destRect.X, 
-				-sourceRect.Y + destRect.Y);
-			impl.Scale (impl, (int)destRect.X, (int)destRect.Y, (int)destRect.Width, (int)destRect.Height, 0, 0, scale.X, scale.Y, Gdk.InterpType.Bilinear);
+			if (opacityOverride < 1.0f) {
+				_context.PushGroup ();
+				Gdk.CairoHelper.SetSourcePixbuf (
+					_context, 
+					impl, 
+					-sourceRect.X + destRect.X, 
+					-sourceRect.Y + destRect.Y);
 
-			_context.PushGroup ();
-			_context.Rectangle (destRect.ToCairo ());
-			_context.Fill ();
-			_context.PopGroupToSource ();
-			_context.PaintWithAlpha (opacityOverride);		
-			_context.Restore();
+				_context.Rectangle (destRect.ToCairo ());
+				_context.Fill ();
+				_context.PopGroupToSource ();
+				_context.PaintWithAlpha (opacityOverride);
+			} else {
+				_context.PushGroup ();
+				Gdk.CairoHelper.SetSourcePixbuf (
+					_context, 
+					impl, 
+					-sourceRect.X + destRect.X, 
+					-sourceRect.Y + destRect.Y);
+
+                _context.Rectangle (destRect.ToCairo ());
+                _context.Fill ();
+                _context.PopGroupToSource ();
+                _context.PaintWithAlpha (opacityOverride);			
+            }
+            _context.Restore();
         }
 
         /// <summary>

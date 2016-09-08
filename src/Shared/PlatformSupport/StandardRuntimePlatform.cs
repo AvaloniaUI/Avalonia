@@ -10,7 +10,7 @@ using Avalonia.Platform;
 
 namespace Avalonia.Shared.PlatformSupport
 {
-    internal class PclPlatformWrapper : IPclPlatformWrapper
+    internal partial class StandardRuntimePlatform : IRuntimePlatform
     {
         public Assembly[] GetLoadedAssemblies() => AppDomain.CurrentDomain.GetAssemblies();
         public void PostThreadPoolItem(Action cb) => ThreadPool.UnsafeQueueUserWorkItem(_ => cb(), null);
@@ -22,6 +22,8 @@ namespace Avalonia.Shared.PlatformSupport
             }, null, interval, interval);
             return Disposable.Create(() => timer.Dispose());
         }
+
+
 
         public string GetStackTrace() => Environment.StackTrace;
     }

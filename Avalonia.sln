@@ -163,6 +163,8 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Avalonia.RenderTests", "tes
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VirtualizationTest", "samples\VirtualizationTest\VirtualizationTest.csproj", "{FBCAF3D0-2808-4934-8E96-3F607594517B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.DotNetFrameworkRuntime", "src\Avalonia.DotNetFrameworkRuntime\Avalonia.DotNetFrameworkRuntime.csproj", "{4A1ABB09-9047-4BD5-A4AD-A055E52C5EE0}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		src\Skia\Avalonia.Skia\Avalonia.Skia.projitems*{2f59f3d0-748d-4652-b01e-e0d954756308}*SharedItemsImports = 13
@@ -172,11 +174,9 @@ Global
 		src\Shared\RenderHelpers\RenderHelpers.projitems*{47be08a7-5985-410b-9ffc-2264b8ea595f}*SharedItemsImports = 4
 		src\Skia\Avalonia.Skia\Avalonia.Skia.projitems*{47be08a7-5985-410b-9ffc-2264b8ea595f}*SharedItemsImports = 4
 		tests\Avalonia.RenderTests\Avalonia.RenderTests.projitems*{48840edd-24bf-495d-911e-2eb12ae75d3b}*SharedItemsImports = 13
-		src\Shared\PlatformSupport\PlatformSupport.projitems*{54f237d5-a70a-4752-9656-0c70b1a7b047}*SharedItemsImports = 4
+		src\Shared\PlatformSupport\PlatformSupport.projitems*{4a1abb09-9047-4bd5-a4ad-a055e52c5ee0}*SharedItemsImports = 4
 		samples\TestApplicationShared\TestApplicationShared.projitems*{78345174-5b52-4a14-b9fd-d5f2428137f0}*SharedItemsImports = 13
 		src\Shared\PlatformSupport\PlatformSupport.projitems*{7b92af71-6287-4693-9dcb-bd5b6e927e23}*SharedItemsImports = 4
-		src\Shared\PlatformSupport\PlatformSupport.projitems*{811a76cf-1cf6-440f-963b-bbe31bd72a82}*SharedItemsImports = 4
-		src\Shared\PlatformSupport\PlatformSupport.projitems*{88060192-33d5-4932-b0f9-8bd2763e857d}*SharedItemsImports = 4
 		samples\TestApplicationShared\TestApplicationShared.projitems*{8c923867-8a8f-4f6b-8b80-47d9e8436166}*SharedItemsImports = 4
 		src\Shared\RenderHelpers\RenderHelpers.projitems*{925dd807-b651-475f-9f7c-cbeb974ce43d}*SharedItemsImports = 4
 		src\Skia\Avalonia.Skia\Avalonia.Skia.projitems*{925dd807-b651-475f-9f7c-cbeb974ce43d}*SharedItemsImports = 4
@@ -184,9 +184,7 @@ Global
 		src\Skia\Avalonia.Skia\Avalonia.Skia.projitems*{bd43f7c0-396b-4aa1-bad9-dfde54d51298}*SharedItemsImports = 4
 		tests\Avalonia.RenderTests\Avalonia.RenderTests.projitems*{d35a9f3d-8bb0-496e-bf72-444038a7debb}*SharedItemsImports = 4
 		tests\Avalonia.RenderTests\Avalonia.RenderTests.projitems*{dabfd304-d6a4-4752-8123-c2ccf7ac7831}*SharedItemsImports = 4
-		src\Shared\PlatformSupport\PlatformSupport.projitems*{db070a10-bf39-4752-8456-86e9d5928478}*SharedItemsImports = 4
 		tests\Avalonia.RenderTests\Avalonia.RenderTests.projitems*{e106cf37-4066-4615-b684-172a6d30b058}*SharedItemsImports = 4
-		src\Shared\PlatformSupport\PlatformSupport.projitems*{e1aa3dbf-9056-4530-9376-18119a7a3ffe}*SharedItemsImports = 4
 		samples\TestApplicationShared\TestApplicationShared.projitems*{e3a1060b-50d0-44e8-88b6-f44ef2e5bd72}*SharedItemsImports = 4
 		src\Shared\PlatformSupport\PlatformSupport.projitems*{e4d9629c-f168-4224-3f51-a5e482ffbc42}*SharedItemsImports = 13
 		src\Shared\RenderHelpers\RenderHelpers.projitems*{fb05ac90-89ba-4f2f-a924-f37875fb547c}*SharedItemsImports = 4
@@ -2242,6 +2240,46 @@ Global
 		{FBCAF3D0-2808-4934-8E96-3F607594517B}.Release|Mono.Build.0 = Release|Any CPU
 		{FBCAF3D0-2808-4934-8E96-3F607594517B}.Release|x86.ActiveCfg = Release|Any CPU
 		{FBCAF3D0-2808-4934-8E96-3F607594517B}.Release|x86.Build.0 = Release|Any CPU
+		{4A1ABB09-9047-4BD5-A4AD-A055E52C5EE0}.Ad-Hoc|Any CPU.ActiveCfg = Release|Any CPU
+		{4A1ABB09-9047-4BD5-A4AD-A055E52C5EE0}.Ad-Hoc|Any CPU.Build.0 = Release|Any CPU
+		{4A1ABB09-9047-4BD5-A4AD-A055E52C5EE0}.Ad-Hoc|iPhone.ActiveCfg = Release|Any CPU
+		{4A1ABB09-9047-4BD5-A4AD-A055E52C5EE0}.Ad-Hoc|iPhone.Build.0 = Release|Any CPU
+		{4A1ABB09-9047-4BD5-A4AD-A055E52C5EE0}.Ad-Hoc|iPhoneSimulator.ActiveCfg = Release|Any CPU
+		{4A1ABB09-9047-4BD5-A4AD-A055E52C5EE0}.Ad-Hoc|iPhoneSimulator.Build.0 = Release|Any CPU
+		{4A1ABB09-9047-4BD5-A4AD-A055E52C5EE0}.Ad-Hoc|Mono.ActiveCfg = Release|Any CPU
+		{4A1ABB09-9047-4BD5-A4AD-A055E52C5EE0}.Ad-Hoc|Mono.Build.0 = Release|Any CPU
+		{4A1ABB09-9047-4BD5-A4AD-A055E52C5EE0}.Ad-Hoc|x86.ActiveCfg = Release|Any CPU
+		{4A1ABB09-9047-4BD5-A4AD-A055E52C5EE0}.Ad-Hoc|x86.Build.0 = Release|Any CPU
+		{4A1ABB09-9047-4BD5-A4AD-A055E52C5EE0}.AppStore|Any CPU.ActiveCfg = Release|Any CPU
+		{4A1ABB09-9047-4BD5-A4AD-A055E52C5EE0}.AppStore|Any CPU.Build.0 = Release|Any CPU
+		{4A1ABB09-9047-4BD5-A4AD-A055E52C5EE0}.AppStore|iPhone.ActiveCfg = Release|Any CPU
+		{4A1ABB09-9047-4BD5-A4AD-A055E52C5EE0}.AppStore|iPhone.Build.0 = Release|Any CPU
+		{4A1ABB09-9047-4BD5-A4AD-A055E52C5EE0}.AppStore|iPhoneSimulator.ActiveCfg = Release|Any CPU
+		{4A1ABB09-9047-4BD5-A4AD-A055E52C5EE0}.AppStore|iPhoneSimulator.Build.0 = Release|Any CPU
+		{4A1ABB09-9047-4BD5-A4AD-A055E52C5EE0}.AppStore|Mono.ActiveCfg = Release|Any CPU
+		{4A1ABB09-9047-4BD5-A4AD-A055E52C5EE0}.AppStore|Mono.Build.0 = Release|Any CPU
+		{4A1ABB09-9047-4BD5-A4AD-A055E52C5EE0}.AppStore|x86.ActiveCfg = Release|Any CPU
+		{4A1ABB09-9047-4BD5-A4AD-A055E52C5EE0}.AppStore|x86.Build.0 = Release|Any CPU
+		{4A1ABB09-9047-4BD5-A4AD-A055E52C5EE0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4A1ABB09-9047-4BD5-A4AD-A055E52C5EE0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4A1ABB09-9047-4BD5-A4AD-A055E52C5EE0}.Debug|iPhone.ActiveCfg = Debug|Any CPU
+		{4A1ABB09-9047-4BD5-A4AD-A055E52C5EE0}.Debug|iPhone.Build.0 = Debug|Any CPU
+		{4A1ABB09-9047-4BD5-A4AD-A055E52C5EE0}.Debug|iPhoneSimulator.ActiveCfg = Debug|Any CPU
+		{4A1ABB09-9047-4BD5-A4AD-A055E52C5EE0}.Debug|iPhoneSimulator.Build.0 = Debug|Any CPU
+		{4A1ABB09-9047-4BD5-A4AD-A055E52C5EE0}.Debug|Mono.ActiveCfg = Debug|Any CPU
+		{4A1ABB09-9047-4BD5-A4AD-A055E52C5EE0}.Debug|Mono.Build.0 = Debug|Any CPU
+		{4A1ABB09-9047-4BD5-A4AD-A055E52C5EE0}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4A1ABB09-9047-4BD5-A4AD-A055E52C5EE0}.Debug|x86.Build.0 = Debug|Any CPU
+		{4A1ABB09-9047-4BD5-A4AD-A055E52C5EE0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4A1ABB09-9047-4BD5-A4AD-A055E52C5EE0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4A1ABB09-9047-4BD5-A4AD-A055E52C5EE0}.Release|iPhone.ActiveCfg = Release|Any CPU
+		{4A1ABB09-9047-4BD5-A4AD-A055E52C5EE0}.Release|iPhone.Build.0 = Release|Any CPU
+		{4A1ABB09-9047-4BD5-A4AD-A055E52C5EE0}.Release|iPhoneSimulator.ActiveCfg = Release|Any CPU
+		{4A1ABB09-9047-4BD5-A4AD-A055E52C5EE0}.Release|iPhoneSimulator.Build.0 = Release|Any CPU
+		{4A1ABB09-9047-4BD5-A4AD-A055E52C5EE0}.Release|Mono.ActiveCfg = Release|Any CPU
+		{4A1ABB09-9047-4BD5-A4AD-A055E52C5EE0}.Release|Mono.Build.0 = Release|Any CPU
+		{4A1ABB09-9047-4BD5-A4AD-A055E52C5EE0}.Release|x86.ActiveCfg = Release|Any CPU
+		{4A1ABB09-9047-4BD5-A4AD-A055E52C5EE0}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
