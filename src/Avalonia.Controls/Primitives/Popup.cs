@@ -68,6 +68,7 @@ namespace Avalonia.Controls.Primitives
         private PopupRoot _popupRoot;
         private TopLevel _topLevel;
         private IDisposable _nonClientListener;
+        bool _ignoreIsOpenChanged = false;
 
         /// <summary>
         /// Initializes static members of the <see cref="Popup"/> class.
@@ -220,7 +221,11 @@ namespace Avalonia.Controls.Primitives
             PopupRootCreated?.Invoke(this, EventArgs.Empty);
 
             _popupRoot.Show();
+
+            _ignoreIsOpenChanged = true;
             IsOpen = true;
+            _ignoreIsOpenChanged = false;
+
             Opened?.Invoke(this, EventArgs.Empty);
         }
 
@@ -268,8 +273,13 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnDetachedFromLogicalTree(e);
             _topLevel = null;
-            _popupRoot?.Dispose();
-            _popupRoot = null;
+            
+            if (_popupRoot != null)
+            {
+                ((ISetLogicalParent)_popupRoot).SetParent(null);
+                _popupRoot.Dispose();
+                _popupRoot = null;
+            }
         }
 
         /// <summary>
@@ -278,13 +288,16 @@ namespace Avalonia.Controls.Primitives
         /// <param name="e">The event args.</param>
         private void IsOpenChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            if ((bool)e.NewValue)
+            if (!_ignoreIsOpenChanged)
             {
-                Open();
-            }
-            else
-            {
-                Close();
+                if ((bool)e.NewValue)
+                {
+                    Open();
+                }
+                else
+                {
+                    Close();
+                }
             }
         }
 

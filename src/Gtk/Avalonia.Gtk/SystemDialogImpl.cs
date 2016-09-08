@@ -15,7 +15,7 @@ namespace Avalonia.Gtk
         public Task<string[]> ShowFileDialogAsync(FileDialog dialog, IWindowImpl parent)
         {
             var tcs = new TaskCompletionSource<string[]>();
-            var dlg = new global::Gtk.FileChooserDialog(dialog.Title, ((WindowImpl)parent),
+            var dlg = new global::Gtk.FileChooserDialog(dialog.Title, ((WindowImplBase)parent).Widget.Toplevel as Window, 
                 dialog is OpenFileDialog
                     ? FileChooserAction.Open
                     : FileChooserAction.Save,
@@ -57,7 +57,7 @@ namespace Avalonia.Gtk
         public Task<string> ShowFolderDialogAsync(OpenFolderDialog dialog, IWindowImpl parent)
         {
             var tcs = new TaskCompletionSource<string>();
-            var dlg = new global::Gtk.FileChooserDialog(dialog.Title, ((WindowImpl)parent),
+            var dlg = new global::Gtk.FileChooserDialog(dialog.Title, ((WindowImplBase)parent).Widget.Toplevel as Window, 
                 FileChooserAction.SelectFolder,
                 "Cancel", ResponseType.Cancel,
                 "Select Folder", ResponseType.Accept)

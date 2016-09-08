@@ -1,165 +1,78 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Reactive.Disposables;
-using System.Runtime.InteropServices;
-using Gdk;
-using Avalonia.Controls;
-using Avalonia.Input.Raw;
 using Avalonia.Platform;
-using Avalonia.Input;
-using Avalonia.Threading;
-using Action = System.Action;
-using WindowEdge = Avalonia.Controls.WindowEdge;
+using Gdk;
 
 namespace Avalonia.Gtk
 {
     using Gtk = global::Gtk;
-
-    public class WindowImpl : Gtk.Window, IWindowImpl, IPlatformHandle
+    public class WindowImpl : WindowImplBase
     {
-        private IInputRoot _inputRoot;
+        private Gtk.Window _window;
+        private Gtk.Window Window => _window ?? (_window = (Gtk.Window) Widget);
 
-        private Size _lastClientSize;
 
+<<<<<<< HEAD
         private Point _lastPosition;
 
         private Gtk.IMContext _imContext;
+=======
+>>>>>>> dfd4bbf34a7632465a84126b22495072945fa7d5
 
-        private uint _lastKeyEventTimestamp;
-
-        private static readonly Gdk.Cursor DefaultCursor = new Gdk.Cursor(CursorType.LeftPtr);
+        public WindowImpl(Gtk.WindowType type) : base(new PlatformHandleAwareWindow(type))
+        {
+            Init();
+        }
 
         public WindowImpl()
-            : base(Gtk.WindowType.Toplevel)
-        {
-            DefaultSize = new Gdk.Size(900, 480);
-            Init();
-        }
-
-        public WindowImpl(Gtk.WindowType type)
-            : base(type)
+            : base(new PlatformHandleAwareWindow(Gtk.WindowType.Toplevel) {DefaultSize = new Gdk.Size(900, 480)})
         {
             Init();
         }
 
-        private void Init()
+        void Init()
         {
-            Events = EventMask.PointerMotionMask |
-              EventMask.ButtonPressMask |
-              EventMask.ButtonReleaseMask;
-            _imContext = new Gtk.IMMulticontext();
-            _imContext.Commit += ImContext_Commit;
-            DoubleBuffered = false;
-            Realize();
+            Window.FocusActivated += OnFocusActivated;
+            Window.ConfigureEvent += OnConfigureEvent;
             _lastClientSize = ClientSize;
             _lastPosition = Position;
         }
-
-        protected override void OnRealized ()
+        private Size _lastClientSize;
+        void OnConfigureEvent(object o, Gtk.ConfigureEventArgs args)
         {
-            base.OnRealized ();
-            _imContext.ClientWindow = this.GdkWindow;
+            var evnt = args.Event;
+            args.RetVal = true;
+            var newSize = new Size(evnt.Width, evnt.Height);
+
+            if (newSize != _lastClientSize)
+            {
+                Resized(newSize);
+                _lastClientSize = newSize;
+            }
         }
 
-        public Size ClientSize
+        public override Size ClientSize
         {
             get
             {
                 int width;
                 int height;
-                GetSize(out width, out height);
+                Window.GetSize(out width, out height);
                 return new Size(width, height);
             }
 
             set
             {
-                Resize((int)value.Width, (int)value.Height);
+                Window.Resize((int)value.Width, (int)value.Height);
             }
         }
 
-        public Size MaxClientSize
+        public override void SetTitle(string title)
         {
-            get
-            {
-                // TODO: This should take into account things such as taskbar and window border
-                // thickness etc.
-                return new Size(Screen.Width, Screen.Height);
-            }
+            Window.Title = title;
         }
 
-        public Avalonia.Controls.WindowState WindowState
-        {
-            get
-            {
-                switch (GdkWindow.State)
-                {
-                    case Gdk.WindowState.Iconified:
-                        return Controls.WindowState.Minimized;
-                    case Gdk.WindowState.Maximized:
-                        return Controls.WindowState.Maximized;
-                    default:
-                        return Controls.WindowState.Normal;
-                }
-            }
-
-            set
-            {
-                switch (value)
-                {
-                    case Controls.WindowState.Minimized:
-                        GdkWindow.Iconify();
-                        break;
-                    case Controls.WindowState.Maximized:
-                        GdkWindow.Maximize();
-                        break;
-                    case Controls.WindowState.Normal:
-                        GdkWindow.Deiconify();
-                        GdkWindow.Unmaximize();
-                        break;
-                }
-            }
-        }
-
-        public double Scaling => 1;
-
-        IPlatformHandle ITopLevelImpl.Handle => this;
-
-        [DllImport("libgdk-win32-2.0-0.dll", CallingConvention = CallingConvention.Cdecl)]
-        extern static IntPtr gdk_win32_drawable_get_handle(IntPtr gdkWindow);
-
-        [DllImport("libgtk-x11-2.0.so.0", CallingConvention = CallingConvention.Cdecl)]
-        extern static IntPtr gdk_x11_drawable_get_xid(IntPtr gdkWindow);
-
-        [DllImport("libgdk-quartz-2.0-0.dylib", CallingConvention = CallingConvention.Cdecl)]
-        extern static IntPtr gdk_quartz_window_get_nswindow(IntPtr gdkWindow);
-
-        IntPtr _nativeWindow;
-
-        IntPtr GetNativeWindow()
-        {
-            IntPtr h = GdkWindow.Handle;
-            if (_nativeWindow != IntPtr.Zero)
-                return _nativeWindow;
-            //Try whatever backend that works
-            try
-            {
-                return _nativeWindow = gdk_quartz_window_get_nswindow(h);
-            }
-            catch
-            {
-            }
-            try
-            {
-                return _nativeWindow = gdk_x11_drawable_get_xid(h);
-            }
-            catch
-            {
-            }
-            return _nativeWindow = gdk_win32_drawable_get_handle(h);
-        }
-
+<<<<<<< HEAD
 
         IntPtr IPlatformHandle.Handle => GetNativeWindow();
         public string HandleDescriptor => "HWND";
@@ -193,75 +106,52 @@ namespace Avalonia.Gtk
         }
 
         public Point PointToClient(Point point)
+=======
+        void OnFocusActivated(object sender, EventArgs eventArgs)
+>>>>>>> dfd4bbf34a7632465a84126b22495072945fa7d5
         {
-            int x, y;
-            GdkWindow.GetDeskrelativeOrigin(out x, out y);
-
-            return new Point(point.X - x, point.Y - y);
+            Activated();
         }
 
-        public Point PointToScreen(Point point)
-        {
-            int x, y;
-            GdkWindow.GetDeskrelativeOrigin(out x, out y);
-
-            return new Point(point.X + x, point.Y + y);
-        }
-
-        public void SetInputRoot(IInputRoot inputRoot)
-        {
-            _inputRoot = inputRoot;
-        }
-
-        public void SetTitle(string title)
-        {
-            Title = title;
-        }
-
-
-        public void SetCursor(IPlatformHandle cursor)
-        {
-            GdkWindow.Cursor = cursor != null ? new Gdk.Cursor(cursor.Handle) : DefaultCursor;
-        }
-
-        public void BeginMoveDrag()
+        public override void BeginMoveDrag()
         {
             int x, y;
             ModifierType mod;
-            Screen.RootWindow.GetPointer(out x, out y, out mod);
-            BeginMoveDrag(1, x, y, 0);
+            Window.Screen.RootWindow.GetPointer(out x, out y, out mod);
+            Window.BeginMoveDrag(1, x, y, 0);
         }
 
-        public void BeginResizeDrag(WindowEdge edge)
+        public override void BeginResizeDrag(Controls.WindowEdge edge)
         {
             int x, y;
             ModifierType mod;
-            Screen.RootWindow.GetPointer(out x, out y, out mod);
-            BeginResizeDrag((Gdk.WindowEdge) (int) edge, 1, x, y, 0);
+            Window.Screen.RootWindow.GetPointer(out x, out y, out mod);
+            Window.BeginResizeDrag((Gdk.WindowEdge)(int)edge, 1, x, y, 0);
         }
 
-        public Point Position
+        public override Point Position
         {
             get
             {
                 int x, y;
-                GetPosition(out x, out y);
+                Window.GetPosition(out x, out y);
                 return new Point(x, y);
             }
             set
             {
-                Move((int)value.X, (int)value.Y);
+                Window.Move((int)value.X, (int)value.Y);
             }
         }
 
-        public IDisposable ShowDialog()
+        public override IDisposable ShowDialog()
         {
-            Modal = true;
-            Show();
+            Window.Modal = true;
+            Window.Show();
 
             return Disposable.Empty;
         }
 
+<<<<<<< HEAD
         public void SetSystemDecorations(bool enabled) => Decorated = enabled;
 
         void ITopLevelImpl.Activate()
@@ -408,10 +298,13 @@ namespace Avalonia.Gtk
             Input(e);
             return true;
         }
+=======
+        public override void SetSystemDecorations(bool enabled) => Window.Decorated = enabled;
+>>>>>>> dfd4bbf34a7632465a84126b22495072945fa7d5
 
-        public void SetIcon(IWindowIconImpl icon)
+        public override void SetIcon(IWindowIconImpl icon)
         {
-            Icon = ((IconImpl)icon).Pixbuf;
+            Window.Icon = ((IconImpl)icon).Pixbuf;
         }
     }
 }

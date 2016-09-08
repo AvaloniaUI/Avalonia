@@ -658,6 +658,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             Assert.Equal(expected, actual);
         }
 
+        [Fact]
         public void Should_Add_Containers_For_Items_After_Clear()
         {
             var target = CreateTarget(itemCount: 10);

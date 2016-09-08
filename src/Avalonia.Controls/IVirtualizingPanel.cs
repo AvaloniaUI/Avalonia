@@ -1,6 +1,8 @@
 ﻿// Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using Avalonia.Layout;
+
 namespace Avalonia.Controls
 {
     /// <summary>
@@ -24,8 +26,8 @@ namespace Avalonia.Controls
         /// </summary>
         /// <remarks>
         /// This property should return false until enough children are added to fill the space
-        /// passed into the last measure in the direction of scroll. It should be updated
-        /// immediately after a child is added or removed.
+        /// passed into the last measure or arrange in the direction of scroll. It should be
+        /// updated immediately after a child is added or removed.
         /// </remarks>
         bool IsFull { get; }
 
@@ -63,5 +65,18 @@ namespace Avalonia.Controls
         /// Gets or sets the current pixel offset of the items in the direction of scroll.
         /// </summary>
         double PixelOffset { get; set; }
+
+        /// <summary>
+        /// Invalidates the measure of the control and forces a call to 
+        /// <see cref="IVirtualizingController.UpdateControls"/> on the next measure.
+        /// </summary>
+        /// <remarks>
+        /// The implementation for this method should call
+        /// <see cref="ILayoutable.InvalidateMeasure"/> and also ensure that the next call to
+        /// <see cref="ILayoutable.Measure(Size)"/> calls
+        /// <see cref="IVirtualizingController.UpdateControls"/> on the next measure even if
+        /// the available size hasn't changed.
+        /// </remarks>
+        void ForceInvalidateMeasure();
     }
 }

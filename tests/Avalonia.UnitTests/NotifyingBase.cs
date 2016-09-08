@@ -16,7 +16,7 @@ namespace Avalonia.UnitTests
             add
             {
                 _propertyChanged += value;
-                ++SubscriptionCount;
+                ++PropertyChangedSubscriptionCount;
             }
 
             remove
@@ -24,12 +24,12 @@ namespace Avalonia.UnitTests
                 if (_propertyChanged?.GetInvocationList().Contains(value) == true)
                 {
                     _propertyChanged -= value;
-                    --SubscriptionCount;
+                    --PropertyChangedSubscriptionCount;
                 }
             }
         }
 
-        public int SubscriptionCount
+        public int PropertyChangedSubscriptionCount
         {
             get;
             private set;

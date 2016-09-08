@@ -18,7 +18,7 @@ using Avalonia.Win32.Interop;
 
 namespace Avalonia.Win32
 {
-    public class WindowImpl : IWindowImpl
+    class WindowImpl : IWindowImpl
     {
         private static readonly List<WindowImpl> s_instances = new List<WindowImpl>();
 
@@ -690,9 +690,9 @@ namespace Avalonia.Win32
         public void SetIcon(IWindowIconImpl icon)
         {
             var impl = (IconImpl)icon;
-            var nativeIcon = impl.IconBitmap;
+            var hIcon = impl.HIcon;
             UnmanagedMethods.PostMessage(_hwnd, (int)UnmanagedMethods.WindowsMessage.WM_SETICON,
-                new IntPtr((int)UnmanagedMethods.Icons.ICON_BIG), nativeIcon.GetHicon());
+                new IntPtr((int)UnmanagedMethods.Icons.ICON_BIG), hIcon);
         }
 
         private static int ToInt32(IntPtr ptr)

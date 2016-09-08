@@ -21,7 +21,11 @@ namespace Avalonia.Data
         public AvaloniaProperty Property { get; }
         private BindingMode Mode { get; }
 
-        public InstancedBinding Initiate(IAvaloniaObject target, AvaloniaProperty targetProperty, object anchor = null)
+        public InstancedBinding Initiate(
+            IAvaloniaObject target,
+            AvaloniaProperty targetProperty,
+            object anchor = null,
+            bool enableDataValidation = false)
         {
             var mode = Mode == BindingMode.Default ?
                 targetProperty.GetMetadata(target.GetType()).DefaultBindingMode :

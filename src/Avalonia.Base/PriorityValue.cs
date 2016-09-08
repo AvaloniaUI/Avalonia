@@ -28,7 +28,7 @@ namespace Avalonia
     {
         private readonly IPriorityValueOwner _owner;
         private readonly Type _valueType;
-        private readonly Dictionary<int, PriorityLevel> _levels = new Dictionary<int, PriorityLevel>();
+        private readonly SingleOrDictionary<int, PriorityLevel> _levels = new SingleOrDictionary<int, PriorityLevel>();
         private object _value;
         private readonly Func<object, object> _validate;
 
@@ -77,7 +77,6 @@ namespace Avalonia
         /// </summary>
         /// <param name="binding">The binding.</param>
         /// <param name="priority">The binding priority.</param>
-        /// <param name="validation">Validation settings for the binding.</param>
         /// <returns>
         /// A disposable that will remove the binding.
         /// </returns>
@@ -180,30 +179,20 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Called whenever a priority level validation state changes.
-        /// </summary>
-        /// <param name="priorityLevel">The priority level of the changed entry.</param>
-        /// <param name="validationStatus">The validation status.</param>
-        public void LevelValidation(PriorityLevel priorityLevel, IValidationStatus validationStatus)
-        {
-            _owner.DataValidationChanged(this, validationStatus);
-        }
-
-        /// <summary>
         /// Called when a priority level encounters an error.
         /// </summary>
         /// <param name="level">The priority level of the changed entry.</param>
         /// <param name="error">The binding error.</param>
-        public void LevelError(PriorityLevel level, BindingError error)
+        public void LevelError(PriorityLevel level, BindingNotification error)
         {
             Logger.Log(
                 LogEventLevel.Error,
                 LogArea.Binding,
                 _owner,
-                "Error binding to {Target}.{Property}: {Message}",
+                "Error in binding to {Target}.{Property}: {Message}",
                 _owner,
                 Property,
-                error.Exception.Message);
+                error.Error.Message);
         }
 
         /// <summary>
@@ -248,7 +237,13 @@ namespace Avalonia
         /// <param name="priority">The priority level that the value came from.</param>
         private void UpdateValue(object value, int priority)
         {
+            var notification = value as BindingNotification;
             object castValue;
+
+            if (notification != null)
+            {
+                value = (notification.HasValue) ? notification.Value : null;
+            }
 
             if (TypeUtilities.TryCast(_valueType, value, out castValue))
             {
@@ -261,7 +256,21 @@ namespace Avalonia
 
                 ValuePriority = priority;
                 _value = castValue;
-                _owner?.Changed(this, old, _value);
+
+                if (notification?.HasValue == true)
+                {
+                    notification.SetValue(castValue);
+                }
+
+                if (notification == null || notification.HasValue)
+                {
+                    _owner?.Changed(this, old, _value);
+                }
+
+                if (notification != null)
+                {
+                    _owner?.BindingNotificationReceived(this, notification);
+                }
             }
             else
             {
