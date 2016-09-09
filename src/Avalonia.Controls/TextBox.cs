@@ -35,6 +35,14 @@ namespace Avalonia.Controls
                 o => o.CaretIndex,
                 (o, v) => o.CaretIndex = v);
 
+        public static readonly DirectProperty<TextBox, IEnumerable<Exception>> DataValidationErrorsProperty =
+            AvaloniaProperty.RegisterDirect<TextBox, IEnumerable<Exception>>(
+                nameof(DataValidationErrors),
+                o => o.DataValidationErrors);
+
+        public static readonly StyledProperty<bool> IsReadOnlyProperty =
+            AvaloniaProperty.Register<TextBox, bool>(nameof(IsReadOnly));
+
         public static readonly DirectProperty<TextBox, int> SelectionStartProperty =
             AvaloniaProperty.RegisterDirect<TextBox, int>(
                 nameof(SelectionStart),
@@ -51,7 +59,8 @@ namespace Avalonia.Controls
             TextBlock.TextProperty.AddOwner<TextBox>(
                 o => o.Text,
                 (o, v) => o.Text = v,
-                defaultBindingMode: BindingMode.TwoWay);
+                defaultBindingMode: BindingMode.TwoWay,
+                enableDataValidation: true);
 
         public static readonly StyledProperty<TextAlignment> TextAlignmentProperty =
             TextBlock.TextAlignmentProperty.AddOwner<TextBox>();
@@ -64,9 +73,6 @@ namespace Avalonia.Controls
 
         public static readonly StyledProperty<bool> UseFloatingWatermarkProperty =
             AvaloniaProperty.Register<TextBox, bool>("UseFloatingWatermark");
-
-        public static readonly StyledProperty<bool> IsReadOnlyProperty =
-            AvaloniaProperty.Register<TextBox, bool>(nameof(IsReadOnly));
 
         struct UndoRedoState : IEquatable<UndoRedoState>
         {
@@ -89,6 +95,8 @@ namespace Avalonia.Controls
         private bool _canScrollHorizontally;
         private TextPresenter _presenter;
         private UndoRedoHelper<UndoRedoState> _undoRedoHelper;
+        private bool _ignoreTextChanges;
+        private IEnumerable<Exception> _dataValidationErrors;
 
         static TextBox()
         {
@@ -145,6 +153,18 @@ namespace Avalonia.Controls
             }
         }
 
+        public IEnumerable<Exception> DataValidationErrors
+        {
+            get { return _dataValidationErrors; }
+            private set { SetAndRaise(DataValidationErrorsProperty, ref _dataValidationErrors, value); }
+        }
+
+        public bool IsReadOnly
+        {
+            get { return GetValue(IsReadOnlyProperty); }
+            set { SetValue(IsReadOnlyProperty, value); }
+        }
+
         public int SelectionStart
         {
             get
@@ -177,7 +197,13 @@ namespace Avalonia.Controls
         public string Text
         {
             get { return _text; }
-            set { SetAndRaise(TextProperty, ref _text, value); }
+            set
+            {
+                if (!_ignoreTextChanges)
+                {
+                    SetAndRaise(TextProperty, ref _text, value);
+                }
+            }
         }
 
         public TextAlignment TextAlignment
@@ -196,12 +222,6 @@ namespace Avalonia.Controls
         {
             get { return GetValue(UseFloatingWatermarkProperty); }
             set { SetValue(UseFloatingWatermarkProperty, value); }
-        }
-
-        public bool IsReadOnly
-        {
-            get { return GetValue(IsReadOnlyProperty); }
-            set { SetValue(IsReadOnlyProperty, value); }
         }
 
         public TextWrapping TextWrapping
@@ -235,14 +255,6 @@ namespace Avalonia.Controls
             HandleTextInput(e.Text);
         }
 
-        protected override void DataValidationChanged(AvaloniaProperty property, IValidationStatus status)
-        {
-            if (property == TextProperty)
-            {
-                UpdateValidationState(status);
-            }
-        }
-
         private void HandleTextInput(string input)
         {
             if (!IsReadOnly)
@@ -254,7 +266,7 @@ namespace Avalonia.Controls
                     DeleteSelection();
                     caretIndex = CaretIndex;
                     text = Text ?? string.Empty;
-                    Text = text.Substring(0, caretIndex) + input + text.Substring(caretIndex);
+                    SetTextInternal(text.Substring(0, caretIndex) + input + text.Substring(caretIndex));
                     CaretIndex += input.Length;
                     SelectionStart = SelectionEnd = CaretIndex;
                     _undoRedoHelper.DiscardRedo();
@@ -304,7 +316,7 @@ namespace Avalonia.Controls
                     break;
 
                 case Key.X:
-                    if(modifiers == InputModifiers.Control)
+                    if (modifiers == InputModifiers.Control)
                     {
                         Copy();
                         DeleteSelection();
@@ -360,18 +372,28 @@ namespace Avalonia.Controls
                     break;
 
                 case Key.Back:
+                    if (modifiers == InputModifiers.Control && SelectionStart == SelectionEnd)
+                    {
+                        SetSelectionForControlBackspace(modifiers);
+                    }
+
                     if (!DeleteSelection() && CaretIndex > 0)
                     {
-                        Text = text.Substring(0, caretIndex - 1) + text.Substring(caretIndex);
+                        SetTextInternal(text.Substring(0, caretIndex - 1) + text.Substring(caretIndex));
                         --CaretIndex;
                     }
 
                     break;
 
                 case Key.Delete:
+                    if (modifiers == InputModifiers.Control && SelectionStart == SelectionEnd)
+                    {
+                        SetSelectionForControlDelete(modifiers);
+                    }
+
                     if (!DeleteSelection() && caretIndex < text.Length)
                     {
-                        Text = text.Substring(0, caretIndex) + text.Substring(caretIndex + 1);
+                        SetTextInternal(text.Substring(0, caretIndex) + text.Substring(caretIndex + 1));
                     }
 
                     break;
@@ -469,31 +491,117 @@ namespace Avalonia.Controls
             }
         }
 
+        protected override void UpdateDataValidation(AvaloniaProperty property, BindingNotification status)
+        {
+            if (property == TextProperty)
+            {
+                var classes = (IPseudoClasses)Classes;
+                DataValidationErrors = UnpackException(status.Error);
+                classes.Set(":error", DataValidationErrors != null);
+            }
+        }
+
+        private static IEnumerable<Exception> UnpackException(Exception exception)
+        {
+            if (exception != null)
+            {
+                var aggregate = exception as AggregateException;
+                var exceptions = aggregate == null ?
+                    (IEnumerable<Exception>)new[] { exception } :
+                    aggregate.InnerExceptions;
+                var filtered = exceptions.Where(x => !(x is BindingChainNullException)).ToList();
+
+                if (filtered.Count > 0)
+                {
+                    return filtered;
+                }
+            }
+
+            return null;
+        }
+
         private int CoerceCaretIndex(int value)
         {
             var text = Text;
             var length = text?.Length ?? 0;
-            return Math.Max(0, Math.Min(length, value));
+
+            if (value < 0)
+            {
+                return 0;
+            }
+            else if (value > length)
+            {
+                return length;
+            }
+            else if (value > 0 && text[value - 1] == '\r' && text[value] == '\n')
+            {
+                return value + 1;
+            }
+            else
+            {
+                return value;
+            }
         }
 
-        private void MoveHorizontal(int count, InputModifiers modifiers)
+        private int DeleteCharacter(int index)
+        {
+            var start = index + 1;
+            var text = Text;
+            var c = text[index];
+            var result = 1;
+
+            if (c == '\n' && index > 0 && text[index - 1] == '\r')
+            {
+                --index;
+                ++result;
+            }
+            else if (c == '\r' && index < text.Length - 1 && text[index + 1] == '\n')
+            {
+                ++start;
+                ++result;
+            }
+
+            Text = text.Substring(0, index) + text.Substring(start);
+
+            return result;
+        }
+
+        private void MoveHorizontal(int direction, InputModifiers modifiers)
         {
             var text = Text ?? string.Empty;
             var caretIndex = CaretIndex;
 
-            if ((modifiers & InputModifiers.Control) != 0)
+            if ((modifiers & InputModifiers.Control) == 0)
             {
-                if (count > 0)
+                var index = caretIndex + direction;
+
+                if (index < 0 || index >= text.Length)
                 {
-                    count = StringUtils.NextWord(text, caretIndex, false) - caretIndex;
+                    return;
+                }
+
+                var c = text[index];
+
+                if (direction > 0)
+                {
+                    CaretIndex += (c == '\r' && index < text.Length - 1 && text[index + 1] == '\n') ? 2 : 1;
                 }
                 else
                 {
-                    count = StringUtils.PreviousWord(text, caretIndex, false) - caretIndex;
+                    CaretIndex -= (c == '\n' && index > 0 && text[index - 1] == '\r') ? 2 : 1;
                 }
             }
-
-            CaretIndex = caretIndex += count;
+            else
+            {
+                if (direction > 0)
+                {
+                    CaretIndex += StringUtils.NextWord(text, caretIndex, false) - caretIndex;
+                }
+                else
+                {
+                    CaretIndex += StringUtils.PreviousWord(text, caretIndex, false) - caretIndex;
+                }
+            }
         }
 
         private void MoveVertical(int count, InputModifiers modifiers)
@@ -597,7 +705,7 @@ namespace Avalonia.Controls
                     var start = Math.Min(selectionStart, selectionEnd);
                     var end = Math.Max(selectionStart, selectionEnd);
                     var text = Text;
-                    Text = text.Substring(0, start) + text.Substring(end);
+                    SetTextInternal(text.Substring(0, start) + text.Substring(end));
                     SelectionStart = SelectionEnd = CaretIndex = start;
                     return true;
                 }
@@ -642,6 +750,39 @@ namespace Avalonia.Controls
             }
 
             return i;
+        }
+
+        private void SetTextInternal(string value)
+        {
+            try
+            {
+                _ignoreTextChanges = true;
+                SetAndRaise(TextProperty, ref _text, value);
+            }
+            finally
+            {
+                _ignoreTextChanges = false;
+            }
+        }
+
+        private void SetSelectionForControlBackspace(InputModifiers modifiers)
+        {
+            SelectionStart = CaretIndex;
+            MoveHorizontal(-1, modifiers);
+            SelectionEnd = CaretIndex;
+        }
+
+        private void SetSelectionForControlDelete(InputModifiers modifiers)
+        {
+            SelectionStart = CaretIndex;
+            MoveHorizontal(1, modifiers);
+            SelectionEnd = CaretIndex;
+
+            string selection = GetSelection();
+            if (selection != " " && selection.EndsWith(" "))
+            {
+                SelectionEnd = CaretIndex - 1;
+            }
         }
 
         UndoRedoState UndoRedoHelper<UndoRedoState>.IUndoRedoHost.UndoRedoState

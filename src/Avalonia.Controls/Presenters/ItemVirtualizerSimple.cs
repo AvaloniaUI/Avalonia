@@ -116,20 +116,22 @@ namespace Avalonia.Controls.Presenters
                         CreateAndRemoveContainers();
 
                         if (e.NewStartingIndex >= FirstIndex &&
-                            e.NewStartingIndex + e.NewItems.Count <= NextIndex)
+                            e.NewStartingIndex < NextIndex)
                         {
                             RecycleContainers();
                         }
 
+                        panel.ForceInvalidateMeasure();
                         break;
 
                     case NotifyCollectionChangedAction.Remove:
                         if (e.OldStartingIndex >= FirstIndex &&
-                            e.OldStartingIndex + e.OldItems.Count <= NextIndex)
+                            e.OldStartingIndex < NextIndex)
                         {
                             RecycleContainersOnRemove();
                         }
 
+                        panel.ForceInvalidateMeasure();
                         break;
 
                     case NotifyCollectionChangedAction.Move:
@@ -140,6 +142,7 @@ namespace Avalonia.Controls.Presenters
                     case NotifyCollectionChangedAction.Reset:
                         RecycleContainersOnRemove();
                         CreateAndRemoveContainers();
+                        panel.ForceInvalidateMeasure();
                         break;
                 }
             }

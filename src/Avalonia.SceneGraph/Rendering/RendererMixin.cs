@@ -142,10 +142,27 @@ namespace Avalonia.Rendering
                             var childClipRect = clipRect.Translate(-childBounds.Position);
                             context.Render(child, childClipRect);
                         }
+                        else
+                        {
+                            ClearTransformedBounds(child);
+                        }
                     }
 
                     ReturnListToPool(lst);
                 }
+            }
+            
+            if (!visual.IsVisible)
+            {
+                ClearTransformedBounds(visual);
+            }
+        }
+
+        private static void ClearTransformedBounds(IVisual visual)
+        {
+            foreach (var e in visual.GetSelfAndVisualDescendents())
+            {
+                BoundsTracker.SetTransformedBounds((Visual)visual, null);
             }
         }
 

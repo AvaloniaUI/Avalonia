@@ -284,7 +284,6 @@ namespace Avalonia.Base.UnitTests
             Assert.Equal("newvalue", target.Foo);
         }
 
-
         [Fact]
         public void UnsetValue_Is_Used_On_AddOwnered_Property()
         {
@@ -336,52 +335,6 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
-        public void Binding_To_Direct_Property_Does_Not_Get_Collected()
-        {
-            var target = new Class2();
-
-            Func<WeakReference> setupBinding = () =>
-            {
-                var source = new Subject<string>();
-                var sub = target.Bind((AvaloniaProperty)Class1.FooProperty, source);
-                source.OnNext("foo");
-                return new WeakReference(source);
-            };
-
-            var weakSource = setupBinding();
-
-            GC.Collect();
-
-            Assert.Equal("foo", target.Foo);
-            Assert.True(weakSource.IsAlive);
-        }
-
-        [Fact]
-        public void Binding_To_Direct_Property_Gets_Collected_When_Completed()
-        {
-            var target = new Class2();
-
-            Func<WeakReference> setupBinding = () =>
-            {
-                var source = new Subject<string>();
-                var sub = target.Bind((AvaloniaProperty)Class1.FooProperty, source);
-                return new WeakReference(source);
-            };
-        
-            var weakSource = setupBinding();
-
-            Action completeSource = () =>
-            {
-                ((ISubject<string>)weakSource.Target).OnCompleted();
-            };
-
-            completeSource();
-            GC.Collect();
-
-            Assert.False(weakSource.IsAlive);
-        }
-
-        [Fact]
         public void Property_Notifies_Initialized()
         {
             Class1 target;
@@ -406,7 +359,7 @@ namespace Avalonia.Base.UnitTests
 
             target.Bind(Class1.FooProperty, source);
             source.OnNext("initial");
-            source.OnNext(new BindingError(new InvalidOperationException("Foo")));
+            source.OnNext(new BindingNotification(new InvalidOperationException("Foo"), BindingErrorType.Error));
 
             Assert.Equal("initial", target.GetValue(Class1.FooProperty));
         }
@@ -419,7 +372,10 @@ namespace Avalonia.Base.UnitTests
 
             target.Bind(Class1.FooProperty, source);
             source.OnNext("initial");
-            source.OnNext(new BindingError(new InvalidOperationException("Foo"), "fallback"));
+            source.OnNext(new BindingNotification(
+                new InvalidOperationException("Foo"),
+                BindingErrorType.Error,
+                "fallback"));
 
             Assert.Equal("fallback", target.GetValue(Class1.FooProperty));
         }
@@ -435,7 +391,7 @@ namespace Avalonia.Base.UnitTests
             {
                 if (level == LogEventLevel.Error &&
                     area == LogArea.Binding &&
-                    mt == "Error binding to {Target}.{Property}: {Message}" &&
+                    mt == "Error in binding to {Target}.{Property}: {Message}" &&
                     pv.Length == 3 &&
                     pv[0] is Class1 &&
                     object.ReferenceEquals(pv[1], Class1.FooProperty) &&
@@ -449,7 +405,7 @@ namespace Avalonia.Base.UnitTests
             {
                 target.Bind(Class1.FooProperty, source);
                 source.OnNext("baz");
-                source.OnNext(new BindingError(new InvalidOperationException("Binding Error Message")));
+                source.OnNext(new BindingNotification(new InvalidOperationException("Binding Error Message"), BindingErrorType.Error));
             }
 
             Assert.True(called);

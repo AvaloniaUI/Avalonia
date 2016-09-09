@@ -57,11 +57,11 @@ namespace Avalonia.Controls.Primitives
             {
                 var info = (AdornedElementInfo)child.GetValue(s_adornedElementInfoProperty);
 
-                if (info != null)
+                if (info != null && info.Bounds.HasValue)
                 {
-                    child.RenderTransform = new MatrixTransform(info.Bounds.Transform);
+                    child.RenderTransform = new MatrixTransform(info.Bounds.Value.Transform);
                     child.RenderTransformOrigin = new RelativePoint(new Point(0,0), RelativeUnit.Absolute);
-                    child.Arrange(info.Bounds.Bounds);
+                    child.Arrange(info.Bounds.Value.Bounds);
                 }
                 else
                 {
@@ -130,7 +130,7 @@ namespace Avalonia.Controls.Primitives
         {
             public IDisposable Subscription { get; set; }
 
-            public TransformedBounds Bounds { get; set; }
+            public TransformedBounds? Bounds { get; set; }
         }
     }
 }

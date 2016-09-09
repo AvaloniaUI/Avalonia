@@ -2,10 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Linq;
-using System.Reactive.Linq;
 using Avalonia.Controls.Templates;
-using Avalonia.Data;
 using Avalonia.Interactivity;
 using Avalonia.Logging;
 using Avalonia.LogicalTree;
@@ -272,23 +269,6 @@ namespace Avalonia.Controls.Primitives
 
                 _appliedTemplate = template;
             }
-        }
-
-        /// <inheritdoc/>
-        protected sealed override IndexerDescriptor CreateBindingDescriptor(IndexerDescriptor source)
-        {
-            var result = base.CreateBindingDescriptor(source);
-
-            // If the binding is a template binding, then complete when the Template changes.
-            if (source.Priority == BindingPriority.TemplatedParent)
-            {
-                var templateChanged = this.GetObservable(TemplateProperty).Skip(1);
-
-                result.SourceObservable = result.Source.GetObservable(result.Property)
-                    .TakeUntil(templateChanged);
-            }
-
-            return result;
         }
 
         /// <inheritdoc/>

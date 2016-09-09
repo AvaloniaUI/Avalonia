@@ -37,8 +37,11 @@ namespace Avalonia.DesignerSupport
         {
             Design.IsDesignMode = true;
             Api = new DesignerApi(shared) {UpdateXaml = UpdateXaml, UpdateXaml2 = UpdateXaml2, SetScalingFactor = SetScalingFactor};
-            var plat = (IPclPlatformWrapper) Activator.CreateInstance(Assembly.Load(new AssemblyName("Avalonia.Win32"))
-                .DefinedTypes.First(typeof (IPclPlatformWrapper).GetTypeInfo().IsAssignableFrom).AsType());
+
+            var runtimeAssembly = Assembly.Load(new AssemblyName("Avalonia.DotNetFrameworkRuntime"));
+
+            var plat = (IRuntimePlatform) Activator.CreateInstance(runtimeAssembly
+                .DefinedTypes.First(typeof (IRuntimePlatform).GetTypeInfo().IsAssignableFrom).AsType());
             
             TypeInfo app = null;
             var asms = plat.GetLoadedAssemblies();
@@ -58,7 +61,12 @@ namespace Avalonia.DesignerSupport
                     //Ignore, Assembly.DefinedTypes threw an exception, we can't do anything about that
                 }
             }
-            AppBuilder.Configure(app == null ? new DesignerApp() : (Application) Activator.CreateInstance(app.AsType()))
+
+            var builderType = runtimeAssembly.GetType("Avalonia.AppBuilder");
+
+            var builder = (dynamic)Activator.CreateInstance(builderType,
+                app == null ? new DesignerApp() : (Application) Activator.CreateInstance(app.AsType()));
+            builder
                 .UseWindowingSubsystem("Avalonia.Win32")
                 .UseRenderingSubsystem("Avalonia.Direct2D1")
                 .SetupWithoutStarting();

@@ -4,7 +4,6 @@
 using System;
 using System.Reactive.Linq;
 using Avalonia.Data;
-using Avalonia.Logging;
 
 namespace Avalonia.Markup.Data.Plugins
 {
@@ -13,36 +12,22 @@ namespace Avalonia.Markup.Data.Plugins
     /// </summary>
     public class AvaloniaPropertyAccessorPlugin : IPropertyAccessorPlugin
     {
-        /// <summary>
-        /// Checks whether this plugin can handle accessing the properties of the specified object.
-        /// </summary>
-        /// <param name="reference">A weak reference to the object.</param>
-        /// <returns>True if the plugin can handle the object; otherwise false.</returns>
-        public bool Match(WeakReference reference)
-        {
-            Contract.Requires<ArgumentNullException>(reference != null);
-
-            return reference.Target is AvaloniaObject;
-        }
+        /// <inheritdoc/>
+        public bool Match(WeakReference reference) => reference.Target is AvaloniaObject;
 
         /// <summary>
         /// Starts monitoring the value of a property on an object.
         /// </summary>
         /// <param name="reference">A weak reference to the object.</param>
         /// <param name="propertyName">The property name.</param>
-        /// <param name="changed">A function to call when the property changes.</param>
         /// <returns>
         /// An <see cref="IPropertyAccessor"/> interface through which future interactions with the 
         /// property will be made.
         /// </returns>
-        public IPropertyAccessor Start(
-            WeakReference reference, 
-            string propertyName, 
-            Action<object> changed)
+        public IPropertyAccessor Start(WeakReference reference, string propertyName)
         {
             Contract.Requires<ArgumentNullException>(reference != null);
             Contract.Requires<ArgumentNullException>(propertyName != null);
-            Contract.Requires<ArgumentNullException>(changed != null);
 
             var instance = reference.Target;
             var o = (AvaloniaObject)instance;
@@ -50,13 +35,13 @@ namespace Avalonia.Markup.Data.Plugins
 
             if (p != null)
             {
-                return new Accessor(new WeakReference<AvaloniaObject>(o), p, changed);
+                return new Accessor(new WeakReference<AvaloniaObject>(o), p);
             }
             else if (instance != AvaloniaProperty.UnsetValue)
             {
                 var message = $"Could not find AvaloniaProperty '{propertyName}' on '{instance}'";
                 var exception = new MissingMemberException(message);
-                return new PropertyError(new BindingError(exception));
+                return new PropertyError(new BindingNotification(exception, BindingErrorType.Error));
             }
             else
             {
@@ -64,23 +49,19 @@ namespace Avalonia.Markup.Data.Plugins
             }
         }
 
-        private class Accessor : IPropertyAccessor
+        private class Accessor : PropertyAccessorBase
         {
             private readonly WeakReference<AvaloniaObject> _reference;
             private readonly AvaloniaProperty _property;
             private IDisposable _subscription;
 
-            public Accessor(
-                WeakReference<AvaloniaObject> reference, 
-                AvaloniaProperty property, 
-                Action<object> changed)
+            public Accessor(WeakReference<AvaloniaObject> reference, AvaloniaProperty property)
             {
                 Contract.Requires<ArgumentNullException>(reference != null);
                 Contract.Requires<ArgumentNullException>(property != null);
 
                 _reference = reference;
                 _property = property;
-                _subscription = Instance.GetWeakObservable(property).Skip(1).Subscribe(changed);
             }
 
             public AvaloniaObject Instance
@@ -93,17 +74,10 @@ namespace Avalonia.Markup.Data.Plugins
                 }
             }
 
-            public Type PropertyType => _property.PropertyType;
+            public override Type PropertyType => _property.PropertyType;
+            public override object Value => Instance?.GetValue(_property);
 
-            public object Value => Instance.GetValue(_property);
-
-            public void Dispose()
-            {
-                _subscription?.Dispose();
-                _subscription = null;
-            }
-
-            public bool SetValue(object value, BindingPriority priority)
+            public override bool SetValue(object value, BindingPriority priority)
             {
                 if (!_property.IsReadOnly)
                 {
@@ -112,6 +86,17 @@ namespace Avalonia.Markup.Data.Plugins
                 }
 
                 return false;
+            }
+
+            protected override void Dispose(bool disposing)
+            {
+                _subscription?.Dispose();
+                _subscription = null;
+            }
+
+            protected override void SubscribeCore(IObserver<object> observer)
+            {
+                _subscription = Instance.GetWeakObservable(_property).Subscribe(observer);
             }
         }
     }

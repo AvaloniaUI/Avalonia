@@ -20,14 +20,16 @@ for the rest of this document we'll refer to existing XAML toolkit's styling as
 
 Make all `Button`s in a `StackPanel` have a blue `Background`:
 
-    <StackPanel>
-      <StackPanel.Styles>
-        <Style Selector="Button">
-          <Setter Property="Button.Background" Value="Blue"/>
-        </Style>
-      </StackPanel.Styles>
-      <Button>I will have a blue background.</Button>
-    </StackPanel>
+```xaml
+<StackPanel>
+  <StackPanel.Styles>
+    <Style Selector="Button">
+      <Setter Property="Button.Background" Value="Blue"/>
+    </Style>
+  </StackPanel.Styles>
+  <Button>I will have a blue background.</Button>
+</StackPanel>
+```
 
 This is very similar to WPF, except `TargetType` is replaced by `Selector`.
 
@@ -39,15 +41,17 @@ qualified property name (i.e. `Button.Background` instead of simply
 
 As in CSS, controls can be given *style classes* which can be used in selectors:
 
-    <StackPanel>
-      <StackPanel.Styles>
-        <Style Selector="Button.blue">
-          <Setter Property="Button.Background" Value="Blue"/>
-        </Style>
-      </StackPanel.Styles>
-      <Button Classes="blue">I will have a blue background.</Button>
-      <Button>I will not.</Button>
-    </StackPanel>
+```xaml
+<StackPanel>
+  <StackPanel.Styles>
+    <Style Selector="Button.blue">
+      <Setter Property="Button.Background" Value="Blue"/>
+    </Style>
+  </StackPanel.Styles>
+  <Button Classes="blue">I will have a blue background.</Button>
+  <Button>I will not.</Button>
+</StackPanel>
+```
 
 Each control can be given 0 or more style classes. This is different to WPF
 where only a single style can be applied to a control: in Avalonia any number
@@ -56,8 +60,10 @@ a particular property, the style closest to the control will take precedence.
 
 Style classes can also be manipulated in code using the `Classes` collection:
 
-    control.Classes.Add("blue");
-    control.Classes.Remove("red");
+```csharp
+control.Classes.Add("blue");
+control.Classes.Remove("red");
+```
 
 ## Pseudoclasses
 
@@ -71,14 +77,16 @@ pseudoclass (`:hover` in CSS - we may change to that in future).
 Pseudoclasses provide the functionality of `Triggers` in WPF and
 `VisualStateManager` in UWP:
 
-    <StackPanel>
-      <StackPanel.Styles>
-        <Style Selector="Button:pointerover">
-          <Setter Property="Button.Foreground" Value="Red"/>
-        </Style>
-      </StackPanel.Styles>
-      <Button>I will have red text when hovered.</Button>
-    </StackPanel>
+```xaml
+<StackPanel>
+  <StackPanel.Styles>
+    <Style Selector="Button:pointerover">
+      <Setter Property="Button.Foreground" Value="Red"/>
+    </Style>
+  </StackPanel.Styles>
+  <Button>I will have red text when hovered.</Button>
+</StackPanel>
+```
 
 Other pseudoclasses include `:focus`, `:disabled`, `:pressed` for buttons,
 `:checked` for checkboxes etc.

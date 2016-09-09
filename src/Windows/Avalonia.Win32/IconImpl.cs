@@ -1,6 +1,7 @@
 ﻿using Avalonia.Platform;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,13 +10,18 @@ namespace Avalonia.Win32
 {
     class IconImpl : IWindowIconImpl
     {
+        private Bitmap bitmap;
+        private Icon icon;
 #if NOT_NETSTANDARD
-        public IconImpl(System.Drawing.Bitmap iconBitmap)
+        public IconImpl(Bitmap bitmap)
         {
-            IconBitmap = iconBitmap;
+            this.bitmap = bitmap;
         }
 
-        public System.Drawing.Bitmap IconBitmap { get; }
-#endif
+        public IconImpl(Icon icon)
+        {
+            this.icon = icon;
+        }
+
     }
 }

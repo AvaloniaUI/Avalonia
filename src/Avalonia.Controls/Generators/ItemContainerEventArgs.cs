@@ -27,6 +27,10 @@ namespace Avalonia.Controls.Generators
         /// </summary>
         /// <param name="startingIndex">The index of the first container in the source items.</param>
         /// <param name="containers">The containers.</param>
+        /// <remarks>
+        /// TODO: Do we really need to pass in StartingIndex here? The ItemContainerInfo objects
+        /// have an index, and what happens if the contains passed in aren't sequential?
+        /// </remarks>
         public ItemContainerEventArgs(
             int startingIndex, 
             IList<ItemContainerInfo> containers)

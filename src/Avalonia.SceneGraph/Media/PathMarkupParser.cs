@@ -17,21 +17,13 @@ namespace Avalonia.Media
         private static readonly Dictionary<char, Command> Commands = new Dictionary<char, Command>
         {
             { 'F', Command.FillRule },
-            { 'f', Command.FillRule },
             { 'M', Command.Move },
-            { 'm', Command.MoveRelative },
             { 'L', Command.Line },
-            { 'l', Command.LineRelative },
             { 'H', Command.HorizontalLine },
-            { 'h', Command.HorizontalLineRelative },
             { 'V', Command.VerticalLine },
-            { 'v', Command.VerticalLineRelative },
             { 'C', Command.CubicBezierCurve },
-            { 'c', Command.CubicBezierCurveRelative },
             { 'A', Command.Arc },
-            { 'a', Command.Arc },
             { 'Z', Command.Close },
-            { 'z', Command.Close },
         };
 
         private static readonly Dictionary<char, FillRule> FillRules = new Dictionary<char, FillRule>
@@ -63,18 +55,12 @@ namespace Avalonia.Media
             None,
             FillRule,
             Move,
-            MoveRelative,
             Line,
-            LineRelative,
             HorizontalLine,
-            HorizontalLineRelative,
             VerticalLine,
-            VerticalLineRelative,
             CubicBezierCurve,
-            CubicBezierCurveRelative,
             Arc,
             Close,
-            Eof,
         }
 
         /// <summary>
@@ -87,11 +73,11 @@ namespace Avalonia.Media
 
             using (StringReader reader = new StringReader(s))
             {
-                Command lastCommand = Command.None;
-                Command command;
+                Command command = Command.None;
                 Point point = new Point();
+                bool relative = false;
 
-                while ((command = ReadCommand(reader, lastCommand)) != Command.Eof)
+                while (ReadCommand(reader, ref command, ref relative))
                 {
                     switch (command)
                     {
@@ -100,72 +86,58 @@ namespace Avalonia.Media
                             break;
 
                         case Command.Move:
-                        case Command.MoveRelative:
                             if (openFigure)
                             {
                                 _context.EndFigure(false);
                             }
 
-                            point = command == Command.Move ?
-                                ReadPoint(reader) :
-                                ReadRelativePoint(reader, point);
-
+                            point = ReadPoint(reader, point, relative);
                             _context.BeginFigure(point, true);
                             openFigure = true;
                             break;
 
                         case Command.Line:
-                            point = ReadPoint(reader);
-                            _context.LineTo(point);
-                            break;
-
-                        case Command.LineRelative:
-                            point = ReadRelativePoint(reader, point);
+                            point = ReadPoint(reader, point, relative);
                             _context.LineTo(point);
                             break;
 
                         case Command.HorizontalLine:
-                            point = point.WithX(ReadDouble(reader));
-                            _context.LineTo(point);
-                            break;
+                            if (!relative)
+                            {
+                                point = point.WithX(ReadDouble(reader));
+                            }
+                            else
+                            {
+                                point = new Point(point.X + ReadDouble(reader), point.Y);
+                            }
 
-                        case Command.HorizontalLineRelative:
-                            point = new Point(point.X + ReadDouble(reader), point.Y);
                             _context.LineTo(point);
                             break;
 
                         case Command.VerticalLine:
-                            point = point.WithY(ReadDouble(reader));
-                            _context.LineTo(point);
-                            break;
+                            if (!relative)
+                            {
+                                point = point.WithY(ReadDouble(reader));
+                            }
+                            else
+                            {
+                                point = new Point(point.X, point.Y + ReadDouble(reader));
+                            }
 
-                        case Command.VerticalLineRelative:
-                            point = new Point(point.X, point.Y + ReadDouble(reader));
                             _context.LineTo(point);
                             break;
 
                         case Command.CubicBezierCurve:
                             {
-                                Point point1 = ReadPoint(reader);
-                                Point point2 = ReadPoint(reader);
-                                point = ReadPoint(reader);
+                                Point point1 = ReadPoint(reader, point, relative);
+                                Point point2 = ReadPoint(reader, point, relative);
+                                point = ReadPoint(reader, point, relative);
                                 _context.CubicBezierTo(point1, point2, point);
-                                break;
-                            }
-
-                        case Command.CubicBezierCurveRelative:
-                            {
-                                Point point1 = ReadRelativePoint(reader, point);
-                                Point point2 = ReadRelativePoint(reader, point);
-                                _context.CubicBezierTo(point, point1, point2);
-                                point = point2;
                                 break;
                             }
 
                         case Command.Arc:
                             {
-                                //example: A10,10 0 0,0 10,20
-                                //format - size rotationAngle isLargeArcFlag sweepDirectionFlag endPoint
                                 Size size = ReadSize(reader);
                                 ReadSeparator(reader);
                                 double rotationAngle = ReadDouble(reader);
@@ -173,7 +145,7 @@ namespace Avalonia.Media
                                 bool isLargeArc = ReadBool(reader);
                                 ReadSeparator(reader);
                                 SweepDirection sweepDirection = ReadBool(reader) ? SweepDirection.Clockwise : SweepDirection.CounterClockwise;
-                                point = ReadPoint(reader);
+                                point = ReadPoint(reader, point, relative);
 
                                 _context.ArcTo(point, size, rotationAngle, isLargeArc, sweepDirection);
                                 break;
@@ -187,8 +159,6 @@ namespace Avalonia.Media
                         default:
                             throw new NotSupportedException("Unsupported command");
                     }
-
-                    lastCommand = command;
                 }
 
                 if (openFigure)
@@ -198,7 +168,10 @@ namespace Avalonia.Media
             }
         }
 
-        private static Command ReadCommand(StringReader reader, Command lastCommand)
+        private static bool ReadCommand(
+            StringReader reader,
+            ref Command command,
+            ref bool relative)
         {
             ReadWhitespace(reader);
 
@@ -206,19 +179,19 @@ namespace Avalonia.Media
 
             if (i == -1)
             {
-                return Command.Eof;
+                return false;
             }
             else
             {
                 char c = (char)i;
-                Command command = Command.None;
+                Command next = Command.None;
 
-                if (!Commands.TryGetValue(c, out command))
+                if (!Commands.TryGetValue(char.ToUpperInvariant(c), out next))
                 {
                     if ((char.IsDigit(c) || c == '.' || c == '+' || c == '-') &&
-                        (lastCommand != Command.None))
+                        (command != Command.None))
                     {
-                        return lastCommand;
+                        return true;
                     }
                     else
                     {
@@ -226,8 +199,10 @@ namespace Avalonia.Media
                     }
                 }
 
+                command = next;
+                relative = char.IsLower(c);
                 reader.Read();
-                return command;
+                return true;
             }
         }
 
@@ -297,12 +272,17 @@ namespace Avalonia.Media
             return double.Parse(b.ToString(), CultureInfo.InvariantCulture);
         }
 
-        private static Point ReadPoint(StringReader reader)
+        private static Point ReadPoint(StringReader reader, Point current, bool relative)
         {
+            if (!relative)
+            {
+                current = new Point();
+            }
+
             ReadWhitespace(reader);
-            double x = ReadDouble(reader);
+            double x = current.X + ReadDouble(reader);
             ReadSeparator(reader);
-            double y = ReadDouble(reader);
+            double y = current.Y + ReadDouble(reader);
             return new Point(x, y);
         }
 

@@ -10,5 +10,6 @@ using System.Runtime.CompilerServices;
 [assembly: XmlnsDefinition("https://github.com/avaloniaui", "Avalonia.Markup.Xaml.MarkupExtensions")]
 [assembly: XmlnsDefinition("https://github.com/avaloniaui", "Avalonia.Markup.Xaml.Styling")]
 [assembly: XmlnsDefinition("https://github.com/avaloniaui", "Avalonia.Markup.Xaml.Templates")]
+[assembly: XmlnsDefinition("http://schemas.microsoft.com/winfx/2006/xaml", "Avalonia.Markup.Xaml.MarkupExtensions.Standard")]
 [assembly: InternalsVisibleTo("Avalonia.Markup.Xaml.UnitTests")]
 

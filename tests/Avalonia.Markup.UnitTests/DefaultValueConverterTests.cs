@@ -115,7 +115,7 @@ namespace Avalonia.Markup.UnitTests
                 null,
                 CultureInfo.InvariantCulture);
 
-            Assert.IsType<BindingError>(result);
+            Assert.IsType<BindingNotification>(result);
         }
 
         private enum TestEnum

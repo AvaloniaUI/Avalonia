@@ -39,7 +39,7 @@
     <EmbeddedResource Include="App.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="MainWindow.xaml">
+    <EmbeddedResource Include="MainView.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Pages\BorderPage.xaml">
@@ -89,6 +89,9 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="MainView.xaml.cs">
+      <DependentUpon>MainView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </Compile>
@@ -127,6 +130,9 @@
     </Compile>
     <Compile Include="Pages\SliderPage.xaml.cs">
       <DependentUpon>SliderPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\TreeViewPage.xaml.cs">
+      <DependentUpon>TreeViewPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Pages\TextBoxPage.xaml.cs">
       <DependentUpon>TextBoxPage.xaml</DependentUpon>
@@ -210,6 +216,16 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="project.json" />
+    <EmbeddedResource Include="Pages\TreeViewPage.xaml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="MainWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>
+      </SubType>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

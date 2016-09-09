@@ -91,9 +91,6 @@ namespace Avalonia.Cairo.Media
 			{
 				if (isClosed)
 					_context.ClosePath ();
-
-				Path = _context.CopyPath ();
-				Bounds = _context.FillExtents ().ToAvalonia ();
 			}
         }
 
@@ -105,7 +102,13 @@ namespace Avalonia.Cairo.Media
 
         public void Dispose()
         {
-			_context.Dispose ();
+            if (this.Path == null)
+            {
+                Path = _context.CopyPath();
+                Bounds = _context.FillExtents().ToAvalonia();
+            }
+
+            _context.Dispose ();
 			_surf.Dispose ();
         }
     }

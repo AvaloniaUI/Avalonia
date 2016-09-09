@@ -8,14 +8,13 @@ using Avalonia.Controls.Platform;
 using Avalonia.Input.Platform;
 using Avalonia.Input;
 using Avalonia.Platform;
-using Avalonia.Shared.PlatformSupport;
 using Avalonia.Controls;
 
 namespace Avalonia
 {
     public static class GtkApplicationExtensions
     {
-        public static AppBuilder UseGtk(this AppBuilder builder)
+        public static T UseGtk<T>(this T builder) where T : AppBuilderBase<T>, new()
         {
             builder.WindowingSubsystem = Avalonia.Gtk.GtkPlatform.Initialize;
             return builder;
@@ -56,7 +55,6 @@ namespace Avalonia.Gtk
                 .Bind<IPlatformThreadingInterface>().ToConstant(s_instance)
                 .Bind<ISystemDialogImpl>().ToSingleton<SystemDialogImpl>()
                 .Bind<IPlatformIconLoader>().ToConstant(s_instance);
-            SharedPlatform.Register();
             _uiThread = Thread.CurrentThread;
         }
 
@@ -105,10 +103,7 @@ namespace Avalonia.Gtk
             return new WindowImpl();
         }
 
-        public IWindowImpl CreateEmbeddableWindow()
-        {
-            throw new NotSupportedException();
-        }
+        public IEmbeddableWindowImpl CreateEmbeddableWindow() => new EmbeddableImpl();
 
         public IPopupImpl CreatePopup()
         {

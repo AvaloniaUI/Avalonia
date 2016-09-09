@@ -234,24 +234,14 @@ namespace Avalonia.Skia
 
             paint.StrokeMiter = (float)pen.MiterLimit;
 
-            // TODO: Implement Dash Style support
-            //
-            //if (pen.DashStyle?.Dashes != null)
-            //{
-            //	var dashes = pen.DashStyle.Dashes;
-            //	if (dashes.Count > NativeBrush.MaxDashCount)
-            //		throw new NotSupportedException("Maximum supported dash count is " + NativeBrush.MaxDashCount);
-            //	brush.Brush->StrokeDashCount = dashes.Count;
-            //	for (int c = 0; c < dashes.Count; c++)
-            //		brush.Brush->StrokeDashes[c] = (float)dashes[c];
-            //	brush.Brush->StrokeDashOffset = (float)pen.DashStyle.Offset;
-
-            //}
-
-            //if (brush->StrokeDashCount != 0)
-            //{
-            //	paint.setPathEffect(SkDashPathEffect::Create(brush->StrokeDashes, brush->StrokeDashCount, brush->StrokeDashOffset))->unref();
-            //}
+            if (pen.DashStyle?.Dashes != null && pen.DashStyle.Dashes.Count > 0)
+            {
+                var pe = SKPathEffect.CreateDash(
+                    pen.DashStyle?.Dashes.Select(x => (float)x).ToArray(),
+                    (float)pen.DashStyle.Offset);
+                paint.PathEffect = pe;
+                rv.AddDisposable(pe);
+            }
 
             return rv;
         }

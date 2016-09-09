@@ -49,7 +49,7 @@ namespace Avalonia.Diagnostics.Views
                         },
                     },
                     [GridRepeater.TemplateProperty] = pt,
-                    [!GridRepeater.ItemsProperty] = this.WhenAnyValue(x => x.ViewModel.Properties),
+                    [!GridRepeater.ItemsProperty] = this.WhenAnyValue(x => x.ViewModel.Properties).AsBinding(),
                 }
             };
         }
@@ -62,19 +62,24 @@ namespace Avalonia.Diagnostics.Views
             {
                 Text = property.Name,
                 TextWrapping = TextWrapping.NoWrap,
-                [!ToolTip.TipProperty] = property.WhenAnyValue(x => x.Diagnostic),
+                [!ToolTip.TipProperty] = property
+                    .WhenAnyValue(x => x.Diagnostic)
+                    .AsBinding(),
             };
 
             yield return new TextBlock
             {
                 TextWrapping = TextWrapping.NoWrap,
-                [!TextBlock.TextProperty] = property.WhenAnyValue(v => v.Value).Select(v => v?.ToString()),
+                [!TextBlock.TextProperty] = property
+                    .WhenAnyValue(v => v.Value)
+                    .Select(v => v?.ToString())
+                    .AsBinding(),
             };
 
             yield return new TextBlock
             {
                 TextWrapping = TextWrapping.NoWrap,
-                [!TextBlock.TextProperty] = property.WhenAnyValue(x => x.Priority),
+                [!TextBlock.TextProperty] = property.WhenAnyValue(x => x.Priority).AsBinding(),
             };
         }
     }

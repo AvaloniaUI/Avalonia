@@ -12,7 +12,6 @@ using System.Threading;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Platform;
-using Avalonia.Shared.PlatformSupport;
 using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop;
 using Avalonia.Controls;
@@ -23,7 +22,7 @@ namespace Avalonia
 {
     public static class Win32ApplicationExtensions
     {
-        public static AppBuilder UseWin32(this AppBuilder builder)
+        public static T UseWin32<T>(this T builder) where T : AppBuilderBase<T>, new()
         {
             builder.WindowingSubsystem = Avalonia.Win32.Win32Platform.Initialize;
             return builder;
@@ -33,7 +32,7 @@ namespace Avalonia
 
 namespace Avalonia.Win32
 {
-    public class Win32Platform : IPlatformThreadingInterface, IPlatformSettings, IWindowingPlatform, IPlatformIconLoader
+    class Win32Platform : IPlatformThreadingInterface, IPlatformSettings, IWindowingPlatform, IPlatformIconLoader
     {
         private static readonly Win32Platform s_instance = new Win32Platform();
         private static Thread _uiThread;
@@ -70,8 +69,7 @@ namespace Avalonia.Win32
                 .Bind<ISystemDialogImpl>().ToSingleton<SystemDialogImpl>()
                 .Bind<IWindowingPlatform>().ToConstant(s_instance)
                 .Bind<IPlatformIconLoader>().ToConstant(s_instance);
-
-            SharedPlatform.Register();
+            
             _uiThread = Thread.CurrentThread;
         }
 
@@ -188,7 +186,7 @@ namespace Avalonia.Win32
             return new WindowImpl();
         }
 
-        public IWindowImpl CreateEmbeddableWindow()
+        public IEmbeddableWindowImpl CreateEmbeddableWindow()
         {
             return new EmbeddedWindowImpl();
         }
@@ -203,9 +201,9 @@ namespace Avalonia.Win32
 #if !NOT_NETSTANDARD
             throw new NotImplementedException();
 #else
-            var icon = new System.Drawing.Bitmap(fileName);
-            return new IconImpl(icon);
-#endif
+            using (var stream = File.OpenRead(fileName))
+            {
+                return CreateImpl(stream); 
         }
 
         public IWindowIconImpl LoadIcon(Stream stream)
@@ -213,8 +211,7 @@ namespace Avalonia.Win32
 #if !NOT_NETSTANDARD
             throw new NotImplementedException();
 #else
-            var icon = new System.Drawing.Bitmap(stream);
-            return new IconImpl(icon);
+            return CreateImpl(stream);
 #endif
         }
 
@@ -230,5 +227,19 @@ namespace Avalonia.Win32
             }
 #endif
         }
+
+#if NOT_NETSTANDARD
+        private static IconImpl CreateImpl(Stream stream)
+        {
+            try
+            {
+                return new IconImpl(new System.Drawing.Icon(stream));
+            }
+            catch (ArgumentException)
+            {
+                return new IconImpl(new System.Drawing.Bitmap(stream));
+            }
+        }
+#endif
     }
 }

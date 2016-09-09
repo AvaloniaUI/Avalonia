@@ -90,6 +90,7 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
+    <Compile Include="AvaloniaObjectTests_DataValidation.cs" />
     <Compile Include="Collections\CollectionChangedTracker.cs" />
     <Compile Include="Collections\AvaloniaDictionaryTests.cs" />
     <Compile Include="Collections\AvaloniaListTests.cs" />
@@ -113,7 +114,6 @@
     <Compile Include="WeakSubscriptionManagerTests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

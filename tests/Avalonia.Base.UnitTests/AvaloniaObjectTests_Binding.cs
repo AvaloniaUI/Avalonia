@@ -55,6 +55,36 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
+        public void OneTime_Binding_Ignores_UnsetValue()
+        {
+            var target = new Class1();
+            var source = new Subject<object>();
+
+            target.Bind(Class1.QuxProperty, new TestOneTimeBinding(source));
+
+            source.OnNext(AvaloniaProperty.UnsetValue);
+            Assert.Equal(5.6, target.GetValue(Class1.QuxProperty));
+
+            source.OnNext(6.7);
+            Assert.Equal(6.7, target.GetValue(Class1.QuxProperty));
+        }
+
+        [Fact]
+        public void OneTime_Binding_Ignores_Binding_Errors()
+        {
+            var target = new Class1();
+            var source = new Subject<object>();
+
+            target.Bind(Class1.QuxProperty, new TestOneTimeBinding(source));
+
+            source.OnNext(new BindingNotification(new Exception(), BindingErrorType.Error));
+            Assert.Equal(5.6, target.GetValue(Class1.QuxProperty));
+
+            source.OnNext(6.7);
+            Assert.Equal(6.7, target.GetValue(Class1.QuxProperty));
+        }
+
+        [Fact]
         public void Bind_Throws_Exception_For_Unregistered_Property()
         {
             Class1 target = new Class1();
@@ -227,14 +257,14 @@ namespace Avalonia.Base.UnitTests
         public void this_Operator_Binds_One_Way()
         {
             Class1 target1 = new Class1();
-            Class1 target2 = new Class1();
-            IndexerDescriptor binding = Class1.FooProperty.Bind().WithMode(BindingMode.OneWay);
+            Class2 target2 = new Class2();
+            IndexerDescriptor binding = Class2.BarProperty.Bind().WithMode(BindingMode.OneWay);
 
             target1.SetValue(Class1.FooProperty, "first");
             target2[binding] = target1[!Class1.FooProperty];
             target1.SetValue(Class1.FooProperty, "second");
 
-            Assert.Equal("second", target2.GetValue(Class1.FooProperty));
+            Assert.Equal("second", target2.GetValue(Class2.BarProperty));
         }
 
         [Fact]
@@ -242,10 +272,9 @@ namespace Avalonia.Base.UnitTests
         {
             Class1 target1 = new Class1();
             Class1 target2 = new Class1();
-            IndexerDescriptor binding = Class1.FooProperty.Bind().WithMode(BindingMode.TwoWay);
 
             target1.SetValue(Class1.FooProperty, "first");
-            target2[binding] = target1[!Class1.FooProperty];
+            target2[!Class1.FooProperty] = target1[!!Class1.FooProperty];
             Assert.Equal("first", target2.GetValue(Class1.FooProperty));
             target1.SetValue(Class1.FooProperty, "second");
             Assert.Equal("second", target2.GetValue(Class1.FooProperty));
@@ -258,10 +287,9 @@ namespace Avalonia.Base.UnitTests
         {
             Class1 target1 = new Class1();
             Class1 target2 = new Class1();
-            IndexerDescriptor binding = Class1.FooProperty.Bind().WithMode(BindingMode.OneTime);
 
             target1.SetValue(Class1.FooProperty, "first");
-            target2[binding] = target1[!Class1.FooProperty];
+            target2[!Class1.FooProperty] = target1[Class1.FooProperty.Bind().WithMode(BindingMode.OneTime)];
             target1.SetValue(Class1.FooProperty, "second");
 
             Assert.Equal("first", target2.GetValue(Class1.FooProperty));
@@ -275,31 +303,36 @@ namespace Avalonia.Base.UnitTests
 
             target.Bind(Class1.QuxProperty, source);
             source.OnNext(6.7);
-            source.OnNext(new BindingError(new InvalidOperationException("Foo")));
+            source.OnNext(new BindingNotification(
+                new InvalidOperationException("Foo"),
+                BindingErrorType.Error));
 
             Assert.Equal(6.7, target.GetValue(Class1.QuxProperty));
         }
 
         [Fact]
-        public void BindingError_With_FallbackValue_Causes_Target_Update()
+        public void BindingNotification_With_FallbackValue_Causes_Target_Update()
         {
             var target = new Class1();
             var source = new Subject<object>();
 
             target.Bind(Class1.QuxProperty, source);
             source.OnNext(6.7);
-            source.OnNext(new BindingError(new InvalidOperationException("Foo"), 8.9));
+            source.OnNext(new BindingNotification(
+                new InvalidOperationException("Foo"),
+                BindingErrorType.Error,
+                8.9));
 
             Assert.Equal(8.9, target.GetValue(Class1.QuxProperty));
         }
 
         [Fact]
-        public void Bind_Logs_BindingError()
+        public void Bind_Logs_Binding_Error()
         {
             var target = new Class1();
             var source = new Subject<object>();
             var called = false;
-            var expectedMessageTemplate = "Error binding to {Target}.{Property}: {Message}";
+            var expectedMessageTemplate = "Error in binding to {Target}.{Property}: {Message}";
 
             LogCallback checkLogMessage = (level, area, src, mt, pv) =>
             {
@@ -315,7 +348,9 @@ namespace Avalonia.Base.UnitTests
             {
                 target.Bind(Class1.QuxProperty, source);
                 source.OnNext(6.7);
-                source.OnNext(new BindingError(new InvalidOperationException("Foo")));
+                source.OnNext(new BindingNotification(
+                    new InvalidOperationException("Foo"),
+                    BindingErrorType.Error));
 
                 Assert.Equal(6.7, target.GetValue(Class1.QuxProperty));
                 Assert.True(called);
@@ -346,6 +381,25 @@ namespace Avalonia.Base.UnitTests
         {
             public static readonly StyledProperty<string> BarProperty =
                 AvaloniaProperty.Register<Class2, string>("Bar", "bardefault");
+        }
+
+        private class TestOneTimeBinding : IBinding
+        {
+            private IObservable<object> _source;
+
+            public TestOneTimeBinding(IObservable<object> source)
+            {
+                _source = source;
+            }
+
+            public InstancedBinding Initiate(
+                IAvaloniaObject target,
+                AvaloniaProperty targetProperty,
+                object anchor = null,
+                bool enableDataValidation = false)
+            {
+                return new InstancedBinding(_source, BindingMode.OneTime);
+            }
         }
     }
 }

@@ -156,5 +156,9 @@ $RECYCLE.BIN/
 *.userprefs
 *.nugetreferenceswitcher
 
-# VS local config
+## Cake
+#################
+.nuget
+artifacts/
+nuget
 .vs

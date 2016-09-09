@@ -20,7 +20,7 @@ namespace Avalonia.Controls.Presenters
         public static readonly StyledProperty<ItemVirtualizationMode> VirtualizationModeProperty =
             AvaloniaProperty.Register<ItemsPresenter, ItemVirtualizationMode>(
                 nameof(VirtualizationMode),
-                defaultValue: ItemVirtualizationMode.Simple);
+                defaultValue: ItemVirtualizationMode.None);
 
         private ItemVirtualizer _virtualizer;
 
@@ -99,7 +99,7 @@ namespace Avalonia.Controls.Presenters
             // the available size.
             if (availableSize == Size.Infinity && VirtualizationMode != ItemVirtualizationMode.None)
             {
-                var window = VisualRoot as Window;
+                var window = VisualRoot as TopLevel;
 
                 if (window != null)
                 {

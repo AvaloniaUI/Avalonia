@@ -37,7 +37,7 @@ namespace Avalonia.Controls.Utils
 
         public void Undo()
         {
-			if (_currentNode != null)  
+			if (_currentNode?.Previous != null)  
 			{
 				_currentNode = _currentNode.Previous;
 			}
@@ -68,7 +68,7 @@ namespace Avalonia.Controls.Utils
 
         public void Redo()
         {            
-			if (_currentNode != null) {
+			if (_currentNode?.Next != null) {
 				_currentNode = _currentNode.Next;
 			}
 
