@@ -204,6 +204,8 @@ namespace Avalonia.Win32
             using (var stream = File.OpenRead(fileName))
             {
                 return CreateImpl(stream); 
+            }
+#endif
         }
 
         public IWindowIconImpl LoadIcon(Stream stream)

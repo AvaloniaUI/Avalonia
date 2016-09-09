@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if NOT_NETSTANDARD
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -50,3 +51,4 @@ namespace Avalonia.Win32.Embedding
         }
     }
 }
+#endif

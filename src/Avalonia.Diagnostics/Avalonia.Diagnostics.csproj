@@ -117,7 +117,6 @@
     <Compile Include="Views\GridRepeater.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
     <Reference Include="Splat">
       <HintPath>..\..\packages\Splat.1.6.2\lib\Portable-net45+win+wpa81+wp80\Splat.dll</HintPath>
     </Reference>

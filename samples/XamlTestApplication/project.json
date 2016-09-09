@@ -1,17 +1,25 @@
 ﻿{
-  "supports": {},
   "dependencies": {
+    "Microsoft.NETCore.DotNetHostPolicy": "1.0.1",
+    "Microsoft.NETCore.Runtime.CoreCLR": "1.0.2",
     "Microsoft.NETCore.Portable.Compatibility": "1.0.1",
     "NETStandard.Library": "1.6.0",
     "Serilog": "2.1.0",
     "Splat": "1.6.2",
     "Sprache": "2.0.0.52",
     "System.Reactive": "3.0.0",
-    "System.Reactive.Core": "3.0.0"
+    "System.Reactive.Core": "3.0.0",
+    "System.Runtime.Loader": "4.0.0",
+    "SharpDX.Direct2D1": "3.0.2",
+    "System.ComponentModel.EventBasedAsync": "4.0.11",
   },
   "frameworks": {
     "netcoreapp1.0": {
-      "imports": [ "portable-net4+netcore45+win8+wp8+sl5+MonoAndroid+Xamarin.iOS10+MonoTouch", "portable-net45+win8+wp8+wpa81" ]
+      "imports": [
+        "portable-net4+netcore45+win8+wp8+sl5+MonoAndroid+Xamarin.iOS10+MonoTouch",
+        "portable-net45+win8+wp8+wpa81",
+        "portable-net45+win8+wpa81"
+      ]
     }
   },
   "runtimes": {

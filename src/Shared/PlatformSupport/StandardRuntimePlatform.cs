@@ -7,6 +7,9 @@ using System.Reflection;
 using System.Resources;
 using System.Threading;
 using Avalonia.Platform;
+using System.Collections.Generic;
+using System.IO;
+using System.Runtime.Loader;
 
 namespace Avalonia.Shared.PlatformSupport
 {
@@ -15,13 +18,24 @@ namespace Avalonia.Shared.PlatformSupport
 #if NOT_NETSTANDARD
         public Assembly[] GetLoadedAssemblies() => AppDomain.CurrentDomain.GetAssemblies();
 #else
+        private List<Assembly> _assemblies = null;
         public Assembly[] GetLoadedAssemblies()
         {
-            Type appDomainType = Type.GetType("AppDomain");
-            var currentDomainProperty = appDomainType.GetTypeInfo().GetProperty("CurrentDomain");
-            var currentDomain = currentDomainProperty.GetMethod.Invoke(null, null);
-            var getAssembliesMethod = appDomainType.GetTypeInfo().GetMethod("GetAssemblies");
-            return (Assembly[])getAssembliesMethod.Invoke(currentDomain, null);
+            if (_assemblies == null)
+            {
+                _assemblies = new List<Assembly>();
+                foreach (var path in Directory.GetFiles(AppContext.BaseDirectory, "*.dll"))
+                {
+                    try
+                    {
+                        AssemblyName an = AssemblyLoadContext.GetAssemblyName(path);
+                        var assembly = Assembly.Load(an);
+                        _assemblies.Add(assembly);
+                    }
+                    catch { }
+                }
+            }
+            return _assemblies.ToArray();
         }
 #endif
         public void PostThreadPoolItem(Action cb) => ThreadPool.QueueUserWorkItem(_ => cb(), null);

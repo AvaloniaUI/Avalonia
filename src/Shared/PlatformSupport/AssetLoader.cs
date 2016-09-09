@@ -133,11 +133,17 @@ namespace Avalonia.Shared.PlatformSupport
 #if NOT_NETSTANDARD
                 var loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies();
 #else
-                Type appDomainType = Type.GetType("AppDomain");
-                var currentDomainProperty = appDomainType.GetTypeInfo().GetProperty("CurrentDomain");
-                var currentDomain = currentDomainProperty.GetMethod.Invoke(null, null);
-                var getAssembliesMethod = appDomainType.GetTypeInfo().GetMethod("GetAssemblies");
-                var loadedAssemblies = (Assembly[])getAssembliesMethod.Invoke(currentDomain, null);
+                var loadedAssemblies = new List<Assembly>();
+                foreach (var path in Directory.GetFiles(AppContext.BaseDirectory, "*.dll"))
+                {
+                    try
+                    {
+                        AssemblyName an = System.Runtime.Loader.AssemblyLoadContext.GetAssemblyName(path);
+                        var assembly = Assembly.Load(an);
+                        loadedAssemblies.Add(assembly);
+                    }
+                    catch { }
+                }
 
 #endif
                 var match = loadedAssemblies.FirstOrDefault(a => a.GetName().Name == name);

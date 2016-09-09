@@ -154,7 +154,6 @@
     <Compile Include="VisualTree\VisualExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
     <None Include="project.json" />
     <None Include="packages.config" />
   </ItemGroup>
