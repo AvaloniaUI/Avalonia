@@ -45,11 +45,11 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<IInputElement> PointerOverElementProperty =
             AvaloniaProperty.Register<TopLevel, IInputElement>(nameof(IInputRoot.PointerOverElement));
 
-        private readonly IRenderQueueManager _renderQueueManager;
         private readonly IInputManager _inputManager;
         private readonly IAccessKeyHandler _accessKeyHandler;
         private readonly IKeyboardNavigationHandler _keyboardNavigationHandler;
         private readonly IApplicationLifecycle _applicationLifecycle;
+        private readonly IPlatformRenderInterface _renderInterface;
         private Size _clientSize;
         private bool _isActive;
 
@@ -86,23 +86,26 @@ namespace Avalonia.Controls
             }
 
             PlatformImpl = impl;
-
             dependencyResolver = dependencyResolver ?? AvaloniaLocator.Current;
-            var renderInterface = TryGetService<IPlatformRenderInterface>(dependencyResolver);
+
             var styler = TryGetService<IStyler>(dependencyResolver);
+
             _accessKeyHandler = TryGetService<IAccessKeyHandler>(dependencyResolver);
             _inputManager = TryGetService<IInputManager>(dependencyResolver);
             _keyboardNavigationHandler = TryGetService<IKeyboardNavigationHandler>(dependencyResolver);
-            _renderQueueManager = TryGetService<IRenderQueueManager>(dependencyResolver);
             _applicationLifecycle = TryGetService<IApplicationLifecycle>(dependencyResolver);
+            _renderInterface = TryGetService<IPlatformRenderInterface>(dependencyResolver);
 
-            (dependencyResolver.GetService<ITopLevelRenderer>() ?? new DefaultTopLevelRenderer()).Attach(this);
+            var renderLoop = TryGetService<IRenderLoop>(dependencyResolver);
+            Renderer = TryGetService<IRenderer>(dependencyResolver);
+            Renderer?.Attach(this, renderLoop);
 
             PlatformImpl.SetInputRoot(this);
             PlatformImpl.Activated = HandleActivated;
             PlatformImpl.Deactivated = HandleDeactivated;
             PlatformImpl.Closed = HandleClosed;
             PlatformImpl.Input = HandleInput;
+            PlatformImpl.Paint = Renderer != null ? (Action<Rect>)Renderer.Render : null;
             PlatformImpl.Resized = HandleResized;
             PlatformImpl.ScalingChanged = HandleScalingChanged;
             PlatformImpl.PositionChanged = HandlePositionChanged;
@@ -180,9 +183,9 @@ namespace Avalonia.Controls
         }
         
         /// <summary>
-        /// Gets the window render manager.
+        /// Gets the renderer for the window.
         /// </summary>
-        IRenderQueueManager IRenderRoot.RenderQueueManager => _renderQueueManager;
+        public IRenderer Renderer { get; }
 
         /// <summary>
         /// Gets the access key handler for the window.
@@ -230,6 +233,18 @@ namespace Avalonia.Controls
         {
             get;
             private set;
+        }
+
+        /// <inheritdoc/>
+        IRenderTarget IRenderRoot.CreateRenderTarget()
+        {
+            return _renderInterface.CreateRenderer(PlatformImpl.Handle);
+        }
+
+        /// <inheritdoc/>
+        void IRenderRoot.Invalidate(Rect rect)
+        {
+            PlatformImpl.Invalidate(rect);
         }
 
         /// <inheritdoc/>
@@ -322,8 +337,8 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Tries to get a service from an <see cref="IAvaloniaDependencyResolver"/>, throwing an
-        /// exception if not found.
+        /// Tries to get a service from an <see cref="IAvaloniaDependencyResolver"/>, logging a
+        /// warning if not found.
         /// </summary>
         /// <typeparam name="T">The service type.</typeparam>
         /// <param name="resolver">The resolver.</param>

@@ -101,6 +101,11 @@
     <Compile Include="Media\Geometry.cs" />
     <Compile Include="Media\IDrawingContext.cs" />
     <Compile Include="Platform\ExportRenderingSubsystemAttribute.cs" />
+    <Compile Include="Rendering\IRenderer.cs" />
+    <Compile Include="Rendering\IRenderLoop.cs" />
+    <Compile Include="Rendering\Renderer.cs" />
+    <Compile Include="Rendering\RendererMixin.cs" />
+    <Compile Include="Rendering\RenderLoop.cs" />
     <Compile Include="RenderTargetCorruptedException.cs" />
     <Compile Include="VisualTree\IVisual.cs" />
     <Compile Include="Media\Imaging\Bitmap.cs" />
@@ -138,9 +143,6 @@
     <Compile Include="RelativeRect.cs" />
     <Compile Include="Rect.cs" />
     <Compile Include="Rendering\IRenderRoot.cs" />
-    <Compile Include="Rendering\IRenderQueueManager.cs" />
-    <Compile Include="Rendering\RendererMixin.cs" />
-    <Compile Include="Rendering\RenderQueueManager.cs" />
     <Compile Include="Size.cs" />
     <Compile Include="Thickness.cs" />
     <Compile Include="Vector.cs" />

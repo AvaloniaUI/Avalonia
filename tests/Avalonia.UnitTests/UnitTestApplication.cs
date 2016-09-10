@@ -7,6 +7,7 @@ using Avalonia.Layout;
 using Avalonia.Platform;
 using Avalonia.Styling;
 using Avalonia.Controls;
+using Avalonia.Rendering;
 
 namespace Avalonia.UnitTests
 {
@@ -42,7 +43,9 @@ namespace Avalonia.UnitTests
                 .Bind<IKeyboardDevice>().ToConstant(Services.KeyboardDevice?.Invoke())
                 .Bind<ILayoutManager>().ToConstant(Services.LayoutManager)
                 .Bind<IRuntimePlatform>().ToConstant(Services.Platform)
+                .Bind<IRenderer>().ToConstant(Services.Renderer)
                 .Bind<IPlatformRenderInterface>().ToConstant(Services.RenderInterface)
+                .Bind<IRenderLoop>().ToConstant(Services.RenderLoop)
                 .Bind<IPlatformThreadingInterface>().ToConstant(Services.ThreadingInterface)
                 .Bind<IStandardCursorFactory>().ToConstant(Services.StandardCursorFactory)
                 .Bind<IStyler>().ToConstant(Services.Styler)

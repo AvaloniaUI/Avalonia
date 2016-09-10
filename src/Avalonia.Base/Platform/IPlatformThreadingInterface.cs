@@ -29,6 +29,5 @@ namespace Avalonia.Platform
         bool CurrentThreadIsLoopThread { get; }
 
         event Action Signaled;
-
     }
 }

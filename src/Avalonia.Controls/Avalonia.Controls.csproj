@@ -72,7 +72,6 @@
     <Compile Include="Mixins\ContentControlMixin.cs" />
     <Compile Include="Platform\IWindowIconImpl.cs" />
     <Compile Include="Platform\IPlatformIconLoader.cs" />
-    <Compile Include="Platform\ITopLevelRenderer.cs" />
     <Compile Include="Platform\IWindowingPlatform.cs" />
     <Compile Include="Platform\PlatformManager.cs" />
     <Compile Include="Presenters\IContentPresenterHost.cs" />

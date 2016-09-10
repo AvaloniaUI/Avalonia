@@ -12,6 +12,7 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
+using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.UnitTests;
 using Xunit;
@@ -977,7 +978,18 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
         private class TestScroller : ScrollContentPresenter, IRenderRoot
         {
-            public IRenderQueueManager RenderQueueManager { get; }
+            public IRenderer Renderer { get; }
+            public Size ClientSize { get; }
+
+            public IRenderTarget CreateRenderTarget()
+            {
+                throw new NotImplementedException();
+            }
+
+            public void Invalidate(Rect rect)
+            {
+                throw new NotImplementedException();
+            }
 
             public Point PointToClient(Point point)
             {
