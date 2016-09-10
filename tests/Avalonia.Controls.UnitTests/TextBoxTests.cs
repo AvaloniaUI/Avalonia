@@ -24,6 +24,24 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void CaretIndex_Can_Moved_To_Position_After_The_End_Of_Text_With_Arrow_Key()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "1234"
+                };
+
+                target.CaretIndex = 3;
+                RaiseKeyEvent(target, Key.Right, 0);
+
+                Assert.Equal(4, target.CaretIndex);
+            }
+        }
+
+        [Fact]
         public void Typing_Beginning_With_0_Should_Not_Modify_Text_When_Bound_To_Int()
         {
             using (UnitTestApplication.Start(Services))
