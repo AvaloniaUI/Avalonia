@@ -152,7 +152,8 @@ namespace Avalonia.UnitTests
                     It.IsAny<FontWeight>(),
                     It.IsAny<TextWrapping>()) == Mock.Of<IFormattedTextImpl>() &&
                 x.CreateStreamGeometry() == Mock.Of<IStreamGeometryImpl>(
-                    y => y.Open() == Mock.Of<IStreamGeometryContextImpl>()));
+                    y => y.Open() == Mock.Of<IStreamGeometryContextImpl>()) &&
+                x.CreateRenderer(It.IsAny<IPlatformHandle>()) == Mock.Of<IRenderTarget>());
         }
     }
 }

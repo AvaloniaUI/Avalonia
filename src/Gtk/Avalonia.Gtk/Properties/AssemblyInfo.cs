@@ -1,6 +1,8 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using Avalonia.Gtk;
+using Avalonia.Platform;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
@@ -19,3 +21,8 @@ using System.Runtime.CompilerServices;
 // The form "{Major}.{Minor}.*" will automatically update the build and revision,
 // and "{Major}.{Minor}.{Build}.*" will update just the revision.
 [assembly: AssemblyVersion("1.0.*")]
+
+[assembly: ExportWindowingSubsystem(OperatingSystemType.WinNT, 2, "GTK", typeof(GtkPlatform), nameof(GtkPlatform.Initialize))]
+[assembly: ExportWindowingSubsystem(OperatingSystemType.Linux, 1, "GTK", typeof(GtkPlatform), nameof(GtkPlatform.Initialize))]
+[assembly: ExportWindowingSubsystem(OperatingSystemType.OSX, 2, "GTK", typeof(GtkPlatform), nameof(GtkPlatform.Initialize))]
+

@@ -1,6 +1,8 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using Avalonia.Cairo;
+using Avalonia.Platform;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -37,3 +39,7 @@ using System.Runtime.InteropServices;
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
+
+[assembly: ExportRenderingSubsystem(OperatingSystemType.WinNT, 2, "Cairo", typeof(CairoPlatform), nameof(CairoPlatform.Initialize), RequiresWindowingSubsystem = "GTK")]
+[assembly: ExportRenderingSubsystem(OperatingSystemType.Linux, 1, "Cairo", typeof(CairoPlatform), nameof(CairoPlatform.Initialize), RequiresWindowingSubsystem = "GTK")]
+[assembly: ExportRenderingSubsystem(OperatingSystemType.OSX, 2, "Cairo", typeof(CairoPlatform), nameof(CairoPlatform.Initialize), RequiresWindowingSubsystem = "GTK")]
