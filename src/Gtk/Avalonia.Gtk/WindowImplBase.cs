@@ -134,7 +134,7 @@ namespace Avalonia.Gtk
 
         public void Invalidate(Rect rect)
         {
-            if (_window.GdkWindow != null)
+            if (_window?.GdkWindow != null)
                 _window.GdkWindow.InvalidateRect(
                     new Rectangle((int) rect.X, (int) rect.Y, (int) rect.Width, (int) rect.Height), true);
         }
@@ -306,7 +306,9 @@ namespace Avalonia.Gtk
 
         public void Dispose()
         {
+            _window.Hide();
             _window.Dispose();
+            _window = null;
         }
     }
 }
