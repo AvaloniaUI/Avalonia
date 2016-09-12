@@ -94,6 +94,10 @@
       <Project>{d2221c82-4a25-4583-9b43-d791e3f6820c}</Project>
       <Name>Avalonia.Controls</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\Avalonia.DotNetFrameworkRuntime\Avalonia.DotNetFrameworkRuntime.csproj">
+      <Project>{4a1abb09-9047-4bd5-a4ad-a055e52c5ee0}</Project>
+      <Name>Avalonia.DotNetFrameworkRuntime</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Avalonia.Input\Avalonia.Input.csproj">
       <Project>{62024b2d-53eb-4638-b26b-85eeaa54866e}</Project>
       <Name>Avalonia.Input</Name>

@@ -178,6 +178,10 @@
       <Project>{3e10a5fa-e8da-48b1-ad44-6a5b6cb7750f}</Project>
       <Name>Avalonia.Themes.Default</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\Avalonia.DotNetFrameworkRuntime\Avalonia.DotNetFrameworkRuntime.csproj">
+      <Project>{4a1abb09-9047-4bd5-a4ad-a055e52c5ee0}</Project>
+      <Name>Avalonia.DotNetFrameworkRuntime</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Avalonia.HtmlRenderer\Avalonia.HtmlRenderer.csproj">
       <Project>{5fb2b005-0a7f-4dad-add4-3ed01444e63d}</Project>
       <Name>Avalonia.HtmlRenderer</Name>

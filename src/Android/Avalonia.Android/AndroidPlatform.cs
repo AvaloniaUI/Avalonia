@@ -15,9 +15,9 @@ namespace Avalonia
 {
     public static class AndroidApplicationExtensions
     {
-        public static AppBuilder UseAndroid(this AppBuilder builder)
+        public static T UseAndroid<T>(this T builder) where T : AppBuilderBase<T>, new()
         {
-            builder.WindowingSubsystem = Avalonia.Android.AndroidPlatform.Initialize;
+            builder.UseWindowingSubsystem(Android.AndroidPlatform.Initialize, "Android");
             return builder;
         }
     }
