@@ -77,11 +77,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
-    <Reference Include="System.Collections" />
     <Reference Include="System.Core" />
-    <Reference Include="System.IO" />
-    <Reference Include="System.Linq.Expressions" />
-    <Reference Include="System.ObjectModel" />
     <Reference Include="System.Reactive.Core, Version=3.0.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\System.Reactive.Core.3.0.0\lib\netstandard1.3\System.Reactive.Core.dll</HintPath>
       <Private>True</Private>
@@ -98,8 +94,6 @@
       <HintPath>..\..\..\packages\System.Reactive.PlatformServices.3.0.0\lib\netstandard1.3\System.Reactive.PlatformServices.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="System.Runtime" />
-    <Reference Include="System.Runtime.Extensions" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Xml" />
   </ItemGroup>
