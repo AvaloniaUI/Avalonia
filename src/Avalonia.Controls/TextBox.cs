@@ -575,8 +575,13 @@ namespace Avalonia.Controls
             {
                 var index = caretIndex + direction;
 
-                if (index < 0 || index >= text.Length)
+                if (index < 0 || index > text.Length)
                 {
+                    return;
+                }
+                else if (index == text.Length)
+                {
+                    CaretIndex = index;
                     return;
                 }
 
