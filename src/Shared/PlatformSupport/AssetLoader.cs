@@ -130,7 +130,22 @@ namespace Avalonia.Shared.PlatformSupport
             AssemblyDescriptor rv;
             if (!AssemblyNameCache.TryGetValue(name, out rv))
             {
+#if NOT_NETSTANDARD
                 var loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies();
+#else
+                var loadedAssemblies = new List<Assembly>();
+                foreach (var path in Directory.GetFiles(AppContext.BaseDirectory, "*.dll"))
+                {
+                    try
+                    {
+                        AssemblyName an = System.Runtime.Loader.AssemblyLoadContext.GetAssemblyName(path);
+                        var assembly = Assembly.Load(an);
+                        loadedAssemblies.Add(assembly);
+                    }
+                    catch { }
+                }
+
+#endif
                 var match = loadedAssemblies.FirstOrDefault(a => a.GetName().Name == name);
                 if (match != null)
                 {
@@ -141,7 +156,7 @@ namespace Avalonia.Shared.PlatformSupport
                     // iOS does not support loading assemblies dynamically!
                     //
 #if !__IOS__
-                    AssemblyNameCache[name] = rv = new AssemblyDescriptor(Assembly.Load(name));
+                    AssemblyNameCache[name] = rv = new AssemblyDescriptor(Assembly.Load(new AssemblyName(name)));
 #endif
                 }
             }

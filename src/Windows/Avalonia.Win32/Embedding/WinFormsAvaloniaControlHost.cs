@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if NOT_NETSTANDARD
+using System;
 using System.ComponentModel;
 using System.Windows.Forms;
 using Avalonia.Controls;
@@ -89,3 +90,4 @@ namespace Avalonia.Win32.Embedding
         }
     }
 }
+#endif

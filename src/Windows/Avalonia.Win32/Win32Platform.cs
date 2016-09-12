@@ -16,6 +16,7 @@ using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop;
 using Avalonia.Controls;
 using System.IO;
+using System.Reflection;
 
 namespace Avalonia
 {
@@ -153,7 +154,7 @@ namespace Avalonia.Win32
             {
                 cbSize = Marshal.SizeOf(typeof(UnmanagedMethods.WNDCLASSEX)),
                 lpfnWndProc = _wndProcDelegate,
-                hInstance = Marshal.GetHINSTANCE(GetType().Module),
+                hInstance = MarshalGetHINSTANCE(GetType().GetTypeInfo().Module),
                 lpszClassName = "AvaloniaMessageWindow",
             };
 
@@ -170,6 +171,14 @@ namespace Avalonia.Win32
             {
                 throw new Win32Exception();
             }
+        }
+
+        [DllImport("kernel32.dll")]
+        internal static extern IntPtr GetModuleHandle([MarshalAs(UnmanagedType.LPTStr)]string module_name);
+  
+        internal static IntPtr MarshalGetHINSTANCE(Module m)
+        {
+            return GetModuleHandle(m.Name);
         }
 
         public IWindowImpl CreateWindow()
@@ -189,26 +198,39 @@ namespace Avalonia.Win32
 
         public IWindowIconImpl LoadIcon(string fileName)
         {
+#if !NOT_NETSTANDARD
+            throw new NotImplementedException();
+#else
             using (var stream = File.OpenRead(fileName))
             {
                 return CreateImpl(stream); 
             }
+#endif
         }
 
         public IWindowIconImpl LoadIcon(Stream stream)
         {
+#if !NOT_NETSTANDARD
+            throw new NotImplementedException();
+#else
             return CreateImpl(stream);
+#endif
         }
 
         public IWindowIconImpl LoadIcon(IBitmapImpl bitmap)
         {
+#if !NOT_NETSTANDARD
+            throw new NotImplementedException();
+#else
             using (var memoryStream = new MemoryStream())
             {
                 bitmap.Save(memoryStream);
                 return new IconImpl(new System.Drawing.Bitmap(memoryStream));
             }
+#endif
         }
 
+#if NOT_NETSTANDARD
         private static IconImpl CreateImpl(Stream stream)
         {
             try
@@ -220,5 +242,6 @@ namespace Avalonia.Win32
                 return new IconImpl(new System.Drawing.Bitmap(stream));
             }
         }
+#endif
     }
 }

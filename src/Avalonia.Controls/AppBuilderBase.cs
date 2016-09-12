@@ -91,7 +91,7 @@ namespace Avalonia.Controls
             };
         }
 
-        protected TAppBuilder Self => (TAppBuilder) this;
+        protected TAppBuilder Self => (TAppBuilder)this;
 
         /// <summary>
         /// Registers a callback to call before <see cref="Start{TMainWindow}"/> is called on the
@@ -121,9 +121,22 @@ namespace Avalonia.Controls
             Setup();
             BeforeStartCallback(Self);
 
-            var window = new TMainWindow();
-            window.Show();
-            Instance.Run(window);
+            try
+            {
+                var window = new TMainWindow();
+                window.Show();
+                Instance.Run(window);
+            }
+            catch (Exception ex)
+            {
+                Exception e = ex.InnerException?.InnerException;
+                if (e != null && e is ReflectionTypeLoadException)
+                {
+                    var rtle = ((ReflectionTypeLoadException)e);
+                }
+
+                throw;
+            }
         }
 
         /// <summary>

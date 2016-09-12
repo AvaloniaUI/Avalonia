@@ -15,6 +15,7 @@ using Avalonia.Input.Raw;
 using Avalonia.Platform;
 using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop;
+using System.Reflection;
 
 namespace Avalonia.Win32
 {
@@ -399,7 +400,7 @@ namespace Avalonia.Win32
                 case UnmanagedMethods.WindowsMessage.WM_DESTROY:
                     if (Closed != null)
                     {
-                        UnmanagedMethods.UnregisterClass(_className, Marshal.GetHINSTANCE(GetType().Module));
+                        UnmanagedMethods.UnregisterClass(_className, Win32Platform.MarshalGetHINSTANCE(GetType().GetTypeInfo().Module));
                         Closed();
                     }
 
@@ -607,7 +608,7 @@ namespace Avalonia.Win32
                 cbSize = Marshal.SizeOf(typeof(UnmanagedMethods.WNDCLASSEX)),
                 style = 0,
                 lpfnWndProc = _wndProcDelegate,
-                hInstance = Marshal.GetHINSTANCE(GetType().Module),
+                hInstance = Win32Platform.MarshalGetHINSTANCE(GetType().GetTypeInfo().Module),
                 hCursor = DefaultCursor,
                 hbrBackground = IntPtr.Zero,
                 lpszClassName = _className
@@ -689,10 +690,12 @@ namespace Avalonia.Win32
 
         public void SetIcon(IWindowIconImpl icon)
         {
+#if NOT_NETSTANDARD
             var impl = (IconImpl)icon;
             var hIcon = impl.HIcon;
             UnmanagedMethods.PostMessage(_hwnd, (int)UnmanagedMethods.WindowsMessage.WM_SETICON,
                 new IntPtr((int)UnmanagedMethods.Icons.ICON_BIG), hIcon);
+#endif
         }
 
         private static int ToInt32(IntPtr ptr)

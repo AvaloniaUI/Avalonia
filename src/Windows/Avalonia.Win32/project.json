@@ -1,0 +1,17 @@
+﻿{
+  "supports": {},
+  "dependencies": {
+    "Microsoft.NETCore.Portable.Compatibility": "1.0.1",
+    "NETStandard.Library": "1.6.0",
+    "System.Threading.Thread": "4.0.0",
+    "System.Reactive": "3.0.0",
+    "System.Reflection": "4.1.0",
+    "System.Threading.ThreadPool": "4.0.10",
+    "System.Runtime.Loader": "4.0.0"
+  },
+  "frameworks": {
+    "netstandard1.5": {
+      "imports": "portable-net45+win+wpa81+wp80"
+    }
+  }
+}

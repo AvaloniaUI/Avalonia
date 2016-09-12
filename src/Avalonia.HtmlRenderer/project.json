@@ -1,0 +1,19 @@
+﻿{
+  "supports": {},
+  "dependencies": {
+    "Microsoft.NETCore.Portable.Compatibility": "1.0.1",
+    "NETStandard.Library": "1.6.0",
+    "Splat": "1.6.2",
+    "System.ComponentModel.EventBasedAsync": "4.0.11",
+    "System.Diagnostics.Contracts": "4.0.1",
+    "System.Reactive": "3.0.0",
+    "System.Runtime.Serialization.Primitives": "4.1.1",
+    "System.Net.Http": "4.1.0",
+    "System.Net.Requests": "4.0.11"
+  },
+  "frameworks": {
+    "netstandard1.1": {
+      "imports": "portable-net45+netcore45+wpa81+wp8"
+    }
+  }
+}

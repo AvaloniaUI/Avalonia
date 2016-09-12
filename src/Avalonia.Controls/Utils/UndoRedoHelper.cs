@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
+////using JetBrains.Annotations;
 using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Utils
@@ -21,7 +21,7 @@ namespace Avalonia.Controls.Utils
 
         private readonly LinkedList<TState> _states = new LinkedList<TState>();
 
-        [NotNull]
+        ////[NotNull]
         private LinkedListNode<TState> _currentNode;
 
         public int Limit { get; set; } = 10;

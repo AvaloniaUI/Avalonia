@@ -96,6 +96,9 @@ publish/
 # NuGet Packages Directory
 ## TODO: If you have NuGet Package Restore enabled, uncomment the next line
 packages/
+*.lock.json
+*.nuget.props
+*.nuget.targets
 
 # Windows Azure Build Output
 csx
@@ -153,10 +156,9 @@ $RECYCLE.BIN/
 *.userprefs
 *.nugetreferenceswitcher
 
-#################
 ## Cake
 #################
-tools/
 .nuget
 artifacts/
 nuget
+.vs

@@ -9,12 +9,16 @@ namespace Avalonia.Win32
 {
     class EmbeddedWindowImpl : WindowImpl, IEmbeddableWindowImpl
     {
+#if NOT_NETSTANDARD
         private static readonly System.Windows.Forms.UserControl WinFormsControl = new System.Windows.Forms.UserControl();
 
         public static IntPtr DefaultParentWindow = WinFormsControl.Handle;
-
+#endif
         protected override IntPtr CreateWindowOverride(ushort atom)
         {
+#if !NOT_NETSTANDARD
+            throw new NotImplementedException();
+#else
             var hWnd = UnmanagedMethods.CreateWindowEx(
                 0,
                 atom,
@@ -29,6 +33,7 @@ namespace Avalonia.Win32
                 IntPtr.Zero,
                 IntPtr.Zero);
             return hWnd;
+#endif
         }
 
         protected override IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
