@@ -3,7 +3,7 @@
 
 namespace Avalonia.Win32
 {
-    public static class PlatformConstants
+    static class PlatformConstants
     {
         public const string WindowHandleType = "HWND";
         public const string CursorHandleType = "HCURSOR";

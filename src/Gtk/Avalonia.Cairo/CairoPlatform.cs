@@ -12,9 +12,9 @@ namespace Avalonia
 {
     public static class GtkApplicationExtensions
     {
-        public static AppBuilder UseCairo(this AppBuilder builder)
+        public static T UseCairo<T>(this T builder) where T : AppBuilderBase<T>, new()
         {
-            builder.RenderingSubsystem = Avalonia.Cairo.CairoPlatform.Initialize;
+            builder.UseRenderingSubsystem(Cairo.CairoPlatform.Initialize, "Cairo");
             return builder;
         }
     }
@@ -53,13 +53,21 @@ namespace Avalonia.Cairo
         public IRenderTarget CreateRenderer(IPlatformHandle handle)
         {
             var window = handle as Gtk.Window;
-            if (window == null)
-                throw new NotSupportedException(string.Format(
-                    "Don't know how to create a Cairo renderer from a '{0}' handle which isn't Gtk.Window",
-                    handle.HandleDescriptor));
+            if (window != null)
+            {
+                window.DoubleBuffered = true;
+                return new RenderTarget(window);
+            }
+            var area = handle as Gtk.DrawingArea;
+            if (area != null)
+            {
+                area.DoubleBuffered = true;
+                return new RenderTarget(area);
+            }
 
-            window.DoubleBuffered = true;
-            return new RenderTarget(window);
+            throw new NotSupportedException(string.Format(
+                "Don't know how to create a Cairo renderer from a '{0}' handle which isn't Gtk.Window or Gtk.DrawingArea",
+                handle.HandleDescriptor));
         }
 
         public IRenderTargetBitmapImpl CreateRenderTargetBitmap(int width, int height)

@@ -39,7 +39,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             {
                 if (level == LogEventLevel.Error &&
                     area == LogArea.Binding &&
-                    mt == "Error binding to {Target}.{Property}: {Message}" &&
+                    mt == "Error in binding to {Target}.{Property}: {Message}" &&
                     pv.Length == 3 &&
                     pv[0] is ProgressBar &&
                     object.ReferenceEquals(pv[1], ProgressBar.ValueProperty) &&

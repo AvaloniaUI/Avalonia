@@ -94,11 +94,12 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
+    <Compile Include="AppBuilderTests.cs" />
     <Compile Include="ClassesTests.cs" />
     <Compile Include="LayoutTransformControlTests.cs" />
     <Compile Include="Presenters\ItemsPresenterTests_Virtualization_Simple.cs" />
     <Compile Include="Presenters\ItemsPresenterTests_Virtualization.cs" />
-    <Compile Include="TextBoxTests_ValidationState.cs" />
+    <Compile Include="TextBoxTests_DataValidation.cs" />
     <Compile Include="UserControlTests.cs" />
     <Compile Include="DockPanelTests.cs" />
     <Compile Include="EnumerableExtensions.cs" />
@@ -152,6 +153,10 @@
     <Compile Include="WrapPanelTests.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Avalonia.DotNetFrameworkRuntime\Avalonia.DotNetFrameworkRuntime.csproj">
+      <Project>{4a1abb09-9047-4bd5-a4ad-a055e52c5ee0}</Project>
+      <Name>Avalonia.DotNetFrameworkRuntime</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj">
       <Project>{3e53a01a-b331-47f3-b828-4a5717e77a24}</Project>
       <Name>Avalonia.Markup.Xaml</Name>

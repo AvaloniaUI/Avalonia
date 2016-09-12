@@ -12,11 +12,6 @@ namespace Avalonia.Platform
     public interface IWindowImpl : ITopLevelImpl
     {
         /// <summary>
-        /// Gets the maximum size of a window on the system.
-        /// </summary>
-        Size MaxClientSize { get; }
-
-        /// <summary>
         /// Gets or sets the minimized/maximized state of the window.
         /// </summary>
         WindowState WindowState { get; set; }

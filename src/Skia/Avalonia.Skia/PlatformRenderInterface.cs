@@ -28,21 +28,14 @@ namespace Avalonia.Skia
         {
             using (var s = new SKManagedStream(stream))
             {
-                using (var codec = SKCodec.Create(s))
+                var bitmap = SKBitmap.Decode(s);
+                if (bitmap != null)
                 {
-                    var info = codec.Info;
-                    var bitmap = new SKBitmap(info.Width, info.Height, SKImageInfo.PlatformColorType, info.IsOpaque ? SKAlphaType.Opaque : SKAlphaType.Premul);
-
-                    IntPtr length;
-                    var result = codec.GetPixels(bitmap.Info, bitmap.GetPixels(out length));
-                    if (result == SKCodecResult.Success || result == SKCodecResult.IncompleteInput)
-                    {
-                        return new BitmapImpl(bitmap);
-                    }
-                    else
-                    {
-                        throw new ArgumentException("Unable to load bitmap from provided data");
-                    }
+                    return new BitmapImpl(bitmap);
+                }
+                else
+                {
+                    throw new ArgumentException("Unable to load bitmap from provided data");
                 }
             }
         }

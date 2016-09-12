@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using Avalonia.Data;
 using Avalonia.Markup.Data.Plugins;
 
@@ -31,41 +32,57 @@ namespace Avalonia.Markup.Data
         /// An ordered collection of validation checker plugins that can be used to customize
         /// the validation of view model and model data.
         /// </summary>
-        public static readonly IList<IValidationPlugin> ValidationCheckers =
-            new List<IValidationPlugin>
+        public static readonly IList<IDataValidationPlugin> DataValidators =
+            new List<IDataValidationPlugin>
             {
+                new DataAnnotationsValidationPlugin(),
                 new IndeiValidationPlugin(),
+                new ExceptionValidationPlugin(),
             };
 
-        private readonly WeakReference _root;
-        private readonly Func<object> _rootGetter;
-        private readonly IObservable<object> _rootObservable;
-        private readonly IObservable<Unit> _update;
-        private IDisposable _rootObserverSubscription;
-        private IDisposable _updateSubscription;
-        private int _count;
+        /// <summary>
+        /// An ordered collection of value handlers that can be used to customize the handling
+        /// of certain values.
+        /// </summary>
+        public static readonly IList<IValuePlugin> ValueHandlers =
+            new List<IValuePlugin>
+            {
+                new TaskValuePlugin(),
+                new ObservableValuePlugin(),
+            };
+
+        private static readonly object UninitializedValue = new object();
         private readonly ExpressionNode _node;
-        private bool _enableValidation;
+        private readonly Subject<Unit> _finished;
+        private readonly object _root;
+        private IObservable<object> _result;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ExpressionObserver"/> class.
         /// </summary>
         /// <param name="root">The root object.</param>
         /// <param name="expression">The expression.</param>
-        /// <param name="enableValidation">Whether property validation should be enabled.</param>
-        public ExpressionObserver(object root, string expression, bool enableValidation = false)
+        /// <param name="enableDataValidation">Whether data validation should be enabled.</param>
+        /// <param name="description">
+        /// A description of the expression. If null, <paramref name="expression"/> will be used.
+        /// </param>
+        public ExpressionObserver(
+            object root,
+            string expression,
+            bool enableDataValidation = false,
+            string description = null)
         {
             Contract.Requires<ArgumentNullException>(expression != null);
 
-            _root = new WeakReference(root);
-            _enableValidation = enableValidation;
-
-            if (!string.IsNullOrWhiteSpace(expression))
+            if (root == AvaloniaProperty.UnsetValue)
             {
-                _node = ExpressionNodeBuilder.Build(expression, enableValidation);
+                root = null;
             }
 
             Expression = expression;
+            Description = description ?? expression;
+            _node = Parse(expression, enableDataValidation);
+            _root = new WeakReference(root);
         }
 
         /// <summary>
@@ -73,24 +90,24 @@ namespace Avalonia.Markup.Data
         /// </summary>
         /// <param name="rootObservable">An observable which provides the root object.</param>
         /// <param name="expression">The expression.</param>
-        /// <param name="enableValidation">Whether property validation should be enabled.</param>
+        /// <param name="enableDataValidation">Whether data validation should be enabled.</param>
+        /// <param name="description">
+        /// A description of the expression. If null, <paramref name="expression"/> will be used.
+        /// </param>
         public ExpressionObserver(
             IObservable<object> rootObservable,
             string expression,
-            bool enableValidation = false)
+            bool enableDataValidation = false,
+            string description = null)
         {
             Contract.Requires<ArgumentNullException>(rootObservable != null);
             Contract.Requires<ArgumentNullException>(expression != null);
 
-            _rootObservable = rootObservable;
-            _enableValidation = enableValidation;
-
-            if (!string.IsNullOrWhiteSpace(expression))
-            {
-                _node = ExpressionNodeBuilder.Build(expression, enableValidation);
-            }
-
             Expression = expression;
+            Description = description ?? expression;
+            _node = Parse(expression, enableDataValidation);
+            _finished = new Subject<Unit>();
+            _root = rootObservable;
         }
 
         /// <summary>
@@ -99,27 +116,28 @@ namespace Avalonia.Markup.Data
         /// <param name="rootGetter">A function which gets the root object.</param>
         /// <param name="expression">The expression.</param>
         /// <param name="update">An observable which triggers a re-read of the getter.</param>
-        /// <param name="enableValidation">Whether property validation should be enabled.</param>
+        /// <param name="enableDataValidation">Whether data validation should be enabled.</param>
+        /// <param name="description">
+        /// A description of the expression. If null, <paramref name="expression"/> will be used.
+        /// </param>
         public ExpressionObserver(
             Func<object> rootGetter,
             string expression,
             IObservable<Unit> update,
-            bool enableValidation = false)
+            bool enableDataValidation = false,
+            string description = null)
         {
             Contract.Requires<ArgumentNullException>(rootGetter != null);
             Contract.Requires<ArgumentNullException>(expression != null);
             Contract.Requires<ArgumentNullException>(update != null);
 
-            _rootGetter = rootGetter;
-            _update = update;
-            _enableValidation = enableValidation;
-
-            if (!string.IsNullOrWhiteSpace(expression))
-            {
-                _node = ExpressionNodeBuilder.Build(expression, enableValidation);
-            }
-
             Expression = expression;
+            Description = description ?? expression;
+            _node = Parse(expression, enableDataValidation);
+            _finished = new Subject<Unit>();
+
+            _node.Target = new WeakReference(rootGetter());
+            _root = update.Select(x => rootGetter());
         }
 
         /// <summary>
@@ -129,26 +147,19 @@ namespace Avalonia.Markup.Data
         /// <param name="priority">The binding priority to use.</param>
         /// <returns>
         /// True if the value could be set; false if the expression does not evaluate to a 
-        /// property.
+        /// property. Note that the <see cref="ExpressionObserver"/> must be subscribed to
+        /// before setting the target value can work, as setting the value requires the
+        /// expression to be evaluated.
         /// </returns>
         public bool SetValue(object value, BindingPriority priority = BindingPriority.LocalValue)
         {
-            IncrementCount();
-
-            if (_rootGetter != null && _node != null)
-            {
-                _node.Target = new WeakReference(_rootGetter());
-            }
-
-            try
-            {
-                return _node?.SetValue(value, priority) ?? false;
-            }
-            finally
-            {
-                DecrementCount();
-            }
+            return (Leaf as PropertyAccessorNode)?.SetTargetValue(value, priority) ?? false;
         }
+
+        /// <summary>
+        /// Gets a description of the expression being observed.
+        /// </summary>
+        public string Description { get; }
 
         /// <summary>
         /// Gets the expression being observed.
@@ -159,41 +170,7 @@ namespace Avalonia.Markup.Data
         /// Gets the type of the expression result or null if the expression could not be 
         /// evaluated.
         /// </summary>
-        public Type ResultType
-        {
-            get
-            {
-                IncrementCount();
-
-                try
-                {
-                    if (_node != null)
-                    {
-                        return (Leaf as PropertyAccessorNode)?.PropertyType;
-                    }
-                    else if (_rootGetter != null)
-                    {
-                        return _rootGetter()?.GetType();
-                    }
-                    else
-                    {
-                        return _root.Target?.GetType();
-                    }
-                }
-                finally
-                {
-                    DecrementCount();
-                }
-            }
-        }
-
-        /// <inheritdoc/>
-        string IDescription.Description => Expression;
-
-        /// <summary>
-        /// Gets the root expression node. Used for testing.
-        /// </summary>
-        internal ExpressionNode Node => _node;
+        public Type ResultType => (Leaf as PropertyAccessorNode)?.PropertyType;
 
         /// <summary>
         /// Gets the leaf node.
@@ -211,94 +188,88 @@ namespace Avalonia.Markup.Data
         /// <inheritdoc/>
         protected override IDisposable SubscribeCore(IObserver<object> observer)
         {
-            IncrementCount();
-
-            if (_node != null)
+            if (_result == null)
             {
-                IObservable<object> source = _node;
+                var source = (IObservable<object>)_node;
 
-                if (_rootObservable != null)
+                if (_finished != null)
                 {
-                    source = source.TakeUntil(_rootObservable.LastOrDefaultAsync());
-                }
-                else if (_update != null)
-                {
-                    source = source.TakeUntil(_update.LastOrDefaultAsync());
+                    source = source.TakeUntil(_finished);
                 }
 
-                var subscription = source.Subscribe(observer);
-
-                return Disposable.Create(() =>
-                {
-                    DecrementCount();
-                    subscription.Dispose();
-                });
+                _result = Observable.Using(StartRoot, _ => source)
+                    .Select(ToWeakReference)
+                    .Publish(UninitializedValue)
+                    .RefCount()
+                    .Where(x => x != UninitializedValue)
+                    .Select(Translate);
             }
-            else if (_rootObservable != null)
+
+            return _result.Subscribe(observer);
+        }
+
+        private static ExpressionNode Parse(string expression, bool enableDataValidation)
+        {
+            if (!string.IsNullOrWhiteSpace(expression))
             {
-                return _rootObservable.Subscribe(observer);
+                return ExpressionNodeBuilder.Build(expression, enableDataValidation);
             }
             else
             {
-                if (_update == null)
-                {
-                    return Observable.Never<object>()
-                        .StartWith(_root.Target)
-                        .Subscribe(observer);
-                }
-                else
-                {
-                    return _update
-                        .Select(_ => _rootGetter())
-                        .StartWith(_rootGetter())
-                        .Subscribe(observer);
-                }
+                return new EmptyExpressionNode();
             }
         }
 
-        private void IncrementCount()
+        private static object ToWeakReference(object o)
         {
-            if (_count++ == 0 && _node != null)
-            {
-                if (_rootGetter != null)
-                {
-                    _node.Target = new WeakReference(_rootGetter());
+            return o is BindingNotification ? o : new WeakReference(o);
+        }
 
-                    if (_update != null)
+        private object Translate(object o)
+        {
+            var weak = o as WeakReference;
+
+            if (weak != null)
+            {
+                return weak.Target;
+            }
+            else
+            {
+                var broken = BindingNotification.ExtractError(o) as MarkupBindingChainNullException;
+
+                if (broken != null)
+                {
+                    // We've received notification of a broken expression due to a null value
+                    // somewhere in the chain. If this null value occurs at the first node then we
+                    // ignore it, as its likely that e.g. the DataContext has not yet been set up.
+                    if (broken.HasNodes)
                     {
-                        _updateSubscription = _update.Subscribe(x =>
-                            _node.Target = new WeakReference(_rootGetter()));
+                        broken.Commit(Description);
+                    }
+                    else
+                    {
+                        o = AvaloniaProperty.UnsetValue;
                     }
                 }
-                else if (_rootObservable != null)
-                {
-                    _rootObserverSubscription = _rootObservable.Subscribe(x =>
-                        _node.Target = new WeakReference(x));
-                }
-                else
-                {
-                    _node.Target = _root;
-                }
+                return o;
             }
         }
 
-        private void DecrementCount()
+        private IDisposable StartRoot()
         {
-            if (--_count == 0 && _node != null)
+            var observable = _root as IObservable<object>;
+
+            if (observable != null)
             {
-                if (_rootObserverSubscription != null)
-                {
-                    _rootObserverSubscription.Dispose();
-                    _rootObserverSubscription = null;
-                }
-
-                if (_updateSubscription != null)
-                {
-                    _updateSubscription.Dispose();
-                    _updateSubscription = null;
-                }
-
-                _node.Target = null;
+                return observable.Subscribe(
+                    x => _node.Target = new WeakReference(x != AvaloniaProperty.UnsetValue ? x : null),
+                    _ => _finished.OnNext(Unit.Default),
+                    () => _finished.OnNext(Unit.Default));
+            }
+            else
+            {
+                _node.Target = (WeakReference)_root;
+                return Disposable.Empty;
             }
         }
     }

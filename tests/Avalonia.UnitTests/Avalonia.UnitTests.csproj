@@ -64,6 +64,10 @@
     <Compile Include="MockWindowingPlatform.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Avalonia.DotNetFrameworkRuntime\Avalonia.DotNetFrameworkRuntime.csproj">
+      <Project>{4a1abb09-9047-4bd5-a4ad-a055e52c5ee0}</Project>
+      <Name>Avalonia.DotNetFrameworkRuntime</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj">
       <Project>{3e53a01a-b331-47f3-b828-4a5717e77a24}</Project>
       <Name>Avalonia.Markup.Xaml</Name>
@@ -113,7 +117,6 @@
     <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
-  <Import Project="..\..\src\Shared\PlatformSupport\PlatformSupport.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

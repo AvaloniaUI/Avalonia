@@ -50,6 +50,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
     <Reference Include="System.Reactive.Core, Version=3.0.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
       <HintPath>..\..\packages\System.Reactive.Core.3.0.0\lib\net45\System.Reactive.Core.dll</HintPath>
@@ -80,7 +81,9 @@
     <Compile Include="TestItemView.xaml.cs">
       <DependentUpon>TestItemView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ViewModels\ExceptionPropertyErrorViewModel.cs" />
+    <Compile Include="ViewModels\DataAnnotationsErrorViewModel.cs" />
+    <Compile Include="ViewModels\IndeiErrorViewModel.cs" />
+    <Compile Include="ViewModels\ExceptionErrorViewModel.cs" />
     <Compile Include="ViewModels\MainWindowViewModel.cs" />
     <Compile Include="ViewModels\TestItem.cs" />
   </ItemGroup>
@@ -93,6 +96,10 @@
     <EmbeddedResource Include="TestItemView.xaml" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Avalonia.DotNetFrameworkRuntime\Avalonia.DotNetFrameworkRuntime.csproj">
+      <Project>{4A1ABB09-9047-4BD5-A4AD-A055E52C5EE0}</Project>
+      <Name>Avalonia.DotNetFrameworkRuntime</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj">
       <Project>{3e53a01a-b331-47f3-b828-4a5717e77a24}</Project>
       <Name>Avalonia.Markup.Xaml</Name>

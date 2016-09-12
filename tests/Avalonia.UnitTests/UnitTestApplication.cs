@@ -41,7 +41,7 @@ namespace Avalonia.UnitTests
                 .Bind<IInputManager>().ToConstant(Services.InputManager)
                 .Bind<IKeyboardDevice>().ToConstant(Services.KeyboardDevice?.Invoke())
                 .Bind<ILayoutManager>().ToConstant(Services.LayoutManager)
-                .Bind<IPclPlatformWrapper>().ToConstant(Services.PlatformWrapper)
+                .Bind<IRuntimePlatform>().ToConstant(Services.Platform)
                 .Bind<IPlatformRenderInterface>().ToConstant(Services.RenderInterface)
                 .Bind<IPlatformThreadingInterface>().ToConstant(Services.ThreadingInterface)
                 .Bind<IStandardCursorFactory>().ToConstant(Services.StandardCursorFactory)

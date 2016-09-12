@@ -64,6 +64,10 @@
       <Project>{799a7bb5-3c2c-48b6-85a7-406a12c420da}</Project>
       <Name>Avalonia.DesignerSupport</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\src\Avalonia.DotNetFrameworkRuntime\Avalonia.DotNetFrameworkRuntime.csproj">
+      <Project>{4A1ABB09-9047-4BD5-A4AD-A055E52C5EE0}</Project>
+      <Name>Avalonia.DotNetFrameworkRuntime</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\Gtk\Avalonia.Cairo\Avalonia.Cairo.csproj">
       <Project>{FB05AC90-89BA-4F2F-A924-F37875FB547C}</Project>
       <Name>Avalonia.Cairo</Name>

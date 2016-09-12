@@ -47,6 +47,7 @@ namespace Avalonia.Controls
         /// </summary>
         static Canvas()
         {
+            ClipToBoundsProperty.OverrideDefaultValue<Canvas>(false);
             AffectsCanvasArrange(LeftProperty, TopProperty, RightProperty, BottomProperty);
         }
 

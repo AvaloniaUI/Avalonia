@@ -19,7 +19,7 @@ namespace Avalonia.UnitTests
         public static readonly TestServices StyledWindow = new TestServices(
             assetLoader: new AssetLoader(),
             layoutManager: new LayoutManager(),
-            platformWrapper: new PclPlatformWrapper(),
+            platform: new AppBuilder().RuntimePlatform,
             renderInterface: CreateRenderInterfaceMock(),
             standardCursorFactory: Mock.Of<IStandardCursorFactory>(),
             styler: new Styler(),
@@ -31,7 +31,7 @@ namespace Avalonia.UnitTests
             renderInterface: CreateRenderInterfaceMock());
 
         public static readonly TestServices MockPlatformWrapper = new TestServices(
-            platformWrapper: Mock.Of<IPclPlatformWrapper>());
+            platform: Mock.Of<IRuntimePlatform>());
 
         public static readonly TestServices MockStyler = new TestServices(
             styler: Mock.Of<IStyler>());
@@ -56,7 +56,7 @@ namespace Avalonia.UnitTests
             IInputManager inputManager = null,
             Func<IKeyboardDevice> keyboardDevice = null,
             ILayoutManager layoutManager = null,
-            IPclPlatformWrapper platformWrapper = null,
+            IRuntimePlatform platform = null,
             IPlatformRenderInterface renderInterface = null,
             IStandardCursorFactory standardCursorFactory = null,
             IStyler styler = null,
@@ -70,7 +70,7 @@ namespace Avalonia.UnitTests
             InputManager = inputManager;
             KeyboardDevice = keyboardDevice;
             LayoutManager = layoutManager;
-            PlatformWrapper = platformWrapper;
+            Platform = platform;
             RenderInterface = renderInterface;
             StandardCursorFactory = standardCursorFactory;
             Styler = styler;
@@ -85,7 +85,7 @@ namespace Avalonia.UnitTests
         public IFocusManager FocusManager { get; }
         public Func<IKeyboardDevice> KeyboardDevice { get; }
         public ILayoutManager LayoutManager { get; }
-        public IPclPlatformWrapper PlatformWrapper { get; }
+        public IRuntimePlatform Platform { get; }
         public IPlatformRenderInterface RenderInterface { get; }
         public IStandardCursorFactory StandardCursorFactory { get; }
         public IStyler Styler { get; }
@@ -100,7 +100,7 @@ namespace Avalonia.UnitTests
             IInputManager inputManager = null,
             Func<IKeyboardDevice> keyboardDevice = null,
             ILayoutManager layoutManager = null,
-            IPclPlatformWrapper platformWrapper = null,
+            IRuntimePlatform platform = null,
             IPlatformRenderInterface renderInterface = null,
             IStandardCursorFactory standardCursorFactory = null,
             IStyler styler = null,
@@ -115,7 +115,7 @@ namespace Avalonia.UnitTests
                 inputManager: inputManager ?? InputManager,
                 keyboardDevice: keyboardDevice ?? KeyboardDevice,
                 layoutManager: layoutManager ?? LayoutManager,
-                platformWrapper: platformWrapper ?? PlatformWrapper,
+                platform: platform ?? Platform,
                 renderInterface: renderInterface ?? RenderInterface,
                 standardCursorFactory: standardCursorFactory ?? StandardCursorFactory,
                 styler: styler ?? Styler,
@@ -152,7 +152,8 @@ namespace Avalonia.UnitTests
                     It.IsAny<FontWeight>(),
                     It.IsAny<TextWrapping>()) == Mock.Of<IFormattedTextImpl>() &&
                 x.CreateStreamGeometry() == Mock.Of<IStreamGeometryImpl>(
-                    y => y.Open() == Mock.Of<IStreamGeometryContextImpl>()));
+                    y => y.Open() == Mock.Of<IStreamGeometryContextImpl>()) &&
+                x.CreateRenderer(It.IsAny<IPlatformHandle>()) == Mock.Of<IRenderTarget>());
         }
     }
 }

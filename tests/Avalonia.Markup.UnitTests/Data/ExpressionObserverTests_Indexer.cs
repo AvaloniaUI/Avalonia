@@ -189,58 +189,22 @@ namespace Avalonia.Markup.UnitTests.Data
 
             var expected = new[] { "bar", "bar2" };
             Assert.Equal(expected, result);
-            Assert.Equal(0, data.Foo.SubscriptionCount);
-        }
-
-        [Fact]
-        public void Should_Not_Keep_Source_Alive_ObservableCollection()
-        {
-            Func<Tuple<ExpressionObserver, WeakReference>> run = () =>
-            {
-                var source = new { Foo = new AvaloniaList<string> { "foo", "bar" } };
-                var target = new ExpressionObserver(source, "Foo");
-                return Tuple.Create(target, new WeakReference(source.Foo));
-            };
-
-            var result = run();
-            result.Item1.Subscribe(x => { });
-
-            GC.Collect();
-
-            Assert.Null(result.Item2.Target);
-        }
-
-        [Fact]
-        public void Should_Not_Keep_Source_Alive_NonIntegerIndexer()
-        {
-            Func<Tuple<ExpressionObserver, WeakReference>> run = () =>
-            {
-                var source = new NonIntegerIndexer();
-                var target = new ExpressionObserver(source, "Foo");
-                return Tuple.Create(target, new WeakReference(source));
-            };
-
-            var result = run();
-            result.Item1.Subscribe(x => { });
-
-            GC.Collect();
-
-            Assert.Null(result.Item2.Target);
+            Assert.Equal(0, data.Foo.PropertyChangedSubscriptionCount);
         }
 
         private class NonIntegerIndexer : NotifyingBase
         {
-            private Dictionary<string, string> storage = new Dictionary<string, string>();
+            private readonly Dictionary<string, string> _storage = new Dictionary<string, string>();
 
             public string this[string key]
             {
                 get
                 {
-                    return storage[key];
+                    return _storage[key];
                 }
                 set
                 {
-                    storage[key] = value;
+                    _storage[key] = value;
                     RaisePropertyChanged(CommonPropertyNames.IndexerName);
                 }
             }

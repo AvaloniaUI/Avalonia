@@ -56,7 +56,7 @@ namespace Avalonia.Android
 
         public void Init(Type applicationType)
         {
-            SharedPlatform.Register(applicationType.Assembly);
+            StandardRuntimePlatformServices.Register(applicationType.Assembly);
         }
 
         public IWindowImpl CreateWindow()
@@ -64,7 +64,7 @@ namespace Avalonia.Android
             return new WindowImpl();
         }
 
-        public IWindowImpl CreateEmbeddableWindow()
+        public IEmbeddableWindowImpl CreateEmbeddableWindow()
         {
             throw new NotImplementedException();
         }

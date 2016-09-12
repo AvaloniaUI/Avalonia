@@ -70,9 +70,19 @@
     </TabItem>
     <TabItem Header="Property Validation">
       <StackPanel Orientation="Horizontal">
-        <StackPanel Margin="18" Gap="4" Width="200" DataContext="{Binding ExceptionPropertyValidation}">
+        <StackPanel Margin="18" Gap="4" MinWidth="200" DataContext="{Binding ExceptionDataValidation}">
           <TextBlock FontSize="16" Text="Exception Validation"/>
-          <TextBox Watermark="Less Than 10" UseFloatingWatermark="True" Text="{Binding Path=LessThan10, EnableValidation=True}"/>
+          <TextBox Watermark="Less Than 10" UseFloatingWatermark="True" Text="{Binding Path=LessThan10}"/>
+        </StackPanel>
+        <StackPanel Margin="18" Gap="4" MinWidth="200" DataContext="{Binding IndeiDataValidation}">
+          <TextBlock FontSize="16" Text="INotifyDataErrorInfo Validation"/>
+          <TextBox Watermark="Maximum" UseFloatingWatermark="True" Text="{Binding Path=Maximum}"/>
+          <TextBox Watermark="Value" UseFloatingWatermark="True" Text="{Binding Path=Value}"/>
+        </StackPanel>
+        <StackPanel Margin="18" Gap="4" MinWidth="200" DataContext="{Binding DataAnnotationsValidation}">
+          <TextBlock FontSize="16" Text="Data Annotations Validation"/>
+          <TextBox Watermark="Phone #" UseFloatingWatermark="True" Text="{Binding PhoneNumber}"/>
+          <TextBox Watermark="Less Than 10" UseFloatingWatermark="True" Text="{Binding Path=LessThan10}"/>
         </StackPanel>
       </StackPanel>
     </TabItem>

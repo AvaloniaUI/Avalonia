@@ -20,7 +20,7 @@ namespace Avalonia.UnitTests
             return _windowImpl?.Invoke() ?? Mock.Of<IWindowImpl>(x => x.Scaling == 1);
         }
 
-        public IWindowImpl CreateEmbeddableWindow()
+        public IEmbeddableWindowImpl CreateEmbeddableWindow()
         {
             throw new NotImplementedException();
         }

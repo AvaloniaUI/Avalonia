@@ -10,129 +10,48 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Reactive.Linq;
 
 namespace Avalonia.Markup.Data
 {
-    internal class IndexerNode : ExpressionNode, 
-        IWeakSubscriber<NotifyCollectionChangedEventArgs>,
-        IWeakSubscriber<PropertyChangedEventArgs>
+    internal class IndexerNode : ExpressionNode
     {
         public IndexerNode(IList<string> arguments)
         {
             Arguments = arguments;
         }
 
+        public override string Description => "[" + string.Join(",", Arguments) + "]";
+
+        protected override IObservable<object> StartListeningCore(WeakReference reference)
+        {
+            var target = reference.Target;
+            var incc = target as INotifyCollectionChanged;
+            var inpc = target as INotifyPropertyChanged;
+            var inputs = new List<IObservable<object>>();
+
+            if (incc != null)
+            {
+                inputs.Add(WeakObservable.FromEventPattern<NotifyCollectionChangedEventArgs>(
+                    target,
+                    nameof(incc.CollectionChanged))
+                    .Where(x => ShouldUpdate(x.Sender, x.EventArgs))
+                    .Select(_ => GetValue(target)));
+            }
+
+            if (inpc != null)
+            {
+                inputs.Add(WeakObservable.FromEventPattern<PropertyChangedEventArgs>(
+                    target,
+                    nameof(inpc.PropertyChanged))
+                    .Where(x => ShouldUpdate(x.Sender, x.EventArgs))
+                    .Select(_ => GetValue(target)));
+            }
+
+            return Observable.Merge(inputs).StartWith(GetValue(target));
+        }
+
         public IList<string> Arguments { get; }
-
-        void IWeakSubscriber<NotifyCollectionChangedEventArgs>.OnEvent(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            var update = false;
-            if (sender is IList)
-            {
-                object indexObject;
-                if (!TypeUtilities.TryConvert(typeof(int), Arguments[0], CultureInfo.InvariantCulture, out indexObject))
-                {
-                    return;
-                }
-                var index = (int)indexObject;
-                switch (e.Action)
-                {
-                    case NotifyCollectionChangedAction.Add:
-                        update = index >= e.NewStartingIndex;
-                        break;
-                    case NotifyCollectionChangedAction.Remove:
-                        update = index >= e.OldStartingIndex;
-                        break;
-                    case NotifyCollectionChangedAction.Replace:
-                        update = index >= e.NewStartingIndex &&
-                                 index < e.NewStartingIndex + e.NewItems.Count;
-                        break;
-                    case NotifyCollectionChangedAction.Move:
-                        update = (index >= e.NewStartingIndex &&
-                                  index < e.NewStartingIndex + e.NewItems.Count) ||
-                                 (index >= e.OldStartingIndex &&
-                                 index < e.OldStartingIndex + e.OldItems.Count);
-                        break;
-                    case NotifyCollectionChangedAction.Reset:
-                        update = true;
-                        break;
-                }
-            }
-            else
-            {
-                update = true;
-            }
-
-            if (update)
-            {
-                CurrentValue = new WeakReference(GetValue(sender));
-            }
-        }
-
-        void IWeakSubscriber<PropertyChangedEventArgs>.OnEvent(object sender, PropertyChangedEventArgs e)
-        {
-            var typeInfo = sender.GetType().GetTypeInfo();
-
-            if (typeInfo.GetDeclaredProperty(e.PropertyName) == null)
-            {
-                return;
-            }
-
-            if (typeInfo.GetDeclaredProperty(e.PropertyName).GetIndexParameters().Any())
-            {
-                CurrentValue = new WeakReference(GetValue(sender));
-            }
-        }
-
-        protected override void SubscribeAndUpdate(WeakReference reference)
-        {
-            object target = reference.Target;
-
-            CurrentValue = new WeakReference(GetValue(target));
-
-            var incc = target as INotifyCollectionChanged;
-
-            if (incc != null)
-            {
-                WeakSubscriptionManager.Subscribe<NotifyCollectionChangedEventArgs>(
-                    incc,
-                    nameof(incc.CollectionChanged),
-                    this);
-            }
-
-            var inpc = target as INotifyPropertyChanged;
-
-            if (inpc != null)
-            {
-                WeakSubscriptionManager.Subscribe<PropertyChangedEventArgs>(
-                    inpc,
-                    nameof(inpc.PropertyChanged),
-                    this);
-            }
-        }
-
-        protected override void Unsubscribe(object target)
-        {
-            var incc = target as INotifyCollectionChanged;
-
-            if (incc != null)
-            {
-                WeakSubscriptionManager.Unsubscribe<NotifyCollectionChangedEventArgs>(
-                    incc,
-                    nameof(incc.CollectionChanged),
-                    this);
-            }
-
-            var inpc = target as INotifyPropertyChanged;
-
-            if (inpc != null)
-            {
-                WeakSubscriptionManager.Unsubscribe<PropertyChangedEventArgs>(
-                    inpc,
-                    nameof(inpc.PropertyChanged),
-                    this);
-            }
-        }
 
         private object GetValue(object target)
         {
@@ -141,18 +60,23 @@ namespace Avalonia.Markup.Data
             var dictionary = target as IDictionary;
             var indexerProperty = GetIndexer(typeInfo);
             var indexerParameters = indexerProperty?.GetIndexParameters();
+
             if (indexerProperty != null && indexerParameters.Length == Arguments.Count)
             {
                 var convertedObjectArray = new object[indexerParameters.Length];
+
                 for (int i = 0; i < Arguments.Count; i++)
                 {
                     object temp = null;
+
                     if (!TypeUtilities.TryConvert(indexerParameters[i].ParameterType, Arguments[i], CultureInfo.InvariantCulture, out temp))
                     {
                         return AvaloniaProperty.UnsetValue;
                     }
+
                     convertedObjectArray[i] = temp;
                 }
+
                 var intArgs = convertedObjectArray.OfType<int>().ToArray();
 
                 // Try special cases where we can validate indicies
@@ -166,16 +90,18 @@ namespace Avalonia.Markup.Data
                     {
                         if (intArgs.Length == Arguments.Count && intArgs[0] >= 0 && intArgs[0] < list.Count)
                         {
-                            return list[intArgs[0]]; 
+                            return list[intArgs[0]];
                         }
+
                         return AvaloniaProperty.UnsetValue;
                     }
                     else if (dictionary != null)
                     {
                         if (dictionary.Contains(convertedObjectArray[0]))
                         {
-                            return dictionary[convertedObjectArray[0]]; 
+                            return dictionary[convertedObjectArray[0]];
                         }
+
                         return AvaloniaProperty.UnsetValue;
                     }
                     else
@@ -187,11 +113,11 @@ namespace Avalonia.Markup.Data
                 else
                 {
                     // Fallback to unchecked access
-                    return indexerProperty.GetValue(target, convertedObjectArray); 
+                    return indexerProperty.GetValue(target, convertedObjectArray);
                 }
             }
             // Multidimensional arrays end up here because the indexer search picks up the IList indexer instead of the
-            //  multidimensional indexer, which doesn't take the same number of arguments
+            // multidimensional indexer, which doesn't take the same number of arguments
             else if (typeInfo.IsArray)
             {
                 return GetValueFromArray((Array)target);
@@ -220,13 +146,16 @@ namespace Avalonia.Markup.Data
         private bool ConvertArgumentsToInts(out int[] intArgs)
         {
             intArgs = new int[Arguments.Count];
+
             for (int i = 0; i < Arguments.Count; ++i)
             {
                 object value;
+
                 if (!TypeUtilities.TryConvert(typeof(int), Arguments[i], CultureInfo.InvariantCulture, out value))
                 {
                     return false;
                 }
+
                 intArgs[i] = (int)value;
             }
             return true;
@@ -235,7 +164,8 @@ namespace Avalonia.Markup.Data
         private static PropertyInfo GetIndexer(TypeInfo typeInfo)
         {
             PropertyInfo indexer;
-            for (;typeInfo != null; typeInfo = typeInfo.BaseType?.GetTypeInfo())
+
+            for (; typeInfo != null; typeInfo = typeInfo.BaseType?.GetTypeInfo())
             {
                 // Check for the default indexer name first to make this faster.
                 // This will only be false when a class in VB has a custom indexer name.
@@ -243,14 +173,16 @@ namespace Avalonia.Markup.Data
                 {
                     return indexer;
                 }
+
                 foreach (var property in typeInfo.DeclaredProperties)
                 {
                     if (property.GetIndexParameters().Any())
                     {
                         return property;
                     }
-                } 
+                }
             }
+
             return null;
         }
 
@@ -272,6 +204,47 @@ namespace Avalonia.Markup.Data
             {
                 return false;
             }
+        }
+
+        private bool ShouldUpdate(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (sender is IList)
+            {
+                object indexObject;
+
+                if (!TypeUtilities.TryConvert(typeof(int), Arguments[0], CultureInfo.InvariantCulture, out indexObject))
+                {
+                    return false;
+                }
+
+                var index = (int)indexObject;
+
+                switch (e.Action)
+                {
+                    case NotifyCollectionChangedAction.Add:
+                        return index >= e.NewStartingIndex;
+                    case NotifyCollectionChangedAction.Remove:
+                        return index >= e.OldStartingIndex;
+                    case NotifyCollectionChangedAction.Replace:
+                        return index >= e.NewStartingIndex &&
+                               index < e.NewStartingIndex + e.NewItems.Count;
+                    case NotifyCollectionChangedAction.Move:
+                        return (index >= e.NewStartingIndex &&
+                                index < e.NewStartingIndex + e.NewItems.Count) ||
+                               (index >= e.OldStartingIndex &&
+                                index < e.OldStartingIndex + e.OldItems.Count);
+                    case NotifyCollectionChangedAction.Reset:
+                        return true;
+                }
+            }
+
+            return false;
+        }
+
+        private bool ShouldUpdate(object sender, PropertyChangedEventArgs e)
+        {
+            var typeInfo = sender.GetType().GetTypeInfo();
+            return typeInfo.GetDeclaredProperty(e.PropertyName)?.GetIndexParameters().Any() ?? false;
         }
     }
 }
