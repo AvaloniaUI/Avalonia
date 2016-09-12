@@ -51,7 +51,7 @@ namespace Avalonia.Rendering
                     s_currentFrames++;
                     var now = s_stopwatch.Elapsed;
                     var elapsed = now - s_lastMeasure;
-                    if (elapsed.TotalSeconds > 0)
+                    if (elapsed.TotalSeconds > 1)
                     {
                         s_fps = (int) (s_currentFrames/elapsed.TotalSeconds);
                         s_currentFrames = 0;
