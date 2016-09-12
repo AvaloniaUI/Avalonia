@@ -1,4 +1,3 @@
-using Avalonia.Android.CanvasRendering;
 using Avalonia.Android.Platform;
 using Avalonia.Android.Platform.Input;
 using Avalonia.Android.Platform.Specific;
@@ -35,7 +34,6 @@ namespace Avalonia.Android
                 .Bind<IPlatformSettings>().ToConstant(this)
                 .Bind<IPlatformThreadingInterface>().ToConstant(new AndroidThreadingInterface())
                 .Bind<ISystemDialogImpl>().ToTransient<SystemDialogImpl>()
-                .Bind<ITopLevelRenderer>().ToTransient<AndroidTopLevelRenderer>()
                 .Bind<IWindowingPlatform>().ToConstant(this);
 
             SkiaPlatform.Initialize();
