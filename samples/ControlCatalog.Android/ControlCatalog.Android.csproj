@@ -5,12 +5,12 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{FF69B927-C545-49AE-8E16-3D14D621AA12}</ProjectGuid>
+    <ProjectGuid>{29132311-1848-4FD6-AE0C-4FF841151BD3}</ProjectGuid>
     <ProjectTypeGuids>{EFBA0AD7-5A72-4C68-AF49-83D382785DCF};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Avalonia.AndroidTestApplication</RootNamespace>
-    <AssemblyName>Avalonia.AndroidTestApplication</AssemblyName>
+    <RootNamespace>ControlCatalog.Android</RootNamespace>
+    <AssemblyName>ControlCatalog.Android</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <AndroidApplication>true</AndroidApplication>
     <AndroidResgenFile>Resources\Resource.Designer.cs</AndroidResgenFile>
@@ -20,7 +20,7 @@
     <AndroidManifest>Properties\AndroidManifest.xml</AndroidManifest>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
+    <DebugSymbols>True</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
@@ -29,16 +29,12 @@
     <WarningLevel>4</WarningLevel>
     <AndroidUseSharedRuntime>True</AndroidUseSharedRuntime>
     <AndroidLinkMode>None</AndroidLinkMode>
-    <AndroidLinkSkip />
     <EmbedAssembliesIntoApk>False</EmbedAssembliesIntoApk>
     <BundleAssemblies>False</BundleAssemblies>
     <AndroidCreatePackagePerAbi>False</AndroidCreatePackagePerAbi>
     <AndroidSupportedAbis>armeabi,armeabi-v7a,x86</AndroidSupportedAbis>
-    <AndroidStoreUncompressedFileExtensions />
-    <MandroidI18n />
     <Debugger>Xamarin</Debugger>
     <AndroidEnableMultiDex>False</AndroidEnableMultiDex>
-    <DevInstrumentationEnabled>True</DevInstrumentationEnabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -58,42 +54,13 @@
     <EnableLLVM>False</EnableLLVM>
     <AndroidEnableMultiDex>False</AndroidEnableMultiDex>
     <EnableProguard>False</EnableProguard>
-    <DevInstrumentationEnabled>False</DevInstrumentationEnabled>
     <DebugSymbols>False</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Mono.Android" />
     <Reference Include="mscorlib" />
-    <Reference Include="Serilog, Version=1.5.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Serilog.1.5.14\lib\portable-net45+win+wpa81+wp80+MonoAndroid10+MonoTouch10\Serilog.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Splat, Version=1.6.2.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Splat.1.6.2\lib\monoandroid\Splat.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Sprache, Version=2.0.0.51, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Sprache.2.0.0.51\lib\portable-net4+netcore45+win8+wp8+sl5+MonoAndroid+Xamarin.iOS10+MonoTouch\Sprache.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Reactive.Core, Version=3.0.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\System.Reactive.Core.3.0.0\lib\netstandard1.3\System.Reactive.Core.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Reactive.Interfaces, Version=3.0.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\System.Reactive.Interfaces.3.0.0\lib\netstandard1.0\System.Reactive.Interfaces.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Reactive.Linq, Version=3.0.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\System.Reactive.Linq.3.0.0\lib\netstandard1.3\System.Reactive.Linq.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Reactive.PlatformServices, Version=3.0.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\System.Reactive.PlatformServices.3.0.0\lib\netstandard1.3\System.Reactive.PlatformServices.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Xml" />
   </ItemGroup>
@@ -103,15 +70,17 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
-    <None Include="packages.config" />
+    <None Include="GettingStarted.Xamarin" />
     <None Include="Resources\AboutResources.txt" />
     <None Include="Assets\AboutAssets.txt" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidResource Include="Resources\values\Strings.xml">
+    <AndroidResource Include="Resources\layout\Main.axml">
       <SubType>Designer</SubType>
     </AndroidResource>
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\values\Strings.xml" />
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\drawable\Icon.png" />
@@ -120,77 +89,81 @@
     <None Include="Properties\AndroidManifest.xml" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\Android\Avalonia.Android\Avalonia.Android.csproj">
-      <Project>{7b92af71-6287-4693-9dcb-bd5b6e927e23}</Project>
+    <ProjectReference Include="..\..\src\Android\Avalonia.Android\Avalonia.Android.csproj">
+      <Project>{7B92AF71-6287-4693-9DCB-BD5B6E927E23}</Project>
       <Name>Avalonia.Android</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\src\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj">
-      <Project>{3e53a01a-b331-47f3-b828-4a5717e77a24}</Project>
-      <Name>Avalonia.Markup.Xaml</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\src\Avalonia.Animation\Avalonia.Animation.csproj">
+    <ProjectReference Include="..\..\src\Avalonia.Animation\Avalonia.Animation.csproj">
       <Project>{d211e587-d8bc-45b9-95a4-f297c8fa5200}</Project>
       <Name>Avalonia.Animation</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\src\Avalonia.Base\Avalonia.Base.csproj">
+    <ProjectReference Include="..\..\src\Avalonia.Base\Avalonia.Base.csproj">
       <Project>{b09b78d8-9b26-48b0-9149-d64a2f120f3f}</Project>
       <Name>Avalonia.Base</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\src\Avalonia.Controls\Avalonia.Controls.csproj">
+    <ProjectReference Include="..\..\src\Avalonia.Controls\Avalonia.Controls.csproj">
       <Project>{d2221c82-4a25-4583-9b43-d791e3f6820c}</Project>
       <Name>Avalonia.Controls</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\src\Avalonia.Diagnostics\Avalonia.Diagnostics.csproj">
+    <ProjectReference Include="..\..\src\Avalonia.Diagnostics\Avalonia.Diagnostics.csproj">
       <Project>{7062ae20-5dcc-4442-9645-8195bdece63e}</Project>
       <Name>Avalonia.Diagnostics</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\src\Avalonia.Input\Avalonia.Input.csproj">
-      <Project>{62024b2d-53eb-4638-b26b-85eeaa54866e}</Project>
-      <Name>Avalonia.Input</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\src\Avalonia.Interactivity\Avalonia.Interactivity.csproj">
-      <Project>{6b0ed19d-a08b-461c-a9d9-a9ee40b0c06b}</Project>
-      <Name>Avalonia.Interactivity</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\src\Avalonia.Layout\Avalonia.Layout.csproj">
-      <Project>{42472427-4774-4c81-8aff-9f27b8e31721}</Project>
-      <Name>Avalonia.Layout</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\src\Avalonia.ReactiveUI\Avalonia.ReactiveUI.csproj">
-      <Project>{6417b24e-49c2-4985-8db2-3ab9d898ec91}</Project>
-      <Name>Avalonia.ReactiveUI</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\src\Avalonia.SceneGraph\Avalonia.SceneGraph.csproj">
-      <Project>{eb582467-6abb-43a1-b052-e981ba910e3a}</Project>
-      <Name>Avalonia.SceneGraph</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\src\Avalonia.Styling\Avalonia.Styling.csproj">
-      <Project>{f1baa01a-f176-4c6a-b39d-5b40bb1b148f}</Project>
-      <Name>Avalonia.Styling</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\src\Avalonia.Themes.Default\Avalonia.Themes.Default.csproj">
-      <Project>{3e10a5fa-e8da-48b1-ad44-6a5b6cb7750f}</Project>
-      <Name>Avalonia.Themes.Default</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Avalonia.DotNetFrameworkRuntime\Avalonia.DotNetFrameworkRuntime.csproj">
+    <ProjectReference Include="..\..\src\Avalonia.DotNetFrameworkRuntime\Avalonia.DotNetFrameworkRuntime.csproj">
       <Project>{4a1abb09-9047-4bd5-a4ad-a055e52c5ee0}</Project>
       <Name>Avalonia.DotNetFrameworkRuntime</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Avalonia.HtmlRenderer\Avalonia.HtmlRenderer.csproj">
+    <ProjectReference Include="..\..\src\Avalonia.HtmlRenderer\Avalonia.HtmlRenderer.csproj">
       <Project>{5fb2b005-0a7f-4dad-add4-3ed01444e63d}</Project>
       <Name>Avalonia.HtmlRenderer</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Skia\Avalonia.Skia.Android\Avalonia.Skia.Android.csproj">
+    <ProjectReference Include="..\..\src\Avalonia.Input\Avalonia.Input.csproj">
+      <Project>{62024b2d-53eb-4638-b26b-85eeaa54866e}</Project>
+      <Name>Avalonia.Input</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\Avalonia.Interactivity\Avalonia.Interactivity.csproj">
+      <Project>{6b0ed19d-a08b-461c-a9d9-a9ee40b0c06b}</Project>
+      <Name>Avalonia.Interactivity</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\Avalonia.Layout\Avalonia.Layout.csproj">
+      <Project>{42472427-4774-4c81-8aff-9f27b8e31721}</Project>
+      <Name>Avalonia.Layout</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\Avalonia.SceneGraph\Avalonia.SceneGraph.csproj">
+      <Project>{eb582467-6abb-43a1-b052-e981ba910e3a}</Project>
+      <Name>Avalonia.SceneGraph</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\Avalonia.Styling\Avalonia.Styling.csproj">
+      <Project>{f1baa01a-f176-4c6a-b39d-5b40bb1b148f}</Project>
+      <Name>Avalonia.Styling</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\Avalonia.Themes.Default\Avalonia.Themes.Default.csproj">
+      <Project>{3e10a5fa-e8da-48b1-ad44-6a5b6cb7750f}</Project>
+      <Name>Avalonia.Themes.Default</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj">
+      <Project>{3e53a01a-b331-47f3-b828-4a5717e77a24}</Project>
+      <Name>Avalonia.Markup.Xaml</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\Markup\Avalonia.Markup\Avalonia.Markup.csproj">
+      <Project>{6417e941-21bc-467b-a771-0de389353ce6}</Project>
+      <Name>Avalonia.Markup</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\Skia\Avalonia.Skia.Android\Avalonia.Skia.Android.csproj">
       <Project>{bd43f7c0-396b-4aa1-bad9-dfde54d51298}</Project>
       <Name>Avalonia.Skia.Android</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ControlCatalog\ControlCatalog.csproj">
+      <Project>{d0a739b9-3c68-4ba6-a328-41606954b6bd}</Project>
+      <Name>ControlCatalog</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
      Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+		<Target Name="BeforeBuild">
+		</Target>
+		<Target Name="AfterBuild">
+		</Target>
+ -->
 </Project>
