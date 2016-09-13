@@ -22,25 +22,25 @@ namespace Avalonia.Controls
         /// Defines the Left attached property.
         /// </summary>
         public static readonly AttachedProperty<double> LeftProperty =
-            AvaloniaProperty.RegisterAttached<Canvas, Control, double>("Left");
+            AvaloniaProperty.RegisterAttached<Canvas, Control, double>("Left", double.NaN);
 
         /// <summary>
         /// Defines the Top attached property.
         /// </summary>
         public static readonly AttachedProperty<double> TopProperty =
-            AvaloniaProperty.RegisterAttached<Canvas, Control, double>("Top");
+            AvaloniaProperty.RegisterAttached<Canvas, Control, double>("Top", double.NaN);
 
         /// <summary>
         /// Defines the Right attached property.
         /// </summary>
         public static readonly AttachedProperty<double> RightProperty =
-            AvaloniaProperty.RegisterAttached<Canvas, Control, double>("Right");
+            AvaloniaProperty.RegisterAttached<Canvas, Control, double>("Right", double.NaN);
 
         /// <summary>
         /// Defines the Bottom attached property.
         /// </summary>
         public static readonly AttachedProperty<double> BottomProperty =
-            AvaloniaProperty.RegisterAttached<Canvas, Control, double>("Bottom");
+            AvaloniaProperty.RegisterAttached<Canvas, Control, double>("Bottom", double.NaN);
 
         /// <summary>
         /// Initializes static members of the <see cref="Canvas"/> class.
