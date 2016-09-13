@@ -148,7 +148,7 @@ namespace Avalonia.Controls
             {
                 value = CoerceCaretIndex(value);
                 SetAndRaise(CaretIndexProperty, ref _caretIndex, value);
-                if (_undoRedoHelper.IsLastState && _undoRedoHelper.LastState.Text == Text)
+                if (_undoRedoHelper.IsLastState && _undoRedoHelper.LastState?.Text == Text)
                     _undoRedoHelper.UpdateLastState();
             }
         }
