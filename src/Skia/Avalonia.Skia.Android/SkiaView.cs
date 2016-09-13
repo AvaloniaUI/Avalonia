@@ -26,7 +26,6 @@ namespace Avalonia.Skia.Android
         public SkiaView(Activity context) : base(context)
         {
             _context = context;
-            SkiaPlatform.Initialize();
             Holder.AddCallback(this);
             _handler = new Handler(context.MainLooper);
         }
