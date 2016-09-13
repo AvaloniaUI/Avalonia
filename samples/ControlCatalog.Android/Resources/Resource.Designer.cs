@@ -9,9 +9,9 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-[assembly: global::Android.Runtime.ResourceDesignerAttribute("Avalonia.Skia.Android.TestApp.Resource", IsApplication=true)]
+[assembly: global::Android.Runtime.ResourceDesignerAttribute("ControlCatalog.Android.Resource", IsApplication=true)]
 
-namespace Avalonia.Skia.Android.TestApp
+namespace ControlCatalog.Android
 {
 	
 	
@@ -26,8 +26,8 @@ namespace Avalonia.Skia.Android.TestApp
 		
 		public static void UpdateIdValues()
 		{
-			global::Avalonia.Android.Resource.String.ApplicationName = global::Avalonia.Skia.Android.TestApp.Resource.String.ApplicationName;
-			global::Avalonia.Android.Resource.String.Hello = global::Avalonia.Skia.Android.TestApp.Resource.String.Hello;
+			global::Avalonia.Android.Resource.String.ApplicationName = global::ControlCatalog.Android.Resource.String.ApplicationName;
+			global::Avalonia.Android.Resource.String.Hello = global::ControlCatalog.Android.Resource.String.Hello;
 		}
 		
 		public partial class Attribute
