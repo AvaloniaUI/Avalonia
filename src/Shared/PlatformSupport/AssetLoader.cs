@@ -20,6 +20,12 @@ namespace Avalonia.Shared.PlatformSupport
 
         private AssemblyDescriptor _defaultAssembly;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AssetLoader"/> class.
+        /// </summary>
+        /// <param name="assembly">
+        /// The default assembly from which to load assets for which no assembly is specified.
+        /// </param>
         public AssetLoader(Assembly assembly = null)
         {
             if (assembly == null)
@@ -28,6 +34,10 @@ namespace Avalonia.Shared.PlatformSupport
                 _defaultAssembly = new AssemblyDescriptor(assembly);
         }
 
+        /// <summary>
+        /// Sets the default assembly from which to load assets for which no assembly is specified.
+        /// </summary>
+        /// <param name="assembly">The default assembly.</param>
         public void SetDefaultAssembly(Assembly assembly)
         {
             _defaultAssembly = new AssemblyDescriptor(assembly);

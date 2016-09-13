@@ -124,11 +124,6 @@ namespace Avalonia.Controls.Generators
             return false;
         }
 
-        /// <summary>
-        /// Gets the data template for the specified item.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns>The template.</returns>
         private ITreeDataTemplate GetTreeDataTemplate(object item, IDataTemplate primary)
         {
             var template = Owner.FindDataTemplate(item, primary) ?? FuncDataTemplate.Default;

@@ -30,8 +30,9 @@ namespace Avalonia.Controls
 
             public void Execute(object parameter) => GetCommand()?.Execute(parameter);
 
-            //Implementation isn't needed in this case
+#pragma warning disable CS0067 // Event not used
             public event EventHandler CanExecuteChanged;
+#pragma warning restore CS0067
         }
 
 

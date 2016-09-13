@@ -17,7 +17,9 @@ namespace Avalonia.Styling.UnitTests
             SubscribeCheckObservable = new TestObservable();
         }
 
+#pragma warning disable CS0067 // Event not used
         public event EventHandler<AvaloniaPropertyChangedEventArgs> PropertyChanged;
+#pragma warning restore CS0067
 
         public string Name { get; set; }
 
