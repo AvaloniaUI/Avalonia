@@ -695,7 +695,7 @@ namespace Avalonia.Controls
         private void SelectAll()
         {
             SelectionStart = 0;
-            SelectionEnd = Text.Length;
+            SelectionEnd = Text?.Length ?? 0;
         }
 
         private bool DeleteSelection()
