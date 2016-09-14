@@ -42,6 +42,17 @@ namespace Avalonia.Controls.Utils
 
         public bool IsLastState => _currentNode != null && _currentNode.Next == null;
 
+        public bool TryGetLastState(out TState _state)
+        {
+            _state = default(TState);
+            if (!IsLastState)
+                return false;
+
+            _state = _currentNode.Value;
+            return true;
+        }
+
+        public bool HasState => _currentNode != null;
         public void UpdateLastState(TState state)
         {
             _states.Last.Value = state;
@@ -51,8 +62,6 @@ namespace Avalonia.Controls.Utils
         {
             _states.Last.Value = _host.UndoRedoState;
         }
-
-        public TState? LastState => _currentNode?.Value;
 
         public void DiscardRedo()
         {
