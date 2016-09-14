@@ -28,8 +28,6 @@ namespace Avalonia.Controls.Utils
         public UndoRedoHelper(IUndoRedoHost host)
         {
             _host = host;
-            //_states.AddFirst(_host.UndoRedoState);
-            //_currentNode = _states.First;
             WeakTimer.StartWeakTimer(this, TimeSpan.FromSeconds(1));
         }
 
