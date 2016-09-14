@@ -32,18 +32,14 @@ namespace Avalonia.Media
             {'1', FillRule.NonZero }
         };
 
-        private StreamGeometry _geometry;
-
         private readonly StreamGeometryContext _context;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PathMarkupParser"/> class.
         /// </summary>
-        /// <param name="geometry">The geometry in which the path should be stored.</param>
-        /// <param name="context">The context for <paramref name="geometry"/>.</param>
-        public PathMarkupParser(StreamGeometry geometry, StreamGeometryContext context)
+        /// <param name="context">The context for the geometry.</param>
+        public PathMarkupParser(StreamGeometryContext context)
         {
-            _geometry = geometry;
             _context = context;
         }
 

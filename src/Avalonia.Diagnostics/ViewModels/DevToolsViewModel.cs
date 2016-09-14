@@ -11,8 +11,6 @@ namespace Avalonia.Diagnostics.ViewModels
 {
     internal class DevToolsViewModel : ReactiveObject
     {
-        private IControl _root;
-
         private ReactiveObject _content;
 
         private int _selectedTab;
@@ -27,7 +25,6 @@ namespace Avalonia.Diagnostics.ViewModels
 
         public DevToolsViewModel(IControl root)
         {
-            _root = root;
             _logicalTree = new TreePageViewModel(LogicalTreeNode.Create(root));
             _visualTree = new TreePageViewModel(VisualTreeNode.Create(root));
 

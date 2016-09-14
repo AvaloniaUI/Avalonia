@@ -21,7 +21,6 @@ namespace Avalonia
         /// <param name="index">
         /// The binding index. Later bindings should have higher indexes.
         /// </param>
-        /// <param name="validation">The validation settings for the binding.</param>
         public PriorityBindingEntry(PriorityLevel owner, int index)
         {
             _owner = owner;

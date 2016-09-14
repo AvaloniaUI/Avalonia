@@ -105,7 +105,7 @@ namespace Avalonia.Controls
 
         public TextBox()
         {
-            var canScrollHorizontally = this.GetObservable(TextWrappingProperty)
+            this.GetObservable(TextWrappingProperty)
                 .Select(x => x == TextWrapping.NoWrap)
                 .Subscribe(x => CanScrollHorizontally = x);
 

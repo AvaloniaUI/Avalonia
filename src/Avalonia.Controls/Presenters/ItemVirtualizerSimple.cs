@@ -359,7 +359,6 @@ namespace Avalonia.Controls.Presenters
             var count = Math.Min(Math.Abs(delta), panel.Children.Count);
             var move = count < panel.Children.Count;
             var first = delta < 0 && move ? panel.Children.Count + delta : 0;
-            var containers = panel.Children.GetRange(first, count).ToList();
 
             for (var i = 0; i < count; ++i)
             {

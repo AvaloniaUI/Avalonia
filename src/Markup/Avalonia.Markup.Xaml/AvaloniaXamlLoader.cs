@@ -8,14 +8,14 @@ using System.Reflection;
 using System.Text;
 using OmniXaml;
 using Avalonia.Platform;
+using Avalonia.Markup.Xaml.Context;
+using Avalonia.Markup.Xaml.Styling;
+using OmniXaml.ObjectAssembler;
+using Avalonia.Controls;
+using Avalonia.Markup.Xaml.Data;
 
 namespace Avalonia.Markup.Xaml
 {
-    using Context;
-    using Controls;
-    using Data;
-    using OmniXaml.ObjectAssembler;
-    using System.Linq;
     /// <summary>
     /// Loads XAML for a avalonia application.
     /// </summary>
@@ -47,7 +47,7 @@ namespace Avalonia.Markup.Xaml
         /// </summary>
         /// <remarks>
         /// TODO: Making this internal for now as I'm not sure that this is the correct
-        /// thing to do, but its needd by <see cref="StyleInclude"/> to get the URL of
+        /// thing to do, but its needed by <see cref="StyleInclude"/> to get the URL of
         /// the currently loading XAML file, as we can't use the OmniXAML parsing context
         /// there. Maybe we need a way to inject OmniXAML context into the objects its
         /// constructing?
