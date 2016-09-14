@@ -97,7 +97,9 @@ namespace Avalonia.Controls.Presenters
         /// <inheritdoc/>
         protected override void PanelCreated(IPanel panel)
         {
-            var task = MoveToPage(-1, SelectedIndex);
+#pragma warning disable 4014
+            MoveToPage(-1, SelectedIndex);
+#pragma warning restore 4014
         }
 
         /// <inheritdoc/>
@@ -139,7 +141,6 @@ namespace Avalonia.Controls.Presenters
 
                 if (toIndex != -1)
                 {
-                    var item = Items.Cast<object>().ElementAt(toIndex);
                     to = GetOrCreateContainer(toIndex);
                 }
 

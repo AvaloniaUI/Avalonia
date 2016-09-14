@@ -14,7 +14,9 @@ namespace Avalonia.Gtk
 {
     class EmbeddableImpl : WindowImplBase, IEmbeddableWindowImpl
     {
+#pragma warning disable CS0067 // Method not used
         public event Action LostFocus;
+#pragma warning restore CS0067
 
         public EmbeddableImpl(DrawingArea area) : base(area)
         {

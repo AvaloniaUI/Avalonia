@@ -8,7 +8,7 @@ using D2DGeometry = SharpDX.Direct2D1.Geometry;
 namespace Avalonia.Direct2D1.Media
 {
     /// <summary>
-    /// A Direct2D implementation of a <see cref="StreamGeometry"/>.
+    /// A Direct2D implementation of a <see cref="Avalonia.Media.StreamGeometry"/>.
     /// </summary>
     public class StreamGeometryImpl : GeometryImpl, IStreamGeometryImpl
     {
@@ -56,7 +56,7 @@ namespace Avalonia.Direct2D1.Media
         /// Opens the geometry to start defining it.
         /// </summary>
         /// <returns>
-        /// A <see cref="StreamGeometryContext"/> which can be used to define the geometry.
+        /// An <see cref="Avalonia.Platform.IStreamGeometryContextImpl"/> which can be used to define the geometry.
         /// </returns>
         public IStreamGeometryContextImpl Open()
         {

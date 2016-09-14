@@ -82,7 +82,6 @@ namespace Avalonia.Styling
         {
             if (Selector != null)
             {
-                var description = "Style " + Selector.ToString();
                 var match = Selector.Match(control);
 
                 if (match.ImmediateResult != false)
