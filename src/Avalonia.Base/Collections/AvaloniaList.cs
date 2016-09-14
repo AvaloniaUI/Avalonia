@@ -397,8 +397,6 @@ namespace Avalonia.Collections
         {
             Contract.Requires<ArgumentNullException>(items != null);
 
-            var list = (items as IList) ?? items.ToList();
-
             foreach (var i in items)
             {
                 // TODO: Optimize to only send as many notifications as necessary.

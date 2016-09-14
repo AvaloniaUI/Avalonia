@@ -208,6 +208,9 @@ namespace Avalonia.Media
         /// Pushes an opacity mask.
         /// </summary>
         /// <param name="mask">The opacity mask.</param>
+        /// <param name="bounds">
+        /// The size of the brush's target area. TODO: Are we sure this is needed?
+        /// </param>
         /// <returns>A disposable to undo the opacity mask.</returns>
         public PushedState PushOpacityMask(IBrush mask, Rect bounds)
         {
@@ -216,15 +219,24 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        /// Pushes a matrix transformation.
+        /// Pushes a matrix post-transformation.
         /// </summary>
         /// <param name="matrix">The matrix</param>
         /// <returns>A disposable used to undo the transformation.</returns>
         public PushedState PushPostTransform(Matrix matrix) => PushSetTransform(CurrentTransform*matrix);
 
+        /// <summary>
+        /// Pushes a matrix pre-transformation.
+        /// </summary>
+        /// <param name="matrix">The matrix</param>
+        /// <returns>A disposable used to undo the transformation.</returns>
         public PushedState PushPreTransform(Matrix matrix) => PushSetTransform(matrix*CurrentTransform);
-        
 
+        /// <summary>
+        /// Sets the current matrix transformation.
+        /// </summary>
+        /// <param name="matrix">The matrix</param>
+        /// <returns>A disposable used to undo the transformation.</returns>
         PushedState PushSetTransform(Matrix matrix)
         {
             var oldMatrix = CurrentTransform;
@@ -233,7 +245,10 @@ namespace Avalonia.Media
             return new PushedState(this, PushedState.PushedStateType.Matrix, oldMatrix);
         }
 
-
+        /// <summary>
+        /// Pushes a new transform context.
+        /// </summary>
+        /// <returns>A disposable used to undo the transformation.</returns>
         public PushedState PushTransformContainer()
         {
             _transformContainers.Push(new TransformContainer(CurrentTransform, _currentContainerTransform));
@@ -242,6 +257,9 @@ namespace Avalonia.Media
             return new PushedState(this, PushedState.PushedStateType.MatrixContainer);
         }
 
+        /// <summary>
+        /// Disposes of any resources held by the <see cref="DrawingContext"/>.
+        /// </summary>
         public void Dispose()
         {
             while (_states.Count != 0)

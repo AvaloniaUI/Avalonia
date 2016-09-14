@@ -157,7 +157,7 @@ namespace Avalonia.Controls
         /// </summary>
         public ScrollViewer()
         {
-            var extentAndViewport = Observable.CombineLatest(
+            Observable.CombineLatest(
                 this.GetObservable(ExtentProperty),
                 this.GetObservable(ViewportProperty))
                 .Select(x => new { Extent = x[0], Viewport = x[1] });

@@ -164,9 +164,7 @@ namespace Avalonia
 
             set
             {
-                var metadata = binding.Property.GetMetadata(GetType());
                 var sourceBinding = value as IBinding;
-
                 this.Bind(binding.Property, sourceBinding);
             }
         }

@@ -13,7 +13,6 @@ namespace Avalonia.Input.UnitTests
         [Fact]
         public void Down_Continue_Returns_Down_Control_In_Container()
         {
-            StackPanel container;
             Button current;
             Button next;
 
@@ -21,7 +20,7 @@ namespace Avalonia.Input.UnitTests
             {
                 Children = new Controls
                 {
-                    (container = new StackPanel
+                    new StackPanel
                     {
                         [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Continue,
                         Children = new Controls
@@ -30,7 +29,7 @@ namespace Avalonia.Input.UnitTests
                             (current = new Button { Name = "Button2" }),
                             (next = new Button { Name = "Button3" }),
                         }
-                    }),
+                    },
                     new StackPanel
                     {
                         [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Continue,
@@ -52,7 +51,6 @@ namespace Avalonia.Input.UnitTests
         [Fact]
         public void Down_Continue_Returns_First_Control_In_Down_Sibling_Container()
         {
-            StackPanel container;
             Button current;
             Button next;
 
@@ -60,7 +58,7 @@ namespace Avalonia.Input.UnitTests
             {
                 Children = new Controls
                 {
-                    (container = new StackPanel
+                    new StackPanel
                     {
                         [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Continue,
                         Children = new Controls
@@ -69,7 +67,7 @@ namespace Avalonia.Input.UnitTests
                             new Button { Name = "Button2" },
                             (current = new Button { Name = "Button3" }),
                         }
-                    }),
+                    },
                     new StackPanel
                     {
                         [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Continue,
@@ -91,7 +89,6 @@ namespace Avalonia.Input.UnitTests
         [Fact]
         public void Down_Continue_Returns_Down_Sibling()
         {
-            StackPanel container;
             Button current;
             Button next;
 
@@ -99,7 +96,7 @@ namespace Avalonia.Input.UnitTests
             {
                 Children = new Controls
                 {
-                    (container = new StackPanel
+                    new StackPanel
                     {
                         [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Continue,
                         Children = new Controls
@@ -108,7 +105,7 @@ namespace Avalonia.Input.UnitTests
                             new Button { Name = "Button2" },
                             (current = new Button { Name = "Button3" }),
                         }
-                    }),
+                    },
                     (next = new Button { Name = "Button4" }),
                 }
             };
@@ -121,7 +118,6 @@ namespace Avalonia.Input.UnitTests
         [Fact]
         public void Down_Continue_Returns_First_Control_In_Down_Uncle_Container()
         {
-            StackPanel container;
             Button current;
             Button next;
 
@@ -133,7 +129,7 @@ namespace Avalonia.Input.UnitTests
                     {
                         Children = new Controls
                         {
-                            (container = new StackPanel
+                            new StackPanel
                             {
                                 [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Continue,
                                 Children = new Controls
@@ -142,7 +138,7 @@ namespace Avalonia.Input.UnitTests
                                     new Button { Name = "Button2" },
                                     (current = new Button { Name = "Button3" }),
                                 }
-                            }),
+                            },
                         },
                     },
                     new StackPanel
@@ -185,7 +181,6 @@ namespace Avalonia.Input.UnitTests
         [Fact]
         public void Down_Continue_Wraps()
         {
-            StackPanel container;
             Button current;
             Button next;
 
@@ -199,7 +194,7 @@ namespace Avalonia.Input.UnitTests
                         [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Continue,
                         Children = new Controls
                         {
-                            (container = new StackPanel
+                            new StackPanel
                             {
                                 [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Continue,
                                 Children = new Controls
@@ -208,7 +203,7 @@ namespace Avalonia.Input.UnitTests
                                     new Button { Name = "Button2" },
                                     new Button { Name = "Button3" },
                                 }
-                            }),
+                            },
                         },
                     },
                     new StackPanel
@@ -232,7 +227,6 @@ namespace Avalonia.Input.UnitTests
         [Fact]
         public void Down_Cycle_Returns_Down_Control_In_Container()
         {
-            StackPanel container;
             Button current;
             Button next;
 
@@ -240,7 +234,7 @@ namespace Avalonia.Input.UnitTests
             {
                 Children = new Controls
                 {
-                    (container = new StackPanel
+                    new StackPanel
                     {
                         [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Cycle,
                         Children = new Controls
@@ -249,7 +243,7 @@ namespace Avalonia.Input.UnitTests
                             (current = new Button { Name = "Button2" }),
                             (next = new Button { Name = "Button3" }),
                         }
-                    }),
+                    },
                     new StackPanel
                     {
                         Children = new Controls
@@ -270,7 +264,6 @@ namespace Avalonia.Input.UnitTests
         [Fact]
         public void Down_Cycle_Wraps_To_First()
         {
-            StackPanel container;
             Button current;
             Button next;
 
@@ -278,7 +271,7 @@ namespace Avalonia.Input.UnitTests
             {
                 Children = new Controls
                 {
-                    (container = new StackPanel
+                    new StackPanel
                     {
                         [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Cycle,
                         Children = new Controls
@@ -287,7 +280,7 @@ namespace Avalonia.Input.UnitTests
                             new Button { Name = "Button2" },
                             (current = new Button { Name = "Button3" }),
                         }
-                    }),
+                    },
                     new StackPanel
                     {
                         Children = new Controls
@@ -308,7 +301,6 @@ namespace Avalonia.Input.UnitTests
         [Fact]
         public void Down_Contained_Returns_Down_Control_In_Container()
         {
-            StackPanel container;
             Button current;
             Button next;
 
@@ -316,7 +308,7 @@ namespace Avalonia.Input.UnitTests
             {
                 Children = new Controls
                 {
-                    (container = new StackPanel
+                    new StackPanel
                     {
                         [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Contained,
                         Children = new Controls
@@ -325,7 +317,7 @@ namespace Avalonia.Input.UnitTests
                             (current = new Button { Name = "Button2" }),
                             (next = new Button { Name = "Button3" }),
                         }
-                    }),
+                    },
                     new StackPanel
                     {
                         [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Contained,
@@ -347,24 +339,22 @@ namespace Avalonia.Input.UnitTests
         [Fact]
         public void Down_Contained_Stops_At_End()
         {
-            StackPanel container;
             Button current;
-            Button next;
 
             var top = new StackPanel
             {
                 Children = new Controls
                 {
-                    (container = new StackPanel
+                    new StackPanel
                     {
                         [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Contained,
                         Children = new Controls
                         {
-                            (next = new Button { Name = "Button1" }),
+                            new Button { Name = "Button1" },
                             new Button { Name = "Button2" },
                             (current = new Button { Name = "Button3" }),
                         }
-                    }),
+                    },
                     new StackPanel
                     {
                         [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Contained,
@@ -386,14 +376,13 @@ namespace Avalonia.Input.UnitTests
         [Fact]
         public void Down_None_Does_Nothing()
         {
-            StackPanel container;
             Button current;
 
             var top = new StackPanel
             {
                 Children = new Controls
                 {
-                    (container = new StackPanel
+                    new StackPanel
                     {
                         [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.None,
                         Children = new Controls
@@ -402,7 +391,7 @@ namespace Avalonia.Input.UnitTests
                             (current = new Button { Name = "Button2" }),
                             new Button { Name = "Button3" },
                         }
-                    }),
+                    },
                     new StackPanel
                     {
                         [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Contained,
@@ -424,7 +413,6 @@ namespace Avalonia.Input.UnitTests
         [Fact]
         public void Up_Continue_Returns_Up_Control_In_Container()
         {
-            StackPanel container;
             Button current;
             Button next;
 
@@ -432,7 +420,7 @@ namespace Avalonia.Input.UnitTests
             {
                 Children = new Controls
                 {
-                    (container = new StackPanel
+                    new StackPanel
                     {
                         [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Continue,
                         Children = new Controls
@@ -441,7 +429,7 @@ namespace Avalonia.Input.UnitTests
                             (next = new Button { Name = "Button2" }),
                             (current = new Button { Name = "Button3" }),
                         }
-                    }),
+                    },
                     new StackPanel
                     {
                         [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Contained,
@@ -463,7 +451,6 @@ namespace Avalonia.Input.UnitTests
         [Fact]
         public void Up_Continue_Returns_Last_Control_In_Up_Sibling_Container()
         {
-            StackPanel container;
             Button current;
             Button next;
 
@@ -471,7 +458,7 @@ namespace Avalonia.Input.UnitTests
             {
                 Children = new Controls
                 {
-                    (container = new StackPanel
+                    new StackPanel
                     {
                         [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Continue,
                         Children = new Controls
@@ -480,7 +467,7 @@ namespace Avalonia.Input.UnitTests
                             new Button { Name = "Button2" },
                             (next = new Button { Name = "Button3" }),
                         }
-                    }),
+                    },
                     new StackPanel
                     {
                         [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Continue,
@@ -502,7 +489,6 @@ namespace Avalonia.Input.UnitTests
         [Fact]
         public void Up_Continue_Returns_Last_Child_Of_Sibling()
         {
-            StackPanel container;
             Button current;
             Button next;
 
@@ -511,7 +497,7 @@ namespace Avalonia.Input.UnitTests
                 [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Continue,
                 Children = new Controls
                 {
-                    (container = new StackPanel
+                    new StackPanel
                     {
                         [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Continue,
                         Children = new Controls
@@ -520,7 +506,7 @@ namespace Avalonia.Input.UnitTests
                             new Button { Name = "Button2" },
                             (next = new Button { Name = "Button3" }),
                         }
-                    }),
+                    },
                     (current = new Button { Name = "Button4" }),
                 }
             };
@@ -533,7 +519,6 @@ namespace Avalonia.Input.UnitTests
         [Fact]
         public void Up_Continue_Returns_Last_Control_In_Up_Nephew_Container()
         {
-            StackPanel container;
             Button current;
             Button next;
 
@@ -545,7 +530,7 @@ namespace Avalonia.Input.UnitTests
                     {
                         Children = new Controls
                         {
-                            (container = new StackPanel
+                            new StackPanel
                             {
                                 [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Continue,
                                 Children = new Controls
@@ -554,7 +539,7 @@ namespace Avalonia.Input.UnitTests
                                     new Button { Name = "Button2" },
                                     (next = new Button { Name = "Button3" }),
                                 }
-                            }),
+                            },
                         },
                     },
                     new StackPanel
@@ -578,7 +563,6 @@ namespace Avalonia.Input.UnitTests
         [Fact]
         public void Up_Continue_Wraps()
         {
-            StackPanel container;
             Button current;
             Button next;
 
@@ -590,7 +574,7 @@ namespace Avalonia.Input.UnitTests
                     {
                         Children = new Controls
                         {
-                            (container = new StackPanel
+                            new StackPanel
                             {
                                 [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Continue,
                                 Children = new Controls
@@ -599,7 +583,7 @@ namespace Avalonia.Input.UnitTests
                                     new Button { Name = "Button2" },
                                     new Button { Name = "Button3" },
                                 }
-                            }),
+                            },
                         },
                     },
                     new StackPanel
@@ -643,7 +627,6 @@ namespace Avalonia.Input.UnitTests
         [Fact]
         public void Up_Cycle_Returns_Up_Control_In_Container()
         {
-            StackPanel container;
             Button current;
             Button next;
 
@@ -651,7 +634,7 @@ namespace Avalonia.Input.UnitTests
             {
                 Children = new Controls
                 {
-                    (container = new StackPanel
+                    new StackPanel
                     {
                         [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Cycle,
                         Children = new Controls
@@ -660,7 +643,7 @@ namespace Avalonia.Input.UnitTests
                             (current = new Button { Name = "Button2" }),
                             new Button { Name = "Button3" },
                         }
-                    }),
+                    },
                     new StackPanel
                     {
                         [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Cycle,
@@ -682,7 +665,6 @@ namespace Avalonia.Input.UnitTests
         [Fact]
         public void Up_Cycle_Wraps_To_Last()
         {
-            StackPanel container;
             Button current;
             Button next;
 
@@ -690,7 +672,7 @@ namespace Avalonia.Input.UnitTests
             {
                 Children = new Controls
                 {
-                    (container = new StackPanel
+                    new StackPanel
                     {
                         [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Cycle,
                         Children = new Controls
@@ -699,7 +681,7 @@ namespace Avalonia.Input.UnitTests
                             new Button { Name = "Button2" },
                             (next = new Button { Name = "Button3" }),
                         }
-                    }),
+                    },
                     new StackPanel
                     {
                         [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Cycle,
@@ -721,7 +703,6 @@ namespace Avalonia.Input.UnitTests
         [Fact]
         public void Up_Contained_Returns_Up_Control_In_Container()
         {
-            StackPanel container;
             Button current;
             Button next;
 
@@ -729,7 +710,7 @@ namespace Avalonia.Input.UnitTests
             {
                 Children = new Controls
                 {
-                    (container = new StackPanel
+                    new StackPanel
                     {
                         [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Contained,
                         Children = new Controls
@@ -738,7 +719,7 @@ namespace Avalonia.Input.UnitTests
                             (current = new Button { Name = "Button2" }),
                             new Button { Name = "Button3" },
                         }
-                    }),
+                    },
                     new StackPanel
                     {
                         [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Contained,
@@ -760,14 +741,13 @@ namespace Avalonia.Input.UnitTests
         [Fact]
         public void Up_Contained_Stops_At_Beginning()
         {
-            StackPanel container;
             Button current;
 
             var top = new StackPanel
             {
                 Children = new Controls
                 {
-                    (container = new StackPanel
+                    new StackPanel
                     {
                         [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Contained,
                         Children = new Controls
@@ -776,7 +756,7 @@ namespace Avalonia.Input.UnitTests
                             new Button { Name = "Button2" },
                             new Button { Name = "Button3" },
                         }
-                    }),
+                    },
                     new StackPanel
                     {
                         [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Contained,

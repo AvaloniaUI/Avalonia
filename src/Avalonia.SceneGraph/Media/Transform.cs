@@ -3,6 +3,7 @@
 
 using System;
 using Avalonia.Animation;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Media
 {
