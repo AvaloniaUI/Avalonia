@@ -64,8 +64,6 @@ namespace Avalonia
         {
             Contract.Requires<ArgumentNullException>(type != null);
 
-            var i = type.GetTypeInfo();
-
             while (type != null)
             {
                 // Ensure the type's static ctor has been run.
@@ -265,7 +263,8 @@ namespace Avalonia
         /// <param name="property">The property.</param>
         /// <remarks>
         /// You won't usually want to call this method directly, instead use the
-        /// <see cref="AvaloniaProperty.Register"/> method.
+        /// <see cref="AvaloniaProperty.Register{TOwner, TValue}(string, TValue, bool, Data.BindingMode, Func{TOwner, TValue, TValue}, Action{IAvaloniaObject, bool})"/>
+        /// method.
         /// </remarks>
         public void Register(Type type, AvaloniaProperty property)
         {

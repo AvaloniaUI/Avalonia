@@ -83,8 +83,6 @@ namespace Avalonia.Shared.PlatformSupport
         {
             if (!uri.IsAbsoluteUri || uri.Scheme == "resm")
             {
-                var uriQueryParams = ParseQueryString(uri);
-                var baseUriQueryParams = uri != null ? ParseQueryString(uri) : null;
                 var asm = GetAssembly(uri) ?? GetAssembly(baseUri) ?? _defaultAssembly;
 
                 if (asm == null && _defaultAssembly == null)
