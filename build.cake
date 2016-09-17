@@ -660,9 +660,9 @@ Task("Run-Unit-Tests")
         Parallelism = ParallelismOption.None 
     };
 
-    if (isRunningOnWindows)
+    if (!isRunningOnWindows)
     {
-        settings.NoAppDomain = false;
+        settings.NoAppDomain = true;
     }
 
     foreach (var file in unitTests)
