@@ -14,7 +14,7 @@ using Xunit;
 
 namespace Avalonia.Markup.UnitTests.Data
 {
-    public class BindingExpressionTests
+    public class BindingExpressionTests : IClassFixture<InvariantCultureFixture>
     {
         [Fact]
         public async void Should_Get_Simple_Property_Value()

@@ -13,7 +13,7 @@ using Xunit;
 
 namespace Avalonia.Markup.UnitTests.Data
 {
-    public class ExpressionObserverTests_DataValidation
+    public class ExpressionObserverTests_DataValidation : IClassFixture<InvariantCultureFixture>
     {
         [Fact]
         public void Doesnt_Send_DataValidationError_When_DataValidatation_Not_Enabled()
