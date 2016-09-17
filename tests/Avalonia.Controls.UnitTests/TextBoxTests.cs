@@ -42,6 +42,58 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Press_Ctrl_A_Select_All_Text()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "1234"
+                };
+
+                RaiseKeyEvent(target, Key.A, InputModifiers.Control);
+
+                Assert.Equal(0, target.SelectionStart);
+                Assert.Equal(4, target.SelectionEnd);
+            }
+        }
+
+        [Fact]
+        public void Press_Ctrl_A_Select_All_Null_Text()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate()
+                };
+
+                RaiseKeyEvent(target, Key.A, InputModifiers.Control);
+
+                Assert.Equal(0, target.SelectionStart);
+                Assert.Equal(0, target.SelectionEnd);
+            }
+        }
+
+        [Fact]
+        public void Press_Ctrl_Z_With_Not_Modify_Text()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "1234"
+                };
+
+                RaiseKeyEvent(target, Key.Z, InputModifiers.Control);
+
+                Assert.Equal("1234", target.Text);
+            }
+        }
+
+        [Fact]
         public void Typing_Beginning_With_0_Should_Not_Modify_Text_When_Bound_To_Int()
         {
             using (UnitTestApplication.Start(Services))
