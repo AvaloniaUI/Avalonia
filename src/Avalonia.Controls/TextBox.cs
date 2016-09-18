@@ -239,7 +239,21 @@ namespace Avalonia.Controls
         protected override void OnGotFocus(GotFocusEventArgs e)
         {
             base.OnGotFocus(e);
-            _presenter.ShowCaret();
+
+            // when navigating to a textbox via the tab key, select all text if
+            //   1) this textbox is *not* a multiline textbox
+            //   2) this textbox has any text to select
+            if (e.NavigationMethod == NavigationMethod.Tab &&
+                !AcceptsReturn &&
+                Text?.Length > 0)
+            {
+                SelectionStart = 0;
+                SelectionEnd = Text.Length;
+            }
+            else
+            {
+                _presenter.ShowCaret();
+            }
         }
 
         protected override void OnLostFocus(RoutedEventArgs e)
