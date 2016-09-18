@@ -33,7 +33,16 @@ namespace Avalonia.Media
         {
             Contract.Requires<ArgumentNullException>(text != null);
             Contract.Requires<ArgumentNullException>(fontFamilyName != null);
-            Contract.Requires<ArgumentException>(fontSize > 0);
+
+            if (fontSize <= 0)
+            {
+                throw new ArgumentException("FontSize must be greater than 0");
+            }
+
+            if (fontWeight <= 0)
+            {
+                throw new ArgumentException("FontWeight must be greater than 0");
+            }
 
             Text = text;
             FontFamilyName = fontFamilyName;
