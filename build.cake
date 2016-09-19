@@ -10,6 +10,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #tool "nuget:?package=xunit.runner.console&version=2.1.0"
+#tool "nuget:?package=OpenCover"
 
 ///////////////////////////////////////////////////////////////////////////////
 // USINGS
@@ -670,18 +671,35 @@ Task("Run-Unit-Tests")
         "./tools/xunit.runner.console/tools/xunit.console.x86.exe" :
         "./tools/xunit.runner.console/tools/xunit.console.exe";
 
-    var settings = new XUnit2Settings 
+    var xUnitSettings = new XUnit2Settings 
     { 
         ToolPath = toolPath,
-        Parallelism = ParallelismOption.None 
+        Parallelism = ParallelismOption.None,
+        ShadowCopy = false
     };
 
-    settings.NoAppDomain = !isRunningOnWindows;
+    xUnitSettings.NoAppDomain = !isRunningOnWindows;
+
+    var openCoverOutput = artifactsDir.GetFilePath(new FilePath("./result.xml"));
+    var openCoverSettings = new OpenCoverSettings
+        {
+            ArgumentCustomization = openCoverArgs => openCoverArgs.AppendSwitch("-mergeoutput", "")
+        }
+        .WithFilter("+[Avalonia.*]* -[*Test*]*");;
 
     foreach (var file in unitTests)
     {
         Information("Running test " + file.GetFilenameWithoutExtension());
-        XUnit2(file.FullPath, settings);
+        if(isRunningOnWindows)
+        {
+            OpenCover(context => {
+                context.XUnit2(file.FullPath, xUnitSettings);
+            }, openCoverOutput, openCoverSettings);
+        }
+        else
+        {
+            XUnit2(file.FullPath, xUnitSettings);
+        }
     }
 });
 
