@@ -77,7 +77,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Press_Ctrl_Z_With_Not_Modify_Text()
+        public void Press_Ctrl_Z_Will_Not_Modify_Text()
         {
             using (UnitTestApplication.Start(Services))
             {
