@@ -219,7 +219,7 @@ namespace Avalonia.Controls.Presenters
         {
             var text = Text;
 
-            if (!string.IsNullOrWhiteSpace(text))
+            if (!string.IsNullOrEmpty(text))
             {
                 return base.MeasureOverride(availableSize);
             }
