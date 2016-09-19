@@ -379,8 +379,20 @@ namespace Avalonia.Controls
 
                     if (!DeleteSelection() && CaretIndex > 0)
                     {
-                        SetTextInternal(text.Substring(0, caretIndex - 1) + text.Substring(caretIndex));
-                        --CaretIndex;
+                        var removedCharacters = 1;
+                        // handle deleting /r/n
+                        // you don't ever want to leave a dangling /r around. So, if deleting /n, check to see if 
+                        // a /r should also be deleted.
+                        if (CaretIndex > 1 &&
+                            text[CaretIndex - 1] == '\n' &&
+                            text[CaretIndex - 2] == '\r')
+                        {
+                            removedCharacters = 2;
+                        }
+
+                        SetTextInternal(text.Substring(0, caretIndex - removedCharacters) + text.Substring(caretIndex));
+                        CaretIndex -= removedCharacters;
+                        SelectionStart = SelectionEnd = CaretIndex;
                     }
 
                     break;
@@ -393,7 +405,18 @@ namespace Avalonia.Controls
 
                     if (!DeleteSelection() && caretIndex < text.Length)
                     {
-                        SetTextInternal(text.Substring(0, caretIndex) + text.Substring(caretIndex + 1));
+                        var removedCharacters = 1;
+                        // handle deleting /r/n
+                        // you don't ever want to leave a dangling /r around. So, if deleting /n, check to see if 
+                        // a /r should also be deleted.
+                        if (CaretIndex < text.Length - 1 &&
+                            text[caretIndex + 1] == '\n' &&
+                            text[caretIndex] == '\r')
+                        {
+                            removedCharacters = 2;
+                        }
+
+                        SetTextInternal(text.Substring(0, caretIndex) + text.Substring(caretIndex + removedCharacters));
                     }
 
                     break;
