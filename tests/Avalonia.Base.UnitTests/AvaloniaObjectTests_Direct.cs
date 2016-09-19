@@ -337,7 +337,6 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void Property_Notifies_Initialized()
         {
-            Class1 target;
             bool raised = false;
 
             Class1.FooProperty.Initialized.Subscribe(e =>
@@ -346,7 +345,7 @@ namespace Avalonia.Base.UnitTests
                          (string)e.NewValue == "initial" &&
                          e.Priority == BindingPriority.Unset);
 
-            target = new Class1();
+            var target = new Class1();
 
             Assert.True(raised);
         }

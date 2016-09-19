@@ -12,7 +12,7 @@ namespace Avalonia.Data
     /// <remarks>
     /// Whereas an <see cref="IBinding"/> holds a description of a binding such as "Bind to the X
     /// property on a control's DataContext"; this class represents a binding that has been 
-    /// *instanced* by calling <see cref="IBinding.Initiate(IAvaloniaObject, AvaloniaProperty, object)"/>
+    /// *instanced* by calling <see cref="IBinding.Initiate(IAvaloniaObject, AvaloniaProperty, object, bool)"/>
     /// on a target object.
     /// 
     /// When a binding is initiated, it can return one of 3 possible sources for the binding:

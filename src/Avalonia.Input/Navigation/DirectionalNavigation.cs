@@ -90,7 +90,6 @@ namespace Avalonia.Input.Navigation
         /// <returns>The element's focusable descendents.</returns>
         private static IEnumerable<IInputElement> GetFocusableDescendents(IInputElement element)
         {
-            var mode = KeyboardNavigation.GetDirectionalNavigation((InputElement)element);
             var children = element.GetVisualChildren().OfType<IInputElement>();
 
             foreach (var child in children)

@@ -77,6 +77,7 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
+    <Compile Include="Media\FormattedTextTests.cs" />
     <Compile Include="Media\PathMarkupParserTests.cs" />
     <Compile Include="RelativeRectComparer.cs" />
     <Compile Include="RelativeRectTests.cs" />

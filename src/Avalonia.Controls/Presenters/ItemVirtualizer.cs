@@ -16,8 +16,6 @@ namespace Avalonia.Controls.Presenters
     /// </summary>
     internal abstract class ItemVirtualizer : IVirtualizingController, IDisposable
     {
-        private bool disposedValue;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemVirtualizer"/> class.
         /// </summary>

@@ -1,27 +1,39 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Platform;
 using Avalonia.Shared.PlatformSupport;
-using System.IO;
 
 namespace Avalonia
 {
+    /// <summary>
+    /// Initializes platform-specific services for an <see cref="Application"/>.
+    /// </summary>
     public sealed class AppBuilder : AppBuilderBase<AppBuilder>
     {
-        public AppBuilder() : base(new StandardRuntimePlatform(), () => StandardRuntimePlatformServices.Register())
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AppBuilder"/> class.
+        /// </summary>
+        public AppBuilder()
+            : base(new StandardRuntimePlatform(), () => StandardRuntimePlatformServices.Register())
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AppBuilder"/> class.
+        /// </summary>
+        /// <param name="app">The <see cref="Application"/> instance.</param>
         public AppBuilder(Application app) : this()
         {
             Instance = app;
         }
 
+        /// <summary>
+        /// Instructs the <see cref="AppBuilder"/> to use the best settings for the platform.
+        /// </summary>
+        /// <returns>An <see cref="AppBuilder"/> instance.</returns>
         public AppBuilder UsePlatformDetect()
         {
             var os = RuntimePlatform.GetRuntimeInfo().OperatingSystem;

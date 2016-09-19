@@ -6,11 +6,12 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Avalonia.Data;
 using Avalonia.Markup.Data.Plugins;
+using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Markup.UnitTests.Data.Plugins
 {
-    public class DataAnnotationsValidationPluginTests
+    public class DataAnnotationsValidationPluginTests : IClassFixture<InvariantCultureFixture>
     {
         [Fact]
         public void Should_Match_Property_With_ValidatorAttribute()

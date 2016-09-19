@@ -39,7 +39,7 @@ namespace Avalonia.Media
 
             using (StreamGeometryContext ctx = result.Open())
             {
-                PathMarkupParser parser = new PathMarkupParser(result, ctx);
+                PathMarkupParser parser = new PathMarkupParser(ctx);
                 parser.Parse(s);
                 return result;
             }

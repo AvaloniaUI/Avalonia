@@ -14,7 +14,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         {
         }
 
-        public WindowState WindowState
+        public new WindowState WindowState
         {
             get { return WindowState.Normal; }
             set { }

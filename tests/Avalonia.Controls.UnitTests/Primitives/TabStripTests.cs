@@ -19,8 +19,10 @@ namespace Avalonia.Controls.UnitTests.Primitives
         {
             var items = new[]
             {
+#pragma warning disable CS0252 // Possible unintended reference comparison; left hand side needs cast
                 Mock.Of<IHeadered>(x => x.Header == "foo"),
                 Mock.Of<IHeadered>(x => x.Header == "bar"),
+#pragma warning restore CS0252 // Possible unintended reference comparison; left hand side needs cast
             };
 
             var target = new TabStrip

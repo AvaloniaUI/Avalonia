@@ -4,6 +4,7 @@
 using System;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Media.Imaging
 {

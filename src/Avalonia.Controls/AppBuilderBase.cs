@@ -9,9 +9,9 @@ using Avalonia.Platform;
 namespace Avalonia.Controls
 {
     /// <summary>
-    /// Initializes up platform-specific services for an <see cref="Application"/>.
+    /// Base class for initializing platform-specific services for an <see cref="Application"/>.
     /// </summary>
-    /// <typeparam name="TAppBuilder"></typeparam>
+    /// <typeparam name="TAppBuilder">The type of the AppBuilder class itself.</typeparam>
     public abstract class AppBuilderBase<TAppBuilder> where TAppBuilder : AppBuilderBase<TAppBuilder>, new()
     {
         /// <summary>
@@ -140,6 +140,7 @@ namespace Avalonia.Controls
         /// Specifies a windowing subsystem to use.
         /// </summary>
         /// <param name="initializer">The method to call to initialize the windowing subsystem.</param>
+        /// <param name="name">The name of the windowing subsystem.</param>
         /// <returns>An <typeparamref name="TAppBuilder"/> instance.</returns>
         public TAppBuilder UseWindowingSubsystem(Action initializer, string name = "")
         {
@@ -159,6 +160,7 @@ namespace Avalonia.Controls
         /// Specifies a rendering subsystem to use.
         /// </summary>
         /// <param name="initializer">The method to call to initialize the rendering subsystem.</param>
+        /// <param name="name">The name of the rendering subsystem.</param>
         /// <returns>An <typeparamref name="TAppBuilder"/> instance.</returns>
         public TAppBuilder UseRenderingSubsystem(Action initializer, string name = "")
         {
