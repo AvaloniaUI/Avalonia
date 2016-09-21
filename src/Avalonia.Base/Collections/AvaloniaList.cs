@@ -188,7 +188,7 @@ namespace Avalonia.Collections
             Validate?.Invoke(item);
             int index = _inner.Count;
             _inner.Add(item);
-            NotifyAdd(new[] { item }, index);
+            NotifyAdd(new[] { item }.ToList(), index);
         }
 
         /// <summary>
@@ -290,7 +290,7 @@ namespace Avalonia.Collections
         {
             Validate?.Invoke(item);
             _inner.Insert(index, item);
-            NotifyAdd(new[] { item }, index);
+            NotifyAdd(new[] { item }.ToList(), index);
         }
 
         /// <summary>
@@ -382,7 +382,7 @@ namespace Avalonia.Collections
             if (index != -1)
             {
                 _inner.RemoveAt(index);
-                NotifyRemove(new[] { item }, index);
+                NotifyRemove(new[] { item }.ToList(), index);
                 return true;
             }
 
@@ -412,7 +412,7 @@ namespace Avalonia.Collections
         {
             T item = _inner[index];
             _inner.RemoveAt(index);
-            NotifyRemove(new[] { item }, index);
+            NotifyRemove(new[] { item }.ToList(), index);
         }
 
         /// <summary>
