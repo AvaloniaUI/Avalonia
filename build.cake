@@ -680,7 +680,7 @@ Task("Run-Unit-Tests")
 
     xUnitSettings.NoAppDomain = !isRunningOnWindows;
 
-    var openCoverOutput = artifactsDir.GetFilePath(new FilePath("./result.xml"));
+    var openCoverOutput = artifactsDir.GetFilePath(new FilePath("./coverage.xml"));
     var openCoverSettings = new OpenCoverSettings
         {
             ArgumentCustomization = openCoverArgs => openCoverArgs.AppendSwitch("-mergeoutput", "")
