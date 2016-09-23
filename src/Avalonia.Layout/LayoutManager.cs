@@ -168,7 +168,7 @@ namespace Avalonia.Layout
 
         private void QueueLayoutPass()
         {
-            if (!_queued)
+            if (!_queued && !_running)
             {
                 Dispatcher.UIThread.InvokeAsync(ExecuteLayoutPass, DispatcherPriority.Render);
                 _queued = true;
