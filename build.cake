@@ -807,7 +807,8 @@ Task("Publish-Coverage")
     .WithCriteria(() => isRunningOnAppVeyor)
     .Does(() =>
 {
-    CoverallsNet(artifactsDir.GetFilePath(new FilePath("./coverage.xml")), CoverallsNetReportType.OpenCover);
+    CoverallsNet(artifactsDir.GetFilePath(new FilePath("./coverage.xml")), CoverallsNetReportType.OpenCover,
+        new CoverallsNetSettings {RepoToken = "jKaVvndtCVJ2y7pNwQtYeHPn2jAxUpuyh", UseRelativePaths = true, ServiceName = "AppVeyor"});
 });
 
 ///////////////////////////////////////////////////////////////////////////////
