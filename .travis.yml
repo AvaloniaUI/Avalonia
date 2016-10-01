@@ -3,7 +3,7 @@ os:
   - linux
   - osx
 mono:
-  - 4.4.2
+  - latest
 script:
   - ./build.sh --target "Travis" --platform "Mono" --configuration "Release"
 notifications:
