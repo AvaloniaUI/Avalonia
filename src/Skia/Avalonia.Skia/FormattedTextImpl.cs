@@ -28,7 +28,9 @@ namespace Avalonia.Skia
             //Paint.TextEncoding = SKTextEncoding.Utf8;
             _paint.TextEncoding = SKTextEncoding.Utf16;
             _paint.IsStroke = false;
-            _paint.IsAntialias = true;
+            _paint.IsAntialias = true;            
+            _paint.LcdRenderText = true;            
+            _paint.SubpixelText = true;
             _paint.Typeface = typeface;
             _paint.TextSize = (float)fontSize;
             _paint.TextAlign = textAlignment.ToSKTextAlign();
