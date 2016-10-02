@@ -95,6 +95,7 @@ var artifactsDir = (DirectoryPath)Directory("./artifacts");
 var nugetRoot = artifactsDir.Combine("nuget");
 var zipRoot = artifactsDir.Combine("zip");
 var binRoot = artifactsDir.Combine("bin");
+var testsRoot = artifactsDir.Combine("tests");
 
 var dirSuffix = configuration;
 var dirSuffixSkia = (isPlatformAnyCPU ? "x86" : platform) + "/" + configuration;
@@ -588,6 +589,7 @@ Task("Clean")
     CleanDirectory(nugetRoot);
     CleanDirectory(zipRoot);
     CleanDirectory(binRoot);
+    CleanDirectory(testsRoot);
 });
 
 Task("Restore-NuGet-Packages")
@@ -683,25 +685,25 @@ Task("Run-Unit-Tests")
     xUnitSettings.NoAppDomain = !isRunningOnWindows;
 
     var openCoverOutput = artifactsDir.GetFilePath(new FilePath("./coverage.xml"));
-    var openCoverSettings = new OpenCoverSettings
-        {
-            ArgumentCustomization = openCoverArgs => openCoverArgs.AppendSwitch("-mergeoutput", "")
-        }
-        .WithFilter("+[Avalonia.*]* -[*Test*]*");;
-
-    foreach (var file in unitTests)
+    var openCoverSettings = new OpenCoverSettings()
+        .WithFilter("+[Avalonia.*]* -[*Test*]* -[ControlCatalog*]*")
+        .WithFilter("-[Avalonia.*]OmniXaml.* -[Avalonia.*]Glass.*")
+        .WithFilter("-[Avalonia.HtmlRenderer]TheArtOfDev.HtmlRenderer.* +[Avalonia.HtmlRenderer]TheArtOfDev.HtmlRenderer.Avalonia.* -[Avalonia.ReactiveUI]*");
+    
+    foreach(var test in unitTests)
     {
-        Information("Running test " + file.GetFilenameWithoutExtension());
-        if(isRunningOnWindows)
-        {
-            OpenCover(context => {
-                context.XUnit2(file.FullPath, xUnitSettings);
-            }, openCoverOutput, openCoverSettings);
-        }
-        else
-        {
-            XUnit2(file.FullPath, xUnitSettings);
-        }
+        CopyDirectory(test.GetDirectory(), testsRoot);
+    }
+
+    if(isRunningOnWindows)
+    {
+        OpenCover(context => {
+            context.XUnit2(unitTests.Select(test => testsRoot.GetFilePath(test).FullPath), xUnitSettings);
+        }, openCoverOutput, openCoverSettings);
+    }
+    else
+    {
+        XUnit2(unitTests.Select(test => test.FullPath), xUnitSettings);
     }
 });
 
