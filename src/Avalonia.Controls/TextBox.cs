@@ -718,6 +718,10 @@ namespace Avalonia.Controls
                         if (pos < text.Length)
                         {
                             --pos;
+                            if (pos > 0 && Text[pos - 1] == '\r' && Text[pos] == '\n')
+                            {
+                                --pos;
+                            }
                         }
 
                         break;
