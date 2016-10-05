@@ -495,10 +495,10 @@ namespace Avalonia.Controls
                         case 2:
                             if (!StringUtils.IsStartOfWord(text, index))
                             {
-                                SelectionStart = StringUtils.PreviousWord(text, index, false);
+                                SelectionStart = StringUtils.PreviousWord(text, index, true);
                             }
 
-                            SelectionEnd = StringUtils.NextWord(text, index, false);
+                            SelectionEnd = StringUtils.NextWord(text, index, true);
                             break;
                         case 3:
                             SelectionStart = 0;
@@ -638,11 +638,11 @@ namespace Avalonia.Controls
             {
                 if (direction > 0)
                 {
-                    CaretIndex += StringUtils.NextWord(text, caretIndex, false) - caretIndex;
+                    CaretIndex += StringUtils.NextWord(text, caretIndex, true) - caretIndex;
                 }
                 else
                 {
-                    CaretIndex += StringUtils.PreviousWord(text, caretIndex, false) - caretIndex;
+                    CaretIndex += StringUtils.PreviousWord(text, caretIndex, true) - caretIndex;
                 }
             }
         }
