@@ -17,7 +17,6 @@ namespace Avalonia.Markup.Data
         private WeakReference _target = UnsetReference;
         private IDisposable _valueSubscription;
         private IObserver<object> _observer;
-        private IDisposable _valuePluginSubscription;
 
         public abstract string Description { get; }
         public ExpressionNode Next { get; set; }
@@ -37,7 +36,6 @@ namespace Avalonia.Markup.Data
                 {
                     _valueSubscription?.Dispose();
                     _valueSubscription = null;
-                    _valuePluginSubscription?.Dispose();
                     _target = value;
 
                     if (running)
@@ -63,8 +61,6 @@ namespace Avalonia.Markup.Data
             {
                 _valueSubscription?.Dispose();
                 _valueSubscription = null;
-                _valuePluginSubscription?.Dispose();
-                _valuePluginSubscription = null;
                 nextSubscription?.Dispose();
                 _observer = null;
             });
@@ -115,25 +111,22 @@ namespace Avalonia.Markup.Data
                 source = StartListeningCore(_target);
             }
 
-            return source.Subscribe(TargetValueChanged);
+            return source.Subscribe(ValueChanged);
         }
 
-        private void TargetValueChanged(object value)
+        private void ValueChanged(object value)
         {
             var notification = value as BindingNotification;
 
             if (notification == null)
             {
-                if (!HandleSpecialValue(value))
+                if (Next != null)
                 {
-                    if (Next != null)
-                    {
-                        Next.Target = new WeakReference(value);
-                    }
-                    else
-                    {
-                        _observer.OnNext(value);
-                    }
+                    Next.Target = new WeakReference(value);
+                }
+                else
+                {
+                    _observer.OnNext(value);
                 }
             }
             else
@@ -144,38 +137,16 @@ namespace Avalonia.Markup.Data
                 }
                 else if (notification.HasValue)
                 {
-                    if (!HandleSpecialValue(notification.Value))
+                    if (Next != null)
                     {
-                        if (Next != null)
-                        {
-                            Next.Target = new WeakReference(notification.Value);
-                        }
-                        else
-                        {
-                            _observer.OnNext(value);
-                        }
+                        Next.Target = new WeakReference(notification.Value);
+                    }
+                    else
+                    {
+                        _observer.OnNext(value);
                     }
                 }
             }
-        }
-
-        private bool HandleSpecialValue(object value)
-        {
-            if (_valuePluginSubscription == null)
-            {
-                var reference = new WeakReference(value);
-
-                foreach (var plugin in ExpressionObserver.ValueHandlers)
-                {
-                    if (plugin.Match(reference))
-                    {
-                        _valuePluginSubscription = plugin.Start(reference)?.Subscribe(TargetValueChanged);
-                        return true;
-                    }
-                }
-            }
-
-            return false;
         }
 
         private BindingNotification TargetNullNotification()
