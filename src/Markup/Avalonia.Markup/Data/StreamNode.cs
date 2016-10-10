@@ -14,7 +14,7 @@ namespace Avalonia.Markup.Data
 
         protected override IObservable<object> StartListeningCore(WeakReference reference)
         {
-            foreach (var plugin in ExpressionObserver.ValueHandlers)
+            foreach (var plugin in ExpressionObserver.StreamHandlers)
             {
                 if (plugin.Match(reference))
                 {
