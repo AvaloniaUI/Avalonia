@@ -110,6 +110,31 @@ namespace Avalonia.Markup.UnitTests.Data
             }
         }
 
+        [Fact]
+        public void Should_Return_BindingNotification_If_Stream_Operator_Applied_To_Not_Supported_Type()
+        {
+            using (var sync = UnitTestSynchronizationContext.Begin())
+            {
+                var data = new Class2("foo");
+                var target = new ExpressionObserver(data, "Foo^", true);
+                var result = new List<object>();
+
+                var sub = target.Subscribe(x => result.Add(x));
+                sync.ExecutePostedCallbacks();
+
+                Assert.Equal(
+                    new[]
+                    {
+                        new BindingNotification(
+                            new MarkupBindingChainException("Stream operator applied to unsupported type", "Foo^", "Foo^"),
+                            BindingErrorType.Error)
+                    },
+                    result);
+
+                sub.Dispose();
+            }
+        }
+
         private class Class1 : NotifyingBase
         {
             public Subject<Class2> Next { get; } = new Subject<Class2>();

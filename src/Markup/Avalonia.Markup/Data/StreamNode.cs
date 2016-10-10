@@ -24,7 +24,7 @@ namespace Avalonia.Markup.Data
 
             // TODO: Improve error.
             return Observable.Return(new BindingNotification(
-                new InvalidCastException("Value could not be streamed."),
+                new MarkupBindingChainException("Stream operator applied to unsupported type", Description),
                 BindingErrorType.Error));
         }
     }

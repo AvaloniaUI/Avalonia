@@ -235,7 +235,7 @@ namespace Avalonia.Markup.Data
             }
             else
             {
-                var broken = BindingNotification.ExtractError(o) as MarkupBindingChainNullException;
+                var broken = BindingNotification.ExtractError(o) as MarkupBindingChainException;
 
                 if (broken != null)
                 {
