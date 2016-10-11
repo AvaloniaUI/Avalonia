@@ -44,6 +44,11 @@ namespace Avalonia.Input
         private bool _ignoreAltUp;
 
         /// <summary>
+        /// Whether the AltKey is down.
+        /// </summary>
+        private bool _altIsDown;
+
+        /// <summary>
         /// Gets or sets the window's main menu.
         /// </summary>
         public IMainMenu MainMenu { get; set; }
@@ -110,6 +115,8 @@ namespace Avalonia.Input
         {
             if (e.Key == Key.LeftAlt)
             {
+                _altIsDown = true;
+
                 if (MainMenu == null || !MainMenu.IsOpen)
                 {
                     // When Alt is pressed without a main menu, or with a closed main menu, show
@@ -125,6 +132,10 @@ namespace Avalonia.Input
 
                 // We always handle the Alt key.
                 e.Handled = true;
+            }
+            else if(_altIsDown)
+            {
+                _ignoreAltUp = true;
             }
         }
 
@@ -179,6 +190,8 @@ namespace Avalonia.Input
             switch (e.Key)
             {
                 case Key.LeftAlt:
+                    _altIsDown = false;
+
                     if (_ignoreAltUp)
                     {
                         _ignoreAltUp = false;
