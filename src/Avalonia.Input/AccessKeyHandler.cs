@@ -49,6 +49,11 @@ namespace Avalonia.Input
         private bool _altIsDown;
 
         /// <summary>
+        /// Element to restore folowing AltKey taking focus.
+        /// </summary>
+        private IInputElement _restoreFocusElement;
+
+        /// <summary>
         /// Gets or sets the window's main menu.
         /// </summary>
         public IMainMenu MainMenu { get; set; }
@@ -119,15 +124,21 @@ namespace Avalonia.Input
 
                 if (MainMenu == null || !MainMenu.IsOpen)
                 {
+                    // Save currently focused input element.
+                    _restoreFocusElement = FocusManager.Instance.Current;
+
                     // When Alt is pressed without a main menu, or with a closed main menu, show
                     // access key markers in the window (i.e. "_File").
-                    _owner.ShowAccessKeys = _showingAccessKeys = true;
+                    _owner.ShowAccessKeys = _showingAccessKeys = true;                    
                 }
                 else
                 {
                     // If the Alt key is pressed and the main menu is open, close the main menu.
                     CloseMenu();
                     _ignoreAltUp = true;
+                    
+                    _restoreFocusElement?.Focus();
+                    _restoreFocusElement = null;
                 }
 
                 // We always handle the Alt key.
