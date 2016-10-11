@@ -129,14 +129,14 @@ namespace Avalonia.Input
 
                     // When Alt is pressed without a main menu, or with a closed main menu, show
                     // access key markers in the window (i.e. "_File").
-                    _owner.ShowAccessKeys = _showingAccessKeys = true;                    
+                    _owner.ShowAccessKeys = _showingAccessKeys = true;
                 }
                 else
                 {
                     // If the Alt key is pressed and the main menu is open, close the main menu.
                     CloseMenu();
                     _ignoreAltUp = true;
-                    
+
                     _restoreFocusElement?.Focus();
                     _restoreFocusElement = null;
                 }
@@ -144,7 +144,7 @@ namespace Avalonia.Input
                 // We always handle the Alt key.
                 e.Handled = true;
             }
-            else if(_altIsDown)
+            else if (_altIsDown)
             {
                 _ignoreAltUp = true;
             }
