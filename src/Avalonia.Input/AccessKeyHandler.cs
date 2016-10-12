@@ -124,8 +124,9 @@ namespace Avalonia.Input
 
                 if (MainMenu == null || !MainMenu.IsOpen)
                 {
+                    // TODO: Use FocusScopes to store the current element and restore it when context menu is closed.
                     // Save currently focused input element.
-                    _restoreFocusElement = FocusManager.Instance.Current;
+                    _restoreFocusElement = FocusManager.Instance.Current;                    
 
                     // When Alt is pressed without a main menu, or with a closed main menu, show
                     // access key markers in the window (i.e. "_File").
