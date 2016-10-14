@@ -12,9 +12,9 @@ using Avalonia.Data;
 namespace Avalonia.Markup.Data.Plugins
 {
     /// <summary>
-    /// Handles binding to <see cref="Task"/>s in an <see cref="ExpressionObserver"/>.
+    /// Handles binding to <see cref="Task"/>s for the '^' stream binding operator.
     /// </summary>
-    public class TaskValuePlugin : IValuePlugin
+    public class TaskStreamPlugin : IStreamPlugin
     {
         /// <summary>
         /// Checks whether this plugin handles the specified value.

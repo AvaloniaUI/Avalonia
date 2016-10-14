@@ -15,13 +15,31 @@ namespace Avalonia.Markup.UnitTests.Data
     public class ExpressionObserverTests_Observable
     {
         [Fact]
-        public void Should_Get_Simple_Observable_Value()
+        public void Should_Not_Get_Observable_Value_Without_Modifier_Char()
         {
             using (var sync = UnitTestSynchronizationContext.Begin())
             {
                 var source = new BehaviorSubject<string>("foo");
                 var data = new { Foo = source };
                 var target = new ExpressionObserver(data, "Foo");
+                var result = new List<object>();
+
+                var sub = target.Subscribe(x => result.Add(x));
+                source.OnNext("bar");
+                sync.ExecutePostedCallbacks();
+
+                Assert.Equal(new[] { source }, result);
+            }
+        }
+
+        [Fact]
+        public void Should_Get_Simple_Observable_Value()
+        {
+            using (var sync = UnitTestSynchronizationContext.Begin())
+            {
+                var source = new BehaviorSubject<string>("foo");
+                var data = new { Foo = source };
+                var target = new ExpressionObserver(data, "Foo^");
                 var result = new List<object>();
 
                 var sub = target.Subscribe(x => result.Add(x));
@@ -38,7 +56,7 @@ namespace Avalonia.Markup.UnitTests.Data
             using (var sync = UnitTestSynchronizationContext.Begin())
             {
                 var data = new Class1();
-                var target = new ExpressionObserver(data, "Next.Foo");
+                var target = new ExpressionObserver(data, "Next^.Foo");
                 var result = new List<object>();
 
                 var sub = target.Subscribe(x => result.Add(x));
@@ -59,7 +77,7 @@ namespace Avalonia.Markup.UnitTests.Data
             {
                 var source = new BehaviorSubject<string>("foo");
                 var data = new { Foo = source };
-                var target = new ExpressionObserver(data, "Foo", true);
+                var target = new ExpressionObserver(data, "Foo^", true);
                 var result = new List<object>();
 
                 var sub = target.Subscribe(x => result.Add(x));
@@ -78,7 +96,7 @@ namespace Avalonia.Markup.UnitTests.Data
             using (var sync = UnitTestSynchronizationContext.Begin())
             {
                 var data = new Class1();
-                var target = new ExpressionObserver(data, "Next.Foo", true);
+                var target = new ExpressionObserver(data, "Next^.Foo", true);
                 var result = new List<object>();
 
                 var sub = target.Subscribe(x => result.Add(x));
@@ -89,6 +107,31 @@ namespace Avalonia.Markup.UnitTests.Data
 
                 sub.Dispose();
                 Assert.Equal(0, data.PropertyChangedSubscriptionCount);
+            }
+        }
+
+        [Fact]
+        public void Should_Return_BindingNotification_If_Stream_Operator_Applied_To_Not_Supported_Type()
+        {
+            using (var sync = UnitTestSynchronizationContext.Begin())
+            {
+                var data = new Class2("foo");
+                var target = new ExpressionObserver(data, "Foo^", true);
+                var result = new List<object>();
+
+                var sub = target.Subscribe(x => result.Add(x));
+                sync.ExecutePostedCallbacks();
+
+                Assert.Equal(
+                    new[]
+                    {
+                        new BindingNotification(
+                            new MarkupBindingChainException("Stream operator applied to unsupported type", "Foo^", "Foo^"),
+                            BindingErrorType.Error)
+                    },
+                    result);
+
+                sub.Dispose();
             }
         }
 
