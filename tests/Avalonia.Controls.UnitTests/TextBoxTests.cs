@@ -175,24 +175,25 @@ namespace Avalonia.Controls.UnitTests
                 RaiseKeyEvent(textBox, Key.Delete, InputModifiers.Control);
                 Assert.Equal("First Second Third ", textBox.Text);
 
-                // (First Second| Third )
-                textBox.CaretIndex = 12;
+                // (First Second |Third )
+                textBox.CaretIndex = 13;
                 RaiseKeyEvent(textBox, Key.Delete, InputModifiers.Control);
                 Assert.Equal("First Second ", textBox.Text);
 
                 // (First Sec|ond )
                 textBox.CaretIndex = 9;
                 RaiseKeyEvent(textBox, Key.Delete, InputModifiers.Control);
-                Assert.Equal("First Sec ", textBox.Text);
+                Assert.Equal("First Sec", textBox.Text);
 
                 // (Fi[rs]t Sec )
                 textBox.SelectionStart = 2;
                 textBox.SelectionEnd = 4;
 
                 RaiseKeyEvent(textBox, Key.Delete, InputModifiers.Control);
-                Assert.Equal("Fit Sec ", textBox.Text);
+                Assert.Equal("Fit Sec", textBox.Text);
 
                 // (Fit Sec| )
+                textBox.Text += " ";
                 textBox.CaretIndex = 7;
                 RaiseKeyEvent(textBox, Key.Delete, InputModifiers.Control);
                 Assert.Equal("Fit Sec", textBox.Text);

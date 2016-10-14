@@ -495,10 +495,10 @@ namespace Avalonia.Controls
                         case 2:
                             if (!StringUtils.IsStartOfWord(text, index))
                             {
-                                SelectionStart = StringUtils.PreviousWord(text, index, false);
+                                SelectionStart = StringUtils.PreviousWord(text, index);
                             }
 
-                            SelectionEnd = StringUtils.NextWord(text, index, false);
+                            SelectionEnd = StringUtils.NextWord(text, index);
                             break;
                         case 3:
                             SelectionStart = 0;
@@ -638,11 +638,11 @@ namespace Avalonia.Controls
             {
                 if (direction > 0)
                 {
-                    CaretIndex += StringUtils.NextWord(text, caretIndex, false) - caretIndex;
+                    CaretIndex += StringUtils.NextWord(text, caretIndex) - caretIndex;
                 }
                 else
                 {
-                    CaretIndex += StringUtils.PreviousWord(text, caretIndex, false) - caretIndex;
+                    CaretIndex += StringUtils.PreviousWord(text, caretIndex) - caretIndex;
                 }
             }
         }
@@ -718,6 +718,10 @@ namespace Avalonia.Controls
                         if (pos < text.Length)
                         {
                             --pos;
+                            if (pos > 0 && Text[pos - 1] == '\r' && Text[pos] == '\n')
+                            {
+                                --pos;
+                            }
                         }
 
                         break;
@@ -820,12 +824,6 @@ namespace Avalonia.Controls
             SelectionStart = CaretIndex;
             MoveHorizontal(1, modifiers);
             SelectionEnd = CaretIndex;
-
-            string selection = GetSelection();
-            if (selection != " " && selection.EndsWith(" "))
-            {
-                SelectionEnd = CaretIndex - 1;
-            }
         }
 
         UndoRedoState UndoRedoHelper<UndoRedoState>.IUndoRedoHost.UndoRedoState
