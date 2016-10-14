@@ -824,12 +824,6 @@ namespace Avalonia.Controls
             SelectionStart = CaretIndex;
             MoveHorizontal(1, modifiers);
             SelectionEnd = CaretIndex;
-
-            string selection = GetSelection();
-            if (selection != " " && selection.EndsWith(" "))
-            {
-                SelectionEnd = CaretIndex - 1;
-            }
         }
 
         UndoRedoState UndoRedoHelper<UndoRedoState>.IUndoRedoHost.UndoRedoState
