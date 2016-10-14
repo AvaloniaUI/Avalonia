@@ -9,6 +9,6 @@
 - name: Logging
   href: logging.md
 - name: Binding from XAML
-  href: binding-from-xaml
+  href: binding-from-xaml.md
 - name: Binding from Code
-  href: binding-from-code
+  href: binding-from-code.md
