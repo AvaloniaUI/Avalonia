@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{4EA70D0C-2193-4506-9DBE-0E15DD568E25}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>Avalonia.Skia.Linux</RootNamespace>
+    <AssemblyName>Avalonia.Skia.Linux</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>full</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="SkiaSharp, Version=1.54.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756">
+      <HintPath>..\..\..\packages\SkiaSharp.1.54.0\lib\net45\SkiaSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="gtk-dotnet, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <Package>gtk-dotnet-2.0</Package>
+    </Reference>
+    <Reference Include="gdk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <Package>gtk-sharp-2.0</Package>
+    </Reference>
+    <Reference Include="gtk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <Package>gtk-sharp-2.0</Package>
+    </Reference>
+    <Reference Include="atk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <Package>gtk-sharp-2.0</Package>
+    </Reference>
+    <Reference Include="glib-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <Package>glib-sharp-2.0</Package>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="MyClass.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="WindowDrawingContextImpl.cs" />
+    <Compile Include="TypefaceCache.cs" />
+    <Compile Include="StreamGeometryImpl.cs" />
+    <Compile Include="SkiaSharpExtensions.cs" />
+    <Compile Include="SkiaPlatform.cs" />
+    <Compile Include="RenderTarget.cs" />
+    <Compile Include="PlatformRenderInterface.cs" />
+    <Compile Include="FormattedTextImpl.cs" />
+    <Compile Include="DrawingContextImpl.cs" />
+    <Compile Include="BitmapImpl.cs" />
+  </ItemGroup>
+  <Import Project="..\..\Shared\RenderHelpers\RenderHelpers.projitems" Label="Shared" Condition="Exists('..\..\Shared\RenderHelpers\RenderHelpers.projitems')" />
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <ProjectReference Include="..\..\Avalonia.Animation\Avalonia.Animation.csproj">
+      <Project>{D211E587-D8BC-45B9-95A4-F297C8FA5200}</Project>
+      <Name>Avalonia.Animation</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Avalonia.Base\Avalonia.Base.csproj">
+      <Project>{B09B78D8-9B26-48B0-9149-D64A2F120F3F}</Project>
+      <Name>Avalonia.Base</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Avalonia.Controls\Avalonia.Controls.csproj">
+      <Project>{D2221C82-4A25-4583-9B43-D791E3F6820C}</Project>
+      <Name>Avalonia.Controls</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Avalonia.Input\Avalonia.Input.csproj">
+      <Project>{62024B2D-53EB-4638-B26B-85EEAA54866E}</Project>
+      <Name>Avalonia.Input</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Avalonia.Interactivity\Avalonia.Interactivity.csproj">
+      <Project>{6B0ED19D-A08B-461C-A9D9-A9EE40B0C06B}</Project>
+      <Name>Avalonia.Interactivity</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Avalonia.Layout\Avalonia.Layout.csproj">
+      <Project>{42472427-4774-4C81-8AFF-9F27B8E31721}</Project>
+      <Name>Avalonia.Layout</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Avalonia.SceneGraph\Avalonia.SceneGraph.csproj">
+      <Project>{EB582467-6ABB-43A1-B052-E981BA910E3A}</Project>
+      <Name>Avalonia.SceneGraph</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Avalonia.Styling\Avalonia.Styling.csproj">
+      <Project>{F1BAA01A-F176-4C6A-B39D-5B40BB1B148F}</Project>
+      <Name>Avalonia.Styling</Name>
+    </ProjectReference>
+  </ItemGroup>
+</Project>
