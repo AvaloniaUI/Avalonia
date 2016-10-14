@@ -24,8 +24,8 @@ source.OnNext("world!");
 
 ## Binding priorities
 
-You can also pass a priority to a binding. *Note: Priorities only apply to styled properties: they
-are ignored for direct properties.*
+You can also pass a priority to a binding. *Note: Priorities only apply to styled properties: they*
+*are ignored for direct properties.*
 
 The priority is passed using the `BindingPriority` enum, which looks like this:
 
@@ -126,7 +126,7 @@ var textBlock = new TextBlock
 
 # Using XAML bindings from code
 
-Sometimes when you want the additional features that XAML bindings provide, it's easier to use XAML bindings from code,. For example, using observables you could bind to a property on `DataContext` like this:
+Sometimes when you want the additional features that XAML bindings provide, it's easier to use XAML bindings from code. For example, using only observables you could bind to a property on `DataContext` like this:
 
 ```csharp
 var textBlock = new TextBlock();
@@ -136,7 +136,7 @@ var viewModelProperty = textBlock.GetObservable(TextBlock.DataContext)
 textBlock.Bind(TextBlock, viewModelProperty);
 ```
 
-However, it might be preferable to just use a XAML binding in this case:
+However, it might be preferable to use a XAML binding in this case:
 
 ```csharp
 var textBlock = new TextBlock
