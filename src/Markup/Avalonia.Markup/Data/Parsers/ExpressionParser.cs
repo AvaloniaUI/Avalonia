@@ -87,6 +87,11 @@ namespace Avalonia.Markup.Data.Parsers
             {
                 return State.BeforeMember;
             }
+            else if (ParseStreamOperator(r))
+            {
+                nodes.Add(new StreamNode());
+                return State.AfterMember;
+            }
             else
             {
                 var args = ArgumentListParser.Parse(r, '[', ']');
@@ -159,6 +164,11 @@ namespace Avalonia.Markup.Data.Parsers
         private static bool ParseOpenBrace(Reader r)
         {
             return !r.End && r.TakeIf('(');
+        }
+
+        private static bool ParseStreamOperator(Reader r)
+        {
+            return !r.End && r.TakeIf('^');
         }
 
         private enum State

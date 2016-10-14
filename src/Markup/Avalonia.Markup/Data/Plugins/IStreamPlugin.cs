@@ -6,9 +6,9 @@ using System;
 namespace Avalonia.Markup.Data.Plugins
 {
     /// <summary>
-    /// Defines how values are observed by an <see cref="ExpressionObserver"/>.
+    /// Defines a plugin that handles the '^' stream binding operator.
     /// </summary>
-    public interface IValuePlugin
+    public interface IStreamPlugin
     {
         /// <summary>
         /// Checks whether this plugin handles the specified value.

@@ -41,14 +41,14 @@ namespace Avalonia.Markup.Data
             };
 
         /// <summary>
-        /// An ordered collection of value handlers that can be used to customize the handling
-        /// of certain values.
+        /// An ordered collection of stream plugins that can be used to customize the behavior
+        /// of the '^' stream binding operator.
         /// </summary>
-        public static readonly IList<IValuePlugin> ValueHandlers =
-            new List<IValuePlugin>
+        public static readonly IList<IStreamPlugin> StreamHandlers =
+            new List<IStreamPlugin>
             {
-                new TaskValuePlugin(),
-                new ObservableValuePlugin(),
+                new TaskStreamPlugin(),
+                new ObservableStreamPlugin(),
             };
 
         private static readonly object UninitializedValue = new object();
@@ -235,7 +235,7 @@ namespace Avalonia.Markup.Data
             }
             else
             {
-                var broken = BindingNotification.ExtractError(o) as MarkupBindingChainNullException;
+                var broken = BindingNotification.ExtractError(o) as MarkupBindingChainException;
 
                 if (broken != null)
                 {
