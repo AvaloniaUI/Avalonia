@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
@@ -13,7 +13,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)DrawingContextImpl.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)FormattedTextImpl.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PlatformRenderInterface.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)RenderTarget.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SkiaPlatform.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SkiaSharpExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)StreamGeometryImpl.cs" />

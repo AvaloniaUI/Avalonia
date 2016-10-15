@@ -76,6 +76,7 @@
     <Compile Include="..\..\Windows\Avalonia.Win32\Interop\UnmanagedMethods.cs">
       <Link>UnmanagedMethods.cs</Link>
     </Compile>
+    <Compile Include="RenderTarget.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Avalonia.Animation\Avalonia.Animation.csproj">
