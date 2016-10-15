@@ -16,7 +16,13 @@ namespace Avalonia
     /// </summary>
     public static class AvaloniaObjectExtensions
     {
-        public static IBinding AsBinding<T>(this IObservable<T> source)
+        /// <summary>
+        /// Converts an <see cref="IObservable{T}"/> to an <see cref="IBinding"/>.
+        /// </summary>
+        /// <typeparam name="T">The type produced by the observable.</typeparam>
+        /// <param name="source">The observable</param>
+        /// <returns>An <see cref="IBinding"/>.</returns>
+        public static IBinding ToBinding<T>(this IObservable<T> source)
         {
             return new BindingAdaptor(source.Select(x => (object)x));
         }

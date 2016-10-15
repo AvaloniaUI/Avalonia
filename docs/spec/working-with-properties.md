@@ -71,6 +71,8 @@ property to the first:
   Console.WriteLine(textBlock2.Text);
 ```
 
+To read more about creating bindings from code, see [Binding from Code](binding-from-code.md).
+
 # Subscribing to a Property on Any Object
 
 The `GetObservable` method returns an observable that tracks changes to a

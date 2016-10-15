@@ -207,7 +207,7 @@ namespace Avalonia.Controls.UnitTests
                 Content = new ItemsPresenter
                 {
                     Name = "PART_ItemsPresenter",
-                    [~ItemsPresenter.ItemsProperty] = parent.GetObservable(ItemsControl.ItemsProperty).AsBinding(),
+                    [~ItemsPresenter.ItemsProperty] = parent.GetObservable(ItemsControl.ItemsProperty).ToBinding(),
                 }
             };
         }
@@ -217,7 +217,7 @@ namespace Avalonia.Controls.UnitTests
             return new ScrollContentPresenter
             {
                 Name = "PART_ContentPresenter",
-                [~ContentPresenter.ContentProperty] = parent.GetObservable(ContentControl.ContentProperty).AsBinding(),
+                [~ContentPresenter.ContentProperty] = parent.GetObservable(ContentControl.ContentProperty).ToBinding(),
             };
         }
 
