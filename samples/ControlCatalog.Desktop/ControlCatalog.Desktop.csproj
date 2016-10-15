@@ -72,6 +72,10 @@
       <Project>{FB05AC90-89BA-4F2F-A924-F37875FB547C}</Project>
       <Name>Avalonia.Cairo</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\src\Gtk\Avalonia.Gtk3\Avalonia.Gtk3.csproj">
+      <Project>{bb1f7bb5-6ad4-4776-94d9-c09d0a972658}</Project>
+      <Name>Avalonia.Gtk3</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\Gtk\Avalonia.Gtk\Avalonia.Gtk.csproj">
       <Project>{54F237D5-A70A-4752-9656-0C70B1A7B047}</Project>
       <Name>Avalonia.Gtk</Name>
