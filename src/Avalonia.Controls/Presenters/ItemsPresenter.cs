@@ -91,24 +91,15 @@ namespace Avalonia.Controls.Presenters
             _virtualizer?.ScrollIntoView(item);
         }
 
+        /// <inheritdoc/>
         protected override Size MeasureOverride(Size availableSize)
         {
-            // If infinity is passed as the available size and we're virtualized then we need to
-            // fill the available space, but to do that we *don't* want to materialize all our
-            // items! Take a look at the root of the tree for a MaxClientSize and use that as
-            // the available size.
-            if (availableSize == Size.Infinity && VirtualizationMode != ItemVirtualizationMode.None)
-            {
-                var window = VisualRoot as TopLevel;
+            return _virtualizer?.MeasureOverride(availableSize) ?? Size.Empty;
+        }
 
-                if (window != null)
-                {
-                    availableSize = window.PlatformImpl.MaxClientSize;
-                }
-            }
-
-            Panel.Measure(availableSize);
-            return Panel.DesiredSize;
+        protected override Size ArrangeOverride(Size finalSize)
+        {
+            return _virtualizer?.ArrangeOverride(finalSize) ?? Size.Empty;
         }
 
         /// <inheritdoc/>

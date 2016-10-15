@@ -146,7 +146,7 @@ namespace Avalonia.Markup.UnitTests.Data
                 new[]
                 {
                     new BindingNotification(
-                    new MarkupBindingChainNullException("Foo.Bar.Baz", "Foo"),
+                        new MarkupBindingChainException("Null value", "Foo.Bar.Baz", "Foo"),
                         BindingErrorType.Error,
                         AvaloniaProperty.UnsetValue),
                 },
@@ -274,7 +274,7 @@ namespace Avalonia.Markup.UnitTests.Data
                 {
                     "bar",
                     new BindingNotification(
-                        new MarkupBindingChainNullException("Next.Next.Bar", "Next.Next"),
+                        new MarkupBindingChainException("Null value", "Next.Next.Bar", "Next.Next"),
                         BindingErrorType.Error,
                         AvaloniaProperty.UnsetValue),
                     "bar"

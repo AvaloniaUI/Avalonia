@@ -15,7 +15,7 @@ namespace Avalonia.Markup.UnitTests.Data
     public class ExpressionObserverTests_Task
     {
         [Fact]
-        public void Should_Get_Simple_Task_Value()
+        public void Should_Not_Get_Task_Result_Without_Modifier_Char()
         {
             using (var sync = UnitTestSynchronizationContext.Begin())
             {
@@ -28,7 +28,8 @@ namespace Avalonia.Markup.UnitTests.Data
                 tcs.SetResult("foo");
                 sync.ExecutePostedCallbacks();
 
-                Assert.Equal(new[] { "foo" }, result);
+                Assert.Equal(1, result.Count);
+                Assert.IsType<Task<string>>(result[0]);
             }
         }
 
@@ -38,7 +39,7 @@ namespace Avalonia.Markup.UnitTests.Data
             using (var sync = UnitTestSynchronizationContext.Begin())
             {
                 var data = new { Foo = Task.FromResult("foo") };
-                var target = new ExpressionObserver(data, "Foo");
+                var target = new ExpressionObserver(data, "Foo^");
                 var result = new List<object>();
 
                 var sub = target.Subscribe(x => result.Add(x));
@@ -54,7 +55,7 @@ namespace Avalonia.Markup.UnitTests.Data
             {
                 var tcs = new TaskCompletionSource<Class2>();
                 var data = new Class1(tcs.Task);
-                var target = new ExpressionObserver(data, "Next.Foo");
+                var target = new ExpressionObserver(data, "Next^.Foo");
                 var result = new List<object>();
 
                 var sub = target.Subscribe(x => result.Add(x));
@@ -72,7 +73,7 @@ namespace Avalonia.Markup.UnitTests.Data
             {
                 var tcs = new TaskCompletionSource<string>();
                 var data = new { Foo = tcs.Task };
-                var target = new ExpressionObserver(data, "Foo");
+                var target = new ExpressionObserver(data, "Foo^");
                 var result = new List<object>();
 
                 var sub = target.Subscribe(x => result.Add(x));
@@ -96,7 +97,7 @@ namespace Avalonia.Markup.UnitTests.Data
             using (var sync = UnitTestSynchronizationContext.Begin())
             {
                 var data = new { Foo = TaskFromException(new NotSupportedException()) };
-                var target = new ExpressionObserver(data, "Foo");
+                var target = new ExpressionObserver(data, "Foo^");
                 var result = new List<object>();
 
                 var sub = target.Subscribe(x => result.Add(x));
@@ -119,7 +120,7 @@ namespace Avalonia.Markup.UnitTests.Data
             {
                 var tcs = new TaskCompletionSource<string>();
                 var data = new { Foo = tcs.Task };
-                var target = new ExpressionObserver(data, "Foo", true);
+                var target = new ExpressionObserver(data, "Foo^", true);
                 var result = new List<object>();
 
                 var sub = target.Subscribe(x => result.Add(x));
