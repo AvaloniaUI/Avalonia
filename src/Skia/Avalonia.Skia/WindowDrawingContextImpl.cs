@@ -6,8 +6,8 @@ namespace Avalonia.Skia
     {
         WindowRenderTarget _target;
 
-        public WindowDrawingContextImpl(WindowRenderTarget target)
-            : base(target.Surface.Canvas)
+        public WindowDrawingContextImpl(WindowRenderTarget target, double scale = 1.0)
+            : base(target.Surface.Canvas, scale)
         {
             _target = target;
         }
