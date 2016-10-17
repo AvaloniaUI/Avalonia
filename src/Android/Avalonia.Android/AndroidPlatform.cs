@@ -1,3 +1,5 @@
+using System;
+using System.IO;
 using Avalonia.Android.Platform;
 using Avalonia.Android.Platform.Input;
 using Avalonia.Android.Platform.SkiaPlatform;
@@ -7,6 +9,7 @@ using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Platform;
 using Avalonia.Shared.PlatformSupport;
+using Avalonia.Skia;
 
 namespace Avalonia
 {
@@ -47,15 +50,9 @@ namespace Avalonia.Android
                 .Bind<IPlatformSettings>().ToConstant(Instance)
                 .Bind<IPlatformThreadingInterface>().ToConstant(new AndroidThreadingInterface())
                 .Bind<ISystemDialogImpl>().ToTransient<SystemDialogImpl>()
-                .Bind<IWindowingPlatform>().ToConstant(this);
+                .Bind<IWindowingPlatform>().ToConstant(Instance);
 
             SkiaPlatform.Initialize();
-
-            _scalingFactor = global::Android.App.Application.Context.Resources.DisplayMetrics.ScaledDensity;
-
-            
-            //we have custom Assetloader so no need to overwrite it
-            
         }
 
         public void Init(Type applicationType)
