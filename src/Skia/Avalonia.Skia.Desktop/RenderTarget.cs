@@ -121,9 +121,14 @@ namespace Avalonia.Skia
             scale = dpi.Width / 96.0;
 #endif
 
-            return
+            var result =
                 new DrawingContext(
-                    new WindowDrawingContextImpl(this, scale));
+                    new WindowDrawingContextImpl(this));
+
+            result.PushPreTransform(Matrix.CreateScale(scale, scale));
+            result.PushTransformContainer();
+
+            return result;
         }
 
         public void Present()
