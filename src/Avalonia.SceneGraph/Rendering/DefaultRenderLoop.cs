@@ -65,24 +65,25 @@ namespace Avalonia.Rendering
         /// </summary>
         protected void Start()
         {
-            _subscription = StartCore();
+            _subscription = StartCore(InternalTick);
         }
 
         /// <summary>
         /// Provides the implementation of starting the timer.
         /// </summary>
+        /// <param name="tick">The method to call on each tick.</param>
         /// <remarks>
         /// This can be overridden by platform implementations to use a specialized timer
         /// implementation.
         /// </remarks>
-        protected virtual IDisposable StartCore()
+        protected virtual IDisposable StartCore(Action tick)
         {
             if (_threading == null)
             {
                 _threading = AvaloniaLocator.Current.GetService<IPlatformThreadingInterface>();
             }
 
-            return _threading.StartTimer(TimeSpan.FromSeconds(1.0 / FramesPerSecond), InternalTick);
+            return _threading.StartTimer(TimeSpan.FromSeconds(1.0 / FramesPerSecond), tick);
         }
 
         /// <summary>

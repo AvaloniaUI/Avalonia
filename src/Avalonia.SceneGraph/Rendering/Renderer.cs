@@ -13,6 +13,7 @@ namespace Avalonia.Rendering
         private IRenderRoot _root;
         private IRenderTarget _renderTarget;
         private bool _dirty;
+        private bool _rendering;
 
         public void Attach(IRenderRoot root, IRenderLoop renderLoop)
         {
@@ -35,6 +36,11 @@ namespace Avalonia.Rendering
 
         public void Render(Rect rect)
         {
+            if (_rendering)
+            {
+                return;
+            }
+
             if (_renderTarget == null)
             {
                 _renderTarget = _root.CreateRenderTarget();
@@ -42,6 +48,7 @@ namespace Avalonia.Rendering
 
             try
             {
+                _rendering = true;
                 _renderTarget.Render(_root);
             }
             catch (RenderTargetCorruptedException ex)
@@ -49,6 +56,11 @@ namespace Avalonia.Rendering
                 Logging.Logger.Information("Renderer", this, "Render target was corrupted. Exception: {0}", ex);
                 _renderTarget.Dispose();
                 _renderTarget = null;
+            }
+            finally
+            {
+                _rendering = false;
+                _dirty = false;
             }
         }
 

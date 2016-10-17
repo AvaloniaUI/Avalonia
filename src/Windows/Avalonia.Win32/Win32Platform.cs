@@ -66,7 +66,7 @@ namespace Avalonia.Win32
                 .Bind<IMouseDevice>().ToConstant(WindowsMouseDevice.Instance)
                 .Bind<IPlatformSettings>().ToConstant(s_instance)
                 .Bind<IPlatformThreadingInterface>().ToConstant(s_instance)
-                .Bind<IRenderLoop>().ToConstant(new DefaultRenderLoop(60))
+                .Bind<IRenderLoop>().ToConstant(new RenderLoop(60))
                 .Bind<ISystemDialogImpl>().ToSingleton<SystemDialogImpl>()
                 .Bind<IWindowingPlatform>().ToConstant(s_instance)
                 .Bind<IPlatformIconLoader>().ToConstant(s_instance);
