@@ -11,8 +11,7 @@ namespace Avalonia.Skia
     internal class DrawingContextImpl : IDrawingContextImpl
     {
         private Stack<PaintWrapper> maskStack = new Stack<PaintWrapper>();
-        private Matrix _currentTransform = Matrix.Identity;
-
+        
         public SKCanvas Canvas { get; private set; }
 
         public DrawingContextImpl(SKCanvas canvas)
@@ -343,7 +342,9 @@ namespace Avalonia.Skia
             }
             Canvas.Restore();
             Canvas.Restore();
-        }        
+        }
+
+        private Matrix _currentTransform = Matrix.Identity;
 
         public Matrix Transform
         {
@@ -354,7 +355,6 @@ namespace Avalonia.Skia
                     return;
 
                 _currentTransform = value;
-
                 Canvas.SetMatrix(value.ToSKMatrix());
             }
         }
