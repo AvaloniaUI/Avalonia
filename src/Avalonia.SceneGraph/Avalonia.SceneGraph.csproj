@@ -106,7 +106,7 @@
     <Compile Include="Rendering\IRenderLoop.cs" />
     <Compile Include="Rendering\Renderer.cs" />
     <Compile Include="Rendering\RendererMixin.cs" />
-    <Compile Include="Rendering\RenderLoop.cs" />
+    <Compile Include="Rendering\DefaultRenderLoop.cs" />
     <Compile Include="RenderTargetCorruptedException.cs" />
     <Compile Include="VisualTree\IVisual.cs" />
     <Compile Include="Media\Imaging\Bitmap.cs" />

@@ -2,10 +2,8 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Reflection;
 using System.Threading;
 using Avalonia.Controls;
-using Avalonia.Controls.Platform;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
@@ -113,11 +111,6 @@ namespace Avalonia
         public Styles Styles { get; } = new Styles();
 
         /// <summary>
-        /// Gets the application's render loop.
-        /// </summary>
-        public IRenderLoop RenderLoop { get; private set; }
-
-        /// <summary>
         /// Gets the styling parent of the application, which is null.
         /// </summary>
         IStyleHost IStyleHost.StylingParent => null;
@@ -172,7 +165,6 @@ namespace Avalonia
             AvaloniaSynchronizationContext.InstallIfNeeded();
             FocusManager = new FocusManager();
             InputManager = new InputManager();
-            RenderLoop = new RenderLoop(60);
 
             AvaloniaLocator.CurrentMutable
                 .Bind<IAccessKeyHandler>().ToTransient<AccessKeyHandler>()
@@ -184,7 +176,6 @@ namespace Avalonia
                 .Bind<IStyler>().ToConstant(_styler)
                 .Bind<ILayoutManager>().ToSingleton<LayoutManager>()
                 .Bind<IRenderer>().ToTransient<Renderer>()
-                .Bind<IRenderLoop>().ToConstant(RenderLoop)
                 .Bind<IApplicationLifecycle>().ToConstant(this);
         }
     }

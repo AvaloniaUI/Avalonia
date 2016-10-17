@@ -25,6 +25,7 @@ namespace Avalonia
 namespace Avalonia.Gtk
 {
     using System.IO;
+    using Rendering;
     using Gtk = global::Gtk;
 
     public class GtkPlatform : IPlatformThreadingInterface, IPlatformSettings, IWindowingPlatform, IPlatformIconLoader
@@ -53,6 +54,7 @@ namespace Avalonia.Gtk
                 .Bind<IMouseDevice>().ToConstant(GtkMouseDevice.Instance)
                 .Bind<IPlatformSettings>().ToConstant(s_instance)
                 .Bind<IPlatformThreadingInterface>().ToConstant(s_instance)
+                .Bind<IRenderLoop>().ToConstant(new DefaultRenderLoop(60))
                 .Bind<ISystemDialogImpl>().ToSingleton<SystemDialogImpl>()
                 .Bind<IPlatformIconLoader>().ToConstant(s_instance);
             _uiThread = Thread.CurrentThread;
