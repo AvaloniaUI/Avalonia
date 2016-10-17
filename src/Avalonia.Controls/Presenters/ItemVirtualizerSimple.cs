@@ -95,6 +95,44 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <inheritdoc/>
+        public override Size MeasureOverride(Size availableSize)
+        {
+            var window = Owner.GetVisualRoot() as TopLevel;
+
+            // If infinity is passed as the available size and we're virtualized then we need to
+            // fill the available space, but to do that we *don't* want to materialize all our
+            // items! Take a look at the root of the tree for a MaxClientSize and use that as
+            // the available size.
+            if (VirtualizingPanel.ScrollDirection == Orientation.Vertical)
+            {
+                if (availableSize.Height == double.PositiveInfinity)
+                {
+                    if (window != null)
+                    {
+                        availableSize = availableSize.WithHeight(window.PlatformImpl.MaxClientSize.Height);
+                    }
+                }
+
+                availableSize = availableSize.WithWidth(double.PositiveInfinity);
+            }
+            else
+            {
+                if (availableSize.Width == double.PositiveInfinity)
+                {
+                    if (window != null)
+                    {
+                        availableSize = availableSize.WithWidth(window.PlatformImpl.MaxClientSize.Width);
+                    }
+                }
+
+                availableSize = availableSize.WithHeight(double.PositiveInfinity);
+            }
+
+            Owner.Panel.Measure(availableSize);
+            return Owner.Panel.DesiredSize;
+        }
+
+        /// <inheritdoc/>
         public override void UpdateControls()
         {
             CreateAndRemoveContainers();
@@ -359,7 +397,6 @@ namespace Avalonia.Controls.Presenters
             var count = Math.Min(Math.Abs(delta), panel.Children.Count);
             var move = count < panel.Children.Count;
             var first = delta < 0 && move ? panel.Children.Count + delta : 0;
-            var containers = panel.Children.GetRange(first, count).ToList();
 
             for (var i = 0; i < count; ++i)
             {
@@ -482,9 +519,19 @@ namespace Avalonia.Controls.Presenters
                 {
                     layoutManager.ExecuteLayoutPass();
 
-                    if (!new Rect(panel.Bounds.Size).Contains(container.Bounds))
+                    if (panel.ScrollDirection == Orientation.Vertical)
                     {
-                        OffsetValue += 1;
+                        if (container.Bounds.Y < panel.Bounds.Y || container.Bounds.Bottom > panel.Bounds.Bottom)
+                        {
+                            OffsetValue += 1;
+                        }
+                    }
+                    else
+                    {
+                        if (container.Bounds.X < panel.Bounds.X || container.Bounds.Right > panel.Bounds.Right)
+                        {
+                            OffsetValue += 1;
+                        }
                     }
                 }
 

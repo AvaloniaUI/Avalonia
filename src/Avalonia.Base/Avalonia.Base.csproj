@@ -38,12 +38,13 @@
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>bin\Release\Avalonia.Base.XML</DocumentationFile>
     <NoWarn>CS1591</NoWarn>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\Shared\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="Data\BindingChainNullException.cs" />
+    <Compile Include="Data\BindingChainException.cs" />
     <Compile Include="Data\BindingNotification.cs" />
     <Compile Include="Data\IndexerBinding.cs" />
     <Compile Include="Diagnostics\INotifyCollectionChangedDebug.cs" />

@@ -635,21 +635,19 @@ Task("Run-Unit-Tests")
     .WithCriteria(() => !skipTests)
     .Does(() =>
 {
-    var pattern = "./tests/Avalonia.*.UnitTests/bin/" + dirSuffix + "/Avalonia.*.UnitTests.dll";
-
-    Func<IFileSystemInfo, bool> ExcludeWindowsTests = i => {
-        return !(i.Path.FullPath.IndexOf("Direct2D", StringComparison.OrdinalIgnoreCase) >= 0);
-    };
-
-    var unitTests = isRunningOnWindows ? GetFiles(pattern) : GetFiles(pattern, ExcludeWindowsTests);
+    var unitTests = GetDirectories("./tests/Avalonia.*.UnitTests")
+        .Select(dir => System.IO.Path.GetFileName(dir.FullPath))
+        .Where(name => isRunningOnWindows ? true : !(name.IndexOf("Direct2D", StringComparison.OrdinalIgnoreCase) >= 0))
+        .Select(name => MakeAbsolute(File("./tests/" + name + "/bin/" + dirSuffix + "/" + name + ".dll")))
+        .ToList();
 
     if (isRunningOnWindows)
     {
-        var windowsTests = GetFiles("./tests/Avalonia.DesignerSupport.Tests/bin/" + dirSuffix + "/*Tests.dll") + 
-                           GetFiles("./tests/Avalonia.LeakTests/bin/" + dirSuffix + "/*Tests.dll") + 
-                           GetFiles("./tests/Avalonia.RenderTests/bin/" + dirSuffix + "/*Tests.dll");
+        var windowsTests = GetFiles("./tests/Avalonia.DesignerSupport.Tests/bin/" + dirSuffix + "/*.Tests.dll") + 
+                           GetFiles("./tests/Avalonia.LeakTests/bin/" + dirSuffix + "/*.LeakTests.dll") + 
+                           GetFiles("./tests/Avalonia.RenderTests/bin/" + dirSuffix + "/*.RenderTests.dll");
 
-        unitTests += windowsTests;
+        unitTests.AddRange(windowsTests);
     }
 
     var toolPath = (isPlatformAnyCPU || isPlatformX86) ? 
@@ -662,10 +660,7 @@ Task("Run-Unit-Tests")
         Parallelism = ParallelismOption.None 
     };
 
-    if (isRunningOnWindows)
-    {
-        settings.NoAppDomain = false;
-    }
+    settings.NoAppDomain = !isRunningOnWindows;
 
     foreach (var file in unitTests)
     {

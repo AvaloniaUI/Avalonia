@@ -2,32 +2,20 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
-using System.Reflection;
-using System.Threading.Tasks;
-using System.Windows.Input;
-using Avalonia.Data;
 
 namespace Avalonia.Markup.Data.Plugins
 {
     /// <summary>
-    /// Handles binding to <see cref="IObservable{T}"/>s in an <see cref="ExpressionObserver"/>.
+    /// Handles binding to <see cref="IObservable{T}"/>s for the '^' stream binding operator.
     /// </summary>
-    public class ObservableValuePlugin : IValuePlugin
+    public class ObservableStreamPlugin : IStreamPlugin
     {
         /// <summary>
         /// Checks whether this plugin handles the specified value.
         /// </summary>
         /// <param name="reference">A weak reference to the value.</param>
         /// <returns>True if the plugin can handle the value; otherwise false.</returns>
-        public virtual bool Match(WeakReference reference)
-        {
-            var target = reference.Target;
-
-            // ReactiveCommand is an IObservable but we want to bind to it, not its value.
-            return target is IObservable<object> && !(target is ICommand);
-        }
+        public virtual bool Match(WeakReference reference) => reference.Target is IObservable<object>;
 
         /// <summary>
         /// Starts producing output based on the specified value.

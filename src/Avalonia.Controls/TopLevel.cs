@@ -87,7 +87,6 @@ namespace Avalonia.Controls
 
             PlatformImpl = impl;
             dependencyResolver = dependencyResolver ?? AvaloniaLocator.Current;
-
             var styler = TryGetService<IStyler>(dependencyResolver);
 
             _accessKeyHandler = TryGetService<IAccessKeyHandler>(dependencyResolver);

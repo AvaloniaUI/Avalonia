@@ -10,7 +10,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Avalonia.AndroidTestApplication</RootNamespace>
-    <AssemblyName>Avalonia Test Application</AssemblyName>
+    <AssemblyName>Avalonia.AndroidTestApplication</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <AndroidApplication>true</AndroidApplication>
     <AndroidResgenFile>Resources\Resource.Designer.cs</AndroidResgenFile>
@@ -77,11 +77,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
-    <Reference Include="System.Collections" />
     <Reference Include="System.Core" />
-    <Reference Include="System.IO" />
-    <Reference Include="System.Linq.Expressions" />
-    <Reference Include="System.ObjectModel" />
     <Reference Include="System.Reactive.Core, Version=3.0.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\System.Reactive.Core.3.0.0\lib\netstandard1.3\System.Reactive.Core.dll</HintPath>
       <Private>True</Private>
@@ -98,8 +94,6 @@
       <HintPath>..\..\..\packages\System.Reactive.PlatformServices.3.0.0\lib\netstandard1.3\System.Reactive.PlatformServices.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="System.Runtime" />
-    <Reference Include="System.Runtime.Extensions" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Xml" />
   </ItemGroup>
@@ -178,6 +172,10 @@
       <Project>{3e10a5fa-e8da-48b1-ad44-6a5b6cb7750f}</Project>
       <Name>Avalonia.Themes.Default</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\Avalonia.DotNetFrameworkRuntime\Avalonia.DotNetFrameworkRuntime.csproj">
+      <Project>{4a1abb09-9047-4bd5-a4ad-a055e52c5ee0}</Project>
+      <Name>Avalonia.DotNetFrameworkRuntime</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Avalonia.HtmlRenderer\Avalonia.HtmlRenderer.csproj">
       <Project>{5fb2b005-0a7f-4dad-add4-3ed01444e63d}</Project>
       <Name>Avalonia.HtmlRenderer</Name>
@@ -187,7 +185,6 @@
       <Name>Avalonia.Skia.Android</Name>
     </ProjectReference>
   </ItemGroup>
-  <Import Project="..\..\..\samples\TestApplicationShared\TestApplicationShared.projitems" Label="Shared" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
      Other similar extension points exist, see Microsoft.Common.targets.

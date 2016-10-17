@@ -11,6 +11,7 @@
     <RootNamespace>Avalonia.Skia.iOS</RootNamespace>
     <IPhoneResourcePrefix>Resources</IPhoneResourcePrefix>
     <AssemblyName>Avalonia.Skia.iOS</AssemblyName>
+    <ShouldIncludeNativeSkiaSharp>True</ShouldIncludeNativeSkiaSharp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -36,12 +37,13 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="RenderTarget.cs" />
     <Compile Include="SkiaView.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="SkiaSharp, Version=1.54.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\SkiaSharp.1.54.0\lib\XamariniOS\SkiaSharp.dll</HintPath>
+      <HintPath>..\..\..\packages\SkiaSharp.1.54.1\lib\XamariniOS\SkiaSharp.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />

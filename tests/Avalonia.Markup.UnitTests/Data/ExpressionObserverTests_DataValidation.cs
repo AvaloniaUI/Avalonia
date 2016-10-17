@@ -13,7 +13,7 @@ using Xunit;
 
 namespace Avalonia.Markup.UnitTests.Data
 {
-    public class ExpressionObserverTests_DataValidation
+    public class ExpressionObserverTests_DataValidation : IClassFixture<InvariantCultureFixture>
     {
         [Fact]
         public void Doesnt_Send_DataValidationError_When_DataValidatation_Not_Enabled()
@@ -143,7 +143,7 @@ namespace Avalonia.Markup.UnitTests.Data
             Assert.Equal(new[]
             {
                 new BindingNotification(
-                    new MarkupBindingChainNullException("Inner.MustBePositive", "Inner"),
+                    new MarkupBindingChainException("Null value", "Inner.MustBePositive", "Inner"),
                     BindingErrorType.Error,
                     AvaloniaProperty.UnsetValue),
             }, result);

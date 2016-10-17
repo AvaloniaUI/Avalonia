@@ -11,7 +11,6 @@ namespace Avalonia.Controls.Platform
             => AvaloniaLocator.Current.GetService<IPlatformSettings>();
 
         static bool s_designerMode;
-        private static double _designerScalingFactor = 1;
 
         public static IDisposable DesignerMode()
         {
@@ -21,7 +20,6 @@ namespace Avalonia.Controls.Platform
 
         public static void SetDesignerScalingFactor(double factor)
         {
-            _designerScalingFactor = factor;
         }
 
         public static IWindowImpl CreateWindow()

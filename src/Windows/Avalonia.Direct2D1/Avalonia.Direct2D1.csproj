@@ -34,6 +34,7 @@
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>bin\Release\Avalonia.Direct2D1.XML</DocumentationFile>
     <NoWarn>CS1591</NoWarn>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="SharpDX, Version=3.0.2.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">

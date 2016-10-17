@@ -16,6 +16,7 @@
     <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
     <AndroidUseLatestPlatformSdk>False</AndroidUseLatestPlatformSdk>
     <TargetFrameworkVersion>v4.4</TargetFrameworkVersion>
+    <ShouldIncludeNativeSkiaSharp>True</ShouldIncludeNativeSkiaSharp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -40,7 +41,7 @@
     <Reference Include="Mono.Android" />
     <Reference Include="mscorlib" />
     <Reference Include="SkiaSharp, Version=1.54.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\SkiaSharp.1.54.0\lib\MonoAndroid\SkiaSharp.dll</HintPath>
+      <HintPath>..\..\..\packages\SkiaSharp.1.54.1\lib\MonoAndroid\SkiaSharp.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -87,6 +88,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AndroidRenderTarget.cs" />
+    <Compile Include="RenderTarget.cs" />
     <Compile Include="SkiaRenderView.cs" />
     <Compile Include="SkiaView.cs" />
   </ItemGroup>

@@ -24,6 +24,76 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void CaretIndex_Can_Moved_To_Position_After_The_End_Of_Text_With_Arrow_Key()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "1234"
+                };
+
+                target.CaretIndex = 3;
+                RaiseKeyEvent(target, Key.Right, 0);
+
+                Assert.Equal(4, target.CaretIndex);
+            }
+        }
+
+        [Fact]
+        public void Press_Ctrl_A_Select_All_Text()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "1234"
+                };
+
+                RaiseKeyEvent(target, Key.A, InputModifiers.Control);
+
+                Assert.Equal(0, target.SelectionStart);
+                Assert.Equal(4, target.SelectionEnd);
+            }
+        }
+
+        [Fact]
+        public void Press_Ctrl_A_Select_All_Null_Text()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate()
+                };
+
+                RaiseKeyEvent(target, Key.A, InputModifiers.Control);
+
+                Assert.Equal(0, target.SelectionStart);
+                Assert.Equal(0, target.SelectionEnd);
+            }
+        }
+
+        [Fact]
+        public void Press_Ctrl_Z_Will_Not_Modify_Text()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "1234"
+                };
+
+                RaiseKeyEvent(target, Key.Z, InputModifiers.Control);
+
+                Assert.Equal("1234", target.Text);
+            }
+        }
+
+        [Fact]
         public void Typing_Beginning_With_0_Should_Not_Modify_Text_When_Bound_To_Int()
         {
             using (UnitTestApplication.Start(Services))
@@ -51,6 +121,85 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Control_Backspace_Should_Remove_The_Word_Before_The_Caret_If_There_Is_No_Selection()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                TextBox textBox = new TextBox
+                {
+                    Text = "First Second Third Fourth",
+                    CaretIndex = 5
+                };
+
+                // (First| Second Third Fourth)
+                RaiseKeyEvent(textBox, Key.Back, InputModifiers.Control);
+                Assert.Equal(" Second Third Fourth", textBox.Text);
+
+                // ( Second |Third Fourth)
+                textBox.CaretIndex = 8;
+                RaiseKeyEvent(textBox, Key.Back, InputModifiers.Control);
+                Assert.Equal(" Third Fourth", textBox.Text);
+
+                // ( Thi|rd Fourth)
+                textBox.CaretIndex = 4;
+                RaiseKeyEvent(textBox, Key.Back, InputModifiers.Control);
+                Assert.Equal(" rd Fourth", textBox.Text);
+
+                // ( rd F[ou]rth)
+                textBox.SelectionStart = 5;
+                textBox.SelectionEnd = 7;
+
+                RaiseKeyEvent(textBox, Key.Back, InputModifiers.Control);
+                Assert.Equal(" rd Frth", textBox.Text);
+
+                // ( |rd Frth)
+                textBox.CaretIndex = 1;
+                RaiseKeyEvent(textBox, Key.Back, InputModifiers.Control);
+                Assert.Equal("rd Frth", textBox.Text);
+            }
+        }
+
+        [Fact]
+        public void Control_Delete_Should_Remove_The_Word_After_The_Caret_If_There_Is_No_Selection()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                TextBox textBox = new TextBox
+                {
+                    Text = "First Second Third Fourth",
+                    CaretIndex = 19
+                };
+
+                // (First Second Third |Fourth)
+                RaiseKeyEvent(textBox, Key.Delete, InputModifiers.Control);
+                Assert.Equal("First Second Third ", textBox.Text);
+
+                // (First Second |Third )
+                textBox.CaretIndex = 13;
+                RaiseKeyEvent(textBox, Key.Delete, InputModifiers.Control);
+                Assert.Equal("First Second ", textBox.Text);
+
+                // (First Sec|ond )
+                textBox.CaretIndex = 9;
+                RaiseKeyEvent(textBox, Key.Delete, InputModifiers.Control);
+                Assert.Equal("First Sec", textBox.Text);
+
+                // (Fi[rs]t Sec )
+                textBox.SelectionStart = 2;
+                textBox.SelectionEnd = 4;
+
+                RaiseKeyEvent(textBox, Key.Delete, InputModifiers.Control);
+                Assert.Equal("Fit Sec", textBox.Text);
+
+                // (Fit Sec| )
+                textBox.Text += " ";
+                textBox.CaretIndex = 7;
+                RaiseKeyEvent(textBox, Key.Delete, InputModifiers.Control);
+                Assert.Equal("Fit Sec", textBox.Text);
+            }
+        }
+
         private static TestServices Services => TestServices.MockThreadingInterface.With(
             standardCursorFactory: Mock.Of<IStandardCursorFactory>());
 
@@ -68,85 +217,6 @@ namespace Avalonia.Controls.UnitTests
                         RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent),
                     },
                 });
-        }
-
-        public void Control_Backspace_Should_Remove_The_Word_Before_The_Caret_If_There_Is_No_Selection()
-        {
-            AvaloniaLocator.CurrentMutable
-                .Bind<IPlatformThreadingInterface>()
-                .ToConstant(TestServices.MockThreadingInterface.ThreadingInterface);
-
-            TextBox textBox = new TextBox
-            {
-                Text = "First Second Third Fourth",
-                CaretIndex = 5
-            };
-
-            // (First| Second Third Fourth)
-            RaiseKeyEvent(textBox, Key.Back, InputModifiers.Control);
-            Assert.Equal(" Second Third Fourth", textBox.Text);
-
-            // ( Second |Third Fourth)
-            textBox.CaretIndex = 8;
-            RaiseKeyEvent(textBox, Key.Back, InputModifiers.Control);
-            Assert.Equal(" Third Fourth", textBox.Text);
-
-            // ( Thi|rd Fourth)
-            textBox.CaretIndex = 4;
-            RaiseKeyEvent(textBox, Key.Back, InputModifiers.Control);
-            Assert.Equal(" rd Fourth", textBox.Text);
-
-            // ( rd F[ou]rth)
-            textBox.SelectionStart = 5;
-            textBox.SelectionEnd = 7;
-
-            RaiseKeyEvent(textBox, Key.Back, InputModifiers.Control);
-            Assert.Equal(" rd Frth", textBox.Text);
-
-            // ( |rd Frth)
-            textBox.CaretIndex = 1;
-            RaiseKeyEvent(textBox, Key.Back, InputModifiers.Control);
-            Assert.Equal("rd Frth", textBox.Text);
-        }
-
-        [Fact]
-        public void Control_Delete_Should_Remove_The_Word_After_The_Caret_If_There_Is_No_Selection()
-        {
-            AvaloniaLocator.CurrentMutable
-                .Bind<IPlatformThreadingInterface>()
-                .ToConstant(TestServices.MockThreadingInterface.ThreadingInterface);
-
-            TextBox textBox = new TextBox
-            {
-                Text = "First Second Third Fourth",
-                CaretIndex = 19
-            };
-
-            // (First Second Third |Fourth)
-            RaiseKeyEvent(textBox, Key.Delete, InputModifiers.Control);
-            Assert.Equal("First Second Third ", textBox.Text);
-
-            // (First Second| Third )
-            textBox.CaretIndex = 12;
-            RaiseKeyEvent(textBox, Key.Delete, InputModifiers.Control);
-            Assert.Equal("First Second ", textBox.Text);
-
-            // (First Sec|ond )
-            textBox.CaretIndex = 9;
-            RaiseKeyEvent(textBox, Key.Delete, InputModifiers.Control);
-            Assert.Equal("First Sec ", textBox.Text);
-
-            // (Fi[rs]t Sec )
-            textBox.SelectionStart = 2;
-            textBox.SelectionEnd = 4;
-
-            RaiseKeyEvent(textBox, Key.Delete, InputModifiers.Control);
-            Assert.Equal("Fit Sec ", textBox.Text);
-
-            // (Fit Sec| )
-            textBox.CaretIndex = 7;
-            RaiseKeyEvent(textBox, Key.Delete, InputModifiers.Control);
-            Assert.Equal("Fit Sec", textBox.Text);
         }
 
         private void RaiseKeyEvent(TextBox textBox, Key key, InputModifiers inputModifiers)

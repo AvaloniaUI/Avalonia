@@ -112,7 +112,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             target.Arrange(new Rect(0, 0, 100, 100));
 
             var scroll = (ScrollContentPresenter)target.Parent;
-            Assert.Equal(new Size(0, 20), scroll.Extent);
+            Assert.Equal(new Size(10, 20), scroll.Extent);
             Assert.Equal(new Size(0, 10), scroll.Viewport);
         }
 
@@ -213,8 +213,8 @@ namespace Avalonia.Controls.UnitTests.Presenters
             target.Arrange(new Rect(0, 0, 100, 100));
 
             Assert.Equal(10, target.Panel.Children.Count);
-            Assert.Equal(new Size(0, 20), scroll.Extent);
-            Assert.Equal(new Size(0, 10), scroll.Viewport);
+            Assert.Equal(new Size(10, 20), scroll.Extent);
+            Assert.Equal(new Size(100, 10), scroll.Viewport);
         }
 
         [Fact]
@@ -254,7 +254,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             scroll.Arrange(new Rect(0, 0, 100, 100));
 
             Assert.Equal(10, target.Panel.Children.Count);
-            Assert.Equal(new Size(0, 20), scroll.Extent);
+            Assert.Equal(new Size(10, 20), scroll.Extent);
             Assert.Equal(new Size(0, 10), scroll.Viewport);
 
             target.VirtualizationMode = ItemVirtualizationMode.None;

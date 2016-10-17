@@ -56,7 +56,7 @@ namespace Avalonia.Base.UnitTests
             var source = new Subject<object>();
             var target = new Class1
             {
-                [!Class1.NonValidatedProperty] = source.AsBinding(),
+                [!Class1.NonValidatedProperty] = source.ToBinding(),
             };
 
             source.OnNext(new BindingNotification(6));
@@ -73,7 +73,7 @@ namespace Avalonia.Base.UnitTests
             var source = new Subject<object>();
             var target = new Class1
             {
-                [!Class1.ValidatedDirectProperty] = source.AsBinding(),
+                [!Class1.ValidatedDirectProperty] = source.ToBinding(),
             };
 
             source.OnNext(new BindingNotification(6));

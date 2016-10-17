@@ -50,7 +50,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             target.Measure(new Size(100, 100));
             target.Arrange(new Rect(0, 0, 100, 100));
 
-            Assert.Equal(new Size(0, 10), ((ILogicalScrollable)target).Viewport);
+            Assert.Equal(new Size(100, 10), ((ILogicalScrollable)target).Viewport);
         }
 
         [Fact]
@@ -62,7 +62,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             target.Measure(new Size(100, 100));
             target.Arrange(new Rect(0, 0, 100, 100));
 
-            Assert.Equal(new Size(10, 0), ((ILogicalScrollable)target).Viewport);
+            Assert.Equal(new Size(10, 100), ((ILogicalScrollable)target).Viewport);
         }
 
         [Fact]
@@ -147,7 +147,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             target.Measure(new Size(100, 95));
             target.Arrange(new Rect(0, 0, 100, 95));
 
-            Assert.Equal(new Size(0, 9), ((ILogicalScrollable)target).Viewport);
+            Assert.Equal(new Size(100, 9), ((ILogicalScrollable)target).Viewport);
         }
 
         [Fact]
@@ -772,6 +772,19 @@ namespace Avalonia.Controls.UnitTests.Presenters
                     Assert.Equal(new Vector(0, 10), ((ILogicalScrollable)target).Offset);
                     Assert.Same(target.Panel.Children[0], result);
                 }
+            }
+
+            [Fact]
+            public void Should_Return_Horizontal_Extent_And_Viewport()
+            {
+                var target = CreateTarget();
+
+                target.ApplyTemplate();
+                target.Measure(new Size(5, 100));
+                target.Arrange(new Rect(0, 0, 5, 100));
+
+                Assert.Equal(new Size(10, 20), ((ILogicalScrollable)target).Extent);
+                Assert.Equal(new Size(5, 10), ((ILogicalScrollable)target).Viewport);
             }
         }
 

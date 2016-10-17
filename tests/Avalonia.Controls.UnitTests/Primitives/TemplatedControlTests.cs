@@ -224,7 +224,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                             {
                                 Child = new ContentPresenter
                                 {
-                                    [~ContentPresenter.ContentProperty] = parent.GetObservable(ContentControl.ContentProperty).AsBinding(),
+                                    [~ContentPresenter.ContentProperty] = parent.GetObservable(ContentControl.ContentProperty).ToBinding(),
                                 }
                             };
                         }),

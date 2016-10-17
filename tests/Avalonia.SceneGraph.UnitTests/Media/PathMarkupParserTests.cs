@@ -92,7 +92,6 @@ namespace Avalonia.SceneGraph.UnitTests.Media
                     .ToConstant(Mock.Of<IPlatformRenderInterface>());
 
             return new PathMarkupParser(
-                new StreamGeometry(),
                 new StreamGeometryContext(implMock != null ? implMock.Object : Mock.Of<IStreamGeometryContextImpl>()));
         }
     }
