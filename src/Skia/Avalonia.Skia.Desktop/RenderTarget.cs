@@ -116,11 +116,19 @@ namespace Avalonia.Skia
 
             double scale = 1.0;
 
-#if WIN32
-            var dpi = GetWindowDpi();
-            scale = dpi.Width / 96.0;
-#endif
+            var runtimeService = AvaloniaLocator.Current.GetService<IRuntimePlatform>();
 
+            if (runtimeService != null)
+            {
+                switch (runtimeService.GetRuntimeInfo().OperatingSystem)
+                {
+                    case OperatingSystemType.WinNT:
+                        var dpi = GetWindowDpi();
+                        scale = dpi.Width / 96.0;
+                        break;
+                }
+            }
+                        
             var result =
                 new DrawingContext(
                     new WindowDrawingContextImpl(this));
