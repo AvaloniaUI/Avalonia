@@ -42,6 +42,7 @@ namespace Avalonia.Media
         public DrawingContext(IDrawingContextImpl impl, Matrix? hiddenPostTransform = null)
         {
             _impl = impl;
+            _hiddenPostTransform = hiddenPostTransform;
         }
 
 
