@@ -128,14 +128,11 @@ namespace Avalonia.Skia
                         break;
                 }
             }
-                        
+
             var result =
                 new DrawingContext(
-                    new WindowDrawingContextImpl(this));
-
-            result.PushPreTransform(Matrix.CreateScale(scale, scale));
-            result.PushTransformContainer();
-
+                    new WindowDrawingContextImpl(this), Matrix.CreateScale(scale, scale));
+            
             return result;
         }
 
