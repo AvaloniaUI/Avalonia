@@ -79,8 +79,7 @@ namespace Avalonia.Skia
 #endif
         }
 
-#if WIN32
-        private Size GetWindowDpi()
+        private Size GetWindowDpiWin32()
         {
             if (UnmanagedMethods.ShCoreAvailable)
             {
@@ -102,7 +101,6 @@ namespace Avalonia.Skia
 
             return new Size(96, 96);
         }
-#endif
 
         public override DrawingContext CreateDrawingContext()
         {
@@ -123,7 +121,7 @@ namespace Avalonia.Skia
                 switch (runtimeService.GetRuntimeInfo().OperatingSystem)
                 {
                     case OperatingSystemType.WinNT:
-                        var dpi = GetWindowDpi();
+                        var dpi = GetWindowDpiWin32();
                         scale = dpi.Width / 96.0;
                         break;
                 }
