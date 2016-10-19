@@ -124,8 +124,12 @@ namespace Avalonia.Rendering
                 using (context.PushTransformContainer())
                 {
                     visual.Render(context);
+
+#pragma warning disable 0618
                     var transformed =
                         new TransformedBounds(bounds, new Rect(), context.CurrentContainerTransform);
+#pragma warning restore 0618
+
                     if (visual is Visual)
                     {
                         BoundsTracker.SetTransformedBounds((Visual)visual, transformed);
