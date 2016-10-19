@@ -12,6 +12,9 @@ namespace Avalonia.Media
     {
         private readonly IDrawingContextImpl _impl;
         private int _currentLevel;
+        //Internal tranformation that is applied but not exposed anywhere
+        //To be used for DPI scaling, etc
+        private Matrix? _hiddenPostTransform = Matrix.Identity;
 
         
 
@@ -36,9 +39,10 @@ namespace Avalonia.Media
             }
         }
 
-        public DrawingContext(IDrawingContextImpl impl)
+        public DrawingContext(IDrawingContextImpl impl, Matrix? hiddenPostTransform = null)
         {
             _impl = impl;
+            _hiddenPostTransform = hiddenPostTransform;
         }
 
 
@@ -55,11 +59,17 @@ namespace Avalonia.Media
             private set
             {
                 _currentTransform = value;
-                _impl.Transform = _currentTransform*_currentContainerTransform;
+                var transform = _currentTransform*_currentContainerTransform;
+                if (_hiddenPostTransform.HasValue)
+                    transform = transform*_hiddenPostTransform.Value;
+                _impl.Transform = transform;
             }
         }
 
-        internal Matrix CurrentContainerTransform => _currentContainerTransform;
+        //HACK: This is a temporary hack that is used in the render loop 
+        //to update TransformedBounds property
+        [Obsolete("HACK for render loop, don't use")]
+        internal Matrix CurrentContainerTransform => _currentContainerTransform;        
 
         /// <summary>
         /// Draws a bitmap image.
