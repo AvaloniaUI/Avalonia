@@ -522,7 +522,7 @@ namespace Avalonia.Skia
             _lineHeight = mDescent - mAscent;
 
             // Rendering is relative to baseline
-            _lineOffset = -metrics.Top;
+            _lineOffset = (-metrics.Ascent);
 
             string subString;
 
