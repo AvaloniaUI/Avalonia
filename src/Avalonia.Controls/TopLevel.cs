@@ -96,8 +96,8 @@ namespace Avalonia.Controls
             _renderInterface = TryGetService<IPlatformRenderInterface>(dependencyResolver);
 
             var renderLoop = TryGetService<IRenderLoop>(dependencyResolver);
-            Renderer = TryGetService<IRenderer>(dependencyResolver);
-            Renderer?.Attach(this, renderLoop);
+            var rendererFactory = TryGetService<IRendererFactory>(dependencyResolver);
+            Renderer = rendererFactory?.CreateRenderer(this, renderLoop);
 
             PlatformImpl.SetInputRoot(this);
             PlatformImpl.Activated = HandleActivated;

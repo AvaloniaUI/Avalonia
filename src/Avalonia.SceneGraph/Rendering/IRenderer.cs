@@ -10,8 +10,6 @@ namespace Avalonia.Rendering
     {
         void AddDirty(IVisual visual);
 
-        void Attach(IRenderRoot root, IRenderLoop renderLoop);
-
         void Render(Rect rect);
     }
 }

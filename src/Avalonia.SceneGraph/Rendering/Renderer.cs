@@ -9,12 +9,12 @@ namespace Avalonia.Rendering
 {
     public class Renderer : IDisposable, IRenderer
     {
-        private IRenderLoop _renderLoop;
-        private IRenderRoot _root;
+        private readonly IRenderLoop _renderLoop;
+        private readonly IRenderRoot _root;
         private IRenderTarget _renderTarget;
         private bool _dirty;
 
-        public void Attach(IRenderRoot root, IRenderLoop renderLoop)
+        public Renderer(IRenderRoot root, IRenderLoop renderLoop)
         {
             Contract.Requires<ArgumentNullException>(root != null);
 

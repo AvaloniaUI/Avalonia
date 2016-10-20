@@ -175,7 +175,6 @@ namespace Avalonia
                 .Bind<IKeyboardNavigationHandler>().ToTransient<KeyboardNavigationHandler>()
                 .Bind<IStyler>().ToConstant(_styler)
                 .Bind<ILayoutManager>().ToSingleton<LayoutManager>()
-                .Bind<IRenderer>().ToTransient<Renderer>()
                 .Bind<IApplicationLifecycle>().ToConstant(this);
         }
     }
