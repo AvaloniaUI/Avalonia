@@ -79,6 +79,29 @@ namespace Avalonia.Skia
 #endif
         }
 
+        private Size GetWindowDpiWin32()
+        {
+            if (UnmanagedMethods.ShCoreAvailable)
+            {
+                uint dpix, dpiy;
+
+                var monitor = UnmanagedMethods.MonitorFromWindow(
+                    _hwnd.Handle,
+                    UnmanagedMethods.MONITOR.MONITOR_DEFAULTTONEAREST);
+
+                if (UnmanagedMethods.GetDpiForMonitor(
+                        monitor,
+                        UnmanagedMethods.MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI,
+                        out dpix,
+                        out dpiy) == 0)
+                {
+                    return new Size(dpix, dpiy);
+                }
+            }
+
+            return new Size(96, 96);
+        }
+
         public override DrawingContext CreateDrawingContext()
         {
             FixSize();
@@ -89,9 +112,26 @@ namespace Avalonia.Skia
             canvas.Clear(SKColors.Red);
             canvas.ResetMatrix();
 
-            return
+            double scale = 1.0;
+
+            var runtimeService = AvaloniaLocator.Current.GetService<IRuntimePlatform>();
+
+            if (runtimeService != null)
+            {
+                switch (runtimeService.GetRuntimeInfo().OperatingSystem)
+                {
+                    case OperatingSystemType.WinNT:
+                        var dpi = GetWindowDpiWin32();
+                        scale = dpi.Width / 96.0;
+                        break;
+                }
+            }
+
+            var result =
                 new DrawingContext(
-                    new WindowDrawingContextImpl(this));
+                    new WindowDrawingContextImpl(this), Matrix.CreateScale(scale, scale));
+            
+            return result;
         }
 
         public void Present()
