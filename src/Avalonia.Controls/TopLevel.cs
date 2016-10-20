@@ -237,7 +237,7 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         IRenderTarget IRenderRoot.CreateRenderTarget()
         {
-            return _renderInterface.CreateRenderer(PlatformImpl.Handle);
+            return _renderInterface.CreateRenderTarget(PlatformImpl.Handle);
         }
 
         /// <inheritdoc/>

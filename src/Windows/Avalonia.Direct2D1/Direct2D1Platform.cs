@@ -59,7 +59,7 @@ namespace Avalonia.Direct2D1
             return new FormattedTextImpl(text, fontFamily, fontSize, fontStyle, textAlignment, fontWeight, wrapping);
         }
 
-        public IRenderTarget CreateRenderer(IPlatformHandle handle)
+        public IRenderTarget CreateRenderTarget(IPlatformHandle handle)
         {
             if (handle.HandleDescriptor == "HWND")
             {

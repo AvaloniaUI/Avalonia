@@ -20,7 +20,7 @@ namespace Avalonia.SceneGraph.UnitTests.VisualTree
             throw new NotImplementedException();
         }
 
-        public IRenderTarget CreateRenderer(IPlatformHandle handle)
+        public IRenderTarget CreateRenderTarget(IPlatformHandle handle)
         {
             throw new NotImplementedException();
         }
