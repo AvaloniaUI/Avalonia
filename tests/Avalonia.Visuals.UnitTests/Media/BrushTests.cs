@@ -5,7 +5,7 @@ using System;
 using Avalonia.Media;
 using Xunit;
 
-namespace Avalonia.SceneGraph.UnitTests.Media
+namespace Avalonia.Visuals.UnitTests.Media
 {
     public class BrushTests
     {

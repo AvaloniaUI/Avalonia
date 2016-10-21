@@ -6,7 +6,7 @@ using Avalonia.Platform;
 using Moq;
 using Xunit;
 
-namespace Avalonia.SceneGraph.UnitTests.Media
+namespace Avalonia.Visuals.UnitTests.Media
 {
     public class PathMarkupParserTests
     {

@@ -12,7 +12,7 @@ using Avalonia.VisualTree;
 using Moq;
 using Xunit;
 
-namespace Avalonia.SceneGraph.UnitTests.VisualTree
+namespace Avalonia.Visuals.UnitTests.VisualTree
 {
     public class VisualExtensionsTests_GetVisualsAt
     {

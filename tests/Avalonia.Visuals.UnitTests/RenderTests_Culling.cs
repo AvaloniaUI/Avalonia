@@ -7,7 +7,7 @@ using Avalonia.Media;
 using Avalonia.Rendering;
 using Xunit;
 
-namespace Avalonia.SceneGraph.UnitTests
+namespace Avalonia.Visuals.UnitTests
 {
     public class RenderTests_Culling
     {
