@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using Avalonia.Android.CanvasRendering;
 using Avalonia.Android.Platform;
 using Avalonia.Android.Platform.Input;
 using Avalonia.Android.Platform.SkiaPlatform;
@@ -10,6 +9,7 @@ using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Platform;
 using Avalonia.Shared.PlatformSupport;
+using Avalonia.Skia;
 
 namespace Avalonia
 {
@@ -50,8 +50,9 @@ namespace Avalonia.Android
                 .Bind<IPlatformSettings>().ToConstant(Instance)
                 .Bind<IPlatformThreadingInterface>().ToConstant(new AndroidThreadingInterface())
                 .Bind<ISystemDialogImpl>().ToTransient<SystemDialogImpl>()
-                .Bind<ITopLevelRenderer>().ToTransient<AndroidTopLevelRenderer>()
                 .Bind<IWindowingPlatform>().ToConstant(Instance);
+
+            SkiaPlatform.Initialize();
         }
 
         public void Init(Type applicationType)

@@ -23,6 +23,8 @@ namespace Avalonia.Win32.Interop
 
         public delegate void TimerProc(IntPtr hWnd, uint uMsg, IntPtr nIDEvent, uint dwTime);
 
+        public delegate void TimeCallback(uint uTimerID, uint uMsg, UIntPtr dwUser, UIntPtr dw1, UIntPtr dw2);
+
         public delegate IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
 
         public enum Cursor
@@ -705,8 +707,6 @@ namespace Avalonia.Win32.Interop
         [DllImport("user32.dll")]
         public static extern IntPtr LoadCursor(IntPtr hInstance, IntPtr lpCursorName);
 
-
-
         [DllImport("user32.dll")]
         public static extern bool PeekMessage(out MSG lpMsg, IntPtr hWnd, uint wMsgFilterMin, uint wMsgFilterMax, uint wRemoveMsg);
         
@@ -737,6 +737,12 @@ namespace Avalonia.Win32.Interop
         public static extern bool SetParent(IntPtr hWnd, IntPtr hWndNewParent);
         [DllImport("user32.dll")]
         public static extern bool ShowWindow(IntPtr hWnd, ShowWindowCommand nCmdShow);
+
+        [DllImport("Winmm.dll")]
+        public static extern uint timeKillEvent(uint uTimerID);
+
+        [DllImport("Winmm.dll")]
+        public static extern uint timeSetEvent(uint uDelay, uint uResolution, TimeCallback lpTimeProc, UIntPtr dwUser, uint fuEvent);
 
         [DllImport("user32.dll")]
         public static extern int ToUnicode(

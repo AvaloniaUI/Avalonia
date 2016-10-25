@@ -50,7 +50,7 @@ namespace Avalonia.Cairo
             return new FormattedTextImpl(s_pangoContext, text, fontFamily, fontSize, fontStyle, textAlignment, fontWeight);
         }
 
-        public IRenderTarget CreateRenderer(IPlatformHandle handle)
+        public IRenderTarget CreateRenderTarget(IPlatformHandle handle)
         {
             var window = handle as Gtk.Window;
             if (window != null)

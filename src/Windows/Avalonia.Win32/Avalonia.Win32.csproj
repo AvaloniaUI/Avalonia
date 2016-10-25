@@ -70,6 +70,7 @@
     </Compile>
     <Compile Include="Embedding\WpfAvaloniaControlHost.cs" />
     <Compile Include="IconImpl.cs" />
+    <Compile Include="RenderLoop.cs" />
     <Compile Include="SystemDialogImpl.cs" />
     <Compile Include="CursorFactory.cs" />
     <Compile Include="Input\KeyInterop.cs" />

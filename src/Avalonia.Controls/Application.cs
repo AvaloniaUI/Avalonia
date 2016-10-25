@@ -2,10 +2,8 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Reflection;
 using System.Threading;
 using Avalonia.Controls;
-using Avalonia.Controls.Platform;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
@@ -177,7 +175,6 @@ namespace Avalonia
                 .Bind<IKeyboardNavigationHandler>().ToTransient<KeyboardNavigationHandler>()
                 .Bind<IStyler>().ToConstant(_styler)
                 .Bind<ILayoutManager>().ToSingleton<LayoutManager>()
-                .Bind<IRenderQueueManager>().ToTransient<RenderQueueManager>()
                 .Bind<IApplicationLifecycle>().ToConstant(this);
         }
     }
