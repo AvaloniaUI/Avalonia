@@ -12,13 +12,6 @@ namespace Avalonia.Controls.Platform
 
         static bool s_designerMode;
 
-        public static IRenderTarget CreateRenderTarget(ITopLevelImpl window)
-        {
-            return AvaloniaLocator.Current
-                .GetService<IPlatformRenderInterface>()
-                .CreateRenderer(window.Handle);
-        }
-
         public static IDisposable DesignerMode()
         {
             s_designerMode = true;

@@ -22,7 +22,7 @@ namespace Avalonia.Skia.Android
         {
             _renderTarget =
                 AvaloniaLocator.Current.GetService<IPlatformRenderInterface>()
-                    .CreateRenderer(this);
+                    .CreateRenderTarget(this);
         }
 
         protected override void Draw()

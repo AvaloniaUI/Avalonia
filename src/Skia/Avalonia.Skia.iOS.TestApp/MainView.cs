@@ -21,7 +21,7 @@ namespace Avalonia.Skia.iOS.TestApp
             AutoresizingMask = UIViewAutoresizing.All;
             SkiaPlatform.Initialize();
             _target = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>()
-                .CreateRenderer(AvaloniaPlatformHandle);
+                .CreateRenderTarget(AvaloniaPlatformHandle);
             UpdateText(0);
         }
         double _radians = 0;

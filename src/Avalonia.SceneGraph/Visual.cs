@@ -259,7 +259,7 @@ namespace Avalonia
         /// </summary>
         public void InvalidateVisual()
         {
-            VisualRoot?.RenderQueueManager?.InvalidateRender(this);
+            VisualRoot?.Renderer?.AddDirty(this);
         }
 
         /// <summary>

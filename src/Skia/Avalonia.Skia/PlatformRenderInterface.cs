@@ -58,7 +58,7 @@ namespace Avalonia.Skia
             return new BitmapImpl(width, height);
         }
 
-        public IRenderTarget CreateRenderer(IPlatformHandle handle)
+        public IRenderTarget CreateRenderTarget(IPlatformHandle handle)
         {
             return new WindowRenderTarget(handle);
         }
