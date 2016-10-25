@@ -42,7 +42,7 @@ namespace Avalonia.Platform
         /// </summary>
         /// <param name="handle">The platform handle for the renderer.</param>
         /// <returns>An <see cref="IRenderTarget"/>.</returns>
-        IRenderTarget CreateRenderer(IPlatformHandle handle);
+        IRenderTarget CreateRenderTarget(IPlatformHandle handle);
 
         /// <summary>
         /// Creates a render target bitmap implementation.

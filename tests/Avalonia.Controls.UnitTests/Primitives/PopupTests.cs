@@ -268,7 +268,6 @@ namespace Avalonia.Controls.UnitTests.Primitives
             globalStyles.Setup(x => x.Styles).Returns(styles);
 
             var renderInterface = new Mock<IPlatformRenderInterface>();
-            renderInterface.Setup(x => x.CreateRenderer(It.IsAny<IPlatformHandle>())).Returns(() => new Mock<IRenderTarget>().Object);
 
             AvaloniaLocator.CurrentMutable
                 .Bind<ILayoutManager>().ToTransient<LayoutManager>()

@@ -1,4 +1,4 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
+﻿// Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
@@ -51,7 +51,7 @@ namespace Avalonia.Rendering
                     s_currentFrames++;
                     var now = s_stopwatch.Elapsed;
                     var elapsed = now - s_lastMeasure;
-                    if (elapsed.TotalSeconds > 0)
+                    if (elapsed.TotalSeconds > 1)
                     {
                         s_fps = (int) (s_currentFrames/elapsed.TotalSeconds);
                         s_currentFrames = 0;

@@ -9,12 +9,19 @@ namespace Avalonia.SceneGraph.UnitTests
 {
     public class TestRoot : TestVisual, IRenderRoot
     {
-        public IRenderTarget RenderTarget
+        public Size ClientSize { get; }
+        
+        public IRenderTarget CreateRenderTarget()
         {
-            get { throw new NotImplementedException(); }
+            throw new NotImplementedException();
         }
 
-        public IRenderQueueManager RenderQueueManager
+        public void Invalidate(Rect rect)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IRenderer Renderer
         {
             get { throw new NotImplementedException(); }
         }

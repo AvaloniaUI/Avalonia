@@ -16,6 +16,7 @@ using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop;
 using Avalonia.Controls;
 using System.IO;
+using Avalonia.Rendering;
 
 namespace Avalonia
 {
@@ -65,6 +66,7 @@ namespace Avalonia.Win32
                 .Bind<IMouseDevice>().ToConstant(WindowsMouseDevice.Instance)
                 .Bind<IPlatformSettings>().ToConstant(s_instance)
                 .Bind<IPlatformThreadingInterface>().ToConstant(s_instance)
+                .Bind<IRenderLoop>().ToConstant(new RenderLoop(60))
                 .Bind<ISystemDialogImpl>().ToSingleton<SystemDialogImpl>()
                 .Bind<IWindowingPlatform>().ToConstant(s_instance)
                 .Bind<IPlatformIconLoader>().ToConstant(s_instance);
