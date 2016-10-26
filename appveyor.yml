@@ -23,5 +23,6 @@ after_build:
 test: off
 artifacts:
   - path: artifacts\nuget\*.nupkg
+  - path: artifacts\zip\*.zip
 cache:
   - gtk-sharp-2.12.26.msi

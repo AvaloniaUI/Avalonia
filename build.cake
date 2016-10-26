@@ -30,6 +30,7 @@ var target = Argument("target", "Default");
 var platform = Argument("platform", "Any CPU");
 var configuration = Argument("configuration", "Release");
 var skipTests = HasArgument("skip-tests");
+
 ///////////////////////////////////////////////////////////////////////////////
 // CONFIGURATION
 ///////////////////////////////////////////////////////////////////////////////
@@ -89,6 +90,8 @@ if (isRunningOnAppVeyor)
 
 var artifactsDir = (DirectoryPath)Directory("./artifacts");
 var nugetRoot = artifactsDir.Combine("nuget");
+var zipRoot = artifactsDir.Combine("zip");
+var binRoot = artifactsDir.Combine("bin");
 
 var dirSuffix = configuration;
 var dirSuffixSkia = (isPlatformAnyCPU ? "x86" : platform) + "/" + configuration;
@@ -121,6 +124,11 @@ var buildDirs =
     GetDirectories("./tests/**/obj/" + dirSuffix) + 
     GetDirectories("./Samples/**/bin/" + dirSuffix) + 
     GetDirectories("./Samples/**/obj/" + dirSuffix);
+
+var fileZipSuffix = version + ".zip";
+var zipCoreArtifacts = zipRoot.CombineWithFilePath("Avalonia-" + fileZipSuffix);
+var zipSourceControlCatalogDesktopDirs = (DirectoryPath)Directory("./samples/ControlCatalog.Desktop/bin/" + dirSuffix);
+var zipTargetControlCatalogDesktopDirs = zipRoot.CombineWithFilePath("ControlCatalog.Desktop-" + fileZipSuffix);
 
 ///////////////////////////////////////////////////////////////////////////////
 // NUGET NUSPECS
@@ -527,6 +535,12 @@ var nugetPackages = nuspecNuGetSettings.Select(nuspec => {
     return nuspec.OutputDirectory.CombineWithFilePath(string.Concat(nuspec.Id, ".", nuspec.Version, ".nupkg"));
 }).ToArray();
 
+var binFiles = nuspecNuGetSettings.SelectMany(nuspec => {
+    return nuspec.Files.Select(file => {
+        return ((DirectoryPath)nuspec.BasePath).CombineWithFilePath(file.Source);
+    });
+}).GroupBy(f => f.FullPath).Select(g => g.First());
+
 ///////////////////////////////////////////////////////////////////////////////
 // INFORMATION
 ///////////////////////////////////////////////////////////////////////////////
@@ -569,6 +583,8 @@ Task("Clean")
     CleanDirectories(buildDirs);
     CleanDirectory(artifactsDir);
     CleanDirectory(nugetRoot);
+    CleanDirectory(zipRoot);
+    CleanDirectory(binRoot);
 });
 
 Task("Restore-NuGet-Packages")
@@ -669,6 +685,25 @@ Task("Run-Unit-Tests")
     }
 });
 
+Task("Copy-Files")
+    .IsDependentOn("Run-Unit-Tests")
+    .Does(() =>
+{
+    CopyFiles(binFiles, binRoot);
+});
+
+Task("Zip-Files")
+    .IsDependentOn("Copy-Files")
+    .Does(() =>
+{
+    Zip(binRoot, zipCoreArtifacts);
+
+    Zip(zipSourceControlCatalogDesktopDirs, 
+        zipTargetControlCatalogDesktopDirs, 
+        GetFiles(zipSourceControlCatalogDesktopDirs.FullPath + "/*.dll") + 
+        GetFiles(zipSourceControlCatalogDesktopDirs.FullPath + "/*.exe"));
+});
+
 Task("Create-NuGet-Packages")
     .IsDependentOn("Run-Unit-Tests")
     .Does(() =>
@@ -758,6 +793,7 @@ Task("Default")
   .IsDependentOn("Package");
 
 Task("AppVeyor")
+  .IsDependentOn("Zip-Files")
   .IsDependentOn("Publish-MyGet")
   .IsDependentOn("Publish-NuGet");
 
