@@ -25,6 +25,13 @@ You can find the packages here: ([stable(ish)](https://www.nuget.org/packages/Av
 You can install the package like this:
 `Install-Package Avalonia -Pre`
 
+## Bleeding Edge Builds
+
+Try out the latest build of Avalonia available for download here:
+https://ci.appveyor.com/project/AvaloniaUI/Avalonia/branch/master/artifacts
+
+Try out the ControlCatalog to give it a quick demo.
+
 ## Background
 
 Avalonia is a multi-platform windowing toolkit - somewhat like WPF - that is intended to be multi-
