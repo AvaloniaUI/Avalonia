@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Avalonia.Controls;
 using Avalonia.Platform;
+using Avalonia.Rendering;
 
 namespace Avalonia
 {
@@ -23,7 +24,12 @@ namespace Avalonia.Skia
         private static bool s_forceSoftwareRendering;
 
         public static void Initialize()
-            => AvaloniaLocator.CurrentMutable.Bind<IPlatformRenderInterface>().ToConstant(new PlatformRenderInterface());
+        {
+            var renderInterface = new PlatformRenderInterface();
+            AvaloniaLocator.CurrentMutable
+                .Bind<IPlatformRenderInterface>().ToConstant(renderInterface)
+                .Bind<IRendererFactory>().ToConstant(renderInterface);
+        }
 
         public static bool ForceSoftwareRendering
         {
