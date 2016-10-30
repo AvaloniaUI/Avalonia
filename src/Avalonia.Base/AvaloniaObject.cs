@@ -12,6 +12,7 @@ using Avalonia.Diagnostics;
 using Avalonia.Logging;
 using Avalonia.Threading;
 using Avalonia.Utilities;
+using System.Reactive.Concurrency;
 
 namespace Avalonia
 {
@@ -303,6 +304,12 @@ namespace Avalonia
             Contract.Requires<ArgumentNullException>(source != null);
 
             VerifyAccess();
+
+            var scheduler = AvaloniaLocator.Current.GetService<IScheduler>();
+            if (scheduler != null)
+            {
+                source = source.ObserveOn(scheduler);
+            }
 
             if (property.IsDirect)
             {
