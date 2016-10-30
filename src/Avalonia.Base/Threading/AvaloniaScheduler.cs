@@ -26,13 +26,7 @@ namespace Avalonia.Threading
         /// <inheritdoc/>
         public override IDisposable Schedule<TState>(TState state, TimeSpan dueTime, Func<IScheduler, TState, IDisposable> action)
         {
-            return DispatcherTimer.Run(
-                () =>
-                {
-                    action(this, state);
-                    return false;
-                },
-                dueTime);
+            return DispatcherTimer.RunOnce(() => action(this, state), dueTime);
         }
     }
 }
