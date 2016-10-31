@@ -11,6 +11,9 @@ using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Xunit;
 using Avalonia.Collections;
+using System.IO;
+using System.Collections.Generic;
+using Avalonia.Layout;
 
 namespace Avalonia.Controls.UnitTests
 {
@@ -67,6 +70,96 @@ namespace Avalonia.Controls.UnitTests
                     .ToList();
 
                 Assert.Equal(items, text);
+            }
+        }
+
+        [Fact]
+        public void Filtering_Multiple_Times_Between_Renders_Should_Generate_Valid_Containers()
+        {
+            var file = File.OpenText("Presenters\\testdata.txt");
+            var unfilteredData = new List<string>();
+
+            while (!file.EndOfStream)
+            {
+                unfilteredData.Add(file.ReadLine());
+            }
+
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var target = new ListBox
+                {
+                    Template = ListBoxTemplate(),
+                    Items = unfilteredData,
+                    ItemTemplate = new FuncDataTemplate<string>(x => new TextBlock { Text = x, Height = 10 }),
+                    SelectedIndex = 0,
+                };
+
+                Prepare(target);
+
+                // Make sure we're virtualized and first item is selected.
+                Assert.Equal(10, target.Presenter.Panel.Children.Count);
+                Assert.True(((ListBoxItem)target.Presenter.Panel.Children[0]).IsSelected);
+
+                var text = target.Presenter.Panel.Children
+                    .OfType<ListBoxItem>()
+                    .Select(x => x.Presenter.Child)
+                    .OfType<TextBlock>()
+                    .Select(x => x.Text)
+                    .ToList();
+
+                Assert.Equal(unfilteredData.Take(10), text);
+
+                string noSelectedSuggestion = string.Empty;
+                string suggestion = string.Empty;
+
+                string currentFilter = "i";
+                var filteredResults = unfilteredData.Where(c => c.ToLower().Contains(currentFilter.ToLower()));
+
+                IEnumerable<string> newSelectedCompletions = null;
+
+                newSelectedCompletions = filteredResults.Where(s => s.StartsWith(currentFilter));
+                // try find exact match case sensitive
+
+                if (newSelectedCompletions.Count() == 0)
+                {
+                    newSelectedCompletions = filteredResults.Where(s => s.ToLower().StartsWith(currentFilter.ToLower()));
+                    // try find non-case sensitve match
+                }
+
+                if (newSelectedCompletions.Count() == 0)
+                {
+                    suggestion = noSelectedSuggestion;
+                }
+                else
+                {
+                    var newSelectedCompletion = newSelectedCompletions.FirstOrDefault();
+
+                    suggestion = newSelectedCompletion;
+                }
+
+                target.Items = filteredResults.ToList();
+                target.SelectedItem = null;
+
+                target.Measure(new Size(100, 100));
+                target.Arrange(new Rect(0, 0, 100, 100));
+
+                target.SelectedItem = suggestion;               
+
+
+                target.Measure(new Size(100, 100));
+                target.Arrange(new Rect(0, 0, 100, 100));
+                LayoutManager.Instance.ExecuteLayoutPass();                
+
+                text = target.Presenter.Panel.Children
+                    .OfType<ListBoxItem>()
+                    .Select(x => x.Presenter.Child)
+                    .OfType<TextBlock>()
+                    .Select(x => x.Text)
+                    .ToList();
+
+                var expected = filteredResults.SkipWhile(x => x != suggestion).Take(10);
+
+                Assert.Equal(expected, text);
             }
         }
 
@@ -140,7 +233,7 @@ namespace Avalonia.Controls.UnitTests
                 SelectedIndex = 0,
             };
 
-            Prepare(target);
+            Prepare(target);            
 
             // Make sure we're virtualized and first item is selected.
             Assert.Equal(10, target.Presenter.Panel.Children.Count);
