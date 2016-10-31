@@ -84,7 +84,7 @@ namespace Avalonia.Controls.UnitTests
                 unfilteredData.Add(file.ReadLine());
             }
 
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             {
                 var target = new ListBox
                 {
@@ -143,12 +143,15 @@ namespace Avalonia.Controls.UnitTests
                 target.Measure(new Size(100, 100));
                 target.Arrange(new Rect(0, 0, 100, 100));
 
-                target.SelectedItem = suggestion;               
-
+                target.SelectedItem = suggestion;
 
                 target.Measure(new Size(100, 100));
                 target.Arrange(new Rect(0, 0, 100, 100));
-                LayoutManager.Instance.ExecuteLayoutPass();                
+
+                target.Scroll.Offset = new Vector(0, filteredResults.ToList().IndexOf(suggestion));
+
+                target.Measure(new Size(100, 100));
+                target.Arrange(new Rect(0, 0, 100, 100));
 
                 text = target.Presenter.Panel.Children
                     .OfType<ListBoxItem>()
@@ -233,7 +236,7 @@ namespace Avalonia.Controls.UnitTests
                 SelectedIndex = 0,
             };
 
-            Prepare(target);            
+            Prepare(target);
 
             // Make sure we're virtualized and first item is selected.
             Assert.Equal(10, target.Presenter.Panel.Children.Count);
@@ -248,7 +251,7 @@ namespace Avalonia.Controls.UnitTests
 
         private FuncControlTemplate ListBoxTemplate()
         {
-            return new FuncControlTemplate<ListBox>(parent => 
+            return new FuncControlTemplate<ListBox>(parent =>
                 new ScrollViewer
                 {
                     Name = "PART_ScrollViewer",
@@ -265,7 +268,7 @@ namespace Avalonia.Controls.UnitTests
 
         private FuncControlTemplate ListBoxItemTemplate()
         {
-            return new FuncControlTemplate<ListBoxItem>(parent => 
+            return new FuncControlTemplate<ListBoxItem>(parent =>
                 new ContentPresenter
                 {
                     Name = "PART_ContentPresenter",
