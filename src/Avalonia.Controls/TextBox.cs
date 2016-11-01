@@ -202,6 +202,7 @@ namespace Avalonia.Controls
             {
                 if (!_ignoreTextChanges)
                 {
+                    CaretIndex = CoerceCaretIndex(CaretIndex, value?.Length ?? 0);
                     SetAndRaise(TextProperty, ref _text, value);
                 }
             }
@@ -558,10 +559,11 @@ namespace Avalonia.Controls
             return null;
         }
 
-        private int CoerceCaretIndex(int value)
+        private int CoerceCaretIndex(int value) => CoerceCaretIndex(value, Text?.Length ?? 0);
+
+        private int CoerceCaretIndex(int value, int length)
         {
             var text = Text;
-            var length = text?.Length ?? 0;
 
             if (value < 0)
             {
