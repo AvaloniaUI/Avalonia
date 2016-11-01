@@ -682,6 +682,7 @@ namespace Avalonia.Win32
             }
 
             UnmanagedMethods.ShowWindow(_hwnd, command);
+            UnmanagedMethods.SetFocus(_hwnd);
         }
 
         public void SetIcon(IWindowIconImpl icon)
