@@ -30,15 +30,22 @@ namespace Avalonia.Threading
             var composite = new CompositeDisposable(2);
             if (dueTime == TimeSpan.Zero)
             {
-                var cancellation = new CancellationDisposable();
-                Dispatcher.UIThread.InvokeAsync(() =>
+                if (!Dispatcher.UIThread.CheckAccess())
                 {
-                    if (!cancellation.Token.IsCancellationRequested)
+                    var cancellation = new CancellationDisposable();
+                    Dispatcher.UIThread.InvokeAsync(() =>
                     {
-                        composite.Add(action(this, state));
-                    }
-                }, DispatcherPriority.DataBind);
-                composite.Add(cancellation);
+                        if (!cancellation.Token.IsCancellationRequested)
+                        {
+                            composite.Add(action(this, state));
+                        }
+                    }, DispatcherPriority.DataBind);
+                    composite.Add(cancellation); 
+                }
+                else
+                {
+                    return action(this, state);
+                }
             }
             else
             {
