@@ -305,10 +305,12 @@ namespace Avalonia
 
             VerifyAccess();
 
-            var scheduler = AvaloniaLocator.Current.GetService<IScheduler>();
-            if (scheduler != null)
+            var description = GetDescription(source);
+
+            if (priority == BindingPriority.LocalValue)
             {
-                source = source.ObserveOn(scheduler);
+                var scheduler = AvaloniaLocator.Current.GetService<IScheduler>() ?? ImmediateScheduler.Instance;
+                source = source.ObserveOn(scheduler); 
             }
 
             if (property.IsDirect)
@@ -323,7 +325,7 @@ namespace Avalonia
                     this,
                     "Bound {Property} to {Binding} with priority LocalValue", 
                     property, 
-                    GetDescription(source));
+                    description);
 
                 IDisposable subscription = null;
 
@@ -365,7 +367,7 @@ namespace Avalonia
                     this,
                     "Bound {Property} to {Binding} with priority {Priority}",
                     property,
-                    GetDescription(source),
+                    description,
                     priority);
 
                 return v.Add(source, (int)priority);

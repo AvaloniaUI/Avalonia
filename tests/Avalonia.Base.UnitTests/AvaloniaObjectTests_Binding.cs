@@ -370,18 +370,10 @@ namespace Avalonia.Base.UnitTests
             var target = new Class1();
             var source = new Subject<object>();
             var currentThreadId = Thread.CurrentThread.ManagedThreadId;
-            var calledThreadingInterface = false;
 
             var threadingInterfaceMock = new Mock<IPlatformThreadingInterface>();
             threadingInterfaceMock.SetupGet(mock => mock.CurrentThreadIsLoopThread)
                 .Returns(() => Thread.CurrentThread.ManagedThreadId == currentThreadId);
-            threadingInterfaceMock.Setup(mock => mock.StartTimer(TimeSpan.Zero, It.IsAny<Action>()))
-                .Returns<TimeSpan, Action>((ts, act) =>
-                {
-                    act();
-                    calledThreadingInterface = true;
-                    return Disposable.Empty;
-                });
 
             using (AvaloniaLocator.EnterScope())
             {
@@ -391,8 +383,6 @@ namespace Avalonia.Base.UnitTests
                 target.Bind(Class1.QuxProperty, source);
 
                 await Task.Run(() => source.OnNext(6.7));
-
-                Assert.True(calledThreadingInterface);
             }
 
         }
