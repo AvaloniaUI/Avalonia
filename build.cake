@@ -10,6 +10,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #tool "nuget:?package=xunit.runner.console&version=2.1.0"
+#tool "nuget:?package=OpenCover"
 
 ///////////////////////////////////////////////////////////////////////////////
 // USINGS
@@ -92,6 +93,7 @@ var artifactsDir = (DirectoryPath)Directory("./artifacts");
 var nugetRoot = artifactsDir.Combine("nuget");
 var zipRoot = artifactsDir.Combine("zip");
 var binRoot = artifactsDir.Combine("bin");
+var testsRoot = artifactsDir.Combine("tests");
 
 var dirSuffix = configuration;
 var dirSuffixSkia = (isPlatformAnyCPU ? "x86" : platform) + "/" + configuration;
@@ -585,6 +587,7 @@ Task("Clean")
     CleanDirectory(nugetRoot);
     CleanDirectory(zipRoot);
     CleanDirectory(binRoot);
+    CleanDirectory(testsRoot);
 });
 
 Task("Restore-NuGet-Packages")
@@ -670,18 +673,35 @@ Task("Run-Unit-Tests")
         "./tools/xunit.runner.console/tools/xunit.console.x86.exe" :
         "./tools/xunit.runner.console/tools/xunit.console.exe";
 
-    var settings = new XUnit2Settings 
+    var xUnitSettings = new XUnit2Settings 
     { 
         ToolPath = toolPath,
-        Parallelism = ParallelismOption.None 
+        Parallelism = ParallelismOption.None,
+        ShadowCopy = false
     };
 
-    settings.NoAppDomain = !isRunningOnWindows;
+    xUnitSettings.NoAppDomain = !isRunningOnWindows;
 
-    foreach (var file in unitTests)
+    var openCoverOutput = artifactsDir.GetFilePath(new FilePath("./coverage.xml"));
+    var openCoverSettings = new OpenCoverSettings()
+        .WithFilter("+[Avalonia.*]* -[*Test*]* -[ControlCatalog*]*")
+        .WithFilter("-[Avalonia.*]OmniXaml.* -[Avalonia.*]Glass.*")
+        .WithFilter("-[Avalonia.HtmlRenderer]TheArtOfDev.HtmlRenderer.* +[Avalonia.HtmlRenderer]TheArtOfDev.HtmlRenderer.Avalonia.* -[Avalonia.ReactiveUI]*");
+    
+    foreach(var test in unitTests)
     {
-        Information("Running test " + file.GetFilenameWithoutExtension());
-        XUnit2(file.FullPath, settings);
+        CopyDirectory(test.GetDirectory(), testsRoot);
+    }
+
+    if(isRunningOnWindows)
+    {
+        OpenCover(context => {
+            context.XUnit2(unitTests.Select(test => testsRoot.GetFilePath(test).FullPath), xUnitSettings);
+        }, openCoverOutput, openCoverSettings);
+    }
+    else
+    {
+        XUnit2(unitTests.Select(test => test.FullPath), xUnitSettings);
     }
 });
 
