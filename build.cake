@@ -4,7 +4,6 @@
 
 #addin "nuget:?package=Polly&version=4.2.0"
 #addin "nuget:?package=NuGet.Core&version=2.12.0"
-#addin Cake.Coveralls
 
 ///////////////////////////////////////////////////////////////////////////////
 // TOOLS
@@ -12,7 +11,6 @@
 
 #tool "nuget:?package=xunit.runner.console&version=2.1.0"
 #tool "nuget:?package=OpenCover"
-#tool coveralls.net
 
 ///////////////////////////////////////////////////////////////////////////////
 // USINGS
@@ -804,15 +802,6 @@ Task("Publish-NuGet")
     Information("Publish-NuGet Task failed, but continuing with next Task...");
 });
 
-Task("Publish-Coverage")
-    .IsDependentOn("Run-Unit-Tests")
-    .WithCriteria(() => isRunningOnAppVeyor)
-    .Does(() =>
-{
-    CoverallsNet(artifactsDir.GetFilePath(new FilePath("./coverage.xml")), CoverallsNetReportType.OpenCover,
-        new CoverallsNetSettings {RepoToken = "jKaVvndtCVJ2y7pNwQtYeHPn2jAxUpuyh", UseRelativePaths = true, ServiceName = "AppVeyor"});
-});
-
 ///////////////////////////////////////////////////////////////////////////////
 // TARGETS
 ///////////////////////////////////////////////////////////////////////////////
@@ -826,8 +815,7 @@ Task("Default")
 Task("AppVeyor")
   .IsDependentOn("Zip-Files")
   .IsDependentOn("Publish-MyGet")
-  .IsDependentOn("Publish-NuGet")
-  .IsDependentOn("Publish-Coverage");
+  .IsDependentOn("Publish-NuGet");
 
 Task("Travis")
   .IsDependentOn("Run-Unit-Tests");
