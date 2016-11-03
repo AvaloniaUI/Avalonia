@@ -30,7 +30,7 @@ namespace Avalonia
         public static Point PointToClient(this IVisual visual, Point point)
         {
             var p = GetRootAndPosition(visual);
-            return p.Item1.PointToClient(point + p.Item2);
+            return p.Item1.PointToClient(point - p.Item2);
         }
 
         /// <summary>
@@ -43,6 +43,22 @@ namespace Avalonia
         {
             var p = GetRootAndPosition(visual);
             return p.Item1.PointToScreen(point + p.Item2);
+        }
+
+        /// <summary>
+        /// Translates a point relative to this visual to coordinates that are relative to the specified visual.
+        /// The visual and relativeTo should be descendants of the same root window
+        /// </summary>
+        /// <param name="visual">The visual.</param>
+        /// <param name="point">The point value, as relative to this visual.</param>
+        /// <param name="relativeTo">The visual to translate the given point into.</param>
+        /// <returns>A point value, now relative to the target visual rather than this source element.</returns>
+        public static Point TranslatePoint(this IVisual visual, Point point, IVisual relativeTo)
+        {
+            var pos = GetRootAndPosition(visual);
+            var relToPos = GetRootAndPosition(relativeTo);
+
+            return point - (relToPos.Item2 - pos.Item2);
         }
 
         /// <summary>

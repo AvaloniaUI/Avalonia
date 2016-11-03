@@ -14,7 +14,7 @@ using Avalonia.Media;
 using Moq;
 using Avalonia.UnitTests;
 
-namespace Avalonia.SceneGraph.UnitTests.VisualTree
+namespace Avalonia.Visuals.UnitTests.VisualTree
 {
     public class BoundsTrackerTests
     {

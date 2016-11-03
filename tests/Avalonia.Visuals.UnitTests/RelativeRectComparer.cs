@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Avalonia.SceneGraph.UnitTests
+namespace Avalonia.Visuals.UnitTests
 {
     public class RelativeRectComparer : IEqualityComparer<RelativeRect>
     {
