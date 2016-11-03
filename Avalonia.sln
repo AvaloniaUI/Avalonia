@@ -4,7 +4,7 @@ VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Base", "src\Avalonia.Base\Avalonia.Base.csproj", "{B09B78D8-9B26-48B0-9149-D64A2F120F3F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.SceneGraph", "src\Avalonia.SceneGraph\Avalonia.SceneGraph.csproj", "{EB582467-6ABB-43A1-B052-E981BA910E3A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Visuals", "src\Avalonia.Visuals\Avalonia.Visuals.csproj", "{EB582467-6ABB-43A1-B052-E981BA910E3A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Layout", "src\Avalonia.Layout\Avalonia.Layout.csproj", "{42472427-4774-4C81-8AFF-9F27B8E31721}"
 EndProject
@@ -39,7 +39,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Styling.UnitTests"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Controls.UnitTests", "tests\Avalonia.Controls.UnitTests\Avalonia.Controls.UnitTests.csproj", "{5CCB5571-7C30-4E7D-967D-0E2158EBD91F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.SceneGraph.UnitTests", "tests\Avalonia.SceneGraph.UnitTests\Avalonia.SceneGraph.UnitTests.csproj", "{76716382-3159-460E-BDA6-C5715CF606D7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Visuals.UnitTests", "tests\Avalonia.Visuals.UnitTests\Avalonia.Visuals.UnitTests.csproj", "{76716382-3159-460E-BDA6-C5715CF606D7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Base.UnitTests", "tests\Avalonia.Base.UnitTests\Avalonia.Base.UnitTests.csproj", "{2905FF23-53FB-45E6-AA49-6AF47A172056}"
 EndProject

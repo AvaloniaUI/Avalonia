@@ -7,7 +7,7 @@ using System.Linq;
 using Avalonia.Rendering;
 using Avalonia.VisualTree;
 
-namespace Avalonia.SceneGraph.UnitTests
+namespace Avalonia.Visuals.UnitTests
 {
     public class ParamEventArgs<T> : EventArgs
     {

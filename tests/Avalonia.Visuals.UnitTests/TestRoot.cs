@@ -5,7 +5,7 @@ using System;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 
-namespace Avalonia.SceneGraph.UnitTests
+namespace Avalonia.Visuals.UnitTests
 {
     public class TestRoot : TestVisual, IRenderRoot
     {

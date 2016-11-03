@@ -65,9 +65,9 @@
       <Project>{D2221C82-4A25-4583-9B43-D791E3F6820C}</Project>
       <Name>Avalonia.Controls</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Avalonia.SceneGraph\Avalonia.SceneGraph.csproj">
+    <ProjectReference Include="..\Avalonia.Visuals\Avalonia.Visuals.csproj">
       <Project>{eb582467-6abb-43a1-b052-e981ba910e3a}</Project>
-      <Name>Avalonia.SceneGraph</Name>
+      <Name>Avalonia.Visuals</Name>
     </ProjectReference>
     <ProjectReference Include="..\Avalonia.Styling\Avalonia.Styling.csproj">
       <Project>{f1baa01a-f176-4c6a-b39d-5b40bb1b148f}</Project>

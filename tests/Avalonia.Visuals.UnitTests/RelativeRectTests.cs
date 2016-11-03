@@ -4,7 +4,7 @@
 using System.Globalization;
 using Xunit;
 
-namespace Avalonia.SceneGraph.UnitTests
+namespace Avalonia.Visuals.UnitTests
 {
     public class RelativeRectTests
     {

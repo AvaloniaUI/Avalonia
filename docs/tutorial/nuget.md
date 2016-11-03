@@ -20,7 +20,7 @@ Avalonia is divided into several `NuGet` packages.
   - Avalonia.Interactivity (.dll)
   - Avalonia.Layout (.dll)
   - Avalonia.Logging.Serilog (.dll)
-  - Avalonia.SceneGraph (.dll)
+  - Avalonia.Visuals (.dll)
   - Avalonia.Styling (.dll)
   - Avalonia.ReactiveUI (.dll)
   - Avalonia.Themes.Default (.dll)

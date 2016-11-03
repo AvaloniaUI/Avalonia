@@ -40,7 +40,7 @@ The main class in the assembly is `Animatable`.
 
 Allows AvaloniaProperties to be animated and provides various utilities related to animation.
 
-### Avalonia.SceneGraph
+### Avalonia.Visuals
 
 The main class in this assembly is `Visual` and its interface `IVisual`.
 
