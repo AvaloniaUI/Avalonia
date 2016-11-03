@@ -30,7 +30,7 @@ namespace Avalonia
         public static Point PointToClient(this IVisual visual, Point point)
         {
             var p = GetRootAndPosition(visual);
-            return p.Item1.PointToClient(point + p.Item2);
+            return p.Item1.PointToClient(point - p.Item2);
         }
 
         /// <summary>
