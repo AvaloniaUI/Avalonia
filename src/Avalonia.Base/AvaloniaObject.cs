@@ -307,11 +307,8 @@ namespace Avalonia
 
             var description = GetDescription(source);
 
-            if (priority == BindingPriority.LocalValue)
-            {
-                var scheduler = AvaloniaLocator.Current.GetService<IScheduler>() ?? ImmediateScheduler.Instance;
-                source = source.ObserveOn(scheduler); 
-            }
+            var scheduler = AvaloniaLocator.Current.GetService<IScheduler>() ?? ImmediateScheduler.Instance;
+            source = source.ObserveOn(scheduler); 
 
             if (property.IsDirect)
             {
