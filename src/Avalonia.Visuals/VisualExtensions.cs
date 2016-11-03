@@ -46,6 +46,22 @@ namespace Avalonia
         }
 
         /// <summary>
+        /// Translates a point relative to this visual to coordinates that are relative to the specified visual.
+        /// The visual and relativeTo should be descendants of the same root window
+        /// </summary>
+        /// <param name="visual">The visual.</param>
+        /// <param name="point">The point value, as relative to this visual.</param>
+        /// <param name="relativeTo">The visual to translate the given point into.</param>
+        /// <returns>A point value, now relative to the target visual rather than this source element.</returns>
+        public static Point TranslatePoint(this IVisual visual, Point point, IVisual relativeTo)
+        {
+            var pos = GetRootAndPosition(visual);
+            var relToPos = GetRootAndPosition(relativeTo);
+
+            return point - (relToPos.Item2 - pos.Item2);
+        }
+
+        /// <summary>
         /// Gets the root of the control's visual tree and the position of the control 
         /// in the root's coordinate space.
         /// </summary>
