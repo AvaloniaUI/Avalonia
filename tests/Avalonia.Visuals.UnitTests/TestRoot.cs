@@ -23,7 +23,7 @@ namespace Avalonia.Visuals.UnitTests
 
         public IRenderer Renderer
         {
-            get { throw new NotImplementedException(); }
+            get { return AvaloniaLocator.Current.GetService<IRenderer>(); }
         }
 
         public Point PointToClient(Point p)

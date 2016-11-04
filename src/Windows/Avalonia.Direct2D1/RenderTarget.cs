@@ -2,6 +2,8 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using Avalonia.Direct2D1.Media;
+using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Win32.Interop;
 using SharpDX;
@@ -80,7 +82,7 @@ namespace Avalonia.Direct2D1
         /// Creates a drawing context for a rendering session.
         /// </summary>
         /// <returns>An <see cref="Avalonia.Media.DrawingContext"/>.</returns>
-        public DrawingContext CreateDrawingContext()
+        public IDrawingContextImpl CreateDrawingContext()
         {
             var window = _renderTarget as WindowRenderTarget;
 
@@ -100,7 +102,7 @@ namespace Avalonia.Direct2D1
                 }
             }
 
-            return new DrawingContext(new Media.DrawingContext(_renderTarget, DirectWriteFactory));
+            return new DrawingContextImpl(_renderTarget, DirectWriteFactory);
         }
 
         public void Dispose()

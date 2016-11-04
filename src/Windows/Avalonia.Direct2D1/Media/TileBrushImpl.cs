@@ -23,7 +23,7 @@ namespace Avalonia.Direct2D1.Media
                 using (var ctx = new RenderTarget(intermediate).CreateDrawingContext())
                 {
                     intermediate.Clear(null);
-                    helper.DrawIntermediate(ctx);
+                    helper.DrawIntermediate(new DrawingContext(ctx));
                 }
 
                 PlatformBrush = new BitmapBrush(

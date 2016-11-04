@@ -39,7 +39,7 @@ namespace Avalonia.Direct2D1.Media
             base.Dispose();
         }
 
-        public Avalonia.Media.DrawingContext CreateDrawingContext() => new RenderTarget(_target).CreateDrawingContext();
+        public IDrawingContextImpl CreateDrawingContext() => new RenderTarget(_target).CreateDrawingContext();
         
     }
 }

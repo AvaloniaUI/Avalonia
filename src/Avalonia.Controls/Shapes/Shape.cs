@@ -64,7 +64,7 @@ namespace Avalonia.Controls.Shapes
                     if (DefiningGeometry != null)
                     {
                         _renderedGeometry = DefiningGeometry.Clone();
-                        _renderedGeometry.Transform = new MatrixTransform(_transform);
+                        ////_renderedGeometry.Transform = new MatrixTransform(_transform);
                     }
                 }
 

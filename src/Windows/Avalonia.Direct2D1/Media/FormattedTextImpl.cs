@@ -23,6 +23,8 @@ namespace Avalonia.Direct2D1.Media
         {
             var factory = AvaloniaLocator.Current.GetService<DWrite.Factory>();
 
+            Text = text;
+
             using (var format = new DWrite.TextFormat(
                 factory,
                 fontFamily,
@@ -57,6 +59,8 @@ namespace Avalonia.Direct2D1.Media
                 TextLayout.MaxHeight = (float)value.Height;
             }
         }
+
+        public string Text { get; }
 
         public DWrite.TextLayout TextLayout { get; }
 

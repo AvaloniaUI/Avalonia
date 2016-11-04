@@ -29,9 +29,9 @@ namespace Avalonia.Direct2D1
 
         private static readonly SharpDX.Direct2D1.Factory s_d2D1Factory =
 #if DEBUG
-            new SharpDX.Direct2D1.Factory(SharpDX.Direct2D1.FactoryType.SingleThreaded, SharpDX.Direct2D1.DebugLevel.Error);
+            new SharpDX.Direct2D1.Factory(SharpDX.Direct2D1.FactoryType.MultiThreaded, SharpDX.Direct2D1.DebugLevel.Error);
 #else
-            new SharpDX.Direct2D1.Factory(SharpDX.Direct2D1.FactoryType.SingleThreaded, SharpDX.Direct2D1.DebugLevel.None);
+            new SharpDX.Direct2D1.Factory(SharpDX.Direct2D1.FactoryType.MultiThreaded, SharpDX.Direct2D1.DebugLevel.None);
 #endif
         private static readonly SharpDX.DirectWrite.Factory s_dwfactory = new SharpDX.DirectWrite.Factory();
 
@@ -63,7 +63,7 @@ namespace Avalonia.Direct2D1
 
         public IRenderer CreateRenderer(IRenderRoot root, IRenderLoop renderLoop)
         {
-            return new Renderer(root, renderLoop);
+            return new DeferredRenderer(root, renderLoop);
         }
 
         public IRenderTarget CreateRenderTarget(IPlatformHandle handle)

@@ -23,6 +23,8 @@ namespace Avalonia.Rendering
             _renderLoop.Tick += OnRenderLoopTick;
         }
 
+        public bool DrawFps { get; set; }
+
         public void AddDirty(IVisual visual)
         {
             _dirty = true;
@@ -42,6 +44,7 @@ namespace Avalonia.Rendering
 
             try
             {
+                RendererMixin.DrawFpsCounter = DrawFps;
                 _renderTarget.Render(_root);
             }
             catch (RenderTargetCorruptedException ex)

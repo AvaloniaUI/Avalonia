@@ -22,7 +22,7 @@ namespace RenderTest
             this.InitializeComponent();
             this.CreateAnimations();
             this.AttachDevTools();
-            RendererMixin.DrawFpsCounter = true;
+            Renderer.DrawFps = true;
         }
 
         private void InitializeComponent()

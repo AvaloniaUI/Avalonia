@@ -2,15 +2,14 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using Avalonia.VisualTree;
 
-namespace Avalonia.Rendering
+namespace Avalonia.Rendering.SceneGraph
 {
-    public interface IRenderer : IDisposable
+    public interface IVisualNode : ISceneNode
     {
-        bool DrawFps { get; set; }
-
-        void AddDirty(IVisual visual);
-        void Render(Rect rect);
+        IReadOnlyList<ISceneNode> Children { get; }
+        IVisual Visual { get; }
     }
 }

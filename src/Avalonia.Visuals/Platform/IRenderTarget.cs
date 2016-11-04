@@ -17,6 +17,6 @@ namespace Avalonia.Platform
         /// <summary>
         /// Creates an <see cref="DrawingContext"/> for a rendering session.
         /// </summary>
-        DrawingContext CreateDrawingContext();
+        IDrawingContextImpl CreateDrawingContext();
     }
 }
