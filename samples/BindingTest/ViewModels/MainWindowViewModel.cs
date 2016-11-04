@@ -3,6 +3,8 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using ReactiveUI;
 using System.Reactive.Linq;
+using System.Threading.Tasks;
+using System.Threading;
 
 namespace BindingTest.ViewModels
 {
@@ -12,6 +14,7 @@ namespace BindingTest.ViewModels
         private double _doubleValue = 5.0;
         private string _stringValue = "Simple Binding";
         private bool _booleanFlag = false;
+        private string _currentTime;
 
         public MainWindowViewModel()
         {
@@ -36,6 +39,15 @@ namespace BindingTest.ViewModels
             {
                 BooleanFlag = !BooleanFlag;
                 StringValue = param.ToString();
+            });
+
+            Task.Run(() =>
+            {
+                while (true)
+                {
+                    CurrentTime = DateTimeOffset.Now.ToString();
+                    Thread.Sleep(1000);
+                }
             });
         }
 
@@ -65,6 +77,12 @@ namespace BindingTest.ViewModels
         {
             get { return _booleanFlag; }
             set { this.RaiseAndSetIfChanged(ref _booleanFlag, value); }
+        }
+
+        public string CurrentTime
+        {
+            get { return _currentTime; }
+            private set { this.RaiseAndSetIfChanged(ref _currentTime, value); }
         }
 
         public ReactiveCommand<object> StringValueCommand { get; }

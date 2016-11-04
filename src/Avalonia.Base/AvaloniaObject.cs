@@ -12,6 +12,7 @@ using Avalonia.Diagnostics;
 using Avalonia.Logging;
 using Avalonia.Threading;
 using Avalonia.Utilities;
+using System.Reactive.Concurrency;
 
 namespace Avalonia
 {
@@ -304,6 +305,11 @@ namespace Avalonia
 
             VerifyAccess();
 
+            var description = GetDescription(source);
+
+            var scheduler = AvaloniaLocator.Current.GetService<IScheduler>() ?? ImmediateScheduler.Instance;
+            source = source.ObserveOn(scheduler); 
+
             if (property.IsDirect)
             {
                 if (property.IsReadOnly)
@@ -316,7 +322,7 @@ namespace Avalonia
                     this,
                     "Bound {Property} to {Binding} with priority LocalValue", 
                     property, 
-                    GetDescription(source));
+                    description);
 
                 IDisposable subscription = null;
 
@@ -358,7 +364,7 @@ namespace Avalonia
                     this,
                     "Bound {Property} to {Binding} with priority {Priority}",
                     property,
-                    GetDescription(source),
+                    description,
                     priority);
 
                 return v.Add(source, (int)priority);
