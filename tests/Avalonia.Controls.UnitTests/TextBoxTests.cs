@@ -1,6 +1,8 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
+using System.Reactive.Linq;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
@@ -197,6 +199,33 @@ namespace Avalonia.Controls.UnitTests
                 textBox.CaretIndex = 7;
                 RaiseKeyEvent(textBox, Key.Delete, InputModifiers.Control);
                 Assert.Equal("Fit Sec", textBox.Text);
+            }
+        }
+
+        [Fact]
+        public void Setting_Text_Updates_CaretPosition()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Text = "Initial Text",
+                    CaretIndex = 11
+                };
+
+                var invoked = false;
+
+                target.GetObservable(TextBox.TextProperty).Skip(1).Subscribe(_ =>
+                {
+                    // Caret index should be set before Text changed notification, as we don't want
+                    // to notify with an invalid CaretIndex.
+                    Assert.Equal(7, target.CaretIndex);
+                    invoked = true;
+                });
+
+                target.Text = "Changed";
+
+                Assert.True(invoked);
             }
         }
 

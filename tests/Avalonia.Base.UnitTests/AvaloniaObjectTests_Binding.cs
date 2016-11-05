@@ -11,6 +11,13 @@ using Avalonia.Data;
 using Avalonia.Logging;
 using Avalonia.UnitTests;
 using Xunit;
+using System.Threading.Tasks;
+using Avalonia.Platform;
+using System.Threading;
+using Moq;
+using System.Reactive.Disposables;
+using System.Reactive.Concurrency;
+using Avalonia.Threading;
 
 namespace Avalonia.Base.UnitTests
 {
@@ -355,6 +362,29 @@ namespace Avalonia.Base.UnitTests
                 Assert.Equal(6.7, target.GetValue(Class1.QuxProperty));
                 Assert.True(called);
             }
+        }
+        
+        [Fact]
+        public async void Bind_With_Scheduler_Executes_On_Scheduler()
+        {
+            var target = new Class1();
+            var source = new Subject<object>();
+            var currentThreadId = Thread.CurrentThread.ManagedThreadId;
+
+            var threadingInterfaceMock = new Mock<IPlatformThreadingInterface>();
+            threadingInterfaceMock.SetupGet(mock => mock.CurrentThreadIsLoopThread)
+                .Returns(() => Thread.CurrentThread.ManagedThreadId == currentThreadId);
+
+            using (AvaloniaLocator.EnterScope())
+            {
+                AvaloniaLocator.CurrentMutable.Bind<IPlatformThreadingInterface>().ToConstant(threadingInterfaceMock.Object);
+                AvaloniaLocator.CurrentMutable.Bind<IScheduler>().ToConstant(AvaloniaScheduler.Instance);
+
+                target.Bind(Class1.QuxProperty, source);
+
+                await Task.Run(() => source.OnNext(6.7));
+            }
+
         }
 
         /// <summary>

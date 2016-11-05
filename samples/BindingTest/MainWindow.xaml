@@ -41,6 +41,10 @@
             <TextBox Watermark="Value of first TextBox" UseFloatingWatermark="True" 
                      Text="{Binding #first.Text, Mode=TwoWay}"/>
           </StackPanel>
+          <StackPanel Margin="18" Gap="4" Width="200" HorizontalAlignment="Left">
+            <TextBlock FontSize="16" Text="Scheduler"/>
+            <TextBox Watermark="Background Thread" Text="{Binding CurrentTime, Mode=OneWay}"/>
+          </StackPanel>
         </StackPanel>
       </StackPanel>
     </TabItem>
