@@ -7,7 +7,7 @@
   <AllowDynamicCodeContractChecking>true</AllowDynamicCodeContractChecking>
   <AllowStaticCodeContractChecking>false</AllowStaticCodeContractChecking>
   <AllowCodeAnalysis>false</AllowCodeAnalysis>
-  <IgnoreThisComponentCompletely>false</IgnoreThisComponentCompletely>
+  <IgnoreThisComponentCompletely>true</IgnoreThisComponentCompletely>
   <RunPreBuildEvents>false</RunPreBuildEvents>
   <RunPostBuildEvents>false</RunPostBuildEvents>
   <PreviouslyBuiltSuccessfully>true</PreviouslyBuiltSuccessfully>

@@ -85,7 +85,6 @@
     <Compile Include="ThicknessTests.cs" />
     <Compile Include="Media\BrushTests.cs" />
     <Compile Include="Media\ColorTests.cs" />
-    <Compile Include="TestRoot.cs" />
     <Compile Include="TestVisual.cs" />
     <Compile Include="RelativePointTests.cs" />
     <Compile Include="RenderTests_Culling.cs" />
