@@ -5,6 +5,7 @@ using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Avalonia.Platform;
 
 namespace Avalonia.Skia
 {
@@ -20,9 +21,9 @@ namespace Avalonia.Skia
             Canvas.Clear();
         }
 
-        public void DrawImage(IBitmap source, double opacity, Rect sourceRect, Rect destRect)
+        public void DrawImage(IBitmapImpl source, double opacity, Rect sourceRect, Rect destRect)
         {
-            var impl = (BitmapImpl)source.PlatformImpl;
+            var impl = (BitmapImpl)source;
             var s = sourceRect.ToSKRect();
             var d = destRect.ToSKRect();
             using (var paint = new SKPaint()
@@ -40,9 +41,9 @@ namespace Avalonia.Skia
             }
         }
 
-        public void DrawGeometry(IBrush brush, Pen pen, Geometry geometry)
+        public void DrawGeometry(IBrush brush, Pen pen, IGeometryImpl geometry)
         {
-            var impl = ((StreamGeometryImpl)geometry.PlatformImpl);
+            var impl = (StreamGeometryImpl)geometry;
             var size = geometry.Bounds.Size;
 
             using (var fill = brush != null ? CreatePaint(brush, size) : default(PaintWrapper))
@@ -188,7 +189,7 @@ namespace Avalonia.Skia
                 var bitmap = new BitmapImpl((int)helper.IntermediateSize.Width, (int)helper.IntermediateSize.Height);
                 rv.AddDisposable(bitmap);
                 using (var ctx = bitmap.CreateDrawingContext())
-                    helper.DrawIntermediate(ctx);
+                    helper.DrawIntermediate(new DrawingContext(ctx));
                 SKMatrix translation = SKMatrix.MakeTranslation(-(float)helper.DestinationRect.X, -(float)helper.DestinationRect.Y);
                 SKShaderTileMode tileX =
                     tileBrush.TileMode == TileMode.None
@@ -278,11 +279,11 @@ namespace Avalonia.Skia
             }
         }
 
-        public void DrawText(IBrush foreground, Point origin, FormattedText text)
+        public void DrawText(IBrush foreground, Point origin, IFormattedTextImpl text)
         {
             using (var paint = CreatePaint(foreground, text.Measure()))
             {
-                var textImpl = text.PlatformImpl as FormattedTextImpl;
+                var textImpl = text as FormattedTextImpl;
                 textImpl.Draw(this, Canvas, origin.ToSKPoint(), paint);
             }
         }

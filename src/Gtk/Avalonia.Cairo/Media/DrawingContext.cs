@@ -12,6 +12,7 @@ using Avalonia.Media;
 namespace Avalonia.Cairo.Media
 {
     using Avalonia.Media.Imaging;
+    using Platform;
     using Cairo = global::Cairo;
 
     /// <summary>
@@ -75,9 +76,9 @@ namespace Avalonia.Cairo.Media
         /// <param name="opacity">The opacity to draw with.</param>
         /// <param name="sourceRect">The rect in the image to draw.</param>
         /// <param name="destRect">The rect in the output to draw to.</param>
-        public void DrawImage(IBitmap bitmap, double opacity, Rect sourceRect, Rect destRect)
+        public void DrawImage(IBitmapImpl bitmap, double opacity, Rect sourceRect, Rect destRect)
         {
-            var impl = bitmap.PlatformImpl as BitmapImpl;
+            var impl = bitmap as BitmapImpl;
             var size = new Size(impl.PixelWidth, impl.PixelHeight);
             var scale = new Vector(destRect.Width / sourceRect.Width, destRect.Height / sourceRect.Height);
 
@@ -137,9 +138,9 @@ namespace Avalonia.Cairo.Media
         /// <param name="brush">The fill brush.</param>
         /// <param name="pen">The stroke pen.</param>
         /// <param name="geometry">The geometry.</param>
-        public void DrawGeometry(IBrush brush, Pen pen, Geometry geometry)
+        public void DrawGeometry(IBrush brush, Pen pen, IGeometryImpl geometry)
         {
-            var impl = geometry.PlatformImpl as StreamGeometryImpl;
+            var impl = geometry as StreamGeometryImpl;
 
             var oldMatrix = Transform;
             Transform = impl.Transform * Transform;
@@ -192,9 +193,9 @@ namespace Avalonia.Cairo.Media
         /// <param name="foreground">The foreground brush.</param>
         /// <param name="origin">The upper-left corner of the text.</param>
         /// <param name="text">The text.</param>
-        public void DrawText(IBrush foreground, Point origin, FormattedText text)
+        public void DrawText(IBrush foreground, Point origin, IFormattedTextImpl text)
         {
-            var layout = ((FormattedTextImpl)text.PlatformImpl).Layout;
+            var layout = ((FormattedTextImpl)text).Layout;
             _context.MoveTo(origin.X, origin.Y);
 
             using (var b = SetBrush(foreground, new Size(0, 0))) 

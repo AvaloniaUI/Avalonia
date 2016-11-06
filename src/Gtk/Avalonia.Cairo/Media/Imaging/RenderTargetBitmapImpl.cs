@@ -40,7 +40,7 @@ namespace Avalonia.Cairo.Media.Imaging
             Surface.WriteToPng(fileName);
         }
 
-        public Avalonia.Media.DrawingContext CreateDrawingContext()
+        public IDrawingContextImpl CreateDrawingContext()
         {
             return _renderTarget.CreateDrawingContext();
         }

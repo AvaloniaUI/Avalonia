@@ -74,10 +74,10 @@ namespace Avalonia.Skia
             }
         }
 
-        public DrawingContext CreateDrawingContext()
+        public IDrawingContextImpl CreateDrawingContext()
         {
 
-            return new DrawingContext(new BitmapDrawingContext(Bitmap));
+            return new BitmapDrawingContext(Bitmap);
         }
 
         public void Save(Stream stream)

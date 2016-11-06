@@ -13,7 +13,6 @@ namespace Avalonia.Cairo.Media
     public class FormattedTextImpl : IFormattedTextImpl
     {
         private Size _size;
-        private readonly string _text;
 
         static double CorrectScale(double input)
         {
@@ -32,7 +31,7 @@ namespace Avalonia.Cairo.Media
             Contract.Requires<ArgumentNullException>(context != null);
             Contract.Requires<ArgumentNullException>(text != null);
             Layout = new Pango.Layout(context);
-            _text = text;
+            Text = text;
             Layout.SetText(text);
             Layout.FontDescription = new Pango.FontDescription
             {
@@ -45,6 +44,8 @@ namespace Avalonia.Cairo.Media
             Layout.Alignment = textAlignment.ToCairo();
             Layout.Attributes = new Pango.AttrList();
         }
+
+        public string Text { get; }
 
         public Size Constraint
         {
@@ -99,7 +100,7 @@ namespace Avalonia.Cairo.Media
 
         int PangoIndexToTextIndex(int pangoIndex)
         {
-            return Encoding.UTF8.GetString(Encoding.UTF8.GetBytes(_text), 0, Math.Min(pangoIndex, _text.Length)).Length;
+            return Encoding.UTF8.GetString(Encoding.UTF8.GetBytes(Text), 0, Math.Min(pangoIndex, Text.Length)).Length;
         }
 
         public Rect HitTestTextPosition(int index)
@@ -109,7 +110,7 @@ namespace Avalonia.Cairo.Media
 
         int TextIndexToPangoIndex(int textIndex)
         {
-            return Encoding.UTF8.GetByteCount(textIndex < _text.Length ? _text.Remove(textIndex) : _text);
+            return Encoding.UTF8.GetByteCount(textIndex < Text.Length ? Text.Remove(textIndex) : Text);
         }
 
         public IEnumerable<Rect> HitTestTextRange(int index, int length)

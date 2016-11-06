@@ -48,9 +48,7 @@ namespace Avalonia.Cairo
         /// Creates a cairo surface that targets a platform-specific resource.
         /// </summary>
         /// <returns>A surface wrapped in an <see cref="Avalonia.Media.DrawingContext"/>.</returns>
-        public DrawingContext CreateDrawingContext() => new DrawingContext(CreateMediaDrawingContext());
-
-        public IDrawingContextImpl CreateMediaDrawingContext()
+        public IDrawingContextImpl CreateDrawingContext()
         {
             if (_window != null)
                 return new Media.DrawingContext(_window.GdkWindow);

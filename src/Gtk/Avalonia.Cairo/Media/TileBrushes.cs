@@ -23,7 +23,7 @@ namespace Avalonia.Cairo.Media
 			using (var intermediate = new ImageSurface(Format.ARGB32, (int)helper.IntermediateSize.Width, (int)helper.IntermediateSize.Height))
             using (var ctx = new RenderTarget(intermediate).CreateDrawingContext())
             {
-                helper.DrawIntermediate(ctx);
+                helper.DrawIntermediate(new Avalonia.Media.DrawingContext(ctx));
 
                 var result = new SurfacePattern(intermediate);
 

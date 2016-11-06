@@ -12,11 +12,9 @@ namespace Avalonia.Skia
     {
         public SKSurface Surface { get; protected set; }
 
-        public virtual DrawingContext CreateDrawingContext()
+        public virtual IDrawingContextImpl CreateDrawingContext()
         {
-            return
-                new DrawingContext(
-                    new DrawingContextImpl(Surface.Canvas));
+            return new DrawingContextImpl(Surface.Canvas);
         }
 
         public void Dispose()
@@ -102,7 +100,7 @@ namespace Avalonia.Skia
             return new Size(96, 96);
         }
 
-        public override DrawingContext CreateDrawingContext()
+        public override IDrawingContextImpl CreateDrawingContext()
         {
             FixSize();
 
@@ -127,9 +125,8 @@ namespace Avalonia.Skia
                 }
             }
 
-            var result =
-                new DrawingContext(
-                    new WindowDrawingContextImpl(this), Matrix.CreateScale(scale, scale));
+            // TODO: Broken DPI scaling on skia here. Fix this.
+            var result = new WindowDrawingContextImpl(this);
             
             return result;
         }
