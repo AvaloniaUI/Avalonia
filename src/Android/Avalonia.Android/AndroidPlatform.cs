@@ -25,7 +25,7 @@ namespace Avalonia
 
 namespace Avalonia.Android
 {
-    public class AndroidPlatform : IPlatformSettings, IWindowingPlatform, IPlatformIconLoader
+    public class AndroidPlatform : IPlatformSettings, IWindowingPlatform
     {
         public static readonly AndroidPlatform Instance = new AndroidPlatform();
         public Size DoubleClickSize => new Size(4, 4);
@@ -50,7 +50,8 @@ namespace Avalonia.Android
                 .Bind<IPlatformSettings>().ToConstant(Instance)
                 .Bind<IPlatformThreadingInterface>().ToConstant(new AndroidThreadingInterface())
                 .Bind<ISystemDialogImpl>().ToTransient<SystemDialogImpl>()
-                .Bind<IWindowingPlatform>().ToConstant(Instance);
+                .Bind<IWindowingPlatform>().ToConstant(Instance)
+                .Bind<IPlatformIconLoader>().ToSingleton<PlatformIconLoader>();
 
             SkiaPlatform.Initialize();
         }
@@ -73,21 +74,6 @@ namespace Avalonia.Android
         public IPopupImpl CreatePopup()
         {
             throw new NotImplementedException();
-        }
-
-        public IWindowIconImpl LoadIcon(string fileName)
-        {
-            return null;
-        }
-
-        public IWindowIconImpl LoadIcon(Stream stream)
-        {
-            return null;
-        }
-
-        public IWindowIconImpl LoadIcon(IBitmapImpl bitmap)
-        {
-            return null;
         }
     }
 }
