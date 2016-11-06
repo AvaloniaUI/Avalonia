@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Linq;
 using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
@@ -55,7 +56,7 @@ namespace Avalonia.Rendering.SceneGraph
                 using (context.PushTransformContainer())
                 {
                     node.Transform = contextImpl.Transform;
-                    node.Bounds = bounds;
+                    node.ClipBounds = bounds * node.Transform;
                     node.ClipToBounds = clipToBounds;
                     node.GeometryClip = visual.Clip;
                     node.Opacity = opacity;
@@ -63,16 +64,7 @@ namespace Avalonia.Rendering.SceneGraph
 
                     visual.Render(context);
 
-#pragma warning disable 0618
-                    var transformed = new TransformedBounds(bounds, new Rect(), context.CurrentContainerTransform);
-#pragma warning restore 0618
-
-                    if (visual is Visual)
-                    {
-                        BoundsTracker.SetTransformedBounds((Visual)visual, transformed);
-                    }
-
-                    foreach (var child in visual.VisualChildren)
+                    foreach (var child in visual.VisualChildren.OrderBy(x => x, ZIndexComparer.Instance))
                     {
                         Update(context, scene, child, node);
                     }

@@ -35,5 +35,10 @@ namespace Avalonia.Rendering.SceneGraph
                 origin == Origin &&
                 Equals(text, Text);
         }
+
+        public bool HitTest(Point p)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

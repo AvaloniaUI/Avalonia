@@ -54,7 +54,6 @@ namespace Avalonia.LeakTests
                 };
 
                 var result = run();
-                PurgeMoqReferences();
 
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Canvas>()).ObjectsCount));
@@ -90,7 +89,6 @@ namespace Avalonia.LeakTests
                 };
 
                 var result = run();
-                PurgeMoqReferences();
 
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Canvas>()).ObjectsCount));
@@ -127,7 +125,6 @@ namespace Avalonia.LeakTests
                 };
 
                 var result = run();
-                PurgeMoqReferences();
 
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<TextBox>()).ObjectsCount));
@@ -163,7 +160,6 @@ namespace Avalonia.LeakTests
                 };
 
                 var result = run();
-                PurgeMoqReferences();
 
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<TextBox>()).ObjectsCount));
@@ -207,7 +203,6 @@ namespace Avalonia.LeakTests
                 };
 
                 var result = run();
-                PurgeMoqReferences();
 
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<TextBox>()).ObjectsCount));
@@ -294,19 +289,10 @@ namespace Avalonia.LeakTests
                 };
 
                 var result = run();
-                PurgeMoqReferences();
 
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<TreeView>()).ObjectsCount));
             }
-        }
-
-        private static void PurgeMoqReferences()
-        {
-            // Moq holds onto references in its mock of IRenderer in case we want to check if a method has been called;
-            // clear these.
-            var renderer = Mock.Get(AvaloniaLocator.Current.GetService<IRenderer>());
-            renderer.ResetCalls();
         }
 
         private class Node

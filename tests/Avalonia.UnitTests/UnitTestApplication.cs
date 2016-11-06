@@ -43,7 +43,7 @@ namespace Avalonia.UnitTests
                 .Bind<IKeyboardDevice>().ToConstant(Services.KeyboardDevice?.Invoke())
                 .Bind<ILayoutManager>().ToConstant(Services.LayoutManager)
                 .Bind<IRuntimePlatform>().ToConstant(Services.Platform)
-                .Bind<IRenderer>().ToConstant(Services.Renderer)
+                .Bind<IRendererFactory>().ToConstant(new RendererFactory(Services.Renderer))
                 .Bind<IPlatformRenderInterface>().ToConstant(Services.RenderInterface)
                 .Bind<IRenderLoop>().ToConstant(Services.RenderLoop)
                 .Bind<IPlatformThreadingInterface>().ToConstant(Services.ThreadingInterface)
@@ -56,6 +56,21 @@ namespace Avalonia.UnitTests
             if (styles != null)
             {
                 Styles.AddRange(styles);
+            }
+        }
+
+        private class RendererFactory : IRendererFactory
+        {
+            Func<IRenderRoot, IRenderLoop, IRenderer> _func;
+
+            public RendererFactory(Func<IRenderRoot, IRenderLoop, IRenderer> func)
+            {
+                _func = func;
+            }
+
+            public IRenderer CreateRenderer(IRenderRoot root, IRenderLoop renderLoop)
+            {
+                return _func?.Invoke(root, renderLoop);
             }
         }
     }

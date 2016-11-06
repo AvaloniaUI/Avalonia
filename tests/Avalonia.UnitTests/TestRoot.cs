@@ -15,6 +15,13 @@ namespace Avalonia.UnitTests
     {
         private readonly NameScope _nameScope = new NameScope();
 
+        public TestRoot()
+        {
+            var rendererFactory = AvaloniaLocator.Current.GetService<IRendererFactory>();
+            var renderLoop = AvaloniaLocator.Current.GetService<IRenderLoop>();
+            Renderer = rendererFactory?.CreateRenderer(this, renderLoop);
+        }
+
         event EventHandler<NameScopeEventArgs> INameScope.Registered
         {
             add { _nameScope.Registered += value; ++NameScopeRegisteredSubscribers; }
@@ -41,7 +48,7 @@ namespace Avalonia.UnitTests
 
         public IRenderTarget RenderTarget => null;
 
-        public IRenderer Renderer => null;
+        public IRenderer Renderer { get; }
 
         public IRenderTarget CreateRenderTarget()
         {
@@ -50,7 +57,6 @@ namespace Avalonia.UnitTests
 
         public void Invalidate(Rect rect)
         {
-            throw new NotImplementedException();
         }
 
         public Point PointToClient(Point p) => p;

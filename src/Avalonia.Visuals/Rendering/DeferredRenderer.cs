@@ -6,6 +6,7 @@ using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
+using System.Collections.Generic;
 
 namespace Avalonia.Rendering
 {
@@ -30,6 +31,7 @@ namespace Avalonia.Rendering
 
             _root = root;
             _scene = new Scene(root);
+            _needsUpdate = true;
             _renderLoop = renderLoop;
             _renderLoop.Tick += OnRenderLoopTick;
         }
@@ -48,6 +50,16 @@ namespace Avalonia.Rendering
         public void Dispose()
         {
             _renderLoop.Tick -= OnRenderLoopTick;
+        }
+
+        public IEnumerable<IVisual> HitTest(Point p, Func<IVisual, bool> filter)
+        {
+            if (_needsUpdate)
+            {
+                UpdateScene();
+            }
+
+            return _scene.HitTest(p, filter);
         }
 
         public void Render(Rect rect)

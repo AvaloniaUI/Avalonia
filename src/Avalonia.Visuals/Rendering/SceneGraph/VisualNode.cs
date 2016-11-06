@@ -18,7 +18,7 @@ namespace Avalonia.Rendering.SceneGraph
 
         public IVisual Visual { get; }
         public Matrix Transform { get; set; }
-        public Rect Bounds { get; set; }
+        public Rect ClipBounds { get; set; }
         public bool ClipToBounds { get; set; }
         public Geometry GeometryClip { get; set; }
         public double Opacity { get; set; }
@@ -32,6 +32,11 @@ namespace Avalonia.Rendering.SceneGraph
             return new VisualNode(Visual);
         }
 
+        public bool HitTest(Point p)
+        {
+            return ClipBounds.Contains(p);
+        }
+
         public void Render(IDrawingContextImpl context)
         {
             context.Transform = Transform;
@@ -43,7 +48,7 @@ namespace Avalonia.Rendering.SceneGraph
 
             if (ClipToBounds)
             {
-                context.PushClip(Bounds);
+                context.PushClip(ClipBounds);
             }
 
             foreach (var child in Children)

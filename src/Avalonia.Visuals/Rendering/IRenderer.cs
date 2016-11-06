@@ -3,6 +3,7 @@
 
 using System;
 using Avalonia.VisualTree;
+using System.Collections.Generic;
 
 namespace Avalonia.Rendering
 {
@@ -11,6 +12,7 @@ namespace Avalonia.Rendering
         bool DrawFps { get; set; }
 
         void AddDirty(IVisual visual);
+        IEnumerable<IVisual> HitTest(Point p, Func<IVisual, bool> filter);
         void Render(Rect rect);
     }
 }

@@ -86,7 +86,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="InputElement_Focus.cs" />
-    <Compile Include="InputElement_HitTesting.cs" />
     <Compile Include="KeyboardNavigationTests_Arrows.cs" />
     <Compile Include="KeyboardNavigationTests_Tab.cs" />
     <Compile Include="KeyGestureParseTests.cs" />

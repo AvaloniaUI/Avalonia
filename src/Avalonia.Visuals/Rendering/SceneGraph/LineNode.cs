@@ -31,5 +31,10 @@ namespace Avalonia.Rendering.SceneGraph
             context.Transform = Transform;
             context.DrawLine(Pen, P1, P2);
         }
+
+        public bool HitTest(Point p)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

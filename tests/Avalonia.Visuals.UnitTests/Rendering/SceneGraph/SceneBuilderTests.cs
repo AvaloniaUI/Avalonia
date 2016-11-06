@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.UnitTests;
+using Avalonia.VisualTree;
 using Xunit;
 
 namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
@@ -49,6 +51,70 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
 
                 var textNode = (TextNode)textBlockNode.Children[0];
                 Assert.NotNull(textNode.Text);
+            }
+        }
+
+        [Fact]
+        public void Should_Respect_ZIndex()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                Border front;
+                Border back;
+                var tree = new TestRoot
+                {
+                    Child = new Panel
+                    {
+                        Children =
+                        {
+                            (front = new Border
+                            {
+                                ZIndex = 1,
+                            }),
+                            (back = new Border
+                            {
+                                ZIndex = 0,
+                            }),
+                        }
+                    }
+                };
+
+                var result = SceneBuilder.Update(new Scene(tree));
+
+                var panelNode = result.FindNode(tree.Child);
+                var expected = new IVisual[] { back, front };
+                var actual = panelNode.Children.OfType<IVisualNode>().Select(x => x.Visual).ToArray();
+                Assert.Equal(expected, actual);
+            }
+        }
+
+        [Fact]
+        public void ClipBounds_Should_Be_In_Global_Coordinates()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                Border target;
+                var tree = new TestRoot
+                {
+                    Child = new Decorator
+                    {
+                        Margin = new Thickness(24, 26),
+                        Child = target = new Border
+                        {
+                            Margin = new Thickness(26, 24),
+                            Width = 100,
+                            Height = 100,
+                        }
+                    }
+                };
+
+                tree.Measure(Size.Infinity);
+                tree.Arrange(new Rect(tree.DesiredSize));
+
+                var result = SceneBuilder.Update(new Scene(tree));
+                var targetNode = result.FindNode(target);
+
+                Assert.Equal(new Rect(50, 50, 100, 100), targetNode.ClipBounds);
             }
         }
 

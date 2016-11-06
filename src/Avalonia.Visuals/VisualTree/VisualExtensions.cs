@@ -1,6 +1,7 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using Avalonia.Rendering;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -102,26 +103,9 @@ namespace Avalonia.VisualTree
         {
             Contract.Requires<ArgumentNullException>(visual != null);
 
-            if (filter?.Invoke(visual) != false)
-            {
-                bool containsPoint = BoundsTracker.GetTransformedBounds((Visual)visual)?.Contains(p) == true;
-
-                if ((containsPoint || !visual.ClipToBounds) && visual.VisualChildren.Any())
-                {
-                    foreach (var child in visual.VisualChildren.SortByZIndex())
-                    {
-                        foreach (var result in child.GetVisualsAt(p, filter))
-                        {
-                            yield return result;
-                        }
-                    }
-                }
-
-                if (containsPoint)
-                {
-                    yield return visual;
-                }
-            }
+            var root = visual.GetVisualRoot();
+            p = visual.TranslatePoint(p, root);
+            return root.Renderer.HitTest(p, filter);
         }
 
         /// <summary>
@@ -197,11 +181,11 @@ namespace Avalonia.VisualTree
         /// <returns>
         /// The root visual or null if the visual is not rooted.
         /// </returns>
-        public static IVisual GetVisualRoot(this IVisual visual)
+        public static IRenderRoot GetVisualRoot(this IVisual visual)
         {
             Contract.Requires<ArgumentNullException>(visual != null);
 
-            return visual.VisualRoot as IVisual;
+            return visual as IRenderRoot ?? visual.VisualRoot;
         }
 
         /// <summary>

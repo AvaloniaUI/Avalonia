@@ -4,6 +4,7 @@
 using System;
 using Avalonia.Platform;
 using Avalonia.VisualTree;
+using System.Collections.Generic;
 
 namespace Avalonia.Rendering
 {
@@ -33,6 +34,11 @@ namespace Avalonia.Rendering
         public void Dispose()
         {
             _renderLoop.Tick -= OnRenderLoopTick;
+        }
+
+        public IEnumerable<IVisual> HitTest(Point p, Func<IVisual, bool> filter)
+        {
+            throw new NotImplementedException();
         }
 
         public void Render(Rect rect)

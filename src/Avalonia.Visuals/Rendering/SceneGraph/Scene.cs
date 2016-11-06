@@ -31,6 +31,14 @@ namespace Avalonia.Rendering.SceneGraph
             _index.Add(node.Visual, node);
         }
 
+        public Scene Clone()
+        {
+            var index = new Dictionary<IVisual, IVisualNode>();
+            var root = (VisualNode)Clone((VisualNode)Root, null, index);
+            var result = new Scene(root, index);
+            return result;
+        }
+
         public IVisualNode FindNode(IVisual visual)
         {
             IVisualNode node;
@@ -38,12 +46,9 @@ namespace Avalonia.Rendering.SceneGraph
             return node;
         }
 
-        public Scene Clone()
+        public IEnumerable<IVisual> HitTest(Point p, Func<IVisual, bool> filter)
         {
-            var index = new Dictionary<IVisual, IVisualNode>();
-            var root = (VisualNode)Clone((VisualNode)Root, null, index);
-            var result = new Scene(root, index);
-            return result;
+            return HitTest(Root, p, null, filter);
         }
 
         private VisualNode Clone(VisualNode source, ISceneNode parent, Dictionary<IVisual, IVisualNode> index)
@@ -67,6 +72,39 @@ namespace Avalonia.Rendering.SceneGraph
             }
 
             return result;
+        }
+
+        private IEnumerable<IVisual> HitTest(IVisualNode node, Point p, Rect? clip, Func<IVisual, bool> filter)
+        {
+            if (filter?.Invoke(node.Visual) != false)
+            {
+                if (node.ClipToBounds)
+                {
+                    // TODO: Handle geometry clip.
+                    clip = clip == null ? node.ClipBounds : clip.Value.Intersect(node.ClipBounds);
+                }
+
+                if (!clip.HasValue || clip.Value.Contains(p))
+                {
+                    for (var i = node.Children.Count - 1; i >= 0; --i)
+                    {
+                        var visualChild = node.Children[i] as IVisualNode;
+
+                        if (visualChild != null)
+                        {
+                            foreach (var h in HitTest(visualChild, p, clip, filter))
+                            {
+                                yield return h;
+                            }
+                        }
+                    }
+
+                    if (node.HitTest(p))
+                    {
+                        yield return node.Visual;
+                    }
+                }
+            }
         }
     }
 }

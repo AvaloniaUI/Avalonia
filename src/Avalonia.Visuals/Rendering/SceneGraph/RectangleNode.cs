@@ -46,5 +46,10 @@ namespace Avalonia.Rendering.SceneGraph
                 context.DrawRectangle(Pen, Rect, CornerRadius);
             }
         }
+
+        public bool HitTest(Point p)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

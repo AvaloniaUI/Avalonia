@@ -9,7 +9,9 @@ namespace Avalonia.Rendering.SceneGraph
 {
     public interface IVisualNode : ISceneNode
     {
-        IReadOnlyList<ISceneNode> Children { get; }
         IVisual Visual { get; }
+        Rect ClipBounds { get; set; }
+        bool ClipToBounds { get; set; }
+        IReadOnlyList<ISceneNode> Children { get; }
     }
 }

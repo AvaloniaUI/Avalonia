@@ -11,6 +11,7 @@ using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Moq;
 using Xunit;
+using System;
 
 namespace Avalonia.Visuals.UnitTests.VisualTree
 {
@@ -19,9 +20,9 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
         [Fact]
         public void GetVisualsAt_Should_Find_Controls_At_Point()
         {
-            using (var application = UnitTestApplication.Start(new TestServices(renderInterface: new MockRenderInterface())))
+            using (TestApplication())
             {
-                var container = new Decorator
+                var container = new TestRoot
                 {
                     Width = 200,
                     Height = 200,
@@ -49,9 +50,9 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
         [Fact]
         public void GetVisualsAt_Should_Not_Find_Invisible_Controls_At_Point()
         {
-            using (var application = UnitTestApplication.Start(new TestServices(renderInterface: new MockRenderInterface())))
+            using (TestApplication())
             {
-                var container = new Decorator
+                var container = new TestRoot
                 {
                     Width = 200,
                     Height = 200,
@@ -85,9 +86,9 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
         [Fact]
         public void GetVisualsAt_Should_Not_Find_Control_Outside_Point()
         {
-            using (UnitTestApplication.Start(new TestServices(renderInterface: new MockRenderInterface())))
+            using (TestApplication())
             {
-                var container = new Decorator
+                var container = new TestRoot
                 {
                     Width = 200,
                     Height = 200,
@@ -115,27 +116,31 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
         [Fact]
         public void GetVisualsAt_Should_Return_Top_Controls_First()
         {
-            using (UnitTestApplication.Start(new TestServices(renderInterface: new MockRenderInterface())))
+            using (TestApplication())
             {
-                var container = new Panel
+                Panel container;
+                var root = new TestRoot
                 {
-                    Width = 200,
-                    Height = 200,
-                    Children = new Controls.Controls
+                    Child = container = new Panel
                     {
-                        new Border
+                        Width = 200,
+                        Height = 200,
+                        Children = new Controls.Controls
                         {
-                            Width = 100,
-                            Height = 100,
-                            HorizontalAlignment = HorizontalAlignment.Center,
-                            VerticalAlignment = VerticalAlignment.Center
-                        },
-                        new Border
-                        {
-                            Width = 50,
-                            Height = 50,
-                            HorizontalAlignment = HorizontalAlignment.Center,
-                            VerticalAlignment = VerticalAlignment.Center
+                            new Border
+                            {
+                                Width = 100,
+                                Height = 100,
+                                HorizontalAlignment = HorizontalAlignment.Center,
+                                VerticalAlignment = VerticalAlignment.Center
+                            },
+                            new Border
+                            {
+                                Width = 50,
+                                Height = 50,
+                                HorizontalAlignment = HorizontalAlignment.Center,
+                                VerticalAlignment = VerticalAlignment.Center
+                            }
                         }
                     }
                 };
@@ -155,36 +160,40 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
         [Fact]
         public void GetVisualsAt_Should_Return_Top_Controls_First_With_ZIndex()
         {
-            using (UnitTestApplication.Start(new TestServices(renderInterface: new MockRenderInterface())))
+            using (TestApplication())
             {
-                var container = new Panel
+                Panel container;
+                var root = new TestRoot
                 {
-                    Width = 200,
-                    Height = 200,
-                    Children = new Controls.Controls
+                    Child = container = new Panel
                     {
-                        new Border
+                        Width = 200,
+                        Height = 200,
+                        Children = new Controls.Controls
                         {
-                            Width = 100,
-                            Height = 100,
-                            ZIndex = 1,
-                            HorizontalAlignment = HorizontalAlignment.Center,
-                            VerticalAlignment = VerticalAlignment.Center
-                        },
-                        new Border
-                        {
-                            Width = 50,
-                            Height = 50,
-                            HorizontalAlignment = HorizontalAlignment.Center,
-                            VerticalAlignment = VerticalAlignment.Center
-                        },
-                        new Border
-                        {
-                            Width = 75,
-                            Height = 75,
-                            ZIndex = 2,
-                            HorizontalAlignment = HorizontalAlignment.Center,
-                            VerticalAlignment = VerticalAlignment.Center
+                            new Border
+                            {
+                                Width = 100,
+                                Height = 100,
+                                ZIndex = 1,
+                                HorizontalAlignment = HorizontalAlignment.Center,
+                                VerticalAlignment = VerticalAlignment.Center
+                            },
+                            new Border
+                            {
+                                Width = 50,
+                                Height = 50,
+                                HorizontalAlignment = HorizontalAlignment.Center,
+                                VerticalAlignment = VerticalAlignment.Center
+                            },
+                            new Border
+                            {
+                                Width = 75,
+                                Height = 75,
+                                ZIndex = 2,
+                                HorizontalAlignment = HorizontalAlignment.Center,
+                                VerticalAlignment = VerticalAlignment.Center
+                            }
                         }
                     }
                 };
@@ -204,32 +213,36 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
         [Fact]
         public void GetVisualsAt_Should_Find_Control_Translated_Outside_Parent_Bounds()
         {
-            using (UnitTestApplication.Start(new TestServices(renderInterface: new MockRenderInterface())))
+            using (TestApplication())
             {
                 Border target;
-                var container = new Panel
+                Panel container;
+                var root = new TestRoot
                 {
-                    Width = 200,
-                    Height = 200,
-                    ClipToBounds = false,
-                    Children = new Controls.Controls
+                    Child = container = new Panel
                     {
-                        new Border
+                        Width = 200,
+                        Height = 200,
+                        ClipToBounds = false,
+                        Children = new Controls.Controls
                         {
-                            Width = 100,
-                            Height = 100,
-                            ZIndex = 1,
-                            HorizontalAlignment = HorizontalAlignment.Left,
-                            VerticalAlignment = VerticalAlignment.Top,
-                            Child = target = new Border
+                            new Border
                             {
-                                Width = 50,
-                                Height = 50,
+                                Width = 100,
+                                Height = 100,
+                                ZIndex = 1,
                                 HorizontalAlignment = HorizontalAlignment.Left,
                                 VerticalAlignment = VerticalAlignment.Top,
-                                RenderTransform = new TranslateTransform(110, 110),
-                            }
-                        },
+                                Child = target = new Border
+                                {
+                                    Width = 50,
+                                    Height = 50,
+                                    HorizontalAlignment = HorizontalAlignment.Left,
+                                    VerticalAlignment = VerticalAlignment.Top,
+                                    RenderTransform = new TranslateTransform(110, 110),
+                                }
+                            },
+                        }
                     }
                 };
 
@@ -248,30 +261,33 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
         [Fact]
         public void GetVisualsAt_Should_Not_Find_Control_Outside_Parent_Bounds_When_Clipped()
         {
-            using (UnitTestApplication.Start(new TestServices(renderInterface: new MockRenderInterface())))
+            using (TestApplication())
             {
                 Border target;
-
-                var container = new Panel
+                Panel container;
+                var root = new TestRoot
                 {
-                    Width = 100,
-                    Height = 200,
-                    Children = new Controls.Controls
+                    Child = container = new Panel
                     {
-                        new Panel()
+                        Width = 100,
+                        Height = 200,
+                        Children = new Controls.Controls
                         {
-                            Width = 100,
-                            Height = 100,
-                            Margin = new Thickness(0, 100, 0, 0),
-                            ClipToBounds = true,
-                            Children = new Controls.Controls
+                            new Panel()
                             {
-                                (target = new Border()
+                                Width = 100,
+                                Height = 100,
+                                Margin = new Thickness(0, 100, 0, 0),
+                                ClipToBounds = true,
+                                Children = new Controls.Controls
                                 {
-                                    Width = 100,
-                                    Height = 100,
-                                    Margin = new Thickness(0, -100, 0, 0)
-                                })
+                                    (target = new Border()
+                                    {
+                                        Width = 100,
+                                        Height = 100,
+                                        Margin = new Thickness(0, -100, 0, 0)
+                                    })
+                                }
                             }
                         }
                     }
@@ -292,45 +308,48 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
         [Fact]
         public void GetVisualsAt_Should_Not_Find_Control_Outside_Scroll_Viewport()
         {
-            using (UnitTestApplication.Start(new TestServices(renderInterface: new MockRenderInterface())))
+            using (TestApplication())
             {
                 Border target;
                 Border item1;
                 Border item2;
                 ScrollContentPresenter scroll;
-
-                var container = new Panel
+                Panel container;
+                var root = new TestRoot
                 {
-                    Width = 100,
-                    Height = 200,
-                    Children = new Controls.Controls
+                    Child = container = new Panel
                     {
-                        (target = new Border()
+                        Width = 100,
+                        Height = 200,
+                        Children = new Controls.Controls
                         {
-                            Width = 100,
-                            Height = 100
-                        }),
-                        new Border()
-                        {
-                            Width = 100,
-                            Height = 100,
-                            Margin = new Thickness(0, 100, 0, 0),
-                            Child = scroll = new ScrollContentPresenter()
+                            (target = new Border()
                             {
-                                Content = new StackPanel()
+                                Width = 100,
+                                Height = 100
+                            }),
+                            new Border()
+                            {
+                                Width = 100,
+                                Height = 100,
+                                Margin = new Thickness(0, 100, 0, 0),
+                                Child = scroll = new ScrollContentPresenter()
                                 {
-                                    Children = new Controls.Controls
+                                    Content = new StackPanel()
                                     {
-                                        (item1 = new Border()
+                                        Children = new Controls.Controls
                                         {
-                                            Width = 100,
-                                            Height = 100,
-                                        }),
-                                        (item2 = new Border()
-                                        {
-                                            Width = 100,
-                                            Height = 100,
-                                        }),
+                                            (item1 = new Border()
+                                            {
+                                                Width = 100,
+                                                Height = 100,
+                                            }),
+                                            (item2 = new Border()
+                                            {
+                                                Width = 100,
+                                                Height = 100,
+                                            }),
+                                        }
                                     }
                                 }
                             }
@@ -372,6 +391,15 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
                 Assert.NotEqual(item1, result);
                 Assert.Equal(target, result);
             }
+        }
+
+        private IDisposable TestApplication()
+        {
+            return UnitTestApplication.Start(
+                new TestServices(
+                    renderInterface: new MockRenderInterface(),
+                    renderLoop: Mock.Of<IRenderLoop>(),
+                    renderer: (root, loop) => new DeferredRenderer(root, loop)));
         }
     }
 }

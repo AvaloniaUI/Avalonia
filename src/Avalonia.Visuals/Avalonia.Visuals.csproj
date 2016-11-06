@@ -124,6 +124,7 @@
     <Compile Include="Rendering\SceneGraph\SceneBuilder.cs" />
     <Compile Include="Rendering\SceneGraph\TextNode.cs" />
     <Compile Include="Rendering\SceneGraph\VisualNode.cs" />
+    <Compile Include="Rendering\ZIndexComparer.cs" />
     <Compile Include="RenderTargetCorruptedException.cs" />
     <Compile Include="Size.cs" />
     <Compile Include="Thickness.cs" />

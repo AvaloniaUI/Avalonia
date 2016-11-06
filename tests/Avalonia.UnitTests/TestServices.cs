@@ -21,7 +21,7 @@ namespace Avalonia.UnitTests
             assetLoader: new AssetLoader(),
             layoutManager: new LayoutManager(),
             platform: new AppBuilder().RuntimePlatform,
-            renderer: Mock.Of<IRenderer>(),
+            renderer: (_, __) => Mock.Of<IRenderer>(),
             renderInterface: CreateRenderInterfaceMock(),
             renderLoop: Mock.Of<IRenderLoop>(),
             standardCursorFactory: Mock.Of<IStandardCursorFactory>(),
@@ -42,6 +42,9 @@ namespace Avalonia.UnitTests
         public static readonly TestServices MockThreadingInterface = new TestServices(
             threadingInterface: Mock.Of<IPlatformThreadingInterface>(x => x.CurrentThreadIsLoopThread == true));
 
+        public static readonly TestServices RealDeferredRenderer = new TestServices(
+            renderer: (root, loop) => new DeferredRenderer(root, loop));
+
         public static readonly TestServices RealFocus = new TestServices(
             focusManager: new FocusManager(),
             keyboardDevice: () => new KeyboardDevice(),
@@ -60,7 +63,7 @@ namespace Avalonia.UnitTests
             Func<IKeyboardDevice> keyboardDevice = null,
             ILayoutManager layoutManager = null,
             IRuntimePlatform platform = null,
-            IRenderer renderer = null,
+            Func<IRenderRoot, IRenderLoop, IRenderer> renderer = null,
             IPlatformRenderInterface renderInterface = null,
             IRenderLoop renderLoop = null,
             IStandardCursorFactory standardCursorFactory = null,
@@ -93,7 +96,7 @@ namespace Avalonia.UnitTests
         public Func<IKeyboardDevice> KeyboardDevice { get; }
         public ILayoutManager LayoutManager { get; }
         public IRuntimePlatform Platform { get; }
-        public IRenderer Renderer { get; }
+        public Func<IRenderRoot, IRenderLoop, IRenderer> Renderer { get; }
         public IPlatformRenderInterface RenderInterface { get; }
         public IRenderLoop RenderLoop { get; }
         public IStandardCursorFactory StandardCursorFactory { get; }
@@ -110,7 +113,7 @@ namespace Avalonia.UnitTests
             Func<IKeyboardDevice> keyboardDevice = null,
             ILayoutManager layoutManager = null,
             IRuntimePlatform platform = null,
-            IRenderer renderer = null,
+            Func<IRenderRoot, IRenderLoop, IRenderer> renderer = null,
             IPlatformRenderInterface renderInterface = null,
             IRenderLoop renderLoop = null,
             IStandardCursorFactory standardCursorFactory = null,

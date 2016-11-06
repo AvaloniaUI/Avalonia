@@ -38,5 +38,10 @@ namespace Avalonia.Rendering.SceneGraph
             context.Transform = Transform;
             context.DrawImage(Source, Opacity, SourceRect, DestRect);
         }
+
+        public bool HitTest(Point p)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
