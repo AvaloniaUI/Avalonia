@@ -31,7 +31,6 @@ namespace Avalonia.Rendering
 
             _root = root;
             _scene = new Scene(root);
-            _needsUpdate = true;
             _renderLoop = renderLoop;
             _renderLoop.Tick += OnRenderLoopTick;
         }
