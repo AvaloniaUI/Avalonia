@@ -7,7 +7,7 @@ using Avalonia.Platform;
 
 namespace Avalonia.Rendering.SceneGraph
 {
-    public class TextNode : ISceneNode
+    public class TextNode : IDrawNode
     {
         public TextNode(Matrix transform, IBrush foreground, Point origin, IFormattedTextImpl text)
         {
@@ -38,7 +38,7 @@ namespace Avalonia.Rendering.SceneGraph
 
         public bool HitTest(Point p)
         {
-            throw new NotImplementedException();
+            return (new Rect(Origin, Text.Measure()) * Transform).Contains(p);
         }
     }
 }

@@ -6,7 +6,7 @@ using Avalonia.Media;
 
 namespace Avalonia.Rendering.SceneGraph
 {
-    public class LineNode : ISceneNode
+    public class LineNode : IDrawNode
     {
         public LineNode(Matrix transform, Pen pen, Point p1, Point p2)
         {
@@ -34,7 +34,8 @@ namespace Avalonia.Rendering.SceneGraph
 
         public bool HitTest(Point p)
         {
-            throw new NotImplementedException();
+            // TODO: Implement line hit testing.
+            return false;
         }
     }
 }

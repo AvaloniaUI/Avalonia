@@ -8,8 +8,6 @@ namespace Avalonia.Rendering.SceneGraph
 {
     public interface ISceneNode
     {
-        bool HitTest(Point p);
-
         void Render(IDrawingContextImpl context);
     }
 }

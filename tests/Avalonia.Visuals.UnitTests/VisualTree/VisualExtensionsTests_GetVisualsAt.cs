@@ -12,6 +12,7 @@ using Avalonia.VisualTree;
 using Moq;
 using Xunit;
 using System;
+using Avalonia.Controls.Shapes;
 
 namespace Avalonia.Visuals.UnitTests.VisualTree
 {
@@ -30,6 +31,7 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
                     {
                         Width = 100,
                         Height = 100,
+                        Background = Brushes.Red,
                         HorizontalAlignment = HorizontalAlignment.Center,
                         VerticalAlignment = VerticalAlignment.Center
                     }
@@ -43,7 +45,37 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
 
                 var result = container.GetVisualsAt(new Point(100, 100));
 
-                Assert.Equal(new[] { container.Child, container }, result);
+                Assert.Equal(new[] { container.Child }, result);
+            }
+        }
+
+        [Fact]
+        public void GetVisualsAt_Should_Not_Find_Empty_Controls_At_Point()
+        {
+            using (TestApplication())
+            {
+                var container = new TestRoot
+                {
+                    Width = 200,
+                    Height = 200,                    
+                    Child = new Border
+                    {
+                        Width = 100,
+                        Height = 100,
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        VerticalAlignment = VerticalAlignment.Center
+                    }
+                };
+
+                container.Measure(Size.Infinity);
+                container.Arrange(new Rect(container.DesiredSize));
+
+                var context = new DrawingContext(Mock.Of<IDrawingContextImpl>());
+                context.Render(container);
+
+                var result = container.GetVisualsAt(new Point(100, 100));
+
+                Assert.Empty(result);
             }
         }
 
@@ -52,6 +84,7 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
         {
             using (TestApplication())
             {
+                Border visible;
                 var container = new TestRoot
                 {
                     Width = 200,
@@ -60,11 +93,13 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
                     {
                         Width = 100,
                         Height = 100,
+                        Background = Brushes.Red,
                         HorizontalAlignment = HorizontalAlignment.Center,
                         VerticalAlignment = VerticalAlignment.Center,
                         IsVisible = false,
-                        Child = new Border
+                        Child = visible = new Border
                         {
+                            Background = Brushes.Red,
                             HorizontalAlignment = HorizontalAlignment.Stretch,
                             VerticalAlignment = VerticalAlignment.Stretch,
                         }
@@ -79,7 +114,7 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
 
                 var result = container.GetVisualsAt(new Point(100, 100));
 
-                Assert.Equal(new[] { container }, result);
+                Assert.Empty(result);
             }
         }
 
@@ -96,6 +131,7 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
                     {
                         Width = 100,
                         Height = 100,
+                        Background = Brushes.Red,
                         HorizontalAlignment = HorizontalAlignment.Center,
                         VerticalAlignment = VerticalAlignment.Center
                     }
@@ -109,7 +145,7 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
 
                 var result = container.GetVisualsAt(new Point(10, 10));
 
-                Assert.Equal(new[] { container }, result);
+                Assert.Empty(result);
             }
         }
 
@@ -131,6 +167,7 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
                             {
                                 Width = 100,
                                 Height = 100,
+                                Background = Brushes.Red,
                                 HorizontalAlignment = HorizontalAlignment.Center,
                                 VerticalAlignment = VerticalAlignment.Center
                             },
@@ -138,6 +175,7 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
                             {
                                 Width = 50,
                                 Height = 50,
+                                Background = Brushes.Red,
                                 HorizontalAlignment = HorizontalAlignment.Center,
                                 VerticalAlignment = VerticalAlignment.Center
                             }
@@ -153,7 +191,7 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
 
                 var result = container.GetVisualsAt(new Point(100, 100));
 
-                Assert.Equal(new[] { container.Children[1], container.Children[0], container }, result);
+                Assert.Equal(new[] { container.Children[1], container.Children[0] }, result);
             }
         }
 
@@ -176,6 +214,7 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
                                 Width = 100,
                                 Height = 100,
                                 ZIndex = 1,
+                                Background = Brushes.Red,
                                 HorizontalAlignment = HorizontalAlignment.Center,
                                 VerticalAlignment = VerticalAlignment.Center
                             },
@@ -183,6 +222,7 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
                             {
                                 Width = 50,
                                 Height = 50,
+                                Background = Brushes.Red,
                                 HorizontalAlignment = HorizontalAlignment.Center,
                                 VerticalAlignment = VerticalAlignment.Center
                             },
@@ -191,6 +231,7 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
                                 Width = 75,
                                 Height = 75,
                                 ZIndex = 2,
+                                Background = Brushes.Red,
                                 HorizontalAlignment = HorizontalAlignment.Center,
                                 VerticalAlignment = VerticalAlignment.Center
                             }
@@ -206,7 +247,7 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
 
                 var result = container.GetVisualsAt(new Point(100, 100));
 
-                Assert.Equal(new[] { container.Children[2], container.Children[0], container.Children[1], container }, result);
+                Assert.Equal(new[] { container.Children[2], container.Children[0], container.Children[1] }, result);
             }
         }
 
@@ -223,6 +264,7 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
                     {
                         Width = 200,
                         Height = 200,
+                        Background = Brushes.Red,
                         ClipToBounds = false,
                         Children = new Controls.Controls
                         {
@@ -231,12 +273,14 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
                                 Width = 100,
                                 Height = 100,
                                 ZIndex = 1,
+                                Background = Brushes.Red,
                                 HorizontalAlignment = HorizontalAlignment.Left,
                                 VerticalAlignment = VerticalAlignment.Top,
                                 Child = target = new Border
                                 {
                                     Width = 50,
                                     Height = 50,
+                                    Background = Brushes.Red,
                                     HorizontalAlignment = HorizontalAlignment.Left,
                                     VerticalAlignment = VerticalAlignment.Top,
                                     RenderTransform = new TranslateTransform(110, 110),
@@ -271,12 +315,14 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
                     {
                         Width = 100,
                         Height = 200,
+                        Background = Brushes.Red,
                         Children = new Controls.Controls
                         {
                             new Panel()
                             {
                                 Width = 100,
                                 Height = 100,
+                                Background = Brushes.Red,
                                 Margin = new Thickness(0, 100, 0, 0),
                                 ClipToBounds = true,
                                 Children = new Controls.Controls
@@ -285,6 +331,7 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
                                     {
                                         Width = 100,
                                         Height = 100,
+                                        Background = Brushes.Red,
                                         Margin = new Thickness(0, -100, 0, 0)
                                     })
                                 }
@@ -321,17 +368,20 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
                     {
                         Width = 100,
                         Height = 200,
+                        Background = Brushes.Red,
                         Children = new Controls.Controls
                         {
                             (target = new Border()
                             {
                                 Width = 100,
-                                Height = 100
+                                Height = 100,
+                                Background = Brushes.Red,
                             }),
                             new Border()
                             {
                                 Width = 100,
                                 Height = 100,
+                                Background = Brushes.Red,
                                 Margin = new Thickness(0, 100, 0, 0),
                                 Child = scroll = new ScrollContentPresenter()
                                 {
@@ -343,11 +393,13 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
                                             {
                                                 Width = 100,
                                                 Height = 100,
+                                                Background = Brushes.Red,
                                             }),
                                             (item2 = new Border()
                                             {
                                                 Width = 100,
                                                 Height = 100,
+                                                Background = Brushes.Red,
                                             }),
                                         }
                                     }
@@ -390,6 +442,40 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
 
                 Assert.NotEqual(item1, result);
                 Assert.Equal(target, result);
+            }
+        }
+
+
+        [Fact]
+        public void GetVisualsAt_Should_Not_Find_Path_When_Outside_Fill()
+        {
+            using (TestApplication())
+            {
+                Path path;
+                var container = new TestRoot
+                {
+                    Width = 200,
+                    Height = 200,
+                    Child = path = new Path
+                    {
+                        Width = 200,
+                        Height = 200,
+                        Fill = Brushes.Red,
+                        Data = StreamGeometry.Parse("M100,0 L0,100 100,100")
+                    }
+                };
+
+                container.Measure(Size.Infinity);
+                container.Arrange(new Rect(container.DesiredSize));
+
+                var context = new DrawingContext(Mock.Of<IDrawingContextImpl>());
+                context.Render(container);
+
+                var result = container.GetVisualsAt(new Point(100, 100));
+                Assert.Equal(new[] { path }, result);
+
+                result = container.GetVisualsAt(new Point(10, 10));
+                Assert.Empty(result);
             }
         }
 

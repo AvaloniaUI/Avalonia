@@ -85,11 +85,14 @@ namespace Avalonia.Direct2D1.Media
             }
         }
 
-
         public bool FillContains(Point point)
         {
             return Geometry.FillContainsPoint(point.ToSharpDX());
         }
 
+        public bool StrokeContains(Avalonia.Media.Pen pen, Point point)
+        {
+            return Geometry.StrokeContainsPoint(point.ToSharpDX(), (float)pen.Thickness);
+        }
     }
 }

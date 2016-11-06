@@ -6,7 +6,7 @@ using Avalonia.Media;
 
 namespace Avalonia.Rendering.SceneGraph
 {
-    public class RectangleNode : ISceneNode
+    public class RectangleNode : IDrawNode
     {
         public RectangleNode(Matrix transform, IBrush brush, Pen pen, Rect rect, float cornerRadius)
         {
@@ -49,7 +49,7 @@ namespace Avalonia.Rendering.SceneGraph
 
         public bool HitTest(Point p)
         {
-            throw new NotImplementedException();
+            return (Rect * Transform).Contains(p);
         }
     }
 }

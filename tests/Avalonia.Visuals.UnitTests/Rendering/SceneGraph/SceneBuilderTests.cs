@@ -22,6 +22,8 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 {
                     Child = border = new Border
                     {
+                        Width = 100,
+                        Height = 100,
                         Background = Brushes.Red,
                         Child = textBlock = new TextBlock
                         {
@@ -29,6 +31,9 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                         }
                     }
                 };
+
+                tree.Measure(Size.Infinity);
+                tree.Arrange(new Rect(tree.DesiredSize));
 
                 var initial = new Scene(tree);
                 var result = SceneBuilder.Update(initial);
@@ -129,13 +134,19 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 {
                     Child = border = new Border
                     {
+                        Width = 100,
+                        Height = 100,
                         Background = Brushes.Red,
                         Child = textBlock = new TextBlock
                         {
+                            Foreground = Brushes.Green,
                             Text = "Hello World",
                         }
                     }
                 };
+
+                tree.Measure(Size.Infinity);
+                tree.Arrange(new Rect(tree.DesiredSize));
 
                 var initial = SceneBuilder.Update(new Scene(tree));
                 var initialBackgroundNode = initial.FindNode(border).Children[0];
@@ -172,6 +183,8 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 TextBlock textBlock;
                 var tree = new TestRoot
                 {
+                    Width = 100,
+                    Height = 100,
                     Child = border = new Border
                     {
                         Background = Brushes.Red,
@@ -181,6 +194,9 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                         }
                     }
                 };
+
+                tree.Measure(Size.Infinity);
+                tree.Arrange(new Rect(tree.DesiredSize));
 
                 var initial = SceneBuilder.Update(new Scene(tree));
 

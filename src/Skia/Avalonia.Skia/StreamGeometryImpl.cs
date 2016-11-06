@@ -84,6 +84,13 @@ namespace Avalonia.Skia
             return GetRenderBounds(0).Contains(point);
         }
 
+        public bool StrokeContains(Pen pen, Point point)
+        {
+            // TODO: Not supported by SkiaSharp yet, so use expanded Rect
+            // return EffectivePath.Contains(point.X, point.Y);
+            return GetRenderBounds(0).Contains(point);
+        }
+
         class StreamContext : IStreamGeometryContextImpl
         {
             private readonly StreamGeometryImpl _geometryImpl;

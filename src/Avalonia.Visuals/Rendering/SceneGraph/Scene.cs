@@ -99,6 +99,8 @@ namespace Avalonia.Rendering.SceneGraph
                         }
                     }
 
+                    dynamic d = node.Visual;
+
                     if (node.HitTest(p))
                     {
                         yield return node.Visual;

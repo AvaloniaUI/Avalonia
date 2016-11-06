@@ -2,16 +2,19 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Linq;
 using System.Reactive.Linq;
 using Avalonia;
 using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
 using Avalonia.Data;
+using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Rendering;
+using Avalonia.VisualTree;
 
 namespace RenderTest
 {
@@ -37,16 +40,18 @@ namespace RenderTest
 
             for (var i = 0; i < Count; ++i)
             {
+                Ellipse ellipse;
                 var element = new Panel
                 {
                     Children =
                     {
-                        new Ellipse
+                        (ellipse = new Ellipse
                         {
+                            Name = $"ellipse{i}",
                             Width = 100,
                             Height = 100,
                             Fill = Brushes.Blue,
-                        },
+                        }),
                         new Path
                         {
                             Data = StreamGeometry.Parse(
@@ -73,10 +78,23 @@ namespace RenderTest
                     degrees,
                     BindingPriority.Animation);
 
+                ellipse.PointerEnter += Ellipse_PointerEnter;
+                ellipse.PointerLeave += Ellipse_PointerLeave;
+
                 panel.Children.Add(element);
             }
 
             Content = panel;
+        }
+
+        private void Ellipse_PointerEnter(object sender, PointerEventArgs e)
+        {
+            ((Ellipse)sender).Fill = Brushes.Red;
+        }
+
+        private void Ellipse_PointerLeave(object sender, PointerEventArgs e)
+        {
+            ((Ellipse)sender).Fill = Brushes.Blue;
         }
     }
 }

@@ -7,7 +7,7 @@ using Avalonia.Platform;
 
 namespace Avalonia.Rendering.SceneGraph
 {
-    public class GeometryNode : ISceneNode
+    public class GeometryNode : IDrawNode
     {
         public GeometryNode(Matrix transform, IBrush brush, Pen pen, IGeometryImpl geometry)
         {
@@ -38,7 +38,8 @@ namespace Avalonia.Rendering.SceneGraph
 
         public bool HitTest(Point p)
         {
-            throw new NotImplementedException();
+            p *= Transform.Invert();
+            return Geometry.FillContains(p) || Geometry.StrokeContains(Pen, p);
         }
     }
 }

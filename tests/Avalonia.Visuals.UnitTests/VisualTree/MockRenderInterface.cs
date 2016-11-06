@@ -48,13 +48,8 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
         class MockStreamGeometry : IStreamGeometryImpl
         {
             private MockStreamGeometryContext _impl = new MockStreamGeometryContext();
-            public Rect Bounds
-            {
-                get
-                {
-                    throw new NotImplementedException();
-                }
-            }
+
+            public Rect Bounds => _impl.CalculateBounds();
 
             public Matrix Transform
             {
@@ -79,6 +74,11 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
                 return _impl.FillContains(point);
             }
 
+            public bool StrokeContains(Pen pen, Point point)
+            {
+                return false;
+            }
+
             public Rect GetRenderBounds(double strokeThickness)
             {
                 throw new NotImplementedException();
@@ -100,6 +100,24 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
                 public void BeginFigure(Point startPoint, bool isFilled)
                 {
                     points.Add(startPoint);
+                }
+
+                public Rect CalculateBounds()
+                {
+                    var left = double.MaxValue;
+                    var right = double.MinValue;
+                    var top = double.MaxValue;
+                    var bottom = double.MinValue;
+                    
+                    foreach (var p in points)
+                    {
+                        left = Math.Min(p.X, left);
+                        right = Math.Max(p.X, right);
+                        top = Math.Min(p.Y, top);
+                        bottom = Math.Max(p.Y, bottom);
+                    }
+
+                    return new Rect(new Point(left, top), new Point(right, bottom));
                 }
 
                 public void CubicBezierTo(Point point1, Point point2, Point point3)

@@ -34,7 +34,17 @@ namespace Avalonia.Rendering.SceneGraph
 
         public bool HitTest(Point p)
         {
-            return ClipBounds.Contains(p);
+            foreach (var child in Children)
+            {
+                var drawNode = child as IDrawNode;
+
+                if (drawNode?.HitTest(p) == true)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         public void Render(IDrawingContextImpl context)
@@ -48,7 +58,7 @@ namespace Avalonia.Rendering.SceneGraph
 
             if (ClipToBounds)
             {
-                context.PushClip(ClipBounds);
+                context.PushClip(ClipBounds * Transform.Invert());
             }
 
             foreach (var child in Children)

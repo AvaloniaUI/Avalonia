@@ -72,5 +72,10 @@ namespace Avalonia.Cairo.Media
         {
             return _impl.FillContains(point);
         }
+
+        public bool StrokeContains(Pen pen, Point point)
+        {
+            return _impl.StrokeContains(pen, point);
+        }
     }
 }

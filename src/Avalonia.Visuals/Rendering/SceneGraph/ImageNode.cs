@@ -7,7 +7,7 @@ using Avalonia.Platform;
 
 namespace Avalonia.Rendering.SceneGraph
 {
-    public class ImageNode : ISceneNode
+    public class ImageNode : IDrawNode
     {
         public ImageNode(Matrix transform, IBitmapImpl source, double opacity, Rect sourceRect, Rect destRect)
         {
@@ -41,7 +41,7 @@ namespace Avalonia.Rendering.SceneGraph
 
         public bool HitTest(Point p)
         {
-            throw new NotImplementedException();
+            return (DestRect * Transform).Contains(p);
         }
     }
 }

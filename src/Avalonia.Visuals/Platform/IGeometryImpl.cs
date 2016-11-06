@@ -1,6 +1,8 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using Avalonia.Media;
+
 namespace Avalonia.Platform
 {
     /// <summary>
@@ -26,10 +28,18 @@ namespace Avalonia.Platform
         Rect GetRenderBounds(double strokeThickness);
 
         /// <summary>
-        /// Indicates whether the geometry contains the specified point.
+        /// Indicates whether the geometry's fill contains the specified point.
         /// </summary>
         /// <param name="point">The point.</param>
         /// <returns><c>true</c> if the geometry contains the point; otherwise, <c>false</c>.</returns>
         bool FillContains(Point point);
+
+        /// <summary>
+        /// Indicates whether the geometry's stroke contains the specified point.
+        /// </summary>
+        /// <param name="pen">The stroke to use.</param>
+        /// <param name="point">The point.</param>
+        /// <returns><c>true</c> if the geometry contains the point; otherwise, <c>false</c>.</returns>
+        bool StrokeContains(Pen pen, Point point);
     }
 }
