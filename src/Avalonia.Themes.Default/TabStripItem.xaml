@@ -1,5 +1,6 @@
 <Styles xmlns="https://github.com/avaloniaui">
   <Style Selector="TabStripItem">
+    <Setter Property="Background" Value="Transparent"/>
     <Setter Property="FontSize" Value="{StyleResource FontSizeLarge}"/>
     <Setter Property="Foreground" Value="{StyleResource ThemeForegroundLightBrush}"/>
     <Setter Property="Template">
