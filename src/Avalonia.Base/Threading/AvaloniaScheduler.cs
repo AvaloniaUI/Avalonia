@@ -3,6 +3,7 @@
 
 using System;
 using System.Reactive.Concurrency;
+using System.Reactive.Disposables;
 
 namespace Avalonia.Threading
 {
@@ -26,13 +27,31 @@ namespace Avalonia.Threading
         /// <inheritdoc/>
         public override IDisposable Schedule<TState>(TState state, TimeSpan dueTime, Func<IScheduler, TState, IDisposable> action)
         {
-            return DispatcherTimer.Run(
-                () =>
+            var composite = new CompositeDisposable(2);
+            if (dueTime == TimeSpan.Zero)
+            {
+                if (!Dispatcher.UIThread.CheckAccess())
                 {
-                    action(this, state);
-                    return false;
-                },
-                dueTime);
+                    var cancellation = new CancellationDisposable();
+                    Dispatcher.UIThread.InvokeAsync(() =>
+                    {
+                        if (!cancellation.Token.IsCancellationRequested)
+                        {
+                            composite.Add(action(this, state));
+                        }
+                    }, DispatcherPriority.DataBind);
+                    composite.Add(cancellation); 
+                }
+                else
+                {
+                    return action(this, state);
+                }
+            }
+            else
+            {
+                composite.Add(DispatcherTimer.RunOnce(() => composite.Add(action(this, state)), dueTime));
+            }
+            return composite;
         }
     }
 }
