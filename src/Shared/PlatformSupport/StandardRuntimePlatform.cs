@@ -16,10 +16,7 @@ namespace Avalonia.Shared.PlatformSupport
         public void PostThreadPoolItem(Action cb) => ThreadPool.UnsafeQueueUserWorkItem(_ => cb(), null);
         public IDisposable StartSystemTimer(TimeSpan interval, Action tick)
         {
-            var timer = new Timer(delegate
-            {
-
-            }, null, interval, interval);
+            var timer = new Timer(_ => tick(), null, interval, interval);
             return Disposable.Create(() => timer.Dispose());
         }
 

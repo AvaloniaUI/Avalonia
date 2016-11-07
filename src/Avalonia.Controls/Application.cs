@@ -11,6 +11,7 @@ using Avalonia.Layout;
 using Avalonia.Rendering;
 using Avalonia.Styling;
 using Avalonia.Threading;
+using System.Reactive.Concurrency;
 
 namespace Avalonia
 {
@@ -175,7 +176,8 @@ namespace Avalonia
                 .Bind<IKeyboardNavigationHandler>().ToTransient<KeyboardNavigationHandler>()
                 .Bind<IStyler>().ToConstant(_styler)
                 .Bind<ILayoutManager>().ToSingleton<LayoutManager>()
-                .Bind<IApplicationLifecycle>().ToConstant(this);
+                .Bind<IApplicationLifecycle>().ToConstant(this)
+                .Bind<IScheduler>().ToConstant(AvaloniaScheduler.Instance);
         }
     }
 }
