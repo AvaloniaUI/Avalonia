@@ -40,9 +40,6 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
                 container.Measure(Size.Infinity);
                 container.Arrange(new Rect(container.DesiredSize));
 
-                var context = new DrawingContext(Mock.Of<IDrawingContextImpl>());
-                context.Render(container);
-
                 var result = container.GetVisualsAt(new Point(100, 100));
 
                 Assert.Equal(new[] { container.Child }, result);
@@ -69,9 +66,6 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
 
                 container.Measure(Size.Infinity);
                 container.Arrange(new Rect(container.DesiredSize));
-
-                var context = new DrawingContext(Mock.Of<IDrawingContextImpl>());
-                context.Render(container);
 
                 var result = container.GetVisualsAt(new Point(100, 100));
 
@@ -109,9 +103,6 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
                 container.Measure(Size.Infinity);
                 container.Arrange(new Rect(container.DesiredSize));
 
-                var context = new DrawingContext(Mock.Of<IDrawingContextImpl>());
-                context.Render(container);
-
                 var result = container.GetVisualsAt(new Point(100, 100));
 
                 Assert.Empty(result);
@@ -139,9 +130,6 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
 
                 container.Measure(Size.Infinity);
                 container.Arrange(new Rect(container.DesiredSize));
-
-                var context = new DrawingContext(Mock.Of<IDrawingContextImpl>());
-                context.Render(container);
 
                 var result = container.GetVisualsAt(new Point(10, 10));
 
@@ -185,9 +173,6 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
 
                 container.Measure(Size.Infinity);
                 container.Arrange(new Rect(container.DesiredSize));
-
-                var context = new DrawingContext(Mock.Of<IDrawingContextImpl>());
-                context.Render(container);
 
                 var result = container.GetVisualsAt(new Point(100, 100));
 
@@ -242,9 +227,6 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
                 container.Measure(Size.Infinity);
                 container.Arrange(new Rect(container.DesiredSize));
 
-                var context = new DrawingContext(Mock.Of<IDrawingContextImpl>());
-                context.Render(container);
-
                 var result = container.GetVisualsAt(new Point(100, 100));
 
                 Assert.Equal(new[] { container.Children[2], container.Children[0], container.Children[1] }, result);
@@ -293,9 +275,6 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
                 container.Measure(Size.Infinity);
                 container.Arrange(new Rect(container.DesiredSize));
 
-                var context = new DrawingContext(Mock.Of<IDrawingContextImpl>());
-                context.Render(container);
-
                 var result = container.GetVisualsAt(new Point(120, 120));
 
                 Assert.Equal(new IVisual[] { target, container }, result);
@@ -342,9 +321,6 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
 
                 container.Measure(Size.Infinity);
                 container.Arrange(new Rect(container.DesiredSize));
-
-                var context = new DrawingContext(Mock.Of<IDrawingContextImpl>());
-                context.Render(container);
 
                 var result = container.GetVisualsAt(new Point(50, 50));
 
@@ -414,9 +390,6 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
                 container.Measure(Size.Infinity);
                 container.Arrange(new Rect(container.DesiredSize));
 
-                var context = new DrawingContext(Mock.Of<IDrawingContextImpl>());
-                context.Render(container);
-
                 var result = container.GetVisualsAt(new Point(50, 150)).First();
 
                 Assert.Equal(item1, result);
@@ -432,7 +405,6 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
                 container.InvalidateArrange();
 
                 container.Arrange(new Rect(container.DesiredSize));
-                context.Render(container);
 
                 result = container.GetVisualsAt(new Point(50, 150)).First();
 
