@@ -95,7 +95,12 @@ namespace Avalonia
         /// </summary>
         static Visual()
         {
-            AffectsRender(BoundsProperty, IsVisibleProperty, OpacityProperty);
+            AffectsRender(
+                BoundsProperty,
+                ClipProperty,
+                ClipToBoundsProperty,
+                IsVisibleProperty,
+                OpacityProperty);
             RenderTransformProperty.Changed.Subscribe(RenderTransformChanged);
         }
 
