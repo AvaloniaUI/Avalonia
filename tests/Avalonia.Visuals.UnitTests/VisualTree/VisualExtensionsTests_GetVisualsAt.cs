@@ -349,12 +349,14 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
                         {
                             (target = new Border()
                             {
+                                Name = "b1",
                                 Width = 100,
                                 Height = 100,
                                 Background = Brushes.Red,
                             }),
                             new Border()
                             {
+                                Name = "b2",
                                 Width = 100,
                                 Height = 100,
                                 Background = Brushes.Red,
@@ -367,12 +369,14 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
                                         {
                                             (item1 = new Border()
                                             {
+                                                Name = "b3",
                                                 Width = 100,
                                                 Height = 100,
                                                 Background = Brushes.Red,
                                             }),
                                             (item2 = new Border()
                                             {
+                                                Name = "b4",
                                                 Width = 100,
                                                 Height = 100,
                                                 Background = Brushes.Red,
@@ -400,19 +404,15 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
 
                 scroll.Offset = new Vector(0, 100);
 
-                //we don't have setup LayoutManager so we will make it manually
+                // We don't have LayoutManager set up so do the layout pass manually.
                 scroll.Parent.InvalidateArrange();
                 container.InvalidateArrange();
-
                 container.Arrange(new Rect(container.DesiredSize));
 
                 result = container.GetVisualsAt(new Point(50, 150)).First();
-
                 Assert.Equal(item2, result);
 
                 result = container.GetVisualsAt(new Point(50, 50)).First();
-
-                Assert.NotEqual(item1, result);
                 Assert.Equal(target, result);
             }
         }

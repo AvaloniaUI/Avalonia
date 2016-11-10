@@ -5,8 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Controls;
+using Avalonia.Rendering;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
+using Moq;
 using Xunit;
 
 namespace Avalonia.Visuals.UnitTests
@@ -73,8 +75,19 @@ namespace Avalonia.Visuals.UnitTests
             var called1 = false;
             var called2 = false;
 
-            child1.AttachedToVisualTree += (s, e) => called1 = true;
-            child2.AttachedToVisualTree += (s, e) => called2 = true;
+            child1.AttachedToVisualTree += (s, e) =>
+            {
+                Assert.Equal(e.Parent, root);
+                Assert.Equal(e.Root, root);
+                called1 = true;
+            };
+
+            child2.AttachedToVisualTree += (s, e) =>
+            {
+                Assert.Equal(e.Parent, root);
+                Assert.Equal(e.Root, root);
+                called2 = true;
+            };
 
             root.Child = child1;
 
@@ -92,12 +105,81 @@ namespace Avalonia.Visuals.UnitTests
             var called2 = false;
 
             root.Child = child1;
-            child1.DetachedFromVisualTree += (s, e) => called1 = true;
-            child2.DetachedFromVisualTree += (s, e) => called2 = true;
+
+            child1.DetachedFromVisualTree += (s, e) =>
+            {
+                Assert.Equal(e.Parent, root);
+                Assert.Equal(e.Root, root);
+                called1 = true;
+            };
+
+            child2.DetachedFromVisualTree += (s, e) =>
+            {
+                Assert.Equal(e.Parent, root);
+                Assert.Equal(e.Root, root);
+                called2 = true;
+            };
+
             root.Child = null;
 
             Assert.True(called1);
             Assert.True(called2);
+        }
+
+        [Fact]
+        public void Root_Should_Retun_Self_As_VisualRoot()
+        {
+            var root = new TestRoot();
+
+            Assert.Same(root, ((IVisual)root).VisualRoot);
+        }
+
+        [Fact]
+        public void Descendents_Should_RetunVisualRoot()
+        {
+            var root = new TestRoot();
+            var child1 = new Decorator();
+            var child2 = new Decorator();
+
+            root.Child = child1;
+            child1.Child = child2;
+
+            Assert.Same(root, ((IVisual)child1).VisualRoot);
+            Assert.Same(root, ((IVisual)child2).VisualRoot);
+        }
+
+        [Fact]
+        public void Attaching_To_Visual_Tree_Should_Invalidate_Visual()
+        {
+            var renderer = new Mock<IRenderer>();
+
+            using (UnitTestApplication.Start(new TestServices(renderer: (root, loop) => renderer.Object)))
+            {
+                var child = new Decorator();
+                var root = new TestRoot();
+
+                root.Child = child;
+
+                renderer.Verify(x => x.AddDirty(child));
+            }                
+        }
+
+        [Fact]
+        public void Detaching_From_Visual_Tree_Should_Invalidate_Visual()
+        {
+            var renderer = new Mock<IRenderer>();
+
+            using (UnitTestApplication.Start(new TestServices(renderer: (root, loop) => renderer.Object)))
+            {
+                var child = new Decorator();
+                var root = new TestRoot();
+
+                root.Child = child;
+                renderer.ResetCalls();
+                root.Child = null;
+
+                renderer.Verify(x => x.AddDirty(child));
+            }
         }
 
         [Fact]

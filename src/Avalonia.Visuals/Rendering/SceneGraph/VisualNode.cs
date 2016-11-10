@@ -10,13 +10,21 @@ namespace Avalonia.Rendering.SceneGraph
 {
     public class VisualNode : IVisualNode
     {
-        public VisualNode(IVisual visual)
+        public VisualNode(IVisual visual, IVisualNode parent)
         {
-            Children = new List<ISceneNode>();
+            if (parent == null && visual.VisualParent != null)
+            {
+                throw new AvaloniaInternalException(
+                    "Attempted to create root VisualNode for parented visual.");
+            }
+
             Visual = visual;
+            Parent = parent;
+            Children = new List<ISceneNode>();
         }
 
         public IVisual Visual { get; }
+        public IVisualNode Parent { get; }
         public Matrix Transform { get; set; }
         public Rect ClipBounds { get; set; }
         public bool ClipToBounds { get; set; }
@@ -24,12 +32,21 @@ namespace Avalonia.Rendering.SceneGraph
         public double Opacity { get; set; }
         public IBrush OpacityMask { get; set; }
         public List<ISceneNode> Children { get; }
+        public bool SubTreeUpdated { get; set; }
 
         IReadOnlyList<ISceneNode> IVisualNode.Children => Children;
 
-        public VisualNode Clone()
+        public VisualNode Clone(IVisualNode parent)
         {
-            return new VisualNode(Visual);
+            return new VisualNode(Visual, parent)
+            {
+                Transform = Transform,
+                ClipBounds = ClipBounds,
+                ClipToBounds = ClipToBounds,
+                GeometryClip = GeometryClip,
+                Opacity = Opacity,
+                OpacityMask = OpacityMask,
+            };
         }
 
         public bool HitTest(Point p)

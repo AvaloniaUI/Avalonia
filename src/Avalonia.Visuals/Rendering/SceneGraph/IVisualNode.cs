@@ -10,8 +10,10 @@ namespace Avalonia.Rendering.SceneGraph
     public interface IVisualNode : ISceneNode
     {
         IVisual Visual { get; }
-        Rect ClipBounds { get; set; }
-        bool ClipToBounds { get; set; }
+        IVisualNode Parent { get; }
+        Matrix Transform { get; }
+        Rect ClipBounds { get; }
+        bool ClipToBounds { get; }
         IReadOnlyList<ISceneNode> Children { get; }
 
         bool HitTest(Point p);

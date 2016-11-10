@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Linq;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
@@ -16,6 +15,7 @@ namespace Avalonia.Rendering
         private readonly IRenderRoot _root;
         private Scene _scene;
         private IRenderTarget _renderTarget;
+        private List<IVisual> _dirty = new List<IVisual>();
         private bool _needsUpdate;
         private bool _needsRender;
 
@@ -39,11 +39,14 @@ namespace Avalonia.Rendering
 
         public void AddDirty(IVisual visual)
         {
-            if (!_needsUpdate)
+            // If the root of the scene has no children, then the scene is being set up; don't
+            // bother filling the dirty list with every control in the window.
+            if (_scene.Root.Children.Count > 0)
             {
-                _needsUpdate = true;
-                Dispatcher.UIThread.InvokeAsync(UpdateScene, DispatcherPriority.Render);
+                _dirty.Add(visual);
             }
+
+            _needsUpdate = true;
         }
 
         public void Dispose()
@@ -63,31 +66,6 @@ namespace Avalonia.Rendering
 
         public void Render(Rect rect)
         {
-            if (_renderTarget == null)
-            {
-                _renderTarget = _root.CreateRenderTarget();
-            }
-
-            try
-            {
-                _totalFrames++;
-
-                using (var context = _renderTarget.CreateDrawingContext())
-                {
-                    _scene.Root.Render(context);
-
-                    if (DrawFps)
-                    {
-                        RenderFps(context);
-                    }
-                }
-            }
-            catch (RenderTargetCorruptedException ex)
-            {
-                Logging.Logger.Information("Renderer", this, "Render target was corrupted. Exception: {0}", ex);
-                _renderTarget.Dispose();
-                _renderTarget = null;
-            }
         }
 
         private void RenderFps(IDrawingContextImpl context)
@@ -122,7 +100,22 @@ namespace Avalonia.Rendering
         {
             Dispatcher.UIThread.VerifyAccess();
 
-            _scene = SceneBuilder.Update(_scene);
+            var scene = _scene.Clone();
+
+            if (_dirty.Count > 0)
+            {
+                foreach (var visual in _dirty)
+                {
+                    SceneBuilder.Update(scene, visual);
+                }
+            }
+            else
+            {
+                SceneBuilder.UpdateAll(scene);
+            }
+
+            _scene = scene;
+
             _needsUpdate = false;
             _needsRender = true;
             _root.Invalidate(new Rect(_root.ClientSize));
@@ -130,10 +123,39 @@ namespace Avalonia.Rendering
 
         private void OnRenderLoopTick(object sender, EventArgs e)
         {
-            //if (_needsRender)
-            //{
-            //    _needsRender = false;
-            //}
+            if (_needsUpdate)
+            {
+                Dispatcher.UIThread.InvokeAsync(UpdateScene, DispatcherPriority.Render);
+            }
+
+            if (_needsRender)
+            {
+                if (_renderTarget == null)
+                {
+                    _renderTarget = _root.CreateRenderTarget();
+                }
+
+                try
+                {
+                    _totalFrames++;
+
+                    using (var context = _renderTarget.CreateDrawingContext())
+                    {
+                        _scene.Root.Render(context);
+
+                        if (DrawFps)
+                        {
+                            RenderFps(context);
+                        }
+                    }
+                }
+                catch (RenderTargetCorruptedException ex)
+                {
+                    Logging.Logger.Information("Renderer", this, "Render target was corrupted. Exception: {0}", ex);
+                    _renderTarget.Dispose();
+                    _renderTarget = null;
+                }
+            }
         }
     }
 }

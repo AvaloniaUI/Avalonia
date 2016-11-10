@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reactive.Disposables;
 using Avalonia.Media;
 using Avalonia.Platform;
@@ -26,6 +27,20 @@ namespace Avalonia.Rendering.SceneGraph
 
         public IDisposable Begin(VisualNode node)
         {
+            if (_stack.Count > 0)
+            {
+                var next = NextNodeAs<VisualNode>();
+
+                if (next == null || next != node)
+                {
+                    Add(node);
+                }
+                else
+                {
+                    ++Index;
+                }
+            }
+
             _stack.Push(new Frame(node));
             return Disposable.Create(Pop);
         }
@@ -34,20 +49,15 @@ namespace Avalonia.Rendering.SceneGraph
         {
         }
 
-        public void AddChild(IVisualNode visualNode)
+        public void TrimNodes()
         {
-            if (_stack.Count > 0)
-            {
-                var next = NextNodeAs<VisualNode>();
+            var frame = _stack.Peek();
+            var children = frame.Node.Children;
+            var index = frame.Index;
 
-                if (next == null || next != visualNode)
-                {
-                    Add(visualNode);
-                }
-                else
-                {
-                    ++Index;
-                }
+            if (children.Count > index)
+            {
+                children.RemoveRange(index, children.Count - index);
             }
         }
 
@@ -196,17 +206,7 @@ namespace Avalonia.Rendering.SceneGraph
             return Index < Node.Children.Count ? Node.Children[Index] as T : null;
         }
 
-        private void Pop()
-        {
-            var frame = _stack.Pop();
-            var children = frame.Node.Children;
-            var index = frame.Index;
-
-            if (children.Count > index)
-            {
-                children.RemoveRange(index, children.Count - index);
-            }
-        }
+        private void Pop() => _stack.Pop();
 
         class Frame
         {

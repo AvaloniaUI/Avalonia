@@ -79,6 +79,8 @@ namespace Avalonia.Threading
         /// </summary>
         /// <param name="action">The method.</param>
         /// <param name="priority">The priority with which to invoke the method.</param>
+        // TODO: The naming of this method is confusing: the Async suffix usually means return a task.
+        // Remove this and rename InvokeTaskAsync as InvokeAsync.
         public void InvokeAsync(Action action, DispatcherPriority priority = DispatcherPriority.Normal)
         {
             _jobRunner?.Post(action, priority);

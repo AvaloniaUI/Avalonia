@@ -12,8 +12,9 @@ namespace Avalonia.Rendering.SceneGraph
         private Dictionary<IVisual, IVisualNode> _index;
 
         public Scene(IVisual rootVisual)
-            : this(new VisualNode(rootVisual), new Dictionary<IVisual, IVisualNode>())
+            : this(new VisualNode(rootVisual, null), new Dictionary<IVisual, IVisualNode>())
         {
+            _index.Add(rootVisual, Root);
         }
 
         internal Scene(VisualNode root, Dictionary<IVisual, IVisualNode> index)
@@ -28,6 +29,8 @@ namespace Avalonia.Rendering.SceneGraph
 
         public void Add(IVisualNode node)
         {
+            Contract.Requires<ArgumentNullException>(node != null);
+
             _index.Add(node.Visual, node);
         }
 
@@ -51,9 +54,16 @@ namespace Avalonia.Rendering.SceneGraph
             return HitTest(Root, p, null, filter);
         }
 
-        private VisualNode Clone(VisualNode source, ISceneNode parent, Dictionary<IVisual, IVisualNode> index)
+        public void Remove(IVisualNode node)
         {
-            var result = source.Clone();
+            Contract.Requires<ArgumentNullException>(node != null);
+
+            _index.Remove(node.Visual);
+        }
+
+        private VisualNode Clone(VisualNode source, IVisualNode parent, Dictionary<IVisual, IVisualNode> index)
+        {
+            var result = source.Clone(parent);
 
             index.Add(result.Visual, result);
 
@@ -98,8 +108,6 @@ namespace Avalonia.Rendering.SceneGraph
                             }
                         }
                     }
-
-                    dynamic d = node.Visual;
 
                     if (node.HitTest(p))
                     {
