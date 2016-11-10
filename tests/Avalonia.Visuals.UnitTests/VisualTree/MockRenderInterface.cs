@@ -51,18 +51,7 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
 
             public Rect Bounds => _impl.CalculateBounds();
 
-            public Matrix Transform
-            {
-                get
-                {
-                    throw new NotImplementedException();
-                }
-
-                set
-                {
-                    throw new NotImplementedException();
-                }
-            }
+            public Matrix Transform { get; set; }
 
             public IStreamGeometryImpl Clone()
             {
