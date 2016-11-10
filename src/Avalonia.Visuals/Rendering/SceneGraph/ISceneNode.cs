@@ -6,8 +6,15 @@ using Avalonia.Media;
 
 namespace Avalonia.Rendering.SceneGraph
 {
+    /// <summary>
+    /// Represents a node in the low-level scene graph.
+    /// </summary>
     public interface ISceneNode
     {
+        /// <summary>
+        /// Renders the node to a drawing context.
+        /// </summary>
+        /// <param name="context">The drawing context.</param>
         void Render(IDrawingContextImpl context);
     }
 }
