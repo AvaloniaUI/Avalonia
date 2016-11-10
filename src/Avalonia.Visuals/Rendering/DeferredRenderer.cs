@@ -148,6 +148,8 @@ namespace Avalonia.Rendering
                             RenderFps(context);
                         }
                     }
+
+                    _needsRender = false;
                 }
                 catch (RenderTargetCorruptedException ex)
                 {
