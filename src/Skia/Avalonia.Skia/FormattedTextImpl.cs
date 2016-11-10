@@ -585,7 +585,7 @@ namespace Avalonia.Skia
             if (_skiaLines.Count == 0)
             {
                 _lines.Add(new FormattedTextLine(0, _lineHeight));
-                _size = new Size(0, _lineHeight + lastLineDescent);
+                _size = new Size(0, _lineHeight);
             }
             else
             {
