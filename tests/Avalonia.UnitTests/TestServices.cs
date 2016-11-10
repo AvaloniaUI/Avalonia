@@ -62,6 +62,7 @@ namespace Avalonia.UnitTests
             IInputManager inputManager = null,
             Func<IKeyboardDevice> keyboardDevice = null,
             ILayoutManager layoutManager = null,
+            Func<IMouseDevice> mouseDevice = null,
             IRuntimePlatform platform = null,
             Func<IRenderRoot, IRenderLoop, IRenderer> renderer = null,
             IPlatformRenderInterface renderInterface = null,
@@ -78,6 +79,7 @@ namespace Avalonia.UnitTests
             InputManager = inputManager;
             KeyboardDevice = keyboardDevice;
             LayoutManager = layoutManager;
+            MouseDevice = mouseDevice;
             Platform = platform;
             Renderer = renderer;
             RenderInterface = renderInterface;
@@ -95,6 +97,7 @@ namespace Avalonia.UnitTests
         public IFocusManager FocusManager { get; }
         public Func<IKeyboardDevice> KeyboardDevice { get; }
         public ILayoutManager LayoutManager { get; }
+        public Func<IMouseDevice> MouseDevice { get; }
         public IRuntimePlatform Platform { get; }
         public Func<IRenderRoot, IRenderLoop, IRenderer> Renderer { get; }
         public IPlatformRenderInterface RenderInterface { get; }
@@ -112,6 +115,7 @@ namespace Avalonia.UnitTests
             IInputManager inputManager = null,
             Func<IKeyboardDevice> keyboardDevice = null,
             ILayoutManager layoutManager = null,
+            Func<IMouseDevice> mouseDevice = null,
             IRuntimePlatform platform = null,
             Func<IRenderRoot, IRenderLoop, IRenderer> renderer = null,
             IPlatformRenderInterface renderInterface = null,
@@ -129,6 +133,7 @@ namespace Avalonia.UnitTests
                 inputManager: inputManager ?? InputManager,
                 keyboardDevice: keyboardDevice ?? KeyboardDevice,
                 layoutManager: layoutManager ?? LayoutManager,
+                mouseDevice: mouseDevice ?? MouseDevice,
                 platform: platform ?? Platform,
                 renderer: renderer ?? Renderer,
                 renderInterface: renderInterface ?? RenderInterface,

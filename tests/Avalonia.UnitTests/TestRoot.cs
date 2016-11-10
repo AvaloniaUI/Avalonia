@@ -11,7 +11,7 @@ using Avalonia.Styling;
 
 namespace Avalonia.UnitTests
 {
-    public class TestRoot : Decorator, IFocusScope, ILayoutRoot, INameScope, IRenderRoot, IStyleRoot
+    public class TestRoot : Decorator, IFocusScope, ILayoutRoot, IInputRoot, INameScope, IRenderRoot, IStyleRoot
     {
         private readonly NameScope _nameScope = new NameScope();
 
@@ -49,6 +49,26 @@ namespace Avalonia.UnitTests
         public IRenderTarget RenderTarget => null;
 
         public IRenderer Renderer { get; }
+
+        public IAccessKeyHandler AccessKeyHandler
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public IKeyboardNavigationHandler KeyboardNavigationHandler
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public IInputElement PointerOverElement { get; set; }
+
+        public bool ShowAccessKeys { get; set; }
 
         public IRenderTarget CreateRenderTarget()
         {
