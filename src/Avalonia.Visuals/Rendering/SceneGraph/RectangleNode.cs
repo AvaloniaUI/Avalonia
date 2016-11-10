@@ -49,6 +49,7 @@ namespace Avalonia.Rendering.SceneGraph
 
         public bool HitTest(Point p)
         {
+            // TODO: Only test interior when Brush != null.
             return (Rect * Transform).Contains(p);
         }
     }

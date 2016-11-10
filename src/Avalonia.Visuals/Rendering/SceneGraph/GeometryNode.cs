@@ -39,7 +39,8 @@ namespace Avalonia.Rendering.SceneGraph
         public bool HitTest(Point p)
         {
             p *= Transform.Invert();
-            return Geometry.FillContains(p) || Geometry.StrokeContains(Pen, p);
+            return (Brush != null && Geometry.FillContains(p)) || 
+                (Pen != null && Geometry.StrokeContains(Pen, p));
         }
     }
 }
