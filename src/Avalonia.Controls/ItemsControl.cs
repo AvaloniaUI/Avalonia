@@ -234,7 +234,8 @@ namespace Avalonia.Controls
                 // it was added to the Items collection.
                 if (container.ContainerControl != null && container.ContainerControl != container.Item)
                 {
-                    toAdd.Add((container.ContainerControl as ContentPresenter).Content as ILogical);
+                    (container.ContainerControl as ContentPresenter).UpdateChild();
+                    toAdd.Add((container.ContainerControl as ContentPresenter).Child as ILogical);
                 }
             }
 
