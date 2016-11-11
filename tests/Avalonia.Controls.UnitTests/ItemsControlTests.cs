@@ -150,7 +150,7 @@ namespace Avalonia.Controls.UnitTests
 
             var logical = (ILogical)target;
             Assert.Equal(1, logical.LogicalChildren.Count);
-            Assert.IsType<ContentPresenter>(logical.LogicalChildren[0]);
+            Assert.IsType<TextBlock>(logical.LogicalChildren[0]);
         }
 
         [Fact]
