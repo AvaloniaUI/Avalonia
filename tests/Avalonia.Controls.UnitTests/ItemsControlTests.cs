@@ -138,7 +138,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Adding_String_Item_Should_Make_ContentPresenter_Appear_In_LogicalChildren()
+        public void Adding_String_Item_Should_Make_TextBlock_Appear_In_LogicalChildren()
         {
             var target = new ItemsControl();
             var child = new Control();
