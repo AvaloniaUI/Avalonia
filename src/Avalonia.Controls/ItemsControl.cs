@@ -257,7 +257,7 @@ namespace Avalonia.Controls
                 // when it is removed from the Items collection.
                 if (container?.ContainerControl != container?.Item)
                 {
-                    toRemove.Add(container.ContainerControl);
+                    toRemove.Add((container.ContainerControl as ContentPresenter).Child);
                 }
             }
 
