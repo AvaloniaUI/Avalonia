@@ -101,20 +101,12 @@ namespace Avalonia.Direct2D1.RenderTests.Media
         [InlineData(stringmiddlenewlines, FontSize, 72.01, 4 * FontSizeHeight)]
         public void Should_Measure_String_Correctly(string input, double fontSize, double expWidth, double expHeight)
         {
-#if !AVALONIA_SKIA
-            double heightCorr = 0;
-#else
-            //In skia there is a small descent added to last line,
-            //otherwise some letters are clipped at bottom
-            //4.55273438 for font 12 size
-            double heightCorr = 0.3793945*fontSize;
-#endif
             using (var fmt = Create(input, fontSize))
             {
                 var size = fmt.Measure();
 
                 Assert.Equal(expWidth, size.Width, 2);
-                Assert.Equal(expHeight + heightCorr, size.Height, 2);
+                Assert.Equal(expHeight, size.Height, 2);
 
                 var linesHeight = fmt.GetLines().Sum(l => l.Height);
 
