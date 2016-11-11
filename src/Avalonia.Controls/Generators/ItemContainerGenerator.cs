@@ -50,6 +50,14 @@ namespace Avalonia.Controls.Generators
         /// </summary>
         public IControl Owner { get; }
 
+        public virtual Type ContainerType
+        {
+            get
+            {
+                return null;
+            }
+        }
+
         /// <inheritdoc/>
         public ItemContainerInfo Materialize(
             int index,
