@@ -14,6 +14,8 @@ using Avalonia.Controls.Templates;
 using Avalonia.Controls.Utils;
 using Avalonia.LogicalTree;
 using Avalonia.Metadata;
+using System;
+
 
 namespace Avalonia.Controls
 {
@@ -219,6 +221,7 @@ namespace Avalonia.Controls
             return new ItemContainerGenerator(this);
         }
 
+
         /// <summary>
         /// Called when new containers are materialized for the <see cref="ItemsControl"/> by its
         /// <see cref="ItemContainerGenerator"/>.
@@ -229,13 +232,20 @@ namespace Avalonia.Controls
             var toAdd = new List<ILogical>();
 
             foreach (var container in e.Containers)
-            {
+            {                
                 // If the item is its own container, then it will be added to the logical tree when
                 // it was added to the Items collection.
                 if (container.ContainerControl != null && container.ContainerControl != container.Item)
                 {
-                    (container.ContainerControl as ContentPresenter).UpdateChild();
-                    toAdd.Add((container.ContainerControl as ContentPresenter).Child as ILogical);
+                    if (ItemContainerGenerator.ContainerType == null)
+                    {
+                        (container.ContainerControl as ContentPresenter).UpdateChild();
+                        toAdd.Add((container.ContainerControl as ContentPresenter).Child as ILogical);
+                    }
+                    else
+                    {
+                        toAdd.Add(container.ContainerControl);
+                    }
                 }
             }
 
@@ -257,7 +267,14 @@ namespace Avalonia.Controls
                 // when it is removed from the Items collection.
                 if (container?.ContainerControl != container?.Item)
                 {
-                    toRemove.Add((container.ContainerControl as ContentPresenter).Child);
+                    if (ItemContainerGenerator.ContainerType == null)
+                    {
+                        toRemove.Add((container.ContainerControl as ContentPresenter).Child);
+                    }
+                    else
+                    {
+                        toRemove.Add(container.ContainerControl);
+                    }
                 }
             }
 
