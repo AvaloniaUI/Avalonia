@@ -11,12 +11,14 @@ namespace Avalonia.Rendering.SceneGraph
     {
         public TextNode(Matrix transform, IBrush foreground, Point origin, IFormattedTextImpl text)
         {
+            Bounds = new Rect(origin, text.Measure()) * transform;
             Transform = transform;
             Foreground = foreground;
             Origin = origin;
             Text = text;
         }
 
+        public Rect Bounds { get; }
         public Matrix Transform { get; }
         public IBrush Foreground { get; }
         public Point Origin { get; }
@@ -36,9 +38,6 @@ namespace Avalonia.Rendering.SceneGraph
                 Equals(text, Text);
         }
 
-        public bool HitTest(Point p)
-        {
-            return (new Rect(Origin, Text.Measure()) * Transform).Contains(p);
-        }
+        public bool HitTest(Point p) => Bounds.Contains(p);
     }
 }

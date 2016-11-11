@@ -10,12 +10,14 @@ namespace Avalonia.Rendering.SceneGraph
     {
         public LineNode(Matrix transform, Pen pen, Point p1, Point p2)
         {
+            Bounds = new Rect(P1, P2);
             Transform = transform;
             Pen = pen;
             P1 = p1;
             P2 = p2;
         }
 
+        public Rect Bounds { get; }
         public Matrix Transform { get; }
         public Pen Pen { get; }
         public Point P1 { get; }

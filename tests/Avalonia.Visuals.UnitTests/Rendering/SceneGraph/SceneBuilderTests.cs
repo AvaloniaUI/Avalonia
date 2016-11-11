@@ -72,7 +72,10 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                     Child = new Border
                     {
                         Margin = new Thickness(10, 20, 30, 40),
-                        Child = canvas = new Canvas(),
+                        Child = canvas = new Canvas
+                        {
+                            Background = Brushes.AliceBlue,
+                        }
                     }
                 };
 
@@ -282,7 +285,10 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                         Background = Brushes.Red,
                         Child = decorator = new Decorator
                         {
-                            Child = canvas = new Canvas()
+                            Child = canvas = new Canvas
+                            {
+                                Background = Brushes.AliceBlue,
+                            }
                         }
                     }
                 };

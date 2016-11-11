@@ -11,12 +11,14 @@ namespace Avalonia.Rendering.SceneGraph
     {
         public GeometryNode(Matrix transform, IBrush brush, Pen pen, IGeometryImpl geometry)
         {
+            Bounds = geometry.Bounds * transform;
             Transform = transform;
             Brush = brush;
             Pen = pen;
             Geometry = geometry;
         }
 
+        public Rect Bounds { get; }
         public Matrix Transform { get; }
         public IBrush Brush { get; }
         public Pen Pen { get; }

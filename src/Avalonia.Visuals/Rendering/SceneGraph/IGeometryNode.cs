@@ -11,6 +11,11 @@ namespace Avalonia.Rendering.SceneGraph
     public interface IGeometryNode : ISceneNode
     {
         /// <summary>
+        /// Gets the bounds of the node in global coordinates.
+        /// </summary>
+        Rect Bounds { get; }
+
+        /// <summary>
         /// Hit test the geometry in this node.
         /// </summary>
         /// <param name="p">The point in global coordinates.</param>

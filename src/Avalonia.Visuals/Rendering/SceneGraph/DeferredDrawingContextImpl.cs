@@ -3,11 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reactive.Disposables;
 using Avalonia.Media;
 using Avalonia.Platform;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering.SceneGraph
 {
@@ -15,9 +13,21 @@ namespace Avalonia.Rendering.SceneGraph
     {
         private Stack<Frame> _stack = new Stack<Frame>();
 
+        public DeferredDrawingContextImpl()
+            : this(new DirtyRects())
+        {
+        }
+
+        public DeferredDrawingContextImpl(DirtyRects dirty)
+        {
+            Dirty = dirty;
+        }
+
         public Matrix Transform { get; set; }
 
         private VisualNode Node => _stack.Peek().Node;
+
+        public DirtyRects Dirty { get; }
 
         private int Index
         {
@@ -206,7 +216,20 @@ namespace Avalonia.Rendering.SceneGraph
             return Index < Node.Children.Count ? Node.Children[Index] as T : null;
         }
 
-        private void Pop() => _stack.Pop();
+        private void Pop()
+        {
+            foreach (var child in Node.Children)
+            {
+                var geometry = child as IGeometryNode;
+
+                if (geometry != null)
+                {
+                    Dirty.Add(geometry.Bounds);
+                }
+            }
+
+            _stack.Pop();
+        }
 
         class Frame
         {

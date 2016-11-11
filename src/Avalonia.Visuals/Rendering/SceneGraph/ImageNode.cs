@@ -11,6 +11,7 @@ namespace Avalonia.Rendering.SceneGraph
     {
         public ImageNode(Matrix transform, IBitmapImpl source, double opacity, Rect sourceRect, Rect destRect)
         {
+            Bounds = destRect * transform;
             Transform = transform;
             Source = source;
             Opacity = opacity;
@@ -18,6 +19,7 @@ namespace Avalonia.Rendering.SceneGraph
             DestRect = destRect;
         }
 
+        public Rect Bounds { get; }
         public Matrix Transform { get; }
         public IBitmapImpl Source { get; }
         public double Opacity { get; }
@@ -39,9 +41,6 @@ namespace Avalonia.Rendering.SceneGraph
             context.DrawImage(Source, Opacity, SourceRect, DestRect);
         }
 
-        public bool HitTest(Point p)
-        {
-            return (DestRect * Transform).Contains(p);
-        }
+        public bool HitTest(Point p) => Bounds.Contains(p);
     }
 }

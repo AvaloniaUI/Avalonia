@@ -6,6 +6,7 @@ using System.Linq;
 using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
+using System.Collections.Generic;
 
 namespace Avalonia.Rendering.SceneGraph
 {
@@ -13,6 +14,7 @@ namespace Avalonia.Rendering.SceneGraph
     {
         public static void UpdateAll(Scene scene)
         {
+            Contract.Requires<ArgumentNullException>(scene != null);
             Dispatcher.UIThread.VerifyAccess();
 
             using (var impl = new DeferredDrawingContextImpl())
@@ -24,6 +26,15 @@ namespace Avalonia.Rendering.SceneGraph
 
         public static bool Update(Scene scene, IVisual visual)
         {
+            var dirty = new DirtyRects();
+            return Update(scene, visual, dirty);
+        }
+
+        public static bool Update(Scene scene, IVisual visual, DirtyRects dirty)
+        {
+            Contract.Requires<ArgumentNullException>(scene != null);
+            Contract.Requires<ArgumentNullException>(visual != null);
+            Contract.Requires<ArgumentNullException>(dirty != null);
             Dispatcher.UIThread.VerifyAccess();
 
             var node = (VisualNode)scene.FindNode(visual);
@@ -44,7 +55,7 @@ namespace Avalonia.Rendering.SceneGraph
                         // descendents too.
                         var recurse = node.Visual != visual;
 
-                        using (var impl = new DeferredDrawingContextImpl())
+                        using (var impl = new DeferredDrawingContextImpl(dirty))
                         using (var context = new DrawingContext(impl))
                         {
                             if (node.Parent != null)
@@ -65,7 +76,7 @@ namespace Avalonia.Rendering.SceneGraph
                         // The control has been removed so remove it from its parent and deindex the
                         // node and its descendents.
                         ((VisualNode)node.Parent)?.Children.Remove(node);
-                        Deindex(scene, node);
+                        Deindex(scene, node, dirty);
                         return true;
                     }
                 }
@@ -76,7 +87,7 @@ namespace Avalonia.Rendering.SceneGraph
                 // node and its descendents.
                 var trim = FindFirstDeadAncestor(scene, node);
                 ((VisualNode)trim.Parent).Children.Remove(trim);
-                Deindex(scene, trim);
+                Deindex(scene, trim, dirty);
                 return true;
             }
 
@@ -170,18 +181,31 @@ namespace Avalonia.Rendering.SceneGraph
             return node;
         }
 
-        private static void Deindex(Scene scene, VisualNode node)
+        private static IList<Rect> Deindex(Scene scene, VisualNode node)
+        {
+            var dirty = new DirtyRects();
+            Deindex(scene, node, dirty);
+            return dirty.Coalesce();
+        }
+
+        private static void Deindex(Scene scene, VisualNode node, DirtyRects dirty)
         {
             scene.Remove(node);
             node.SubTreeUpdated = true;
 
             foreach (var child in node.Children)
             {
-                var visualChild = child as VisualNode;
+                var geometry = child as IGeometryNode;
+                var visual = child as VisualNode;
 
-                if (visualChild != null)
+                if (geometry != null)
                 {
-                    Deindex(scene, visualChild);
+                    dirty.Add(geometry.Bounds);
+                }
+
+                if (visual != null)
+                {
+                    Deindex(scene, visual, dirty);
                 }
             }
         }

@@ -10,6 +10,7 @@ namespace Avalonia.Rendering.SceneGraph
     {
         public RectangleNode(Matrix transform, IBrush brush, Pen pen, Rect rect, float cornerRadius)
         {
+            Bounds = rect * transform;
             Transform = transform;
             Brush = brush;
             Pen = pen;
@@ -17,6 +18,7 @@ namespace Avalonia.Rendering.SceneGraph
             CornerRadius = cornerRadius;
         }
 
+        public Rect Bounds { get; }
         public Matrix Transform { get; }
         public IBrush Brush { get; }
         public Pen Pen { get; }
@@ -47,10 +49,6 @@ namespace Avalonia.Rendering.SceneGraph
             }
         }
 
-        public bool HitTest(Point p)
-        {
-            // TODO: Only test interior when Brush != null.
-            return (Rect * Transform).Contains(p);
-        }
+        public bool HitTest(Point p) => Bounds.Contains(p);
     }
 }
