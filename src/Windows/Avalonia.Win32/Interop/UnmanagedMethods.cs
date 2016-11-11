@@ -23,6 +23,8 @@ namespace Avalonia.Win32.Interop
 
         public delegate void TimerProc(IntPtr hWnd, uint uMsg, IntPtr nIDEvent, uint dwTime);
 
+        public delegate void TimeCallback(uint uTimerID, uint uMsg, UIntPtr dwUser, UIntPtr dw1, UIntPtr dw2);
+
         public delegate IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
 
         public enum Cursor
@@ -705,8 +707,6 @@ namespace Avalonia.Win32.Interop
         [DllImport("user32.dll")]
         public static extern IntPtr LoadCursor(IntPtr hInstance, IntPtr lpCursorName);
 
-
-
         [DllImport("user32.dll")]
         public static extern bool PeekMessage(out MSG lpMsg, IntPtr hWnd, uint wMsgFilterMin, uint wMsgFilterMax, uint wRemoveMsg);
         
@@ -727,13 +727,22 @@ namespace Avalonia.Win32.Interop
 
         [DllImport("user32.dll")]
         public static extern IntPtr SetTimer(IntPtr hWnd, IntPtr nIDEvent, uint uElapse, TimerProc lpTimerFunc);
-
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool MoveWindow(IntPtr hWnd, int X, int Y, int nWidth, int nHeight, bool bRepaint);
         [DllImport("user32.dll")]
         public static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int x, int y, int cx, int cy, SetWindowPosFlags uFlags);
+        [DllImport("user32.dll")]
+        public static extern bool SetFocus(IntPtr hWnd);
         [DllImport("user32.dll")]
         public static extern bool SetParent(IntPtr hWnd, IntPtr hWndNewParent);
         [DllImport("user32.dll")]
         public static extern bool ShowWindow(IntPtr hWnd, ShowWindowCommand nCmdShow);
+
+        [DllImport("Winmm.dll")]
+        public static extern uint timeKillEvent(uint uTimerID);
+
+        [DllImport("Winmm.dll")]
+        public static extern uint timeSetEvent(uint uDelay, uint uResolution, TimeCallback lpTimeProc, UIntPtr dwUser, uint fuEvent);
 
         [DllImport("user32.dll")]
         public static extern int ToUnicode(

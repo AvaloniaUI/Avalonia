@@ -197,7 +197,6 @@ namespace Avalonia.Controls
         /// <param name="count">The number of items to remove.</param>
         public override void RemoveRange(int index, int count)
         {
-            var names = GetRange(index, count);
             base.RemoveRange(index, count);
         }
 

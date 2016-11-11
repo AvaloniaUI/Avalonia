@@ -8,40 +8,89 @@ namespace Avalonia.Skia
 {
     static class TypefaceCache
     {
-        static readonly Dictionary<string, Dictionary<SKTypefaceStyle, SKTypeface>> Cache = new Dictionary<string, Dictionary<SKTypefaceStyle, SKTypeface>>();
+        static readonly Dictionary<string, Dictionary<FontKey, SKTypeface>> Cache = new Dictionary<string, Dictionary<FontKey, SKTypeface>>();
 
-        unsafe static SKTypeface GetTypeface(string name, SKTypefaceStyle style)
+        struct FontKey
+        {
+            public readonly SKFontStyleSlant Slant;
+            public readonly SKFontStyleWeight Weight;
+
+            public FontKey(SKFontStyleWeight weight, SKFontStyleSlant  slant)
+            {
+                Slant  = slant;
+                Weight = weight;
+            }
+
+            public override int GetHashCode()
+            {
+                int hash = 17;
+                hash = hash * 31 + (int)Slant;
+                hash = hash * 31 + (int)Weight;
+
+                return hash;
+            }
+
+            public override bool Equals(object other)
+            {
+                return other is FontKey ? Equals((FontKey)other) : false;
+            }
+
+            public bool Equals(FontKey other)
+            {
+                return Slant == other.Slant &&
+                    Weight == other.Weight;
+            }
+
+            // Equals and GetHashCode ommitted
+        }
+
+        unsafe static SKTypeface GetTypeface(string name, FontKey key)
         {
             if (name == null)
+            {
                 name = "Arial";
+            }
 
-            Dictionary<SKTypefaceStyle, SKTypeface> entry;
+            Dictionary<FontKey, SKTypeface> entry;
+
             if (!Cache.TryGetValue(name, out entry))
-                Cache[name] = entry = new Dictionary<SKTypefaceStyle, SKTypeface>();
+            {
+                Cache[name] = entry = new Dictionary<FontKey, SKTypeface>();
+            }
 
             SKTypeface typeface = null;
-            if (!entry.TryGetValue(style, out typeface))
+
+            if (!entry.TryGetValue(key, out typeface))
             {
-                typeface = SKTypeface.FromFamilyName(name, style);
+                typeface = SKTypeface.FromFamilyName(name, key.Weight, SKFontStyleWidth.Normal, key.Slant);
+
                 if (typeface == null)
                 {
-                    typeface = SKTypeface.FromFamilyName(null, style);
+                    typeface = SKTypeface.FromFamilyName(null, SKTypefaceStyle.Normal);
                 }
-                entry[style] = typeface;
+
+                entry[key] = typeface;
             }
+
             return typeface;
         }
 
         public static SKTypeface GetTypeface(string name, FontStyle style, FontWeight weight)
         {
-            SKTypefaceStyle sstyle = SKTypefaceStyle.Normal;
-            if (style != FontStyle.Normal)
-                sstyle |= SKTypefaceStyle.Italic;
+            SKFontStyleSlant skStyle = SKFontStyleSlant.Upright;
 
-            if (weight > FontWeight.Normal)
-                sstyle |= SKTypefaceStyle.Bold;
+            switch(style)
+            {
+                case FontStyle.Italic:
+                    skStyle = SKFontStyleSlant.Italic;
+                    break;
 
-            return GetTypeface(name, sstyle);
+                case FontStyle.Oblique:
+                    skStyle = SKFontStyleSlant.Oblique;
+                    break;
+            }
+
+            return GetTypeface(name, new FontKey((SKFontStyleWeight)weight, skStyle));
         }
 
     }

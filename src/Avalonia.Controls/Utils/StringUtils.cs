@@ -57,7 +57,7 @@ namespace Avalonia.Controls.Utils
             }
         }
 
-        public static int PreviousWord(string text, int cursor, bool gtkMode)
+        public static int PreviousWord(string text, int cursor)
         {
             int begin;
             int i;
@@ -81,60 +81,21 @@ namespace Avalonia.Controls.Utils
                 return (cr > 0) ? cr : 0;
             }
 
-            if (gtkMode)
+            CharClass cc = GetCharClass(text[cursor - 1]);
+            begin = lf + 1;
+            i = cursor;
+
+            // skip over the word, punctuation, or run of whitespace
+            while (i > begin && GetCharClass(text[i - 1]) == cc)
             {
-                CharClass cc = GetCharClass(text[cursor - 1]);
-                begin = lf + 1;
-                i = cursor;
-
-                // skip over the word, punctuation, or run of whitespace
-                while (i > begin && GetCharClass(text[i - 1]) == cc)
-                {
-                    i--;
-                }
-
-                // if the cursor was at whitespace, skip back a word too
-                if (cc == CharClass.CharClassWhitespace && i > begin)
-                {
-                    cc = GetCharClass(text[i - 1]);
-                    while (i > begin && GetCharClass(text[i - 1]) == cc)
-                    {
-                        i--;
-                    }
-                }
+                i--;
             }
-            else
+
+            // if the cursor was at whitespace, skip back a word too
+            if (cc == CharClass.CharClassWhitespace && i > begin)
             {
-                begin = lf + 1;
-                i = cursor;
-
-                if (cursor < text.Length)
-                {
-                    // skip to the beginning of this word
-                    while (i > begin && !char.IsWhiteSpace(text[i - 1]))
-                    {
-                        i--;
-                    }
-
-                    if (i < cursor && IsStartOfWord(text, i))
-                    {
-                        return i;
-                    }
-                }
-
-                // skip to the start of the lwsp
-                while (i > begin && char.IsWhiteSpace(text[i - 1]))
-                {
-                    i--;
-                }
-
-                if (i > begin)
-                {
-                    i--;
-                }
-
-                // skip to the beginning of the word
-                while (i > begin && !IsStartOfWord(text, i))
+                cc = GetCharClass(text[i - 1]);
+                while (i > begin && GetCharClass(text[i - 1]) == cc)
                 {
                     i--;
                 }
@@ -143,7 +104,7 @@ namespace Avalonia.Controls.Utils
             return i;
         }
 
-        public static int NextWord(string text, int cursor, bool gtkMode)
+        public static int NextWord(string text, int cursor)
         {
             int i, lf, cr;
 
@@ -169,50 +130,19 @@ namespace Avalonia.Controls.Utils
                 return cursor;
             }
 
-            if (gtkMode)
+            CharClass cc = GetCharClass(text[cursor]);
+            i = cursor;
+
+            // skip over the word, punctuation, or run of whitespace
+            while (i < cr && GetCharClass(text[i]) == cc)
             {
-                CharClass cc = GetCharClass(text[cursor]);
-                i = cursor;
-
-                // skip over the word, punctuation, or run of whitespace
-                while (i < cr && GetCharClass(text[i]) == cc)
-                {
-                    i++;
-                }
-
-                // skip any whitespace after the word/punct
-                while (i < cr && char.IsWhiteSpace(text[i]))
-                {
-                    i++;
-                }
+                i++;
             }
-            else
+
+            // skip any whitespace after the word/punct
+            while (i < cr && char.IsWhiteSpace(text[i]))
             {
-                i = cursor;
-
-                // skip any whitespace before the word
-                while (i < cr && char.IsWhiteSpace(text[i]))
-                {
-                    i++;
-                }
-
-                // skip to the end of the current word
-                while (i < cr && !char.IsWhiteSpace(text[i]))
-                {
-                    i++;
-                }
-
-                // skip any whitespace after the word
-                while (i < cr && char.IsWhiteSpace(text[i]))
-                {
-                    i++;
-                }
-
-                // find the start of the next word
-                while (i < cr && !IsStartOfWord(text, i))
-                {
-                    i++;
-                }
+                i++;
             }
 
             return i;

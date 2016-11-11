@@ -10,11 +10,14 @@ namespace Avalonia.Markup.Data.Plugins
     /// Defines an accessor to a property on an object returned by a 
     /// <see cref="IPropertyAccessorPlugin"/>
     /// </summary>
-    public interface IPropertyAccessor : IDisposable
+    public interface IPropertyAccessor : IObservable<object>, IDisposable
     {
         /// <summary>
         /// Gets the type of the property.
         /// </summary>
+        /// <exception cref="InvalidOperationException">
+        /// The accessor has not been subscribed to yet.
+        /// </exception>
         Type PropertyType { get; }
 
         /// <summary>

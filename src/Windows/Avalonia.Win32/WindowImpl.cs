@@ -18,7 +18,7 @@ using Avalonia.Win32.Interop;
 
 namespace Avalonia.Win32
 {
-    public class WindowImpl : IWindowImpl
+    class WindowImpl : IWindowImpl
     {
         private static readonly List<WindowImpl> s_instances = new List<WindowImpl>();
 
@@ -54,6 +54,8 @@ namespace Avalonia.Win32
         public Action<Size> Resized { get; set; }
 
         public Action<double> ScalingChanged { get; set; }
+
+        public Action<Point> PositionChanged { get; set; }
 
         public Thickness BorderThickness
         {
@@ -535,18 +537,15 @@ namespace Avalonia.Win32
                     break;
 
                 case UnmanagedMethods.WindowsMessage.WM_PAINT:
-                    if (Paint != null)
-                    {
-                        UnmanagedMethods.PAINTSTRUCT ps;
+                    UnmanagedMethods.PAINTSTRUCT ps;
 
-                        if (UnmanagedMethods.BeginPaint(_hwnd, out ps) != IntPtr.Zero)
-                        {
-                            UnmanagedMethods.RECT r;
-                            UnmanagedMethods.GetUpdateRect(_hwnd, out r, false);
-                            var f = Scaling;
-                            Paint(new Rect(r.left / f, r.top / f, (r.right - r.left) / f, (r.bottom - r.top) / f));
-                            UnmanagedMethods.EndPaint(_hwnd, ref ps);
-                        }
+                    if (UnmanagedMethods.BeginPaint(_hwnd, out ps) != IntPtr.Zero)
+                    {
+                        UnmanagedMethods.RECT r;
+                        UnmanagedMethods.GetUpdateRect(_hwnd, out r, false);
+                        var f = Scaling;
+                        Paint?.Invoke(new Rect(r.left / f, r.top / f, (r.right - r.left) / f, (r.bottom - r.top) / f));
+                        UnmanagedMethods.EndPaint(_hwnd, ref ps);
                     }
 
                     return IntPtr.Zero;
@@ -560,6 +559,10 @@ namespace Avalonia.Win32
                         Resized(clientSize / Scaling);
                     }
 
+                    return IntPtr.Zero;
+
+                case UnmanagedMethods.WindowsMessage.WM_MOVE:
+                    PositionChanged?.Invoke(new Point((short)(ToInt32(lParam) & 0xffff), (short)(ToInt32(lParam) >> 16)));
                     return IntPtr.Zero;
             }
 
@@ -679,14 +682,15 @@ namespace Avalonia.Win32
             }
 
             UnmanagedMethods.ShowWindow(_hwnd, command);
+            UnmanagedMethods.SetFocus(_hwnd);
         }
 
         public void SetIcon(IWindowIconImpl icon)
         {
             var impl = (IconImpl)icon;
-            var nativeIcon = impl.IconBitmap;
+            var hIcon = impl.HIcon;
             UnmanagedMethods.PostMessage(_hwnd, (int)UnmanagedMethods.WindowsMessage.WM_SETICON,
-                new IntPtr((int)UnmanagedMethods.Icons.ICON_BIG), nativeIcon.GetHicon());
+                new IntPtr((int)UnmanagedMethods.Icons.ICON_BIG), hIcon);
         }
 
         private static int ToInt32(IntPtr ptr)

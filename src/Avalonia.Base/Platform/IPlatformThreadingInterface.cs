@@ -21,14 +21,10 @@ namespace Avalonia.Platform
         /// <returns>An <see cref="IDisposable"/> used to stop the timer.</returns>
         IDisposable StartTimer(TimeSpan interval, Action tick);
 
-        /// <summary>
-        /// Sends a message that causes <see cref="ProcessMessage"/> to exit.
-        /// </summary>
         void Signal();
 
         bool CurrentThreadIsLoopThread { get; }
 
         event Action Signaled;
-
     }
 }

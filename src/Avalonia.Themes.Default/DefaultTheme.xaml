@@ -1,4 +1,7 @@
 <Styles xmlns="https://github.com/avaloniaui">
+  <!-- Define ToolTip first so its styles can be overriden by other controls (e.g. TextBox) -->
+  <StyleInclude Source="resm:Avalonia.Themes.Default.ToolTip.xaml?assembly=Avalonia.Themes.Default"/>
+
   <StyleInclude Source="resm:Avalonia.Themes.Default.FocusAdorner.xaml?assembly=Avalonia.Themes.Default"/>
   <StyleInclude Source="resm:Avalonia.Themes.Default.Button.xaml?assembly=Avalonia.Themes.Default"/>
   <StyleInclude Source="resm:Avalonia.Themes.Default.Carousel.xaml?assembly=Avalonia.Themes.Default"/>
@@ -28,8 +31,8 @@
   <StyleInclude Source="resm:Avalonia.Themes.Default.TextBox.xaml?assembly=Avalonia.Themes.Default"/>
   <StyleInclude Source="resm:Avalonia.Themes.Default.ToggleButton.xaml?assembly=Avalonia.Themes.Default"/>
   <StyleInclude Source="resm:Avalonia.Themes.Default.Expander.xaml?assembly=Avalonia.Themes.Default"/>
-  <StyleInclude Source="resm:Avalonia.Themes.Default.ToolTip.xaml?assembly=Avalonia.Themes.Default"/>
   <StyleInclude Source="resm:Avalonia.Themes.Default.TreeView.xaml?assembly=Avalonia.Themes.Default"/>
   <StyleInclude Source="resm:Avalonia.Themes.Default.TreeViewItem.xaml?assembly=Avalonia.Themes.Default"/>
   <StyleInclude Source="resm:Avalonia.Themes.Default.Window.xaml?assembly=Avalonia.Themes.Default"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Default.EmbeddableControlRoot.xaml?assembly=Avalonia.Themes.Default"/>
 </Styles>

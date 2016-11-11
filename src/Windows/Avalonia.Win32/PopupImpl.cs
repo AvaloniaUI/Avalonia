@@ -7,7 +7,7 @@ using Avalonia.Win32.Interop;
 
 namespace Avalonia.Win32
 {
-    public class PopupImpl : WindowImpl, IPopupImpl
+    class PopupImpl : WindowImpl, IPopupImpl
     {
         public override void Show()
         {

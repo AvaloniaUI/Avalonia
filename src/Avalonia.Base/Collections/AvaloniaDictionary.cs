@@ -207,7 +207,6 @@ namespace Avalonia.Collections
 
             if (CollectionChanged != null)
             {
-                var val = new KeyValuePair<TKey, TValue>(key, value);
                 var e = new NotifyCollectionChangedEventArgs(
                     NotifyCollectionChangedAction.Add,
                     new[] { new KeyValuePair<TKey, TValue>(key, value) },

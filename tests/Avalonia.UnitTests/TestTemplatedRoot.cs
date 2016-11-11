@@ -43,7 +43,17 @@ namespace Avalonia.UnitTests
 
         public IRenderTarget RenderTarget => null;
 
-        public IRenderQueueManager RenderQueueManager => null;
+        public IRenderer Renderer => null;
+
+        public IRenderTarget CreateRenderTarget()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Invalidate(Rect rect)
+        {
+            throw new NotImplementedException();
+        }
 
         public Point PointToClient(Point p) => p;
 

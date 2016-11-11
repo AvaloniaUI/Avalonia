@@ -1,16 +1,13 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Avalonia.Media;
 using Avalonia.Platform;
+using Avalonia.Rendering;
 using SkiaSharp;
 
 namespace Avalonia.Skia
 {
-    public class PlatformRenderInterface : IPlatformRenderInterface
+    public class PlatformRenderInterface : IPlatformRenderInterface, IRendererFactory
     {
         public IBitmapImpl CreateBitmap(int width, int height)
         {
@@ -32,21 +29,14 @@ namespace Avalonia.Skia
         {
             using (var s = new SKManagedStream(stream))
             {
-                using (var codec = SKCodec.Create(s))
+                var bitmap = SKBitmap.Decode(s);
+                if (bitmap != null)
                 {
-                    var info = codec.Info;
-                    var bitmap = new SKBitmap(info.Width, info.Height, SKImageInfo.PlatformColorType, info.IsOpaque ? SKAlphaType.Opaque : SKAlphaType.Premul);
-
-                    IntPtr length;
-                    var result = codec.GetPixels(bitmap.Info, bitmap.GetPixels(out length));
-                    if (result == SKCodecResult.Success || result == SKCodecResult.IncompleteInput)
-                    {
-                        return new BitmapImpl(bitmap);
-                    }
-                    else
-                    {
-                        throw new ArgumentException("Unable to load bitmap from provided data");
-                    }
+                    return new BitmapImpl(bitmap);
+                }
+                else
+                {
+                    throw new ArgumentException("Unable to load bitmap from provided data");
                 }
             }
         }
@@ -59,6 +49,11 @@ namespace Avalonia.Skia
             }
         }
 
+        public IRenderer CreateRenderer(IRenderRoot root, IRenderLoop renderLoop)
+        {
+            return new Renderer(root, renderLoop);
+        }
+
         public IRenderTargetBitmapImpl CreateRenderTargetBitmap(int width, int height)
         {
             if (width < 1)
@@ -69,9 +64,9 @@ namespace Avalonia.Skia
             return new BitmapImpl(width, height);
         }
 
-        public IRenderTarget CreateRenderer(IPlatformHandle handle)
+        public IRenderTarget CreateRenderTarget(IPlatformHandle handle)
         {
-            return new WindowRenderTarget(handle.Handle);
+            return new WindowRenderTarget(handle);
         }
     }
 }

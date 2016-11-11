@@ -137,7 +137,6 @@ namespace Avalonia.Layout.UnitTests
             var formattedText = fixture.Create<IFormattedTextImpl>();
             var globalStyles = new Mock<IGlobalStyles>();
             var renderInterface = fixture.Create<IPlatformRenderInterface>();
-            var renderManager = fixture.Create<IRenderQueueManager>();
             var windowImpl = new Mock<IWindowImpl>();
 
             windowImpl.SetupProperty(x => x.ClientSize);
@@ -149,9 +148,8 @@ namespace Avalonia.Layout.UnitTests
                 .Bind<IInputManager>().ToConstant(new Mock<IInputManager>().Object)
                 .Bind<IGlobalStyles>().ToConstant(globalStyles.Object)
                 .Bind<ILayoutManager>().ToConstant(new LayoutManager())
-                .Bind<IPclPlatformWrapper>().ToConstant(new PclPlatformWrapper())
+                .Bind<IRuntimePlatform>().ToConstant(new AppBuilder().RuntimePlatform)
                 .Bind<IPlatformRenderInterface>().ToConstant(renderInterface)
-                .Bind<IRenderQueueManager>().ToConstant(renderManager)
                 .Bind<IStyler>().ToConstant(new Styler())
                 .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformMock(() => windowImpl.Object));
 

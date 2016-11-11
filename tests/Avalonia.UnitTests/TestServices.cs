@@ -11,6 +11,7 @@ using Avalonia.Platform;
 using Avalonia.Shared.PlatformSupport;
 using Avalonia.Styling;
 using Avalonia.Themes.Default;
+using Avalonia.Rendering;
 
 namespace Avalonia.UnitTests
 {
@@ -19,8 +20,10 @@ namespace Avalonia.UnitTests
         public static readonly TestServices StyledWindow = new TestServices(
             assetLoader: new AssetLoader(),
             layoutManager: new LayoutManager(),
-            platformWrapper: new PclPlatformWrapper(),
+            platform: new AppBuilder().RuntimePlatform,
+            renderer: Mock.Of<IRenderer>(),
             renderInterface: CreateRenderInterfaceMock(),
+            renderLoop: Mock.Of<IRenderLoop>(),
             standardCursorFactory: Mock.Of<IStandardCursorFactory>(),
             styler: new Styler(),
             theme: () => CreateDefaultTheme(),
@@ -31,7 +34,7 @@ namespace Avalonia.UnitTests
             renderInterface: CreateRenderInterfaceMock());
 
         public static readonly TestServices MockPlatformWrapper = new TestServices(
-            platformWrapper: Mock.Of<IPclPlatformWrapper>());
+            platform: Mock.Of<IRuntimePlatform>());
 
         public static readonly TestServices MockStyler = new TestServices(
             styler: Mock.Of<IStyler>());
@@ -56,8 +59,10 @@ namespace Avalonia.UnitTests
             IInputManager inputManager = null,
             Func<IKeyboardDevice> keyboardDevice = null,
             ILayoutManager layoutManager = null,
-            IPclPlatformWrapper platformWrapper = null,
+            IRuntimePlatform platform = null,
+            IRenderer renderer = null,
             IPlatformRenderInterface renderInterface = null,
+            IRenderLoop renderLoop = null,
             IStandardCursorFactory standardCursorFactory = null,
             IStyler styler = null,
             Func<Styles> theme = null,
@@ -70,8 +75,10 @@ namespace Avalonia.UnitTests
             InputManager = inputManager;
             KeyboardDevice = keyboardDevice;
             LayoutManager = layoutManager;
-            PlatformWrapper = platformWrapper;
+            Platform = platform;
+            Renderer = renderer;
             RenderInterface = renderInterface;
+            RenderLoop = renderLoop;
             StandardCursorFactory = standardCursorFactory;
             Styler = styler;
             Theme = theme;
@@ -85,8 +92,10 @@ namespace Avalonia.UnitTests
         public IFocusManager FocusManager { get; }
         public Func<IKeyboardDevice> KeyboardDevice { get; }
         public ILayoutManager LayoutManager { get; }
-        public IPclPlatformWrapper PlatformWrapper { get; }
+        public IRuntimePlatform Platform { get; }
+        public IRenderer Renderer { get; }
         public IPlatformRenderInterface RenderInterface { get; }
+        public IRenderLoop RenderLoop { get; }
         public IStandardCursorFactory StandardCursorFactory { get; }
         public IStyler Styler { get; }
         public Func<Styles> Theme { get; }
@@ -100,8 +109,10 @@ namespace Avalonia.UnitTests
             IInputManager inputManager = null,
             Func<IKeyboardDevice> keyboardDevice = null,
             ILayoutManager layoutManager = null,
-            IPclPlatformWrapper platformWrapper = null,
+            IRuntimePlatform platform = null,
+            IRenderer renderer = null,
             IPlatformRenderInterface renderInterface = null,
+            IRenderLoop renderLoop = null,
             IStandardCursorFactory standardCursorFactory = null,
             IStyler styler = null,
             Func<Styles> theme = null,
@@ -115,8 +126,10 @@ namespace Avalonia.UnitTests
                 inputManager: inputManager ?? InputManager,
                 keyboardDevice: keyboardDevice ?? KeyboardDevice,
                 layoutManager: layoutManager ?? LayoutManager,
-                platformWrapper: platformWrapper ?? PlatformWrapper,
+                platform: platform ?? Platform,
+                renderer: renderer ?? Renderer,
                 renderInterface: renderInterface ?? RenderInterface,
+                renderLoop: renderLoop ?? RenderLoop,
                 standardCursorFactory: standardCursorFactory ?? StandardCursorFactory,
                 styler: styler ?? Styler,
                 theme: theme ?? Theme,

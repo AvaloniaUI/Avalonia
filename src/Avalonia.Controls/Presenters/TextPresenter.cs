@@ -106,6 +106,11 @@ namespace Avalonia.Controls.Presenters
             {
                 var start = Math.Min(selectionStart, selectionEnd);
                 var length = Math.Max(selectionStart, selectionEnd) - start;
+
+                // issue #600: set constaint before any FormattedText manipulation
+                //             see base.Render(...) implementation
+                FormattedText.Constraint = Bounds.Size;
+
                 var rects = FormattedText.HitTestTextRange(start, length);
 
                 if (_highlightBrush == null)
@@ -214,7 +219,7 @@ namespace Avalonia.Controls.Presenters
         {
             var text = Text;
 
-            if (!string.IsNullOrWhiteSpace(text))
+            if (!string.IsNullOrEmpty(text))
             {
                 return base.MeasureOverride(availableSize);
             }

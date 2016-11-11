@@ -28,7 +28,9 @@ namespace Avalonia.Skia
             //Paint.TextEncoding = SKTextEncoding.Utf8;
             _paint.TextEncoding = SKTextEncoding.Utf16;
             _paint.IsStroke = false;
-            _paint.IsAntialias = true;
+            _paint.IsAntialias = true;            
+            _paint.LcdRenderText = true;            
+            _paint.SubpixelText = true;
             _paint.Typeface = typeface;
             _paint.TextSize = (float)fontSize;
             _paint.TextAlign = textAlignment.ToSKTextAlign();
@@ -520,7 +522,7 @@ namespace Avalonia.Skia
             _lineHeight = mDescent - mAscent;
 
             // Rendering is relative to baseline
-            _lineOffset = -metrics.Top;
+            _lineOffset = (-metrics.Ascent);
 
             string subString;
 
@@ -583,12 +585,12 @@ namespace Avalonia.Skia
             if (_skiaLines.Count == 0)
             {
                 _lines.Add(new FormattedTextLine(0, _lineHeight));
-                _size = new Size(0, _lineHeight + lastLineDescent);
+                _size = new Size(0, _lineHeight);
             }
             else
             {
                 var lastLine = _skiaLines[_skiaLines.Count - 1];
-                _size = new Size(maxX, lastLine.Top + lastLine.Height + lastLineDescent);
+                _size = new Size(maxX, lastLine.Top + lastLine.Height);
             }
         }
 

@@ -27,7 +27,7 @@ namespace Avalonia.Styling.UnitTests
             var control = new TextBlock();
             var subject = new BehaviorSubject<object>("foo");
             var descriptor = new InstancedBinding(subject);
-            var binding = Mock.Of<IBinding>(x => x.Initiate(control, TextBlock.TextProperty, null) == descriptor);
+            var binding = Mock.Of<IBinding>(x => x.Initiate(control, TextBlock.TextProperty, null, false) == descriptor);
             var style = Mock.Of<IStyle>();
             var setter = new Setter(TextBlock.TextProperty, binding);
 

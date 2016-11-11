@@ -12,6 +12,7 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
+using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.UnitTests;
 using Xunit;
@@ -49,7 +50,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             target.Measure(new Size(100, 100));
             target.Arrange(new Rect(0, 0, 100, 100));
 
-            Assert.Equal(new Size(0, 10), ((ILogicalScrollable)target).Viewport);
+            Assert.Equal(new Size(100, 10), ((ILogicalScrollable)target).Viewport);
         }
 
         [Fact]
@@ -61,7 +62,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             target.Measure(new Size(100, 100));
             target.Arrange(new Rect(0, 0, 100, 100));
 
-            Assert.Equal(new Size(10, 0), ((ILogicalScrollable)target).Viewport);
+            Assert.Equal(new Size(10, 100), ((ILogicalScrollable)target).Viewport);
         }
 
         [Fact]
@@ -146,7 +147,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             target.Measure(new Size(100, 95));
             target.Arrange(new Rect(0, 0, 100, 95));
 
-            Assert.Equal(new Size(0, 9), ((ILogicalScrollable)target).Viewport);
+            Assert.Equal(new Size(100, 9), ((ILogicalScrollable)target).Viewport);
         }
 
         [Fact]
@@ -658,6 +659,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             Assert.Equal(expected, actual);
         }
 
+        [Fact]
         public void Should_Add_Containers_For_Items_After_Clear()
         {
             var target = CreateTarget(itemCount: 10);
@@ -770,6 +772,19 @@ namespace Avalonia.Controls.UnitTests.Presenters
                     Assert.Equal(new Vector(0, 10), ((ILogicalScrollable)target).Offset);
                     Assert.Same(target.Panel.Children[0], result);
                 }
+            }
+
+            [Fact]
+            public void Should_Return_Horizontal_Extent_And_Viewport()
+            {
+                var target = CreateTarget();
+
+                target.ApplyTemplate();
+                target.Measure(new Size(5, 100));
+                target.Arrange(new Rect(0, 0, 5, 100));
+
+                Assert.Equal(new Size(10, 20), ((ILogicalScrollable)target).Extent);
+                Assert.Equal(new Size(5, 10), ((ILogicalScrollable)target).Viewport);
             }
         }
 
@@ -976,7 +991,18 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
         private class TestScroller : ScrollContentPresenter, IRenderRoot
         {
-            public IRenderQueueManager RenderQueueManager { get; }
+            public IRenderer Renderer { get; }
+            public Size ClientSize { get; }
+
+            public IRenderTarget CreateRenderTarget()
+            {
+                throw new NotImplementedException();
+            }
+
+            public void Invalidate(Rect rect)
+            {
+                throw new NotImplementedException();
+            }
 
             public Point PointToClient(Point point)
             {

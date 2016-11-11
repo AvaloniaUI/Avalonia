@@ -32,6 +32,8 @@ namespace Avalonia.Markup.UnitTests.Data
             var data = new { Foo = "foo" };
             var target = new ExpressionObserver(data, "Foo");
 
+            target.Subscribe(_ => { });
+
             Assert.Equal(typeof(string), target.ResultType);
         }
 
@@ -56,6 +58,46 @@ namespace Avalonia.Markup.UnitTests.Data
         }
 
         [Fact]
+        public async void Should_Return_UnsetValue_For_Root_Null()
+        {
+            var data = new Class3 { Foo = "foo" };
+            var target = new ExpressionObserver(default(object), "Foo");
+            var result = await target.Take(1);
+
+            Assert.Equal(AvaloniaProperty.UnsetValue, result);
+        }
+
+        [Fact]
+        public async void Should_Return_UnsetValue_For_Root_UnsetValue()
+        {
+            var data = new Class3 { Foo = "foo" };
+            var target = new ExpressionObserver(AvaloniaProperty.UnsetValue, "Foo");
+            var result = await target.Take(1);
+
+            Assert.Equal(AvaloniaProperty.UnsetValue, result);
+        }
+
+        [Fact]
+        public async void Should_Return_UnsetValue_For_Observable_Root_Null()
+        {
+            var data = new Class3 { Foo = "foo" };
+            var target = new ExpressionObserver(Observable.Return(default(object)), "Foo");
+            var result = await target.Take(1);
+
+            Assert.Equal(AvaloniaProperty.UnsetValue, result);
+        }
+
+        [Fact]
+        public async void Should_Return_UnsetValue_For_Observable_Root_UnsetValue()
+        {
+            var data = new Class3 { Foo = "foo" };
+            var target = new ExpressionObserver(Observable.Return(AvaloniaProperty.UnsetValue), "Foo");
+            var result = await target.Take(1);
+
+            Assert.Equal(AvaloniaProperty.UnsetValue, result);
+        }
+
+        [Fact]
         public async void Should_Get_Simple_Property_Chain()
         {
             var data = new { Foo = new { Bar = new { Baz = "baz" } }  };
@@ -71,21 +113,44 @@ namespace Avalonia.Markup.UnitTests.Data
             var data = new { Foo = new { Bar = new { Baz = "baz" } } };
             var target = new ExpressionObserver(data, "Foo.Bar.Baz");
 
+            target.Subscribe(_ => { });
+
             Assert.Equal(typeof(string), target.ResultType);
         }
 
         [Fact]
-        public async void Should_Return_BindingError_For_Broken_Chain()
+        public async void Should_Return_BindingNotification_Error_For_Broken_Chain()
         {
             var data = new { Foo = new { Bar = 1 } };
             var target = new ExpressionObserver(data, "Foo.Bar.Baz");
             var result = await target.Take(1);
 
-            Assert.IsType<BindingError>(result);
+            Assert.IsType<BindingNotification>(result);
 
-            var error = result as BindingError;
-            Assert.IsType<MissingMemberException>(error.Exception);
-            Assert.Equal("Could not find CLR property 'Baz' on '1'", error.Exception.Message);
+            Assert.Equal(
+                new BindingNotification(
+                    new MissingMemberException("Could not find CLR property 'Baz' on '1'"), BindingErrorType.Error),
+                result);
+        }
+
+        [Fact]
+        public void Should_Return_BindingNotification_Error_For_Chain_With_Null_Value()
+        {
+            var data = new { Foo = default(object) };
+            var target = new ExpressionObserver(data, "Foo.Bar.Baz");
+            var result = new List<object>();
+
+            target.Subscribe(x => result.Add(x));
+
+            Assert.Equal(
+                new[]
+                {
+                    new BindingNotification(
+                        new MarkupBindingChainException("Null value", "Foo.Bar.Baz", "Foo"),
+                        BindingErrorType.Error,
+                        AvaloniaProperty.UnsetValue),
+                },
+                result);
         }
 
         [Fact]
@@ -111,7 +176,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
             sub.Dispose();
 
-            Assert.Equal(0, data.SubscriptionCount);
+            Assert.Equal(0, data.PropertyChangedSubscriptionCount);
         }
 
         [Fact]
@@ -139,7 +204,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
             sub.Dispose();
 
-            Assert.Equal(0, data.SubscriptionCount);
+            Assert.Equal(0, data.PropertyChangedSubscriptionCount);
         }
 
         [Fact]
@@ -151,13 +216,14 @@ namespace Avalonia.Markup.UnitTests.Data
 
             var sub = target.Subscribe(x => result.Add(x));
             ((Class2)data.Next).Bar = "baz";
+            ((Class2)data.Next).Bar = null;
 
-            Assert.Equal(new[] { "bar", "baz" }, result);
+            Assert.Equal(new[] { "bar", "baz", null }, result);
 
             sub.Dispose();
 
-            Assert.Equal(0, data.SubscriptionCount);
-            Assert.Equal(0, data.Next.SubscriptionCount);
+            Assert.Equal(0, data.PropertyChangedSubscriptionCount);
+            Assert.Equal(0, data.Next.PropertyChangedSubscriptionCount);
         }
 
         [Fact]
@@ -170,39 +236,60 @@ namespace Avalonia.Markup.UnitTests.Data
             var sub = target.Subscribe(x => result.Add(x));
             var old = data.Next;
             data.Next = new Class2 { Bar = "baz" };
+            data.Next = new Class2 { Bar = null };
 
-            Assert.Equal(new[] { "bar", "baz" }, result);
+            Assert.Equal(new[] { "bar", "baz", null }, result);
 
             sub.Dispose();
 
-            Assert.Equal(0, data.SubscriptionCount);
-            Assert.Equal(0, data.Next.SubscriptionCount);
-            Assert.Equal(0, old.SubscriptionCount);
+            Assert.Equal(0, data.PropertyChangedSubscriptionCount);
+            Assert.Equal(0, data.Next.PropertyChangedSubscriptionCount);
+            Assert.Equal(0, old.PropertyChangedSubscriptionCount);
         }
 
         [Fact]
         public void Should_Track_Property_Chain_Breaking_With_Null_Then_Mending()
         {
-            var data = new Class1 { Next = new Class2 { Bar = "bar" } };
-            var target = new ExpressionObserver(data, "Next.Bar");
+            var data = new Class1
+            {
+                Next = new Class2
+                {
+                    Next = new Class2
+                    {
+                        Bar = "bar"
+                    }
+                }
+            };
+
+            var target = new ExpressionObserver(data, "Next.Next.Bar");
             var result = new List<object>();
 
             var sub = target.Subscribe(x => result.Add(x));
             var old = data.Next;
-            data.Next = null;
             data.Next = new Class2 { Bar = "baz" };
+            data.Next = old;
 
-            Assert.Equal(new[] { "bar", AvaloniaProperty.UnsetValue, "baz" }, result);
+            Assert.Equal(
+                new object[] 
+                {
+                    "bar",
+                    new BindingNotification(
+                        new MarkupBindingChainException("Null value", "Next.Next.Bar", "Next.Next"),
+                        BindingErrorType.Error,
+                        AvaloniaProperty.UnsetValue),
+                    "bar"
+                }, 
+                result);
 
             sub.Dispose();
 
-            Assert.Equal(0, data.SubscriptionCount);
-            Assert.Equal(0, data.Next.SubscriptionCount);
-            Assert.Equal(0, old.SubscriptionCount);
+            Assert.Equal(0, data.PropertyChangedSubscriptionCount);
+            Assert.Equal(0, data.Next.PropertyChangedSubscriptionCount);
+            Assert.Equal(0, old.PropertyChangedSubscriptionCount);
         }
 
         [Fact]
-        public void Should_Track_Property_Chain_Breaking_With_Object_Then_Mending()
+        public void Should_Track_Property_Chain_Breaking_With_Missing_Member_Then_Mending()
         {
             var data = new Class1 { Next = new Class2 { Bar = "bar" } };
             var target = new ExpressionObserver(data, "Next.Bar");
@@ -214,17 +301,23 @@ namespace Avalonia.Markup.UnitTests.Data
             data.Next = breaking;
             data.Next = new Class2 { Bar = "baz" };
 
-            Assert.Equal(3, result.Count);
-            Assert.Equal("bar", result[0]);
-            Assert.IsType<BindingError>(result[1]);
-            Assert.Equal("baz", result[2]);
+            Assert.Equal(
+                new object[]
+                {
+                    "bar",
+                    new BindingNotification(
+                        new MissingMemberException("Could not find CLR property 'Bar' on 'Avalonia.Markup.UnitTests.Data.ExpressionObserverTests_Property+WithoutBar'"),
+                        BindingErrorType.Error),
+                    "baz",
+                },
+                result);
 
             sub.Dispose();
 
-            Assert.Equal(0, data.SubscriptionCount);
-            Assert.Equal(0, data.Next.SubscriptionCount);
-            Assert.Equal(0, breaking.SubscriptionCount);
-            Assert.Equal(0, old.SubscriptionCount);
+            Assert.Equal(0, data.PropertyChangedSubscriptionCount);
+            Assert.Equal(0, data.Next.PropertyChangedSubscriptionCount);
+            Assert.Equal(0, breaking.PropertyChangedSubscriptionCount);
+            Assert.Equal(0, old.PropertyChangedSubscriptionCount);
         }
 
         [Fact]
@@ -258,8 +351,46 @@ namespace Avalonia.Markup.UnitTests.Data
                 scheduler.Start();
             }
 
-            Assert.Equal(new[] { AvaloniaProperty.UnsetValue, "foo", "bar" }, result);
+            Assert.Equal(new[] { "foo", "bar" }, result);
             Assert.All(source.Subscriptions, x => Assert.NotEqual(Subscription.Infinite, x.Unsubscribe));
+        }
+
+        [Fact]
+        public void Subscribing_Multiple_Times_Should_Return_Values_To_All()
+        {
+            var data = new Class1 { Foo = "foo" };
+            var target = new ExpressionObserver(data, "Foo");
+            var result1 = new List<object>();
+            var result2 = new List<object>();
+            var result3 = new List<object>();
+
+            target.Subscribe(x => result1.Add(x));
+            target.Subscribe(x => result2.Add(x));
+
+            data.Foo = "bar";
+
+            target.Subscribe(x => result3.Add(x));
+
+            Assert.Equal(new[] { "foo", "bar" }, result1);
+            Assert.Equal(new[] { "foo", "bar" }, result2);
+            Assert.Equal(new[] { "bar" }, result3);
+        }
+
+        [Fact]
+        public void Subscribing_Multiple_Times_Should_Only_Add_PropertyChanged_Handlers_Once()
+        {
+            var data = new Class1 { Foo = "foo" };
+            var target = new ExpressionObserver(data, "Foo");
+
+            var sub1 = target.Subscribe(x => { });
+            var sub2 = target.Subscribe(x => { });
+
+            Assert.Equal(1, data.PropertyChangedSubscriptionCount);
+
+            sub1.Dispose();
+            sub2.Dispose();
+
+            Assert.Equal(0, data.PropertyChangedSubscriptionCount);
         }
 
         [Fact]
@@ -268,7 +399,11 @@ namespace Avalonia.Markup.UnitTests.Data
             var data = new Class1 { Foo = "foo" };
             var target = new ExpressionObserver(data, "Foo");
 
-            Assert.True(target.SetValue("bar"));
+            using (target.Subscribe(_ => { }))
+            {
+                Assert.True(target.SetValue("bar"));
+            }
+
             Assert.Equal("bar", data.Foo);
         }
 
@@ -278,7 +413,11 @@ namespace Avalonia.Markup.UnitTests.Data
             var data = new Class1 { Next = new Class2 { Bar = "bar" } };
             var target = new ExpressionObserver(data, "Next.Bar");
 
-            Assert.True(target.SetValue("baz"));
+            using (target.Subscribe(_ => { }))
+            {
+                Assert.True(target.SetValue("baz"));
+            }
+
             Assert.Equal("baz", ((Class2)data.Next).Bar);
         }
 
@@ -288,7 +427,36 @@ namespace Avalonia.Markup.UnitTests.Data
             var data = new Class1 { Next = new WithoutBar()};
             var target = new ExpressionObserver(data, "Next.Bar");
 
-            Assert.False(target.SetValue("baz"));
+            using (target.Subscribe(_ => { }))
+            {
+                Assert.False(target.SetValue("baz"));
+            }
+        }
+
+        [Fact]
+        public void SetValue_Should_Notify_New_Value_With_Inpc()
+        {
+            var data = new Class1();
+            var target = new ExpressionObserver(data, "Foo");
+            var result = new List<object>();
+
+            target.Subscribe(x => result.Add(x));
+            target.SetValue("bar");
+
+            Assert.Equal(new[] { null, "bar" }, result);
+        }
+
+        [Fact]
+        public void SetValue_Should_Notify_New_Value_Without_Inpc()
+        {
+            var data = new Class1();
+            var target = new ExpressionObserver(data, "Bar");
+            var result = new List<object>();
+
+            target.Subscribe(x => result.Add(x));
+            target.SetValue("bar");
+
+            Assert.Equal(new[] { null, "bar" }, result);
         }
 
         [Fact]
@@ -297,16 +465,10 @@ namespace Avalonia.Markup.UnitTests.Data
             var data = new Class1();
             var target = new ExpressionObserver(data, "Next.Bar");
 
-            Assert.False(target.SetValue("baz"));
-        }
-
-        [Fact]
-        public async void Should_Handle_Null_Root()
-        {
-            var target = new ExpressionObserver((object)null, "Foo");
-            var result = await target.Take(1);
-
-            Assert.Equal(AvaloniaProperty.UnsetValue, result);
+            using (target.Subscribe(_ => { }))
+            {
+                Assert.False(target.SetValue("baz"));
+            }
         }
 
         [Fact]
@@ -325,10 +487,17 @@ namespace Avalonia.Markup.UnitTests.Data
             root = null;
             update.OnNext(Unit.Default);
 
-            Assert.Equal(new[] { "foo", "bar", AvaloniaProperty.UnsetValue }, result);
+            Assert.Equal(
+                new object[] 
+                {
+                    "foo",
+                    "bar",
+                    AvaloniaProperty.UnsetValue,
+                }, 
+                result);
 
-            Assert.Equal(0, first.SubscriptionCount);
-            Assert.Equal(0, second.SubscriptionCount);
+            Assert.Equal(0, first.PropertyChangedSubscriptionCount);
+            Assert.Equal(0, second.PropertyChangedSubscriptionCount);
         }
 
         [Fact]
@@ -351,7 +520,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
         private interface INext
         {
-            int SubscriptionCount { get; }
+            int PropertyChangedSubscriptionCount { get; }
         }
 
         private class Class1 : NotifyingBase
@@ -390,6 +559,7 @@ namespace Avalonia.Markup.UnitTests.Data
         private class Class2 : NotifyingBase, INext
         {
             private string _bar;
+            private INext _next;
 
             public string Bar
             {
@@ -398,6 +568,16 @@ namespace Avalonia.Markup.UnitTests.Data
                 {
                     _bar = value;
                     RaisePropertyChanged(nameof(Bar));
+                }
+            }
+
+            public INext Next
+            {
+                get { return _next; }
+                set
+                {
+                    _next = value;
+                    RaisePropertyChanged(nameof(Next));
                 }
             }
         }

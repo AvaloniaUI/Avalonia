@@ -38,12 +38,13 @@
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>bin\Release\Avalonia.Controls.XML</DocumentationFile>
     <NoWarn>CS1591</NoWarn>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\Shared\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="AppBuilder.cs" />
+    <Compile Include="AppBuilderBase.cs" />
     <Compile Include="Application.cs" />
     <Compile Include="Classes.cs" />
     <Compile Include="ContextMenu.cs" />
@@ -56,6 +57,11 @@
     <Compile Include="HotkeyManager.cs" />
     <Compile Include="IApplicationLifecycle.cs" />
     <Compile Include="IScrollable.cs" />
+    <Compile Include="PointEventArgs.cs" />
+    <Compile Include="Embedding\EmbeddableControlRoot.cs" />
+    <Compile Include="Platform\IEmbeddableWindowImpl.cs" />
+    <Compile Include="Platform\ExportAvaloniaModuleAttribute.cs" />
+    <Compile Include="Platform\ExportWindowingSubsystemAttribute.cs" />
     <Compile Include="WindowIcon.cs" />
     <Compile Include="IPseudoClasses.cs" />
     <Compile Include="DropDownItem.cs" />
@@ -67,7 +73,6 @@
     <Compile Include="Mixins\ContentControlMixin.cs" />
     <Compile Include="Platform\IWindowIconImpl.cs" />
     <Compile Include="Platform\IPlatformIconLoader.cs" />
-    <Compile Include="Platform\ITopLevelRenderer.cs" />
     <Compile Include="Platform\IWindowingPlatform.cs" />
     <Compile Include="Platform\PlatformManager.cs" />
     <Compile Include="Presenters\IContentPresenterHost.cs" />
@@ -251,9 +256,9 @@
       <Project>{42472427-4774-4C81-8AFF-9F27B8E31721}</Project>
       <Name>Avalonia.Layout</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Avalonia.SceneGraph\Avalonia.SceneGraph.csproj">
+    <ProjectReference Include="..\Avalonia.Visuals\Avalonia.Visuals.csproj">
       <Project>{EB582467-6ABB-43A1-B052-E981BA910E3A}</Project>
-      <Name>Avalonia.SceneGraph</Name>
+      <Name>Avalonia.Visuals</Name>
     </ProjectReference>
     <ProjectReference Include="..\Avalonia.Styling\Avalonia.Styling.csproj">
       <Project>{F1BAA01A-F176-4C6A-B39D-5B40BB1B148F}</Project>

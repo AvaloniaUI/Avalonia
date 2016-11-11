@@ -108,7 +108,6 @@ namespace Avalonia.Controls
             PseudoClass(IsEnabledCoreProperty, x => !x, ":disabled");
             PseudoClass(IsFocusedProperty, ":focus");
             PseudoClass(IsPointerOverProperty, ":pointerover");
-            PseudoClass(ValidationStatusProperty, status => !status.IsValid, ":invalid");
         }
 
         /// <summary>
@@ -399,13 +398,6 @@ namespace Avalonia.Controls
         /// pseudoclasses.
         /// </summary>
         protected IPseudoClasses PseudoClasses => Classes;
-
-        /// <inheritdoc/>
-        protected override void DataValidationChanged(AvaloniaProperty property, IValidationStatus status)
-        {
-            base.DataValidationChanged(property, status);
-            ValidationStatus.UpdateValidationStatus(status);
-        }
 
         /// <summary>
         /// Sets the control's logical parent.
@@ -729,7 +721,6 @@ namespace Avalonia.Controls
 
                 _isAttachedToLogicalTree = false;
                 _styleDetach.OnNext(this);
-                this.TemplatedParent = null;
                 OnDetachedFromLogicalTree(e);
 
                 foreach (var child in LogicalChildren.OfType<Control>())

@@ -16,7 +16,7 @@ namespace Avalonia.Controls.Presenters
     /// </summary>
     internal abstract class ItemVirtualizer : IVirtualizingController, IDisposable
     {
-        private bool disposedValue;
+        private double _crossAxisOffset;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemVirtualizer"/> class.
@@ -62,7 +62,7 @@ namespace Avalonia.Controls.Presenters
         /// <summary>
         /// Gets a value indicating whether the items should be scroll horizontally or vertically.
         /// </summary>
-        public bool Vertical => VirtualizingPanel.ScrollDirection == Orientation.Vertical;
+        public bool Vertical => VirtualizingPanel?.ScrollDirection == Orientation.Vertical;
 
         /// <summary>
         /// Gets a value indicating whether logical scrolling is enabled.
@@ -87,12 +87,28 @@ namespace Avalonia.Controls.Presenters
         /// <summary>
         /// Gets the <see cref="ExtentValue"/> as a <see cref="Size"/>.
         /// </summary>
-        public Size Extent => Vertical ? new Size(0, ExtentValue) : new Size(ExtentValue, 0);
+        public Size Extent
+        {
+            get
+            {
+                return Vertical ?
+                    new Size(Owner.Panel.DesiredSize.Width, ExtentValue) :
+                    new Size(ExtentValue, Owner.Panel.DesiredSize.Height);
+            }
+        }
 
         /// <summary>
         /// Gets the <see cref="ViewportValue"/> as a <see cref="Size"/>.
         /// </summary>
-        public Size Viewport => Vertical ? new Size(0, ViewportValue) : new Size(ViewportValue, 0);
+        public Size Viewport
+        {
+            get
+            {
+                return Vertical ? 
+                    new Size(Owner.Panel.Bounds.Width, ViewportValue) :
+                    new Size(ViewportValue, Owner.Panel.Bounds.Height);
+            }
+        }
 
         /// <summary>
         /// Gets or sets the <see cref="OffsetValue"/> as a <see cref="Vector"/>.
@@ -101,12 +117,28 @@ namespace Avalonia.Controls.Presenters
         {
             get
             {
-                return Vertical ? new Vector(0, OffsetValue) : new Vector(OffsetValue, 0);
+                return Vertical ? new Vector(_crossAxisOffset, OffsetValue) : new Vector(OffsetValue, _crossAxisOffset);
             }
 
             set
             {
-                OffsetValue = Vertical ? value.Y : value.X;
+                var oldCrossAxisOffset = _crossAxisOffset;
+
+                if (Vertical)
+                {
+                    OffsetValue = value.Y;
+                    _crossAxisOffset = value.X;
+                }
+                else
+                {
+                    OffsetValue = value.X;
+                    _crossAxisOffset = value.Y;
+                }
+
+                if (_crossAxisOffset != oldCrossAxisOffset)
+                {
+                    Owner.InvalidateArrange();
+                }
             }
         }
         
@@ -143,6 +175,29 @@ namespace Avalonia.Controls.Presenters
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Carries out a measure for the related <see cref="ItemsPresenter"/>.
+        /// </summary>
+        /// <param name="availableSize">The size available to the control.</param>
+        /// <returns>The desired size for the control.</returns>
+        public virtual Size MeasureOverride(Size availableSize)
+        {
+            Owner.Panel.Measure(availableSize);
+            return Owner.Panel.DesiredSize;
+        }
+
+        /// <summary>
+        /// Carries out an arrange for the related <see cref="ItemsPresenter"/>.
+        /// </summary>
+        /// <param name="finalSize">The size available to the control.</param>
+        /// <returns>The actual size used.</returns>
+        public virtual Size ArrangeOverride(Size finalSize)
+        {
+            var origin = Vertical ? new Point(-_crossAxisOffset, 0) : new Point(0, _crossAxisOffset);
+            Owner.Panel.Arrange(new Rect(origin, finalSize));
+            return finalSize;
         }
 
         /// <inheritdoc/>

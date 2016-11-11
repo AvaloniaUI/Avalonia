@@ -7,14 +7,15 @@ using Avalonia.Direct2D1.Media;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Controls;
+using Avalonia.Rendering;
 
 namespace Avalonia
 {
     public static class Direct2DApplicationExtensions
     {
-        public static AppBuilder UseDirect2D1(this AppBuilder builder)
+        public static T UseDirect2D1<T>(this T builder) where T : AppBuilderBase<T>, new()
         {
-            builder.RenderingSubsystem = Avalonia.Direct2D1.Direct2D1Platform.Initialize;
+            builder.UseRenderingSubsystem(Direct2D1.Direct2D1Platform.Initialize, "Direct2D1");
             return builder;
         }
     }
@@ -22,7 +23,7 @@ namespace Avalonia
 
 namespace Avalonia.Direct2D1
 {
-    public class Direct2D1Platform : IPlatformRenderInterface
+    public class Direct2D1Platform : IPlatformRenderInterface, IRendererFactory
     {
         private static readonly Direct2D1Platform s_instance = new Direct2D1Platform();
 
@@ -38,6 +39,7 @@ namespace Avalonia.Direct2D1
 
         public static void Initialize() => AvaloniaLocator.CurrentMutable
             .Bind<IPlatformRenderInterface>().ToConstant(s_instance)
+            .Bind<IRendererFactory>().ToConstant(s_instance)
             .BindToSelf(s_d2D1Factory)
             .BindToSelf(s_dwfactory)
             .BindToSelf(s_imagingFactory);
@@ -59,7 +61,12 @@ namespace Avalonia.Direct2D1
             return new FormattedTextImpl(text, fontFamily, fontSize, fontStyle, textAlignment, fontWeight, wrapping);
         }
 
-        public IRenderTarget CreateRenderer(IPlatformHandle handle)
+        public IRenderer CreateRenderer(IRenderRoot root, IRenderLoop renderLoop)
+        {
+            return new Renderer(root, renderLoop);
+        }
+
+        public IRenderTarget CreateRenderTarget(IPlatformHandle handle)
         {
             if (handle.HandleDescriptor == "HWND")
             {

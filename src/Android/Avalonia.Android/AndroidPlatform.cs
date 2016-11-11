@@ -1,17 +1,27 @@
-using Avalonia.Android.CanvasRendering;
+using System;
+using System.IO;
 using Avalonia.Android.Platform;
 using Avalonia.Android.Platform.Input;
-using Avalonia.Android.Platform.Specific;
+using Avalonia.Android.Platform.SkiaPlatform;
+using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Platform;
 using Avalonia.Shared.PlatformSupport;
 using Avalonia.Skia;
-using System;
-using System.Collections.Generic;
-using Avalonia.Android.Platform.SkiaPlatform;
-using System.IO;
+
+namespace Avalonia
+{
+    public static class AndroidApplicationExtensions
+    {
+        public static T UseAndroid<T>(this T builder) where T : AppBuilderBase<T>, new()
+        {
+            builder.UseWindowingSubsystem(Android.AndroidPlatform.Initialize, "Android");
+            return builder;
+        }
+    }
+}
 
 namespace Avalonia.Android
 {
@@ -25,31 +35,29 @@ namespace Avalonia.Android
 
         private readonly double _scalingFactor = 1;
 
-        AndroidPlatform()
+        public AndroidPlatform()
+        {
+            _scalingFactor = global::Android.App.Application.Context.Resources.DisplayMetrics.ScaledDensity;
+        }
+
+        public static void Initialize()
         {
             AvaloniaLocator.CurrentMutable
                 .Bind<IClipboard>().ToTransient<ClipboardImpl>()
                 .Bind<IStandardCursorFactory>().ToTransient<CursorFactory>()
                 .Bind<IKeyboardDevice>().ToSingleton<AndroidKeyboardDevice>()
                 .Bind<IMouseDevice>().ToSingleton<AndroidMouseDevice>()
-                .Bind<IPlatformSettings>().ToConstant(this)
+                .Bind<IPlatformSettings>().ToConstant(Instance)
                 .Bind<IPlatformThreadingInterface>().ToConstant(new AndroidThreadingInterface())
                 .Bind<ISystemDialogImpl>().ToTransient<SystemDialogImpl>()
-                .Bind<ITopLevelRenderer>().ToTransient<AndroidTopLevelRenderer>()
-                .Bind<IWindowingPlatform>().ToConstant(this);
+                .Bind<IWindowingPlatform>().ToConstant(Instance);
 
             SkiaPlatform.Initialize();
-
-            _scalingFactor = global::Android.App.Application.Context.Resources.DisplayMetrics.ScaledDensity;
-
-            
-            //we have custom Assetloader so no need to overwrite it
-            
         }
 
         public void Init(Type applicationType)
         {
-            SharedPlatform.Register(applicationType.Assembly);
+            StandardRuntimePlatformServices.Register(applicationType.Assembly);
         }
 
         public IWindowImpl CreateWindow()
@@ -57,7 +65,7 @@ namespace Avalonia.Android
             return new WindowImpl();
         }
 
-        public IWindowImpl CreateEmbeddableWindow()
+        public IEmbeddableWindowImpl CreateEmbeddableWindow()
         {
             throw new NotImplementedException();
         }
