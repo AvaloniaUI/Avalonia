@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.VisualTree;
@@ -18,45 +19,15 @@ namespace Avalonia.Controls
     /// </remarks>
     public class GridSplitter : Thumb
     {
-        /// <summary>
-        /// Defines the <see cref="Orientation"/> property.
-        /// </summary>
-        public static readonly StyledProperty<Orientation> OrientationProperty =
-            AvaloniaProperty.Register<GridSplitter, Orientation>(nameof(Orientation));
+        private List<DefinitionBase> _definitions;
 
         protected Grid _grid;
 
-        private DefinitionBase _prevDefinition;
-
         private DefinitionBase _nextDefinition;
 
-        private List<DefinitionBase> _definitions;
+        private Orientation _orientation;
 
-        /// <summary>
-        /// Gets or sets the orientation of the GridsSlitter.
-        /// </summary>
-        /// <remarks>
-        /// if null, it's inferred from column/row definition (should be auto).
-        /// </remarks>
-        public Orientation Orientation {
-            get
-            {
-                return GetValue(OrientationProperty);
-            }
-            set
-            {
-                SetValue(OrientationProperty, value);
-            }
-        }
-
-        /// <summary>
-        /// Initializes static members of the <see cref="GridSplitter"/> class. 
-        /// </summary>
-        static GridSplitter()
-        {
-            PseudoClass(OrientationProperty, o => o == Avalonia.Controls.Orientation.Vertical, ":vertical");
-            PseudoClass(OrientationProperty, o => o == Avalonia.Controls.Orientation.Horizontal, ":horizontal");
-        }
+        private DefinitionBase _prevDefinition;
 
         private void GetDeltaConstraints(out double min, out double max)
         {
@@ -74,7 +45,7 @@ namespace Avalonia.Controls
 
         protected override void OnDragDelta(VectorEventArgs e)
         {
-            var delta = Orientation == Orientation.Vertical ? e.Vector.X : e.Vector.Y;
+            var delta = _orientation == Orientation.Vertical ? e.Vector.X : e.Vector.Y;
             double max;
             double min;
             GetDeltaConstraints(out min, out max);
@@ -137,24 +108,58 @@ namespace Avalonia.Controls
         {
             base.OnAttachedToVisualTree(e);
             _grid = this.GetVisualParent<Grid>();
-            
-            if (Orientation == Orientation.Vertical)
+
+            _orientation = DetectOrientation();
+
+            int pos;
+            if (_orientation == Orientation.Vertical)
             {
                 Cursor = new Cursor(StandardCursorType.SizeWestEast);
-                var col = GetValue(Grid.ColumnProperty);
+                pos = GetValue(Grid.ColumnProperty);
                 _definitions = _grid.ColumnDefinitions.Cast<DefinitionBase>().ToList();
-                _prevDefinition = _definitions[col - 1];
-                _nextDefinition = _definitions[col + 1];
+                PseudoClasses.Add(":vertical");
             }
             else
             {
                 Cursor = new Cursor(StandardCursorType.SizeNorthSouth);
-                var row = GetValue(Grid.RowProperty);
+                pos = GetValue(Grid.RowProperty);
                 _definitions = _grid.RowDefinitions.Cast<DefinitionBase>().ToList();
-                _prevDefinition = _definitions[row - 1];
-                _nextDefinition = _definitions[row + 1];
+                PseudoClasses.Add(":horizontal");
             }
+            _prevDefinition = _definitions[pos - 1];
+            _nextDefinition = _definitions[pos + 1];
+        }
+
+        private Orientation DetectOrientation()
+        {
+            if(!_grid.ColumnDefinitions.Any())
+                return Orientation.Horizontal;
+            if (!_grid.RowDefinitions.Any())
+                return Orientation.Vertical;
+
+            var col = GetValue(Grid.ColumnProperty);
+            var row = GetValue(Grid.RowProperty);
+            var width = _grid.ColumnDefinitions[col].Width;
+            var height = _grid.RowDefinitions[row].Height;
+            if (!width.IsAuto && !height.IsAuto)
+            {
+                throw new InvalidOperationException("Whether RowDefenition or ColumnDefenition matched with the GridSplitter should have Auto size");
+            }
+            if (width.IsAuto && !height.IsAuto)
+            {
+                return Orientation.Vertical;
+            }
+            if (!width.IsAuto && height.IsAuto)
+            {
+                return Orientation.Horizontal;
+            }
+            if (_grid.Children.OfType<Control>() // Decision based on other controls in the same column
+                .Where(c => Grid.GetColumn(c) == col)
+                .Any(c => c.GetType() != typeof(GridSplitter)))
+            {
+                return Orientation.Horizontal;
+            }
+            return Orientation.Vertical;
         }
     }
 }
-

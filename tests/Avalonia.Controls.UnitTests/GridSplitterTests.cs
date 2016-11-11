@@ -19,7 +19,6 @@ namespace Avalonia.Controls.UnitTests
             var control1 = new Border { [Grid.ColumnProperty] = 0 };
             var splitter = new GridSplitter
             {
-                Orientation = Orientation.Vertical,
                 [Grid.ColumnProperty] = 1,
             };
             var control2 = new Border { [Grid.ColumnProperty] = 2 };
@@ -41,7 +40,6 @@ namespace Avalonia.Controls.UnitTests
             };
 
             var root = new TestRoot { Child = grid };
-            Assert.Equal(splitter.Orientation, Orientation.Vertical);
 
             root.Measure(new Size(200, 100));
             root.Arrange(new Rect(0, 0, 200, 100));
@@ -71,7 +69,6 @@ namespace Avalonia.Controls.UnitTests
             var control1 = new Border { [Grid.RowProperty] = 0 };
             var splitter = new GridSplitter
             {
-                Orientation = Orientation.Horizontal,
                 [Grid.RowProperty] = 1,
             };
             var control2 = new Border { [Grid.RowProperty] = 2 };
@@ -93,7 +90,6 @@ namespace Avalonia.Controls.UnitTests
             };
 
             var root = new TestRoot { Child = grid };
-            Assert.Equal(splitter.Orientation, Orientation.Horizontal);
             root.Measure(new Size(100, 200));
             root.Arrange(new Rect(0, 0, 100, 200));
 
