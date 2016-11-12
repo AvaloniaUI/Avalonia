@@ -35,13 +35,7 @@ namespace Avalonia.Controls.Generators
         }
 
         /// <inheritdoc/>
-        public override Type ContainerType
-        {
-            get
-            {
-                return typeof(T);
-            }
-        }
+        public override Type ContainerType => typeof(T);
 
         /// <summary>
         /// Gets the container's Content property.
