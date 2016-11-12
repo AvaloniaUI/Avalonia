@@ -229,8 +229,6 @@ namespace Avalonia.Controls
         /// <param name="e">The details of the containers.</param>
         protected virtual void OnContainersMaterialized(ItemContainerEventArgs e)
         {
-            var toAdd = new List<ILogical>();
-
             foreach (var container in e.Containers)
             {
                 // If the item is its own container, then it will be added to the logical tree when
@@ -244,7 +242,8 @@ namespace Avalonia.Controls
                         if (containerControl != null && containerControl is ILogical)
                         {
                             containerControl.UpdateChild();
-                            toAdd.Add(containerControl.Child as ILogical);
+                            LogicalChildren.Add(containerControl.Child as ILogical);
+                            containerControl.SetValue(TemplatedParentProperty, null);
                         }
                         else
                         {
@@ -253,12 +252,10 @@ namespace Avalonia.Controls
                     }
                     else
                     {
-                        toAdd.Add(container.ContainerControl);
+                        LogicalChildren.Add(container.ContainerControl);
                     }
                 }
             }
-
-            LogicalChildren.AddRange(toAdd);
         }
 
         /// <summary>
