@@ -239,7 +239,7 @@ namespace Avalonia.Controls
                     {
                         var containerControl = container.ContainerControl as ContentPresenter;
 
-                        if (containerControl != null && containerControl.Child is ILogical)
+                        if (containerControl != null && containerControl.Child != null && containerControl.Child is ILogical)
                         {
                             ((ISetLogicalParent)containerControl).SetParent(this);
                             containerControl.UpdateChild();
@@ -278,7 +278,7 @@ namespace Avalonia.Controls
                     {
                         var containerControl = container.ContainerControl as ContentPresenter;
 
-                        if (containerControl != null && containerControl.Child is ILogical)
+                        if (containerControl != null && containerControl.Child != null && containerControl.Child is ILogical)
                         {
                             toRemove.Add(containerControl.Child as ILogical);
                         }
