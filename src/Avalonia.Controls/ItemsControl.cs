@@ -239,8 +239,17 @@ namespace Avalonia.Controls
                 {
                     if (ItemContainerGenerator.ContainerType == null)
                     {
-                        (container.ContainerControl as ContentPresenter).UpdateChild();
-                        toAdd.Add((container.ContainerControl as ContentPresenter).Child as ILogical);
+                        var containerControl = container.ContainerControl as ContentPresenter;
+
+                        if(containerControl != null && containerControl is ILogical)
+                        {
+                            containerControl.UpdateChild();
+                            toAdd.Add(containerControl.Child as ILogical);
+                        }
+                        else
+                        {
+                            // TODO ? Throw exception or something else?
+                        }
                     }
                     else
                     {
@@ -269,7 +278,16 @@ namespace Avalonia.Controls
                 {
                     if (ItemContainerGenerator.ContainerType == null)
                     {
-                        toRemove.Add((container.ContainerControl as ContentPresenter).Child);
+                        var containerControl = container.ContainerControl as ContentPresenter;
+
+                        if(containerControl != null && containerControl.Child is ILogical)
+                        {
+                            toRemove.Add(containerControl.Child as ILogical);
+                        }     
+                        else
+                        {
+                            // TODO throw exception ??
+                        }                   
                     }
                     else
                     {
