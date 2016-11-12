@@ -241,7 +241,7 @@ namespace Avalonia.Controls
                     {
                         var containerControl = container.ContainerControl as ContentPresenter;
 
-                        if(containerControl != null && containerControl is ILogical)
+                        if (containerControl != null && containerControl is ILogical)
                         {
                             containerControl.UpdateChild();
                             toAdd.Add(containerControl.Child as ILogical);
@@ -280,14 +280,14 @@ namespace Avalonia.Controls
                     {
                         var containerControl = container.ContainerControl as ContentPresenter;
 
-                        if(containerControl != null && containerControl.Child is ILogical)
+                        if (containerControl != null && containerControl.Child is ILogical)
                         {
                             toRemove.Add(containerControl.Child as ILogical);
-                        }     
+                        }
                         else
                         {
                             // TODO throw exception ??
-                        }                   
+                        }
                     }
                     else
                     {
