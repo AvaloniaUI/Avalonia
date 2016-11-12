@@ -232,7 +232,7 @@ namespace Avalonia.Controls
             var toAdd = new List<ILogical>();
 
             foreach (var container in e.Containers)
-            {                
+            {
                 // If the item is its own container, then it will be added to the logical tree when
                 // it was added to the Items collection.
                 if (container.ContainerControl != null && container.ContainerControl != container.Item)
