@@ -242,14 +242,14 @@ namespace Avalonia.Controls
                         if (containerControl != null)
                         {
                             ((ISetLogicalParent)containerControl).SetParent(this);
+                            containerControl.SetValue(TemplatedParentProperty, null);
+
                             containerControl.UpdateChild();
 
                             if (containerControl.Child is ILogical)
                             {
                                 LogicalChildren.Add(containerControl.Child as ILogical);
                             }
-
-                            containerControl.SetValue(TemplatedParentProperty, null);
                         }
                         else
                         {
@@ -286,6 +286,7 @@ namespace Avalonia.Controls
                         if (containerControl != null && containerControl.Child is ILogical)
                         {
                             toRemove.Add(containerControl.Child as ILogical);
+                            ((ISetLogicalParent)containerControl).SetParent(null);
                         }
                         else
                         {
