@@ -241,6 +241,7 @@ namespace Avalonia.Controls
 
                         if (containerControl != null && containerControl is ILogical)
                         {
+                            ((ISetLogicalParent)containerControl).SetParent(this);
                             containerControl.UpdateChild();
                             LogicalChildren.Add(containerControl.Child as ILogical);
                             containerControl.SetValue(TemplatedParentProperty, null);
