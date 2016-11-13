@@ -107,6 +107,12 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         public void SetSystemDecorations(bool enabled)
         {
         }
+
+        public void SetIgnoreTaskBarWhenMaximized(bool enable)
+        {
+            //Not supported
+        }
+
         public void Invalidate(Rect rect)
         {
             if (Holder?.Surface?.IsValid == true) base.Invalidate();
