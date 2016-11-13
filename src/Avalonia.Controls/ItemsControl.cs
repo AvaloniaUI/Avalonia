@@ -251,10 +251,6 @@ namespace Avalonia.Controls
                                 LogicalChildren.Add(containerControl.Child as ILogical);
                             }
                         }
-                        else
-                        {
-                            // TODO ? Throw exception or something else?
-                        }
                     }
                     else
                     {
@@ -287,10 +283,6 @@ namespace Avalonia.Controls
                         {
                             toRemove.Add(containerControl.Child as ILogical);
                             ((ISetLogicalParent)containerControl).SetParent(null);
-                        }
-                        else
-                        {
-                            // TODO throw exception ??
                         }
                     }
                     else
