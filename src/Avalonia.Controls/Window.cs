@@ -68,7 +68,7 @@ namespace Avalonia.Controls
         /// When system window decorations are disables sets if the Window when maximized ignores the taskbar.
         /// </summary>
         public static readonly StyledProperty<bool> IgnoreTaskbarOnMaximizeProperty =
-            AvaloniaProperty.Register<Window, bool>(nameof(IgnoreTaskBarOnMaximize), false);
+            AvaloniaProperty.Register<Window, bool>(nameof(IgnoreTaskBarOnMaximize), true);
 
         /// <summary>
         /// Defines the <see cref="Title"/> property.
