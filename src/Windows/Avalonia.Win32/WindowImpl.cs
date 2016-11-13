@@ -33,6 +33,7 @@ namespace Avalonia.Win32
         private bool _trackingMouse;
         private bool _isActive;
         private bool _decorated = true;
+        private bool _ignoreTaskBarWhenMaximized = true;
         private double _scaling = 1;
         private WindowState _showWindowState;
 
@@ -688,7 +689,7 @@ namespace Avalonia.Win32
                 case WindowState.Maximized:
                     command = UnmanagedMethods.ShowWindowCommand.Maximize;
 
-                    if (!_decorated)
+                    if (!_decorated && !_ignoreTaskBarWhenMaximized)
                     {
                         IntPtr monitor = MonitorFromWindow(_hwnd, MONITOR.MONITOR_DEFAULTTONEAREST);
 
@@ -740,6 +741,16 @@ namespace Avalonia.Win32
             if (IntPtr.Size == 4) return ptr.ToInt32();
 
             return (int)(ptr.ToInt64() & 0xffffffff);
+        }
+
+        public void SetIgnoreTaskBarWhenMaximized(bool enable)
+        {
+            _ignoreTaskBarWhenMaximized = enable;
+
+            if(_showWindowState == WindowState.Maximized)
+            {
+                ShowWindow(WindowState.Maximized);
+            }
         }
     }
 }
