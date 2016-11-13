@@ -65,6 +65,12 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<Window, bool>(nameof(HasSystemDecorations), true);
 
         /// <summary>
+        /// When system window decorations are disables sets if the Window when maximized ignores the taskbar.
+        /// </summary>
+        public static readonly StyledProperty<bool> IgnoreTaskbarOnMaximizeProperty =
+            AvaloniaProperty.Register<Window, bool>(nameof(IgnoreTaskBarOnMaximize), false);
+
+        /// <summary>
         /// Defines the <see cref="Title"/> property.
         /// </summary>
         public static readonly StyledProperty<string> TitleProperty =
@@ -89,6 +95,10 @@ namespace Avalonia.Controls
             TitleProperty.Changed.AddClassHandler<Window>((s, e) => s.PlatformImpl.SetTitle((string)e.NewValue));
             HasSystemDecorationsProperty.Changed.AddClassHandler<Window>(
                 (s, e) => s.PlatformImpl.SetSystemDecorations((bool) e.NewValue));
+
+            IgnoreTaskbarOnMaximizeProperty.Changed.AddClassHandler<Window>(
+                (s, e) => s.PlatformImpl.SetIgnoreTaskBarWhenMaximized((bool)e.NewValue));
+
             IconProperty.Changed.AddClassHandler<Window>((s, e) => s.PlatformImpl.SetIcon(((WindowIcon)e.NewValue).PlatformImpl));
         }
 
@@ -155,6 +165,15 @@ namespace Avalonia.Controls
         {
             get { return GetValue(HasSystemDecorationsProperty); }
             set { SetValue(HasSystemDecorationsProperty, value); }
+        }
+
+        /// <summary>
+        /// When system window decorations are disables sets if the Window when maximized ignores the taskbar.
+        /// </summary>
+        public bool IgnoreTaskBarOnMaximize
+        {
+            get { return GetValue(IgnoreTaskbarOnMaximizeProperty); }
+            set { SetValue(IgnoreTaskbarOnMaximizeProperty, value); }
         }
 
         /// <summary>
