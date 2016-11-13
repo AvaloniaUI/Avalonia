@@ -679,7 +679,7 @@ namespace Avalonia.Win32
         {
             UnmanagedMethods.ShowWindowCommand command;
 
-            bool doShow = true;
+            Action afterShow = null;
 
             switch (state)
             {
@@ -706,8 +706,10 @@ namespace Avalonia.Win32
                                 var cx = Math.Abs(monitorInfo.rcWork.right - x);
                                 var cy = Math.Abs(monitorInfo.rcWork.bottom - y);
 
-                                doShow = false;
-                                UnmanagedMethods.SetWindowPos(_hwnd, new IntPtr(-2), x, y, cx, cy, SetWindowPosFlags.SWP_SHOWWINDOW);
+                                afterShow = () =>
+                                {
+                                    UnmanagedMethods.SetWindowPos(_hwnd, new IntPtr(-2), x, y, cx, cy, SetWindowPosFlags.SWP_SHOWWINDOW);
+                                };
                             }
                         }
                     }
@@ -716,13 +718,16 @@ namespace Avalonia.Win32
                 case WindowState.Normal:
                     command = UnmanagedMethods.ShowWindowCommand.Restore;
                     break;
+
                 default:
                     throw new ArgumentException("Invalid WindowState.");
             }
 
-            if (doShow)
+            UnmanagedMethods.ShowWindow(_hwnd, command);
+
+            if (afterShow != null)
             {
-                UnmanagedMethods.ShowWindow(_hwnd, command);
+                afterShow();
             }
 
             UnmanagedMethods.SetFocus(_hwnd);
