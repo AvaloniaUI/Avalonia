@@ -76,7 +76,7 @@ namespace Avalonia.Controls.UnitTests
                 var templatedParent = new Button();
                 target.TemplatedParent = templatedParent;
                 target.Template = GetTemplate();
-                
+
                 target.Items = new[] { "Foo" };
 
                 root.ApplyTemplate();
@@ -198,7 +198,7 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Equal(new ILogical[0], target.GetLogicalChildren());
         }
-        
+
 
         [Fact]
         public void Setting_Items_Should_Fire_LogicalChildren_CollectionChanged()
