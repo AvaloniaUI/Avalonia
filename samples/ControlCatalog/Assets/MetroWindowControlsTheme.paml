@@ -1,0 +1,16 @@
+﻿<Styles xmlns="https://github.com/avaloniaui">
+  <!--Window Controls (Minimize, Restore, Close)-->
+  <Style Selector="Button">
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+  <Style Selector="Button:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="{StyleResource AccentColorLight}" />
+    <Setter Property="BorderThickness" Value="0" />
+  </Style>
+  <Style Selector="Button:pressed  /template/ ContentPresenter">
+    <Setter Property="Background" Value="{StyleResource HighlightColorBrush}" />
+    <Setter Property="BorderThickness" Value="0" />
+  </Style>
+</Styles>

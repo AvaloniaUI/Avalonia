@@ -4,7 +4,7 @@ using Avalonia.Markup.Xaml;
 
 namespace ControlCatalog
 {
-    public class MainWindow : Window
+    public class MainWindow : MetroWindow
     {
         public MainWindow()
         {
