@@ -260,8 +260,6 @@ namespace Avalonia.Controls
         /// <param name="e">The details of the containers.</param>
         protected virtual void OnContainersDematerialized(ItemContainerEventArgs e)
         {
-            var toRemove = new List<ILogical>();
-
             foreach (var container in e.Containers)
             {
                 // If the item is its own container, then it will be removed from the logical tree
@@ -274,18 +272,16 @@ namespace Avalonia.Controls
 
                         if (containerControl != null)
                         {
-                            toRemove.Add(containerControl.Child);
                             ((ISetLogicalParent)containerControl).SetParent(null);
+                            LogicalChildren.Remove(containerControl.Child);
                         }
                     }
                     else
                     {
-                        toRemove.Add(container.ContainerControl);
+                        LogicalChildren.Remove(container.ContainerControl);
                     }
                 }
             }
-
-            LogicalChildren.RemoveAll(toRemove);
         }
 
         /// <summary>
