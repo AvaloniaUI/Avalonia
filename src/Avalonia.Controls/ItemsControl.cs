@@ -221,7 +221,6 @@ namespace Avalonia.Controls
             return new ItemContainerGenerator(this);
         }
 
-
         /// <summary>
         /// Called when new containers are materialized for the <see cref="ItemsControl"/> by its
         /// <see cref="ItemContainerGenerator"/>.
