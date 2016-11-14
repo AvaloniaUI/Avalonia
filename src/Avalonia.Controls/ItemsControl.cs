@@ -242,7 +242,10 @@ namespace Avalonia.Controls
 
                             containerControl.UpdateChild();
 
-                            LogicalChildren.Add(containerControl.Child);
+                            if (containerControl.Child != null)
+                            {
+                                LogicalChildren.Add(containerControl.Child);
+                            }
                         }
                     }
                     else
@@ -273,7 +276,11 @@ namespace Avalonia.Controls
                         if (containerControl != null)
                         {
                             ((ISetLogicalParent)containerControl).SetParent(null);
-                            LogicalChildren.Remove(containerControl.Child);
+
+                            if (containerControl.Child != null)
+                            {
+                                LogicalChildren.Remove(containerControl.Child);
+                            }
                         }
                     }
                     else
