@@ -50,6 +50,7 @@ namespace Avalonia.Controls.Generators
         /// </summary>
         public IControl Owner { get; }
 
+        /// <inheritdoc/>
         public virtual Type ContainerType => null;
 
         /// <inheritdoc/>
