@@ -85,7 +85,7 @@ namespace Avalonia.Controls.UnitTests
 
                 var container = (ContentPresenter)target.Presenter.Panel.Children[0];
 
-                Assert.Equal(container.Child.Parent, container);
+                Assert.Equal(container, container.Child.Parent);
             }
         }
 
