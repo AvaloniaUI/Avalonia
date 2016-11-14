@@ -14,8 +14,6 @@ using Avalonia.Controls.Templates;
 using Avalonia.Controls.Utils;
 using Avalonia.LogicalTree;
 using Avalonia.Metadata;
-using System;
-
 
 namespace Avalonia.Controls
 {
