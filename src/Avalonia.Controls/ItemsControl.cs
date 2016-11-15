@@ -4,7 +4,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls.Generators;
@@ -226,19 +225,35 @@ namespace Avalonia.Controls
         /// <param name="e">The details of the containers.</param>
         protected virtual void OnContainersMaterialized(ItemContainerEventArgs e)
         {
-            var toAdd = new List<ILogical>();
-
             foreach (var container in e.Containers)
             {
                 // If the item is its own container, then it will be added to the logical tree when
                 // it was added to the Items collection.
                 if (container.ContainerControl != null && container.ContainerControl != container.Item)
                 {
-                    toAdd.Add(container.ContainerControl);
+                    if (ItemContainerGenerator.ContainerType == null)
+                    {
+                        var containerControl = container.ContainerControl as ContentPresenter;
+
+                        if (containerControl != null)
+                        {
+                            ((ISetLogicalParent)containerControl).SetParent(this);
+                            containerControl.SetValue(TemplatedParentProperty, null);
+
+                            containerControl.UpdateChild();
+
+                            if (containerControl.Child != null)
+                            {
+                                LogicalChildren.Add(containerControl.Child);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        LogicalChildren.Add(container.ContainerControl);
+                    }
                 }
             }
-
-            LogicalChildren.AddRange(toAdd);
         }
 
         /// <summary>
@@ -248,19 +263,32 @@ namespace Avalonia.Controls
         /// <param name="e">The details of the containers.</param>
         protected virtual void OnContainersDematerialized(ItemContainerEventArgs e)
         {
-            var toRemove = new List<ILogical>();
-
             foreach (var container in e.Containers)
             {
                 // If the item is its own container, then it will be removed from the logical tree
                 // when it is removed from the Items collection.
                 if (container?.ContainerControl != container?.Item)
                 {
-                    toRemove.Add(container.ContainerControl);
+                    if (ItemContainerGenerator.ContainerType == null)
+                    {
+                        var containerControl = container.ContainerControl as ContentPresenter;
+
+                        if (containerControl != null)
+                        {
+                            ((ISetLogicalParent)containerControl).SetParent(null);
+
+                            if (containerControl.Child != null)
+                            {
+                                LogicalChildren.Remove(containerControl.Child);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        LogicalChildren.Remove(container.ContainerControl);
+                    }
                 }
             }
-
-            LogicalChildren.RemoveAll(toRemove);
         }
 
         /// <summary>
