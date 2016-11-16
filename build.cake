@@ -662,11 +662,9 @@ Task("Run-Unit-Tests")
 
     if (isRunningOnWindows)
     {
-        var windowsTests = GetFiles("./tests/Avalonia.DesignerSupport.Tests/bin/" + dirSuffix + "/*.Tests.dll") + 
-                           GetFiles("./tests/Avalonia.LeakTests/bin/" + dirSuffix + "/*.LeakTests.dll") + 
-                           GetFiles("./tests/Avalonia.RenderTests/bin/" + dirSuffix + "/*.RenderTests.dll");
+        var leakTests = GetFiles("./tests/Avalonia.LeakTests/bin/" + dirSuffix + "/*.LeakTests.dll");
 
-        unitTests.AddRange(windowsTests);
+        unitTests.AddRange(leakTests);
     }
 
     var toolPath = (isPlatformAnyCPU || isPlatformX86) ? 
@@ -688,20 +686,32 @@ Task("Run-Unit-Tests")
         .WithFilter("-[Avalonia.*]OmniXaml.* -[Avalonia.*]Glass.*")
         .WithFilter("-[Avalonia.HtmlRenderer]TheArtOfDev.HtmlRenderer.* +[Avalonia.HtmlRenderer]TheArtOfDev.HtmlRenderer.Avalonia.* -[Avalonia.ReactiveUI]*");
     
-    foreach(var test in unitTests)
+    openCoverSettings.ReturnTargetCodeOffset = 0;
+
+    foreach(var test in unitTests.Where(testFile => FileExists(testFile)))
     {
         CopyDirectory(test.GetDirectory(), testsRoot);
+    }
+
+    var testsInDirectoryToRun = new List<FilePath>();
+    if(isRunningOnWindows)
+    {
+        testsInDirectoryToRun.AddRange(GetFiles("./artifacts/tests/*Tests.dll"));
+    }
+    else
+    {
+        testsInDirectoryToRun.AddRange(GetFiles("./artifacts/tests/*.UnitTests.dll"));
     }
 
     if(isRunningOnWindows)
     {
         OpenCover(context => {
-            context.XUnit2(unitTests.Select(test => testsRoot.GetFilePath(test).FullPath), xUnitSettings);
+            context.XUnit2(testsInDirectoryToRun, xUnitSettings);
         }, openCoverOutput, openCoverSettings);
     }
     else
     {
-        XUnit2(unitTests.Select(test => test.FullPath), xUnitSettings);
+        XUnit2(testsInDirectoryToRun, xUnitSettings);
     }
 });
 

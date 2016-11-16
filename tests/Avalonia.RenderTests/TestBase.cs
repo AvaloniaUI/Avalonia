@@ -42,11 +42,11 @@ namespace Avalonia.Direct2D1.RenderTests
         public TestBase(string outputPath)
         {
 #if AVALONIA_CAIRO
-            string testFiles = Path.GetFullPath(@"..\..\..\TestFiles\Cairo");
+            string testFiles = Path.GetFullPath(@"..\..\tests\TestFiles\Cairo");
 #elif AVALONIA_SKIA
-            string testFiles = Path.GetFullPath(@"..\..\..\TestFiles\Skia");
+            string testFiles = Path.GetFullPath(@"..\..\tests\TestFiles\Skia");
 #else
-            string testFiles = Path.GetFullPath(@"..\..\..\TestFiles\Direct2D1");
+            string testFiles = Path.GetFullPath(@"..\..\tests\TestFiles\Direct2D1");
 #endif
             OutputPath = Path.Combine(testFiles, outputPath);
         }
@@ -81,13 +81,15 @@ namespace Avalonia.Direct2D1.RenderTests
         {
             string expectedPath = Path.Combine(OutputPath, testName + ".expected.png");
             string actualPath = Path.Combine(OutputPath, testName + ".out.png");
-            MagickImage expected = new MagickImage(expectedPath);
-            MagickImage actual = new MagickImage(actualPath);
-            double error = expected.Compare(actual, ErrorMetric.RootMeanSquared);
-
-            if (error > 0.022)
+            using (MagickImage expected = new MagickImage(expectedPath))
+            using (MagickImage actual = new MagickImage(actualPath))
             {
-                Assert.True(false, actualPath + ": Error = " + error);
+                double error = expected.Compare(actual, ErrorMetric.RootMeanSquared);
+
+                if (error > 0.022)
+                {
+                    Assert.True(false, actualPath + ": Error = " + error);
+                }
             }
         }
     }
