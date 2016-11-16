@@ -30,5 +30,7 @@ namespace Avalonia.Controls
         }
 
         public IWindowIconImpl PlatformImpl { get; }
+
+        public Stream Save() => PlatformImpl.Save();
     }
 }
