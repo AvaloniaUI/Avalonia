@@ -10,6 +10,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #tool "nuget:?package=xunit.runner.console&version=2.1.0"
+#tool "nuget:?package=OpenCover"
 
 ///////////////////////////////////////////////////////////////////////////////
 // USINGS
@@ -92,6 +93,7 @@ var artifactsDir = (DirectoryPath)Directory("./artifacts");
 var nugetRoot = artifactsDir.Combine("nuget");
 var zipRoot = artifactsDir.Combine("zip");
 var binRoot = artifactsDir.Combine("bin");
+var testsRoot = artifactsDir.Combine("tests");
 
 var dirSuffix = configuration;
 var dirSuffixSkia = (isPlatformAnyCPU ? "x86" : platform) + "/" + configuration;
@@ -240,8 +242,8 @@ var coreLibraries = new string[][]
     new [] { "./src/", "Avalonia.Layout", ".xml" },
     new [] { "./src/", "Avalonia.Logging.Serilog", ".dll" },
     new [] { "./src/", "Avalonia.Logging.Serilog", ".xml" },
-    new [] { "./src/", "Avalonia.SceneGraph", ".dll" },
-    new [] { "./src/", "Avalonia.SceneGraph", ".xml" },
+    new [] { "./src/", "Avalonia.Visuals", ".dll" },
+    new [] { "./src/", "Avalonia.Visuals", ".xml" },
     new [] { "./src/", "Avalonia.Styling", ".dll" },
     new [] { "./src/", "Avalonia.Styling", ".xml" },
     new [] { "./src/", "Avalonia.ReactiveUI", ".dll" },
@@ -585,6 +587,7 @@ Task("Clean")
     CleanDirectory(nugetRoot);
     CleanDirectory(zipRoot);
     CleanDirectory(binRoot);
+    CleanDirectory(testsRoot);
 });
 
 Task("Restore-NuGet-Packages")
@@ -659,29 +662,56 @@ Task("Run-Unit-Tests")
 
     if (isRunningOnWindows)
     {
-        var windowsTests = GetFiles("./tests/Avalonia.DesignerSupport.Tests/bin/" + dirSuffix + "/*.Tests.dll") + 
-                           GetFiles("./tests/Avalonia.LeakTests/bin/" + dirSuffix + "/*.LeakTests.dll") + 
-                           GetFiles("./tests/Avalonia.RenderTests/bin/" + dirSuffix + "/*.RenderTests.dll");
+        var leakTests = GetFiles("./tests/Avalonia.LeakTests/bin/" + dirSuffix + "/*.LeakTests.dll");
 
-        unitTests.AddRange(windowsTests);
+        unitTests.AddRange(leakTests);
     }
 
     var toolPath = (isPlatformAnyCPU || isPlatformX86) ? 
         "./tools/xunit.runner.console/tools/xunit.console.x86.exe" :
         "./tools/xunit.runner.console/tools/xunit.console.exe";
 
-    var settings = new XUnit2Settings 
+    var xUnitSettings = new XUnit2Settings 
     { 
         ToolPath = toolPath,
-        Parallelism = ParallelismOption.None 
+        Parallelism = ParallelismOption.None,
+        ShadowCopy = false
     };
 
-    settings.NoAppDomain = !isRunningOnWindows;
+    xUnitSettings.NoAppDomain = !isRunningOnWindows;
 
-    foreach (var file in unitTests)
+    var openCoverOutput = artifactsDir.GetFilePath(new FilePath("./coverage.xml"));
+    var openCoverSettings = new OpenCoverSettings()
+        .WithFilter("+[Avalonia.*]* -[*Test*]* -[ControlCatalog*]*")
+        .WithFilter("-[Avalonia.*]OmniXaml.* -[Avalonia.*]Glass.*")
+        .WithFilter("-[Avalonia.HtmlRenderer]TheArtOfDev.HtmlRenderer.* +[Avalonia.HtmlRenderer]TheArtOfDev.HtmlRenderer.Avalonia.* -[Avalonia.ReactiveUI]*");
+    
+    openCoverSettings.ReturnTargetCodeOffset = 0;
+
+    foreach(var test in unitTests.Where(testFile => FileExists(testFile)))
     {
-        Information("Running test " + file.GetFilenameWithoutExtension());
-        XUnit2(file.FullPath, settings);
+        CopyDirectory(test.GetDirectory(), testsRoot);
+    }
+
+    var testsInDirectoryToRun = new List<FilePath>();
+    if(isRunningOnWindows)
+    {
+        testsInDirectoryToRun.AddRange(GetFiles("./artifacts/tests/*Tests.dll"));
+    }
+    else
+    {
+        testsInDirectoryToRun.AddRange(GetFiles("./artifacts/tests/*.UnitTests.dll"));
+    }
+
+    if(isRunningOnWindows)
+    {
+        OpenCover(context => {
+            context.XUnit2(testsInDirectoryToRun, xUnitSettings);
+        }, openCoverOutput, openCoverSettings);
+    }
+    else
+    {
+        XUnit2(testsInDirectoryToRun, xUnitSettings);
     }
 });
 

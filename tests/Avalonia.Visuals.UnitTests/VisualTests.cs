@@ -8,7 +8,7 @@ using Avalonia.Controls;
 using Avalonia.VisualTree;
 using Xunit;
 
-namespace Avalonia.SceneGraph.UnitTests
+namespace Avalonia.Visuals.UnitTests
 {
     public class VisualTests
     {

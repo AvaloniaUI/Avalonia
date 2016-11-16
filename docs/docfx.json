@@ -18,7 +18,7 @@
             "/src/Avalonia.Interactivity/Avalonia.Interactivity.csproj",
             "/src/Avalonia.Layout/Avalonia.Layout.csproj",
             "/src/Avalonia.ReactiveUI/Avalonia.ReactiveUI.csproj",
-            "/src/Avalonia.SceneGraph/Avalonia.SceneGraph.csproj",
+            "/src/Avalonia.Visuals/Avalonia.Visuals.csproj",
             "/src/Avalonia.Styling/Avalonia.Styling.csproj",
             "/src/Avalonia.Themes.Default/Avalonia.Themes.Default.csproj",
             "/src/Skia/Avalonia.Skia.Desktop/Avalonia.Skia.Desktop.csproj",
