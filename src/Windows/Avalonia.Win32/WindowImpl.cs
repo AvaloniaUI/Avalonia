@@ -213,10 +213,10 @@ namespace Avalonia.Win32
                 var thickness = BorderThickness;
 
                 newRect = new Rect(
-                    windowRect.left - thickness.Left,
-                    windowRect.top - thickness.Top,
-                    (windowRect.right - windowRect.left) + (thickness.Left + thickness.Right),
-                    (windowRect.bottom - windowRect.top) + (thickness.Top + thickness.Bottom));
+                windowRect.left - thickness.Left,
+                windowRect.top - thickness.Top,
+                (windowRect.right - windowRect.left) + (thickness.Left + thickness.Right),
+                (windowRect.bottom - windowRect.top) + (thickness.Top + thickness.Bottom));
             }
             else
             {
@@ -230,7 +230,6 @@ namespace Avalonia.Win32
             UnmanagedMethods.SetWindowPos(_hwnd, IntPtr.Zero, (int)newRect.X, (int)newRect.Y, (int)newRect.Width,
                 (int)newRect.Height,
                 UnmanagedMethods.SetWindowPosFlags.SWP_NOZORDER | UnmanagedMethods.SetWindowPosFlags.SWP_NOACTIVATE);
-
 
             _decorated = value;
         }
