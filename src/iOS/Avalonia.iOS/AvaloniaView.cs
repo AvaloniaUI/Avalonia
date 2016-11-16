@@ -170,7 +170,7 @@ namespace Avalonia.iOS
             //Not supported
         }
 
-        public void SetIgnoreTaskBarWhenMaximized(bool enable)
+        public void SetCoverTaskbarWhenMaximized(bool enable)
         {
             //Not supported
         }

@@ -33,7 +33,7 @@ namespace Avalonia.Win32
         private bool _trackingMouse;
         private bool _isActive;
         private bool _decorated = true;
-        private bool _ignoreTaskBarWhenMaximized = true;
+        private bool _coverTaskBarWhenMaximized = true;
         private double _scaling = 1;
         private WindowState _showWindowState;
 
@@ -688,7 +688,7 @@ namespace Avalonia.Win32
                 case WindowState.Maximized:
                     command = ShowWindowCommand.Maximize;
 
-                    if (!_decorated && !_ignoreTaskBarWhenMaximized)
+                    if (!_decorated && !_coverTaskBarWhenMaximized)
                     {
                         maximizeFillsDesktop = true;
                     }
@@ -749,9 +749,9 @@ namespace Avalonia.Win32
             return (int)(ptr.ToInt64() & 0xffffffff);
         }
 
-        public void SetIgnoreTaskBarWhenMaximized(bool enable)
+        public void SetCoverTaskbarWhenMaximized(bool enable)
         {
-            _ignoreTaskBarWhenMaximized = enable;
+            _coverTaskBarWhenMaximized = enable;
 
             if(_showWindowState == WindowState.Maximized)
             {

@@ -67,8 +67,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// When system window decorations are disables sets if the Window when maximized ignores the taskbar.
         /// </summary>
-        public static readonly StyledProperty<bool> IgnoreTaskbarOnMaximizeProperty =
-            AvaloniaProperty.Register<Window, bool>(nameof(IgnoreTaskBarOnMaximize), true);
+        public static readonly StyledProperty<bool> CoverTaskbarOnMaximizeProperty =
+            AvaloniaProperty.Register<Window, bool>(nameof(CoverTaskbarOnMaximize), true);
 
         /// <summary>
         /// Defines the <see cref="Title"/> property.
@@ -96,8 +96,8 @@ namespace Avalonia.Controls
             HasSystemDecorationsProperty.Changed.AddClassHandler<Window>(
                 (s, e) => s.PlatformImpl.SetSystemDecorations((bool) e.NewValue));
 
-            IgnoreTaskbarOnMaximizeProperty.Changed.AddClassHandler<Window>(
-                (s, e) => s.PlatformImpl.SetIgnoreTaskBarWhenMaximized((bool)e.NewValue));
+            CoverTaskbarOnMaximizeProperty.Changed.AddClassHandler<Window>(
+                (s, e) => s.PlatformImpl.SetCoverTaskbarWhenMaximized((bool)e.NewValue));
 
             IconProperty.Changed.AddClassHandler<Window>((s, e) => s.PlatformImpl.SetIcon(((WindowIcon)e.NewValue).PlatformImpl));
         }
@@ -168,12 +168,13 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// When system window decorations are disables sets if the Window when maximized ignores the taskbar.
+        /// Sets if the Window should Covert the taskbar when Maximized. Only applies to Windows 
+        /// with HasSystemDecorations = false.
         /// </summary>
-        public bool IgnoreTaskBarOnMaximize
+        public bool CoverTaskbarOnMaximize
         {
-            get { return GetValue(IgnoreTaskbarOnMaximizeProperty); }
-            set { SetValue(IgnoreTaskbarOnMaximizeProperty, value); }
+            get { return GetValue(CoverTaskbarOnMaximizeProperty); }
+            set { SetValue(CoverTaskbarOnMaximizeProperty, value); }
         }
 
         /// <summary>

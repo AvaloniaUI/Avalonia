@@ -108,7 +108,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         {
         }
 
-        public void SetIgnoreTaskBarWhenMaximized(bool enable)
+        public void SetCoverTaskbarWhenMaximized(bool enable)
         {
             //Not supported
         }

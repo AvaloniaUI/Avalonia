@@ -304,7 +304,7 @@ namespace Avalonia.Gtk
             args.RetVal = true;
         }
 
-        public void SetIgnoreTaskBarWhenMaximized(bool enable)
+        public void SetCoverTaskbarWhenMaximized(bool enable)
         {
             // No action neccesary on Gtk.
         }
