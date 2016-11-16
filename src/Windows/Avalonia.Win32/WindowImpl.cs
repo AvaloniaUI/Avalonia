@@ -678,44 +678,24 @@ namespace Avalonia.Win32
         {
             UnmanagedMethods.ShowWindowCommand command;
 
-            Action afterShow = null;
+            bool maximizeFillsDesktop = false; // otherwise we cover entire screen.
 
             switch (state)
             {
                 case WindowState.Minimized:
-                    command = UnmanagedMethods.ShowWindowCommand.Minimize;
+                    command = ShowWindowCommand.Minimize;
                     break;
                 case WindowState.Maximized:
-                    command = UnmanagedMethods.ShowWindowCommand.Maximize;
+                    command = ShowWindowCommand.Maximize;
 
                     if (!_decorated && !_ignoreTaskBarWhenMaximized)
                     {
-                        IntPtr monitor = MonitorFromWindow(_hwnd, MONITOR.MONITOR_DEFAULTTONEAREST);
-
-                        if (monitor != IntPtr.Zero)
-                        {
-                            MONITORINFO monitorInfo = new MONITORINFO();
-
-                            if (UnmanagedMethods.GetMonitorInfo(monitor, monitorInfo))
-                            {
-                                RECT rcMonitorArea = monitorInfo.rcMonitor;
-
-                                var x = monitorInfo.rcWork.left;
-                                var y = monitorInfo.rcWork.top;
-                                var cx = Math.Abs(monitorInfo.rcWork.right - x);
-                                var cy = Math.Abs(monitorInfo.rcWork.bottom - y);
-
-                                afterShow = () =>
-                                {
-                                    UnmanagedMethods.SetWindowPos(_hwnd, new IntPtr(-2), x, y, cx, cy, SetWindowPosFlags.SWP_SHOWWINDOW);
-                                };
-                            }
-                        }
+                        maximizeFillsDesktop = true;
                     }
                     break;
 
                 case WindowState.Normal:
-                    command = UnmanagedMethods.ShowWindowCommand.Restore;
+                    command = ShowWindowCommand.Restore;
                     break;
 
                 default:
@@ -724,12 +704,34 @@ namespace Avalonia.Win32
 
             UnmanagedMethods.ShowWindow(_hwnd, command);
 
-            if (afterShow != null)
+            if(maximizeFillsDesktop)
             {
-                afterShow();
-            }
+                MaximizeWithoutCoveringTaskbar();
+            }            
 
-            UnmanagedMethods.SetFocus(_hwnd);
+            SetFocus(_hwnd);
+        }
+
+        private void MaximizeWithoutCoveringTaskbar()
+        {
+            IntPtr monitor = MonitorFromWindow(_hwnd, MONITOR.MONITOR_DEFAULTTONEAREST);
+
+            if (monitor != IntPtr.Zero)
+            {
+                MONITORINFO monitorInfo = new MONITORINFO();
+
+                if (GetMonitorInfo(monitor, monitorInfo))
+                {
+                    RECT rcMonitorArea = monitorInfo.rcMonitor;
+
+                    var x = monitorInfo.rcWork.left;
+                    var y = monitorInfo.rcWork.top;
+                    var cx = Math.Abs(monitorInfo.rcWork.right - x);
+                    var cy = Math.Abs(monitorInfo.rcWork.bottom - y);
+
+                    SetWindowPos(_hwnd, new IntPtr(-2), x, y, cx, cy, SetWindowPosFlags.SWP_SHOWWINDOW);                    
+                }
+            }
         }
 
         public void SetIcon(IWindowIconImpl icon)
