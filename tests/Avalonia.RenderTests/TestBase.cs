@@ -81,13 +81,15 @@ namespace Avalonia.Direct2D1.RenderTests
         {
             string expectedPath = Path.Combine(OutputPath, testName + ".expected.png");
             string actualPath = Path.Combine(OutputPath, testName + ".out.png");
-            MagickImage expected = new MagickImage(expectedPath);
-            MagickImage actual = new MagickImage(actualPath);
-            double error = expected.Compare(actual, ErrorMetric.RootMeanSquared);
-
-            if (error > 0.022)
+            using (MagickImage expected = new MagickImage(expectedPath))
+            using (MagickImage actual = new MagickImage(actualPath))
             {
-                Assert.True(false, actualPath + ": Error = " + error);
+                double error = expected.Compare(actual, ErrorMetric.RootMeanSquared);
+
+                if (error > 0.022)
+                {
+                    Assert.True(false, actualPath + ": Error = " + error);
+                }
             }
         }
     }
