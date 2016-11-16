@@ -213,18 +213,18 @@ namespace Avalonia.Win32
                 var thickness = BorderThickness;
 
                 newRect = new Rect(
-                windowRect.left - thickness.Left,
-                windowRect.top - thickness.Top,
-                (windowRect.right - windowRect.left) + (thickness.Left + thickness.Right),
-                (windowRect.bottom - windowRect.top) + (thickness.Top + thickness.Bottom));
+                    windowRect.left - thickness.Left,
+                    windowRect.top - thickness.Top,
+                    (windowRect.right - windowRect.left) + (thickness.Left + thickness.Right),
+                    (windowRect.bottom - windowRect.top) + (thickness.Top + thickness.Bottom));
             }
             else
             {
                 newRect = new Rect(
-                windowRect.left + oldThickness.Left,
-                windowRect.top + oldThickness.Top,
-                (windowRect.right - windowRect.left) - (oldThickness.Left + oldThickness.Right),
-                (windowRect.bottom - windowRect.top) - (oldThickness.Top + oldThickness.Bottom));
+                    windowRect.left + oldThickness.Left,
+                    windowRect.top + oldThickness.Top,
+                    (windowRect.right - windowRect.left) - (oldThickness.Left + oldThickness.Right),
+                    (windowRect.bottom - windowRect.top) - (oldThickness.Top + oldThickness.Bottom));
             }
 
             UnmanagedMethods.SetWindowPos(_hwnd, IntPtr.Zero, (int)newRect.X, (int)newRect.Y, (int)newRect.Width,
@@ -704,10 +704,10 @@ namespace Avalonia.Win32
 
             UnmanagedMethods.ShowWindow(_hwnd, command);
 
-            if(maximizeFillsDesktop)
+            if (maximizeFillsDesktop)
             {
                 MaximizeWithoutCoveringTaskbar();
-            }            
+            }
 
             SetFocus(_hwnd);
         }
@@ -729,7 +729,7 @@ namespace Avalonia.Win32
                     var cx = Math.Abs(monitorInfo.rcWork.right - x);
                     var cy = Math.Abs(monitorInfo.rcWork.bottom - y);
 
-                    SetWindowPos(_hwnd, new IntPtr(-2), x, y, cx, cy, SetWindowPosFlags.SWP_SHOWWINDOW);                    
+                    SetWindowPos(_hwnd, new IntPtr(-2), x, y, cx, cy, SetWindowPosFlags.SWP_SHOWWINDOW);
                 }
             }
         }
@@ -753,7 +753,7 @@ namespace Avalonia.Win32
         {
             _coverTaskBarWhenMaximized = enable;
 
-            if(_showWindowState == WindowState.Maximized)
+            if (_showWindowState == WindowState.Maximized)
             {
                 ShowWindow(WindowState.Maximized);
             }
