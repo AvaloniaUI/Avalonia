@@ -65,7 +65,8 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<Window, bool>(nameof(HasSystemDecorations), true);
 
         /// <summary>
-        /// When system window decorations are disables sets if the Window when maximized ignores the taskbar.
+        /// Sets if the window should cover the taskbar when maximized. Only applies to Windows 
+        /// with HasSystemDecorations = false.
         /// </summary>
         public static readonly StyledProperty<bool> CoverTaskbarOnMaximizeProperty =
             AvaloniaProperty.Register<Window, bool>(nameof(CoverTaskbarOnMaximize), true);
@@ -168,7 +169,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Sets if the Window should Covert the taskbar when Maximized. Only applies to Windows 
+        /// Sets if the window should cover the taskbar when maximized. Only applies to Windows 
         /// with HasSystemDecorations = false.
         /// </summary>
         public bool CoverTaskbarOnMaximize
