@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Gdk;
+using System.IO;
 
 namespace Avalonia.Gtk
 {
@@ -16,5 +17,10 @@ namespace Avalonia.Gtk
         }
 
         public Pixbuf Pixbuf { get; }
+
+        public Stream Save()
+        {
+            return new MemoryStream(Pixbuf.SaveToBuffer("png"));
+        }
     }
 }
