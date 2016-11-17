@@ -17,7 +17,9 @@ namespace Avalonia.Rendering
         private Scene _scene;
         private IRenderTarget _renderTarget;
         private List<IVisual> _dirty = new List<IVisual>();
+        private ConcurrentQueue<Rect> _renderQueue = new ConcurrentQueue<Rect>();
         private bool _needsUpdate;
+        private bool _updateQueued;
         private bool _needsRender;
 
         private readonly Stopwatch _stopwatch = Stopwatch.StartNew();
@@ -121,32 +123,50 @@ namespace Avalonia.Rendering
         {
             Dispatcher.UIThread.VerifyAccess();
 
-            var scene = _scene.Clone();
-
-            if (_dirty.Count > 0)
+            try
             {
-                foreach (var visual in _dirty)
+                var scene = _scene.Clone();
+
+                if (_dirty.Count > 0)
                 {
-                    SceneBuilder.Update(scene, visual);
+                    var dirtyRects = new DirtyRects();
+
+                    foreach (var visual in _dirty)
+                    {
+                        SceneBuilder.Update(scene, visual, dirtyRects);
+                    }
+
+                    foreach (var r in dirtyRects.Coalesce())
+                    {
+                        _renderQueue.Enqueue(r);
+                    }
+
+                    _dirty.Clear();
                 }
+                else
+                {
+                    SceneBuilder.UpdateAll(scene);
+                    _renderQueue.Enqueue(new Rect(_root.ClientSize));
+                }
+
+                _scene = scene;
+
+                _needsUpdate = false;
+                _needsRender = true;
+                _root.Invalidate(new Rect(_root.ClientSize));
             }
-            else
+            finally
             {
-                SceneBuilder.UpdateAll(scene);
+                _updateQueued = false;
             }
-
-            _scene = scene;
-
-            _needsUpdate = false;
-            _needsRender = true;
-            _root.Invalidate(new Rect(_root.ClientSize));
         }
 
         private void OnRenderLoopTick(object sender, EventArgs e)
         {
-            if (_needsUpdate)
+            if (_needsUpdate && !_updateQueued)
             {
                 Dispatcher.UIThread.InvokeAsync(UpdateScene, DispatcherPriority.Render);
+                _updateQueued = true;
             }
 
             if (_needsRender)
@@ -162,11 +182,18 @@ namespace Avalonia.Rendering
 
                     using (var context = _renderTarget.CreateDrawingContext())
                     {
-                        Render(context, _scene.Root, new Rect(_root.ClientSize));
+                        Rect rect;
 
-                        if (DrawFps)
+                        while (_renderQueue.TryDequeue(out rect))
                         {
-                            RenderFps(context);
+                            context.PushClip(rect);
+                            Render(context, _scene.Root, rect);
+                            context.PopClip();
+
+                            if (DrawFps)
+                            {
+                                RenderFps(context);
+                            }
                         }
                     }
 

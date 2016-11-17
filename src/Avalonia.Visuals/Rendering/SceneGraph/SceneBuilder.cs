@@ -128,6 +128,8 @@ namespace Avalonia.Rendering.SceneGraph
             var bounds = new Rect(visual.Bounds.Size);
             var contextImpl = (DeferredDrawingContextImpl)context.PlatformImpl;
 
+            contextImpl.Dirty.Add(node.Bounds);
+
             if (visual.IsVisible)
             {
                 var m = Matrix.CreateTranslation(visual.Bounds.Position);

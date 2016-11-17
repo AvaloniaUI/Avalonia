@@ -13,23 +13,41 @@ namespace Avalonia.Rendering
 
         public void Add(Rect rect)
         {
-            for (var i = 0; i < _rects.Count; ++i)
+            if (!rect.IsEmpty)
             {
-                var intersection = _rects[i].Intersect(rect);
-
-                if (intersection != Rect.Empty)
+                for (var i = 0; i < _rects.Count; ++i)
                 {
-                    _rects[i] = intersection;
-                    return;
-                }
-            }
+                    var union = _rects[i].Union(rect);
 
-            _rects.Add(rect);
+                    if (union != Rect.Empty)
+                    {
+                        _rects[i] = union;
+                        return;
+                    }
+                }
+
+                _rects.Add(rect);
+            }
         }
 
         public IList<Rect> Coalesce()
         {
-            // TODO: Final coalesce
+            for (var i = _rects.Count - 1; i >= 0; --i)
+            {
+                var a = _rects[i].Inflate(1);
+
+                for (var j = 0; j < i; ++j)
+                {
+                    var b = _rects[j];
+
+                    if (a.Intersects(b))
+                    {
+                        _rects[i] = _rects[i].Union(b);
+                        _rects.RemoveAt(i);
+                    }
+                }
+            }
+
             return _rects;
         }
     }

@@ -7,6 +7,7 @@ using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Xunit;
 using Avalonia.Layout;
+using Avalonia.Rendering;
 
 namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
 {
@@ -397,6 +398,53 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 canvasNode = scene.FindNode(canvas);
                 Assert.Equal(Matrix.CreateTranslation(0, 20), borderNode.Transform);
                 Assert.Equal(Matrix.CreateTranslation(0, 20), canvasNode.Transform);
+            }
+        }
+
+        [Fact]
+        public void DirtyRects_Should_Contain_Old_And_New_Bounds_When_Margin_Changed()
+        {
+            using (TestApplication())
+            {
+                Decorator decorator;
+                Border border;
+                Canvas canvas;
+                var tree = new TestRoot
+                {
+                    Width = 100,
+                    Height = 100,
+                    Child = decorator = new Decorator
+                    {
+                        Margin = new Thickness(0, 10, 0, 0),
+                        Child = border = new Border
+                        {
+                            Background = Brushes.Red,
+                            Child = canvas = new Canvas(),
+                        }
+                    }
+                };
+
+                var layout = AvaloniaLocator.Current.GetService<ILayoutManager>();
+                layout.ExecuteInitialLayoutPass(tree);
+
+                var scene = new Scene(tree);
+                SceneBuilder.UpdateAll(scene);
+
+                var borderNode = scene.FindNode(border);
+                var canvasNode = scene.FindNode(canvas);
+                Assert.Equal(Matrix.CreateTranslation(0, 10), borderNode.Transform);
+                Assert.Equal(Matrix.CreateTranslation(0, 10), canvasNode.Transform);
+
+                decorator.Margin = new Thickness(0, 20, 0, 0);
+                layout.ExecuteLayoutPass();
+
+                scene = scene.Clone();
+
+                var dirty = new DirtyRects();
+                SceneBuilder.Update(scene, decorator, dirty);
+
+                var rects = dirty.Coalesce().ToArray();
+                Assert.Equal(new[] { new Rect(0, 10, 100, 90) }, rects);
             }
         }
 

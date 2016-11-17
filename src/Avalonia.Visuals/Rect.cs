@@ -413,6 +413,21 @@ namespace Avalonia
         }
 
         /// <summary>
+        /// Gets the union of two rectangles.
+        /// </summary>
+        /// <param name="rect">The other rectangle.</param>
+        /// <returns>The union.</returns>
+        public Rect Union(Rect rect)
+        {
+            var x1 = Math.Min(this.X, rect.X);
+            var x2 = Math.Max(this.Right, rect.Right);
+            var y1 = Math.Min(this.Y, rect.Y);
+            var y2 = Math.Max(this.Bottom, rect.Bottom);
+
+            return new Rect(new Point(x1, y1), new Point(x2, y2));
+        }
+
+        /// <summary>
         /// Returns a new <see cref="Rect"/> with the specified X position.
         /// </summary>
         /// <param name="x">The x position.</param>
