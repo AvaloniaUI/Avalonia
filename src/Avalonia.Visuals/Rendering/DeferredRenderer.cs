@@ -20,7 +20,6 @@ namespace Avalonia.Rendering
         private ConcurrentQueue<Rect> _renderQueue = new ConcurrentQueue<Rect>();
         private bool _needsUpdate;
         private bool _updateQueued;
-        private bool _needsRender;
 
         private readonly Stopwatch _stopwatch = Stopwatch.StartNew();
         private int _totalFrames;
@@ -152,7 +151,6 @@ namespace Avalonia.Rendering
                 _scene = scene;
 
                 _needsUpdate = false;
-                _needsRender = true;
                 _root.Invalidate(new Rect(_root.ClientSize));
             }
             finally
@@ -169,7 +167,7 @@ namespace Avalonia.Rendering
                 _updateQueued = true;
             }
 
-            if (_needsRender)
+            if (!_renderQueue.IsEmpty)
             {
                 if (_renderTarget == null)
                 {
@@ -196,8 +194,6 @@ namespace Avalonia.Rendering
                             RenderFps(context);
                         }
                     }
-
-                    _needsRender = false;
                 }
                 catch (RenderTargetCorruptedException ex)
                 {
