@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 namespace Avalonia.Rendering
 {
-    public class DirtyRects
+    public class DirtyRects : IEnumerable<Rect>
     {
         private List<Rect> _rects = new List<Rect>();
 
@@ -17,11 +17,11 @@ namespace Avalonia.Rendering
             {
                 for (var i = 0; i < _rects.Count; ++i)
                 {
-                    var union = _rects[i].Union(rect);
+                    var r = _rects[i].Inflate(1);
 
-                    if (union != Rect.Empty)
+                    if (r.Intersects(rect))
                     {
-                        _rects[i] = union;
+                        _rects[i] = r.Union(rect);
                         return;
                     }
                 }
@@ -30,7 +30,7 @@ namespace Avalonia.Rendering
             }
         }
 
-        public IList<Rect> Coalesce()
+        public void Coalesce()
         {
             for (var i = _rects.Count - 1; i >= 0; --i)
             {
@@ -47,8 +47,9 @@ namespace Avalonia.Rendering
                     }
                 }
             }
-
-            return _rects;
         }
+
+        public IEnumerator<Rect> GetEnumerator() => _rects.GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => _rects.GetEnumerator();
     }
 }

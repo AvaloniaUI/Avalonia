@@ -67,7 +67,7 @@ namespace RenderTest
                 };
 
                 var start = Animate.Stopwatch.Elapsed;
-                var index = i;
+                var index = i % (Count / 2);
                 var degrees = Animate.Timer
                     .Select(x => (x - start).TotalSeconds)
                     .Where(x => (x % Count) >= index && (x % Count) < index + 1)

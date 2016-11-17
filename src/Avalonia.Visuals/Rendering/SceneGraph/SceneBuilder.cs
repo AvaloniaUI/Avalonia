@@ -183,13 +183,6 @@ namespace Avalonia.Rendering.SceneGraph
             return node;
         }
 
-        private static IList<Rect> Deindex(Scene scene, VisualNode node)
-        {
-            var dirty = new DirtyRects();
-            Deindex(scene, node, dirty);
-            return dirty.Coalesce();
-        }
-
         private static void Deindex(Scene scene, VisualNode node, DirtyRects dirty)
         {
             scene.Remove(node);

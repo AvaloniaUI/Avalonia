@@ -17,7 +17,7 @@ namespace Avalonia.Rendering
         private Scene _scene;
         private IRenderTarget _renderTarget;
         private List<IVisual> _dirty = new List<IVisual>();
-        private ConcurrentQueue<Rect> _renderQueue = new ConcurrentQueue<Rect>();
+        private DirtyRects _dirtyRects;
         private bool _needsUpdate;
         private bool _updateQueued;
         private bool _rendering;
@@ -99,7 +99,7 @@ namespace Avalonia.Rendering
             }
         }
 
-        private void RenderFps(IDrawingContextImpl context)
+        private void RenderFps(IDrawingContextImpl context, int count)
         {
             var now = _stopwatch.Elapsed;
             var elapsed = now - _lastFpsUpdate;
@@ -115,7 +115,7 @@ namespace Avalonia.Rendering
 
             var pt = new Point(40, 40);
             using (
-                var txt = new FormattedText("Frame #" + _totalFrames + " FPS: " + _fps, "Arial", 18,
+                var txt = new FormattedText($"Frame #{_totalFrames} FPS: {_fps} Updates: {count}", "Arial", 18,
                     FontStyle.Normal,
                     TextAlignment.Left,
                     FontWeight.Normal,
@@ -134,31 +134,30 @@ namespace Avalonia.Rendering
             try
             {
                 var scene = _scene.Clone();
+                var dirtyRects = new DirtyRects();
 
                 if (_dirty.Count > 0)
                 {
-                    var dirtyRects = new DirtyRects();
-
                     foreach (var visual in _dirty)
                     {
                         SceneBuilder.Update(scene, visual, dirtyRects);
                     }
 
-                    foreach (var r in dirtyRects.Coalesce())
-                    {
-                        _renderQueue.Enqueue(r);
-                    }
-
-                    _dirty.Clear();
+                    dirtyRects.Coalesce();
                 }
                 else
                 {
                     SceneBuilder.UpdateAll(scene);
-                    _renderQueue.Enqueue(new Rect(_root.ClientSize));
+                    dirtyRects.Add(new Rect(_root.ClientSize));
                 }
 
-                _scene = scene;
+                lock (_scene)
+                {
+                    _scene = scene;
+                    _dirtyRects = dirtyRects;
+                }
 
+                _dirty.Clear();
                 _needsUpdate = false;
                 _root.Invalidate(new Rect(_root.ClientSize));
             }
@@ -183,7 +182,16 @@ namespace Avalonia.Rendering
 
             _rendering = true;
 
-            if (!_renderQueue.IsEmpty)
+            Scene scene;
+            DirtyRects dirtyRects;
+
+            lock (_scene)
+            {
+                scene = _scene;
+                dirtyRects = _dirtyRects;
+            }
+
+            if (dirtyRects != null)
             {
                 if (_renderTarget == null)
                 {
@@ -194,20 +202,21 @@ namespace Avalonia.Rendering
                 {
                     _totalFrames++;
 
+                    int count = 0;
+
                     using (var context = _renderTarget.CreateDrawingContext())
                     {
-                        Rect rect;
-
-                        while (_renderQueue.TryDequeue(out rect))
+                        foreach (var rect in dirtyRects)
                         {
                             context.PushClip(rect);
                             Render(context, _scene.Root, rect);
                             context.PopClip();
+                            ++count;
                         }
 
                         if (DrawFps)
                         {
-                            RenderFps(context);
+                            RenderFps(context, count);
                         }
                     }
                 }
