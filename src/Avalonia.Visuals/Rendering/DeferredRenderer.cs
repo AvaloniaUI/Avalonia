@@ -33,8 +33,12 @@ namespace Avalonia.Rendering
 
             _root = root;
             _scene = new Scene(root);
-            _renderLoop = renderLoop;
-            _renderLoop.Tick += OnRenderLoopTick;
+
+            if (renderLoop != null)
+            {
+                _renderLoop = renderLoop;
+                _renderLoop.Tick += OnRenderLoopTick;
+            }
         }
 
         public bool DrawFps { get; set; }
@@ -53,13 +57,17 @@ namespace Avalonia.Rendering
 
         public void Dispose()
         {
-            _renderLoop.Tick -= OnRenderLoopTick;
+            if (_renderLoop != null)
+            {
+                _renderLoop.Tick -= OnRenderLoopTick;
+            }
         }
 
         public IEnumerable<IVisual> HitTest(Point p, Func<IVisual, bool> filter)
         {
-            if (_needsUpdate)
+            if (_renderLoop == null && _needsUpdate)
             {
+                // When unit testing the renderLoop may be null, so update the scene manually.
                 UpdateScene();
             }
 

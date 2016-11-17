@@ -456,7 +456,6 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
             return UnitTestApplication.Start(
                 new TestServices(
                     renderInterface: new MockRenderInterface(),
-                    renderLoop: Mock.Of<IRenderLoop>(),
                     renderer: (root, loop) => new DeferredRenderer(root, loop)));
         }
     }
