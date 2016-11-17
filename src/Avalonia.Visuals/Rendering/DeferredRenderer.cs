@@ -189,11 +189,11 @@ namespace Avalonia.Rendering
                             context.PushClip(rect);
                             Render(context, _scene.Root, rect);
                             context.PopClip();
+                        }
 
-                            if (DrawFps)
-                            {
-                                RenderFps(context);
-                            }
+                        if (DrawFps)
+                        {
+                            RenderFps(context);
                         }
                     }
 
