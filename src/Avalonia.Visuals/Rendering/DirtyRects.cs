@@ -11,6 +11,8 @@ namespace Avalonia.Rendering
     {
         private List<Rect> _rects = new List<Rect>();
 
+        public bool IsEmpty => _rects.Count == 0;
+
         public void Add(Rect rect)
         {
             if (!rect.IsEmpty)

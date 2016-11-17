@@ -6,7 +6,6 @@ using Avalonia.Rendering.SceneGraph;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using System.Collections.Generic;
-using System.Collections.Concurrent;
 
 namespace Avalonia.Rendering
 {
@@ -144,10 +143,12 @@ namespace Avalonia.Rendering
                     dirtyRects.Coalesce();
                 }
 
+                var empty = dirtyRects.IsEmpty;
+
                 lock (_scene)
                 {
                     _scene = scene;
-                    _dirtyRects = dirtyRects;
+                    _dirtyRects = empty ? null : dirtyRects;
                 }
 
                 _dirty.Clear();
@@ -166,7 +167,7 @@ namespace Avalonia.Rendering
                 return;
             }
 
-            if (!_updateQueued && (_dirty == null || _dirty.Count > 0))
+            if (!_updateQueued && (_dirty == null || _dirty.Count > 0 || _dirtyRects != null))
             {
                 Dispatcher.UIThread.InvokeAsync(UpdateScene, DispatcherPriority.Render);
                 _updateQueued = true;
@@ -183,41 +184,41 @@ namespace Avalonia.Rendering
                 dirtyRects = _dirtyRects;
             }
 
-            if (dirtyRects != null)
+            try
             {
                 if (_renderTarget == null)
                 {
                     _renderTarget = _root.CreateRenderTarget();
                 }
 
-                try
+                using (var context = _renderTarget.CreateDrawingContext())
                 {
+                    int updateCount = 0;
+
                     _totalFrames++;
 
-                    int count = 0;
-
-                    using (var context = _renderTarget.CreateDrawingContext())
+                    if (dirtyRects != null)
                     {
                         foreach (var rect in dirtyRects)
                         {
                             context.PushClip(rect);
                             Render(context, _scene.Root, rect);
                             context.PopClip();
-                            ++count;
-                        }
-
-                        if (DrawFps)
-                        {
-                            RenderFps(context, count);
+                            ++updateCount;
                         }
                     }
+
+                    if (DrawFps)
+                    {
+                        RenderFps(context, updateCount);
+                    }
                 }
-                catch (RenderTargetCorruptedException ex)
-                {
-                    Logging.Logger.Information("Renderer", this, "Render target was corrupted. Exception: {0}", ex);
-                    _renderTarget.Dispose();
-                    _renderTarget = null;
-                }
+            }
+            catch (RenderTargetCorruptedException ex)
+            {
+                Logging.Logger.Information("Renderer", this, "Render target was corrupted. Exception: {0}", ex);
+                _renderTarget.Dispose();
+                _renderTarget = null;
             }
 
             _rendering = false;
