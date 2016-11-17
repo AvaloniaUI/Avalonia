@@ -16,9 +16,8 @@ namespace Avalonia.Rendering
         private readonly IRenderRoot _root;
         private Scene _scene;
         private IRenderTarget _renderTarget;
-        private List<IVisual> _dirty = new List<IVisual>();
+        private List<IVisual> _dirty;
         private DirtyRects _dirtyRects;
-        private bool _needsUpdate;
         private bool _updateQueued;
         private bool _rendering;
 
@@ -46,14 +45,7 @@ namespace Avalonia.Rendering
 
         public void AddDirty(IVisual visual)
         {
-            // If the root of the scene has no children, then the scene is being set up; don't
-            // bother filling the dirty list with every control in the window.
-            if (_scene.Root.Children.Count > 0)
-            {
-                _dirty.Add(visual);
-            }
-
-            _needsUpdate = true;
+            _dirty?.Add(visual);
         }
 
         public void Dispose()
@@ -66,7 +58,7 @@ namespace Avalonia.Rendering
 
         public IEnumerable<IVisual> HitTest(Point p, Func<IVisual, bool> filter)
         {
-            if (_renderLoop == null && _needsUpdate)
+            if (_renderLoop == null && (_dirty == null || _dirty.Count > 0))
             {
                 // When unit testing the renderLoop may be null, so update the scene manually.
                 UpdateScene();
@@ -136,7 +128,13 @@ namespace Avalonia.Rendering
                 var scene = _scene.Clone();
                 var dirtyRects = new DirtyRects();
 
-                if (_dirty.Count > 0)
+                if (_dirty == null)
+                {
+                    _dirty = new List<IVisual>();
+                    SceneBuilder.UpdateAll(scene);
+                    dirtyRects.Add(new Rect(_root.ClientSize));
+                }
+                else if (_dirty.Count > 0)
                 {
                     foreach (var visual in _dirty)
                     {
@@ -144,11 +142,6 @@ namespace Avalonia.Rendering
                     }
 
                     dirtyRects.Coalesce();
-                }
-                else
-                {
-                    SceneBuilder.UpdateAll(scene);
-                    dirtyRects.Add(new Rect(_root.ClientSize));
                 }
 
                 lock (_scene)
@@ -158,7 +151,6 @@ namespace Avalonia.Rendering
                 }
 
                 _dirty.Clear();
-                _needsUpdate = false;
                 _root.Invalidate(new Rect(_root.ClientSize));
             }
             finally
@@ -174,7 +166,7 @@ namespace Avalonia.Rendering
                 return;
             }
 
-            if (_needsUpdate && !_updateQueued)
+            if (!_updateQueued && (_dirty == null || _dirty.Count > 0))
             {
                 Dispatcher.UIThread.InvokeAsync(UpdateScene, DispatcherPriority.Render);
                 _updateQueued = true;
