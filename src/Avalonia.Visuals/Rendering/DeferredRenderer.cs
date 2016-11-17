@@ -143,12 +143,10 @@ namespace Avalonia.Rendering
                     dirtyRects.Coalesce();
                 }
 
-                var empty = dirtyRects.IsEmpty;
-
                 lock (_scene)
                 {
                     _scene = scene;
-                    _dirtyRects = empty ? null : dirtyRects;
+                    _dirtyRects = dirtyRects.IsEmpty ? null : dirtyRects;
                 }
 
                 _dirty.Clear();
