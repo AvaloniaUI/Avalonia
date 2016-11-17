@@ -6,6 +6,7 @@ using Avalonia.Rendering.SceneGraph;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 
 namespace Avalonia.Rendering
 {
@@ -66,6 +67,26 @@ namespace Avalonia.Rendering
 
         public void Render(Rect rect)
         {
+        }
+
+        private void Render(IDrawingContextImpl context, IVisualNode node, Rect clipBounds)
+        {
+            clipBounds = node.Bounds.Intersect(clipBounds);
+
+            if (!clipBounds.IsEmpty)
+            {
+                node.Render(context);
+
+                foreach (var child in node.Children)
+                {
+                    var visualChild = child as IVisualNode;
+
+                    if (visualChild != null)
+                    {
+                        Render(context, visualChild, clipBounds);
+                    }
+                }
+            }
         }
 
         private void RenderFps(IDrawingContextImpl context)
@@ -141,7 +162,7 @@ namespace Avalonia.Rendering
 
                     using (var context = _renderTarget.CreateDrawingContext())
                     {
-                        _scene.Root.Render(context);
+                        Render(context, _scene.Root, new Rect(_root.ClientSize));
 
                         if (DrawFps)
                         {

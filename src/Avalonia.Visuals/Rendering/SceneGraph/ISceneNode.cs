@@ -11,6 +11,8 @@ namespace Avalonia.Rendering.SceneGraph
     /// </summary>
     public interface ISceneNode
     {
+        Rect Bounds { get; }
+
         /// <summary>
         /// Renders the node to a drawing context.
         /// </summary>
