@@ -20,6 +20,7 @@ namespace Avalonia.Rendering
         private ConcurrentQueue<Rect> _renderQueue = new ConcurrentQueue<Rect>();
         private bool _needsUpdate;
         private bool _updateQueued;
+        private bool _rendering;
 
         private readonly Stopwatch _stopwatch = Stopwatch.StartNew();
         private int _totalFrames;
@@ -169,11 +170,18 @@ namespace Avalonia.Rendering
 
         private void OnRenderLoopTick(object sender, EventArgs e)
         {
+            if (_rendering)
+            {
+                return;
+            }
+
             if (_needsUpdate && !_updateQueued)
             {
                 Dispatcher.UIThread.InvokeAsync(UpdateScene, DispatcherPriority.Render);
                 _updateQueued = true;
             }
+
+            _rendering = true;
 
             if (!_renderQueue.IsEmpty)
             {
@@ -210,6 +218,8 @@ namespace Avalonia.Rendering
                     _renderTarget = null;
                 }
             }
+
+            _rendering = false;
         }
     }
 }
