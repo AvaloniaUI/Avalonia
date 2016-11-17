@@ -17,9 +17,9 @@ namespace Avalonia.Rendering
             {
                 for (var i = 0; i < _rects.Count; ++i)
                 {
-                    var r = _rects[i].Inflate(1);
+                    var r = _rects[i];
 
-                    if (r.Intersects(rect))
+                    if (r.Inflate(1).Intersects(rect))
                     {
                         _rects[i] = r.Union(rect);
                         return;

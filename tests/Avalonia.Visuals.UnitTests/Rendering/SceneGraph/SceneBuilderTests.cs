@@ -443,7 +443,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 var dirty = new DirtyRects();
                 SceneBuilder.Update(scene, decorator, dirty);
 
-                var rects = dirty.Coalesce().ToArray();
+                var rects = dirty.ToArray();
                 Assert.Equal(new[] { new Rect(0, 10, 100, 90) }, rects);
             }
         }
