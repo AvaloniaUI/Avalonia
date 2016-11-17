@@ -14,7 +14,7 @@ namespace Avalonia.Rendering.SceneGraph
     public class VisualNode : IVisualNode
     {
         private Rect? _bounds;
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="VisualNode"/> class.
         /// </summary>
@@ -44,8 +44,8 @@ namespace Avalonia.Rendering.SceneGraph
         /// <inheritdoc/>
         public Matrix Transform { get; set; }
 
-        // TODO: Calculate real bounds.
-        public Rect Bounds => ClipBounds;
+        /// <inheritdoc/>
+        public Rect Bounds => _bounds ?? CalculateBounds();
 
         /// <inheritdoc/>
         public Rect ClipBounds { get; set; }
@@ -145,6 +145,22 @@ namespace Avalonia.Rendering.SceneGraph
             {
                 context.PopOpacity();
             }
+        }
+
+        private Rect CalculateBounds()
+        {
+            var result = new Rect();
+
+            foreach (var child in Children)
+            {
+                if (!(child is IVisualNode))
+                {
+                    result = result.Union(child.Bounds);
+                }
+            }
+
+            _bounds = result;
+            return result;
         }
     }
 }

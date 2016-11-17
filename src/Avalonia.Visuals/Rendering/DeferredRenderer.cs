@@ -72,7 +72,7 @@ namespace Avalonia.Rendering
 
         private void Render(IDrawingContextImpl context, IVisualNode node, Rect clipBounds)
         {
-            clipBounds = node.Bounds.Intersect(clipBounds);
+            clipBounds = node.ClipBounds.Intersect(clipBounds);
 
             if (!clipBounds.IsEmpty)
             {

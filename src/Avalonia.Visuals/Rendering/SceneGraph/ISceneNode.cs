@@ -11,6 +11,9 @@ namespace Avalonia.Rendering.SceneGraph
     /// </summary>
     public interface ISceneNode
     {
+        /// <summary>
+        /// Gets the bounds of the visible content in the node.
+        /// </summary>
         Rect Bounds { get; }
 
         /// <summary>

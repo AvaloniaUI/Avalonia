@@ -419,12 +419,23 @@ namespace Avalonia
         /// <returns>The union.</returns>
         public Rect Union(Rect rect)
         {
-            var x1 = Math.Min(this.X, rect.X);
-            var x2 = Math.Max(this.Right, rect.Right);
-            var y1 = Math.Min(this.Y, rect.Y);
-            var y2 = Math.Max(this.Bottom, rect.Bottom);
+            if (IsEmpty)
+            {
+                return rect;
+            }
+            else if (rect.IsEmpty)
+            {
+                return this;
+            }
+            else
+            {
+                var x1 = Math.Min(this.X, rect.X);
+                var x2 = Math.Max(this.Right, rect.Right);
+                var y1 = Math.Min(this.Y, rect.Y);
+                var y2 = Math.Max(this.Bottom, rect.Bottom);
 
-            return new Rect(new Point(x1, y1), new Point(x2, y2));
+                return new Rect(new Point(x1, y1), new Point(x2, y2));
+            }
         }
 
         /// <summary>
