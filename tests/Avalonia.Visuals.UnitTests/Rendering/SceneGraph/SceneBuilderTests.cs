@@ -99,6 +99,55 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
         }
 
         [Fact]
+        public void ClipBounds_Should_Be_Intersection_With_Parent_ClipBounds()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                Border border;
+                var tree = new TestRoot
+                {
+                    Width = 200,
+                    Height = 300,
+                    Child = new Canvas
+                    {
+                        ClipToBounds = true,
+                        Width = 100,
+                        Height = 100,
+                        HorizontalAlignment = HorizontalAlignment.Left,
+                        VerticalAlignment = VerticalAlignment.Top,
+                        Children =
+                        {
+                            (border = new Border
+                            {
+                                Background = Brushes.AliceBlue,
+                                Width = 100,
+                                Height = 100,
+                                [Canvas.LeftProperty] = 50,
+                                [Canvas.TopProperty] = 50,
+                            })
+                        }
+                    }
+                };
+
+                tree.Measure(Size.Infinity);
+                tree.Arrange(new Rect(tree.DesiredSize));
+
+                var scene = new Scene(tree);
+                SceneBuilder.UpdateAll(scene);
+
+                var borderNode = scene.FindNode(border);
+                Assert.Equal(new Rect(50, 50, 50, 50), borderNode.ClipBounds);
+
+                // Initial ClipBounds are correct, make sure they're still correct after updating border.
+                scene = scene.Clone();
+                Assert.True(SceneBuilder.Update(scene, border));
+
+                borderNode = scene.FindNode(border);
+                Assert.Equal(new Rect(50, 50, 50, 50), borderNode.ClipBounds);
+            }
+        }
+
+        [Fact]
         public void Should_Respect_ZIndex()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))

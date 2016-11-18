@@ -20,7 +20,7 @@ namespace Avalonia.Rendering.SceneGraph
             using (var impl = new DeferredDrawingContextImpl())
             using (var context = new DrawingContext(impl))
             {
-                Update(context, scene, (VisualNode)scene.Root, true);
+                Update(context, scene, (VisualNode)scene.Root, scene.Root.Visual.Bounds, true);
             }
         }
 
@@ -58,12 +58,15 @@ namespace Avalonia.Rendering.SceneGraph
                         using (var impl = new DeferredDrawingContextImpl(dirty))
                         using (var context = new DrawingContext(impl))
                         {
+                            var clip = scene.Root.Visual.Bounds;
+
                             if (node.Parent != null)
                             {
                                 context.PushPostTransform(node.Parent.Transform);
+                                clip = node.Parent.ClipBounds;
                             }
 
-                            Update(context, scene, (VisualNode)node, recurse);
+                            Update(context, scene, (VisualNode)node, clip, recurse);
                         }
 
                         return true;
@@ -120,7 +123,7 @@ namespace Avalonia.Rendering.SceneGraph
             return (VisualNode)node;
         }
 
-        private static void Update(DrawingContext context, Scene scene, VisualNode node, bool forceRecurse)
+        private static void Update(DrawingContext context, Scene scene, VisualNode node, Rect clip, bool forceRecurse)
         {
             var visual = node.Visual;
             var opacity = visual.Opacity;
@@ -153,11 +156,16 @@ namespace Avalonia.Rendering.SceneGraph
                         node.Transform != contextImpl.Transform;
 
                     node.Transform = contextImpl.Transform;
-                    node.ClipBounds = bounds * node.Transform;
+                    node.ClipBounds = (bounds * node.Transform).Intersect(clip);
                     node.ClipToBounds = clipToBounds;
                     node.GeometryClip = visual.Clip;
                     node.Opacity = opacity;
                     node.OpacityMask = visual.OpacityMask;
+
+                    if (node.ClipToBounds)
+                    {
+                        clip = clip.Intersect(node.ClipBounds);
+                    }
 
                     visual.Render(context);
 
@@ -166,7 +174,7 @@ namespace Avalonia.Rendering.SceneGraph
                         foreach (var child in visual.VisualChildren.OrderBy(x => x, ZIndexComparer.Instance))
                         {
                             var childNode = scene.FindNode(child) ?? CreateNode(scene, child, node);
-                            Update(context, scene, (VisualNode)childNode, forceRecurse);
+                            Update(context, scene, (VisualNode)childNode, clip, forceRecurse);
                         }
 
                         node.SubTreeUpdated = true;

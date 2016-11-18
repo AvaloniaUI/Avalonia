@@ -171,8 +171,8 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
                     }
                 };
 
-                container.Measure(Size.Infinity);
-                container.Arrange(new Rect(container.DesiredSize));
+                root.Measure(Size.Infinity);
+                root.Arrange(new Rect(container.DesiredSize));
 
                 var result = container.GetVisualsAt(new Point(100, 100));
 
@@ -224,8 +224,8 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
                     }
                 };
 
-                container.Measure(Size.Infinity);
-                container.Arrange(new Rect(container.DesiredSize));
+                root.Measure(Size.Infinity);
+                root.Arrange(new Rect(container.DesiredSize));
 
                 var result = container.GetVisualsAt(new Point(100, 100));
 
@@ -319,8 +319,8 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
                     }
                 };
 
-                container.Measure(Size.Infinity);
-                container.Arrange(new Rect(container.DesiredSize));
+                root.Measure(Size.Infinity);
+                root.Arrange(new Rect(container.DesiredSize));
 
                 var result = container.GetVisualsAt(new Point(50, 50));
 
@@ -391,8 +391,8 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
 
                 scroll.UpdateChild();
 
-                container.Measure(Size.Infinity);
-                container.Arrange(new Rect(container.DesiredSize));
+                root.Measure(Size.Infinity);
+                root.Arrange(new Rect(container.DesiredSize));
 
                 var result = container.GetVisualsAt(new Point(50, 150)).First();
 
