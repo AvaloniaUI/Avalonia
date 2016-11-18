@@ -42,7 +42,7 @@ namespace Avalonia.Rendering
                 {
                     var b = _rects[j];
 
-                    if (a.Intersects(b))
+                    if (i < _rects.Count && a.Intersects(b))
                     {
                         _rects[i] = _rects[i].Union(b);
                         _rects.RemoveAt(i);
