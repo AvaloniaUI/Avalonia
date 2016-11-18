@@ -65,15 +65,16 @@
     <Compile Include="Media\BrushImpl.cs" />
     <Compile Include="Media\BrushWrapper.cs" />
     <Compile Include="Media\DrawingContextImpl.cs" />
+    <Compile Include="Media\GeometryImpl.cs" />
     <Compile Include="Media\Imaging\RenderTargetBitmapImpl.cs" />
     <Compile Include="Media\Imaging\BitmapImpl.cs" />
     <Compile Include="Media\RadialGradientBrushImpl.cs" />
     <Compile Include="Media\LinearGradientBrushImpl.cs" />
     <Compile Include="Media\AvaloniaTextRenderer.cs" />
+    <Compile Include="Media\TransformedGeometryImpl.cs" />
     <Compile Include="Media\TileBrushImpl.cs" />
     <Compile Include="Media\SolidColorBrushImpl.cs" />
     <Compile Include="Media\StreamGeometryContextImpl.cs" />
-    <Compile Include="Media\GeometryImpl.cs" />
     <Compile Include="Media\StreamGeometryImpl.cs" />
     <Compile Include="Media\FormattedTextImpl.cs" />
     <Compile Include="PrimitiveExtensions.cs" />

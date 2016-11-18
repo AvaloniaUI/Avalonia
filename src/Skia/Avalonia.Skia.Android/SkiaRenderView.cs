@@ -30,7 +30,7 @@ namespace Avalonia.Skia.Android
             if (_renderTarget == null)
                 return;
             using (var ctx = _renderTarget.CreateDrawingContext())
-                OnRender(ctx);
+                OnRender(new DrawingContext(ctx));
         }
 
         protected abstract void OnRender(DrawingContext ctx);

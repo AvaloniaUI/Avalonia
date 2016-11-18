@@ -11,11 +11,9 @@ namespace Avalonia.Skia
     {
         public SKSurface Surface { get; protected set; }
 
-        public virtual DrawingContext CreateDrawingContext()
+        public virtual IDrawingContextImpl CreateDrawingContext()
         {
-            return
-                new DrawingContext(
-                    new DrawingContextImpl(Surface.Canvas));
+            return new DrawingContextImpl(Surface.Canvas);
         }
 
         public void Dispose()
@@ -68,8 +66,9 @@ namespace Avalonia.Skia
             h = surfaceView.Height;
         }
 
-        public override DrawingContext CreateDrawingContext()
+        public override IDrawingContextImpl CreateDrawingContext()
         {
+            base.CreateDrawingContext();
             FixSize();
 
             var canvas = Surface.Canvas;
@@ -78,9 +77,7 @@ namespace Avalonia.Skia
             canvas.Clear(SKColors.Red);
             canvas.ResetMatrix();
 
-            return
-                new DrawingContext(
-                    new WindowDrawingContextImpl(this));
+            return new WindowDrawingContextImpl(this);
         }
 
         public void Present()

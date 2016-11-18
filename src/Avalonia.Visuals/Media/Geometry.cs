@@ -22,10 +22,7 @@ namespace Avalonia.Media
         /// </summary>
         static Geometry()
         {
-            TransformProperty.Changed.Subscribe(x =>
-            {
-                ((Geometry)x.Sender).PlatformImpl.Transform = ((Transform)x.NewValue).Value;
-            });
+            TransformProperty.Changed.AddClassHandler<Geometry>(x => x.TransformChanged);
         }
 
         /// <summary>
@@ -86,6 +83,12 @@ namespace Avalonia.Media
         public bool StrokeContains(Pen pen, Point point)
         {
             return PlatformImpl.StrokeContains(pen, point);
+        }
+
+        private void TransformChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            var transform = (Transform)e.NewValue;
+            PlatformImpl = PlatformImpl.WithTransform(transform.Value);
         }
     }
 }

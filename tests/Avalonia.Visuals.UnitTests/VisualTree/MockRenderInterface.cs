@@ -78,6 +78,11 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
                 return _impl;
             }
 
+            public IGeometryImpl WithTransform(Matrix transform)
+            {
+                return this;
+            }
+
             class MockStreamGeometryContext : IStreamGeometryContextImpl
             {
                 private List<Point> points = new List<Point>();

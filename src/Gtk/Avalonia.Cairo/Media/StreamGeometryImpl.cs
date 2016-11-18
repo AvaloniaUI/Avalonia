@@ -35,19 +35,11 @@ namespace Avalonia.Cairo.Media
         private readonly StreamGeometryContextImpl _impl;
 
         private Matrix _transform = Matrix.Identity;
+
         public Matrix Transform
         {
             get { return _transform; }
-            set
-            {
-                if (value != Transform)
-                {
-                    if (!value.IsIdentity)
-                    {
-                        _transform = value;
-                    }
-                }
-            }
+            private set { _transform = value; }
         }
 
         public FillRule FillRule { get; set; }
@@ -76,6 +68,14 @@ namespace Avalonia.Cairo.Media
         public bool StrokeContains(Pen pen, Point point)
         {
             return _impl.StrokeContains(pen, point);
+        }
+
+        /// <inheritdoc/>
+        public IGeometryImpl WithTransform(Matrix transform)
+        {
+            var result = (StreamGeometryImpl)Clone();
+            result.Transform = transform;
+            return result;
         }
     }
 }
