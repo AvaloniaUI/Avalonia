@@ -43,6 +43,7 @@ namespace Avalonia.Direct2D1
             .BindToSelf(s_d2D1Factory)
             .BindToSelf(s_dwfactory)
             .BindToSelf(s_imagingFactory);
+            SharpDX.Configuration.EnableReleaseOnFinalizer = true;
 
         public IBitmapImpl CreateBitmap(int width, int height)
         {
