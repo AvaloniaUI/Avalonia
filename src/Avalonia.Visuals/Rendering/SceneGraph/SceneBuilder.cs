@@ -66,7 +66,7 @@ namespace Avalonia.Rendering.SceneGraph
                                 clip = node.Parent.ClipBounds;
                             }
 
-                            Update(context, scene, (VisualNode)node, clip, recurse);
+                            Update(context, scene, node, clip, recurse);
                         }
 
                         return true;
