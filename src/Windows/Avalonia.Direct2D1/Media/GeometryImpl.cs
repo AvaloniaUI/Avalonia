@@ -18,7 +18,7 @@ namespace Avalonia.Direct2D1.Media
         }
 
         /// <inheritdoc/>
-        public Rect Bounds => Geometry.GetBounds().ToAvalonia();
+        public Rect Bounds => Geometry.GetWidenedBounds(0).ToAvalonia();
 
         /// <inheritdoc/>
         public Geometry Geometry { get; }
