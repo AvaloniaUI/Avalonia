@@ -11,7 +11,7 @@ namespace Avalonia.Rendering.SceneGraph
     {
         public TextNode(Matrix transform, IBrush foreground, Point origin, IFormattedTextImpl text)
         {
-            Bounds = new Rect(origin, text.Measure()) * transform;
+            Bounds = new Rect(origin, text.Size) * transform;
             Transform = transform;
             Foreground = foreground;
             Origin = origin;

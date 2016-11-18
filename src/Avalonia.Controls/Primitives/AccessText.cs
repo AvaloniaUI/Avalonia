@@ -89,6 +89,7 @@ namespace Avalonia.Controls.Primitives
                 StripAccessKey(Text),
                 FontFamily,
                 FontSize,
+                constraint,
                 FontStyle,
                 TextAlignment,
                 FontWeight);

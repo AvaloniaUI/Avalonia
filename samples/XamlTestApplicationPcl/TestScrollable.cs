@@ -62,17 +62,16 @@ namespace XamlTestApplication
 
             for (var i = (int)_offset.Y; i < itemCount; ++i)
             {
-                using (var line = new FormattedText(
+                var line = new FormattedText(
                     "Item " + (i + 1),
                     TextBlock.GetFontFamily(this),
                     TextBlock.GetFontSize(this),
+                    Size.Infinity,
                     TextBlock.GetFontStyle(this),
                     TextAlignment.Left,
-                    TextBlock.GetFontWeight(this)))
-                {
-                    context.DrawText(Brushes.Black, new Point(-_offset.X, y), line);
-                    y += _lineSize.Height;
-                }
+                    TextBlock.GetFontWeight(this));
+                context.DrawText(Brushes.Black, new Point(-_offset.X, y), line);
+                y += _lineSize.Height;
             }
         }
 
@@ -88,18 +87,17 @@ namespace XamlTestApplication
 
         protected override Size MeasureOverride(Size availableSize)
         {
-            using (var line = new FormattedText(
+            var line = new FormattedText(
                 "Item 100",
                 TextBlock.GetFontFamily(this),
                 TextBlock.GetFontSize(this),
+                Size.Infinity,
                 TextBlock.GetFontStyle(this),
                 TextAlignment.Left,
-                TextBlock.GetFontWeight(this)))
-            {
-                line.Constraint = availableSize;
-                _lineSize = line.Measure();
-                return new Size(_lineSize.Width, _lineSize.Height * itemCount);
-            }
+                TextBlock.GetFontWeight(this));
+            line.Constraint = availableSize;
+            _lineSize = line.Measure();
+            return new Size(_lineSize.Width, _lineSize.Height * itemCount);
         }
 
         protected override Size ArrangeOverride(Size finalSize)

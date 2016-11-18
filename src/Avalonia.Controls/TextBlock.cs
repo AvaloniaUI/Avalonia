@@ -354,6 +354,7 @@ namespace Avalonia.Controls
                 Text ?? string.Empty,
                 FontFamily,
                 FontSize,
+                constraint,
                 FontStyle,
                 TextAlignment,
                 FontWeight,
@@ -370,7 +371,6 @@ namespace Avalonia.Controls
             if (_formattedText != null)
             {
                 _constraint = _formattedText.Constraint;
-                _formattedText.Dispose();
                 _formattedText = null;
             }
 

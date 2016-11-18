@@ -15,9 +15,9 @@ namespace Avalonia.Skia
         }
 
         public IFormattedTextImpl CreateFormattedText(string text, string fontFamilyName, double fontSize, FontStyle fontStyle,
-            TextAlignment textAlignment, FontWeight fontWeight, TextWrapping wrapping)
+            TextAlignment textAlignment, FontWeight fontWeight, TextWrapping wrapping, Size constraint)
         {
-            return new FormattedTextImpl(text, fontFamilyName, fontSize, fontStyle, textAlignment, fontWeight, wrapping);
+            return new FormattedTextImpl(text, fontFamilyName, fontSize, fontStyle, textAlignment, fontWeight, wrapping, constraint);
         }
 
         public IStreamGeometryImpl CreateStreamGeometry()

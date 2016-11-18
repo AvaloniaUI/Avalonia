@@ -12,7 +12,7 @@ namespace Avalonia.Cairo.Media
 {
     public class FormattedTextImpl : IFormattedTextImpl
     {
-        private Size _size;
+        private Size _constraint;
 
         static double CorrectScale(double input)
         {
@@ -26,51 +26,37 @@ namespace Avalonia.Cairo.Media
             double fontSize,
             FontStyle fontStyle,
             TextAlignment textAlignment,
-            FontWeight fontWeight)
+            FontWeight fontWeight,
+            Size constraint)
         {
             Contract.Requires<ArgumentNullException>(context != null);
             Contract.Requires<ArgumentNullException>(text != null);
-            Layout = new Pango.Layout(context);
-            Text = text;
-            Layout.SetText(text);
-            Layout.FontDescription = new Pango.FontDescription
-            {
-                Family = fontFamily,
-                Size = Pango.Units.FromDouble(CorrectScale(fontSize)),
-                Style = (Pango.Style)fontStyle,
-                Weight = fontWeight.ToCairo()
-            };
 
-            Layout.Alignment = textAlignment.ToCairo();
-            Layout.Attributes = new Pango.AttrList();
+            Layout = Create(
+                context,
+                text,
+                fontFamily,
+                fontSize,
+                (Pango.Style)fontStyle,
+                textAlignment.ToCairo(),
+                fontWeight.ToCairo(),
+                constraint);
+            Size = Measure();
         }
 
-        public string Text { get; }
-
-        public Size Constraint
+        public FormattedTextImpl(Pango.Layout layout)
         {
-            get
-            {
-                return _size;
-            }
-
-            set
-            {
-                _size = value;
-                Layout.Width = double.IsPositiveInfinity(value.Width) ?
-                    -1 : Pango.Units.FromDouble(value.Width);
-            }
+            Layout = layout;
+            Size = Measure();
         }
 
-        public Pango.Layout Layout
-        {
-            get;
-        }
+        public string Text => Layout.Text;
 
-        public void Dispose()
-        {
-            Layout.Dispose();
-        }
+        public Size Constraint => _constraint;
+
+        public Size Size { get; }
+
+        public Pango.Layout Layout { get; }
 
         public IEnumerable<FormattedTextLine> GetLines()
         {
@@ -125,15 +111,6 @@ namespace Avalonia.Cairo.Media
             return ranges;
         }
 
-        public Size Measure()
-        {
-            int width;
-            int height;
-            Layout.GetPixelSize(out width, out height);
-
-            return new Size(width, height);
-        }
-
         public void SetForegroundBrush(IBrush brush, int startIndex, int count)
         {
             var scb = brush as SolidColorBrush;
@@ -149,6 +126,58 @@ namespace Avalonia.Cairo.Media
 
                 Layout.Attributes.Insert(brushAttr);
             }
+        }
+
+        public IFormattedTextImpl WithConstraint(Size constraint)
+        {
+            return new FormattedTextImpl(Create(
+                Layout.Context,
+                Layout.Text,
+                Layout.FontDescription.Family,
+                Layout.FontDescription.Size,
+                Layout.FontDescription.Style,
+                Layout.Alignment,
+                Layout.FontDescription.Weight,
+                constraint));
+        }
+
+        private Pango.Layout Create(
+            Pango.Context context,
+            string text,
+            string fontFamily,
+            double fontSize,
+            Pango.Style fontStyle,
+            Pango.Alignment textAlignment,
+            Pango.Weight fontWeight,
+            Size constraint)
+        {
+            Contract.Requires<ArgumentNullException>(context != null);
+            Contract.Requires<ArgumentNullException>(text != null);
+            var result = new Pango.Layout(context);
+
+            result.SetText(text);
+
+            result.FontDescription = new Pango.FontDescription
+            {
+                Family = fontFamily,
+                Size = Pango.Units.FromDouble(CorrectScale(fontSize)),
+                Style = (Pango.Style)fontStyle,
+                Weight = fontWeight
+            };
+
+            result.Alignment = textAlignment;
+            result.Attributes = new Pango.AttrList();
+            result.Width = double.IsPositiveInfinity(constraint.Width) ? -1 : Pango.Units.FromDouble(constraint.Width);
+            return result;
+        }
+
+        private Size Measure()
+        {
+            int width;
+            int height;
+            Layout.GetPixelSize(out width, out height);
+
+            return new Size(width, height);
         }
     }
 }

@@ -45,9 +45,10 @@ namespace Avalonia.Cairo
             FontStyle fontStyle,
             TextAlignment textAlignment,
             Avalonia.Media.FontWeight fontWeight,
-            TextWrapping wrapping)
+            TextWrapping wrapping,
+            Size constraint)
         {
-            return new FormattedTextImpl(s_pangoContext, text, fontFamily, fontSize, fontStyle, textAlignment, fontWeight);
+            return new FormattedTextImpl(s_pangoContext, text, fontFamily, fontSize, fontStyle, textAlignment, fontWeight, constraint);
         }
 
         public IRenderTarget CreateRenderTarget(IPlatformHandle handle)

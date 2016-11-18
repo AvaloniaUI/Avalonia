@@ -12,7 +12,8 @@ namespace Avalonia.Visuals.UnitTests.Media
             Assert.Throws<ArgumentException>(() => new FormattedText(
                 "foo",
                 "Ariel",
-                0));
+                0,
+                Size.Infinity));
         }
 
         [Fact]
@@ -22,6 +23,7 @@ namespace Avalonia.Visuals.UnitTests.Media
                 "foo",
                 "Ariel",
                 12,
+                Size.Infinity,
                 fontWeight: 0));
         }
     }

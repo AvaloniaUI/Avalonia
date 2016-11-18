@@ -10,7 +10,7 @@ namespace Avalonia.Media
     /// <summary>
     /// Represents a piece of text with formatting.
     /// </summary>
-    public class FormattedText : AvaloniaDisposable
+    public class FormattedText
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="FormattedText"/> class.
@@ -18,6 +18,7 @@ namespace Avalonia.Media
         /// <param name="text">The text.</param>
         /// <param name="fontFamilyName">The font family.</param>
         /// <param name="fontSize">The font size.</param>
+        /// <param name="constraint">The text layout constraints.</param>
         /// <param name="fontStyle">The font style.</param>
         /// <param name="textAlignment">The text alignment.</param>
         /// <param name="fontWeight">The font weight.</param>
@@ -26,6 +27,7 @@ namespace Avalonia.Media
             string text,
             string fontFamilyName,
             double fontSize,
+            Size constraint,
             FontStyle fontStyle = FontStyle.Normal,
             TextAlignment textAlignment = TextAlignment.Left,
             FontWeight fontWeight = FontWeight.Normal,
@@ -66,7 +68,8 @@ namespace Avalonia.Media
                 fontStyle,
                 textAlignment,
                 fontWeight,
-                wrapping);
+                wrapping,
+                constraint);
         }
 
         /// <summary>
@@ -74,16 +77,8 @@ namespace Avalonia.Media
         /// </summary>
         public Size Constraint
         {
-            get
-            {
-                CheckDisposed();
-                return PlatformImpl.Constraint;
-            }
-            set
-            {
-                CheckDisposed();
-                PlatformImpl.Constraint = value;
-            }
+            get { return PlatformImpl.Constraint; }
+            set { PlatformImpl = PlatformImpl.WithConstraint(value); }
         }
 
         /// <summary>
@@ -114,7 +109,7 @@ namespace Avalonia.Media
         /// <summary>
         /// Gets platform-specific platform implementation.
         /// </summary>
-        public IFormattedTextImpl PlatformImpl { get; }
+        public IFormattedTextImpl PlatformImpl { get; private set; }
 
         /// <summary>
         /// Gets the text alignment.
@@ -127,14 +122,6 @@ namespace Avalonia.Media
         public TextWrapping Wrapping { get; }
 
         /// <summary>
-        /// Disposes of unmanaged resources associated with the formatted text.
-        /// </summary>
-        protected override void DoDispose()
-        {
-            PlatformImpl.Dispose();
-        }
-
-        /// <summary>
         /// Gets the lines in the text.
         /// </summary>
         /// <returns>
@@ -142,7 +129,6 @@ namespace Avalonia.Media
         /// </returns>
         public IEnumerable<FormattedTextLine> GetLines()
         {
-            CheckDisposed();
             return PlatformImpl.GetLines();
         }
 
@@ -155,7 +141,6 @@ namespace Avalonia.Media
         /// </returns>
         public TextHitTestResult HitTestPoint(Point point)
         {
-            CheckDisposed();
             return PlatformImpl.HitTestPoint(point);
         }
 
@@ -166,7 +151,6 @@ namespace Avalonia.Media
         /// <returns>The character bounds.</returns>
         public Rect HitTestTextPosition(int index)
         {
-            CheckDisposed();
             return PlatformImpl.HitTestTextPosition(index);
         }
 
@@ -178,7 +162,6 @@ namespace Avalonia.Media
         /// <returns>The character bounds.</returns>
         public IEnumerable<Rect> HitTestTextRange(int index, int length)
         {
-            CheckDisposed();
             return PlatformImpl.HitTestTextRange(index, length);
         }
 
@@ -188,8 +171,7 @@ namespace Avalonia.Media
         /// <returns>The bounds box of the text.</returns>
         public Size Measure()
         {
-            CheckDisposed();
-            return PlatformImpl.Measure();
+            return PlatformImpl.Size;
         }
 
         /// <summary>
@@ -200,7 +182,6 @@ namespace Avalonia.Media
         /// <param name="length">The length of the text range.</param>
         public void SetForegroundBrush(IBrush brush, int startIndex, int length)
         {
-            CheckDisposed();
             PlatformImpl.SetForegroundBrush(brush, startIndex, length);
         }
     }

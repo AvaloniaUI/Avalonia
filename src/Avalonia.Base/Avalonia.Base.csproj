@@ -72,7 +72,6 @@
     <Compile Include="Logging\Logger.cs" />
     <Compile Include="Metadata\DependsOnAttribute.cs" />
     <Compile Include="Metadata\ContentAttribute.cs" />
-    <Compile Include="AvaloniaDisposable.cs" />
     <Compile Include="AvaloniaInternalException.cs" />
     <Compile Include="AvaloniaLocator.cs" />
     <Compile Include="Metadata\XmlnsDefinitionAttribute.cs" />

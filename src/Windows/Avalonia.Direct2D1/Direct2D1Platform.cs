@@ -37,13 +37,16 @@ namespace Avalonia.Direct2D1
 
         private static readonly SharpDX.WIC.ImagingFactory s_imagingFactory = new SharpDX.WIC.ImagingFactory();
 
-        public static void Initialize() => AvaloniaLocator.CurrentMutable
-            .Bind<IPlatformRenderInterface>().ToConstant(s_instance)
-            .Bind<IRendererFactory>().ToConstant(s_instance)
-            .BindToSelf(s_d2D1Factory)
-            .BindToSelf(s_dwfactory)
-            .BindToSelf(s_imagingFactory);
+        public static void Initialize()
+        {
+            AvaloniaLocator.CurrentMutable
+                .Bind<IPlatformRenderInterface>().ToConstant(s_instance)
+                .Bind<IRendererFactory>().ToConstant(s_instance)
+                .BindToSelf(s_d2D1Factory)
+                .BindToSelf(s_dwfactory)
+                .BindToSelf(s_imagingFactory);
             SharpDX.Configuration.EnableReleaseOnFinalizer = true;
+        }
 
         public IBitmapImpl CreateBitmap(int width, int height)
         {
@@ -57,9 +60,18 @@ namespace Avalonia.Direct2D1
             FontStyle fontStyle,
             TextAlignment textAlignment,
             FontWeight fontWeight,
-            TextWrapping wrapping)
+            TextWrapping wrapping,
+            Size constraint)
         {
-            return new FormattedTextImpl(text, fontFamily, fontSize, fontStyle, textAlignment, fontWeight, wrapping);
+            return new FormattedTextImpl(
+                text,
+                fontFamily,
+                fontSize,
+                fontStyle,
+                textAlignment,
+                fontWeight,
+                wrapping,
+                constraint);
         }
 
         public IRenderer CreateRenderer(IRenderRoot root, IRenderLoop renderLoop)

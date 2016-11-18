@@ -105,17 +105,15 @@ namespace Avalonia.Rendering
             }
 
             var pt = new Point(40, 40);
-            using (
-                var txt = new FormattedText($"Frame #{_totalFrames} FPS: {_fps} Updates: {count}", "Arial", 18,
-                    FontStyle.Normal,
-                    TextAlignment.Left,
-                    FontWeight.Normal,
-                    TextWrapping.NoWrap))
-            {
-                context.Transform = Matrix.Identity;
-                context.FillRectangle(Brushes.White, new Rect(pt, txt.Measure()));
-                context.DrawText(Brushes.Black, pt, txt.PlatformImpl);
-            }
+            var txt = new FormattedText($"Frame #{_totalFrames} FPS: {_fps} Updates: {count}", "Arial", 18,
+                Size.Infinity,
+                FontStyle.Normal,
+                TextAlignment.Left,
+                FontWeight.Normal,
+                TextWrapping.NoWrap);
+            context.Transform = Matrix.Identity;
+            context.FillRectangle(Brushes.White, new Rect(pt, txt.Measure()));
+            context.DrawText(Brushes.Black, pt, txt.PlatformImpl);
         }
 
         private void UpdateScene()

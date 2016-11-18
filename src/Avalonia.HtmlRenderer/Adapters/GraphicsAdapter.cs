@@ -117,7 +117,7 @@ namespace TheArtOfDev.HtmlRenderer.Avalonia.Adapters
         FormattedText GetText(string str, RFont font)
         {
             var f = ((FontAdapter)font);
-            return new FormattedText(str, f.Name, font.Size, f.FontStyle, TextAlignment.Left, f.Weight);
+            return new FormattedText(str, f.Name, font.Size, Size.Infinity, f.FontStyle, TextAlignment.Left, f.Weight);
         }
 
         public override void MeasureString(string str, RFont font, double maxWidth, out int charFit, out double charFitWidth)

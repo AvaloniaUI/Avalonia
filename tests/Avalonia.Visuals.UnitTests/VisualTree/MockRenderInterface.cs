@@ -15,7 +15,8 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
             FontStyle fontStyle,
             TextAlignment textAlignment,
             FontWeight fontWeight,
-            TextWrapping wrapping)
+            TextWrapping wrapping,
+            Size constraint)
         {
             throw new NotImplementedException();
         }

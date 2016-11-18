@@ -13,7 +13,7 @@ namespace Avalonia.Skia
     public class FormattedTextImpl : IFormattedTextImpl
     {
         public FormattedTextImpl(string text, string fontFamilyName, double fontSize, FontStyle fontStyle,
-                    TextAlignment textAlignment, FontWeight fontWeight, TextWrapping wrapping)
+                    TextAlignment textAlignment, FontWeight fontWeight, TextWrapping wrapping, Size constraint)
         {
             Text = text ?? string.Empty;
 
@@ -36,27 +36,14 @@ namespace Avalonia.Skia
             _paint.TextAlign = textAlignment.ToSKTextAlign();
 
             _wrapping = wrapping;
+            _constraint = constraint;
 
             Rebuild();
         }
 
-        public Size Constraint
-        {
-            get { return _constraint; }
-            set
-            {
-                if (_constraint == value)
-                    return;
+        public Size Constraint => _constraint;
 
-                _constraint = value;
-
-                Rebuild();
-            }
-        }
-
-        public void Dispose()
-        {
-        }
+        public Size Size => _size;
 
         public IEnumerable<FormattedTextLine> GetLines()
         {
@@ -159,11 +146,6 @@ namespace Avalonia.Skia
             return result;
         }
 
-        public Size Measure()
-        {
-            return _size;
-        }
-
         public void SetForegroundBrush(IBrush brush, int startIndex, int length)
         {
             var key = new FBrushRange(startIndex, length);
@@ -183,6 +165,11 @@ namespace Avalonia.Skia
         public override string ToString()
         {
             return Text;
+        }
+
+        public IFormattedTextImpl WithConstraint(Size constraint)
+        {
+            throw new NotImplementedException();
         }
 
         internal void Draw(DrawingContextImpl context,

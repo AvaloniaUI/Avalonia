@@ -226,16 +226,14 @@ namespace Avalonia.Controls.Presenters
             else
             {
                 // TODO: Pretty sure that measuring "X" isn't the right way to do this...
-                using (var formattedText = new FormattedText(
+                return new FormattedText(
                     "X",
                     FontFamily,
                     FontSize,
+                    availableSize,
                     FontStyle,
                     TextAlignment,
-                    FontWeight))
-                {
-                    return formattedText.Measure();
-                }
+                    FontWeight).Measure();
             }
         }
 

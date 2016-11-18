@@ -19,46 +19,33 @@ namespace Avalonia.Direct2D1.Media
             FontStyle fontStyle,
             TextAlignment textAlignment,
             FontWeight fontWeight,
-            TextWrapping wrapping)
+            TextWrapping wrapping,
+            Size constraint)
         {
-            var factory = AvaloniaLocator.Current.GetService<DWrite.Factory>();
-
             Text = text;
-
-            using (var format = new DWrite.TextFormat(
-                factory,
+            TextLayout = Create(
+                text,
                 fontFamily,
-                (DWrite.FontWeight)fontWeight,
+                fontSize,
                 (DWrite.FontStyle)fontStyle,
-                (float)fontSize))
-            {
-                format.WordWrapping = wrapping == TextWrapping.Wrap ? 
-                    DWrite.WordWrapping.Wrap : DWrite.WordWrapping.NoWrap;
-
-                TextLayout = new DWrite.TextLayout(
-                    factory,
-                    text ?? string.Empty,
-                    format,
-                    float.MaxValue,
-                    float.MaxValue);
-            }
-
-            TextLayout.TextAlignment = textAlignment.ToDirect2D();
+                (DWrite.TextAlignment)textAlignment,
+                (DWrite.FontWeight)fontWeight,
+                wrapping == TextWrapping.Wrap ? DWrite.WordWrapping.Wrap : DWrite.WordWrapping.NoWrap,
+                (float)constraint.Width,
+                (float)constraint.Height);
+            Size = Measure();
         }
 
-        public Size Constraint
+        public FormattedTextImpl(string text, DWrite.TextLayout textLayout)
         {
-            get
-            {
-                return new Size(TextLayout.MaxWidth, TextLayout.MaxHeight);
-            }
-
-            set
-            {
-                TextLayout.MaxWidth = (float)value.Width;
-                TextLayout.MaxHeight = (float)value.Height;
-            }
+            Text = text;
+            TextLayout = textLayout;
+            Size = Measure();
         }
+
+        public Size Constraint => new Size(TextLayout.MaxWidth, TextLayout.MaxHeight);
+
+        public Size Size { get; }
 
         public string Text { get; }
 
@@ -114,7 +101,62 @@ namespace Avalonia.Direct2D1.Media
             return result.Select(x => new Rect(x.Left, x.Top, x.Width, x.Height));
         }
 
-        public Size Measure()
+        public void SetForegroundBrush(IBrush brush, int startIndex, int count)
+        {
+            TextLayout.SetDrawingEffect(
+                new BrushWrapper(brush),
+                new DWrite.TextRange(startIndex, count));
+        }
+
+        public IFormattedTextImpl WithConstraint(Size constraint)
+        {
+            var factory = AvaloniaLocator.Current.GetService<DWrite.Factory>();
+            return new FormattedTextImpl(Text, Create(
+                Text,
+                TextLayout.FontFamilyName,
+                TextLayout.FontSize,
+                TextLayout.FontStyle,
+                TextLayout.TextAlignment,
+                TextLayout.FontWeight,
+                TextLayout.WordWrapping,
+                (float)constraint.Width,
+                (float)constraint.Height));
+        }
+
+        private static DWrite.TextLayout Create(
+            string text,
+            string fontFamily,
+            double fontSize,
+            DWrite.FontStyle fontStyle,
+            DWrite.TextAlignment textAlignment,
+            DWrite.FontWeight fontWeight,
+            DWrite.WordWrapping wrapping,
+            float constraintX,
+            float constraintY)
+        {
+            var factory = AvaloniaLocator.Current.GetService<DWrite.Factory>();
+
+            using (var format = new DWrite.TextFormat(
+                factory,
+                fontFamily,
+                fontWeight,
+                fontStyle,
+                (float)fontSize))
+            {
+                format.WordWrapping = wrapping;
+
+                var result = new DWrite.TextLayout(
+                    factory,
+                    text ?? string.Empty,
+                    format,
+                    constraintX,
+                    constraintY);
+                result.TextAlignment = textAlignment;
+                return result;
+            }
+        }
+
+        private Size Measure()
         {
             var metrics = TextLayout.Metrics;
             var width = metrics.WidthIncludingTrailingWhitespace;
@@ -125,13 +167,6 @@ namespace Avalonia.Direct2D1.Media
             }
 
             return new Size(width, TextLayout.Metrics.Height);
-        }
-
-        public void SetForegroundBrush(IBrush brush, int startIndex, int count)
-        {
-            TextLayout.SetDrawingEffect(
-                new BrushWrapper(brush),
-                new DWrite.TextRange(startIndex, count));
         }
     }
 }
