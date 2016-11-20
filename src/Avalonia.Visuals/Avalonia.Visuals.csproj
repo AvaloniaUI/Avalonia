@@ -116,9 +116,8 @@
     <Compile Include="Rendering\DefaultRenderLoop.cs" />
     <Compile Include="Rendering\SceneGraph\DeferredDrawingContextImpl.cs" />
     <Compile Include="Rendering\SceneGraph\GeometryNode.cs" />
-    <Compile Include="Rendering\SceneGraph\IGeometryNode.cs" />
+    <Compile Include="Rendering\SceneGraph\IDrawOperation.cs" />
     <Compile Include="Rendering\SceneGraph\ImageNode.cs" />
-    <Compile Include="Rendering\SceneGraph\ISceneNode.cs" />
     <Compile Include="Rendering\SceneGraph\IVisualNode.cs" />
     <Compile Include="Rendering\SceneGraph\LineNode.cs" />
     <Compile Include="Rendering\SceneGraph\RectangleNode.cs" />

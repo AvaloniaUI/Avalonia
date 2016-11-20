@@ -7,7 +7,7 @@ using Avalonia.Platform;
 
 namespace Avalonia.Rendering.SceneGraph
 {
-    public class GeometryNode : IGeometryNode
+    public class GeometryNode : IDrawOperation
     {
         public GeometryNode(Matrix transform, IBrush brush, Pen pen, IGeometryImpl geometry)
         {

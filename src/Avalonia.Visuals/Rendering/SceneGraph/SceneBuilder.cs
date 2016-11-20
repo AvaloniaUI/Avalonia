@@ -78,7 +78,7 @@ namespace Avalonia.Rendering.SceneGraph
                     {
                         // The control has been removed so remove it from its parent and deindex the
                         // node and its descendents.
-                        ((VisualNode)node.Parent)?.Children.Remove(node);
+                        ((VisualNode)node.Parent)?.RemoveChild(node);
                         Deindex(scene, node, dirty);
                         return true;
                     }
@@ -89,7 +89,7 @@ namespace Avalonia.Rendering.SceneGraph
                 // The control has been removed so remove it from its parent and deindex the
                 // node and its descendents.
                 var trim = FindFirstDeadAncestor(scene, node);
-                ((VisualNode)trim.Parent).Children.Remove(trim);
+                ((VisualNode)trim.Parent).RemoveChild(trim);
                 Deindex(scene, trim, dirty);
                 return true;
             }
@@ -148,12 +148,11 @@ namespace Avalonia.Rendering.SceneGraph
 
                 m = renderTransform * m;
 
-                using (contextImpl.Begin(node))
+                using (contextImpl.BeginUpdate(node))
                 using (context.PushPostTransform(m))
                 using (context.PushTransformContainer())
                 {
-                    forceRecurse = forceRecurse ||
-                        node.Transform != contextImpl.Transform;
+                    forceRecurse = forceRecurse || node.Transform != contextImpl.Transform;
 
                     node.Transform = contextImpl.Transform;
                     node.ClipBounds = (bounds * node.Transform).Intersect(clip);
@@ -167,7 +166,11 @@ namespace Avalonia.Rendering.SceneGraph
                         clip = clip.Intersect(node.ClipBounds);
                     }
 
-                    visual.Render(context);
+                    try
+                    {
+                        visual.Render(context);
+                    }
+                    catch { }
 
                     if (forceRecurse)
                     {
@@ -178,7 +181,11 @@ namespace Avalonia.Rendering.SceneGraph
                         }
 
                         node.SubTreeUpdated = true;
-                        contextImpl.TrimNodes();
+                        contextImpl.TrimChildren();
+                    }
+                    else if (node.OpacityChanged)
+                    {
+                        AddSubtreeBounds(node, contextImpl.Dirty);
                     }
                 }
             }
@@ -198,7 +205,7 @@ namespace Avalonia.Rendering.SceneGraph
 
             foreach (var child in node.Children)
             {
-                var geometry = child as IGeometryNode;
+                var geometry = child as IDrawOperation;
                 var visual = child as VisualNode;
 
                 if (geometry != null)
@@ -210,6 +217,16 @@ namespace Avalonia.Rendering.SceneGraph
                 {
                     Deindex(scene, visual, dirty);
                 }
+            }
+        }
+
+        private static void AddSubtreeBounds(VisualNode node, DirtyRects dirty)
+        {
+            dirty.Add(node.Bounds);
+
+            foreach (var child in node.Children)
+            {
+                AddSubtreeBounds((VisualNode)child, dirty);
             }
         }
     }

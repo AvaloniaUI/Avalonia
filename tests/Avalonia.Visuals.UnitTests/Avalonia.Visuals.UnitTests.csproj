@@ -81,7 +81,9 @@
     <Compile Include="Media\PathMarkupParserTests.cs" />
     <Compile Include="RelativeRectComparer.cs" />
     <Compile Include="RelativeRectTests.cs" />
+    <Compile Include="Rendering\SceneGraph\DeferredDrawingContextImplTests.cs" />
     <Compile Include="Rendering\SceneGraph\SceneBuilderTests.cs" />
+    <Compile Include="Rendering\SceneGraph\VisualNodeTests.cs" />
     <Compile Include="ThicknessTests.cs" />
     <Compile Include="Media\BrushTests.cs" />
     <Compile Include="Media\ColorTests.cs" />

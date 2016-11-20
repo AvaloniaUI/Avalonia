@@ -11,9 +11,16 @@ namespace Avalonia.Rendering.SceneGraph
     /// <summary>
     /// A node in the low-level scene graph representing an <see cref="IVisual"/>.
     /// </summary>
-    public class VisualNode : IVisualNode
+    internal class VisualNode : IVisualNode
     {
+        private static readonly IReadOnlyList<IVisualNode> EmptyChildren = new IVisualNode[0];
+        private static readonly IReadOnlyList<IDrawOperation> EmptyDrawOperations = new IDrawOperation[0];
+
         private Rect? _bounds;
+        private double _opacity;
+        private List<IVisualNode> _children;
+        private List<IDrawOperation> _drawOperations;
+        private bool _drawOperationsCloned;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="VisualNode"/> class.
@@ -32,7 +39,6 @@ namespace Avalonia.Rendering.SceneGraph
 
             Visual = visual;
             Parent = parent;
-            Children = new List<ISceneNode>();
         }
 
         /// <inheritdoc/>
@@ -57,9 +63,20 @@ namespace Avalonia.Rendering.SceneGraph
         public Geometry GeometryClip { get; set; }
 
         /// <summary>
-        /// Gets or sets the opacity of the scnee graph node.
+        /// Gets or sets the opacity of the scene graph node.
         /// </summary>
-        public double Opacity { get; set; }
+        public double Opacity
+        {
+            get { return _opacity; }
+            set
+            {
+                if (_opacity != value)
+                {
+                    _opacity = value;
+                    OpacityChanged = true;
+                }
+            }
+        }
 
         /// <summary>
         /// Gets or sets the opacity mask for the scnee graph node.
@@ -67,18 +84,101 @@ namespace Avalonia.Rendering.SceneGraph
         public IBrush OpacityMask { get; set; }
 
         /// <summary>
-        /// Gets the child scene graph nodes.
-        /// </summary>
-        public List<ISceneNode> Children { get; }
-
-        /// <summary>
         /// Gets a value indicating whether this node in the scene graph has already
         /// been updated in the current update pass.
         /// </summary>
         public bool SubTreeUpdated { get; set; }
 
+        /// <summary>
+        /// Gets a value indicating whether the <see cref="Opacity"/> property has changed.
+        /// </summary>
+        public bool OpacityChanged { get; private set; }
+
         /// <inheritdoc/>
-        IReadOnlyList<ISceneNode> IVisualNode.Children => Children;
+        public IReadOnlyList<IVisualNode> Children => _children ?? EmptyChildren;
+
+        /// <inheritdoc/>
+        public IReadOnlyList<IDrawOperation> DrawOperations => _drawOperations ?? EmptyDrawOperations;
+
+        /// <summary>
+        /// Adds a child to the <see cref="Children"/> collection.
+        /// </summary>
+        /// <param name="child">The child to add.</param>
+        public void AddChild(IVisualNode child)
+        {
+            EnsureChildrenCreated();
+            _children.Add(child);
+        }
+
+        /// <summary>
+        /// Adds an operation to the <see cref="DrawOperations"/> collection.
+        /// </summary>
+        /// <param name="operation">The operation to add.</param>
+        public void AddDrawOperation(IDrawOperation operation)
+        {
+            EnsureDrawOperationsCreated();
+            _drawOperations.Add(operation);
+        }
+
+        /// <summary>
+        /// Removes a child from the <see cref="Children"/> collection.
+        /// </summary>
+        /// <param name="child">The child to remove.</param>
+        public void RemoveChild(IVisualNode child)
+        {
+            EnsureChildrenCreated();
+            _children.Remove(child);
+        }
+
+        /// <summary>
+        /// Replaces a child in the <see cref="Children"/> collection.
+        /// </summary>
+        /// <param name="index">The child to be replaced.</param>
+        /// <param name="node">The child to add.</param>
+        public void ReplaceChild(int index, IVisualNode node)
+        {
+            EnsureChildrenCreated();
+            _children[index] = node;
+        }
+
+        /// <summary>
+        /// Replaces an item in the <see cref="DrawOperations"/> collection.
+        /// </summary>
+        /// <param name="index">The opeation to be replaced.</param>
+        /// <param name="operation">The operation to add.</param>
+        public void ReplaceDrawOperation(int index, IDrawOperation operation)
+        {
+            EnsureDrawOperationsCreated();
+            _drawOperations[index] = operation;
+        }
+
+        /// <summary>
+        /// Removes items in the <see cref="Children"/> collection from the specified index
+        /// to the end.
+        /// </summary>
+        /// <param name="first">The index of the first child to be removed.</param>
+        public void TrimChildren(int first)
+        {
+            if (first < _children?.Count)
+            {
+                EnsureChildrenCreated();
+                _children.RemoveRange(first, _children.Count - first);
+            }
+        }
+
+        /// <summary>
+        /// Removes items in the <see cref="DrawOperations"/> collection from the specified index
+        /// to the end.
+        /// </summary>
+        /// <param name="first">The index of the first operation to be removed.</param>
+        public void TrimDrawOperations(int first)
+        {
+            if (first < _drawOperations?.Count)
+            {
+                EnsureDrawOperationsCreated();
+                _drawOperations.RemoveRange(first, _drawOperations.Count - first);
+            }
+        }
 
         /// <summary>
         /// Makes a copy of the node
@@ -93,19 +193,19 @@ namespace Avalonia.Rendering.SceneGraph
                 ClipBounds = ClipBounds,
                 ClipToBounds = ClipToBounds,
                 GeometryClip = GeometryClip,
-                Opacity = Opacity,
+                _opacity = Opacity,
                 OpacityMask = OpacityMask,
+                _drawOperations = _drawOperations,
+                _drawOperationsCloned = true,
             };
         }
 
         /// <inheritdoc/>
         public bool HitTest(Point p)
         {
-            foreach (var child in Children)
+            foreach (var operation in DrawOperations)
             {
-                var geometry = child as IGeometryNode;
-
-                if (geometry?.HitTest(p) == true)
+                if (operation.HitTest(p) == true)
                 {
                     return true;
                 }
@@ -114,7 +214,8 @@ namespace Avalonia.Rendering.SceneGraph
             return false;
         }
 
-        public void Render(IDrawingContextImpl context)
+        /// <inheritdoc/>
+        public void BeginRender(IDrawingContextImpl context)
         {
             context.Transform = Transform;
 
@@ -127,15 +228,11 @@ namespace Avalonia.Rendering.SceneGraph
             {
                 context.PushClip(ClipBounds * Transform.Invert());
             }
+        }
 
-            foreach (var child in Children)
-            {
-                if (!(child is IVisualNode))
-                {
-                    child.Render(context);
-                }
-            }
-
+        /// <inheritdoc/>
+        public void EndRender(IDrawingContextImpl context)
+        {
             if (ClipToBounds)
             {
                 context.PopClip();
@@ -151,16 +248,34 @@ namespace Avalonia.Rendering.SceneGraph
         {
             var result = new Rect();
 
-            foreach (var child in Children)
+            foreach (var operation in DrawOperations)
             {
-                if (!(child is IVisualNode))
-                {
-                    result = result.Union(child.Bounds);
-                }
+                result = result.Union(operation.Bounds);
             }
 
             _bounds = result;
             return result;
+        }
+
+        private void EnsureChildrenCreated()
+        {
+            if (_children == null)
+            {
+                _children = new List<IVisualNode>();
+            }
+        }
+
+        private void EnsureDrawOperationsCreated()
+        {
+            if (_drawOperations == null)
+            {
+                _drawOperations = new List<IDrawOperation>();
+            }
+            else if (_drawOperationsCloned)
+            {
+                _drawOperations = new List<IDrawOperation>(_drawOperations);
+                _drawOperationsCloned = false;
+            }
         }
     }
 }

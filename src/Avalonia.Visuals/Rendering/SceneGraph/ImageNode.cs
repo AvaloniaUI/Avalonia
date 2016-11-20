@@ -7,7 +7,7 @@ using Avalonia.Platform;
 
 namespace Avalonia.Rendering.SceneGraph
 {
-    public class ImageNode : IGeometryNode
+    public class ImageNode : IDrawOperation
     {
         public ImageNode(Matrix transform, IBitmapImpl source, double opacity, Rect sourceRect, Rect destRect)
         {

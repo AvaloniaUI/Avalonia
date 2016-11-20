@@ -69,16 +69,7 @@ namespace Avalonia.Rendering.SceneGraph
 
             foreach (var child in source.Children)
             {
-                var visualNode = child as VisualNode;
-
-                if (visualNode != null)
-                {
-                    result.Children.Add(Clone(visualNode, result, index));
-                }
-                else
-                {
-                    result.Children.Add(child);
-                }
+                result.AddChild(Clone((VisualNode)child, result, index));
             }
 
             return result;
@@ -98,14 +89,9 @@ namespace Avalonia.Rendering.SceneGraph
                 {
                     for (var i = node.Children.Count - 1; i >= 0; --i)
                     {
-                        var visualChild = node.Children[i] as IVisualNode;
-
-                        if (visualChild != null)
+                        foreach (var h in HitTest(node.Children[i], p, clip, filter))
                         {
-                            foreach (var h in HitTest(visualChild, p, clip, filter))
-                            {
-                                yield return h;
-                            }
+                            yield return h;
                         }
                     }
 

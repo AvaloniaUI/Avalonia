@@ -6,7 +6,7 @@ using Avalonia.Media;
 
 namespace Avalonia.Rendering.SceneGraph
 {
-    public class RectangleNode : IGeometryNode
+    public class RectangleNode : IDrawOperation
     {
         public RectangleNode(Matrix transform, IBrush brush, Pen pen, Rect rect, float cornerRadius)
         {

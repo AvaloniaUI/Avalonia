@@ -45,17 +45,18 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 var borderNode = (VisualNode)result.Root.Children[0];
                 Assert.Same(borderNode, result.FindNode(border));
                 Assert.Same(border, borderNode.Visual);
-                Assert.Equal(2, borderNode.Children.Count);
+                Assert.Equal(1, borderNode.Children.Count);
+                Assert.Equal(1, borderNode.DrawOperations.Count);
 
-                var backgroundNode = (RectangleNode)borderNode.Children[0];
+                var backgroundNode = (RectangleNode)borderNode.DrawOperations[0];
                 Assert.Equal(Brushes.Red, backgroundNode.Brush);
 
-                var textBlockNode = (VisualNode)borderNode.Children[1];
+                var textBlockNode = (VisualNode)borderNode.Children[0];
                 Assert.Same(textBlockNode, result.FindNode(textBlock));
                 Assert.Same(textBlock, textBlockNode.Visual);
-                Assert.Equal(1, textBlockNode.Children.Count);
+                Assert.Equal(1, textBlockNode.DrawOperations.Count);
 
-                var textNode = (TextNode)textBlockNode.Children[0];
+                var textNode = (TextNode)textBlockNode.DrawOperations[0];
                 Assert.NotNull(textNode.Text);
             }
         }
@@ -243,7 +244,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 SceneBuilder.UpdateAll(initial);
 
                 var initialBackgroundNode = initial.FindNode(border).Children[0];
-                var initialTextNode = initial.FindNode(textBlock).Children[0];
+                var initialTextNode = initial.FindNode(textBlock).DrawOperations[0];
 
                 Assert.NotNull(initialBackgroundNode);
                 Assert.NotNull(initialTextNode);
@@ -256,14 +257,14 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 var borderNode = (VisualNode)result.Root.Children[0];
                 Assert.Same(border, borderNode.Visual);
 
-                var backgroundNode = (RectangleNode)borderNode.Children[0];
+                var backgroundNode = (RectangleNode)borderNode.DrawOperations[0];
                 Assert.NotSame(initialBackgroundNode, backgroundNode);
                 Assert.Equal(Brushes.Green, backgroundNode.Brush);
 
-                var textBlockNode = (VisualNode)borderNode.Children[1];
+                var textBlockNode = (VisualNode)borderNode.Children[0];
                 Assert.Same(textBlock, textBlockNode.Visual);
 
-                var textNode = (TextNode)textBlockNode.Children[0];
+                var textNode = (TextNode)textBlockNode.DrawOperations[0];
                 Assert.Same(initialTextNode, textNode);
             }
         }
@@ -306,9 +307,10 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 Assert.False(SceneBuilder.Update(result, canvas));
 
                 var borderNode = (VisualNode)result.Root.Children[0];
-                Assert.Equal(2, borderNode.Children.Count);
+                Assert.Equal(1, borderNode.Children.Count);
+                Assert.Equal(1, borderNode.DrawOperations.Count);
 
-                var decoratorNode = (VisualNode)borderNode.Children[1];
+                var decoratorNode = (VisualNode)borderNode.Children[0];
                 Assert.Same(decorator, decoratorNode.Visual);
                 Assert.Same(decoratorNode, result.FindNode(decorator));
 
@@ -356,7 +358,8 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 Assert.False(SceneBuilder.Update(result, canvas));
 
                 var borderNode = (VisualNode)result.Root.Children[0];
-                Assert.Equal(1, borderNode.Children.Count);
+                Assert.Equal(0, borderNode.Children.Count);
+                Assert.Equal(1, borderNode.DrawOperations.Count);
 
                 Assert.Null(result.FindNode(decorator));
             }

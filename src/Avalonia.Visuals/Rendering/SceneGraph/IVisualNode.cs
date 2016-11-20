@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Avalonia.Media;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering.SceneGraph
@@ -10,7 +11,7 @@ namespace Avalonia.Rendering.SceneGraph
     /// <summary>
     /// Represents a node in the low-level scene graph representing an <see cref="IVisual"/>.
     /// </summary>
-    public interface IVisualNode : ISceneNode
+    public interface IVisualNode
     {
         /// <summary>
         /// Gets the visual to which the node relates.
@@ -44,7 +45,24 @@ namespace Avalonia.Rendering.SceneGraph
         /// <summary>
         /// Gets the child scene graph nodes.
         /// </summary>
-        IReadOnlyList<ISceneNode> Children { get; }
+        IReadOnlyList<IVisualNode> Children { get; }
+
+        /// <summary>
+        /// Gets the drawing operations for the visual.
+        /// </summary>
+        IReadOnlyList<IDrawOperation> DrawOperations { get; }
+
+        /// <summary>
+        /// Sets up the drawing context for rendering the node's geometry.
+        /// </summary>
+        /// <param name="context">The drawing context.</param>
+        void BeginRender(IDrawingContextImpl context);
+
+        /// <summary>
+        /// Resets the drawing context after rendering the node's geometry.
+        /// </summary>
+        /// <param name="context">The drawing context.</param>
+        void EndRender(IDrawingContextImpl context);
 
         /// <summary>
         /// Hit test the geometry in this node.

@@ -6,7 +6,7 @@ using Avalonia.Media;
 
 namespace Avalonia.Rendering.SceneGraph
 {
-    public class LineNode : IGeometryNode
+    public class LineNode : IDrawOperation
     {
         public LineNode(Matrix transform, Pen pen, Point p1, Point p2)
         {

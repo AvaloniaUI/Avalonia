@@ -76,17 +76,19 @@ namespace Avalonia.Rendering
 
             if (!clipBounds.IsEmpty)
             {
-                node.Render(context);
+                node.BeginRender(context);
+
+                foreach (var operation in node.DrawOperations)
+                {
+                    operation.Render(context);
+                }
 
                 foreach (var child in node.Children)
                 {
-                    var visualChild = child as IVisualNode;
-
-                    if (visualChild != null)
-                    {
-                        Render(context, visualChild, clipBounds);
-                    }
+                    Render(context, child, clipBounds);
                 }
+
+                node.EndRender(context);
             }
         }
 

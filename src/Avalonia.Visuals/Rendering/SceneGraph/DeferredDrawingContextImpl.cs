@@ -2,16 +2,16 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
-using System.Reactive.Disposables;
 using Avalonia.Media;
 using Avalonia.Platform;
 
 namespace Avalonia.Rendering.SceneGraph
 {
-    public class DeferredDrawingContextImpl : IDrawingContextImpl
+    internal class DeferredDrawingContextImpl : IDrawingContextImpl
     {
-        private Stack<Frame> _stack = new Stack<Frame>();
+        private VisualNode _node;
+        private int _childIndex;
+        private int _drawOperationindex;
 
         public DeferredDrawingContextImpl()
             : this(new DirtyRects())
@@ -23,57 +23,47 @@ namespace Avalonia.Rendering.SceneGraph
             Dirty = dirty;
         }
 
-        public Matrix Transform { get; set; }
-
-        private VisualNode Node => _stack.Peek().Node;
+        public Matrix Transform { get; set; } = Matrix.Identity;
 
         public DirtyRects Dirty { get; }
 
-        private int Index
+        public UpdateState BeginUpdate(VisualNode node)
         {
-            get { return _stack.Peek().Index; }
-            set { _stack.Peek().Index = value; }
-        }
+            Contract.Requires<ArgumentNullException>(node != null);
 
-        public IDisposable Begin(VisualNode node)
-        {
-            if (_stack.Count > 0)
+            if (_node != null)
             {
-                var next = NextNodeAs<VisualNode>();
-
-                if (next == null || next != node)
+                if (_childIndex < _node.Children.Count)
                 {
-                    Add(node);
+                    _node.ReplaceChild(_childIndex, node);
                 }
                 else
                 {
-                    ++Index;
+                    _node.AddChild(node);
                 }
+
+                ++_childIndex;
             }
 
-            _stack.Push(new Frame(node));
-            return Disposable.Create(Pop);
+            var state = new UpdateState(this, _node, _childIndex, _drawOperationindex);
+            _node = node;
+            _childIndex = _drawOperationindex = 0;
+            return state;
         }
 
         public void Dispose()
         {
+            // Nothing to do here as we allocate no unmanaged resources.
         }
 
-        public void TrimNodes()
+        public void TrimChildren()
         {
-            var frame = _stack.Peek();
-            var children = frame.Node.Children;
-            var index = frame.Index;
-
-            if (children.Count > index)
-            {
-                children.RemoveRange(index, children.Count - index);
-            }
+            _node.TrimChildren(_childIndex);
         }
 
         public void DrawGeometry(IBrush brush, Pen pen, IGeometryImpl geometry)
         {
-            var next = NextNodeAs<GeometryNode>();
+            var next = NextDrawAs<GeometryNode>();
 
             if (next == null || !next.Equals(Transform, brush, pen, geometry))
             {
@@ -81,13 +71,13 @@ namespace Avalonia.Rendering.SceneGraph
             }
             else
             {
-                ++Index;
+                ++_drawOperationindex;
             }
         }
 
         public void DrawImage(IBitmapImpl source, double opacity, Rect sourceRect, Rect destRect)
         {
-            var next = NextNodeAs<ImageNode>();
+            var next = NextDrawAs<ImageNode>();
 
             if (next == null || !next.Equals(Transform, source, opacity, sourceRect, destRect))
             {
@@ -95,13 +85,13 @@ namespace Avalonia.Rendering.SceneGraph
             }
             else
             {
-                ++Index;
+                ++_drawOperationindex;
             }
         }
 
         public void DrawLine(Pen pen, Point p1, Point p2)
         {
-            var next = NextNodeAs<LineNode>();
+            var next = NextDrawAs<LineNode>();
 
             if (next == null || !next.Equals(Transform, pen, p1, p2))
             {
@@ -109,13 +99,13 @@ namespace Avalonia.Rendering.SceneGraph
             }
             else
             {
-                ++Index;
+                ++_drawOperationindex;
             }
         }
 
         public void DrawRectangle(Pen pen, Rect rect, float cornerRadius = 0)
         {
-            var next = NextNodeAs<RectangleNode>();
+            var next = NextDrawAs<RectangleNode>();
 
             if (next == null || !next.Equals(Transform, null, pen, rect, cornerRadius))
             {
@@ -123,13 +113,13 @@ namespace Avalonia.Rendering.SceneGraph
             }
             else
             {
-                ++Index;
+                ++_drawOperationindex;
             }
         }
 
         public void DrawText(IBrush foreground, Point origin, IFormattedTextImpl text)
         {
-            var next = NextNodeAs<TextNode>();
+            var next = NextDrawAs<TextNode>();
 
             if (next == null || !next.Equals(Transform, foreground, origin, text))
             {
@@ -137,13 +127,13 @@ namespace Avalonia.Rendering.SceneGraph
             }
             else
             {
-                ++Index;
+                ++_drawOperationindex;
             }
         }
 
         public void FillRectangle(IBrush brush, Rect rect, float cornerRadius = 0)
         {
-            var next = NextNodeAs<RectangleNode>();
+            var next = NextDrawAs<RectangleNode>();
 
             if (next == null || !next.Equals(Transform, brush, null, rect, cornerRadius))
             {
@@ -151,7 +141,7 @@ namespace Avalonia.Rendering.SceneGraph
             }
             else
             {
-                ++Index;
+                ++_drawOperationindex;
             }
         }
 
@@ -195,51 +185,57 @@ namespace Avalonia.Rendering.SceneGraph
             // TODO: Implement
         }
 
-        private void Add(ISceneNode node)
+        public struct UpdateState : IDisposable
         {
-            var index = Index;
-
-            if (index < Node.Children.Count)
+            public UpdateState(
+                DeferredDrawingContextImpl owner,
+                VisualNode node,
+                int childIndex,
+                int drawOperationIndex)
             {
-                Node.Children[index] = node;
+                Owner = owner;
+                Node = node;
+                ChildIndex = childIndex;
+                DrawOperationIndex = drawOperationIndex;
+            }
+
+            public void Dispose()
+            {
+                Owner._node.TrimDrawOperations(Owner._drawOperationindex);
+
+                foreach (var operation in Owner._node.DrawOperations)
+                {
+                    Owner.Dirty.Add(operation.Bounds);
+                }
+
+                Owner._node = Node;
+                Owner._childIndex = ChildIndex;
+                Owner._drawOperationindex = DrawOperationIndex;
+            }
+
+            public DeferredDrawingContextImpl Owner { get; }
+            public VisualNode Node { get; }
+            public int ChildIndex { get; }
+            public int DrawOperationIndex { get; }
+        }
+
+        private void Add(IDrawOperation  node)
+        {
+            if (_drawOperationindex < _node.DrawOperations.Count)
+            {
+                _node.ReplaceDrawOperation(_drawOperationindex, node);
             }
             else
             {
-                Node.Children.Add(node);
+                _node.AddDrawOperation(node);
             }
 
-            ++Index;
+            ++_drawOperationindex;
         }
 
-        private T NextNodeAs<T>() where T : class, ISceneNode
+        private T NextDrawAs<T>() where T : class, IDrawOperation
         {
-            return Index < Node.Children.Count ? Node.Children[Index] as T : null;
-        }
-
-        private void Pop()
-        {
-            foreach (var child in Node.Children)
-            {
-                var geometry = child as IGeometryNode;
-
-                if (geometry != null)
-                {
-                    Dirty.Add(geometry.Bounds);
-                }
-            }
-
-            _stack.Pop();
-        }
-
-        class Frame
-        {
-            public Frame(VisualNode node)
-            {
-                Node = node;
-            }
-
-            public VisualNode Node { get; }
-            public int Index { get; set; }
+            return _drawOperationindex < _node.DrawOperations.Count ? _node.DrawOperations[_drawOperationindex] as T : null;
         }
     }
 }
