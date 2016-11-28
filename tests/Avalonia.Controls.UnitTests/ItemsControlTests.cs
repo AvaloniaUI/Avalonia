@@ -9,6 +9,8 @@ using Avalonia.Controls.Templates;
 using Avalonia.LogicalTree;
 using Avalonia.VisualTree;
 using Xunit;
+using System.Collections.ObjectModel;
+using Avalonia.UnitTests;
 
 namespace Avalonia.Controls.UnitTests
 {
@@ -59,6 +61,32 @@ namespace Avalonia.Controls.UnitTests
             var container = (ContentPresenter)target.Presenter.Panel.Children[0];
 
             Assert.Null(container.TemplatedParent);
+        }
+
+        [Fact]
+        public void Container_Child_Should_Have_LogicalParent_Set_To_Container()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var root = new Window();
+                var target = new ItemsControl();
+
+                root.Content = target;
+
+                var templatedParent = new Button();
+                target.TemplatedParent = templatedParent;
+                target.Template = GetTemplate();
+
+                target.Items = new[] { "Foo" };
+
+                root.ApplyTemplate();
+                target.ApplyTemplate();
+                target.Presenter.ApplyTemplate();
+
+                var container = (ContentPresenter)target.Presenter.Panel.Children[0];
+
+                Assert.Equal(container, container.Child.Parent);
+            }
         }
 
         [Fact]
@@ -138,7 +166,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Adding_String_Item_Should_Make_ContentPresenter_Appear_In_LogicalChildren()
+        public void Adding_String_Item_Should_Make_TextBlock_Appear_In_LogicalChildren()
         {
             var target = new ItemsControl();
             var child = new Control();
@@ -150,7 +178,7 @@ namespace Avalonia.Controls.UnitTests
 
             var logical = (ILogical)target;
             Assert.Equal(1, logical.LogicalChildren.Count);
-            Assert.IsType<ContentPresenter>(logical.LogicalChildren[0]);
+            Assert.IsType<TextBlock>(logical.LogicalChildren[0]);
         }
 
         [Fact]
@@ -170,6 +198,7 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Equal(new ILogical[0], target.GetLogicalChildren());
         }
+
 
         [Fact]
         public void Setting_Items_Should_Fire_LogicalChildren_CollectionChanged()

@@ -63,6 +63,7 @@
   <ItemGroup>
     <Compile Include="AndroidPlatform.cs" />
     <Compile Include="AndroidThreadingInterface.cs" />
+    <Compile Include="PlatformIconLoader.cs" />
     <Compile Include="Platform\ClipboardImpl.cs" />
     <Compile Include="CursorFactory.cs" />
     <Compile Include="Platform\Input\AndroidKeyboardDevice.cs" />
