@@ -2,6 +2,8 @@ using System;
 using Avalonia.Media;
 using Avalonia.Platform;
 using SkiaSharp;
+using Gdk;
+using Gtk;
 #if WIN32
 using Avalonia.Win32.Interop;
 #endif
@@ -27,14 +29,15 @@ namespace Avalonia.Skia
 
     internal class WindowRenderTarget : RenderTarget
     {
-        private readonly IPlatformHandle _hwnd;
+        //private readonly IPlatformHandle _hwnd;
+		private readonly Gtk.Window _hwnd;
         SKBitmap _bitmap;
         int Width { get; set; }
         int Height { get; set; }
 
         public WindowRenderTarget(IPlatformHandle hwnd)
         {
-            _hwnd = hwnd;
+			_hwnd = (Gtk.Window) hwnd;
             FixSize();
         }
 
@@ -42,8 +45,8 @@ namespace Avalonia.Skia
         {
             int width, height;
             GetPlatformWindowSize(out width, out height);
-            if (Width == width && Height == height)
-                return;
+            /*if (Width == width && Height == height)
+                return;*/
 
             Width = width;
             Height = height;
@@ -64,7 +67,8 @@ namespace Avalonia.Skia
             var pixels = _bitmap.GetPixels(out length);
 
             // Wrap the bitmap in a Surface and keep it cached
-            Surface = SKSurface.Create(_bitmap.Info, pixels, _bitmap.RowBytes);
+            //Surface = SKSurface.Create(_bitmap.Info, pixels, _bitmap.RowBytes);
+			Surface = SKSurface.Create (_bitmap.Info.Width, _bitmap.Info.Height, SKColorType.Bgra8888, SKAlphaType.Premul, pixels, _bitmap.RowBytes);
         }
 
         private void GetPlatformWindowSize(out int w, out int h)
@@ -75,10 +79,12 @@ namespace Avalonia.Skia
             w = rc.right - rc.left;
             h = rc.bottom - rc.top;
 #else
-			throw new NotImplementedException();
+			w = 800;
+			h = 600;
 #endif
         }
 
+#if WIN32
         private Size GetWindowDpiWin32()
         {
             if (UnmanagedMethods.ShCoreAvailable)
@@ -101,6 +107,7 @@ namespace Avalonia.Skia
 
             return new Size(96, 96);
         }
+#endif
 
         public override DrawingContext CreateDrawingContext()
         {
@@ -121,8 +128,10 @@ namespace Avalonia.Skia
                 switch (runtimeService.GetRuntimeInfo().OperatingSystem)
                 {
                     case OperatingSystemType.WinNT:
+					#if WIN32
                         var dpi = GetWindowDpiWin32();
                         scale = dpi.Width / 96.0;
+					#endif
                         break;
                 }
             }
@@ -163,10 +172,19 @@ namespace Avalonia.Skia
 
             UnmanagedMethods.ReleaseDC(_hwnd.Handle, hdc);
 #else
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
 #endif
 
-            _bitmap.UnlockPixels();
+			var gdk = _hwnd.GdkWindow;
+
+			Gdk.GC gc = new Gdk.GC ((Drawable)gdk);
+
+			// Is the _bitmap.Bytes[] a reference or will this be a copy??? its a byte[] array
+			global::Gdk.Pixbuf pb = new Pixbuf (_bitmap.Bytes, Gdk.Colorspace.Rgb, true, 8, _bitmap.Width, _bitmap.Height, _bitmap.RowBytes);
+			gdk.DrawPixbuf (gc, pb, 0, 0, 0, 0, _bitmap.Width, _bitmap.Height, RgbDither.None, 0, 0);
+
+			_bitmap.UnlockPixels();
+
         }
     }
 }
