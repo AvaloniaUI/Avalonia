@@ -26,6 +26,36 @@ namespace Avalonia.Markup.UnitTests.Data
         }
 
         [Fact]
+        public async void Should_Get_UnsetValue_For_Invalid_Array_Index()
+        {
+            var data = new { Foo = new[] { "foo", "bar" } };
+            var target = new ExpressionObserver(data, "Foo[invalid]");
+            var result = await target.Take(1);
+
+            Assert.Equal(AvaloniaProperty.UnsetValue, result);
+        }
+
+        [Fact]
+        public async void Should_Get_UnsetValue_For_Invalid_Dictionary_Index()
+        {
+            var data = new { Foo = new Dictionary<int, string> { { 1, "foo" } } };
+            var target = new ExpressionObserver(data, "Foo[invalid]");
+            var result = await target.Take(1);
+
+            Assert.Equal(AvaloniaProperty.UnsetValue, result);
+        }
+
+        [Fact]
+        public async void Should_Get_UnsetValue_For_Object_Without_Indexer()
+        {
+            var data = new { Foo = 5 };
+            var target = new ExpressionObserver(data, "Foo[noindexer]");
+            var result = await target.Take(1);
+
+            Assert.Equal(AvaloniaProperty.UnsetValue, result);
+        }
+
+        [Fact]
         public async void Should_Get_MultiDimensional_Array_Value()
         {
             var data = new { Foo = new[,] { { "foo", "bar" }, { "baz", "qux" } } };
