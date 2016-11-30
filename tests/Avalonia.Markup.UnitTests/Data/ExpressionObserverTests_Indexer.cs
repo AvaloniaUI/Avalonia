@@ -192,6 +192,79 @@ namespace Avalonia.Markup.UnitTests.Data
             Assert.Equal(0, data.Foo.PropertyChangedSubscriptionCount);
         }
 
+        [Fact]
+        public void Should_SetArrayIndex()
+        {
+            var data = new { Foo = new[] { "foo", "bar" } };
+            var target = new ExpressionObserver(data, "Foo[1]");
+
+            using (target.Subscribe(_ => { }))
+            {
+                Assert.True(target.SetValue("baz"));
+            }
+
+            Assert.Equal("baz", data.Foo[1]);
+        }
+
+        [Fact]
+        public void Should_Set_ExistingDictionaryEntry()
+        {
+            var data = new
+            {
+                Foo = new Dictionary<string, int>
+                {
+                    {"foo", 1 }
+                }
+            };
+
+
+            var target = new ExpressionObserver(data, "Foo[foo]");
+            using (target.Subscribe(_ => { }))
+            {
+                Assert.True(target.SetValue(4));
+            }
+
+            Assert.Equal(4, data.Foo["foo"]);
+        }
+
+        [Fact]
+        public void Should_Add_NewDictionaryEntry()
+        {
+            var data = new
+            {
+                Foo = new Dictionary<string, int>
+                {
+                    {"foo", 1 }
+                }
+            };
+
+
+            var target = new ExpressionObserver(data, "Foo[bar]");
+            using (target.Subscribe(_ => { }))
+            {
+                Assert.True(target.SetValue(4));
+            }
+
+            Assert.Equal(4, data.Foo["bar"]);
+        }
+
+        [Fact]
+        public void Should_Set_NonIntegerIndexer()
+        {
+            var data = new { Foo = new NonIntegerIndexer() };
+            data.Foo["foo"] = "bar";
+            data.Foo["baz"] = "qux";
+
+            var target = new ExpressionObserver(data, "Foo[foo]");
+
+            using (target.Subscribe(_ => { }))
+            {
+                Assert.True(target.SetValue("bar2"));
+            }
+            
+            Assert.Equal("bar2", data.Foo["foo"]);
+        }
+
         private class NonIntegerIndexer : NotifyingBase
         {
             private readonly Dictionary<string, string> _storage = new Dictionary<string, string>();
