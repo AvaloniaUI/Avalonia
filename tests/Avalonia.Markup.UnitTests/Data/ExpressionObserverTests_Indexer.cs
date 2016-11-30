@@ -246,8 +246,7 @@ namespace Avalonia.Markup.UnitTests.Data
                     {"foo", 1 }
                 }
             };
-
-
+            
             var target = new ExpressionObserver(data, "Foo[foo]");
             using (target.Subscribe(_ => { }))
             {
@@ -267,8 +266,7 @@ namespace Avalonia.Markup.UnitTests.Data
                     {"foo", 1 }
                 }
             };
-
-
+            
             var target = new ExpressionObserver(data, "Foo[bar]");
             using (target.Subscribe(_ => { }))
             {
