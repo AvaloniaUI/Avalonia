@@ -11,12 +11,15 @@ namespace Avalonia.Rendering
 {
     public class DeferredRenderer : IRenderer
     {
+        private readonly IDispatcher _dispatcher;
         private readonly IRenderLoop _renderLoop;
         private readonly IRenderRoot _root;
+        private readonly ISceneBuilder _sceneBuilder;
+        private readonly RenderLayers _layers;
         private Scene _scene;
         private IRenderTarget _renderTarget;
         private List<IVisual> _dirty;
-        private DirtyRects _dirtyRects;
+        private LayerDirtyRects _dirtyRects;
         private bool _updateQueued;
         private bool _rendering;
 
@@ -26,12 +29,20 @@ namespace Avalonia.Rendering
         private int _fps;
         private TimeSpan _lastFpsUpdate;
 
-        public DeferredRenderer(IRenderRoot root, IRenderLoop renderLoop)
+        public DeferredRenderer(
+            IRenderRoot root,
+            IRenderLoop renderLoop,
+            ISceneBuilder sceneBuilder = null,
+            IRenderLayerFactory layerFactory = null,
+            IDispatcher dispatcher = null)
         {
             Contract.Requires<ArgumentNullException>(root != null);
 
+            _dispatcher = dispatcher ?? Dispatcher.UIThread;
             _root = root;
+            _sceneBuilder = sceneBuilder ?? new SceneBuilder();
             _scene = new Scene(root);
+            _layers = new RenderLayers(layerFactory ?? new DefaultRenderLayerFactory());
 
             if (renderLoop != null)
             {
@@ -70,25 +81,28 @@ namespace Avalonia.Rendering
         {
         }
 
-        private void Render(IDrawingContextImpl context, IVisualNode node, Rect clipBounds)
+        private void Render(IDrawingContextImpl context, VisualNode node, IVisual layer, Rect clipBounds)
         {
-            clipBounds = node.ClipBounds.Intersect(clipBounds);
-
-            if (!clipBounds.IsEmpty)
+            if (node.LayerRoot == layer)
             {
-                node.BeginRender(context);
+                clipBounds = node.ClipBounds.Intersect(clipBounds);
 
-                foreach (var operation in node.DrawOperations)
+                if (!clipBounds.IsEmpty)
                 {
-                    operation.Render(context);
-                }
+                    node.BeginRender(context);
 
-                foreach (var child in node.Children)
-                {
-                    Render(context, child, clipBounds);
-                }
+                    foreach (var operation in node.DrawOperations)
+                    {
+                        operation.Render(context);
+                    }
 
-                node.EndRender(context);
+                    foreach (var child in node.Children)
+                    {
+                        Render(context, (VisualNode)child, layer, clipBounds);
+                    }
+
+                    node.EndRender(context);
+                }
             }
         }
 
@@ -125,19 +139,18 @@ namespace Avalonia.Rendering
             try
             {
                 var scene = _scene.Clone();
-                var dirtyRects = new DirtyRects();
+                var dirtyRects = new LayerDirtyRects();
 
                 if (_dirty == null)
                 {
                     _dirty = new List<IVisual>();
-                    SceneBuilder.UpdateAll(scene);
-                    dirtyRects.Add(new Rect(_root.ClientSize));
+                    _sceneBuilder.UpdateAll(scene, dirtyRects);
                 }
                 else if (_dirty.Count > 0)
                 {
                     foreach (var visual in _dirty)
                     {
-                        SceneBuilder.Update(scene, visual, dirtyRects);
+                        _sceneBuilder.Update(scene, visual, dirtyRects);
                     }
 
                     dirtyRects.Coalesce();
@@ -167,19 +180,45 @@ namespace Avalonia.Rendering
 
             if (!_updateQueued && (_dirty == null || _dirty.Count > 0 || _dirtyRects != null))
             {
-                Dispatcher.UIThread.InvokeAsync(UpdateScene, DispatcherPriority.Render);
                 _updateQueued = true;
+                _dispatcher.InvokeAsync(UpdateScene, DispatcherPriority.Render);
             }
 
             _rendering = true;
+            _totalFrames++;
 
             Scene scene;
-            DirtyRects dirtyRects;
+            LayerDirtyRects dirtyRects;
+            int updateCount = 0;
 
             lock (_scene)
             {
                 scene = _scene;
                 dirtyRects = _dirtyRects;
+            }
+
+            var toRemove = new List<IVisual>();
+
+            if (dirtyRects != null)
+            {
+                foreach (var layer in dirtyRects)
+                {
+                    var renderTarget = GetRenderTargetForLayer(layer.Key);
+                    var node = (VisualNode)scene.FindNode(layer.Key);
+
+                    using (var context = renderTarget.CreateDrawingContext())
+                    {
+                        foreach (var rect in layer.Value)
+                        {
+                            context.PushClip(rect);
+                            Render(context, node, layer.Key, rect);
+                            context.PopClip();
+                            ++updateCount;
+                        }
+                    }
+                }
+
+                _layers.RemoveUnused(scene);
             }
 
             try
@@ -191,18 +230,13 @@ namespace Avalonia.Rendering
 
                 using (var context = _renderTarget.CreateDrawingContext())
                 {
-                    int updateCount = 0;
-
-                    _totalFrames++;
-
                     if (dirtyRects != null)
                     {
-                        foreach (var rect in dirtyRects)
+                        var rect = new Rect(_root.ClientSize);
+
+                        foreach (var layer in _layers)
                         {
-                            context.PushClip(rect);
-                            Render(context, _scene.Root, rect);
-                            context.PopClip();
-                            ++updateCount;
+                            context.DrawImage(layer.Bitmap, layer.LayerRoot.Opacity, rect, rect);
                         }
                     }
 
@@ -220,6 +254,11 @@ namespace Avalonia.Rendering
             }
 
             _rendering = false;
+        }
+
+        private IRenderTargetBitmapImpl GetRenderTargetForLayer(IVisual layerRoot)
+        {
+            return (_layers.Get(layerRoot) ?? _layers.Add(layerRoot, _root.ClientSize)).Bitmap;
         }
     }
 }

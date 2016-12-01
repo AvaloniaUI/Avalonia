@@ -23,6 +23,7 @@ namespace Avalonia.Rendering.SceneGraph
 
             _index = index;
             Root = root;
+            root.LayerRoot = root.Visual;
         }
 
         public IVisualNode Root { get; }

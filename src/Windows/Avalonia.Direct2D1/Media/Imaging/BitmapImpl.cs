@@ -15,8 +15,6 @@ namespace Avalonia.Direct2D1.Media
     {
         private readonly ImagingFactory _factory;
 
-        private SharpDX.Direct2D1.Bitmap _direct2D;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="BitmapImpl"/> class.
         /// </summary>
@@ -93,14 +91,9 @@ namespace Avalonia.Direct2D1.Media
         /// <returns>The Direct2D bitmap.</returns>
         public SharpDX.Direct2D1.Bitmap GetDirect2DBitmap(SharpDX.Direct2D1.RenderTarget renderTarget)
         {
-            if (_direct2D == null)
-            {
-                FormatConverter converter = new FormatConverter(_factory);
-                converter.Initialize(WicImpl, PixelFormat.Format32bppPBGRA);
-                _direct2D = SharpDX.Direct2D1.Bitmap.FromWicBitmap(renderTarget, converter);
-            }
-
-            return _direct2D;
+            FormatConverter converter = new FormatConverter(_factory);
+            converter.Initialize(WicImpl, PixelFormat.Format32bppPBGRA);
+            return SharpDX.Direct2D1.Bitmap.FromWicBitmap(renderTarget, converter);
         }
 
         /// <summary>

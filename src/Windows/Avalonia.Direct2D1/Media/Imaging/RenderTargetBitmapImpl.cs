@@ -4,19 +4,21 @@
 using System;
 using Avalonia.Media;
 using Avalonia.Platform;
-using Avalonia.Rendering;
 using SharpDX.Direct2D1;
 using SharpDX.WIC;
+using DirectWriteFactory = SharpDX.DirectWrite.Factory;
 
 namespace Avalonia.Direct2D1.Media
 {
     public class RenderTargetBitmapImpl : BitmapImpl, IRenderTargetBitmapImpl, IDisposable
     {
+        private readonly DirectWriteFactory _dwriteFactory;
         private readonly WicRenderTarget _target;
 
         public RenderTargetBitmapImpl(
             ImagingFactory imagingFactory,
             Factory d2dFactory,
+            DirectWriteFactory dwriteFactory,
             int width,
             int height)
             : base(imagingFactory, width, height)
@@ -31,6 +33,8 @@ namespace Avalonia.Direct2D1.Media
                 d2dFactory,
                 WicImpl,
                 props);
+
+            _dwriteFactory = dwriteFactory;
         }
 
         public override void Dispose()
@@ -39,7 +43,9 @@ namespace Avalonia.Direct2D1.Media
             base.Dispose();
         }
 
-        public IDrawingContextImpl CreateDrawingContext() => new RenderTarget(_target).CreateDrawingContext();
-        
+        public IDrawingContextImpl CreateDrawingContext()
+        {
+            return new DrawingContextImpl(_target, _dwriteFactory);
+        }        
     }
 }

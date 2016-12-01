@@ -180,7 +180,6 @@ namespace Avalonia
             set { SetValue(OpacityProperty, value); }
         }
 
-
         /// <summary>
         /// Gets the opacity mask of the scene graph node.
         /// </summary>

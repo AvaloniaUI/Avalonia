@@ -5,15 +5,19 @@ using System;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Layout;
+using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Styling;
+using Moq;
 
 namespace Avalonia.UnitTests
 {
     public class TestRoot : Decorator, IFocusScope, ILayoutRoot, IInputRoot, INameScope, IRenderRoot, IStyleRoot
     {
         private readonly NameScope _nameScope = new NameScope();
+        private readonly IRenderTarget _renderTarget = Mock.Of<IRenderTarget>(
+            x => x.CreateDrawingContext() == Mock.Of<IDrawingContextImpl>());
 
         public TestRoot()
         {
@@ -48,32 +52,17 @@ namespace Avalonia.UnitTests
 
         public IRenderTarget RenderTarget => null;
 
-        public IRenderer Renderer { get; }
+        public IRenderer Renderer { get; set; }
 
-        public IAccessKeyHandler AccessKeyHandler
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
+        public IAccessKeyHandler AccessKeyHandler => null;
 
-        public IKeyboardNavigationHandler KeyboardNavigationHandler
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
+        public IKeyboardNavigationHandler KeyboardNavigationHandler => null;
 
         public IInputElement PointerOverElement { get; set; }
 
         public bool ShowAccessKeys { get; set; }
 
-        public IRenderTarget CreateRenderTarget()
-        {
-            throw new NotImplementedException();
-        }
+        public IRenderTarget CreateRenderTarget() => _renderTarget;
 
         public void Invalidate(Rect rect)
         {

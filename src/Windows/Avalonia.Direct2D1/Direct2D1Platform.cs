@@ -95,7 +95,7 @@ namespace Avalonia.Direct2D1
 
         public IRenderTargetBitmapImpl CreateRenderTargetBitmap(int width, int height)
         {
-            return new RenderTargetBitmapImpl(s_imagingFactory, s_d2D1Factory, width, height);
+            return new RenderTargetBitmapImpl(s_imagingFactory, s_d2D1Factory, s_dwfactory, width, height);
         }
 
         public IStreamGeometryImpl CreateStreamGeometry()

@@ -6,31 +6,24 @@ using System.Linq;
 using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
-using System.Collections.Generic;
 
 namespace Avalonia.Rendering.SceneGraph
 {
-    public static class SceneBuilder
+    public class SceneBuilder : ISceneBuilder
     {
-        public static void UpdateAll(Scene scene)
+        public void UpdateAll(Scene scene, LayerDirtyRects dirty)
         {
             Contract.Requires<ArgumentNullException>(scene != null);
             Dispatcher.UIThread.VerifyAccess();
 
-            using (var impl = new DeferredDrawingContextImpl())
+            using (var impl = new DeferredDrawingContextImpl(dirty))
             using (var context = new DrawingContext(impl))
             {
                 Update(context, scene, (VisualNode)scene.Root, scene.Root.Visual.Bounds, true);
             }
         }
 
-        public static bool Update(Scene scene, IVisual visual)
-        {
-            var dirty = new DirtyRects();
-            return Update(scene, visual, dirty);
-        }
-
-        public static bool Update(Scene scene, IVisual visual, DirtyRects dirty)
+        public bool Update(Scene scene, IVisual visual, LayerDirtyRects dirty)
         {
             Contract.Requires<ArgumentNullException>(scene != null);
             Contract.Requires<ArgumentNullException>(visual != null);
@@ -131,7 +124,7 @@ namespace Avalonia.Rendering.SceneGraph
             var bounds = new Rect(visual.Bounds.Size);
             var contextImpl = (DeferredDrawingContextImpl)context.PlatformImpl;
 
-            contextImpl.Dirty.Add(node.Bounds);
+            contextImpl.Dirty.Add(node.LayerRoot, node.Bounds);
 
             if (visual.IsVisible)
             {
@@ -160,6 +153,15 @@ namespace Avalonia.Rendering.SceneGraph
                     node.GeometryClip = visual.Clip;
                     node.Opacity = opacity;
                     node.OpacityMask = visual.OpacityMask;
+
+                    if (opacity < 1)
+                    {
+                        SetLayer(node, node.Visual);
+                    }
+                    else if (node.LayerRoot == node.Visual && node.Parent != null)
+                    {
+                        ClearLayer(node, contextImpl.Dirty);
+                    }
 
                     if (node.ClipToBounds)
                     {
@@ -191,26 +193,27 @@ namespace Avalonia.Rendering.SceneGraph
             }
         }
 
-        private static VisualNode CreateNode(Scene scene, IVisual visual, IVisualNode parent)
+        private static VisualNode CreateNode(Scene scene, IVisual visual, VisualNode parent)
         {
             var node = new VisualNode(visual, parent);
+            node.LayerRoot = parent.LayerRoot;
             scene.Add(node);
             return node;
         }
 
-        private static void Deindex(Scene scene, VisualNode node, DirtyRects dirty)
+        private static void Deindex(Scene scene, VisualNode node, LayerDirtyRects dirty)
         {
             scene.Remove(node);
             node.SubTreeUpdated = true;
 
-            foreach (var child in node.Children)
+            foreach (VisualNode child in node.Children)
             {
                 var geometry = child as IDrawOperation;
                 var visual = child as VisualNode;
 
                 if (geometry != null)
                 {
-                    dirty.Add(geometry.Bounds);
+                    dirty.Add(child.LayerRoot, geometry.Bounds);
                 }
 
                 if (visual != null)
@@ -220,13 +223,48 @@ namespace Avalonia.Rendering.SceneGraph
             }
         }
 
-        private static void AddSubtreeBounds(VisualNode node, DirtyRects dirty)
+        private static void AddSubtreeBounds(VisualNode node, LayerDirtyRects dirty)
         {
-            dirty.Add(node.Bounds);
+            dirty.Add(node.LayerRoot, node.Bounds);
 
-            foreach (var child in node.Children)
+            foreach (VisualNode child in node.Children)
             {
-                AddSubtreeBounds((VisualNode)child, dirty);
+                if (child.LayerRoot == node.LayerRoot)
+                {
+                    AddSubtreeBounds(child, dirty);
+                }
+            }
+        }
+
+        private static void ClearLayer(VisualNode node, LayerDirtyRects dirty)
+        {
+            var parent = (VisualNode)node.Parent;
+            var newLayerRoot = parent.LayerRoot;
+            var existingDirtyRects = dirty[node.LayerRoot];
+
+            existingDirtyRects.Coalesce();
+
+            foreach (var r in existingDirtyRects)
+            {
+                dirty.Add(newLayerRoot, r);
+            }
+
+            dirty.Remove(node.LayerRoot);
+
+            SetLayer(node, newLayerRoot);
+        }
+
+        private static void SetLayer(VisualNode node, IVisual layerRoot)
+        {
+            node.LayerRoot = layerRoot;
+
+            foreach (VisualNode child in node.Children)
+            {
+                // If the child is not the start of a new layer, recurse.
+                if (child.LayerRoot != child.Visual)
+                {
+                    SetLayer(child, layerRoot);
+                }
             }
         }
     }

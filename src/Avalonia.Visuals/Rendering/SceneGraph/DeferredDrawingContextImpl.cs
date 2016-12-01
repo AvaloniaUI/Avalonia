@@ -14,18 +14,18 @@ namespace Avalonia.Rendering.SceneGraph
         private int _drawOperationindex;
 
         public DeferredDrawingContextImpl()
-            : this(new DirtyRects())
+            : this(new LayerDirtyRects())
         {
         }
 
-        public DeferredDrawingContextImpl(DirtyRects dirty)
+        public DeferredDrawingContextImpl(LayerDirtyRects dirty)
         {
             Dirty = dirty;
         }
 
         public Matrix Transform { get; set; } = Matrix.Identity;
 
-        public DirtyRects Dirty { get; }
+        public LayerDirtyRects Dirty { get; }
 
         public UpdateState BeginUpdate(VisualNode node)
         {
@@ -205,7 +205,7 @@ namespace Avalonia.Rendering.SceneGraph
 
                 foreach (var operation in Owner._node.DrawOperations)
                 {
-                    Owner.Dirty.Add(operation.Bounds);
+                    Owner.Dirty.Add(Owner._node.LayerRoot, operation.Bounds);
                 }
 
                 Owner._node = Node;

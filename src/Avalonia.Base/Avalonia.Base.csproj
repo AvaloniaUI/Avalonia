@@ -111,6 +111,7 @@
     <Compile Include="Threading\Dispatcher.cs" />
     <Compile Include="Threading\DispatcherPriority.cs" />
     <Compile Include="Threading\DispatcherTimer.cs" />
+    <Compile Include="Threading\IDispatcher.cs" />
     <Compile Include="Threading\JobRunner.cs" />
     <Compile Include="Threading\AvaloniaScheduler.cs" />
     <Compile Include="Threading\AvaloniaSynchronizationContext.cs" />

@@ -54,6 +54,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ImmediateDispatcher.cs" />
     <Compile Include="InvariantCultureFixture.cs" />
     <Compile Include="NotifyingBase.cs" />
     <Compile Include="TestLogSink.cs" />

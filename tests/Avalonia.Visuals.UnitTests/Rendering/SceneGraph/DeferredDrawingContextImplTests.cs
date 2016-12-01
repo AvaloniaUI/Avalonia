@@ -88,6 +88,8 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
             var node = new VisualNode(Mock.Of<IVisual>(), null);
             var target = new DeferredDrawingContextImpl();
 
+            node.LayerRoot = node.Visual;
+
             using (target.BeginUpdate(node))
             {
                 target.FillRectangle(Brushes.Red, new Rect(0, 0, 100, 100));
@@ -106,6 +108,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
             var operation = new RectangleNode(Matrix.Identity, Brushes.Red, null, new Rect(0, 0, 100, 100), 0);
             var target = new DeferredDrawingContextImpl();
 
+            node.LayerRoot = node.Visual;
             node.AddDrawOperation(operation);
 
             using (target.BeginUpdate(node))
@@ -126,6 +129,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
             var operation = new RectangleNode(Matrix.Identity, Brushes.Red, null, new Rect(0, 0, 100, 100), 0);
             var target = new DeferredDrawingContextImpl();
 
+            node.LayerRoot = node.Visual;
             node.AddDrawOperation(operation);
 
             using (target.BeginUpdate(node))
@@ -144,15 +148,17 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
         {
             var node = new VisualNode(Mock.Of<IVisual>(), null);
             var operation = new RectangleNode(Matrix.Identity, Brushes.Red, null, new Rect(0, 0, 100, 100), 0);
-            var dirtyRects = new DirtyRects();
+            var dirtyRects = new LayerDirtyRects();
             var target = new DeferredDrawingContextImpl(dirtyRects);
+
+            node.LayerRoot = node.Visual;
 
             using (target.BeginUpdate(node))
             {
                 target.FillRectangle(Brushes.Green, new Rect(0, 0, 100, 100));
             }
 
-            Assert.Equal(new Rect(0, 0, 100, 100), dirtyRects.Single());
+            Assert.Equal(new Rect(0, 0, 100, 100), dirtyRects.Single().Value.Single());
         }
 
         [Fact]
@@ -160,6 +166,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
         {
             var node = new VisualNode(Mock.Of<IVisual>(), null);
 
+            node.LayerRoot = node.Visual;
             node.AddDrawOperation(new RectangleNode(Matrix.Identity, Brushes.Red, null, new Rect(0, 0, 10, 100), 0));
             node.AddDrawOperation(new RectangleNode(Matrix.Identity, Brushes.Red, null, new Rect(0, 0, 20, 100), 0));
             node.AddDrawOperation(new RectangleNode(Matrix.Identity, Brushes.Red, null, new Rect(0, 0, 30, 100), 0));

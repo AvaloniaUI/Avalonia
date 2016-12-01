@@ -18,14 +18,7 @@ namespace Avalonia.Direct2D1.Media
     /// </summary>
     public class DrawingContextImpl : IDrawingContextImpl, IDisposable
     {
-        /// <summary>
-        /// The Direct2D1 render target.
-        /// </summary>
         private readonly SharpDX.Direct2D1.RenderTarget _renderTarget;
-
-        /// <summary>
-        /// The DirectWrite factory.
-        /// </summary>
         private SharpDX.DirectWrite.Factory _directWriteFactory;
 
         /// <summary>
@@ -77,14 +70,15 @@ namespace Avalonia.Direct2D1.Media
         /// <param name="destRect">The rect in the output to draw to.</param>
         public void DrawImage(IBitmapImpl source, double opacity, Rect sourceRect, Rect destRect)
         {
-            BitmapImpl impl = (BitmapImpl)source;
-            Bitmap d2d = impl.GetDirect2DBitmap(_renderTarget);
-            _renderTarget.DrawBitmap(
-                d2d,
-                destRect.ToSharpDX(),
-                (float)opacity,
-                BitmapInterpolationMode.Linear,
-                sourceRect.ToSharpDX());
+            using (var d2d = ((BitmapImpl)source).GetDirect2DBitmap(_renderTarget))
+            {
+                _renderTarget.DrawBitmap(
+                    d2d,
+                    destRect.ToSharpDX(),
+                    (float)opacity,
+                    BitmapInterpolationMode.Linear,
+                    sourceRect.ToSharpDX());
+            }
         }
 
         /// <summary>

@@ -94,6 +94,8 @@ namespace Avalonia.Rendering.SceneGraph
         /// </summary>
         public bool OpacityChanged { get; private set; }
 
+        public IVisual LayerRoot { get; set; }
+
         /// <inheritdoc/>
         public IReadOnlyList<IVisualNode> Children => _children ?? EmptyChildren;
 
@@ -197,6 +199,7 @@ namespace Avalonia.Rendering.SceneGraph
                 OpacityMask = OpacityMask,
                 _drawOperations = _drawOperations,
                 _drawOperationsCloned = true,
+                LayerRoot= LayerRoot,
             };
         }
 
@@ -219,11 +222,6 @@ namespace Avalonia.Rendering.SceneGraph
         {
             context.Transform = Transform;
 
-            if (Opacity != 1)
-            {
-                context.PushOpacity(Opacity);
-            }
-
             if (ClipToBounds)
             {
                 context.PushClip(ClipBounds * Transform.Invert());
@@ -236,11 +234,6 @@ namespace Avalonia.Rendering.SceneGraph
             if (ClipToBounds)
             {
                 context.PopClip();
-            }
-
-            if (Opacity != 1)
-            {
-                context.PopOpacity();
             }
         }
 
