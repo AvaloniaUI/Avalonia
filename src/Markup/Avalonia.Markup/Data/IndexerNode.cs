@@ -11,10 +11,11 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Reactive.Linq;
+using Avalonia.Data;
 
 namespace Avalonia.Markup.Data
 {
-    internal class IndexerNode : ExpressionNode
+    internal class IndexerNode : ExpressionNode, ISettableNode
     {
         public IndexerNode(IList<string> arguments)
         {
@@ -51,7 +52,109 @@ namespace Avalonia.Markup.Data
             return Observable.Merge(inputs).StartWith(GetValue(target));
         }
 
+        public bool SetTargetValue(object value, BindingPriority priority)
+        {
+            var typeInfo = Target.Target.GetType().GetTypeInfo();
+            var list = Target.Target as IList;
+            var dictionary = Target.Target as IDictionary;
+            var indexerProperty = GetIndexer(typeInfo);
+            var indexerParameters = indexerProperty?.GetIndexParameters();
+
+            if (indexerProperty != null && indexerParameters.Length == Arguments.Count)
+            {
+                var convertedObjectArray = new object[indexerParameters.Length];
+
+                for (int i = 0; i < Arguments.Count; i++)
+                {
+                    object temp = null;
+
+                    if (!TypeUtilities.TryConvert(indexerParameters[i].ParameterType, Arguments[i], CultureInfo.InvariantCulture, out temp))
+                    {
+                        return false;
+                    }
+
+                    convertedObjectArray[i] = temp;
+                }
+
+                var intArgs = convertedObjectArray.OfType<int>().ToArray();
+
+                // Try special cases where we can validate indicies
+                if (typeInfo.IsArray)
+                {
+                    return SetValueInArray((Array)Target.Target, intArgs, value);
+                }
+                else if (Arguments.Count == 1)
+                {
+                    if (list != null)
+                    {
+                        if (intArgs.Length == Arguments.Count && intArgs[0] >= 0 && intArgs[0] < list.Count)
+                        {
+                            list[intArgs[0]] = value;
+                            return true;
+                        }
+
+                        return false;
+                    }
+                    else if (dictionary != null)
+                    {
+                        if (dictionary.Contains(convertedObjectArray[0]))
+                        {
+                            dictionary[convertedObjectArray[0]] = value;
+                            return true;
+                        }
+                        else
+                        {
+                            dictionary.Add(convertedObjectArray[0], value);
+                            return true;
+                        }
+                    }
+                    else
+                    {
+                        // Fallback to unchecked access
+                        indexerProperty.SetValue(Target.Target, value, convertedObjectArray);
+                        return true;
+                    }
+                }
+                else
+                {
+                    // Fallback to unchecked access
+                    indexerProperty.SetValue(Target.Target, value, convertedObjectArray);
+                    return true;
+                }
+            }
+            // Multidimensional arrays end up here because the indexer search picks up the IList indexer instead of the
+            // multidimensional indexer, which doesn't take the same number of arguments
+            else if (typeInfo.IsArray)
+            {
+                SetValueInArray((Array)Target.Target, value);
+                return true;
+            }
+            return false;
+        }
+
+        private bool SetValueInArray(Array array, object value)
+        {
+            int[] intArgs;
+            if (!ConvertArgumentsToInts(out intArgs))
+                return false;
+            return SetValueInArray(array, intArgs);
+        }
+
+
+        private bool SetValueInArray(Array array, int[] indicies, object value)
+        {
+            if (ValidBounds(indicies, array))
+            {
+                array.SetValue(value, indicies);
+                return true;
+            }
+            return false;
+        }
+
+
         public IList<string> Arguments { get; }
+
+        public Type PropertyType => GetIndexer(Target.Target.GetType().GetTypeInfo())?.PropertyType;
 
         private object GetValue(object target)
         {
@@ -238,7 +341,7 @@ namespace Avalonia.Markup.Data
                 }
             }
 
-            return false;
+            return true; // Implementation defined meaning for the index, so just try to update anyway
         }
 
         private bool ShouldUpdate(object sender, PropertyChangedEventArgs e)

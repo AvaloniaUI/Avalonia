@@ -10,7 +10,7 @@ using Avalonia.Markup.Data.Plugins;
 
 namespace Avalonia.Markup.Data
 {
-    internal class PropertyAccessorNode : ExpressionNode
+    internal class PropertyAccessorNode : ExpressionNode, ISettableNode
     {
         private readonly bool _enableValidation;
         private IPropertyAccessor _accessor;
