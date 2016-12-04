@@ -158,3 +158,15 @@ and error-prone](http://stackoverflow.com/questions/23682232).
 In Avalonia, there is no `PropertyChangedCallback` at the time of registration,
 instead a class listener is [added to the control's static constructor in much
 the same way that event class listeners are added](../spec/working-with-properties.md#subscribing-to-a-property-on-any-object).
+
+## RenderTransforms and RenderTransformOrigin
+
+RenderTransformOrigins are different in WPF and Avalonia: If you apply a `RenderTransform`, keep in mind that our default value for the RenderTransformOrigin is `RelativePoint.Middle`. In WPF the default value is `RelativePoint.TopLeft` (0, 0). In controls like Viewbox (currently being developed) the same code will lead to a different rendering behavior:
+
+In WPF:
+![WPF](https://files.gitter.im/AvaloniaUI/Avalonia/cDrM/image.png)
+
+In Avalonia:
+![Avalonia](https://files.gitter.im/AvaloniaUI/Avalonia/KGk7/image.png)
+
+In AvaloniaUI, to get the same scale transform we should indicate that the RenderTransformOrigin is the TopLeft part of the Visual. 
