@@ -61,6 +61,11 @@ namespace Avalonia.Cairo.Media
             }
         }
 
+        public void Clear(Color color)
+        {
+            throw new NotImplementedException();
+        }
+
         /// <summary>
         /// Ends a draw operation.
         /// </summary>

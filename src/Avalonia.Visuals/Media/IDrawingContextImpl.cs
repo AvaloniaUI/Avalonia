@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 
 namespace Avalonia.Media
@@ -16,6 +15,12 @@ namespace Avalonia.Media
         /// Gets or sets the current transform of the drawing context.
         /// </summary>
         Matrix Transform { get; set; }
+
+        /// <summary>
+        /// Clears the render target to the specified color.
+        /// </summary>
+        /// <param name="color">The color.</param>
+        void Clear(Color color);
 
         /// <summary>
         /// Draws a bitmap image.

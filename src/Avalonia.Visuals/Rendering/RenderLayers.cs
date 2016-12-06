@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.VisualTree;
 
@@ -56,6 +57,6 @@ namespace Avalonia.Rendering
         }
 
         public IEnumerator<RenderLayer> GetEnumerator() => _inner.GetEnumerator();
-        IEnumerator IEnumerable.GetEnumerator() => _inner.GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }

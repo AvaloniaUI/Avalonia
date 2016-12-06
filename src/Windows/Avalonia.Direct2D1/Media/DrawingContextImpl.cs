@@ -43,6 +43,12 @@ namespace Avalonia.Direct2D1.Media
             get { return _renderTarget.Transform.ToAvalonia(); }
             set { _renderTarget.Transform = value.ToDirect2D(); }
         }
+        
+        /// <inheritdoc/>
+        public void Clear(Color color)
+        {
+            _renderTarget.Clear(color.ToDirect2D());
+        }
 
         /// <summary>
         /// Ends a draw operation.

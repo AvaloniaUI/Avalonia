@@ -16,10 +16,13 @@ namespace Avalonia.Rendering
         private readonly IRenderRoot _root;
         private readonly ISceneBuilder _sceneBuilder;
         private readonly RenderLayers _layers;
+        private readonly IRenderLayerFactory _layerFactory;
+
         private Scene _scene;
         private IRenderTarget _renderTarget;
         private List<IVisual> _dirty;
         private LayerDirtyRects _dirtyRects;
+        private IRenderTargetBitmapImpl _overlay;
         private bool _updateQueued;
         private bool _rendering;
 
@@ -28,6 +31,7 @@ namespace Avalonia.Rendering
         private int _framesThisSecond;
         private int _fps;
         private TimeSpan _lastFpsUpdate;
+        private DisplayDirtyRects _dirtyRectsDisplay = new DisplayDirtyRects();
 
         public DeferredRenderer(
             IRenderRoot root,
@@ -42,7 +46,8 @@ namespace Avalonia.Rendering
             _root = root;
             _sceneBuilder = sceneBuilder ?? new SceneBuilder();
             _scene = new Scene(root);
-            _layers = new RenderLayers(layerFactory ?? new DefaultRenderLayerFactory());
+            _layerFactory = layerFactory ?? new DefaultRenderLayerFactory();
+            _layers = new RenderLayers(_layerFactory);
 
             if (renderLoop != null)
             {
@@ -52,6 +57,7 @@ namespace Avalonia.Rendering
         }
 
         public bool DrawFps { get; set; }
+        public bool DrawDirtyRects { get; set; }
 
         public void AddDirty(IVisual visual)
         {
@@ -106,7 +112,64 @@ namespace Avalonia.Rendering
             }
         }
 
-        private void RenderFps(IDrawingContextImpl context, int count)
+        private void RenderToLayers(Scene scene, LayerDirtyRects dirtyRects)
+        {
+            if (dirtyRects != null)
+            {
+                foreach (var layer in dirtyRects)
+                {
+                    var renderTarget = GetRenderTargetForLayer(layer.Key);
+                    var node = (VisualNode)scene.FindNode(layer.Key);
+
+                    using (var context = renderTarget.CreateDrawingContext())
+                    {
+                        foreach (var rect in layer.Value)
+                        {
+                            context.PushClip(rect);
+                            Render(context, node, layer.Key, rect);
+                            context.PopClip();
+
+                            if (DrawDirtyRects)
+                            {
+                                _dirtyRectsDisplay.Add(rect);
+                            }
+                        }
+                    }
+                }
+
+                _layers.RemoveUnused(scene);
+            }
+        }
+
+        private void RenderOverlay()
+        {
+            if (DrawFps || DrawDirtyRects)
+            {
+                var overlay = GetOverlay(_root.ClientSize);
+
+                using (var context = overlay.CreateDrawingContext())
+                {
+                    context.Clear(Colors.Transparent);
+
+                    if (DrawFps)
+                    {
+                        RenderFps(context);
+                    }
+
+                    if (DrawDirtyRects)
+                    {
+                        RenderDirtyRects(context);
+                    }
+                }
+            }
+            else
+            {
+                _overlay?.Dispose();
+                _overlay = null;
+            }
+        }
+
+        private void RenderFps(IDrawingContextImpl context)
         {
             var now = _stopwatch.Elapsed;
             var elapsed = now - _lastFpsUpdate;
@@ -121,7 +184,7 @@ namespace Avalonia.Rendering
             }
 
             var pt = new Point(40, 40);
-            var txt = new FormattedText($"Frame #{_totalFrames} FPS: {_fps} Updates: {count}", "Arial", 18,
+            var txt = new FormattedText($"Frame #{_totalFrames} FPS: {_fps}", "Arial", 18,
                 Size.Infinity,
                 FontStyle.Normal,
                 TextAlignment.Left,
@@ -130,6 +193,57 @@ namespace Avalonia.Rendering
             context.Transform = Matrix.Identity;
             context.FillRectangle(Brushes.White, new Rect(pt, txt.Measure()));
             context.DrawText(Brushes.Black, pt, txt.PlatformImpl);
+        }
+
+        private void RenderDirtyRects(IDrawingContextImpl context)
+        {
+            foreach (var r in _dirtyRectsDisplay)
+            {
+                var brush = new SolidColorBrush(Colors.Magenta, r.Opacity);
+                context.FillRectangle(brush, r.Rect);
+            }
+        }
+
+        //private void SaveLayers()
+        //{
+        //    int i = 0;
+        //    foreach (var layer in _layers)
+        //    {
+        //        layer.Bitmap.Save($"C:\\Users\\Grokys\\Desktop\\layer{i}.png");
+        //        ++i;
+        //    }
+        //}
+
+        private void RenderComposite(Scene scene, LayerDirtyRects dirtyRects)
+        {
+            try
+            {
+                if (_renderTarget == null)
+                {
+                    _renderTarget = _root.CreateRenderTarget();
+                }
+
+                using (var context = _renderTarget.CreateDrawingContext())
+                {
+                    var clientRect = new Rect(_root.ClientSize);
+
+                    foreach (var layer in _layers)
+                    {
+                        context.DrawImage(layer.Bitmap, layer.LayerRoot.Opacity, clientRect, clientRect);
+                    }
+
+                    if (_overlay != null)
+                    {
+                        context.DrawImage(_overlay, 0.5, clientRect, clientRect);
+                    }
+                }
+            }
+            catch (RenderTargetCorruptedException ex)
+            {
+                Logging.Logger.Information("Renderer", this, "Render target was corrupted. Exception: {0}", ex);
+                _renderTarget.Dispose();
+                _renderTarget = null;
+            }
         }
 
         private void UpdateScene()
@@ -186,10 +300,10 @@ namespace Avalonia.Rendering
 
             _rendering = true;
             _totalFrames++;
+            _dirtyRectsDisplay.Tick();
 
             Scene scene;
             LayerDirtyRects dirtyRects;
-            int updateCount = 0;
 
             lock (_scene)
             {
@@ -197,63 +311,25 @@ namespace Avalonia.Rendering
                 dirtyRects = _dirtyRects;
             }
 
-            var toRemove = new List<IVisual>();
-
-            if (dirtyRects != null)
-            {
-                foreach (var layer in dirtyRects)
-                {
-                    var renderTarget = GetRenderTargetForLayer(layer.Key);
-                    var node = (VisualNode)scene.FindNode(layer.Key);
-
-                    using (var context = renderTarget.CreateDrawingContext())
-                    {
-                        foreach (var rect in layer.Value)
-                        {
-                            context.PushClip(rect);
-                            Render(context, node, layer.Key, rect);
-                            context.PopClip();
-                            ++updateCount;
-                        }
-                    }
-                }
-
-                _layers.RemoveUnused(scene);
-            }
-
-            try
-            {
-                if (_renderTarget == null)
-                {
-                    _renderTarget = _root.CreateRenderTarget();
-                }
-
-                using (var context = _renderTarget.CreateDrawingContext())
-                {
-                    if (dirtyRects != null)
-                    {
-                        var rect = new Rect(_root.ClientSize);
-
-                        foreach (var layer in _layers)
-                        {
-                            context.DrawImage(layer.Bitmap, layer.LayerRoot.Opacity, rect, rect);
-                        }
-                    }
-
-                    if (DrawFps)
-                    {
-                        RenderFps(context, updateCount);
-                    }
-                }
-            }
-            catch (RenderTargetCorruptedException ex)
-            {
-                Logging.Logger.Information("Renderer", this, "Render target was corrupted. Exception: {0}", ex);
-                _renderTarget.Dispose();
-                _renderTarget = null;
-            }
+            RenderToLayers(scene, dirtyRects);
+            RenderOverlay();
+            RenderComposite(scene, dirtyRects);
 
             _rendering = false;
+        }
+
+        private IRenderTargetBitmapImpl GetOverlay(Size size)
+        {
+            int width = (int)Math.Ceiling(size.Width);
+            int height = (int)Math.Ceiling(size.Height);
+
+            if (_overlay == null || _overlay.PixelWidth != width || _overlay.PixelHeight != height)
+            {
+                _overlay?.Dispose();
+                _overlay = _layerFactory.CreateLayer(null, size);
+            }
+
+            return _overlay;
         }
 
         private IRenderTargetBitmapImpl GetRenderTargetForLayer(IVisual layerRoot)

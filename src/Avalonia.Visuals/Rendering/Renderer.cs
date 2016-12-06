@@ -25,6 +25,7 @@ namespace Avalonia.Rendering
         }
 
         public bool DrawFps { get; set; }
+        public bool DrawDirtyRects { get; set; }
 
         public void AddDirty(IVisual visual)
         {

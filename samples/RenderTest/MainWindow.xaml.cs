@@ -25,7 +25,7 @@ namespace RenderTest
             this.InitializeComponent();
             this.CreateAnimations();
             this.AttachDevTools();
-            Renderer.DrawFps = true;
+            Renderer.DrawFps = Renderer.DrawDirtyRects = true;
         }
 
         private void InitializeComponent()

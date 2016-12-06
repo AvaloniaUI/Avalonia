@@ -51,6 +51,11 @@ namespace Avalonia.Rendering.SceneGraph
             return state;
         }
 
+        public void Clear(Color color)
+        {
+            // Cannot clear a deferred scene.
+        }
+
         public void Dispose()
         {
             // Nothing to do here as we allocate no unmanaged resources.

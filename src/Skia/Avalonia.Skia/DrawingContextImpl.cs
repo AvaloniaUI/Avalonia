@@ -21,6 +21,11 @@ namespace Avalonia.Skia
             Canvas.Clear();
         }
 
+        public void Clear(Color color)
+        {
+            Canvas.Clear(color.ToSKColor());
+        }
+
         public void DrawImage(IBitmapImpl source, double opacity, Rect sourceRect, Rect destRect)
         {
             var impl = (BitmapImpl)source;

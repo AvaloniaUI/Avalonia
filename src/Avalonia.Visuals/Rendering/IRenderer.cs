@@ -10,6 +10,7 @@ namespace Avalonia.Rendering
     public interface IRenderer : IDisposable
     {
         bool DrawFps { get; set; }
+        bool DrawDirtyRects { get; set; }
 
         void AddDirty(IVisual visual);
         IEnumerable<IVisual> HitTest(Point p, Func<IVisual, bool> filter);
