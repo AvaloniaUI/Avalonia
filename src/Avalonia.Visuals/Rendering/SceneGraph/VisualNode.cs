@@ -220,12 +220,13 @@ namespace Avalonia.Rendering.SceneGraph
         /// <inheritdoc/>
         public void BeginRender(IDrawingContextImpl context)
         {
-            context.Transform = Transform;
-
             if (ClipToBounds)
             {
-                context.PushClip(ClipBounds * Transform.Invert());
+                context.Transform = Matrix.Identity;
+                context.PushClip(ClipBounds);
             }
+
+            context.Transform = Transform;
         }
 
         /// <inheritdoc/>

@@ -47,7 +47,7 @@ namespace Avalonia.Rendering
                 var layer = _inner[i];
                 var node = (VisualNode)scene.FindNode(layer.LayerRoot);
 
-                if (node == null || node.LayerRoot != layer.LayerRoot)
+                if (node == null || node.LayerRoot.VisualRoot == null || node.LayerRoot != layer.LayerRoot)
                 {
                     layer.Bitmap.Dispose();
                     _inner.RemoveAt(i);

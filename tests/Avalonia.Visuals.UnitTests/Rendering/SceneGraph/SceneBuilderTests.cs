@@ -571,9 +571,13 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 Assert.Same(tree, borderNode.LayerRoot);
                 Assert.Same(tree, canvasNode.LayerRoot);
 
-                Assert.Equal(1, dirty.Count());
-                Assert.Equal(tree, dirty.Single().Key);
-                Assert.Equal(new Rect(21, 21, 58, 78), dirty.Single().Value.Single());
+                var rootDirty = dirty[tree];
+                var borderDirty = dirty[border];
+
+                Assert.Equal(1, rootDirty.Count());
+                Assert.Equal(1, borderDirty.Count());
+                Assert.Equal(new Rect(21, 21, 58, 78), rootDirty.Single());
+                Assert.Equal(new Rect(21, 21, 58, 78), borderDirty.Single());
             }
         }
 

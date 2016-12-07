@@ -4,7 +4,7 @@ namespace Avalonia.Rendering
 {
     public class DisplayDirtyRect
     {
-        public static readonly TimeSpan TimeToLive = TimeSpan.FromMilliseconds(500);
+        public static readonly TimeSpan TimeToLive = TimeSpan.FromMilliseconds(250);
 
         public DisplayDirtyRect(Rect rect)
         {

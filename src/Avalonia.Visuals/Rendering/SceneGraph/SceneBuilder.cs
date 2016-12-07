@@ -154,11 +154,11 @@ namespace Avalonia.Rendering.SceneGraph
                     node.Opacity = opacity;
                     node.OpacityMask = visual.OpacityMask;
 
-                    if (opacity < 1)
+                    if (opacity < 1 && node.LayerRoot != visual)
                     {
-                        SetLayer(node, node.Visual);
+                        SetLayer(node, node.Visual, contextImpl.Dirty);
                     }
-                    else if (node.LayerRoot == node.Visual && node.Parent != null)
+                    else if (opacity >= 1 && node.LayerRoot == node.Visual && node.Parent != null)
                     {
                         ClearLayer(node, contextImpl.Dirty);
                     }
@@ -184,10 +184,6 @@ namespace Avalonia.Rendering.SceneGraph
 
                         node.SubTreeUpdated = true;
                         contextImpl.TrimChildren();
-                    }
-                    else if (node.OpacityChanged)
-                    {
-                        AddSubtreeBounds(node, contextImpl.Dirty);
                     }
                 }
             }
@@ -251,19 +247,28 @@ namespace Avalonia.Rendering.SceneGraph
 
             dirty.Remove(node.LayerRoot);
 
-            SetLayer(node, newLayerRoot);
+            SetLayer(node, newLayerRoot, dirty);
         }
 
-        private static void SetLayer(VisualNode node, IVisual layerRoot)
+        private static void SetLayer(VisualNode node, IVisual layerRoot, LayerDirtyRects dirty)
         {
+            if (node.LayerRoot == layerRoot)
+            {
+                throw new AvaloniaInternalException("Called SetLayer with unchanged LayerRoot.");
+            }
+
+            var oldLayerRoot = node.LayerRoot;
+
             node.LayerRoot = layerRoot;
+            dirty.Add(oldLayerRoot, node.Bounds);
+            dirty.Add(layerRoot, node.Bounds);
 
             foreach (VisualNode child in node.Children)
             {
                 // If the child is not the start of a new layer, recurse.
                 if (child.LayerRoot != child.Visual)
                 {
-                    SetLayer(child, layerRoot);
+                    SetLayer(child, layerRoot, dirty);
                 }
             }
         }
