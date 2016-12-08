@@ -181,6 +181,7 @@ namespace Avalonia
         public void ClearValue(AvaloniaProperty property)
         {
             Contract.Requires<ArgumentNullException>(property != null);
+            VerifyAccess();
 
             SetValue(property, AvaloniaProperty.UnsetValue);
         }
@@ -193,6 +194,7 @@ namespace Avalonia
         public object GetValue(AvaloniaProperty property)
         {
             Contract.Requires<ArgumentNullException>(property != null);
+            VerifyAccess();
 
             if (property.IsDirect)
             {
@@ -234,7 +236,8 @@ namespace Avalonia
         public bool IsSet(AvaloniaProperty property)
         {
             Contract.Requires<ArgumentNullException>(property != null);
-            
+            VerifyAccess();
+
             PriorityValue value;
 
             if (_values.TryGetValue(property, out value))

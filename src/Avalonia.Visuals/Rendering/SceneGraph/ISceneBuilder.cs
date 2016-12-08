@@ -4,7 +4,7 @@ namespace Avalonia.Rendering.SceneGraph
 {
     public interface ISceneBuilder
     {
-        bool Update(Scene scene, IVisual visual, LayerDirtyRects dirty);
-        void UpdateAll(Scene scene, LayerDirtyRects dirty);
+        bool Update(Scene scene, IVisual visual);
+        void UpdateAll(Scene scene);
     }
 }

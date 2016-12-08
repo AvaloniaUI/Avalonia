@@ -7,11 +7,10 @@ using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Xunit;
 using Avalonia.Layout;
-using Avalonia.Rendering;
 
 namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
 {
-    public class SceneBuilderTests
+    public partial class SceneBuilderTests
     {
         [Fact]
         public void Should_Build_Initial_Scene()
@@ -39,7 +38,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
 
                 var result = new Scene(tree);
                 var sceneBuilder = new SceneBuilder();
-                sceneBuilder.UpdateAll(result, new LayerDirtyRects());
+                sceneBuilder.UpdateAll(result);
 
                 Assert.Same(tree, ((VisualNode)result.Root).LayerRoot);
                 Assert.Equal(1, result.Root.Children.Count);
@@ -88,14 +87,14 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
 
                 var result = new Scene(tree);
                 var sceneBuilder = new SceneBuilder();
-                sceneBuilder.UpdateAll(result, new LayerDirtyRects());
+                sceneBuilder.UpdateAll(result);
 
                 var canvasNode = result.FindNode(canvas);
                 Assert.Equal(new Rect(10, 20, 160, 240), canvasNode.ClipBounds);
 
                 // Initial ClipBounds are correct, make sure they're still correct after updating canvas.
                 result = result.Clone();
-                Assert.True(sceneBuilder.Update(result, canvas, new LayerDirtyRects()));
+                Assert.True(sceneBuilder.Update(result, canvas));
 
                 canvasNode = result.FindNode(canvas);
                 Assert.Equal(new Rect(10, 20, 160, 240), canvasNode.ClipBounds);
@@ -138,14 +137,14 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
 
                 var scene = new Scene(tree);
                 var sceneBuilder = new SceneBuilder();
-                sceneBuilder.UpdateAll(scene, new LayerDirtyRects());
+                sceneBuilder.UpdateAll(scene);
 
                 var borderNode = scene.FindNode(border);
                 Assert.Equal(new Rect(50, 50, 50, 50), borderNode.ClipBounds);
 
                 // Initial ClipBounds are correct, make sure they're still correct after updating border.
                 scene = scene.Clone();
-                Assert.True(sceneBuilder.Update(scene, border, new LayerDirtyRects()));
+                Assert.True(sceneBuilder.Update(scene, border));
 
                 borderNode = scene.FindNode(border);
                 Assert.Equal(new Rect(50, 50, 50, 50), borderNode.ClipBounds);
@@ -179,7 +178,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
 
                 var result = new Scene(tree);
                 var sceneBuilder = new SceneBuilder();
-                sceneBuilder.UpdateAll(result, new LayerDirtyRects());
+                sceneBuilder.UpdateAll(result);
 
                 var panelNode = result.FindNode(tree.Child);
                 var expected = new IVisual[] { back, front };
@@ -213,7 +212,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
 
                 var result = new Scene(tree);
                 var sceneBuilder = new SceneBuilder();
-                sceneBuilder.UpdateAll(result, new LayerDirtyRects());
+                sceneBuilder.UpdateAll(result);
 
                 var targetNode = result.FindNode(target);
 
@@ -248,7 +247,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
 
                 var initial = new Scene(tree);
                 var sceneBuilder = new SceneBuilder();
-                sceneBuilder.UpdateAll(initial, new LayerDirtyRects());
+                sceneBuilder.UpdateAll(initial);
 
                 var initialBackgroundNode = initial.FindNode(border).Children[0];
                 var initialTextNode = initial.FindNode(textBlock).DrawOperations[0];
@@ -259,7 +258,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 border.Background = Brushes.Green;
 
                 var result = initial.Clone();
-                sceneBuilder.Update(result, border, new LayerDirtyRects());
+                sceneBuilder.Update(result, border);
                 
                 var borderNode = (VisualNode)result.Root.Children[0];
                 Assert.Same(border, borderNode.Visual);
@@ -303,16 +302,16 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
 
                 var initial = new Scene(tree);
                 var sceneBuilder = new SceneBuilder();
-                sceneBuilder.UpdateAll(initial, new LayerDirtyRects());
+                sceneBuilder.UpdateAll(initial);
 
                 border.Child = decorator;
                 var result = initial.Clone();
 
-                Assert.True(sceneBuilder.Update(result, decorator, new LayerDirtyRects()));
+                Assert.True(sceneBuilder.Update(result, decorator));
 
                 // Updating canvas should result in no-op as it should have been updated along 
                 // with decorator as part of the add opeation.
-                Assert.False(sceneBuilder.Update(result, canvas, new LayerDirtyRects()));
+                Assert.False(sceneBuilder.Update(result, canvas));
 
                 var borderNode = (VisualNode)result.Root.Children[0];
                 Assert.Equal(1, borderNode.Children.Count);
@@ -358,13 +357,13 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
 
                 var initial = new Scene(tree);
                 var sceneBuilder = new SceneBuilder();
-                sceneBuilder.UpdateAll(initial, new LayerDirtyRects());
+                sceneBuilder.UpdateAll(initial);
 
                 border.Child = null;
                 var result = initial.Clone();
 
-                Assert.True(sceneBuilder.Update(result, decorator, new LayerDirtyRects()));
-                Assert.False(sceneBuilder.Update(result, canvas, new LayerDirtyRects()));
+                Assert.True(sceneBuilder.Update(result, decorator));
+                Assert.False(sceneBuilder.Update(result, canvas));
 
                 var borderNode = (VisualNode)result.Root.Children[0];
                 Assert.Equal(0, borderNode.Children.Count);
@@ -401,13 +400,13 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
 
                 var initial = new Scene(tree);
                 var sceneBuilder = new SceneBuilder();
-                sceneBuilder.UpdateAll(initial, new LayerDirtyRects());
+                sceneBuilder.UpdateAll(initial);
 
                 border.IsVisible = false;
                 var result = initial.Clone();
 
-                Assert.True(sceneBuilder.Update(result, border, new LayerDirtyRects()));
-                Assert.False(sceneBuilder.Update(result, canvas, new LayerDirtyRects()));
+                Assert.True(sceneBuilder.Update(result, border));
+                Assert.False(sceneBuilder.Update(result, canvas));
 
                 var decoratorNode = (VisualNode)result.Root.Children[0];
                 Assert.Equal(0, decoratorNode.Children.Count);
@@ -444,7 +443,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
 
                 var scene = new Scene(tree);
                 var sceneBuilder = new SceneBuilder();
-                sceneBuilder.UpdateAll(scene, new LayerDirtyRects());
+                sceneBuilder.UpdateAll(scene);
 
                 var borderNode = scene.FindNode(border);
                 var canvasNode = scene.FindNode(canvas);
@@ -455,7 +454,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 layout.ExecuteLayoutPass();
 
                 scene = scene.Clone();
-                sceneBuilder.Update(scene, decorator, new LayerDirtyRects());
+                sceneBuilder.Update(scene, decorator);
 
                 borderNode = scene.FindNode(border);
                 canvasNode = scene.FindNode(canvas);
@@ -492,7 +491,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
 
                 var scene = new Scene(tree);
                 var sceneBuilder = new SceneBuilder();
-                sceneBuilder.UpdateAll(scene, new LayerDirtyRects());
+                sceneBuilder.UpdateAll(scene);
 
                 var borderNode = scene.FindNode(border);
                 var canvasNode = scene.FindNode(canvas);
@@ -504,80 +503,10 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
 
                 scene = scene.Clone();
 
-                var dirty = new LayerDirtyRects();
-                sceneBuilder.Update(scene, decorator, dirty);
+                sceneBuilder.Update(scene, decorator);
 
-                var rects = dirty.Single().Value.ToArray();
+                var rects = scene.Layers.Single().Dirty.ToArray();
                 Assert.Equal(new[] { new Rect(0, 10, 100, 90) }, rects);
-            }
-        }
-
-        [Fact]
-        public void Control_With_Transparency_Should_Start_New_Layer()
-        {
-            using (TestApplication())
-            {
-                Decorator decorator;
-                Border border;
-                Canvas canvas;
-                var tree = new TestRoot
-                {
-                    Padding = new Thickness(10),
-                    Width = 100,
-                    Height = 120,
-                    Child = decorator = new Decorator
-                    {
-                        Padding = new Thickness(11),
-                        Child = border = new Border
-                        {
-                            Opacity = 0.5,
-                            Background = Brushes.Red,
-                            Padding = new Thickness(12),
-                            Child = canvas = new Canvas(),
-                        }
-                    }
-                };
-
-                var layout = AvaloniaLocator.Current.GetService<ILayoutManager>();
-                layout.ExecuteInitialLayoutPass(tree);
-
-                var dirty = new LayerDirtyRects();
-                var scene = new Scene(tree);
-                var sceneBuilder = new SceneBuilder();
-                sceneBuilder.UpdateAll(scene, dirty);
-
-                var rootNode = (VisualNode)scene.Root;
-                var borderNode = (VisualNode)scene.FindNode(border);
-                var canvasNode = (VisualNode)scene.FindNode(canvas);
-
-                Assert.Same(tree, rootNode.LayerRoot);
-                Assert.Same(border, borderNode.LayerRoot);
-                Assert.Same(border, canvasNode.LayerRoot);
-
-                Assert.Equal(2, dirty.Count());
-                Assert.Empty(dirty.Select(x => x.Key).Except(new IVisual[] { tree, border }));
-
-                border.Opacity = 1;
-                scene = scene.Clone();
-
-                dirty = new LayerDirtyRects();
-                sceneBuilder.Update(scene, border, dirty);
-
-                rootNode = (VisualNode)scene.Root;
-                borderNode = (VisualNode)scene.FindNode(border);
-                canvasNode = (VisualNode)scene.FindNode(canvas);
-
-                Assert.Same(tree, rootNode.LayerRoot);
-                Assert.Same(tree, borderNode.LayerRoot);
-                Assert.Same(tree, canvasNode.LayerRoot);
-
-                var rootDirty = dirty[tree];
-                var borderDirty = dirty[border];
-
-                Assert.Equal(1, rootDirty.Count());
-                Assert.Equal(1, borderDirty.Count());
-                Assert.Equal(new Rect(21, 21, 58, 78), rootDirty.Single());
-                Assert.Equal(new Rect(21, 21, 58, 78), borderDirty.Single());
             }
         }
 

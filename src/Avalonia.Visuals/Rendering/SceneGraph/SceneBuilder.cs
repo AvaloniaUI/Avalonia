@@ -11,23 +11,24 @@ namespace Avalonia.Rendering.SceneGraph
 {
     public class SceneBuilder : ISceneBuilder
     {
-        public void UpdateAll(Scene scene, LayerDirtyRects dirty)
+        public void UpdateAll(Scene scene)
         {
             Contract.Requires<ArgumentNullException>(scene != null);
             Dispatcher.UIThread.VerifyAccess();
 
-            using (var impl = new DeferredDrawingContextImpl(dirty))
+            scene.Layers.GetOrAdd(scene.Root.Visual);
+
+            using (var impl = new DeferredDrawingContextImpl(scene.Layers))
             using (var context = new DrawingContext(impl))
             {
                 Update(context, scene, (VisualNode)scene.Root, scene.Root.Visual.Bounds, true);
             }
         }
 
-        public bool Update(Scene scene, IVisual visual, LayerDirtyRects dirty)
+        public bool Update(Scene scene, IVisual visual)
         {
             Contract.Requires<ArgumentNullException>(scene != null);
             Contract.Requires<ArgumentNullException>(visual != null);
-            Contract.Requires<ArgumentNullException>(dirty != null);
             Dispatcher.UIThread.VerifyAccess();
 
             var node = (VisualNode)scene.FindNode(visual);
@@ -48,7 +49,7 @@ namespace Avalonia.Rendering.SceneGraph
                         // descendents too.
                         var recurse = node.Visual != visual;
 
-                        using (var impl = new DeferredDrawingContextImpl(dirty))
+                        using (var impl = new DeferredDrawingContextImpl(scene.Layers))
                         using (var context = new DrawingContext(impl))
                         {
                             var clip = scene.Root.Visual.Bounds;
@@ -69,10 +70,10 @@ namespace Avalonia.Rendering.SceneGraph
                 {
                     if (node != null)
                     {
-                        // The control has been removed so remove it from its parent and deindex the
+                        // The control has been hidden so remove it from its parent and deindex the
                         // node and its descendents.
                         ((VisualNode)node.Parent)?.RemoveChild(node);
-                        Deindex(scene, node, dirty);
+                        Deindex(scene, node);
                         return true;
                     }
                 }
@@ -83,7 +84,7 @@ namespace Avalonia.Rendering.SceneGraph
                 // node and its descendents.
                 var trim = FindFirstDeadAncestor(scene, node);
                 ((VisualNode)trim.Parent).RemoveChild(trim);
-                Deindex(scene, trim, dirty);
+                Deindex(scene, trim);
                 return true;
             }
 
@@ -124,7 +125,7 @@ namespace Avalonia.Rendering.SceneGraph
             var bounds = new Rect(visual.Bounds.Size);
             var contextImpl = (DeferredDrawingContextImpl)context.PlatformImpl;
 
-            contextImpl.Dirty.Add(node.LayerRoot, node.Bounds);
+            contextImpl.Layers[node.LayerRoot].Dirty.Add(node.Bounds);
 
             if (visual.IsVisible)
             {
@@ -156,11 +157,16 @@ namespace Avalonia.Rendering.SceneGraph
 
                     if (opacity < 1 && node.LayerRoot != visual)
                     {
-                        SetLayer(node, node.Visual, contextImpl.Dirty);
+                        SetLayer(scene, node, node.Visual);
                     }
                     else if (opacity >= 1 && node.LayerRoot == node.Visual && node.Parent != null)
                     {
-                        ClearLayer(node, contextImpl.Dirty);
+                        ClearLayer(scene, node);
+                    }
+
+                    if (node.LayerRoot == visual)
+                    {
+                        scene.Layers[visual].Opacity = visual.Opacity;
                     }
 
                     if (node.ClipToBounds)
@@ -197,7 +203,7 @@ namespace Avalonia.Rendering.SceneGraph
             return node;
         }
 
-        private static void Deindex(Scene scene, VisualNode node, LayerDirtyRects dirty)
+        private static void Deindex(Scene scene, VisualNode node)
         {
             scene.Remove(node);
             node.SubTreeUpdated = true;
@@ -209,48 +215,41 @@ namespace Avalonia.Rendering.SceneGraph
 
                 if (geometry != null)
                 {
-                    dirty.Add(child.LayerRoot, geometry.Bounds);
+                    scene.Layers[child.LayerRoot].Dirty.Add(geometry.Bounds);
                 }
 
                 if (visual != null)
                 {
-                    Deindex(scene, visual, dirty);
+                    Deindex(scene, visual);
                 }
             }
-        }
 
-        private static void AddSubtreeBounds(VisualNode node, LayerDirtyRects dirty)
-        {
-            dirty.Add(node.LayerRoot, node.Bounds);
-
-            foreach (VisualNode child in node.Children)
+            if (node.LayerRoot == node.Visual)
             {
-                if (child.LayerRoot == node.LayerRoot)
-                {
-                    AddSubtreeBounds(child, dirty);
-                }
+                scene.Layers.Remove(node.LayerRoot);
             }
         }
 
-        private static void ClearLayer(VisualNode node, LayerDirtyRects dirty)
+        private static void ClearLayer(Scene scene, VisualNode node)
         {
             var parent = (VisualNode)node.Parent;
+            var oldLayerRoot = node.LayerRoot;
             var newLayerRoot = parent.LayerRoot;
-            var existingDirtyRects = dirty[node.LayerRoot];
+            var existingDirtyRects = scene.Layers[node.LayerRoot].Dirty;
+            var newDirtyRects = scene.Layers[newLayerRoot].Dirty;
 
             existingDirtyRects.Coalesce();
 
             foreach (var r in existingDirtyRects)
             {
-                dirty.Add(newLayerRoot, r);
+                newDirtyRects.Add(r);
             }
 
-            dirty.Remove(node.LayerRoot);
-
-            SetLayer(node, newLayerRoot, dirty);
+            SetLayer(scene, node, newLayerRoot);
+            scene.Layers.Remove(oldLayerRoot);
         }
 
-        private static void SetLayer(VisualNode node, IVisual layerRoot, LayerDirtyRects dirty)
+        private static void SetLayer(Scene scene, VisualNode node, IVisual layerRoot)
         {
             if (node.LayerRoot == layerRoot)
             {
@@ -260,15 +259,17 @@ namespace Avalonia.Rendering.SceneGraph
             var oldLayerRoot = node.LayerRoot;
 
             node.LayerRoot = layerRoot;
-            dirty.Add(oldLayerRoot, node.Bounds);
-            dirty.Add(layerRoot, node.Bounds);
+
+            var layer = scene.Layers.GetOrAdd(layerRoot);
+            layer.Dirty.Add(node.Bounds);
+            scene.Layers[oldLayerRoot].Dirty.Add(node.Bounds);
 
             foreach (VisualNode child in node.Children)
             {
                 // If the child is not the start of a new layer, recurse.
                 if (child.LayerRoot != child.Visual)
                 {
-                    SetLayer(child, layerRoot, dirty);
+                    SetLayer(scene, child, layerRoot);
                 }
             }
         }

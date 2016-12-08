@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Platform;
@@ -20,11 +21,16 @@ namespace Avalonia.Visuals.UnitTests.Rendering
         {
             var loop = new Mock<IRenderLoop>();
             var root = new TestRoot();
+
             var dispatcher = new Mock<IDispatcher>();
+            dispatcher.Setup(x => x.InvokeAsync(It.IsAny<Action>(), DispatcherPriority.Render))
+                .Callback<Action, DispatcherPriority>((a, p) => a());
+
             var target = new DeferredRenderer(
                 root,
                 loop.Object,
-                sceneBuilder: null,
+                sceneBuilder: MockSceneBuilder(root).Object,
+                layerFactory: MockLayerFactory(root).Object,
                 dispatcher: dispatcher.Object);
 
             RunFrame(loop);
@@ -40,17 +46,18 @@ namespace Avalonia.Visuals.UnitTests.Rendering
         {
             var loop = new Mock<IRenderLoop>();
             var root = new TestRoot();
-            var sceneBuilder = new Mock<ISceneBuilder>();
+            var sceneBuilder = MockSceneBuilder(root);
             var dispatcher = new ImmediateDispatcher();
             var target = new DeferredRenderer(
                 root,
                 loop.Object,
                 sceneBuilder: sceneBuilder.Object,
+                layerFactory: MockLayerFactory(root).Object,
                 dispatcher: dispatcher);
 
             RunFrame(loop);
 
-            sceneBuilder.Verify(x => x.UpdateAll(It.IsAny<Scene>(), It.IsAny<LayerDirtyRects>()));
+            sceneBuilder.Verify(x => x.UpdateAll(It.IsAny<Scene>()));
         }
 
         [Fact]
@@ -58,19 +65,20 @@ namespace Avalonia.Visuals.UnitTests.Rendering
         {
             var loop = new Mock<IRenderLoop>();
             var root = new TestRoot();
-            var sceneBuilder = new Mock<ISceneBuilder>();
+            var sceneBuilder = MockSceneBuilder(root);
             var dispatcher = new ImmediateDispatcher();
             var target = new DeferredRenderer(
                 root,
                 loop.Object,
                 sceneBuilder: sceneBuilder.Object,
+                layerFactory: MockLayerFactory(root).Object,
                 dispatcher: dispatcher);
 
             IgnoreFirstFrame(loop, sceneBuilder);
             RunFrame(loop);
 
-            sceneBuilder.Verify(x => x.UpdateAll(It.IsAny<Scene>(), It.IsAny<LayerDirtyRects>()), Times.Never);
-            sceneBuilder.Verify(x => x.Update(It.IsAny<Scene>(), It.IsAny<Visual>(), It.IsAny<LayerDirtyRects>()), Times.Never);
+            sceneBuilder.Verify(x => x.UpdateAll(It.IsAny<Scene>()), Times.Never);
+            sceneBuilder.Verify(x => x.Update(It.IsAny<Scene>(), It.IsAny<Visual>()), Times.Never);
         }
 
         [Fact]
@@ -78,7 +86,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
         {
             var loop = new Mock<IRenderLoop>();
             var root = new TestRoot();
-            var sceneBuilder = new Mock<ISceneBuilder>();
+            var sceneBuilder = MockSceneBuilder(root);
             var dispatcher = new ImmediateDispatcher();
             var control1 = new Border();
             var control2 = new Canvas();
@@ -86,6 +94,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
                 root,
                 loop.Object,
                 sceneBuilder: sceneBuilder.Object,
+                layerFactory: MockLayerFactory(root).Object,
                 dispatcher: dispatcher);
 
             IgnoreFirstFrame(loop, sceneBuilder);
@@ -93,8 +102,8 @@ namespace Avalonia.Visuals.UnitTests.Rendering
             target.AddDirty(control2);
             RunFrame(loop);
 
-            sceneBuilder.Verify(x => x.Update(It.IsAny<Scene>(), control1, It.IsAny<LayerDirtyRects>()));
-            sceneBuilder.Verify(x => x.Update(It.IsAny<Scene>(), control2, It.IsAny<LayerDirtyRects>()));
+            sceneBuilder.Verify(x => x.Update(It.IsAny<Scene>(), control1));
+            sceneBuilder.Verify(x => x.Update(It.IsAny<Scene>(), control2));
         }
 
         [Fact]
@@ -106,12 +115,10 @@ namespace Avalonia.Visuals.UnitTests.Rendering
             var dispatcher = new ImmediateDispatcher();
 
             var sceneBuilder = new Mock<ISceneBuilder>();
-            sceneBuilder.Setup(x => x.UpdateAll(It.IsAny<Scene>(), It.IsAny<LayerDirtyRects>()))
-                .Callback<Scene, LayerDirtyRects>((scene, dirty) =>
+            sceneBuilder.Setup(x => x.UpdateAll(It.IsAny<Scene>()))
+                .Callback<Scene>(scene =>
                 {
-                    var rects = new DirtyRects();
-                    rects.Add(new Rect(root.ClientSize));
-                    dirty.Add(root, rects);
+                    scene.Layers.Add(root).Dirty.Add(new Rect(root.ClientSize));
                 });
 
             var layers = new Mock<IRenderLayerFactory>();
@@ -210,6 +217,21 @@ namespace Avalonia.Visuals.UnitTests.Rendering
         {
             return Mock.Of<IRenderTargetBitmapImpl>(x =>
                 x.CreateDrawingContext() == Mock.Of<IDrawingContextImpl>());
+        }
+
+        private Mock<IRenderLayerFactory> MockLayerFactory(IRenderRoot root)
+        {
+            var result = new Mock<IRenderLayerFactory>();
+            result.Setup(x => x.CreateLayer(root, root.ClientSize)).Returns(CreateLayer());
+            return result;
+        }
+
+        private Mock<ISceneBuilder> MockSceneBuilder(IRenderRoot root)
+        {
+            var result = new Mock<ISceneBuilder>();
+            result.Setup(x => x.UpdateAll(It.IsAny<Scene>()))
+                .Callback<Scene>(x => x.Layers.Add(root).Dirty.Add(new Rect(root.ClientSize)));
+            return result;
         }
 
         private class MockRenderLayerFactory : IRenderLayerFactory

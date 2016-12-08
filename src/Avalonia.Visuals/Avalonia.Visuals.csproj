@@ -114,7 +114,6 @@
     <Compile Include="Rendering\IRendererFactory.cs" />
     <Compile Include="Rendering\IRenderLoop.cs" />
     <Compile Include="Rendering\DirtyRects.cs" />
-    <Compile Include="Rendering\LayerDirtyRects.cs" />
     <Compile Include="Rendering\Renderer.cs" />
     <Compile Include="Rendering\RendererMixin.cs" />
     <Compile Include="Rendering\DefaultRenderLoop.cs" />
@@ -131,6 +130,8 @@
     <Compile Include="Rendering\SceneGraph\RectangleNode.cs" />
     <Compile Include="Rendering\SceneGraph\Scene.cs" />
     <Compile Include="Rendering\SceneGraph\SceneBuilder.cs" />
+    <Compile Include="Rendering\SceneGraph\SceneLayer.cs" />
+    <Compile Include="Rendering\SceneGraph\SceneLayers.cs" />
     <Compile Include="Rendering\SceneGraph\TextNode.cs" />
     <Compile Include="Rendering\SceneGraph\VisualNode.cs" />
     <Compile Include="Rendering\ZIndexComparer.cs" />

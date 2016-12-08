@@ -20,11 +20,11 @@ namespace Avalonia.Rendering
 
         private Scene _scene;
         private IRenderTarget _renderTarget;
-        private List<IVisual> _dirty;
-        private LayerDirtyRects _dirtyRects;
+        private HashSet<IVisual> _dirty;
         private IRenderTargetBitmapImpl _overlay;
         private bool _updateQueued;
         private bool _rendering;
+        private int _lastSceneId = -1;
 
         private readonly Stopwatch _stopwatch = Stopwatch.StartNew();
         private int _totalFrames;
@@ -112,21 +112,22 @@ namespace Avalonia.Rendering
             }
         }
 
-        private void RenderToLayers(Scene scene, LayerDirtyRects dirtyRects)
+        private void RenderToLayers(Scene scene)
         {
-            if (dirtyRects != null)
+            if (scene.Layers.HasDirty)
             {
-                foreach (var layer in dirtyRects)
+                foreach (var layer in scene.Layers)
                 {
-                    var renderTarget = GetRenderTargetForLayer(layer.Key);
-                    var node = (VisualNode)scene.FindNode(layer.Key);
+                    var renderTarget = GetRenderTargetForLayer(layer.LayerRoot);
+                    var node = (VisualNode)scene.FindNode(layer.LayerRoot);
 
                     using (var context = renderTarget.CreateDrawingContext())
                     {
-                        foreach (var rect in layer.Value)
+                        foreach (var rect in layer.Dirty)
                         {
+                            context.Transform = Matrix.Identity;
                             context.PushClip(rect);
-                            Render(context, node, layer.Key, rect);
+                            Render(context, node, layer.LayerRoot, rect);
                             context.PopClip();
 
                             if (DrawDirtyRects)
@@ -136,8 +137,6 @@ namespace Avalonia.Rendering
                         }
                     }
                 }
-
-                _layers.RemoveUnused(scene);
             }
         }
 
@@ -204,17 +203,7 @@ namespace Avalonia.Rendering
             }
         }
 
-        //private void SaveLayers()
-        //{
-        //    int i = 0;
-        //    foreach (var layer in _layers)
-        //    {
-        //        layer.Bitmap.Save($"C:\\Users\\Grokys\\Desktop\\layer{i}.png");
-        //        ++i;
-        //    }
-        //}
-
-        private void RenderComposite(Scene scene, LayerDirtyRects dirtyRects)
+        private void RenderComposite(Scene scene)
         {
             try
             {
@@ -227,9 +216,10 @@ namespace Avalonia.Rendering
                 {
                     var clientRect = new Rect(_root.ClientSize);
 
-                    foreach (var layer in _layers)
+                    foreach (var layer in scene.Layers)
                     {
-                        context.DrawImage(layer.Bitmap, layer.LayerRoot.Opacity, clientRect, clientRect);
+                        var renderLayer = _layers.Get(layer.LayerRoot);
+                        context.DrawImage(renderLayer.Bitmap, layer.Opacity, clientRect, clientRect);
                     }
 
                     if (_overlay != null)
@@ -253,27 +243,23 @@ namespace Avalonia.Rendering
             try
             {
                 var scene = _scene.Clone();
-                var dirtyRects = new LayerDirtyRects();
 
                 if (_dirty == null)
                 {
-                    _dirty = new List<IVisual>();
-                    _sceneBuilder.UpdateAll(scene, dirtyRects);
+                    _dirty = new HashSet<IVisual>();
+                    _sceneBuilder.UpdateAll(scene);
                 }
                 else if (_dirty.Count > 0)
                 {
                     foreach (var visual in _dirty)
                     {
-                        _sceneBuilder.Update(scene, visual, dirtyRects);
+                        _sceneBuilder.Update(scene, visual);
                     }
-
-                    dirtyRects.Coalesce();
                 }
 
                 lock (_scene)
                 {
                     _scene = scene;
-                    _dirtyRects = dirtyRects.IsEmpty ? null : dirtyRects;
                 }
 
                 _dirty.Clear();
@@ -292,7 +278,7 @@ namespace Avalonia.Rendering
                 return;
             }
 
-            if (!_updateQueued && (_dirty == null || _dirty.Count > 0 || _dirtyRects != null))
+            if (!_updateQueued && (_dirty == null || _dirty.Count > 0))
             {
                 _updateQueued = true;
                 _dispatcher.InvokeAsync(UpdateScene, DispatcherPriority.Render);
@@ -303,17 +289,21 @@ namespace Avalonia.Rendering
             _dirtyRectsDisplay.Tick();
 
             Scene scene;
-            LayerDirtyRects dirtyRects;
 
             lock (_scene)
             {
                 scene = _scene;
-                dirtyRects = _dirtyRects;
             }
 
-            RenderToLayers(scene, dirtyRects);
+            if (scene.Id != _lastSceneId)
+            {
+                _layers.RemoveUnused(scene);
+                RenderToLayers(scene);
+                _lastSceneId = scene.Id;
+            }
+
             RenderOverlay();
-            RenderComposite(scene, dirtyRects);
+            RenderComposite(scene);
 
             _rendering = false;
         }
