@@ -14,6 +14,34 @@ namespace Avalonia.VisualTree
     public static class VisualExtensions
     {
         /// <summary>
+        /// Calculates the distance from a visual's <see cref="IRenderRoot"/>.
+        /// </summary>
+        /// <param name="visual">The visual.</param>
+        /// <returns>The number of steps from the visual to the render root.</returns>
+        /// <exception cref="ArgumentException">The visual is not rooted.</exception>
+        public static int CalculateDistanceFromVisualRoot(this IVisual visual)
+        {
+            Contract.Requires<ArgumentNullException>(visual != null);
+
+            var root = visual.VisualRoot;
+
+            if (root == null)
+            {
+                throw new ArgumentException("Visual is not rooted.");
+            }
+
+            var result = 0;
+
+            while (visual != root)
+            {
+                ++result;
+                visual = visual.VisualParent;
+            }
+
+            return result;
+        }
+
+        /// <summary>
         /// Tries to get the first common ancestor of two visuals.
         /// </summary>
         /// <param name="visual">The first visual.</param>
@@ -21,6 +49,8 @@ namespace Avalonia.VisualTree
         /// <returns>The common ancestor, or null if not found.</returns>
         public static IVisual FindCommonVisualAncestor(this IVisual visual, IVisual target)
         {
+            Contract.Requires<ArgumentNullException>(visual != null);
+
             return visual.GetSelfAndVisualAncestors().Intersect(target.GetSelfAndVisualAncestors())
                 .FirstOrDefault();
         }
@@ -50,6 +80,8 @@ namespace Avalonia.VisualTree
         /// <returns>The visual and its ancestors.</returns>
         public static IEnumerable<IVisual> GetSelfAndVisualAncestors(this IVisual visual)
         {
+            Contract.Requires<ArgumentNullException>(visual != null);
+
             yield return visual;
 
             foreach (var ancestor in visual.GetVisualAncestors())

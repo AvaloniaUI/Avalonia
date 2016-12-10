@@ -9,7 +9,7 @@ namespace Avalonia.Rendering.SceneGraph
         {
             LayerRoot = layerRoot;
             Dirty = new DirtyRects();
-            DistanceFromRoot = CalculateDistanceFromRoot(layerRoot);
+            DistanceFromRoot = layerRoot.CalculateDistanceFromVisualRoot();
         }
 
         internal SceneLayer(IVisual layerRoot, int distanceFromRoot)
@@ -31,25 +31,5 @@ namespace Avalonia.Rendering.SceneGraph
         public DirtyRects Dirty { get; }
         public int DistanceFromRoot { get; }
         public double Opacity { get; set; } = 1;
-
-        private int CalculateDistanceFromRoot(IVisual visual)
-        {
-            var result = 0;
-
-            while (!(visual is IRenderRoot))
-            {
-                visual = visual.VisualParent;
-
-                if (visual == null)
-                {
-                    throw new AvaloniaInternalException(
-                        "Attempted to create a SceneLayer for an unrooted visual.");
-                }
-
-                ++result;
-            }
-
-            return result;
-        }
     }
 }

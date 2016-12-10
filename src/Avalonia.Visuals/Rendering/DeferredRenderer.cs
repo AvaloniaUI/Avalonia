@@ -20,7 +20,7 @@ namespace Avalonia.Rendering
 
         private Scene _scene;
         private IRenderTarget _renderTarget;
-        private HashSet<IVisual> _dirty;
+        private DirtyVisuals _dirty;
         private IRenderTargetBitmapImpl _overlay;
         private bool _updateQueued;
         private bool _rendering;
@@ -268,7 +268,7 @@ namespace Avalonia.Rendering
 
                 if (_dirty == null)
                 {
-                    _dirty = new HashSet<IVisual>();
+                    _dirty = new DirtyVisuals();
                     _sceneBuilder.UpdateAll(scene);
                 }
                 else if (_dirty.Count > 0)

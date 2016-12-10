@@ -82,14 +82,26 @@ namespace Avalonia.Visuals.UnitTests.Rendering
         }
 
         [Fact]
-        public void Frame_Should_Call_SceneBuilder_Update_With_Dirty_Controls()
+        public void Should_Update_Dirty_Controls_In_Order()
         {
             var loop = new Mock<IRenderLoop>();
-            var root = new TestRoot();
-            var sceneBuilder = MockSceneBuilder(root);
             var dispatcher = new ImmediateDispatcher();
-            var control1 = new Border();
-            var control2 = new Canvas();
+
+            Border border;
+            Decorator decorator;
+            Canvas canvas;
+            var root = new TestRoot
+            {
+                Child = decorator = new Decorator
+                {
+                    Child = border = new Border
+                    {
+                        Child = canvas = new Canvas()
+                    }
+                }
+            };
+
+            var sceneBuilder = MockSceneBuilder(root);
             var target = new DeferredRenderer(
                 root,
                 loop.Object,
@@ -98,12 +110,18 @@ namespace Avalonia.Visuals.UnitTests.Rendering
                 dispatcher: dispatcher);
 
             IgnoreFirstFrame(loop, sceneBuilder);
-            target.AddDirty(control1);
-            target.AddDirty(control2);
+            target.AddDirty(border);
+            target.AddDirty(canvas);
+            target.AddDirty(root);
+            target.AddDirty(decorator);
+
+            var result = new List<IVisual>();
+            sceneBuilder.Setup(x => x.Update(It.IsAny<Scene>(), It.IsAny<IVisual>()))
+                .Callback<Scene, IVisual>((_, v) => result.Add(v));
+
             RunFrame(loop);
 
-            sceneBuilder.Verify(x => x.Update(It.IsAny<Scene>(), control1));
-            sceneBuilder.Verify(x => x.Update(It.IsAny<Scene>(), control2));
+            Assert.Equal(new List<IVisual> { root, decorator, border, canvas }, result);
         }
 
         [Fact]
