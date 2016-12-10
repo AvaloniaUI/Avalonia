@@ -19,6 +19,7 @@ namespace Avalonia.Direct2D1.Media
     public class DrawingContextImpl : IDrawingContextImpl, IDisposable
     {
         private readonly SharpDX.Direct2D1.RenderTarget _renderTarget;
+        private readonly SharpDX.DXGI.SwapChain1 _swapChain;
         private SharpDX.DirectWrite.Factory _directWriteFactory;
 
         /// <summary>
@@ -28,9 +29,11 @@ namespace Avalonia.Direct2D1.Media
         /// <param name="directWriteFactory">The DirectWrite factory.</param>
         public DrawingContextImpl(
             SharpDX.Direct2D1.RenderTarget renderTarget,
-            SharpDX.DirectWrite.Factory directWriteFactory)
+            SharpDX.DirectWrite.Factory directWriteFactory,
+            SharpDX.DXGI.SwapChain1 swapChain = null)
         {
             _renderTarget = renderTarget;
+            _swapChain = swapChain;
             _directWriteFactory = directWriteFactory;
             _renderTarget.BeginDraw();
         }
@@ -60,6 +63,11 @@ namespace Avalonia.Direct2D1.Media
             try
             {
                 _renderTarget.EndDraw();
+
+                if (_swapChain != null)
+                {
+                    _swapChain.Present(1, SharpDX.DXGI.PresentFlags.None);
+                }
             }
             catch (SharpDXException ex) when((uint)ex.HResult == 0x8899000C) // D2DERR_RECREATE_TARGET
             {

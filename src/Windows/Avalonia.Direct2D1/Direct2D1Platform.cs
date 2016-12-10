@@ -83,7 +83,7 @@ namespace Avalonia.Direct2D1
         {
             if (handle.HandleDescriptor == "HWND")
             {
-                return new RenderTarget(handle.Handle);
+                return new HwndRenderTarget(handle.Handle);
             }
             else
             {
