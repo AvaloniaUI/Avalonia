@@ -8,6 +8,7 @@ using Avalonia.Platform;
 using Avalonia.Win32.Interop;
 using SharpDX;
 using SharpDX.Direct2D1;
+using SharpDX.Mathematics.Interop;
 using DrawingContext = Avalonia.Media.DrawingContext;
 using DwFactory = SharpDX.DirectWrite.Factory;
 

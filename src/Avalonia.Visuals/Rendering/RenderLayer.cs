@@ -1,26 +1,47 @@
 ﻿using System;
+using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering
 {
-    public class RenderLayer : IComparable<RenderLayer>
+    public class RenderLayer
     {
+        private readonly IRenderLayerFactory _factory;
+
         public RenderLayer(
-            IRenderTargetBitmapImpl bitmap,
+            IRenderLayerFactory factory,
             Size size,
             IVisual layerRoot)
         {
-            Bitmap = bitmap;
+            _factory = factory;
+            Bitmap = factory.CreateLayer(layerRoot, size);
             Size = size;
             LayerRoot = layerRoot;
             Order = GetDistanceFromRenderRoot(layerRoot);
         }
 
-        public IRenderTargetBitmapImpl Bitmap { get; }
-        public Size Size { get; }
+        public IRenderTargetBitmapImpl Bitmap { get; private set; }
+        public Size Size { get; private set; }
         public IVisual LayerRoot { get; }
         public int Order { get; }
+
+        public void ResizeBitmap(Size size)
+        {
+            if (Size != size)
+            {
+                var resized = _factory.CreateLayer(LayerRoot, size);
+
+                using (var context = resized.CreateDrawingContext())
+                {
+                    context.Clear(Colors.Black);
+                    context.DrawImage(Bitmap, 1, new Rect(Size), new Rect(Size));
+                    Bitmap.Dispose();
+                    Bitmap = resized;
+                    Size = size;
+                }
+            }
+        }
 
         private static int GetDistanceFromRenderRoot(IVisual visual)
         {
@@ -41,11 +62,6 @@ namespace Avalonia.Rendering
             }
 
             return result;
-        }
-
-        public int CompareTo(RenderLayer other)
-        {
-            return Order - other.Order;
         }
     }
 }

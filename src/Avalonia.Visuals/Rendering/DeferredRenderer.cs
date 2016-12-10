@@ -87,6 +87,28 @@ namespace Avalonia.Rendering
         {
         }
 
+        private void Render(Scene scene)
+        {
+            _rendering = true;
+            _totalFrames++;
+            _dirtyRectsDisplay.Tick();
+
+            if (scene.Size != Size.Empty)
+            {
+                if (scene.Id != _lastSceneId)
+                {
+                    _layers.RemoveUnused(scene);
+                    RenderToLayers(scene);
+                    _lastSceneId = scene.Id;
+                }
+
+                RenderOverlay(scene);
+                RenderComposite(scene);
+            }
+
+            _rendering = false;
+        }
+
         private void Render(IDrawingContextImpl context, VisualNode node, IVisual layer, Rect clipBounds)
         {
             if (node.LayerRoot == layer)
@@ -118,7 +140,7 @@ namespace Avalonia.Rendering
             {
                 foreach (var layer in scene.Layers)
                 {
-                    var renderTarget = GetRenderTargetForLayer(layer.LayerRoot);
+                    var renderTarget = GetRenderTargetForLayer(scene, layer.LayerRoot);
                     var node = (VisualNode)scene.FindNode(layer.LayerRoot);
 
                     using (var context = renderTarget.CreateDrawingContext())
@@ -140,11 +162,11 @@ namespace Avalonia.Rendering
             }
         }
 
-        private void RenderOverlay()
+        private void RenderOverlay(Scene scene)
         {
             if (DrawFps || DrawDirtyRects)
             {
-                var overlay = GetOverlay(_root.ClientSize);
+                var overlay = GetOverlay(scene.Size);
 
                 using (var context = overlay.CreateDrawingContext())
                 {
@@ -214,11 +236,11 @@ namespace Avalonia.Rendering
 
                 using (var context = _renderTarget.CreateDrawingContext())
                 {
-                    var clientRect = new Rect(_root.ClientSize);
+                    var clientRect = new Rect(scene.Size);
 
                     foreach (var layer in scene.Layers)
                     {
-                        var renderLayer = _layers.Get(layer.LayerRoot);
+                        var renderLayer = _layers[layer.LayerRoot];
                         context.DrawImage(renderLayer.Bitmap, layer.Opacity, clientRect, clientRect);
                     }
 
@@ -263,7 +285,7 @@ namespace Avalonia.Rendering
                 }
 
                 _dirty.Clear();
-                _root.Invalidate(new Rect(_root.ClientSize));
+                _root.Invalidate(new Rect(scene.Size));
             }
             finally
             {
@@ -284,10 +306,6 @@ namespace Avalonia.Rendering
                 _dispatcher.InvokeAsync(UpdateScene, DispatcherPriority.Render);
             }
 
-            _rendering = true;
-            _totalFrames++;
-            _dirtyRectsDisplay.Tick();
-
             Scene scene;
 
             lock (_scene)
@@ -295,17 +313,7 @@ namespace Avalonia.Rendering
                 scene = _scene;
             }
 
-            if (scene.Id != _lastSceneId)
-            {
-                _layers.RemoveUnused(scene);
-                RenderToLayers(scene);
-                _lastSceneId = scene.Id;
-            }
-
-            RenderOverlay();
-            RenderComposite(scene);
-
-            _rendering = false;
+            Render(scene);
         }
 
         private IRenderTargetBitmapImpl GetOverlay(Size size)
@@ -322,9 +330,23 @@ namespace Avalonia.Rendering
             return _overlay;
         }
 
-        private IRenderTargetBitmapImpl GetRenderTargetForLayer(IVisual layerRoot)
+        private IRenderTargetBitmapImpl GetRenderTargetForLayer(Scene scene, IVisual layerRoot)
         {
-            return (_layers.Get(layerRoot) ?? _layers.Add(layerRoot, _root.ClientSize)).Bitmap;
+            RenderLayer result;
+
+            if (_layers.TryGetValue(layerRoot, out result))
+            {
+                if (result.Size != scene.Size)
+                {
+                    result.ResizeBitmap(scene.Size);
+                }
+            }
+            else
+            {
+                _layers.Add(layerRoot, scene.Size);
+            }
+
+            return _layers[layerRoot].Bitmap;
         }
     }
 }

@@ -510,6 +510,51 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
             }
         }
 
+        [Fact]
+        public void Resizing_Scene_Should_Add_DirtyRects()
+        {
+            using (TestApplication())
+            {
+                Decorator decorator;
+                Border border;
+                Canvas canvas;
+                var tree = new TestRoot
+                {
+                    Child = decorator = new Decorator
+                    {
+                        Margin = new Thickness(0, 10, 0, 0),
+                        Child = border = new Border
+                        {
+                            Opacity = 0.5,
+                            Background = Brushes.Red,
+                            Child = canvas = new Canvas(),
+                        }
+                    }
+                };
+
+                var scene = new Scene(tree);
+                var sceneBuilder = new SceneBuilder();
+                sceneBuilder.UpdateAll(scene);
+
+                Assert.Equal(new Size(100, 100), scene.Size);
+
+                tree.ClientSize = new Size(110, 120);
+                scene = scene.Clone();
+                sceneBuilder.Update(scene, tree);
+
+                Assert.Equal(new Size(110, 120), scene.Size);
+
+                var expected = new[]
+                {
+                    new Rect(100, 0, 10, 100),
+                    new Rect(0, 100, 110, 20),
+                };
+
+                Assert.Equal(expected, scene.Layers[tree].Dirty.ToArray());
+                Assert.Equal(expected, scene.Layers[border].Dirty.ToArray());
+            }
+        }
+
         private IDisposable TestApplication()
         {
             return UnitTestApplication.Start(

@@ -21,7 +21,7 @@ namespace Avalonia.Rendering
                 {
                     var r = _rects[i];
 
-                    if (r.Inflate(1).Intersects(rect))
+                    if (r.Intersects(rect))
                     {
                         _rects[i] = r.Union(rect);
                         return;
@@ -36,7 +36,7 @@ namespace Avalonia.Rendering
         {
             for (var i = _rects.Count - 1; i >= 0; --i)
             {
-                var a = _rects[i].Inflate(1);
+                var a = _rects[i];
 
                 for (var j = 0; j < i; ++j)
                 {

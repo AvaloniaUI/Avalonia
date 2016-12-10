@@ -21,6 +21,8 @@ namespace Avalonia.Rendering.SceneGraph
         {
             Contract.Requires<ArgumentNullException>(root != null);
 
+            var renderRoot = root.Visual as IRenderRoot;
+
             _index = index;
             Root = root;
             Layers = layers;
@@ -31,6 +33,7 @@ namespace Avalonia.Rendering.SceneGraph
         public int Id { get; }
         public SceneLayers Layers { get; }
         public IVisualNode Root { get; }
+        public Size Size { get; set; }
 
         public void Add(IVisualNode node)
         {
@@ -42,8 +45,13 @@ namespace Avalonia.Rendering.SceneGraph
         public Scene Clone()
         {
             var index = new Dictionary<IVisual, IVisualNode>();
-            var root = (VisualNode)Clone((VisualNode)Root, null, index);
-            var result = new Scene(root, index, Layers.Clone(), Id + 1);
+            var root = Clone((VisualNode)Root, null, index);
+
+            var result = new Scene(root, index, Layers.Clone(), Id + 1)
+            {
+                Size = Size,
+            };
+
             return result;
         }
 

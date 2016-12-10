@@ -18,14 +18,16 @@ namespace Avalonia.Rendering
             _factory = factory;
         }
 
+        public int Count => _inner.Count;
+        public RenderLayer this[IVisual layerRoot] => _index[layerRoot];
+
         public RenderLayer Add(IVisual layerRoot, Size size)
         {
             RenderLayer result;
 
             if (!_index.TryGetValue(layerRoot, out result))
             {
-                var bitmap = _factory.CreateLayer(layerRoot, size);
-                result = new RenderLayer(bitmap, size, layerRoot);
+                result = new RenderLayer(_factory, size, layerRoot);
                 _inner.Add(result);
                 _index.Add(layerRoot, result);
             }
@@ -33,12 +35,7 @@ namespace Avalonia.Rendering
             return result;
         }
 
-        public RenderLayer Get(IVisual layerRoot)
-        {
-            RenderLayer result;
-            _index.TryGetValue(layerRoot, out result);
-            return result;
-        }
+        public bool Exists(IVisual layerRoot) => _index.ContainsKey(layerRoot);
 
         public void RemoveUnused(Scene scene)
         {
@@ -53,6 +50,11 @@ namespace Avalonia.Rendering
                     _index.Remove(layer.LayerRoot);
                 }
             }
+        }
+
+        public bool TryGetValue(IVisual layerRoot, out RenderLayer value)
+        {
+            return _index.TryGetValue(layerRoot, out value);
         }
 
         public IEnumerator<RenderLayer> GetEnumerator() => _inner.GetEnumerator();

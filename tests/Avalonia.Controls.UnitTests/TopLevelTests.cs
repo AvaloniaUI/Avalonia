@@ -164,6 +164,29 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Window_Resize_Notification_Should_Notify_Renderer_Dirty()
+        {
+            var renderer = new Mock<IRenderer>();
+            var services = TestServices.StyledWindow.With(renderer: (_, __) => renderer.Object);
+
+            using (UnitTestApplication.Start(services))
+            {
+                var impl = new Mock<ITopLevelImpl>();
+                impl.SetupAllProperties();
+                impl.Setup(x => x.ClientSize).Returns(new Size(123, 456));
+                impl.Setup(x => x.Scaling).Returns(1);
+
+                var target = new TestTopLevel(impl.Object);
+                target.Measure(new Size(123, 456));
+                Assert.True(target.IsMeasureValid);
+
+                impl.Object.Resized(new Size(100, 200));
+
+                renderer.Verify(x => x.AddDirty(target));
+            }
+        }
+
+        [Fact]
         public void Activate_Should_Call_Impl_Activate()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))

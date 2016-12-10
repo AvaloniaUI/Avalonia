@@ -82,7 +82,8 @@ namespace Avalonia.Direct2D1.Media
         /// </summary>
         public Bitmap WicImpl
         {
-            get; }
+            get;
+        }
 
         /// <summary>
         /// Gets a Direct2D bitmap to use on the specified render target.

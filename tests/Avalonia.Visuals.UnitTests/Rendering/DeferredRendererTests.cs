@@ -118,6 +118,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
             sceneBuilder.Setup(x => x.UpdateAll(It.IsAny<Scene>()))
                 .Callback<Scene>(scene =>
                 {
+                    scene.Size = root.ClientSize;
                     scene.Layers.Add(root).Dirty.Add(new Rect(root.ClientSize));
                 });
 

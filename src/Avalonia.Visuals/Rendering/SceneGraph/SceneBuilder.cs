@@ -16,6 +16,7 @@ namespace Avalonia.Rendering.SceneGraph
             Contract.Requires<ArgumentNullException>(scene != null);
             Dispatcher.UIThread.VerifyAccess();
 
+            scene.Size = (scene.Root.Visual as IRenderRoot)?.ClientSize ?? scene.Root.Visual.Bounds.Size;
             scene.Layers.GetOrAdd(scene.Root.Visual);
 
             using (var impl = new DeferredDrawingContextImpl(scene.Layers))
@@ -32,6 +33,11 @@ namespace Avalonia.Rendering.SceneGraph
             Dispatcher.UIThread.VerifyAccess();
 
             var node = (VisualNode)scene.FindNode(visual);
+
+            if (visual == scene.Root.Visual)
+            {
+                UpdateSize(scene);
+            }
 
             if (visual.VisualRoot != null)
             {
@@ -191,6 +197,37 @@ namespace Avalonia.Rendering.SceneGraph
                         node.SubTreeUpdated = true;
                         contextImpl.TrimChildren();
                     }
+                }
+            }
+        }
+
+        private void UpdateSize(Scene scene)
+        {
+            var newSize = (scene.Root.Visual as IRenderRoot)?.ClientSize ?? scene.Root.Visual.Bounds.Size;
+
+            if (scene.Size != newSize)
+            {
+                var oldSize = scene.Size;
+
+                scene.Size = newSize;
+
+                Rect horizontalDirtyRect = Rect.Empty;
+                Rect verticalDirtyRect = Rect.Empty;
+
+                if (newSize.Width > oldSize.Width)
+                {
+                    horizontalDirtyRect = new Rect(oldSize.Width, 0, newSize.Width - oldSize.Width, oldSize.Height);
+                }
+
+                if (newSize.Height > oldSize.Height)
+                {
+                    verticalDirtyRect = new Rect(0, oldSize.Height, newSize.Width, newSize.Height - oldSize.Height);
+                }
+
+                foreach (var layer in scene.Layers)
+                {
+                    layer.Dirty.Add(horizontalDirtyRect);
+                    layer.Dirty.Add(verticalDirtyRect);
                 }
             }
         }
