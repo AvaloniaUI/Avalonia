@@ -14,7 +14,7 @@ namespace Avalonia.Rendering
 
         public void Add(IVisual visual)
         {
-            var distance = visual.CalculateDistanceFromVisualRoot();
+            var distance = visual.IsAttachedToVisualTree ? visual.CalculateDistanceFromVisualRoot() : -1;
             int existingDistance;
 
             if (_index.TryGetValue(visual, out existingDistance))
@@ -44,6 +44,20 @@ namespace Avalonia.Rendering
         {
             _inner.Clear();
             _index.Clear();
+        }
+
+        public bool Remove(IVisual visual)
+        {
+            int distance;
+
+            if (_index.TryGetValue(visual, out distance))
+            {
+                _inner[distance].Remove(visual);
+                _index.Remove(visual);
+                return true;
+            }
+
+            return false;
         }
 
         public IEnumerator<IVisual> GetEnumerator()
