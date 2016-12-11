@@ -17,8 +17,8 @@ namespace Avalonia.Direct2D1
         private readonly SharpDX.Direct3D11.Device _d3dDevice;
         private DeviceContext _deviceContext;
         private SharpDX.DXGI.SwapChain1 _swapChain;
-        private Size2 _savedSize;
-        private Size2F _savedDpi;
+        private Size2 _size;
+        private Size2F _dpi;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HwndRenderTarget"/> class.
@@ -48,7 +48,9 @@ namespace Avalonia.Direct2D1
                 SharpDX.Direct3D11.DeviceCreationFlags.BgraSupport,
                 featureLevels);
 
-            CreateSwapChain();
+            var size = GetWindowSize();
+            var dpi = GetWindowDpi();
+            CreateSwapChain(size, dpi);
         }
 
         /// <summary>
@@ -76,11 +78,9 @@ namespace Avalonia.Direct2D1
             var size = GetWindowSize();
             var dpi = GetWindowDpi();
 
-            if (size != _savedSize || dpi != _savedDpi)
+            if (size != _size || _dpi != dpi)
             {
-                _savedSize = size;
-                _savedDpi = dpi;
-                CreateSwapChain();
+                CreateSwapChain(size, dpi);
             }
 
             return new DrawingContextImpl(_deviceContext, DirectWriteFactory, _swapChain);
@@ -93,8 +93,11 @@ namespace Avalonia.Direct2D1
             _d3dDevice.Dispose();
         }
 
-        private void CreateSwapChain()
+        private void CreateSwapChain(Size2 size, Size2F dpi)
         {
+            _size = size;
+            _dpi = dpi;
+
             using (var dxgiDevice = _d3dDevice.QueryInterface<SharpDX.DXGI.Device>())
             using (var d2dDevice = new Device(dxgiDevice))
             using (var dxgiAdaptor = dxgiDevice.Adapter)
@@ -102,6 +105,7 @@ namespace Avalonia.Direct2D1
             {
                 _deviceContext?.Dispose();
                 _deviceContext = new DeviceContext(d2dDevice, DeviceContextOptions.None);
+                _deviceContext.DotsPerInch = dpi;
 
                 var swapChainDesc = new SharpDX.DXGI.SwapChainDescription1
                 {
@@ -120,8 +124,6 @@ namespace Avalonia.Direct2D1
                     SwapEffect = SharpDX.DXGI.SwapEffect.FlipSequential,
                     Flags = 0,
                 };
-
-                var dpi = Direct2DFactory.DesktopDpi;
 
                 _swapChain?.Dispose();
                 _swapChain = new SharpDX.DXGI.SwapChain1(dxgiFactory, _d3dDevice, _hwnd, ref swapChainDesc);
@@ -144,7 +146,6 @@ namespace Avalonia.Direct2D1
                 }
             }
         }
-
         private Size2F GetWindowDpi()
         {
             if (UnmanagedMethods.ShCoreAvailable)

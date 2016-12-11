@@ -20,13 +20,13 @@ namespace Avalonia.Rendering
         public int Count => _inner.Count;
         public RenderLayer this[IVisual layerRoot] => _index[layerRoot];
 
-        public RenderLayer Add(IVisual layerRoot, Size size)
+        public RenderLayer Add(IVisual layerRoot, Size size, double scaling)
         {
             RenderLayer result;
 
             if (!_index.TryGetValue(layerRoot, out result))
             {
-                result = new RenderLayer(_factory, size, layerRoot);
+                result = new RenderLayer(_factory, size, scaling, layerRoot);
                 _inner.Add(result);
                 _index.Add(layerRoot, result);
             }

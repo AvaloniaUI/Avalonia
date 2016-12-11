@@ -11,7 +11,7 @@ namespace Avalonia.Skia
     {
         public IBitmapImpl CreateBitmap(int width, int height)
         {
-            return CreateRenderTargetBitmap(width, height);
+            return CreateRenderTargetBitmap(width, height, 96, 96);
         }
 
         public IFormattedTextImpl CreateFormattedText(string text, string fontFamilyName, double fontSize, FontStyle fontStyle,
@@ -54,7 +54,11 @@ namespace Avalonia.Skia
             return new Renderer(root, renderLoop);
         }
 
-        public IRenderTargetBitmapImpl CreateRenderTargetBitmap(int width, int height)
+        public IRenderTargetBitmapImpl CreateRenderTargetBitmap(
+            int width,
+            int height,
+            double dpiX,
+            double dpiY)
         {
             if (width < 1)
                 throw new ArgumentException("Width can't be less than 1", nameof(width));

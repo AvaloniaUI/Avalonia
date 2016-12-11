@@ -141,7 +141,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
                 });
 
             var layers = new Mock<IRenderLayerFactory>();
-            layers.Setup(x => x.CreateLayer(root, root.ClientSize)).Returns(CreateLayer());
+            layers.Setup(x => x.CreateLayer(root, root.ClientSize, 96, 96)).Returns(CreateLayer());
 
             var renderInterface = new Mock<IPlatformRenderInterface>();
 
@@ -154,7 +154,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
 
             RunFrame(loop);
 
-            layers.Verify(x => x.CreateLayer(root, root.ClientSize));
+            layers.Verify(x => x.CreateLayer(root, root.ClientSize, 96, 96));
         }
 
         [Fact]
@@ -241,7 +241,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
         private Mock<IRenderLayerFactory> MockLayerFactory(IRenderRoot root)
         {
             var result = new Mock<IRenderLayerFactory>();
-            result.Setup(x => x.CreateLayer(root, root.ClientSize)).Returns(CreateLayer());
+            result.Setup(x => x.CreateLayer(root, root.ClientSize, 96, 96)).Returns(CreateLayer());
             return result;
         }
 
@@ -262,7 +262,11 @@ namespace Avalonia.Visuals.UnitTests.Rendering
                 _layers = layers;
             }
 
-            public IRenderTargetBitmapImpl CreateLayer(IVisual layerRoot, Size size)
+            public IRenderTargetBitmapImpl CreateLayer(
+                IVisual layerRoot,
+                Size size,
+                double dpiX,
+                double dpiY)
             {
                 return _layers[layerRoot];
             }

@@ -220,6 +220,9 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         double ILayoutRoot.LayoutScaling => PlatformImpl.Scaling;
 
+        /// <inheritdoc/>
+        double IRenderRoot.RenderScaling => PlatformImpl.Scaling;
+
         IStyleHost IStyleHost.StylingParent
         {
             get { return AvaloniaLocator.Current.GetService<IGlobalStyles>(); }

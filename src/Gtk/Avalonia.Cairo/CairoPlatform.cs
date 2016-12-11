@@ -71,7 +71,7 @@ namespace Avalonia.Cairo
                 handle.HandleDescriptor));
         }
 
-        public IRenderTargetBitmapImpl CreateRenderTargetBitmap(int width, int height)
+        public IRenderTargetBitmapImpl CreateRenderTargetBitmap(int width, int height, double dpiX, double dpiY)
         {
             return new RenderTargetBitmapImpl(new ImageSurface(Format.Argb32, width, height));
         }

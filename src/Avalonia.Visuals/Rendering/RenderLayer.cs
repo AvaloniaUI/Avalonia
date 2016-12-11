@@ -12,23 +12,26 @@ namespace Avalonia.Rendering
         public RenderLayer(
             IRenderLayerFactory factory,
             Size size,
+            double scaling,
             IVisual layerRoot)
         {
             _factory = factory;
-            Bitmap = factory.CreateLayer(layerRoot, size);
+            Bitmap = factory.CreateLayer(layerRoot, size, 96 * scaling, 96 * scaling);
             Size = size;
+            Scaling = scaling;
             LayerRoot = layerRoot;
         }
 
         public IRenderTargetBitmapImpl Bitmap { get; private set; }
+        public double Scaling { get; private set; }
         public Size Size { get; private set; }
         public IVisual LayerRoot { get; }
 
-        public void ResizeBitmap(Size size)
+        public void ResizeBitmap(Size size, double scaling)
         {
-            if (Size != size)
+            if (Size != size || Scaling != scaling)
             {
-                var resized = _factory.CreateLayer(LayerRoot, size);
+                var resized = _factory.CreateLayer(LayerRoot, size, 96 * scaling, 96 * scaling);
 
                 using (var context = resized.CreateDrawingContext())
                 {

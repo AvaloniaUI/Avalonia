@@ -6,6 +6,6 @@ namespace Avalonia.Rendering
 {
     public interface IRenderLayerFactory
     {
-        IRenderTargetBitmapImpl CreateLayer(IVisual layerRoot, Size size);
+        IRenderTargetBitmapImpl CreateLayer(IVisual layerRoot, Size size, double dpiX, double dpiY);
     }
 }

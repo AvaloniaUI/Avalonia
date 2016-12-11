@@ -18,11 +18,17 @@ namespace Avalonia.Rendering
             _renderInterface = renderInterface;
         }
 
-        public IRenderTargetBitmapImpl CreateLayer(IVisual layerRoot, Size size)
+        public IRenderTargetBitmapImpl CreateLayer(
+            IVisual layerRoot,
+            Size size,
+            double dpiX,
+            double dpiY)
         {
             return _renderInterface.CreateRenderTargetBitmap(
                 (int)Math.Ceiling(size.Width),
-                (int)Math.Ceiling(size.Height));
+                (int)Math.Ceiling(size.Height),
+                dpiX,
+                dpiY);
         }
     }
 }

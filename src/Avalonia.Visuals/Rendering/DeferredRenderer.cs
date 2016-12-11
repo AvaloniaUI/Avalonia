@@ -166,7 +166,7 @@ namespace Avalonia.Rendering
         {
             if (DrawFps || DrawDirtyRects)
             {
-                var overlay = GetOverlay(scene.Size);
+                var overlay = GetOverlay(scene.Size, scene.Scaling);
 
                 using (var context = overlay.CreateDrawingContext())
                 {
@@ -240,13 +240,15 @@ namespace Avalonia.Rendering
 
                     foreach (var layer in scene.Layers)
                     {
-                        var renderLayer = _layers[layer.LayerRoot];
-                        context.DrawImage(renderLayer.Bitmap, layer.Opacity, clientRect, clientRect);
+                        var bitmap = _layers[layer.LayerRoot].Bitmap;
+                        var sourceRect = new Rect(0, 0, bitmap.PixelWidth, bitmap.PixelHeight);
+                        context.DrawImage(bitmap, layer.Opacity, sourceRect, clientRect);
                     }
 
                     if (_overlay != null)
                     {
-                        context.DrawImage(_overlay, 0.5, clientRect, clientRect);
+                        var sourceRect = new Rect(0, 0, _overlay.PixelWidth, _overlay.PixelHeight);
+                        context.DrawImage(_overlay, 0.5, sourceRect, clientRect);
                     }
                 }
             }
@@ -316,15 +318,16 @@ namespace Avalonia.Rendering
             Render(scene);
         }
 
-        private IRenderTargetBitmapImpl GetOverlay(Size size)
+        private IRenderTargetBitmapImpl GetOverlay(Size size, double scaling)
         {
-            int width = (int)Math.Ceiling(size.Width);
-            int height = (int)Math.Ceiling(size.Height);
+            size = new Size(size.Width * scaling, size.Height * scaling);
 
-            if (_overlay == null || _overlay.PixelWidth != width || _overlay.PixelHeight != height)
+            if (_overlay == null ||
+                _overlay.PixelWidth != size.Width ||
+                _overlay.PixelHeight != size.Height)
             {
                 _overlay?.Dispose();
-                _overlay = _layerFactory.CreateLayer(null, size);
+                _overlay = _layerFactory.CreateLayer(null, size, 96 * scaling, 96 * scaling);
             }
 
             return _overlay;
@@ -332,18 +335,19 @@ namespace Avalonia.Rendering
 
         private IRenderTargetBitmapImpl GetRenderTargetForLayer(Scene scene, IVisual layerRoot)
         {
+            var size = new Size(scene.Size.Width * scene.Scaling, scene.Size.Height * scene.Scaling);
             RenderLayer result;
 
             if (_layers.TryGetValue(layerRoot, out result))
             {
                 if (result.Size != scene.Size)
                 {
-                    result.ResizeBitmap(scene.Size);
+                    result.ResizeBitmap(size, scene.Scaling);
                 }
             }
             else
             {
-                _layers.Add(layerRoot, scene.Size);
+                _layers.Add(layerRoot, size, scene.Scaling);
             }
 
             return _layers[layerRoot].Bitmap;

@@ -39,6 +39,8 @@ namespace Avalonia.UnitTests
 
         public double LayoutScaling => 1;
 
+        public double RenderScaling => 1;
+
         public ILayoutManager LayoutManager => AvaloniaLocator.Current.GetService<ILayoutManager>();
 
         public IRenderTarget RenderTarget => null;

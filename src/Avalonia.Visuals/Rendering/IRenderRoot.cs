@@ -22,6 +22,8 @@ namespace Avalonia.Rendering
         /// </summary>
         IRenderer Renderer { get; }
 
+        double RenderScaling { get; }
+
         /// <summary>
         /// Creates a render target for the window.
         /// </summary>

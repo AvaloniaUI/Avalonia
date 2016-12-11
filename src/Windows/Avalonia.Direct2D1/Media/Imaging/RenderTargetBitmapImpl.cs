@@ -20,13 +20,15 @@ namespace Avalonia.Direct2D1.Media
             Factory d2dFactory,
             DirectWriteFactory dwriteFactory,
             int width,
-            int height)
+            int height,
+            double dpiX,
+            double dpiY)
             : base(imagingFactory, width, height)
         {
             var props = new RenderTargetProperties
             {
-                DpiX = 96,
-                DpiY = 96,
+                DpiX = (float)dpiX,
+                DpiY = (float)dpiY,
             };
 
             _target = new WicRenderTarget(

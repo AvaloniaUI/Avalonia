@@ -34,6 +34,7 @@ namespace Avalonia.Rendering.SceneGraph
         public SceneLayers Layers { get; }
         public IVisualNode Root { get; }
         public Size Size { get; set; }
+        public double Scaling { get; set; } = 1;
 
         public void Add(IVisualNode node)
         {
@@ -50,6 +51,7 @@ namespace Avalonia.Rendering.SceneGraph
             var result = new Scene(root, index, Layers.Clone(), Id + 1)
             {
                 Size = Size,
+                Scaling = Scaling,
             };
 
             return result;
