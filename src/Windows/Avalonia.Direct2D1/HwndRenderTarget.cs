@@ -50,7 +50,7 @@ namespace Avalonia.Direct2D1
 
             var size = GetWindowSize();
             var dpi = GetWindowDpi();
-            CreateSwapChain(size, dpi);
+            UpdateSwapChain(size, dpi);
         }
 
         /// <summary>
@@ -80,7 +80,7 @@ namespace Avalonia.Direct2D1
 
             if (size != _size || _dpi != dpi)
             {
-                CreateSwapChain(size, dpi);
+                UpdateSwapChain(size, dpi);
             }
 
             return new DrawingContextImpl(_deviceContext, DirectWriteFactory, _swapChain);
@@ -93,7 +93,7 @@ namespace Avalonia.Direct2D1
             _d3dDevice.Dispose();
         }
 
-        private void CreateSwapChain(Size2 size, Size2F dpi)
+        private void UpdateSwapChain(Size2 size, Size2F dpi)
         {
             _size = size;
             _dpi = dpi;
@@ -104,29 +104,36 @@ namespace Avalonia.Direct2D1
             using (var dxgiFactory = dxgiAdaptor.GetParent<SharpDX.DXGI.Factory2>())
             {
                 _deviceContext?.Dispose();
+
+                if (_swapChain == null)
+                {
+                    var swapChainDesc = new SharpDX.DXGI.SwapChainDescription1
+                    {
+                        Width = 0,
+                        Height = 0,
+                        Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
+                        Stereo = false,
+                        SampleDescription = new SharpDX.DXGI.SampleDescription
+                        {
+                            Count = 1,
+                            Quality = 0,
+                        },
+                        Usage = SharpDX.DXGI.Usage.RenderTargetOutput,
+                        BufferCount = 2,
+                        Scaling = SharpDX.DXGI.Scaling.None,
+                        SwapEffect = SharpDX.DXGI.SwapEffect.FlipSequential,
+                        Flags = 0,
+                    };
+
+                    _swapChain = new SharpDX.DXGI.SwapChain1(dxgiFactory, _d3dDevice, _hwnd, ref swapChainDesc);
+                }
+                else
+                {
+                    _swapChain.ResizeBuffers(2, 0, 0, SharpDX.DXGI.Format.B8G8R8A8_UNorm, 0);
+                }
+
                 _deviceContext = new DeviceContext(d2dDevice, DeviceContextOptions.None);
                 _deviceContext.DotsPerInch = dpi;
-
-                var swapChainDesc = new SharpDX.DXGI.SwapChainDescription1
-                {
-                    Width = 0,
-                    Height = 0,
-                    Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
-                    Stereo = false,
-                    SampleDescription = new SharpDX.DXGI.SampleDescription
-                    {
-                        Count = 1,
-                        Quality = 0,
-                    },
-                    Usage = SharpDX.DXGI.Usage.RenderTargetOutput,
-                    BufferCount = 2,
-                    Scaling = SharpDX.DXGI.Scaling.None,
-                    SwapEffect = SharpDX.DXGI.SwapEffect.FlipSequential,
-                    Flags = 0,
-                };
-
-                _swapChain?.Dispose();
-                _swapChain = new SharpDX.DXGI.SwapChain1(dxgiFactory, _d3dDevice, _hwnd, ref swapChainDesc);
 
                 using (var dxgiBackBuffer = _swapChain.GetBackBuffer<SharpDX.DXGI.Surface>(0))
                 using (var d2dBackBuffer = new Bitmap1(
