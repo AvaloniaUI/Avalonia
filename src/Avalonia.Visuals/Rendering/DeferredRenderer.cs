@@ -149,6 +149,7 @@ namespace Avalonia.Rendering
                         {
                             context.Transform = Matrix.Identity;
                             context.PushClip(rect);
+                            context.Clear(Colors.Transparent);
                             Render(context, node, layer.LayerRoot, rect);
                             context.PopClip();
 
