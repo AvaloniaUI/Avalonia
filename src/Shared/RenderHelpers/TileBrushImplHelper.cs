@@ -104,7 +104,7 @@ namespace Avalonia.RenderHelpers
                 {
                     using (ctx.PushPostTransform(Matrix.CreateTranslation(-_visualBrush.Visual.Bounds.Position)))
                     {
-                        Renderer.Render(_visualBrush.Visual, ctx);
+                        ImmediateRenderer.Render(_visualBrush.Visual, ctx);
                     }
                 }
             }

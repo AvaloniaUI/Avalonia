@@ -11,7 +11,7 @@ using System.Linq;
 
 namespace Avalonia.Rendering
 {
-    public class Renderer : IDisposable, IRenderer
+    public class ImmediateRenderer : IDisposable, IRenderer
     {
         private readonly IRenderLoop _renderLoop;
         private readonly IVisual _root;
@@ -19,7 +19,7 @@ namespace Avalonia.Rendering
         private bool _dirty;
         private bool _renderQueued;
 
-        public Renderer(IRenderRoot root, IRenderLoop renderLoop)
+        public ImmediateRenderer(IRenderRoot root, IRenderLoop renderLoop)
         {
             Contract.Requires<ArgumentNullException>(root != null);
             Contract.Requires<ArgumentNullException>(renderLoop != null);
@@ -29,7 +29,7 @@ namespace Avalonia.Rendering
             _renderLoop.Tick += OnRenderLoopTick;
         }
 
-        private Renderer(IVisual root)
+        private ImmediateRenderer(IVisual root)
         {
             Contract.Requires<ArgumentNullException>(root != null);
 
@@ -41,7 +41,7 @@ namespace Avalonia.Rendering
 
         public static void Render(IVisual visual, IRenderTarget target)
         {
-            using (var renderer = new Renderer(visual))
+            using (var renderer = new ImmediateRenderer(visual))
             using (var context = new DrawingContext(target.CreateDrawingContext()))
             {
                 renderer.Render(context, visual, visual.Bounds);
@@ -50,7 +50,7 @@ namespace Avalonia.Rendering
 
         public static void Render(IVisual visual, DrawingContext context)
         {
-            using (var renderer = new Renderer(visual))
+            using (var renderer = new ImmediateRenderer(visual))
             {
                 renderer.Render(context, visual, visual.Bounds);
             }

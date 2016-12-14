@@ -42,7 +42,7 @@ namespace Avalonia.Media.Imaging
         /// Renders a visual to the <see cref="RenderTargetBitmap"/>.
         /// </summary>
         /// <param name="visual">The visual to render.</param>
-        public void Render(IVisual visual) => Renderer.Render(visual, this);
+        public void Render(IVisual visual) => ImmediateRenderer.Render(visual, this);
 
         /// <summary>
         /// Creates a platform-specific imlementation for a <see cref="RenderTargetBitmap"/>.
