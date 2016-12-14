@@ -27,22 +27,25 @@ namespace Avalonia.Direct2D1
     {
         private static readonly Direct2D1Platform s_instance = new Direct2D1Platform();
 
-        private static readonly SharpDX.Direct2D1.Factory s_d2D1Factory =
+        private static readonly SharpDX.Direct2D1.Factory1 s_d2D1Factory =
 #if DEBUG
-            new SharpDX.Direct2D1.Factory(SharpDX.Direct2D1.FactoryType.MultiThreaded, SharpDX.Direct2D1.DebugLevel.Error);
+            new SharpDX.Direct2D1.Factory1(SharpDX.Direct2D1.FactoryType.MultiThreaded, SharpDX.Direct2D1.DebugLevel.Error);
 #else
-            new SharpDX.Direct2D1.Factory(SharpDX.Direct2D1.FactoryType.MultiThreaded, SharpDX.Direct2D1.DebugLevel.None);
+            new SharpDX.Direct2D1.Factory1(SharpDX.Direct2D1.FactoryType.MultiThreaded, SharpDX.Direct2D1.DebugLevel.None);
 #endif
         private static readonly SharpDX.DirectWrite.Factory s_dwfactory = new SharpDX.DirectWrite.Factory();
 
         private static readonly SharpDX.WIC.ImagingFactory s_imagingFactory = new SharpDX.WIC.ImagingFactory();
+
+        public static bool UseImmediateRenderer { get; set; }
 
         public static void Initialize()
         {
             AvaloniaLocator.CurrentMutable
                 .Bind<IPlatformRenderInterface>().ToConstant(s_instance)
                 .Bind<IRendererFactory>().ToConstant(s_instance)
-                .BindToSelf(s_d2D1Factory)
+                .Bind<SharpDX.Direct2D1.Factory>().ToConstant(s_d2D1Factory)
+                .Bind<SharpDX.Direct2D1.Factory1>().ToConstant(s_d2D1Factory)
                 .BindToSelf(s_dwfactory)
                 .BindToSelf(s_imagingFactory);
             SharpDX.Configuration.EnableReleaseOnFinalizer = true;
@@ -76,7 +79,14 @@ namespace Avalonia.Direct2D1
 
         public IRenderer CreateRenderer(IRenderRoot root, IRenderLoop renderLoop)
         {
-            return new DeferredRenderer(root, renderLoop);
+            if (UseImmediateRenderer)
+            {
+                return new ImmediateRenderer(root, renderLoop);
+            }
+            else
+            {
+                return new DeferredRenderer(root, renderLoop);
+            }
         }
 
         public IRenderTarget CreateRenderTarget(IPlatformHandle handle)

@@ -27,8 +27,10 @@ namespace Avalonia.Direct2D1
         public HwndRenderTarget(IntPtr hwnd)
         {
             _hwnd = hwnd;
-            Direct2DFactory = AvaloniaLocator.Current.GetService<Factory>();
+            Direct2DFactory = AvaloniaLocator.Current.GetService<Factory1>();
             DirectWriteFactory = AvaloniaLocator.Current.GetService<SharpDX.DirectWrite.Factory>();
+
+            System.Diagnostics.Debug.WriteLine("Created HwndRenderTarget");
 
             var featureLevels = new[]
             {
@@ -56,7 +58,7 @@ namespace Avalonia.Direct2D1
         /// <summary>
         /// Gets the Direct2D factory.
         /// </summary>
-        public Factory Direct2DFactory
+        public Factory1 Direct2DFactory
         {
             get;
         }
@@ -99,7 +101,7 @@ namespace Avalonia.Direct2D1
             _dpi = dpi;
 
             using (var dxgiDevice = _d3dDevice.QueryInterface<SharpDX.DXGI.Device>())
-            using (var d2dDevice = new Device(dxgiDevice))
+            using (var d2dDevice = new Device(Direct2DFactory, dxgiDevice))
             using (var dxgiAdaptor = dxgiDevice.Adapter)
             using (var dxgiFactory = dxgiAdaptor.GetParent<SharpDX.DXGI.Factory2>())
             {
