@@ -76,7 +76,7 @@ namespace Avalonia.Direct2D1
 
         public IRenderer CreateRenderer(IRenderRoot root, IRenderLoop renderLoop)
         {
-            return new ImmediateRenderer(root, renderLoop);
+            return new DeferredRenderer(root, renderLoop);
         }
 
         public IRenderTarget CreateRenderTarget(IPlatformHandle handle)

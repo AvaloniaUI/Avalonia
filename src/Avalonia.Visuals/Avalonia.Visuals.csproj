@@ -118,6 +118,7 @@
     <Compile Include="Rendering\ImmediateRenderer.cs" />
     <Compile Include="Rendering\DefaultRenderLoop.cs" />
     <Compile Include="Rendering\IRenderLayerFactory.cs" />
+    <Compile Include="Rendering\RendererBase.cs" />
     <Compile Include="Rendering\RenderLayer.cs" />
     <Compile Include="Rendering\RenderLayers.cs" />
     <Compile Include="Rendering\SceneGraph\DeferredDrawingContextImpl.cs" />

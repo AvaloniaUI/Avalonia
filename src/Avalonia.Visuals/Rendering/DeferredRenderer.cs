@@ -9,7 +9,7 @@ using System.Collections.Generic;
 
 namespace Avalonia.Rendering
 {
-    public class DeferredRenderer : IRenderer
+    public class DeferredRenderer : RendererBase, IRenderer
     {
         private readonly IDispatcher _dispatcher;
         private readonly IRenderLoop _renderLoop;
@@ -25,12 +25,6 @@ namespace Avalonia.Rendering
         private bool _updateQueued;
         private bool _rendering;
         private int _lastSceneId = -1;
-
-        private readonly Stopwatch _stopwatch = Stopwatch.StartNew();
-        private int _totalFrames;
-        private int _framesThisSecond;
-        private int _fps;
-        private TimeSpan _lastFpsUpdate;
         private DisplayDirtyRects _dirtyRectsDisplay = new DisplayDirtyRects();
 
         public DeferredRenderer(
@@ -90,7 +84,6 @@ namespace Avalonia.Rendering
         private void Render(Scene scene)
         {
             _rendering = true;
-            _totalFrames++;
             _dirtyRectsDisplay.Tick();
 
             if (scene.Size != Size.Empty)
@@ -175,7 +168,7 @@ namespace Avalonia.Rendering
 
                     if (DrawFps)
                     {
-                        RenderFps(context);
+                        RenderFps(context, new Rect(scene.Size), true);
                     }
 
                     if (DrawDirtyRects)
@@ -189,32 +182,6 @@ namespace Avalonia.Rendering
                 _overlay?.Dispose();
                 _overlay = null;
             }
-        }
-
-        private void RenderFps(IDrawingContextImpl context)
-        {
-            var now = _stopwatch.Elapsed;
-            var elapsed = now - _lastFpsUpdate;
-
-            _framesThisSecond++;
-
-            if (elapsed.TotalSeconds > 1)
-            {
-                _fps = (int)(_framesThisSecond / elapsed.TotalSeconds);
-                _framesThisSecond = 0;
-                _lastFpsUpdate = now;
-            }
-
-            var pt = new Point(40, 40);
-            var txt = new FormattedText($"Frame #{_totalFrames} FPS: {_fps}", "Arial", 18,
-                Size.Infinity,
-                FontStyle.Normal,
-                TextAlignment.Left,
-                FontWeight.Normal,
-                TextWrapping.NoWrap);
-            context.Transform = Matrix.Identity;
-            context.FillRectangle(Brushes.White, new Rect(pt, txt.Measure()));
-            context.DrawText(Brushes.Black, pt, txt.PlatformImpl);
         }
 
         private void RenderDirtyRects(IDrawingContextImpl context)

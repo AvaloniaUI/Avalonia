@@ -11,12 +11,12 @@ using System.Linq;
 
 namespace Avalonia.Rendering
 {
-    public class ImmediateRenderer : IDisposable, IRenderer
+    public class ImmediateRenderer : RendererBase, IRenderer
     {
         private readonly IRenderLoop _renderLoop;
         private readonly IVisual _root;
         private IRenderTarget _renderTarget;
-        private bool _dirty;
+        private bool _dirty = true;
         private bool _renderQueued;
 
         public ImmediateRenderer(IRenderRoot root, IRenderLoop renderLoop)
@@ -76,26 +76,6 @@ namespace Avalonia.Rendering
 
         public void Render(Rect rect)
         {
-            if (_renderTarget == null)
-            {
-                _renderTarget = ((IRenderRoot)_root).CreateRenderTarget();
-            }
-
-            try
-            {
-                Render(_root);
-            }
-            catch (RenderTargetCorruptedException ex)
-            {
-                Logging.Logger.Information("Renderer", this, "Render target was corrupted. Exception: {0}", ex);
-                _renderTarget.Dispose();
-                _renderTarget = null;
-            }
-            finally
-            {
-                _dirty = false;
-                _renderQueued = false;
-            }
         }
 
         private static void ClearTransformedBounds(IVisual visual)
@@ -150,11 +130,35 @@ namespace Avalonia.Rendering
             }
         }
 
-        private void Render(IVisual visual)
+        private void Render()
         {
-            using (var context = new DrawingContext(_renderTarget.CreateDrawingContext()))
+            if (_renderTarget == null)
             {
-                Render(context, visual, visual.Bounds);
+                _renderTarget = ((IRenderRoot)_root).CreateRenderTarget();
+            }
+
+            try
+            {
+                using (var context = new DrawingContext(_renderTarget.CreateDrawingContext()))
+                {
+                    Render(context, _root, _root.Bounds);
+
+                    if (DrawFps)
+                    {
+                        RenderFps(context.PlatformImpl, _root.Bounds, true);
+                    }
+                }
+            }
+            catch (RenderTargetCorruptedException ex)
+            {
+                Logging.Logger.Information("Renderer", this, "Render target was corrupted. Exception: {0}", ex);
+                _renderTarget.Dispose();
+                _renderTarget = null;
+            }
+            finally
+            {
+                _dirty = false;
+                _renderQueued = false;
             }
         }
 
@@ -228,10 +232,10 @@ namespace Avalonia.Rendering
 
         private void OnRenderLoopTick(object sender, EventArgs e)
         {
-            if (_dirty && !_renderQueued)
+            if ((_dirty || DrawFps) && !_renderQueued)
             {
                 _renderQueued = true;
-                Dispatcher.UIThread.InvokeAsync(() => Render(new Rect(((IRenderRoot)_root).ClientSize)));
+                Dispatcher.UIThread.InvokeAsync(() => Render());
             }
         }
     }
