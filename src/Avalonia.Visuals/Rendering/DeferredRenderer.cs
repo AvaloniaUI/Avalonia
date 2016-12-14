@@ -158,23 +158,14 @@ namespace Avalonia.Rendering
 
         private void RenderOverlay(Scene scene)
         {
-            if (DrawFps || DrawDirtyRects)
+            if (DrawDirtyRects)
             {
                 var overlay = GetOverlay(scene.Size, scene.Scaling);
 
                 using (var context = overlay.CreateDrawingContext())
                 {
                     context.Clear(Colors.Transparent);
-
-                    if (DrawFps)
-                    {
-                        RenderFps(context, new Rect(scene.Size), true);
-                    }
-
-                    if (DrawDirtyRects)
-                    {
-                        RenderDirtyRects(context);
-                    }
+                    RenderDirtyRects(context);
                 }
             }
             else
@@ -217,6 +208,11 @@ namespace Avalonia.Rendering
                     {
                         var sourceRect = new Rect(0, 0, _overlay.PixelWidth, _overlay.PixelHeight);
                         context.DrawImage(_overlay, 0.5, sourceRect, clientRect);
+                    }
+
+                    if (DrawFps)
+                    {
+                        RenderFps(context, clientRect, true);
                     }
                 }
             }
