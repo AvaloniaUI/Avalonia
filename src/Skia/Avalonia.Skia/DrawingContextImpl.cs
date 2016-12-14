@@ -18,7 +18,6 @@ namespace Avalonia.Skia
         public DrawingContextImpl(SKCanvas canvas)
         {
             Canvas = canvas;
-            Canvas.Clear();
         }
 
         public void Clear(Color color)
