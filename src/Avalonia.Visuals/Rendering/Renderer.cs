@@ -6,13 +6,15 @@ using Avalonia.Platform;
 using Avalonia.VisualTree;
 using System.Collections.Generic;
 using Avalonia.Threading;
+using Avalonia.Media;
+using System.Linq;
 
 namespace Avalonia.Rendering
 {
     public class Renderer : IDisposable, IRenderer
     {
         private readonly IRenderLoop _renderLoop;
-        private readonly IRenderRoot _root;
+        private readonly IVisual _root;
         private IRenderTarget _renderTarget;
         private bool _dirty;
         private bool _renderQueued;
@@ -20,14 +22,39 @@ namespace Avalonia.Rendering
         public Renderer(IRenderRoot root, IRenderLoop renderLoop)
         {
             Contract.Requires<ArgumentNullException>(root != null);
+            Contract.Requires<ArgumentNullException>(renderLoop != null);
 
             _root = root;
             _renderLoop = renderLoop;
             _renderLoop.Tick += OnRenderLoopTick;
         }
 
+        private Renderer(IVisual root)
+        {
+            Contract.Requires<ArgumentNullException>(root != null);
+
+            _root = root;
+        }
+
         public bool DrawFps { get; set; }
         public bool DrawDirtyRects { get; set; }
+
+        public static void Render(IVisual visual, IRenderTarget target)
+        {
+            using (var renderer = new Renderer(visual))
+            using (var context = new DrawingContext(target.CreateDrawingContext()))
+            {
+                renderer.Render(context, visual, visual.Bounds);
+            }
+        }
+
+        public static void Render(IVisual visual, DrawingContext context)
+        {
+            using (var renderer = new Renderer(visual))
+            {
+                renderer.Render(context, visual, visual.Bounds);
+            }
+        }
 
         public void AddDirty(IVisual visual)
         {
@@ -36,7 +63,10 @@ namespace Avalonia.Rendering
 
         public void Dispose()
         {
-            _renderLoop.Tick -= OnRenderLoopTick;
+            if (_renderLoop != null)
+            {
+                _renderLoop.Tick -= OnRenderLoopTick;
+            }
         }
 
         public IEnumerable<IVisual> HitTest(Point p, Func<IVisual, bool> filter)
@@ -48,13 +78,12 @@ namespace Avalonia.Rendering
         {
             if (_renderTarget == null)
             {
-                _renderTarget = _root.CreateRenderTarget();
+                _renderTarget = ((IRenderRoot)_root).CreateRenderTarget();
             }
 
             try
             {
-                RendererMixin.DrawFpsCounter = DrawFps;
-                _renderTarget.Render(_root);
+                Render(_root);
             }
             catch (RenderTargetCorruptedException ex)
             {
@@ -66,6 +95,29 @@ namespace Avalonia.Rendering
             {
                 _dirty = false;
                 _renderQueued = false;
+            }
+        }
+
+        private static void ClearTransformedBounds(IVisual visual)
+        {
+            foreach (var e in visual.GetSelfAndVisualDescendents())
+            {
+                BoundsTracker.SetTransformedBounds((Visual)visual, null);
+            }
+        }
+
+        private static Rect GetTransformedBounds(IVisual visual)
+        {
+            if (visual.RenderTransform == null)
+            {
+                return visual.Bounds;
+            }
+            else
+            {
+                var origin = visual.RenderTransformOrigin.ToPixels(new Size(visual.Bounds.Width, visual.Bounds.Height));
+                var offset = Matrix.CreateTranslation(visual.Bounds.Position + origin);
+                var m = (-offset) * visual.RenderTransform.Value * (offset);
+                return visual.Bounds.TransformToAABB(m);
             }
         }
 
@@ -98,12 +150,88 @@ namespace Avalonia.Rendering
             }
         }
 
+        private void Render(IVisual visual)
+        {
+            using (var context = new DrawingContext(_renderTarget.CreateDrawingContext()))
+            {
+                Render(context, visual, visual.Bounds);
+            }
+        }
+
+        private void Render(DrawingContext context, IVisual visual, Rect clipRect)
+        {
+            var opacity = visual.Opacity;
+            var clipToBounds = visual.ClipToBounds;
+            var bounds = new Rect(visual.Bounds.Size);
+
+            if (visual.IsVisible && opacity > 0)
+            {
+                var m = Matrix.CreateTranslation(visual.Bounds.Position);
+
+                var renderTransform = Matrix.Identity;
+
+                if (visual.RenderTransform != null)
+                {
+                    var origin = visual.RenderTransformOrigin.ToPixels(new Size(visual.Bounds.Width, visual.Bounds.Height));
+                    var offset = Matrix.CreateTranslation(origin);
+                    renderTransform = (-offset) * visual.RenderTransform.Value * (offset);
+                }
+
+                m = renderTransform * m;
+
+                if (clipToBounds)
+                {
+                    clipRect = clipRect.Intersect(new Rect(visual.Bounds.Size));
+                }
+
+                using (context.PushPostTransform(m))
+                using (context.PushOpacity(opacity))
+                using (clipToBounds ? context.PushClip(bounds) : default(DrawingContext.PushedState))
+                using (visual.Clip != null ? context.PushGeometryClip(visual.Clip) : default(DrawingContext.PushedState))
+                using (visual.OpacityMask != null ? context.PushOpacityMask(visual.OpacityMask, bounds) : default(DrawingContext.PushedState))
+                using (context.PushTransformContainer())
+                {
+                    visual.Render(context);
+
+#pragma warning disable 0618
+                    var transformed =
+                        new TransformedBounds(bounds, new Rect(), context.CurrentContainerTransform);
+#pragma warning restore 0618
+
+                    if (visual is Visual)
+                    {
+                        BoundsTracker.SetTransformedBounds((Visual)visual, transformed);
+                    }
+
+                    foreach (var child in visual.VisualChildren.OrderBy(x => x, ZIndexComparer.Instance))
+                    {
+                        var childBounds = GetTransformedBounds(child);
+
+                        if (!child.ClipToBounds || clipRect.Intersects(childBounds))
+                        {
+                            var childClipRect = clipRect.Translate(-childBounds.Position);
+                            Render(context, child, childClipRect);
+                        }
+                        else
+                        {
+                            ClearTransformedBounds(child);
+                        }
+                    }
+                }
+            }
+
+            if (!visual.IsVisible)
+            {
+                ClearTransformedBounds(visual);
+            }
+        }
+
         private void OnRenderLoopTick(object sender, EventArgs e)
         {
             if (_dirty && !_renderQueued)
             {
                 _renderQueued = true;
-                Dispatcher.UIThread.InvokeAsync(() => Render(new Rect(_root.ClientSize)));
+                Dispatcher.UIThread.InvokeAsync(() => Render(new Rect(((IRenderRoot)_root).ClientSize)));
             }
         }
     }

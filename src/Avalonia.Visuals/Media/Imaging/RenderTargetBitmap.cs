@@ -3,6 +3,7 @@
 
 using System;
 using Avalonia.Platform;
+using Avalonia.Rendering;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Media.Imaging
@@ -36,6 +37,12 @@ namespace Avalonia.Media.Imaging
         {
             PlatformImpl.Dispose();
         }
+
+        /// <summary>
+        /// Renders a visual to the <see cref="RenderTargetBitmap"/>.
+        /// </summary>
+        /// <param name="visual">The visual to render.</param>
+        public void Render(IVisual visual) => Renderer.Render(visual, this);
 
         /// <summary>
         /// Creates a platform-specific imlementation for a <see cref="RenderTargetBitmap"/>.

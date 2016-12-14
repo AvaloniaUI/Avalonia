@@ -116,7 +116,6 @@
     <Compile Include="Rendering\IRenderLoop.cs" />
     <Compile Include="Rendering\DirtyRects.cs" />
     <Compile Include="Rendering\Renderer.cs" />
-    <Compile Include="Rendering\RendererMixin.cs" />
     <Compile Include="Rendering\DefaultRenderLoop.cs" />
     <Compile Include="Rendering\IRenderLayerFactory.cs" />
     <Compile Include="Rendering\RenderLayer.cs" />
