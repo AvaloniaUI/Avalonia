@@ -9,6 +9,7 @@ using Avalonia.Rendering;
 namespace Avalonia.Cairo.Media.Imaging
 {
     using System.IO;
+    using Gdk;
     using Cairo = global::Cairo;
 
     public class RenderTargetBitmapImpl : IRenderTargetBitmapImpl

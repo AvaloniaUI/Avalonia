@@ -63,7 +63,8 @@ namespace Avalonia.Cairo.Media
 
         public void Clear(Color color)
         {
-            throw new NotImplementedException();
+            _context.SetSourceRGBA(color.R, color.G, color.B, color.A);
+            _context.Paint();
         }
 
         /// <summary>
@@ -83,39 +84,37 @@ namespace Avalonia.Cairo.Media
         /// <param name="destRect">The rect in the output to draw to.</param>
         public void DrawImage(IBitmapImpl bitmap, double opacity, Rect sourceRect, Rect destRect)
         {
-            var impl = bitmap as BitmapImpl;
-            var size = new Size(impl.PixelWidth, impl.PixelHeight);
+            var pixbuf = bitmap as Gdk.Pixbuf;
+            var rtb = bitmap as RenderTargetBitmapImpl;
+            var size = new Size(pixbuf?.Width ?? rtb.PixelWidth, pixbuf?.Height ?? rtb.PixelHeight);
             var scale = new Vector(destRect.Width / sourceRect.Width, destRect.Height / sourceRect.Height);
 
             _context.Save();
             _context.Scale(scale.X, scale.Y);
             destRect /= scale;
 
-			if (opacityOverride < 1.0f) {
-				_context.PushGroup ();
-				Gdk.CairoHelper.SetSourcePixbuf (
-					_context, 
-					impl, 
-					-sourceRect.X + destRect.X, 
-					-sourceRect.Y + destRect.Y);
+			_context.PushGroup ();
 
-				_context.Rectangle (destRect.ToCairo ());
-				_context.Fill ();
-				_context.PopGroupToSource ();
-				_context.PaintWithAlpha (opacityOverride);
-			} else {
-				_context.PushGroup ();
-				Gdk.CairoHelper.SetSourcePixbuf (
-					_context, 
-					impl, 
-					-sourceRect.X + destRect.X, 
-					-sourceRect.Y + destRect.Y);
-
-                _context.Rectangle (destRect.ToCairo ());
-                _context.Fill ();
-                _context.PopGroupToSource ();
-                _context.PaintWithAlpha (opacityOverride);			
+            if (pixbuf != null)
+            {
+                Gdk.CairoHelper.SetSourcePixbuf(
+                    _context,
+                    pixbuf,
+                    -sourceRect.X + destRect.X,
+                    -sourceRect.Y + destRect.Y);
             }
+            else
+            {
+                _context.SetSourceSurface(
+                        rtb.Surface,
+                        (int)(-sourceRect.X + destRect.X),
+                        (int)(-sourceRect.Y + destRect.Y));
+            }
+
+            _context.Rectangle (destRect.ToCairo ());
+			_context.Fill ();
+			_context.PopGroupToSource ();
+			_context.PaintWithAlpha (opacityOverride);
             _context.Restore();
         }
 

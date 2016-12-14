@@ -115,7 +115,7 @@ namespace Avalonia.Gtk
 
         public IRenderer CreateRenderer(IRenderRoot root, IRenderLoop renderLoop)
         {
-            return new Renderer(root, renderLoop);
+            return new DeferredRenderer(root, renderLoop);
         }
 
         public IWindowIconImpl LoadIcon(string fileName)

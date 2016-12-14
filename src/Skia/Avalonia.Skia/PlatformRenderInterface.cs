@@ -51,7 +51,7 @@ namespace Avalonia.Skia
 
         public IRenderer CreateRenderer(IRenderRoot root, IRenderLoop renderLoop)
         {
-            return new Renderer(root, renderLoop);
+            return new DeferredRenderer(root, renderLoop);
         }
 
         public IRenderTargetBitmapImpl CreateRenderTargetBitmap(

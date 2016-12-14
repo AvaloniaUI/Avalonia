@@ -16,6 +16,8 @@ namespace Avalonia.Skia
                     TextAlignment textAlignment, FontWeight fontWeight, TextWrapping wrapping, Size constraint)
         {
             Text = text ?? string.Empty;
+            _fontStyle = fontStyle;
+            _fontWeight = fontWeight;
 
             // Replace 0 characters with zero-width spaces (200B)
             Text = Text.Replace((char)0, (char)0x200B);
@@ -169,7 +171,15 @@ namespace Avalonia.Skia
 
         public IFormattedTextImpl WithConstraint(Size constraint)
         {
-            throw new NotImplementedException();
+            return new FormattedTextImpl(
+                Text,
+                _paint.Typeface.FamilyName,
+                _paint.TextSize,
+                _fontStyle,
+                _paint.TextAlign.ToAvalonia(),
+                _fontWeight,
+                _wrapping,
+                constraint);
         }
 
         internal void Draw(DrawingContextImpl context,
@@ -273,6 +283,8 @@ namespace Avalonia.Skia
         private readonly List<Rect> _rects = new List<Rect>();
         public string Text { get; }
         private readonly TextWrapping _wrapping;
+        private readonly FontStyle _fontStyle;
+        private readonly FontWeight _fontWeight;
         private Size _constraint = new Size(double.PositiveInfinity, double.PositiveInfinity);
         private float _lineHeight = 0;
         private float _lineOffset = 0;
