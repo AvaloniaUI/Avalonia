@@ -28,7 +28,7 @@ namespace Avalonia.Direct2D1.Media
                 fontFamily,
                 fontSize,
                 (DWrite.FontStyle)fontStyle,
-                (DWrite.TextAlignment)textAlignment,
+                textAlignment.ToDirect2D(),
                 (DWrite.FontWeight)fontWeight,
                 wrapping == TextWrapping.Wrap ? DWrite.WordWrapping.Wrap : DWrite.WordWrapping.NoWrap,
                 (float)constraint.Width,

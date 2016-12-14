@@ -42,34 +42,35 @@ namespace Avalonia.Rendering
         /// <param name="visual">The visual to render.</param>
         public static void Render(this IRenderTarget renderTarget, IVisual visual)
         {
-            ////using (var ctx = renderTarget.CreateDrawingContext())
-            ////{
-            ////    ctx.Render(visual);
-            ////    s_frameNum++;
-            ////    if (DrawFpsCounter)
-            ////    {
-            ////        s_currentFrames++;
-            ////        var now = s_stopwatch.Elapsed;
-            ////        var elapsed = now - s_lastMeasure;
-            ////        if (elapsed.TotalSeconds > 1)
-            ////        {
-            ////            s_fps = (int) (s_currentFrames/elapsed.TotalSeconds);
-            ////            s_currentFrames = 0;
-            ////            s_lastMeasure = now;
-            ////        }
-            ////        var pt = new Point(40, 40);
-            ////        using (
-            ////            var txt = new FormattedText("Frame #" + s_frameNum + " FPS: " + s_fps, "Arial", 18,
-            ////                FontStyle.Normal,
-            ////                TextAlignment.Left,
-            ////                FontWeight.Normal,
-            ////                TextWrapping.NoWrap))
-            ////        {
-            ////            ctx.FillRectangle(Brushes.White, new Rect(pt, txt.Measure()));
-            ////            ctx.DrawText(Brushes.Black, pt, txt);
-            ////        }
-            ////    }
-            ////}
+            using (var ctx = new DrawingContext(renderTarget.CreateDrawingContext()))
+            {
+                ctx.Render(visual);
+                s_frameNum++;
+                if (DrawFpsCounter)
+                {
+                    s_currentFrames++;
+                    var now = s_stopwatch.Elapsed;
+                    var elapsed = now - s_lastMeasure;
+                    if (elapsed.TotalSeconds > 1)
+                    {
+                        s_fps = (int)(s_currentFrames / elapsed.TotalSeconds);
+                        s_currentFrames = 0;
+                        s_lastMeasure = now;
+                    }
+                    var pt = new Point(40, 40);
+                    var txt = new FormattedText(
+                        "Frame #" + s_frameNum + " FPS: " + s_fps,
+                        "Arial",
+                        18,
+                        Size.Infinity,
+                        FontStyle.Normal,
+                        TextAlignment.Left,
+                        FontWeight.Normal,
+                        TextWrapping.NoWrap);
+                    ctx.FillRectangle(Brushes.White, new Rect(pt, txt.Measure()));
+                    ctx.DrawText(Brushes.Black, pt, txt);
+                }
+            }
         }
 
         /// <summary>
