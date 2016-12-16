@@ -43,6 +43,7 @@ namespace Avalonia.Gtk
             _imContext = new Gtk.IMMulticontext();
             _imContext.Commit += ImContext_Commit;
             _window.Realized += OnRealized;
+            _window.AppPaintable = true;
             _window.DoubleBuffered = false;
             _window.Realize();
             _window.ButtonPressEvent += OnButtonPressEvent;
