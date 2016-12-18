@@ -6,6 +6,7 @@ using Avalonia.Rendering.SceneGraph;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using System.Collections.Generic;
+using System.IO;
 
 namespace Avalonia.Rendering
 {
@@ -52,6 +53,7 @@ namespace Avalonia.Rendering
 
         public bool DrawFps { get; set; }
         public bool DrawDirtyRects { get; set; }
+        public string DebugFramesPath { get; set; }
 
         public void AddDirty(IVisual visual)
         {
@@ -92,6 +94,12 @@ namespace Avalonia.Rendering
                 {
                     _layers.RemoveUnused(scene);
                     RenderToLayers(scene);
+
+                    if (DebugFramesPath != null)
+                    {
+                        SaveDebugFrames(scene.Id);
+                    }
+
                     _lastSceneId = scene.Id;
                 }
 
@@ -315,6 +323,17 @@ namespace Avalonia.Rendering
             }
 
             return _layers[layerRoot].Bitmap;
+        }
+
+        private void SaveDebugFrames(int id)
+        {
+            var index = 0;
+
+            foreach (var layer in _layers)
+            {
+                var fileName = Path.Combine(DebugFramesPath, $"frame-{id}-layer-{index++}.png");
+                layer.Bitmap.Save(fileName);
+            }
         }
     }
 }
