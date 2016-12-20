@@ -188,6 +188,7 @@ namespace Avalonia.Controls
         {
             s_windows.Remove(this);
             PlatformImpl.Dispose();
+            IsVisible = false;
         }
 
         protected override void HandleApplicationExiting()
@@ -220,6 +221,8 @@ namespace Avalonia.Controls
             {
                 PlatformImpl.Hide();
             }
+
+            IsVisible = false;
         }
 
         /// <summary>
@@ -236,6 +239,8 @@ namespace Avalonia.Controls
             {
                 PlatformImpl.Show();
             }
+
+            IsVisible = true;
         }
 
         /// <summary>
@@ -278,6 +283,7 @@ namespace Avalonia.Controls
                         result.SetResult((TResult)_dialogResult);
                     });
 
+                IsVisible = true;
                 return result.Task;
             }
         }

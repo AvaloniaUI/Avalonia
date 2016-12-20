@@ -205,6 +205,7 @@ namespace Avalonia.Controls.Primitives
             }
 
             _popupRoot.Position = GetPosition();
+            IsVisible = true;
 
             if (_topLevel == null && PlacementTarget != null)
             {

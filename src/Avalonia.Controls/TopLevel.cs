@@ -59,6 +59,7 @@ namespace Avalonia.Controls
         static TopLevel()
         {
             AffectsMeasure(ClientSizeProperty);
+            IsVisibleProperty.OverrideDefaultValue<TopLevel>(false);
         }
 
         /// <summary>
@@ -383,6 +384,7 @@ namespace Avalonia.Controls
         /// </summary>
         private void HandleClosed()
         {
+            IsVisible = false;
             Closed?.Invoke(this, EventArgs.Empty);
             _applicationLifecycle.OnExit -= OnApplicationExiting;
         }
