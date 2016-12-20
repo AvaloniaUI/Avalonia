@@ -36,6 +36,7 @@ namespace Avalonia.Skia
             _paint.Typeface = typeface;
             _paint.TextSize = (float)fontSize;
             _paint.TextAlign = textAlignment.ToSKTextAlign();
+            _paint.XferMode = SKXferMode.Src;
 
             _wrapping = wrapping;
             _constraint = constraint;
