@@ -131,7 +131,7 @@ namespace Avalonia.Rendering.SceneGraph
             var bounds = new Rect(visual.Bounds.Size);
             var contextImpl = (DeferredDrawingContextImpl)context.PlatformImpl;
 
-            contextImpl.Layers[node.LayerRoot].Dirty.Add(node.Bounds);
+            contextImpl.Layers.Find(node.LayerRoot)?.Dirty.Add(node.Bounds);
 
             if (visual.IsVisible)
             {
@@ -172,7 +172,12 @@ namespace Avalonia.Rendering.SceneGraph
 
                     if (node.LayerRoot == visual)
                     {
-                        scene.Layers[visual].Opacity = visual.Opacity;
+                        var layer = scene.Layers.Find(visual);
+
+                        if (layer != null)
+                        {
+                            layer.Opacity = visual.Opacity;
+                        }
                     }
 
                     if (node.ClipToBounds)

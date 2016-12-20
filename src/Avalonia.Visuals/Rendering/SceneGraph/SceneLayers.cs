@@ -67,6 +67,13 @@ namespace Avalonia.Rendering.SceneGraph
             return _index.ContainsKey(layerRoot);
         }
 
+        public SceneLayer Find(IVisual layerRoot)
+        {
+            SceneLayer result;
+            _index.TryGetValue(layerRoot, out result);
+            return result;
+        }
+
         public SceneLayer GetOrAdd(IVisual layerRoot)
         {
             Contract.Requires<ArgumentNullException>(layerRoot != null);
