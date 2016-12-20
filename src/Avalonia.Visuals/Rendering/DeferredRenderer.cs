@@ -92,7 +92,7 @@ namespace Avalonia.Rendering
             {
                 if (scene.Id != _lastSceneId)
                 {
-                    _layers.RemoveUnused(scene);
+                    _layers.Update(scene);
                     RenderToLayers(scene);
 
                     if (DebugFramesPath != null)
@@ -141,7 +141,7 @@ namespace Avalonia.Rendering
             {
                 foreach (var layer in scene.Layers)
                 {
-                    var renderTarget = GetRenderTargetForLayer(scene, layer.LayerRoot);
+                    var renderTarget = _layers[layer.LayerRoot].Bitmap;
                     var node = (VisualNode)scene.FindNode(layer.LayerRoot);
 
                     using (var context = renderTarget.CreateDrawingContext())
@@ -303,26 +303,6 @@ namespace Avalonia.Rendering
             }
 
             return _overlay;
-        }
-
-        private IRenderTargetBitmapImpl GetRenderTargetForLayer(Scene scene, IVisual layerRoot)
-        {
-            var size = new Size(scene.Size.Width * scene.Scaling, scene.Size.Height * scene.Scaling);
-            RenderLayer result;
-
-            if (_layers.TryGetValue(layerRoot, out result))
-            {
-                if (result.Size != scene.Size)
-                {
-                    result.ResizeBitmap(size, scene.Scaling);
-                }
-            }
-            else
-            {
-                _layers.Add(layerRoot, size, scene.Scaling);
-            }
-
-            return _layers[layerRoot].Bitmap;
         }
 
         private void SaveDebugFrames(int id)

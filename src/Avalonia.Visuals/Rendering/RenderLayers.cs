@@ -20,24 +20,25 @@ namespace Avalonia.Rendering
         public int Count => _inner.Count;
         public RenderLayer this[IVisual layerRoot] => _index[layerRoot];
 
-        public RenderLayer Add(IVisual layerRoot, Size size, double scaling)
+        public void Update(Scene scene)
         {
-            RenderLayer result;
-
-            if (!_index.TryGetValue(layerRoot, out result))
+            for (var i = scene.Layers.Count - 1; i >= 0; --i)
             {
-                result = new RenderLayer(_factory, size, scaling, layerRoot);
-                _inner.Add(result);
-                _index.Add(layerRoot, result);
+                var src = scene.Layers[i];
+                RenderLayer layer;
+
+                if (!_index.TryGetValue(src.LayerRoot, out layer))
+                {
+                    layer = new RenderLayer(_factory, scene.Size, scene.Scaling, src.LayerRoot);
+                    _inner.Add(layer);
+                    _index.Add(src.LayerRoot, layer);
+                }
+                else
+                {
+                    layer.ResizeBitmap(scene.Size, scene.Scaling);
+                }
             }
 
-            return result;
-        }
-
-        public bool Exists(IVisual layerRoot) => _index.ContainsKey(layerRoot);
-
-        public void RemoveUnused(Scene scene)
-        {
             for (var i = _inner.Count - 1; i >= 0; --i)
             {
                 var layer = _inner[i];

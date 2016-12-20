@@ -16,7 +16,7 @@ namespace Avalonia.Rendering
             IVisual layerRoot)
         {
             _factory = factory;
-            Bitmap = factory.CreateLayer(layerRoot, size, 96 * scaling, 96 * scaling);
+            Bitmap = factory.CreateLayer(layerRoot, size * scaling, 96 * scaling, 96 * scaling);
             Size = size;
             Scaling = scaling;
             LayerRoot = layerRoot;
