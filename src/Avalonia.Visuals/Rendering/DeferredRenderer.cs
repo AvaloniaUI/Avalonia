@@ -287,7 +287,11 @@ namespace Avalonia.Rendering
                 scene = _scene;
             }
 
-            Render(scene);
+            try
+            {
+                Render(scene);
+            }
+            catch { }
         }
 
         private IRenderTargetBitmapImpl GetOverlay(Size size, double scaling)

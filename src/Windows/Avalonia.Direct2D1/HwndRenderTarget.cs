@@ -30,8 +30,6 @@ namespace Avalonia.Direct2D1
             Direct2DFactory = AvaloniaLocator.Current.GetService<Factory1>();
             DirectWriteFactory = AvaloniaLocator.Current.GetService<SharpDX.DirectWrite.Factory>();
 
-            System.Diagnostics.Debug.WriteLine("Created HwndRenderTarget");
-
             var featureLevels = new[]
             {
                 SharpDX.Direct3D.FeatureLevel.Level_12_1,
