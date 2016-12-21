@@ -12,8 +12,8 @@ namespace Avalonia.DesignerSupport.Tests
     public class DesignerSupportTests
     {
         [Theory,
-         InlineData(@"..\..\..\Avalonia.DesignerSupport.TestApp\bin\$BUILD\Avalonia.DesignerSupport.TestApp.exe", @"..\..\..\Avalonia.DesignerSupport.TestApp\MainWindow.xaml"),
-         InlineData(@"..\..\..\..\samples\ControlCatalog.Desktop\bin\$BUILD\ControlCatalog.dll", @"..\..\..\..\samples\ControlCatalog\MainWindow.xaml")]
+         InlineData(@"Avalonia.DesignerSupport.TestApp.exe", @"..\..\tests\Avalonia.DesignerSupport.TestApp\MainWindow.xaml"),
+         InlineData(@"..\..\samples\ControlCatalog.Desktop\bin\$BUILD\ControlCatalog.dll", @"..\..\samples\ControlCatalog\MainWindow.xaml")]
         public void DesgignerApiShoudBeOperational(string outputDir, string xamlFile)
         {
             var xaml = File.ReadAllText(xamlFile);

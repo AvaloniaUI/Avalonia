@@ -86,8 +86,8 @@ namespace Avalonia.Controls.Primitives
         {
             EnsureInitialized();
             PlatformImpl.Show();
-            LayoutManager.Instance.ExecuteInitialLayoutPass(this);
             IsVisible = true;
+            LayoutManager.Instance.ExecuteInitialLayoutPass(this);
         }
 
         /// <inheritdoc/>

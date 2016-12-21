@@ -38,6 +38,17 @@ namespace Avalonia.Markup.UnitTests.Data
         }
 
         [Fact]
+        public void Should_Set_Indexed_Value()
+        {
+            var data = new { Foo = new[] { "foo" } };
+            var target = new BindingExpression(new ExpressionObserver(data, "Foo[0]"), typeof(string));
+
+            target.OnNext("bar");
+
+            Assert.Equal("bar", data.Foo[0]);
+        }
+
+        [Fact]
         public async void Should_Convert_Get_String_To_Double()
         {
             Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;

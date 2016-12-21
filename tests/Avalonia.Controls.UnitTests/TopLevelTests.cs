@@ -92,6 +92,7 @@ namespace Avalonia.Controls.UnitTests
 
                 var target = new TestTopLevel(impl.Object)
                 {
+                    IsVisible = true,
                     Template = CreateTemplate(),
                     Content = new TextBlock
                     {
@@ -115,6 +116,7 @@ namespace Avalonia.Controls.UnitTests
 
                 var target = new TestTopLevel(impl)
                 {
+                    IsVisible = true,
                     Template = CreateTemplate(),
                     Content = new TextBlock
                     {
