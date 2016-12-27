@@ -16,7 +16,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
         {
             var parent = new VisualNode(new TestRoot(), null);
             var child = new VisualNode(Mock.Of<IVisual>(), null);
-            var layers = new SceneLayers();
+            var layers = new SceneLayers(parent.Visual);
             var target = new DeferredDrawingContextImpl(layers);
 
             target.BeginUpdate(parent);
@@ -31,7 +31,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
         {
             var parent = new VisualNode(new TestRoot(), null);
             var child = new VisualNode(Mock.Of<IVisual>(), null);
-            var layers = new SceneLayers();
+            var layers = new SceneLayers(parent.Visual);
 
             parent.AddChild(child);
 
@@ -50,7 +50,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
             var parent = new VisualNode(new TestRoot(), null);
             var child1 = new VisualNode(Mock.Of<IVisual>(), null);
             var child2 = new VisualNode(Mock.Of<IVisual>(), null);
-            var layers = new SceneLayers();
+            var layers = new SceneLayers(parent.Visual);
 
             parent.AddChild(child1);
 
@@ -74,7 +74,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
             node.AddChild(new VisualNode(Mock.Of<IVisual>(), node) { LayerRoot = root });
             node.AddChild(new VisualNode(Mock.Of<IVisual>(), node) { LayerRoot = root });
 
-            var layers = new SceneLayers();
+            var layers = new SceneLayers(root);
             var target = new DeferredDrawingContextImpl(layers);
             var child1 = new VisualNode(Mock.Of<IVisual>(), null) { LayerRoot = root };
             var child2 = new VisualNode(Mock.Of<IVisual>(), null) { LayerRoot = root };
@@ -91,7 +91,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
         public void Should_Add_DrawOperations()
         {
             var node = new VisualNode(new TestRoot(), null);
-            var layers = new SceneLayers();
+            var layers = new SceneLayers(node.Visual);
             var target = new DeferredDrawingContextImpl(layers);
 
             node.LayerRoot = node.Visual;
@@ -112,7 +112,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
         {
             var node = new VisualNode(new TestRoot(), null);
             var operation = new RectangleNode(Matrix.Identity, Brushes.Red, null, new Rect(0, 0, 100, 100), 0);
-            var layers = new SceneLayers();
+            var layers = new SceneLayers(node.Visual);
             var target = new DeferredDrawingContextImpl(layers);
 
             node.LayerRoot = node.Visual;
@@ -134,7 +134,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
         {
             var node = new VisualNode(new TestRoot(), null);
             var operation = new RectangleNode(Matrix.Identity, Brushes.Red, null, new Rect(0, 0, 100, 100), 0);
-            var layers = new SceneLayers();
+            var layers = new SceneLayers(node.Visual);
             var target = new DeferredDrawingContextImpl(layers);
 
             node.LayerRoot = node.Visual;
@@ -156,7 +156,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
         {
             var node = new VisualNode(new TestRoot(), null);
             var operation = new RectangleNode(Matrix.Identity, Brushes.Red, null, new Rect(0, 0, 100, 100), 0);
-            var layers = new SceneLayers();
+            var layers = new SceneLayers(node.Visual);
             var target = new DeferredDrawingContextImpl(layers);
 
             node.LayerRoot = node.Visual;
@@ -180,7 +180,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
             node.AddDrawOperation(new RectangleNode(Matrix.Identity, Brushes.Red, null, new Rect(0, 0, 30, 100), 0));
             node.AddDrawOperation(new RectangleNode(Matrix.Identity, Brushes.Red, null, new Rect(0, 0, 40, 100), 0));
 
-            var layers = new SceneLayers();
+            var layers = new SceneLayers(node.Visual);
             var target = new DeferredDrawingContextImpl(layers);
 
             using (target.BeginUpdate(node))

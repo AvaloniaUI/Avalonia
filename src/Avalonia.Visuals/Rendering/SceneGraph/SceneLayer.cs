@@ -5,14 +5,7 @@ namespace Avalonia.Rendering.SceneGraph
 {
     public class SceneLayer
     {
-        public SceneLayer(IVisual layerRoot)
-        {
-            LayerRoot = layerRoot;
-            Dirty = new DirtyRects();
-            DistanceFromRoot = layerRoot.CalculateDistanceFromVisualRoot();
-        }
-
-        internal SceneLayer(IVisual layerRoot, int distanceFromRoot)
+        public SceneLayer(IVisual layerRoot, int distanceFromRoot)
         {
             LayerRoot = layerRoot;
             Dirty = new DirtyRects();

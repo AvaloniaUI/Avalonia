@@ -17,28 +17,24 @@ namespace Avalonia.VisualTree
         /// Calculates the distance from a visual's <see cref="IRenderRoot"/>.
         /// </summary>
         /// <param name="visual">The visual.</param>
-        /// <returns>The number of steps from the visual to the render root.</returns>
-        /// <exception cref="ArgumentException">The visual is not rooted.</exception>
-        public static int CalculateDistanceFromVisualRoot(this IVisual visual)
+        /// <param name="ancestor">The ancestor visual.</param>
+        /// <returns>
+        /// The number of steps from the visual to the ancestor or -1 if
+        /// <paramref name="visual"/> is not a descendent of <paramref name="ancestor"/>.
+        /// </returns>
+        public static int CalculateDistanceFromAncestor(this IVisual visual, IVisual ancestor)
         {
             Contract.Requires<ArgumentNullException>(visual != null);
 
-            var root = visual.VisualRoot;
-
-            if (root == null)
-            {
-                throw new ArgumentException("Visual is not rooted.");
-            }
-
             var result = 0;
 
-            while (visual != root)
+            while (visual != null && visual != ancestor)
             {
                 ++result;
                 visual = visual.VisualParent;
             }
 
-            return result;
+            return visual != null ? result : -1;
         }
 
         /// <summary>

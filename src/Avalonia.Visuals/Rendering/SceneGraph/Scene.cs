@@ -12,7 +12,11 @@ namespace Avalonia.Rendering.SceneGraph
         private Dictionary<IVisual, IVisualNode> _index;
 
         public Scene(IVisual rootVisual)
-            : this(new VisualNode(rootVisual, null), new Dictionary<IVisual, IVisualNode>(), new SceneLayers(), 0)
+            : this(
+                new VisualNode(rootVisual, null),
+                new Dictionary<IVisual, IVisualNode>(),
+                new SceneLayers(rootVisual),
+                0)
         {
             _index.Add(rootVisual, Root);
         }

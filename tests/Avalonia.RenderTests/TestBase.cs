@@ -9,6 +9,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Rendering;
 
 using Xunit;
+using Avalonia.Platform;
 
 #if AVALONIA_CAIRO
 using Avalonia.Cairo;
@@ -63,7 +64,9 @@ namespace Avalonia.Direct2D1.RenderTests
                 Directory.CreateDirectory(OutputPath);
             }
 
-            string path = Path.Combine(OutputPath, testName + ".out.png");
+            var immediatePath = Path.Combine(OutputPath, testName + ".immediate.out.png");
+            var deferredPath = Path.Combine(OutputPath, testName + ".deferred.out.png");
+            var factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
 
             using (RenderTargetBitmap bitmap = new RenderTargetBitmap(
                 (int)target.Width,
@@ -73,22 +76,41 @@ namespace Avalonia.Direct2D1.RenderTests
                 target.Measure(size);
                 target.Arrange(new Rect(size));
                 bitmap.Render(target);
-                bitmap.Save(path);
+                bitmap.Save(immediatePath);
+            }
+
+            using (var rtb = factory.CreateRenderTargetBitmap((int)target.Width, (int)target.Height, 96, 96))
+            using (var renderer = new DeferredRenderer(target, rtb))
+            {
+                Size size = new Size(target.Width, target.Height);
+                target.Measure(size);
+                target.Arrange(new Rect(size));
+                renderer.Render(target.Bounds);
+                rtb.Save(deferredPath);
             }
         }
 
         protected void CompareImages([CallerMemberName] string testName = "")
         {
-            string expectedPath = Path.Combine(OutputPath, testName + ".expected.png");
-            string actualPath = Path.Combine(OutputPath, testName + ".out.png");
-            using (MagickImage expected = new MagickImage(expectedPath))
-            using (MagickImage actual = new MagickImage(actualPath))
-            {
-                double error = expected.Compare(actual, ErrorMetric.RootMeanSquared);
+            var expectedPath = Path.Combine(OutputPath, testName + ".expected.png");
+            var immediatePath = Path.Combine(OutputPath, testName + ".immediate.out.png");
+            var deferredPath = Path.Combine(OutputPath, testName + ".deferred.out.png");
 
-                if (error > 0.022)
+            using (var expected = new MagickImage(expectedPath))
+            using (var immediate = new MagickImage(immediatePath))
+            using (var deferred = new MagickImage(deferredPath))
+            {
+                double immediateError = expected.Compare(immediate, ErrorMetric.RootMeanSquared);
+                double deferredError = expected.Compare(deferred, ErrorMetric.RootMeanSquared);
+
+                if (immediateError > 0.022)
                 {
-                    Assert.True(false, actualPath + ": Error = " + error);
+                    Assert.True(false, immediatePath + ": Error = " + immediateError);
+                }
+
+                if (deferredError > 0.022)
+                {
+                    Assert.True(false, deferredPath + ": Error = " + deferredError);
                 }
             }
         }

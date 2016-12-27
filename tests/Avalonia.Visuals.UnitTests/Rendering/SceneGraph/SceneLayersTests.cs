@@ -23,7 +23,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 }
             };
 
-            var target = new SceneLayers();
+            var target = new SceneLayers(root);
             target.Add(root);
             target.Add(decorator);
             target.Add(border);

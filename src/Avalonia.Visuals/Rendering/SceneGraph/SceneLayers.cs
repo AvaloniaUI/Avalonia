@@ -7,11 +7,13 @@ namespace Avalonia.Rendering.SceneGraph
 {
     public class SceneLayers : IEnumerable<SceneLayer>
     {
-        private List<SceneLayer> _inner = new List<SceneLayer>();
-        private Dictionary<IVisual, SceneLayer> _index = new Dictionary<IVisual, SceneLayer>();
+        private readonly IVisual _root;
+        private readonly List<SceneLayer> _inner = new List<SceneLayer>();
+        private readonly Dictionary<IVisual, SceneLayer> _index = new Dictionary<IVisual, SceneLayer>();
 
-        public SceneLayers()
+        public SceneLayers(IVisual root)
         {
+            _root = root;
         }
 
         public int Count => _inner.Count;
@@ -39,7 +41,8 @@ namespace Avalonia.Rendering.SceneGraph
         {
             Contract.Requires<ArgumentNullException>(layerRoot != null);
 
-            var layer = new SceneLayer(layerRoot);
+            var distance = layerRoot.CalculateDistanceFromAncestor(_root);
+            var layer = new SceneLayer(layerRoot, distance);
             var insert = FindInsertIndex(layer);
             _index.Add(layerRoot, layer);
             _inner.Insert(insert, layer);
@@ -48,7 +51,7 @@ namespace Avalonia.Rendering.SceneGraph
 
         public SceneLayers Clone()
         {
-            var result = new SceneLayers();
+            var result = new SceneLayers(_root);
 
             foreach (var src in _inner)
             {

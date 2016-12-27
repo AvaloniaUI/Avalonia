@@ -14,7 +14,7 @@ namespace Avalonia.Rendering
     {
         private readonly IDispatcher _dispatcher;
         private readonly IRenderLoop _renderLoop;
-        private readonly IRenderRoot _root;
+        private readonly IVisual _root;
         private readonly ISceneBuilder _sceneBuilder;
         private readonly RenderLayers _layers;
         private readonly IRenderLayerFactory _layerFactory;
@@ -51,6 +51,23 @@ namespace Avalonia.Rendering
             }
         }
 
+        public DeferredRenderer(
+            IVisual root,
+            IRenderTarget renderTarget,
+            ISceneBuilder sceneBuilder = null,
+            IRenderLayerFactory layerFactory = null)
+        {
+            Contract.Requires<ArgumentNullException>(root != null);
+            Contract.Requires<ArgumentNullException>(renderTarget != null);
+
+            _root = root;
+            _renderTarget = renderTarget;
+            _sceneBuilder = sceneBuilder ?? new SceneBuilder();
+            _scene = new Scene(root);
+            _layerFactory = layerFactory ?? new DefaultRenderLayerFactory();
+            _layers = new RenderLayers(_layerFactory);
+        }
+
         public bool DrawFps { get; set; }
         public bool DrawDirtyRects { get; set; }
         public string DebugFramesPath { get; set; }
@@ -81,6 +98,8 @@ namespace Avalonia.Rendering
 
         public void Render(Rect rect)
         {
+            UpdateScene();
+            Render(_scene);
         }
 
         private void Render(Scene scene)
@@ -198,7 +217,7 @@ namespace Avalonia.Rendering
             {
                 if (_renderTarget == null)
                 {
-                    _renderTarget = _root.CreateRenderTarget();
+                    _renderTarget = ((IRenderRoot)_root).CreateRenderTarget();
                 }
 
                 using (var context = _renderTarget.CreateDrawingContext())
@@ -259,7 +278,7 @@ namespace Avalonia.Rendering
                 }
 
                 _dirty.Clear();
-                _root.Invalidate(new Rect(scene.Size));
+                (_root as IRenderRoot)?.Invalidate(new Rect(scene.Size));
             }
             finally
             {

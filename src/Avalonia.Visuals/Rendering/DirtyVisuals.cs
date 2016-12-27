@@ -14,7 +14,7 @@ namespace Avalonia.Rendering
 
         public void Add(IVisual visual)
         {
-            var distance = visual.IsAttachedToVisualTree ? visual.CalculateDistanceFromVisualRoot() : -1;
+            var distance = visual.CalculateDistanceFromAncestor(visual.VisualRoot);
             int existingDistance;
 
             if (_index.TryGetValue(visual, out existingDistance))
