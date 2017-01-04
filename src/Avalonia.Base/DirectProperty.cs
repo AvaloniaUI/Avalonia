@@ -30,7 +30,7 @@ namespace Avalonia
             string name,
             Func<TOwner, TValue> getter,
             Action<TOwner, TValue> setter,
-            PropertyMetadata metadata)
+            DirectPropertyMetadata<TValue> metadata)
             : base(name, typeof(TOwner), metadata)
         {
             Contract.Requires<ArgumentNullException>(getter != null);
@@ -50,7 +50,7 @@ namespace Avalonia
             AvaloniaProperty<TValue> source,
             Func<TOwner, TValue> getter,
             Action<TOwner, TValue> setter,
-            PropertyMetadata metadata)
+            DirectPropertyMetadata<TValue> metadata)
             : base(source, typeof(TOwner), metadata)
         {
             Contract.Requires<ArgumentNullException>(getter != null);
@@ -93,18 +93,22 @@ namespace Avalonia
             Func<TNewOwner, TValue> getter,
             Action<TNewOwner, TValue> setter = null,
             TValue unsetValue = default(TValue),
-            BindingMode defaultBindingMode = BindingMode.OneWay,
+            BindingMode defaultBindingMode = BindingMode.Default,
             bool enableDataValidation = false)
                 where TNewOwner : AvaloniaObject
         {
+            var metadata = new DirectPropertyMetadata<TValue>(
+                unsetValue: unsetValue,
+                defaultBindingMode: defaultBindingMode,
+                enableDataValidation: enableDataValidation);
+
+            metadata.Merge(GetMetadata<TOwner>(), this);
+
             var result = new DirectProperty<TNewOwner, TValue>(
                 this,
                 getter,
                 setter,
-                new DirectPropertyMetadata<TValue>(
-                    unsetValue: unsetValue,
-                    defaultBindingMode: defaultBindingMode,
-                    enableDataValidation: enableDataValidation));
+                metadata);
 
             AvaloniaPropertyRegistry.Instance.Register(typeof(TNewOwner), result);
             return result;
