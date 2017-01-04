@@ -88,9 +88,16 @@ namespace Avalonia.Win32
 
                     var pofn = &ofn;
 
+                    // We should save the current directory to restore it later.
+                    var currentDirectory = Environment.CurrentDirectory;
+
                     var res = dialog is OpenFileDialog
                         ? UnmanagedMethods.GetOpenFileName(new IntPtr(pofn))
                         : UnmanagedMethods.GetSaveFileName(new IntPtr(pofn));
+
+                    // Restore the old current directory, since GetOpenFileName and GetSaveFileName change it after they're called
+                    Environment.CurrentDirectory = currentDirectory;
+
                     if (!res)
                         return null;
                     if (dialog?.Filters.Count > 0)
