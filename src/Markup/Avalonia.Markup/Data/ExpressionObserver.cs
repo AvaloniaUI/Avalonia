@@ -153,7 +153,7 @@ namespace Avalonia.Markup.Data
         /// </returns>
         public bool SetValue(object value, BindingPriority priority = BindingPriority.LocalValue)
         {
-            return (Leaf as PropertyAccessorNode)?.SetTargetValue(value, priority) ?? false;
+            return (Leaf as ISettableNode)?.SetTargetValue(value, priority) ?? false;
         }
 
         /// <summary>
@@ -170,7 +170,7 @@ namespace Avalonia.Markup.Data
         /// Gets the type of the expression result or null if the expression could not be 
         /// evaluated.
         /// </summary>
-        public Type ResultType => (Leaf as PropertyAccessorNode)?.PropertyType;
+        public Type ResultType => (Leaf as ISettableNode)?.PropertyType;
 
         /// <summary>
         /// Gets the leaf node.

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reactive.Subjects;
+using Avalonia;
 using Avalonia.Data;
 using Avalonia.Logging;
 using Avalonia.UnitTests;
@@ -408,6 +409,34 @@ namespace Avalonia.Base.UnitTests
             }
 
             Assert.True(called);
+        }
+
+        [Fact]
+        public void AddOwner_Should_Inherit_DefaultBindingMode()
+        {
+            var foo = new DirectProperty<Class1, string>(
+                "foo",
+                o => "foo",
+                null,
+                new DirectPropertyMetadata<string>(defaultBindingMode: BindingMode.TwoWay));
+            var bar = foo.AddOwner<Class2>(o => "bar");
+
+            Assert.Equal(BindingMode.TwoWay, bar.GetMetadata<Class1>().DefaultBindingMode);
+            Assert.Equal(BindingMode.TwoWay, bar.GetMetadata<Class2>().DefaultBindingMode);
+        }
+
+        [Fact]
+        public void AddOwner_Can_Override_DefaultBindingMode()
+        {
+            var foo = new DirectProperty<Class1, string>(
+                "foo",
+                o => "foo",
+                null,
+                new DirectPropertyMetadata<string>(defaultBindingMode: BindingMode.TwoWay));
+            var bar = foo.AddOwner<Class2>(o => "bar", defaultBindingMode: BindingMode.OneWayToSource);
+
+            Assert.Equal(BindingMode.TwoWay, bar.GetMetadata<Class1>().DefaultBindingMode);
+            Assert.Equal(BindingMode.OneWayToSource, bar.GetMetadata<Class2>().DefaultBindingMode);
         }
 
         private class Class1 : AvaloniaObject

@@ -23,7 +23,7 @@ namespace Avalonia
         public DirectPropertyMetadata(
             TValue unsetValue = default(TValue),
             BindingMode defaultBindingMode = BindingMode.Default,
-            bool enableDataValidation = false)
+            bool? enableDataValidation = null)
                 : base(defaultBindingMode)
         {
             UnsetValue = unsetValue;
@@ -44,7 +44,7 @@ namespace Avalonia
         /// control (such as a TextBox's Text property) will be interested in recieving data
         /// validation messages so this feature must be explicitly enabled by setting this flag.
         /// </remarks>
-        public bool EnableDataValidation { get; }
+        public bool? EnableDataValidation { get; private set; }
 
         /// <inheritdoc/>
         object IDirectPropertyMetadata.UnsetValue => UnsetValue;
@@ -61,6 +61,11 @@ namespace Avalonia
                 if (UnsetValue == null)
                 {
                     UnsetValue = src.UnsetValue;
+                }
+
+                if (EnableDataValidation == null)
+                {
+                    EnableDataValidation = src.EnableDataValidation;
                 }
             }
         }

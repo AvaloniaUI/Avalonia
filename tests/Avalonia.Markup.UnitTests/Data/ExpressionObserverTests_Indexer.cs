@@ -26,6 +26,36 @@ namespace Avalonia.Markup.UnitTests.Data
         }
 
         [Fact]
+        public async void Should_Get_UnsetValue_For_Invalid_Array_Index()
+        {
+            var data = new { Foo = new[] { "foo", "bar" } };
+            var target = new ExpressionObserver(data, "Foo[invalid]");
+            var result = await target.Take(1);
+
+            Assert.Equal(AvaloniaProperty.UnsetValue, result);
+        }
+
+        [Fact]
+        public async void Should_Get_UnsetValue_For_Invalid_Dictionary_Index()
+        {
+            var data = new { Foo = new Dictionary<int, string> { { 1, "foo" } } };
+            var target = new ExpressionObserver(data, "Foo[invalid]");
+            var result = await target.Take(1);
+
+            Assert.Equal(AvaloniaProperty.UnsetValue, result);
+        }
+
+        [Fact]
+        public async void Should_Get_UnsetValue_For_Object_Without_Indexer()
+        {
+            var data = new { Foo = 5 };
+            var target = new ExpressionObserver(data, "Foo[noindexer]");
+            var result = await target.Take(1);
+
+            Assert.Equal(AvaloniaProperty.UnsetValue, result);
+        }
+
+        [Fact]
         public async void Should_Get_MultiDimensional_Array_Value()
         {
             var data = new { Foo = new[,] { { "foo", "bar" }, { "baz", "qux" } } };
@@ -190,6 +220,77 @@ namespace Avalonia.Markup.UnitTests.Data
             var expected = new[] { "bar", "bar2" };
             Assert.Equal(expected, result);
             Assert.Equal(0, data.Foo.PropertyChangedSubscriptionCount);
+        }
+
+        [Fact]
+        public void Should_SetArrayIndex()
+        {
+            var data = new { Foo = new[] { "foo", "bar" } };
+            var target = new ExpressionObserver(data, "Foo[1]");
+
+            using (target.Subscribe(_ => { }))
+            {
+                Assert.True(target.SetValue("baz"));
+            }
+
+            Assert.Equal("baz", data.Foo[1]);
+        }
+
+        [Fact]
+        public void Should_Set_ExistingDictionaryEntry()
+        {
+            var data = new
+            {
+                Foo = new Dictionary<string, int>
+                {
+                    {"foo", 1 }
+                }
+            };
+            
+            var target = new ExpressionObserver(data, "Foo[foo]");
+            using (target.Subscribe(_ => { }))
+            {
+                Assert.True(target.SetValue(4));
+            }
+
+            Assert.Equal(4, data.Foo["foo"]);
+        }
+
+        [Fact]
+        public void Should_Add_NewDictionaryEntry()
+        {
+            var data = new
+            {
+                Foo = new Dictionary<string, int>
+                {
+                    {"foo", 1 }
+                }
+            };
+            
+            var target = new ExpressionObserver(data, "Foo[bar]");
+            using (target.Subscribe(_ => { }))
+            {
+                Assert.True(target.SetValue(4));
+            }
+
+            Assert.Equal(4, data.Foo["bar"]);
+        }
+
+        [Fact]
+        public void Should_Set_NonIntegerIndexer()
+        {
+            var data = new { Foo = new NonIntegerIndexer() };
+            data.Foo["foo"] = "bar";
+            data.Foo["baz"] = "qux";
+
+            var target = new ExpressionObserver(data, "Foo[foo]");
+
+            using (target.Subscribe(_ => { }))
+            {
+                Assert.True(target.SetValue("bar2"));
+            }
+            
+            Assert.Equal("bar2", data.Foo["foo"]);
         }
 
         private class NonIntegerIndexer : NotifyingBase
