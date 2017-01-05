@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Controls;
-using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Xunit;
 
@@ -67,8 +66,8 @@ namespace Avalonia.Visuals.UnitTests
         [Fact]
         public void Adding_Children_Should_Fire_OnAttachedToVisualTree()
         {
-            var child2 = new Decorator();
-            var child1 = new Decorator { Child = child2 };
+            var child2 = new TestVisual();
+            var child1 = new TestVisual { Child = child2 };
             var root = new TestRoot();
             var called1 = false;
             var called2 = false;
@@ -85,8 +84,8 @@ namespace Avalonia.Visuals.UnitTests
         [Fact]
         public void Removing_Children_Should_Fire_OnDetachedFromVisualTree()
         {
-            var child2 = new Decorator();
-            var child1 = new Decorator { Child = child2 };
+            var child2 = new TestVisual();
+            var child1 = new TestVisual { Child = child2 };
             var root = new TestRoot();
             var called1 = false;
             var called2 = false;
@@ -105,11 +104,11 @@ namespace Avalonia.Visuals.UnitTests
         {
             var root1 = new TestRoot();
             var root2 = new TestRoot();
-            var child = new Canvas();
+            var child = new TestVisual();
 
-            root1.Child = child;
+            root1.AddChild(child);
 
-            Assert.Throws<InvalidOperationException>(() => root2.Child = child);
+            Assert.Throws<InvalidOperationException>(() => root2.AddChild(child));
             Assert.Equal(0, root2.GetVisualChildren().Count());
         }
     }
