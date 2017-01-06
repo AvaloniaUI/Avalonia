@@ -131,20 +131,14 @@ namespace Avalonia.Markup.Data
             }
             else
             {
-                if (notification.Error != null)
+                if (Next != null)
                 {
-                    _observer.OnNext(notification);
+                    Next.Target = new WeakReference(notification.Value);
                 }
-                else if (notification.HasValue)
+                
+                if (Next == null || notification.Error != null)
                 {
-                    if (Next != null)
-                    {
-                        Next.Target = new WeakReference(notification.Value);
-                    }
-                    else
-                    {
-                        _observer.OnNext(value);
-                    }
+                    _observer.OnNext(value);
                 }
             }
         }
