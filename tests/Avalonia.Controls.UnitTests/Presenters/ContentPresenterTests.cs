@@ -172,6 +172,22 @@ namespace Avalonia.Controls.UnitTests.Presenters
         }
 
         [Fact]
+        public void Assigning_Control_To_Content_After_NonControl_Should_Clear_DataContext()
+        {
+            var target = new ContentPresenter();
+
+            target.Content = "foo";
+            target.UpdateChild();
+
+            Assert.True(target.IsSet(Control.DataContextProperty));
+
+            target.Content = new Border();
+            target.UpdateChild();
+
+            Assert.False(target.IsSet(Control.DataContextProperty));
+        }
+
+        [Fact]
         public void Tries_To_Recycle_DataTemplate()
         {
             var target = new ContentPresenter
