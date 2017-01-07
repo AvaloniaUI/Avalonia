@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Avalonia.Collections;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
@@ -113,7 +112,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
             var scroll = (ScrollContentPresenter)target.Parent;
             Assert.Equal(new Size(10, 20), scroll.Extent);
-            Assert.Equal(new Size(0, 10), scroll.Viewport);
+            Assert.Equal(new Size(100, 10), scroll.Viewport);
         }
 
         [Fact]
@@ -255,7 +254,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
             Assert.Equal(10, target.Panel.Children.Count);
             Assert.Equal(new Size(10, 20), scroll.Extent);
-            Assert.Equal(new Size(0, 10), scroll.Viewport);
+            Assert.Equal(new Size(100, 10), scroll.Viewport);
 
             target.VirtualizationMode = ItemVirtualizationMode.None;
             target.Measure(new Size(100, 100));

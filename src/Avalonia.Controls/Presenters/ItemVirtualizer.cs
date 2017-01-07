@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Specialized;
+using System.Reactive.Linq;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Utils;
 using Avalonia.Input;
@@ -17,6 +18,7 @@ namespace Avalonia.Controls.Presenters
     internal abstract class ItemVirtualizer : IVirtualizingController, IDisposable
     {
         private double _crossAxisOffset;
+        private IDisposable _subscriptions;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemVirtualizer"/> class.
@@ -27,6 +29,15 @@ namespace Avalonia.Controls.Presenters
             Owner = owner;
             Items = owner.Items;
             ItemCount = owner.Items.Count();
+
+            var panel = VirtualizingPanel;
+
+            if (panel != null)
+            {
+                _subscriptions = panel.GetObservable(Panel.BoundsProperty)
+                    .Skip(1)
+                    .Subscribe(_ => InvalidateScroll());
+            }
         }
 
         /// <summary>
@@ -240,6 +251,9 @@ namespace Avalonia.Controls.Presenters
         /// <inheritdoc/>
         public virtual void Dispose()
         {
+            _subscriptions?.Dispose();
+            _subscriptions = null;
+
             if (VirtualizingPanel != null)
             {
                 VirtualizingPanel.Controller = null;
