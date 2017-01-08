@@ -115,6 +115,10 @@ namespace Avalonia.Markup.Xaml.Data
                     anchor,
                     enableDataValidation);
             }
+            else if (RelativeSource.Mode == RelativeSourceMode.Self)
+            {
+                observer = CreateSourceObserver(target, pathInfo.Path, enableDataValidation);
+            }
             else if (RelativeSource.Mode == RelativeSourceMode.TemplatedParent)
             {
                 observer = CreateTemplatedParentObserver(target, pathInfo.Path);
