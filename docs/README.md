@@ -4,15 +4,16 @@
 
 ## Building
 
-Download and unzip `docfx.zip` into `Documentation` folder from [DocFX project site](https://github.com/dotnet/docfx/releases).
+Unzip the latest [docfx release](https://github.com/dotnet/docfx/releases))
+into a folder called `docfx` (this folder is .gitignored).
 
-**Step 1.** To create `_site` documentation folder run build script
+Create the `_site` documentation folder by running the build script:
 
 ```
 build.cmd
 ```
 
-**Step 2.** To browse `_site` documentation folder run serve script
+To browse the `_site` documentation folder run the serve script:
 
 ```
 serve.cmd
