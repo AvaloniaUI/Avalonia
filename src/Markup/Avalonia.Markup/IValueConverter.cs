@@ -3,6 +3,7 @@
 
 using System;
 using System.Globalization;
+using Avalonia.Data;
 
 namespace Avalonia.Markup
 {
@@ -21,8 +22,8 @@ namespace Avalonia.Markup
         /// <returns>The converted value.</returns>
         /// <remarks>
         /// This method should not throw exceptions. If the value is not convertible, return
-        /// <see cref="AvaloniaProperty.UnsetValue"/>. Any exception thrown will be treated as
-        /// an application exception.
+        /// a <see cref="BindingNotification"/> in an error state. Any exceptions thrown will be
+        /// treated as an application exception.
         /// </remarks>
         object Convert(object value, Type targetType, object parameter, CultureInfo culture);
 
@@ -36,8 +37,8 @@ namespace Avalonia.Markup
         /// <returns>The converted value.</returns>
         /// <remarks>
         /// This method should not throw exceptions. If the value is not convertible, return
-        /// <see cref="AvaloniaProperty.UnsetValue"/>. Any exception thrown will be treated as
-        /// an application exception.
+        /// a <see cref="BindingNotification"/> in an error state. Any exceptions thrown will be
+        /// treated as an application exception.
         /// </remarks>
         object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture);
     }

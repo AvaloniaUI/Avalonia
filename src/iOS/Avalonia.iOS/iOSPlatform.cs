@@ -13,14 +13,14 @@ namespace Avalonia
 {
     public static class iOSApplicationExtensions
     {
-        public static AppBuilder UseiOS(this AppBuilder builder)
+        public static T UseiOS<T>(this T builder) where T : AppBuilderBase<T>, new()
         {
-            builder.WindowingSubsystem = Avalonia.iOS.iOSPlatform.Initialize;
+            builder.UseWindowingSubsystem(iOSPlatform.Initialize, "iOS");
             return builder;
         }
 
         // TODO: Can we merge this with UseSkia somehow once HW/platform cleanup is done?
-        public static AppBuilder UseSkiaViewHost(this AppBuilder builder)
+        public static T UseSkiaViewHost<T>(this T builder) where T : AppBuilderBase<T>, new()
         {
             var window = new UIWindow(UIScreen.MainScreen.Bounds);
             var controller = new AvaloniaViewController(window);
@@ -53,7 +53,7 @@ namespace Avalonia.iOS
             KeyboardDevice = new KeyboardDevice();
 
             AvaloniaLocator.CurrentMutable
-                .Bind<IPclPlatformWrapper>().ToSingleton<PclPlatformWrapper>()
+                .Bind<IRuntimePlatform>().ToSingleton<StandardRuntimePlatform>()
                 .Bind<IClipboard>().ToTransient<Clipboard>()
                 // TODO: what does this look like for iOS??
                 //.Bind<ISystemDialogImpl>().ToTransient<SystemDialogImpl>()

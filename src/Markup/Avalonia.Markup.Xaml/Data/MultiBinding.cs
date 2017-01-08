@@ -53,7 +53,8 @@ namespace Avalonia.Markup.Xaml.Data
         public InstancedBinding Initiate(
             IAvaloniaObject target,
             AvaloniaProperty targetProperty,
-            object anchor = null)
+            object anchor = null,
+            bool enableDataValidation = false)
         {
             if (Converter == null)
             {

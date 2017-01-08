@@ -167,6 +167,24 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
+        public void PopupRoot_Should_Be_Detached_From_Logical_Tree_When_Popup_Is_Detached()
+        {
+            using (CreateServices())
+            {
+                var target = new Popup();
+                var root = new TestRoot { Child = target };
+
+                target.Open();
+
+                var popupRoot = (ILogical)target.PopupRoot;
+
+                Assert.True(popupRoot.IsAttachedToLogicalTree);
+                root.Child = null;
+                Assert.False(((ILogical)target).IsAttachedToLogicalTree);
+            }
+        }
+
+        [Fact]
         public void PopupRoot_Should_Have_Template_Applied()
         {
             using (CreateServices())
@@ -249,12 +267,15 @@ namespace Avalonia.Controls.UnitTests.Primitives
             var globalStyles = new Mock<IGlobalStyles>();
             globalStyles.Setup(x => x.Styles).Returns(styles);
 
+            var renderInterface = new Mock<IPlatformRenderInterface>();
+
             AvaloniaLocator.CurrentMutable
                 .Bind<ILayoutManager>().ToTransient<LayoutManager>()
                 .Bind<IGlobalStyles>().ToFunc(() => globalStyles.Object)
                 .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformMock())
-                .Bind<IStyler>().ToTransient<Styler>();
-
+                .Bind<IStyler>().ToTransient<Styler>()
+                .Bind<IPlatformRenderInterface>().ToFunc(() => renderInterface.Object);
+            
             return result;
         }
 

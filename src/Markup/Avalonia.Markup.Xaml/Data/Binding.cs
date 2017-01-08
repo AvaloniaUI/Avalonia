@@ -27,10 +27,12 @@ namespace Avalonia.Markup.Xaml.Data
         /// Initializes a new instance of the <see cref="Binding"/> class.
         /// </summary>
         /// <param name="path">The binding path.</param>
-        public Binding(string path)
+        /// <param name="mode">The binding mode.</param>
+        public Binding(string path, BindingMode mode = BindingMode.Default)
             : this()
         {
             Path = path;
+            Mode = mode;
         }
 
         /// <summary>
@@ -78,21 +80,18 @@ namespace Avalonia.Markup.Xaml.Data
         /// </summary>
         public object Source { get; set; }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether the property should be validated.
-        /// </summary>
-        public bool EnableValidation { get; set; }
-
         /// <inheritdoc/>
         public InstancedBinding Initiate(
             IAvaloniaObject target,
             AvaloniaProperty targetProperty,
-            object anchor = null)
+            object anchor = null,
+            bool enableDataValidation = false)
         {
             Contract.Requires<ArgumentNullException>(target != null);
 
             var pathInfo = ParsePath(Path);
             ValidateState(pathInfo);
+            enableDataValidation = enableDataValidation && Priority == BindingPriority.LocalValue;
 
             ExpressionObserver observer;
 
@@ -105,7 +104,7 @@ namespace Avalonia.Markup.Xaml.Data
             }
             else if (Source != null)
             {
-                observer = CreateSourceObserver(Source, pathInfo.Path);
+                observer = CreateSourceObserver(Source, pathInfo.Path, enableDataValidation);
             }
             else if (RelativeSource == null || RelativeSource.Mode == RelativeSourceMode.DataContext)
             {
@@ -113,7 +112,8 @@ namespace Avalonia.Markup.Xaml.Data
                     target,
                     pathInfo.Path,
                     targetProperty == Control.DataContextProperty,
-                    anchor);
+                    anchor,
+                    enableDataValidation);
             }
             else if (RelativeSource.Mode == RelativeSourceMode.TemplatedParent)
             {
@@ -135,7 +135,7 @@ namespace Avalonia.Markup.Xaml.Data
                 fallback = null;
             }
 
-            var subject = new ExpressionSubject(
+            var subject = new BindingExpression(
                 observer,
                 targetProperty?.PropertyType ?? typeof(object),
                 fallback,
@@ -197,7 +197,8 @@ namespace Avalonia.Markup.Xaml.Data
             IAvaloniaObject target,
             string path,
             bool targetIsDataContext,
-            object anchor)
+            object anchor,
+            bool enableDataValidation)
         {
             Contract.Requires<ArgumentNullException>(target != null);
 
@@ -220,19 +221,16 @@ namespace Avalonia.Markup.Xaml.Data
                     () => target.GetValue(Control.DataContextProperty),
                     path,
                     update,
-                    EnableValidation);
+                    enableDataValidation);
 
                 return result;
             }
             else
             {
                 return new ExpressionObserver(
-                    target.GetObservable(Visual.VisualParentProperty)
-                          .OfType<IAvaloniaObject>()
-                          .Select(x => x.GetObservable(Control.DataContextProperty))
-                          .Switch(),
+                    GetParentDataContext(target),
                     path,
-                    EnableValidation);
+                    enableDataValidation);
             }
         }
 
@@ -240,18 +238,23 @@ namespace Avalonia.Markup.Xaml.Data
         {
             Contract.Requires<ArgumentNullException>(target != null);
 
+            var description = $"#{elementName}.{path}";
             var result = new ExpressionObserver(
                 ControlLocator.Track(target, elementName),
                 path,
-                EnableValidation);
+                false,
+                description);
             return result;
         }
 
-        private ExpressionObserver CreateSourceObserver(object source, string path)
+        private ExpressionObserver CreateSourceObserver(
+            object source,
+            string path,
+            bool enabledDataValidation)
         {
             Contract.Requires<ArgumentNullException>(source != null);
 
-            return new ExpressionObserver(source, path, EnableValidation);
+            return new ExpressionObserver(source, path, enabledDataValidation);
         }
 
         private ExpressionObserver CreateTemplatedParentObserver(
@@ -270,6 +273,22 @@ namespace Avalonia.Markup.Xaml.Data
                 update);
 
             return result;
+        }
+
+        private IObservable<object> GetParentDataContext(IAvaloniaObject target)
+        {
+            // The DataContext is based on the visual parent and not the logical parent: this may
+            // seem unintuitive considering the fact that property inheritance works on the logical
+            // tree, but consider a ContentControl with a ContentPresenter. The ContentControl's
+            // Content property is bound to a value which becomes the ContentPresenter's 
+            // DataContext - it is from this that the child hosted by the ContentPresenter needs to
+            // inherit its DataContext.
+            return target.GetObservable(Visual.VisualParentProperty)
+                .Select(x =>
+                {
+                    return (x as IAvaloniaObject)?.GetObservable(Control.DataContextProperty) ?? 
+                           Observable.Return((object)null);
+                }).Switch();
         }
 
         private class PathInfo

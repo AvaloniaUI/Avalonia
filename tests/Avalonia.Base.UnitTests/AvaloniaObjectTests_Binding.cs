@@ -11,6 +11,13 @@ using Avalonia.Data;
 using Avalonia.Logging;
 using Avalonia.UnitTests;
 using Xunit;
+using System.Threading.Tasks;
+using Avalonia.Platform;
+using System.Threading;
+using Moq;
+using System.Reactive.Disposables;
+using System.Reactive.Concurrency;
+using Avalonia.Threading;
 
 namespace Avalonia.Base.UnitTests
 {
@@ -52,6 +59,36 @@ namespace Avalonia.Base.UnitTests
 
             Assert.Equal(5.6, target.GetValue(Class1.QuxProperty));
             Assert.False(target.IsSet(Class1.QuxProperty));
+        }
+
+        [Fact]
+        public void OneTime_Binding_Ignores_UnsetValue()
+        {
+            var target = new Class1();
+            var source = new Subject<object>();
+
+            target.Bind(Class1.QuxProperty, new TestOneTimeBinding(source));
+
+            source.OnNext(AvaloniaProperty.UnsetValue);
+            Assert.Equal(5.6, target.GetValue(Class1.QuxProperty));
+
+            source.OnNext(6.7);
+            Assert.Equal(6.7, target.GetValue(Class1.QuxProperty));
+        }
+
+        [Fact]
+        public void OneTime_Binding_Ignores_Binding_Errors()
+        {
+            var target = new Class1();
+            var source = new Subject<object>();
+
+            target.Bind(Class1.QuxProperty, new TestOneTimeBinding(source));
+
+            source.OnNext(new BindingNotification(new Exception(), BindingErrorType.Error));
+            Assert.Equal(5.6, target.GetValue(Class1.QuxProperty));
+
+            source.OnNext(6.7);
+            Assert.Equal(6.7, target.GetValue(Class1.QuxProperty));
         }
 
         [Fact]
@@ -273,31 +310,36 @@ namespace Avalonia.Base.UnitTests
 
             target.Bind(Class1.QuxProperty, source);
             source.OnNext(6.7);
-            source.OnNext(new BindingError(new InvalidOperationException("Foo")));
+            source.OnNext(new BindingNotification(
+                new InvalidOperationException("Foo"),
+                BindingErrorType.Error));
 
             Assert.Equal(6.7, target.GetValue(Class1.QuxProperty));
         }
 
         [Fact]
-        public void BindingError_With_FallbackValue_Causes_Target_Update()
+        public void BindingNotification_With_FallbackValue_Causes_Target_Update()
         {
             var target = new Class1();
             var source = new Subject<object>();
 
             target.Bind(Class1.QuxProperty, source);
             source.OnNext(6.7);
-            source.OnNext(new BindingError(new InvalidOperationException("Foo"), 8.9));
+            source.OnNext(new BindingNotification(
+                new InvalidOperationException("Foo"),
+                BindingErrorType.Error,
+                8.9));
 
             Assert.Equal(8.9, target.GetValue(Class1.QuxProperty));
         }
 
         [Fact]
-        public void Bind_Logs_BindingError()
+        public void Bind_Logs_Binding_Error()
         {
             var target = new Class1();
             var source = new Subject<object>();
             var called = false;
-            var expectedMessageTemplate = "Error binding to {Target}.{Property}: {Message}";
+            var expectedMessageTemplate = "Error in binding to {Target}.{Property}: {Message}";
 
             LogCallback checkLogMessage = (level, area, src, mt, pv) =>
             {
@@ -313,11 +355,36 @@ namespace Avalonia.Base.UnitTests
             {
                 target.Bind(Class1.QuxProperty, source);
                 source.OnNext(6.7);
-                source.OnNext(new BindingError(new InvalidOperationException("Foo")));
+                source.OnNext(new BindingNotification(
+                    new InvalidOperationException("Foo"),
+                    BindingErrorType.Error));
 
                 Assert.Equal(6.7, target.GetValue(Class1.QuxProperty));
                 Assert.True(called);
             }
+        }
+        
+        [Fact]
+        public async void Bind_With_Scheduler_Executes_On_Scheduler()
+        {
+            var target = new Class1();
+            var source = new Subject<object>();
+            var currentThreadId = Thread.CurrentThread.ManagedThreadId;
+
+            var threadingInterfaceMock = new Mock<IPlatformThreadingInterface>();
+            threadingInterfaceMock.SetupGet(mock => mock.CurrentThreadIsLoopThread)
+                .Returns(() => Thread.CurrentThread.ManagedThreadId == currentThreadId);
+
+            using (AvaloniaLocator.EnterScope())
+            {
+                AvaloniaLocator.CurrentMutable.Bind<IPlatformThreadingInterface>().ToConstant(threadingInterfaceMock.Object);
+                AvaloniaLocator.CurrentMutable.Bind<IScheduler>().ToConstant(AvaloniaScheduler.Instance);
+
+                target.Bind(Class1.QuxProperty, source);
+
+                await Task.Run(() => source.OnNext(6.7));
+            }
+
         }
 
         /// <summary>
@@ -344,6 +411,25 @@ namespace Avalonia.Base.UnitTests
         {
             public static readonly StyledProperty<string> BarProperty =
                 AvaloniaProperty.Register<Class2, string>("Bar", "bardefault");
+        }
+
+        private class TestOneTimeBinding : IBinding
+        {
+            private IObservable<object> _source;
+
+            public TestOneTimeBinding(IObservable<object> source)
+            {
+                _source = source;
+            }
+
+            public InstancedBinding Initiate(
+                IAvaloniaObject target,
+                AvaloniaProperty targetProperty,
+                object anchor = null,
+                bool enableDataValidation = false)
+            {
+                return new InstancedBinding(_source, BindingMode.OneTime);
+            }
         }
     }
 }

@@ -60,6 +60,7 @@
     <Compile Include="Converters\ColumnDefinitionsTypeConverter.cs" />
     <Compile Include="Converters\CursorTypeConverter.cs" />
     <Compile Include="Converters\DateTimeTypeConverter.cs" />
+    <Compile Include="Converters\FontWeightConverter.cs" />
     <Compile Include="Converters\GeometryTypeConverter.cs" />
     <Compile Include="Converters\GridLengthTypeConverter.cs" />
     <Compile Include="Converters\IconTypeConverter.cs" />
@@ -94,6 +95,8 @@
     <Compile Include="glass\Glass.Core\ReflectionExtensions.cs" />
     <Compile Include="glass\Glass.Core\StackingLinkedList.cs" />
     <Compile Include="glass\Glass.Core\StackingLinkedListMixin.cs" />
+    <Compile Include="MarkupExtensions\Standard\StaticExtension.cs" />
+    <Compile Include="MarkupExtensions\Standard\TypeExtension.cs" />
     <Compile Include="MarkupExtensions\StyleResourceExtension.cs" />
     <Compile Include="MarkupExtensions\BindingExtension.cs" />
     <Compile Include="MarkupExtensions\RelativeSourceExtension.cs" />
@@ -305,9 +308,9 @@
       <Project>{42472427-4774-4C81-8AFF-9F27B8E31721}</Project>
       <Name>Avalonia.Layout</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Avalonia.SceneGraph\Avalonia.SceneGraph.csproj">
+    <ProjectReference Include="..\..\Avalonia.Visuals\Avalonia.Visuals.csproj">
       <Project>{EB582467-6ABB-43A1-B052-E981BA910E3A}</Project>
-      <Name>Avalonia.SceneGraph</Name>
+      <Name>Avalonia.Visuals</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Avalonia.Styling\Avalonia.Styling.csproj">
       <Project>{F1BAA01A-F176-4C6A-B39D-5B40BB1B148F}</Project>
@@ -319,8 +322,8 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Sprache, Version=2.0.0.50, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Sprache.2.0.0.50\lib\portable-net4+netcore45+win8+wp8+sl5+MonoAndroid+Xamarin.iOS10+MonoTouch\Sprache.dll</HintPath>
+    <Reference Include="Sprache, Version=2.0.0.51, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Sprache.2.0.0.51\lib\portable-net4+netcore45+win8+wp8+sl5+MonoAndroid+Xamarin.iOS10+MonoTouch\Sprache.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Reactive.Core, Version=3.0.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">

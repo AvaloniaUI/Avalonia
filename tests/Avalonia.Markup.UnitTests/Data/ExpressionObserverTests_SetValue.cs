@@ -2,8 +2,8 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
 using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using Avalonia.Markup.Data;
 using Avalonia.UnitTests;
 using Xunit;
@@ -18,7 +18,10 @@ namespace Avalonia.Markup.UnitTests.Data
             var data = new { Foo = "foo" };
             var target = new ExpressionObserver(data, "Foo");
 
-            target.SetValue("bar");
+            using (target.Subscribe(_ => { }))
+            {
+                target.SetValue("bar");
+            }
 
             Assert.Equal("foo", data.Foo);
         }
@@ -29,7 +32,10 @@ namespace Avalonia.Markup.UnitTests.Data
             var data = new Class1 { Foo = new Class2 { Bar = "bar" } };
             var target = new ExpressionObserver(data, "Foo.Bar");
 
-            target.SetValue("foo");
+            using (target.Subscribe(_ => { }))
+            {
+                target.SetValue("foo");
+            }
 
             Assert.Equal("foo", data.Foo.Bar);
         }
@@ -46,6 +52,28 @@ namespace Avalonia.Markup.UnitTests.Data
             data.Foo = null;
 
             Assert.False(target.SetValue("foo"));
+        }
+
+        /// <summary>
+        /// Test for #831 - Bound properties are incorrectly updated when changing tab items.
+        /// </summary>
+        /// <remarks>
+        /// There was a bug whereby pushing a null as the ExpressionObserver root didn't update
+        /// the leaf node, cauing a subsequent SetValue to update an object that should have become
+        /// unbound.
+        /// </remarks>
+        [Fact]
+        public void Pushing_Null_To_RootObservable_Updates_Leaf_Node()
+        {
+            var data = new Class1 { Foo = new Class2 { Bar = "bar" } };
+            var rootObservable = new BehaviorSubject<Class1>(data);
+            var target = new ExpressionObserver(rootObservable, "Foo.Bar");
+
+            target.Subscribe(_ => { });
+            rootObservable.OnNext(null);
+            target.SetValue("baz");
+
+            Assert.Equal("bar", data.Foo.Bar);
         }
 
         private class Class1 : NotifyingBase

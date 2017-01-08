@@ -16,7 +16,13 @@ namespace Avalonia
     /// </summary>
     public static class AvaloniaObjectExtensions
     {
-        public static IBinding AsBinding<T>(this IObservable<T> source)
+        /// <summary>
+        /// Converts an <see cref="IObservable{T}"/> to an <see cref="IBinding"/>.
+        /// </summary>
+        /// <typeparam name="T">The type produced by the observable.</typeparam>
+        /// <param name="source">The observable</param>
+        /// <returns>An <see cref="IBinding"/>.</returns>
+        public static IBinding ToBinding<T>(this IObservable<T> source)
         {
             return new BindingAdaptor(source.Select(x => (object)x));
         }
@@ -216,7 +222,13 @@ namespace Avalonia
             Contract.Requires<ArgumentNullException>(property != null);
             Contract.Requires<ArgumentNullException>(binding != null);
 
-            var result = binding.Initiate(target, property, anchor);
+            var metadata = property.GetMetadata(target.GetType()) as IDirectPropertyMetadata;
+
+            var result = binding.Initiate(
+                target,
+                property,
+                anchor, 
+                metadata?.EnableDataValidation ?? false);
 
             if (result != null)
             {
@@ -311,7 +323,8 @@ namespace Avalonia
             public InstancedBinding Initiate(
                 IAvaloniaObject target,
                 AvaloniaProperty targetProperty,
-                object anchor = null)
+                object anchor = null,
+                bool enableDataValidation = false)
             {
                 return new InstancedBinding(_source);
             }

@@ -13,7 +13,6 @@ namespace Avalonia.Input.UnitTests
         [Fact]
         public void Next_Continue_Returns_Next_Control_In_Container()
         {
-            StackPanel container;
             Button current;
             Button next;
 
@@ -21,7 +20,7 @@ namespace Avalonia.Input.UnitTests
             {
                 Children = new Controls
                 {
-                    (container = new StackPanel
+                    new StackPanel
                     {
                         Children = new Controls
                         {
@@ -29,7 +28,7 @@ namespace Avalonia.Input.UnitTests
                             (current = new Button { Name = "Button2" }),
                             (next = new Button { Name = "Button3" }),
                         }
-                    }),
+                    },
                     new StackPanel
                     {
                         Children = new Controls
@@ -50,7 +49,6 @@ namespace Avalonia.Input.UnitTests
         [Fact]
         public void Next_Continue_Returns_First_Control_In_Next_Sibling_Container()
         {
-            StackPanel container;
             Button current;
             Button next;
 
@@ -58,7 +56,7 @@ namespace Avalonia.Input.UnitTests
             {
                 Children = new Controls
                 {
-                    (container = new StackPanel
+                    new StackPanel
                     {
                         Children = new Controls
                         {
@@ -66,7 +64,7 @@ namespace Avalonia.Input.UnitTests
                             new Button { Name = "Button2" },
                             (current = new Button { Name = "Button3" }),
                         }
-                    }),
+                    },
                     new StackPanel
                     {
                         Children = new Controls
@@ -87,7 +85,6 @@ namespace Avalonia.Input.UnitTests
         [Fact]
         public void Next_Continue_Doesnt_Enter_Panel_With_TabNavigation_None()
         {
-            StackPanel container;
             Button current;
             Button next;
 
@@ -95,7 +92,7 @@ namespace Avalonia.Input.UnitTests
             {
                 Children = new Controls
                 {
-                    (container = new StackPanel
+                    new StackPanel
                     {
                         Children = new Controls
                         {
@@ -103,7 +100,7 @@ namespace Avalonia.Input.UnitTests
                             new Button { Name = "Button2" },
                             (current = new Button { Name = "Button3" }),
                         }
-                    }),
+                    },
                     new StackPanel
                     {
                         [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.None,
@@ -131,7 +128,6 @@ namespace Avalonia.Input.UnitTests
         [Fact]
         public void Next_Continue_Returns_Next_Sibling()
         {
-            StackPanel container;
             Button current;
             Button next;
 
@@ -139,7 +135,7 @@ namespace Avalonia.Input.UnitTests
             {
                 Children = new Controls
                 {
-                    (container = new StackPanel
+                    new StackPanel
                     {
                         Children = new Controls
                         {
@@ -147,7 +143,7 @@ namespace Avalonia.Input.UnitTests
                             new Button { Name = "Button2" },
                             (current = new Button { Name = "Button3" }),
                         }
-                    }),
+                    },
                     (next = new Button { Name = "Button4" }),
                 }
             };
@@ -160,7 +156,6 @@ namespace Avalonia.Input.UnitTests
         [Fact]
         public void Next_Continue_Returns_First_Control_In_Next_Uncle_Container()
         {
-            StackPanel container;
             Button current;
             Button next;
 
@@ -172,7 +167,7 @@ namespace Avalonia.Input.UnitTests
                     {
                         Children = new Controls
                         {
-                            (container = new StackPanel
+                            new StackPanel
                             {
                                 Children = new Controls
                                 {
@@ -180,7 +175,7 @@ namespace Avalonia.Input.UnitTests
                                     new Button { Name = "Button2" },
                                     (current = new Button { Name = "Button3" }),
                                 }
-                            }),
+                            },
                         },
                     },
                     new StackPanel
@@ -221,7 +216,6 @@ namespace Avalonia.Input.UnitTests
         [Fact]
         public void Next_Continue_Wraps()
         {
-            StackPanel container;
             Button current;
             Button next;
 
@@ -233,7 +227,7 @@ namespace Avalonia.Input.UnitTests
                     {
                         Children = new Controls
                         {
-                            (container = new StackPanel
+                            new StackPanel
                             {
                                 Children = new Controls
                                 {
@@ -241,7 +235,7 @@ namespace Avalonia.Input.UnitTests
                                     new Button { Name = "Button2" },
                                     new Button { Name = "Button3" },
                                 }
-                            }),
+                            },
                         },
                     },
                     new StackPanel
@@ -264,7 +258,6 @@ namespace Avalonia.Input.UnitTests
         [Fact]
         public void Next_Cycle_Returns_Next_Control_In_Container()
         {
-            StackPanel container;
             Button current;
             Button next;
 
@@ -272,7 +265,7 @@ namespace Avalonia.Input.UnitTests
             {
                 Children = new Controls
                 {
-                    (container = new StackPanel
+                    new StackPanel
                     {
                         [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
                         Children = new Controls
@@ -281,7 +274,7 @@ namespace Avalonia.Input.UnitTests
                             (current = new Button { Name = "Button2" }),
                             (next = new Button { Name = "Button3" }),
                         }
-                    }),
+                    },
                     new StackPanel
                     {
                         Children = new Controls
@@ -302,7 +295,6 @@ namespace Avalonia.Input.UnitTests
         [Fact]
         public void Next_Cycle_Wraps_To_First()
         {
-            StackPanel container;
             Button current;
             Button next;
 
@@ -310,7 +302,7 @@ namespace Avalonia.Input.UnitTests
             {
                 Children = new Controls
                 {
-                    (container = new StackPanel
+                    new StackPanel
                     {
                         [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
                         Children = new Controls
@@ -319,7 +311,7 @@ namespace Avalonia.Input.UnitTests
                             new Button { Name = "Button2" },
                             (current = new Button { Name = "Button3" }),
                         }
-                    }),
+                    },
                     new StackPanel
                     {
                         Children = new Controls
@@ -340,7 +332,6 @@ namespace Avalonia.Input.UnitTests
         [Fact]
         public void Next_Contained_Returns_Next_Control_In_Container()
         {
-            StackPanel container;
             Button current;
             Button next;
 
@@ -348,7 +339,7 @@ namespace Avalonia.Input.UnitTests
             {
                 Children = new Controls
                 {
-                    (container = new StackPanel
+                    new StackPanel
                     {
                         [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Contained,
                         Children = new Controls
@@ -357,7 +348,7 @@ namespace Avalonia.Input.UnitTests
                             (current = new Button { Name = "Button2" }),
                             (next = new Button { Name = "Button3" }),
                         }
-                    }),
+                    },
                     new StackPanel
                     {
                         Children = new Controls
@@ -378,24 +369,22 @@ namespace Avalonia.Input.UnitTests
         [Fact]
         public void Next_Contained_Stops_At_End()
         {
-            StackPanel container;
             Button current;
-            Button next;
 
             var top = new StackPanel
             {
                 Children = new Controls
                 {
-                    (container = new StackPanel
+                    new StackPanel
                     {
                         [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Contained,
                         Children = new Controls
                         {
-                            (next = new Button { Name = "Button1" }),
+                            new Button { Name = "Button1" },
                             new Button { Name = "Button2" },
                             (current = new Button { Name = "Button3" }),
                         }
-                    }),
+                    },
                     new StackPanel
                     {
                         Children = new Controls
@@ -416,7 +405,6 @@ namespace Avalonia.Input.UnitTests
         [Fact]
         public void Next_Once_Moves_To_Next_Container()
         {
-            StackPanel container;
             Button current;
             Button next;
 
@@ -424,7 +412,7 @@ namespace Avalonia.Input.UnitTests
             {
                 Children = new Controls
                 {
-                    (container = new StackPanel
+                    new StackPanel
                     {
                         [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Once,
                         Children = new Controls
@@ -433,7 +421,7 @@ namespace Avalonia.Input.UnitTests
                             (current = new Button { Name = "Button2" }),
                             new Button { Name = "Button3" },
                         }
-                    }),
+                    },
                     new StackPanel
                     {
                         Children = new Controls
@@ -494,7 +482,6 @@ namespace Avalonia.Input.UnitTests
         [Fact]
         public void Next_None_Moves_To_Next_Container()
         {
-            StackPanel container;
             Button current;
             Button next;
 
@@ -502,7 +489,7 @@ namespace Avalonia.Input.UnitTests
             {
                 Children = new Controls
                 {
-                    (container = new StackPanel
+                    new StackPanel
                     {
                         [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.None,
                         Children = new Controls
@@ -511,7 +498,7 @@ namespace Avalonia.Input.UnitTests
                             (current = new Button { Name = "Button2" }),
                             new Button { Name = "Button3" },
                         }
-                    }),
+                    },
                     new StackPanel
                     {
                         Children = new Controls
@@ -572,7 +559,6 @@ namespace Avalonia.Input.UnitTests
         [Fact]
         public void Previous_Continue_Returns_Previous_Control_In_Container()
         {
-            StackPanel container;
             Button current;
             Button next;
 
@@ -580,7 +566,7 @@ namespace Avalonia.Input.UnitTests
             {
                 Children = new Controls
                 {
-                    (container = new StackPanel
+                    new StackPanel
                     {
                         Children = new Controls
                         {
@@ -588,7 +574,7 @@ namespace Avalonia.Input.UnitTests
                             (next = new Button { Name = "Button2" }),
                             (current = new Button { Name = "Button3" }),
                         }
-                    }),
+                    },
                     new StackPanel
                     {
                         Children = new Controls
@@ -609,7 +595,6 @@ namespace Avalonia.Input.UnitTests
         [Fact]
         public void Previous_Continue_Returns_Last_Control_In_Previous_Sibling_Container()
         {
-            StackPanel container;
             Button current;
             Button next;
 
@@ -617,7 +602,7 @@ namespace Avalonia.Input.UnitTests
             {
                 Children = new Controls
                 {
-                    (container = new StackPanel
+                    new StackPanel
                     {
                         Children = new Controls
                         {
@@ -625,7 +610,7 @@ namespace Avalonia.Input.UnitTests
                             new Button { Name = "Button2" },
                             (next = new Button { Name = "Button3" }),
                         }
-                    }),
+                    },
                     new StackPanel
                     {
                         Children = new Controls
@@ -646,7 +631,6 @@ namespace Avalonia.Input.UnitTests
         [Fact]
         public void Previous_Continue_Returns_Last_Child_Of_Sibling()
         {
-            StackPanel container;
             Button current;
             Button next;
 
@@ -654,7 +638,7 @@ namespace Avalonia.Input.UnitTests
             {
                 Children = new Controls
                 {
-                    (container = new StackPanel
+                    new StackPanel
                     {
                         Children = new Controls
                         {
@@ -662,7 +646,7 @@ namespace Avalonia.Input.UnitTests
                             new Button { Name = "Button2" },
                             (next = new Button { Name = "Button3" }),
                         }
-                    }),
+                    },
                     (current = new Button { Name = "Button4" }),
                 }
             };
@@ -675,7 +659,6 @@ namespace Avalonia.Input.UnitTests
         [Fact]
         public void Previous_Continue_Returns_Last_Control_In_Previous_Nephew_Container()
         {
-            StackPanel container;
             Button current;
             Button next;
 
@@ -687,7 +670,7 @@ namespace Avalonia.Input.UnitTests
                     {
                         Children = new Controls
                         {
-                            (container = new StackPanel
+                            new StackPanel
                             {
                                 Children = new Controls
                                 {
@@ -695,7 +678,7 @@ namespace Avalonia.Input.UnitTests
                                     new Button { Name = "Button2" },
                                     (next = new Button { Name = "Button3" }),
                                 }
-                            }),
+                            },
                         },
                     },
                     new StackPanel
@@ -718,7 +701,6 @@ namespace Avalonia.Input.UnitTests
         [Fact]
         public void Previous_Continue_Wraps()
         {
-            StackPanel container;
             Button current;
             Button next;
 
@@ -730,7 +712,7 @@ namespace Avalonia.Input.UnitTests
                     {
                         Children = new Controls
                         {
-                            (container = new StackPanel
+                            new StackPanel
                             {
                                 Children = new Controls
                                 {
@@ -738,7 +720,7 @@ namespace Avalonia.Input.UnitTests
                                     new Button { Name = "Button2" },
                                     new Button { Name = "Button3" },
                                 }
-                            }),
+                            },
                         },
                     },
                     new StackPanel
@@ -780,7 +762,6 @@ namespace Avalonia.Input.UnitTests
         [Fact]
         public void Previous_Cycle_Returns_Previous_Control_In_Container()
         {
-            StackPanel container;
             Button current;
             Button next;
 
@@ -788,7 +769,7 @@ namespace Avalonia.Input.UnitTests
             {
                 Children = new Controls
                 {
-                    (container = new StackPanel
+                    new StackPanel
                     {
                         [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
                         Children = new Controls
@@ -797,7 +778,7 @@ namespace Avalonia.Input.UnitTests
                             (current = new Button { Name = "Button2" }),
                             new Button { Name = "Button3" },
                         }
-                    }),
+                    },
                     new StackPanel
                     {
                         Children = new Controls
@@ -818,7 +799,6 @@ namespace Avalonia.Input.UnitTests
         [Fact]
         public void Previous_Cycle_Wraps_To_Last()
         {
-            StackPanel container;
             Button current;
             Button next;
 
@@ -826,7 +806,7 @@ namespace Avalonia.Input.UnitTests
             {
                 Children = new Controls
                 {
-                    (container = new StackPanel
+                    new StackPanel
                     {
                         [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
                         Children = new Controls
@@ -835,7 +815,7 @@ namespace Avalonia.Input.UnitTests
                             new Button { Name = "Button2" },
                             (next = new Button { Name = "Button3" }),
                         }
-                    }),
+                    },
                     new StackPanel
                     {
                         Children = new Controls
@@ -856,7 +836,6 @@ namespace Avalonia.Input.UnitTests
         [Fact]
         public void Previous_Contained_Returns_Previous_Control_In_Container()
         {
-            StackPanel container;
             Button current;
             Button next;
 
@@ -864,7 +843,7 @@ namespace Avalonia.Input.UnitTests
             {
                 Children = new Controls
                 {
-                    (container = new StackPanel
+                    new StackPanel
                     {
                         [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Contained,
                         Children = new Controls
@@ -873,7 +852,7 @@ namespace Avalonia.Input.UnitTests
                             (current = new Button { Name = "Button2" }),
                             new Button { Name = "Button3" },
                         }
-                    }),
+                    },
                     new StackPanel
                     {
                         Children = new Controls
@@ -894,24 +873,22 @@ namespace Avalonia.Input.UnitTests
         [Fact]
         public void Previous_Contained_Stops_At_Beginning()
         {
-            StackPanel container;
             Button current;
-            Button next;
 
             var top = new StackPanel
             {
                 Children = new Controls
                 {
-                    (container = new StackPanel
+                    new StackPanel
                     {
                         [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Contained,
                         Children = new Controls
                         {
                             (current = new Button { Name = "Button1" }),
                             new Button { Name = "Button2" },
-                            (next = new Button { Name = "Button3" }),
+                            new Button { Name = "Button3" },
                         }
-                    }),
+                    },
                     new StackPanel
                     {
                         Children = new Controls
@@ -932,7 +909,6 @@ namespace Avalonia.Input.UnitTests
         [Fact]
         public void Previous_Once_Moves_To_Previous_Container()
         {
-            StackPanel container;
             Button current;
             Button next;
 
@@ -940,7 +916,7 @@ namespace Avalonia.Input.UnitTests
             {
                 Children = new Controls
                 {
-                    (container = new StackPanel
+                    new StackPanel
                     {
                         Children = new Controls
                         {
@@ -948,7 +924,7 @@ namespace Avalonia.Input.UnitTests
                             new Button { Name = "Button2" },
                             (next = new Button { Name = "Button3" }),
                         }
-                    }),
+                    },
                     new StackPanel
                     {
                         [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Once,
@@ -1010,7 +986,6 @@ namespace Avalonia.Input.UnitTests
         [Fact]
         public void Previous_Once_Moves_To_First_Element()
         {
-            StackPanel container;
             Button current;
             Button next;
 
@@ -1018,7 +993,7 @@ namespace Avalonia.Input.UnitTests
             {
                 Children = new Controls
                 {
-                    (container = new StackPanel
+                    new StackPanel
                     {
                         [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Once,
                         Children = new Controls
@@ -1027,7 +1002,7 @@ namespace Avalonia.Input.UnitTests
                             new Button { Name = "Button2" },
                             new Button { Name = "Button3" },
                         }
-                    }),
+                    },
                     new StackPanel
                     {
                         Children = new Controls

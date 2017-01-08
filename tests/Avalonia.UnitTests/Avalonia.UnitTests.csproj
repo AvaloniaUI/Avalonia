@@ -54,6 +54,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="InvariantCultureFixture.cs" />
     <Compile Include="NotifyingBase.cs" />
     <Compile Include="TestLogSink.cs" />
     <Compile Include="TestTemplatedRoot.cs" />
@@ -64,6 +65,10 @@
     <Compile Include="MockWindowingPlatform.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Avalonia.DotNetFrameworkRuntime\Avalonia.DotNetFrameworkRuntime.csproj">
+      <Project>{4a1abb09-9047-4bd5-a4ad-a055e52c5ee0}</Project>
+      <Name>Avalonia.DotNetFrameworkRuntime</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj">
       <Project>{3e53a01a-b331-47f3-b828-4a5717e77a24}</Project>
       <Name>Avalonia.Markup.Xaml</Name>
@@ -96,9 +101,9 @@
       <Project>{42472427-4774-4c81-8aff-9f27b8e31721}</Project>
       <Name>Avalonia.Layout</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\Avalonia.SceneGraph\Avalonia.SceneGraph.csproj">
+    <ProjectReference Include="..\..\src\Avalonia.Visuals\Avalonia.Visuals.csproj">
       <Project>{eb582467-6abb-43a1-b052-e981ba910e3a}</Project>
-      <Name>Avalonia.SceneGraph</Name>
+      <Name>Avalonia.Visuals</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\Avalonia.Styling\Avalonia.Styling.csproj">
       <Project>{f1baa01a-f176-4c6a-b39d-5b40bb1b148f}</Project>
@@ -113,7 +118,6 @@
     <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
-  <Import Project="..\..\src\Shared\PlatformSupport\PlatformSupport.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

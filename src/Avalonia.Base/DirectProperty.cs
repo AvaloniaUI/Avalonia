@@ -30,7 +30,7 @@ namespace Avalonia
             string name,
             Func<TOwner, TValue> getter,
             Action<TOwner, TValue> setter,
-            PropertyMetadata metadata)
+            DirectPropertyMetadata<TValue> metadata)
             : base(name, typeof(TOwner), metadata)
         {
             Contract.Requires<ArgumentNullException>(getter != null);
@@ -50,7 +50,7 @@ namespace Avalonia
             AvaloniaProperty<TValue> source,
             Func<TOwner, TValue> getter,
             Action<TOwner, TValue> setter,
-            PropertyMetadata metadata)
+            DirectPropertyMetadata<TValue> metadata)
             : base(source, typeof(TOwner), metadata)
         {
             Contract.Requires<ArgumentNullException>(getter != null);
@@ -85,19 +85,30 @@ namespace Avalonia
         /// The value to use when the property is set to <see cref="AvaloniaProperty.UnsetValue"/>
         /// </param>
         /// <param name="defaultBindingMode">The default binding mode for the property.</param>
+        /// <param name="enableDataValidation">
+        /// Whether the property is interested in data validation.
+        /// </param>
         /// <returns>The property.</returns>
         public DirectProperty<TNewOwner, TValue> AddOwner<TNewOwner>(
             Func<TNewOwner, TValue> getter,
             Action<TNewOwner, TValue> setter = null,
             TValue unsetValue = default(TValue),
-            BindingMode defaultBindingMode = BindingMode.OneWay)
+            BindingMode defaultBindingMode = BindingMode.Default,
+            bool enableDataValidation = false)
                 where TNewOwner : AvaloniaObject
         {
+            var metadata = new DirectPropertyMetadata<TValue>(
+                unsetValue: unsetValue,
+                defaultBindingMode: defaultBindingMode,
+                enableDataValidation: enableDataValidation);
+
+            metadata.Merge(GetMetadata<TOwner>(), this);
+
             var result = new DirectProperty<TNewOwner, TValue>(
                 this,
                 getter,
                 setter,
-                new DirectPropertyMetadata<TValue>(unsetValue, defaultBindingMode));
+                metadata);
 
             AvaloniaPropertyRegistry.Instance.Register(typeof(TNewOwner), result);
             return result;

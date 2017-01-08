@@ -9,9 +9,10 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>VirtualizationTest</RootNamespace>
     <AssemblyName>VirtualizationTest</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -102,6 +103,10 @@
       <Project>{7062ae20-5dcc-4442-9645-8195bdece63e}</Project>
       <Name>Avalonia.Diagnostics</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\src\Avalonia.DotNetFrameworkRuntime\Avalonia.DotNetFrameworkRuntime.csproj">
+      <Project>{4A1ABB09-9047-4BD5-A4AD-A055E52C5EE0}</Project>
+      <Name>Avalonia.DotNetFrameworkRuntime</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\Avalonia.Input\Avalonia.Input.csproj">
       <Project>{62024b2d-53eb-4638-b26b-85eeaa54866e}</Project>
       <Name>Avalonia.Input</Name>
@@ -122,9 +127,9 @@
       <Project>{6417b24e-49c2-4985-8db2-3ab9d898ec91}</Project>
       <Name>Avalonia.ReactiveUI</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\Avalonia.SceneGraph\Avalonia.SceneGraph.csproj">
+    <ProjectReference Include="..\..\src\Avalonia.Visuals\Avalonia.Visuals.csproj">
       <Project>{eb582467-6abb-43a1-b052-e981ba910e3a}</Project>
-      <Name>Avalonia.SceneGraph</Name>
+      <Name>Avalonia.Visuals</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\Avalonia.Styling\Avalonia.Styling.csproj">
       <Project>{f1baa01a-f176-4c6a-b39d-5b40bb1b148f}</Project>
@@ -142,11 +147,11 @@
       <Project>{6417e941-21bc-467b-a771-0de389353ce6}</Project>
       <Name>Avalonia.Markup</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\Windows\Avalonia.Direct2D1\Avalonia.Direct2D1.csproj">
+    <ProjectReference Include="..\..\src\Windows\Avalonia.Direct2D1\Avalonia.Direct2D1.csproj" Condition="'$(Platform)'!='Mono'">
       <Project>{3e908f67-5543-4879-a1dc-08eace79b3cd}</Project>
       <Name>Avalonia.Direct2D1</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\Windows\Avalonia.Win32\Avalonia.Win32.csproj">
+    <ProjectReference Include="..\..\src\Windows\Avalonia.Win32\Avalonia.Win32.csproj" Condition="'$(Platform)'!='Mono'">
       <Project>{811a76cf-1cf6-440f-963b-bbe31bd72a82}</Project>
       <Name>Avalonia.Win32</Name>
     </ProjectReference>

@@ -17,7 +17,7 @@ namespace Avalonia.Controls
     /// Subsequent ordering happens sequentially from top to bottom or from right to left, 
     /// depending on the value of the Orientation property.
     /// </summary>
-    internal class WrapPanel : Panel, INavigableContainer
+    public class WrapPanel : Panel, INavigableContainer
     {
         /// <summary>
         /// Defines the <see cref="Orientation"/> property.

@@ -87,6 +87,8 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public Action<double> ScalingChanged { get; set; }
 
+        public Action<Point> PositionChanged { get; set; }
+
         public View View => this;
 
         Action ITopLevelImpl.Activated { get; set; }
@@ -105,6 +107,12 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         public void SetSystemDecorations(bool enabled)
         {
         }
+
+        public void SetCoverTaskbarWhenMaximized(bool enable)
+        {
+            //Not supported
+        }
+
         public void Invalidate(Rect rect)
         {
             if (Holder?.Surface?.IsValid == true) base.Invalidate();

@@ -12,11 +12,6 @@ namespace Avalonia.Platform
     public interface IWindowImpl : ITopLevelImpl
     {
         /// <summary>
-        /// Gets the maximum size of a window on the system.
-        /// </summary>
-        Size MaxClientSize { get; }
-
-        /// <summary>
         /// Gets or sets the minimized/maximized state of the window.
         /// </summary>
         WindowState WindowState { get; set; }
@@ -39,6 +34,11 @@ namespace Avalonia.Platform
         /// Enables of disables system window decorations (title bar, buttons, etc)
         /// </summary>
         void SetSystemDecorations(bool enabled);
+
+        /// <summary>
+        /// When system decorations are disabled sets if the maximized state covers the entire screen or just the working area.
+        /// </summary>        
+        void SetCoverTaskbarWhenMaximized(bool enable);
 
         /// <summary>
         /// Sets the icon of this window.

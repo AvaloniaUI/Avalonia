@@ -4,12 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Avalonia.Collections;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Layout;
+using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.UnitTests;
 using Xunit;
@@ -111,8 +111,8 @@ namespace Avalonia.Controls.UnitTests.Presenters
             target.Arrange(new Rect(0, 0, 100, 100));
 
             var scroll = (ScrollContentPresenter)target.Parent;
-            Assert.Equal(new Size(0, 20), scroll.Extent);
-            Assert.Equal(new Size(0, 10), scroll.Viewport);
+            Assert.Equal(new Size(10, 20), scroll.Extent);
+            Assert.Equal(new Size(100, 10), scroll.Viewport);
         }
 
         [Fact]
@@ -212,8 +212,8 @@ namespace Avalonia.Controls.UnitTests.Presenters
             target.Arrange(new Rect(0, 0, 100, 100));
 
             Assert.Equal(10, target.Panel.Children.Count);
-            Assert.Equal(new Size(0, 20), scroll.Extent);
-            Assert.Equal(new Size(0, 10), scroll.Viewport);
+            Assert.Equal(new Size(10, 20), scroll.Extent);
+            Assert.Equal(new Size(100, 10), scroll.Viewport);
         }
 
         [Fact]
@@ -253,8 +253,8 @@ namespace Avalonia.Controls.UnitTests.Presenters
             scroll.Arrange(new Rect(0, 0, 100, 100));
 
             Assert.Equal(10, target.Panel.Children.Count);
-            Assert.Equal(new Size(0, 20), scroll.Extent);
-            Assert.Equal(new Size(0, 10), scroll.Viewport);
+            Assert.Equal(new Size(10, 20), scroll.Extent);
+            Assert.Equal(new Size(100, 10), scroll.Viewport);
 
             target.VirtualizationMode = ItemVirtualizationMode.None;
             target.Measure(new Size(100, 100));
@@ -315,7 +315,18 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
         private class TestScroller : ScrollContentPresenter, IRenderRoot
         {
-            public IRenderQueueManager RenderQueueManager { get; }
+            public IRenderer Renderer { get; }
+            public Size ClientSize { get; }
+
+            public IRenderTarget CreateRenderTarget()
+            {
+                throw new NotImplementedException();
+            }
+
+            public void Invalidate(Rect rect)
+            {
+                throw new NotImplementedException();
+            }
 
             public Point PointToClient(Point point)
             {

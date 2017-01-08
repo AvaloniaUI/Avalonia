@@ -372,7 +372,10 @@ namespace Avalonia.Cairo.Media
         public void PopOpacityMask()
         {
             _context.PopGroupToSource();
-            _context.Mask(_maskStack.Pop().PlatformBrush);
+			var brushImpl = _maskStack.Pop ();
+
+            _context.Mask(brushImpl.PlatformBrush);
+			brushImpl.Dispose ();
         }
     }
 }

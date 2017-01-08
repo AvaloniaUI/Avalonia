@@ -130,7 +130,7 @@ namespace Avalonia.Controls.Primitives
 
             control.ApplyTemplate();
 
-            if (!(control is IPresenter && control.TemplatedParent == templatedParent))
+            if (!(control is IPresenter) && control.TemplatedParent == templatedParent)
             {
                 foreach (IControl child in control.GetVisualChildren())
                 {

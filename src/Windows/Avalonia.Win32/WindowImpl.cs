@@ -15,10 +15,11 @@ using Avalonia.Input.Raw;
 using Avalonia.Platform;
 using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop;
+using static Avalonia.Win32.Interop.UnmanagedMethods;
 
 namespace Avalonia.Win32
 {
-    public class WindowImpl : IWindowImpl
+    class WindowImpl : IWindowImpl
     {
         private static readonly List<WindowImpl> s_instances = new List<WindowImpl>();
 
@@ -32,6 +33,7 @@ namespace Avalonia.Win32
         private bool _trackingMouse;
         private bool _isActive;
         private bool _decorated = true;
+        private bool _coverTaskBarWhenMaximized = true;
         private double _scaling = 1;
         private WindowState _showWindowState;
 
@@ -54,6 +56,8 @@ namespace Avalonia.Win32
         public Action<Size> Resized { get; set; }
 
         public Action<double> ScalingChanged { get; set; }
+
+        public Action<Point> PositionChanged { get; set; }
 
         public Thickness BorderThickness
         {
@@ -133,7 +137,7 @@ namespace Avalonia.Win32
             {
                 var placement = default(UnmanagedMethods.WINDOWPLACEMENT);
                 UnmanagedMethods.GetWindowPlacement(_hwnd, ref placement);
-                
+
                 switch (placement.ShowCmd)
                 {
                     case UnmanagedMethods.ShowWindowCommand.Maximize:
@@ -182,22 +186,32 @@ namespace Avalonia.Win32
         public void SetSystemDecorations(bool value)
         {
             if (value == _decorated)
+            {
                 return;
-            var style = (UnmanagedMethods.WindowStyles) UnmanagedMethods.GetWindowLong(_hwnd, -16);
+            }
+
+            var style = (UnmanagedMethods.WindowStyles)UnmanagedMethods.GetWindowLong(_hwnd, -16);
+
             style |= UnmanagedMethods.WindowStyles.WS_OVERLAPPEDWINDOW;
+
             if (!value)
+            {
                 style ^= UnmanagedMethods.WindowStyles.WS_OVERLAPPEDWINDOW;
+            }
 
             UnmanagedMethods.RECT windowRect;
 
             UnmanagedMethods.GetWindowRect(_hwnd, out windowRect);
+
             Rect newRect;
             var oldThickness = BorderThickness;
 
-            UnmanagedMethods.SetWindowLong(_hwnd, -16, (uint) style);
+            UnmanagedMethods.SetWindowLong(_hwnd, -16, (uint)style);
+
             if (value)
             {
                 var thickness = BorderThickness;
+
                 newRect = new Rect(
                     windowRect.left - thickness.Left,
                     windowRect.top - thickness.Top,
@@ -205,19 +219,19 @@ namespace Avalonia.Win32
                     (windowRect.bottom - windowRect.top) + (thickness.Top + thickness.Bottom));
             }
             else
+            {
                 newRect = new Rect(
                     windowRect.left + oldThickness.Left,
                     windowRect.top + oldThickness.Top,
                     (windowRect.right - windowRect.left) - (oldThickness.Left + oldThickness.Right),
                     (windowRect.bottom - windowRect.top) - (oldThickness.Top + oldThickness.Bottom));
-            UnmanagedMethods.SetWindowPos(_hwnd, IntPtr.Zero, (int) newRect.X, (int) newRect.Y, (int) newRect.Width,
-                (int) newRect.Height,
+            }
+
+            UnmanagedMethods.SetWindowPos(_hwnd, IntPtr.Zero, (int)newRect.X, (int)newRect.Y, (int)newRect.Width,
+                (int)newRect.Height,
                 UnmanagedMethods.SetWindowPosFlags.SWP_NOZORDER | UnmanagedMethods.SetWindowPosFlags.SWP_NOACTIVATE);
 
-
             _decorated = value;
-
-
         }
 
         public void Invalidate(Rect rect)
@@ -266,7 +280,7 @@ namespace Avalonia.Win32
 
         public void BeginMoveDrag()
         {
-            UnmanagedMethods.DefWindowProc(_hwnd, (int) UnmanagedMethods.WindowsMessage.WM_NCLBUTTONDOWN,
+            UnmanagedMethods.DefWindowProc(_hwnd, (int)UnmanagedMethods.WindowsMessage.WM_NCLBUTTONDOWN,
                 new IntPtr((int)UnmanagedMethods.HitTestValues.HTCAPTION), IntPtr.Zero);
         }
 
@@ -284,8 +298,8 @@ namespace Avalonia.Win32
 
         public void BeginResizeDrag(WindowEdge edge)
         {
-            UnmanagedMethods.DefWindowProc(_hwnd, (int) UnmanagedMethods.WindowsMessage.WM_NCLBUTTONDOWN,
-                new IntPtr((int) EdgeDic[edge]), IntPtr.Zero);
+            UnmanagedMethods.DefWindowProc(_hwnd, (int)UnmanagedMethods.WindowsMessage.WM_NCLBUTTONDOWN,
+                new IntPtr((int)EdgeDic[edge]), IntPtr.Zero);
         }
 
         public Point Position
@@ -301,8 +315,8 @@ namespace Avalonia.Win32
                 UnmanagedMethods.SetWindowPos(
                     Handle.Handle,
                     IntPtr.Zero,
-                    (int) value.X,
-                    (int) value.Y,
+                    (int)value.X,
+                    (int)value.Y,
                     0,
                     0,
                     UnmanagedMethods.SetWindowPosFlags.SWP_NOSIZE | UnmanagedMethods.SetWindowPosFlags.SWP_NOACTIVATE);
@@ -452,7 +466,7 @@ namespace Avalonia.Win32
                                 : RawMouseEventType.MiddleButtonDown,
                         DipFromLParam(lParam), GetMouseModifiers(wParam));
                     break;
-                    
+
                 case UnmanagedMethods.WindowsMessage.WM_LBUTTONUP:
                 case UnmanagedMethods.WindowsMessage.WM_RBUTTONUP:
                 case UnmanagedMethods.WindowsMessage.WM_MBUTTONUP:
@@ -460,9 +474,9 @@ namespace Avalonia.Win32
                         WindowsMouseDevice.Instance,
                         timestamp,
                         _owner,
-                        msg == (int) UnmanagedMethods.WindowsMessage.WM_LBUTTONUP
+                        msg == (int)UnmanagedMethods.WindowsMessage.WM_LBUTTONUP
                             ? RawMouseEventType.LeftButtonUp
-                            : msg == (int) UnmanagedMethods.WindowsMessage.WM_RBUTTONUP
+                            : msg == (int)UnmanagedMethods.WindowsMessage.WM_RBUTTONUP
                                 ? RawMouseEventType.RightButtonUp
                                 : RawMouseEventType.MiddleButtonUp,
                         DipFromLParam(lParam), GetMouseModifiers(wParam));
@@ -506,7 +520,7 @@ namespace Avalonia.Win32
                         timestamp,
                         _owner,
                         ScreenToClient(DipFromLParam(lParam)),
-                        new Vector(-(ToInt32(wParam) >> 16) / wheelDelta,0), GetMouseModifiers(wParam));
+                        new Vector(-(ToInt32(wParam) >> 16) / wheelDelta, 0), GetMouseModifiers(wParam));
                     break;
 
                 case UnmanagedMethods.WindowsMessage.WM_MOUSELEAVE:
@@ -535,18 +549,15 @@ namespace Avalonia.Win32
                     break;
 
                 case UnmanagedMethods.WindowsMessage.WM_PAINT:
-                    if (Paint != null)
-                    {
-                        UnmanagedMethods.PAINTSTRUCT ps;
+                    UnmanagedMethods.PAINTSTRUCT ps;
 
-                        if (UnmanagedMethods.BeginPaint(_hwnd, out ps) != IntPtr.Zero)
-                        {
-                            UnmanagedMethods.RECT r;
-                            UnmanagedMethods.GetUpdateRect(_hwnd, out r, false);
-                            var f = Scaling;
-                            Paint(new Rect(r.left / f, r.top / f, (r.right - r.left) / f, (r.bottom - r.top) / f));
-                            UnmanagedMethods.EndPaint(_hwnd, ref ps);
-                        }
+                    if (UnmanagedMethods.BeginPaint(_hwnd, out ps) != IntPtr.Zero)
+                    {
+                        UnmanagedMethods.RECT r;
+                        UnmanagedMethods.GetUpdateRect(_hwnd, out r, false);
+                        var f = Scaling;
+                        Paint?.Invoke(new Rect(r.left / f, r.top / f, (r.right - r.left) / f, (r.bottom - r.top) / f));
+                        UnmanagedMethods.EndPaint(_hwnd, ref ps);
                     }
 
                     return IntPtr.Zero;
@@ -560,6 +571,10 @@ namespace Avalonia.Win32
                         Resized(clientSize / Scaling);
                     }
 
+                    return IntPtr.Zero;
+
+                case UnmanagedMethods.WindowsMessage.WM_MOVE:
+                    PositionChanged?.Invoke(new Point((short)(ToInt32(lParam) & 0xffff), (short)(ToInt32(lParam) >> 16)));
                     return IntPtr.Zero;
             }
 
@@ -582,9 +597,9 @@ namespace Avalonia.Win32
             var modifiers = WindowsKeyboardDevice.Instance.Modifiers;
             if (keys.HasFlag(UnmanagedMethods.ModifierKeys.MK_LBUTTON))
                 modifiers |= InputModifiers.LeftMouseButton;
-            if(keys.HasFlag(UnmanagedMethods.ModifierKeys.MK_RBUTTON))
-                modifiers  |= InputModifiers.RightMouseButton;
-            if(keys.HasFlag(UnmanagedMethods.ModifierKeys.MK_MBUTTON))
+            if (keys.HasFlag(UnmanagedMethods.ModifierKeys.MK_RBUTTON))
+                modifiers |= InputModifiers.RightMouseButton;
+            if (keys.HasFlag(UnmanagedMethods.ModifierKeys.MK_MBUTTON))
                 modifiers |= InputModifiers.MiddleMouseButton;
             return modifiers;
         }
@@ -663,30 +678,71 @@ namespace Avalonia.Win32
         {
             UnmanagedMethods.ShowWindowCommand command;
 
+            bool maximizeFillsDesktop = false; // otherwise we cover entire screen.
+
             switch (state)
             {
                 case WindowState.Minimized:
-                    command = UnmanagedMethods.ShowWindowCommand.Minimize;
+                    command = ShowWindowCommand.Minimize;
                     break;
                 case WindowState.Maximized:
-                    command = UnmanagedMethods.ShowWindowCommand.Maximize;
+                    command = ShowWindowCommand.Maximize;
+
+                    if (!_decorated && !_coverTaskBarWhenMaximized)
+                    {
+                        maximizeFillsDesktop = true;
+                    }
                     break;
+
                 case WindowState.Normal:
-                    command = UnmanagedMethods.ShowWindowCommand.Restore;
+                    command = ShowWindowCommand.Restore;
                     break;
+
                 default:
                     throw new ArgumentException("Invalid WindowState.");
             }
 
             UnmanagedMethods.ShowWindow(_hwnd, command);
+
+            if (maximizeFillsDesktop)
+            {
+                MaximizeWithoutCoveringTaskbar();
+            }
+
+            if (!Design.IsDesignMode)
+            {
+                SetFocus(_hwnd);
+            }
+        }
+
+        private void MaximizeWithoutCoveringTaskbar()
+        {
+            IntPtr monitor = MonitorFromWindow(_hwnd, MONITOR.MONITOR_DEFAULTTONEAREST);
+
+            if (monitor != IntPtr.Zero)
+            {
+                MONITORINFO monitorInfo = new MONITORINFO();
+
+                if (GetMonitorInfo(monitor, monitorInfo))
+                {
+                    RECT rcMonitorArea = monitorInfo.rcMonitor;
+
+                    var x = monitorInfo.rcWork.left;
+                    var y = monitorInfo.rcWork.top;
+                    var cx = Math.Abs(monitorInfo.rcWork.right - x);
+                    var cy = Math.Abs(monitorInfo.rcWork.bottom - y);
+
+                    SetWindowPos(_hwnd, new IntPtr(-2), x, y, cx, cy, SetWindowPosFlags.SWP_SHOWWINDOW);
+                }
+            }
         }
 
         public void SetIcon(IWindowIconImpl icon)
         {
             var impl = (IconImpl)icon;
-            var nativeIcon = impl.IconBitmap;
+            var hIcon = impl.HIcon;
             UnmanagedMethods.PostMessage(_hwnd, (int)UnmanagedMethods.WindowsMessage.WM_SETICON,
-                new IntPtr((int)UnmanagedMethods.Icons.ICON_BIG), nativeIcon.GetHicon());
+                new IntPtr((int)UnmanagedMethods.Icons.ICON_BIG), hIcon);
         }
 
         private static int ToInt32(IntPtr ptr)
@@ -694,6 +750,16 @@ namespace Avalonia.Win32
             if (IntPtr.Size == 4) return ptr.ToInt32();
 
             return (int)(ptr.ToInt64() & 0xffffffff);
+        }
+
+        public void SetCoverTaskbarWhenMaximized(bool enable)
+        {
+            _coverTaskBarWhenMaximized = enable;
+
+            if (_showWindowState == WindowState.Maximized)
+            {
+                ShowWindow(WindowState.Maximized);
+            }
         }
     }
 }

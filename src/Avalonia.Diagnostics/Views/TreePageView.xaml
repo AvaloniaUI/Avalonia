@@ -18,7 +18,7 @@
       </TreeView.Styles>
     </TreeView>
 
-    <GridSplitter Width="4" Orientation="Vertical" Grid.Column="1"/>
+    <GridSplitter Width="4" Grid.Column="1"/>
     <ContentControl Content="{Binding Details}" Grid.Column="2"/>
   </Grid>
 </UserControl>

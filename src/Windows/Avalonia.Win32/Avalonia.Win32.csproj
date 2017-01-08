@@ -36,8 +36,11 @@
     <DocumentationFile>bin\Release\Avalonia.Win32.XML</DocumentationFile>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <NoWarn>CS1591</NoWarn>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
@@ -53,13 +56,21 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Xaml" />
+    <Reference Include="WindowsBase" />
+    <Reference Include="WindowsFormsIntegration" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\..\Shared\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="ClipboardImpl.cs" />
+    <Compile Include="Embedding\WinFormsAvaloniaControlHost.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Embedding\WpfAvaloniaControlHost.cs" />
     <Compile Include="IconImpl.cs" />
+    <Compile Include="RenderLoop.cs" />
     <Compile Include="SystemDialogImpl.cs" />
     <Compile Include="CursorFactory.cs" />
     <Compile Include="Input\KeyInterop.cs" />
@@ -102,9 +113,9 @@
       <Project>{42472427-4774-4C81-8AFF-9F27B8E31721}</Project>
       <Name>Avalonia.Layout</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Avalonia.SceneGraph\Avalonia.SceneGraph.csproj">
+    <ProjectReference Include="..\..\Avalonia.Visuals\Avalonia.Visuals.csproj">
       <Project>{EB582467-6ABB-43A1-B052-E981BA910E3A}</Project>
-      <Name>Avalonia.SceneGraph</Name>
+      <Name>Avalonia.Visuals</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Avalonia.Styling\Avalonia.Styling.csproj">
       <Project>{F1BAA01A-F176-4C6A-B39D-5B40BB1B148F}</Project>
@@ -114,7 +125,6 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
-  <Import Project="..\..\Shared\PlatformSupport\PlatformSupport.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

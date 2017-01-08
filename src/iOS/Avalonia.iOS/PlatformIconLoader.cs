@@ -1,7 +1,4 @@
 ﻿using Avalonia.Platform;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.IO;
 
 namespace Avalonia.iOS
@@ -10,17 +7,42 @@ namespace Avalonia.iOS
     {
         public IWindowIconImpl LoadIcon(IBitmapImpl bitmap)
         {
-            return null;
+            using (var stream = new MemoryStream())
+            {
+                bitmap.Save(stream);
+                return LoadIcon(stream);
+            }
         }
 
         public IWindowIconImpl LoadIcon(Stream stream)
         {
-            return null;
+            return new FakeIcon(stream);
         }
 
         public IWindowIconImpl LoadIcon(string fileName)
         {
-            return null;
+            using (var file = File.Open(fileName, FileMode.Open))
+            {
+                return new FakeIcon(file);
+            }
+        }
+    }
+
+    // Stores the icon created as a stream to support saving even though an icon is never shown
+    public class FakeIcon : IWindowIconImpl
+    {
+        private Stream stream = new MemoryStream();
+
+        public FakeIcon(Stream stream)
+        {
+            stream.CopyTo(this.stream);
+        }
+
+        public Stream Save()
+        {
+            var returnStream = new MemoryStream();
+            stream.CopyTo(returnStream);
+            return returnStream;
         }
     }
 }

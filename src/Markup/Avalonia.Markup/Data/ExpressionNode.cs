@@ -2,124 +2,153 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Avalonia.Data;
 
 namespace Avalonia.Markup.Data
 {
-    internal abstract class ExpressionNode : IObservable<object>
+    internal abstract class ExpressionNode : ISubject<object>
     {
         protected static readonly WeakReference UnsetReference = 
             new WeakReference(AvaloniaProperty.UnsetValue);
 
-        private WeakReference _target;
+        private WeakReference _target = UnsetReference;
+        private IDisposable _valueSubscription;
+        private IObserver<object> _observer;
 
-        private Subject<object> _subject;
-
-        private WeakReference _value = UnsetReference;
-
+        public abstract string Description { get; }
         public ExpressionNode Next { get; set; }
 
         public WeakReference Target
         {
-            get
-            {
-                return _target;
-            }
+            get { return _target; }
             set
             {
-                var newInstance = value?.Target;
-                var oldInstance = _target?.Target;
+                Contract.Requires<ArgumentNullException>(value != null);
 
-                if (!object.Equals(oldInstance, newInstance))
+                var oldTarget = _target?.Target;
+                var newTarget = value.Target;
+                var running = _valueSubscription != null;
+
+                if (!ReferenceEquals(oldTarget, newTarget))
                 {
-                    if (oldInstance != null)
-                    {
-                        Unsubscribe(oldInstance);
-                    }
-
+                    _valueSubscription?.Dispose();
+                    _valueSubscription = null;
                     _target = value;
 
-                    if (newInstance != null)
+                    if (running)
                     {
-                        SubscribeAndUpdate(_target);
-                    }
-                    else
-                    {
-                        CurrentValue = UnsetReference;
-                    }
-
-                    if (Next != null)
-                    {
-                        Next.Target = _value;
+                        _valueSubscription = StartListening();
                     }
                 }
             }
         }
 
-        public WeakReference CurrentValue
+        public IDisposable Subscribe(IObserver<object> observer)
         {
-            get
+            if (_observer != null)
             {
-                return _value;
+                throw new AvaloniaInternalException("ExpressionNode can only be subscribed once.");
             }
 
-            set
-            {
-                _value = value;
+            _observer = observer;
+            var nextSubscription = Next?.Subscribe(this);
+            _valueSubscription = StartListening();
 
+            return Disposable.Create(() =>
+            {
+                _valueSubscription?.Dispose();
+                _valueSubscription = null;
+                nextSubscription?.Dispose();
+                _observer = null;
+            });
+        }
+
+        void IObserver<object>.OnCompleted()
+        {
+            throw new AvaloniaInternalException("ExpressionNode.OnCompleted should not be called.");
+        }
+
+        void IObserver<object>.OnError(Exception error)
+        {
+            throw new AvaloniaInternalException("ExpressionNode.OnError should not be called.");
+        }
+
+        void IObserver<object>.OnNext(object value)
+        {
+            NextValueChanged(value);
+        }
+
+        protected virtual IObservable<object> StartListeningCore(WeakReference reference)
+        {
+            return Observable.Return(reference.Target);
+        }
+
+        protected virtual void NextValueChanged(object value)
+        {
+            var bindingBroken = BindingNotification.ExtractError(value) as MarkupBindingChainException;
+            bindingBroken?.AddNode(Description);
+            _observer.OnNext(value);
+        }
+
+        private IDisposable StartListening()
+        {
+            var target = _target.Target;
+            IObservable<object> source;
+
+            if (target == null)
+            {
+                source = Observable.Return(TargetNullNotification());
+            }
+            else if (target == AvaloniaProperty.UnsetValue)
+            {
+                source = Observable.Empty<object>();
+            }
+            else
+            {
+                source = StartListeningCore(_target);
+            }
+
+            return source.Subscribe(ValueChanged);
+        }
+
+        private void ValueChanged(object value)
+        {
+            var notification = value as BindingNotification;
+
+            if (notification == null)
+            {
                 if (Next != null)
                 {
-                    Next.Target = value;
+                    Next.Target = new WeakReference(value);
                 }
-
-                _subject?.OnNext(value.Target);
-            }
-        }
-
-        public virtual bool SetValue(object value, BindingPriority priority)
-        {
-            return Next?.SetValue(value, priority) ?? false;
-        }
-
-        public virtual IDisposable Subscribe(IObserver<object> observer)
-        {
-            if (Next != null)
-            {
-                return Next.Subscribe(observer);
-            }
-            else
-            {
-                if (_subject == null)
+                else
                 {
-                    _subject = new Subject<object>();
+                    _observer.OnNext(value);
                 }
-
-                observer.OnNext(CurrentValue.Target);
-                return _subject.Subscribe(observer);
-            }
-        }
-
-        protected virtual void SubscribeAndUpdate(WeakReference reference)
-        {
-            CurrentValue = reference;
-        }
-
-        protected virtual void SendValidationStatus(IValidationStatus status)
-        {
-            //Even if elements only bound to sub-values, send validation changes along so they will be surfaced to the UI level.
-            if (_subject != null)
-            {
-                _subject.OnNext(status);
             }
             else
             {
-                Next?.SendValidationStatus(status);
+                if (Next != null)
+                {
+                    Next.Target = new WeakReference(notification.Value);
+                }
+                
+                if (Next == null || notification.Error != null)
+                {
+                    _observer.OnNext(value);
+                }
             }
         }
 
-        protected virtual void Unsubscribe(object target)
+        private BindingNotification TargetNullNotification()
         {
+            return new BindingNotification(
+                new MarkupBindingChainException("Null value"),
+                BindingErrorType.Error,
+                AvaloniaProperty.UnsetValue);
         }
     }
 }

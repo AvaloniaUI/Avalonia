@@ -3,21 +3,17 @@
 
 using System;
 using System.Linq;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
-using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Windows.Input;
 using Avalonia.Data;
 using Avalonia.Markup.Data.Plugins;
 
 namespace Avalonia.Markup.Data
 {
-    internal class PropertyAccessorNode : ExpressionNode
+    internal class PropertyAccessorNode : ExpressionNode, ISettableNode
     {
+        private readonly bool _enableValidation;
         private IPropertyAccessor _accessor;
-        private IDisposable _subscription;
-        private bool _enableValidation;
 
         public PropertyAccessorNode(string propertyName, bool enableValidation)
         {
@@ -25,118 +21,44 @@ namespace Avalonia.Markup.Data
             _enableValidation = enableValidation;
         }
 
+        public override string Description => PropertyName;
         public string PropertyName { get; }
-
         public Type PropertyType => _accessor?.PropertyType;
 
-        public override bool SetValue(object value, BindingPriority priority)
+        public bool SetTargetValue(object value, BindingPriority priority)
         {
-            if (Next != null)
+            if (_accessor != null)
             {
-                return Next.SetValue(value, priority);
+                try { return _accessor.SetValue(value, priority); } catch { }
             }
-            else
-            {
-                if (_accessor != null)
-                {
-                    return _accessor.SetValue(value, priority);
-                }
 
-                return false;
-            }
+            return false;
         }
 
-        protected override void SubscribeAndUpdate(WeakReference reference)
+        protected override IObservable<object> StartListeningCore(WeakReference reference)
         {
-            var instance = reference.Target;
+            var plugin = ExpressionObserver.PropertyAccessors.FirstOrDefault(x => x.Match(reference));
+            var accessor = plugin?.Start(reference, PropertyName);
 
-            if (instance != null && instance != AvaloniaProperty.UnsetValue)
+            if (_enableValidation && Next == null)
             {
-                var accessorPlugin = ExpressionObserver.PropertyAccessors.FirstOrDefault(x => x.Match(reference));
-
-                if (accessorPlugin != null)
+                foreach (var validator in ExpressionObserver.DataValidators)
                 {
-                    _accessor = ExceptionValidationPlugin.Instance.Start(
-                        reference,
-                        PropertyName,
-                        accessorPlugin.Start(reference, PropertyName, SetCurrentValue),
-                        SendValidationStatus);
-
-                    if (_enableValidation)
+                    if (validator.Match(reference, PropertyName))
                     {
-                        foreach (var validationPlugin in ExpressionObserver.ValidationCheckers)
-                        {
-                            if (validationPlugin.Match(reference))
-                            {
-                                _accessor = validationPlugin.Start(reference, PropertyName, _accessor, SendValidationStatus);
-                            }
-                        }
-                    }
-
-                    if (_accessor != null)
-                    {
-                        SetCurrentValue(_accessor.Value);
-                        return;
+                        accessor = validator.Start(reference, PropertyName, accessor);
                     }
                 }
             }
 
-            CurrentValue = UnsetReference;
-        }
-
-        protected override void Unsubscribe(object target)
-        {
-            _accessor?.Dispose();
-            _accessor = null;
-        }
-
-        private void SetCurrentValue(object value)
-        {
-            var observable = value as IObservable<object>;
-            var command = value as ICommand;
-            var task = value as Task;
-            bool set = false;
-
-            // HACK: ReactiveCommand is an IObservable but we want to bind to it, not its value.
-            // We may need to make this a more general solution.
-            if (observable != null && command == null)
-            {
-                CurrentValue = UnsetReference;
-                set = true;
-                _subscription = observable
-                    .ObserveOn(SynchronizationContext.Current)
-                    .Subscribe(x => CurrentValue = new WeakReference(x));
-            }
-            else if (task != null)
-            {
-                var resultProperty = task.GetType().GetTypeInfo().GetDeclaredProperty("Result");
-
-                if (resultProperty != null)
+            // Ensure that _accessor is set for the duration of the subscription.
+            return Observable.Using(
+                () =>
                 {
-                    if (task.Status == TaskStatus.RanToCompletion)
-                    {
-                        CurrentValue = new WeakReference(resultProperty.GetValue(task));
-                        set = true;
-                    }
-                    else
-                    {
-                        task.ContinueWith(
-                                x => CurrentValue = new WeakReference(resultProperty.GetValue(task)),
-                                TaskScheduler.FromCurrentSynchronizationContext())
-                            .ConfigureAwait(false);
-                    }
-                }
-            }
-            else
-            {
-                CurrentValue = new WeakReference(value);
-                set = true;
-            }
-
-            if (!set)
-            {
-                CurrentValue = UnsetReference;
-            }
+                    _accessor = accessor;
+                    return Disposable.Create(() => _accessor = null);
+                },
+                _ => accessor);
         }
     }
 }

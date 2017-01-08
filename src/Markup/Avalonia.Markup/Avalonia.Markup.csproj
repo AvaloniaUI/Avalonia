@@ -36,19 +36,25 @@
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>bin\Release\Avalonia.Markup.XML</DocumentationFile>
     <NoWarn>CS1591</NoWarn>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\..\Shared\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Data\ISettableNode.cs" />
+    <Compile Include="Data\StreamNode.cs" />
+    <Compile Include="Data\MarkupBindingChainException.cs" />
     <Compile Include="Data\CommonPropertyNames.cs" />
+    <Compile Include="Data\EmptyExpressionNode.cs" />
     <Compile Include="Data\ExpressionNodeBuilder.cs" />
     <Compile Include="Data\ExpressionParseException.cs" />
-    <Compile Include="Data\ExpressionSubject.cs" />
+    <Compile Include="Data\BindingExpression.cs" />
     <Compile Include="ControlLocator.cs" />
+    <Compile Include="Data\Plugins\DataAnnotationsValidationPlugin.cs" />
     <Compile Include="Data\Plugins\ExceptionValidationPlugin.cs" />
     <Compile Include="Data\Plugins\IndeiValidationPlugin.cs" />
-    <Compile Include="Data\Plugins\IValidationPlugin.cs" />
+    <Compile Include="Data\Plugins\IDataValidationPlugin.cs" />
     <Compile Include="Data\Plugins\AvaloniaPropertyAccessorPlugin.cs" />
     <Compile Include="Data\Plugins\InpcPropertyAccessorPlugin.cs" />
     <Compile Include="Data\Plugins\IPropertyAccessor.cs" />
@@ -59,8 +65,12 @@
     <Compile Include="Data\Parsers\IdentifierParser.cs" />
     <Compile Include="Data\Parsers\ExpressionParser.cs" />
     <Compile Include="Data\Parsers\Reader.cs" />
+    <Compile Include="Data\Plugins\ObservableStreamPlugin.cs" />
+    <Compile Include="Data\Plugins\TaskStreamPlugin.cs" />
+    <Compile Include="Data\Plugins\IStreamPlugin.cs" />
+    <Compile Include="Data\Plugins\PropertyAccessorBase.cs" />
     <Compile Include="Data\Plugins\PropertyError.cs" />
-    <Compile Include="Data\Plugins\ValidatingPropertyAccessorBase.cs" />
+    <Compile Include="Data\Plugins\DataValidatiorBase.cs" />
     <Compile Include="Data\PropertyAccessorNode.cs" />
     <Compile Include="Data\ExpressionNode.cs" />
     <Compile Include="Data\ExpressionObserver.cs" />
@@ -94,9 +104,9 @@
       <Project>{42472427-4774-4c81-8aff-9f27b8e31721}</Project>
       <Name>Avalonia.Layout</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Avalonia.SceneGraph\Avalonia.SceneGraph.csproj">
+    <ProjectReference Include="..\..\Avalonia.Visuals\Avalonia.Visuals.csproj">
       <Project>{eb582467-6abb-43a1-b052-e981ba910e3a}</Project>
-      <Name>Avalonia.SceneGraph</Name>
+      <Name>Avalonia.Visuals</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Avalonia.Styling\Avalonia.Styling.csproj">
       <Project>{f1baa01a-f176-4c6a-b39d-5b40bb1b148f}</Project>

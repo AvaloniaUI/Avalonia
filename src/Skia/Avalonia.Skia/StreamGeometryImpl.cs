@@ -72,6 +72,8 @@ namespace Avalonia.Skia
         public IStreamGeometryContextImpl Open()
         {
             _path = new SKPath();
+            _path.FillType = SKPathFillType.EvenOdd;
+
             return new StreamContext(this);
         }
 

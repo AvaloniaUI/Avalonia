@@ -3,14 +3,15 @@ using System.Collections.Generic;
 using System.Text;
 using Avalonia.Controls;
 using Avalonia.Platform;
+using Avalonia.Rendering;
 
 namespace Avalonia
 {
     public static class SkiaApplicationExtensions
     {
-        public static AppBuilder UseSkia(this AppBuilder builder)
+        public static T UseSkia<T>(this T builder) where T : AppBuilderBase<T>, new()
         {
-            builder.RenderingSubsystem = Avalonia.Skia.SkiaPlatform.Initialize;
+            builder.UseRenderingSubsystem(Skia.SkiaPlatform.Initialize, "Skia");
             return builder;
         }
     }
@@ -23,7 +24,12 @@ namespace Avalonia.Skia
         private static bool s_forceSoftwareRendering;
 
         public static void Initialize()
-            => AvaloniaLocator.CurrentMutable.Bind<IPlatformRenderInterface>().ToConstant(new PlatformRenderInterface());
+        {
+            var renderInterface = new PlatformRenderInterface();
+            AvaloniaLocator.CurrentMutable
+                .Bind<IPlatformRenderInterface>().ToConstant(renderInterface)
+                .Bind<IRendererFactory>().ToConstant(renderInterface);
+        }
 
         public static bool ForceSoftwareRendering
         {
