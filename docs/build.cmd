@@ -1,3 +1,3 @@
 @echo off
-docfx metadata
-docfx build
+docfx\docfx.exe metadata
+docfx\docfx.exe build

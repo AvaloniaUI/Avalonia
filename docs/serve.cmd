@@ -1,2 +1,2 @@
 @echo off
-docfx serve _site
+docfx\docfx.exe serve _site
