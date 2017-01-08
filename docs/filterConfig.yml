@@ -1,3 +1,4 @@
+apiRules:
 - exclude:
-      uidRegex: ^OmniXaml
-      type: Type
+    uidRegex: ^OmniXaml
+    type: Type
