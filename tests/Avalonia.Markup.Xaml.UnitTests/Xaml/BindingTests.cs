@@ -145,5 +145,49 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 Assert.Equal("foo", border.DataContext);
             }
         }
+
+        [Fact(Skip = "OmniXaml doesn't support nested markup extensions. #119")]
+        public void Binding_To_Self_Works()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <TextBlock Name='textblock' Text='{Binding Tag, RelativeSource={RelativeSource Self}}'/>
+</Window>";
+                var loader = new AvaloniaXamlLoader();
+                var window = (Window)loader.Load(xaml);
+                var textBlock = (TextBlock)window.Content;
+
+                window.ApplyTemplate();
+
+                Assert.Equal("foo", textBlock.Text);
+            }
+        }
+
+        [Fact]
+        public void Longform_Binding_To_Self_Works()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <TextBlock Name='textblock' Tag='foo'>
+        <TextBlock.Text>
+            <Binding RelativeSource='{RelativeSource Self}' Path='Tag'/>
+        </TextBlock.Text>
+    </TextBlock>
+</Window>";
+                var loader = new AvaloniaXamlLoader();
+                var window = (Window)loader.Load(xaml);
+                var textBlock = (TextBlock)window.Content;
+
+                window.ApplyTemplate();
+
+                Assert.Equal("foo", textBlock.Text);
+            }
+        }
     }
 }
