@@ -2,9 +2,9 @@
   href: index.md
 - name: Getting Started
   href: tutorial/
-- name: Guidelines
-  href: guidelines/
-- name: Specifications
-  href: spec/
+- name: Fundamentals
+  href: fundamentals/
+- name: Contributing
+  href: contributing/
 - name: API Documentation
   href: api/
