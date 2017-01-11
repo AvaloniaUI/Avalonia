@@ -183,7 +183,7 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Multiplies a rectangle by a vector.
+        /// Multiplies a rectangle by a scaling vector.
         /// </summary>
         /// <param name="rect">The rectangle.</param>
         /// <param name="scale">The vector scale.</param>
@@ -195,17 +195,6 @@ namespace Avalonia
                 rect.Y * scale.Y,
                 rect.Width * scale.X,
                 rect.Height * scale.Y);
-        }
-
-        /// <summary>
-        /// Transforms a rectangle by a matrix and returns the axis-aligned bounding box.
-        /// </summary>
-        /// <param name="rect">The rectangle.</param>
-        /// <param name="matrix">The matrix.</param>
-        /// <returns>The axis-aligned bounding box.</returns>
-        public static Rect operator *(Rect rect, Matrix matrix)
-        {
-            return new Rect(rect.TopLeft * matrix, rect.BottomRight * matrix);
         }
 
         /// <summary>

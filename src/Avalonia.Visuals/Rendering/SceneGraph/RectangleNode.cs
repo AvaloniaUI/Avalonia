@@ -10,7 +10,7 @@ namespace Avalonia.Rendering.SceneGraph
     {
         public RectangleNode(Matrix transform, IBrush brush, Pen pen, Rect rect, float cornerRadius)
         {
-            Bounds = (rect * transform).Inflate(pen?.Thickness ?? 0);
+            Bounds = rect.TransformToAABB(transform).Inflate(pen?.Thickness ?? 0);
             Transform = transform;
             Brush = brush;
             Pen = pen;

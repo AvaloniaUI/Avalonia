@@ -155,7 +155,7 @@ namespace Avalonia.Rendering.SceneGraph
                     forceRecurse = forceRecurse || node.Transform != contextImpl.Transform;
 
                     node.Transform = contextImpl.Transform;
-                    node.ClipBounds = (bounds * node.Transform).Intersect(clip);
+                    node.ClipBounds = bounds.TransformToAABB(node.Transform).Intersect(clip);
                     node.ClipToBounds = clipToBounds;
                     node.GeometryClip = visual.Clip;
                     node.Opacity = opacity;

@@ -11,7 +11,7 @@ namespace Avalonia.Rendering.SceneGraph
     {
         public ImageNode(Matrix transform, IBitmapImpl source, double opacity, Rect sourceRect, Rect destRect)
         {
-            Bounds = destRect * transform;
+            Bounds = destRect.TransformToAABB(transform);
             Transform = transform;
             Source = source;
             Opacity = opacity;
