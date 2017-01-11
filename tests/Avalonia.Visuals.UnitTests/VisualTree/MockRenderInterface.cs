@@ -73,10 +73,7 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
                 return false;
             }
 
-            public Rect GetRenderBounds(double strokeThickness)
-            {
-                throw new NotImplementedException();
-            }
+            public Rect GetRenderBounds(double strokeThickness) => Bounds;
 
             public IStreamGeometryContextImpl Open()
             {

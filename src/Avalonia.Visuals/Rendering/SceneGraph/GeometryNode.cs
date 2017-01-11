@@ -11,7 +11,7 @@ namespace Avalonia.Rendering.SceneGraph
     {
         public GeometryNode(Matrix transform, IBrush brush, Pen pen, IGeometryImpl geometry)
         {
-            Bounds = geometry.Bounds.TransformToAABB(transform);
+            Bounds = geometry.GetRenderBounds(pen.Thickness).TransformToAABB(transform);
             Transform = transform;
             Brush = brush;
             Pen = pen;

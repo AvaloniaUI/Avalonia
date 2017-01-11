@@ -441,7 +441,6 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
                 container.Arrange(new Rect(container.DesiredSize));
 
                 var context = new DrawingContext(Mock.Of<IDrawingContextImpl>());
-                ////context.Render(container);
 
                 var result = container.GetVisualsAt(new Point(100, 100));
                 Assert.Equal(new[] { path }, result);
