@@ -27,18 +27,16 @@ namespace Avalonia.Win32
 
         public IntPtr HIcon => icon?.Handle ?? bitmap.GetHicon();
 
-        public Stream Save()
+        public void Save(Stream outputStream)
         {
-            var stream = new MemoryStream();
             if (icon != null)
             {
-                icon.Save(stream);
+                icon.Save(outputStream);
             }
             else
             {
-                bitmap.Save(stream, ImageFormat.Png);
+                bitmap.Save(outputStream, ImageFormat.Png);
             }
-            return stream;
         }
     }
 }

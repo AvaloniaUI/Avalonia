@@ -34,6 +34,10 @@
                Width="100" Height="200"
                Stretch="UniformToFill"/>
       </StackPanel>
-    </StackPanel>    
+    </StackPanel>
+    <StackPanel Orientation="Vertical">
+      <TextBlock>Window Icon as an Image</TextBlock>
+      <Image Name="Icon" Width="100" Height="200" Stretch="None" />
+    </StackPanel>
   </StackPanel>
 </UserControl>
