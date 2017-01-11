@@ -219,7 +219,7 @@ namespace Avalonia.Input
                 InputModifiers = inputModifiers
             };
 
-            source.RaiseEvent(e);
+            source?.RaiseEvent(e);
             return e.Handled;
         }
 
