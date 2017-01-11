@@ -34,6 +34,7 @@ namespace Avalonia.Direct2D1.Media
         /// </summary>
         /// <param name="renderTarget">The render target to draw to.</param>
         /// <param name="directWriteFactory">The DirectWrite factory.</param>
+        /// <param name="swapChain">An optional swap chain associated with this drawing context.</param>
         public DrawingContext(
             SharpDX.Direct2D1.RenderTarget renderTarget,
             SharpDX.DirectWrite.Factory directWriteFactory,

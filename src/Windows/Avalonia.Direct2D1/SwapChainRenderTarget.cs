@@ -81,7 +81,8 @@ namespace Avalonia.Direct2D1
             using (var dxgiFactory = dxgiAdaptor.GetParent<Factory2>())
             {
                 _deviceContext?.Dispose();
-                _deviceContext = new DeviceContext(d2dDevice, DeviceContextOptions.None);
+                _deviceContext = new DeviceContext(d2dDevice, DeviceContextOptions.None) {DotsPerInch = _savedDpi};
+
 
                 var swapChainDesc = new SwapChainDescription1
                 {
@@ -100,8 +101,6 @@ namespace Avalonia.Direct2D1
                     SwapEffect = SwapEffect.FlipSequential,
                     Flags = 0,
                 };
-
-                var dpi = Direct2DFactory.DesktopDpi;
 
                 _swapChain?.Dispose();
                 _swapChain = CreateSwapChain(dxgiFactory, swapChainDesc);
