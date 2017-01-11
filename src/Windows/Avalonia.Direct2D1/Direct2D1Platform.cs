@@ -28,17 +28,13 @@ namespace Avalonia.Direct2D1
     {
         private static readonly Direct2D1Platform s_instance = new Direct2D1Platform();
 
-        private static readonly SharpDX.Direct2D1.Factory s_d2D1Factory =
-#if DEBUG
-            new SharpDX.Direct2D1.Factory(SharpDX.Direct2D1.FactoryType.MultiThreaded, SharpDX.Direct2D1.DebugLevel.Error);
-#else
-            new SharpDX.Direct2D1.Factory(SharpDX.Direct2D1.FactoryType.MultiThreaded, SharpDX.Direct2D1.DebugLevel.None);
-#endif
         private static readonly SharpDX.DirectWrite.Factory s_dwfactory = new SharpDX.DirectWrite.Factory();
 
         private static readonly SharpDX.WIC.ImagingFactory s_imagingFactory = new SharpDX.WIC.ImagingFactory();
 
-        private static readonly SharpDX.DXGI.Device s_device;
+        private static readonly SharpDX.DXGI.Device s_dxgiDevice;
+
+        private static readonly SharpDX.Direct2D1.Device s_d2d1Device;
 
         static Direct2D1Platform()
         {
@@ -60,17 +56,20 @@ namespace Avalonia.Direct2D1
                 SharpDX.Direct3D11.DeviceCreationFlags.BgraSupport | SharpDX.Direct3D11.DeviceCreationFlags.VideoSupport,
                 featureLevels))
             {
-                s_device = d3dDevice.QueryInterface<SharpDX.DXGI.Device>();
+                s_dxgiDevice = d3dDevice.QueryInterface<SharpDX.DXGI.Device>();
             }
+
+            s_d2d1Device = new SharpDX.Direct2D1.Device(s_dxgiDevice);
         }
 
         public static void Initialize() => AvaloniaLocator.CurrentMutable
             .Bind<IPlatformRenderInterface>().ToConstant(s_instance)
             .Bind<IRendererFactory>().ToConstant(s_instance)
-            .BindToSelf(s_d2D1Factory)
+            .BindToSelf(s_d2d1Device.Factory)
             .BindToSelf(s_dwfactory)
             .BindToSelf(s_imagingFactory)
-            .BindToSelf(s_device);
+            .BindToSelf(s_dxgiDevice)
+            .BindToSelf(s_d2d1Device);
 
         public IBitmapImpl CreateBitmap(int width, int height)
         {
@@ -110,7 +109,7 @@ namespace Avalonia.Direct2D1
 
         public IRenderTargetBitmapImpl CreateRenderTargetBitmap(int width, int height)
         {
-            return new RenderTargetBitmapImpl(s_imagingFactory, s_d2D1Factory, width, height);
+            return new RenderTargetBitmapImpl(s_imagingFactory, s_d2d1Device.Factory, width, height);
         }
 
         public IStreamGeometryImpl CreateStreamGeometry()

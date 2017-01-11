@@ -20,7 +20,7 @@ namespace Avalonia.Direct2D1
 
         protected override SwapChain1 CreateSwapChain(Factory2 dxgiFactory, SwapChainDescription1 swapChainDesc)
         {
-            return new SwapChain1(dxgiFactory, Device, _hwnd, ref swapChainDesc);
+            return new SwapChain1(dxgiFactory, DxgiDevice, _hwnd, ref swapChainDesc);
         }
 
         protected override Size2F GetWindowDpi()

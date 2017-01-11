@@ -25,7 +25,8 @@ namespace Avalonia.Direct2D1
 
         protected SwapChainRenderTarget()
         {
-            Device = AvaloniaLocator.Current.GetService<SharpDX.DXGI.Device>();
+            DxgiDevice = AvaloniaLocator.Current.GetService<SharpDX.DXGI.Device>();
+            D2DDevice = AvaloniaLocator.Current.GetService<Device>();
             Direct2DFactory = AvaloniaLocator.Current.GetService<Factory>();
             DirectWriteFactory = AvaloniaLocator.Current.GetService<SharpDX.DirectWrite.Factory>();
         }
@@ -47,7 +48,9 @@ namespace Avalonia.Direct2D1
             get;
         }
 
-        protected SharpDX.DXGI.Device Device { get; }
+        protected SharpDX.DXGI.Device DxgiDevice { get; }
+        
+        public Device D2DDevice { get; }
 
         /// <summary>
         /// Creates a drawing context for a rendering session.
@@ -76,12 +79,11 @@ namespace Avalonia.Direct2D1
 
         private void CreateSwapChain()
         {
-            using (var d2dDevice = new Device(Device))
-            using (var dxgiAdaptor = Device.Adapter)
+            using (var dxgiAdaptor = DxgiDevice.Adapter)
             using (var dxgiFactory = dxgiAdaptor.GetParent<Factory2>())
             {
                 _deviceContext?.Dispose();
-                _deviceContext = new DeviceContext(d2dDevice, DeviceContextOptions.None) {DotsPerInch = _savedDpi};
+                _deviceContext = new DeviceContext(D2DDevice, DeviceContextOptions.None) {DotsPerInch = _savedDpi};
 
 
                 var swapChainDesc = new SwapChainDescription1
