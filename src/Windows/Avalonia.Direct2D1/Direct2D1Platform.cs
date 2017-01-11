@@ -8,6 +8,7 @@ using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Controls;
 using Avalonia.Rendering;
+using SharpDX.Direct3D11;
 
 namespace Avalonia
 {
@@ -29,20 +30,47 @@ namespace Avalonia.Direct2D1
 
         private static readonly SharpDX.Direct2D1.Factory s_d2D1Factory =
 #if DEBUG
-            new SharpDX.Direct2D1.Factory(SharpDX.Direct2D1.FactoryType.SingleThreaded, SharpDX.Direct2D1.DebugLevel.Error);
+            new SharpDX.Direct2D1.Factory(SharpDX.Direct2D1.FactoryType.MultiThreaded, SharpDX.Direct2D1.DebugLevel.Error);
 #else
-            new SharpDX.Direct2D1.Factory(SharpDX.Direct2D1.FactoryType.SingleThreaded, SharpDX.Direct2D1.DebugLevel.None);
+            new SharpDX.Direct2D1.Factory(SharpDX.Direct2D1.FactoryType.MultiThreaded, SharpDX.Direct2D1.DebugLevel.None);
 #endif
         private static readonly SharpDX.DirectWrite.Factory s_dwfactory = new SharpDX.DirectWrite.Factory();
 
         private static readonly SharpDX.WIC.ImagingFactory s_imagingFactory = new SharpDX.WIC.ImagingFactory();
+
+        private static readonly SharpDX.DXGI.Device s_device;
+
+        static Direct2D1Platform()
+        {
+            var featureLevels = new[]
+            {
+                SharpDX.Direct3D.FeatureLevel.Level_12_1,
+                SharpDX.Direct3D.FeatureLevel.Level_12_0,
+                SharpDX.Direct3D.FeatureLevel.Level_11_1,
+                SharpDX.Direct3D.FeatureLevel.Level_11_0,
+                SharpDX.Direct3D.FeatureLevel.Level_10_1,
+                SharpDX.Direct3D.FeatureLevel.Level_10_0,
+                SharpDX.Direct3D.FeatureLevel.Level_9_3,
+                SharpDX.Direct3D.FeatureLevel.Level_9_2,
+                SharpDX.Direct3D.FeatureLevel.Level_9_1,
+            };
+
+            using (var d3dDevice = new SharpDX.Direct3D11.Device(
+                SharpDX.Direct3D.DriverType.Hardware,
+                SharpDX.Direct3D11.DeviceCreationFlags.BgraSupport | SharpDX.Direct3D11.DeviceCreationFlags.VideoSupport,
+                featureLevels))
+            {
+                s_device = d3dDevice.QueryInterface<SharpDX.DXGI.Device>();
+            }
+        }
 
         public static void Initialize() => AvaloniaLocator.CurrentMutable
             .Bind<IPlatformRenderInterface>().ToConstant(s_instance)
             .Bind<IRendererFactory>().ToConstant(s_instance)
             .BindToSelf(s_d2D1Factory)
             .BindToSelf(s_dwfactory)
-            .BindToSelf(s_imagingFactory);
+            .BindToSelf(s_imagingFactory)
+            .BindToSelf(s_device);
 
         public IBitmapImpl CreateBitmap(int width, int height)
         {
@@ -70,7 +98,7 @@ namespace Avalonia.Direct2D1
         {
             if (handle.HandleDescriptor == "HWND")
             {
-                return new RenderTarget(handle.Handle);
+                return new HwndRenderTarget(handle.Handle);
             }
             else
             {
