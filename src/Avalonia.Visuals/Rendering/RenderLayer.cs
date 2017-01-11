@@ -31,7 +31,7 @@ namespace Avalonia.Rendering
         {
             if (Size != size || Scaling != scaling)
             {
-                var resized = _factory.CreateLayer(LayerRoot, size, 96 * scaling, 96 * scaling);
+                var resized = _factory.CreateLayer(LayerRoot, size * scaling, 96 * scaling, 96 * scaling);
 
                 using (var context = resized.CreateDrawingContext())
                 {
