@@ -8,7 +8,6 @@ using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Controls;
 using Avalonia.Rendering;
-using SharpDX.Direct3D11;
 
 namespace Avalonia
 {
@@ -28,6 +27,12 @@ namespace Avalonia.Direct2D1
     {
         private static readonly Direct2D1Platform s_instance = new Direct2D1Platform();
 
+        private static readonly SharpDX.Direct2D1.Factory s_d2D1Factory =
+#if DEBUG
+            new SharpDX.Direct2D1.Factory1(SharpDX.Direct2D1.FactoryType.MultiThreaded, SharpDX.Direct2D1.DebugLevel.Error);
+#else
+            new SharpDX.Direct2D1.Factory1(SharpDX.Direct2D1.FactoryType.MultiThreaded, SharpDX.Direct2D1.DebugLevel.None);
+#endif
         private static readonly SharpDX.DirectWrite.Factory s_dwfactory = new SharpDX.DirectWrite.Factory();
 
         private static readonly SharpDX.WIC.ImagingFactory s_imagingFactory = new SharpDX.WIC.ImagingFactory();
@@ -59,13 +64,16 @@ namespace Avalonia.Direct2D1
                 s_dxgiDevice = d3dDevice.QueryInterface<SharpDX.DXGI.Device>();
             }
 
-            s_d2D1Device = new SharpDX.Direct2D1.Device(s_dxgiDevice);
+            using (var factory1 = s_d2D1Factory.QueryInterface<SharpDX.Direct2D1.Factory1>())
+            {
+                s_d2D1Device = new SharpDX.Direct2D1.Device(factory1, s_dxgiDevice);
+            }
         }
 
         public static void Initialize() => AvaloniaLocator.CurrentMutable
             .Bind<IPlatformRenderInterface>().ToConstant(s_instance)
             .Bind<IRendererFactory>().ToConstant(s_instance)
-            .BindToSelf(s_d2D1Device.Factory)
+            .BindToSelf(s_d2D1Factory)
             .BindToSelf(s_dwfactory)
             .BindToSelf(s_imagingFactory)
             .BindToSelf(s_dxgiDevice)

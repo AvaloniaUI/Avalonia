@@ -73,8 +73,8 @@ namespace Avalonia.Direct2D1
 
         public void Dispose()
         {
-            _deviceContext.Dispose();
-            _swapChain.Dispose();
+            _deviceContext?.Dispose();
+            _swapChain?.Dispose();
         }
 
         private void CreateSwapChain()
