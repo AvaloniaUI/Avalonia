@@ -55,16 +55,10 @@ namespace Avalonia.Direct2D1
                 SharpDX.Direct3D.FeatureLevel.Level_9_2,
                 SharpDX.Direct3D.FeatureLevel.Level_9_1,
             };
-            var creationFlags = SharpDX.Direct3D11.DeviceCreationFlags.BgraSupport;
-            var osVersion = Environment.OSVersion.Version;
-            if (osVersion.Major > 6 || (osVersion.Major == 6 && osVersion.Minor >= 2)) // If Windows 8 or newer
-            {
-                creationFlags |= SharpDX.Direct3D11.DeviceCreationFlags.VideoSupport;
-            }
 
             using (var d3dDevice = new SharpDX.Direct3D11.Device(
                 SharpDX.Direct3D.DriverType.Hardware,
-                creationFlags,
+                SharpDX.Direct3D11.DeviceCreationFlags.BgraSupport,
                 featureLevels))
             {
                 s_dxgiDevice = d3dDevice.QueryInterface<SharpDX.DXGI.Device>();
