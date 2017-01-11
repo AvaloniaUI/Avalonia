@@ -45,8 +45,6 @@ namespace Avalonia.Direct2D1
         {
             var featureLevels = new[]
             {
-                SharpDX.Direct3D.FeatureLevel.Level_12_1,
-                SharpDX.Direct3D.FeatureLevel.Level_12_0,
                 SharpDX.Direct3D.FeatureLevel.Level_11_1,
                 SharpDX.Direct3D.FeatureLevel.Level_11_0,
                 SharpDX.Direct3D.FeatureLevel.Level_10_1,
@@ -58,7 +56,7 @@ namespace Avalonia.Direct2D1
 
             using (var d3dDevice = new SharpDX.Direct3D11.Device(
                 SharpDX.Direct3D.DriverType.Hardware,
-                SharpDX.Direct3D11.DeviceCreationFlags.BgraSupport,
+                SharpDX.Direct3D11.DeviceCreationFlags.BgraSupport | SharpDX.Direct3D11.DeviceCreationFlags.VideoSupport,
                 featureLevels))
             {
                 s_dxgiDevice = d3dDevice.QueryInterface<SharpDX.DXGI.Device>();
