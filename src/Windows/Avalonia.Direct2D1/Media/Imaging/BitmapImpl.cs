@@ -65,6 +65,21 @@ namespace Avalonia.Direct2D1.Media
         }
 
         /// <summary>
+        /// Initialize a new instance of the <see cref="BitmapImpl"/> class
+        /// with a bitmap backed by GPU memory.
+        /// </summary>
+        /// <param name="d2DBitmap">The GPU bitmap.</param>
+        /// <remarks>
+        /// This bitmap must be either from the same render target,
+        /// or if the render target is a <see cref="SharpDX.Direct2D1.DeviceContext"/>,
+        /// the device associated with this context, to be renderable.
+        /// </remarks>
+        public BitmapImpl(SharpDX.Direct2D1.Bitmap d2DBitmap)
+        {
+            _direct2D = d2DBitmap;
+        }
+
+        /// <summary>
         /// Gets the width of the bitmap, in pixels.
         /// </summary>
         public int PixelWidth => WicImpl.Size.Width;
@@ -77,14 +92,13 @@ namespace Avalonia.Direct2D1.Media
         public virtual void Dispose()
         {
             WicImpl.Dispose();
+            _direct2D?.Dispose();
         }
 
         /// <summary>
         /// Gets the WIC implementation of the bitmap.
         /// </summary>
-        public Bitmap WicImpl
-        {
-            get; }
+        public Bitmap WicImpl { get; }
 
         /// <summary>
         /// Gets a Direct2D bitmap to use on the specified render target.
