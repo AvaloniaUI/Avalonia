@@ -31,18 +31,16 @@ namespace Avalonia.iOS
     // Stores the icon created as a stream to support saving even though an icon is never shown
     public class FakeIcon : IWindowIconImpl
     {
-        private Stream stream = new MemoryStream();
+        private readonly Stream stream = new MemoryStream();
 
         public FakeIcon(Stream stream)
         {
             stream.CopyTo(this.stream);
         }
 
-        public Stream Save()
+        public void Save(Stream outputStream)
         {
-            var returnStream = new MemoryStream();
-            stream.CopyTo(returnStream);
-            return returnStream;
+            stream.CopyTo(outputStream);
         }
     }
 }
