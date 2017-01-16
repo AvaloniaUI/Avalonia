@@ -9,6 +9,7 @@
 *.suo
 *.user
 *.sln.docstates
+.vs/
 
 # Build results
 
