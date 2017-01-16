@@ -7,6 +7,6 @@ namespace Avalonia.Platform
 {
     public interface IWindowIconImpl
     {
-        Stream Save();
+        void Save(Stream outputStream);
     }
 }
