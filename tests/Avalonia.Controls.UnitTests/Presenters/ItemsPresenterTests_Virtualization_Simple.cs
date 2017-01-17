@@ -786,6 +786,24 @@ namespace Avalonia.Controls.UnitTests.Presenters
                 Assert.Equal(new Size(10, 20), ((ILogicalScrollable)target).Extent);
                 Assert.Equal(new Size(5, 10), ((ILogicalScrollable)target).Viewport);
             }
+
+            [Fact]
+            public void Horizontal_Scroll_Should_Update_Item_Position()
+            {
+                var target = CreateTarget();
+
+                target.ApplyTemplate();
+
+                target.Measure(new Size(5, 100));
+                target.Arrange(new Rect(0, 0, 5, 100));
+
+                ((ILogicalScrollable)target).Offset = new Vector(5, 0);
+
+                target.Measure(new Size(5, 100));
+                target.Arrange(new Rect(0, 0, 5, 100));
+
+                Assert.Equal(new Rect(-5, 0, 10, 10), target.Panel.Children[0].Bounds);
+            }
         }
 
         public class Horizontal

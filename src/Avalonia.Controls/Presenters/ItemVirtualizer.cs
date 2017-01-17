@@ -206,8 +206,17 @@ namespace Avalonia.Controls.Presenters
         /// <returns>The actual size used.</returns>
         public virtual Size ArrangeOverride(Size finalSize)
         {
-            var origin = Vertical ? new Point(-_crossAxisOffset, 0) : new Point(0, _crossAxisOffset);
-            Owner.Panel.Arrange(new Rect(origin, finalSize));
+            if (VirtualizingPanel != null)
+            {
+                VirtualizingPanel.CrossAxisOffset = _crossAxisOffset;
+                Owner.Panel.Arrange(new Rect(finalSize));
+            }
+            else
+            {
+                var origin = Vertical ? new Point(-_crossAxisOffset, 0) : new Point(0, _crossAxisOffset);
+                Owner.Panel.Arrange(new Rect(origin, finalSize));
+            }
+
             return finalSize;
         }
 
