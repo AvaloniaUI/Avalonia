@@ -2,6 +2,24 @@
 	<s:String x:Key="/Default/CodeInspection/ExcludedFiles/FilesAndFoldersToSkip2/=6417B24E_002D49C2_002D4985_002D8DB2_002D3AB9D898EC91/@EntryIndexedValue">ExplicitlyExcluded</s:String>
 	<s:String x:Key="/Default/CodeInspection/ExcludedFiles/FilesAndFoldersToSkip2/=E3A1060B_002D50D0_002D44E8_002D88B6_002DF44EF2E5BD72_002Ff_003Ahtml_002Ehtm/@EntryIndexedValue">ExplicitlyExcluded</s:String>
 	<s:String x:Key="/Default/CodeInspection/Highlighting/InspectionSeverities/=RedundantUsingDirective/@EntryIndexedValue">HINT</s:String>
+	<s:String x:Key="/Default/CodeStyle/Naming/CppNaming/UserRules/=DECLSPEC_005FPROPERTY/@EntryIndexedValue">&lt;Policy Inspect="True" Prefix="" Suffix="" Style="AaBb" /&gt;</s:String>
+	<s:String x:Key="/Default/CodeStyle/Naming/CppNaming/UserRules/=ENUM/@EntryIndexedValue">&lt;Policy Inspect="True" Prefix="" Suffix="" Style="aa_bb" /&gt;</s:String>
+	<s:String x:Key="/Default/CodeStyle/Naming/CppNaming/UserRules/=ENUMERATOR/@EntryIndexedValue">&lt;Policy Inspect="True" Prefix="" Suffix="" Style="aa_bb" /&gt;</s:String>
+	<s:String x:Key="/Default/CodeStyle/Naming/CppNaming/UserRules/=GETTER/@EntryIndexedValue">&lt;Policy Inspect="True" Prefix="" Suffix="" Style="aa_bb" /&gt;</s:String>
+	<s:String x:Key="/Default/CodeStyle/Naming/CppNaming/UserRules/=GLOBAL_005FFUNCTION/@EntryIndexedValue">&lt;Policy Inspect="True" Prefix="" Suffix="" Style="aa_bb" /&gt;</s:String>
+	<s:String x:Key="/Default/CodeStyle/Naming/CppNaming/UserRules/=GLOBAL_005FVARIABLE/@EntryIndexedValue">&lt;Policy Inspect="True" Prefix="" Suffix="" Style="aa_bb" /&gt;</s:String>
+	<s:String x:Key="/Default/CodeStyle/Naming/CppNaming/UserRules/=LOCAL_005FTYPEDEF/@EntryIndexedValue">&lt;Policy Inspect="True" Prefix="" Suffix="" Style="aa_bb" /&gt;</s:String>
+	<s:String x:Key="/Default/CodeStyle/Naming/CppNaming/UserRules/=LOCAL_005FVARIABLE/@EntryIndexedValue">&lt;Policy Inspect="True" Prefix="" Suffix="" Style="aa_bb" /&gt;</s:String>
+	<s:String x:Key="/Default/CodeStyle/Naming/CppNaming/UserRules/=NAMESPACE/@EntryIndexedValue">&lt;Policy Inspect="True" Prefix="" Suffix="" Style="aa_bb" /&gt;</s:String>
+	<s:String x:Key="/Default/CodeStyle/Naming/CppNaming/UserRules/=PARAMETER/@EntryIndexedValue">&lt;Policy Inspect="True" Prefix="" Suffix="" Style="aa_bb" /&gt;</s:String>
+	<s:String x:Key="/Default/CodeStyle/Naming/CppNaming/UserRules/=SETTER/@EntryIndexedValue">&lt;Policy Inspect="True" Prefix="set_" Suffix="" Style="aa_bb" /&gt;</s:String>
+	<s:String x:Key="/Default/CodeStyle/Naming/CppNaming/UserRules/=STRUCT/@EntryIndexedValue">&lt;Policy Inspect="True" Prefix="" Suffix="" Style="aa_bb" /&gt;</s:String>
+	<s:String x:Key="/Default/CodeStyle/Naming/CppNaming/UserRules/=STRUCT_005FFIELD/@EntryIndexedValue">&lt;Policy Inspect="True" Prefix="" Suffix="_" Style="aa_bb" /&gt;</s:String>
+	<s:String x:Key="/Default/CodeStyle/Naming/CppNaming/UserRules/=STRUCT_005FMETHODS/@EntryIndexedValue">&lt;Policy Inspect="True" Prefix="" Suffix="" Style="aa_bb" /&gt;</s:String>
+	<s:String x:Key="/Default/CodeStyle/Naming/CppNaming/UserRules/=TEMPLATE_005FPARAMETER/@EntryIndexedValue">&lt;Policy Inspect="True" Prefix="" Suffix="" Style="aa_bb" /&gt;</s:String>
+	<s:String x:Key="/Default/CodeStyle/Naming/CppNaming/UserRules/=TYPEDEF/@EntryIndexedValue">&lt;Policy Inspect="True" Prefix="" Suffix="" Style="aa_bb" /&gt;</s:String>
+	<s:String x:Key="/Default/CodeStyle/Naming/CppNaming/UserRules/=UNION/@EntryIndexedValue">&lt;Policy Inspect="True" Prefix="" Suffix="" Style="aa_bb" /&gt;</s:String>
+	<s:String x:Key="/Default/CodeStyle/Naming/CppNaming/UserRules/=UNION_005FMEMBER/@EntryIndexedValue">&lt;Policy Inspect="True" Prefix="" Suffix="" Style="aa_bb" /&gt;</s:String>
 	<s:String x:Key="/Default/CodeStyle/Naming/CSharpNaming/PredefinedNamingRules/=Constants/@EntryIndexedValue">&lt;Policy Inspect="False" Prefix="" Suffix="" Style="AaBb" /&gt;</s:String>
 	<s:String x:Key="/Default/CodeStyle/Naming/CSharpNaming/PredefinedNamingRules/=EnumMember/@EntryIndexedValue">&lt;Policy Inspect="False" Prefix="" Suffix="" Style="AaBb" /&gt;</s:String>
 	<s:String x:Key="/Default/CodeStyle/Naming/CSharpNaming/PredefinedNamingRules/=Interfaces/@EntryIndexedValue">&lt;Policy Inspect="False" Prefix="I" Suffix="" Style="AaBb" /&gt;</s:String>
@@ -10,8 +28,9 @@
 	<s:String x:Key="/Default/CodeStyle/Naming/CSharpNaming/PredefinedNamingRules/=Other/@EntryIndexedValue">&lt;Policy Inspect="False" Prefix="" Suffix="" Style="AaBb" /&gt;</s:String>
 	<s:String x:Key="/Default/CodeStyle/Naming/CSharpNaming/PredefinedNamingRules/=Parameters/@EntryIndexedValue">&lt;Policy Inspect="False" Prefix="" Suffix="" Style="aaBb" /&gt;</s:String>
 	<s:String x:Key="/Default/CodeStyle/Naming/CSharpNaming/PredefinedNamingRules/=PrivateConstants/@EntryIndexedValue">&lt;Policy Inspect="False" Prefix="" Suffix="" Style="AaBb" /&gt;</s:String>
+	<s:String x:Key="/Default/CodeStyle/Naming/CSharpNaming/PredefinedNamingRules/=PrivateInstanceFields/@EntryIndexedValue">&lt;Policy Inspect="True" Prefix="_" Suffix="" Style="aaBb" /&gt;</s:String>
 	<s:String x:Key="/Default/CodeStyle/Naming/CSharpNaming/PredefinedNamingRules/=PrivateStaticFields/@EntryIndexedValue">&lt;Policy Inspect="True" Prefix="s_" Suffix="" Style="aaBb" /&gt;</s:String>
-	<s:String x:Key="/Default/CodeStyle/Naming/CSharpNaming/PredefinedNamingRules/=PrivateStaticReadonly/@EntryIndexedValue">&lt;Policy Inspect="True" Prefix="" Suffix="" Style="AaBb"&gt;&lt;ExtraRule Prefix="s_" Suffix="" Style="aaBb" /&gt;&lt;/Policy&gt;</s:String>
+	<s:String x:Key="/Default/CodeStyle/Naming/CSharpNaming/PredefinedNamingRules/=PrivateStaticReadonly/@EntryIndexedValue">&lt;Policy Inspect="True" Prefix="s_" Suffix="" Style="aaBb" /&gt;</s:String>
 	<s:String x:Key="/Default/CodeStyle/Naming/CSharpNaming/PredefinedNamingRules/=StaticReadonly/@EntryIndexedValue">&lt;Policy Inspect="True" Prefix="" Suffix="" Style="AaBb" /&gt;</s:String>
 	<s:String x:Key="/Default/CodeStyle/Naming/CSharpNaming/PredefinedNamingRules/=TypeParameters/@EntryIndexedValue">&lt;Policy Inspect="False" Prefix="T" Suffix="" Style="AaBb" /&gt;</s:String>
 	<s:String x:Key="/Default/CodeStyle/Naming/CSharpNaming/PredefinedNamingRules/=TypesAndNamespaces/@EntryIndexedValue">&lt;Policy Inspect="False" Prefix="" Suffix="" Style="AaBb" /&gt;</s:String></wpf:ResourceDictionary>
