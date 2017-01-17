@@ -76,7 +76,7 @@ namespace Avalonia.Direct2D1.Media
         /// <param name="destRect">The rect in the output to draw to.</param>
         public void DrawImage(IBitmap source, double opacity, Rect sourceRect, Rect destRect)
         {
-            BitmapImpl impl = (BitmapImpl)source.PlatformImpl;
+            var impl = (BitmapImpl)source.PlatformImpl;
             Bitmap d2d = impl.GetDirect2DBitmap(_renderTarget);
             _renderTarget.DrawBitmap(
                 d2d,
