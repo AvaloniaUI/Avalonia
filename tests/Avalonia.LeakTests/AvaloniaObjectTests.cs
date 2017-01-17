@@ -6,6 +6,7 @@ using Xunit.Abstractions;
 
 namespace Avalonia.LeakTests
 {
+    [DotMemoryUnit(FailIfRunWithoutSupport = false)]
     public class AvaloniaObjectTests
     {
         public AvaloniaObjectTests(ITestOutputHelper atr)
