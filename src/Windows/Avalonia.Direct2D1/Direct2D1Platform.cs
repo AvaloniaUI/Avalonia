@@ -79,7 +79,7 @@ namespace Avalonia.Direct2D1
 
         public IBitmapImpl CreateBitmap(int width, int height)
         {
-            return new BitmapImpl(s_imagingFactory, width, height);
+            return new WicBitmapImpl(s_imagingFactory, width, height);
         }
 
         public IFormattedTextImpl CreateFormattedText(
@@ -125,12 +125,12 @@ namespace Avalonia.Direct2D1
 
         public IBitmapImpl LoadBitmap(string fileName)
         {
-            return new BitmapImpl(s_imagingFactory, fileName);
+            return new WicBitmapImpl(s_imagingFactory, fileName);
         }
 
         public IBitmapImpl LoadBitmap(Stream stream)
         {
-            return new BitmapImpl(s_imagingFactory, stream);
+            return new WicBitmapImpl(s_imagingFactory, stream);
         }
     }
 }

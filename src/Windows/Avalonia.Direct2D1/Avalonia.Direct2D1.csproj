@@ -66,8 +66,10 @@
     <Compile Include="Media\BrushImpl.cs" />
     <Compile Include="Media\BrushWrapper.cs" />
     <Compile Include="Media\DrawingContext.cs" />
-    <Compile Include="Media\Imaging\RenderTargetBitmapImpl.cs" />
     <Compile Include="Media\Imaging\BitmapImpl.cs" />
+    <Compile Include="Media\Imaging\D2DBitmapImpl.cs" />
+    <Compile Include="Media\Imaging\RenderTargetBitmapImpl.cs" />
+    <Compile Include="Media\Imaging\WicBitmapImpl.cs" />
     <Compile Include="Media\RadialGradientBrushImpl.cs" />
     <Compile Include="Media\LinearGradientBrushImpl.cs" />
     <Compile Include="Media\AvaloniaTextRenderer.cs" />

@@ -1,136 +1,24 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using Avalonia.Platform;
-using SharpDX.WIC;
+using SharpDX.Direct2D1;
 
 namespace Avalonia.Direct2D1.Media
 {
-    /// <summary>
-    /// A Direct2D implementation of a <see cref="Avalonia.Media.Imaging.Bitmap"/>.
-    /// </summary>
-    public class BitmapImpl : IBitmapImpl
+    public abstract class BitmapImpl : IBitmapImpl, IDisposable
     {
-        private readonly ImagingFactory _factory;
-
-        private SharpDX.Direct2D1.Bitmap _direct2D;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BitmapImpl"/> class.
-        /// </summary>
-        /// <param name="factory">The WIC imaging factory to use.</param>
-        /// <param name="fileName">The filename of the bitmap to load.</param>
-        public BitmapImpl(ImagingFactory factory, string fileName)
-        {
-            _factory = factory;
-
-            using (BitmapDecoder decoder = new BitmapDecoder(factory, fileName, DecodeOptions.CacheOnDemand))
-            {
-                WicImpl = new Bitmap(factory, decoder.GetFrame(0), BitmapCreateCacheOption.CacheOnDemand);
-            }
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BitmapImpl"/> class.
-        /// </summary>
-        /// <param name="factory">The WIC imaging factory to use.</param>
-        /// <param name="stream">The stream to read the bitmap from.</param>
-        public BitmapImpl(ImagingFactory factory, Stream stream)
-        {
-            _factory = factory;
-
-            using (BitmapDecoder decoder = new BitmapDecoder(factory, stream, DecodeOptions.CacheOnLoad))
-            {
-                WicImpl = new Bitmap(factory, decoder.GetFrame(0), BitmapCreateCacheOption.CacheOnLoad);
-            }
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BitmapImpl"/> class.
-        /// </summary>
-        /// <param name="factory">The WIC imaging factory to use.</param>
-        /// <param name="width">The width of the bitmap.</param>
-        /// <param name="height">The height of the bitmap.</param>
-        public BitmapImpl(ImagingFactory factory, int width, int height)
-        {
-            _factory = factory;
-            WicImpl = new Bitmap(
-                factory,
-                width,
-                height,
-                PixelFormat.Format32bppPBGRA,
-                BitmapCreateCacheOption.CacheOnLoad);
-        }
-
-        /// <summary>
-        /// Gets the width of the bitmap, in pixels.
-        /// </summary>
-        public int PixelWidth => WicImpl.Size.Width;
-
-        /// <summary>
-        /// Gets the height of the bitmap, in pixels.
-        /// </summary>
-        public int PixelHeight => WicImpl.Size.Height;
+        public abstract Bitmap GetDirect2DBitmap(SharpDX.Direct2D1.RenderTarget target);
+        public abstract int PixelWidth { get; }
+        public abstract int PixelHeight { get; }
+        public abstract void Save(string fileName);
+        public abstract void Save(Stream stream);
 
         public virtual void Dispose()
         {
-            WicImpl.Dispose();
-        }
-
-        /// <summary>
-        /// Gets the WIC implementation of the bitmap.
-        /// </summary>
-        public Bitmap WicImpl
-        {
-            get; }
-
-        /// <summary>
-        /// Gets a Direct2D bitmap to use on the specified render target.
-        /// </summary>
-        /// <param name="renderTarget">The render target.</param>
-        /// <returns>The Direct2D bitmap.</returns>
-        public SharpDX.Direct2D1.Bitmap GetDirect2DBitmap(SharpDX.Direct2D1.RenderTarget renderTarget)
-        {
-            if (_direct2D == null)
-            {
-                FormatConverter converter = new FormatConverter(_factory);
-                converter.Initialize(WicImpl, PixelFormat.Format32bppPBGRA);
-                _direct2D = SharpDX.Direct2D1.Bitmap.FromWicBitmap(renderTarget, converter);
-            }
-
-            return _direct2D;
-        }
-
-        /// <summary>
-        /// Saves the bitmap to a file.
-        /// </summary>
-        /// <param name="fileName">The filename.</param>
-        public void Save(string fileName)
-        {
-            if (Path.GetExtension(fileName) != ".png")
-            {
-                // Yeah, we need to support other formats.
-                throw new NotSupportedException("Use PNG, stoopid.");
-            }
-
-            using (FileStream s = new FileStream(fileName, FileMode.Create))
-            {
-                Save(s);
-            }
-        }
-
-        public void Save(Stream stream)
-        {
-            PngBitmapEncoder encoder = new PngBitmapEncoder(_factory);
-            encoder.Initialize(stream);
-
-            BitmapFrameEncode frame = new BitmapFrameEncode(encoder);
-            frame.Initialize();
-            frame.WriteSource(WicImpl);
-            frame.Commit();
-            encoder.Commit();
         }
     }
 }
