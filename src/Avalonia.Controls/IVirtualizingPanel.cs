@@ -67,6 +67,11 @@ namespace Avalonia.Controls
         double PixelOffset { get; set; }
 
         /// <summary>
+        /// Gets or sets the current scroll offset in the cross axis.
+        /// </summary>
+        double CrossAxisOffset { get; set; }
+
+        /// <summary>
         /// Invalidates the measure of the control and forces a call to 
         /// <see cref="IVirtualizingController.UpdateControls"/> on the next measure.
         /// </summary>
