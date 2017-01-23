@@ -10,7 +10,6 @@ using Avalonia.Collections;
 using Avalonia.Data;
 using Avalonia.Logging;
 using Avalonia.Media;
-using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.VisualTree;
 
@@ -20,10 +19,10 @@ namespace Avalonia
     /// Base class for controls that provides rendering and related visual properties.
     /// </summary>
     /// <remarks>
-    /// The <see cref="Visual"/> class acts as a node in the Avalonia scene graph and holds
-    /// all the information needed for an <see cref="IRenderTarget"/> to render the control.
-    /// To traverse the scene graph (aka Visual Tree), use the extension methods defined
-    /// in <see cref="VisualExtensions"/>.
+    /// The <see cref="Visual"/> class represents elements that have a visual on-screen
+    /// representation and stores all the information needed for an 
+    /// <see cref="IRenderer"/> to render the control. To traverse the visual tree, use the
+    /// extension methods defined in <see cref="VisualExtensions"/>.
     /// </remarks>
     public class Visual : Animatable, IVisual
     {
@@ -128,7 +127,7 @@ namespace Avalonia
         public event EventHandler<VisualTreeAttachmentEventArgs> DetachedFromVisualTree;
 
         /// <summary>
-        /// Gets the bounds of the scene graph node relative to its parent.
+        /// Gets the bounds of the control relative to its parent.
         /// </summary>
         public Rect Bounds
         {
@@ -137,7 +136,7 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Gets a value indicating whether the scene graph node should be clipped to its bounds.
+        /// Gets a value indicating whether the control should be clipped to its bounds.
         /// </summary>
         public bool ClipToBounds
         {
@@ -155,7 +154,7 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Gets a value indicating whether this scene graph node and all its parents are visible.
+        /// Gets a value indicating whether this control and all its parents are visible.
         /// </summary>
         public bool IsEffectivelyVisible
         {
@@ -163,7 +162,7 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Gets a value indicating whether this scene graph node is visible.
+        /// Gets a value indicating whether this control is visible.
         /// </summary>
         public bool IsVisible
         {
@@ -172,7 +171,7 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Gets the opacity of the scene graph node.
+        /// Gets the opacity of the control.
         /// </summary>
         public double Opacity
         {
@@ -181,7 +180,7 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Gets the opacity mask of the scene graph node.
+        /// Gets the opacity mask of the control.
         /// </summary>
         public IBrush OpacityMask
         {
@@ -190,7 +189,7 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Gets the render transform of the scene graph node.
+        /// Gets the render transform of the control.
         /// </summary>
         public Transform RenderTransform
         {
@@ -199,7 +198,7 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Gets the transform origin of the scene graph node.
+        /// Gets the transform origin of the control.
         /// </summary>
         public RelativePoint RenderTransformOrigin
         {
@@ -208,7 +207,7 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Gets the Z index of the node.
+        /// Gets the Z index of the control.
         /// </summary>
         /// <remarks>
         /// Controls with a higher <see cref="ZIndex"/> will appear in front of controls with
@@ -222,7 +221,7 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Gets the control's visual children.
+        /// Gets the control's child visuals.
         /// </summary>
         protected IAvaloniaList<IVisual> VisualChildren
         {
@@ -236,17 +235,17 @@ namespace Avalonia
         protected IRenderRoot VisualRoot => _visualRoot ?? (this as IRenderRoot);
 
         /// <summary>
-        /// Gets a value indicating whether this scene graph node is attached to a visual root.
+        /// Gets a value indicating whether this control is attached to a visual root.
         /// </summary>
         bool IVisual.IsAttachedToVisualTree => VisualRoot != null;
 
         /// <summary>
-        /// Gets the scene graph node's child nodes.
+        /// Gets the control's child controls.
         /// </summary>
         IAvaloniaReadOnlyList<IVisual> IVisual.VisualChildren => VisualChildren;
 
         /// <summary>
-        /// Gets the scene graph node's parent node.
+        /// Gets the control's parent visual.
         /// </summary>
         IVisual IVisual.VisualParent => _visualParent;
 
