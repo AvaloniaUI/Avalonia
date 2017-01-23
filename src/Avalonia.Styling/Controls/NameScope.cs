@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Avalonia.LogicalTree;
 
 namespace Avalonia.Controls
 {
@@ -30,12 +31,40 @@ namespace Avalonia.Controls
         public event EventHandler<NameScopeEventArgs> Unregistered;
 
         /// <summary>
+        /// Finds the containing name scope for a visual.
+        /// </summary>
+        /// <param name="visual">The visual.</param>
+        /// <returns>The containing name scope.</returns>
+        public static INameScope FindNameScope(Visual visual)
+        {
+            Contract.Requires<ArgumentNullException>(visual != null);
+
+            INameScope result;
+
+            while (visual != null)
+            {
+                result = visual as INameScope ?? GetNameScope(visual);
+
+                if (result != null)
+                {
+                    return result;
+                }
+
+                visual = (visual as ILogical).LogicalParent as Visual;
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Gets the value of the attached <see cref="NameScopeProperty"/> on a visual.
         /// </summary>
         /// <param name="visual">The visual.</param>
         /// <returns>The value of the NameScope attached property.</returns>
         public static INameScope GetNameScope(Visual visual)
         {
+            Contract.Requires<ArgumentNullException>(visual != null);
+
             return visual.GetValue(NameScopeProperty);
         }
 
@@ -46,6 +75,8 @@ namespace Avalonia.Controls
         /// <param name="value">The value to set.</param>
         public static void SetNameScope(Visual visual, INameScope value)
         {
+            Contract.Requires<ArgumentNullException>(visual != null);
+
             visual.SetValue(NameScopeProperty, value);
         }
 

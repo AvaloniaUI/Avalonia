@@ -47,13 +47,46 @@ namespace Avalonia.Direct2D1
                 .Bind<SharpDX.Direct2D1.Factory>().ToConstant(s_d2D1Factory)
                 .Bind<SharpDX.Direct2D1.Factory1>().ToConstant(s_d2D1Factory)
                 .BindToSelf(s_dwfactory)
-                .BindToSelf(s_imagingFactory);
+                .BindToSelf(s_imagingFactory)
+                .BindToSelf(s_dxgiDevice)
+                .BindToSelf(s_d2D1Device);
             SharpDX.Configuration.EnableReleaseOnFinalizer = true;
+        }
+
+        private static readonly SharpDX.DXGI.Device s_dxgiDevice;
+
+        private static readonly SharpDX.Direct2D1.Device s_d2D1Device;
+
+        static Direct2D1Platform()
+        {
+            var featureLevels = new[]
+            {
+                SharpDX.Direct3D.FeatureLevel.Level_11_1,
+                SharpDX.Direct3D.FeatureLevel.Level_11_0,
+                SharpDX.Direct3D.FeatureLevel.Level_10_1,
+                SharpDX.Direct3D.FeatureLevel.Level_10_0,
+                SharpDX.Direct3D.FeatureLevel.Level_9_3,
+                SharpDX.Direct3D.FeatureLevel.Level_9_2,
+                SharpDX.Direct3D.FeatureLevel.Level_9_1,
+            };
+
+            using (var d3dDevice = new SharpDX.Direct3D11.Device(
+                SharpDX.Direct3D.DriverType.Hardware,
+                SharpDX.Direct3D11.DeviceCreationFlags.BgraSupport | SharpDX.Direct3D11.DeviceCreationFlags.VideoSupport,
+                featureLevels))
+            {
+                s_dxgiDevice = d3dDevice.QueryInterface<SharpDX.DXGI.Device>();
+            }
+
+            using (var factory1 = s_d2D1Factory.QueryInterface<SharpDX.Direct2D1.Factory1>())
+            {
+                s_d2D1Device = new SharpDX.Direct2D1.Device(factory1, s_dxgiDevice);
+            }
         }
 
         public IBitmapImpl CreateBitmap(int width, int height)
         {
-            return new BitmapImpl(s_imagingFactory, width, height);
+            return new WicBitmapImpl(s_imagingFactory, width, height);
         }
 
         public IFormattedTextImpl CreateFormattedText(
@@ -126,12 +159,12 @@ namespace Avalonia.Direct2D1
 
         public IBitmapImpl LoadBitmap(string fileName)
         {
-            return new BitmapImpl(s_imagingFactory, fileName);
+            return new WicBitmapImpl(s_imagingFactory, fileName);
         }
 
         public IBitmapImpl LoadBitmap(Stream stream)
         {
-            return new BitmapImpl(s_imagingFactory, stream);
+            return new WicBitmapImpl(s_imagingFactory, stream);
         }
     }
 }

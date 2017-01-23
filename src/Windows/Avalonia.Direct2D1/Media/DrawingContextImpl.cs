@@ -27,6 +27,7 @@ namespace Avalonia.Direct2D1.Media
         /// </summary>
         /// <param name="renderTarget">The render target to draw to.</param>
         /// <param name="directWriteFactory">The DirectWrite factory.</param>
+        /// <param name="swapChain">An optional swap chain associated with this drawing context.</param>
         public DrawingContextImpl(
             SharpDX.Direct2D1.RenderTarget renderTarget,
             SharpDX.DirectWrite.Factory directWriteFactory,
@@ -35,6 +36,7 @@ namespace Avalonia.Direct2D1.Media
             _renderTarget = renderTarget;
             _swapChain = swapChain;
             _directWriteFactory = directWriteFactory;
+            _swapChain = swapChain;
             _renderTarget.BeginDraw();
         }
 
@@ -63,11 +65,8 @@ namespace Avalonia.Direct2D1.Media
             try
             {
                 _renderTarget.EndDraw();
-
-                if (_swapChain != null)
-                {
-                    _swapChain.Present(1, SharpDX.DXGI.PresentFlags.None);
-                }
+                
+                _swapChain?.Present(1, SharpDX.DXGI.PresentFlags.None);
             }
             catch (SharpDXException ex) when((uint)ex.HResult == 0x8899000C) // D2DERR_RECREATE_TARGET
             {

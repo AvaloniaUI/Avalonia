@@ -26,7 +26,7 @@ namespace Avalonia.Markup.Data
             _nodes = null;
         }
 
-        public bool HasNodes => _nodes.Count > 0;
+        public bool HasNodes => _nodes?.Count > 0;
         public void AddNode(string node) => _nodes.Add(node);
 
         public void Commit(string expression)

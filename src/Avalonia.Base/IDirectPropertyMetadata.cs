@@ -16,6 +16,6 @@ namespace Avalonia
         /// <summary>
         /// Gets a value indicating whether the property is interested in data validation.
         /// </summary>
-        bool EnableDataValidation { get; }
+        bool? EnableDataValidation { get; }
     }
 }

@@ -232,6 +232,10 @@ namespace Avalonia.Controls.Presenters
             {
                 DataContext = content;
             }
+            else
+            {
+                ClearValue(DataContextProperty);
+            }
 
             // Update the Child.
             if (newChild == null)

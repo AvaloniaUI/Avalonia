@@ -709,7 +709,10 @@ namespace Avalonia.Win32
                 MaximizeWithoutCoveringTaskbar();
             }
 
-            SetFocus(_hwnd);
+            if (!Design.IsDesignMode)
+            {
+                SetFocus(_hwnd);
+            }
         }
 
         private void MaximizeWithoutCoveringTaskbar()

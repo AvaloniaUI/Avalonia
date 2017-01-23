@@ -173,10 +173,13 @@ namespace Avalonia.Controls.Presenters
         {
             if (this.GetVisualParent() != null)
             {
-                _caretBlink = true;
-                _caretTimer.Stop();
-                _caretTimer.Start();
-                InvalidateVisual();
+                if (_caretTimer.IsEnabled)
+                {
+                    _caretBlink = true;
+                    _caretTimer.Stop();
+                    _caretTimer.Start();
+                    InvalidateVisual();
+                }
 
                 if (IsMeasureValid)
                 {

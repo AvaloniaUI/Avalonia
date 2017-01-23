@@ -4,12 +4,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using JetBrains.dotMemoryUnit;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Avalonia.LeakTests
 {
+    [DotMemoryUnit(FailIfRunWithoutSupport = false)]
     public class MemberSelectorTests
     {
+        public MemberSelectorTests(ITestOutputHelper atr)
+        {
+            DotMemoryUnitTestOutput.SetOutputMethod(atr.WriteLine);
+        }
+
         [Fact]
         public void Should_Not_Hold_Reference_To_Object()
         {

@@ -1,159 +1,29 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
-using Avalonia.Direct2D1.Media;
-using Avalonia.Media;
-using Avalonia.Platform;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using Avalonia.Win32.Interop;
 using SharpDX;
-using SharpDX.Direct2D1;
+using SharpDX.DXGI;
 
 namespace Avalonia.Direct2D1
 {
-    public class HwndRenderTarget : IRenderTarget
+    class HwndRenderTarget : SwapChainRenderTarget
     {
         private readonly IntPtr _hwnd;
-        private readonly SharpDX.Direct3D11.Device _d3dDevice;
-        private DeviceContext _deviceContext;
-        private SharpDX.DXGI.SwapChain1 _swapChain;
-        private Size2 _size;
-        private Size2F _dpi;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="HwndRenderTarget"/> class.
-        /// </summary>
-        /// <param name="hwnd">The window handle.</param>
         public HwndRenderTarget(IntPtr hwnd)
         {
             _hwnd = hwnd;
-            Direct2DFactory = AvaloniaLocator.Current.GetService<Factory1>();
-            DirectWriteFactory = AvaloniaLocator.Current.GetService<SharpDX.DirectWrite.Factory>();
-
-            var featureLevels = new[]
-            {
-                SharpDX.Direct3D.FeatureLevel.Level_12_1,
-                SharpDX.Direct3D.FeatureLevel.Level_12_0,
-                SharpDX.Direct3D.FeatureLevel.Level_11_1,
-                SharpDX.Direct3D.FeatureLevel.Level_11_0,
-                SharpDX.Direct3D.FeatureLevel.Level_10_1,
-                SharpDX.Direct3D.FeatureLevel.Level_10_0,
-                SharpDX.Direct3D.FeatureLevel.Level_9_3,
-                SharpDX.Direct3D.FeatureLevel.Level_9_2,
-                SharpDX.Direct3D.FeatureLevel.Level_9_1,
-            };
-
-            _d3dDevice = new SharpDX.Direct3D11.Device(
-                SharpDX.Direct3D.DriverType.Hardware,
-                SharpDX.Direct3D11.DeviceCreationFlags.BgraSupport,
-                featureLevels);
-
-            var size = GetWindowSize();
-            var dpi = GetWindowDpi();
-            UpdateSwapChain(size, dpi);
         }
 
-        /// <summary>
-        /// Gets the Direct2D factory.
-        /// </summary>
-        public Factory1 Direct2DFactory
+        protected override SwapChain1 CreateSwapChain(Factory2 dxgiFactory, SwapChainDescription1 swapChainDesc)
         {
-            get;
+            return new SwapChain1(dxgiFactory, DxgiDevice, _hwnd, ref swapChainDesc);
         }
 
-        /// <summary>
-        /// Gets the DirectWrite factory.
-        /// </summary>
-        public SharpDX.DirectWrite.Factory DirectWriteFactory
-        {
-            get;
-        }
-
-        /// <summary>
-        /// Creates a drawing context for a rendering session.
-        /// </summary>
-        /// <returns>An <see cref="Avalonia.Media.DrawingContext"/>.</returns>
-        public IDrawingContextImpl CreateDrawingContext()
-        {
-            var size = GetWindowSize();
-            var dpi = GetWindowDpi();
-
-            if (size != _size || _dpi != dpi)
-            {
-                UpdateSwapChain(size, dpi);
-            }
-
-            return new DrawingContextImpl(_deviceContext, DirectWriteFactory, _swapChain);
-        }
-
-        public void Dispose()
-        {
-            _deviceContext.Dispose();
-            _swapChain.Dispose();
-            _d3dDevice.Dispose();
-        }
-
-        private void UpdateSwapChain(Size2 size, Size2F dpi)
-        {
-            _size = size;
-            _dpi = dpi;
-
-            using (var dxgiDevice = _d3dDevice.QueryInterface<SharpDX.DXGI.Device>())
-            using (var d2dDevice = new Device(Direct2DFactory, dxgiDevice))
-            using (var dxgiAdaptor = dxgiDevice.Adapter)
-            using (var dxgiFactory = dxgiAdaptor.GetParent<SharpDX.DXGI.Factory2>())
-            {
-                _deviceContext?.Dispose();
-
-                if (_swapChain == null)
-                {
-                    var swapChainDesc = new SharpDX.DXGI.SwapChainDescription1
-                    {
-                        Width = 0,
-                        Height = 0,
-                        Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
-                        Stereo = false,
-                        SampleDescription = new SharpDX.DXGI.SampleDescription
-                        {
-                            Count = 1,
-                            Quality = 0,
-                        },
-                        Usage = SharpDX.DXGI.Usage.RenderTargetOutput,
-                        BufferCount = 2,
-                        Scaling = SharpDX.DXGI.Scaling.None,
-                        SwapEffect = SharpDX.DXGI.SwapEffect.FlipSequential,
-                        Flags = 0,
-                    };
-
-                    _swapChain = new SharpDX.DXGI.SwapChain1(dxgiFactory, _d3dDevice, _hwnd, ref swapChainDesc);
-                }
-                else
-                {
-                    _swapChain.ResizeBuffers(2, 0, 0, SharpDX.DXGI.Format.B8G8R8A8_UNorm, 0);
-                }
-
-                _deviceContext = new DeviceContext(d2dDevice, DeviceContextOptions.None);
-                _deviceContext.DotsPerInch = dpi;
-
-                using (var dxgiBackBuffer = _swapChain.GetBackBuffer<SharpDX.DXGI.Surface>(0))
-                using (var d2dBackBuffer = new Bitmap1(
-                    _deviceContext,
-                    dxgiBackBuffer,
-                    new BitmapProperties1(
-                        new PixelFormat
-                        {
-                            AlphaMode = AlphaMode.Ignore,
-                            Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm
-                        },
-                        dpi.Width,
-                        dpi.Height,
-                        BitmapOptions.Target | BitmapOptions.CannotDraw)))
-                {
-                    _deviceContext.Target = d2dBackBuffer;
-                }
-            }
-        }
-        private Size2F GetWindowDpi()
+        protected override Size2F GetWindowDpi()
         {
             if (UnmanagedMethods.ShCoreAvailable)
             {
@@ -176,7 +46,7 @@ namespace Avalonia.Direct2D1
             return new Size2F(96, 96);
         }
 
-        private Size2 GetWindowSize()
+        protected override Size2 GetWindowSize()
         {
             UnmanagedMethods.RECT rc;
             UnmanagedMethods.GetClientRect(_hwnd, out rc);
