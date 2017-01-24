@@ -99,32 +99,28 @@ namespace Avalonia.Win32
         public int RowBytes => Width * 4;
         public PixelFormat Format => PixelFormat.Bgra8888;
 
-        //TODO: Proper DPI support here
-        /*
-                  private Size GetWindowDpiWin32()
+        public Size Dpi
         {
-            if (UnmanagedMethods.ShCoreAvailable)
+            get
             {
-                uint dpix, dpiy;
-
-                var monitor = UnmanagedMethods.MonitorFromWindow(
-                    _hwnd.Handle,
-                    UnmanagedMethods.MONITOR.MONITOR_DEFAULTTONEAREST);
-
-                if (UnmanagedMethods.GetDpiForMonitor(
-                        monitor,
-                        UnmanagedMethods.MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI,
-                        out dpix,
-                        out dpiy) == 0)
+                if (UnmanagedMethods.ShCoreAvailable)
                 {
-                    return new Size(dpix, dpiy);
-                }
-            }
+                    uint dpix, dpiy;
 
-            return new Size(96, 96);
+                    var monitor = UnmanagedMethods.MonitorFromWindow(_handle,
+                        UnmanagedMethods.MONITOR.MONITOR_DEFAULTTONEAREST);
+
+                    if (UnmanagedMethods.GetDpiForMonitor(
+                            monitor,
+                            UnmanagedMethods.MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI,
+                            out dpix,
+                            out dpiy) == 0)
+                    {
+                        return new Size(dpix, dpiy);
+                    }
+                }
+                return new Size(96, 96);
+            }
         }
-         */
-        public Size Dpi => new Size(96, 96);
-        
     }
 }
