@@ -72,11 +72,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="PlatformRenderInterfaceDesktop.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="..\..\Windows\Avalonia.Win32\Interop\UnmanagedMethods.cs">
-      <Link>UnmanagedMethods.cs</Link>
-    </Compile>
-    <Compile Include="RenderTarget.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Avalonia.Animation\Avalonia.Animation.csproj">

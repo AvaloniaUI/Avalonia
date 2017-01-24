@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
@@ -36,6 +37,11 @@ namespace Avalonia.Platform
         /// Gets the platform window handle.
         /// </summary>
         IPlatformHandle Handle { get; }
+
+        /// <summary>
+        /// Supported methods of image output
+        /// </summary>
+        IEnumerable<object> Surfaces { get; }
 
         /// <summary>
         /// Gets or sets a method called when the window is activated (receives focus).

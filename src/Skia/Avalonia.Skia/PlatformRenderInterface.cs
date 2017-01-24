@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using Avalonia.Media;
 using Avalonia.Platform;
@@ -7,7 +8,7 @@ using SkiaSharp;
 
 namespace Avalonia.Skia
 {
-    public class PlatformRenderInterface : IPlatformRenderInterface, IRendererFactory
+    public partial class PlatformRenderInterface : IPlatformRenderInterface, IRendererFactory
     {
         public IBitmapImpl CreateBitmap(int width, int height)
         {
@@ -54,6 +55,8 @@ namespace Avalonia.Skia
             return new Renderer(root, renderLoop);
         }
 
+        
+
         public IRenderTargetBitmapImpl CreateRenderTargetBitmap(int width, int height)
         {
             if (width < 1)
@@ -62,11 +65,6 @@ namespace Avalonia.Skia
                 throw new ArgumentException("Height can't be less than 1", nameof(height));
 
             return new BitmapImpl(width, height);
-        }
-
-        public IRenderTarget CreateRenderTarget(IPlatformHandle handle)
-        {
-            return new WindowRenderTarget(handle);
         }
     }
 }

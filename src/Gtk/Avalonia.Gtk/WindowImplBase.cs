@@ -2,10 +2,12 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.Reactive.Disposables;
 using System.Runtime.InteropServices;
 using Gdk;
 using Avalonia.Controls;
+using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
 using Avalonia.Input;
@@ -22,7 +24,8 @@ namespace Avalonia.Gtk
         private IInputRoot _inputRoot;
         protected Gtk.Widget _window;
         public Gtk.Widget Widget => _window;
-
+        public Gdk.Drawable CurrentDrawable { get; private set; }
+        private FramebufferManager _framebuffer;
 
         private Gtk.IMContext _imContext;
 
@@ -33,6 +36,7 @@ namespace Avalonia.Gtk
         protected WindowImplBase(Gtk.Widget window)
         {
             _window = window;
+            _framebuffer = new FramebufferManager(this);
             Init();
         }
 
@@ -43,7 +47,6 @@ namespace Avalonia.Gtk
             _imContext = new Gtk.IMMulticontext();
             _imContext.Commit += ImContext_Commit;
             _window.Realized += OnRealized;
-            _window.DoubleBuffered = false;
             _window.Realize();
             _window.ButtonPressEvent += OnButtonPressEvent;
             _window.ButtonReleaseEvent += OnButtonReleaseEvent;
@@ -283,7 +286,9 @@ namespace Avalonia.Gtk
 
         void OnExposeEvent(object o, Gtk.ExposeEventArgs args)
         {
+            CurrentDrawable = args.Event.Window;
             Paint(args.Event.Area.ToAvalonia());
+            CurrentDrawable = null;
             args.RetVal = true;
         }
 
@@ -311,9 +316,32 @@ namespace Avalonia.Gtk
 
         public void Dispose()
         {
+            _framebuffer.Dispose();
             _window.Hide();
             _window.Dispose();
             _window = null;
         }
+
+
+        //We need that for DrawingArea which does not have an HWND until parent window is realized
+        //and could also *change* it's HWND
+        class DynamicNativeWindowSurface : INativeWindowPlatformSurface
+        {
+            private readonly IPlatformHandle _handle;
+
+            public DynamicNativeWindowSurface(IPlatformHandle handle)
+            {
+                _handle = handle;
+            }
+
+            public IntPtr Handle => _handle.Handle;
+        }
+
+        public IEnumerable<object> Surfaces => new object[]
+        {
+            new DynamicNativeWindowSurface(Handle), 
+            new Func<Gdk.Drawable>(() => CurrentDrawable),
+            _framebuffer
+        };
     }
 }

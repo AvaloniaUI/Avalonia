@@ -232,6 +232,8 @@ namespace Avalonia.iOS
         public void SetIcon(IWindowIconImpl icon)
         {
         }
+
+        public IEnumerable<object> Surfaces => new object[]{this};
     }
 
     class AvaloniaViewController : UIViewController

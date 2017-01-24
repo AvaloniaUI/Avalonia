@@ -9,6 +9,7 @@ using Avalonia.Input.Raw;
 using Avalonia.Platform;
 using Avalonia.Skia.Android;
 using System;
+using System.Collections.Generic;
 using Avalonia.Controls;
 
 namespace Avalonia.Android.Platform.SkiaPlatform
@@ -193,5 +194,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         {
             // No window icons for mobile platforms
         }
+
+        public IEnumerable<object> Surfaces => new object[] {this};
     }
 }

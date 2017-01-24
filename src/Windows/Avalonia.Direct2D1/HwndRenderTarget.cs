@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Win32.Interop;
 using SharpDX;
 using SharpDX.DXGI;
@@ -11,16 +12,16 @@ namespace Avalonia.Direct2D1
 {
     class HwndRenderTarget : SwapChainRenderTarget
     {
-        private readonly IntPtr _hwnd;
+        private readonly INativeWindowPlatformSurface _window;
 
-        public HwndRenderTarget(IntPtr hwnd)
+        public HwndRenderTarget(INativeWindowPlatformSurface window)
         {
-            _hwnd = hwnd;
+            _window = window;
         }
 
         protected override SwapChain1 CreateSwapChain(Factory2 dxgiFactory, SwapChainDescription1 swapChainDesc)
         {
-            return new SwapChain1(dxgiFactory, DxgiDevice, _hwnd, ref swapChainDesc);
+            return new SwapChain1(dxgiFactory, DxgiDevice, _window.Handle, ref swapChainDesc);
         }
 
         protected override Size2F GetWindowDpi()
@@ -30,7 +31,7 @@ namespace Avalonia.Direct2D1
                 uint dpix, dpiy;
 
                 var monitor = UnmanagedMethods.MonitorFromWindow(
-                    _hwnd,
+                    _window.Handle,
                     UnmanagedMethods.MONITOR.MONITOR_DEFAULTTONEAREST);
 
                 if (UnmanagedMethods.GetDpiForMonitor(
@@ -49,7 +50,7 @@ namespace Avalonia.Direct2D1
         protected override Size2 GetWindowSize()
         {
             UnmanagedMethods.RECT rc;
-            UnmanagedMethods.GetClientRect(_hwnd, out rc);
+            UnmanagedMethods.GetClientRect(_window.Handle, out rc);
             return new Size2(rc.right - rc.left, rc.bottom - rc.top);
         }
     }

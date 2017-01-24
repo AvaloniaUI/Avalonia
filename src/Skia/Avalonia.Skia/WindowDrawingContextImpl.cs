@@ -1,6 +1,7 @@
 
 namespace Avalonia.Skia
 {
+#if !DESKTOP
     // not sure we need this yet
     internal class WindowDrawingContextImpl : DrawingContextImpl
     {
@@ -18,4 +19,5 @@ namespace Avalonia.Skia
             _target.Present();
         }
     }
+#endif
 }

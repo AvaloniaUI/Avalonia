@@ -87,6 +87,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AndroidPlatformRenderInterface.cs" />
     <Compile Include="AndroidRenderTarget.cs" />
     <Compile Include="RenderTarget.cs" />
     <Compile Include="SkiaRenderView.cs" />
