@@ -19,7 +19,7 @@ namespace Avalonia.Skia
         {
             var surfaceView = surfaces?.OfType<SurfaceView>().FirstOrDefault();
             if (surfaceView == null)
-                throw new ArgumentException("Avalonia.Skia.Android is only capable to draw on SurfaceView");
+                throw new ArgumentException("Avalonia.Skia.Android is only capable of drawing on SurfaceView");
             return new WindowRenderTarget(surfaceView);
         }
     }

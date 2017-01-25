@@ -767,7 +767,7 @@ namespace Avalonia.Win32
 
         public IEnumerable<object> Surfaces => new object[]
         {
-            new NativeWindowPlatformSurface(_hwnd), _framebuffer 
+            Handle, _framebuffer 
         };
     }
 }

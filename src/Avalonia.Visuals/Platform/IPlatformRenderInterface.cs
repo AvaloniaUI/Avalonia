@@ -41,7 +41,7 @@ namespace Avalonia.Platform
         /// <summary>
         /// Creates a renderer.
         /// </summary>
-        /// <param name="surfaces">The list of surfaces that can be used for output.</param>
+        /// <param name="surfaces">The list of native platform's surfaces that can be used for output.</param>
         /// <returns>An <see cref="IRenderTarget"/>.</returns>
         IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces);
 

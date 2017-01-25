@@ -322,24 +322,9 @@ namespace Avalonia.Gtk
             _window = null;
         }
 
-
-        //We need that for DrawingArea which does not have an HWND until parent window is realized
-        //and could also *change* it's HWND
-        class DynamicNativeWindowSurface : INativeWindowPlatformSurface
-        {
-            private readonly IPlatformHandle _handle;
-
-            public DynamicNativeWindowSurface(IPlatformHandle handle)
-            {
-                _handle = handle;
-            }
-
-            public IntPtr Handle => _handle.Handle;
-        }
-
         public IEnumerable<object> Surfaces => new object[]
         {
-            new DynamicNativeWindowSurface(Handle), 
+            Handle, 
             new Func<Gdk.Drawable>(() => CurrentDrawable),
             _framebuffer
         };

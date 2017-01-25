@@ -39,8 +39,15 @@ namespace Avalonia.Platform
         IPlatformHandle Handle { get; }
 
         /// <summary>
-        /// Supported methods of image output
+        /// The list of native platform's surfaces that can be consumed by rendering subsystems.
         /// </summary>
+        /// <remarks>
+        /// Rendering platform will check that list and see if it can utilize one of them to output.
+        /// It should be enough to expose a native window handle via IPlatformHandle
+        /// and add support for framebuffer (even if it's emulated one) via IFramebufferPlatformSurface.
+        /// If you have some rendering platform that's tied to your particular windowing platform,
+        /// just expose some toolkit-specific object (e. g. Func&lt;Gdk.Drawable&gt; in case of GTK#+Cairo)
+        /// </remarks>
         IEnumerable<object> Surfaces { get; }
 
         /// <summary>
