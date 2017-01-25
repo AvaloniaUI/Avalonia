@@ -10,6 +10,7 @@ using Avalonia.Gtk3.Interop;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Platform;
+using Avalonia.Rendering;
 
 namespace Avalonia.Gtk3
 {
@@ -35,6 +36,7 @@ namespace Avalonia.Gtk3
                 .Bind<IPlatformSettings>().ToConstant(Instance)
                 .Bind<IPlatformThreadingInterface>().ToConstant(Instance)
                 .Bind<ISystemDialogImpl>().ToSingleton<SystemDialogStub>()
+                .Bind<IRenderLoop>().ToConstant(new DefaultRenderLoop(60))
                 .Bind<IPlatformIconLoader>().ToConstant(new PlatformIconLoaderStub());
 
         }
@@ -67,11 +69,28 @@ namespace Avalonia.Gtk3
 
         public IDisposable StartTimer(TimeSpan interval, Action tick)
         {
-            return null;
+            return GlibTimeout.StarTimer((uint) interval.TotalMilliseconds, tick);
         }
+
+        private bool _signaled = false;
+        object _lock = new object();
 
         public void Signal()
         {
+            lock(_lock)
+                if (!_signaled)
+                {
+                    _signaled = true;
+                    GlibTimeout.Add(0, () =>
+                    {
+                        lock (_lock)
+                        {
+                            _signaled = false;
+                        }
+                        Signaled?.Invoke();
+                        return false;
+                    });
+                }
         }
         public event Action Signaled;
 

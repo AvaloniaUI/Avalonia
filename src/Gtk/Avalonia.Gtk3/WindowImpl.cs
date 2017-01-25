@@ -11,7 +11,7 @@ namespace Avalonia.Gtk3
         public void SetTitle(string title)
         {
             using (var t = new Utf8Buffer(title))
-                Native.GtkWindowSetTitle(_gtkWidget, t);
+                Native.GtkWindowSetTitle(GtkWidget, t);
         }
 
         public IDisposable ShowDialog()
@@ -20,7 +20,7 @@ namespace Avalonia.Gtk3
             //STUB
         }
 
-        public void SetSystemDecorations(bool enabled) => Native.GtkWindowSetDecorated(_gtkWidget, enabled);
+        public void SetSystemDecorations(bool enabled) => Native.GtkWindowSetDecorated(GtkWidget, enabled);
 
         public void SetIcon(IWindowIconImpl icon)
         {
@@ -36,13 +36,15 @@ namespace Avalonia.Gtk3
             get
             {
                 int w, h;
-                Native.GtkWindowGetSize(_gtkWidget, out w, out h);
+                Native.GtkWindowGetSize(GtkWidget, out w, out h);
                 return new Size(w, h);
             }
-            set
-            {
-                //STUB
-            }
+            set { Native.GtkWindowResize(GtkWidget, (int) value.Width, (int) value.Height); }
+        }
+
+        public void SetCoverTaskbarWhenMaximized(bool enable)
+        {
+            //Why do we even have that?
         }
     }
 }

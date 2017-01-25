@@ -130,6 +130,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ControlCatalog", "samples\ControlCatalog\ControlCatalog.csproj", "{D0A739B9-3C68-4BA6-A328-41606954B6BD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ControlCatalog.Desktop", "samples\ControlCatalog.Desktop\ControlCatalog.Desktop.csproj", "{2B888490-D14A-4BCA-AB4B-48676FA93C9B}"
+	ProjectSection(ProjectDependencies) = postProject
+		{BB1F7BB5-6AD4-4776-94D9-C09D0A972658} = {BB1F7BB5-6AD4-4776-94D9-C09D0A972658}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ControlCatalog.iOS", "samples\ControlCatalog.iOS\ControlCatalog.iOS.csproj", "{57E0455D-D565-44BB-B069-EE1AA20F8337}"
 EndProject

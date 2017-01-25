@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using Avalonia.Controls;
 using Avalonia.Gtk3.Interop;
 using Avalonia.Input;
@@ -9,44 +11,69 @@ namespace Avalonia.Gtk3
 {
     abstract class TopLevelImpl : ITopLevelImpl, IPlatformHandle
     {
-        protected readonly IntPtr _gtkWidget;
+        protected readonly IntPtr GtkWidget;
         private IInputRoot _inputRoot;
+        protected readonly List<IDisposable> _disposables = new List<IDisposable>();
 
         public TopLevelImpl(IntPtr gtkWidget)
         {
-            _gtkWidget = gtkWidget;
+            GtkWidget = gtkWidget;
+            Native.GtkWidgetSetEvents(gtkWidget, uint.MaxValue);
             Native.GtkWidgetRealize(gtkWidget);
-            Native.GtkWidgetSetDoubleBuffered(gtkWidget, false);
-            Signal.Connect<Native.D.signal_widget_draw>(_gtkWidget, "draw", OnDraw);
+            Connect<Native.D.signal_widget_draw>("draw", OnDraw);
+            Connect<Native.D.signal_onevent>("configure-event", OnConfigured);
         }
+
+        private bool OnConfigured(IntPtr gtkwidget, IntPtr ev, IntPtr userdata)
+        {
+            Debug.WriteLine("Configured");
+            Resized?.Invoke(ClientSize);
+            return false;
+        }
+
+
+        void Connect<T>(string name, T handler) => _disposables.Add(Signal.Connect<T>(GtkWidget, name, handler));
 
         private bool OnDraw(IntPtr gtkwidget, IntPtr cairocontext, IntPtr userdata)
         {
+            Debug.WriteLine("Draw");
             Paint?.Invoke(new Rect(ClientSize));
             return true;
         }
 
         public void Dispose()
         {
-            //STUB
+            foreach(var d in _disposables)
+                d.Dispose();
+            _disposables.Clear();
+            //TODO
         }
 
         public abstract Size ClientSize { get; set; }
 
-        public Size MaxClientSize => new Size(1024, 768); //STUB
+        public Size MaxClientSize
+        {
+            get
+            {
+                var s = Native.GtkWidgetGetScreen(GtkWidget);
+                return new Size(Native.GdkScreenGetWidth(s), Native.GdkScreenGetHeight(s));
+            }
+        }
+
+
         public double Scaling => 1; //TODO: Implement scaling
         public IPlatformHandle Handle => this;
 
         string IPlatformHandle.HandleDescriptor => "HWND";
 
-        public Action Activated { get; set; }
-        public Action Closed { get; set; }
-        public Action Deactivated { get; set; }
-        public Action<RawInputEventArgs> Input { get; set; }
+        public Action Activated { get; set; } //TODO
+        public Action Closed { get; set; } //TODO
+        public Action Deactivated { get; set; } //TODO
+        public Action<RawInputEventArgs> Input { get; set; } //TODO
         public Action<Rect> Paint { get; set; }
-        public Action<Size> Resized { get; set; }
-        public Action<double> ScalingChanged { get; set; }
-        public Action<Point> PositionChanged { get; set; }
+        public Action<Size> Resized { get; set; } //TODO
+        public Action<double> ScalingChanged { get; set; } //TODO
+        public Action<Point> PositionChanged { get; set; } //TODO
         public void Activate()
         {
             throw new NotImplementedException();
@@ -54,7 +81,7 @@ namespace Avalonia.Gtk3
 
         public void Invalidate(Rect rect)
         {
-            throw new NotImplementedException();
+            Native.GtkWidgetQueueDrawArea(GtkWidget, (int)rect.X, (int)rect.Y, (int)rect.Width, (int)rect.Height);
         }
 
         public void SetInputRoot(IInputRoot inputRoot) => _inputRoot = inputRoot;
@@ -74,9 +101,9 @@ namespace Avalonia.Gtk3
             //STUB
         }
 
-        public void Show() => Native.GtkWindowPresent(_gtkWidget);
+        public void Show() => Native.GtkWindowPresent(GtkWidget);
 
-        public void Hide() => Native.GtkWidgetHide(_gtkWidget);
+        public void Hide() => Native.GtkWidgetHide(GtkWidget);
 
         public void BeginMoveDrag()
         {
@@ -90,6 +117,7 @@ namespace Avalonia.Gtk3
 
         public Point Position { get; set; }
 
-        IntPtr IPlatformHandle.Handle => Native.GetNativeGdkWindowHandle(Native.GtkWidgetGetWindow(_gtkWidget));
+        IntPtr IPlatformHandle.Handle => Native.GetNativeGdkWindowHandle(Native.GtkWidgetGetWindow(GtkWidget));
+        public IEnumerable<object> Surfaces => new object[] {Handle};
     }
 }

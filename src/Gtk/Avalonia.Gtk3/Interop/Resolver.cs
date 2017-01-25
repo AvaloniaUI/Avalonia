@@ -84,13 +84,14 @@ namespace Avalonia.Gtk3.Interop
                 fieldInfo.SetValue(null, Marshal.GetDelegateForFunctionPointer(funcPtr, fieldInfo.FieldType));
             }
 
-            var nativeHandleNames = new[] {"gdk_x11_window_get_xid", "gdk_win32_window_get_handle"};
+            var nativeHandleNames = new[] { "gdk_win32_window_get_handle", "gdk_x11_window_get_xid", "gdk_quartz_window_get_nswindow" };
             foreach (var name in nativeHandleNames)
             {
                 try
                 {
                     Native.GetNativeGdkWindowHandle = (Native.D.gdk_get_native_handle)Marshal
                         .GetDelegateForFunctionPointer(loader.GetProcAddress(gdk, name), typeof(Native.D.gdk_get_native_handle));
+                    break;
                 }
                 catch { }
             }
