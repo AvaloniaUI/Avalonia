@@ -36,11 +36,6 @@ namespace Avalonia.Platform
         void SetSystemDecorations(bool enabled);
 
         /// <summary>
-        /// When system decorations are disabled sets if the maximized state covers the entire screen or just the working area.
-        /// </summary>        
-        void SetCoverTaskbarWhenMaximized(bool enable);
-
-        /// <summary>
         /// Sets the icon of this window.
         /// </summary>
         void SetIcon(IWindowIconImpl icon);
