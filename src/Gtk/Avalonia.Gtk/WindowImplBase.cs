@@ -125,6 +125,13 @@ namespace Avalonia.Gtk
 
         public Action<double> ScalingChanged { get; set; }
 
+        public IEnumerable<object> Surfaces => new object[]
+        {
+            Handle,
+            new Func<Gdk.Drawable>(() => CurrentDrawable),
+            _framebuffer
+        };
+
         public IPopupImpl CreatePopup()
         {
             return new PopupImpl();
@@ -316,12 +323,5 @@ namespace Avalonia.Gtk
             _window.Dispose();
             _window = null;
         }
-
-        public IEnumerable<object> Surfaces => new object[]
-        {
-            Handle, 
-            new Func<Gdk.Drawable>(() => CurrentDrawable),
-            _framebuffer
-        };
     }
 }
