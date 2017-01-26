@@ -3,15 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Reactive.Disposables;
-using System.Runtime.InteropServices;
-using Gdk;
-using Avalonia.Controls;
-using Avalonia.Controls.Platform.Surfaces;
+using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
-using Avalonia.Input;
-using Avalonia.Threading;
+using Gdk;
 using Action = System.Action;
 using WindowEdge = Avalonia.Controls.WindowEdge;
 
@@ -23,8 +18,6 @@ namespace Avalonia.Gtk
     {
         private IInputRoot _inputRoot;
         protected Gtk.Widget _window;
-        public Gtk.Widget Widget => _window;
-        public Gdk.Drawable CurrentDrawable { get; private set; }
         private FramebufferManager _framebuffer;
 
         private Gtk.IMContext _imContext;
@@ -60,6 +53,8 @@ namespace Avalonia.Gtk
         }
 
         public IPlatformHandle Handle { get; private set; }
+        public Gtk.Widget Widget => _window;
+        public Gdk.Drawable CurrentDrawable { get; private set; }
 
         void OnRealized (object sender, EventArgs eventArgs)
         {

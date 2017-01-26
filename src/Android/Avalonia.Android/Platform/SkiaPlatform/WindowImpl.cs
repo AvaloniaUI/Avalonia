@@ -96,6 +96,8 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         IPlatformHandle ITopLevelImpl.Handle => this;
 
+        public IEnumerable<object> Surfaces => new object[] { this };
+
         public void Activate()
         {
         }
@@ -194,7 +196,5 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         {
             // No window icons for mobile platforms
         }
-
-        public IEnumerable<object> Surfaces => new object[] {this};
-    }
+            }
 }

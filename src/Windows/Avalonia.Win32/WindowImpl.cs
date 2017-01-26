@@ -38,6 +38,7 @@ namespace Avalonia.Win32
         private double _scaling = 1;
         private WindowState _showWindowState;
         private FramebufferManager _framebuffer;
+
         public WindowImpl()
         {
             CreateWindow();
@@ -163,6 +164,11 @@ namespace Avalonia.Win32
                 }
             }
         }
+
+        public IEnumerable<object> Surfaces => new object[]
+        {
+            Handle, _framebuffer
+        };
 
         public void Activate()
         {
@@ -764,10 +770,5 @@ namespace Avalonia.Win32
                 ShowWindow(WindowState.Maximized);
             }
         }
-
-        public IEnumerable<object> Surfaces => new object[]
-        {
-            Handle, _framebuffer 
-        };
     }
 }

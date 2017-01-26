@@ -55,8 +55,6 @@ namespace Avalonia.Skia
             return new Renderer(root, renderLoop);
         }
 
-        
-
         public IRenderTargetBitmapImpl CreateRenderTargetBitmap(int width, int height)
         {
             if (width < 1)
