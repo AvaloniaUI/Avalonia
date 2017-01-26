@@ -80,6 +80,33 @@ namespace Avalonia.Gtk3.Interop
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
             public delegate void gtk_window_move(IntPtr gtkWindow, int x, int y);
 
+
+
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Cairo)]
+            public delegate IntPtr cairo_image_surface_create(int format, int width, int height);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Cairo)]
+            public delegate IntPtr cairo_image_surface_get_data(IntPtr surface);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Cairo)]
+            public delegate int cairo_image_surface_get_stride(IntPtr surface);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Cairo)]
+            public delegate void cairo_surface_mark_dirty(IntPtr surface);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Cairo)]
+            public delegate void cairo_surface_flush(IntPtr surface);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Cairo)]
+            public delegate void cairo_surface_destroy(IntPtr surface);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Cairo)]
+            public delegate void cairo_set_source_surface(IntPtr cr, IntPtr surface, double x, double y);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Cairo)]
+            public delegate void cairo_paint(IntPtr context);
+
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
             public delegate void gtk_widget_queue_draw_area(IntPtr gtkWindow, int x, int y, int width, int height);
 
@@ -130,7 +157,14 @@ namespace Avalonia.Gtk3.Interop
         public static D.gdk_screen_get_width GdkScreenGetWidth;
         public static D.gdk_window_get_origin GdkWindowGetOrigin;
 
-
+        public static D.cairo_image_surface_create CairoImageSurfaceCreate;
+        public static D.cairo_image_surface_get_data CairoImageSurfaceGetData;
+        public static D.cairo_image_surface_get_stride CairoImageSurfaceGetStride;
+        public static D.cairo_surface_mark_dirty CairoSurfaceMarkDirty;
+        public static D.cairo_surface_flush CairoSurfaceFlush;
+        public static D.cairo_surface_destroy CairoSurfaceDestroy;
+        public static D.cairo_set_source_surface CairoSetSourceSurface;
+        public static D.cairo_paint CairoPaint;
     }
 
     public enum GtkWindowType

@@ -18,7 +18,7 @@ namespace ControlCatalog
             // TODO: Make this work with GTK/Skia/Cairo depending on command-line args
             // again.
             AppBuilder.Configure<App>()
-                .UseDirect2D1()
+                .UseSkia()
                 .UseGtk3()
                 .Start<MainWindow>();
         }

@@ -104,7 +104,11 @@ namespace Avalonia.Gtk3
 
     public static class Gtk3AppBuilderExtensions
     {
-        public static T UseGtk3<T>(this AppBuilderBase<T> builder) where T : AppBuilderBase<T>, new()
-        => builder.UseWindowingSubsystem(Gtk3Platform.Initialize, "GTK3");
+        public static T UseGtk3<T>(this AppBuilderBase<T> builder, ICustomGtk3NativeLibraryResolver resolver = null) 
+            where T : AppBuilderBase<T>, new()
+        {
+            Resolver.Custom = resolver;
+            return builder.UseWindowingSubsystem(Gtk3Platform.Initialize, "GTK3");
+        }
     }
 }

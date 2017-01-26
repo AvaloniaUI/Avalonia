@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
 /*
@@ -11,7 +12,7 @@ namespace Avalonia.Gtk3.Interop
 {
     internal interface IDynLoader
     {
-        IntPtr LoadLibrary(string basePath, string dll);
+        IntPtr LoadLibrary(string dll);
         IntPtr GetProcAddress(IntPtr dll, string proc);
 
     }
@@ -21,7 +22,6 @@ namespace Avalonia.Gtk3.Interop
         // ReSharper disable InconsistentNaming
         static class LinuxImports
         {
-            
             [DllImport("libdl.so.2")]
             private static extern IntPtr dlopen(string path, int flags);
 
@@ -36,7 +36,6 @@ namespace Avalonia.Gtk3.Interop
                 DlOpen = dlopen;
                 DlSym = dlsym;
                 DlError = dlerror;
-                Postfix = ".so.0";
             }
         }
         static class OsXImports
@@ -57,7 +56,6 @@ namespace Avalonia.Gtk3.Interop
                 DlOpen = dlopen;
                 DlSym = dlsym;
                 DlError = dlerror;
-                Postfix = ".dylib"; //TODO
             }
             
         }
@@ -65,8 +63,6 @@ namespace Avalonia.Gtk3.Interop
 
         [DllImport("libc")]
         static extern int uname(IntPtr buf);
-
-        
 
         static UnixLoader()
         {
@@ -83,20 +79,12 @@ namespace Avalonia.Gtk3.Interop
         private static Func<string, int, IntPtr> DlOpen;
         private static Func<IntPtr, string, IntPtr> DlSym;
         private static Func<IntPtr> DlError;
-        private static string Postfix;
         // ReSharper restore InconsistentNaming
 
-        static string DlErrorString()
-        {
-            
-            return Marshal.PtrToStringAnsi(DlError());
-        }
+        static string DlErrorString() => Marshal.PtrToStringAnsi(DlError());
 
-        public IntPtr LoadLibrary(string basePath, string dll)
+        public IntPtr LoadLibrary(string dll)
         {
-            dll += Postfix;
-            if (basePath != null)
-                dll = System.IO.Path.Combine(basePath, dll);
             var handle = DlOpen(dll, 1);
             if (handle == IntPtr.Zero)
                 throw new NativeException(DlErrorString());
@@ -120,15 +108,14 @@ namespace Avalonia.Gtk3.Interop
         [DllImport("kernel32", EntryPoint = "LoadLibraryW", SetLastError = true, CharSet = CharSet.Unicode)]
         private static extern IntPtr LoadLibrary(string lpszLib);
 
-        IntPtr IDynLoader.LoadLibrary(string basePath, string dll)
+        IntPtr IDynLoader.LoadLibrary(string dll)
         {
-            dll += "-0.dll";
-            if (basePath != null)
-                dll = System.IO.Path.Combine(basePath, dll);
             var handle = LoadLibrary(dll);
-            if (handle == IntPtr.Zero)
-                throw new NativeException("Error " + Marshal.GetLastWin32Error());
-            return handle;
+            if (handle != IntPtr.Zero)
+                return handle;
+            var err = Marshal.GetLastWin32Error();
+
+            throw new NativeException("Error loading " + dll + " error " + err);
         }
 
         IntPtr IDynLoader.GetProcAddress(IntPtr dll, string proc)

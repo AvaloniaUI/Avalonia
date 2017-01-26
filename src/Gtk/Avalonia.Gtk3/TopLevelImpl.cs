@@ -13,11 +13,13 @@ namespace Avalonia.Gtk3
     {
         protected readonly IntPtr GtkWidget;
         private IInputRoot _inputRoot;
+        private readonly FramebufferManager _framebuffer;
         protected readonly List<IDisposable> _disposables = new List<IDisposable>();
 
         public TopLevelImpl(IntPtr gtkWidget)
         {
             GtkWidget = gtkWidget;
+            _framebuffer = new FramebufferManager(this);
             Native.GtkWidgetSetEvents(gtkWidget, uint.MaxValue);
             Native.GtkWidgetRealize(gtkWidget);
             Connect<Native.D.signal_widget_draw>("draw", OnDraw);
@@ -126,9 +128,13 @@ namespace Avalonia.Gtk3
 
         void Connect<T>(string name, T handler) => _disposables.Add(Signal.Connect<T>(GtkWidget, name, handler));
 
+        internal IntPtr CurrentCairoContext { get; private set; }
+
         private bool OnDraw(IntPtr gtkwidget, IntPtr cairocontext, IntPtr userdata)
         {
+            CurrentCairoContext = cairocontext;
             Paint?.Invoke(new Rect(ClientSize));
+            CurrentCairoContext = IntPtr.Zero;
             return true;
         }
 
@@ -234,6 +240,6 @@ namespace Avalonia.Gtk3
         }
 
         IntPtr IPlatformHandle.Handle => Native.GetNativeGdkWindowHandle(Native.GtkWidgetGetWindow(GtkWidget));
-        public IEnumerable<object> Surfaces => new object[] {Handle};
+        public IEnumerable<object> Surfaces => new object[] {Handle, _framebuffer};
     }
 }
