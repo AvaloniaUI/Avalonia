@@ -24,6 +24,8 @@ namespace Avalonia.Gtk3
             Connect<Native.D.signal_onevent>("configure-event", OnConfigured);
             Connect<Native.D.signal_onevent>("button-press-event", OnButton);
             Connect<Native.D.signal_onevent>("button-release-event", OnButton);
+            Connect<Native.D.signal_onevent>("motion-notify-event", OnMotion);
+            Connect<Native.D.signal_onevent>("scroll-event", OnScroll);
         }
 
         private Size _lastSize;
@@ -82,6 +84,43 @@ namespace Avalonia.Gtk3
                         : evnt->button == 3 ? RawMouseEventType.RightButtonDown : RawMouseEventType.MiddleButtonDown,
                 new Point(evnt->x, evnt->y), GetModifierKeys(evnt->state));
             Input?.Invoke(e);
+            return false;
+        }
+
+        private unsafe bool OnMotion(IntPtr w, IntPtr ev, IntPtr userdata)
+        {
+            var evnt = (GdkEventMotion*)ev;
+            var position = new Point(evnt->x, evnt->y);
+            
+
+            var e = new RawMouseEventArgs(
+                Gtk3Platform.Mouse,
+                evnt->time,
+                _inputRoot,
+                RawMouseEventType.Move,
+                position, GetModifierKeys(evnt->state));
+            Input(e);
+            return false;
+        }
+        private unsafe bool OnScroll(IntPtr w, IntPtr ev, IntPtr userdata)
+        {
+            var evnt = (GdkEventScroll*)ev;
+            var delta = new Vector();
+            var step = (double) 1;
+            if (evnt->direction == GdkScrollDirection.Down)
+                delta = new Vector(0, -step);
+            else if (evnt->direction == GdkScrollDirection.Up)
+                delta = new Vector(0, step);
+            else if (evnt->direction == GdkScrollDirection.Right)
+                delta = new Vector(-step, 0);
+            else if (evnt->direction == GdkScrollDirection.Left)
+                delta = new Vector(step, 0);
+            else if (evnt->direction == GdkScrollDirection.Smooth)
+                delta = new Vector(evnt->delta_x, evnt->delta_y);
+
+            var e = new RawMouseWheelEventArgs(Gtk3Platform.Mouse, evnt->time, _inputRoot,
+                new Point(evnt->x, evnt->y), delta, GetModifierKeys(evnt->state));
+            Input(e);
             return false;
         }
 

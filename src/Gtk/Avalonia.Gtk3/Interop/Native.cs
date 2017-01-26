@@ -5,8 +5,10 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using gint8 = System.Byte;
+using gint16 = System.Int16;
 using gint32 = System.Int32;
 using gint = System.Int32;
+using guint16 = System.UInt16;
 using guint32 = System.UInt32;
 using guint = System.UInt32;
 using gdouble = System.Double;
@@ -195,7 +197,7 @@ namespace Avalonia.Gtk3.Interop
         GrabBroken = 35,
     }
 
-    public enum GdkModifierType
+    enum GdkModifierType
     {
         ShiftMask = 1,
         LockMask = 2,
@@ -218,6 +220,15 @@ namespace Avalonia.Gtk3.Interop
         None = 0,
     }
 
+    enum GdkScrollDirection
+    {
+        Up,
+        Down,
+        Left,
+        Right,
+        Smooth
+    }
+
     [StructLayout(LayoutKind.Sequential)]
     unsafe struct GdkEventButton
     {
@@ -232,5 +243,38 @@ namespace Avalonia.Gtk3.Interop
         public guint button;
         public IntPtr device;
         public gdouble x_root, y_root;
-    };
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    unsafe struct GdkEventMotion
+    {
+        public GdkEventType type;
+        public IntPtr window;
+        public gint8 send_event;
+        public guint32 time;
+        public gdouble x;
+        public gdouble y;
+        public gdouble* axes;
+        public GdkModifierType state;
+        public gint16 is_hint;
+        public IntPtr device;
+        public gdouble x_root, y_root;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    unsafe  struct GdkEventScroll
+    {
+        public GdkEventType type;
+        public IntPtr window;
+        public gint8 send_event;
+        public guint32 time;
+        public gdouble x;
+        public gdouble y;
+        public GdkModifierType state;
+        public GdkScrollDirection direction;
+        public IntPtr device;
+        public gdouble x_root, y_root;
+        public gdouble delta_x;
+        public gdouble delta_y;
+    }
 }
