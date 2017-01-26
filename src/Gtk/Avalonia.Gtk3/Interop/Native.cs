@@ -4,6 +4,12 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using gint8 = System.Byte;
+using gint32 = System.Int32;
+using gint = System.Int32;
+using guint32 = System.UInt32;
+using guint = System.UInt32;
+using gdouble = System.Double;
 
 namespace Avalonia.Gtk3.Interop
 {
@@ -48,6 +54,9 @@ namespace Avalonia.Gtk3.Interop
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
             public delegate int gdk_screen_get_width(IntPtr screen);
 
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
+            public delegate int gdk_window_get_origin(IntPtr gdkWindow, out int x, out int y);
+
 
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
@@ -64,6 +73,10 @@ namespace Avalonia.Gtk3.Interop
             public delegate void gtk_window_get_size(IntPtr gtkWindow, out int width, out int height);
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
             public delegate void gtk_window_resize(IntPtr gtkWindow, int width, int height);
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
+            public delegate void gtk_window_get_position(IntPtr gtkWindow, out int x, out int y);
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
+            public delegate void gtk_window_move(IntPtr gtkWindow, int x, int y);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
             public delegate void gtk_widget_queue_draw_area(IntPtr gtkWindow, int x, int y, int width, int height);
@@ -102,6 +115,8 @@ namespace Avalonia.Gtk3.Interop
         public static D.gtk_widget_realize GtkWidgetRealize;
         public static D.gtk_window_get_size GtkWindowGetSize;
         public static D.gtk_window_resize GtkWindowResize;
+        public static D.gtk_window_get_position GtkWindowGetPosition;
+        public static D.gtk_window_move GtkWindowMove;
         public static D.g_signal_connect_object GSignalConnectObject;
         public static D.g_signal_handler_disconnect GSignalHandlerDisconnect;
         public static D.g_timeout_add GTimeoutAdd;
@@ -111,6 +126,7 @@ namespace Avalonia.Gtk3.Interop
         public static D.gtk_widget_queue_draw_area GtkWidgetQueueDrawArea;
         public static D.gdk_screen_get_height GdkScreenGetHeight;
         public static D.gdk_screen_get_width GdkScreenGetWidth;
+        public static D.gdk_window_get_origin GdkWindowGetOrigin;
 
 
     }
@@ -137,4 +153,84 @@ namespace Avalonia.Gtk3.Interop
             };
         }
     }
+
+    enum GdkEventType
+    {
+        Nothing = -1,
+        Delete = 0,
+        Destroy = 1,
+        Expose = 2,
+        MotionNotify = 3,
+        ButtonPress = 4,
+        TwoButtonPress = 5,
+        ThreeButtonPress = 6,
+        ButtonRelease = 7,
+        KeyPress = 8,
+        KeyRelease = 9,
+        EnterNotify = 10,
+        LeaveNotify = 11,
+        FocusChange = 12,
+        Configure = 13,
+        Map = 14,
+        Unmap = 15,
+        PropertyNotify = 16,
+        SelectionClear = 17,
+        SelectionRequest = 18,
+        SelectionNotify = 19,
+        ProximityIn = 20,
+        ProximityOut = 21,
+        DragEnter = 22,
+        DragLeave = 23,
+        DragMotion = 24,
+        DragStatus = 25,
+        DropStart = 26,
+        DropFinished = 27,
+        ClientEvent = 28,
+        VisibilityNotify = 29,
+        NoExpose = 30,
+        Scroll = 31,
+        WindowState = 32,
+        Setting = 33,
+        OwnerChange = 34,
+        GrabBroken = 35,
+    }
+
+    public enum GdkModifierType
+    {
+        ShiftMask = 1,
+        LockMask = 2,
+        ControlMask = 4,
+        Mod1Mask = 8,
+        Mod2Mask = 16,
+        Mod3Mask = 32,
+        Mod4Mask = 64,
+        Mod5Mask = 128,
+        Button1Mask = 256,
+        Button2Mask = 512,
+        Button3Mask = 1024,
+        Button4Mask = 2048,
+        Button5Mask = 4096,
+        SuperMask = 67108864,
+        HyperMask = 134217728,
+        MetaMask = 268435456,
+        ReleaseMask = 1073741824,
+        ModifierMask = ReleaseMask | Button5Mask | Button4Mask | Button3Mask | Button2Mask | Button1Mask | Mod5Mask | Mod4Mask | Mod3Mask | Mod2Mask | Mod1Mask | ControlMask | LockMask | ShiftMask,
+        None = 0,
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    unsafe struct GdkEventButton
+    {
+        public GdkEventType type;
+        public IntPtr window;
+        public gint8 send_event;
+        public guint32 time;
+        public gdouble x;
+        public gdouble y;
+        public gdouble* axes;
+        public GdkModifierType state;
+        public guint button;
+        public IntPtr device;
+        public gdouble x_root, y_root;
+    };
 }

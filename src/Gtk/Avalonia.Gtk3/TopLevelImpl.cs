@@ -22,21 +22,73 @@ namespace Avalonia.Gtk3
             Native.GtkWidgetRealize(gtkWidget);
             Connect<Native.D.signal_widget_draw>("draw", OnDraw);
             Connect<Native.D.signal_onevent>("configure-event", OnConfigured);
+            Connect<Native.D.signal_onevent>("button-press-event", OnButton);
+            Connect<Native.D.signal_onevent>("button-release-event", OnButton);
         }
+
+        private Size _lastSize;
+        private Point _lastPosition;
 
         private bool OnConfigured(IntPtr gtkwidget, IntPtr ev, IntPtr userdata)
         {
-            Debug.WriteLine("Configured");
-            Resized?.Invoke(ClientSize);
+            var size = ClientSize;
+            if (_lastSize != size)
+            {
+                _lastSize = size;
+                Resized?.Invoke(size);
+            }
+            var pos = Position;
+            if (_lastPosition != pos)
+            {
+                _lastPosition = pos;
+                PositionChanged?.Invoke(pos);
+            }
+
             return false;
         }
 
+
+        private static InputModifiers GetModifierKeys(GdkModifierType state)
+        {
+            var rv = InputModifiers.None;
+            if (state.HasFlag(GdkModifierType.ControlMask))
+                rv |= InputModifiers.Control;
+            if (state.HasFlag(GdkModifierType.ShiftMask))
+                rv |= InputModifiers.Shift;
+            if (state.HasFlag(GdkModifierType.Mod1Mask))
+                rv |= InputModifiers.Control;
+            if (state.HasFlag(GdkModifierType.Button1Mask))
+                rv |= InputModifiers.LeftMouseButton;
+            if (state.HasFlag(GdkModifierType.Button2Mask))
+                rv |= InputModifiers.RightMouseButton;
+            if (state.HasFlag(GdkModifierType.Button3Mask))
+                rv |= InputModifiers.MiddleMouseButton;
+            return rv;
+        }
+
+        private unsafe bool OnButton(IntPtr w, IntPtr ev, IntPtr userdata)
+        {
+            var evnt = (GdkEventButton*)ev;
+            var e = new RawMouseEventArgs(
+                Gtk3Platform.Mouse,
+                evnt->time,
+                _inputRoot,
+                evnt->type == GdkEventType.ButtonRelease
+                    ? evnt->button == 1
+                        ? RawMouseEventType.LeftButtonUp
+                        : evnt->button == 3 ? RawMouseEventType.RightButtonUp : RawMouseEventType.MiddleButtonUp
+                    : evnt->button == 1
+                        ? RawMouseEventType.LeftButtonDown
+                        : evnt->button == 3 ? RawMouseEventType.RightButtonDown : RawMouseEventType.MiddleButtonDown,
+                new Point(evnt->x, evnt->y), GetModifierKeys(evnt->state));
+            Input?.Invoke(e);
+            return false;
+        }
 
         void Connect<T>(string name, T handler) => _disposables.Add(Signal.Connect<T>(GtkWidget, name, handler));
 
         private bool OnDraw(IntPtr gtkwidget, IntPtr cairocontext, IntPtr userdata)
         {
-            Debug.WriteLine("Draw");
             Paint?.Invoke(new Rect(ClientSize));
             return true;
         }
@@ -48,8 +100,6 @@ namespace Avalonia.Gtk3
             _disposables.Clear();
             //TODO
         }
-
-        public abstract Size ClientSize { get; set; }
 
         public Size MaxClientSize
         {
@@ -71,9 +121,10 @@ namespace Avalonia.Gtk3
         public Action Deactivated { get; set; } //TODO
         public Action<RawInputEventArgs> Input { get; set; } //TODO
         public Action<Rect> Paint { get; set; }
-        public Action<Size> Resized { get; set; } //TODO
+        public Action<Size> Resized { get; set; }
         public Action<double> ScalingChanged { get; set; } //TODO
-        public Action<Point> PositionChanged { get; set; } //TODO
+        public Action<Point> PositionChanged { get; set; }
+
         public void Activate()
         {
             throw new NotImplementedException();
@@ -88,12 +139,17 @@ namespace Avalonia.Gtk3
 
         public Point PointToClient(Point point)
         {
-            throw new NotImplementedException();
+            int x, y;
+            Native.GdkWindowGetOrigin(Native.GtkWidgetGetWindow(GtkWidget), out x, out y);
+
+            return new Point(point.X - x, point.Y - y);
         }
 
         public Point PointToScreen(Point point)
         {
-            throw new NotImplementedException();
+            int x, y;
+            Native.GdkWindowGetOrigin(Native.GtkWidgetGetWindow(GtkWidget), out x, out y);
+            return new Point(point.X + x, point.Y + y);
         }
 
         public void SetCursor(IPlatformHandle cursor)
@@ -115,7 +171,28 @@ namespace Avalonia.Gtk3
             //STUB
         }
 
-        public Point Position { get; set; }
+
+        public Size ClientSize
+        {
+            get
+            {
+                int w, h;
+                Native.GtkWindowGetSize(GtkWidget, out w, out h);
+                return new Size(w, h);
+            }
+            set { Native.GtkWindowResize(GtkWidget, (int)value.Width, (int)value.Height); }
+        }
+
+        public Point Position
+        {
+            get
+            {
+                int x, y;
+                Native.GtkWindowGetPosition(GtkWidget, out x, out y);
+                return new Point(x, y);
+            }
+            set { Native.GtkWindowMove(GtkWidget, (int)value.X, (int)value.Y); }
+        }
 
         IntPtr IPlatformHandle.Handle => Native.GetNativeGdkWindowHandle(Native.GtkWidgetGetWindow(GtkWidget));
         public IEnumerable<object> Surfaces => new object[] {Handle};

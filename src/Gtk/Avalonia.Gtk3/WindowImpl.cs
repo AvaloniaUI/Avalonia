@@ -31,17 +31,6 @@ namespace Avalonia.Gtk3
         {
         }
 
-        public override Size ClientSize
-        {
-            get
-            {
-                int w, h;
-                Native.GtkWindowGetSize(GtkWidget, out w, out h);
-                return new Size(w, h);
-            }
-            set { Native.GtkWindowResize(GtkWidget, (int) value.Width, (int) value.Height); }
-        }
-
         public void SetCoverTaskbarWhenMaximized(bool enable)
         {
             //Why do we even have that?
