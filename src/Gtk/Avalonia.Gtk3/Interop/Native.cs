@@ -20,7 +20,7 @@ namespace Avalonia.Gtk3.Interop
         public static class D
         {
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
-            public delegate IntPtr gtk_application_new([MarshalAs(UnmanagedType.AnsiBStr)] string appId, int flags);
+            public delegate IntPtr gtk_application_new(Utf8Buffer appId, int flags);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
             public delegate void gtk_main_iteration();
@@ -113,7 +113,7 @@ namespace Avalonia.Gtk3.Interop
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
             public delegate void gdk_window_invalidate_rect(IntPtr window, ref GdkRectangle rect, bool invalidate_children);
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gobject)]
-            public delegate ulong g_signal_connect_object(IntPtr instance, [MarshalAs(UnmanagedType.AnsiBStr)]string signal, IntPtr handler, IntPtr userData, int flags);
+            public delegate ulong g_signal_connect_object(IntPtr instance, Utf8Buffer signal, IntPtr handler, IntPtr userData, int flags);
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gobject)]
             public delegate ulong g_signal_handler_disconnect(IntPtr instance, ulong connectionId);
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Glib)]

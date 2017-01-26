@@ -24,7 +24,8 @@ namespace Avalonia.Gtk3
         {
             Resolver.Resolve();
             Native.GtkInit(0, IntPtr.Zero);
-            App = Native.GtkApplicationNew("avalonia.app." + Guid.NewGuid(), 0);
+            using (var utf = new Utf8Buffer("avalonia.app." + Guid.NewGuid()))
+                App = Native.GtkApplicationNew(utf, 0);
             //Mark current thread as UI thread
             s_tlsMarker = true;
 

@@ -36,10 +36,13 @@ namespace Avalonia.Gtk3.Interop
         {
             var handle = GCHandle.Alloc(handler);
             var ptr = Marshal.GetFunctionPointerForDelegate((Delegate)(object)handler);
-            var id = Native.GSignalConnectObject(obj, name, ptr, IntPtr.Zero, 0);
-            if (id == 0)
-                throw new ArgumentException("Unable to connect to signal " + name);
-            return new ConnectedSignal(obj, handle, id);
+            using (var utf = new Utf8Buffer(name))
+            {
+                var id = Native.GSignalConnectObject(obj, utf, ptr, IntPtr.Zero, 0);
+                if (id == 0)
+                    throw new ArgumentException("Unable to connect to signal " + name);
+                return new ConnectedSignal(obj, handle, id);
+            }
         }
     }
 }
