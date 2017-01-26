@@ -197,6 +197,7 @@ var SystemReactiveVersion = packageVersions["System.Reactive"].FirstOrDefault().
 var SkiaSharpVersion = packageVersions["SkiaSharp"].FirstOrDefault().Item1;
 var SharpDXVersion = packageVersions["SharpDX"].FirstOrDefault().Item1;
 var SharpDXDirect2D1Version = packageVersions["SharpDX.Direct2D1"].FirstOrDefault().Item1;
+var SharpDXDirect3D11Version = packageVersions["SharpDX.Direct3D11"].FirstOrDefault().Item1;
 var SharpDXDXGIVersion = packageVersions["SharpDX.DXGI"].FirstOrDefault().Item1;
 
 Information("Package: Serilog, version: {0}", SerilogVersion);
@@ -206,6 +207,7 @@ Information("Package: System.Reactive, version: {0}", SystemReactiveVersion);
 Information("Package: SkiaSharp, version: {0}", SkiaSharpVersion);
 Information("Package: SharpDX, version: {0}", SharpDXVersion);
 Information("Package: SharpDX.Direct2D1, version: {0}", SharpDXDirect2D1Version);
+Information("Package: SharpDX.Direct3D11, version: {0}", SharpDXDirect3D11Version);
 Information("Package: SharpDX.DXGI, version: {0}", SharpDXDXGIVersion);
 
 var SetNuGetNuspecCommonProperties = new Action<NuGetPackSettings> ((nuspec) => {
@@ -441,6 +443,7 @@ var nuspecNuGetSettingsDesktop = new []
             new NuSpecDependency() { Id = "Avalonia", Version = version },
             new NuSpecDependency() { Id = "SharpDX", Version = SharpDXVersion },
             new NuSpecDependency() { Id = "SharpDX.Direct2D1", Version = SharpDXDirect2D1Version },
+            new NuSpecDependency() { Id = "SharpDX.Direct3D11", Version = SharpDXDirect3D11Version },
             new NuSpecDependency() { Id = "SharpDX.DXGI", Version = SharpDXDXGIVersion }
         },
         Files = new []
