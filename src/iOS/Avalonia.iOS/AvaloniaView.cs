@@ -173,11 +173,6 @@ namespace Avalonia.iOS
             //Not supported
         }
 
-        public void SetCoverTaskbarWhenMaximized(bool enable)
-        {
-            //Not supported
-        }
-
         public override void TouchesEnded(NSSet touches, UIEvent evt)
         {
             var touch = touches.AnyObject as UITouch;

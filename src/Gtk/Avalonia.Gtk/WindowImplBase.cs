@@ -311,11 +311,6 @@ namespace Avalonia.Gtk
             args.RetVal = true;
         }
 
-        public void SetCoverTaskbarWhenMaximized(bool enable)
-        {
-            // No action neccesary on Gtk.
-        }
-
         public void Dispose()
         {
             _framebuffer.Dispose();
