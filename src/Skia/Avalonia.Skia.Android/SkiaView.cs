@@ -18,12 +18,12 @@ namespace Avalonia.Skia.Android
 {
     public abstract class SkiaView : SurfaceView, ISurfaceHolderCallback, IPlatformHandle
     {
-        private readonly Activity _context;
+        private readonly Context _context;
         bool _invalidateQueued;
         readonly object _lock = new object();
         private readonly Handler _handler;
 
-        public SkiaView(Activity context) : base(context)
+        public SkiaView(Context context) : base(context)
         {
             _context = context;
             Holder.AddCallback(this);

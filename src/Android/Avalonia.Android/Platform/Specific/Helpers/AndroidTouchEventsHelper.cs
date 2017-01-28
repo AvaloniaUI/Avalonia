@@ -8,7 +8,7 @@ using System;
 
 namespace Avalonia.Android.Platform.Specific.Helpers
 {
-    public class AndroidTouchEventsHelper<TView> : IDisposable where TView : View, IWindowImpl, IAndroidView
+    public class AndroidTouchEventsHelper<TView> : IDisposable where TView : View, ITopLevelImpl, IAndroidView
     {
         private TView _view;
         public bool HandleEvents { get; set; }

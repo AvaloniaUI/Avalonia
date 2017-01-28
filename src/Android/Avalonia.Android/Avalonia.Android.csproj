@@ -63,16 +63,15 @@
   <ItemGroup>
     <Compile Include="AndroidPlatform.cs" />
     <Compile Include="AndroidThreadingInterface.cs" />
+    <Compile Include="AvaloniaActivity.cs" />
+    <Compile Include="AvaloniaView.cs" />
     <Compile Include="PlatformIconLoader.cs" />
     <Compile Include="Platform\ClipboardImpl.cs" />
     <Compile Include="CursorFactory.cs" />
     <Compile Include="Platform\Input\AndroidKeyboardDevice.cs" />
     <Compile Include="Platform\Input\AndroidMouseDevice.cs" />
-    <Compile Include="Platform\SkiaPlatform\MainWindowImpl.cs" />
-    <Compile Include="Platform\SkiaPlatform\WindowImpl.cs" />
+    <Compile Include="Platform\SkiaPlatform\TopLevelImpl.cs" />
     <Compile Include="Platform\Specific\IAndroidView.cs" />
-    <Compile Include="Platform\Specific\IAndroidActivity.cs" />
-    <Compile Include="Platform\Specific\AvaloniaActivity.cs" />
     <Compile Include="Platform\Specific\Helpers\AndroidTouchEventsHelper.cs" />
     <Compile Include="Platform\Specific\Helpers\AndroidKeyboardEventsHelper.cs" />
     <Compile Include="Resources\Resource.Designer.cs" />
