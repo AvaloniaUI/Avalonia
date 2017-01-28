@@ -24,7 +24,11 @@ namespace Avalonia.Skia
         {
             PixelHeight = height;
             PixelWidth = width;
-            Bitmap = new SKBitmap(width, height, SKImageInfo.PlatformColorType, SKAlphaType.Premul);
+            var colorType = SKImageInfo.PlatformColorType;
+            var runtime = AvaloniaLocator.Current?.GetService<IRuntimePlatform>()?.GetRuntimeInfo();
+            if (runtime?.IsDesktop == true && runtime?.OperatingSystem == OperatingSystemType.Linux)
+                colorType = SKColorType.Bgra8888;
+            Bitmap = new SKBitmap(width, height, colorType, SKAlphaType.Premul);
         }
 
         public void Dispose()
