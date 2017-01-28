@@ -1,0 +1,9 @@
+﻿<SolutionConfiguration>
+  <Settings>
+    <AdditionalFilesToIncludeForSolution>
+      <Value>tests\TestFiles\**.*</Value>
+    </AdditionalFilesToIncludeForSolution>
+    <AllowParallelTestExecution>False</AllowParallelTestExecution>
+    <SolutionConfigured>True</SolutionConfigured>
+  </Settings>
+</SolutionConfiguration>
