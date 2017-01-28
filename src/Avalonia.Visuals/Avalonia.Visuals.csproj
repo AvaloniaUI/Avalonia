@@ -135,6 +135,7 @@
     <Compile Include="Rendering\SceneGraph\SceneLayers.cs" />
     <Compile Include="Rendering\SceneGraph\TextNode.cs" />
     <Compile Include="Rendering\SceneGraph\VisualNode.cs" />
+    <Compile Include="Rendering\Utilities\TileBrushCalculator.cs" />
     <Compile Include="Rendering\ZIndexComparer.cs" />
     <Compile Include="RenderTargetCorruptedException.cs" />
     <Compile Include="Size.cs" />

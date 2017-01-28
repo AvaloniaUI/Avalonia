@@ -332,11 +332,11 @@ namespace Avalonia.Direct2D1.Media
             }
             else if (imageBrush != null)
             {
-                return new TileBrushImpl(imageBrush, _renderTarget, destinationSize);
-            }
-            else if (visualBrush != null)
-            {
-                return new TileBrushImpl(visualBrush, _renderTarget, destinationSize);
+                return new ImageBrushImpl(
+                    imageBrush,
+                    _renderTarget,
+                    (BitmapImpl)imageBrush.Source.PlatformImpl,
+                    destinationSize);
             }
             else
             {

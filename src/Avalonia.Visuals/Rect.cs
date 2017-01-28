@@ -238,7 +238,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="rect">The rectangle to center.</param>
         /// <returns>The centered rectangle.</returns>
-        public Rect CenterIn(Rect rect)
+        public Rect CenterRect(Rect rect)
         {
             return new Rect(
                 _x + ((_width - rect._width) / 2),

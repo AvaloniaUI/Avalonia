@@ -88,7 +88,7 @@
     <Compile Include="Media\LinearGradientBrushImpl.cs" />
     <Compile Include="Media\AvaloniaTextRenderer.cs" />
     <Compile Include="Media\TransformedGeometryImpl.cs" />
-    <Compile Include="Media\TileBrushImpl.cs" />
+    <Compile Include="Media\ImageBrushImpl.cs" />
     <Compile Include="Media\SolidColorBrushImpl.cs" />
     <Compile Include="Media\StreamGeometryContextImpl.cs" />
     <Compile Include="Media\StreamGeometryImpl.cs" />

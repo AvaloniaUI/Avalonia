@@ -317,10 +317,6 @@ namespace Avalonia.Cairo.Media
             {
                 impl = new ImageBrushImpl(imageBrush, destinationSize);
             }
-            else if (visualBrush != null)
-            {
-                impl = new VisualBrushImpl(visualBrush, destinationSize);
-            }
             else
             {
                 impl = new SolidColorBrushImpl(null, opacityOverride);
