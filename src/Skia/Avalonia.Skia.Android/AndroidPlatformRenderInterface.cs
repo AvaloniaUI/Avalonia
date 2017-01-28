@@ -9,6 +9,7 @@ using Android.OS;
 using Android.Runtime;
 using Android.Views;
 using Android.Widget;
+using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Platform;
 
 namespace Avalonia.Skia
@@ -17,10 +18,10 @@ namespace Avalonia.Skia
     {
         public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)
         {
-            var surfaceView = surfaces?.OfType<SurfaceView>().FirstOrDefault();
-            if (surfaceView == null)
-                throw new ArgumentException("Avalonia.Skia.Android is only capable of drawing on SurfaceView");
-            return new WindowRenderTarget(surfaceView);
+            var fb = surfaces?.OfType<IFramebufferPlatformSurface>().FirstOrDefault();
+            if (fb == null)
+                throw new ArgumentException("Avalonia.Skia.Android is only capable of drawing on framebuffer");
+            return new FramebufferRenderTarget(fb);
         }
     }
 }

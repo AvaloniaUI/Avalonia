@@ -2,7 +2,7 @@ using System;
 using Android.App;
 using Android.Content.PM;
 using Android.OS;
-using Avalonia.Android.Platform.Specific;
+using Avalonia.Android;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Markup.Xaml;
@@ -17,36 +17,24 @@ namespace Avalonia.AndroidTestApplication
         Icon = "@drawable/icon",
         LaunchMode = LaunchMode.SingleInstance/*,
         ScreenOrientation = ScreenOrientation.Landscape*/)]
-    public class MainBaseActivity : AvaloniaActivity
+    public class MainBaseActivity : Activity
     {
-        public MainBaseActivity() : base(typeof (App))
-        {
-
-        }
-
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
-
-            App app;
-            if (Avalonia.Application.Current != null)
-                app = (App)Avalonia.Application.Current;
-            else
+            if (Avalonia.Application.Current == null)
             {
-                app = new App();
-                AppBuilder.Configure(app)
+                AppBuilder.Configure<App>()
                     .UseAndroid()
-                    .UseSkia()
                     .SetupWithoutStarting();
             }
-
-            app.Run();
+            SetContentView(new AvaloniaView(this) { Content = App.CreateSimpleWindow() });
         }
     }
 
     public class App : Application
     {
-        public void Run()
+        public override void Initialize()
         {
             Styles.Add(new DefaultTheme());
 
@@ -55,18 +43,14 @@ namespace Avalonia.AndroidTestApplication
                 new Uri("resm:Avalonia.Themes.Default.Accents.BaseLight.xaml?assembly=Avalonia.Themes.Default"));
             Styles.Add(baseLight);
 
-            var wnd = App.CreateSimpleWindow();
-            wnd.AttachDevTools();
 
-            Run(wnd);
         }
 
         // This provides a simple UI tree for testing input handling, drawing, etc
-        public static Window CreateSimpleWindow()
+        public static ContentControl CreateSimpleWindow()
         {
-            Window window = new Window
+            ContentControl window = new ContentControl()
             {
-                Title = "Avalonia Test Application",
                 Background = Brushes.Red,
                 Content = new StackPanel
                 {
