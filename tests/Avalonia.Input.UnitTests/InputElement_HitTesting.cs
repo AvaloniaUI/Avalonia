@@ -340,7 +340,7 @@ namespace Avalonia.Input.UnitTests
                 throw new NotImplementedException();
             }
 
-            public IRenderTarget CreateRenderTarget(IPlatformHandle handle)
+            public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)
             {
                 throw new NotImplementedException();
             }

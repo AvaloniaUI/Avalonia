@@ -569,6 +569,27 @@ namespace Avalonia.Win32.Interop
         }
 
         [StructLayout(LayoutKind.Sequential)]
+        public struct BITMAPINFOHEADER
+        {
+            public uint biSize;
+            public int biWidth;
+            public int biHeight;
+            public ushort biPlanes;
+            public ushort biBitCount;
+            public uint biCompression;
+            public uint biSizeImage;
+            public int biXPelsPerMeter;
+            public int biYPelsPerMeter;
+            public uint biClrUsed;
+            public uint biClrImportant;
+
+            public void Init()
+            {
+                biSize = (uint)Marshal.SizeOf(this);
+            }
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
         public struct BITMAPINFO
         {
             // C# cannot inlay structs in structs so must expand directly here
@@ -858,6 +879,31 @@ namespace Avalonia.Win32.Interop
         [return: MarshalAs(UnmanagedType.Bool)]
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
         public static extern bool PostMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
+
+        [DllImport("gdi32.dll")]
+        public static extern int SetDIBitsToDevice(IntPtr hdc, int XDest, int YDest, uint
+                dwWidth, uint dwHeight, int XSrc, int YSrc, uint uStartScan, uint cScanLines,
+            IntPtr lpvBits, [In] ref BITMAPINFOHEADER lpbmi, uint fuColorUse);
+        
+        [DllImport("kernel32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool CloseHandle(IntPtr hObject);
+        [DllImport("gdi32.dll", SetLastError = true)]
+        public static extern IntPtr CreateDIBSection(IntPtr hDC, ref BITMAPINFOHEADER pBitmapInfo, int un, out IntPtr lplpVoid, IntPtr handle, int dw);
+        [DllImport("gdi32.dll")]
+        public static extern int DeleteObject(IntPtr hObject);
+        [DllImport("gdi32.dll", SetLastError = true)]
+        public static extern IntPtr CreateCompatibleDC(IntPtr hdc);
+        [DllImport("gdi32.dll")]
+        public static extern IntPtr SelectObject(IntPtr hdc, IntPtr hObject);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        public static extern IntPtr CreateFileMapping(IntPtr hFile,
+            IntPtr lpFileMappingAttributes,
+            uint flProtect,
+            uint dwMaximumSizeHigh,
+            uint dwMaximumSizeLow,
+            string lpName);
 
         public enum MONITOR
         {
@@ -1177,6 +1223,7 @@ namespace Avalonia.Win32.Interop
 
         [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
         uint SetFilter([MarshalAs(UnmanagedType.Interface)] IntPtr pFilter);
+
     }
 
 
@@ -1197,5 +1244,6 @@ namespace Avalonia.Win32.Interop
 
         [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
         uint Compare([In, MarshalAs(UnmanagedType.Interface)] IShellItem psi, [In] uint hint, out int piOrder);
+        
     }
 }

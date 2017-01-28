@@ -11,6 +11,7 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Runtime.InteropServices;
 using Avalonia.Controls;
+using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
 using Avalonia.Win32.Input;
@@ -35,10 +36,12 @@ namespace Avalonia.Win32
         private bool _decorated = true;
         private double _scaling = 1;
         private WindowState _showWindowState;
+        private FramebufferManager _framebuffer;
 
         public WindowImpl()
         {
             CreateWindow();
+            _framebuffer = new FramebufferManager(_hwnd);
             s_instances.Add(this);
         }
 
@@ -161,6 +164,11 @@ namespace Avalonia.Win32
             }
         }
 
+        public IEnumerable<object> Surfaces => new object[]
+        {
+            Handle, _framebuffer
+        };
+
         public void Activate()
         {
             UnmanagedMethods.SetActiveWindow(_hwnd);
@@ -174,6 +182,7 @@ namespace Avalonia.Win32
         public void Dispose()
         {
             s_instances.Remove(this);
+            _framebuffer.Dispose();
             UnmanagedMethods.DestroyWindow(_hwnd);
         }
 

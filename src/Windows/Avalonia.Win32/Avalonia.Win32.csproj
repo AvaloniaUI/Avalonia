@@ -69,6 +69,8 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Embedding\WpfAvaloniaControlHost.cs" />
+    <Compile Include="WindowFramebuffer.cs" />
+    <Compile Include="FramebufferManager.cs" />
     <Compile Include="IconImpl.cs" />
     <Compile Include="RenderLoop.cs" />
     <Compile Include="SystemDialogImpl.cs" />

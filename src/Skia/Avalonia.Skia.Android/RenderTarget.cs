@@ -26,14 +26,14 @@ namespace Avalonia.Skia
 
     internal class WindowRenderTarget : RenderTarget
     {
-        private readonly IPlatformHandle _hwnd;
+        private readonly SurfaceView _surfaceView;
         Bitmap _bitmap;
         int Width { get; set; }
         int Height { get; set; }
 
-        public WindowRenderTarget(IPlatformHandle hwnd)
+        public WindowRenderTarget(SurfaceView surfaceView)
         {
-            _hwnd = hwnd;
+            _surfaceView = surfaceView;
             FixSize();
         }
 
@@ -63,9 +63,8 @@ namespace Avalonia.Skia
 
         private void GetPlatformWindowSize(out int w, out int h)
         {
-            var surfaceView = _hwnd as SurfaceView;
-            w = surfaceView.Width;
-            h = surfaceView.Height;
+            w = _surfaceView.Width;
+            h = _surfaceView.Height;
         }
 
         public override DrawingContext CreateDrawingContext()
@@ -85,11 +84,10 @@ namespace Avalonia.Skia
 
         public void Present()
         {
-            var surfaceView = _hwnd as SurfaceView;
             Canvas canvas = null;
             try
             {
-                canvas = surfaceView.Holder.LockCanvas(null);
+                canvas = _surfaceView.Holder.LockCanvas(null);
                 _bitmap.UnlockPixels();
                 canvas.DrawBitmap(_bitmap, 0, 0, null);
             }
@@ -99,7 +97,7 @@ namespace Avalonia.Skia
             finally
             {
                 if (canvas != null)
-                    surfaceView.Holder.UnlockCanvasAndPost(canvas);
+                    _surfaceView.Holder.UnlockCanvasAndPost(canvas);
             }
 
             _bitmap.UnlockPixels();

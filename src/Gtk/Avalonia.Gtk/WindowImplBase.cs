@@ -2,14 +2,11 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Reactive.Disposables;
-using System.Runtime.InteropServices;
-using Gdk;
-using Avalonia.Controls;
+using System.Collections.Generic;
+using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
-using Avalonia.Input;
-using Avalonia.Threading;
+using Gdk;
 using Action = System.Action;
 using WindowEdge = Avalonia.Controls.WindowEdge;
 
@@ -21,8 +18,7 @@ namespace Avalonia.Gtk
     {
         private IInputRoot _inputRoot;
         protected Gtk.Widget _window;
-        public Gtk.Widget Widget => _window;
-
+        private FramebufferManager _framebuffer;
 
         private Gtk.IMContext _imContext;
 
@@ -33,6 +29,7 @@ namespace Avalonia.Gtk
         protected WindowImplBase(Gtk.Widget window)
         {
             _window = window;
+            _framebuffer = new FramebufferManager(this);
             Init();
         }
 
@@ -43,7 +40,6 @@ namespace Avalonia.Gtk
             _imContext = new Gtk.IMMulticontext();
             _imContext.Commit += ImContext_Commit;
             _window.Realized += OnRealized;
-            _window.DoubleBuffered = false;
             _window.Realize();
             _window.ButtonPressEvent += OnButtonPressEvent;
             _window.ButtonReleaseEvent += OnButtonReleaseEvent;
@@ -57,6 +53,8 @@ namespace Avalonia.Gtk
         }
 
         public IPlatformHandle Handle { get; private set; }
+        public Gtk.Widget Widget => _window;
+        public Gdk.Drawable CurrentDrawable { get; private set; }
 
         void OnRealized (object sender, EventArgs eventArgs)
         {
@@ -126,6 +124,13 @@ namespace Avalonia.Gtk
         public Action<Point> PositionChanged { get; set; }
 
         public Action<double> ScalingChanged { get; set; }
+
+        public IEnumerable<object> Surfaces => new object[]
+        {
+            Handle,
+            new Func<Gdk.Drawable>(() => CurrentDrawable),
+            _framebuffer
+        };
 
         public IPopupImpl CreatePopup()
         {
@@ -283,7 +288,9 @@ namespace Avalonia.Gtk
 
         void OnExposeEvent(object o, Gtk.ExposeEventArgs args)
         {
+            CurrentDrawable = args.Event.Window;
             Paint(args.Event.Area.ToAvalonia());
+            CurrentDrawable = null;
             args.RetVal = true;
         }
 
@@ -306,6 +313,7 @@ namespace Avalonia.Gtk
 
         public void Dispose()
         {
+            _framebuffer.Dispose();
             _window.Hide();
             _window.Dispose();
             _window = null;
