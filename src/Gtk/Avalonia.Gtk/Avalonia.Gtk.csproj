@@ -30,6 +30,8 @@
     <ConsolePause>false</ConsolePause>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Mono.Cairo, Version=4.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+    </Reference>
     <Reference Include="System" />
     <Reference Include="gtk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f" />
     <Reference Include="atk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f" />
@@ -50,7 +52,7 @@
     <Compile Include="Embedding\GtkAvaloniaControlHost.cs" />
     <Compile Include="FramebufferManager.cs" />
     <Compile Include="IconImpl.cs" />
-    <Compile Include="PixbufFramebuffer.cs" />
+    <Compile Include="SurfaceFramebuffer.cs" />
     <Compile Include="SystemDialogImpl.cs" />
     <Compile Include="CursorFactory.cs" />
     <Compile Include="GtkExtensions.cs" />
