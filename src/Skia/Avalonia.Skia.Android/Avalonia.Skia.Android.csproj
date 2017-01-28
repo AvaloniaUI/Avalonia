@@ -88,11 +88,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AndroidPlatformRenderInterface.cs" />
-    <Compile Include="AndroidRenderTarget.cs" />
-    <Compile Include="NativeMethods.cs" />
-    <Compile Include="RenderTarget.cs" />
-    <Compile Include="SkiaRenderView.cs" />
-    <Compile Include="SkiaView.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

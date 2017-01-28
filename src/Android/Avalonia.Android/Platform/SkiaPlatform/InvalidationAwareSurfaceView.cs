@@ -14,16 +14,16 @@ using Android.Widget;
 using Avalonia.Media;
 using Avalonia.Platform;
 
-namespace Avalonia.Skia.Android
+namespace Avalonia.Android
 {
-    public abstract class SkiaView : SurfaceView, ISurfaceHolderCallback, IPlatformHandle
+    public abstract class InvalidationAwareSurfaceView : SurfaceView, ISurfaceHolderCallback, IPlatformHandle
     {
         private readonly Context _context;
         bool _invalidateQueued;
         readonly object _lock = new object();
         private readonly Handler _handler;
 
-        public SkiaView(Context context) : base(context)
+        public InvalidationAwareSurfaceView(Context context) : base(context)
         {
             _context = context;
             Holder.AddCallback(this);

@@ -1,23 +1,54 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-
-using Android.App;
-using Android.Content;
-using Android.OS;
 using Android.Runtime;
 using Android.Views;
-using Android.Widget;
+using Avalonia.Controls.Platform.Surfaces;
 
-namespace Avalonia.Skia.Android
+namespace Avalonia.Android.Platform.SkiaPlatform
 {
-    static class NativeMethods
+    class AndroidFramebuffer : ILockedFramebuffer
     {
+        private IntPtr _window;
+
+        public AndroidFramebuffer(Surface surface)
+        {
+            _window = ANativeWindow_fromSurface(JNIEnv.Handle, surface.Handle);
+            ANativeWindow_Buffer buffer;
+            var rc = new ARect()
+            {
+                right = Width = ANativeWindow_getWidth(_window),
+                bottom = Height = ANativeWindow_getHeight(_window)
+            };
+            ANativeWindow_lock(_window, out buffer, ref rc);
+
+            Format = buffer.format == AndroidPixelFormat.WINDOW_FORMAT_RGB_565
+                ? PixelFormat.Rgb565 : PixelFormat.Rgba8888;
+
+            RowBytes = buffer.stride * (Format == PixelFormat.Rgb565 ? 2 : 4);
+            Address = buffer.bits;
+        }
+
+        public void Dispose()
+        {
+            ANativeWindow_unlockAndPost(_window);
+            ANativeWindow_release(_window);
+            _window = IntPtr.Zero;
+            Address = IntPtr.Zero;
+        }
+
+        public IntPtr Address { get; set; }
+        public int Width { get; }
+        public int Height { get; }
+        public int RowBytes { get; }
+        public Size Dpi { get; } = new Size(96, 96);
+        public PixelFormat Format { get; }
+
         [DllImport("android")]
         internal static extern IntPtr ANativeWindow_fromSurface(IntPtr jniEnv, IntPtr handle);
-
+        [DllImport("android")]
+        internal static extern int ANativeWindow_getWidth(IntPtr window);
+        [DllImport("android")]
+        internal static extern int ANativeWindow_getHeight(IntPtr window);
         [DllImport("android")]
         internal static extern void ANativeWindow_release(IntPtr window);
         [DllImport("android")]
@@ -39,8 +70,7 @@ namespace Avalonia.Skia.Android
             public int right;
             public int bottom;
         }
-
-
+        
         internal struct ANativeWindow_Buffer
         {
             // The number of pixels that are show horizontally.

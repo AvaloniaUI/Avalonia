@@ -7,14 +7,16 @@ using Avalonia.Android.Platform.Specific.Helpers;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
-using Avalonia.Skia.Android;
 using System;
 using System.Collections.Generic;
 using Avalonia.Controls;
+using Avalonia.Controls.Platform.Surfaces;
 
 namespace Avalonia.Android.Platform.SkiaPlatform
 {
-    class TopLevelImpl : SkiaView, IAndroidView, ITopLevelImpl, ISurfaceHolderCallback
+    class TopLevelImpl : InvalidationAwareSurfaceView, IAndroidView, ITopLevelImpl,
+        ISurfaceHolderCallback, IFramebufferPlatformSurface
+
     {
         protected AndroidKeyboardEventsHelper<TopLevelImpl> _keyboardHelper;
 
@@ -183,5 +185,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         {
             // No window icons for mobile platforms
         }
-            }
+
+        ILockedFramebuffer IFramebufferPlatformSurface.Lock()=>new AndroidFramebuffer(Holder.Surface);
+    }
 }

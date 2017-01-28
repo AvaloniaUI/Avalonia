@@ -70,6 +70,8 @@
     <Compile Include="CursorFactory.cs" />
     <Compile Include="Platform\Input\AndroidKeyboardDevice.cs" />
     <Compile Include="Platform\Input\AndroidMouseDevice.cs" />
+    <Compile Include="Platform\SkiaPlatform\AndroidFramebuffer.cs" />
+    <Compile Include="Platform\SkiaPlatform\InvalidationAwareSurfaceView.cs" />
     <Compile Include="Platform\SkiaPlatform\TopLevelImpl.cs" />
     <Compile Include="Platform\Specific\IAndroidView.cs" />
     <Compile Include="Platform\Specific\Helpers\AndroidTouchEventsHelper.cs" />
