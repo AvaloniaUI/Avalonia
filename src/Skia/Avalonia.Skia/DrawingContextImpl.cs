@@ -192,7 +192,7 @@ namespace Avalonia.Skia
                 var helper = new TileBrushImplHelper(tileBrush, targetSize);
                 var bitmap = new BitmapImpl((int)helper.IntermediateSize.Width, (int)helper.IntermediateSize.Height);
                 rv.AddDisposable(bitmap);
-                using (var ctx = bitmap.CreateDrawingContext())
+                using (var ctx = bitmap.CreateDrawingContext(null))
                     helper.DrawIntermediate(new DrawingContext(ctx));
                 SKMatrix translation = SKMatrix.MakeTranslation(-(float)helper.DestinationRect.X, -(float)helper.DestinationRect.Y);
                 SKShaderTileMode tileX =

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Avalonia.Direct2D1.Media;
 using Avalonia.Media;
 using Avalonia.Platform;
+using Avalonia.Rendering;
 using Avalonia.Win32.Interop;
 using SharpDX;
 using SharpDX.Direct2D1;
@@ -57,7 +58,7 @@ namespace Avalonia.Direct2D1
         /// Creates a drawing context for a rendering session.
         /// </summary>
         /// <returns>An <see cref="Avalonia.Media.DrawingContext"/>.</returns>
-        public IDrawingContextImpl CreateDrawingContext()
+        public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
         {
             var size = GetWindowSize();
             var dpi = GetWindowDpi();
@@ -69,7 +70,11 @@ namespace Avalonia.Direct2D1
                 CreateSwapChain();
             }
 
-            return new DrawingContextImpl(_deviceContext, DirectWriteFactory, _swapChain);
+            return new DrawingContextImpl(
+                visualBrushRenderer,
+                _deviceContext,
+                DirectWriteFactory,
+                _swapChain);
         }
 
         public void Dispose()

@@ -4,6 +4,7 @@
 using System;
 using Avalonia.Media;
 using Avalonia.Platform;
+using Avalonia.Rendering;
 using SharpDX.Direct2D1;
 using SharpDX.WIC;
 using DirectWriteFactory = SharpDX.DirectWrite.Factory;
@@ -45,9 +46,9 @@ namespace Avalonia.Direct2D1.Media
             base.Dispose();
         }
 
-        public IDrawingContextImpl CreateDrawingContext()
+        public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
         {
-            return new DrawingContextImpl(_target, _dwriteFactory);
+            return new DrawingContextImpl(visualBrushRenderer, _target, _dwriteFactory);
         }        
     }
 }

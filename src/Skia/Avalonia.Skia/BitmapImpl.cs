@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Avalonia.Media;
 using Avalonia.Platform;
+using Avalonia.Rendering;
 using SkiaSharp;
 
 namespace Avalonia.Skia
@@ -74,7 +75,7 @@ namespace Avalonia.Skia
             }
         }
 
-        public IDrawingContextImpl CreateDrawingContext()
+        public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
         {
 
             return new BitmapDrawingContext(Bitmap);

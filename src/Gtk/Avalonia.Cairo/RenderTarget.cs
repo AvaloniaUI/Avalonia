@@ -47,8 +47,9 @@ namespace Avalonia.Cairo
         /// <summary>
         /// Creates a cairo surface that targets a platform-specific resource.
         /// </summary>
+        /// <param name="visualBrushRenderer">The visual brush renderer to use.</param>
         /// <returns>A surface wrapped in an <see cref="Avalonia.Media.DrawingContext"/>.</returns>
-        public IDrawingContextImpl CreateDrawingContext()
+        public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
         {
             if (_window != null)
                 return new Media.DrawingContext(_window.GdkWindow);

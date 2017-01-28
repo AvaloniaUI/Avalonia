@@ -319,7 +319,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             public Size ClientSize { get; }
             public double RenderScaling => 1;
 
-            public IRenderTarget CreateRenderTarget()
+            public IRenderTarget CreateRenderTarget(IVisualBrushRenderer visualBrushRenderer)
             {
                 throw new NotImplementedException();
             }

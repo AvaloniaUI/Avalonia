@@ -17,7 +17,7 @@ namespace Avalonia.UnitTests
     {
         private readonly NameScope _nameScope = new NameScope();
         private readonly IRenderTarget _renderTarget = Mock.Of<IRenderTarget>(
-            x => x.CreateDrawingContext() == Mock.Of<IDrawingContextImpl>());
+            x => x.CreateDrawingContext(It.IsAny<IVisualBrushRenderer>()) == Mock.Of<IDrawingContextImpl>());
 
         public TestRoot()
         {
@@ -64,7 +64,7 @@ namespace Avalonia.UnitTests
 
         public bool ShowAccessKeys { get; set; }
 
-        public IRenderTarget CreateRenderTarget() => _renderTarget;
+        public IRenderTarget CreateRenderTarget(IVisualBrushRenderer visualBrushRenderer) => _renderTarget;
 
         public void Invalidate(Rect rect)
         {

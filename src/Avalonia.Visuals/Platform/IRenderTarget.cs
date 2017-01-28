@@ -3,6 +3,7 @@
 
 using System;
 using Avalonia.Media;
+using Avalonia.Rendering;
 
 namespace Avalonia.Platform
 {
@@ -17,6 +18,10 @@ namespace Avalonia.Platform
         /// <summary>
         /// Creates an <see cref="DrawingContext"/> for a rendering session.
         /// </summary>
-        IDrawingContextImpl CreateDrawingContext();
+        /// <param name="visualBrushRenderer">
+        /// A render to be used to render visual brushes. May be null if no visual brushes are
+        /// to be drawn.
+        /// </param>
+        IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer);
     }
 }

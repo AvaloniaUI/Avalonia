@@ -42,13 +42,6 @@ namespace Avalonia.RenderHelpers
                 if (control != null)
                 {
                     EnsureInitialized(control);
-
-                    if (control.IsArrangeValid == false)
-                    {
-                        control.Measure(Size.Infinity);
-                        control.Arrange(new Rect(control.DesiredSize));
-                    }
-
                     _imageSize = control.Bounds.Size;
                     IsValid = true;
                 }
@@ -182,28 +175,39 @@ namespace Avalonia.RenderHelpers
             return transform;
         }
 
+        public static void EnsureInitialized(IVisual visual)
+        {
+            var control = visual as IControl;
+
+            if (control != null)
+            {
+                foreach (var i in control.GetSelfAndVisualDescendents())
+                {
+                    var c = i as IControl;
+
+                    if (c?.IsInitialized == false)
+                    {
+                        var init = c as ISupportInitialize;
+
+                        if (init != null)
+                        {
+                            init.BeginInit();
+                            init.EndInit();
+                        }
+                    }
+                }
+
+                if (!control.IsArrangeValid)
+                {
+                    control.Measure(Size.Infinity);
+                    control.Arrange(new Rect(control.DesiredSize));
+                }
+            }
+        }
+
         private static Size CalculateIntermediateSize(
             TileMode tileMode,
             Size targetSize,
             Size destinationSize) => tileMode == TileMode.None ? targetSize : destinationSize;
-
-        private static void EnsureInitialized(IControl control)
-        {
-            foreach (var i in control.GetSelfAndVisualDescendents())
-            {
-                var c = i as IControl;
-
-                if (c?.IsInitialized == false)
-                {
-                    var init = c as ISupportInitialize;
-
-                    if (init != null)
-                    {
-                        init.BeginInit();
-                        init.EndInit();
-                    }
-                }
-            }
-        }
     }
 }

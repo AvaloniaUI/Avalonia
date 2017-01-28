@@ -2,6 +2,7 @@ using System;
 using Avalonia.Media;
 using Avalonia.Platform;
 using SkiaSharp;
+using Avalonia.Rendering;
 #if WIN32
 using Avalonia.Win32.Interop;
 #endif
@@ -12,7 +13,7 @@ namespace Avalonia.Skia
     {
         public SKSurface Surface { get; protected set; }
 
-        public virtual IDrawingContextImpl CreateDrawingContext()
+        public virtual IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
         {
             return new DrawingContextImpl(Surface.Canvas);
         }
@@ -100,7 +101,7 @@ namespace Avalonia.Skia
             return new Size(96, 96);
         }
 
-        public override IDrawingContextImpl CreateDrawingContext()
+        public override IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
         {
             FixSize();
 

@@ -235,7 +235,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
         private IRenderTargetBitmapImpl CreateLayer()
         {
             return Mock.Of<IRenderTargetBitmapImpl>(x =>
-                x.CreateDrawingContext() == Mock.Of<IDrawingContextImpl>());
+                x.CreateDrawingContext(It.IsAny<IVisualBrushRenderer>()) == Mock.Of<IDrawingContextImpl>());
         }
 
         private Mock<IRenderLayerFactory> MockLayerFactory(IRenderRoot root)
@@ -278,7 +278,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
 
             public Mock<IDrawingContextImpl> GetMockDrawingContext(IVisual layerRoot)
             {
-                return Mock.Get(_layers[layerRoot].CreateDrawingContext());
+                return Mock.Get(_layers[layerRoot].CreateDrawingContext(null));
             }
         }
     }

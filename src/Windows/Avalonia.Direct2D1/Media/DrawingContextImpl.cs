@@ -6,6 +6,8 @@ using System.Collections;
 using System.Collections.Generic;
 using Avalonia.Media;
 using Avalonia.Platform;
+using Avalonia.RenderHelpers;
+using Avalonia.Rendering;
 using SharpDX;
 using SharpDX.Direct2D1;
 using SharpDX.Mathematics.Interop;
@@ -18,6 +20,7 @@ namespace Avalonia.Direct2D1.Media
     /// </summary>
     public class DrawingContextImpl : IDrawingContextImpl, IDisposable
     {
+        private readonly IVisualBrushRenderer _visualBrushRenderer;
         private readonly SharpDX.Direct2D1.RenderTarget _renderTarget;
         private readonly SharpDX.DXGI.SwapChain1 _swapChain;
         private SharpDX.DirectWrite.Factory _directWriteFactory;
@@ -25,14 +28,17 @@ namespace Avalonia.Direct2D1.Media
         /// <summary>
         /// Initializes a new instance of the <see cref="DrawingContextImpl"/> class.
         /// </summary>
+        /// <param name="visualBrushRenderer">The visual brush renderer.</param>
         /// <param name="renderTarget">The render target to draw to.</param>
         /// <param name="directWriteFactory">The DirectWrite factory.</param>
         /// <param name="swapChain">An optional swap chain associated with this drawing context.</param>
         public DrawingContextImpl(
+            IVisualBrushRenderer visualBrushRenderer,
             SharpDX.Direct2D1.RenderTarget renderTarget,
             SharpDX.DirectWrite.Factory directWriteFactory,
             SharpDX.DXGI.SwapChain1 swapChain = null)
         {
+            _visualBrushRenderer = visualBrushRenderer;
             _renderTarget = renderTarget;
             _swapChain = swapChain;
             _directWriteFactory = directWriteFactory;
@@ -337,6 +343,35 @@ namespace Avalonia.Direct2D1.Media
                     _renderTarget,
                     (BitmapImpl)imageBrush.Source.PlatformImpl,
                     destinationSize);
+            }
+            else if (visualBrush != null)
+            {
+                if (_visualBrushRenderer != null)
+                {
+                    TileBrushImplHelper.EnsureInitialized(visualBrush.Visual);
+
+                    using (var intermediate = new BitmapRenderTarget(
+                        _renderTarget,
+                        CompatibleRenderTargetOptions.None,
+                        visualBrush.Visual.Bounds.Size.ToSharpDX()))
+                    {
+                        using (var ctx = new RenderTarget(intermediate).CreateDrawingContext(_visualBrushRenderer))
+                        {
+                            intermediate.Clear(null);
+                            _visualBrushRenderer.RenderVisualBrush(ctx, visualBrush);
+                        }
+
+                        return new ImageBrushImpl(
+                            visualBrush,
+                            _renderTarget,
+                            new D2DBitmapImpl(intermediate.Bitmap),
+                            destinationSize);
+                    }
+                }
+                else
+                {
+                    throw new NotSupportedException("No IVisualBrushRenderer was supplied to DrawingContextImpl.");
+                }
             }
             else
             {

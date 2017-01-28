@@ -41,9 +41,9 @@ namespace Avalonia.Cairo.Media.Imaging
             Surface.WriteToPng(fileName);
         }
 
-        public IDrawingContextImpl CreateDrawingContext()
+        public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
         {
-            return _renderTarget.CreateDrawingContext();
+            return _renderTarget.CreateDrawingContext(visualBrushRenderer);
         }
 
         public void Save(Stream stream)

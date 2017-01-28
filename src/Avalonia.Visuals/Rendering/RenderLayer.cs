@@ -33,7 +33,7 @@ namespace Avalonia.Rendering
             {
                 var resized = _factory.CreateLayer(LayerRoot, size * scaling, 96 * scaling, 96 * scaling);
 
-                using (var context = resized.CreateDrawingContext())
+                using (var context = resized.CreateDrawingContext(null))
                 {
                     context.Clear(Colors.Transparent);
                     context.DrawImage(Bitmap, 1, new Rect(Size), new Rect(Size));

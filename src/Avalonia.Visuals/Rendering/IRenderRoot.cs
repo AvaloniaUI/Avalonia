@@ -28,7 +28,7 @@ namespace Avalonia.Rendering
         /// Creates a render target for the window.
         /// </summary>
         /// <returns>An <see cref="IRenderTarget"/>.</returns>
-        IRenderTarget CreateRenderTarget();
+        IRenderTarget CreateRenderTarget(IVisualBrushRenderer visualBrushRenderer);
 
         /// <summary>
         /// Adds a rectangle to the window's dirty region.

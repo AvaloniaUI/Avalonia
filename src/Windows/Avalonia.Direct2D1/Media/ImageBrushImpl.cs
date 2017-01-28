@@ -90,7 +90,7 @@ namespace Avalonia.Direct2D1.Media
                 CompatibleRenderTargetOptions.None,
                 calc.IntermediateSize.ToSharpDX());
 
-            using (var context = new RenderTarget(result).CreateDrawingContext())
+            using (var context = new RenderTarget(result).CreateDrawingContext(null))
             {
                 var rect = new Rect(0, 0, bitmap.PixelWidth, bitmap.PixelHeight);
 

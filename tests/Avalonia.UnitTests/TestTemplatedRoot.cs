@@ -47,7 +47,7 @@ namespace Avalonia.UnitTests
 
         public IRenderer Renderer => null;
 
-        public IRenderTarget CreateRenderTarget()
+        public IRenderTarget CreateRenderTarget(IVisualBrushRenderer visualBrushRenderer)
         {
             throw new NotImplementedException();
         }

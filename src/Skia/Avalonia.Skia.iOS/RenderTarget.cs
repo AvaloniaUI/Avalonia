@@ -4,6 +4,7 @@ using Avalonia.Platform;
 using SkiaSharp;
 using CoreGraphics;
 using UIKit;
+using Avalonia.Rendering;
 
 namespace Avalonia.Skia
 {
@@ -11,7 +12,7 @@ namespace Avalonia.Skia
     {
         public SKSurface Surface { get; protected set; }
 
-        public virtual IDrawingContextImpl CreateDrawingContext()
+        public virtual IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
         {
             return new DrawingContextImpl(Surface.Canvas);
         }
@@ -88,7 +89,7 @@ namespace Avalonia.Skia
             h = (int)bounds.Height;
         }
 
-        public override IDrawingContextImpl CreateDrawingContext()
+        public override IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
         {
             FixSize();
 

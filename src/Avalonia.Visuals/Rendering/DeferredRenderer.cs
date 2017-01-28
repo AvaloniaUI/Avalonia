@@ -10,7 +10,7 @@ using System.IO;
 
 namespace Avalonia.Rendering
 {
-    public class DeferredRenderer : RendererBase, IRenderer
+    public class DeferredRenderer : RendererBase, IRenderer, IVisualBrushRenderer
     {
         private readonly IDispatcher _dispatcher;
         private readonly IRenderLoop _renderLoop;
@@ -102,6 +102,11 @@ namespace Avalonia.Rendering
             Render(_scene);
         }
 
+        void IVisualBrushRenderer.RenderVisualBrush(IDrawingContextImpl context, VisualBrush brush)
+        {
+            throw new NotImplementedException();
+        }
+
         private void Render(Scene scene)
         {
             _rendering = true;
@@ -163,7 +168,7 @@ namespace Avalonia.Rendering
                     var renderTarget = _layers[layer.LayerRoot].Bitmap;
                     var node = (VisualNode)scene.FindNode(layer.LayerRoot);
 
-                    using (var context = renderTarget.CreateDrawingContext())
+                    using (var context = renderTarget.CreateDrawingContext(this))
                     {
                         foreach (var rect in layer.Dirty)
                         {
@@ -189,7 +194,7 @@ namespace Avalonia.Rendering
             {
                 var overlay = GetOverlay(scene.Size, scene.Scaling);
 
-                using (var context = overlay.CreateDrawingContext())
+                using (var context = overlay.CreateDrawingContext(this))
                 {
                     context.Clear(Colors.Transparent);
                     RenderDirtyRects(context);
@@ -217,10 +222,10 @@ namespace Avalonia.Rendering
             {
                 if (_renderTarget == null)
                 {
-                    _renderTarget = ((IRenderRoot)_root).CreateRenderTarget();
+                    _renderTarget = ((IRenderRoot)_root).CreateRenderTarget(this);
                 }
 
-                using (var context = _renderTarget.CreateDrawingContext())
+                using (var context = _renderTarget.CreateDrawingContext(this))
                 {
                     var clientRect = new Rect(scene.Size);
 

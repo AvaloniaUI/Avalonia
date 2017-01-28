@@ -4,6 +4,7 @@ using Avalonia.Platform;
 using SkiaSharp;
 using Android.Graphics;
 using Android.Views;
+using Avalonia.Rendering;
 
 namespace Avalonia.Skia
 {
@@ -11,7 +12,7 @@ namespace Avalonia.Skia
     {
         public SKSurface Surface { get; protected set; }
 
-        public virtual IDrawingContextImpl CreateDrawingContext()
+        public virtual IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
         {
             return new DrawingContextImpl(Surface.Canvas);
         }
@@ -66,9 +67,9 @@ namespace Avalonia.Skia
             h = surfaceView.Height;
         }
 
-        public override IDrawingContextImpl CreateDrawingContext()
+        public override IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
         {
-            base.CreateDrawingContext();
+            base.CreateDrawingContext(visualBrushRenderer);
             FixSize();
 
             var canvas = Surface.Canvas;

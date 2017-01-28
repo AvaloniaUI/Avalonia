@@ -8,10 +8,11 @@ using System.Collections.Generic;
 using Avalonia.Threading;
 using Avalonia.Media;
 using System.Linq;
+using Avalonia.Media.Imaging;
 
 namespace Avalonia.Rendering
 {
-    public class ImmediateRenderer : RendererBase, IRenderer
+    public class ImmediateRenderer : RendererBase, IRenderer, IVisualBrushRenderer
     {
         private readonly IRenderLoop _renderLoop;
         private readonly IVisual _root;
@@ -42,7 +43,7 @@ namespace Avalonia.Rendering
         public static void Render(IVisual visual, IRenderTarget target)
         {
             using (var renderer = new ImmediateRenderer(visual))
-            using (var context = new DrawingContext(target.CreateDrawingContext()))
+            using (var context = new DrawingContext(target.CreateDrawingContext(renderer)))
             {
                 renderer.Render(context, visual, visual.Bounds);
             }
@@ -76,6 +77,12 @@ namespace Avalonia.Rendering
 
         public void Render(Rect rect)
         {
+        }
+
+        void IVisualBrushRenderer.RenderVisualBrush(IDrawingContextImpl context, VisualBrush brush)
+        {
+            var visual = brush.Visual;
+            Render(new DrawingContext(context), visual, visual.Bounds);
         }
 
         private static void ClearTransformedBounds(IVisual visual)
@@ -134,12 +141,12 @@ namespace Avalonia.Rendering
         {
             if (_renderTarget == null)
             {
-                _renderTarget = ((IRenderRoot)_root).CreateRenderTarget();
+                _renderTarget = ((IRenderRoot)_root).CreateRenderTarget(this);
             }
 
             try
             {
-                using (var context = new DrawingContext(_renderTarget.CreateDrawingContext()))
+                using (var context = new DrawingContext(_renderTarget.CreateDrawingContext(this)))
                 {
                     Render(context, _root, _root.Bounds);
 
