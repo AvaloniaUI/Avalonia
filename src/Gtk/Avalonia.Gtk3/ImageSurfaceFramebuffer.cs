@@ -54,16 +54,8 @@ namespace Avalonia.Gtk3
 
         //TODO: Proper DPI detect
         public Size Dpi => new Size(96, 96);
-        public PixelFormat Format
-        {
-            get
-            {
-                if (AvaloniaLocator.Current.GetService<IRuntimePlatform>().GetRuntimeInfo().OperatingSystem ==
-                    OperatingSystemType.WinNT)
-                    return PixelFormat.Bgra8888;
-                return PixelFormat.Rgba8888;
-            }
-        }
+
+        public PixelFormat Format => PixelFormat.Bgra8888;
     }
 }
 
