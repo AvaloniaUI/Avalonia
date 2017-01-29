@@ -429,7 +429,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
         [Fact]
         public void VisualBrush_InTree_Visual()
         {
-            TextBlock source;
+            Border source;
             Decorator target = new Decorator
             {
                 Padding = new Thickness(8),
@@ -440,10 +440,14 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                     RowDefinitions = new RowDefinitions("Auto,*"),
                     Children =
                     {
-                        (source = new TextBlock
+                        (source = new Border
                         {
+                            Background = Brushes.Yellow,
                             HorizontalAlignment = HorizontalAlignment.Left,
-                            Text = "Visual"
+                            Child = new TextBlock
+                            {
+                                Text = "Visual"
+                            }
                         }),
                         new Rectangle
                         {
