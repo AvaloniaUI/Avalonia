@@ -425,5 +425,41 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             RenderToFile(target);
             CompareImages();
         }
+
+        [Fact]
+        public void VisualBrush_InTree_Visual()
+        {
+            TextBlock source;
+            Decorator target = new Decorator
+            {
+                Padding = new Thickness(8),
+                Width = 200,
+                Height = 200,
+                Child = new Grid
+                {
+                    RowDefinitions = new RowDefinitions("Auto,*"),
+                    Children =
+                    {
+                        (source = new TextBlock
+                        {
+                            HorizontalAlignment = HorizontalAlignment.Left,
+                            Text = "Visual"
+                        }),
+                        new Rectangle
+                        {
+                            Fill = new VisualBrush
+                            {
+                                Stretch = Stretch.Uniform,
+                                Visual = source,
+                            },
+                            [Grid.RowProperty] = 1,
+                        }
+                    }
+                }
+            };
+
+            RenderToFile(target);
+            CompareImages();
+        }
     }
 }
