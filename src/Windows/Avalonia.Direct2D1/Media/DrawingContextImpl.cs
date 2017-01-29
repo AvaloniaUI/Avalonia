@@ -348,24 +348,27 @@ namespace Avalonia.Direct2D1.Media
             {
                 if (_visualBrushRenderer != null)
                 {
-                    TileBrushImplHelper.EnsureInitialized(visualBrush.Visual);
+                    var intermediateSize = _visualBrushRenderer.GetRenderTargetSize(visualBrush);
 
-                    using (var intermediate = new BitmapRenderTarget(
-                        _renderTarget,
-                        CompatibleRenderTargetOptions.None,
-                        visualBrush.Visual.Bounds.Size.ToSharpDX()))
+                    if (intermediateSize.Width >= 1 && intermediateSize.Height >= 1)
                     {
-                        using (var ctx = new RenderTarget(intermediate).CreateDrawingContext(_visualBrushRenderer))
-                        {
-                            intermediate.Clear(null);
-                            _visualBrushRenderer.RenderVisualBrush(ctx, visualBrush);
-                        }
-
-                        return new ImageBrushImpl(
-                            visualBrush,
+                        using (var intermediate = new BitmapRenderTarget(
                             _renderTarget,
-                            new D2DBitmapImpl(intermediate.Bitmap),
-                            destinationSize);
+                            CompatibleRenderTargetOptions.None,
+                            intermediateSize.ToSharpDX()))
+                        {
+                            using (var ctx = new RenderTarget(intermediate).CreateDrawingContext(_visualBrushRenderer))
+                            {
+                                intermediate.Clear(null);
+                                _visualBrushRenderer.RenderVisualBrush(ctx, visualBrush);
+                            }
+
+                            return new ImageBrushImpl(
+                                visualBrush,
+                                _renderTarget,
+                                new D2DBitmapImpl(intermediate.Bitmap),
+                                destinationSize);
+                        }
                     }
                 }
                 else
@@ -373,10 +376,8 @@ namespace Avalonia.Direct2D1.Media
                     throw new NotSupportedException("No IVisualBrushRenderer was supplied to DrawingContextImpl.");
                 }
             }
-            else
-            {
-                return new SolidColorBrushImpl((Avalonia.Media.SolidColorBrush)null, _renderTarget);
-            }
+
+            return new SolidColorBrushImpl(null, _renderTarget);
         }
 
         public void PushGeometryClip(Avalonia.Media.Geometry clip)

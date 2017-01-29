@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
 using Avalonia.Media;
 
 namespace Avalonia.Rendering
@@ -8,6 +11,14 @@ namespace Avalonia.Rendering
     /// </summary>
     public interface IVisualBrushRenderer
     {
+        /// <summary>
+        /// Gets the size of the intermediate render target to which the visual brush should be
+        /// drawn.
+        /// </summary>
+        /// <param name="brush">The visual brush.</param>
+        /// <returns>The size of the intermediate render target to create.</returns>
+        Size GetRenderTargetSize(VisualBrush brush);
+
         /// <summary>
         /// Renders a visual brush to a bitmap.
         /// </summary>
