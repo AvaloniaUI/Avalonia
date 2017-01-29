@@ -104,7 +104,6 @@ namespace Avalonia.Rendering
 
         void IVisualBrushRenderer.RenderVisualBrush(IDrawingContextImpl context, VisualBrush brush)
         {
-            throw new NotImplementedException();
         }
 
         private void Render(Scene scene)
