@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
 using System.Diagnostics;
 using Avalonia.Media;
 using Avalonia.Platform;
@@ -102,8 +105,23 @@ namespace Avalonia.Rendering
             Render(_scene);
         }
 
+        Size IVisualBrushRenderer.GetRenderTargetSize(VisualBrush brush)
+        {
+            if (brush.Visual != null)
+            {
+                return _scene.FindNode(brush.Visual)?.ClipBounds.Size ?? Size.Empty;
+            }
+
+            return Size.Empty;
+        }
+
         void IVisualBrushRenderer.RenderVisualBrush(IDrawingContextImpl context, VisualBrush brush)
         {
+            if (brush.Visual != null)
+            {
+                var node = (VisualNode)_scene.FindNode(brush.Visual);
+                Render(context, node, null, node.ClipBounds);
+            }
         }
 
         private void Render(Scene scene)
@@ -135,7 +153,7 @@ namespace Avalonia.Rendering
 
         private void Render(IDrawingContextImpl context, VisualNode node, IVisual layer, Rect clipBounds)
         {
-            if (node.LayerRoot == layer)
+            if (layer == null || node.LayerRoot == layer)
             {
                 clipBounds = node.ClipBounds.Intersect(clipBounds);
 
