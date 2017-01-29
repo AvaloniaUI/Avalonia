@@ -9,6 +9,7 @@ using Avalonia.Platform;
 using Gdk;
 using Action = System.Action;
 using WindowEdge = Avalonia.Controls.WindowEdge;
+using GLib;
 
 namespace Avalonia.Gtk
 {
@@ -49,6 +50,7 @@ namespace Avalonia.Gtk
             _window.KeyReleaseEvent += OnKeyReleaseEvent;
             _window.ExposeEvent += OnExposeEvent;
             _window.MotionNotifyEvent += OnMotionNotifyEvent;
+
             
         }
 
@@ -269,6 +271,7 @@ namespace Avalonia.Gtk
             Input(e);
         }
 
+		[ConnectBefore]
         void OnKeyPressEvent(object o, Gtk.KeyPressEventArgs args)
         {
             args.RetVal = true;
