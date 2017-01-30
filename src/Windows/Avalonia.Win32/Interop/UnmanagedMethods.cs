@@ -692,6 +692,9 @@ namespace Avalonia.Win32.Interop
         [DllImport("kernel32.dll")]
         public static extern IntPtr GetModuleHandle(string lpModuleName);
 
+        [DllImport("kernel32.dll")]
+        public static extern uint GetCurrentThreadId();
+
         [DllImport("user32.dll")]
         public static extern int GetSystemMetrics(SystemMetric smIndex);
 
@@ -784,7 +787,7 @@ namespace Avalonia.Win32.Interop
         [DllImport("user32.dll")]
         public static extern bool UnregisterClass(string lpClassName, IntPtr hInstance);
 
-        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode, EntryPoint = "SetWindowTextW")]
         public static extern bool SetWindowText(IntPtr hwnd, string lpString);
 
         public enum ClassLongIndex : int
@@ -808,13 +811,14 @@ namespace Avalonia.Win32.Interop
 
             return SetClassLong64(hWnd, nIndex, dwNewLong);
         }
-        
+#if !NETSTANDARD
         [ComImport, ClassInterface(ClassInterfaceType.None), TypeLibType(TypeLibTypeFlags.FCanCreate), Guid("DC1C5A9C-E88A-4DDE-A5A1-60F82A20AEF7")]
         internal class FileOpenDialogRCW { }
 
         
         [DllImport("shell32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
         internal static extern int SHCreateItemFromParsingName([MarshalAs(UnmanagedType.LPWStr)] string pszPath, IntPtr pbc, ref Guid riid, [MarshalAs(UnmanagedType.Interface)] out IShellItem ppv);
+#endif
 
         [DllImport("user32.dll", SetLastError = true)]
         public static extern bool OpenClipboard(IntPtr hWndOwner);
@@ -831,16 +835,16 @@ namespace Avalonia.Win32.Interop
         [DllImport("user32.dll")]
         public static extern IntPtr SetClipboardData(ClipboardFormat uFormat, IntPtr hMem);
 
-        [DllImport("kernel32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
+        [DllImport("kernel32.dll", ExactSpelling = true)]
         public static extern IntPtr GlobalLock(IntPtr handle);
 
-        [DllImport("kernel32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
+        [DllImport("kernel32.dll", ExactSpelling = true)]
         public static extern bool GlobalUnlock(IntPtr handle);
 
-        [DllImport("kernel32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
+        [DllImport("kernel32.dll", ExactSpelling = true)]
         public static extern IntPtr GlobalAlloc(int uFlags, int dwBytes);
 
-        [DllImport("kernel32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
+        [DllImport("kernel32.dll", ExactSpelling = true)]
         public static extern IntPtr GlobalFree(IntPtr hMem);
 
         [DllImport("kernel32.dll", SetLastError = true)]
@@ -877,7 +881,7 @@ namespace Avalonia.Win32.Interop
         public static extern bool GetMonitorInfo([In] IntPtr hMonitor, [Out] MONITORINFO lpmi);
 
         [return: MarshalAs(UnmanagedType.Bool)]
-        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode, EntryPoint = "PostMessageW")]
         public static extern bool PostMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
 
         [DllImport("gdi32.dll")]
@@ -912,7 +916,7 @@ namespace Avalonia.Win32.Interop
             MONITOR_DEFAULTTONEAREST = 0x00000002,
         }
 
-        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
+        [StructLayout(LayoutKind.Sequential)]
         internal class MONITORINFO
         {
             public int cbSize = Marshal.SizeOf(typeof(MONITORINFO));
@@ -1146,7 +1150,7 @@ namespace Avalonia.Win32.Interop
             public int flagsEx;
         }        
     }
-
+#if !NETSTANDARD
     [ComImport(), Guid("42F85136-DB7E-439C-85F1-E4075D135FC8"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     internal interface IFileDialog
     {
@@ -1246,4 +1250,5 @@ namespace Avalonia.Win32.Interop
         uint Compare([In, MarshalAs(UnmanagedType.Interface)] IShellItem psi, [In] uint hint, out int piOrder);
         
     }
+#endif
 }

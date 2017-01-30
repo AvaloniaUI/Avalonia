@@ -427,9 +427,10 @@ var nuspecNuGetSettingsDesktop = new []
         },
         Files = new []
         {
-            new NuSpecContent { Source = "Avalonia.Win32.dll", Target = "lib/net45" }
+            new NuSpecContent { Source = "Avalonia.Win32/bin/" + dirSuffix + "/Avalonia.Win32.dll", Target = "lib/net45" },
+            new NuSpecContent { Source = "Avalonia.Win32.NetStandard/bin/" + dirSuffix + "/Avalonia.Win32.dll", Target = "lib/netstandard1.1" }
         },
-        BasePath = Directory("./src/Windows/Avalonia.Win32/bin/" + dirSuffix),
+        BasePath = Directory("./src/Windows"),
         OutputDirectory = nugetRoot
     },
     ///////////////////////////////////////////////////////////////////////////////

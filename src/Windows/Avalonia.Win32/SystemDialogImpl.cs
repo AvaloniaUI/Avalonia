@@ -16,6 +16,16 @@ namespace Avalonia.Win32
 
     class SystemDialogImpl : ISystemDialogImpl
     {
+        static char[] ToChars(string s)
+        {
+            if (s == null)
+                return null;
+            var chars = new char[s.Length];
+            for (int c = 0; c < s.Length; c++)
+                chars[c] = s[c];
+            return chars;
+        }
+
         public unsafe Task<string[]> ShowFileDialogAsync(FileDialog dialog, IWindowImpl parent)
         {
             var hWnd = parent?.Handle?.Handle ?? IntPtr.Zero;
@@ -40,14 +50,15 @@ namespace Avalonia.Win32
                 var filterBuffer = new char[filters.Length];
                 filters.CopyTo(0, filterBuffer, 0, filterBuffer.Length);
 
-                var defExt = (dialog as SaveFileDialog)?.DefaultExtension?.ToArray();
+                var defExt = ToChars((dialog as SaveFileDialog)?.DefaultExtension);
                 var fileBuffer = new char[256];
                 dialog.InitialFileName?.CopyTo(0, fileBuffer, 0, dialog.InitialFileName.Length);
 
                 string userSelectedExt = null;
 
-                var title = dialog.Title?.ToArray();
-                var initialDir = dialog.InitialDirectory?.ToArray();
+
+                var title = ToChars(dialog.Title);
+                var initialDir = ToChars(dialog.InitialDirectory);
 
                 fixed (char* pFileBuffer = fileBuffer)
                 fixed (char* pFilterBuffer = filterBuffer)
@@ -89,14 +100,17 @@ namespace Avalonia.Win32
                     var pofn = &ofn;
 
                     // We should save the current directory to restore it later.
+#if !NETSTANDARD
                     var currentDirectory = Environment.CurrentDirectory;
-
+#endif
                     var res = dialog is OpenFileDialog
                         ? UnmanagedMethods.GetOpenFileName(new IntPtr(pofn))
                         : UnmanagedMethods.GetSaveFileName(new IntPtr(pofn));
 
                     // Restore the old current directory, since GetOpenFileName and GetSaveFileName change it after they're called
+#if !NETSTANDARD
                     Environment.CurrentDirectory = currentDirectory;
+#endif
 
                     if (!res)
                         return null;
@@ -141,6 +155,9 @@ namespace Avalonia.Win32
 
         public Task<string> ShowFolderDialogAsync(OpenFolderDialog dialog, IWindowImpl parent)
         {
+#if NETSTANDARD
+            throw new NotImplementedException();
+#else
             return Task.Factory.StartNew(() =>
             {
                 string result = string.Empty;
@@ -197,6 +214,7 @@ namespace Avalonia.Win32
 
                 return result;
             });
+#endif
         }
     }
 }
