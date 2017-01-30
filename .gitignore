@@ -161,3 +161,4 @@ tools/
 .nuget
 artifacts/
 nuget
+Avalonia.XBuild.sln

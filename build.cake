@@ -42,7 +42,7 @@ var AssemblyInfoPath = File("./src/Shared/SharedAssemblyInfo.cs");
 var ReleasePlatform = "Any CPU";
 var ReleaseConfiguration = "Release";
 var MSBuildSolution = "./Avalonia.sln";
-var XBuildSolution = "./Avalonia.sln";
+var XBuildSolution = "./Avalonia.XBuild.sln";
 
 ///////////////////////////////////////////////////////////////////////////////
 // PARAMETERS
@@ -593,9 +593,39 @@ Task("Clean")
     CleanDirectory(binRoot);
     CleanDirectory(testsRoot);
 });
+Task("Prepare-XBuild-Solution")
+    .Does(() =>
+{
+    var blacklistedProjects = new[]{"Avalonia.Win32.NetStandard"};
+    var blacklistedGuids = new HashSet<string>(System.IO.File.ReadAllLines(MSBuildSolution)
+        .Where(l=>l.StartsWith("Project") && blacklistedProjects.Any(p=>l.Contains(p)))
+        .Select(l => l.Split(',').Select(part => part.Trim()).FirstOrDefault(part => part.StartsWith("\"{")))
+        .Where(g=>g!=null)
+        .Select(l=>l.Trim(new[]{'"', '}', '{'}).ToLower())
+    );
+    Console.WriteLine("Blacklisted guids are: " + string.Join(",", blacklistedGuids));
+    var removeUntilEndProject = false;
+    System.IO.File.WriteAllLines(XBuildSolution, System.IO.File.ReadAllLines(MSBuildSolution)
+        .Where(l => 
+        {
+            if(removeUntilEndProject)
+            {
+                if(l.StartsWith("EndProject"))
+                    removeUntilEndProject = false;
+                return false;
+            }
+            
+            var blacklist = blacklistedGuids.Any(g => l.ToLower().Contains(g));
+            if(blacklist && l.StartsWith("Project"))
+                removeUntilEndProject = true;
+            
+            return !blacklist;
+        }));
+});
 
 Task("Restore-NuGet-Packages")
     .IsDependentOn("Clean")
+    .IsDependentOn("Prepare-XBuild-Solution")
     .Does(() =>
 {
     var maxRetryCount = 5;
