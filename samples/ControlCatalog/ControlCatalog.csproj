@@ -94,6 +94,8 @@
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="MetroWindow.cs" />
+    <Compile Include="MetroWindowTheme.paml.cs" />
     <Compile Include="Pages\BorderPage.xaml.cs">
       <DependentUpon>BorderPage.xaml</DependentUpon>
     </Compile>
@@ -224,6 +226,11 @@
       <SubType>
       </SubType>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\MetroWindow.paml" />
+    <EmbeddedResource Include="Assets\MetroWindowControlsTheme.paml" />
+    <EmbeddedResource Include="Assets\MetroWindowTheme.paml" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
