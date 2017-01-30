@@ -3,17 +3,13 @@
 
 using System;
 using System.Collections.Generic;
-using System.Reactive.Disposables;
-using System.Runtime.InteropServices;
-using Gdk;
-using Avalonia.Controls;
-using Avalonia.Controls.Platform.Surfaces;
+using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
-using Avalonia.Input;
-using Avalonia.Threading;
+using Gdk;
 using Action = System.Action;
 using WindowEdge = Avalonia.Controls.WindowEdge;
+using GLib;
 
 namespace Avalonia.Gtk
 {
@@ -23,8 +19,6 @@ namespace Avalonia.Gtk
     {
         private IInputRoot _inputRoot;
         protected Gtk.Widget _window;
-        public Gtk.Widget Widget => _window;
-        public Gdk.Drawable CurrentDrawable { get; private set; }
         private FramebufferManager _framebuffer;
 
         private Gtk.IMContext _imContext;
@@ -56,10 +50,13 @@ namespace Avalonia.Gtk
             _window.KeyReleaseEvent += OnKeyReleaseEvent;
             _window.ExposeEvent += OnExposeEvent;
             _window.MotionNotifyEvent += OnMotionNotifyEvent;
+
             
         }
 
         public IPlatformHandle Handle { get; private set; }
+        public Gtk.Widget Widget => _window;
+        public Gdk.Drawable CurrentDrawable { get; private set; }
 
         void OnRealized (object sender, EventArgs eventArgs)
         {
@@ -129,6 +126,13 @@ namespace Avalonia.Gtk
         public Action<Point> PositionChanged { get; set; }
 
         public Action<double> ScalingChanged { get; set; }
+
+        public IEnumerable<object> Surfaces => new object[]
+        {
+            Handle,
+            new Func<Gdk.Drawable>(() => CurrentDrawable),
+            _framebuffer
+        };
 
         public IPopupImpl CreatePopup()
         {
@@ -267,6 +271,7 @@ namespace Avalonia.Gtk
             Input(e);
         }
 
+		[ConnectBefore]
         void OnKeyPressEvent(object o, Gtk.KeyPressEventArgs args)
         {
             args.RetVal = true;
@@ -309,11 +314,6 @@ namespace Avalonia.Gtk
             args.RetVal = true;
         }
 
-        public void SetCoverTaskbarWhenMaximized(bool enable)
-        {
-            // No action neccesary on Gtk.
-        }
-
         public void Dispose()
         {
             _framebuffer.Dispose();
@@ -321,12 +321,5 @@ namespace Avalonia.Gtk
             _window.Dispose();
             _window = null;
         }
-
-        public IEnumerable<object> Surfaces => new object[]
-        {
-            Handle, 
-            new Func<Gdk.Drawable>(() => CurrentDrawable),
-            _framebuffer
-        };
     }
 }

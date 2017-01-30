@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Avalonia.Controls.Platform.Surfaces;
 
 namespace Avalonia.Gtk
@@ -10,7 +6,8 @@ namespace Avalonia.Gtk
     class FramebufferManager : IFramebufferPlatformSurface, IDisposable
     {
         private readonly WindowImplBase _window;
-        private PixbufFramebuffer _fb;
+        private SurfaceFramebuffer _fb;
+
         public FramebufferManager(WindowImplBase window)
         {
             _window = window;
@@ -32,8 +29,8 @@ namespace Avalonia.Gtk
             if (_fb == null || _fb.Width != width ||
                 _fb.Height != height)
             {
-                _fb?.Dispose();
-                _fb = new PixbufFramebuffer(width, height);
+                _fb?.Deallocate();
+                _fb = new SurfaceFramebuffer(width, height);
             }
             _fb.SetDrawable(drawable);
             return _fb;

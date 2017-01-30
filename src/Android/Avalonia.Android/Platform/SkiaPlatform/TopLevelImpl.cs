@@ -7,32 +7,30 @@ using Avalonia.Android.Platform.Specific.Helpers;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
-using Avalonia.Skia.Android;
 using System;
 using System.Collections.Generic;
 using Avalonia.Controls;
+using Avalonia.Controls.Platform.Surfaces;
 
 namespace Avalonia.Android.Platform.SkiaPlatform
 {
-    public class WindowImpl : SkiaView, IAndroidView, IWindowImpl, ISurfaceHolderCallback
+    class TopLevelImpl : InvalidationAwareSurfaceView, IAndroidView, ITopLevelImpl,
+        ISurfaceHolderCallback, IFramebufferPlatformSurface
+
     {
-        protected AndroidKeyboardEventsHelper<WindowImpl> _keyboardHelper;
+        protected AndroidKeyboardEventsHelper<TopLevelImpl> _keyboardHelper;
 
-        private AndroidTouchEventsHelper<WindowImpl> _touchHelper;
+        private AndroidTouchEventsHelper<TopLevelImpl> _touchHelper;
 
-        public WindowImpl(Context context) : base((Activity)context)
+        public TopLevelImpl(Context context) : base(context)
         {
-            _keyboardHelper = new AndroidKeyboardEventsHelper<WindowImpl>(this);
-            _touchHelper = new AndroidTouchEventsHelper<WindowImpl>(this, () => InputRoot, p => GetAvaloniaPointFromEvent(p));
+            _keyboardHelper = new AndroidKeyboardEventsHelper<TopLevelImpl>(this);
+            _touchHelper = new AndroidTouchEventsHelper<TopLevelImpl>(this, () => InputRoot, p => GetAvaloniaPointFromEvent(p));
 
             MaxClientSize = new Size(Resources.DisplayMetrics.WidthPixels, Resources.DisplayMetrics.HeightPixels);
             ClientSize = MaxClientSize;
-            Init();
         }
-
-        public WindowImpl() : this(AvaloniaLocator.Current.GetService<IAndroidActivity>().Activity)
-        {
-        }
+        
 
         void ISurfaceHolderCallback.SurfaceChanged(ISurfaceHolder holder, Format format, int width, int height)
         {
@@ -46,11 +44,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
             base.SurfaceChanged(holder, format, width, height);
         }
-
-        protected virtual void Init()
-        {
-        }
-
+        
         private bool _handleEvents;
 
         public bool HandleEvents
@@ -96,6 +90,8 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         IPlatformHandle ITopLevelImpl.Handle => this;
 
+        public IEnumerable<object> Surfaces => new object[] { this };
+
         public void Activate()
         {
         }
@@ -107,11 +103,6 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public void SetSystemDecorations(bool enabled)
         {
-        }
-
-        public void SetCoverTaskbarWhenMaximized(bool enable)
-        {
-            //Not supported
         }
 
         public void Invalidate(Rect rect)
@@ -195,6 +186,6 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             // No window icons for mobile platforms
         }
 
-        public IEnumerable<object> Surfaces => new object[] {this};
+        ILockedFramebuffer IFramebufferPlatformSurface.Lock()=>new AndroidFramebuffer(Holder.Surface);
     }
 }

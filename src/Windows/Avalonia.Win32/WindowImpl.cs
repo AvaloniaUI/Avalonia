@@ -34,10 +34,10 @@ namespace Avalonia.Win32
         private bool _trackingMouse;
         private bool _isActive;
         private bool _decorated = true;
-        private bool _coverTaskBarWhenMaximized = true;
         private double _scaling = 1;
         private WindowState _showWindowState;
         private FramebufferManager _framebuffer;
+
         public WindowImpl()
         {
             CreateWindow();
@@ -163,6 +163,11 @@ namespace Avalonia.Win32
                 }
             }
         }
+
+        public IEnumerable<object> Surfaces => new object[]
+        {
+            Handle, _framebuffer
+        };
 
         public void Activate()
         {
@@ -681,8 +686,6 @@ namespace Avalonia.Win32
         {
             UnmanagedMethods.ShowWindowCommand command;
 
-            bool maximizeFillsDesktop = false; // otherwise we cover entire screen.
-
             switch (state)
             {
                 case WindowState.Minimized:
@@ -690,11 +693,6 @@ namespace Avalonia.Win32
                     break;
                 case WindowState.Maximized:
                     command = ShowWindowCommand.Maximize;
-
-                    if (!_decorated && !_coverTaskBarWhenMaximized)
-                    {
-                        maximizeFillsDesktop = true;
-                    }
                     break;
 
                 case WindowState.Normal:
@@ -707,7 +705,7 @@ namespace Avalonia.Win32
 
             UnmanagedMethods.ShowWindow(_hwnd, command);
 
-            if (maximizeFillsDesktop)
+            if (state == WindowState.Maximized)
             {
                 MaximizeWithoutCoveringTaskbar();
             }
@@ -754,20 +752,5 @@ namespace Avalonia.Win32
 
             return (int)(ptr.ToInt64() & 0xffffffff);
         }
-
-        public void SetCoverTaskbarWhenMaximized(bool enable)
-        {
-            _coverTaskBarWhenMaximized = enable;
-
-            if (_showWindowState == WindowState.Maximized)
-            {
-                ShowWindow(WindowState.Maximized);
-            }
-        }
-
-        public IEnumerable<object> Surfaces => new object[]
-        {
-            Handle, _framebuffer 
-        };
     }
 }

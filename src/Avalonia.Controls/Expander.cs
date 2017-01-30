@@ -31,7 +31,8 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterDirect<Expander, bool>(
                 nameof(IsExpanded),
                 o => o.IsExpanded,
-                (o, v) => o.IsExpanded = v);
+                (o, v) => o.IsExpanded = v,
+                defaultBindingMode: Data.BindingMode.TwoWay);
 
         static Expander()
         {

@@ -59,7 +59,7 @@ namespace Avalonia.Cairo
                 return new RenderTarget(accessor);
 
             throw new NotSupportedException(string.Format(
-                "Don't know how to create a Cairo renderer from any of provided surfaces"));
+                "Don't know how to create a Cairo renderer from any of the provided surfaces."));
         }
 
         public IRenderTargetBitmapImpl CreateRenderTargetBitmap(int width, int height)
