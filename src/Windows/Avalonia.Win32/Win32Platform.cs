@@ -159,7 +159,7 @@ namespace Avalonia.Win32
                 cbSize = Marshal.SizeOf(typeof(UnmanagedMethods.WNDCLASSEX)),
                 lpfnWndProc = _wndProcDelegate,
                 hInstance = UnmanagedMethods.GetModuleHandle(null),
-                lpszClassName = "AvaloniaMessageWindow",
+                lpszClassName = "AvaloniaMessageWindow " + Guid.NewGuid(),
             };
 
             ushort atom = UnmanagedMethods.RegisterClassEx(ref wndClassEx);
