@@ -273,6 +273,12 @@ var win32CoreLibrariesNuSpecContent = coreLibrariesFiles.Select((file) => {
     };
 });
 
+var netcoreappCoreLibrariesNuSpecContent = coreLibrariesFiles.Select((file) => {
+    return new NuSpecContent { 
+        Source = file.FullPath, Target = "lib/netcoreapp1.0" 
+    };
+});
+
 var net45RuntimePlatformExtensions = new [] {".xml", ".dll"};
 var net45RuntimePlatform = net45RuntimePlatformExtensions.Select(libSuffix => {
     return new NuSpecContent {
@@ -280,6 +286,15 @@ var net45RuntimePlatform = net45RuntimePlatformExtensions.Select(libSuffix => {
         Target = "lib/net45" 
     };
 });
+
+var netCoreRuntimePlatformExtensions = new [] {".xml", ".dll"};
+var netCoreRuntimePlatform = netCoreRuntimePlatformExtensions.Select(libSuffix => {
+    return new NuSpecContent {
+        Source = ((FilePath)File("./src/Avalonia.DotNetCoreRuntime/bin/" + dirSuffix + "/Avalonia.DotNetCoreRuntime" + libSuffix)).FullPath, 
+        Target = "lib/netcoreapp1.0" 
+    };
+});
+
 
 var nuspecNuGetSettingsCore = new []
 {
@@ -294,9 +309,16 @@ var nuspecNuGetSettingsCore = new []
             new NuSpecDependency() { Id = "Serilog", Version = SerilogVersion },
             new NuSpecDependency() { Id = "Splat", Version = SplatVersion },
             new NuSpecDependency() { Id = "Sprache", Version = SpracheVersion },
-            new NuSpecDependency() { Id = "System.Reactive", Version = SystemReactiveVersion }
+            new NuSpecDependency() { Id = "System.Reactive", Version = SystemReactiveVersion },
+            new NuSpecDependency() { Id = "System.Threading.ThreadPool", TargetFramework = "netcoreapp1.0", Version = "4.3.0" },
+            new NuSpecDependency() { Id = "Microsoft.Extensions.DependencyModel", TargetFramework = "netcoreapp1.0", Version = "1.1.0" },
+            new NuSpecDependency() { Id = "NETStandard.Library", TargetFramework = "netcoreapp1.0", Version = "1.6.1" },
+            new NuSpecDependency() { Id = "Microsoft.NETCore.Portable.Compatibility", TargetFramework = "netcoreapp1.0", Version = "1.0.1" }
         },
-        Files = coreLibrariesNuSpecContent.Concat(win32CoreLibrariesNuSpecContent).Concat(net45RuntimePlatform).ToList(),
+        Files = coreLibrariesNuSpecContent
+            .Concat(win32CoreLibrariesNuSpecContent).Concat(net45RuntimePlatform)
+            .Concat(netcoreappCoreLibrariesNuSpecContent).Concat(netCoreRuntimePlatform)
+            .ToList(),
         BasePath = Directory("./"),
         OutputDirectory = nugetRoot
     },
@@ -596,15 +618,16 @@ Task("Clean")
 Task("Prepare-XBuild-Solution")
     .Does(() =>
 {
-    var blacklistedProjects = new[]{"Avalonia.Win32.NetStandard"};
-    var blacklistedGuids = new HashSet<string>(System.IO.File.ReadAllLines(MSBuildSolution)
+    var blacklistedProjects = new[]{"Avalonia.Win32.NetStandard", "Avalonia.DotNetCoreRuntime"};
+    var blacklistedGuids = System.IO.File.ReadAllLines(MSBuildSolution)
         .Where(l=>l.StartsWith("Project") && blacklistedProjects.Any(p=>l.Contains(p)))
         .Select(l => l.Split(',').Select(part => part.Trim()).FirstOrDefault(part => part.StartsWith("\"{")))
         .Where(g=>g!=null)
-        .Select(l=>l.Trim(new[]{'"', '}', '{'}).ToLower())
-    );
+        .Select(l=>l.Trim(new[]{'"', '}', '{'}).ToLower()).ToArray();
+
     Console.WriteLine("Blacklisted guids are: " + string.Join(",", blacklistedGuids));
     var removeUntilEndProject = false;
+
     System.IO.File.WriteAllLines(XBuildSolution, System.IO.File.ReadAllLines(MSBuildSolution)
         .Where(l => 
         {
@@ -769,7 +792,7 @@ Task("Zip-Files")
 });
 
 Task("Create-NuGet-Packages")
-    .IsDependentOn("Run-Unit-Tests")
+    //.IsDependentOn("Build")
     .Does(() =>
 {
     foreach(var nuspec in nuspecNuGetSettings)
