@@ -22,7 +22,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;GTK3_PINVOKE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -31,7 +31,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;GTK3_PINVOKE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -41,7 +41,11 @@
     <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Avalonia.Gtk\KeyTransform.cs">
+      <Link>KeyTransform.cs</Link>
+    </Compile>
     <Compile Include="FramebufferManager.cs" />
+    <Compile Include="GdkKey.cs" />
     <Compile Include="Gtk3Platform.cs" />
     <Compile Include="Interop\ICustomGtk3NativeLibraryResolver.cs" />
     <Compile Include="Interop\DynLoader.cs" />

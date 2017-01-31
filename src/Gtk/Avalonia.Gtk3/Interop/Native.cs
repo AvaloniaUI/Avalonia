@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using Avalonia.Controls;
 using gint8 = System.Byte;
 using gint16 = System.Int16;
 using gint32 = System.Int32;
@@ -110,8 +111,33 @@ namespace Avalonia.Gtk3.Interop
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
             public delegate void gtk_widget_queue_draw_area(IntPtr gtkWindow, int x, int y, int width, int height);
 
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
+            public delegate IntPtr gtk_im_multicontext_new();
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
+            public delegate IntPtr gtk_im_context_set_client_window(IntPtr context, IntPtr window);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
+            public delegate bool gtk_im_context_filter_keypress(IntPtr context, IntPtr ev);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
+            public delegate void gtk_widget_activate(IntPtr widget);
+            
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
+            public delegate IntPtr gdk_screen_get_root_window(IntPtr screen);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
+            public delegate IntPtr gdk_window_get_pointer(IntPtr raw, out int x, out int y, out int mask);
+
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
             public delegate void gdk_window_invalidate_rect(IntPtr window, ref GdkRectangle rect, bool invalidate_children);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
+            public delegate void gdk_window_begin_move_drag(IntPtr window, gint button, gint root_x, gint root_y, guint32 timestamp);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
+            public delegate void gdk_window_begin_resize_drag(IntPtr window, WindowEdge edge, gint button, gint root_x, gint root_y, guint32 timestamp);
+
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gobject)]
             public delegate ulong g_signal_connect_object(IntPtr instance, Utf8Buffer signal, IntPtr handler, IntPtr userData, int flags);
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gobject)]
@@ -122,8 +148,13 @@ namespace Avalonia.Gtk3.Interop
             public delegate bool signal_widget_draw(IntPtr gtkWidget, IntPtr cairoContext, IntPtr userData);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            public delegate bool signal_generic(IntPtr gtkWidget, IntPtr userData);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate bool signal_onevent(IntPtr gtkWidget, IntPtr ev, IntPtr userData);
 
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            public delegate bool signal_commit(IntPtr gtkWidget, IntPtr utf8string, IntPtr userData);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate bool timeout_callback(IntPtr data);
@@ -153,9 +184,20 @@ namespace Avalonia.Gtk3.Interop
         public static D.gtk_widget_set_events GtkWidgetSetEvents;
         public static D.gdk_window_invalidate_rect GdkWindowInvalidateRect;
         public static D.gtk_widget_queue_draw_area GtkWidgetQueueDrawArea;
+        public static D.gtk_widget_activate GtkWidgetActivate;
+
+
+        public static D.gtk_im_multicontext_new GtkImMulticontextNew;
+        public static D.gtk_im_context_filter_keypress GtkImContextFilterKeypress;
+        public static D.gtk_im_context_set_client_window GtkImContextSetClientWindow;
+
         public static D.gdk_screen_get_height GdkScreenGetHeight;
         public static D.gdk_screen_get_width GdkScreenGetWidth;
+        public static D.gdk_screen_get_root_window GdkScreenGetRootWindow;
         public static D.gdk_window_get_origin GdkWindowGetOrigin;
+        public static D.gdk_window_get_pointer GdkWindowGetPointer;
+        public static D.gdk_window_begin_move_drag GdkWindowBeginMoveDrag;
+        public static D.gdk_window_begin_resize_drag GdkWindowBeginResizeDrag;
 
         public static D.cairo_image_surface_create CairoImageSurfaceCreate;
         public static D.cairo_image_surface_get_data CairoImageSurfaceGetData;
@@ -310,5 +352,44 @@ namespace Avalonia.Gtk3.Interop
         public gdouble x_root, y_root;
         public gdouble delta_x;
         public gdouble delta_y;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    unsafe struct GdkEventWindowState
+    {
+        public GdkEventType type;
+        public IntPtr window;
+        gint8 send_event;
+        public GdkWindowState changed_mask;
+        public GdkWindowState new_window_state;
+    }
+
+    unsafe struct GdkEventKey
+    {
+        public GdkEventType type;
+        public IntPtr window;
+        public gint8 send_event;
+        public guint32 time;
+        public guint state;
+        public guint keyval;
+        public gint length;
+        public IntPtr pstring;
+        public guint16 hardware_keycode;
+        public byte group;
+        public guint is_modifier;
+    }
+
+    [Flags]
+    public enum GdkWindowState
+    {
+        Withdrawn = 1,
+        Iconified = 2,
+        Maximized = 4,
+        Sticky = 8,
+        Fullscreen = 16,
+        Above = 32,
+        Below = 64,
+        Focused = 128,
+        Ttiled = 256
     }
 }

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
+using System.Text;
 using Avalonia.Controls;
 using Avalonia.Gtk3.Interop;
 using Avalonia.Input;
@@ -13,25 +15,32 @@ namespace Avalonia.Gtk3
     {
         protected readonly IntPtr GtkWidget;
         private IInputRoot _inputRoot;
+        private readonly IntPtr _imContext;
         private readonly FramebufferManager _framebuffer;
-        protected readonly List<IDisposable> _disposables = new List<IDisposable>();
+        protected readonly List<IDisposable> Disposables = new List<IDisposable>();
+        private Size _lastSize;
+        private Point _lastPosition;
+        private uint _lastKbdEvent;
 
         public TopLevelImpl(IntPtr gtkWidget)
         {
             GtkWidget = gtkWidget;
             _framebuffer = new FramebufferManager(this);
+            _imContext = Native.GtkImMulticontextNew();
             Native.GtkWidgetSetEvents(gtkWidget, uint.MaxValue);
-            Native.GtkWidgetRealize(gtkWidget);
+            Disposables.Add(Signal.Connect<Native.D.signal_commit>(_imContext, "commit", OnCommit));
             Connect<Native.D.signal_widget_draw>("draw", OnDraw);
-            Connect<Native.D.signal_onevent>("configure-event", OnConfigured);
-            Connect<Native.D.signal_onevent>("button-press-event", OnButton);
-            Connect<Native.D.signal_onevent>("button-release-event", OnButton);
-            Connect<Native.D.signal_onevent>("motion-notify-event", OnMotion);
-            Connect<Native.D.signal_onevent>("scroll-event", OnScroll);
+            Connect<Native.D.signal_generic>("realize", OnRealized);
+            ConnectEvent("configure-event", OnConfigured);
+            ConnectEvent("button-press-event", OnButton);
+            ConnectEvent("button-release-event", OnButton);
+            ConnectEvent("motion-notify-event", OnMotion);
+            ConnectEvent("scroll-event", OnScroll);
+            ConnectEvent("window-state-event", OnStateChanged);
+            ConnectEvent("key-press-event", OnKeyEvent);
+            ConnectEvent("key-release-event", OnKeyEvent);
+            Native.GtkWidgetRealize(gtkWidget);
         }
-
-        private Size _lastSize;
-        private Point _lastPosition;
 
         private bool OnConfigured(IntPtr gtkwidget, IntPtr ev, IntPtr userdata)
         {
@@ -51,6 +60,11 @@ namespace Avalonia.Gtk3
             return false;
         }
 
+        private bool OnRealized(IntPtr gtkwidget, IntPtr userdata)
+        {
+            Native.GtkImContextSetClientWindow(_imContext, Native.GtkWidgetGetWindow(GtkWidget));
+            return false;
+        }
 
         private static InputModifiers GetModifierKeys(GdkModifierType state)
         {
@@ -89,6 +103,19 @@ namespace Avalonia.Gtk3
             return false;
         }
 
+        private unsafe bool OnStateChanged(IntPtr w, IntPtr pev, IntPtr userData)
+        {
+            var ev = (GdkEventWindowState*) pev;
+            if (ev->changed_mask.HasFlag(GdkWindowState.Focused))
+            {
+                if(ev->new_window_state.HasFlag(GdkWindowState.Focused))
+                    Activated?.Invoke();
+                else
+                    Deactivated?.Invoke();
+            }
+            return true;
+        }
+
         private unsafe bool OnMotion(IntPtr w, IntPtr ev, IntPtr userdata)
         {
             var evnt = (GdkEventMotion*)ev;
@@ -108,7 +135,7 @@ namespace Avalonia.Gtk3
         {
             var evnt = (GdkEventScroll*)ev;
             var delta = new Vector();
-            var step = (double) 1;
+            const double step = (double) 1;
             if (evnt->direction == GdkScrollDirection.Down)
                 delta = new Vector(0, -step);
             else if (evnt->direction == GdkScrollDirection.Up)
@@ -126,7 +153,36 @@ namespace Avalonia.Gtk3
             return false;
         }
 
-        void Connect<T>(string name, T handler) => _disposables.Add(Signal.Connect<T>(GtkWidget, name, handler));
+        private unsafe bool OnKeyEvent(IntPtr w, IntPtr pev, IntPtr userData)
+        {
+            var evnt = (GdkEventKey*) pev;
+            _lastKbdEvent = evnt->time;
+            if (Native.GtkImContextFilterKeypress(_imContext, pev))
+                return true;
+            var e = new RawKeyEventArgs(
+                Gtk3Platform.Keyboard,
+                evnt->time,
+                evnt->type == GdkEventType.KeyPress ? RawKeyEventType.KeyDown : RawKeyEventType.KeyUp,
+                Avalonia.Gtk.Common.KeyTransform.ConvertKey((GdkKey)evnt->keyval), GetModifierKeys((GdkModifierType)evnt->state));
+            Input(e);
+            return true;
+        }
+
+        private unsafe bool OnCommit(IntPtr gtkwidget, IntPtr utf8string, IntPtr userdata)
+        {
+            var pstr = (byte*)utf8string;
+            int len;
+            for (len = 0; pstr[len] != 0; len++) ;
+            var bytes = new byte[len];
+            Marshal.Copy(utf8string, bytes, 0, len);
+
+            Input(new RawTextInputEventArgs(Gtk3Platform.Keyboard, _lastKbdEvent, Encoding.UTF8.GetString(bytes, 0, len)));
+            return true;
+        }
+
+        void ConnectEvent(string name, Native.D.signal_onevent handler) 
+            => Disposables.Add(Signal.Connect<Native.D.signal_onevent>(GtkWidget, name, handler));
+        void Connect<T>(string name, T handler) => Disposables.Add(Signal.Connect(GtkWidget, name, handler));
 
         internal IntPtr CurrentCairoContext { get; private set; }
 
@@ -140,9 +196,9 @@ namespace Avalonia.Gtk3
 
         public void Dispose()
         {
-            foreach(var d in _disposables)
+            foreach(var d in Disposables)
                 d.Dispose();
-            _disposables.Clear();
+            Disposables.Clear();
             //TODO
         }
 
@@ -161,19 +217,16 @@ namespace Avalonia.Gtk3
 
         string IPlatformHandle.HandleDescriptor => "HWND";
 
-        public Action Activated { get; set; } //TODO
+        public Action Activated { get; set; }
         public Action Closed { get; set; } //TODO
-        public Action Deactivated { get; set; } //TODO
-        public Action<RawInputEventArgs> Input { get; set; } //TODO
+        public Action Deactivated { get; set; }
+        public Action<RawInputEventArgs> Input { get; set; }
         public Action<Rect> Paint { get; set; }
         public Action<Size> Resized { get; set; }
         public Action<double> ScalingChanged { get; set; } //TODO
         public Action<Point> PositionChanged { get; set; }
 
-        public void Activate()
-        {
-            throw new NotImplementedException();
-        }
+        public void Activate() => Native.GtkWidgetActivate(GtkWidget);
 
         public void Invalidate(Rect rect)
         {
@@ -206,14 +259,25 @@ namespace Avalonia.Gtk3
 
         public void Hide() => Native.GtkWidgetHide(GtkWidget);
 
+        void GetGlobalPointer(out int x, out int y)
+        {
+            int mask;
+            Native.GdkWindowGetPointer(Native.GdkScreenGetRootWindow(Native.GtkWidgetGetScreen(GtkWidget)),
+                out x, out y, out mask);
+        }
+
         public void BeginMoveDrag()
         {
-            //STUB
+            int x, y;
+            GetGlobalPointer(out x, out y);
+            Native.GdkWindowBeginMoveDrag(Native.GtkWidgetGetWindow(GtkWidget), 1, x, y, 0);
         }
 
         public void BeginResizeDrag(WindowEdge edge)
         {
-            //STUB
+            int x, y;
+            GetGlobalPointer(out x, out y);
+            Native.GdkWindowBeginResizeDrag(Native.GtkWidgetGetWindow(GtkWidget), edge, 1, x, y, 0);
         }
 
 
