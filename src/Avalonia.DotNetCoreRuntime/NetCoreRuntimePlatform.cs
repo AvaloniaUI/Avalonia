@@ -5,8 +5,6 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.DotNet.PlatformAbstractions;
-using Microsoft.Extensions.DependencyModel;
 
 namespace Avalonia.Shared.PlatformSupport
 {
@@ -14,31 +12,33 @@ namespace Avalonia.Shared.PlatformSupport
     {
         public Assembly[] GetLoadedAssemblies()
         {
-            List<Assembly> assemblies = new List<Assembly>();
-            // Mostly copy-pasted from (MIT):
-            // https://github.com/StefH/System.AppDomain.Core/blob/0b35e676c2721aa367b96e62eb52c97ee0b43a70/src/System.AppDomain.NetCoreApp/AppDomain.cs
-            foreach (var assemblyName in DependencyContext.Default.GetRuntimeAssemblyNames(RuntimeEnvironment.GetRuntimeIdentifier()))
+
+            var rv = new List<Assembly>();
+            var entry = Assembly.GetEntryAssembly();
+            rv.Add(entry);
+            var queue = new Queue<AssemblyName>(entry.GetReferencedAssemblies());
+            var aset = new HashSet<string>(queue.Select(r => r.ToString()));
+
+            while (queue.Count > 0)
             {
+                Assembly asm;
                 try
                 {
-                    try
-                    {
-                        var assembly = Assembly.Load(assemblyName);
-                        // just load all types and skip this assembly if one or more types cannot be resolved
-                        assembly.DefinedTypes.ToArray();
-                        assemblies.Add(assembly);
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.Write(ex.Message);
-                    }
+                    asm = Assembly.Load(queue.Dequeue());
                 }
-                catch (Exception ex)
+                catch (Exception e)
                 {
-                    Debug.Write(ex.Message);
+                    Debug.Write(e.ToString());
+                    continue;
+                }
+                rv.Add(asm);
+                foreach (var r in asm.GetReferencedAssemblies())
+                {
+                    if (aset.Add(r.ToString()))
+                        queue.Enqueue(r);
                 }
             }
-            return assemblies.OrderBy(a => a.FullName).ToArray();
+            return rv.Distinct().ToArray();
         }
     }
 }

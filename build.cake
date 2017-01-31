@@ -311,8 +311,7 @@ var nuspecNuGetSettingsCore = new []
             new NuSpecDependency() { Id = "Sprache", Version = SpracheVersion },
             new NuSpecDependency() { Id = "System.Reactive", Version = SystemReactiveVersion },
             new NuSpecDependency() { Id = "System.Threading.ThreadPool", TargetFramework = "netcoreapp1.0", Version = "4.3.0" },
-            new NuSpecDependency() { Id = "Microsoft.Extensions.DependencyModel", TargetFramework = "netcoreapp1.0", Version = "1.1.0" },
-            new NuSpecDependency() { Id = "NETStandard.Library", TargetFramework = "netcoreapp1.0", Version = "1.6.1" },
+            new NuSpecDependency() { Id = "NETStandard.Library", TargetFramework = "netcoreapp1.0", Version = "1.6.0" },
             new NuSpecDependency() { Id = "Microsoft.NETCore.Portable.Compatibility", TargetFramework = "netcoreapp1.0", Version = "1.0.1" }
         },
         Files = coreLibrariesNuSpecContent
@@ -792,7 +791,7 @@ Task("Zip-Files")
 });
 
 Task("Create-NuGet-Packages")
-    //.IsDependentOn("Build")
+    .IsDependentOn("Run-Unit-Tests")
     .Does(() =>
 {
     foreach(var nuspec in nuspecNuGetSettings)

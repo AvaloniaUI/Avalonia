@@ -2,14 +2,10 @@
   "supports": {},
   "dependencies": {
     "Microsoft.NETCore.Portable.Compatibility": "1.0.1",
-    "NETStandard.Library": "1.6.1"
+    "NETStandard.Library": "1.6.0",
+    "System.Threading.ThreadPool": "4.3.0"
   },
   "frameworks": {
-    "netstandard1.6": {
-        "dependencies": {
-            "System.Threading.ThreadPool": "4.3.0",
-            "Microsoft.Extensions.DependencyModel": "1.1.0"
-        }
-    }
+    "netstandard1.5": {}
   }
 }
