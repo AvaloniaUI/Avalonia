@@ -281,7 +281,7 @@ namespace Avalonia.Gtk3
         }
 
 
-        public Size ClientSize
+        public virtual Size ClientSize
         {
             get
             {
@@ -289,7 +289,13 @@ namespace Avalonia.Gtk3
                 Native.GtkWindowGetSize(GtkWidget, out w, out h);
                 return new Size(w, h);
             }
-            set { Native.GtkWindowResize(GtkWidget, (int)value.Width, (int)value.Height); }
+            set
+            {
+                Native.GtkWindowResize(GtkWidget, (int)value.Width, (int)value.Height);
+                if (Native.GtkWidgetGetWindow(GtkWidget) == IntPtr.Zero)
+                    Native.GtkWidgetRealize(GtkWidget);
+                Native.GdkWindowResize(Native.GtkWidgetGetWindow(GtkWidget), (int)value.Width, (int)value.Height);
+            }
         }
 
         public Point Position

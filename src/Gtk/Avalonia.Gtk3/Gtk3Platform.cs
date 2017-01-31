@@ -49,10 +49,7 @@ namespace Avalonia.Gtk3
             throw new NotImplementedException();
         }
 
-        public IPopupImpl CreatePopup()
-        {
-            throw new NotImplementedException();
-        }
+        public IPopupImpl CreatePopup() => new PopupImpl();
 
         
 

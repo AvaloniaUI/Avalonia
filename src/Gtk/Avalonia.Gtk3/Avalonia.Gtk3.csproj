@@ -55,6 +55,7 @@
     <Compile Include="Interop\Resolver.cs" />
     <Compile Include="Interop\Signal.cs" />
     <Compile Include="ImageSurfaceFramebuffer.cs" />
+    <Compile Include="PopupImpl.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Stubs.cs" />
     <Compile Include="TopLevelImpl.cs" />

@@ -59,7 +59,8 @@ namespace Avalonia.Gtk3.Interop
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
             public delegate int gdk_window_get_origin(IntPtr gdkWindow, out int x, out int y);
-
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
+            public delegate void gdk_window_resize(IntPtr gtkWindow, int width, int height);
 
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
@@ -76,6 +77,10 @@ namespace Avalonia.Gtk3.Interop
             public delegate void gtk_window_get_size(IntPtr gtkWindow, out int width, out int height);
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
             public delegate void gtk_window_resize(IntPtr gtkWindow, int width, int height);
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
+            public delegate void gtk_widget_set_size_request(IntPtr gtkWindow, int width, int height);
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
+            public delegate void gtk_window_set_default_size(IntPtr gtkWindow, int width, int height);
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
             public delegate void gtk_window_get_position(IntPtr gtkWindow, out int x, out int y);
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
@@ -128,6 +133,8 @@ namespace Avalonia.Gtk3.Interop
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
             public delegate IntPtr gdk_window_get_pointer(IntPtr raw, out int x, out int y, out int mask);
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
+            public delegate void gtk_window_set_geometry_hints(IntPtr window, IntPtr geometry_widget, ref GdkGeometry geometry, GdkWindowHints geom_mask);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
             public delegate void gdk_window_invalidate_rect(IntPtr window, ref GdkRectangle rect, bool invalidate_children);
@@ -175,6 +182,9 @@ namespace Avalonia.Gtk3.Interop
         public static D.gtk_widget_realize GtkWidgetRealize;
         public static D.gtk_window_get_size GtkWindowGetSize;
         public static D.gtk_window_resize GtkWindowResize;
+        public static D.gdk_window_resize GdkWindowResize;
+        public static D.gtk_widget_set_size_request GtkWindowSetSizeRequest;
+        public static D.gtk_window_set_default_size GtkWindowSetDefaultSize;
         public static D.gtk_window_get_position GtkWindowGetPosition;
         public static D.gtk_window_move GtkWindowMove;
         public static D.g_signal_connect_object GSignalConnectObject;
@@ -364,6 +374,7 @@ namespace Avalonia.Gtk3.Interop
         public GdkWindowState new_window_state;
     }
 
+    [StructLayout(LayoutKind.Sequential)]
     unsafe struct GdkEventKey
     {
         public GdkEventType type;
@@ -391,5 +402,34 @@ namespace Avalonia.Gtk3.Interop
         Below = 64,
         Focused = 128,
         Ttiled = 256
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    struct GdkGeometry
+    {
+        gint min_width;
+        gint min_height;
+        gint max_width;
+        gint max_height;
+        gint base_width;
+        gint base_height;
+        gint width_inc;
+        gint height_inc;
+        gdouble min_aspect;
+        gdouble max_aspect;
+        gint win_gravity;
+    }
+
+    enum GdkWindowHints
+    {
+        GDK_HINT_POS = 1 << 0,
+        GDK_HINT_MIN_SIZE = 1 << 1,
+        GDK_HINT_MAX_SIZE = 1 << 2,
+        GDK_HINT_BASE_SIZE = 1 << 3,
+        GDK_HINT_ASPECT = 1 << 4,
+        GDK_HINT_RESIZE_INC = 1 << 5,
+        GDK_HINT_WIN_GRAVITY = 1 << 6,
+        GDK_HINT_USER_POS = 1 << 7,
+        GDK_HINT_USER_SIZE = 1 << 8
     }
 }
