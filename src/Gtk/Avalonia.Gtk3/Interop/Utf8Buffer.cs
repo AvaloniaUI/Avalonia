@@ -16,6 +16,8 @@ namespace Avalonia.Gtk3.Interop
             handle = _gchandle.AddrOfPinnedObject();
         }
 
+        public int ByteLen => _data.Length;
+
         protected override bool ReleaseHandle()
         {
             if (handle != IntPtr.Zero)
@@ -28,5 +30,16 @@ namespace Avalonia.Gtk3.Interop
         }
 
         public override bool IsInvalid => handle == IntPtr.Zero;
+
+        public static unsafe string StringFromPtr(IntPtr s)
+        {
+            var pstr = (byte*)s;
+            int len;
+            for (len = 0; pstr[len] != 0; len++) ;
+            var bytes = new byte[len];
+            Marshal.Copy(s, bytes, 0, len);
+
+            return Encoding.UTF8.GetString(bytes, 0, len);
+        }
     }
 }

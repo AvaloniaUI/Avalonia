@@ -58,6 +58,9 @@ namespace Avalonia.Gtk3.Interop
             public delegate int gdk_screen_get_width(IntPtr screen);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
+            public delegate IntPtr gdk_display_get_default();
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
             public delegate int gdk_window_get_origin(IntPtr gdkWindow, out int x, out int y);
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
             public delegate void gdk_window_resize(IntPtr gtkWindow, int width, int height);
@@ -145,6 +148,18 @@ namespace Avalonia.Gtk3.Interop
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
             public delegate void gdk_window_begin_resize_drag(IntPtr window, WindowEdge edge, gint button, gint root_x, gint root_y, guint32 timestamp);
 
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
+            public delegate IntPtr gtk_clipboard_get_for_display(IntPtr display, IntPtr atom);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
+            public delegate void gtk_clipboard_request_text(IntPtr clipboard, GtkClipboardTextReceivedFunc callback, IntPtr user_data);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
+            public delegate void gtk_clipboard_set_text(IntPtr clipboard, Utf8Buffer text, int len);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
+            public delegate void gtk_clipboard_clear(IntPtr clipboard);
+
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gobject)]
             public delegate ulong g_signal_connect_object(IntPtr instance, Utf8Buffer signal, IntPtr handler, IntPtr userData, int flags);
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gobject)]
@@ -165,6 +180,9 @@ namespace Avalonia.Gtk3.Interop
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate bool timeout_callback(IntPtr data);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            public delegate void GtkClipboardTextReceivedFunc(IntPtr clipboard, IntPtr utf8string, IntPtr userdata);
         }
 
 
@@ -195,6 +213,10 @@ namespace Avalonia.Gtk3.Interop
         public static D.gdk_window_invalidate_rect GdkWindowInvalidateRect;
         public static D.gtk_widget_queue_draw_area GtkWidgetQueueDrawArea;
         public static D.gtk_widget_activate GtkWidgetActivate;
+        public static D.gtk_clipboard_get_for_display GtkClipboardGetForDisplay;
+        public static D.gtk_clipboard_request_text GtkClipboardRequestText;
+        public static D.gtk_clipboard_set_text GtkClipboardSetText;
+        public static D.gtk_clipboard_clear GtkClipboardRequestClear;
 
 
         public static D.gtk_im_multicontext_new GtkImMulticontextNew;
@@ -202,6 +224,7 @@ namespace Avalonia.Gtk3.Interop
         public static D.gtk_im_context_set_client_window GtkImContextSetClientWindow;
 
         public static D.gdk_screen_get_height GdkScreenGetHeight;
+        public static D.gdk_display_get_default GdkGetDefaultDisplay;
         public static D.gdk_screen_get_width GdkScreenGetWidth;
         public static D.gdk_screen_get_root_window GdkScreenGetRootWindow;
         public static D.gdk_window_get_origin GdkWindowGetOrigin;

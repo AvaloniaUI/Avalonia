@@ -170,13 +170,7 @@ namespace Avalonia.Gtk3
 
         private unsafe bool OnCommit(IntPtr gtkwidget, IntPtr utf8string, IntPtr userdata)
         {
-            var pstr = (byte*)utf8string;
-            int len;
-            for (len = 0; pstr[len] != 0; len++) ;
-            var bytes = new byte[len];
-            Marshal.Copy(utf8string, bytes, 0, len);
-
-            Input(new RawTextInputEventArgs(Gtk3Platform.Keyboard, _lastKbdEvent, Encoding.UTF8.GetString(bytes, 0, len)));
+            Input(new RawTextInputEventArgs(Gtk3Platform.Keyboard, _lastKbdEvent, Utf8Buffer.StringFromPtr(utf8string)));
             return true;
         }
 

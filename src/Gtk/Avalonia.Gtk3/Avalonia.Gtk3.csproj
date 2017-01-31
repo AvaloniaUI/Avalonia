@@ -44,6 +44,7 @@
     <Compile Include="..\Avalonia.Gtk\KeyTransform.cs">
       <Link>KeyTransform.cs</Link>
     </Compile>
+    <Compile Include="ClipboardImpl.cs" />
     <Compile Include="FramebufferManager.cs" />
     <Compile Include="GdkKey.cs" />
     <Compile Include="Gtk3Platform.cs" />

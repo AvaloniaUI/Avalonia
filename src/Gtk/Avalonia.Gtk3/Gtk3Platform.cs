@@ -30,7 +30,7 @@ namespace Avalonia.Gtk3
             s_tlsMarker = true;
 
             AvaloniaLocator.CurrentMutable.Bind<IWindowingPlatform>().ToConstant(Instance)
-                .Bind<IClipboard>().ToSingleton<ClipboardStub>()
+                .Bind<IClipboard>().ToSingleton<ClipboardImpl>()
                 .Bind<IStandardCursorFactory>().ToConstant(new CursorFactoryStub())
                 .Bind<IKeyboardDevice>().ToConstant(Keyboard)
                 .Bind<IMouseDevice>().ToConstant(Mouse)

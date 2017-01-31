@@ -14,15 +14,6 @@ using Avalonia.Platform;
 
 namespace Avalonia.Gtk3
 {
-    class ClipboardStub : IClipboard
-    {
-        public Task<string> GetTextAsync() => Task.FromResult("");
-
-        public Task SetTextAsync(string text) => Task.FromResult(0);
-
-        public Task ClearAsync() => Task.FromResult(0);
-    }
-
     class CursorFactoryStub :  IStandardCursorFactory
     {
         public IPlatformHandle GetCursor(StandardCursorType cursorType) => new PlatformHandle(IntPtr.Zero, "STUB");
