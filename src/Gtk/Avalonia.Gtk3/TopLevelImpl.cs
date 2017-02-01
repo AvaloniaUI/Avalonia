@@ -267,6 +267,8 @@ namespace Avalonia.Gtk3
 
         public void SetCursor(IPlatformHandle cursor)
         {
+            if (GtkWidget.IsClosed)
+                return;
             Native.GdkWindowSetCursor(Native.GtkWidgetGetWindow(GtkWidget), cursor?.Handle ??  IntPtr.Zero);
         }
 
