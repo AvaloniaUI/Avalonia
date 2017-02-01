@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using Avalonia.Controls;
@@ -13,20 +14,23 @@ namespace Avalonia.Gtk3
 {
     abstract class TopLevelImpl : ITopLevelImpl, IPlatformHandle
     {
-        protected readonly IntPtr GtkWidget;
+        protected readonly GtkWindow GtkWidget;
         private IInputRoot _inputRoot;
-        private readonly IntPtr _imContext;
+        private readonly GtkImContext _imContext;
         private readonly FramebufferManager _framebuffer;
         protected readonly List<IDisposable> Disposables = new List<IDisposable>();
         private Size _lastSize;
         private Point _lastPosition;
         private uint _lastKbdEvent;
 
-        public TopLevelImpl(IntPtr gtkWidget)
+        public TopLevelImpl(GtkWindow gtkWidget)
         {
+            
             GtkWidget = gtkWidget;
+            Disposables.Add(gtkWidget);
             _framebuffer = new FramebufferManager(this);
             _imContext = Native.GtkImMulticontextNew();
+            Disposables.Add(_imContext);
             Native.GtkWidgetSetEvents(gtkWidget, uint.MaxValue);
             Disposables.Add(Signal.Connect<Native.D.signal_commit>(_imContext, "commit", OnCommit));
             Connect<Native.D.signal_widget_draw>("draw", OnDraw);
@@ -39,6 +43,7 @@ namespace Avalonia.Gtk3
             ConnectEvent("window-state-event", OnStateChanged);
             ConnectEvent("key-press-event", OnKeyEvent);
             ConnectEvent("key-release-event", OnKeyEvent);
+            Connect<Native.D.signal_generic>("destroy", OnDestroy);
             Native.GtkWidgetRealize(gtkWidget);
         }
 
@@ -63,6 +68,12 @@ namespace Avalonia.Gtk3
         private bool OnRealized(IntPtr gtkwidget, IntPtr userdata)
         {
             Native.GtkImContextSetClientWindow(_imContext, Native.GtkWidgetGetWindow(GtkWidget));
+            return false;
+        }
+
+        private bool OnDestroy(IntPtr gtkwidget, IntPtr userdata)
+        {
+            Closed?.Invoke();
             return false;
         }
 
@@ -190,10 +201,10 @@ namespace Avalonia.Gtk3
 
         public void Dispose()
         {
-            foreach(var d in Disposables)
+            Closed?.Invoke();
+            foreach(var d in Disposables.AsEnumerable().Reverse())
                 d.Dispose();
             Disposables.Clear();
-            //TODO
         }
 
         public Size MaxClientSize
@@ -212,7 +223,7 @@ namespace Avalonia.Gtk3
         string IPlatformHandle.HandleDescriptor => "HWND";
 
         public Action Activated { get; set; }
-        public Action Closed { get; set; } //TODO
+        public Action Closed { get; set; }
         public Action Deactivated { get; set; }
         public Action<RawInputEventArgs> Input { get; set; }
         public Action<Rect> Paint { get; set; }
@@ -224,6 +235,8 @@ namespace Avalonia.Gtk3
 
         public void Invalidate(Rect rect)
         {
+            if(GtkWidget.IsClosed)
+                return;
             Native.GtkWidgetQueueDrawArea(GtkWidget, (int)rect.X, (int)rect.Y, (int)rect.Width, (int)rect.Height);
         }
 
@@ -279,12 +292,16 @@ namespace Avalonia.Gtk3
         {
             get
             {
+                if (GtkWidget.IsClosed)
+                    return new Size();
                 int w, h;
                 Native.GtkWindowGetSize(GtkWidget, out w, out h);
                 return new Size(w, h);
             }
             set
             {
+                if (GtkWidget.IsClosed)
+                    return;
                 Native.GtkWindowResize(GtkWidget, (int)value.Width, (int)value.Height);
                 if (Native.GtkWidgetGetWindow(GtkWidget) == IntPtr.Zero)
                     Native.GtkWidgetRealize(GtkWidget);

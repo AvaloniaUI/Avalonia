@@ -33,5 +33,20 @@ namespace Avalonia.Gtk3.Interop
     {
         
     }
+
+    class GtkWidget : GObject
+    {
+        
+    }
+
+    class GtkWindow : GtkWidget
+    {
+        
+    }
+
+    class GtkImContext : GObject
+    {
+        
+    }
 }
 

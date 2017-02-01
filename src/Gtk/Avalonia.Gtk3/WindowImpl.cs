@@ -14,10 +14,19 @@ namespace Avalonia.Gtk3
                 Native.GtkWindowSetTitle(GtkWidget, t);
         }
 
+        class EmptyDisposable : IDisposable
+        {
+            public void Dispose()
+            {
+                
+            }
+        }
+
         public IDisposable ShowDialog()
         {
-            return null;
-            //STUB
+            Native.GtkWindowSetModal(GtkWidget, true);
+            Show();
+            return new EmptyDisposable();
         }
 
         public void SetSystemDecorations(bool enabled) => Native.GtkWindowSetDecorated(GtkWidget, enabled);

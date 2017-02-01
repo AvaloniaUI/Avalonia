@@ -10,7 +10,7 @@ namespace Avalonia.Gtk3
 {
     class PopupImpl : TopLevelImpl, IPopupImpl
     {
-        static IntPtr CreateWindow()
+        static GtkWindow CreateWindow()
         {
             var window = Native.GtkWindowNew(GtkWindowType.Popup);
             Native.GtkWindowSetSizeRequest(window, 1, 1);
@@ -33,6 +33,8 @@ namespace Avalonia.Gtk3
             }
             set
             {
+                if(GtkWidget.IsClosed)
+                    return;
                 Native.GtkWindowSetDefaultSize(GtkWidget, (int)value.Width, (int)value.Height);
                 base.ClientSize = value;
                 var size = ClientSize;

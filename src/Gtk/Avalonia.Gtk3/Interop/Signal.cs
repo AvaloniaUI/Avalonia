@@ -7,15 +7,15 @@ using System.Threading.Tasks;
 
 namespace Avalonia.Gtk3.Interop
 {
-    public class Signal
+    class Signal
     {
         class ConnectedSignal : IDisposable
         {
-            private readonly IntPtr _instance;
+            private readonly GObject _instance;
             private GCHandle _handle;
             private readonly ulong _id;
 
-            public ConnectedSignal(IntPtr instance, GCHandle handle, ulong id)
+            public ConnectedSignal(GObject instance, GCHandle handle, ulong id)
             {
                 _instance = instance;
                 _handle = handle;
@@ -32,7 +32,7 @@ namespace Avalonia.Gtk3.Interop
             }
         }
 
-        public static IDisposable Connect<T>(IntPtr obj, string name, T handler) 
+        public static IDisposable Connect<T>(GObject obj, string name, T handler) 
         {
             var handle = GCHandle.Alloc(handler);
             var ptr = Marshal.GetFunctionPointerForDelegate((Delegate)(object)handler);
