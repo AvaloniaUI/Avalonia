@@ -11,6 +11,7 @@ using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Gtk3;
 
 namespace Avalonia.Gtk3
 {
@@ -99,7 +100,10 @@ namespace Avalonia.Gtk3
         public bool CurrentThreadIsLoopThread => s_tlsMarker;
 
     }
+}
 
+namespace Avalonia
+{
     public static class Gtk3AppBuilderExtensions
     {
         public static T UseGtk3<T>(this AppBuilderBase<T> builder, ICustomGtk3NativeLibraryResolver resolver = null) 
