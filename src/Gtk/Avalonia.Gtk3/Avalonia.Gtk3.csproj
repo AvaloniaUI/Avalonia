@@ -45,7 +45,9 @@
       <Link>KeyTransform.cs</Link>
     </Compile>
     <Compile Include="ClipboardImpl.cs" />
+    <Compile Include="CursorFactory.cs" />
     <Compile Include="FramebufferManager.cs" />
+    <Compile Include="GdkCursor.cs" />
     <Compile Include="GdkKey.cs" />
     <Compile Include="Gtk3Platform.cs" />
     <Compile Include="Interop\GException.cs" />

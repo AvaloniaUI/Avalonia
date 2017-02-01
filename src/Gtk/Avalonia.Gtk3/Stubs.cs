@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
-using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Platform;
 
@@ -13,11 +11,6 @@ using Avalonia.Platform;
 
 namespace Avalonia.Gtk3
 {
-    class CursorFactoryStub :  IStandardCursorFactory
-    {
-        public IPlatformHandle GetCursor(StandardCursorType cursorType) => new PlatformHandle(IntPtr.Zero, "STUB");
-    }
-
     class SystemDialogStub : ISystemDialogImpl
     {
         public Task<string[]> ShowFileDialogAsync(FileDialog dialog, IWindowImpl parent) => Task.FromResult(new string[0]);

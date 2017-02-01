@@ -31,7 +31,7 @@ namespace Avalonia.Gtk3
 
             AvaloniaLocator.CurrentMutable.Bind<IWindowingPlatform>().ToConstant(Instance)
                 .Bind<IClipboard>().ToSingleton<ClipboardImpl>()
-                .Bind<IStandardCursorFactory>().ToConstant(new CursorFactoryStub())
+                .Bind<IStandardCursorFactory>().ToConstant(new CursorFactory())
                 .Bind<IKeyboardDevice>().ToConstant(Keyboard)
                 .Bind<IMouseDevice>().ToConstant(Mouse)
                 .Bind<IPlatformSettings>().ToConstant(Instance)

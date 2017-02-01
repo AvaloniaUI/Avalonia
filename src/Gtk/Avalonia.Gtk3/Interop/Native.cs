@@ -141,6 +141,9 @@ namespace Avalonia.Gtk3.Interop
             public delegate IntPtr gdk_screen_get_root_window(IntPtr screen);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
+            public delegate IntPtr gdk_cursor_new(GdkCursorType type);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
             public delegate IntPtr gdk_window_get_pointer(IntPtr raw, out int x, out int y, out int mask);
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
             public delegate void gtk_window_set_geometry_hints(GtkWindow window, IntPtr geometry_widget, ref GdkGeometry geometry, GdkWindowHints geom_mask);
@@ -169,6 +172,18 @@ namespace Avalonia.Gtk3.Interop
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.GdkPixBuf)]
             public delegate IntPtr gdk_pixbuf_new_from_file(Utf8Buffer filename, out IntPtr error);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
+            public delegate IntPtr gtk_icon_theme_get_default();
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
+            public delegate IntPtr gtk_icon_theme_load_icon(IntPtr icon_theme, Utf8Buffer icon_name, gint size, int flags,out IntPtr error);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
+            public delegate IntPtr gdk_cursor_new_from_pixbuf(IntPtr disp, IntPtr pixbuf, int x, int y);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
+            public delegate IntPtr gdk_window_set_cursor(IntPtr window, IntPtr cursor);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.GdkPixBuf)]
             public delegate IntPtr gdk_pixbuf_new_from_stream(GInputStream stream, IntPtr cancel, out IntPtr error);
@@ -257,12 +272,17 @@ namespace Avalonia.Gtk3.Interop
         public static D.gdk_display_get_default GdkGetDefaultDisplay;
         public static D.gdk_screen_get_width GdkScreenGetWidth;
         public static D.gdk_screen_get_root_window GdkScreenGetRootWindow;
+        public static D.gdk_cursor_new GdkCursorNew;
         public static D.gdk_window_get_origin GdkWindowGetOrigin;
         public static D.gdk_window_get_pointer GdkWindowGetPointer;
         public static D.gdk_window_begin_move_drag GdkWindowBeginMoveDrag;
         public static D.gdk_window_begin_resize_drag GdkWindowBeginResizeDrag;
 
         public static D.gdk_pixbuf_new_from_file GdkPixbufNewFromFile;
+        public static D.gtk_icon_theme_get_default GtkIconThemeGetDefault;
+        public static D.gtk_icon_theme_load_icon GtkIconThemeLoadIcon;
+        public static D.gdk_cursor_new_from_pixbuf GdkCursorNewFromPixbuf;
+        public static D.gdk_window_set_cursor GdkWindowSetCursor;
         public static D.gdk_pixbuf_new_from_stream GdkPixbufNewFromStream;
         public static D.gdk_pixbuf_save_to_bufferv GdkPixbufSaveToBufferv;
 
