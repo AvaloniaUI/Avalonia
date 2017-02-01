@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,9 +14,6 @@ namespace Avalonia.Gtk3
         static GtkWindow CreateWindow()
         {
             var window = Native.GtkWindowNew(GtkWindowType.Popup);
-            Native.GtkWindowSetSizeRequest(window, 1, 1);
-            Native.GtkWindowSetDefaultSize(window, 200, 200);
-
             return window;
         }
 
@@ -25,21 +23,18 @@ namespace Avalonia.Gtk3
 
         }
 
+        private Size _desiredSize = new Size(1, 1);
         public override Size ClientSize
         {
-            get
-            {
-                return base.ClientSize;
-            }
+            get { return _desiredSize; }
             set
             {
-                if(GtkWidget.IsClosed)
+                _desiredSize = value;
+                if (GtkWidget.IsClosed)
                     return;
-                Native.GtkWindowSetDefaultSize(GtkWidget, (int)value.Width, (int)value.Height);
-                base.ClientSize = value;
-                if (Native.GtkWidgetGetWindow(GtkWidget) == IntPtr.Zero)
-                    Native.GtkWidgetRealize(GtkWidget);
-                Native.GdkWindowResize(Native.GtkWidgetGetWindow(GtkWidget), (int)value.Width, (int)value.Height);
+                if (base.ClientSize == value)
+                    return;
+                Native.GtkWindowResize(GtkWidget, (int) value.Width, (int) value.Height);
             }
         }
     }
