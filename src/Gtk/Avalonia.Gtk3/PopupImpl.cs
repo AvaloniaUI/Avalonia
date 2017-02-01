@@ -19,24 +19,6 @@ namespace Avalonia.Gtk3
 
         public PopupImpl() : base(CreateWindow())
         {
-
-
-        }
-
-        private Size _desiredSize = new Size(1, 1);
-        public override Size ClientSize
-        {
-            get { return _desiredSize; }
-            set
-            {
-                _desiredSize = value;
-                if (GtkWidget.IsClosed)
-                    return;
-                Native.GtkWindowResize(GtkWidget, (int) value.Width, (int) value.Height);
-                if (Native.GtkWidgetGetWindow(GtkWidget) == IntPtr.Zero)
-                    Native.GtkWidgetRealize(GtkWidget);
-                Native.GdkWindowResize(Native.GtkWidgetGetWindow(GtkWidget), (int) value.Width, (int) value.Height);
-            }
         }
     }
 }

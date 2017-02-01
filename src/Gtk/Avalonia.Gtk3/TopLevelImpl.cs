@@ -46,6 +46,7 @@ namespace Avalonia.Gtk3
             ConnectEvent("key-release-event", OnKeyEvent);
             Connect<Native.D.signal_generic>("destroy", OnDestroy);
             Native.GtkWidgetRealize(gtkWidget);
+            _lastSize = ClientSize;
         }
 
         private bool OnConfigured(IntPtr gtkwidget, IntPtr ev, IntPtr userdata)
@@ -53,14 +54,14 @@ namespace Avalonia.Gtk3
             var size = ClientSize;
             if (_lastSize != size)
             {
-                _lastSize = size;
                 Resized?.Invoke(size);
+                _lastSize = size;
             }
             var pos = Position;
             if (_lastPosition != pos)
             {
-                _lastPosition = pos;
                 PositionChanged?.Invoke(pos);
+                _lastPosition = pos;
             }
 
             return false;
@@ -115,7 +116,7 @@ namespace Avalonia.Gtk3
             return true;
         }
 
-        private unsafe bool OnStateChanged(IntPtr w, IntPtr pev, IntPtr userData)
+        protected virtual unsafe bool OnStateChanged(IntPtr w, IntPtr pev, IntPtr userData)
         {
             var ev = (GdkEventWindowState*) pev;
             if (ev->changed_mask.HasFlag(GdkWindowState.Focused))
@@ -298,7 +299,7 @@ namespace Avalonia.Gtk3
         }
 
 
-        public virtual Size ClientSize
+        public Size ClientSize
         {
             get
             {
