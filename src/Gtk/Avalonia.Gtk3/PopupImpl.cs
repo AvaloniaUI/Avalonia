@@ -37,7 +37,9 @@ namespace Avalonia.Gtk3
                     return;
                 Native.GtkWindowSetDefaultSize(GtkWidget, (int)value.Width, (int)value.Height);
                 base.ClientSize = value;
-                var size = ClientSize;
+                if (Native.GtkWidgetGetWindow(GtkWidget) == IntPtr.Zero)
+                    Native.GtkWidgetRealize(GtkWidget);
+                Native.GdkWindowResize(Native.GtkWidgetGetWindow(GtkWidget), (int)value.Width, (int)value.Height);
             }
         }
     }

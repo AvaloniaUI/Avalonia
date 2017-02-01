@@ -36,7 +36,7 @@ namespace Avalonia.Gtk3
                 .Bind<IMouseDevice>().ToConstant(Mouse)
                 .Bind<IPlatformSettings>().ToConstant(Instance)
                 .Bind<IPlatformThreadingInterface>().ToConstant(Instance)
-                .Bind<ISystemDialogImpl>().ToSingleton<SystemDialogStub>()
+                .Bind<ISystemDialogImpl>().ToSingleton<SystemDialog>()
                 .Bind<IRenderLoop>().ToConstant(new DefaultRenderLoop(60))
                 .Bind<IPlatformIconLoader>().ToConstant(new PlatformIconLoader());
 

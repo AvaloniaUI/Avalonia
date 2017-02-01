@@ -168,6 +168,9 @@ namespace Avalonia.Gtk3.Interop
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
             public delegate void gdk_window_begin_resize_drag(IntPtr window, WindowEdge edge, gint button, gint root_x, gint root_y, guint32 timestamp);
 
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
+            public delegate void gdk_event_request_motions(IntPtr ev);
+
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
             public delegate IntPtr gtk_clipboard_get_for_display(IntPtr display, IntPtr atom);
 
@@ -299,6 +302,7 @@ namespace Avalonia.Gtk3.Interop
         public static D.gdk_window_get_pointer GdkWindowGetPointer;
         public static D.gdk_window_begin_move_drag GdkWindowBeginMoveDrag;
         public static D.gdk_window_begin_resize_drag GdkWindowBeginResizeDrag;
+        public static D.gdk_event_request_motions GdkEventRequestMotions;
 
         public static D.gdk_pixbuf_new_from_file GdkPixbufNewFromFile;
         public static D.gtk_icon_theme_get_default GtkIconThemeGetDefault;

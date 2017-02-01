@@ -31,7 +31,7 @@ namespace Avalonia.Gtk3
             _framebuffer = new FramebufferManager(this);
             _imContext = Native.GtkImMulticontextNew();
             Disposables.Add(_imContext);
-            Native.GtkWidgetSetEvents(gtkWidget, uint.MaxValue);
+            Native.GtkWidgetSetEvents(gtkWidget, 0xFFFFFE);
             Disposables.Add(Signal.Connect<Native.D.signal_commit>(_imContext, "commit", OnCommit));
             Connect<Native.D.signal_widget_draw>("draw", OnDraw);
             Connect<Native.D.signal_generic>("realize", OnRealized);
@@ -111,7 +111,7 @@ namespace Avalonia.Gtk3
                         : evnt->button == 3 ? RawMouseEventType.RightButtonDown : RawMouseEventType.MiddleButtonDown,
                 new Point(evnt->x, evnt->y), GetModifierKeys(evnt->state));
             Input?.Invoke(e);
-            return false;
+            return true;
         }
 
         private unsafe bool OnStateChanged(IntPtr w, IntPtr pev, IntPtr userData)
@@ -131,8 +131,7 @@ namespace Avalonia.Gtk3
         {
             var evnt = (GdkEventMotion*)ev;
             var position = new Point(evnt->x, evnt->y);
-            
-
+            Native.GdkEventRequestMotions(ev);
             var e = new RawMouseEventArgs(
                 Gtk3Platform.Mouse,
                 evnt->time,
@@ -140,7 +139,8 @@ namespace Avalonia.Gtk3
                 RawMouseEventType.Move,
                 position, GetModifierKeys(evnt->state));
             Input(e);
-            return false;
+            
+            return true;
         }
         private unsafe bool OnScroll(IntPtr w, IntPtr ev, IntPtr userdata)
         {
@@ -156,12 +156,13 @@ namespace Avalonia.Gtk3
             else if (evnt->direction == GdkScrollDirection.Left)
                 delta = new Vector(step, 0);
             else if (evnt->direction == GdkScrollDirection.Smooth)
-                delta = new Vector(evnt->delta_x, evnt->delta_y);
-
+            {
+                delta = new Vector(-evnt->delta_x, -evnt->delta_y);
+            }
             var e = new RawMouseWheelEventArgs(Gtk3Platform.Mouse, evnt->time, _inputRoot,
                 new Point(evnt->x, evnt->y), delta, GetModifierKeys(evnt->state));
             Input(e);
-            return false;
+            return true;
         }
 
         private unsafe bool OnKeyEvent(IntPtr w, IntPtr pev, IntPtr userData)
@@ -303,9 +304,6 @@ namespace Avalonia.Gtk3
                 if (GtkWidget.IsClosed)
                     return;
                 Native.GtkWindowResize(GtkWidget, (int)value.Width, (int)value.Height);
-                if (Native.GtkWidgetGetWindow(GtkWidget) == IntPtr.Zero)
-                    Native.GtkWidgetRealize(GtkWidget);
-                Native.GdkWindowResize(Native.GtkWidgetGetWindow(GtkWidget), (int)value.Width, (int)value.Height);
             }
         }
 

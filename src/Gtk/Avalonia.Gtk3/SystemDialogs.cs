@@ -9,11 +9,9 @@ using Avalonia.Gtk3.Interop;
 using Avalonia.Input.Platform;
 using Avalonia.Platform;
 
-//TODO: This file should be empty once everything is implemented
-
 namespace Avalonia.Gtk3
 {
-    class SystemDialogStub : ISystemDialogImpl
+    class SystemDialog : ISystemDialogImpl
     {
 
         unsafe static Task<string[]> ShowDialog(string title, GtkWindow parent, GtkFileChooserAction action,
