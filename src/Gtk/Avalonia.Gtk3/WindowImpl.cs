@@ -22,10 +22,7 @@ namespace Avalonia.Gtk3
 
         public void SetSystemDecorations(bool enabled) => Native.GtkWindowSetDecorated(GtkWidget, enabled);
 
-        public void SetIcon(IWindowIconImpl icon)
-        {
-            //STUB
-        }
+        public void SetIcon(IWindowIconImpl icon) => Native.GtkWindowSetIcon(GtkWidget, (Pixbuf) icon);
 
         public WindowImpl() : base(Native.GtkWindowNew(GtkWindowType.TopLevel))
         {

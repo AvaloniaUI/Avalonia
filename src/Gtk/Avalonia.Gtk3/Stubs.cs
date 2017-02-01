@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -25,14 +24,5 @@ namespace Avalonia.Gtk3
 
         public Task<string> ShowFolderDialogAsync(OpenFolderDialog dialog, IWindowImpl parent)
             => Task.FromResult((string) null);
-    }
-
-    class PlatformIconLoaderStub : IPlatformIconLoader
-    {
-        public IWindowIconImpl LoadIcon(string fileName) => null;
-
-        public IWindowIconImpl LoadIcon(Stream stream) => null;
-
-        public IWindowIconImpl LoadIcon(IBitmapImpl bitmap) => null;
     }
 }

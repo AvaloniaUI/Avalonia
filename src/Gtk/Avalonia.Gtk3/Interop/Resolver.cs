@@ -31,7 +31,8 @@ namespace Avalonia.Gtk3.Interop
         Glib,
         Gio,
         Gobject,
-        Cairo
+        Cairo,
+        GdkPixBuf
     }
 
     static class Resolver
@@ -76,6 +77,8 @@ namespace Avalonia.Gtk3.Interop
                     return FormatName("gtk-3");
                 case GtkDll.Gobject:
                     return FormatName("gobject-2.0");
+                case GtkDll.GdkPixBuf:
+                    return FormatName("gdk_pixbuf-2.0");
                 default:
                     throw new ArgumentException("Unknown lib: " + dll);
             }
