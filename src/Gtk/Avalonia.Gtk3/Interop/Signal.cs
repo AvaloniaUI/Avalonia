@@ -18,6 +18,7 @@ namespace Avalonia.Gtk3.Interop
             public ConnectedSignal(GObject instance, GCHandle handle, ulong id)
             {
                 _instance = instance;
+                Native.GObjectRef(instance);
                 _handle = handle;
                 _id = id;
             }
@@ -26,6 +27,7 @@ namespace Avalonia.Gtk3.Interop
             {
                 if (_handle.IsAllocated)
                 {
+                    Native.GObjectUnref(_instance.DangerousGetHandle());
                     Native.GSignalHandlerDisconnect(_instance, _id);
                     _handle.Free();
                 }

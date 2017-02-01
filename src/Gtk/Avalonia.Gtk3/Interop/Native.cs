@@ -210,6 +210,8 @@ namespace Avalonia.Gtk3.Interop
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gobject)]
             public delegate void g_object_unref(IntPtr instance);
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gobject)]
+            public delegate void g_object_ref(GObject instance);
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gobject)]
             public delegate ulong g_signal_connect_object(GObject instance, Utf8Buffer signal, IntPtr handler, IntPtr userData, int flags);
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gobject)]
             public delegate ulong g_signal_handler_disconnect(GObject instance, ulong connectionId);
@@ -272,6 +274,7 @@ namespace Avalonia.Gtk3.Interop
         public static D.gtk_file_chooser_get_filenames GtkFileChooserGetFilenames;
         public static D.gtk_dialog_add_button GtkDialogAddButton;
         public static D.g_object_unref GObjectUnref;
+        public static D.g_object_ref GObjectRef;
         public static D.g_signal_connect_object GSignalConnectObject;
         public static D.g_signal_handler_disconnect GSignalHandlerDisconnect;
         public static D.g_timeout_add GTimeoutAdd;
