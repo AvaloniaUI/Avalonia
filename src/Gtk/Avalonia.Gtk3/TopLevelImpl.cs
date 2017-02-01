@@ -22,6 +22,7 @@ namespace Avalonia.Gtk3
         private Size _lastSize;
         private Point _lastPosition;
         private uint _lastKbdEvent;
+        private uint _lastSmoothScrollEvent;
 
         public TopLevelImpl(GtkWindow gtkWidget)
         {
@@ -145,6 +146,11 @@ namespace Avalonia.Gtk3
         private unsafe bool OnScroll(IntPtr w, IntPtr ev, IntPtr userdata)
         {
             var evnt = (GdkEventScroll*)ev;
+
+            //Ignore duplicates
+            if (evnt->time - _lastSmoothScrollEvent < 10 && evnt->direction != GdkScrollDirection.Smooth)
+                return true;
+
             var delta = new Vector();
             const double step = (double) 1;
             if (evnt->direction == GdkScrollDirection.Down)
@@ -158,6 +164,7 @@ namespace Avalonia.Gtk3
             else if (evnt->direction == GdkScrollDirection.Smooth)
             {
                 delta = new Vector(-evnt->delta_x, -evnt->delta_y);
+                _lastSmoothScrollEvent = evnt->time;
             }
             var e = new RawMouseWheelEventArgs(Gtk3Platform.Mouse, evnt->time, _inputRoot,
                 new Point(evnt->x, evnt->y), delta, GetModifierKeys(evnt->state));
