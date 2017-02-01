@@ -95,6 +95,17 @@ namespace Avalonia.Gtk3.Interop
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
             public delegate void gtk_window_move(GtkWindow gtkWindow, int x, int y);
 
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
+            public delegate GtkFileChooser gtk_file_chooser_dialog_new(Utf8Buffer title, GtkWindow parent, GtkFileChooserAction action, IntPtr ignore);
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
+            public unsafe delegate GSList* gtk_file_chooser_get_filenames(GtkFileChooser chooser);
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
+            public delegate void gtk_file_chooser_set_select_multiple(GtkFileChooser chooser, bool allow);
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
+            public delegate void gtk_file_chooser_set_filename(GtkFileChooser chooser, Utf8Buffer file);
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
+            public delegate void gtk_dialog_add_button(GtkDialog raw, Utf8Buffer button_text, GtkResponseType response_id);
+
 
 
 
@@ -203,6 +214,8 @@ namespace Avalonia.Gtk3.Interop
             public delegate ulong g_timeout_add(uint interval, timeout_callback callback, IntPtr data);
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Glib)]
             public delegate ulong g_free(IntPtr data);
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Glib)]
+            public unsafe delegate void g_slist_free(GSList* data);
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gio)]
             public delegate GInputStream g_memory_input_stream_new_from_data(IntPtr ptr, IntPtr len, IntPtr destroyCallback);
 
@@ -211,6 +224,9 @@ namespace Avalonia.Gtk3.Interop
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate bool signal_generic(IntPtr gtkWidget, IntPtr userData);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            public delegate bool signal_dialog_response(IntPtr gtkWidget, GtkResponseType response, IntPtr userData);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate bool signal_onevent(IntPtr gtkWidget, IntPtr ev, IntPtr userData);
@@ -247,11 +263,17 @@ namespace Avalonia.Gtk3.Interop
         public static D.gtk_window_set_default_size GtkWindowSetDefaultSize;
         public static D.gtk_window_get_position GtkWindowGetPosition;
         public static D.gtk_window_move GtkWindowMove;
+        public static D.gtk_file_chooser_dialog_new GtkFileChooserDialogNew;
+        public static D.gtk_file_chooser_set_select_multiple GtkFileChooserSetSelectMultiple;
+        public static D.gtk_file_chooser_set_filename GtkFileChooserSetFilename;
+        public static D.gtk_file_chooser_get_filenames GtkFileChooserGetFilenames;
+        public static D.gtk_dialog_add_button GtkDialogAddButton;
         public static D.g_object_unref GObjectUnref;
         public static D.g_signal_connect_object GSignalConnectObject;
         public static D.g_signal_handler_disconnect GSignalHandlerDisconnect;
         public static D.g_timeout_add GTimeoutAdd;
         public static D.g_free GFree;
+        public static D.g_slist_free GSlistFree;
         public static D.g_memory_input_stream_new_from_data GMemoryInputStreamNewFromData;
         public static D.gtk_widget_set_double_buffered GtkWidgetSetDoubleBuffered;
         public static D.gtk_widget_set_events GtkWidgetSetEvents;
@@ -467,6 +489,13 @@ namespace Avalonia.Gtk3.Interop
         public guint is_modifier;
     }
 
+    [StructLayout(LayoutKind.Sequential)]
+    unsafe struct GSList
+    {
+        public IntPtr Data;
+        public GSList* Next;
+    }
+
     [Flags]
     public enum GdkWindowState
     {
@@ -479,6 +508,29 @@ namespace Avalonia.Gtk3.Interop
         Below = 64,
         Focused = 128,
         Ttiled = 256
+    }
+
+    public enum GtkResponseType
+    {
+        Help = -11,
+        Apply = -10,
+        No = -9,
+        Yes = -8,
+        Close = -7,
+        Cancel = -6,
+        Ok = -5,
+        DeleteEvent = -4,
+        Accept = -3,
+        Reject = -2,
+        None = -1,
+    }
+
+    public enum GtkFileChooserAction
+    {
+        Open,
+        Save,
+        SelectFolder,
+        CreateFolder,
     }
 
     [StructLayout(LayoutKind.Sequential)]

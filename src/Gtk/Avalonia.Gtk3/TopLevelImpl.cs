@@ -14,7 +14,7 @@ namespace Avalonia.Gtk3
 {
     abstract class TopLevelImpl : ITopLevelImpl, IPlatformHandle
     {
-        protected readonly GtkWindow GtkWidget;
+        public readonly GtkWindow GtkWidget;
         private IInputRoot _inputRoot;
         private readonly GtkImContext _imContext;
         private readonly FramebufferManager _framebuffer;

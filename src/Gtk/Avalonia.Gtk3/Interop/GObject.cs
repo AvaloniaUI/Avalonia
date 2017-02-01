@@ -48,5 +48,15 @@ namespace Avalonia.Gtk3.Interop
     {
         
     }
+
+    class GtkDialog : GtkWindow
+    {
+        
+    }
+
+    class GtkFileChooser : GtkDialog
+    {
+        
+    }
 }
 
