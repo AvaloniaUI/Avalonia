@@ -313,8 +313,13 @@ var nuspecNuGetSettingsCore = new []
             new NuSpecDependency() { Id = "Sprache", Version = SpracheVersion },
             new NuSpecDependency() { Id = "System.Reactive", Version = SystemReactiveVersion },
             new NuSpecDependency() { Id = "System.Threading.ThreadPool", TargetFramework = "netcoreapp1.0", Version = "4.3.0" },
+            //.NET Core
             new NuSpecDependency() { Id = "NETStandard.Library", TargetFramework = "netcoreapp1.0", Version = "1.6.0" },
-            new NuSpecDependency() { Id = "Microsoft.NETCore.Portable.Compatibility", TargetFramework = "netcoreapp1.0", Version = "1.0.1" }
+            new NuSpecDependency() { Id = "Microsoft.NETCore.Portable.Compatibility", TargetFramework = "netcoreapp1.0", Version = "1.0.1" },
+            new NuSpecDependency() { Id = "Splat", TargetFramework = "netcoreapp1.0", Version = "2.0.0" },
+            new NuSpecDependency() { Id = "Serilog", TargetFramework = "netcoreapp1.0", Version = "2.3.0" },
+            new NuSpecDependency() { Id = "Sprache", TargetFramework = "netcoreapp1.0", Version = SpracheVersion },
+            new NuSpecDependency() { Id = "System.Reactive", TargetFramework = "netcoreapp1.0", Version = SystemReactiveVersion }
         },
         Files = coreLibrariesNuSpecContent
             .Concat(win32CoreLibrariesNuSpecContent).Concat(net45RuntimePlatform)
@@ -521,6 +526,9 @@ var nuspecNuGetSettingsDesktop = new []
         {
             new NuSpecDependency() { Id = "Avalonia", Version = version },
             new NuSpecDependency() { Id = "SkiaSharp", Version = SkiaSharpVersion },
+            //.NET Core
+            new NuSpecDependency() { Id = "Avalonia", TargetFramework = "netcoreapp1.0", Version = version },
+            new NuSpecDependency() { Id = "SkiaSharp", TargetFramework = "netcoreapp1.0", Version = SkiaSharpVersion },
             new NuSpecDependency() { Id = "NETStandard.Library", TargetFramework = "netcoreapp1.0", Version = "1.6.0" },
             new NuSpecDependency() { Id = "Microsoft.NETCore.Portable.Compatibility", TargetFramework = "netcoreapp1.0", Version = "1.0.1" }
         },
