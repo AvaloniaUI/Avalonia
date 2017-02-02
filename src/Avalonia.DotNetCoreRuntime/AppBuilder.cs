@@ -36,15 +36,18 @@ namespace Avalonia
         {
             //We don't have the ability to load every assembly right now, so we are
             //stuck with manual configuration  here
+            //Helpers are extracted to separate methods to take the advantage of the fact
+            //that CLR doesn't try to load dependencies before referencing method is jitted
             if (RuntimePlatform.GetRuntimeInfo().OperatingSystem == OperatingSystemType.WinNT)
-                this.UseWin32();
+                LoadWin32();
             else
-            {
-                //TODO: Register GTK3
-            }
-            //TODO: Register Skia#
+                LoadGtk3();
+            this.UseSkia();
 
             return this;
         }
+
+        void LoadWin32() => this.UseWin32();
+        void LoadGtk3() => this.UseGtk3();
     }
 }

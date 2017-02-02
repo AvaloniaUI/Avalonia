@@ -500,6 +500,23 @@ var nuspecNuGetSettingsDesktop = new []
         OutputDirectory = nugetRoot
     },
     ///////////////////////////////////////////////////////////////////////////////
+    // Avalonia.Gtk3
+    ///////////////////////////////////////////////////////////////////////////////
+    new NuGetPackSettings()
+    {
+        Id = "Avalonia.Gtk3",
+        Dependencies = new []
+        {
+            new NuSpecDependency() { Id = "Avalonia", Version = version }
+        },
+        Files = new []
+        {
+            new NuSpecContent { Source = "Avalonia.Gtk3.dll", Target = "lib/netstandard1.1" }
+        },
+        BasePath = Directory("./src/Gtk/Avalonia.Gtk3/bin/" + dirSuffix),
+        OutputDirectory = nugetRoot
+    },
+    ///////////////////////////////////////////////////////////////////////////////
     // Avalonia.Cairo
     ///////////////////////////////////////////////////////////////////////////////
     new NuGetPackSettings()
@@ -630,7 +647,13 @@ Task("Clean")
 Task("Prepare-XBuild-Solution")
     .Does(() =>
 {
-    var blacklistedProjects = new[]{"Avalonia.Win32.NetStandard", "Avalonia.DotNetCoreRuntime", "Avalonia.Skia.Desktop.NetStandard"};
+    var blacklistedProjects = new[]
+    {
+        "Avalonia.Win32.NetStandard",
+        "Avalonia.DotNetCoreRuntime",
+        "Avalonia.Skia.Desktop.NetStandard",
+        "Avalonia.Gtk3"
+    };
     var blacklistedGuids = System.IO.File.ReadAllLines(MSBuildSolution)
         .Where(l=>l.StartsWith("Project") && blacklistedProjects.Any(p=>l.Contains(p)))
         .Select(l => l.Split(',').Select(part => part.Trim()).FirstOrDefault(part => part.StartsWith("\"{")))
