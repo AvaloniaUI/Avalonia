@@ -69,7 +69,7 @@ var isNuGetRelease = isTagged && isReleasable;
 // VERSION
 ///////////////////////////////////////////////////////////////////////////////
 
-var version = ParseAssemblyInfo(AssemblyInfoPath).AssemblyVersion;
+var version = Argument("force-nuget-version", ParseAssemblyInfo(AssemblyInfoPath).AssemblyVersion);
 
 if (isRunningOnAppVeyor)
 {
@@ -115,7 +115,9 @@ var buildDirs =
     (DirectoryPath)Directory("./src/Skia/Avalonia.Skia.Android.TestApp/bin/" + dirSuffix) + 
     (DirectoryPath)Directory("./src/Skia/Avalonia.Skia.Android.TestApp/obj/" + dirSuffix) + 
     (DirectoryPath)Directory("./src/Skia/Avalonia.Skia.Desktop/bin/" + dirSuffixSkia) + 
-    (DirectoryPath)Directory("./src/Skia/Avalonia.Skia.Desktop/obj/" + dirSuffixSkia) + 
+    (DirectoryPath)Directory("./src/Skia/Avalonia.Skia.Desktop/obj/" + dirSuffixSkia) +
+    (DirectoryPath)Directory("./src/Skia/Avalonia.Skia.Desktop.NetStandard/bin/" + dirSuffix) + 
+    (DirectoryPath)Directory("./src/Skia/Avalonia.Skia.Desktop.NetStandard/obj/" + dirSuffix) + 
     (DirectoryPath)Directory("./src/Skia/Avalonia.Skia.iOS/bin/" + dirSuffixIOS) + 
     (DirectoryPath)Directory("./src/Skia/Avalonia.Skia.iOS/obj/" + dirSuffixIOS) + 
     (DirectoryPath)Directory("./src/Skia/Avalonia.Skia.iOS.TestApp/bin/" + dirSuffixIOS) + 
@@ -518,13 +520,16 @@ var nuspecNuGetSettingsDesktop = new []
         Dependencies = new []
         {
             new NuSpecDependency() { Id = "Avalonia", Version = version },
-            new NuSpecDependency() { Id = "SkiaSharp", Version = SkiaSharpVersion }
+            new NuSpecDependency() { Id = "SkiaSharp", Version = SkiaSharpVersion },
+            new NuSpecDependency() { Id = "NETStandard.Library", TargetFramework = "netcoreapp1.0", Version = "1.6.0" },
+            new NuSpecDependency() { Id = "Microsoft.NETCore.Portable.Compatibility", TargetFramework = "netcoreapp1.0", Version = "1.0.1" }
         },
         Files = new []
         {
-            new NuSpecContent { Source = "Avalonia.Skia.Desktop.dll", Target = "lib/net45" }
+            new NuSpecContent { Source = "Avalonia.Skia.Desktop/bin/" + dirSuffixSkia + "/Avalonia.Skia.Desktop.dll", Target = "lib/net45" },
+            new NuSpecContent { Source = "Avalonia.Skia.Desktop.NetStandard/bin/" + dirSuffix + "/Avalonia.Skia.Desktop.dll", Target = "lib/netcoreapp1.0" }
         },
-        BasePath = Directory("./src/Skia/Avalonia.Skia.Desktop/bin/" + dirSuffixSkia),
+        BasePath = Directory("./src/Skia/"),
         OutputDirectory = nugetRoot
     },
     ///////////////////////////////////////////////////////////////////////////////
@@ -617,7 +622,7 @@ Task("Clean")
 Task("Prepare-XBuild-Solution")
     .Does(() =>
 {
-    var blacklistedProjects = new[]{"Avalonia.Win32.NetStandard", "Avalonia.DotNetCoreRuntime"};
+    var blacklistedProjects = new[]{"Avalonia.Win32.NetStandard", "Avalonia.DotNetCoreRuntime", "Avalonia.Skia.Desktop.NetStandard"};
     var blacklistedGuids = System.IO.File.ReadAllLines(MSBuildSolution)
         .Where(l=>l.StartsWith("Project") && blacklistedProjects.Any(p=>l.Contains(p)))
         .Select(l => l.Split(',').Select(part => part.Trim()).FirstOrDefault(part => part.StartsWith("\"{")))

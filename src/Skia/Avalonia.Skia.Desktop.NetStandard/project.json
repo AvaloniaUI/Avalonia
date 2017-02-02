@@ -3,9 +3,9 @@
   "dependencies": {
     "Microsoft.NETCore.Portable.Compatibility": "1.0.1",
     "NETStandard.Library": "1.6.0",
-    "System.Reactive.Core": "3.0.0"
+    "SkiaSharp": "1.56.1-beta"
   },
   "frameworks": {
-    "netstandard1.1": {}
+    "netstandard1.3": {}
   }
 }
