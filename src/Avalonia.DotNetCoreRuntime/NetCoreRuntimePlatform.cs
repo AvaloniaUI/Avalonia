@@ -10,7 +10,10 @@ namespace Avalonia.Shared.PlatformSupport
 {
     internal partial class StandardRuntimePlatform
     {
-        public Assembly[] GetLoadedAssemblies()
+        private static readonly Lazy<Assembly[]> Assemblies = new Lazy<Assembly[]>(LoadAssemblies);
+        public Assembly[] GetLoadedAssemblies() => Assemblies.Value;
+
+        static Assembly[] LoadAssemblies()
         {
 
             var rv = new List<Assembly>();
