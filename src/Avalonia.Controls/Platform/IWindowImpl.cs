@@ -28,6 +28,7 @@ namespace Avalonia.Platform
         /// <returns>
         /// An <see cref="IDisposable"/> that should be used to close the window.
         /// </returns>
+        [Obsolete("Use Avalonia.Controls.Window.ShowDialog() instead.")]
         IDisposable ShowDialog();
 
         /// <summary>

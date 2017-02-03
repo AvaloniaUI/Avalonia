@@ -108,6 +108,7 @@ namespace Avalonia.Gtk
             }
         }
 
+        [Obsolete("Use Avalonia.Controls.Window.ShowDialog() instead.")]
         public override IDisposable ShowDialog()
         {
             Window.Modal = true;

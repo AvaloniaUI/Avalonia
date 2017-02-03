@@ -136,7 +136,7 @@ namespace Avalonia.Win32
         public WindowState WindowState
         {
             get
-            {
+            {                
                 var placement = default(UnmanagedMethods.WINDOWPLACEMENT);
                 UnmanagedMethods.GetWindowPlacement(_hwnd, ref placement);
 
@@ -175,7 +175,7 @@ namespace Avalonia.Win32
         }
 
         public IPopupImpl CreatePopup()
-        {
+        {            
             return new PopupImpl();
         }
 
@@ -332,6 +332,7 @@ namespace Avalonia.Win32
             }
         }
 
+        [Obsolete("Use Avalonia.Controls.Window.ShowDialog() instead.")]
         public virtual IDisposable ShowDialog()
         {
             var disabled = s_instances.Where(x => x != this && x.IsEnabled).ToList();

@@ -167,6 +167,7 @@ namespace Avalonia.Gtk
         }
 
         public abstract void SetTitle(string title);
+        [Obsolete("Use Avalonia.Controls.Window.ShowDialog() instead.")]
         public abstract IDisposable ShowDialog();
         public abstract void SetSystemDecorations(bool enabled);
         public abstract void SetIcon(IWindowIconImpl icon);
