@@ -4,9 +4,8 @@
 using Avalonia.Input.Platform;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Reactive.Disposables;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Avalonia.Controls.Platform;
@@ -15,8 +14,12 @@ using Avalonia.Platform;
 using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop;
 using Avalonia.Controls;
-using System.IO;
 using Avalonia.Rendering;
+#if NETSTANDARD
+using Win32Exception = Avalonia.Win32.NetStandard.AvaloniaWin32Exception;
+#else
+using System.ComponentModel;
+#endif
 
 namespace Avalonia
 {
@@ -32,10 +35,10 @@ namespace Avalonia
 
 namespace Avalonia.Win32
 {
-    class Win32Platform : IPlatformThreadingInterface, IPlatformSettings, IWindowingPlatform, IPlatformIconLoader
+    partial class Win32Platform : IPlatformThreadingInterface, IPlatformSettings, IWindowingPlatform, IPlatformIconLoader
     {
         private static readonly Win32Platform s_instance = new Win32Platform();
-        private static Thread _uiThread;
+        private static uint _uiThread;
         private UnmanagedMethods.WndProc _wndProcDelegate;
         private IntPtr _hwnd;
         private readonly List<Delegate> _delegates = new List<Delegate>();
@@ -71,7 +74,7 @@ namespace Avalonia.Win32
                 .Bind<IWindowingPlatform>().ToConstant(s_instance)
                 .Bind<IPlatformIconLoader>().ToConstant(s_instance);
             
-            _uiThread = Thread.CurrentThread;
+            _uiThread = UnmanagedMethods.GetCurrentThreadId();
         }
 
         public bool HasMessages()
@@ -132,7 +135,7 @@ namespace Avalonia.Win32
                 new IntPtr(SignalL));
         }
 
-        public bool CurrentThreadIsLoopThread => _uiThread == Thread.CurrentThread;
+        public bool CurrentThreadIsLoopThread => _uiThread == UnmanagedMethods.GetCurrentThreadId();
 
         public event Action Signaled;
 
@@ -155,8 +158,8 @@ namespace Avalonia.Win32
             {
                 cbSize = Marshal.SizeOf(typeof(UnmanagedMethods.WNDCLASSEX)),
                 lpfnWndProc = _wndProcDelegate,
-                hInstance = Marshal.GetHINSTANCE(GetType().Module),
-                lpszClassName = "AvaloniaMessageWindow",
+                hInstance = UnmanagedMethods.GetModuleHandle(null),
+                lpszClassName = "AvaloniaMessageWindow " + Guid.NewGuid(),
             };
 
             ushort atom = UnmanagedMethods.RegisterClassEx(ref wndClassEx);
@@ -181,46 +184,16 @@ namespace Avalonia.Win32
 
         public IEmbeddableWindowImpl CreateEmbeddableWindow()
         {
+#if NETSTANDARD
+            throw new NotSupportedException();
+#else
             return new EmbeddedWindowImpl();
+#endif
         }
 
         public IPopupImpl CreatePopup()
         {
             return new PopupImpl();
-        }
-
-        public IWindowIconImpl LoadIcon(string fileName)
-        {
-            using (var stream = File.OpenRead(fileName))
-            {
-                return CreateImpl(stream); 
-            }
-        }
-
-        public IWindowIconImpl LoadIcon(Stream stream)
-        {
-            return CreateImpl(stream);
-        }
-
-        public IWindowIconImpl LoadIcon(IBitmapImpl bitmap)
-        {
-            using (var memoryStream = new MemoryStream())
-            {
-                bitmap.Save(memoryStream);
-                return new IconImpl(new System.Drawing.Bitmap(memoryStream));
-            }
-        }
-
-        private static IconImpl CreateImpl(Stream stream)
-        {
-            try
-            {
-                return new IconImpl(new System.Drawing.Icon(stream));
-            }
-            catch (ArgumentException)
-            {
-                return new IconImpl(new System.Drawing.Bitmap(stream));
-            }
         }
     }
 }

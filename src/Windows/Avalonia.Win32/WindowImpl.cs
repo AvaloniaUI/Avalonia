@@ -7,16 +7,17 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
 using System.Runtime.InteropServices;
 using Avalonia.Controls;
-using Avalonia.Controls.Platform.Surfaces;
+using System.Reactive.Disposables;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
 using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
+#if NETSTANDARD
+using Win32Exception = Avalonia.Win32.NetStandard.AvaloniaWin32Exception;
+#endif
 
 namespace Avalonia.Win32
 {
@@ -420,7 +421,7 @@ namespace Avalonia.Win32
                 case UnmanagedMethods.WindowsMessage.WM_DESTROY:
                     if (Closed != null)
                     {
-                        UnmanagedMethods.UnregisterClass(_className, Marshal.GetHINSTANCE(GetType().Module));
+                        UnmanagedMethods.UnregisterClass(_className, UnmanagedMethods.GetModuleHandle(null));
                         Closed();
                     }
 
@@ -625,7 +626,7 @@ namespace Avalonia.Win32
                 cbSize = Marshal.SizeOf(typeof(UnmanagedMethods.WNDCLASSEX)),
                 style = 0,
                 lpfnWndProc = _wndProcDelegate,
-                hInstance = Marshal.GetHINSTANCE(GetType().Module),
+                hInstance = UnmanagedMethods.GetModuleHandle(null),
                 hCursor = DefaultCursor,
                 hbrBackground = IntPtr.Zero,
                 lpszClassName = _className
