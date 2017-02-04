@@ -138,7 +138,7 @@ namespace Avalonia.Shared.PlatformSupport
             AssemblyDescriptor rv;
             if (!AssemblyNameCache.TryGetValue(name, out rv))
             {
-                var loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies();
+                var loadedAssemblies = AvaloniaLocator.Current.GetService<IRuntimePlatform>().GetLoadedAssemblies();
                 var match = loadedAssemblies.FirstOrDefault(a => a.GetName().Name == name);
                 if (match != null)
                 {
@@ -148,7 +148,9 @@ namespace Avalonia.Shared.PlatformSupport
                 {
                     // iOS does not support loading assemblies dynamically!
                     //
-#if !__IOS__
+#if NETSTANDARD
+                    AssemblyNameCache[name] = rv = new AssemblyDescriptor(Assembly.Load(new AssemblyName(name)));
+#elif !__IOS__
                     AssemblyNameCache[name] = rv = new AssemblyDescriptor(Assembly.Load(name));
 #endif
                 }

@@ -267,7 +267,7 @@ namespace Avalonia.Gtk
                 GtkKeyboardDevice.Instance,
                 evnt.Time,
                 evnt.Type == EventType.KeyPress ? RawKeyEventType.KeyDown : RawKeyEventType.KeyUp,
-                GtkKeyboardDevice.ConvertKey(evnt.Key), GetModifierKeys(evnt.State));
+                Common.KeyTransform.ConvertKey(evnt.Key), GetModifierKeys(evnt.State));
             Input(e);
         }
 

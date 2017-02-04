@@ -42,7 +42,7 @@ var AssemblyInfoPath = File("./src/Shared/SharedAssemblyInfo.cs");
 var ReleasePlatform = "Any CPU";
 var ReleaseConfiguration = "Release";
 var MSBuildSolution = "./Avalonia.sln";
-var XBuildSolution = "./Avalonia.sln";
+var XBuildSolution = "./Avalonia.XBuild.sln";
 
 ///////////////////////////////////////////////////////////////////////////////
 // PARAMETERS
@@ -69,7 +69,7 @@ var isNuGetRelease = isTagged && isReleasable;
 // VERSION
 ///////////////////////////////////////////////////////////////////////////////
 
-var version = ParseAssemblyInfo(AssemblyInfoPath).AssemblyVersion;
+var version = Argument("force-nuget-version", ParseAssemblyInfo(AssemblyInfoPath).AssemblyVersion);
 
 if (isRunningOnAppVeyor)
 {
@@ -115,7 +115,9 @@ var buildDirs =
     (DirectoryPath)Directory("./src/Skia/Avalonia.Skia.Android.TestApp/bin/" + dirSuffix) + 
     (DirectoryPath)Directory("./src/Skia/Avalonia.Skia.Android.TestApp/obj/" + dirSuffix) + 
     (DirectoryPath)Directory("./src/Skia/Avalonia.Skia.Desktop/bin/" + dirSuffixSkia) + 
-    (DirectoryPath)Directory("./src/Skia/Avalonia.Skia.Desktop/obj/" + dirSuffixSkia) + 
+    (DirectoryPath)Directory("./src/Skia/Avalonia.Skia.Desktop/obj/" + dirSuffixSkia) +
+    (DirectoryPath)Directory("./src/Skia/Avalonia.Skia.Desktop.NetStandard/bin/" + dirSuffix) + 
+    (DirectoryPath)Directory("./src/Skia/Avalonia.Skia.Desktop.NetStandard/obj/" + dirSuffix) + 
     (DirectoryPath)Directory("./src/Skia/Avalonia.Skia.iOS/bin/" + dirSuffixIOS) + 
     (DirectoryPath)Directory("./src/Skia/Avalonia.Skia.iOS/obj/" + dirSuffixIOS) + 
     (DirectoryPath)Directory("./src/Skia/Avalonia.Skia.iOS.TestApp/bin/" + dirSuffixIOS) + 
@@ -273,6 +275,12 @@ var win32CoreLibrariesNuSpecContent = coreLibrariesFiles.Select((file) => {
     };
 });
 
+var netcoreappCoreLibrariesNuSpecContent = coreLibrariesFiles.Select((file) => {
+    return new NuSpecContent { 
+        Source = file.FullPath, Target = "lib/netcoreapp1.0" 
+    };
+});
+
 var net45RuntimePlatformExtensions = new [] {".xml", ".dll"};
 var net45RuntimePlatform = net45RuntimePlatformExtensions.Select(libSuffix => {
     return new NuSpecContent {
@@ -280,6 +288,15 @@ var net45RuntimePlatform = net45RuntimePlatformExtensions.Select(libSuffix => {
         Target = "lib/net45" 
     };
 });
+
+var netCoreRuntimePlatformExtensions = new [] {".xml", ".dll"};
+var netCoreRuntimePlatform = netCoreRuntimePlatformExtensions.Select(libSuffix => {
+    return new NuSpecContent {
+        Source = ((FilePath)File("./src/Avalonia.DotNetCoreRuntime/bin/" + dirSuffix + "/Avalonia.DotNetCoreRuntime" + libSuffix)).FullPath, 
+        Target = "lib/netcoreapp1.0" 
+    };
+});
+
 
 var nuspecNuGetSettingsCore = new []
 {
@@ -294,9 +311,20 @@ var nuspecNuGetSettingsCore = new []
             new NuSpecDependency() { Id = "Serilog", Version = SerilogVersion },
             new NuSpecDependency() { Id = "Splat", Version = SplatVersion },
             new NuSpecDependency() { Id = "Sprache", Version = SpracheVersion },
-            new NuSpecDependency() { Id = "System.Reactive", Version = SystemReactiveVersion }
+            new NuSpecDependency() { Id = "System.Reactive", Version = SystemReactiveVersion },
+            new NuSpecDependency() { Id = "System.Threading.ThreadPool", TargetFramework = "netcoreapp1.0", Version = "4.3.0" },
+            //.NET Core
+            new NuSpecDependency() { Id = "NETStandard.Library", TargetFramework = "netcoreapp1.0", Version = "1.6.0" },
+            new NuSpecDependency() { Id = "Microsoft.NETCore.Portable.Compatibility", TargetFramework = "netcoreapp1.0", Version = "1.0.1" },
+            new NuSpecDependency() { Id = "Splat", TargetFramework = "netcoreapp1.0", Version = "2.0.0" },
+            new NuSpecDependency() { Id = "Serilog", TargetFramework = "netcoreapp1.0", Version = "2.3.0" },
+            new NuSpecDependency() { Id = "Sprache", TargetFramework = "netcoreapp1.0", Version = SpracheVersion },
+            new NuSpecDependency() { Id = "System.Reactive", TargetFramework = "netcoreapp1.0", Version = SystemReactiveVersion }
         },
-        Files = coreLibrariesNuSpecContent.Concat(win32CoreLibrariesNuSpecContent).Concat(net45RuntimePlatform).ToList(),
+        Files = coreLibrariesNuSpecContent
+            .Concat(win32CoreLibrariesNuSpecContent).Concat(net45RuntimePlatform)
+            .Concat(netcoreappCoreLibrariesNuSpecContent).Concat(netCoreRuntimePlatform)
+            .ToList(),
         BasePath = Directory("./"),
         OutputDirectory = nugetRoot
     },
@@ -427,9 +455,10 @@ var nuspecNuGetSettingsDesktop = new []
         },
         Files = new []
         {
-            new NuSpecContent { Source = "Avalonia.Win32.dll", Target = "lib/net45" }
+            new NuSpecContent { Source = "Avalonia.Win32/bin/" + dirSuffix + "/Avalonia.Win32.dll", Target = "lib/net45" },
+            new NuSpecContent { Source = "Avalonia.Win32.NetStandard/bin/" + dirSuffix + "/Avalonia.Win32.dll", Target = "lib/netstandard1.1" }
         },
-        BasePath = Directory("./src/Windows/Avalonia.Win32/bin/" + dirSuffix),
+        BasePath = Directory("./src/Windows"),
         OutputDirectory = nugetRoot
     },
     ///////////////////////////////////////////////////////////////////////////////
@@ -471,6 +500,23 @@ var nuspecNuGetSettingsDesktop = new []
         OutputDirectory = nugetRoot
     },
     ///////////////////////////////////////////////////////////////////////////////
+    // Avalonia.Gtk3
+    ///////////////////////////////////////////////////////////////////////////////
+    new NuGetPackSettings()
+    {
+        Id = "Avalonia.Gtk3",
+        Dependencies = new []
+        {
+            new NuSpecDependency() { Id = "Avalonia", Version = version }
+        },
+        Files = new []
+        {
+            new NuSpecContent { Source = "Avalonia.Gtk3.dll", Target = "lib/netstandard1.1" }
+        },
+        BasePath = Directory("./src/Gtk/Avalonia.Gtk3/bin/" + dirSuffix),
+        OutputDirectory = nugetRoot
+    },
+    ///////////////////////////////////////////////////////////////////////////////
     // Avalonia.Cairo
     ///////////////////////////////////////////////////////////////////////////////
     new NuGetPackSettings()
@@ -496,13 +542,19 @@ var nuspecNuGetSettingsDesktop = new []
         Dependencies = new []
         {
             new NuSpecDependency() { Id = "Avalonia", Version = version },
-            new NuSpecDependency() { Id = "SkiaSharp", Version = SkiaSharpVersion }
+            new NuSpecDependency() { Id = "SkiaSharp", Version = SkiaSharpVersion },
+            //.NET Core
+            new NuSpecDependency() { Id = "Avalonia", TargetFramework = "netcoreapp1.0", Version = version },
+            new NuSpecDependency() { Id = "SkiaSharp", TargetFramework = "netcoreapp1.0", Version = SkiaSharpVersion },
+            new NuSpecDependency() { Id = "NETStandard.Library", TargetFramework = "netcoreapp1.0", Version = "1.6.0" },
+            new NuSpecDependency() { Id = "Microsoft.NETCore.Portable.Compatibility", TargetFramework = "netcoreapp1.0", Version = "1.0.1" }
         },
         Files = new []
         {
-            new NuSpecContent { Source = "Avalonia.Skia.Desktop.dll", Target = "lib/net45" }
+            new NuSpecContent { Source = "Avalonia.Skia.Desktop/bin/" + dirSuffixSkia + "/Avalonia.Skia.Desktop.dll", Target = "lib/net45" },
+            new NuSpecContent { Source = "Avalonia.Skia.Desktop.NetStandard/bin/" + dirSuffix + "/Avalonia.Skia.Desktop.dll", Target = "lib/netcoreapp1.0" }
         },
-        BasePath = Directory("./src/Skia/Avalonia.Skia.Desktop/bin/" + dirSuffixSkia),
+        BasePath = Directory("./src/Skia/"),
         OutputDirectory = nugetRoot
     },
     ///////////////////////////////////////////////////////////////////////////////
@@ -592,9 +644,46 @@ Task("Clean")
     CleanDirectory(binRoot);
     CleanDirectory(testsRoot);
 });
+Task("Prepare-XBuild-Solution")
+    .Does(() =>
+{
+    var blacklistedProjects = new[]
+    {
+        "Avalonia.Win32.NetStandard",
+        "Avalonia.DotNetCoreRuntime",
+        "Avalonia.Skia.Desktop.NetStandard",
+        "Avalonia.Gtk3"
+    };
+    var blacklistedGuids = System.IO.File.ReadAllLines(MSBuildSolution)
+        .Where(l=>l.StartsWith("Project") && blacklistedProjects.Any(p=>l.Contains(p)))
+        .Select(l => l.Split(',').Select(part => part.Trim()).FirstOrDefault(part => part.StartsWith("\"{")))
+        .Where(g=>g!=null)
+        .Select(l=>l.Trim(new[]{'"', '}', '{'}).ToLower()).ToArray();
+
+    Console.WriteLine("Blacklisted guids are: " + string.Join(",", blacklistedGuids));
+    var removeUntilEndProject = false;
+
+    System.IO.File.WriteAllLines(XBuildSolution, System.IO.File.ReadAllLines(MSBuildSolution)
+        .Where(l => 
+        {
+            if(removeUntilEndProject)
+            {
+                if(l.StartsWith("EndProject"))
+                    removeUntilEndProject = false;
+                return false;
+            }
+            
+            var blacklist = blacklistedGuids.Any(g => l.ToLower().Contains(g));
+            if(blacklist && l.StartsWith("Project"))
+                removeUntilEndProject = true;
+            
+            return !blacklist;
+        }));
+});
 
 Task("Restore-NuGet-Packages")
     .IsDependentOn("Clean")
+    .IsDependentOn("Prepare-XBuild-Solution")
     .Does(() =>
 {
     var maxRetryCount = 5;
