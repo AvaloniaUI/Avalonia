@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System.IO;
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
@@ -26,7 +27,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
         }
 
         [Fact]
-        public void Image_Stretch_None()
+        public async Task Image_Stretch_None()
         {
             Decorator target = new Decorator
             {
@@ -44,12 +45,12 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
 
         [Fact]
-        public void Image_Stretch_Fill()
+        public async Task Image_Stretch_Fill()
         {
             Decorator target = new Decorator
             {
@@ -67,12 +68,12 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
 
         [Fact]
-        public void Image_Stretch_Uniform()
+        public async Task Image_Stretch_Uniform()
         {
             Decorator target = new Decorator
             {
@@ -90,12 +91,12 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
 
         [Fact]
-        public void Image_Stretch_UniformToFill()
+        public async Task Image_Stretch_UniformToFill()
         {
             Decorator target = new Decorator
             {
@@ -113,7 +114,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
     }

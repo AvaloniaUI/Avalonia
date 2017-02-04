@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Xunit;
+using System.Threading.Tasks;
 
 #if AVALONIA_CAIRO
 namespace Avalonia.Cairo.RenderTests
@@ -22,7 +23,7 @@ namespace Avalonia.Direct2D1.RenderTests
         }
 
         [Fact]
-        public void Geometry_Clip_Clips_Path()
+        public async Task Geometry_Clip_Clips_Path()
         {
             var target = new Canvas
             {
@@ -44,7 +45,7 @@ namespace Avalonia.Direct2D1.RenderTests
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
     }

@@ -10,6 +10,9 @@ using Avalonia.Rendering;
 
 using Xunit;
 using Avalonia.Platform;
+using System.Threading.Tasks;
+using System;
+using System.Threading;
 
 #if AVALONIA_CAIRO
 using Avalonia.Cairo;
@@ -29,6 +32,9 @@ namespace Avalonia.Direct2D1.RenderTests
 {
     public class TestBase
     {
+        private static readonly TestThreadingInterface threadingInterface =
+            new TestThreadingInterface();
+
         static TestBase()
         {
 #if AVALONIA_CAIRO
@@ -38,6 +44,10 @@ namespace Avalonia.Direct2D1.RenderTests
 #else
             Direct2D1Platform.Initialize();
 #endif
+            AvaloniaLocator.CurrentMutable
+                .Bind<IPlatformThreadingInterface>()
+                .ToConstant(threadingInterface);
+
         }
 
         public TestBase(string outputPath)
@@ -50,6 +60,8 @@ namespace Avalonia.Direct2D1.RenderTests
             string testFiles = Path.GetFullPath(@"..\..\tests\TestFiles\Direct2D1");
 #endif
             OutputPath = Path.Combine(testFiles, outputPath);
+
+            threadingInterface.MainThread = Thread.CurrentThread;
         }
 
         public string OutputPath
@@ -57,7 +69,7 @@ namespace Avalonia.Direct2D1.RenderTests
             get;
         }
 
-        protected void RenderToFile(Control target, [CallerMemberName] string testName = "")
+        protected async Task RenderToFile(Control target, [CallerMemberName] string testName = "")
         {
             if (!Directory.Exists(OutputPath))
             {
@@ -85,7 +97,12 @@ namespace Avalonia.Direct2D1.RenderTests
                 Size size = new Size(target.Width, target.Height);
                 target.Measure(size);
                 target.Arrange(new Rect(size));
-                renderer.Render(target.Bounds);
+                renderer.UnitTestUpdateScene();
+
+                // Do the deferred render on a background thread to expose any threading errors in
+                // the deferred rendering path.
+                await Task.Run((Action)renderer.UnitTestRender);
+
                 rtb.Save(deferredPath);
             }
         }
@@ -112,6 +129,30 @@ namespace Avalonia.Direct2D1.RenderTests
                 {
                     Assert.True(false, deferredPath + ": Error = " + deferredError);
                 }
+            }
+        }
+
+        private class TestThreadingInterface : IPlatformThreadingInterface
+        {
+            public bool CurrentThreadIsLoopThread => MainThread.ManagedThreadId == Thread.CurrentThread.ManagedThreadId;
+
+            public Thread MainThread { get; set; }
+
+            public event Action Signaled;
+
+            public void RunLoop(CancellationToken cancellationToken)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void Signal()
+            {
+                throw new NotImplementedException();
+            }
+
+            public IDisposable StartTimer(TimeSpan interval, Action tick)
+            {
+                throw new NotImplementedException();
             }
         }
     }

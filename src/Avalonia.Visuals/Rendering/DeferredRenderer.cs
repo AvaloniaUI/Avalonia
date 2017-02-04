@@ -124,6 +124,10 @@ namespace Avalonia.Rendering
             }
         }
 
+        internal void UnitTestUpdateScene() => UpdateScene();
+
+        internal void UnitTestRender() => Render(_scene);
+
         private void Render(Scene scene)
         {
             _rendering = true;

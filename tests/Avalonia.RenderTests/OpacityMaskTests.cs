@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Xunit;
+using System.Threading.Tasks;
 
 #if AVALONIA_CAIRO
 namespace Avalonia.Cairo.RenderTests
@@ -22,7 +23,7 @@ namespace Avalonia.Direct2D1.RenderTests
         }
 
         [Fact]
-        public void Opacity_Mask_Masks_Element()
+        public async Task Opacity_Mask_Masks_Element()
         {
             var target = new Canvas
             {
@@ -53,7 +54,7 @@ namespace Avalonia.Direct2D1.RenderTests
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
     }

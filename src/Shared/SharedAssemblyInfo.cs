@@ -3,6 +3,7 @@
 
 using System.Reflection;
 using System.Resources;
+using System.Runtime.CompilerServices;
 
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyConfiguration("")]
@@ -16,3 +17,7 @@ using System.Resources;
 [assembly: AssemblyVersion("0.4.1")]
 [assembly: AssemblyFileVersion("0.4.1")]
 [assembly: AssemblyInformationalVersion("0.4.1")]
+
+[assembly: InternalsVisibleTo("Avalonia.Cairo.RenderTests")]
+[assembly: InternalsVisibleTo("Avalonia.Direct2D1.RenderTests")]
+[assembly: InternalsVisibleTo("Avalonia.Skia.RenderTests")]

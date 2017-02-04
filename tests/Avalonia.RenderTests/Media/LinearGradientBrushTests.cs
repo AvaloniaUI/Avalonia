@@ -29,7 +29,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
 #else
         [Fact]
 #endif
-        public void LinearGradientBrush_RedBlue_Horizontal_Fill()
+        public async Task LinearGradientBrush_RedBlue_Horizontal_Fill()
         {
             Decorator target = new Decorator
             {
@@ -51,7 +51,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
 
@@ -60,7 +60,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
 #else
         [Fact]
 #endif
-        public void LinearGradientBrush_RedBlue_Vertical_Fill()
+        public async Task LinearGradientBrush_RedBlue_Vertical_Fill()
         {
             Decorator target = new Decorator
             {
@@ -82,7 +82,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
     }
