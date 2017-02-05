@@ -182,9 +182,18 @@ namespace Avalonia.Win32
 
         public void Dispose()
         {
-            s_instances.Remove(this);
-            _framebuffer.Dispose();
-            UnmanagedMethods.DestroyWindow(_hwnd);
+            _framebuffer?.Dispose();
+            _framebuffer = null;
+            if (_hwnd != IntPtr.Zero)
+            {
+                UnmanagedMethods.DestroyWindow(_hwnd);
+                _hwnd = IntPtr.Zero;
+            }
+            if (_className != null)
+            {
+                UnmanagedMethods.UnregisterClass(_className, UnmanagedMethods.GetModuleHandle(null));
+                _className = null;
+            }
         }
 
         public void Hide()
@@ -418,12 +427,13 @@ namespace Avalonia.Win32
                     return IntPtr.Zero;
 
                 case UnmanagedMethods.WindowsMessage.WM_DESTROY:
-                    if (Closed != null)
-                    {
-                        UnmanagedMethods.UnregisterClass(_className, UnmanagedMethods.GetModuleHandle(null));
-                        Closed();
-                    }
-
+                    //Window doesn't exist anymore
+                    _hwnd = IntPtr.Zero;
+                    //Remove root reference to this class, so unmanaged delegate can be collected
+                    s_instances.Remove(this);
+                    Closed?.Invoke();
+                    //Free other resources
+                    Dispose();
                     return IntPtr.Zero;
 
                 case UnmanagedMethods.WindowsMessage.WM_DPICHANGED:
