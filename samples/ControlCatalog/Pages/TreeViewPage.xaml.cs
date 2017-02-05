@@ -11,7 +11,7 @@ namespace ControlCatalog.Pages
         public TreeViewPage()
         {
             this.InitializeComponent();
-            DataContext = CreateNodes(0);
+            DataContext = new Node().Children;
         }
 
         private void InitializeComponent()
@@ -19,19 +19,22 @@ namespace ControlCatalog.Pages
             AvaloniaXamlLoader.Load(this);
         }
 
-        private IList<Node> CreateNodes(int level)
+        public class Node
         {
-            return Enumerable.Range(0, 10).Select(x => new Node
+            private IList<Node> _children;
+            public string Header { get; private set; }
+            public IList<Node> Children
             {
-                Header = $"Item {x}",
-                Children = level < 5 ? CreateNodes(level + 1) : null,
-            }).ToList();
-        }
-
-        private class Node
-        {
-            public string Header { get; set; }
-            public IList<Node> Children { get; set; }
+                get
+                {
+                    if (_children == null)
+                    {
+                        _children = Enumerable.Range(1, 10).Select(i => new Node() {Header = $"Item {i}"})
+                            .ToArray();
+                    }
+                    return _children;
+                }
+            }
         }
     }
 }
