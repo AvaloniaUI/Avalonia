@@ -13,10 +13,11 @@ namespace Avalonia.Gtk3
     class ImageSurfaceFramebuffer : ILockedFramebuffer
     {
         private IntPtr _context;
-        private IntPtr _surface;
+        private CairoSurface _surface;
 
-        public ImageSurfaceFramebuffer(int width, int height)
+        public ImageSurfaceFramebuffer(IntPtr context, int width, int height)
         {
+            _context = context;
             _surface = Native.CairoImageSurfaceCreate(1, width, height);
             Width = width;
             Height = height;
@@ -24,27 +25,17 @@ namespace Avalonia.Gtk3
             RowBytes = Native.CairoImageSurfaceGetStride(_surface);
             Native.CairoSurfaceFlush(_surface);
         }
-
-        public void Prepare(IntPtr context)
-        {
-            _context = context;
-        }
-
-        public void Deallocate()
-        {
-            Native.CairoSurfaceDestroy(_surface);
-            _surface = IntPtr.Zero;
-        }
-
+        
         public void Dispose()
         {
-            if(_context == IntPtr.Zero || _surface == IntPtr.Zero)
+            if(_context == IntPtr.Zero || _surface == null)
                 return;
             Native.CairoSurfaceMarkDirty(_surface);
             Native.CairoSetSourceSurface(_context, _surface, 0, 0);
             Native.CairoPaint(_context);
             _context = IntPtr.Zero;
-
+            _surface.Dispose();
+            _surface = null;
         }
 
         public IntPtr Address { get; }
