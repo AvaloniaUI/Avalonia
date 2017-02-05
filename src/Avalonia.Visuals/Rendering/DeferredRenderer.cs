@@ -105,7 +105,7 @@ namespace Avalonia.Rendering
             Render(_scene);
         }
 
-        Size IVisualBrushRenderer.GetRenderTargetSize(VisualBrush brush)
+        Size IVisualBrushRenderer.GetRenderTargetSize(IVisualBrush brush)
         {
             if (brush.Visual != null)
             {
@@ -115,7 +115,7 @@ namespace Avalonia.Rendering
             return Size.Empty;
         }
 
-        void IVisualBrushRenderer.RenderVisualBrush(IDrawingContextImpl context, VisualBrush brush)
+        void IVisualBrushRenderer.RenderVisualBrush(IDrawingContextImpl context, IVisualBrush brush)
         {
             if (brush.Visual != null)
             {

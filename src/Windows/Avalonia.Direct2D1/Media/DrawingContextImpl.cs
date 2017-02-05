@@ -321,8 +321,8 @@ namespace Avalonia.Direct2D1.Media
             var solidColorBrush = brush as Avalonia.Media.ISolidColorBrush;
             var linearGradientBrush = brush as Avalonia.Media.LinearGradientBrush;
             var radialGradientBrush = brush as Avalonia.Media.RadialGradientBrush;
-            var imageBrush = brush as Avalonia.Media.ImageBrush;
-            var visualBrush = brush as Avalonia.Media.VisualBrush;
+            var imageBrush = brush as Avalonia.Media.IImageBrush;
+            var visualBrush = brush as Avalonia.Media.IVisualBrush;
 
             if (solidColorBrush != null)
             {

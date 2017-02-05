@@ -17,7 +17,7 @@ namespace Avalonia.Rendering
         /// </summary>
         /// <param name="brush">The visual brush.</param>
         /// <returns>The size of the intermediate render target to create.</returns>
-        Size GetRenderTargetSize(VisualBrush brush);
+        Size GetRenderTargetSize(IVisualBrush brush);
 
         /// <summary>
         /// Renders a visual brush to a bitmap.
@@ -25,6 +25,6 @@ namespace Avalonia.Rendering
         /// <param name="context">The drawing context to render to.</param>
         /// <param name="brush">The visual brush.</param>
         /// <returns>A bitmap containing the rendered brush.</returns>
-        void RenderVisualBrush(IDrawingContextImpl context, VisualBrush brush);
+        void RenderVisualBrush(IDrawingContextImpl context, IVisualBrush brush);
     }
 }

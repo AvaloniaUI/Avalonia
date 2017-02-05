@@ -6,18 +6,18 @@ using Avalonia.Media;
 
 namespace Avalonia.Rendering.SceneGraph
 {
-    public class LineNode : IDrawOperation
+    public class LineNode : BrushDrawOperation
     {
         public LineNode(Matrix transform, Pen pen, Point p1, Point p2)
         {
             Bounds = new Rect(P1, P2);
             Transform = transform;
-            Pen = pen;
+            Pen = Convert(pen);
             P1 = p1;
             P2 = p2;
         }
 
-        public Rect Bounds { get; }
+        public override Rect Bounds { get; }
         public Matrix Transform { get; }
         public Pen Pen { get; }
         public Point P1 { get; }
@@ -28,13 +28,13 @@ namespace Avalonia.Rendering.SceneGraph
             return transform == Transform && pen == Pen && p1 == P1 && p2 == P2;
         }
 
-        public void Render(IDrawingContextImpl context)
+        public override void Render(IDrawingContextImpl context)
         {
             context.Transform = Transform;
             context.DrawLine(Pen, P1, P2);
         }
 
-        public bool HitTest(Point p)
+        public override bool HitTest(Point p)
         {
             // TODO: Implement line hit testing.
             return false;

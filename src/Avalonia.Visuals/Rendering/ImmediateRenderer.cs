@@ -79,13 +79,13 @@ namespace Avalonia.Rendering
         {
         }
 
-        Size IVisualBrushRenderer.GetRenderTargetSize(VisualBrush brush)
+        Size IVisualBrushRenderer.GetRenderTargetSize(IVisualBrush brush)
         {
             (brush.Visual as IVisualBrushInitialize)?.EnsureInitialized();
             return brush.Visual?.Bounds.Size ?? Size.Empty;
         }
 
-        void IVisualBrushRenderer.RenderVisualBrush(IDrawingContextImpl context, VisualBrush brush)
+        void IVisualBrushRenderer.RenderVisualBrush(IDrawingContextImpl context, IVisualBrush brush)
         {
             var visual = brush.Visual;
             Render(new DrawingContext(context), visual, visual.Bounds);

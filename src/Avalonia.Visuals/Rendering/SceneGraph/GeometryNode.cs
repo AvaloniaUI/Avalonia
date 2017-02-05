@@ -7,18 +7,18 @@ using Avalonia.Platform;
 
 namespace Avalonia.Rendering.SceneGraph
 {
-    public class GeometryNode : IDrawOperation
+    public class GeometryNode : BrushDrawOperation
     {
         public GeometryNode(Matrix transform, IBrush brush, Pen pen, IGeometryImpl geometry)
         {
             Bounds = geometry.GetRenderBounds(pen.Thickness).TransformToAABB(transform);
             Transform = transform;
-            Brush = brush;
-            Pen = pen;
+            Brush = Convert(brush);
+            Pen = Convert(pen);
             Geometry = geometry;
         }
 
-        public Rect Bounds { get; }
+        public override Rect Bounds { get; }
         public Matrix Transform { get; }
         public IBrush Brush { get; }
         public Pen Pen { get; }
@@ -32,13 +32,13 @@ namespace Avalonia.Rendering.SceneGraph
                 Equals(geometry, Geometry);
         }
 
-        public void Render(IDrawingContextImpl context)
+        public override void Render(IDrawingContextImpl context)
         {
             context.Transform = Transform;
             context.DrawGeometry(Brush, Pen, Geometry);
         }
 
-        public bool HitTest(Point p)
+        public override bool HitTest(Point p)
         {
             p *= Transform.Invert();
             return (Brush != null && Geometry.FillContains(p)) || 

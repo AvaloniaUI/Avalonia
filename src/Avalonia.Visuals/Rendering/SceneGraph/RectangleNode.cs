@@ -6,19 +6,19 @@ using Avalonia.Media;
 
 namespace Avalonia.Rendering.SceneGraph
 {
-    public class RectangleNode : IDrawOperation
+    public class RectangleNode : BrushDrawOperation
     {
         public RectangleNode(Matrix transform, IBrush brush, Pen pen, Rect rect, float cornerRadius)
         {
             Bounds = rect.TransformToAABB(transform).Inflate(pen?.Thickness ?? 0);
             Transform = transform;
-            Brush = brush;
-            Pen = pen;
+            Brush = Convert(brush);
+            Pen = Convert(pen);
             Rect = rect;
             CornerRadius = cornerRadius;
         }
 
-        public Rect Bounds { get; }
+        public override Rect Bounds { get; }
         public Matrix Transform { get; }
         public IBrush Brush { get; }
         public Pen Pen { get; }
@@ -34,7 +34,7 @@ namespace Avalonia.Rendering.SceneGraph
                 cornerRadius == CornerRadius;
         }
 
-        public void Render(IDrawingContextImpl context)
+        public override void Render(IDrawingContextImpl context)
         {
             context.Transform = Transform;
 
@@ -49,6 +49,6 @@ namespace Avalonia.Rendering.SceneGraph
             }
         }
 
-        public bool HitTest(Point p) => Bounds.Contains(p);
+        public override bool HitTest(Point p) => Bounds.Contains(p);
     }
 }

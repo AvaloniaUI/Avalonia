@@ -11,7 +11,7 @@ namespace Avalonia.Direct2D1.Media
     public sealed class ImageBrushImpl : BrushImpl
     {
         public ImageBrushImpl(
-            TileBrush brush,
+            ITileBrush brush,
             SharpDX.Direct2D1.RenderTarget target,
             BitmapImpl bitmap,
             Size targetSize)
@@ -45,7 +45,7 @@ namespace Avalonia.Direct2D1.Media
             base.Dispose();
         }
 
-        private static BitmapBrushProperties GetBitmapBrushProperties(TileBrush brush)
+        private static BitmapBrushProperties GetBitmapBrushProperties(ITileBrush brush)
         {
             var tileMode = brush.TileMode;
 
@@ -56,7 +56,7 @@ namespace Avalonia.Direct2D1.Media
             };
         }
 
-        private static BrushProperties GetBrushProperties(TileBrush brush, Rect destinationRect)
+        private static BrushProperties GetBrushProperties(ITileBrush brush, Rect destinationRect)
         {
             var tileTransform =
                 brush.TileMode != TileMode.None ?

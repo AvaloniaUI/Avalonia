@@ -69,6 +69,9 @@
     <Compile Include="Media\BrushMappingMode.cs" />
     <Compile Include="Media\Color.cs" />
     <Compile Include="Media\Colors.cs" />
+    <Compile Include="Media\IImageBrush.cs" />
+    <Compile Include="Media\ITileBrush.cs" />
+    <Compile Include="Media\IVisualBrush.cs" />
     <Compile Include="Media\TextWrapping.cs" />
     <Compile Include="Media\TransformGroup.cs" />
     <Compile Include="Media\DashStyle.cs" />
@@ -124,12 +127,15 @@
     <Compile Include="Rendering\RenderLayer.cs" />
     <Compile Include="Rendering\RenderLayers.cs" />
     <Compile Include="Rendering\SceneGraph\DeferredDrawingContextImpl.cs" />
+    <Compile Include="Rendering\SceneGraph\BrushDrawOperation.cs" />
     <Compile Include="Rendering\SceneGraph\GeometryNode.cs" />
     <Compile Include="Rendering\SceneGraph\IDrawOperation.cs" />
     <Compile Include="Rendering\SceneGraph\ImageNode.cs" />
     <Compile Include="Rendering\SceneGraph\ISceneBuilder.cs" />
     <Compile Include="Rendering\SceneGraph\IVisualNode.cs" />
     <Compile Include="Rendering\SceneGraph\LineNode.cs" />
+    <Compile Include="Rendering\SceneGraph\Media\SceneVisualBrush.cs" />
+    <Compile Include="Rendering\SceneGraph\Media\SceneImageBrush.cs" />
     <Compile Include="Rendering\SceneGraph\RectangleNode.cs" />
     <Compile Include="Rendering\SceneGraph\Scene.cs" />
     <Compile Include="Rendering\SceneGraph\SceneBuilder.cs" />
@@ -185,6 +191,7 @@
     <Compile Include="VisualTree\VisualExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="ClassDiagram1.cd" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

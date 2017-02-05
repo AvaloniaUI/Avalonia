@@ -18,7 +18,7 @@ namespace Avalonia.Rendering.Utilities
         /// <param name="brush">The brush to be rendered.</param>
         /// <param name="contentSize">The size of the content of the tile brush.</param>
         /// <param name="targetSize">The size of the control to which the brush is being rendered.</param>
-        public TileBrushCalculator(TileBrush brush, Size contentSize, Size targetSize)
+        public TileBrushCalculator(ITileBrush brush, Size contentSize, Size targetSize)
             : this(
                   brush.TileMode,
                   brush.Stretch,

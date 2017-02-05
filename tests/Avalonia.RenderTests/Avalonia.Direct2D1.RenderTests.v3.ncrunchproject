@@ -2,51 +2,12 @@
   <Settings>
     <DefaultTestTimeout>1000</DefaultTestTimeout>
     <IgnoredTests>
-      <NamedTestSelector>
-        <TestName>Avalonia.Direct2D1.RenderTests.Media.ImageBrushTests.ImageBrush_NoStretch_FlipX_TopLeftDest</TestName>
-      </NamedTestSelector>
       <FixtureTestSelector>
         <FixtureName>Avalonia.Direct2D1.RenderTests.Media.LinearGradientBrushTests</FixtureName>
       </FixtureTestSelector>
       <FixtureTestSelector>
-        <FixtureName>Avalonia.Direct2D1.RenderTests.Media.VisualBrushTests</FixtureName>
-      </FixtureTestSelector>
-      <FixtureTestSelector>
         <FixtureName>Avalonia.Direct2D1.RenderTests.Controls.BorderTests</FixtureName>
       </FixtureTestSelector>
-      <NamedTestSelector>
-        <TestName>Avalonia.Direct2D1.RenderTests.Media.ImageBrushTests.ImageBrush_NoStretch_FlipXY_TopLeftDest</TestName>
-      </NamedTestSelector>
-      <NamedTestSelector>
-        <TestName>Avalonia.Direct2D1.RenderTests.Media.ImageBrushTests.ImageBrush_NoStretch_FlipY_TopLeftDest</TestName>
-      </NamedTestSelector>
-      <NamedTestSelector>
-        <TestName>Avalonia.Direct2D1.RenderTests.Media.ImageBrushTests.ImageBrush_NoStretch_NoTile_Alignment_BottomRight</TestName>
-      </NamedTestSelector>
-      <NamedTestSelector>
-        <TestName>Avalonia.Direct2D1.RenderTests.Media.ImageBrushTests.ImageBrush_NoStretch_NoTile_Alignment_Center</TestName>
-      </NamedTestSelector>
-      <NamedTestSelector>
-        <TestName>Avalonia.Direct2D1.RenderTests.Media.ImageBrushTests.ImageBrush_NoStretch_NoTile_Alignment_TopLeft</TestName>
-      </NamedTestSelector>
-      <NamedTestSelector>
-        <TestName>Avalonia.Direct2D1.RenderTests.Media.ImageBrushTests.ImageBrush_NoStretch_NoTile_BottomRightQuarterDest</TestName>
-      </NamedTestSelector>
-      <NamedTestSelector>
-        <TestName>Avalonia.Direct2D1.RenderTests.Media.ImageBrushTests.ImageBrush_NoStretch_NoTile_BottomRightQuarterSource</TestName>
-      </NamedTestSelector>
-      <NamedTestSelector>
-        <TestName>Avalonia.Direct2D1.RenderTests.Media.ImageBrushTests.ImageBrush_NoStretch_NoTile_BottomRightQuarterSource_BottomRightQuarterDest</TestName>
-      </NamedTestSelector>
-      <NamedTestSelector>
-        <TestName>Avalonia.Direct2D1.RenderTests.Media.ImageBrushTests.ImageBrush_NoStretch_Tile_BottomRightQuarterSource_CenterQuarterDest</TestName>
-      </NamedTestSelector>
-      <NamedTestSelector>
-        <TestName>Avalonia.Direct2D1.RenderTests.Media.ImageBrushTests.ImageBrush_Uniform_NoTile</TestName>
-      </NamedTestSelector>
-      <NamedTestSelector>
-        <TestName>Avalonia.Direct2D1.RenderTests.Media.ImageBrushTests.ImageBrush_UniformToFill_NoTile</TestName>
-      </NamedTestSelector>
       <FixtureTestSelector>
         <FixtureName>Avalonia.Direct2D1.RenderTests.Controls.ImageTests</FixtureName>
       </FixtureTestSelector>
