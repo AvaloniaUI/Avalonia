@@ -8,7 +8,7 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering.SceneGraph
 {
-    public class RectangleNode : BrushDrawOperation
+    internal class RectangleNode : BrushDrawOperation
     {
         public RectangleNode(
             Matrix transform,

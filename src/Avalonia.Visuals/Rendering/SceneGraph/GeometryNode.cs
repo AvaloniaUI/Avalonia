@@ -9,7 +9,7 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering.SceneGraph
 {
-    public class GeometryNode : BrushDrawOperation
+    internal class GeometryNode : BrushDrawOperation
     {
         public GeometryNode(
             Matrix transform,

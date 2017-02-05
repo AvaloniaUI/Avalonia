@@ -9,7 +9,7 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering.SceneGraph
 {
-    public class ImageNode : IDrawOperation
+    internal class ImageNode : IDrawOperation
     {
         public ImageNode(Matrix transform, IBitmapImpl source, double opacity, Rect sourceRect, Rect destRect)
         {

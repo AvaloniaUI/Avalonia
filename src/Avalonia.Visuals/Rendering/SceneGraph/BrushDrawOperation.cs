@@ -6,7 +6,7 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering.SceneGraph
 {
-    public abstract class BrushDrawOperation : IDrawOperation
+    internal abstract class BrushDrawOperation : IDrawOperation
     {
         public abstract Rect Bounds { get; }
         public abstract bool HitTest(Point p);
