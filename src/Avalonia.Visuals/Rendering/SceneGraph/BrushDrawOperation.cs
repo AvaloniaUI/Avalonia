@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using Avalonia.Media;
 using Avalonia.Rendering.SceneGraph.Media;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering.SceneGraph
 {
@@ -8,6 +10,8 @@ namespace Avalonia.Rendering.SceneGraph
     {
         public abstract Rect Bounds { get; }
         public abstract bool HitTest(Point p);
+        public abstract IDictionary<IVisual, Scene> ChildScenes { get; }
+
         public abstract void Render(IDrawingContextImpl context);
 
         protected IBrush Convert(IBrush brush)

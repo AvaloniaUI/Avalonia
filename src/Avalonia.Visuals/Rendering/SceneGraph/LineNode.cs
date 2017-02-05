@@ -2,7 +2,9 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using Avalonia.Media;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering.SceneGraph
 {
@@ -22,6 +24,7 @@ namespace Avalonia.Rendering.SceneGraph
         public Pen Pen { get; }
         public Point P1 { get; }
         public Point P2 { get; }
+        public override IDictionary<IVisual, Scene> ChildScenes => null;
 
         public bool Equals(Matrix transform, Pen pen, Point p1, Point p2)
         {

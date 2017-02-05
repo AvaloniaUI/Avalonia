@@ -2,19 +2,23 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using Avalonia.Media;
 using Avalonia.Platform;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering.SceneGraph
 {
     internal class DeferredDrawingContextImpl : IDrawingContextImpl
     {
+        private readonly ISceneBuilder _sceneBuilder;
         private VisualNode _node;
         private int _childIndex;
         private int _drawOperationindex;
 
-        public DeferredDrawingContextImpl(SceneLayers layers)
+        public DeferredDrawingContextImpl(ISceneBuilder sceneBuilder, SceneLayers layers)
         {
+            _sceneBuilder = sceneBuilder;
             Layers = layers;
         }
 
@@ -67,7 +71,7 @@ namespace Avalonia.Rendering.SceneGraph
 
             if (next == null || !next.Equals(Transform, brush, pen, geometry))
             {
-                Add(new GeometryNode(Transform, brush, pen, geometry));
+                Add(new GeometryNode(Transform, brush, pen, geometry, CreateChildScene(brush)));
             }
             else
             {
@@ -109,7 +113,7 @@ namespace Avalonia.Rendering.SceneGraph
 
             if (next == null || !next.Equals(Transform, null, pen, rect, cornerRadius))
             {
-                Add(new RectangleNode(Transform, null, pen, rect, cornerRadius));
+                Add(new RectangleNode(Transform, null, pen, rect, cornerRadius, CreateChildScene(pen.Brush)));
             }
             else
             {
@@ -137,7 +141,7 @@ namespace Avalonia.Rendering.SceneGraph
 
             if (next == null || !next.Equals(Transform, brush, null, rect, cornerRadius))
             {
-                Add(new RectangleNode(Transform, brush, null, rect, cornerRadius));
+                Add(new RectangleNode(Transform, brush, null, rect, cornerRadius, CreateChildScene(brush)));
             }
             else
             {
@@ -238,6 +242,26 @@ namespace Avalonia.Rendering.SceneGraph
         private T NextDrawAs<T>() where T : class, IDrawOperation
         {
             return _drawOperationindex < _node.DrawOperations.Count ? _node.DrawOperations[_drawOperationindex] as T : null;
+        }
+
+        private IDictionary<IVisual, Scene> CreateChildScene(IBrush brush)
+        {
+            var visualBrush = brush as VisualBrush;
+
+            if (visualBrush != null)
+            {
+                var visual = visualBrush.Visual;
+
+                if (visual != null)
+                {
+                    (visual as IVisualBrushInitialize)?.EnsureInitialized();
+                    var scene = new Scene(visual);
+                    _sceneBuilder.UpdateAll(scene);
+                    return new Dictionary<IVisual, Scene> { { visualBrush.Visual, scene } };
+                }
+            }
+
+            return null;
         }
     }
 }

@@ -2,20 +2,28 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using Avalonia.Media;
 using Avalonia.Platform;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering.SceneGraph
 {
     public class GeometryNode : BrushDrawOperation
     {
-        public GeometryNode(Matrix transform, IBrush brush, Pen pen, IGeometryImpl geometry)
+        public GeometryNode(
+            Matrix transform,
+            IBrush brush,
+            Pen pen,
+            IGeometryImpl geometry,
+            IDictionary<IVisual, Scene> childScenes = null)
         {
             Bounds = geometry.GetRenderBounds(pen.Thickness).TransformToAABB(transform);
             Transform = transform;
             Brush = Convert(brush);
             Pen = Convert(pen);
             Geometry = geometry;
+            ChildScenes = childScenes;
         }
 
         public override Rect Bounds { get; }
@@ -23,6 +31,7 @@ namespace Avalonia.Rendering.SceneGraph
         public IBrush Brush { get; }
         public Pen Pen { get; }
         public IGeometryImpl Geometry { get; }
+        public override IDictionary<IVisual, Scene> ChildScenes { get; }
 
         public bool Equals(Matrix transform, IBrush brush, Pen pen, IGeometryImpl geometry)
         {

@@ -19,7 +19,7 @@ namespace Avalonia.Rendering.SceneGraph
             UpdateSize(scene);
             scene.Layers.GetOrAdd(scene.Root.Visual);
 
-            using (var impl = new DeferredDrawingContextImpl(scene.Layers))
+            using (var impl = new DeferredDrawingContextImpl(this, scene.Layers))
             using (var context = new DrawingContext(impl))
             {
                 Update(context, scene, (VisualNode)scene.Root, scene.Root.Visual.Bounds, true);
@@ -55,7 +55,7 @@ namespace Avalonia.Rendering.SceneGraph
                         // descendents too.
                         var recurse = node.Visual != visual;
 
-                        using (var impl = new DeferredDrawingContextImpl(scene.Layers))
+                        using (var impl = new DeferredDrawingContextImpl(this, scene.Layers))
                         using (var context = new DrawingContext(impl))
                         {
                             var clip = scene.Root.Visual.Bounds;

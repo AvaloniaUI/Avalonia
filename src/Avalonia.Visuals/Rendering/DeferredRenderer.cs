@@ -30,6 +30,7 @@ namespace Avalonia.Rendering
         private bool _rendering;
         private int _lastSceneId = -1;
         private DisplayDirtyRects _dirtyRectsDisplay = new DisplayDirtyRects();
+        private IDrawOperation _currentDraw;
 
         public DeferredRenderer(
             IRenderRoot root,
@@ -107,20 +108,16 @@ namespace Avalonia.Rendering
 
         Size IVisualBrushRenderer.GetRenderTargetSize(IVisualBrush brush)
         {
-            if (brush.Visual != null)
-            {
-                return _scene.FindNode(brush.Visual)?.ClipBounds.Size ?? Size.Empty;
-            }
-
-            return Size.Empty;
+            return (_currentDraw as BrushDrawOperation)?.ChildScenes?[brush.Visual]?.Size ?? Size.Empty;
         }
 
         void IVisualBrushRenderer.RenderVisualBrush(IDrawingContextImpl context, IVisualBrush brush)
         {
-            if (brush.Visual != null)
+            var childScene = (_currentDraw as BrushDrawOperation)?.ChildScenes?[brush.Visual];
+
+            if (childScene != null)
             {
-                var node = (VisualNode)_scene.FindNode(brush.Visual);
-                Render(context, node, null, node.ClipBounds);
+                Render(context, (VisualNode)childScene.Root, null, new Rect(childScene.Size));
             }
         }
 
@@ -130,29 +127,37 @@ namespace Avalonia.Rendering
 
         private void Render(Scene scene)
         {
-            _rendering = true;
-            _dirtyRectsDisplay.Tick();
-
-            if (scene.Size != Size.Empty)
+            if (!_rendering)
             {
-                if (scene.Id != _lastSceneId)
+                try
                 {
-                    _layers.Update(scene);
-                    RenderToLayers(scene);
+                    _rendering = true;
+                    _dirtyRectsDisplay.Tick();
 
-                    if (DebugFramesPath != null)
+                    if (scene.Size != Size.Empty)
                     {
-                        SaveDebugFrames(scene.Id);
+                        if (scene.Id != _lastSceneId)
+                        {
+                            _layers.Update(scene);
+                            RenderToLayers(scene);
+
+                            if (DebugFramesPath != null)
+                            {
+                                SaveDebugFrames(scene.Id);
+                            }
+
+                            _lastSceneId = scene.Id;
+                        }
+
+                        RenderOverlay(scene);
+                        RenderComposite(scene);
                     }
-
-                    _lastSceneId = scene.Id;
                 }
-
-                RenderOverlay(scene);
-                RenderComposite(scene);
+                finally
+                {
+                    _rendering = false;
+                }
             }
-
-            _rendering = false;
         }
 
         private void Render(IDrawingContextImpl context, VisualNode node, IVisual layer, Rect clipBounds)
@@ -167,7 +172,9 @@ namespace Avalonia.Rendering
 
                     foreach (var operation in node.DrawOperations)
                     {
+                        _currentDraw = operation;
                         operation.Render(context);
+                        _currentDraw = null;
                     }
 
                     foreach (var child in node.Children)

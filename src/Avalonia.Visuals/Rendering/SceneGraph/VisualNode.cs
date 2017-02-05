@@ -31,12 +31,6 @@ namespace Avalonia.Rendering.SceneGraph
         {
             Contract.Requires<ArgumentNullException>(visual != null);
 
-            if (parent == null && visual.VisualParent != null)
-            {
-                throw new AvaloniaInternalException(
-                    "Attempted to create root VisualNode for parented visual.");
-            }
-
             Visual = visual;
             Parent = parent;
         }

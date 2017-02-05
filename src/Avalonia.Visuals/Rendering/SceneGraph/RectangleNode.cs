@@ -2,13 +2,21 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using Avalonia.Media;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering.SceneGraph
 {
     public class RectangleNode : BrushDrawOperation
     {
-        public RectangleNode(Matrix transform, IBrush brush, Pen pen, Rect rect, float cornerRadius)
+        public RectangleNode(
+            Matrix transform,
+            IBrush brush,
+            Pen pen,
+            Rect rect,
+            float cornerRadius,
+            IDictionary<IVisual, Scene> childScenes = null)
         {
             Bounds = rect.TransformToAABB(transform).Inflate(pen?.Thickness ?? 0);
             Transform = transform;
@@ -16,6 +24,7 @@ namespace Avalonia.Rendering.SceneGraph
             Pen = Convert(pen);
             Rect = rect;
             CornerRadius = cornerRadius;
+            ChildScenes = childScenes;
         }
 
         public override Rect Bounds { get; }
@@ -24,6 +33,7 @@ namespace Avalonia.Rendering.SceneGraph
         public Pen Pen { get; }
         public Rect Rect { get; }
         public float CornerRadius { get; }
+        public override IDictionary<IVisual, Scene> ChildScenes { get; }
 
         public bool Equals(Matrix transform, IBrush brush, Pen pen, Rect rect, float cornerRadius)
         {

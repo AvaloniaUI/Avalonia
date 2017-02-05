@@ -17,7 +17,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
             var parent = new VisualNode(new TestRoot(), null);
             var child = new VisualNode(Mock.Of<IVisual>(), null);
             var layers = new SceneLayers(parent.Visual);
-            var target = new DeferredDrawingContextImpl(layers);
+            var target = new DeferredDrawingContextImpl(null, layers);
 
             target.BeginUpdate(parent);
             target.BeginUpdate(child);
@@ -35,7 +35,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
 
             parent.AddChild(child);
 
-            var target = new DeferredDrawingContextImpl(layers);
+            var target = new DeferredDrawingContextImpl(null, layers);
 
             target.BeginUpdate(parent);
             target.BeginUpdate(child);
@@ -54,7 +54,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
 
             parent.AddChild(child1);
 
-            var target = new DeferredDrawingContextImpl(layers);
+            var target = new DeferredDrawingContextImpl(null, layers);
 
             target.BeginUpdate(parent);
             target.BeginUpdate(child2);
@@ -75,7 +75,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
             node.AddChild(new VisualNode(Mock.Of<IVisual>(), node) { LayerRoot = root });
 
             var layers = new SceneLayers(root);
-            var target = new DeferredDrawingContextImpl(layers);
+            var target = new DeferredDrawingContextImpl(null, layers);
             var child1 = new VisualNode(Mock.Of<IVisual>(), null) { LayerRoot = root };
             var child2 = new VisualNode(Mock.Of<IVisual>(), null) { LayerRoot = root };
 
@@ -92,7 +92,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
         {
             var node = new VisualNode(new TestRoot(), null);
             var layers = new SceneLayers(node.Visual);
-            var target = new DeferredDrawingContextImpl(layers);
+            var target = new DeferredDrawingContextImpl(null, layers);
 
             node.LayerRoot = node.Visual;
 
@@ -113,7 +113,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
             var node = new VisualNode(new TestRoot(), null);
             var operation = new RectangleNode(Matrix.Identity, Brushes.Red, null, new Rect(0, 0, 100, 100), 0);
             var layers = new SceneLayers(node.Visual);
-            var target = new DeferredDrawingContextImpl(layers);
+            var target = new DeferredDrawingContextImpl(null, layers);
 
             node.LayerRoot = node.Visual;
             node.AddDrawOperation(operation);
@@ -135,7 +135,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
             var node = new VisualNode(new TestRoot(), null);
             var operation = new RectangleNode(Matrix.Identity, Brushes.Red, null, new Rect(0, 0, 100, 100), 0);
             var layers = new SceneLayers(node.Visual);
-            var target = new DeferredDrawingContextImpl(layers);
+            var target = new DeferredDrawingContextImpl(null, layers);
 
             node.LayerRoot = node.Visual;
             node.AddDrawOperation(operation);
@@ -157,7 +157,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
             var node = new VisualNode(new TestRoot(), null);
             var operation = new RectangleNode(Matrix.Identity, Brushes.Red, null, new Rect(0, 0, 100, 100), 0);
             var layers = new SceneLayers(node.Visual);
-            var target = new DeferredDrawingContextImpl(layers);
+            var target = new DeferredDrawingContextImpl(null, layers);
 
             node.LayerRoot = node.Visual;
 
@@ -181,7 +181,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
             node.AddDrawOperation(new RectangleNode(Matrix.Identity, Brushes.Red, null, new Rect(0, 0, 40, 100), 0));
 
             var layers = new SceneLayers(node.Visual);
-            var target = new DeferredDrawingContextImpl(layers);
+            var target = new DeferredDrawingContextImpl(null, layers);
 
             using (target.BeginUpdate(node))
             {
