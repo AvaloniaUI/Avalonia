@@ -20,8 +20,8 @@ namespace Avalonia.Rendering.SceneGraph
         {
             Bounds = rect.TransformToAABB(transform).Inflate(pen?.Thickness ?? 0);
             Transform = transform;
-            Brush = Convert(brush);
-            Pen = Convert(pen);
+            Brush = ToImmutable(brush);
+            Pen = ToImmutable(pen);
             Rect = rect;
             CornerRadius = cornerRadius;
             ChildScenes = childScenes;

@@ -70,6 +70,9 @@
     <Compile Include="Media\Color.cs" />
     <Compile Include="Media\Colors.cs" />
     <Compile Include="Media\IImageBrush.cs" />
+    <Compile Include="Media\Immutable\ImmutableTileBrush.cs" />
+    <Compile Include="Media\Immutable\ImmutableSolidColorBrush.cs" />
+    <Compile Include="Media\IMutableBrush.cs" />
     <Compile Include="Media\ITileBrush.cs" />
     <Compile Include="Media\IVisualBrush.cs" />
     <Compile Include="Media\TextWrapping.cs" />
@@ -84,7 +87,6 @@
     <Compile Include="Media\ISolidColorBrush.cs" />
     <Compile Include="Media\LineGeometry.cs" />
     <Compile Include="Media\LineSegment.cs" />
-    <Compile Include="Media\Mutable\SolidColorBrush.cs" />
     <Compile Include="Media\PathGeometryCollections.cs" />
     <Compile Include="Media\PathFigure.cs" />
     <Compile Include="Media\PathGeometry.cs" />
@@ -134,8 +136,8 @@
     <Compile Include="Rendering\SceneGraph\ISceneBuilder.cs" />
     <Compile Include="Rendering\SceneGraph\IVisualNode.cs" />
     <Compile Include="Rendering\SceneGraph\LineNode.cs" />
-    <Compile Include="Rendering\SceneGraph\Media\SceneVisualBrush.cs" />
-    <Compile Include="Rendering\SceneGraph\Media\SceneImageBrush.cs" />
+    <Compile Include="Media\Immutable\ImmutableVisualBrush.cs" />
+    <Compile Include="Media\Immutable\ImmutableImageBrush.cs" />
     <Compile Include="Rendering\SceneGraph\RectangleNode.cs" />
     <Compile Include="Rendering\SceneGraph\Scene.cs" />
     <Compile Include="Rendering\SceneGraph\SceneBuilder.cs" />
@@ -210,6 +212,9 @@
       <HintPath>..\..\packages\System.Reactive.PlatformServices.3.0.0\lib\netstandard1.0\System.Reactive.PlatformServices.dll</HintPath>
       <Private>True</Private>
     </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Rendering\SceneGraph\Media\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

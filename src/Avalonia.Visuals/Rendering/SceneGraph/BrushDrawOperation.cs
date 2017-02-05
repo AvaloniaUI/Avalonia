@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Avalonia.Media;
-using Avalonia.Rendering.SceneGraph.Media;
+using Avalonia.Media.Immutable;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering.SceneGraph
@@ -14,32 +14,18 @@ namespace Avalonia.Rendering.SceneGraph
 
         public abstract void Render(IDrawingContextImpl context);
 
-        protected IBrush Convert(IBrush brush)
+        protected IBrush ToImmutable(IBrush brush)
         {
-            var imageBrush = brush as ImageBrush;
-            var visualBrush = brush as VisualBrush;
-            
-            if (imageBrush != null)
-            {
-                return new SceneImageBrush(imageBrush);
-            }
-            else if (visualBrush != null)
-            {
-                return new SceneVisualBrush(visualBrush);
-            }
-            else
-            {
-                return brush;
-            }
+            return (brush as IMutableBrush)?.ToImmutable() ?? brush;
         }
 
-        protected Pen Convert(Pen pen)
+        protected Pen ToImmutable(Pen pen)
         {
-            var brush = pen?.Brush != null ? Convert(pen.Brush) : null;
+            var brush = pen?.Brush != null ? ToImmutable(pen.Brush) : null;
             return ReferenceEquals(pen?.Brush, brush) ?
                 pen :
                 new Pen(
-                    pen.Brush,
+                    brush,
                     thickness: pen.Thickness,
                     dashStyle: pen.DashStyle,
                     dashCap: pen.DashCap,

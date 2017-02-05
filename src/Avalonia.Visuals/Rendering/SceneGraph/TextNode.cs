@@ -9,25 +9,25 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering.SceneGraph
 {
-    internal class TextNode : IDrawOperation
+    internal class TextNode : BrushDrawOperation
     {
         public TextNode(Matrix transform, IBrush foreground, Point origin, IFormattedTextImpl text)
         {
             Bounds = new Rect(origin, text.Size).TransformToAABB(transform);
             Transform = transform;
-            Foreground = foreground;
+            Foreground = ToImmutable(foreground);
             Origin = origin;
             Text = text;
         }
 
-        public Rect Bounds { get; }
+        public override Rect Bounds { get; }
         public Matrix Transform { get; }
         public IBrush Foreground { get; }
         public Point Origin { get; }
         public IFormattedTextImpl Text { get; }
-        public IDictionary<VisualBrush, Scene> ChildScenes => null;
+        public override IDictionary<IVisual, Scene> ChildScenes => null;
 
-        public void Render(IDrawingContextImpl context)
+        public override void Render(IDrawingContextImpl context)
         {
             context.Transform = Transform;
             context.DrawText(Foreground, Origin, Text);
@@ -41,6 +41,6 @@ namespace Avalonia.Rendering.SceneGraph
                 Equals(text, Text);
         }
 
-        public bool HitTest(Point p) => Bounds.Contains(p);
+        public override bool HitTest(Point p) => Bounds.Contains(p);
     }
 }

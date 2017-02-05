@@ -2,9 +2,9 @@
   <Settings>
     <DefaultTestTimeout>1000</DefaultTestTimeout>
     <IgnoredTests>
-      <FixtureTestSelector>
-        <FixtureName>Avalonia.Direct2D1.RenderTests.Media.LinearGradientBrushTests</FixtureName>
-      </FixtureTestSelector>
+      <NamedTestSelector>
+        <TestName>Avalonia.Direct2D1.RenderTests.Media.LinearGradientBrushTests.LinearGradientBrush_RedBlue_Vertical_Fill</TestName>
+      </NamedTestSelector>
       <FixtureTestSelector>
         <FixtureName>Avalonia.Direct2D1.RenderTests.Controls.BorderTests</FixtureName>
       </FixtureTestSelector>
@@ -38,6 +38,9 @@
       <FixtureTestSelector>
         <FixtureName>Avalonia.Direct2D1.RenderTests.Shapes.RectangleTests</FixtureName>
       </FixtureTestSelector>
+      <NamedTestSelector>
+        <TestName>Avalonia.Direct2D1.RenderTests.Media.LinearGradientBrushTests.LinearGradientBrush_RedBlue_Horizontal_Fill</TestName>
+      </NamedTestSelector>
     </IgnoredTests>
     <PreviouslyBuiltSuccessfully>True</PreviouslyBuiltSuccessfully>
   </Settings>

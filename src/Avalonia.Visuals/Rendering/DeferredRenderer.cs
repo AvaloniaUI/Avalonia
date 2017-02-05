@@ -10,6 +10,7 @@ using Avalonia.Threading;
 using Avalonia.VisualTree;
 using System.Collections.Generic;
 using System.IO;
+using Avalonia.Media.Immutable;
 
 namespace Avalonia.Rendering
 {
@@ -239,7 +240,7 @@ namespace Avalonia.Rendering
         {
             foreach (var r in _dirtyRectsDisplay)
             {
-                var brush = new SolidColorBrush(Colors.Magenta, r.Opacity);
+                var brush = new ImmutableSolidColorBrush(Colors.Magenta, r.Opacity);
                 context.FillRectangle(brush, r.Rect);
             }
         }
