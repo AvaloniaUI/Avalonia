@@ -69,7 +69,11 @@
     <Compile Include="Media\BrushMappingMode.cs" />
     <Compile Include="Media\Color.cs" />
     <Compile Include="Media\Colors.cs" />
+    <Compile Include="Media\IGradientBrush.cs" />
     <Compile Include="Media\IImageBrush.cs" />
+    <Compile Include="Media\ILinearGradientBrush.cs" />
+    <Compile Include="Media\Immutable\ImmutableGradientBrush.cs" />
+    <Compile Include="Media\Immutable\ImmutableLinearGradientBrush.cs" />
     <Compile Include="Media\Immutable\ImmutableTileBrush.cs" />
     <Compile Include="Media\Immutable\ImmutableSolidColorBrush.cs" />
     <Compile Include="Media\IMutableBrush.cs" />

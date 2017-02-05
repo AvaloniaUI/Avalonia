@@ -1,12 +1,14 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
+
 namespace Avalonia.Media
 {
     /// <summary>
     /// A brush that draws with a linear gradient.
     /// </summary>
-    public sealed class LinearGradientBrush : GradientBrush
+    public sealed class LinearGradientBrush : GradientBrush, ILinearGradientBrush, IMutableBrush
     {
         /// <summary>
         /// Defines the <see cref="StartPoint"/> property.
@@ -40,6 +42,12 @@ namespace Avalonia.Media
         {
             get { return GetValue(EndPointProperty); }
             set { SetValue(EndPointProperty, value); }
+        }
+
+        /// <inheritdoc/>
+        IBrush IMutableBrush.ToImmutable()
+        {
+            return new Immutable.ImmutableLinearGradientBrush(this);
         }
     }
 }

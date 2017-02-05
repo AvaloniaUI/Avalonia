@@ -8,7 +8,7 @@ namespace Avalonia.Direct2D1.Media
     public class LinearGradientBrushImpl : BrushImpl
     {
         public LinearGradientBrushImpl(
-            Avalonia.Media.LinearGradientBrush brush,
+            Avalonia.Media.ILinearGradientBrush brush,
             SharpDX.Direct2D1.RenderTarget target,
             Size destinationSize)
         {
