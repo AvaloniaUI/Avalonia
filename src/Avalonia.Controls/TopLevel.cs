@@ -184,7 +184,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the renderer for the window.
         /// </summary>
-        public IRenderer Renderer { get; }
+        public IRenderer Renderer { get; private set; }
 
         /// <summary>
         /// Gets the access key handler for the window.
@@ -381,6 +381,8 @@ namespace Avalonia.Controls
         private void HandleClosed()
         {
             Closed?.Invoke(this, EventArgs.Empty);
+            Renderer?.Dispose();
+            Renderer = null;
             _applicationLifecycle.OnExit -= OnApplicationExiting;
         }
 

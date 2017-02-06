@@ -75,7 +75,7 @@ namespace Avalonia.Gtk3
 
         private bool OnDestroy(IntPtr gtkwidget, IntPtr userdata)
         {
-            Closed?.Invoke();
+            Dispose();
             return false;
         }
 
@@ -210,7 +210,9 @@ namespace Avalonia.Gtk3
 
         public void Dispose()
         {
-            Closed?.Invoke();
+            //We are calling it here, since signal handler will be detached
+            if (!GtkWidget.IsClosed)
+                Closed?.Invoke();
             foreach(var d in Disposables.AsEnumerable().Reverse())
                 d.Dispose();
             Disposables.Clear();

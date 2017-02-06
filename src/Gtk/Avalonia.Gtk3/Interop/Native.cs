@@ -110,25 +110,25 @@ namespace Avalonia.Gtk3.Interop
 
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Cairo)]
-            public delegate IntPtr cairo_image_surface_create(int format, int width, int height);
+            public delegate CairoSurface cairo_image_surface_create(int format, int width, int height);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Cairo)]
-            public delegate IntPtr cairo_image_surface_get_data(IntPtr surface);
+            public delegate IntPtr cairo_image_surface_get_data(CairoSurface surface);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Cairo)]
-            public delegate int cairo_image_surface_get_stride(IntPtr surface);
+            public delegate int cairo_image_surface_get_stride(CairoSurface surface);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Cairo)]
-            public delegate void cairo_surface_mark_dirty(IntPtr surface);
+            public delegate void cairo_surface_mark_dirty(CairoSurface surface);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Cairo)]
-            public delegate void cairo_surface_flush(IntPtr surface);
+            public delegate void cairo_surface_flush(CairoSurface surface);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Cairo)]
             public delegate void cairo_surface_destroy(IntPtr surface);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Cairo)]
-            public delegate void cairo_set_source_surface(IntPtr cr, IntPtr surface, double x, double y);
+            public delegate void cairo_set_source_surface(IntPtr cr, CairoSurface surface, double x, double y);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Cairo)]
             public delegate void cairo_paint(IntPtr context);

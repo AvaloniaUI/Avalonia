@@ -11,6 +11,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Diagnostics;
 using Avalonia.Layout;
+using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
@@ -298,6 +299,33 @@ namespace Avalonia.LeakTests
 
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<TreeView>()).ObjectsCount));
+            }
+        }
+
+
+        [Fact]
+        public void RendererIsDisposed()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var renderer = new Mock<IRenderer>();
+                renderer.Setup(x => x.Dispose());
+                var impl = new Mock<IWindowImpl>();
+                impl.SetupGet(x => x.Scaling).Returns(1);
+                impl.SetupProperty(x => x.Closed);
+                impl.Setup(x => x.Dispose()).Callback(() => impl.Object.Closed());
+
+                AvaloniaLocator.CurrentMutable.Bind<IWindowingPlatform>()
+                    .ToConstant(new MockWindowingPlatform(() => impl.Object));
+                AvaloniaLocator.CurrentMutable.Bind<IRendererFactory>()
+                    .ToConstant(new MockRendererFactory(renderer.Object));
+                var window = new Window()
+                {
+                    Content = new Button()
+                };
+                window.Show();
+                window.Close();
+                renderer.Verify(r => r.Dispose());
             }
         }
 
