@@ -12,7 +12,7 @@ namespace Avalonia.Media.Immutable
     public class ImmutableLinearGradientBrush : ImmutableGradientBrush, ILinearGradientBrush
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ImmutableGradientBrush"/> class.
+        /// Initializes a new instance of the <see cref="ImmutableLinearGradientBrush"/> class.
         /// </summary>
         /// <param name="gradientStops">The gradient stops.</param>
         /// <param name="opacity">The opacity of the brush.</param>
@@ -32,7 +32,7 @@ namespace Avalonia.Media.Immutable
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ImmutableGradientBrush"/> class.
+        /// Initializes a new instance of the <see cref="ImmutableLinearGradientBrush"/> class.
         /// </summary>
         /// <param name="source">The brush from which this brush's properties should be copied.</param>
         public ImmutableLinearGradientBrush(ILinearGradientBrush source)

@@ -70,6 +70,9 @@
       <NamedTestSelector>
         <TestName>Avalonia.Cairo.RenderTests.Media.LinearGradientBrushTests.LinearGradientBrush_RedBlue_Horizontal_Fill</TestName>
       </NamedTestSelector>
+      <NamedTestSelector>
+        <TestName>Avalonia.Cairo.RenderTests.Media.RadialGradientBrushTests.RadialGradientBrush_RedBlue</TestName>
+      </NamedTestSelector>
     </IgnoredTests>
     <PreviouslyBuiltSuccessfully>True</PreviouslyBuiltSuccessfully>
   </Settings>
