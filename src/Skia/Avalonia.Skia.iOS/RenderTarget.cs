@@ -103,9 +103,7 @@ namespace Avalonia.Skia
             canvas.Clear(SKColors.Red);
             canvas.ResetMatrix();
 
-            return
-                new DrawingContext(
-                    new WindowDrawingContextImpl(this));
+            return new DrawingContext(new WindowDrawingContextImpl(this));
         }
 
         public void Present()
