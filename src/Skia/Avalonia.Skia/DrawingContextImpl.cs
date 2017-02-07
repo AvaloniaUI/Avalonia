@@ -37,6 +37,11 @@ namespace Avalonia.Skia
             }
         }
 
+        public void DrawImage(IBitmapImpl source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect)
+        {
+            throw new NotImplementedException();
+        }
+
         public void DrawLine(Pen pen, Point p1, Point p2)
         {
             using (var paint = CreatePaint(pen, new Size(Math.Abs(p2.X - p1.X), Math.Abs(p2.Y - p1.Y))))

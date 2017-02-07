@@ -262,7 +262,15 @@ namespace Avalonia.Rendering
                     {
                         var bitmap = _layers[layer.LayerRoot].Bitmap;
                         var sourceRect = new Rect(0, 0, bitmap.PixelWidth, bitmap.PixelHeight);
-                        context.DrawImage(bitmap, layer.Opacity, sourceRect, clientRect);
+
+                        if (layer.OpacityMask == null)
+                        {
+                            context.DrawImage(bitmap, layer.Opacity, sourceRect, clientRect);
+                        }
+                        else
+                        {
+                            context.DrawImage(bitmap, layer.OpacityMask, layer.OpacityMaskRect, sourceRect);
+                        }
                     }
 
                     if (_overlay != null)

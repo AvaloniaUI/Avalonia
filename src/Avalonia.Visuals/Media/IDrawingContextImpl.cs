@@ -32,6 +32,15 @@ namespace Avalonia.Media
         void DrawImage(IBitmapImpl source, double opacity, Rect sourceRect, Rect destRect);
 
         /// <summary>
+        /// Draws a bitmap image.
+        /// </summary>
+        /// <param name="source">The bitmap image.</param>
+        /// <param name="opacityMask">The opacity mask to draw with.</param>
+        /// <param name="opacityMaskRect">The destination rect for the opacity mask.</param>
+        /// <param name="destRect">The rect in the output to draw to.</param>
+        void DrawImage(IBitmapImpl source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect);
+
+        /// <summary>
         /// Draws a line.
         /// </summary>
         /// <param name="pen">The stroke pen.</param>

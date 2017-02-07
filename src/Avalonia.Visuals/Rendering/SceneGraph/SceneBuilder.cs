@@ -152,6 +152,8 @@ namespace Avalonia.Rendering.SceneGraph
                 using (context.PushPostTransform(m))
                 using (context.PushTransformContainer())
                 {
+                    var startLayer = opacity < 1 || visual.OpacityMask != null;
+
                     forceRecurse = forceRecurse || node.Transform != contextImpl.Transform;
 
                     node.Transform = contextImpl.Transform;
@@ -161,23 +163,20 @@ namespace Avalonia.Rendering.SceneGraph
                     node.Opacity = opacity;
                     node.OpacityMask = visual.OpacityMask;
 
-                    if (opacity < 1 && node.LayerRoot != visual)
+                    if (startLayer)
                     {
-                        SetLayer(scene, node, node.Visual);
+                        if (node.LayerRoot != visual)
+                        {
+                            MakeLayer(scene, node);
+                        }
+                        else
+                        {
+                            UpdateLayer(node, scene.Layers[node.LayerRoot]);
+                        }
                     }
-                    else if (opacity >= 1 && node.LayerRoot == node.Visual && node.Parent != null)
+                    else if (!startLayer && node.LayerRoot == node.Visual && node.Parent != null)
                     {
                         ClearLayer(scene, node);
-                    }
-
-                    if (node.LayerRoot == visual)
-                    {
-                        var layer = scene.Layers.Find(visual);
-
-                        if (layer != null)
-                        {
-                            layer.Opacity = visual.Opacity;
-                        }
                     }
 
                     if (node.ClipToBounds)
@@ -290,33 +289,57 @@ namespace Avalonia.Rendering.SceneGraph
                 newDirtyRects.Add(r);
             }
 
-            SetLayer(scene, node, newLayerRoot);
-            scene.Layers.Remove(oldLayerRoot);
+            var oldLayer = scene.Layers[oldLayerRoot];
+            SetDescendentsLayer(node, scene.Layers[newLayerRoot], oldLayer);
+            scene.Layers.Remove(oldLayer);
         }
 
-        private static void SetLayer(Scene scene, VisualNode node, IVisual layerRoot)
+        private static void MakeLayer(Scene scene, VisualNode node)
         {
-            if (node.LayerRoot == layerRoot)
-            {
-                throw new AvaloniaInternalException("Called SetLayer with unchanged LayerRoot.");
-            }
-
             var oldLayerRoot = node.LayerRoot;
+            var layer = scene.Layers.Add(node.Visual);
+            var oldLayer = scene.Layers[oldLayerRoot];
 
-            node.LayerRoot = layerRoot;
+            UpdateLayer(node, layer);
+            SetDescendentsLayer(node, layer, scene.Layers[oldLayerRoot]);
+        }
 
-            var layer = scene.Layers.GetOrAdd(layerRoot);
+        private static void UpdateLayer(VisualNode node, SceneLayer layer)
+        {
+            layer.Opacity = node.Visual.Opacity;
+
+            if (node.Visual.OpacityMask != null)
+            {
+                layer.OpacityMask = ToImmutable(node.Visual.OpacityMask);
+                layer.OpacityMaskRect = node.ClipBounds;
+            }
+            else
+            {
+                layer.OpacityMask = null;
+                layer.OpacityMaskRect = Rect.Empty;
+            }
+        }
+
+        private static void SetDescendentsLayer(VisualNode node, SceneLayer layer, SceneLayer oldLayer)
+        {
+            node.LayerRoot = layer.LayerRoot;
+
             layer.Dirty.Add(node.Bounds);
-            scene.Layers[oldLayerRoot].Dirty.Add(node.Bounds);
+            oldLayer.Dirty.Add(node.Bounds);
 
             foreach (VisualNode child in node.Children)
             {
                 // If the child is not the start of a new layer, recurse.
                 if (child.LayerRoot != child.Visual)
                 {
-                    SetLayer(scene, child, layerRoot);
+                    SetDescendentsLayer(child, layer, oldLayer);
                 }
             }
+        }
+
+        private static IBrush ToImmutable(IBrush brush)
+        {
+            return (brush as IMutableBrush)?.ToImmutable() ?? brush;
         }
     }
 }

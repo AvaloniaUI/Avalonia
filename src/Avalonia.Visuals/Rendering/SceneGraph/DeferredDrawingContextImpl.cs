@@ -93,6 +93,11 @@ namespace Avalonia.Rendering.SceneGraph
             }
         }
 
+        public void DrawImage(IBitmapImpl source, IBrush opacityMask, Rect opacityMaskRect, Rect sourceRect)
+        {
+            throw new NotImplementedException();
+        }
+
         public void DrawLine(Pen pen, Point p1, Point p2)
         {
             var next = NextDrawAs<LineNode>();

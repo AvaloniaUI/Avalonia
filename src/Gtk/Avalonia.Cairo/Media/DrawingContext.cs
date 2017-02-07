@@ -118,6 +118,11 @@ namespace Avalonia.Cairo.Media
             _context.Restore();
         }
 
+        public void DrawImage(IBitmapImpl source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect)
+        {
+            throw new NotImplementedException();
+        }
+
         /// <summary>
         /// Draws a line.
         /// </summary>

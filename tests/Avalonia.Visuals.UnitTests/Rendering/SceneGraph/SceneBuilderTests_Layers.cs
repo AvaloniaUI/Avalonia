@@ -80,6 +80,72 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
         }
 
         [Fact]
+        public void Control_With_OpacityMask_Should_Start_New_Layer()
+        {
+            using (TestApplication())
+            {
+                Decorator decorator;
+                Border border;
+                Canvas canvas;
+                var tree = new TestRoot
+                {
+                    Padding = new Thickness(10),
+                    Width = 100,
+                    Height = 120,
+                    Child = decorator = new Decorator
+                    {
+                        Padding = new Thickness(11),
+                        Child = border = new Border
+                        {
+                            OpacityMask = Brushes.Red,
+                            Background = Brushes.Red,
+                            Padding = new Thickness(12),
+                            Child = canvas = new Canvas(),
+                        }
+                    }
+                };
+
+                var layout = AvaloniaLocator.Current.GetService<ILayoutManager>();
+                layout.ExecuteInitialLayoutPass(tree);
+
+                var scene = new Scene(tree);
+                var sceneBuilder = new SceneBuilder();
+                sceneBuilder.UpdateAll(scene);
+
+                var rootNode = (VisualNode)scene.Root;
+                var borderNode = (VisualNode)scene.FindNode(border);
+                var canvasNode = (VisualNode)scene.FindNode(canvas);
+
+                Assert.Same(tree, rootNode.LayerRoot);
+                Assert.Same(border, borderNode.LayerRoot);
+                Assert.Same(border, canvasNode.LayerRoot);
+                Assert.Equal(Brushes.Red, scene.Layers[border].OpacityMask);
+
+                Assert.Equal(2, scene.Layers.Count());
+                Assert.Empty(scene.Layers.Select(x => x.LayerRoot).Except(new IVisual[] { tree, border }));
+
+                border.OpacityMask = null;
+                scene = scene.Clone();
+
+                sceneBuilder.Update(scene, border);
+
+                rootNode = (VisualNode)scene.Root;
+                borderNode = (VisualNode)scene.FindNode(border);
+                canvasNode = (VisualNode)scene.FindNode(canvas);
+
+                Assert.Same(tree, rootNode.LayerRoot);
+                Assert.Same(tree, borderNode.LayerRoot);
+                Assert.Same(tree, canvasNode.LayerRoot);
+                Assert.Equal(1, scene.Layers.Count());
+
+                var rootDirty = scene.Layers[tree].Dirty;
+
+                Assert.Equal(1, rootDirty.Count());
+                Assert.Equal(new Rect(21, 21, 58, 78), rootDirty.Single());
+            }
+        }
+
+        [Fact]
         public void Removing_Transparent_Control_Should_Remove_Layers()
         {
             using (TestApplication())

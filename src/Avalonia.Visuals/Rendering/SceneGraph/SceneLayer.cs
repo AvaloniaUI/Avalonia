@@ -1,4 +1,5 @@
 ﻿using System;
+using Avalonia.Media;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering.SceneGraph
@@ -16,7 +17,9 @@ namespace Avalonia.Rendering.SceneGraph
         {
             return new SceneLayer(LayerRoot, DistanceFromRoot)
             {
-                Opacity = Opacity
+                Opacity = Opacity,
+                OpacityMask = OpacityMask,
+                OpacityMaskRect = OpacityMaskRect,
             };
         }
 
@@ -24,5 +27,7 @@ namespace Avalonia.Rendering.SceneGraph
         public DirtyRects Dirty { get; }
         public int DistanceFromRoot { get; }
         public double Opacity { get; set; } = 1;
+        public IBrush OpacityMask { get; set; }
+        public Rect OpacityMaskRect { get; set; }
     }
 }

@@ -101,6 +101,29 @@ namespace Avalonia.Direct2D1.Media
         }
 
         /// <summary>
+        /// Draws a bitmap image.
+        /// </summary>
+        /// <param name="source">The bitmap image.</param>
+        /// <param name="opacityMask">The opacity mask to draw with.</param>
+        /// <param name="opacityMaskRect">The destination rect for the opacity mask.</param>
+        /// <param name="destRect">The rect in the output to draw to.</param>
+        public void DrawImage(IBitmapImpl source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect)
+        {
+            using (var d2dSource = ((BitmapImpl)source).GetDirect2DBitmap(_renderTarget))
+            using (var sourceBrush = new BitmapBrush(_renderTarget, d2dSource))
+            using (var d2dOpacityMask = CreateBrush(opacityMask, opacityMaskRect.Size))
+            using (var geometry = new SharpDX.Direct2D1.RectangleGeometry(_renderTarget.Factory, destRect.ToDirect2D()))
+            {
+                d2dOpacityMask.PlatformBrush.Transform = Matrix.CreateTranslation(opacityMaskRect.Position).ToDirect2D();
+
+                _renderTarget.FillGeometry(
+                    geometry,
+                    sourceBrush,
+                    d2dOpacityMask.PlatformBrush);
+            }
+        }
+
+        /// <summary>
         /// Draws a line.
         /// </summary>
         /// <param name="pen">The stroke pen.</param>

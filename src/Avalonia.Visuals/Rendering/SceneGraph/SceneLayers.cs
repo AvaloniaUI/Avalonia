@@ -99,11 +99,18 @@ namespace Avalonia.Rendering.SceneGraph
 
             if (_index.TryGetValue(layerRoot, out layer))
             {
-                _index.Remove(layerRoot);
-                _inner.Remove(layer);
+                Remove(layer);
             }
 
             return layer != null;
+        }
+
+        public bool Remove(SceneLayer layer)
+        {
+            Contract.Requires<ArgumentNullException>(layer != null);
+
+            _index.Remove(layer.LayerRoot);
+            return _inner.Remove(layer);
         }
 
         public IEnumerator<SceneLayer> GetEnumerator() => _inner.GetEnumerator();
