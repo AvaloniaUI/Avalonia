@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Controls;
@@ -15,7 +16,9 @@ namespace Avalonia
         /// Initializes a new instance of the <see cref="AppBuilder"/> class.
         /// </summary>
         public AppBuilder()
-            : base(new StandardRuntimePlatform(), () => StandardRuntimePlatformServices.Register())
+            : base(new StandardRuntimePlatform(),
+                  builder => StandardRuntimePlatformServices.Register(builder.Instance?.GetType()
+                      ?.GetTypeInfo().Assembly))
         {
         }
 
