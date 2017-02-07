@@ -417,7 +417,6 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
             }
         }
 
-
         [Fact]
         public void GetVisualsAt_Should_Not_Find_Path_When_Outside_Fill()
         {
@@ -444,6 +443,36 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
 
                 var result = container.GetVisualsAt(new Point(100, 100));
                 Assert.Equal(new[] { path }, result);
+
+                result = container.GetVisualsAt(new Point(10, 10));
+                Assert.Empty(result);
+            }
+        }
+
+        [Fact]
+        public void GetVisualsAt_Should_Respect_Geometry_Clip()
+        {
+            using (TestApplication())
+            {
+                Border border;
+                var container = new TestRoot
+                {
+                    Width = 200,
+                    Height = 200,
+                    Child = border = new Border
+                    {
+                        Background = Brushes.Red,
+                        Clip = StreamGeometry.Parse("M100,0 L0,100 100,100"),
+                    }
+                };
+
+                container.Measure(Size.Infinity);
+                container.Arrange(new Rect(container.DesiredSize));
+
+                var context = new DrawingContext(Mock.Of<IDrawingContextImpl>());
+
+                var result = container.GetVisualsAt(new Point(100, 100));
+                Assert.Equal(new[] { border }, result);
 
                 result = container.GetVisualsAt(new Point(10, 10));
                 Assert.Empty(result);
