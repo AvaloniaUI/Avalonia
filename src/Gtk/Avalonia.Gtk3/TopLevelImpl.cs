@@ -21,6 +21,7 @@ namespace Avalonia.Gtk3
         protected readonly List<IDisposable> Disposables = new List<IDisposable>();
         private Size _lastSize;
         private Point _lastPosition;
+        private double _lastScaling;
         private uint _lastKbdEvent;
         private uint _lastSmoothScrollEvent;
 
@@ -63,7 +64,12 @@ namespace Avalonia.Gtk3
                 PositionChanged?.Invoke(pos);
                 _lastPosition = pos;
             }
-
+            var scaling = Scaling;
+            if (_lastScaling != scaling)
+            {
+                ScalingChanged?.Invoke(scaling);
+                _lastScaling = scaling;
+            }
             return false;
         }
 
@@ -228,7 +234,8 @@ namespace Avalonia.Gtk3
         }
 
 
-        public double Scaling => 1; //TODO: Implement scaling
+        public double Scaling => (double) 1 / (Native.GtkWidgetGetScaleFactor?.Invoke(GtkWidget) ?? 1);
+
         public IPlatformHandle Handle => this;
 
         string IPlatformHandle.HandleDescriptor => "HWND";

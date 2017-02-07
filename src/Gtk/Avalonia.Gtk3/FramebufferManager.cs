@@ -26,7 +26,7 @@ namespace Avalonia.Gtk3
                 throw new InvalidOperationException("Window is not in drawing state");
             var width = (int) _window.ClientSize.Width;
             var height = (int) _window.ClientSize.Height;
-            return new ImageSurfaceFramebuffer(_window.CurrentCairoContext, width, height);
+            return new ImageSurfaceFramebuffer(_window.CurrentCairoContext, _window.GtkWidget, width, height);
         }
     }
 }
