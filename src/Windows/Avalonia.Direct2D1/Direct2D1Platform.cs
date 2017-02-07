@@ -2,11 +2,14 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Avalonia.Direct2D1.Media;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Controls;
+using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Rendering;
 
 namespace Avalonia
@@ -122,18 +125,16 @@ namespace Avalonia.Direct2D1
             }
         }
 
-        public IRenderTarget CreateRenderTarget(IPlatformHandle handle)
+        public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)
         {
-            if (handle.HandleDescriptor == "HWND")
+            var nativeWindow = surfaces?.OfType<IPlatformHandle>().FirstOrDefault();
+            if (nativeWindow != null)
             {
-                return new HwndRenderTarget(handle.Handle);
+                if(nativeWindow.HandleDescriptor != "HWND")
+                    throw new NotSupportedException("Don't know how to create a Direct2D1 renderer from " + nativeWindow.HandleDescriptor);
+                return new HwndRenderTarget(nativeWindow);
             }
-            else
-            {
-                throw new NotSupportedException(string.Format(
-                    "Don't know how to create a Direct2D1 renderer from a '{0}' handle",
-                    handle.HandleDescriptor));
-            }
+            throw new NotSupportedException("Don't know how to create a Direct2D1 renderer from any of provided surfaces");
         }
 
         public IRenderTargetBitmapImpl CreateRenderTargetBitmap(

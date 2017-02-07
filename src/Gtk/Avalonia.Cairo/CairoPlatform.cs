@@ -2,6 +2,8 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Avalonia.Cairo.Media;
 using Avalonia.Cairo.Media.Imaging;
 using Avalonia.Media;
@@ -51,24 +53,14 @@ namespace Avalonia.Cairo
             return new FormattedTextImpl(s_pangoContext, text, fontFamily, fontSize, fontStyle, textAlignment, fontWeight, constraint);
         }
 
-        public IRenderTarget CreateRenderTarget(IPlatformHandle handle)
+        public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)
         {
-            var window = handle as Gtk.Window;
-            if (window != null)
-            {
-                window.DoubleBuffered = true;
-                return new RenderTarget(window);
-            }
-            var area = handle as Gtk.DrawingArea;
-            if (area != null)
-            {
-                area.DoubleBuffered = true;
-                return new RenderTarget(area);
-            }
+            var accessor = surfaces?.OfType<Func<Gdk.Drawable>>().FirstOrDefault();
+            if(accessor!=null)
+                return new RenderTarget(accessor);
 
             throw new NotSupportedException(string.Format(
-                "Don't know how to create a Cairo renderer from a '{0}' handle which isn't Gtk.Window or Gtk.DrawingArea",
-                handle.HandleDescriptor));
+                "Don't know how to create a Cairo renderer from any of the provided surfaces."));
         }
 
         public IRenderTargetBitmapImpl CreateRenderTargetBitmap(int width, int height, double dpiX, double dpiY)

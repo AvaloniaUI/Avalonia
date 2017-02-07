@@ -65,13 +65,6 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<Window, bool>(nameof(HasSystemDecorations), true);
 
         /// <summary>
-        /// Sets if the window should cover the taskbar when maximized. Only applies to Windows 
-        /// with HasSystemDecorations = false.
-        /// </summary>
-        public static readonly StyledProperty<bool> CoverTaskbarOnMaximizeProperty =
-            AvaloniaProperty.Register<Window, bool>(nameof(CoverTaskbarOnMaximize), true);
-
-        /// <summary>
         /// Defines the <see cref="Title"/> property.
         /// </summary>
         public static readonly StyledProperty<string> TitleProperty =
@@ -96,9 +89,6 @@ namespace Avalonia.Controls
             TitleProperty.Changed.AddClassHandler<Window>((s, e) => s.PlatformImpl.SetTitle((string)e.NewValue));
             HasSystemDecorationsProperty.Changed.AddClassHandler<Window>(
                 (s, e) => s.PlatformImpl.SetSystemDecorations((bool) e.NewValue));
-
-            CoverTaskbarOnMaximizeProperty.Changed.AddClassHandler<Window>(
-                (s, e) => s.PlatformImpl.SetCoverTaskbarWhenMaximized((bool)e.NewValue));
 
             IconProperty.Changed.AddClassHandler<Window>((s, e) => s.PlatformImpl.SetIcon(((WindowIcon)e.NewValue).PlatformImpl));
         }
@@ -166,16 +156,6 @@ namespace Avalonia.Controls
         {
             get { return GetValue(HasSystemDecorationsProperty); }
             set { SetValue(HasSystemDecorationsProperty, value); }
-        }
-
-        /// <summary>
-        /// Sets if the window should cover the taskbar when maximized. Only applies to Windows 
-        /// with HasSystemDecorations = false.
-        /// </summary>
-        public bool CoverTaskbarOnMaximize
-        {
-            get { return GetValue(CoverTaskbarOnMaximizeProperty); }
-            set { SetValue(CoverTaskbarOnMaximizeProperty, value); }
         }
 
         /// <summary>

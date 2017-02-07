@@ -10,7 +10,7 @@ namespace Avalonia.Gtk
     {
         private Gtk.Window _window;
         private Gtk.Window Window => _window ?? (_window = (Gtk.Window) Widget);
-		
+        
         public WindowImpl(Gtk.WindowType type) : base(new PlatformHandleAwareWindow(type))
         {
             Init();

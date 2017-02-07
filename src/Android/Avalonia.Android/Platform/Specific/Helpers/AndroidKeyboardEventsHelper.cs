@@ -12,7 +12,7 @@ using System.ComponentModel;
 
 namespace Avalonia.Android.Platform.Specific.Helpers
 {
-    public class AndroidKeyboardEventsHelper<TView> : IDisposable where TView : View, IWindowImpl, IAndroidView
+    public class AndroidKeyboardEventsHelper<TView> : IDisposable where TView : View, ITopLevelImpl, IAndroidView
     {
         private TView _view;
         private IInputElement _lastFocusedElement;

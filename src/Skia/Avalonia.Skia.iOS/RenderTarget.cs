@@ -25,14 +25,13 @@ namespace Avalonia.Skia
 
     internal class WindowRenderTarget : RenderTarget
     {
-        private readonly IPlatformHandle _hwnd;
+
         SKBitmap _bitmap;
         int Width { get; set; }
         int Height { get; set; }
 
-        public WindowRenderTarget(IPlatformHandle hwnd)
+        public WindowRenderTarget()
         {
-            _hwnd = hwnd;
             FixSize();
         }
 

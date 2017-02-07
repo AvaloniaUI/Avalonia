@@ -11,12 +11,14 @@ namespace Avalonia.Skia
 {
     internal class DrawingContextImpl : IDrawingContextImpl
     {
+        private readonly IDisposable[] _disposables;
         private Stack<PaintWrapper> maskStack = new Stack<PaintWrapper>();
         
         public SKCanvas Canvas { get; private set; }
 
-        public DrawingContextImpl(SKCanvas canvas)
+        public DrawingContextImpl(SKCanvas canvas, params IDisposable[] disposables)
         {
+            _disposables = disposables;
             Canvas = canvas;
         }
 
@@ -324,6 +326,9 @@ namespace Avalonia.Skia
 
         public virtual void Dispose()
         {
+            if(_disposables!=null)
+                foreach (var disposable in _disposables)
+                    disposable?.Dispose();
         }
 
         public void PushGeometryClip(Geometry clip)

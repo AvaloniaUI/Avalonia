@@ -149,6 +149,9 @@ namespace Avalonia.iOS
         }
 
         public Size MaxClientSize => Bounds.Size.ToAvalonia();
+
+        public IEnumerable<object> Surfaces => new object[] { this };
+
         public void SetTitle(string title)
         {
             //Not supported
@@ -166,11 +169,6 @@ namespace Avalonia.iOS
         }
 
         public void SetSystemDecorations(bool enabled)
-        {
-            //Not supported
-        }
-
-        public void SetCoverTaskbarWhenMaximized(bool enable)
         {
             //Not supported
         }

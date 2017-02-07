@@ -12,12 +12,12 @@
     <Compile Include="$(MSBuildThisFileDirectory)BitmapImpl.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DrawingContextImpl.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)FormattedTextImpl.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)FramebufferRenderTarget.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PlatformRenderInterface.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SkiaPlatform.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SkiaSharpExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)StreamGeometryImpl.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TypefaceCache.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)WindowDrawingContextImpl.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)readme.md" />

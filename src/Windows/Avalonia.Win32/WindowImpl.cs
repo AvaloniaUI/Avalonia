@@ -7,15 +7,17 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
 using System.Runtime.InteropServices;
 using Avalonia.Controls;
+using System.Reactive.Disposables;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
 using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
+#if NETSTANDARD
+using Win32Exception = Avalonia.Win32.NetStandard.AvaloniaWin32Exception;
+#endif
 
 namespace Avalonia.Win32
 {
@@ -33,13 +35,14 @@ namespace Avalonia.Win32
         private bool _trackingMouse;
         private bool _isActive;
         private bool _decorated = true;
-        private bool _coverTaskBarWhenMaximized = true;
         private double _scaling = 1;
         private WindowState _showWindowState;
+        private FramebufferManager _framebuffer;
 
         public WindowImpl()
         {
             CreateWindow();
+            _framebuffer = new FramebufferManager(_hwnd);
             s_instances.Add(this);
         }
 
@@ -162,6 +165,11 @@ namespace Avalonia.Win32
             }
         }
 
+        public IEnumerable<object> Surfaces => new object[]
+        {
+            Handle, _framebuffer
+        };
+
         public void Activate()
         {
             UnmanagedMethods.SetActiveWindow(_hwnd);
@@ -174,8 +182,18 @@ namespace Avalonia.Win32
 
         public void Dispose()
         {
-            s_instances.Remove(this);
-            UnmanagedMethods.DestroyWindow(_hwnd);
+            _framebuffer?.Dispose();
+            _framebuffer = null;
+            if (_hwnd != IntPtr.Zero)
+            {
+                UnmanagedMethods.DestroyWindow(_hwnd);
+                _hwnd = IntPtr.Zero;
+            }
+            if (_className != null)
+            {
+                UnmanagedMethods.UnregisterClass(_className, UnmanagedMethods.GetModuleHandle(null));
+                _className = null;
+            }
         }
 
         public void Hide()
@@ -409,12 +427,13 @@ namespace Avalonia.Win32
                     return IntPtr.Zero;
 
                 case UnmanagedMethods.WindowsMessage.WM_DESTROY:
-                    if (Closed != null)
-                    {
-                        UnmanagedMethods.UnregisterClass(_className, Marshal.GetHINSTANCE(GetType().Module));
-                        Closed();
-                    }
-
+                    //Window doesn't exist anymore
+                    _hwnd = IntPtr.Zero;
+                    //Remove root reference to this class, so unmanaged delegate can be collected
+                    s_instances.Remove(this);
+                    Closed?.Invoke();
+                    //Free other resources
+                    Dispose();
                     return IntPtr.Zero;
 
                 case UnmanagedMethods.WindowsMessage.WM_DPICHANGED:
@@ -616,7 +635,7 @@ namespace Avalonia.Win32
                 cbSize = Marshal.SizeOf(typeof(UnmanagedMethods.WNDCLASSEX)),
                 style = 0,
                 lpfnWndProc = _wndProcDelegate,
-                hInstance = Marshal.GetHINSTANCE(GetType().Module),
+                hInstance = UnmanagedMethods.GetModuleHandle(null),
                 hCursor = DefaultCursor,
                 hbrBackground = IntPtr.Zero,
                 lpszClassName = _className
@@ -678,8 +697,6 @@ namespace Avalonia.Win32
         {
             UnmanagedMethods.ShowWindowCommand command;
 
-            bool maximizeFillsDesktop = false; // otherwise we cover entire screen.
-
             switch (state)
             {
                 case WindowState.Minimized:
@@ -687,11 +704,6 @@ namespace Avalonia.Win32
                     break;
                 case WindowState.Maximized:
                     command = ShowWindowCommand.Maximize;
-
-                    if (!_decorated && !_coverTaskBarWhenMaximized)
-                    {
-                        maximizeFillsDesktop = true;
-                    }
                     break;
 
                 case WindowState.Normal:
@@ -704,7 +716,7 @@ namespace Avalonia.Win32
 
             UnmanagedMethods.ShowWindow(_hwnd, command);
 
-            if (maximizeFillsDesktop)
+            if (state == WindowState.Maximized)
             {
                 MaximizeWithoutCoveringTaskbar();
             }
@@ -750,16 +762,6 @@ namespace Avalonia.Win32
             if (IntPtr.Size == 4) return ptr.ToInt32();
 
             return (int)(ptr.ToInt64() & 0xffffffff);
-        }
-
-        public void SetCoverTaskbarWhenMaximized(bool enable)
-        {
-            _coverTaskBarWhenMaximized = enable;
-
-            if (_showWindowState == WindowState.Maximized)
-            {
-                ShowWindow(WindowState.Maximized);
-            }
         }
     }
 }
