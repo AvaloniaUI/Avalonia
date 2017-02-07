@@ -18,14 +18,13 @@ namespace Avalonia.Android
 {
     public abstract class InvalidationAwareSurfaceView : SurfaceView, ISurfaceHolderCallback, IPlatformHandle
     {
-        private readonly Context _context;
         bool _invalidateQueued;
         readonly object _lock = new object();
         private readonly Handler _handler;
+        
 
         public InvalidationAwareSurfaceView(Context context) : base(context)
         {
-            _context = context;
             Holder.AddCallback(this);
             _handler = new Handler(context.MainLooper);
         }
@@ -38,13 +37,11 @@ namespace Avalonia.Android
                     return;
                 _handler.Post(() =>
                 {
-                    lock (_lock)
-                    {
-                        _invalidateQueued = false;
-                    }
+                    if (Holder.Surface?.IsValid != true)
+                        return;
                     try
                     {
-                        Draw();
+                        DoDraw();
                     }
                     catch (Exception e)
                     {
@@ -67,20 +64,29 @@ namespace Avalonia.Android
         public void SurfaceChanged(ISurfaceHolder holder, Format format, int width, int height)
         {
             Log.Info("AVALONIA", "Surface Changed");
-            Draw();
+            DoDraw();
         }
 
         public void SurfaceCreated(ISurfaceHolder holder)
         {
             Log.Info("AVALONIA", "Surface Created");
-            Draw();
+            DoDraw();
         }
 
         public void SurfaceDestroyed(ISurfaceHolder holder)
         {
             Log.Info("AVALONIA", "Surface Destroyed");
+            
         }
 
+        protected void DoDraw()
+        {
+            lock (_lock)
+            {
+                _invalidateQueued = false;
+            }
+            Draw();
+        }
         protected abstract void Draw();
         public string HandleDescriptor => "SurfaceView";
     }
