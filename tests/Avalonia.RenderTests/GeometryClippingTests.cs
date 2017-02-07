@@ -27,6 +27,7 @@ namespace Avalonia.Direct2D1.RenderTests
         {
             var target = new Canvas
             {
+                Background = Brushes.Yellow,
                 Clip = StreamGeometry.Parse("F1 M 0,0  H 76 V 76 Z"),
                 Width = 76,
                 Height = 76,
