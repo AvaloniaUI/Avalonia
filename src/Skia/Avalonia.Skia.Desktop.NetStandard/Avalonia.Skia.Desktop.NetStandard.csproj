@@ -44,9 +44,6 @@
     <Compile Include="..\..\Shared\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="..\Avalonia.Skia.Desktop\PlatformRenderInterfaceDesktop.cs">
-      <Link>PlatformRenderInterfaceDesktop.cs</Link>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Avalonia.Base\Avalonia.Base.csproj">

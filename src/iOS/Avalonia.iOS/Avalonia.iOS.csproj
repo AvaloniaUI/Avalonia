@@ -23,6 +23,7 @@
     <ConsolePause>false</ConsolePause>
     <MtouchDebug>true</MtouchDebug>
     <CodesignKey>iPhone Developer</CodesignKey>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>none</DebugType>
@@ -32,13 +33,21 @@
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
     <CodesignKey>iPhone Developer</CodesignKey>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="AppBuilder.cs" />
+    <Compile Include="AvaloniaRootViewController.cs" />
+    <Compile Include="AvaloniaView.cs" />
+    <Compile Include="AvaloniaWindow.cs" />
     <Compile Include="Clipboard.cs" />
     <Compile Include="CursorFactory.cs" />
+    <Compile Include="DisplayLinkRenderLoop.cs" />
+    <Compile Include="EmbeddableImpl.cs" />
+    <Compile Include="EmulatedFramebuffer.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="iOSPlatform.cs" />
-    <Compile Include="AvaloniaView.cs" />
+    <Compile Include="TopLevelImpl.cs" />
     <Compile Include="PlatformIconLoader.cs" />
     <Compile Include="PlatformSettings.cs" />
     <Compile Include="PlatformThreadingInterface.cs" />

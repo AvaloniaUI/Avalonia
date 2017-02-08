@@ -7,7 +7,6 @@ using Avalonia.Controls;
 using Avalonia.iOS;
 using Avalonia.Media;
 using Avalonia.Threading;
-using TestApplication;
 using UIKit;
 
 namespace Avalonia.iOSTestApplication
@@ -18,6 +17,8 @@ namespace Avalonia.iOSTestApplication
     [Register("AppDelegate")]
     public partial class AppDelegate : UIApplicationDelegate
     {
+        public override UIWindow Window { get; set; }
+
         //
         // This method is invoked when the application has loaded and is ready to run. In this 
         // method you should instantiate the window, load the UI into it and then make the window
@@ -27,16 +28,9 @@ namespace Avalonia.iOSTestApplication
         //
         public override bool FinishedLaunching(UIApplication uiapp, NSDictionary options)
         {
-            var app = new App();
-
-            AppBuilder.Configure(app)
-                .UseiOS()
-                .UseSkiaViewHost()
-                .UseSkia()
-                .SetupWithoutStarting();
-
-            app.Run();
-
+            AppBuilder.Configure<SimpleApp>().UseSkia().UseiOS().SetupWithoutStarting();
+            Window  = new AvaloniaWindow { Content = new SimpleControl()};
+            Window.MakeKeyAndVisible();
             return true;
         }
     }
