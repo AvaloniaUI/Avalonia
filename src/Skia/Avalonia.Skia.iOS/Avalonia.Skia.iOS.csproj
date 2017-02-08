@@ -37,7 +37,6 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="PlatformRenderingInterfaceIos.cs" />
     <Compile Include="RenderTarget.cs" />
     <Compile Include="SkiaView.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

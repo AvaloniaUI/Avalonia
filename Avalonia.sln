@@ -182,6 +182,8 @@ Global
 		src\Shared\RenderHelpers\RenderHelpers.projitems*{925dd807-b651-475f-9f7c-cbeb974ce43d}*SharedItemsImports = 4
 		src\Skia\Avalonia.Skia\Avalonia.Skia.projitems*{925dd807-b651-475f-9f7c-cbeb974ce43d}*SharedItemsImports = 4
 		src\Windows\Avalonia.Win32\Avalonia.Win32.Shared.projitems*{9defc6b7-845b-4d8f-afc0-d32bf0032b8c}*SharedItemsImports = 13
+		src\Shared\RenderHelpers\RenderHelpers.projitems*{bd43f7c0-396b-4aa1-bad9-dfde54d51298}*SharedItemsImports = 4
+		src\Skia\Avalonia.Skia\Avalonia.Skia.projitems*{bd43f7c0-396b-4aa1-bad9-dfde54d51298}*SharedItemsImports = 4
 		tests\Avalonia.RenderTests\Avalonia.RenderTests.projitems*{d35a9f3d-8bb0-496e-bf72-444038a7debb}*SharedItemsImports = 4
 		tests\Avalonia.RenderTests\Avalonia.RenderTests.projitems*{dabfd304-d6a4-4752-8123-c2ccf7ac7831}*SharedItemsImports = 4
 		tests\Avalonia.RenderTests\Avalonia.RenderTests.projitems*{e106cf37-4066-4615-b684-172a6d30b058}*SharedItemsImports = 4
