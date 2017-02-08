@@ -99,8 +99,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Skia.Desktop", "sr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Skia.Android", "src\Skia\Avalonia.Skia.Android\Avalonia.Skia.Android.csproj", "{BD43F7C0-396B-4AA1-BAD9-DFDE54D51298}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Skia.iOS.TestApp", "src\Skia\Avalonia.Skia.iOS.TestApp\Avalonia.Skia.iOS.TestApp.csproj", "{DA49C5F3-BE95-461C-B999-072128CCF59E}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Skia.iOS", "src\Skia\Avalonia.Skia.iOS\Avalonia.Skia.iOS.csproj", "{47BE08A7-5985-410B-9FFC-2264B8EA595F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Android", "Android", "{7CF9789C-F1D3-4D0E-90E5-F1DF67A2753F}"
@@ -178,15 +176,12 @@ Global
 		tests\Avalonia.RenderTests\Avalonia.RenderTests.projitems*{48840edd-24bf-495d-911e-2eb12ae75d3b}*SharedItemsImports = 13
 		src\Shared\PlatformSupport\PlatformSupport.projitems*{4a1abb09-9047-4bd5-a4ad-a055e52c5ee0}*SharedItemsImports = 4
 		src\Shared\PlatformSupport\PlatformSupport.projitems*{7863ea94-f0fb-4386-bf8c-e5bfa761560a}*SharedItemsImports = 4
-		src\Shared\PlatformSupport\PlatformSupport.projitems*{7b92af71-6287-4693-9dcb-bd5b6e927e23}*SharedItemsImports = 4
 		src\Shared\RenderHelpers\RenderHelpers.projitems*{7d2d3083-71dd-4cc9-8907-39a0d86fb322}*SharedItemsImports = 4
 		src\Skia\Avalonia.Skia\Avalonia.Skia.projitems*{7d2d3083-71dd-4cc9-8907-39a0d86fb322}*SharedItemsImports = 4
 		src\Windows\Avalonia.Win32\Avalonia.Win32.Shared.projitems*{811a76cf-1cf6-440f-963b-bbe31bd72a82}*SharedItemsImports = 4
 		src\Shared\RenderHelpers\RenderHelpers.projitems*{925dd807-b651-475f-9f7c-cbeb974ce43d}*SharedItemsImports = 4
 		src\Skia\Avalonia.Skia\Avalonia.Skia.projitems*{925dd807-b651-475f-9f7c-cbeb974ce43d}*SharedItemsImports = 4
 		src\Windows\Avalonia.Win32\Avalonia.Win32.Shared.projitems*{9defc6b7-845b-4d8f-afc0-d32bf0032b8c}*SharedItemsImports = 13
-		src\Shared\RenderHelpers\RenderHelpers.projitems*{bd43f7c0-396b-4aa1-bad9-dfde54d51298}*SharedItemsImports = 4
-		src\Skia\Avalonia.Skia\Avalonia.Skia.projitems*{bd43f7c0-396b-4aa1-bad9-dfde54d51298}*SharedItemsImports = 4
 		tests\Avalonia.RenderTests\Avalonia.RenderTests.projitems*{d35a9f3d-8bb0-496e-bf72-444038a7debb}*SharedItemsImports = 4
 		tests\Avalonia.RenderTests\Avalonia.RenderTests.projitems*{dabfd304-d6a4-4752-8123-c2ccf7ac7831}*SharedItemsImports = 4
 		tests\Avalonia.RenderTests\Avalonia.RenderTests.projitems*{e106cf37-4066-4615-b684-172a6d30b058}*SharedItemsImports = 4
@@ -1486,34 +1481,6 @@ Global
 		{BD43F7C0-396B-4AA1-BAD9-DFDE54D51298}.Release|Mono.ActiveCfg = Release|Any CPU
 		{BD43F7C0-396B-4AA1-BAD9-DFDE54D51298}.Release|x86.ActiveCfg = Release|Any CPU
 		{BD43F7C0-396B-4AA1-BAD9-DFDE54D51298}.Release|x86.Build.0 = Release|Any CPU
-		{DA49C5F3-BE95-461C-B999-072128CCF59E}.Ad-Hoc|Any CPU.ActiveCfg = Ad-Hoc|iPhone
-		{DA49C5F3-BE95-461C-B999-072128CCF59E}.Ad-Hoc|iPhone.ActiveCfg = Ad-Hoc|iPhone
-		{DA49C5F3-BE95-461C-B999-072128CCF59E}.Ad-Hoc|iPhone.Build.0 = Ad-Hoc|iPhone
-		{DA49C5F3-BE95-461C-B999-072128CCF59E}.Ad-Hoc|iPhoneSimulator.ActiveCfg = Ad-Hoc|iPhoneSimulator
-		{DA49C5F3-BE95-461C-B999-072128CCF59E}.Ad-Hoc|iPhoneSimulator.Build.0 = Ad-Hoc|iPhoneSimulator
-		{DA49C5F3-BE95-461C-B999-072128CCF59E}.Ad-Hoc|Mono.ActiveCfg = Ad-Hoc|iPhoneSimulator
-		{DA49C5F3-BE95-461C-B999-072128CCF59E}.Ad-Hoc|x86.ActiveCfg = Ad-Hoc|iPhoneSimulator
-		{DA49C5F3-BE95-461C-B999-072128CCF59E}.AppStore|Any CPU.ActiveCfg = AppStore|iPhone
-		{DA49C5F3-BE95-461C-B999-072128CCF59E}.AppStore|iPhone.ActiveCfg = AppStore|iPhone
-		{DA49C5F3-BE95-461C-B999-072128CCF59E}.AppStore|iPhone.Build.0 = AppStore|iPhone
-		{DA49C5F3-BE95-461C-B999-072128CCF59E}.AppStore|iPhoneSimulator.ActiveCfg = AppStore|iPhoneSimulator
-		{DA49C5F3-BE95-461C-B999-072128CCF59E}.AppStore|iPhoneSimulator.Build.0 = AppStore|iPhoneSimulator
-		{DA49C5F3-BE95-461C-B999-072128CCF59E}.AppStore|Mono.ActiveCfg = AppStore|iPhoneSimulator
-		{DA49C5F3-BE95-461C-B999-072128CCF59E}.AppStore|x86.ActiveCfg = AppStore|iPhoneSimulator
-		{DA49C5F3-BE95-461C-B999-072128CCF59E}.Debug|Any CPU.ActiveCfg = Debug|iPhone
-		{DA49C5F3-BE95-461C-B999-072128CCF59E}.Debug|iPhone.ActiveCfg = Debug|iPhone
-		{DA49C5F3-BE95-461C-B999-072128CCF59E}.Debug|iPhone.Build.0 = Debug|iPhone
-		{DA49C5F3-BE95-461C-B999-072128CCF59E}.Debug|iPhoneSimulator.ActiveCfg = Debug|iPhoneSimulator
-		{DA49C5F3-BE95-461C-B999-072128CCF59E}.Debug|iPhoneSimulator.Build.0 = Debug|iPhoneSimulator
-		{DA49C5F3-BE95-461C-B999-072128CCF59E}.Debug|Mono.ActiveCfg = Debug|iPhoneSimulator
-		{DA49C5F3-BE95-461C-B999-072128CCF59E}.Debug|x86.ActiveCfg = Debug|iPhoneSimulator
-		{DA49C5F3-BE95-461C-B999-072128CCF59E}.Release|Any CPU.ActiveCfg = Release|iPhone
-		{DA49C5F3-BE95-461C-B999-072128CCF59E}.Release|iPhone.ActiveCfg = Release|iPhone
-		{DA49C5F3-BE95-461C-B999-072128CCF59E}.Release|iPhone.Build.0 = Release|iPhone
-		{DA49C5F3-BE95-461C-B999-072128CCF59E}.Release|iPhoneSimulator.ActiveCfg = Release|iPhoneSimulator
-		{DA49C5F3-BE95-461C-B999-072128CCF59E}.Release|iPhoneSimulator.Build.0 = Release|iPhoneSimulator
-		{DA49C5F3-BE95-461C-B999-072128CCF59E}.Release|Mono.ActiveCfg = Release|iPhoneSimulator
-		{DA49C5F3-BE95-461C-B999-072128CCF59E}.Release|x86.ActiveCfg = Release|iPhoneSimulator
 		{47BE08A7-5985-410B-9FFC-2264B8EA595F}.Ad-Hoc|Any CPU.ActiveCfg = Release|Any CPU
 		{47BE08A7-5985-410B-9FFC-2264B8EA595F}.Ad-Hoc|Any CPU.Build.0 = Release|Any CPU
 		{47BE08A7-5985-410B-9FFC-2264B8EA595F}.Ad-Hoc|iPhone.ActiveCfg = Release|Any CPU
@@ -2502,7 +2469,6 @@ Global
 		{2F59F3D0-748D-4652-B01E-E0D954756308} = {3743B0F2-CC41-4F14-A8C8-267F579BF91E}
 		{925DD807-B651-475F-9F7C-CBEB974CE43D} = {3743B0F2-CC41-4F14-A8C8-267F579BF91E}
 		{BD43F7C0-396B-4AA1-BAD9-DFDE54D51298} = {3743B0F2-CC41-4F14-A8C8-267F579BF91E}
-		{DA49C5F3-BE95-461C-B999-072128CCF59E} = {3743B0F2-CC41-4F14-A8C8-267F579BF91E}
 		{47BE08A7-5985-410B-9FFC-2264B8EA595F} = {3743B0F2-CC41-4F14-A8C8-267F579BF91E}
 		{7B92AF71-6287-4693-9DCB-BD5B6E927E23} = {7CF9789C-F1D3-4D0E-90E5-F1DF67A2753F}
 		{FF69B927-C545-49AE-8E16-3D14D621AA12} = {7CF9789C-F1D3-4D0E-90E5-F1DF67A2753F}
