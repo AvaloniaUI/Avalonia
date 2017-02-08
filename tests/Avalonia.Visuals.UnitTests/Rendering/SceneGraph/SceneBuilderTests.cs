@@ -221,6 +221,49 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
         }
 
         [Fact]
+        public void Transform_For_Control_With_RenderTransform_Should_Be_Correct_After_Update()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                Border border;
+                var tree = new TestRoot
+                {
+                    Width = 400,
+                    Height = 200,
+                    Child = new Decorator
+                    {
+                        Width = 200,
+                        Height = 100,
+                        Child = border = new Border
+                        {
+                            Background = Brushes.Red,
+                            HorizontalAlignment = HorizontalAlignment.Right,
+                            Width = 100,
+                            RenderTransform = new ScaleTransform(0.5, 1),
+                        }
+                    }
+                };
+
+                tree.Measure(Size.Infinity);
+                tree.Arrange(new Rect(tree.DesiredSize));
+
+                var scene = new Scene(tree);
+                var sceneBuilder = new SceneBuilder();
+                sceneBuilder.UpdateAll(scene);
+
+                var expectedTransform = Matrix.CreateScale(0.5, 1) * Matrix.CreateTranslation(225, 50);
+                var borderNode = scene.FindNode(border);
+                Assert.Equal(expectedTransform, borderNode.Transform);
+
+                scene = scene.Clone();
+                Assert.True(sceneBuilder.Update(scene, border));
+
+                borderNode = scene.FindNode(border);
+                Assert.Equal(expectedTransform, borderNode.Transform);
+            }
+        }
+
+        [Fact]
         public void Should_Update_Border_Background_Node()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
