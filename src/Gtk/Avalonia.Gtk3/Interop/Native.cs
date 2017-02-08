@@ -50,6 +50,10 @@ namespace Avalonia.Gtk3.Interop
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
             public delegate IntPtr gtk_widget_get_window(GtkWidget gtkWidget);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk, optional: true)]
+            public delegate uint gtk_widget_get_scale_factor(GtkWidget gtkWidget);
+
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
             public delegate IntPtr gtk_widget_get_screen(GtkWidget gtkWidget);
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
@@ -131,6 +135,9 @@ namespace Avalonia.Gtk3.Interop
             public delegate void cairo_set_source_surface(IntPtr cr, CairoSurface surface, double x, double y);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Cairo)]
+            public delegate void cairo_scale(IntPtr context, double sx, double sy);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Cairo)]
             public delegate void cairo_paint(IntPtr context);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
@@ -156,6 +163,22 @@ namespace Avalonia.Gtk3.Interop
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
             public delegate IntPtr gdk_window_get_pointer(IntPtr raw, out int x, out int y, out int mask);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
+            public delegate GdkWindowState gdk_window_get_state(IntPtr window);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
+            public delegate void gdk_window_iconify(IntPtr window);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
+            public delegate void gdk_window_deiconify(IntPtr window);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
+            public delegate void gdk_window_maximize(IntPtr window);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
+            public delegate void gdk_window_unmaximize(IntPtr window);
+
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
             public delegate void gtk_window_set_geometry_hints(GtkWindow window, IntPtr geometry_widget, ref GdkGeometry geometry, GdkWindowHints geom_mask);
 
@@ -259,6 +282,7 @@ namespace Avalonia.Gtk3.Interop
         public static D.gtk_widget_hide GtkWidgetHide;
         public static D.gdk_get_native_handle GetNativeGdkWindowHandle;
         public static D.gtk_widget_get_window GtkWidgetGetWindow;
+        public static D.gtk_widget_get_scale_factor GtkWidgetGetScaleFactor;
         public static D.gtk_widget_get_screen GtkWidgetGetScreen;
         public static D.gtk_widget_realize GtkWidgetRealize;
         public static D.gtk_window_get_size GtkWindowGetSize;
@@ -303,6 +327,11 @@ namespace Avalonia.Gtk3.Interop
         public static D.gdk_cursor_new GdkCursorNew;
         public static D.gdk_window_get_origin GdkWindowGetOrigin;
         public static D.gdk_window_get_pointer GdkWindowGetPointer;
+        public static D.gdk_window_get_state GdkWindowGetState;
+        public static D.gdk_window_iconify GdkWindowIconify;
+        public static D.gdk_window_deiconify GdkWindowDeiconify;
+        public static D.gdk_window_maximize GdkWindowMaximize;
+        public static D.gdk_window_unmaximize GdkWindowUnmaximize;
         public static D.gdk_window_begin_move_drag GdkWindowBeginMoveDrag;
         public static D.gdk_window_begin_resize_drag GdkWindowBeginResizeDrag;
         public static D.gdk_event_request_motions GdkEventRequestMotions;
@@ -322,6 +351,7 @@ namespace Avalonia.Gtk3.Interop
         public static D.cairo_surface_flush CairoSurfaceFlush;
         public static D.cairo_surface_destroy CairoSurfaceDestroy;
         public static D.cairo_set_source_surface CairoSetSourceSurface;
+        public static D.cairo_scale CairoScale;
         public static D.cairo_paint CairoPaint;
     }
 
