@@ -14,16 +14,17 @@ namespace Avalonia.Android
 {
     public abstract class AvaloniaActivity : Activity
     {
-        AvaloniaView _view;
+        
+        internal AvaloniaView View;
         object _content;
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
             RequestWindowFeature(WindowFeatures.NoTitle);
-            _view = new AvaloniaView(this);
+            View = new AvaloniaView(this);
             if(_content != null)
-                _view.Content = _content;
-            SetContentView(_view);
+                View.Content = _content;
+            SetContentView(View);
             TakeKeyEvents(true);
             base.OnCreate(savedInstanceState);
         }
@@ -37,14 +38,14 @@ namespace Avalonia.Android
             set
             {
                 _content = value;
-                if (_view != null)
-                    _view.Content = value;
+                if (View != null)
+                    View.Content = value;
             }
         }
 
         public override bool DispatchKeyEvent(KeyEvent e)
         {
-            return _view.DispatchKeyEvent(e);
+            return View.DispatchKeyEvent(e);
         }
     }
 }

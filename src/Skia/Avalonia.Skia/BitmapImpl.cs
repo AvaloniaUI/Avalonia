@@ -63,7 +63,10 @@ namespace Avalonia.Skia
             private static SKSurface CreateSurface(SKBitmap bitmap)
             {
                 IntPtr length;
-                return SKSurface.Create(bitmap.Info, bitmap.GetPixels(out length), bitmap.RowBytes);
+                var rv =  SKSurface.Create(bitmap.Info, bitmap.GetPixels(out length), bitmap.RowBytes);
+                if (rv == null)
+                    throw new Exception("Unable to create Skia surface");
+                return rv;
             }
 
             public BitmapDrawingContext(SKSurface surface) : base(surface.Canvas)
