@@ -45,7 +45,6 @@ namespace Avalonia.Gtk
         {
         }
 
-        [Obsolete("Use Avalonia.Controls.Window.ShowDialog() instead.")]
         public override IDisposable ShowDialog() => Disposable.Create(() => { });
 
         public override void SetSystemDecorations(bool enabled)

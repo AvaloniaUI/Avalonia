@@ -47,7 +47,7 @@ namespace Avalonia.Controls
     /// </summary>
     public class Window : TopLevel, IStyleable, IFocusScope, ILayoutRoot, INameScope
     {
-        private static IList<Window> s_windows = new List<Window>();        
+        private static IList<Window> s_windows = new List<Window>();
 
         /// <summary>
         /// Retrieves an enumeration of all Windows in the currently running application.
@@ -91,7 +91,7 @@ namespace Avalonia.Controls
             TitleProperty.Changed.AddClassHandler<Window>((s, e) => s.PlatformImpl.SetTitle((string)e.NewValue));
             HasSystemDecorationsProperty.Changed.AddClassHandler<Window>(
                 (s, e) => s.PlatformImpl.SetSystemDecorations((bool) e.NewValue));
-            
+
             IconProperty.Changed.AddClassHandler<Window>((s, e) => s.PlatformImpl.SetIcon(((WindowIcon)e.NewValue).PlatformImpl));
         }
 
@@ -182,7 +182,7 @@ namespace Avalonia.Controls
         Size ILayoutRoot.MaxClientSize => _maxPlatformClientSize;
 
         /// <inheritdoc/>
-        Type IStyleable.StyleKey => typeof(Window);        
+        Type IStyleable.StyleKey => typeof(Window);
 
         /// <summary>
         /// Closes the window.
@@ -240,7 +240,7 @@ namespace Avalonia.Controls
                 PlatformImpl.Show();
             }
         }
-        
+
         /// <summary>
         /// Shows the window as a dialog.
         /// </summary>
@@ -265,14 +265,14 @@ namespace Avalonia.Controls
         {
             s_windows.Add(this);
 
-            EnsureInitialized();            
-            LayoutManager.Instance.ExecuteInitialLayoutPass(this);                        
+            EnsureInitialized();
+            LayoutManager.Instance.ExecuteInitialLayoutPass(this);
 
             using (BeginAutoSizing())
             {
-                var modal = GetModal();
+                var modal = ShowModal();
                 var result = new TaskCompletionSource<TResult>();
-                
+
                 Observable.FromEventPattern(this, nameof(Closed))
                     .Take(1)
                     .Subscribe(_ =>
@@ -284,8 +284,8 @@ namespace Avalonia.Controls
                 return result.Task;
             }
         }
-        
-        private IDisposable GetModal()
+
+        private IDisposable ShowModal()
         {
             var disabled = s_windows.Where(w => w.IsEnabled && w != this);
             Window activated = null;
@@ -299,7 +299,7 @@ namespace Avalonia.Controls
                 window.IsEnabled = false;
             }
 
-            PlatformImpl.Show();
+            PlatformImpl.ShowDialog();
 
             return Disposable.Create(() =>
             {
@@ -335,7 +335,7 @@ namespace Avalonia.Controls
             var sizeToContent = SizeToContent;
             var size = ClientSize;
             var desired = base.MeasureOverride(availableSize.Constrain(_maxPlatformClientSize));
-            
+
             switch (sizeToContent)
             {
                 case SizeToContent.Width:
@@ -376,7 +376,7 @@ namespace Avalonia.Controls
                 init.BeginInit();
                 init.EndInit();
             }
-        }        
+        }
     }
 }
 
