@@ -62,6 +62,8 @@ namespace Avalonia.Android
                 .Bind<IAssetLoader>().ToConstant(new AssetLoader(app.GetType().Assembly));
 
             SkiaPlatform.Initialize();
+            ((global::Android.App.Application) global::Android.App.Application.Context.ApplicationContext)
+                .RegisterActivityLifecycleCallbacks(new ActivityTracker());
         }
 
         public IWindowImpl CreateWindow()
@@ -76,7 +78,7 @@ namespace Avalonia.Android
 
         public IPopupImpl CreatePopup()
         {
-            throw new NotImplementedException();
+            return new PopupImpl();
         }
     }
 }
