@@ -22,7 +22,7 @@ namespace Avalonia.UnitTests
             layoutManager: new LayoutManager(),
             platform: new AppBuilder().RuntimePlatform,
             renderer: (_, __) => Mock.Of<IRenderer>(),
-            renderInterface: CreateRenderInterfaceMock(),
+            renderInterface: new MockPlatformRenderInterface(),
             renderLoop: Mock.Of<IRenderLoop>(),
             standardCursorFactory: Mock.Of<IStandardCursorFactory>(),
             styler: new Styler(),
@@ -31,7 +31,7 @@ namespace Avalonia.UnitTests
             windowingPlatform: new MockWindowingPlatform());
 
         public static readonly TestServices MockPlatformRenderInterface = new TestServices(
-            renderInterface: CreateRenderInterfaceMock());
+            renderInterface: new MockPlatformRenderInterface());
 
         public static readonly TestServices MockPlatformWrapper = new TestServices(
             platform: Mock.Of<IRuntimePlatform>());
@@ -162,25 +162,6 @@ namespace Avalonia.UnitTests
             result.Add(baseLight);
 
             return result;
-        }
-
-        private static IPlatformRenderInterface CreateRenderInterfaceMock()
-        {
-            var formattedTextImpl = new Mock<IFormattedTextImpl>();
-            formattedTextImpl.Setup(x => x.WithConstraint(It.IsAny<Size>())).Returns(() => formattedTextImpl.Object);
-
-            return Mock.Of<IPlatformRenderInterface>(x => 
-                x.CreateFormattedText(
-                    It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.IsAny<double>(),
-                    It.IsAny<FontStyle>(),
-                    It.IsAny<TextAlignment>(),
-                    It.IsAny<FontWeight>(),
-                    It.IsAny<TextWrapping>(),
-                    It.IsAny<Size>()) == formattedTextImpl.Object &&
-                x.CreateStreamGeometry() == Mock.Of<IStreamGeometryImpl>(
-                    y => y.Open() == Mock.Of<IStreamGeometryContextImpl>()));
         }
     }
 }

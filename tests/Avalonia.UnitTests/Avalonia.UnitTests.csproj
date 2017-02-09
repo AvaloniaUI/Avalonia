@@ -57,6 +57,8 @@
     <Compile Include="ImmediateDispatcher.cs" />
     <Compile Include="InvariantCultureFixture.cs" />
     <Compile Include="MockRendererFactory.cs" />
+    <Compile Include="MockPlatformRenderInterface.cs" />
+    <Compile Include="MockStreamGeometryImpl.cs" />
     <Compile Include="NotifyingBase.cs" />
     <Compile Include="TestLogSink.cs" />
     <Compile Include="TestTemplatedRoot.cs" />

@@ -492,7 +492,7 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
         {
             return UnitTestApplication.Start(
                 new TestServices(
-                    renderInterface: new MockRenderInterface(),
+                    renderInterface: new MockPlatformRenderInterface(),
                     renderer: (root, loop) => new DeferredRenderer(root, loop)));
         }
     }
