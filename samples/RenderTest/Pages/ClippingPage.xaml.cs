@@ -1,3 +1,4 @@
+using System;
 using System.Reactive.Linq;
 using Avalonia;
 using Avalonia.Animation;
@@ -10,10 +11,13 @@ namespace RenderTest.Pages
 {
     public class ClippingPage : UserControl
     {
+        private Geometry _clip;
+
         public ClippingPage()
         {
             InitializeComponent();
             CreateAnimations();
+            WireUpCheckbox();
         }
 
         private void InitializeComponent()
@@ -23,7 +27,7 @@ namespace RenderTest.Pages
 
         private void CreateAnimations()
         {
-            var clipped = this.FindControl<Border>("geometryClipped");
+            var clipped = this.FindControl<Border>("clipChild");
             var degrees = Animate.Timer.Select(x => x.TotalMilliseconds / 5);
             clipped.RenderTransform = new RotateTransform();
             clipped.RenderTransform.Bind(RotateTransform.AngleProperty, degrees, BindingPriority.Animation);
@@ -31,6 +35,14 @@ namespace RenderTest.Pages
                 Border.BackgroundProperty,
                 clipped.GetObservable(Control.IsPointerOverProperty)
                     .Select(x => x ? Brushes.Crimson : AvaloniaProperty.UnsetValue));
+        }
+
+        private void WireUpCheckbox()
+        {
+            var useMask = this.FindControl<CheckBox>("useMask");
+            var clipped = this.FindControl<Border>("clipped");
+            _clip = clipped.Clip;
+            useMask.Click += (s, e) => clipped.Clip = clipped.Clip == null ? _clip : null;
         }
     }
 }
