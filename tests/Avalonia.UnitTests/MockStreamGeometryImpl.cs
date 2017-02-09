@@ -68,7 +68,6 @@ namespace Avalonia.UnitTests
             private List<Point> points = new List<Point>();
             public void ArcTo(Point point, Size size, double rotationAngle, bool isLargeArc, SweepDirection sweepDirection)
             {
-                throw new NotImplementedException();
             }
 
             public void BeginFigure(Point startPoint, bool isFilled)
@@ -96,7 +95,6 @@ namespace Avalonia.UnitTests
 
             public void CubicBezierTo(Point point1, Point point2, Point point3)
             {
-                throw new NotImplementedException();
             }
 
             public void Dispose()
