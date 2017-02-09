@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Avalonia;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering.SceneGraph
@@ -98,13 +99,21 @@ namespace Avalonia.Rendering.SceneGraph
         {
             if (filter?.Invoke(node.Visual) != false)
             {
+                var clipped = false;
+
                 if (node.ClipToBounds)
                 {
-                    // TODO: Handle geometry clip.
                     clip = clip == null ? node.ClipBounds : clip.Value.Intersect(node.ClipBounds);
+                    clipped = !clip.Value.Contains(p);
                 }
 
-                if (!clip.HasValue || clip.Value.Contains(p))
+                if (node.GeometryClip != null)
+                {
+                    var controlPoint = Root.Visual.TranslatePoint(p, node.Visual);
+                    clipped = !node.GeometryClip.FillContains(p);
+                }
+
+                if (!clipped)
                 {
                     for (var i = node.Children.Count - 1; i >= 0; --i)
                     {

@@ -598,6 +598,30 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
             }
         }
 
+        [Fact]
+        public void Should_Set_GeometryClip()
+        {
+            using (TestApplication())
+            {
+                var clip = StreamGeometry.Parse("M100,0 L0,100 100,100");
+                Decorator decorator;
+                var tree = new TestRoot
+                {
+                    Child = decorator = new Decorator
+                    {
+                        Clip = clip,
+                    }
+                };
+
+                var scene = new Scene(tree);
+                var sceneBuilder = new SceneBuilder();
+                sceneBuilder.UpdateAll(scene);
+
+                var decoratorNode = scene.FindNode(decorator);
+                Assert.Same(clip, decoratorNode.GeometryClip);
+            }
+        }
+
         private IDisposable TestApplication()
         {
             return UnitTestApplication.Start(

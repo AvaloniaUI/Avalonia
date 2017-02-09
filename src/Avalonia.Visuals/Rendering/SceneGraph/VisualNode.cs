@@ -221,11 +221,21 @@ namespace Avalonia.Rendering.SceneGraph
             }
 
             context.Transform = Transform;
+
+            if (GeometryClip != null)
+            {
+                context.PushGeometryClip(GeometryClip);
+            }
         }
 
         /// <inheritdoc/>
         public void EndRender(IDrawingContextImpl context)
         {
+            if (GeometryClip != null)
+            {
+                context.PopGeometryClip();
+            }
+
             if (ClipToBounds)
             {
                 context.PopClip();

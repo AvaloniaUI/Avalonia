@@ -43,6 +43,11 @@ namespace Avalonia.Rendering.SceneGraph
         bool ClipToBounds { get; }
 
         /// <summary>
+        /// Gets the node's clip geometry, if any.
+        /// </summary>
+        Geometry GeometryClip { get; set; }
+
+        /// <summary>
         /// Gets the child scene graph nodes.
         /// </summary>
         IReadOnlyList<IVisualNode> Children { get; }
