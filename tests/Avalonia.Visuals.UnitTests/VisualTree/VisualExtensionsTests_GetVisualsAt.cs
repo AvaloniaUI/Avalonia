@@ -458,12 +458,14 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
                 Canvas canvas;
                 var container = new TestRoot
                 {
-                    Width = 200,
-                    Height = 200,
+                    Width = 400,
+                    Height = 400,
                     Child = border = new Border
                     {
                         Background = Brushes.Red,
                         Clip = StreamGeometry.Parse("M100,0 L0,100 100,100"),
+                        Width = 200,
+                        Height = 200,
                         Child = canvas = new Canvas
                         {
                             Background = Brushes.Yellow,
@@ -474,13 +476,14 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
 
                 container.Measure(Size.Infinity);
                 container.Arrange(new Rect(container.DesiredSize));
+                Assert.Equal(new Rect(100, 100, 200, 200), border.Bounds);
 
                 var context = new DrawingContext(Mock.Of<IDrawingContextImpl>());
 
-                var result = container.GetVisualsAt(new Point(100, 100));
+                var result = container.GetVisualsAt(new Point(200, 200));
                 Assert.Equal(new IVisual[] { canvas, border }, result);
 
-                result = container.GetVisualsAt(new Point(10, 10));
+                result = container.GetVisualsAt(new Point(110, 110));
                 Assert.Empty(result);
             }
         }
