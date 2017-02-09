@@ -179,7 +179,7 @@ namespace Avalonia.Rendering.SceneGraph
             // TODO: Implement
         }
 
-        public void PushGeometryClip(Geometry clip)
+        public void PushGeometryClip(IGeometryImpl clip)
         {
             // TODO: Implement
         }

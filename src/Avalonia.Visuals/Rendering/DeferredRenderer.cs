@@ -263,6 +263,11 @@ namespace Avalonia.Rendering
                         var bitmap = _layers[layer.LayerRoot].Bitmap;
                         var sourceRect = new Rect(0, 0, bitmap.PixelWidth, bitmap.PixelHeight);
 
+                        if (layer.GeometryClip != null)
+                        {
+                            context.PushGeometryClip(layer.GeometryClip);
+                        }
+
                         if (layer.OpacityMask == null)
                         {
                             context.DrawImage(bitmap, layer.Opacity, sourceRect, clientRect);
@@ -270,6 +275,11 @@ namespace Avalonia.Rendering
                         else
                         {
                             context.DrawImage(bitmap, layer.OpacityMask, layer.OpacityMaskRect, sourceRect);
+                        }
+
+                        if (layer.GeometryClip != null)
+                        {
+                            context.PopGeometryClip();
                         }
                     }
 

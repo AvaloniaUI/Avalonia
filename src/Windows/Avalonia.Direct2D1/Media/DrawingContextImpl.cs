@@ -403,14 +403,14 @@ namespace Avalonia.Direct2D1.Media
             return new SolidColorBrushImpl(null, _renderTarget);
         }
 
-        public void PushGeometryClip(Avalonia.Media.Geometry clip)
+        public void PushGeometryClip(IGeometryImpl clip)
         {
             var parameters = new LayerParameters
             {
                 ContentBounds = PrimitiveExtensions.RectangleInfinite,
                 MaskTransform = PrimitiveExtensions.Matrix3x2Identity,
                 Opacity = 1,
-                GeometricMask = ((GeometryImpl)clip.PlatformImpl).Geometry
+                GeometricMask = ((GeometryImpl)clip).Geometry
             };
             var layer = _layerPool.Count != 0 ? _layerPool.Pop() : new Layer(_renderTarget);
             _renderTarget.PushLayer(ref parameters, layer);

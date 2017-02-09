@@ -7,11 +7,29 @@ namespace Avalonia.UnitTests
 {
     public class MockStreamGeometryImpl : IStreamGeometryImpl
     {
-        private MockStreamGeometryContext _impl = new MockStreamGeometryContext();
+        private MockStreamGeometryContext _context;
 
-        public Rect Bounds => _impl.CalculateBounds();
+        public MockStreamGeometryImpl()
+        {
+            Transform = Matrix.Identity;
+            _context = new MockStreamGeometryContext();
+        }
 
-        public Matrix Transform { get; set; }
+        public MockStreamGeometryImpl(Matrix transform)
+        {
+            Transform = transform;
+            _context = new MockStreamGeometryContext();
+        }
+
+        private MockStreamGeometryImpl(Matrix transform, MockStreamGeometryContext context)
+        {
+            Transform = transform;
+            _context = context;
+        }
+
+        public Rect Bounds => _context.CalculateBounds();
+
+        public Matrix Transform { get; }
 
         public IStreamGeometryImpl Clone()
         {
@@ -20,7 +38,7 @@ namespace Avalonia.UnitTests
 
         public bool FillContains(Point point)
         {
-            return _impl.FillContains(point);
+            return _context.FillContains(point);
         }
 
         public bool StrokeContains(Pen pen, Point point)
@@ -30,14 +48,19 @@ namespace Avalonia.UnitTests
 
         public Rect GetRenderBounds(double strokeThickness) => Bounds;
 
+        public IGeometryImpl Intersect(IGeometryImpl geometry)
+        {
+            return new MockStreamGeometryImpl(Transform);
+        }
+
         public IStreamGeometryContextImpl Open()
         {
-            return _impl;
+            return _context;
         }
 
         public IGeometryImpl WithTransform(Matrix transform)
         {
-            return this;
+            return new MockStreamGeometryImpl(transform, _context);
         }
 
         class MockStreamGeometryContext : IStreamGeometryContextImpl

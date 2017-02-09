@@ -238,5 +238,40 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 Assert.Equal(1, scene.Layers.Count);
             }
         }
+
+        [Fact]
+        public void GeometryClip_Should_Affect_Child_Layers()
+        {
+            using (TestApplication())
+            {
+                var clip = StreamGeometry.Parse("M100,0 L0,100 100,100");
+                Decorator decorator;
+                Border border;
+                var tree = new TestRoot
+                {
+                    Child = decorator = new Decorator
+                    {
+                        Clip = clip,
+                        Margin = new Thickness(12, 16),
+                        Child = border = new Border
+                        {
+                            Opacity = 0.5,
+                        }
+                    }
+                };
+
+                var layout = AvaloniaLocator.Current.GetService<ILayoutManager>();
+                layout.ExecuteInitialLayoutPass(tree);
+
+                var scene = new Scene(tree);
+                var sceneBuilder = new SceneBuilder();
+                sceneBuilder.UpdateAll(scene);
+
+                var borderLayer = scene.Layers[border];
+                Assert.Equal(
+                    Matrix.CreateTranslation(12, 16),
+                    ((MockStreamGeometryImpl)borderLayer.GeometryClip).Transform);
+            }
+        }
     }
 }

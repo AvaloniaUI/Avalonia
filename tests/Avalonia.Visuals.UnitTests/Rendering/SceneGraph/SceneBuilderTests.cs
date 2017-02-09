@@ -7,6 +7,8 @@ using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Xunit;
 using Avalonia.Layout;
+using Moq;
+using Avalonia.Platform;
 
 namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
 {
@@ -618,7 +620,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 sceneBuilder.UpdateAll(scene);
 
                 var decoratorNode = scene.FindNode(decorator);
-                Assert.Same(clip, decoratorNode.GeometryClip);
+                Assert.Same(clip.PlatformImpl, decoratorNode.GeometryClip);
             }
         }
 

@@ -35,6 +35,13 @@ namespace Avalonia.Platform
         bool FillContains(Point point);
 
         /// <summary>
+        /// Intersects the geometry with another geometry.
+        /// </summary>
+        /// <param name="geometry">The other geometry.</param>
+        /// <returns>A new <see cref="IGeometryImpl"/> representing the intersection.</returns>
+        IGeometryImpl Intersect(IGeometryImpl geometry);
+
+        /// <summary>
         /// Indicates whether the geometry's stroke contains the specified point.
         /// </summary>
         /// <param name="pen">The stroke to use.</param>

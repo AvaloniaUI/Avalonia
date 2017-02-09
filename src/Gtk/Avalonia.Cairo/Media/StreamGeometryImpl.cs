@@ -65,6 +65,11 @@ namespace Avalonia.Cairo.Media
             return _impl.FillContains(point);
         }
 
+        public IGeometryImpl Intersect(IGeometryImpl geometry)
+        {
+            throw new NotImplementedException();
+        }
+
         public bool StrokeContains(Pen pen, Point point)
         {
             return _impl.StrokeContains(pen, point);

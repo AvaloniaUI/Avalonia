@@ -39,6 +39,18 @@ namespace Avalonia.Direct2D1.Media
         }
 
         /// <inheritdoc/>
+        public IGeometryImpl Intersect(IGeometryImpl geometry)
+        {
+            var result = new PathGeometry(Geometry.Factory);
+
+            using (var sink = result.Open())
+            {
+                Geometry.Combine(((GeometryImpl)geometry).Geometry, CombineMode.Intersect, sink);
+                return new StreamGeometryImpl(result);
+            }
+        }
+
+        /// <inheritdoc/>
         public bool StrokeContains(Avalonia.Media.Pen pen, Point point)
         {
             return Geometry.StrokeContainsPoint(point.ToSharpDX(), (float)pen.Thickness);

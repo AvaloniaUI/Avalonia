@@ -63,6 +63,11 @@ namespace Avalonia.Skia
             return GetRenderBounds(0).Contains(point);
         }
 
+        public IGeometryImpl Intersect(IGeometryImpl geometry)
+        {
+            throw new NotImplementedException();
+        }
+
         public IGeometryImpl WithTransform(Matrix transform)
         {
             var result = (StreamGeometryImpl)Clone();

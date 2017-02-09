@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Avalonia.Media;
+using Avalonia.Platform;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering.SceneGraph
@@ -45,7 +46,12 @@ namespace Avalonia.Rendering.SceneGraph
         /// <summary>
         /// Gets the node's clip geometry, if any.
         /// </summary>
-        Geometry GeometryClip { get; set; }
+        IGeometryImpl GeometryClip { get; set; }
+
+        /// <summary>
+        /// Gets a value indicating whether one of the node's ancestors has a geometry clip.
+        /// </summary>
+        bool HasAncestorGeometryClip { get; }
 
         /// <summary>
         /// Gets the child scene graph nodes.

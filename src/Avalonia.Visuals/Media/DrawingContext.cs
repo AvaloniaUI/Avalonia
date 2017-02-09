@@ -227,7 +227,7 @@ namespace Avalonia.Media
         public PushedState PushGeometryClip(Geometry clip)
         {
             Contract.Requires<ArgumentNullException>(clip != null);
-            PlatformImpl.PushGeometryClip(clip);
+            PlatformImpl.PushGeometryClip(clip.PlatformImpl);
             return new PushedState(this, PushedState.PushedStateType.GeometryClip);
         }
 

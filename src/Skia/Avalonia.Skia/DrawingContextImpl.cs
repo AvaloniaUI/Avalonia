@@ -331,10 +331,10 @@ namespace Avalonia.Skia
                     disposable?.Dispose();
         }
 
-        public void PushGeometryClip(Geometry clip)
+        public void PushGeometryClip(IGeometryImpl clip)
         {
             Canvas.Save();
-            Canvas.ClipPath(((StreamGeometryImpl)clip.PlatformImpl).EffectivePath);
+            Canvas.ClipPath(((StreamGeometryImpl)clip).EffectivePath);
         }
 
         public void PopGeometryClip()

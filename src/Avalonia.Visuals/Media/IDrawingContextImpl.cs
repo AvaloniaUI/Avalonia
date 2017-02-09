@@ -104,7 +104,7 @@ namespace Avalonia.Media
         /// Pushes a clip geometry.
         /// </summary>
         /// <param name="clip">The clip geometry.</param>
-        void PushGeometryClip(Geometry clip);
+        void PushGeometryClip(IGeometryImpl clip);
 
         void PopGeometryClip();
     }

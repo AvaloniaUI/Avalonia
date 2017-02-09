@@ -1,5 +1,6 @@
 ﻿using System;
 using Avalonia.Media;
+using Avalonia.Platform;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering.SceneGraph
@@ -20,6 +21,7 @@ namespace Avalonia.Rendering.SceneGraph
                 Opacity = Opacity,
                 OpacityMask = OpacityMask,
                 OpacityMaskRect = OpacityMaskRect,
+                GeometryClip = GeometryClip,
             };
         }
 
@@ -29,5 +31,6 @@ namespace Avalonia.Rendering.SceneGraph
         public double Opacity { get; set; } = 1;
         public IBrush OpacityMask { get; set; }
         public Rect OpacityMaskRect { get; set; }
+        public IGeometryImpl GeometryClip { get; set; }
     }
 }

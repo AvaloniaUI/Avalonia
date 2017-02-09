@@ -23,7 +23,7 @@ namespace Avalonia.Direct2D1.Media
         /// Initializes a new instance of the <see cref="StreamGeometryImpl"/> class.
         /// </summary>
         /// <param name="geometry">An existing Direct2D <see cref="PathGeometry"/>.</param>
-        protected StreamGeometryImpl(PathGeometry geometry)
+        public StreamGeometryImpl(PathGeometry geometry)
             : base(geometry)
         {
         }

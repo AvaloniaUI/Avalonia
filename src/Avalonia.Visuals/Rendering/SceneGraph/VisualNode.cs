@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Avalonia.Media;
+using Avalonia.Platform;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering.SceneGraph
@@ -33,6 +34,8 @@ namespace Avalonia.Rendering.SceneGraph
 
             Visual = visual;
             Parent = parent;
+            HasAncestorGeometryClip = parent != null && 
+                (parent.HasAncestorGeometryClip || parent.GeometryClip != null);
         }
 
         /// <inheritdoc/>
@@ -54,7 +57,10 @@ namespace Avalonia.Rendering.SceneGraph
         public bool ClipToBounds { get; set; }
 
         /// <inheritdoc/>
-        public Geometry GeometryClip { get; set; }
+        public IGeometryImpl GeometryClip { get; set; }
+
+        /// <inheritdoc/>
+        public bool HasAncestorGeometryClip { get; }
 
         /// <summary>
         /// Gets or sets the opacity of the scene graph node.

@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using Avalonia.Media;
+using Avalonia.Platform;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 
@@ -162,7 +163,7 @@ namespace Avalonia.Rendering.SceneGraph
                     node.Transform = contextImpl.Transform;
                     node.ClipBounds = bounds.TransformToAABB(node.Transform).Intersect(clip);
                     node.ClipToBounds = clipToBounds;
-                    node.GeometryClip = visual.Clip;
+                    node.GeometryClip = visual.Clip?.PlatformImpl;
                     node.Opacity = opacity;
                     node.OpacityMask = visual.OpacityMask;
 
@@ -293,7 +294,7 @@ namespace Avalonia.Rendering.SceneGraph
             }
 
             var oldLayer = scene.Layers[oldLayerRoot];
-            SetDescendentsLayer(node, scene.Layers[newLayerRoot], oldLayer);
+            PropagateLayer(node, scene.Layers[newLayerRoot], oldLayer);
             scene.Layers.Remove(oldLayer);
         }
 
@@ -304,7 +305,7 @@ namespace Avalonia.Rendering.SceneGraph
             var oldLayer = scene.Layers[oldLayerRoot];
 
             UpdateLayer(node, layer);
-            SetDescendentsLayer(node, layer, scene.Layers[oldLayerRoot]);
+            PropagateLayer(node, layer, scene.Layers[oldLayerRoot]);
         }
 
         private static void UpdateLayer(VisualNode node, SceneLayer layer)
@@ -321,9 +322,13 @@ namespace Avalonia.Rendering.SceneGraph
                 layer.OpacityMask = null;
                 layer.OpacityMaskRect = Rect.Empty;
             }
+
+            layer.GeometryClip = node.HasAncestorGeometryClip ?
+                CreateLayerGeometryClip(node) :
+                null;
         }
 
-        private static void SetDescendentsLayer(VisualNode node, SceneLayer layer, SceneLayer oldLayer)
+        private static void PropagateLayer(VisualNode node, SceneLayer layer, SceneLayer oldLayer)
         {
             node.LayerRoot = layer.LayerRoot;
 
@@ -335,9 +340,33 @@ namespace Avalonia.Rendering.SceneGraph
                 // If the child is not the start of a new layer, recurse.
                 if (child.LayerRoot != child.Visual)
                 {
-                    SetDescendentsLayer(child, layer, oldLayer);
+                    PropagateLayer(child, layer, oldLayer);
                 }
             }
+        }
+
+        private static IGeometryImpl CreateLayerGeometryClip(VisualNode node)
+        {
+            IGeometryImpl result = null;
+
+            for (;;)
+            {
+                node = (VisualNode)node.Parent;
+
+                if (node == null || (node.GeometryClip == null && !node.HasAncestorGeometryClip))
+                {
+                    break;
+                }
+
+                if (node?.GeometryClip != null)
+                {
+                    var transformed = node.GeometryClip.WithTransform(node.Transform);
+
+                    result = result == null ? transformed : result.Intersect(transformed);
+                }
+            }
+
+            return result;
         }
 
         private static IBrush ToImmutable(IBrush brush)
