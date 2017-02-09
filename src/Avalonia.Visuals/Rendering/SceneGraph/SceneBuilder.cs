@@ -66,7 +66,10 @@ namespace Avalonia.Rendering.SceneGraph
                                 clip = node.Parent.ClipBounds;
                             }
 
-                            Update(context, scene, node, clip, recurse);
+                            using (context.PushTransformContainer())
+                            {
+                                Update(context, scene, node, clip, recurse);
+                            }
                         }
 
                         return true;
