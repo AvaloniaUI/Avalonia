@@ -90,10 +90,8 @@ namespace Avalonia.Skia
             canvas.Save();
             canvas.Clear(SKColors.Red);
             canvas.ResetMatrix();
-
-            throw new NotImplementedException();
-            //return new DrawingContext(new DrawingContextImpl(canvas, canvas, surface, shim, fb),
-            //    Matrix.CreateScale(fb.Dpi.Width / 96, fb.Dpi.Height / 96));
+            var scale = Matrix.CreateScale(fb.Dpi.Width / 96, fb.Dpi.Height / 96);
+            return new DrawingContextImpl(canvas, scale, canvas, surface, shim, fb);
         }
     }
 }

@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
@@ -67,6 +69,14 @@ namespace Avalonia.Skia
                 throw new ArgumentException("Height can't be less than 1", nameof(height));
 
             return new BitmapImpl(width, height);
+        }
+
+        public virtual IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)
+        {
+            var fb = surfaces?.OfType<IFramebufferPlatformSurface>().FirstOrDefault();
+            if (fb == null)
+                throw new Exception("Skia backend currently only supports framebuffer render target");
+            return new FramebufferRenderTarget(fb);
         }
     }
 }

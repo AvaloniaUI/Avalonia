@@ -60,10 +60,10 @@ namespace Avalonia.Controls
         /// </summary>
         public Action<TAppBuilder> BeforeStartCallback { get; private set; } = builder => { };
 
-        protected AppBuilderBase(IRuntimePlatform platform, Action platformSevices)
+        protected AppBuilderBase(IRuntimePlatform platform, Action<TAppBuilder> platformSevices)
         {
             RuntimePlatform = platform;
-            RuntimePlatformServicesInitializer = platformSevices;
+            RuntimePlatformServicesInitializer = () => platformSevices((TAppBuilder)this);
         }
 
         /// <summary>

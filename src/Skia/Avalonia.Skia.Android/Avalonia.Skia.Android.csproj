@@ -86,9 +86,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AndroidPlatformRenderInterface.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="..\Avalonia.Skia\Avalonia.Skia.projitems" Label="Shared" />

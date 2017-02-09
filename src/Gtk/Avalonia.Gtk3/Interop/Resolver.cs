@@ -128,9 +128,11 @@ namespace Avalonia.Gtk3.Interop
                 if(import == null)
                     continue;
                 IntPtr lib = dlls[import.Dll];
-                
-                var funcPtr = loader.GetProcAddress(lib, import.Name ?? fieldInfo.FieldType.Name);
-                fieldInfo.SetValue(null, Marshal.GetDelegateForFunctionPointer(funcPtr, fieldInfo.FieldType));
+
+                var funcPtr =  loader.GetProcAddress(lib, import.Name ?? fieldInfo.FieldType.Name, import.Optional);
+
+                if (funcPtr != IntPtr.Zero)
+                    fieldInfo.SetValue(null, Marshal.GetDelegateForFunctionPointer(funcPtr, fieldInfo.FieldType));
             }
 
             var nativeHandleNames = new[] { "gdk_win32_window_get_handle", "gdk_x11_window_get_xid", "gdk_quartz_window_get_nswindow" };
@@ -139,7 +141,7 @@ namespace Avalonia.Gtk3.Interop
                 try
                 {
                     Native.GetNativeGdkWindowHandle = (Native.D.gdk_get_native_handle)Marshal
-                        .GetDelegateForFunctionPointer(loader.GetProcAddress(dlls[GtkDll.Gdk], name), typeof(Native.D.gdk_get_native_handle));
+                        .GetDelegateForFunctionPointer(loader.GetProcAddress(dlls[GtkDll.Gdk], name, false), typeof(Native.D.gdk_get_native_handle));
                     break;
                 }
                 catch { }

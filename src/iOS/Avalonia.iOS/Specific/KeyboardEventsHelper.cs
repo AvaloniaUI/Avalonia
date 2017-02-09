@@ -37,7 +37,7 @@ namespace Avalonia.iOS.Specific
     ///             view.ResignFirstResponder();
     /// </summary>
     /// <typeparam name="TView">View that needs keyboard events and show/hide keyboard</typeparam>
-    internal class KeyboardEventsHelper<TView> where TView : UIView, IWindowImpl
+    internal class KeyboardEventsHelper<TView> where TView : UIView, ITopLevelImpl
     {
         private TView _view;
         private IInputElement _lastFocusedElement;

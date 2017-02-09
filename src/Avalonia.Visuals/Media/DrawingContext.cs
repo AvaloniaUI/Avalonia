@@ -7,10 +7,6 @@ namespace Avalonia.Media
     public sealed class DrawingContext : IDisposable
     {
         private int _currentLevel;
-        //Internal tranformation that is applied but not exposed anywhere
-        //To be used for DPI scaling, etc
-        private Matrix? _hiddenPostTransform = Matrix.Identity;
-
         
 
         static readonly Stack<Stack<PushedState>> StateStackPool = new Stack<Stack<PushedState>>();
@@ -34,10 +30,9 @@ namespace Avalonia.Media
             }
         }
 
-        public DrawingContext(IDrawingContextImpl impl, Matrix? hiddenPostTransform = null)
+        public DrawingContext(IDrawingContextImpl impl)
         {
             PlatformImpl = impl;
-            _hiddenPostTransform = hiddenPostTransform;
         }
 
         public IDrawingContextImpl PlatformImpl { get; }
@@ -56,8 +51,6 @@ namespace Avalonia.Media
             {
                 _currentTransform = value;
                 var transform = _currentTransform*_currentContainerTransform;
-                if (_hiddenPostTransform.HasValue)
-                    transform = transform*_hiddenPostTransform.Value;
                 PlatformImpl.Transform = transform;
             }
         }
