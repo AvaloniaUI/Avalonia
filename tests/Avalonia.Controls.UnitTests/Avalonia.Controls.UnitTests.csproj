@@ -51,6 +51,10 @@
       <HintPath>..\..\packages\AutoFixture.AutoMoq.3.40.0\lib\net40\Ploeh.AutoFixture.AutoMoq.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Splat, Version=1.6.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Splat.1.6.2\lib\Net45\Splat.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Reactive.Core, Version=3.0.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
       <HintPath>..\..\packages\System.Reactive.Core.3.0.0\lib\net45\System.Reactive.Core.dll</HintPath>
@@ -98,6 +102,7 @@
     <Compile Include="CanvasTests.cs" />
     <Compile Include="ClassesTests.cs" />
     <Compile Include="LayoutTransformControlTests.cs" />
+    <Compile Include="ListBoxScrollingIssueTest.cs" />
     <Compile Include="Presenters\ItemsPresenterTests_Virtualization_Simple.cs" />
     <Compile Include="Presenters\ItemsPresenterTests_Virtualization.cs" />
     <Compile Include="TextBoxTests_DataValidation.cs" />
@@ -157,6 +162,10 @@
     <ProjectReference Include="..\..\src\Avalonia.DotNetFrameworkRuntime\Avalonia.DotNetFrameworkRuntime.csproj">
       <Project>{4a1abb09-9047-4bd5-a4ad-a055e52c5ee0}</Project>
       <Name>Avalonia.DotNetFrameworkRuntime</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\Avalonia.ReactiveUI\Avalonia.ReactiveUI.csproj">
+      <Project>{6417B24E-49C2-4985-8DB2-3AB9D898EC91}</Project>
+      <Name>Avalonia.ReactiveUI</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj">
       <Project>{3e53a01a-b331-47f3-b828-4a5717e77a24}</Project>
