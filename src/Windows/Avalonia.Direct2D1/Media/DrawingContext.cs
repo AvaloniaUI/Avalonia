@@ -28,6 +28,7 @@ namespace Avalonia.Direct2D1.Media
         private SharpDX.DirectWrite.Factory _directWriteFactory;
 
         private SharpDX.DXGI.SwapChain1 _swapChain;
+        private readonly IDisposable _targetLock;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DrawingContext"/> class.
@@ -35,14 +36,17 @@ namespace Avalonia.Direct2D1.Media
         /// <param name="renderTarget">The render target to draw to.</param>
         /// <param name="directWriteFactory">The DirectWrite factory.</param>
         /// <param name="swapChain">An optional swap chain associated with this drawing context.</param>
+        /// <param name="targetLock">An object that should be disposed after rendering is done</param>
         public DrawingContext(
             SharpDX.Direct2D1.RenderTarget renderTarget,
             SharpDX.DirectWrite.Factory directWriteFactory,
-            SharpDX.DXGI.SwapChain1 swapChain = null)
+            SharpDX.DXGI.SwapChain1 swapChain = null,
+            IDisposable targetLock = null)
         {
             _renderTarget = renderTarget;
             _directWriteFactory = directWriteFactory;
             _swapChain = swapChain;
+            _targetLock = targetLock;
             _renderTarget.BeginDraw();
         }
 
@@ -65,12 +69,16 @@ namespace Avalonia.Direct2D1.Media
             try
             {
                 _renderTarget.EndDraw();
-                
+
                 _swapChain?.Present(1, SharpDX.DXGI.PresentFlags.None);
             }
-            catch (SharpDXException ex) when((uint)ex.HResult == 0x8899000C) // D2DERR_RECREATE_TARGET
+            catch (SharpDXException ex) when ((uint) ex.HResult == 0x8899000C) // D2DERR_RECREATE_TARGET
             {
                 throw new RenderTargetCorruptedException(ex);
+            }
+            finally
+            {
+                _targetLock?.Dispose();
             }
         }
 

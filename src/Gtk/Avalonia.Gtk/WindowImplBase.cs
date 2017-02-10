@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
@@ -15,12 +17,12 @@ namespace Avalonia.Gtk
 {
     using Gtk = global::Gtk;
 
-    public abstract class WindowImplBase : IWindowImpl
+    public abstract class WindowImplBase : IWindowImpl, IPlatformWindowRenderSurface
     {
         private IInputRoot _inputRoot;
         protected Gtk.Widget _window;
         private FramebufferManager _framebuffer;
-
+        private readonly CancellationTokenSource _disposed =  new CancellationTokenSource();
         private Gtk.IMContext _imContext;
 
         private uint _lastKeyEventTimestamp;
@@ -55,6 +57,8 @@ namespace Avalonia.Gtk
         }
 
         public IPlatformHandle Handle { get; private set; }
+        IntPtr IPlatformWindowRenderSurface.Handle => Handle.Handle;
+        CancellationToken IPlatformWindowRenderSurface.Disposed => _disposed.Token;
         public Gtk.Widget Widget => _window;
         public Gdk.Drawable CurrentDrawable { get; private set; }
 
@@ -129,7 +133,7 @@ namespace Avalonia.Gtk
 
         public IEnumerable<object> Surfaces => new object[]
         {
-            Handle,
+            this,
             new Func<Gdk.Drawable>(() => CurrentDrawable),
             _framebuffer
         };
@@ -254,6 +258,7 @@ namespace Avalonia.Gtk
 
         void OnDestroyed(object sender, EventArgs eventArgs)
         {
+            _disposed.Cancel(false);
             Closed();
         }
 

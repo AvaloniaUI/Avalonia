@@ -68,14 +68,16 @@ namespace Avalonia.Direct2D1
                 CreateSwapChain();
             }
 
-            return new DrawingContext(new Media.DrawingContext(_deviceContext, DirectWriteFactory, _swapChain));
+            return new DrawingContext(new Media.DrawingContext(_deviceContext, DirectWriteFactory, _swapChain, LockTarget()));
         }
 
-        public void Dispose()
+        public virtual void Dispose()
         {
             _deviceContext?.Dispose();
             _swapChain?.Dispose();
         }
+
+        protected virtual IDisposable LockTarget() => null;
 
         private void CreateSwapChain()
         {

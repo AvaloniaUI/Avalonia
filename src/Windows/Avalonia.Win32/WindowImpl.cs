@@ -10,6 +10,8 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using Avalonia.Controls;
 using System.Reactive.Disposables;
+using System.Threading;
+using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
 using Avalonia.Win32.Input;
@@ -21,7 +23,7 @@ using Win32Exception = Avalonia.Win32.NetStandard.AvaloniaWin32Exception;
 
 namespace Avalonia.Win32
 {
-    class WindowImpl : IWindowImpl
+    class WindowImpl : IWindowImpl, IPlatformWindowRenderSurface
     {
         private static readonly List<WindowImpl> s_instances = new List<WindowImpl>();
 
@@ -38,7 +40,7 @@ namespace Avalonia.Win32
         private double _scaling = 1;
         private WindowState _showWindowState;
         private FramebufferManager _framebuffer;
-
+        private readonly CancellationTokenSource _disposed = new CancellationTokenSource();
         public WindowImpl()
         {
             CreateWindow();
@@ -117,6 +119,8 @@ namespace Avalonia.Win32
             private set;
         }
 
+        IntPtr IPlatformWindowRenderSurface.Handle => Handle.Handle;
+
         public bool IsEnabled
         {
             get { return UnmanagedMethods.IsWindowEnabled(_hwnd); }
@@ -165,9 +169,10 @@ namespace Avalonia.Win32
             }
         }
 
+        public CancellationToken Disposed => _disposed.Token;
         public IEnumerable<object> Surfaces => new object[]
         {
-            Handle, _framebuffer
+            this, _framebuffer
         };
 
         public void Activate()
@@ -428,7 +433,9 @@ namespace Avalonia.Win32
 
                 case UnmanagedMethods.WindowsMessage.WM_DESTROY:
                     //Window doesn't exist anymore
+                    _disposed.Cancel(false);
                     _hwnd = IntPtr.Zero;
+                    
                     //Remove root reference to this class, so unmanaged delegate can be collected
                     s_instances.Remove(this);
                     Closed?.Invoke();

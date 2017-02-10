@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Platform;
@@ -13,11 +14,46 @@ namespace Avalonia.Direct2D1
 {
     class HwndRenderTarget : SwapChainRenderTarget
     {
-        private readonly IPlatformHandle _window;
+        private readonly IPlatformWindowRenderSurface _window;
+        private readonly AutoResetEvent _targetLock = new AutoResetEvent(true);
 
-        public HwndRenderTarget(IPlatformHandle window)
+        public HwndRenderTarget(IPlatformWindowRenderSurface window)
         {
             _window = window;
+            _window.Disposed.Register(() => _targetLock.WaitOne());
+        }
+
+        class TargetLockDisposable : IDisposable
+        {
+            private readonly AutoResetEvent _ev;
+
+            public TargetLockDisposable(AutoResetEvent ev)
+            {
+                _ev = ev;
+            }
+
+            public void Dispose()
+            {
+                _ev.Set();
+            }
+        }
+
+        protected override IDisposable LockTarget()
+        {
+            _targetLock.Reset();
+            Thread.MemoryBarrier();
+            if (_window.Disposed.IsCancellationRequested)
+            {
+                _targetLock.Set();
+                throw new RenderTargetUnavailableException();
+            }
+            return new TargetLockDisposable(_targetLock);
+        }
+
+        public override void Dispose()
+        {
+            _targetLock.Dispose();
+            base.Dispose();
         }
 
         protected override SwapChain1 CreateSwapChain(Factory2 dxgiFactory, SwapChainDescription1 swapChainDesc)
