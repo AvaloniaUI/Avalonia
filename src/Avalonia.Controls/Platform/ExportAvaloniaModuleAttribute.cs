@@ -54,5 +54,6 @@ namespace Avalonia.Platform
 
         public string ForWindowingSubsystem { get; set; } = "";
         public string ForRenderingSubsystem { get; set; } = "";
+        public OperatingSystemType ForOperatingSystem { get; set; }
     }
 }

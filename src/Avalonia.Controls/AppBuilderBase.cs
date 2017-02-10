@@ -190,16 +190,20 @@ namespace Avalonia.Controls
 
         private void SetupAvaloniaModules()
         {
-            var moduleInitializers = from assembly in AvaloniaLocator.Current.GetService<IRuntimePlatform>().GetLoadedAssemblies()
+            var runtimePlatform = AvaloniaLocator.Current.GetService<IRuntimePlatform>();
+            var moduleInitializers = from assembly in runtimePlatform.GetLoadedAssemblies()
                                           from attribute in assembly.GetCustomAttributes<ExportAvaloniaModuleAttribute>()
                                           where attribute.ForWindowingSubsystem == ""
                                            || attribute.ForWindowingSubsystem == WindowingSubsystemName
                                           where attribute.ForRenderingSubsystem == ""
                                            || attribute.ForRenderingSubsystem == RenderingSubsystemName
+                                          where attribute.ForOperatingSystem == OperatingSystemType.Unknown
+                                           || attribute.ForOperatingSystem == runtimePlatform.GetRuntimeInfo().OperatingSystem
                                           group attribute by attribute.Name into exports
                                           select (from export in exports
                                                   orderby export.ForWindowingSubsystem.Length descending
                                                   orderby export.ForRenderingSubsystem.Length descending
+                                                  orderby (int)export.ForOperatingSystem descending
                                                   select export).First().ModuleType into moduleType
                                           select (from constructor in moduleType.GetTypeInfo().DeclaredConstructors
                                                   where constructor.GetParameters().Length == 0 && !constructor.IsStatic
