@@ -201,9 +201,9 @@ namespace Avalonia.Controls
                                            || attribute.ForOperatingSystem == runtimePlatform.GetRuntimeInfo().OperatingSystem
                                           group attribute by attribute.Name into exports
                                           select (from export in exports
+                                                  orderby (int)export.ForOperatingSystem descending
                                                   orderby export.ForWindowingSubsystem.Length descending
                                                   orderby export.ForRenderingSubsystem.Length descending
-                                                  orderby (int)export.ForOperatingSystem descending
                                                   select export).First().ModuleType into moduleType
                                           select (from constructor in moduleType.GetTypeInfo().DeclaredConstructors
                                                   where constructor.GetParameters().Length == 0 && !constructor.IsStatic

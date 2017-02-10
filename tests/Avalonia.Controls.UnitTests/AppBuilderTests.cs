@@ -6,11 +6,14 @@ using System.Threading.Tasks;
 using Xunit;
 using Avalonia.Controls.UnitTests;
 using Avalonia.Platform;
+using Moq;
+using System.Reflection;
 
 [assembly: ExportAvaloniaModule("DefaultModule", typeof(AppBuilderTests.DefaultModule))]
 [assembly: ExportAvaloniaModule("RenderingModule", typeof(AppBuilderTests.Direct2DModule), ForRenderingSubsystem = "Direct2D1")]
 [assembly: ExportAvaloniaModule("RenderingModule", typeof(AppBuilderTests.SkiaModule), ForRenderingSubsystem = "Skia")]
 [assembly: ExportAvaloniaModule("RenderingModule", typeof(AppBuilderTests.DefaultRenderingModule))]
+[assembly: ExportAvaloniaModule("OSModule", typeof(AppBuilderTests.WindowsModule), ForOperatingSystem = OperatingSystemType.WinNT)]
 
 
 namespace Avalonia.Controls.UnitTests
@@ -18,6 +21,55 @@ namespace Avalonia.Controls.UnitTests
 
     public class AppBuilderTests
     {
+        class TestAppBuilder : AppBuilderBase<TestAppBuilder>
+        {
+            public TestAppBuilder()
+                :base(null, builder => { })
+            {
+            }
+
+            public TestAppBuilder(IRuntimePlatform platform, App app)
+                : base(platform,
+                      builder => AvaloniaLocator.CurrentMutable.Bind<IRuntimePlatform>().ToConstant(platform))
+            {
+                Instance = app;
+            }
+        }
+
+        class MockRuntimePlatform : IRuntimePlatform
+        {
+            private OperatingSystemType os;
+
+            public MockRuntimePlatform(OperatingSystemType os)
+            {
+                this.os = os;
+            }
+            public Assembly[] GetLoadedAssemblies()
+            {
+                return new[] { typeof(MockRuntimePlatform).Assembly };
+            }
+
+            public RuntimePlatformInfo GetRuntimeInfo()
+            {
+                return new RuntimePlatformInfo { OperatingSystem = os };
+            }
+
+            public string GetStackTrace()
+            {
+                return "";
+            }
+
+            public void PostThreadPoolItem(Action cb)
+            {
+                throw new NotImplementedException();
+            }
+
+            public IDisposable StartSystemTimer(TimeSpan interval, Action tick)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
         class App : Application
         {
         }
@@ -53,6 +105,15 @@ namespace Avalonia.Controls.UnitTests
         {
             public static bool IsLoaded = false;
             public SkiaModule()
+            {
+                IsLoaded = true;
+            }
+        }
+
+        public class WindowsModule
+        {
+            public static bool IsLoaded = false;
+            public WindowsModule()
             {
                 IsLoaded = true;
             }
@@ -115,12 +176,45 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void LoadsModuleAssociatedWithOperatingSystem()
+        {
+            using (AvaloniaLocator.EnterScope())
+            {
+                ResetModuleLoadStates();
+                var builder = new TestAppBuilder(new MockRuntimePlatform(OperatingSystemType.WinNT), new App());
+                builder
+                    .UseWindowingSubsystem(() => { })
+                    .UseRenderingSubsystem(() => { })
+                    .UseAvaloniaModules()
+                    .SetupWithoutStarting();
+                Assert.True(WindowsModule.IsLoaded);
+            }
+        }
+
+        [Fact]
+        public void DoesNotLoadModuleAssociatedWithDifferentOperatingSystem()
+        {
+            using (AvaloniaLocator.EnterScope())
+            {
+                ResetModuleLoadStates();
+                var builder = new TestAppBuilder(new MockRuntimePlatform(OperatingSystemType.Android), new App());
+                builder
+                    .UseWindowingSubsystem(() => { })
+                    .UseRenderingSubsystem(() => { })
+                    .UseAvaloniaModules()
+                    .SetupWithoutStarting();
+                Assert.False(WindowsModule.IsLoaded);
+            }
+        }
+
         private static void ResetModuleLoadStates()
         {
             DefaultModule.IsLoaded = false;
             DefaultRenderingModule.IsLoaded = false;
             Direct2DModule.IsLoaded = false;
             SkiaModule.IsLoaded = false;
+            WindowsModule.IsLoaded = false;
         }
     }
 }
