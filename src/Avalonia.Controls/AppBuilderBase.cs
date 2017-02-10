@@ -191,25 +191,42 @@ namespace Avalonia.Controls
         private void SetupAvaloniaModules()
         {
             var runtimePlatform = AvaloniaLocator.Current.GetService<IRuntimePlatform>();
-            var moduleInitializers = from assembly in runtimePlatform.GetLoadedAssemblies()
-                                          from attribute in assembly.GetCustomAttributes<ExportAvaloniaModuleAttribute>()
-                                          where attribute.ForWindowingSubsystem == ""
-                                           || attribute.ForWindowingSubsystem == WindowingSubsystemName
-                                          where attribute.ForRenderingSubsystem == ""
-                                           || attribute.ForRenderingSubsystem == RenderingSubsystemName
-                                          where attribute.ForOperatingSystem == OperatingSystemType.Unknown
-                                           || attribute.ForOperatingSystem == runtimePlatform.GetRuntimeInfo().OperatingSystem
-                                          group attribute by attribute.Name into exports
-                                          select (from export in exports
-                                                  orderby (int)export.ForOperatingSystem descending
-                                                  orderby export.ForWindowingSubsystem.Length descending
-                                                  orderby export.ForRenderingSubsystem.Length descending
-                                                  select export).First().ModuleType into moduleType
-                                          select (from constructor in moduleType.GetTypeInfo().DeclaredConstructors
-                                                  where constructor.GetParameters().Length == 0 && !constructor.IsStatic
-                                                  select constructor).Single() into constructor
-                                          select (Action)(() => constructor.Invoke(new object[0]));
-            Delegate.Combine(moduleInitializers.ToArray()).DynamicInvoke();
+            var groupedModuleInitializers = from assembly in runtimePlatform.GetLoadedAssemblies()
+                                            from attribute in assembly.GetCustomAttributes<ExportAvaloniaModuleAttribute>()
+                                            where attribute.ForWindowingSubsystem == ""
+                                             || attribute.ForWindowingSubsystem == WindowingSubsystemName
+                                            where attribute.ForRenderingSubsystem == ""
+                                             || attribute.ForRenderingSubsystem == RenderingSubsystemName
+                                            where attribute.ForOperatingSystem == OperatingSystemType.Unknown
+                                             || attribute.ForOperatingSystem == runtimePlatform.GetRuntimeInfo().OperatingSystem
+                                            let initializer = (from constructor in attribute.ModuleType.GetTypeInfo().DeclaredConstructors
+                                                               where constructor.GetParameters().Length == 0 && !constructor.IsStatic
+                                                               select constructor).First()
+                                            select new { initializer, attribute } into module
+                                            group module by module.attribute.Name into moduleGroups
+                                            select (from module in moduleGroups
+                                                    orderby module.attribute.ForOperatingSystem descending
+                                                    orderby module.attribute.ForWindowingSubsystem descending
+                                                    orderby module.attribute.ForRenderingSubsystem descending
+                                                    select module);
+
+            Delegate.Combine(groupedModuleInitializers
+                .Select(group =>
+                (Action)(() => 
+                {
+                    foreach (var module in group)
+                    {
+                        try
+                        {
+                            module.initializer.Invoke(null);
+                            break;
+                        }
+                        catch (Exception)
+                        {
+                        }
+                    }
+                })).ToArray())
+                .DynamicInvoke(null);
         }
 
         /// <summary>

@@ -14,7 +14,11 @@ using System.Reflection;
 [assembly: ExportAvaloniaModule("RenderingModule", typeof(AppBuilderTests.SkiaModule), ForRenderingSubsystem = "Skia")]
 [assembly: ExportAvaloniaModule("RenderingModule", typeof(AppBuilderTests.DefaultRenderingModule))]
 [assembly: ExportAvaloniaModule("OSModule", typeof(AppBuilderTests.WindowsModule), ForOperatingSystem = OperatingSystemType.WinNT)]
-
+[assembly: ExportAvaloniaModule(nameof(AppBuilderTests.DependsOnModule), typeof(AppBuilderTests.DependsOnModule),
+    DependsOnModules = new[] { nameof(AppBuilderTests.DependedOnModule) })]
+[assembly: ExportAvaloniaModule(nameof(AppBuilderTests.DependedOnModule), typeof(AppBuilderTests.DependedOnModule))]
+[assembly: ExportAvaloniaModule("FallbackModuleTest", typeof(AppBuilderTests.Win32Module), ForWindowingSubsystem = "Win32")]
+[assembly: ExportAvaloniaModule("FallbackModuleTest", typeof(AppBuilderTests.FallbackModule))]
 
 namespace Avalonia.Controls.UnitTests
 {
@@ -118,7 +122,46 @@ namespace Avalonia.Controls.UnitTests
                 IsLoaded = true;
             }
         }
-        
+
+        public class DependedOnModule
+        {
+            public static bool IsLoaded = false;
+            public DependedOnModule()
+            {
+                IsLoaded = true;
+            }
+        }
+
+        public class DependsOnModule
+        {
+            public static bool IsLoaded = false;
+            public static bool LoadedInCorrectOrder = false;
+            public DependsOnModule()
+            {
+                IsLoaded = true;
+                LoadedInCorrectOrder = DependedOnModule.IsLoaded;
+            }
+        }
+
+        public class Win32Module
+        {
+            public static bool TriedToLoad = false;
+            public Win32Module()
+            {
+                TriedToLoad = true;
+                throw new Exception();
+            }
+        }
+
+        public class FallbackModule
+        {
+            public static bool IsLoaded = false;
+            public FallbackModule()
+            {
+                IsLoaded = true;
+            }
+        }
+
         [Fact]
         public void LoadsDefaultModule()
         {
@@ -208,6 +251,37 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void ModulesLoadedInDependencyOrder()
+        {
+            using (AvaloniaLocator.EnterScope())
+            {
+                ResetModuleLoadStates();
+                AppBuilder.Configure<App>()
+                    .UseWindowingSubsystem(() => { })
+                    .UseRenderingSubsystem(() => { })
+                    .UseAvaloniaModules()
+                    .SetupWithoutStarting();
+                Assert.True(DependsOnModule.LoadedInCorrectOrder);
+            }
+        }
+
+        [Fact]
+        public void LoadsModuleFallbackIfInitializationThrowsException()
+        {
+            using (AvaloniaLocator.EnterScope())
+            {
+                ResetModuleLoadStates();
+                AppBuilder.Configure<App>()
+                    .UseWindowingSubsystem(() => { }, "Win32")
+                    .UseRenderingSubsystem(() => { })
+                    .UseAvaloniaModules()
+                    .SetupWithoutStarting();
+                Assert.True(Win32Module.TriedToLoad);
+                Assert.True(FallbackModule.IsLoaded);
+            }
+        }
+
         private static void ResetModuleLoadStates()
         {
             DefaultModule.IsLoaded = false;
@@ -215,6 +289,11 @@ namespace Avalonia.Controls.UnitTests
             Direct2DModule.IsLoaded = false;
             SkiaModule.IsLoaded = false;
             WindowsModule.IsLoaded = false;
+            DependedOnModule.IsLoaded = false;
+            DependsOnModule.IsLoaded = false;
+            DependsOnModule.LoadedInCorrectOrder = false;
+            Win32Module.TriedToLoad = false;
+            FallbackModule.IsLoaded = false;
         }
     }
 }
