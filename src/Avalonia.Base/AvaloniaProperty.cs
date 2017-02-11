@@ -41,7 +41,7 @@ namespace Avalonia
             Type valueType,
             Type ownerType,
             PropertyMetadata metadata,
-            Action<IAvaloniaObject, bool> notifying = null)
+            Action<IAvaloniaObject, bool, object, object> notifying = null)
         {
             Contract.Requires<ArgumentNullException>(name != null);
             Contract.Requires<ArgumentNullException>(valueType != null);
@@ -171,7 +171,7 @@ namespace Avalonia
         /// will be true before the property change notifications are sent and false afterwards. This
         /// callback is intended to support Control.IsDataContextChanging.
         /// </remarks>
-        public Action<IAvaloniaObject, bool> Notifying { get; }
+        public Action<IAvaloniaObject, bool, object, object> Notifying { get; }
 
         /// <summary>
         /// Gets the integer ID that represents this property.
@@ -263,7 +263,7 @@ namespace Avalonia
             bool inherits = false,
             BindingMode defaultBindingMode = BindingMode.OneWay,
             Func<TOwner, TValue, TValue> validate = null,
-            Action<IAvaloniaObject, bool> notifying = null)
+            Action<IAvaloniaObject, bool, object, object> notifying = null)
                 where TOwner : IAvaloniaObject
         {
             Contract.Requires<ArgumentNullException>(name != null);

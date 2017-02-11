@@ -22,7 +22,7 @@ namespace Avalonia
             string name,
             Type ownerType,
             PropertyMetadata metadata,
-            Action<IAvaloniaObject, bool> notifying = null)
+            Action<IAvaloniaObject, bool, object, object> notifying = null)
             : base(name, typeof(TValue), ownerType, metadata, notifying)
         {
         }

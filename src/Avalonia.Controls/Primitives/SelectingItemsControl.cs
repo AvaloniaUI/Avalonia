@@ -414,16 +414,16 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <inheritdoc/>
-        protected override void OnDataContextChanging()
+        protected override void OnDataContextChanging(object oldValue, object newValue)
         {
-            base.OnDataContextChanging();
+            base.OnDataContextChanging(oldValue, newValue);
             ++_updateCount;
         }
 
         /// <inheritdoc/>
-        protected override void OnDataContextChanged()
+        protected override void OnDataContextChanged(object oldValue, object newValue)
         {
-            base.OnDataContextChanged();
+            base.OnDataContextChanged(oldValue, newValue);
 
             if (--_updateCount == 0)
             {

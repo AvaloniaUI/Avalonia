@@ -135,7 +135,7 @@ namespace Avalonia.Controls
         /// This event will be raised when the <see cref="DataContext"/> property has changed and
         /// all subscribers to that change have been notified.
         /// </remarks>
-        public event EventHandler DataContextChanged;
+        public event EventHandler<AvaloniaPropertyChangedEventArgs> DataContextChanged;
 
         /// <summary>
         /// Occurs when the control has finished initialization.
@@ -555,16 +555,18 @@ namespace Avalonia.Controls
         /// <summary>
         /// Called before the <see cref="DataContext"/> property changes.
         /// </summary>
-        protected virtual void OnDataContextChanging()
+        protected virtual void OnDataContextChanging(object oldValue, object newValue)
         {
         }
 
         /// <summary>
         /// Called after the <see cref="DataContext"/> property changes.
         /// </summary>
-        protected virtual void OnDataContextChanged()
+        protected virtual void OnDataContextChanged(object oldValue, object newValue)
         {
-            DataContextChanged?.Invoke(this, EventArgs.Empty);
+            var eventArgs = new AvaloniaPropertyChangedEventArgs(
+              this, DataContextProperty, oldValue, newValue, BindingPriority.LocalValue);
+            DataContextChanged?.Invoke(this, eventArgs);
         }
 
         /// <inheritdoc/>
@@ -622,7 +624,9 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="o">The object on which the DataContext is changing.</param>
         /// <param name="notifying">Whether the notifcation is beginning or ending.</param>
-        private static void DataContextNotifying(IAvaloniaObject o, bool notifying)
+        /// <param name="oldValue">Old DataContext.</param>
+        /// <param name="newValue">New DataContext.</param>
+        private static void DataContextNotifying(IAvaloniaObject o, bool notifying, object oldValue, object newValue)
         {
             var control = o as Control;
 
@@ -630,11 +634,11 @@ namespace Avalonia.Controls
             {
                 if (notifying)
                 {
-                    control.OnDataContextChanging();
+                    control.OnDataContextChanging(oldValue, newValue);
                 }
                 else
                 {
-                    control.OnDataContextChanged();
+                    control.OnDataContextChanged(oldValue, newValue);
                 }
             }
         }
