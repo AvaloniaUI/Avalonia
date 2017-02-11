@@ -9,21 +9,21 @@ using Avalonia.Platform;
 using Moq;
 using System.Reflection;
 
-[assembly: ExportAvaloniaModule("DefaultModule", typeof(AppBuilderTests.DefaultModule))]
-[assembly: ExportAvaloniaModule("RenderingModule", typeof(AppBuilderTests.Direct2DModule), ForRenderingSubsystem = "Direct2D1")]
-[assembly: ExportAvaloniaModule("RenderingModule", typeof(AppBuilderTests.SkiaModule), ForRenderingSubsystem = "Skia")]
-[assembly: ExportAvaloniaModule("RenderingModule", typeof(AppBuilderTests.DefaultRenderingModule))]
-[assembly: ExportAvaloniaModule("OSModule", typeof(AppBuilderTests.WindowsModule), ForOperatingSystem = OperatingSystemType.WinNT)]
-[assembly: ExportAvaloniaModule(nameof(AppBuilderTests.DependsOnModule), typeof(AppBuilderTests.DependsOnModule),
-    DependsOnModules = new[] { nameof(AppBuilderTests.DependedOnModule) })]
-[assembly: ExportAvaloniaModule(nameof(AppBuilderTests.DependedOnModule), typeof(AppBuilderTests.DependedOnModule))]
-[assembly: ExportAvaloniaModule("FallbackModuleTest", typeof(AppBuilderTests.Win32Module), ForWindowingSubsystem = "Win32")]
-[assembly: ExportAvaloniaModule("FallbackModuleTest", typeof(AppBuilderTests.FallbackModule))]
+[assembly: ExportAvaloniaModule("DefaultModule", typeof(ModuleLoaderTests.DefaultModule))]
+[assembly: ExportAvaloniaModule("RenderingModule", typeof(ModuleLoaderTests.Direct2DModule), ForRenderingSubsystem = "Direct2D1")]
+[assembly: ExportAvaloniaModule("RenderingModule", typeof(ModuleLoaderTests.SkiaModule), ForRenderingSubsystem = "Skia")]
+[assembly: ExportAvaloniaModule("RenderingModule", typeof(ModuleLoaderTests.DefaultRenderingModule))]
+[assembly: ExportAvaloniaModule("OSModule", typeof(ModuleLoaderTests.WindowsModule), ForOperatingSystem = OperatingSystemType.WinNT)]
+[assembly: ExportAvaloniaModule(nameof(ModuleLoaderTests.DependsOnModule), typeof(ModuleLoaderTests.DependsOnModule),
+    DependsOnModules = new[] { nameof(ModuleLoaderTests.DependedOnModule) })]
+[assembly: ExportAvaloniaModule(nameof(ModuleLoaderTests.DependedOnModule), typeof(ModuleLoaderTests.DependedOnModule))]
+[assembly: ExportAvaloniaModule("FallbackModuleTest", typeof(ModuleLoaderTests.Win32Module), ForWindowingSubsystem = "Win32")]
+[assembly: ExportAvaloniaModule("FallbackModuleTest", typeof(ModuleLoaderTests.FallbackModule))]
 
 namespace Avalonia.Controls.UnitTests
 {
 
-    public class AppBuilderTests
+    public class ModuleLoaderTests
     {
         class TestAppBuilder : AppBuilderBase<TestAppBuilder>
         {
