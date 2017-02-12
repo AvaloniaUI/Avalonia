@@ -75,6 +75,8 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ComStreamWrapper.cs" />
+    <Compile Include="Gdip.cs" />
     <Compile Include="IconImpl.cs" />
     <Compile Include="NativeWin32Platform.cs" />
     <Compile Include="Win32Exception.cs" />
