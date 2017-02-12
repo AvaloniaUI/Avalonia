@@ -269,6 +269,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="AvaloniaXamlLoader.cs" />
     <Compile Include="Styling\StyleInclude.cs" />
+    <Compile Include="Styling\StylesModule.cs" />
     <Compile Include="Templates\ControlTemplate.cs" />
     <Compile Include="Templates\DataTemplate.cs" />
     <Compile Include="Templates\FocusAdornerTemplate.cs" />
