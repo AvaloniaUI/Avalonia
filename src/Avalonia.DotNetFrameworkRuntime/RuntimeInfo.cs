@@ -11,6 +11,14 @@ namespace Avalonia.Shared.PlatformSupport
             var isMono = Type.GetType("Mono.Runtime") != null;
             var isUnix = Environment.OSVersion.Platform == PlatformID.Unix ||
                          Environment.OSVersion.Platform == PlatformID.MacOSX;
+
+            bool isDirectXCompositionAvailable = false;
+            if (!isUnix)
+            {
+                var winVersion = Environment.OSVersion.Version;
+                isDirectXCompositionAvailable = winVersion.Major >= 6 && winVersion.Minor >= 3; // since Win 8.1
+            }
+
             return new RuntimePlatformInfo
             {
                 IsCoreClr = false,
@@ -20,6 +28,7 @@ namespace Avalonia.Shared.PlatformSupport
                 IsMobile = false,
                 IsUnix = isUnix,
                 OperatingSystem = isUnix ? DetectUnix() : OperatingSystemType.WinNT,
+                IsDirectXCompositionAvailable = isDirectXCompositionAvailable
             };
         });
 

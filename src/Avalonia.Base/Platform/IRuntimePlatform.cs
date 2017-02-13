@@ -25,6 +25,7 @@ namespace Avalonia.Platform
         public bool IsMono { get; set; }
         public bool IsDotNetFramework { get; set; }
         public bool IsUnix { get; set; }
+        public bool IsDirectXCompositionAvailable { get; set; }
     }
 
     public enum OperatingSystemType
