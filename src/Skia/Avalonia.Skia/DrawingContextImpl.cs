@@ -18,11 +18,12 @@ namespace Avalonia.Skia
 
         public DrawingContextImpl(SKCanvas canvas, Matrix? postTransform = null, params IDisposable[] disposables)
         {
-            if (_postTransform.HasValue && !_postTransform.Value.IsIdentity)
+            if (postTransform.HasValue && !postTransform.Value.IsIdentity)
                 _postTransform = postTransform;
             _disposables = disposables;
             Canvas = canvas;
             Canvas.Clear();
+            Transform = Matrix.Identity;
         }
 
         public void DrawImage(IBitmap source, double opacity, Rect sourceRect, Rect destRect)
@@ -352,7 +353,7 @@ namespace Avalonia.Skia
             Canvas.Restore();
         }
 
-        private Matrix _currentTransform = Matrix.Identity;
+        private Matrix _currentTransform;
 
         public Matrix Transform
         {
