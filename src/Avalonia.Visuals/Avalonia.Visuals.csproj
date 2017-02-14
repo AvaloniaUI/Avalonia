@@ -122,6 +122,7 @@
     <Compile Include="Rendering\DirtyVisuals.cs" />
     <Compile Include="Rendering\DisplayDirtyRect.cs" />
     <Compile Include="Rendering\DisplayDirtyRects.cs" />
+    <Compile Include="Platform\IModuleEnvironmentChecker.cs" />
     <Compile Include="Rendering\IRenderer.cs" />
     <Compile Include="Rendering\IRendererFactory.cs" />
     <Compile Include="Rendering\IRenderLoop.cs" />
