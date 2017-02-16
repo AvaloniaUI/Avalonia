@@ -47,9 +47,9 @@ namespace Avalonia.Cairo
         public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
         {
             if (_drawableAccessor != null)
-                return new Media.DrawingContext(_drawableAccessor());
+                return new Media.DrawingContext(_drawableAccessor(), visualBrushRenderer);
             if (_surface != null)
-                return new Media.DrawingContext(_surface);
+                return new Media.DrawingContext(_surface, visualBrushRenderer);
             throw new InvalidOperationException("Unspecified render target");
         }
 

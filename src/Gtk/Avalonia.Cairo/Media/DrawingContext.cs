@@ -5,14 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Disposables;
-using System.Runtime.InteropServices;
 using Avalonia.Cairo.Media.Imaging;
 using Avalonia.Media;
+using Avalonia.Platform;
+using Avalonia.Rendering;
 
 namespace Avalonia.Cairo.Media
 {
-    using Avalonia.Media.Imaging;
-    using Platform;
     using Cairo = global::Cairo;
 
     /// <summary>
@@ -20,31 +19,29 @@ namespace Avalonia.Cairo.Media
     /// </summary>
     public class DrawingContext : IDrawingContextImpl, IDisposable
     {
-        /// <summary>
-        /// The cairo context.
-        /// </summary>
         private readonly Cairo.Context _context;
-
+        private readonly IVisualBrushRenderer _visualBrushRenderer;
         private readonly Stack<BrushImpl> _maskStack = new Stack<BrushImpl>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DrawingContext"/> class.
         /// </summary>
         /// <param name="surface">The target surface.</param>
-        public DrawingContext(Cairo.Surface surface)
+        public DrawingContext(Cairo.Surface surface, IVisualBrushRenderer visualBrushRenderer)
         {
             _context = new Cairo.Context(surface);
+            _visualBrushRenderer = visualBrushRenderer;
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DrawingContext"/> class.
         /// </summary>
         /// <param name="surface">The GDK drawable.</param>
-        public DrawingContext(Gdk.Drawable drawable)
+        public DrawingContext(Gdk.Drawable drawable, IVisualBrushRenderer visualBrushRenderer)
         {
             _context = Gdk.CairoHelper.Create(drawable);
+            _visualBrushRenderer = visualBrushRenderer;
         }
-
 
         private Matrix _transform = Matrix.Identity;
         /// <summary>
@@ -120,7 +117,9 @@ namespace Avalonia.Cairo.Media
 
         public void DrawImage(IBitmapImpl source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect)
         {
-            throw new NotImplementedException();
+            PushOpacityMask(opacityMask, opacityMaskRect);
+            DrawImage(source, 1, new Rect(0, 0, source.PixelWidth, source.PixelHeight), destRect);
+            PopOpacityMask();
         }
 
         /// <summary>
@@ -299,11 +298,11 @@ namespace Avalonia.Cairo.Media
 
         private BrushImpl CreateBrushImpl(IBrush brush, Size destinationSize)
         {
-            var solid = brush as SolidColorBrush;
-            var linearGradientBrush = brush as LinearGradientBrush;
-            var radialGradientBrush = brush as RadialGradientBrush;
-            var imageBrush = brush as ImageBrush;
-            var visualBrush = brush as VisualBrush;
+            var solid = brush as ISolidColorBrush;
+            var linearGradientBrush = brush as ILinearGradientBrush;
+            var radialGradientBrush = brush as IRadialGradientBrush;
+            var imageBrush = brush as IImageBrush;
+            var visualBrush = brush as IVisualBrush;
             BrushImpl impl = null;
 
             if (solid != null)
@@ -320,7 +319,35 @@ namespace Avalonia.Cairo.Media
             }
             else if (imageBrush != null)
             {
-                impl = new ImageBrushImpl(imageBrush, destinationSize);
+                impl = new ImageBrushImpl(imageBrush, (BitmapImpl)imageBrush.Source.PlatformImpl, destinationSize);
+            }
+            else if (visualBrush != null)
+            {
+                if (_visualBrushRenderer != null)
+                {
+                    var intermediateSize = _visualBrushRenderer.GetRenderTargetSize(visualBrush);
+
+                    if (intermediateSize.Width >= 1 && intermediateSize.Height >= 1)
+                    {
+                        using (var intermediate = new Cairo.ImageSurface(Cairo.Format.ARGB32, (int)intermediateSize.Width, (int)intermediateSize.Height))
+                        {
+                            using (var ctx = new RenderTarget(intermediate).CreateDrawingContext(_visualBrushRenderer))
+                            {
+                                ctx.Clear(Colors.Transparent);
+                                _visualBrushRenderer.RenderVisualBrush(ctx, visualBrush);
+                            }
+
+                            return new ImageBrushImpl(
+                                visualBrush,
+                                new RenderTargetBitmapImpl(intermediate),
+                                destinationSize);
+                        }
+                    }
+                }
+                else
+                {
+                    throw new NotSupportedException("No IVisualBrushRenderer was supplied to DrawingContextImpl.");
+                }
             }
             else
             {

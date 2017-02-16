@@ -61,7 +61,6 @@
     <Compile Include="Media\Imaging\BitmapImpl.cs" />
     <Compile Include="Media\Imaging\RenderTargetBitmapImpl.cs" />
     <Compile Include="Media\RadialGradientBrushImpl.cs" />
-    <Compile Include="Media\TileBrushes.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RenderTarget.cs" />
     <Compile Include="CairoExtensions.cs" />
@@ -71,7 +70,6 @@
     <Compile Include="Media\SolidColorBrushImpl.cs" />
     <Compile Include="Media\LinearGradientBrushImpl.cs" />
     <Compile Include="Media\ImageBrushImpl.cs" />
-    <Compile Include="Media\VisualBrushImpl.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Avalonia.Animation\Avalonia.Animation.csproj">

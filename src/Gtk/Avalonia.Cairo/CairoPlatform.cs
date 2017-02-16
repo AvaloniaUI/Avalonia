@@ -26,14 +26,22 @@ namespace Avalonia.Cairo
 {
     using System.IO;
     using global::Cairo;
+    using Rendering;
 
-    public class CairoPlatform : IPlatformRenderInterface
+    public class CairoPlatform : IPlatformRenderInterface, IRendererFactory
     {
         private static readonly CairoPlatform s_instance = new CairoPlatform();
 
         private static readonly Pango.Context s_pangoContext = CreatePangoContext();
 
-        public static void Initialize() => AvaloniaLocator.CurrentMutable.Bind<IPlatformRenderInterface>().ToConstant(s_instance);
+        public static bool UseImmediateRenderer { get; set; }
+
+        public static void Initialize()
+        {
+            AvaloniaLocator.CurrentMutable
+                .Bind<IPlatformRenderInterface>().ToConstant(s_instance)
+                .Bind<IRendererFactory>().ToConstant(s_instance);
+        }
 
         public IBitmapImpl CreateBitmap(int width, int height)
         {
@@ -51,6 +59,18 @@ namespace Avalonia.Cairo
             Size constraint)
         {
             return new FormattedTextImpl(s_pangoContext, text, fontFamily, fontSize, fontStyle, textAlignment, fontWeight, constraint);
+        }
+
+        public IRenderer CreateRenderer(IRenderRoot root, IRenderLoop renderLoop)
+        {
+            if (UseImmediateRenderer)
+            {
+                return new ImmediateRenderer(root, renderLoop);
+            }
+            else
+            {
+                return new DeferredRenderer(root, renderLoop);
+            }
         }
 
         public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)

@@ -1,6 +1,7 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
 using Avalonia.Media;
@@ -22,7 +23,7 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
         }
 
         [Fact]
-        public void Circle_1px_Stroke()
+        public async Task Circle_1px_Stroke()
         {
             Decorator target = new Decorator
             {
@@ -36,7 +37,7 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
     }

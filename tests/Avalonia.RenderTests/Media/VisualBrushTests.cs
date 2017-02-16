@@ -427,7 +427,13 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
+#if AVALONIA_CAIRO
+        [Fact(Skip = "Font scaling currently broken on cairo")]
+#elif AVALONIA_SKIA_SKIP_FAIL
+        [Fact(Skip = "FIXME")]
+#else
         [Fact]
+#endif
         public async Task VisualBrush_InTree_Visual()
         {
             Border source;
