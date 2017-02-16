@@ -12,7 +12,6 @@ using Avalonia.Platform;
 using Avalonia.Styling;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reactive.Disposables;
 
 namespace Avalonia.Controls
 {
@@ -270,7 +269,11 @@ namespace Avalonia.Controls
 
             using (BeginAutoSizing())
             {
-                var modal = ShowModal();
+                var affectedWindows = s_windows.Where(w => w.IsEnabled && w != this);
+                Window activated = affectedWindows.Where(w => w.IsActive).FirstOrDefault();
+                SetIsEnabled(affectedWindows, false);
+
+                var modal = PlatformImpl.ShowDialog();
                 var result = new TaskCompletionSource<TResult>();
 
                 Observable.FromEventPattern(this, nameof(Closed))
@@ -278,6 +281,8 @@ namespace Avalonia.Controls
                     .Subscribe(_ =>
                     {
                         modal.Dispose();
+                        SetIsEnabled(affectedWindows, true);
+                        activated?.Activate();
                         result.SetResult((TResult)_dialogResult);
                     });
 
@@ -285,30 +290,12 @@ namespace Avalonia.Controls
             }
         }
 
-        private IDisposable ShowModal()
+        void SetIsEnabled(IEnumerable<Window> windows, bool isEnabled)
         {
-            var disabled = s_windows.Where(w => w.IsEnabled && w != this);
-            Window activated = null;
-            foreach (var window in disabled)
+            foreach (var window in windows)
             {
-                if (window.IsActive)
-                {
-                    activated = window;
-                }
-
-                window.IsEnabled = false;
+                window.IsEnabled = isEnabled;
             }
-
-            PlatformImpl.ShowDialog();
-
-            return Disposable.Create(() =>
-            {
-                foreach (var window in disabled)
-                {
-                    window.IsEnabled = true;
-                }
-                activated?.Activate();
-            });
         }
 
         /// <inheritdoc/>
