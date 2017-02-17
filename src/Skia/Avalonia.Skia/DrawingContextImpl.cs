@@ -46,7 +46,9 @@ namespace Avalonia.Skia
 
         public void DrawImage(IBitmapImpl source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect)
         {
-            throw new NotImplementedException();
+            PushOpacityMask(opacityMask, opacityMaskRect);
+            DrawImage(source, 1, new Rect(0, 0, source.PixelWidth, source.PixelHeight), destRect);
+            PopOpacityMask();
         }
 
         public void DrawLine(Pen pen, Point p1, Point p2)
