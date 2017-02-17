@@ -23,7 +23,6 @@ namespace Avalonia.Skia
                 _postTransform = postTransform;
             _disposables = disposables;
             Canvas = canvas;
-            Canvas.Clear();
             Transform = Matrix.Identity;
         }
 
