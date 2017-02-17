@@ -21,7 +21,7 @@ namespace Avalonia.Skia
         public Rect GetRenderBounds(double strokeThickness)
         {
             // TODO: Calculate properly.
-            return Bounds.Inflate(strokeThickness);
+            return Bounds.TransformToAABB(Transform).Inflate(strokeThickness);
         }
 
         public Rect Bounds { get; private set; }
