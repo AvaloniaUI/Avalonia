@@ -18,21 +18,19 @@ namespace Avalonia.Android.Platform.SkiaPlatform
     {
         private Point _position;
         private bool _isAdded;
+        Action IWindowBaseImpl.Activated { get; set; }
         public PopupImpl() : base(ActivityTracker.Current, true)
         {
         }
 
         private Size _clientSize = new Size(1, 1);
-        public override Size ClientSize
+
+        public void Resize(Size value)
         {
-            get { return base.ClientSize; }
-            set
-            {
-                if(View == null)
-                    return;
-                _clientSize = value;
-                UpdateParams();
-            }
+            if (View == null)
+                return;
+            _clientSize = value;
+            UpdateParams();
         }
 
         public override Point Position

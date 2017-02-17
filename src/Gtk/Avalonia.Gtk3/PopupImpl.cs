@@ -9,7 +9,7 @@ using Avalonia.Platform;
 
 namespace Avalonia.Gtk3
 {
-    class PopupImpl : TopLevelImpl, IPopupImpl
+    class PopupImpl : WindowBaseImpl, IPopupImpl
     {
         static GtkWindow CreateWindow()
         {

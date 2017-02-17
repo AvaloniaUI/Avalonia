@@ -63,8 +63,8 @@ namespace Avalonia.Gtk
             _imContext.ClientWindow = _window.GdkWindow;
         }
 
-        public abstract Size ClientSize { get; set; }
-
+        public abstract Size ClientSize { get; }
+        public abstract void Resize(Size value);
 
         public Size MaxClientSize
         {
@@ -184,7 +184,7 @@ namespace Avalonia.Gtk
         public abstract void BeginResizeDrag(WindowEdge edge);
         public abstract Point Position { get; set; }
 
-        void ITopLevelImpl.Activate()
+        void IWindowBaseImpl.Activate()
         {
             _window.Activate();
         }

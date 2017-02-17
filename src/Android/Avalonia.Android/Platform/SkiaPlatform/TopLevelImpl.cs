@@ -83,9 +83,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public View View => _view;
 
-        Action ITopLevelImpl.Activated { get; set; }
-
-        IPlatformHandle ITopLevelImpl.Handle => _view;
+        public IPlatformHandle Handle => _view;
 
         public IEnumerable<object> Surfaces => new object[] {this};
 

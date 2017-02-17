@@ -36,13 +36,16 @@ namespace Avalonia.Gtk
         public override Size ClientSize
         {
             get { return new Size(Widget.Allocation.Width, Widget.Allocation.Height); }
-            set {}
         }
-
 
         //Stubs are needed for future GTK designer embedding support
         public override void SetTitle(string title)
         {
+        }
+
+        public override void Resize(Size value)
+        {
+            
         }
 
         public override IDisposable ShowDialog() => Disposable.Create(() => { });

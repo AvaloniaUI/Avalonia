@@ -61,11 +61,11 @@ namespace Avalonia.Gtk
                 Window.GetSize(out width, out height);
                 return new Size(width, height);
             }
+        }
 
-            set
-            {
-                Window.Resize((int)value.Width, (int)value.Height);
-            }
+        public override void Resize(Size value)
+        {
+            Window.Resize((int)value.Width, (int)value.Height);
         }
 
         public override void SetTitle(string title)
