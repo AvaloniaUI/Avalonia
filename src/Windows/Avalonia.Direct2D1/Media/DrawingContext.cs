@@ -27,17 +27,22 @@ namespace Avalonia.Direct2D1.Media
         /// </summary>
         private SharpDX.DirectWrite.Factory _directWriteFactory;
 
+        private SharpDX.DXGI.SwapChain1 _swapChain;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="DrawingContext"/> class.
         /// </summary>
         /// <param name="renderTarget">The render target to draw to.</param>
         /// <param name="directWriteFactory">The DirectWrite factory.</param>
+        /// <param name="swapChain">An optional swap chain associated with this drawing context.</param>
         public DrawingContext(
             SharpDX.Direct2D1.RenderTarget renderTarget,
-            SharpDX.DirectWrite.Factory directWriteFactory)
+            SharpDX.DirectWrite.Factory directWriteFactory,
+            SharpDX.DXGI.SwapChain1 swapChain = null)
         {
             _renderTarget = renderTarget;
             _directWriteFactory = directWriteFactory;
+            _swapChain = swapChain;
             _renderTarget.BeginDraw();
         }
 
@@ -60,6 +65,8 @@ namespace Avalonia.Direct2D1.Media
             try
             {
                 _renderTarget.EndDraw();
+                
+                _swapChain?.Present(1, SharpDX.DXGI.PresentFlags.None);
             }
             catch (SharpDXException ex) when((uint)ex.HResult == 0x8899000C) // D2DERR_RECREATE_TARGET
             {
@@ -76,7 +83,7 @@ namespace Avalonia.Direct2D1.Media
         /// <param name="destRect">The rect in the output to draw to.</param>
         public void DrawImage(IBitmap source, double opacity, Rect sourceRect, Rect destRect)
         {
-            BitmapImpl impl = (BitmapImpl)source.PlatformImpl;
+            var impl = (BitmapImpl)source.PlatformImpl;
             Bitmap d2d = impl.GetDirect2DBitmap(_renderTarget);
             _renderTarget.DrawBitmap(
                 d2d,

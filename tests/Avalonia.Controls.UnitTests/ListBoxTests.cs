@@ -153,6 +153,23 @@ namespace Avalonia.Controls.UnitTests
             Assert.False(((ListBoxItem)target.Presenter.Panel.Children[0]).IsSelected);
         }
 
+        [Fact]
+        public void ScrollViewer_Should_Have_Correct_Extent_And_Viewport()
+        {
+            var target = new ListBox
+            {
+                Template = ListBoxTemplate(),
+                Items = Enumerable.Range(0, 20).Select(x => $"Item {x}").ToList(),
+                ItemTemplate = new FuncDataTemplate<string>(x => new TextBlock { Width = 20, Height = 10 }),
+                SelectedIndex = 0,
+            };
+
+            Prepare(target);
+
+            Assert.Equal(new Size(20, 20), target.Scroll.Extent);
+            Assert.Equal(new Size(100, 10), target.Scroll.Viewport);
+        }
+
         private FuncControlTemplate ListBoxTemplate()
         {
             return new FuncControlTemplate<ListBox>(parent => 
@@ -233,6 +250,7 @@ namespace Avalonia.Controls.UnitTests
                 i.InvalidateMeasure();
             }
 
+            target.Measure(new Size(100, 100));
             target.Arrange(new Rect(0, 0, 100, 100));
         }
 

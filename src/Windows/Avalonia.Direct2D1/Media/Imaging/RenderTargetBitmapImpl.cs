@@ -10,7 +10,7 @@ using SharpDX.WIC;
 
 namespace Avalonia.Direct2D1.Media
 {
-    public class RenderTargetBitmapImpl : BitmapImpl, IRenderTargetBitmapImpl, IDisposable
+    public class RenderTargetBitmapImpl : WicBitmapImpl, IRenderTargetBitmapImpl
     {
         private readonly WicRenderTarget _target;
 

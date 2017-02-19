@@ -1,6 +1,7 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System.Collections.Generic;
 using System.IO;
 using Avalonia.Media;
 
@@ -40,9 +41,11 @@ namespace Avalonia.Platform
         /// <summary>
         /// Creates a renderer.
         /// </summary>
-        /// <param name="handle">The platform handle for the renderer.</param>
+        /// <param name="surfaces">
+        /// The list of native platform surfaces that can be used for output.
+        /// </param>
         /// <returns>An <see cref="IRenderTarget"/>.</returns>
-        IRenderTarget CreateRenderTarget(IPlatformHandle handle);
+        IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces);
 
         /// <summary>
         /// Creates a render target bitmap implementation.

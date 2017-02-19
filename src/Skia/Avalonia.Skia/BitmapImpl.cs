@@ -24,7 +24,11 @@ namespace Avalonia.Skia
         {
             PixelHeight = height;
             PixelWidth = width;
-            Bitmap = new SKBitmap(width, height, SKImageInfo.PlatformColorType, SKAlphaType.Premul);
+            var colorType = SKImageInfo.PlatformColorType;
+            var runtime = AvaloniaLocator.Current?.GetService<IRuntimePlatform>()?.GetRuntimeInfo();
+            if (runtime?.IsDesktop == true && runtime?.OperatingSystem == OperatingSystemType.Linux)
+                colorType = SKColorType.Bgra8888;
+            Bitmap = new SKBitmap(width, height, colorType, SKAlphaType.Premul);
         }
 
         public void Dispose()
@@ -59,7 +63,10 @@ namespace Avalonia.Skia
             private static SKSurface CreateSurface(SKBitmap bitmap)
             {
                 IntPtr length;
-                return SKSurface.Create(bitmap.Info, bitmap.GetPixels(out length), bitmap.RowBytes);
+                var rv =  SKSurface.Create(bitmap.Info, bitmap.GetPixels(out length), bitmap.RowBytes);
+                if (rv == null)
+                    throw new Exception("Unable to create Skia surface");
+                return rv;
             }
 
             public BitmapDrawingContext(SKSurface surface) : base(surface.Canvas)

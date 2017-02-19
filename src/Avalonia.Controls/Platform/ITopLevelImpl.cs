@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
@@ -36,6 +37,18 @@ namespace Avalonia.Platform
         /// Gets the platform window handle.
         /// </summary>
         IPlatformHandle Handle { get; }
+
+        /// <summary>
+        /// The list of native platform's surfaces that can be consumed by rendering subsystems.
+        /// </summary>
+        /// <remarks>
+        /// Rendering platform will check that list and see if it can utilize one of them to output.
+        /// It should be enough to expose a native window handle via IPlatformHandle
+        /// and add support for framebuffer (even if it's emulated one) via IFramebufferPlatformSurface.
+        /// If you have some rendering platform that's tied to your particular windowing platform,
+        /// just expose some toolkit-specific object (e. g. Func&lt;Gdk.Drawable&gt; in case of GTK#+Cairo)
+        /// </remarks>
+        IEnumerable<object> Surfaces { get; }
 
         /// <summary>
         /// Gets or sets a method called when the window is activated (receives focus).

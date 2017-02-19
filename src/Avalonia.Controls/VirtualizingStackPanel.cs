@@ -19,6 +19,7 @@ namespace Avalonia.Controls
         private double _averageItemSize;
         private int _averageCount;
         private double _pixelOffset;
+        private double _crossAxisOffset;
         private bool _forceRemeasure;
 
         bool IVirtualizingPanel.IsFull
@@ -55,6 +56,20 @@ namespace Avalonia.Controls
                 if (_pixelOffset != value)
                 {
                     _pixelOffset = value;
+                    InvalidateArrange();
+                }
+            }
+        }
+
+        double IVirtualizingPanel.CrossAxisOffset
+        {
+            get { return _crossAxisOffset; }
+
+            set
+            {
+                if (_crossAxisOffset != value)
+                {
+                    _crossAxisOffset = value;
                     InvalidateArrange();
                 }
             }
@@ -140,7 +155,11 @@ namespace Avalonia.Controls
         {
             if (orientation == Orientation.Vertical)
             {
-                rect = new Rect(rect.X, rect.Y - _pixelOffset, rect.Width, rect.Height);
+                rect = new Rect(
+                    rect.X - _crossAxisOffset,
+                    rect.Y - _pixelOffset,
+                    rect.Width,
+                    rect.Height);
                 child.Arrange(rect);
 
                 if (rect.Y >= _availableSpace.Height)
@@ -157,7 +176,11 @@ namespace Avalonia.Controls
             }
             else
             {
-                rect = new Rect(rect.X - _pixelOffset, rect.Y, rect.Width, rect.Height);
+                rect = new Rect(
+                    rect.X - _pixelOffset,
+                    rect.Y - _crossAxisOffset,
+                    rect.Width,
+                    rect.Height);
                 child.Arrange(rect);
 
                 if (rect.X >= _availableSpace.Width)

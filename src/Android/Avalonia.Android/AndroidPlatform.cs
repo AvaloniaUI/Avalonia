@@ -1,5 +1,8 @@
 using System;
 using System.IO;
+using System.Linq;
+using Android.Content;
+using Android.Views;
 using Avalonia.Android.Platform;
 using Avalonia.Android.Platform.Input;
 using Avalonia.Android.Platform.SkiaPlatform;
@@ -8,6 +11,7 @@ using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Platform;
+using Avalonia.Rendering;
 using Avalonia.Shared.PlatformSupport;
 using Avalonia.Skia;
 
@@ -17,7 +21,8 @@ namespace Avalonia
     {
         public static T UseAndroid<T>(this T builder) where T : AppBuilderBase<T>, new()
         {
-            builder.UseWindowingSubsystem(Android.AndroidPlatform.Initialize, "Android");
+            builder.UseWindowingSubsystem(() => Android.AndroidPlatform.Initialize(builder.Instance), "Android");
+            builder.UseSkia();
             return builder;
         }
     }
@@ -25,7 +30,7 @@ namespace Avalonia
 
 namespace Avalonia.Android
 {
-    public class AndroidPlatform : IPlatformSettings, IWindowingPlatform
+    class AndroidPlatform : IPlatformSettings, IWindowingPlatform
     {
         public static readonly AndroidPlatform Instance = new AndroidPlatform();
         public Size DoubleClickSize => new Size(4, 4);
@@ -40,7 +45,7 @@ namespace Avalonia.Android
             _scalingFactor = global::Android.App.Application.Context.Resources.DisplayMetrics.ScaledDensity;
         }
 
-        public static void Initialize()
+        public static void Initialize(Avalonia.Application app)
         {
             AvaloniaLocator.CurrentMutable
                 .Bind<IClipboard>().ToTransient<ClipboardImpl>()
@@ -51,29 +56,29 @@ namespace Avalonia.Android
                 .Bind<IPlatformThreadingInterface>().ToConstant(new AndroidThreadingInterface())
                 .Bind<ISystemDialogImpl>().ToTransient<SystemDialogImpl>()
                 .Bind<IWindowingPlatform>().ToConstant(Instance)
-                .Bind<IPlatformIconLoader>().ToSingleton<PlatformIconLoader>();
+                .Bind<IPlatformIconLoader>().ToSingleton<PlatformIconLoader>()
+                .Bind<IRenderLoop>().ToConstant(new DefaultRenderLoop(60))
+
+                .Bind<IAssetLoader>().ToConstant(new AssetLoader(app.GetType().Assembly));
 
             SkiaPlatform.Initialize();
-        }
-
-        public void Init(Type applicationType)
-        {
-            StandardRuntimePlatformServices.Register(applicationType.Assembly);
+            ((global::Android.App.Application) global::Android.App.Application.Context.ApplicationContext)
+                .RegisterActivityLifecycleCallbacks(new ActivityTracker());
         }
 
         public IWindowImpl CreateWindow()
         {
-            return new WindowImpl();
+            throw new NotSupportedException();
         }
 
         public IEmbeddableWindowImpl CreateEmbeddableWindow()
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
         public IPopupImpl CreatePopup()
         {
-            throw new NotImplementedException();
+            return new PopupImpl();
         }
     }
 }

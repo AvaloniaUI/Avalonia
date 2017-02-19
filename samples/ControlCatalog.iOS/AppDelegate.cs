@@ -2,6 +2,8 @@ using Foundation;
 using UIKit;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.iOS;
+using Avalonia.Media;
 
 namespace ControlCatalog
 {
@@ -11,6 +13,8 @@ namespace ControlCatalog
     [Register("AppDelegate")]
     public partial class AppDelegate : UIApplicationDelegate
     {
+        public override UIWindow Window { get; set; }
+
         //
         // This method is invoked when the application has loaded and is ready to run. In this 
         // method you should instantiate the window, load the UI into it and then make the window
@@ -22,10 +26,9 @@ namespace ControlCatalog
         {
             AppBuilder.Configure<App>()
                 .UseiOS()
-                .UseSkiaViewHost()
-                .UseSkia()
-                .Start<MainWindow>();
-
+                .UseSkia().SetupWithoutStarting();
+            Window = new AvaloniaWindow() {Content = new MainView(), StatusBarColor = Colors.LightSteelBlue};
+            Window.MakeKeyAndVisible();
             return true;
         }
     }

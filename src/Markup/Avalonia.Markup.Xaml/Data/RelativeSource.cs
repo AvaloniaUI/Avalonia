@@ -5,6 +5,7 @@ namespace Avalonia.Markup.Xaml.Data
 {
     public enum RelativeSourceMode
     {
+        Self,
         DataContext,
         TemplatedParent,
     }

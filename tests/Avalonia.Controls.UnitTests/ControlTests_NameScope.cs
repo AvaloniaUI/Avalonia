@@ -70,5 +70,23 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Null(NameScope.GetNameScope((Control)root.Presenter).Find("foo"));
         }
+
+        [Fact]
+        public void Control_That_Is_NameScope_Should_Register_With_Parent_NameScope()
+        {
+            UserControl userControl;
+            var root = new TestTemplatedRoot
+            {
+                Content = userControl = new UserControl
+                {
+                    Name = "foo",
+                }
+            };
+
+            root.ApplyTemplate();
+
+            Assert.Same(userControl, root.FindControl<UserControl>("foo"));
+            Assert.Same(userControl, userControl.FindControl<UserControl>("foo"));
+        }
     }
 }

@@ -26,14 +26,13 @@ namespace Avalonia.Skia
 
     internal class WindowRenderTarget : RenderTarget
     {
-        private readonly IPlatformHandle _hwnd;
+
         SKBitmap _bitmap;
         int Width { get; set; }
         int Height { get; set; }
 
-        public WindowRenderTarget(IPlatformHandle hwnd)
+        public WindowRenderTarget()
         {
-            _hwnd = hwnd;
             FixSize();
         }
 
@@ -104,9 +103,7 @@ namespace Avalonia.Skia
             canvas.Clear(SKColors.Red);
             canvas.ResetMatrix();
 
-            return
-                new DrawingContext(
-                    new WindowDrawingContextImpl(this));
+            return new DrawingContext(new WindowDrawingContextImpl(this));
         }
 
         public void Present()

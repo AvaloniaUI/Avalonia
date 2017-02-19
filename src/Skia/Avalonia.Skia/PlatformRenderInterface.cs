@@ -1,5 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
@@ -7,7 +10,7 @@ using SkiaSharp;
 
 namespace Avalonia.Skia
 {
-    public class PlatformRenderInterface : IPlatformRenderInterface, IRendererFactory
+    public partial class PlatformRenderInterface : IPlatformRenderInterface, IRendererFactory
     {
         public IBitmapImpl CreateBitmap(int width, int height)
         {
@@ -64,9 +67,12 @@ namespace Avalonia.Skia
             return new BitmapImpl(width, height);
         }
 
-        public IRenderTarget CreateRenderTarget(IPlatformHandle handle)
+        public virtual IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)
         {
-            return new WindowRenderTarget(handle);
+            var fb = surfaces?.OfType<IFramebufferPlatformSurface>().FirstOrDefault();
+            if (fb == null)
+                throw new Exception("Skia backend currently only supports framebuffer render target");
+            return new FramebufferRenderTarget(fb);
         }
     }
 }

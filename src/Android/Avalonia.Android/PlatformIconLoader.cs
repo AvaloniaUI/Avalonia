@@ -49,11 +49,9 @@ namespace Avalonia.Android
             stream.CopyTo(this.stream);
         }
 
-        public Stream Save()
+        public void Save(Stream outputStream)
         {
-            var returnStream = new MemoryStream();
-            stream.CopyTo(returnStream);
-            return returnStream;
+            stream.CopyTo(outputStream);
         }
     }
 }

@@ -10,14 +10,20 @@ namespace Avalonia.Skia
 {
     internal class DrawingContextImpl : IDrawingContextImpl
     {
+        private readonly Matrix? _postTransform;
+        private readonly IDisposable[] _disposables;
         private Stack<PaintWrapper> maskStack = new Stack<PaintWrapper>();
         
         public SKCanvas Canvas { get; private set; }
 
-        public DrawingContextImpl(SKCanvas canvas)
+        public DrawingContextImpl(SKCanvas canvas, Matrix? postTransform = null, params IDisposable[] disposables)
         {
+            if (postTransform.HasValue && !postTransform.Value.IsIdentity)
+                _postTransform = postTransform;
+            _disposables = disposables;
             Canvas = canvas;
             Canvas.Clear();
+            Transform = Matrix.Identity;
         }
 
         public void DrawImage(IBitmap source, double opacity, Rect sourceRect, Rect destRect)
@@ -314,6 +320,9 @@ namespace Avalonia.Skia
 
         public virtual void Dispose()
         {
+            if(_disposables!=null)
+                foreach (var disposable in _disposables)
+                    disposable?.Dispose();
         }
 
         public void PushGeometryClip(Geometry clip)
@@ -344,7 +353,7 @@ namespace Avalonia.Skia
             Canvas.Restore();
         }
 
-        private Matrix _currentTransform = Matrix.Identity;
+        private Matrix _currentTransform;
 
         public Matrix Transform
         {
@@ -355,7 +364,10 @@ namespace Avalonia.Skia
                     return;
 
                 _currentTransform = value;
-                Canvas.SetMatrix(value.ToSKMatrix());
+                var transform = value;
+                if (_postTransform.HasValue)
+                    transform *= _postTransform.Value;
+                Canvas.SetMatrix(transform.ToSKMatrix());
             }
         }
     }

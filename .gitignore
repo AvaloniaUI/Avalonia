@@ -9,6 +9,7 @@
 *.suo
 *.user
 *.sln.docstates
+.vs/
 
 # Build results
 
@@ -160,3 +161,5 @@ tools/
 .nuget
 artifacts/
 nuget
+Avalonia.XBuild.sln
+project.lock.json
