@@ -23,8 +23,6 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
 
 #if AVALONIA_CAIRO
         [Fact(Skip = "Caused by cairo bug")]
-#elif AVALONIA_SKIA_SKIP_FAIL
-        [Fact(Skip = "Waiting for https://github.com/mono/SkiaSharp/pull/63")]
 #else
         [Fact]
 #endif
@@ -51,8 +49,6 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
 
 #if AVALONIA_CAIRO
         [Fact(Skip = "Caused by cairo bug")]
-#elif AVALONIA_SKIA_SKIP_FAIL
-        [Fact(Skip = "Waiting for https://github.com/mono/SkiaSharp/pull/63")]
 #else
         [Fact]
 #endif
