@@ -137,7 +137,10 @@ namespace Avalonia.Controls
                 Width = clientSize.Width;
                 Height = clientSize.Height;
             }
-            base.HandleResized(clientSize);
+            ClientSize = clientSize;
+            LayoutManager.Instance.ExecuteLayoutPass();
+            PlatformImpl.Invalidate(new Rect(clientSize));
+
         }
 
         /// <summary>

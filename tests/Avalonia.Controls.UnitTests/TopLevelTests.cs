@@ -86,7 +86,6 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
                 var impl = new Mock<ITopLevelImpl>();
-                impl.SetupProperty(x => x.ClientSize);
                 impl.SetupProperty(x => x.Resized);
                 impl.SetupGet(x => x.Scaling).Returns(1);
 

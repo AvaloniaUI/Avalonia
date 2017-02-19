@@ -129,7 +129,7 @@ namespace Avalonia.Controls
         public Size ClientSize
         {
             get { return _clientSize; }
-            private set { SetAndRaise(ClientSizeProperty, ref _clientSize, value); }
+            protected set { SetAndRaise(ClientSizeProperty, ref _clientSize, value); }
         }
 
         /// <summary>
@@ -216,6 +216,8 @@ namespace Avalonia.Controls
         protected virtual void HandleResized(Size clientSize)
         {
             ClientSize = clientSize;
+            Width = clientSize.Width;
+            Height = clientSize.Height;
             LayoutManager.Instance.ExecuteLayoutPass();
             PlatformImpl.Invalidate(new Rect(clientSize));
         }
