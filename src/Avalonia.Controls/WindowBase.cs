@@ -18,7 +18,7 @@ namespace Avalonia.Controls
     /// <remarks>
     /// This class acts as a base for top level windows such as <see cref="Window"/> and
     /// <see cref="PopupRoot"/>. It handles scheduling layout, styling and rendering as well as
-    /// tracking the window <see cref="ClientSize"/> and <see cref="IsActive"/> state.
+    /// tracking the window <see cref="TopLevel.ClientSize"/> and <see cref="IsActive"/> state.
     /// </remarks>
     public class WindowBase : TopLevel
     {
@@ -142,7 +142,7 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Handles a window position change notification from 
-        /// <see cref="ITopLevelImpl.PositionChanged"/>.
+        /// <see cref="IWindowBaseImpl.PositionChanged"/>.
         /// </summary>
         /// <param name="pos">The window position.</param>
         private void HandlePositionChanged(Point pos)
@@ -151,7 +151,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Handles an activated notification from <see cref="ITopLevelImpl.Activated"/>.
+        /// Handles an activated notification from <see cref="IWindowBaseImpl.Activated"/>.
         /// </summary>
         private void HandleActivated()
         {
@@ -168,7 +168,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Handles a deactivated notification from <see cref="ITopLevelImpl.Deactivated"/>.
+        /// Handles a deactivated notification from <see cref="IWindowBaseImpl.Deactivated"/>.
         /// </summary>
         private void HandleDeactivated()
         {
