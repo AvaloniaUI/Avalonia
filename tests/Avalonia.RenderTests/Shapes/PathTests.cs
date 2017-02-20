@@ -300,6 +300,7 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
             CompareImages();
         }
 
+        [Fact]
         public void Path_Tick_Scaled()
         {
             Decorator target = new Decorator
@@ -322,6 +323,7 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
             CompareImages();
         }
 
+        [Fact]
         public void Path_Tick_Scaled_Stroke_8px()
         {
             Decorator target = new Decorator
