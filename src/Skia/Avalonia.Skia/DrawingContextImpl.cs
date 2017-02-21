@@ -182,9 +182,9 @@ namespace Avalonia.Skia
                     var end = linearGradient.EndPoint.ToPixels(targetSize).ToSKPoint();
 
                     // would be nice to cache these shaders possibly?
-                    var shader = SKShader.CreateLinearGradient(start, end, stopColors, stopOffsets, tileMode);
-                    paint.Shader = shader;
-                    shader.Dispose();
+                    using (var shader = SKShader.CreateLinearGradient(start, end, stopColors, stopOffsets, tileMode))
+                        paint.Shader = shader;
+
                 }
                 else
                 {
@@ -198,9 +198,9 @@ namespace Avalonia.Skia
                         //paint.setAlpha(128);
 
                         // would be nice to cache these shaders possibly?
-                        var shader = SKShader.CreateRadialGradient(center, radius, stopColors, stopOffsets, tileMode);
-                        paint.Shader = shader;
-                        shader.Dispose();
+                        using (var shader = SKShader.CreateRadialGradient(center, radius, stopColors, stopOffsets, tileMode))
+                            paint.Shader = shader;
+
                     }
                 }
 
@@ -271,8 +271,8 @@ namespace Avalonia.Skia
                         : tileBrush.TileMode == TileMode.FlipY || tileBrush.TileMode == TileMode.FlipXY
                             ? SKShaderTileMode.Mirror
                             : SKShaderTileMode.Repeat;
-                paint.Shader = SKShader.CreateBitmap(bitmap.Bitmap, tileX, tileY, translation);
-                paint.Shader.Dispose();
+                using (var shader = SKShader.CreateBitmap(bitmap.Bitmap, tileX, tileY, translation))
+                    paint.Shader = shader;
             }
 
             return rv;
