@@ -155,6 +155,11 @@ namespace Avalonia.Layout
         }
 
         /// <summary>
+        /// Occurs when a layout pass completes for the control.
+        /// </summary>
+        public event EventHandler LayoutUpdated;
+
+        /// <summary>
         /// Gets or sets the width of the element.
         /// </summary>
         public double Width
@@ -357,6 +362,8 @@ namespace Avalonia.Layout
                 IsArrangeValid = true;
                 ArrangeCore(rect);
                 _previousArrange = rect;
+
+                LayoutUpdated?.Invoke(this, EventArgs.Empty);
             }
         }
 
