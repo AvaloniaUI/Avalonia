@@ -97,11 +97,9 @@ namespace Avalonia.Controls.Presenters
         /// <inheritdoc/>
         public override Size MeasureOverride(Size availableSize)
         {
-            var maxAvailableSize = (Owner.GetVisualRoot() as WindowBase)?.PlatformImpl?.MaxClientSize;
-            if (!maxAvailableSize.HasValue)
-            {
-                maxAvailableSize = (Owner.GetVisualRoot() as TopLevel)?.ClientSize;
-            }
+            var visualRoot = Owner.GetVisualRoot();
+            var maxAvailableSize = (visualRoot as WindowBase)?.PlatformImpl?.MaxClientSize
+                 ?? (visualRoot as TopLevel)?.ClientSize;
 
             // If infinity is passed as the available size and we're virtualized then we need to
             // fill the available space, but to do that we *don't* want to materialize all our
