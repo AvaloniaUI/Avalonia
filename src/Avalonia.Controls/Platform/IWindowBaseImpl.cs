@@ -62,8 +62,8 @@ namespace Avalonia.Platform
         Size MaxClientSize { get; }
 
         /// <summary>
-        /// Gets the client size of the toplevel.
+        /// Sets the client size of the toplevel.
         /// </summary>
-        void Resize(Size size);
+        void Resize(Size clientSize);
     }
 }
