@@ -5,6 +5,7 @@ using System;
 using System.Reflection;
 using System.Linq;
 using Avalonia.Platform;
+using System.Collections.Generic;
 
 namespace Avalonia.Controls
 {
@@ -188,28 +189,6 @@ namespace Avalonia.Controls
             var init = platformClass.GetRuntimeMethod("Initialize", new Type[0]);
             init.Invoke(null, null);
         };
-
-        public TAppBuilder UseAvaloniaModules() => AfterSetup(builder => SetupAvaloniaModules());
-
-        private void SetupAvaloniaModules()
-        {
-            var moduleInitializers = from assembly in AvaloniaLocator.Current.GetService<IRuntimePlatform>().GetLoadedAssemblies()
-                                          from attribute in assembly.GetCustomAttributes<ExportAvaloniaModuleAttribute>()
-                                          where attribute.ForWindowingSubsystem == ""
-                                           || attribute.ForWindowingSubsystem == WindowingSubsystemName
-                                          where attribute.ForRenderingSubsystem == ""
-                                           || attribute.ForRenderingSubsystem == RenderingSubsystemName
-                                          group attribute by attribute.Name into exports
-                                          select (from export in exports
-                                                  orderby export.ForWindowingSubsystem.Length descending
-                                                  orderby export.ForRenderingSubsystem.Length descending
-                                                  select export).First().ModuleType into moduleType
-                                          select (from constructor in moduleType.GetTypeInfo().DeclaredConstructors
-                                                  where constructor.GetParameters().Length == 0 && !constructor.IsStatic
-                                                  select constructor).Single() into constructor
-                                          select (Action)(() => constructor.Invoke(new object[0]));
-            Delegate.Combine(moduleInitializers.ToArray()).DynamicInvoke();
-        }
 
         /// <summary>
         /// Sets up the platform-speciic services for the <see cref="Application"/>.

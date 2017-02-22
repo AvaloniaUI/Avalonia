@@ -94,7 +94,7 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
-    <Compile Include="AppBuilderTests.cs" />
+    <Compile Include="ModuleLoaderTests.cs" />
     <Compile Include="CanvasTests.cs" />
     <Compile Include="ClassesTests.cs" />
     <Compile Include="LayoutTransformControlTests.cs" />
