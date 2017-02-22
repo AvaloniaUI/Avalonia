@@ -110,6 +110,7 @@
     <Compile Include="Rendering\RendererMixin.cs" />
     <Compile Include="Rendering\DefaultRenderLoop.cs" />
     <Compile Include="RenderTargetCorruptedException.cs" />
+    <Compile Include="RenderTargetUnavailableException.cs" />
     <Compile Include="VisualTree\IVisual.cs" />
     <Compile Include="Media\Imaging\Bitmap.cs" />
     <Compile Include="Media\Imaging\IBitmap.cs" />

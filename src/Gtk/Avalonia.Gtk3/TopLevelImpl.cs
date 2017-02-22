@@ -4,7 +4,9 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using Avalonia.Controls;
+using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Gtk3.Interop;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
@@ -12,7 +14,7 @@ using Avalonia.Platform;
 
 namespace Avalonia.Gtk3
 {
-    abstract class TopLevelImpl : ITopLevelImpl, IPlatformHandle
+    abstract class TopLevelImpl : ITopLevelImpl, IPlatformHandle, IPlatformWindowRenderSurface
     {
         public readonly GtkWindow GtkWidget;
         private IInputRoot _inputRoot;
@@ -24,6 +26,7 @@ namespace Avalonia.Gtk3
         private double _lastScaling;
         private uint _lastKbdEvent;
         private uint _lastSmoothScrollEvent;
+        private readonly CancellationTokenSource _disposed = new CancellationTokenSource();
 
         public TopLevelImpl(GtkWindow gtkWidget)
         {
@@ -216,6 +219,7 @@ namespace Avalonia.Gtk3
 
         public void Dispose()
         {
+            _disposed.Cancel(false);
             //We are calling it here, since signal handler will be detached
             if (!GtkWidget.IsClosed)
                 Closed?.Invoke();
@@ -236,7 +240,7 @@ namespace Avalonia.Gtk3
 
         public double Scaling => (double) 1 / (Native.GtkWidgetGetScaleFactor?.Invoke(GtkWidget) ?? 1);
 
-        public IPlatformHandle Handle => this;
+        IPlatformHandle ITopLevelImpl.Handle => this;
 
         string IPlatformHandle.HandleDescriptor => "HWND";
 
@@ -337,7 +341,8 @@ namespace Avalonia.Gtk3
             set { Native.GtkWindowMove(GtkWidget, (int)value.X, (int)value.Y); }
         }
 
-        IntPtr IPlatformHandle.Handle => Native.GetNativeGdkWindowHandle(Native.GtkWidgetGetWindow(GtkWidget));
-        public IEnumerable<object> Surfaces => new object[] {Handle, _framebuffer};
+        public IntPtr Handle => Native.GetNativeGdkWindowHandle(Native.GtkWidgetGetWindow(GtkWidget));
+        public CancellationToken Disposed => _disposed.Token;
+        public IEnumerable<object> Surfaces => new object[] {this, _framebuffer};
     }
 }
