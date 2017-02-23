@@ -4,6 +4,9 @@
 using System;
 using System.IO;
 using Avalonia.Platform;
+using Avalonia.Win32.Interop;
+using PixelFormat  = SharpDX.WIC.PixelFormat;
+using APixelFormat  = Avalonia.Platform.PixelFormat;
 using SharpDX.WIC;
 
 namespace Avalonia.Direct2D1.Media
@@ -62,6 +65,28 @@ namespace Avalonia.Direct2D1.Media
                 height,
                 PixelFormat.Format32bppPBGRA,
                 BitmapCreateCacheOption.CacheOnLoad);
+        }
+
+        public WicBitmapImpl(ImagingFactory factory, Platform.PixelFormat format, IntPtr data, int width, int height, int stride)
+        {
+            Guid fmt;
+            if (format == APixelFormat.Rgb565)
+                fmt = PixelFormat.Format16bppBGR565;
+            else if (format == APixelFormat.Bgra8888)
+                fmt = PixelFormat.Format32bppPBGRA;
+            else if (format == APixelFormat.Rgba8888)
+                fmt = PixelFormat.Format32bppPRGBA;
+            else throw new ArgumentException("Unknown pixel format");
+
+            WicImpl = new Bitmap(factory, width, height, fmt, BitmapCreateCacheOption.CacheOnDemand);
+            using (var l = WicImpl.Lock(BitmapLockFlags.Write))
+            {
+                for (var row = 0; row < height; row++)
+                {
+                    UnmanagedMethods.CopyMemory(new IntPtr(l.Data.DataPointer.ToInt64() + row * l.Stride),
+                        new IntPtr(data.ToInt64() + row * stride), (uint) l.Data.Pitch);
+                }
+            }
         }
 
         /// <summary>

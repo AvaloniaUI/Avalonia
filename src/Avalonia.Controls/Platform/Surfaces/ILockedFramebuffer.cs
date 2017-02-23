@@ -1,4 +1,5 @@
 ﻿using System;
+using Avalonia.Platform;
 
 namespace Avalonia.Controls.Platform.Surfaces
 {

@@ -133,5 +133,10 @@ namespace Avalonia.Direct2D1
         {
             return new WicBitmapImpl(s_imagingFactory, stream);
         }
+
+        public IBitmapImpl LoadBitmap(PixelFormat format, IntPtr data, int width, int height, int stride)
+        {
+            return new WicBitmapImpl(s_imagingFactory, format, data, width, height, stride);
+        }
     }
 }

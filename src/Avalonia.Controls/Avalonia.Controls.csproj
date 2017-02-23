@@ -60,7 +60,6 @@
     <Compile Include="Platform\IWindowBaseImpl.cs" />
     <Compile Include="Platform\Surfaces\IFramebufferPlatformSurface.cs" />
     <Compile Include="Platform\Surfaces\ILockedFramebuffer.cs" />
-    <Compile Include="Platform\Surfaces\PixelFormat.cs" />
     <Compile Include="PointEventArgs.cs" />
     <Compile Include="Embedding\EmbeddableControlRoot.cs" />
     <Compile Include="Platform\IEmbeddableWindowImpl.cs" />

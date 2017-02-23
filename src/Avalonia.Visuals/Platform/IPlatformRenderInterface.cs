@@ -1,6 +1,7 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using Avalonia.Media;
@@ -68,5 +69,16 @@ namespace Avalonia.Platform
         /// <param name="stream">The stream to read the bitmap from.</param>
         /// <returns>An <see cref="IBitmapImpl"/>.</returns>
         IBitmapImpl LoadBitmap(Stream stream);
+
+        /// <summary>
+        /// Loads a bitmap implementation from a pixels in memory..
+        /// </summary>
+        /// <param name="format">Pixel format</param>
+        /// <param name="data">Pointer to source bytes</param>
+        /// <param name="width">Bitmap width</param>
+        /// <param name="height">Bitmap height</param>
+        /// <param name="stride">Bytes per row</param>
+        /// <returns>An <see cref="IBitmapImpl"/>.</returns>
+        IBitmapImpl LoadBitmap(PixelFormat format, IntPtr data, int width, int height, int stride);
     }
 }
