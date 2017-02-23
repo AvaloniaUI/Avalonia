@@ -96,5 +96,10 @@ namespace Avalonia.Cairo
         {
             throw new NotSupportedException("No proper control over pixel format with Cairo, use Skia backend instead");
         }
+
+        public IWritableBitmapImpl CreateWritableBitmap(int width, int height, PixelFormat? fmt)
+        {
+            throw new NotSupportedException("No proper support with Cairo, use Skia backend instead");
+        }
     }
 }

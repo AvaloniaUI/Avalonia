@@ -57,6 +57,15 @@ namespace Avalonia.Platform
         IRenderTargetBitmapImpl CreateRenderTargetBitmap(int width, int height);
 
         /// <summary>
+        /// Creates a writable bitmap implementation.
+        /// </summary>
+        /// <param name="width">The width of the bitmap.</param>
+        /// <param name="height">The height of the bitmap.</param>
+        /// <param name="format">Pixel format (optional).</param>
+        /// <returns>An <see cref="IWritableBitmapImpl"/>.</returns>
+        IWritableBitmapImpl CreateWritableBitmap(int width, int height, PixelFormat? format = null);
+
+        /// <summary>
         /// Loads a bitmap implementation from a file..
         /// </summary>
         /// <param name="fileName">The filename of the bitmap.</param>

@@ -57,6 +57,17 @@ namespace Avalonia.Skia
             throw new ArgumentException("Unknown pixel format: " + fmt);
         }
 
+        public static PixelFormat ToPixelFormat(this SKColorType fmt)
+        {
+            if (fmt == SKColorType.Rgb565)
+                return PixelFormat.Rgb565;
+            if (fmt == SKColorType.Bgra8888)
+                return PixelFormat.Bgra8888;
+            if (fmt == SKColorType.Rgba8888)
+                return PixelFormat.Rgba8888;
+            throw new ArgumentException("Unknown pixel format: " + fmt);
+        }
+
         public static SKShaderTileMode ToSKShaderTileMode(this Media.GradientSpreadMethod m)
         {
             switch (m)

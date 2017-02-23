@@ -70,6 +70,7 @@
     <Compile Include="Media\Imaging\D2DBitmapImpl.cs" />
     <Compile Include="Media\Imaging\RenderTargetBitmapImpl.cs" />
     <Compile Include="Media\Imaging\WicBitmapImpl.cs" />
+    <Compile Include="Media\Imaging\WritableWicBitmapImpl.cs" />
     <Compile Include="Media\RadialGradientBrushImpl.cs" />
     <Compile Include="Media\LinearGradientBrushImpl.cs" />
     <Compile Include="Media\AvaloniaTextRenderer.cs" />

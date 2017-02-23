@@ -102,7 +102,38 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 rtb.Save(System.IO.Path.Combine(OutputPath, testName + ".out.png"));
             }
             CompareImages(testName);
-            
+        }
+
+#if AVALONIA_CAIRO
+        //wontfix
+#else
+        [Theory]
+#endif
+        [InlineData(PixelFormat.Bgra8888), InlineData(PixelFormat.Rgba8888)]
+        public void WritableBitmapShouldBeUsable(PixelFormat fmt)
+        {
+            var writableBitmap = new WritableBitmap(256, 256, fmt);
+
+            var data = new int[256 * 256];
+            for (int y = 0; y < 256; y++)
+                for (int x = 0; x < 256; x++)
+                    data[y * 256 + x] =(int)((uint)(x + (y << 8)) | 0xFF000000u);
+
+
+            using (var l = writableBitmap.Lock())
+            {
+                for(var r = 0; r<256; r++)
+                {
+                    Marshal.Copy(data, r * 256, new IntPtr(l.Address.ToInt64() + r * l.RowBytes), 256);
+                }
+            }
+
+
+            var name = nameof(WritableBitmapShouldBeUsable) + "_" + fmt;
+
+            writableBitmap.Save(System.IO.Path.Combine(OutputPath, name + ".out.png"));
+            CompareImages(name);
+
         }
     }
 }

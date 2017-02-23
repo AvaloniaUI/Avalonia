@@ -84,5 +84,10 @@ namespace Avalonia.Skia
                 throw new Exception("Skia backend currently only supports framebuffer render target");
             return new FramebufferRenderTarget(fb);
         }
+
+        public IWritableBitmapImpl CreateWritableBitmap(int width, int height, PixelFormat? format = null)
+        {
+            return new BitmapImpl(width, height, format);
+        }
     }
 }

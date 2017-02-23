@@ -56,29 +56,26 @@ namespace Avalonia.Direct2D1.Media
         /// <param name="factory">The WIC imaging factory to use.</param>
         /// <param name="width">The width of the bitmap.</param>
         /// <param name="height">The height of the bitmap.</param>
-        public WicBitmapImpl(ImagingFactory factory, int width, int height)
+        /// <param name="pixelFormat">Pixel format</param>
+        public WicBitmapImpl(ImagingFactory factory, int width, int height, APixelFormat? pixelFormat = null)
         {
+            if (!pixelFormat.HasValue)
+                pixelFormat = APixelFormat.Rgba8888;
+
             _factory = factory;
+            PixelFormat = pixelFormat;
             WicImpl = new Bitmap(
                 factory,
                 width,
                 height,
-                PixelFormat.Format32bppPBGRA,
+                pixelFormat.Value.ToWic(),
                 BitmapCreateCacheOption.CacheOnLoad);
         }
 
         public WicBitmapImpl(ImagingFactory factory, Platform.PixelFormat format, IntPtr data, int width, int height, int stride)
         {
-            Guid fmt;
-            if (format == APixelFormat.Rgb565)
-                fmt = PixelFormat.Format16bppBGR565;
-            else if (format == APixelFormat.Bgra8888)
-                fmt = PixelFormat.Format32bppPBGRA;
-            else if (format == APixelFormat.Rgba8888)
-                fmt = PixelFormat.Format32bppPRGBA;
-            else throw new ArgumentException("Unknown pixel format");
-
-            WicImpl = new Bitmap(factory, width, height, fmt, BitmapCreateCacheOption.CacheOnDemand);
+            WicImpl = new Bitmap(factory, width, height, format.ToWic(), BitmapCreateCacheOption.CacheOnDemand);
+            PixelFormat = format;
             using (var l = WicImpl.Lock(BitmapLockFlags.Write))
             {
                 for (var row = 0; row < height; row++)
@@ -88,6 +85,8 @@ namespace Avalonia.Direct2D1.Media
                 }
             }
         }
+
+        protected APixelFormat? PixelFormat { get; }
 
         /// <summary>
         /// Gets the width of the bitmap, in pixels.
@@ -120,7 +119,7 @@ namespace Avalonia.Direct2D1.Media
             if (_direct2D == null)
             {
                 FormatConverter converter = new FormatConverter(_factory);
-                converter.Initialize(WicImpl, PixelFormat.Format32bppPBGRA);
+                converter.Initialize(WicImpl, SharpDX.WIC.PixelFormat.Format32bppPBGRA);
                 _direct2D = SharpDX.Direct2D1.Bitmap.FromWicBitmap(renderTarget, converter);
             }
 

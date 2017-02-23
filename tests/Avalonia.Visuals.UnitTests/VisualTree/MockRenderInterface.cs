@@ -50,6 +50,11 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
             throw new NotImplementedException();
         }
 
+        public IWritableBitmapImpl CreateWritableBitmap(int width, int height, PixelFormat? fmt)
+        {
+            throw new NotImplementedException();
+        }
+
         class MockStreamGeometry : IStreamGeometryImpl
         {
             private MockStreamGeometryContext _impl = new MockStreamGeometryContext();

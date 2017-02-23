@@ -69,6 +69,7 @@
     <Compile Include="Media\BrushMappingMode.cs" />
     <Compile Include="Media\Color.cs" />
     <Compile Include="Media\Colors.cs" />
+    <Compile Include="Media\Imaging\WritableBitmap.cs" />
     <Compile Include="Media\TextWrapping.cs" />
     <Compile Include="Media\TransformGroup.cs" />
     <Compile Include="Media\DashStyle.cs" />
@@ -102,7 +103,9 @@
     <Compile Include="Media\Geometry.cs" />
     <Compile Include="Media\IDrawingContext.cs" />
     <Compile Include="Platform\ExportRenderingSubsystemAttribute.cs" />
+    <Compile Include="Platform\ILockedFramebuffer.cs" />
     <Compile Include="Platform\IModuleEnvironmentChecker.cs" />
+    <Compile Include="Platform\IWritableBitmapImpl.cs" />
     <Compile Include="Platform\PixelFormat.cs" />
     <Compile Include="Rendering\IRenderer.cs" />
     <Compile Include="Rendering\IRendererFactory.cs" />
