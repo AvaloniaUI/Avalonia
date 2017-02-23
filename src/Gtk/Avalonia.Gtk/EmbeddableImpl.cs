@@ -12,7 +12,7 @@ using WindowEdge = Avalonia.Controls.WindowEdge;
 
 namespace Avalonia.Gtk
 {
-    class EmbeddableImpl : WindowImplBase, IEmbeddableWindowImpl
+    class EmbeddableImpl : TopLevelImpl, IEmbeddableWindowImpl
     {
 #pragma warning disable CS0067 // Method not used
         public event Action LostFocus;
@@ -36,37 +36,7 @@ namespace Avalonia.Gtk
         public override Size ClientSize
         {
             get { return new Size(Widget.Allocation.Width, Widget.Allocation.Height); }
-            set {}
         }
-
-
-        //Stubs are needed for future GTK designer embedding support
-        public override void SetTitle(string title)
-        {
-        }
-
-        public override IDisposable ShowDialog() => Disposable.Create(() => { });
-
-        public override void SetSystemDecorations(bool enabled)
-        {
-        }
-
-        public override void SetIcon(IWindowIconImpl icon)
-        {
-        }
-
-        public override void BeginMoveDrag()
-        {
-        }
-
-        public override void BeginResizeDrag(WindowEdge edge)
-        {
-        }
-
-        public override Point Position
-        {
-            get { return new Point(); } 
-            set {}
-        }
+        
     }
 }

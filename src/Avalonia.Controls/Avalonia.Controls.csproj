@@ -57,6 +57,7 @@
     <Compile Include="HotkeyManager.cs" />
     <Compile Include="IApplicationLifecycle.cs" />
     <Compile Include="IScrollable.cs" />
+    <Compile Include="Platform\IWindowBaseImpl.cs" />
     <Compile Include="Platform\Surfaces\IFramebufferPlatformSurface.cs" />
     <Compile Include="Platform\Surfaces\ILockedFramebuffer.cs" />
     <Compile Include="Platform\Surfaces\PixelFormat.cs" />
@@ -65,6 +66,7 @@
     <Compile Include="Platform\IEmbeddableWindowImpl.cs" />
     <Compile Include="Platform\ExportAvaloniaModuleAttribute.cs" />
     <Compile Include="Platform\ExportWindowingSubsystemAttribute.cs" />
+    <Compile Include="WindowBase.cs" />
     <Compile Include="WindowIcon.cs" />
     <Compile Include="IPseudoClasses.cs" />
     <Compile Include="DropDownItem.cs" />

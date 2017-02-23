@@ -6,7 +6,7 @@ using Gdk;
 namespace Avalonia.Gtk
 {
     using Gtk = global::Gtk;
-    public class WindowImpl : WindowImplBase
+    public class WindowImpl : TopLevelImpl, IWindowImpl
     {
         private Gtk.Window _window;
         private Gtk.Window Window => _window ?? (_window = (Gtk.Window) Widget);
@@ -61,16 +61,21 @@ namespace Avalonia.Gtk
                 Window.GetSize(out width, out height);
                 return new Size(width, height);
             }
-
-            set
-            {
-                Window.Resize((int)value.Width, (int)value.Height);
-            }
         }
 
-        public override void SetTitle(string title)
+        public void Resize(Size value)
+        {
+            Window.Resize((int)value.Width, (int)value.Height);
+        }
+
+        public void SetTitle(string title)
         {
             Window.Title = title;
+        }
+
+        void IWindowBaseImpl.Activate()
+        {
+            _window.Activate();
         }
 
         void OnFocusActivated(object sender, EventArgs eventArgs)
@@ -78,7 +83,7 @@ namespace Avalonia.Gtk
             Activated();
         }
 
-        public override void BeginMoveDrag()
+        public void BeginMoveDrag()
         {
             int x, y;
             ModifierType mod;
@@ -86,7 +91,7 @@ namespace Avalonia.Gtk
             Window.BeginMoveDrag(1, x, y, 0);
         }
 
-        public override void BeginResizeDrag(Controls.WindowEdge edge)
+        public void BeginResizeDrag(Controls.WindowEdge edge)
         {
             int x, y;
             ModifierType mod;
@@ -94,7 +99,7 @@ namespace Avalonia.Gtk
             Window.BeginResizeDrag((Gdk.WindowEdge)(int)edge, 1, x, y, 0);
         }
 
-        public override Point Position
+        public Point Position
         {
             get
             {
@@ -108,7 +113,7 @@ namespace Avalonia.Gtk
             }
         }
 
-        public override IDisposable ShowDialog()
+        public IDisposable ShowDialog()
         {
             Window.Modal = true;
             Window.Show();
@@ -116,9 +121,9 @@ namespace Avalonia.Gtk
             return Disposable.Empty;
         }
 
-        public override void SetSystemDecorations(bool enabled) => Window.Decorated = enabled;
+        public void SetSystemDecorations(bool enabled) => Window.Decorated = enabled;
 
-        public override void SetIcon(IWindowIconImpl icon)
+        public void SetIcon(IWindowIconImpl icon)
         {
             Window.Icon = ((IconImpl)icon).Pixbuf;
         }

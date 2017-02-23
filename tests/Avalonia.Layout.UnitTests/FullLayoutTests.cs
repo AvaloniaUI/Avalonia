@@ -139,7 +139,10 @@ namespace Avalonia.Layout.UnitTests
             var renderInterface = fixture.Create<IPlatformRenderInterface>();
             var windowImpl = new Mock<IWindowImpl>();
 
-            windowImpl.SetupProperty(x => x.ClientSize);
+            Size clientSize = default(Size);
+
+            windowImpl.SetupGet(x => x.ClientSize).Returns(() => clientSize);
+            windowImpl.Setup(x => x.Resize(It.IsAny<Size>())).Callback<Size>(s => clientSize = s);
             windowImpl.Setup(x => x.MaxClientSize).Returns(new Size(1024, 1024));
             windowImpl.SetupGet(x => x.Scaling).Returns(1);
 

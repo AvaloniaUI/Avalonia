@@ -11,12 +11,11 @@ namespace Avalonia.Controls.Embedding
     {
         public EmbeddableControlRoot(IEmbeddableWindowImpl impl) : base(impl)
         {
-            PlatformImpl.Show();
+            
         }
 
         public EmbeddableControlRoot() : base(PlatformManager.CreateEmbeddableWindow())
         {
-            PlatformImpl.Show();
         }
 
         public new IEmbeddableWindowImpl PlatformImpl => (IEmbeddableWindowImpl) base.PlatformImpl;
@@ -25,7 +24,6 @@ namespace Avalonia.Controls.Embedding
         {
             EnsureInitialized();
             ApplyTemplate();
-            PlatformImpl.Show();
             LayoutManager.Instance.ExecuteInitialLayoutPass(this);
         }
 
