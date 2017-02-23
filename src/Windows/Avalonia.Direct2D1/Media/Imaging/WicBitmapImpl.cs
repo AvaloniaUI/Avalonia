@@ -60,7 +60,7 @@ namespace Avalonia.Direct2D1.Media
         public WicBitmapImpl(ImagingFactory factory, int width, int height, APixelFormat? pixelFormat = null)
         {
             if (!pixelFormat.HasValue)
-                pixelFormat = APixelFormat.Rgba8888;
+                pixelFormat = APixelFormat.Bgra8888;
 
             _factory = factory;
             PixelFormat = pixelFormat;
