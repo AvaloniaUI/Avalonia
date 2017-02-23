@@ -2,7 +2,7 @@ using System;
 using System.Runtime.InteropServices;
 using Android.Runtime;
 using Android.Views;
-using Avalonia.Controls.Platform.Surfaces;
+using Avalonia.Platform;
 
 namespace Avalonia.Android.Platform.SkiaPlatform
 {
