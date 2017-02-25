@@ -66,7 +66,7 @@
     <Compile Include="PopupImpl.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SystemDialogs.cs" />
-    <Compile Include="TopLevelImpl.cs" />
+    <Compile Include="WindowBaseImpl.cs" />
     <Compile Include="Interop\Utf8Buffer.cs" />
     <Compile Include="WindowImpl.cs" />
   </ItemGroup>

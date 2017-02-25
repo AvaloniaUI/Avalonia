@@ -9,8 +9,8 @@ namespace Avalonia.Gtk3
 {
     class FramebufferManager : IFramebufferPlatformSurface, IDisposable
     {
-        private readonly TopLevelImpl _window;
-        public FramebufferManager(TopLevelImpl window)
+        private readonly WindowBaseImpl _window;
+        public FramebufferManager(WindowBaseImpl window)
         {
             _window = window;
         }

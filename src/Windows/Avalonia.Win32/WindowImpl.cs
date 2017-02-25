@@ -89,23 +89,23 @@ namespace Avalonia.Win32
                 UnmanagedMethods.GetClientRect(_hwnd, out rect);
                 return new Size(rect.right, rect.bottom) / Scaling;
             }
+        }
 
-            set
+        public void Resize(Size value)
+        {
+            if (value != ClientSize)
             {
-                if (value != ClientSize)
-                {
-                    value *= Scaling;
-                    value += BorderThickness;
+                value *= Scaling;
+                value += BorderThickness;
 
-                    UnmanagedMethods.SetWindowPos(
-                        _hwnd,
-                        IntPtr.Zero,
-                        0,
-                        0,
-                        (int)value.Width,
-                        (int)value.Height,
-                        UnmanagedMethods.SetWindowPosFlags.SWP_RESIZE);
-                }
+                UnmanagedMethods.SetWindowPos(
+                    _hwnd,
+                    IntPtr.Zero,
+                    0,
+                    0,
+                    (int)value.Width,
+                    (int)value.Height,
+                    UnmanagedMethods.SetWindowPosFlags.SWP_RESIZE);
             }
         }
 

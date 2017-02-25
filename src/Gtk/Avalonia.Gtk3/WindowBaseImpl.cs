@@ -12,7 +12,7 @@ using Avalonia.Platform;
 
 namespace Avalonia.Gtk3
 {
-    abstract class TopLevelImpl : ITopLevelImpl, IPlatformHandle
+    abstract class WindowBaseImpl : IWindowBaseImpl, IPlatformHandle
     {
         public readonly GtkWindow GtkWidget;
         private IInputRoot _inputRoot;
@@ -25,7 +25,7 @@ namespace Avalonia.Gtk3
         private uint _lastKbdEvent;
         private uint _lastSmoothScrollEvent;
 
-        public TopLevelImpl(GtkWindow gtkWidget)
+        public WindowBaseImpl(GtkWindow gtkWidget)
         {
             
             GtkWidget = gtkWidget;
@@ -318,12 +318,13 @@ namespace Avalonia.Gtk3
                 Native.GtkWindowGetSize(GtkWidget, out w, out h);
                 return new Size(w, h);
             }
-            set
-            {
-                if (GtkWidget.IsClosed)
-                    return;
-                Native.GtkWindowResize(GtkWidget, (int)value.Width, (int)value.Height);
-            }
+        }
+
+        public void Resize(Size value)
+        {
+            if (GtkWidget.IsClosed)
+                return;
+            Native.GtkWindowResize(GtkWidget, (int)value.Width, (int)value.Height);
         }
 
         public Point Position

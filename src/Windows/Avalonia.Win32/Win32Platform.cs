@@ -187,7 +187,9 @@ namespace Avalonia.Win32
 #if NETSTANDARD
             throw new NotSupportedException();
 #else
-            return new EmbeddedWindowImpl();
+            var embedded = new EmbeddedWindowImpl();
+            embedded.Show();
+            return embedded;
 #endif
         }
 

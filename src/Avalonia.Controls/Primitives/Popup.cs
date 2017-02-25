@@ -214,7 +214,9 @@ namespace Avalonia.Controls.Primitives
 
             if (_topLevel != null)
             {
-                _topLevel.Deactivated += TopLevelDeactivated;
+                var window = _topLevel as Window;
+                if (window != null)
+                    window.Deactivated += WindowDeactivated;
                 _topLevel.AddHandler(PointerPressedEvent, PointerPressedOutside, RoutingStrategies.Tunnel);
                 _nonClientListener = InputManager.Instance.Process.Subscribe(ListenForNonClientClick);
             }
@@ -240,7 +242,9 @@ namespace Avalonia.Controls.Primitives
                 if (_topLevel != null)
                 {
                     _topLevel.RemoveHandler(PointerPressedEvent, PointerPressedOutside);
-                    _topLevel.Deactivated -= TopLevelDeactivated;
+                    var window = _topLevel as Window;
+                    if (window != null)
+                        window.Deactivated -= WindowDeactivated;
                     _nonClientListener?.Dispose();
                     _nonClientListener = null;
                 }
@@ -382,7 +386,7 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        private void TopLevelDeactivated(object sender, EventArgs e)
+        private void WindowDeactivated(object sender, EventArgs e)
         {
             if (!StaysOpen)
             {

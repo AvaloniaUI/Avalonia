@@ -101,6 +101,7 @@
     <Compile Include="Presenters\ItemsPresenterTests_Virtualization_Simple.cs" />
     <Compile Include="Presenters\ItemsPresenterTests_Virtualization.cs" />
     <Compile Include="TextBoxTests_DataValidation.cs" />
+    <Compile Include="WindowBaseTests.cs" />
     <Compile Include="UserControlTests.cs" />
     <Compile Include="DockPanelTests.cs" />
     <Compile Include="EnumerableExtensions.cs" />

@@ -14,7 +14,7 @@ namespace Avalonia.Skia
 
         public virtual IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
         {
-            return new DrawingContextImpl(Surface.Canvas);
+            return new DrawingContextImpl(Surface.Canvas, visualBrushRenderer);
         }
 
         public void Dispose()

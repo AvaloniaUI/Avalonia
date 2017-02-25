@@ -15,10 +15,10 @@ namespace Avalonia.Gtk
 {
     using Gtk = global::Gtk;
 
-    public abstract class WindowImplBase : IWindowImpl
+    public abstract class TopLevelImpl : ITopLevelImpl
     {
         private IInputRoot _inputRoot;
-        protected Gtk.Widget _window;
+        private Gtk.Widget _widget;
         private FramebufferManager _framebuffer;
 
         private Gtk.IMContext _imContext;
@@ -27,46 +27,43 @@ namespace Avalonia.Gtk
 
         private static readonly Gdk.Cursor DefaultCursor = new Gdk.Cursor(CursorType.LeftPtr);
 
-        protected WindowImplBase(Gtk.Widget window)
+        protected TopLevelImpl(Gtk.Widget window)
         {
-            _window = window;
+            _widget = window;
             _framebuffer = new FramebufferManager(this);
             Init();
         }
 
         void Init()
         {
-            Handle = _window as IPlatformHandle;
-            _window.Events = EventMask.AllEventsMask;
+            Handle = _widget as IPlatformHandle;
+            _widget.Events = EventMask.AllEventsMask;
             _imContext = new Gtk.IMMulticontext();
             _imContext.Commit += ImContext_Commit;
-            _window.Realized += OnRealized;
-            _window.AppPaintable = true;
-            _window.DoubleBuffered = false;
-            _window.Realize();
-            _window.ButtonPressEvent += OnButtonPressEvent;
-            _window.ButtonReleaseEvent += OnButtonReleaseEvent;
-            _window.ScrollEvent += OnScrollEvent;
-            _window.Destroyed += OnDestroyed;
-            _window.KeyPressEvent += OnKeyPressEvent;
-            _window.KeyReleaseEvent += OnKeyReleaseEvent;
-            _window.ExposeEvent += OnExposeEvent;
-            _window.MotionNotifyEvent += OnMotionNotifyEvent;
+            _widget.Realized += OnRealized;
+            _widget.Realize();
+            _widget.ButtonPressEvent += OnButtonPressEvent;
+            _widget.ButtonReleaseEvent += OnButtonReleaseEvent;
+            _widget.ScrollEvent += OnScrollEvent;
+            _widget.Destroyed += OnDestroyed;
+            _widget.KeyPressEvent += OnKeyPressEvent;
+            _widget.KeyReleaseEvent += OnKeyReleaseEvent;
+            _widget.ExposeEvent += OnExposeEvent;
+            _widget.MotionNotifyEvent += OnMotionNotifyEvent;
 
             
         }
 
         public IPlatformHandle Handle { get; private set; }
-        public Gtk.Widget Widget => _window;
+        public Gtk.Widget Widget => _widget;
         public Gdk.Drawable CurrentDrawable { get; private set; }
 
         void OnRealized (object sender, EventArgs eventArgs)
         {
-            _imContext.ClientWindow = _window.GdkWindow;
+            _imContext.ClientWindow = _widget.GdkWindow;
         }
 
-        public abstract Size ClientSize { get; set; }
-
+        public abstract Size ClientSize { get; }
 
         public Size MaxClientSize
         {
@@ -74,7 +71,7 @@ namespace Avalonia.Gtk
             {
                 // TODO: This should take into account things such as taskbar and window border
                 // thickness etc.
-                return new Size(_window.Screen.Width, _window.Screen.Height);
+                return new Size(_widget.Screen.Width, _widget.Screen.Height);
             }
         }
 
@@ -82,7 +79,7 @@ namespace Avalonia.Gtk
         {
             get
             {
-                switch (_window.GdkWindow.State)
+                switch (_widget.GdkWindow.State)
                 {
                     case Gdk.WindowState.Iconified:
                         return Controls.WindowState.Minimized;
@@ -98,14 +95,14 @@ namespace Avalonia.Gtk
                 switch (value)
                 {
                     case Controls.WindowState.Minimized:
-                        _window.GdkWindow.Iconify();
+                        _widget.GdkWindow.Iconify();
                         break;
                     case Controls.WindowState.Maximized:
-                        _window.GdkWindow.Maximize();
+                        _widget.GdkWindow.Maximize();
                         break;
                     case Controls.WindowState.Normal:
-                        _window.GdkWindow.Deiconify();
-                        _window.GdkWindow.Unmaximize();
+                        _widget.GdkWindow.Deiconify();
+                        _widget.GdkWindow.Unmaximize();
                         break;
                 }
             }
@@ -143,15 +140,15 @@ namespace Avalonia.Gtk
 
         public void Invalidate(Rect rect)
         {
-            if (_window?.GdkWindow != null)
-                _window.GdkWindow.InvalidateRect(
+            if (_widget?.GdkWindow != null)
+                _widget.GdkWindow.InvalidateRect(
                     new Rectangle((int) rect.X, (int) rect.Y, (int) rect.Width, (int) rect.Height), true);
         }
 
         public Point PointToClient(Point point)
         {
             int x, y;
-            _window.GdkWindow.GetDeskrelativeOrigin(out x, out y);
+            _widget.GdkWindow.GetDeskrelativeOrigin(out x, out y);
 
             return new Point(point.X - x, point.Y - y);
         }
@@ -159,7 +156,7 @@ namespace Avalonia.Gtk
         public Point PointToScreen(Point point)
         {
             int x, y;
-            _window.GdkWindow.GetDeskrelativeOrigin(out x, out y);
+            _widget.GdkWindow.GetDeskrelativeOrigin(out x, out y);
             return new Point(point.X + x, point.Y + y);
         }
 
@@ -168,28 +165,15 @@ namespace Avalonia.Gtk
             _inputRoot = inputRoot;
         }
 
-        public abstract void SetTitle(string title);
-        public abstract IDisposable ShowDialog();
-        public abstract void SetSystemDecorations(bool enabled);
-        public abstract void SetIcon(IWindowIconImpl icon);
-
 
         public void SetCursor(IPlatformHandle cursor)
         {
-            _window.GdkWindow.Cursor = cursor != null ? new Gdk.Cursor(cursor.Handle) : DefaultCursor;
+            _widget.GdkWindow.Cursor = cursor != null ? new Gdk.Cursor(cursor.Handle) : DefaultCursor;
         }
 
-        public void Show() => _window.Show();
+        public void Show() => _widget.Show();
 
-        public void Hide() => _window.Hide();
-        public abstract void BeginMoveDrag();
-        public abstract void BeginResizeDrag(WindowEdge edge);
-        public abstract Point Position { get; set; }
-
-        void ITopLevelImpl.Activate()
-        {
-            _window.Activate();
-        }
+        public void Hide() => _widget.Hide();
 
         private static InputModifiers GetModifierKeys(ModifierType state)
         {
@@ -319,9 +303,9 @@ namespace Avalonia.Gtk
         public void Dispose()
         {
             _framebuffer.Dispose();
-            _window.Hide();
-            _window.Dispose();
-            _window = null;
+            _widget.Hide();
+            _widget.Dispose();
+            _widget = null;
         }
     }
 }

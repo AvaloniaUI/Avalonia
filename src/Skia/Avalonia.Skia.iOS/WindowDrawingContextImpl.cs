@@ -8,7 +8,7 @@ namespace Avalonia.Skia
         WindowRenderTarget _target;
 
         public WindowDrawingContextImpl(WindowRenderTarget target)
-            : base(target.Surface.Canvas)
+            : base(target.Surface.Canvas, null)
         {
             _target = target;
         }

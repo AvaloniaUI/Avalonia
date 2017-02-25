@@ -18,12 +18,12 @@ using Avalonia.VisualTree;
 namespace Avalonia.Controls
 {
     /// <summary>
-    /// Base class for top-level windows.
+    /// Base class for top-level widgets.
     /// </summary>
     /// <remarks>
-    /// This class acts as a base for top level windows such as <see cref="Window"/> and
-    /// <see cref="PopupRoot"/>. It handles scheduling layout, styling and rendering as well as
-    /// tracking the window <see cref="ClientSize"/> and <see cref="IsActive"/> state.
+    /// This class acts as a base for top level widget.
+    /// It handles scheduling layout, styling and rendering as well as
+    /// tracking the widget's <see cref="ClientSize"/>.
     /// </remarks>
     public abstract class TopLevel : ContentControl, IInputRoot, ILayoutRoot, IRenderRoot, ICloseable, IStyleRoot
     {
@@ -32,12 +32,6 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly DirectProperty<TopLevel, Size> ClientSizeProperty =
             AvaloniaProperty.RegisterDirect<TopLevel, Size>(nameof(ClientSize), o => o.ClientSize);
-
-        /// <summary>
-        /// Defines the <see cref="IsActive"/> property.
-        /// </summary>
-        public static readonly DirectProperty<TopLevel, bool> IsActiveProperty =
-            AvaloniaProperty.RegisterDirect<TopLevel, bool>(nameof(IsActive), o => o.IsActive);
 
         /// <summary>
         /// Defines the <see cref="IInputRoot.PointerOverElement"/> property.
@@ -51,7 +45,6 @@ namespace Avalonia.Controls
         private readonly IApplicationLifecycle _applicationLifecycle;
         private readonly IPlatformRenderInterface _renderInterface;
         private Size _clientSize;
-        private bool _isActive;
 
         /// <summary>
         /// Initializes static members of the <see cref="TopLevel"/> class.
@@ -101,21 +94,20 @@ namespace Avalonia.Controls
             Renderer = rendererFactory?.CreateRenderer(this, renderLoop);
 
             PlatformImpl.SetInputRoot(this);
-            PlatformImpl.Activated = HandleActivated;
-            PlatformImpl.Deactivated = HandleDeactivated;
+
             PlatformImpl.Closed = HandleClosed;
             PlatformImpl.Input = HandleInput;
             PlatformImpl.Paint = Renderer != null ? (Action<Rect>)Renderer.Render : null;
             PlatformImpl.Resized = HandleResized;
             PlatformImpl.ScalingChanged = HandleScalingChanged;
-            PlatformImpl.PositionChanged = HandlePositionChanged;
+            
 
             _keyboardNavigationHandler?.SetOwner(this);
             _accessKeyHandler?.SetOwner(this);
             styler?.ApplyStyles(this);
 
             ClientSize = PlatformImpl.ClientSize;
-            this.GetObservable(ClientSizeProperty).Skip(1).Subscribe(x => PlatformImpl.ClientSize = x);
+            
             this.GetObservable(PointerOverElementProperty)
                 .Select(
                     x => (x as InputElement)?.GetObservable(CursorProperty) ?? Observable.Empty<Cursor>())
@@ -128,24 +120,9 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Fired when the window is activated.
-        /// </summary>
-        public event EventHandler Activated;
-
-        /// <summary>
         /// Fired when the window is closed.
         /// </summary>
         public event EventHandler Closed;
-
-        /// <summary>
-        /// Fired when the window is deactivated.
-        /// </summary>
-        public event EventHandler Deactivated;
-
-        /// <summary>
-        /// Fired when the window position is changed.
-        /// </summary>
-        public event EventHandler<PointEventArgs> PositionChanged;
 
         /// <summary>
         /// Gets or sets the client size of the window.
@@ -153,25 +130,7 @@ namespace Avalonia.Controls
         public Size ClientSize
         {
             get { return _clientSize; }
-            private set { SetAndRaise(ClientSizeProperty, ref _clientSize, value); }
-        }
-
-        /// <summary>
-        /// Gets a value that indicates whether the window is active.
-        /// </summary>
-        public bool IsActive
-        {
-            get { return _isActive; }
-            private set { SetAndRaise(IsActiveProperty, ref _isActive, value); }
-        }
-
-        /// <summary>
-        /// Gets or sets the window position in screen coordinates.
-        /// </summary>
-        public Point Position
-        {
-            get { return PlatformImpl.Position; }
-            set { PlatformImpl.Position = value; }
+            protected set { SetAndRaise(ClientSizeProperty, ref _clientSize, value); }
         }
 
         /// <summary>
@@ -229,15 +188,6 @@ namespace Avalonia.Controls
             get { return AvaloniaLocator.Current.GetService<IGlobalStyles>(); }
         }
 
-        /// <summary>
-        /// Whether an auto-size operation is in progress.
-        /// </summary>
-        protected bool AutoSizing
-        {
-            get;
-            private set;
-        }
-
         /// <inheritdoc/>
         IRenderTarget IRenderRoot.CreateRenderTarget(IVisualBrushRenderer visualBrushRenderer)
         {
@@ -262,43 +212,6 @@ namespace Avalonia.Controls
             return PlatformImpl.PointToScreen(p);
         }
 
-        /// <summary>
-        /// Activates the window.
-        /// </summary>
-        public void Activate()
-        {
-            PlatformImpl.Activate();
-        }
-
-        /// <summary>
-        /// Begins an auto-resize operation.
-        /// </summary>
-        /// <returns>A disposable used to finish the operation.</returns>
-        /// <remarks>
-        /// When an auto-resize operation is in progress any resize events received will not be
-        /// cause the new size to be written to the <see cref="Layoutable.Width"/> and
-        /// <see cref="Layoutable.Height"/> properties.
-        /// </remarks>
-        protected IDisposable BeginAutoSizing()
-        {
-            AutoSizing = true;
-            return Disposable.Create(() => AutoSizing = false);
-        }
-
-        /// <summary>
-        /// Carries out the arrange pass of the window.
-        /// </summary>
-        /// <param name="finalSize">The final window size.</param>
-        /// <returns>The <paramref name="finalSize"/> parameter unchanged.</returns>
-        protected override Size ArrangeOverride(Size finalSize)
-        {
-            using (BeginAutoSizing())
-            {
-                PlatformImpl.ClientSize = finalSize;
-            }
-
-            return base.ArrangeOverride(PlatformImpl.ClientSize);
-        }
 
         /// <summary>
         /// Handles a resize notification from <see cref="ITopLevelImpl.Resized"/>.
@@ -306,13 +219,9 @@ namespace Avalonia.Controls
         /// <param name="clientSize">The new client size.</param>
         protected virtual void HandleResized(Size clientSize)
         {
-            if (!AutoSizing)
-            {
-                Width = clientSize.Width;
-                Height = clientSize.Height;
-            }
-
             ClientSize = clientSize;
+            Width = clientSize.Width;
+            Height = clientSize.Height;
             LayoutManager.Instance.ExecuteLayoutPass();
             PlatformImpl.Invalidate(new Rect(clientSize));
         }
@@ -363,23 +272,6 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Handles an activated notification from <see cref="ITopLevelImpl.Activated"/>.
-        /// </summary>
-        private void HandleActivated()
-        {
-            Activated?.Invoke(this, EventArgs.Empty);
-
-            var scope = this as IFocusScope;
-
-            if (scope != null)
-            {
-                FocusManager.Instance.SetFocusScope(scope);
-            }
-
-            IsActive = true;
-        }
-
-        /// <summary>
         /// Handles a closed notification from <see cref="ITopLevelImpl.Closed"/>.
         /// </summary>
         private void HandleClosed()
@@ -404,16 +296,6 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Handles a deactivated notification from <see cref="ITopLevelImpl.Deactivated"/>.
-        /// </summary>
-        private void HandleDeactivated()
-        {
-            IsActive = false;
-
-            Deactivated?.Invoke(this, EventArgs.Empty);
-        }
-
-        /// <summary>
         /// Handles input from <see cref="ITopLevelImpl.Input"/>.
         /// </summary>
         /// <param name="e">The event args.</param>
@@ -421,26 +303,5 @@ namespace Avalonia.Controls
         {
             _inputManager.ProcessInput(e);
         }
-
-        /// <summary>
-        /// Handles a window position change notification from 
-        /// <see cref="ITopLevelImpl.PositionChanged"/>.
-        /// </summary>
-        /// <param name="pos">The window position.</param>
-        private void HandlePositionChanged(Point pos)
-        {
-            PositionChanged?.Invoke(this, new PointEventArgs(pos));
-        }
-
-        /// <summary>
-        /// Starts moving a window with left button being held. Should be called from left mouse button press event handler
-        /// </summary>
-        public void BeginMoveDrag() => PlatformImpl.BeginMoveDrag();
-
-        /// <summary>
-        /// Starts resizing a window. This function is used if an application has window resizing controls. 
-        /// Should be called from left mouse button press event handler
-        /// </summary>
-        public void BeginResizeDrag(WindowEdge edge) => PlatformImpl.BeginResizeDrag(edge);
     }
 }

@@ -5,7 +5,7 @@ using Avalonia.Platform;
 
 namespace Avalonia.Gtk3
 {
-    class WindowImpl : TopLevelImpl, IWindowImpl
+    class WindowImpl : WindowBaseImpl, IWindowImpl
     {
         public WindowImpl() : base(Native.GtkWindowNew(GtkWindowType.TopLevel))
         {
