@@ -385,8 +385,10 @@ namespace Avalonia.Base.UnitTests
             }
         }
 
-        [Fact]
-        public void SetValue_Should_Not_Cause_StackOverflow_And_Have_Correct_Values()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void SetValue_Should_Not_Cause_StackOverflow_And_Have_Correct_Values(bool useXamlBinding)
         {
             var viewModel = new TestStackOverflowViewModel()
             {
@@ -401,12 +403,24 @@ namespace Avalonia.Base.UnitTests
             //    [~~Class1.DoubleValueProperty] = target[~~Class1.DoubleValueProperty]
             //};
 
-            target.Bind(Class1.DoubleValueProperty, new Binding("Value") { Mode = BindingMode.TwoWay, Source = viewModel });
+            target.Bind(Class1.DoubleValueProperty,
+                new Binding("Value") { Mode = BindingMode.TwoWay, Source = viewModel });
 
-            var child = new Class1()
+            var child = new Class1();
+
+            if (useXamlBinding)
             {
-                [~~Class1.DoubleValueProperty] = target[~~Class1.DoubleValueProperty]
-            };
+                child.Bind(Class1.DoubleValueProperty,
+                    new Binding("DoubleValue")
+                    {
+                        Mode = BindingMode.TwoWay,
+                        Source = target
+                    });
+            }
+            else
+            {
+                child[!!Class1.DoubleValueProperty] = target[!!Class1.DoubleValueProperty];
+            }
 
             Assert.Equal(1, viewModel.SetterInvokedCount);
 
