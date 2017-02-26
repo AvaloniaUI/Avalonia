@@ -7,6 +7,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Markup.Xaml.Data;
+using Avalonia.Styling;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Primitives
@@ -91,8 +92,10 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.Throws<ArgumentException>(() => target.Value = double.NegativeInfinity);
         }
 
-        [Fact]
-        public void SetValue_Should_Not_Cause_StackOverflow()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void SetValue_Should_Not_Cause_StackOverflow(bool useXamlBinding)
         {
             var viewModel = new TestStackOverflowViewModel()
             {
@@ -105,16 +108,32 @@ namespace Avalonia.Controls.UnitTests.Primitives
             {
                 Template = new FuncControlTemplate<RangeBase>(c =>
                 {
-                    return track = new Track()
+                    track = new Track()
                     {
                         Width = 100,
                         Orientation = Orientation.Horizontal,
                         [~~Track.MinimumProperty] = c[~~RangeBase.MinimumProperty],
                         [~~Track.MaximumProperty] = c[~~RangeBase.MaximumProperty],
-                        [~~Track.ValueProperty] = c[~~RangeBase.ValueProperty],
+
                         Name = "PART_Track",
                         Thumb = new Thumb()
                     };
+
+                    if (useXamlBinding)
+                    {
+                        track.Bind(Track.ValueProperty, new Binding("Value")
+                                                    {
+                                                        Mode = BindingMode.TwoWay,
+                                                        Source = c,
+                                                        Priority = BindingPriority.Style
+                                                    });
+                    }
+                    else
+                    {
+                        track[~~Track.ValueProperty] = c[~~RangeBase.ValueProperty];
+                    }
+
+                    return track;
                 }),
                 Minimum = 0,
                 Maximum = 100,
