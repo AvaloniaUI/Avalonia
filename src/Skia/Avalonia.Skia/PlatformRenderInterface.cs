@@ -52,6 +52,16 @@ namespace Avalonia.Skia
             }
         }
 
+        public IBitmapImpl LoadBitmap(PixelFormat format, IntPtr data, int width, int height, int stride)
+        {
+            using (var tmp = new SKBitmap())
+            {
+                tmp.InstallPixels(new SKImageInfo(width, height, format.ToSkColorType(), SKAlphaType.Premul)
+                    , data, stride);
+                return new BitmapImpl(tmp.Copy());
+            }
+        }
+
         public IRenderer CreateRenderer(IRenderRoot root, IRenderLoop renderLoop)
         {
             return new Renderer(root, renderLoop);
@@ -73,6 +83,11 @@ namespace Avalonia.Skia
             if (fb == null)
                 throw new Exception("Skia backend currently only supports framebuffer render target");
             return new FramebufferRenderTarget(fb);
+        }
+
+        public IWritableBitmapImpl CreateWritableBitmap(int width, int height, PixelFormat? format = null)
+        {
+            return new BitmapImpl(width, height, format);
         }
     }
 }

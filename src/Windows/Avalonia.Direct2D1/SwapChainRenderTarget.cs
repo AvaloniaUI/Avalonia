@@ -9,6 +9,7 @@ using Avalonia.Win32.Interop;
 using SharpDX;
 using SharpDX.Direct2D1;
 using SharpDX.DXGI;
+using PixelFormat = SharpDX.Direct2D1.PixelFormat;
 using AlphaMode = SharpDX.Direct2D1.AlphaMode;
 using Device = SharpDX.Direct2D1.Device;
 using Factory = SharpDX.Direct2D1.Factory;

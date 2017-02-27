@@ -10,6 +10,7 @@ using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform.Surfaces;
+using Avalonia.Direct2D1.Media.Imaging;
 using Avalonia.Rendering;
 
 namespace Avalonia
@@ -119,6 +120,11 @@ namespace Avalonia.Direct2D1
             return new RenderTargetBitmapImpl(s_imagingFactory, s_d2D1Device.Factory, width, height);
         }
 
+        public IWritableBitmapImpl CreateWritableBitmap(int width, int height, PixelFormat? format = null)
+        {
+            return new WritableWicBitmapImpl(s_imagingFactory, width, height, format);
+        }
+
         public IStreamGeometryImpl CreateStreamGeometry()
         {
             return new StreamGeometryImpl();
@@ -132,6 +138,11 @@ namespace Avalonia.Direct2D1
         public IBitmapImpl LoadBitmap(Stream stream)
         {
             return new WicBitmapImpl(s_imagingFactory, stream);
+        }
+
+        public IBitmapImpl LoadBitmap(PixelFormat format, IntPtr data, int width, int height, int stride)
+        {
+            return new WicBitmapImpl(s_imagingFactory, format, data, width, height, stride);
         }
     }
 }

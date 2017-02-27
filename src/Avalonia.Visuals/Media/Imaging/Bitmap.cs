@@ -42,6 +42,20 @@ namespace Avalonia.Media.Imaging
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="Bitmap"/> class.
+        /// </summary>
+        /// <param name="format">Pixel format</param>
+        /// <param name="data">Pointer to source bytes</param>
+        /// <param name="width">Bitmap width</param>
+        /// <param name="height">Bitmap height</param>
+        /// <param name="stride">Bytes per row</param>
+        public Bitmap(PixelFormat format, IntPtr data, int width, int height, int stride)
+        {
+            PlatformImpl = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>()
+                .LoadBitmap(format, data, width, height, stride);
+        }
+
+        /// <summary>
         /// Gets the width of the bitmap, in pixels.
         /// </summary>
         public int PixelWidth => PlatformImpl.PixelWidth;
