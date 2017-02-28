@@ -10,6 +10,7 @@ using Avalonia.VisualTree;
 using System.Collections.Generic;
 using System.IO;
 using Avalonia.Media.Immutable;
+using System.Threading;
 
 namespace Avalonia.Rendering
 {
@@ -27,7 +28,7 @@ namespace Avalonia.Rendering
         private DirtyVisuals _dirty;
         private IRenderTargetBitmapImpl _overlay;
         private bool _updateQueued;
-        private bool _rendering;
+        private object _rendering = new object();
         private int _lastSceneId = -1;
         private DisplayDirtyRects _dirtyRectsDisplay = new DisplayDirtyRects();
         private IDrawOperation _currentDraw;
@@ -129,36 +130,25 @@ namespace Avalonia.Rendering
 
         private void Render(Scene scene)
         {
-            if (!_rendering)
+            _dirtyRectsDisplay.Tick();
+
+            if (scene.Size != Size.Empty)
             {
-                try
+                if (scene.Id != _lastSceneId)
                 {
-                    _rendering = true;
-                    _dirtyRectsDisplay.Tick();
+                    _layers.Update(scene);
+                    RenderToLayers(scene);
 
-                    if (scene.Size != Size.Empty)
+                    if (DebugFramesPath != null)
                     {
-                        if (scene.Id != _lastSceneId)
-                        {
-                            _layers.Update(scene);
-                            RenderToLayers(scene);
-
-                            if (DebugFramesPath != null)
-                            {
-                                SaveDebugFrames(scene.Id);
-                            }
-
-                            _lastSceneId = scene.Id;
-                        }
-
-                        RenderOverlay(scene);
-                        RenderComposite(scene);
+                        SaveDebugFrames(scene.Id);
                     }
+
+                    _lastSceneId = scene.Id;
                 }
-                finally
-                {
-                    _rendering = false;
-                }
+
+                RenderOverlay(scene);
+                RenderComposite(scene);
             }
         }
 
@@ -325,10 +315,7 @@ namespace Avalonia.Rendering
                     }
                 }
 
-                lock (_scene)
-                {
-                    _scene = scene;
-                }
+                Interlocked.Exchange(ref _scene, scene);
 
                 _dirty.Clear();
                 (_root as IRenderRoot)?.Invalidate(new Rect(scene.Size));
@@ -341,29 +328,26 @@ namespace Avalonia.Rendering
 
         private void OnRenderLoopTick(object sender, EventArgs e)
         {
-            if (_rendering)
+            if (Monitor.TryEnter(_rendering))
             {
-                return;
-            }
+                try
+                {
+                    if (!_updateQueued && (_dirty == null || _dirty.Count > 0))
+                    {
+                        _updateQueued = true;
+                        _dispatcher.InvokeAsync(UpdateScene, DispatcherPriority.Render);
+                    }
 
-            if (!_updateQueued && (_dirty == null || _dirty.Count > 0))
-            {
-                _updateQueued = true;
-                _dispatcher.InvokeAsync(UpdateScene, DispatcherPriority.Render);
+                    Scene scene = null;
+                    Interlocked.Exchange(ref scene, _scene);
+                    Render(scene);
+                }
+                catch { }
+                finally
+                {
+                    Monitor.Exit(_rendering);
+                }
             }
-
-            Scene scene;
-
-            lock (_scene)
-            {
-                scene = _scene;
-            }
-
-            try
-            {
-                Render(scene);
-            }
-            catch { }
         }
 
         private IRenderTargetBitmapImpl GetOverlay(Size size, double scaling)
