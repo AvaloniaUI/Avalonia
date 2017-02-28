@@ -30,6 +30,11 @@ namespace Avalonia.Rendering.SceneGraph
         Matrix Transform { get; }
 
         /// <summary>
+        /// Gets the bounds for the node's geometry in global coordinates.
+        /// </summary>
+        Rect Bounds { get; }
+
+        /// <summary>
         /// Gets the clip bounds for the node in global coordinates.
         /// </summary>
         /// <remarks>
