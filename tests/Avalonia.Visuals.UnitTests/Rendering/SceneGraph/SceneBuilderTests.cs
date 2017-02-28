@@ -415,6 +415,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 Assert.Equal(1, borderNode.DrawOperations.Count);
 
                 Assert.Null(result.FindNode(decorator));
+                Assert.Equal(new Rect(0, 0, 100, 100), result.Layers.Single().Dirty.Single());
             }
         }
 
@@ -458,6 +459,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
 
                 Assert.Null(result.FindNode(border));
                 Assert.Null(result.FindNode(canvas));
+                Assert.Equal(new Rect(0, 0, 100, 100), result.Layers.Single().Dirty.Single());
             }
         }
 

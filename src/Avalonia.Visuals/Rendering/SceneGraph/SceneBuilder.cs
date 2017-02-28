@@ -256,15 +256,12 @@ namespace Avalonia.Rendering.SceneGraph
             scene.Remove(node);
             node.SubTreeUpdated = true;
 
+            scene.Layers[node.LayerRoot].Dirty.Add(node.Bounds);
+
             foreach (VisualNode child in node.Children)
             {
                 var geometry = child as IDrawOperation;
                 var visual = child as VisualNode;
-
-                if (geometry != null)
-                {
-                    scene.Layers[child.LayerRoot].Dirty.Add(geometry.Bounds);
-                }
 
                 if (visual != null)
                 {
