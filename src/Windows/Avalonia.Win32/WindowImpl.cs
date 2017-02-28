@@ -575,7 +575,7 @@ namespace Avalonia.Win32
                         UnmanagedMethods.RECT r;
                         UnmanagedMethods.GetUpdateRect(_hwnd, out r, false);
                         var f = Scaling;
-                        //Paint?.Invoke(new Rect(r.left / f, r.top / f, (r.right - r.left) / f, (r.bottom - r.top) / f));
+                        Paint?.Invoke(new Rect(r.left / f, r.top / f, (r.right - r.left) / f, (r.bottom - r.top) / f));
                         UnmanagedMethods.EndPaint(_hwnd, ref ps);
                     }
 

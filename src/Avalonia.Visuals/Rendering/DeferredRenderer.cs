@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Diagnostics;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
@@ -101,10 +100,12 @@ namespace Avalonia.Rendering
             return _scene.HitTest(p, filter);
         }
 
-        public void Render(Rect rect)
+        public void Paint(Rect rect)
         {
-            UpdateScene();
-            Render(_scene);
+        }
+
+        public void Resized(Size size)
+        {
         }
 
         Size IVisualBrushRenderer.GetRenderTargetSize(IVisualBrush brush)

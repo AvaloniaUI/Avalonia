@@ -40,6 +40,14 @@ namespace Avalonia.Rendering
         public bool DrawFps { get; set; }
         public bool DrawDirtyRects { get; set; }
 
+        public void Paint(Rect rect)
+        {
+        }
+
+        public void Resized(Size size)
+        {
+        }
+
         public static void Render(IVisual visual, IRenderTarget target)
         {
             using (var renderer = new ImmediateRenderer(visual))
@@ -73,10 +81,6 @@ namespace Avalonia.Rendering
         public IEnumerable<IVisual> HitTest(Point p, Func<IVisual, bool> filter)
         {
             return HitTest(_root, p, filter);
-        }
-
-        public void Render(Rect rect)
-        {
         }
 
         Size IVisualBrushRenderer.GetRenderTargetSize(IVisualBrush brush)
