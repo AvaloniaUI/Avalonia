@@ -29,6 +29,8 @@ namespace Avalonia.Controls.UnitTests
             {
                 var impl = Mock.Of<IWindowBaseImpl>(x => x.Scaling == 1);
 
+                Mock.Get(impl).Setup(x => x.Resize(It.IsAny<Size>())).Callback(() => { });
+
                 var target = new TestWindowBase(impl)
                 {
                     Template = CreateTemplate(),
@@ -36,7 +38,8 @@ namespace Avalonia.Controls.UnitTests
                     {
                         Width = 321,
                         Height = 432,
-                    }
+                    },
+                    IsVisible = true,
                 };
 
                 LayoutManager.Instance.ExecuteInitialLayoutPass(target);
