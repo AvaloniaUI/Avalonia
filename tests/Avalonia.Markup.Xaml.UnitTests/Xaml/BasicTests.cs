@@ -66,6 +66,36 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         }
 
         [Fact]
+        public void Named_Control_Is_Added_To_NameScope_Simple()
+        {
+            var xaml = @"
+<UserControl xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Button Name='button'>Foo</Button>
+</UserControl>";
+            var loader = new AvaloniaXamlLoader();
+            var control = (UserControl)loader.Load(xaml);
+            var button = control.FindControl<Button>("button");
+
+            Assert.Equal("Foo", button.Content);
+        }
+
+        [Fact]
+        public void Named_x_Control_Is_Added_To_NameScope_Simple()
+        {
+            var xaml = @"
+<UserControl xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Button x:Name='button'>Foo</Button>
+</UserControl>";
+            var loader = new AvaloniaXamlLoader();
+            var control = (UserControl)loader.Load(xaml);
+            var button = control.FindControl<Button>("button");
+
+            Assert.Equal("Foo", button.Content);
+        }
+
+        [Fact]
         public void Named_Control_Is_Added_To_NameScope()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
