@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Avalonia.Markup.Xaml.Context;
@@ -30,7 +29,7 @@ namespace Avalonia.Markup.Xaml.PortableXaml
                     type = base.GetXamlType(xamlNamespace, name, typeArguments);
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 //TODO: log or wrap exception
                 throw e;
@@ -66,5 +65,15 @@ namespace Avalonia.Markup.Xaml.PortableXaml
 
         protected override ICustomAttributeProvider GetCustomAttributeProvider(MemberInfo member)
                                     => new AvaloniaMemberAttributeProvider(member);
+
+        public override XamlType GetXamlType(Type type)
+        {
+            if (type.FullName.StartsWith("Avalonia."))
+            {
+                return new AvaloniaXamlType(type, this);
+            }
+
+            return base.GetXamlType(type);
+        }
     }
 }

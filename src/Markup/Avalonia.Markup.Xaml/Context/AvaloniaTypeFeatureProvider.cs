@@ -23,6 +23,7 @@ using OmniMetadata = OmniXaml.Typing.Metadata;
 
 namespace Avalonia.Markup.Xaml.Context
 {
+#if OMNIXAML
     public class AvaloniaTypeFeatureProvider : ITypeFeatureProvider
     {
         private Dictionary<Type, OmniMetadata> _metadata =
@@ -177,4 +178,5 @@ namespace Avalonia.Markup.Xaml.Context
             RegisterTypeConverter(typeof(FontWeight), new FontWeightConverter());
         }
     }
+#endif
 }

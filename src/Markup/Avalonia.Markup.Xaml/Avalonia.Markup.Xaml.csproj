@@ -44,6 +44,7 @@
     <Compile Include="AvaloniaXamlLoader.cs" />
     <Compile Include="PortableXaml\AvaloniaMemberAttributeProvider.cs" />
     <Compile Include="PortableXaml\AvaloniaNameScope.cs" />
+    <Compile Include="PortableXaml\AvaloniaDefaultTypeConverters.cs" />
     <Compile Include="PortableXaml\AvaloniaXamlObjectWriter.cs" />
     <Compile Include="PortableXaml\AvaloniaRuntimeTypeProvider.cs" />
     <Compile Include="PortableXaml\AvaloniaXamlSchemaContext.cs" />
@@ -274,6 +275,8 @@
     <Compile Include="Parsers\SelectorGrammar.cs" />
     <Compile Include="Parsers\SelectorParser.cs" />
     <Compile Include="PortableXaml\AvaloniaTypeAttributeProvider.cs" />
+    <Compile Include="PortableXaml\AvaloniaXamlType.cs" />
+    <Compile Include="PortableXaml\TypeDescriptorExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="AvaloniaXamlLoaderOmniXaml.cs" />
     <Compile Include="Styling\StyleInclude.cs" />

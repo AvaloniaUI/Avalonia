@@ -43,6 +43,25 @@ namespace Avalonia.Markup.Xaml.PortableXaml
                          };
                 }
             }
+            else if (attributeType == typeof(TypeConverterAttribute))
+            {
+                var attribs = _type.GetTypeInfo().GetCustomAttributes(attributeType, inherit);
+
+                if (attribs?.Any() != true)
+                {
+                    var convType = AvaloniaDefaultTypeConverters.GetTypeConverter(_type);
+
+                    if (convType != null)
+                    {
+                        return new object[]
+                        {
+                            new TypeConverterAttribute(convType)
+                        };
+                    }
+                }
+
+                return (attribs as object[]) ?? attribs.ToArray();
+            }
 
             var attr = _type.GetTypeInfo().GetCustomAttributes(attributeType, inherit);
             return (attr as object[]) ?? attr.ToArray();
