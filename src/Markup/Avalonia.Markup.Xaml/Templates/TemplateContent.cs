@@ -2,13 +2,38 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System.Collections.Generic;
-using OmniXaml;
-using OmniXaml.ObjectAssembler;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml.Context;
 
 namespace Avalonia.Markup.Xaml.Templates
 {
+#if !OMNIXAML
+    using Portable.Xaml;
+
+    public class TemplateContent
+    {
+        public TemplateContent()
+        {
+        }
+
+        public TemplateContent(XamlReader reader)
+        {
+            List = new XamlNodeList(reader.SchemaContext);
+            XamlServices.Transform(reader, List.Writer);
+        }
+
+        public XamlNodeList List { get; set; }
+
+        public IControl Load()
+        {
+            return (IControl)XamlServices.Load(List.GetReader());
+        }
+    }
+#else
+
+    using OmniXaml;
+    using OmniXaml.ObjectAssembler;
+
     public class TemplateContent
     {
         private readonly IEnumerable<Instruction> nodes;
@@ -34,4 +59,6 @@ namespace Avalonia.Markup.Xaml.Templates
             return (Control)assembler.Result;
         }
     }
+
+#endif
 }

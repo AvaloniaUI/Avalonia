@@ -171,7 +171,7 @@ namespace Avalonia.Markup.Xaml.Context
             RegisterTypeConverter(typeof(SolidColorBrush), new BrushTypeConverter());
             RegisterTypeConverter(typeof(Thickness), new ThicknessTypeConverter());
             RegisterTypeConverter(typeof(TimeSpan), new TimeSpanTypeConverter());
-            RegisterTypeConverter(typeof(Uri), new UriTypeConverter());
+            RegisterTypeConverter(typeof(Uri), new Converters.UriTypeConverter());
             RegisterTypeConverter(typeof(Cursor), new CursorTypeConverter());
             RegisterTypeConverter(typeof(WindowIcon), new IconTypeConverter());
             RegisterTypeConverter(typeof(FontWeight), new FontWeightConverter());

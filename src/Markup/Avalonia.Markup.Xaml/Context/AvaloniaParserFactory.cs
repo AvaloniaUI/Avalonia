@@ -8,6 +8,7 @@ using OmniXaml.Parsers.ProtoParser;
 
 namespace Avalonia.Markup.Xaml.Context
 {
+#if OMNIXAML
     public class AvaloniaParserFactory : IParserFactory
     {
         private readonly IRuntimeTypeSource runtimeTypeSource;
@@ -38,4 +39,5 @@ namespace Avalonia.Markup.Xaml.Context
             return new XmlParser(phaseParserKit);
         }
     }
+#endif
 }

@@ -13,10 +13,14 @@ namespace Avalonia.Markup.Xaml.Templates
     {
         public Type DataType { get; set; }
 
+        //we need content to be object otherwise portable.xaml is crashing
         [Content]
-        public TemplateContent Content { get; set; }
+        [TemplateContent]
+        public object Content { get; set; }
 
-        public bool SupportsRecycling => true;
+        private TemplateContent TemplateContent => (TemplateContent)Content;
+
+        public bool SupportsRecycling { get; set; }
 
         public bool Match(object data)
         {
@@ -30,6 +34,6 @@ namespace Avalonia.Markup.Xaml.Templates
             }
         }
 
-        public IControl Build(object data) => Content.Load();
+        public IControl Build(object data) => TemplateContent.Load();
     }
 }
