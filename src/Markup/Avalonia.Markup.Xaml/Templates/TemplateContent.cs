@@ -26,7 +26,13 @@ namespace Avalonia.Markup.Xaml.Templates
 
         public IControl Load()
         {
-            return (IControl)XamlServices.Load(List.GetReader());
+            //return (IControl)XamlServices.Load(List.GetReader());
+            return (IControl)AvaloniaXamlLoader.LoadFromReader(List.GetReader());
+        }
+
+        public static IControl Load(object templateContent)
+        {
+            return ((TemplateContent)templateContent).Load();
         }
     }
 #else

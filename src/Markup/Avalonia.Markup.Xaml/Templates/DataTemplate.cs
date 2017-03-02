@@ -18,9 +18,7 @@ namespace Avalonia.Markup.Xaml.Templates
         [TemplateContent]
         public object Content { get; set; }
 
-        private TemplateContent TemplateContent => (TemplateContent)Content;
-
-        public bool SupportsRecycling { get; set; }
+        public bool SupportsRecycling { get; set; } = true;
 
         public bool Match(object data)
         {
@@ -34,6 +32,6 @@ namespace Avalonia.Markup.Xaml.Templates
             }
         }
 
-        public IControl Build(object data) => TemplateContent.Load();
+        public IControl Build(object data) => TemplateContent.Load(Content);
     }
 }
