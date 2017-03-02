@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Reflection;
 using Avalonia.Markup.Xaml.Converters;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Styling;
+using Portable.Xaml.ComponentModel;
 
 namespace Avalonia.Markup.Xaml.PortableXaml
 {
@@ -12,6 +14,7 @@ namespace Avalonia.Markup.Xaml.PortableXaml
     {
         private static Dictionary<Type, Type> _defaultConverters = new Dictionary<Type, Type>()
         {
+            //avalonia default converters
             { typeof(IBitmap), typeof(BitmapTypeConverter)},
             { typeof(IBrush), typeof(BrushTypeConverter) },
             //{ typeof(Color), typeof(ColorTypeConverter) },
@@ -31,7 +34,7 @@ namespace Avalonia.Markup.Xaml.PortableXaml
             //{ typeof(RowDefinitions), typeof(RowDefinitionsTypeConverter) },
             //{ typeof(Size), typeof(SizeTypeConverter) },
             { typeof(Selector), typeof(SelectorTypeConverter)},
-            //{ typeof(SolidColorBrush), typeof(BrushTypeConverter) },
+            { typeof(SolidColorBrush), typeof(BrushTypeConverter) },
             //{ typeof(Thickness), typeof(ThicknessTypeConverter) },
             //{ typeof(TimeSpan), typeof(TimeSpanTypeConverter) },
             //{ typeof(Uri), typeof(Converters.UriTypeConverter) },
@@ -44,26 +47,33 @@ namespace Avalonia.Markup.Xaml.PortableXaml
         {
             Type converterType;
 
-            Type curType = type;
-
-            while (curType != null)
+            if (_defaultConverters.TryGetValue(type, out converterType))
             {
-                if (_defaultConverters.TryGetValue(curType, out converterType))
-                {
-                    if (curType != type)
-                    {
-                        _defaultConverters[curType] = converterType;
-                    }
-
-                    return converterType;
-                }
-                else
-                {
-                    _defaultConverters[curType] = null;
-                }
-
-                curType = curType.GetTypeInfo().BaseType;
+                return converterType;
             }
+
+            //TODO: probably a smarter way to handle types
+            //is it needed ??
+            //Type curType = type;
+
+            //while (curType != null)
+            //{
+            //    if (_defaultConverters.TryGetValue(curType, out converterType))
+            //    {
+            //        if (curType != type)
+            //        {
+            //            _defaultConverters[curType] = converterType;
+            //        }
+            //        return converterType;
+            //    }
+            //    else
+            //    {
+            //        _defaultConverters[curType] = null;
+            //    }
+            //    curType = curType.GetTypeInfo().BaseType;
+            //}
+
+
 
             return null;
         }

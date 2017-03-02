@@ -7,6 +7,7 @@ using OmniXaml.TypeConversion;
 
 namespace Avalonia.Markup.Xaml.Converters
 {
+#if OMNIXAML
     public class UriTypeConverter : ITypeConverter
     {
         public bool CanConvertFrom(IValueContext context, Type sourceType)
@@ -29,4 +30,5 @@ namespace Avalonia.Markup.Xaml.Converters
             throw new NotImplementedException();
         }
     }
+#endif
 }
