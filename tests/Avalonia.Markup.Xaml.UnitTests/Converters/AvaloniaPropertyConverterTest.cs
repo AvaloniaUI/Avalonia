@@ -13,6 +13,7 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml.Converters;
 using Avalonia.Styling;
 using Xunit;
+using Portable.Xaml.ComponentModel;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Converters
 {
@@ -55,7 +56,12 @@ namespace Avalonia.Markup.Xaml.UnitTests.Converters
 
             Assert.Equal(AttachedOwner.AttachedProperty, result);
         }
-
+#if !OMNIXAML
+        private ITypeDescriptorContext CreateContext(Style style = null)
+        {
+            return null;
+        }
+#else
         private IValueContext CreateContext(Style style = null)
         {
             var context = new Mock<IValueContext>();
@@ -71,7 +77,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Converters
             typeRepository.Setup(x => x.GetByQualifiedName("AttachedOwner")).Returns(attachedOwnerXamlType);
             return context.Object;
         }
-
+#endif
         private class Class1 : AvaloniaObject, IStyleable
         {
             public static readonly StyledProperty<string> FooProperty =
