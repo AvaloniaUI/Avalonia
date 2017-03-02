@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Avalonia.Markup.Xaml.Context;
@@ -54,11 +55,60 @@ namespace Avalonia.Markup.Xaml.PortableXaml
 
             if (type == null)
             {
-                return null;
+                //let's try the simple types
+                //in Portable xaml xmlns:sys='clr-namespace:System;assembly=mscorlib'
+                //and sys:Double is not resolved
+                return ResolveSimpleTypeName(xmlNamespace, xmlLocalName);
             }
 
             return GetXamlType(type);
         }
+
+        #region Workaround for bug in Portablexaml system types like double,int etc ...
+
+        private static Type[] _simpleTypes = new Type[]
+        {
+            typeof(bool),
+            typeof(byte),
+            typeof(char),
+            typeof(decimal),
+            typeof(double),
+            typeof(Int16),
+            typeof(Int32),
+            typeof(Int64),
+            typeof(float),
+            typeof(string),
+            typeof(TimeSpan),
+            typeof(Uri),
+        };
+
+        private static Dictionary<Tuple<string, string>, XamlType> _simpleXamlTypes;
+
+        private static XamlType ResolveSimpleTypeName(string xmlNamespace, string xmlLocalName)
+        {
+            if (_simpleXamlTypes == null)
+            {
+                _simpleXamlTypes = new Dictionary<Tuple<string, string>, XamlType>();
+
+                foreach (var type in _simpleTypes)
+                {
+                    string asmName = type.GetTypeInfo().Assembly.GetName().Name;
+                    string ns = $"clr-namespace:{type.Namespace};assembly={asmName}";
+                    var xamlType = XamlLanguage.AllTypes.First(t => t.UnderlyingType == type);
+                    _simpleXamlTypes.Add(new Tuple<string, string>(ns, type.Name), xamlType);
+                }
+            }
+
+            XamlType result;
+
+            var key = new Tuple<string, string>(xmlNamespace, xmlLocalName);
+
+            _simpleXamlTypes.TryGetValue(key, out result);
+
+            return result;
+        }
+
+        #endregion Workaround for bug in Portablexaml system types like double,int etc ...
 
         protected override ICustomAttributeProvider GetCustomAttributeProvider(Type type)
                                     => new AvaloniaTypeAttributeProvider(type);
