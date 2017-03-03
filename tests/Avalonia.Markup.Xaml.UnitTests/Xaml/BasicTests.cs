@@ -3,7 +3,10 @@
 
 using System.Linq;
 using Avalonia.Controls;
+using Avalonia.Controls.Presenters;
+using Avalonia.Markup.Xaml.Data;
 using Avalonia.Markup.Xaml.Styling;
+using Avalonia.Markup.Xaml.Templates;
 using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
@@ -186,6 +189,91 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
                 Assert.NotNull(style);
             }
+        }
+
+        [Fact]
+        public void Simple_Xaml_Binding_Is_Operational()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformWrapper
+                                    .With(windowingPlatform: new MockWindowingPlatform())))
+            {
+                var xaml =
+@"<Window xmlns='https://github.com/avaloniaui' Content='{Binding}'/>";
+
+                var target = AvaloniaXamlLoader.Parse<ContentControl>(xaml);
+
+                Assert.Null(target.Content);
+
+                target.DataContext = "Foo";
+
+                Assert.Equal("Foo", target.Content);
+            }
+        }
+
+        [Fact]
+        public void Control_Template_Is_Operational()
+        {
+            var xaml = @"
+<ContentControl xmlns='https://github.com/avaloniaui' 
+                xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <ContentControl.Template>
+        <ControlTemplate>
+            <ContentPresenter Name='PART_ContentPresenter' 
+                        Content='{TemplateBinding Content}'/>
+        </ControlTemplate>
+    </ContentControl.Template>
+</ContentControl>";
+
+            var target = AvaloniaXamlLoader.Parse<ContentControl>(xaml);
+
+            Assert.NotNull(target.Template);
+
+            Assert.Null(target.Presenter);
+
+            target.ApplyTemplate();
+
+            Assert.NotNull(target.Presenter);
+
+            target.Content = "Foo";
+
+            Assert.Equal("Foo", target.Presenter.Content);
+        }
+
+        [Fact]
+        public void Style_ControlTemplate_Is_Build()
+        {
+                var xaml = @"
+<Style xmlns='https://github.com/avaloniaui' Selector='ContentControl'>
+  <Setter Property='Template'>
+     <ControlTemplate>
+        <ContentPresenter Name='PART_ContentPresenter'
+                       Background='{TemplateBinding Background}'
+                       BorderBrush='{TemplateBinding BorderBrush}'
+                       BorderThickness='{TemplateBinding BorderThickness}'
+                       Content='{TemplateBinding Content}'
+                       ContentTemplate='{TemplateBinding ContentTemplate}'
+                       Padding='{TemplateBinding Padding}' />
+      </ControlTemplate>
+  </Setter>
+</Style> ";
+
+                var style = AvaloniaXamlLoader.Parse<Style>(xaml);
+
+                Assert.Equal(1, style.Setters.Count());
+
+                var setter = (Setter)style.Setters.First();
+
+                Assert.Equal(ContentControl.TemplateProperty, setter.Property);
+
+                Assert.IsType<ControlTemplate>(setter.Value);
+
+                var template = (ControlTemplate)setter.Value;
+
+                var control = new ContentControl();
+
+                var result = (ContentPresenter)template.Build(control);
+
+                Assert.NotNull(result);
         }
 
         [Fact]
