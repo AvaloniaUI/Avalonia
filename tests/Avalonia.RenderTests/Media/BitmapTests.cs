@@ -132,7 +132,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             var name = nameof(WritableBitmapShouldBeUsable) + "_" + fmt;
 
             writableBitmap.Save(System.IO.Path.Combine(OutputPath, name + ".out.png"));
-            CompareImagesNoRenderer(testName);
+            CompareImagesNoRenderer(name);
 
         }
     }
