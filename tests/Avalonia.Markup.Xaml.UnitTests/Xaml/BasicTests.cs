@@ -111,6 +111,53 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         }
 
         [Fact]
+        public void ControlTemplate_With_Nested_Child_Is_Operational()
+        {
+            var xaml = @"
+<ControlTemplate xmlns='https://github.com/avaloniaui'>
+    <ContentControl Name='parent'>
+        <ContentControl Name='child' />
+    </ContentControl>
+</ControlTemplate>
+";
+            var template = AvaloniaXamlLoader.Parse<ControlTemplate>(xaml);
+
+            var parent = (ContentControl)template.Build(new ContentControl());
+
+            Assert.Equal("parent", parent.Name);
+
+            var child = parent.Content as ContentControl;
+
+            Assert.NotNull(child);
+
+            Assert.Equal("child", child.Name);
+        }
+
+        [Fact]
+        public void ControlTemplate_With_Panel_Children_Are_Added()
+        {
+            var xaml = @"
+<ControlTemplate xmlns='https://github.com/avaloniaui'>
+    <Panel Name='panel'>
+        <ContentControl Name='Foo' />
+        <ContentControl Name='Bar' />
+    </Panel>
+</ControlTemplate>
+";
+            var template = AvaloniaXamlLoader.Parse<ControlTemplate>(xaml);
+
+            var panel = (Panel)template.Build(new ContentControl());
+
+            Assert.Equal(2, panel.Children.Count);
+
+            var foo = panel.Children[0];
+            var bar = panel.Children[1];
+
+            Assert.Equal("Foo", foo.Name);
+            Assert.Equal("Bar", bar.Name);
+        }
+
+        [Fact]
         public void Named_x_Control_Is_Added_To_NameScope_Simple()
         {
             var xaml = @"
@@ -172,6 +219,66 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
             Assert.Equal(TextBlock.WidthProperty, setters[1].Property);
             Assert.Equal(100.0, setters[1].Value);
+        }
+
+        [Fact]
+        public void Complex_Style_Is_Parsed()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Styles xmlns='https://github.com/avaloniaui'>
+  <Style Selector='CheckBox'>
+    <Setter Property='BorderBrush' Value='{StyleResource ThemeBorderMidBrush}'/>
+    <Setter Property='BorderThickness' Value='{StyleResource ThemeBorderThickness}'/>
+    <Setter Property='Template'>
+      <ControlTemplate>
+        <Grid ColumnDefinitions='Auto,*'>
+          <Border Name='border'
+                  BorderBrush='{TemplateBinding BorderBrush}'
+                  BorderThickness='{TemplateBinding BorderThickness}'
+                  Width='18'
+                  Height='18'
+                  VerticalAlignment='Center'>
+            <Path Name='checkMark'
+                  Fill='{StyleResource HighlightBrush}'
+                  Width='11'
+                  Height='10'
+                  Stretch='Uniform'
+                  HorizontalAlignment='Center'
+                  VerticalAlignment='Center'
+                  Data='M 1145.607177734375,430 C1145.607177734375,430 1141.449951171875,435.0772705078125 1141.449951171875,435.0772705078125 1141.449951171875,435.0772705078125 1139.232177734375,433.0999755859375 1139.232177734375,433.0999755859375 1139.232177734375,433.0999755859375 1138,434.5538330078125 1138,434.5538330078125 1138,434.5538330078125 1141.482177734375,438 1141.482177734375,438 1141.482177734375,438 1141.96875,437.9375 1141.96875,437.9375 1141.96875,437.9375 1147,431.34619140625 1147,431.34619140625 1147,431.34619140625 1145.607177734375,430 1145.607177734375,430 z'/>
+          </Border>
+          <ContentPresenter Name='PART_ContentPresenter'
+                            Content='{TemplateBinding Content}'
+                            ContentTemplate='{TemplateBinding ContentTemplate}'
+                            Margin='4,0,0,0'
+                            VerticalAlignment='Center'
+                            Grid.Column='1'/>
+        </Grid>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+</Styles>
+";
+                var styles = AvaloniaXamlLoader.Parse<Styles>(xaml);
+
+                Assert.Equal(1, styles.Count);
+
+                var style = (Style)styles[0];
+
+                var setters = style.Setters.Cast<Setter>().ToArray();
+
+                Assert.Equal(3, setters.Length);
+
+                Assert.Equal(CheckBox.BorderBrushProperty, setters[0].Property);
+                Assert.Equal(CheckBox.BorderThicknessProperty, setters[1].Property);
+                Assert.Equal(CheckBox.TemplateProperty, setters[2].Property);
+
+                Assert.IsType<StyleResourceBinding>(setters[0].Value);
+                Assert.IsType<StyleResourceBinding>(setters[1].Value);
+                Assert.IsType<ControlTemplate>(setters[2].Value);
+            }
         }
 
         [Fact]
