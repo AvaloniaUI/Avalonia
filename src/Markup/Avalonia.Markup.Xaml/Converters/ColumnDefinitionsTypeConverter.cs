@@ -3,11 +3,31 @@
 
 using System;
 using System.Globalization;
-using OmniXaml.TypeConversion;
 using Avalonia.Controls;
 
 namespace Avalonia.Markup.Xaml.Converters
 {
+#if !OMNIXAML
+
+    using Portable.Xaml.ComponentModel;
+
+    public class ColumnDefinitionsTypeConverter : TypeConverter
+    {
+        public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+        {
+            return sourceType == typeof(string);
+        }
+
+        public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+        {
+            return new ColumnDefinitions((string)value);
+        }
+    }
+
+#else
+
+    using OmniXaml.TypeConversion;
+
     public class ColumnDefinitionsTypeConverter : ITypeConverter
     {
         public bool CanConvertFrom(IValueContext context, Type sourceType)
@@ -30,4 +50,5 @@ namespace Avalonia.Markup.Xaml.Converters
             throw new NotImplementedException();
         }
     }
+#endif
 }

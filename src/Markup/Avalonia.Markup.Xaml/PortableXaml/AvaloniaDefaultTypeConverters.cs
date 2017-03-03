@@ -7,6 +7,10 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Styling;
 using Portable.Xaml.ComponentModel;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Collections;
+using Avalonia.Controls.Templates;
 
 namespace Avalonia.Markup.Xaml.PortableXaml
 {
@@ -17,29 +21,29 @@ namespace Avalonia.Markup.Xaml.PortableXaml
             //avalonia default converters
             { typeof(IBitmap), typeof(BitmapTypeConverter)},
             { typeof(IBrush), typeof(BrushTypeConverter) },
-            //{ typeof(Color), typeof(ColorTypeConverter) },
-            //{ typeof(Classes), typeof(ClassesTypeConverter) },
-            //{ typeof(ColumnDefinitions), typeof(ColumnDefinitionsTypeConverter) },
+            { typeof(Color), typeof(ColorTypeConverter) },
+            { typeof(Classes), typeof(ClassesTypeConverter) },
+            { typeof(ColumnDefinitions), typeof(ColumnDefinitionsTypeConverter) },
             //{ typeof(DateTime), typeof(DateTimeTypeConverter) },
-            //{ typeof(Geometry), typeof(GeometryTypeConverter) },
-            //{ typeof(GridLength), typeof(GridLengthTypeConverter) },
-            //{ typeof(KeyGesture), typeof(KeyGestureConverter) },
-            //{ typeof(AvaloniaList<double>), typeof(AvaloniaListTypeConverter<double>) },
-            //{ typeof(IMemberSelector), typeof(MemberSelectorTypeConverter) },
-            //{ typeof(Point), typeof(PointTypeConverter) },
-            //{ typeof(IList<Point>), typeof(PointsListTypeConverter) },
+            { typeof(Geometry), typeof(GeometryTypeConverter) },
+            { typeof(GridLength), typeof(GridLengthTypeConverter) },
+            { typeof(KeyGesture), typeof(KeyGestureConverter) },
+            { typeof(AvaloniaList<double>), typeof(AvaloniaListTypeConverter<double>) },
+            { typeof(IMemberSelector), typeof(MemberSelectorTypeConverter) },
+            { typeof(Point), typeof(PointTypeConverter) },
+            { typeof(IList<Point>), typeof(PointsListTypeConverter) },
             { typeof(AvaloniaProperty), typeof(AvaloniaPropertyTypeConverter) },
-            //{ typeof(RelativePoint), typeof(RelativePointTypeConverter) },
-            //{ typeof(RelativeRect), typeof(RelativeRectTypeConverter) },
-            //{ typeof(RowDefinitions), typeof(RowDefinitionsTypeConverter) },
-            //{ typeof(Size), typeof(SizeTypeConverter) },
+            { typeof(RelativePoint), typeof(RelativePointTypeConverter) },
+            { typeof(RelativeRect), typeof(RelativeRectTypeConverter) },
+            { typeof(RowDefinitions), typeof(RowDefinitionsTypeConverter) },
+            { typeof(Size), typeof(SizeTypeConverter) },
             { typeof(Selector), typeof(SelectorTypeConverter)},
             { typeof(SolidColorBrush), typeof(BrushTypeConverter) },
-            //{ typeof(Thickness), typeof(ThicknessTypeConverter) },
-            //{ typeof(TimeSpan), typeof(TimeSpanTypeConverter) },
+            { typeof(Thickness), typeof(ThicknessTypeConverter) },
+            { typeof(TimeSpan), typeof(TimeSpanTypeConverter) },
             //{ typeof(Uri), typeof(Converters.UriTypeConverter) },
-            //{ typeof(Cursor), typeof(CursorTypeConverter) },
-            //{ typeof(WindowIcon), typeof(IconTypeConverter) },
+            { typeof(Cursor), typeof(CursorTypeConverter) },
+            { typeof(WindowIcon), typeof(IconTypeConverter) },
             //{ typeof(FontWeight), typeof(FontWeightConverter) },
         };
 

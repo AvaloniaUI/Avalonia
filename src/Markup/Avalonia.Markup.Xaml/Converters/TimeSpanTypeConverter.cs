@@ -3,11 +3,39 @@
 
 using System;
 using System.Globalization;
-using OmniXaml.TypeConversion;
-using Avalonia.Media;
 
 namespace Avalonia.Markup.Xaml.Converters
 {
+#if !OMNIXAML
+
+    using Portable.Xaml.ComponentModel;
+
+    public class TimeSpanTypeConverter : Portable.Xaml.ComponentModel.TimeSpanConverter
+    {
+        public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+        {
+            return base.CanConvertFrom(context, sourceType);
+        }
+
+        public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+        {
+            var valueStr = (string)value;
+            if (!valueStr.Contains(":"))
+            {
+                // shorthand seconds format (ie. "0.25")
+                var secs = double.Parse(valueStr, CultureInfo.InvariantCulture);
+                return TimeSpan.FromSeconds(secs);
+            }
+
+            return base.ConvertFrom(context, culture, value);
+        }
+    }
+
+#else
+
+    using OmniXaml.TypeConversion;
+    using Avalonia.Media;
+
     public class TimeSpanTypeConverter : ITypeConverter
     {
         public bool CanConvertFrom(IValueContext context, Type sourceType)
@@ -38,4 +66,5 @@ namespace Avalonia.Markup.Xaml.Converters
             throw new NotImplementedException();
         }
     }
+#endif
 }

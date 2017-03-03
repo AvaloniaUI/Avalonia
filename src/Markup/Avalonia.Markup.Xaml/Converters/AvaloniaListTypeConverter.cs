@@ -3,13 +3,48 @@
 
 using System;
 using System.Globalization;
-using System.Linq;
-using OmniXaml.TypeConversion;
 using Avalonia.Collections;
 using Avalonia.Utilities;
 
 namespace Avalonia.Markup.Xaml.Converters
 {
+#if !OMNIXAML
+
+    using Portable.Xaml.ComponentModel;
+
+    public class AvaloniaListTypeConverter<T> : TypeConverter
+    {
+        public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+        {
+            return sourceType == typeof(string);
+        }
+
+        public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+        {
+            var result = new AvaloniaList<T>();
+            var values = ((string)value).Split(',');
+
+            foreach (var s in values)
+            {
+                object v;
+
+                if (TypeUtilities.TryConvert(typeof(T), s, culture, out v))
+                {
+                    result.Add((T)v);
+                }
+                else
+                {
+                    throw new InvalidCastException($"Could not convert '{s}' to {typeof(T)}.");
+                }
+            }
+
+            return result;
+        }
+    }
+
+#else
+    using OmniXaml.TypeConversion;
+
     public class AvaloniaListTypeConverter<T> : ITypeConverter
     {
         public bool CanConvertFrom(IValueContext context, Type sourceType)
@@ -49,4 +84,5 @@ namespace Avalonia.Markup.Xaml.Converters
             throw new NotImplementedException();
         }
     }
+#endif
 }
