@@ -36,6 +36,16 @@
     <DocumentationFile>bin\Release\Avalonia.Markup.Xaml.XML</DocumentationFile>
     <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'DebugOmniXaml|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\DebugOmniXaml\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;OMNIXAML</DefineConstants>
+    <NoWarn>CS1591</NoWarn>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\..\Shared\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>

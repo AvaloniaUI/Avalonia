@@ -64,6 +64,11 @@ namespace Avalonia.Markup.Xaml.Templates
 
             return (Control)assembler.Result;
         }
+
+        public static IControl Load(object templateContent)
+        {
+            return ((TemplateContent)templateContent).Load();
+        }
     }
 
 #endif
