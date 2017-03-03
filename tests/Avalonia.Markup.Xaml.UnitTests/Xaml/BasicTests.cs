@@ -39,6 +39,18 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         }
 
         [Fact]
+        public void Attached_Property_Is_Set()
+        {
+            var xaml =
+        @"<ContentControl xmlns='https://github.com/avaloniaui' TextBlock.FontSize='21'/>";
+
+            var target = AvaloniaXamlLoader.Parse<ContentControl>(xaml);
+
+            Assert.NotNull(target);
+            Assert.Equal(21.0, TextBlock.GetFontSize(target));
+        }
+
+        [Fact]
         public void ContentControl_ContentTemplate_Is_Functional()
         {
             var xaml =
@@ -72,6 +84,30 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             var button = control.FindControl<Button>("button");
 
             Assert.Equal("Foo", button.Content);
+        }
+
+        [Fact]
+        public void Panel_Children_Are_Added()
+        {
+            var xaml = @"
+<UserControl xmlns='https://github.com/avaloniaui'>
+    <Panel Name='panel'>
+        <ContentControl Name='Foo' />
+        <ContentControl Name='Bar' />
+    </Panel>
+</UserControl>";
+
+            var control = AvaloniaXamlLoader.Parse<UserControl>(xaml);
+
+            var panel = control.FindControl<Panel>("panel");
+
+            Assert.Equal(2, panel.Children.Count);
+
+            var foo = control.FindControl<ContentControl>("Foo");
+            var bar = control.FindControl<ContentControl>("Bar");
+
+            Assert.Contains(foo, panel.Children);
+            Assert.Contains(bar, panel.Children);
         }
 
         [Fact]
