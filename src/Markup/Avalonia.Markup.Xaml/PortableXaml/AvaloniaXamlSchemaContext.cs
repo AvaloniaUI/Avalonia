@@ -7,6 +7,7 @@ using Portable.Xaml;
 using Portable.Xaml.ComponentModel;
 using am = Avalonia.Metadata;
 using Avalonia.Data;
+using Avalonia.Markup.Xaml.Data;
 
 namespace Avalonia.Markup.Xaml.PortableXaml
 {
@@ -54,17 +55,19 @@ namespace Avalonia.Markup.Xaml.PortableXaml
             }
 
             // MarkupExtension type could omit "Extension" part in XML name.
-            Type type = _avaloniaTypeProvider.FindType(xmlNamespace, xmlLocalName, genArgs)
-                                ?? _avaloniaTypeProvider.FindType(xmlNamespace,
-                                                                xmlLocalName + "Extension",
-                                                                genArgs);
+            Type type = _avaloniaTypeProvider.FindType(xmlNamespace,
+                                                        xmlLocalName,
+                                                        genArgs) ??
+                        _avaloniaTypeProvider.FindType(xmlNamespace,
+                                                        xmlLocalName + "Extension",
+                                                        genArgs);
 
             if (type == null)
             {
 
                 //let's try the simple types
-                //in Portable xaml xmlns:sys='clr-namespace:System;assembly=mscorlib'
-                //and sys:Double is not resolved
+                //in Portable xaml like xmlns:sys='clr-namespace:System;assembly=mscorlib'
+                //and sys:Double is not resolved properly
                 return ResolveSimpleTypeName(xmlNamespace, xmlLocalName);
             }
 
@@ -91,6 +94,9 @@ namespace Avalonia.Markup.Xaml.PortableXaml
 
         private static Dictionary<Tuple<string, string>, XamlType> _simpleXamlTypes;
 
+        //in Portable xaml like xmlns:sys='clr-namespace:System;assembly=mscorlib'
+        //and sys:Double is not resolved properly
+        [Obsolete("TODO: remove once it's fixed in Portable.xaml")]
         private static XamlType ResolveSimpleTypeName(string xmlNamespace, string xmlLocalName)
         {
             if (_simpleXamlTypes == null)
@@ -125,13 +131,33 @@ namespace Avalonia.Markup.Xaml.PortableXaml
 
         public override XamlType GetXamlType(Type type)
         {
+            XamlType result = null;
+
+            if (_cachedTypes.TryGetValue(type, out result))
+            {
+                return result;
+            }
+
+            _cachedTypes[type] = result = GetAvaloniaXamlType(type) ?? base.GetXamlType(type);
+
+            return result;
+        }
+
+        private XamlType GetAvaloniaXamlType(Type type)
+        {
+            if (type == typeof(Binding))
+            {
+                return new BindingXamlType(type, this);
+            }
+
+            //TODO: do we need it ???
             //if (type.FullName.StartsWith("Avalonia."))
             //{
             //    return new AvaloniaXamlType(type, this);
             //}
-            return base.GetXamlType(type);
-        }
 
+            return null;
+        }
 
         protected override XamlMember GetAttachableProperty(string attachablePropertyName, MethodInfo getter, MethodInfo setter)
         {
@@ -164,5 +190,7 @@ namespace Avalonia.Markup.Xaml.PortableXaml
 
             return base.GetProperty(pi);
         }
+
+        private Dictionary<Type, XamlType> _cachedTypes = new Dictionary<Type, XamlType>();
     }
 }

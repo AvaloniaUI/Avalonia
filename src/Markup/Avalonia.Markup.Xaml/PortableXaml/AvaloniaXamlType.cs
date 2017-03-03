@@ -3,23 +3,31 @@ using System.Collections.Generic;
 using System.Reflection;
 using Avalonia.Data;
 using Portable.Xaml;
+using Portable.Xaml.Markup;
 using Portable.Xaml.Schema;
-
 
 namespace Avalonia.Markup.Xaml.PortableXaml
 {
-    //public class AvaloniaXamlType : XamlType
-    //{
-    //    public AvaloniaXamlType(Type underlyingType, XamlSchemaContext schemaContext) :
-    //        base(underlyingType, schemaContext)
-    //    {
-    //    }
+    public class AvaloniaXamlType : XamlType
+    {
+        public AvaloniaXamlType(Type underlyingType, XamlSchemaContext schemaContext) :
+            base(underlyingType, schemaContext)
+        {
+        }
+    }
 
-    //    protected override XamlMember LookupMember(string name, bool skipReadOnlyCheck)
-    //    {
-    //        return base.LookupMember(name, skipReadOnlyCheck);
-    //    }
-    //}
+    public class BindingXamlType : AvaloniaXamlType
+    {
+        public BindingXamlType(Type underlyingType, XamlSchemaContext schemaContext) :
+            base(underlyingType, schemaContext)
+        {
+        }
+
+        public override bool CanAssignTo(XamlType xamlType)
+        {
+            return true;
+        }
+    }
 
     public class AvaloniaPropertyXamlMember : XamlMember
     {

@@ -247,12 +247,8 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
   <Setter Property='Template'>
      <ControlTemplate>
         <ContentPresenter Name='PART_ContentPresenter'
-                       Background='{TemplateBinding Background}'
-                       BorderBrush='{TemplateBinding BorderBrush}'
-                       BorderThickness='{TemplateBinding BorderThickness}'
                        Content='{TemplateBinding Content}'
-                       ContentTemplate='{TemplateBinding ContentTemplate}'
-                       Padding='{TemplateBinding Padding}' />
+                       ContentTemplate='{TemplateBinding ContentTemplate}' />
       </ControlTemplate>
   </Setter>
 </Style> ";
