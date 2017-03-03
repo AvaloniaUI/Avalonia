@@ -5,6 +5,8 @@ using System.Reflection;
 using Avalonia.Markup.Xaml.Context;
 using Portable.Xaml;
 using Portable.Xaml.ComponentModel;
+using am = Avalonia.Metadata;
+using Avalonia.Data;
 
 namespace Avalonia.Markup.Xaml.PortableXaml
 {
@@ -51,10 +53,15 @@ namespace Avalonia.Markup.Xaml.PortableXaml
                 }
             }
 
-            Type type = _avaloniaTypeProvider.FindType(xmlNamespace, xmlLocalName, genArgs);
+            // MarkupExtension type could omit "Extension" part in XML name.
+            Type type = _avaloniaTypeProvider.FindType(xmlNamespace, xmlLocalName, genArgs)
+                                ?? _avaloniaTypeProvider.FindType(xmlNamespace,
+                                                                xmlLocalName + "Extension",
+                                                                genArgs);
 
             if (type == null)
             {
+
                 //let's try the simple types
                 //in Portable xaml xmlns:sys='clr-namespace:System;assembly=mscorlib'
                 //and sys:Double is not resolved
@@ -118,12 +125,44 @@ namespace Avalonia.Markup.Xaml.PortableXaml
 
         public override XamlType GetXamlType(Type type)
         {
-            if (type.FullName.StartsWith("Avalonia."))
+            //if (type.FullName.StartsWith("Avalonia."))
+            //{
+            //    return new AvaloniaXamlType(type, this);
+            //}
+            return base.GetXamlType(type);
+        }
+
+
+        protected override XamlMember GetAttachableProperty(string attachablePropertyName, MethodInfo getter, MethodInfo setter)
+        {
+            return base.GetAttachableProperty(attachablePropertyName, getter, setter);
+        }
+
+        protected override XamlMember GetProperty(PropertyInfo pi)
+        {
+            Type objType = pi.DeclaringType;
+            string name = pi.Name;
+
+            var avProp = AvaloniaPropertyRegistry.Instance.FindRegistered(objType, name);
+
+            var assignBindingAttr = pi.GetCustomAttribute<AssignBindingAttribute>();
+
+            if (avProp != null)
             {
-                return new AvaloniaXamlType(type, this);
+                return new AvaloniaPropertyXamlMember(avProp, pi, this)
+                {
+                    AssignBinding = assignBindingAttr != null
+                };
             }
 
-            return base.GetXamlType(type);
+            var dependAttr = pi.GetCustomAttribute<am.DependsOnAttribute>();
+
+            if (dependAttr != null)
+            {
+                return new DependOnXamlMember(dependAttr.Name, pi, this);
+            }
+
+            return base.GetProperty(pi);
         }
     }
 }

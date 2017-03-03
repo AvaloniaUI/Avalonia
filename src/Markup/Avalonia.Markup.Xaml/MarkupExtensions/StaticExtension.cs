@@ -4,11 +4,22 @@
 using System;
 using System.Linq;
 using System.Reflection;
-using OmniXaml;
-using Glass.Core;
+
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions
 {
+#if !OMNIXAML
+
+    //TODO: check do we need something more than std Portable.xaml static??
+    public class StaticExtension : Portable.Xaml.Markup.StaticExtension
+    {
+
+    }
+
+#else
+    using OmniXaml;
+    using Glass.Core;
+
     public class StaticExtension : MarkupExtension
     {
         public StaticExtension()
@@ -83,4 +94,5 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             throw new ArgumentException($"Static member '{type}.{name}' not found.");
         }
     }
+#endif
 }

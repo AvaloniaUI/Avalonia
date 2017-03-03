@@ -9,6 +9,7 @@ using Glass.Core;
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions.Standard
 {
+#if OMNIXAML
     [ContentProperty("TargetType")]
     public class TypeExtension : MarkupExtension
     {
@@ -46,4 +47,5 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.Standard
             return ResolveFromString(TypeName, markupExtensionContext.ValueContext.TypeRepository);
         }
     }
+#endif
 }

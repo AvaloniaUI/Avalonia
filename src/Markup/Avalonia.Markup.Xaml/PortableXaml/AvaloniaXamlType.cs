@@ -1,31 +1,94 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using Avalonia.Data;
 using Portable.Xaml;
 using Portable.Xaml.Schema;
-using am = Avalonia.Metadata;
+
 
 namespace Avalonia.Markup.Xaml.PortableXaml
 {
-    public class AvaloniaXamlType : XamlType
+    //public class AvaloniaXamlType : XamlType
+    //{
+    //    public AvaloniaXamlType(Type underlyingType, XamlSchemaContext schemaContext) :
+    //        base(underlyingType, schemaContext)
+    //    {
+    //    }
+
+    //    protected override XamlMember LookupMember(string name, bool skipReadOnlyCheck)
+    //    {
+    //        return base.LookupMember(name, skipReadOnlyCheck);
+    //    }
+    //}
+
+    public class AvaloniaPropertyXamlMember : XamlMember
     {
-        public AvaloniaXamlType(Type underlyingType, XamlSchemaContext schemaContext) :
-            base(underlyingType, schemaContext)
+        public bool AssignBinding { get; set; } = false;
+
+        public AvaloniaProperty Property { get; }
+
+        public AvaloniaPropertyXamlMember(AvaloniaProperty property,
+                        PropertyInfo propertyInfo,
+                        XamlSchemaContext schemaContext) :
+            base(propertyInfo, schemaContext)
         {
+            Property = property;
         }
 
-        protected override XamlMember LookupMember(string name, bool skipReadOnlyCheck)
+        protected override XamlMemberInvoker LookupInvoker()
         {
-            var pi = UnderlyingType.GetRuntimeProperty(name);
+            return new AvaloniaPropertyInvoker(this);
+        }
 
-            var dependAttr = pi.GetCustomAttribute<am.DependsOnAttribute>();
-
-            if (dependAttr != null)
+        private class AvaloniaPropertyInvoker : XamlMemberInvoker
+        {
+            public AvaloniaPropertyInvoker(XamlMember member) : base(member)
             {
-                return new DependOnXamlMember(dependAttr.Name, pi, SchemaContext);
             }
 
-            return base.LookupMember(name, skipReadOnlyCheck);
+            public override void SetValue(object instance, object value)
+            {
+                if (Property != null)
+                {
+                    var obj = ((IAvaloniaObject)instance);
+                    if (value is IBinding && !Member.AssignBinding)
+                    {
+                        ApplyBinding(obj, (IBinding)value);
+                    }
+                    else
+                    {
+                        obj.SetValue(Property, value);
+                    }
+                }
+                else
+                {
+                    base.SetValue(instance, value);
+                }
+            }
+
+            public override object GetValue(object instance)
+            {
+                if (Property != null)
+                {
+                    return ((IAvaloniaObject)instance).GetValue(Property);
+                }
+                else
+                {
+                    return base.GetValue(instance);
+                }
+            }
+
+            private void ApplyBinding(IAvaloniaObject obj, IBinding binding)
+            {
+                //TODO: in Context.PropertyAccessor there is
+                //some quirk stuff check it later
+                obj.Bind(Property, binding);
+            }
+
+            private AvaloniaProperty Property => Member.Property;
+
+            private new AvaloniaPropertyXamlMember Member =>
+                            (AvaloniaPropertyXamlMember)base.Member;
         }
     }
 

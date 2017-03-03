@@ -195,13 +195,18 @@ namespace Avalonia.Markup.Xaml
             }
         }
 
-        internal static object LoadFromReader(XamlReader reader, object instance = null)
+        internal static object LoadFromReader(XamlReader reader, object instance)
         {
             var writer = AvaloniaXamlObjectWriter.Create(_context, instance);
 
-            XamlServices.Transform(reader, writer);
+             XamlServices.Transform(reader, writer);
 
-            return writer.Result;
+            return writer.Result;           
+        }
+
+        internal static object LoadFromReader(XamlReader reader)
+        {
+            return XamlServices.Load(reader);
         }
 
         /// <summary>

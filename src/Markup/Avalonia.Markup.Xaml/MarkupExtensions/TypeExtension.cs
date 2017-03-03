@@ -1,14 +1,24 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using System;
-using OmniXaml;
-using OmniXaml.Attributes;
-using OmniXaml.Typing;
-using Glass.Core;
-
 namespace Avalonia.Markup.Xaml.MarkupExtensions
 {
+#if !OMNIXAML
+
+    //TODO: check do we need something more than std Portable.xaml type??
+    public class TypeExtension : Portable.Xaml.Markup.TypeExtension
+    {
+
+    }
+
+#else
+
+    using System;
+    using OmniXaml;
+    using OmniXaml.Attributes;
+    using OmniXaml.Typing;
+    using Glass.Core;
+
     [ContentProperty("TargetType")]
     public class TypeExtension : MarkupExtension
     {
@@ -46,4 +56,6 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             return ResolveFromString(TypeName, markupExtensionContext.ValueContext.TypeRepository);
         }
     }
+
+#endif
 }
