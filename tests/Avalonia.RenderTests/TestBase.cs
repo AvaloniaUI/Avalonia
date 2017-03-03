@@ -132,6 +132,23 @@ namespace Avalonia.Direct2D1.RenderTests
             }
         }
 
+        protected void CompareImagesNoRenderer([CallerMemberName] string testName = "")
+        {
+            var expectedPath = Path.Combine(OutputPath, testName + ".expected.png");
+            var actualPath = Path.Combine(OutputPath, testName + ".out.png");
+
+            using (var expected = new MagickImage(expectedPath))
+            using (var actual = new MagickImage(actualPath))
+            {
+                double immediateError = expected.Compare(actual, ErrorMetric.RootMeanSquared);
+
+                if (immediateError > 0.022)
+                {
+                    Assert.True(false, actualPath + ": Error = " + immediateError);
+                }
+            }
+        }
+
         private class TestThreadingInterface : IPlatformThreadingInterface
         {
             public bool CurrentThreadIsLoopThread => MainThread.ManagedThreadId == Thread.CurrentThread.ManagedThreadId;

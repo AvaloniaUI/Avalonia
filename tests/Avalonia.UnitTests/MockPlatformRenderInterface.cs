@@ -43,6 +43,11 @@ namespace Avalonia.UnitTests
             return new MockStreamGeometryImpl();
         }
 
+        public IWritableBitmapImpl CreateWritableBitmap(int width, int height, PixelFormat? format = default(PixelFormat?))
+        {
+            throw new NotImplementedException();
+        }
+
         public IBitmapImpl LoadBitmap(Stream stream)
         {
             return Mock.Of<IBitmapImpl>();
@@ -51,6 +56,11 @@ namespace Avalonia.UnitTests
         public IBitmapImpl LoadBitmap(string fileName)
         {
             return Mock.Of<IBitmapImpl>();
+        }
+
+        public IBitmapImpl LoadBitmap(PixelFormat format, IntPtr data, int width, int height, int stride)
+        {
+            throw new NotImplementedException();
         }
     }
 }

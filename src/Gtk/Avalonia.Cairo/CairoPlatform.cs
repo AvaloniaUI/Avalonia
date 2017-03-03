@@ -112,5 +112,15 @@ namespace Avalonia.Cairo
             Gtk.Application.Init();
             return new Gtk.Invisible().CreatePangoContext();
         }
+
+        public IBitmapImpl LoadBitmap(PixelFormat format, IntPtr data, int width, int height, int stride)
+        {
+            throw new NotSupportedException("No proper control over pixel format with Cairo, use Skia backend instead");
+        }
+
+        public IWritableBitmapImpl CreateWritableBitmap(int width, int height, PixelFormat? fmt)
+        {
+            throw new NotSupportedException("No proper support with Cairo, use Skia backend instead");
+        }
     }
 }

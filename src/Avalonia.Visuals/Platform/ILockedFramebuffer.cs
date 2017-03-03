@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Avalonia.Controls.Platform.Surfaces
+namespace Avalonia.Platform
 {
     public interface ILockedFramebuffer : IDisposable
     {
