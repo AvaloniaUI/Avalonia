@@ -333,10 +333,10 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Portable.Xaml, Version=0.15.0.0, Culture=neutral, PublicKeyToken=ba4456acace7dab7, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Portable.Xaml.0.15.0\lib\portable-net45+win+wpa81+wp80+MonoAndroid10+xamarinios10+MonoTouch10\Portable.Xaml.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
+    <ProjectReference Include="..\Portable.Xaml\src\Portable.Xaml\Portable.Xaml-pcl259.csproj">
+      <Project>{179484ec-db00-451a-ad2d-2e2ab20de519}</Project>
+      <Name>Portable.Xaml-pcl259</Name>
+    </ProjectReference>
     <Reference Include="Sprache, Version=2.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\Sprache.2.1.0\lib\netstandard1.0\Sprache.dll</HintPath>
     </Reference>

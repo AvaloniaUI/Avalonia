@@ -46,11 +46,6 @@
       <HintPath>..\..\packages\Moq.4.2.1510.2205\lib\net40\Moq.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Portable.Xaml, Version=0.15.0.0, Culture=neutral, PublicKeyToken=ba4456acace7dab7, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Portable.Xaml.0.15.0\lib\portable-net45+win+wpa81+wp80+MonoAndroid10+xamarinios10+MonoTouch10\Portable.Xaml.dll</HintPath>
-      <SpecificVersion>False</SpecificVersion>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="Splat, Version=1.6.2.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Splat.1.6.2\lib\Net45\Splat.dll</HintPath>
       <Private>True</Private>
@@ -170,6 +165,10 @@
     <ProjectReference Include="..\..\src\Avalonia.Themes.Default\Avalonia.Themes.Default.csproj">
       <Project>{3E10A5FA-E8DA-48B1-AD44-6A5B6CB7750F}</Project>
       <Name>Avalonia.Themes.Default</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\Markup\Portable.Xaml\src\Portable.Xaml\Portable.Xaml-pcl259.csproj">
+      <Project>{179484ec-db00-451a-ad2d-2e2ab20de519}</Project>
+      <Name>Portable.Xaml-pcl259</Name>
     </ProjectReference>
     <ProjectReference Include="..\Avalonia.UnitTests\Avalonia.UnitTests.csproj">
       <Project>{88060192-33d5-4932-b0f9-8bd2763e857d}</Project>
