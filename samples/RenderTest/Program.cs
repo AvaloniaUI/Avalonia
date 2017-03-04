@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Direct2D1;
 using Avalonia.Logging.Serilog;
 using Avalonia.Platform;
 using Serilog;
