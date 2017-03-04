@@ -2,18 +2,26 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Reactive;
 using Moq;
+using Avalonia.Collections;
+using Avalonia.Markup.Xaml.Converters;
+using Avalonia.Styling;
+using Xunit;
+
+#if !OMNIXAML
+
+using Portable.Xaml.ComponentModel;
+using Portable.Xaml;
+using Portable.Xaml.Markup;
+
+#else
+
 using OmniXaml;
 using OmniXaml.ObjectAssembler.Commands;
 using OmniXaml.TypeConversion;
 using OmniXaml.Typing;
-using Avalonia.Collections;
-using Avalonia.Controls;
-using Avalonia.Markup.Xaml.Converters;
-using Avalonia.Styling;
-using Xunit;
-using Portable.Xaml.ComponentModel;
+
+#endif
 
 namespace Avalonia.Markup.Xaml.UnitTests.Converters
 {
@@ -56,12 +64,38 @@ namespace Avalonia.Markup.Xaml.UnitTests.Converters
 
             Assert.Equal(AttachedOwner.AttachedProperty, result);
         }
+
 #if !OMNIXAML
         private ITypeDescriptorContext CreateContext(Style style = null)
         {
-            return null;
+            var tdMock = new Mock<ITypeDescriptorContext>();
+            var xsc = new Mock<IXamlSchemaContextProvider>();
+            var sc = Mock.Of<XamlSchemaContext>();
+            var amb = new Mock<IAmbientProvider>();
+            var tr = new Mock<IXamlTypeResolver>();
+
+            tdMock.Setup(d => d.GetService(typeof(IAmbientProvider)))
+                .Returns(amb.Object);
+            tdMock.Setup(d => d.GetService(typeof(IXamlSchemaContextProvider)))
+                .Returns(xsc.Object);
+            tdMock.Setup(d => d.GetService(typeof(IXamlTypeResolver)))
+                .Returns(tr.Object);
+
+            xsc.SetupGet(v => v.SchemaContext)
+                .Returns(sc);
+            amb.Setup(v => v.GetFirstAmbientValue(It.IsAny<Portable.Xaml.XamlType>()))
+                .Returns(style);
+            amb.Setup(v => v.GetAllAmbientValues(It.IsAny<Portable.Xaml.XamlType>()))
+                .Returns(new object[] { style });
+            tr.Setup(v => v.Resolve(nameof(Class1)))
+                .Returns(typeof(Class1));
+            tr.Setup(v => v.Resolve(nameof(AttachedOwner)))
+                .Returns(typeof(AttachedOwner));
+
+            return tdMock.Object;
         }
 #else
+
         private IValueContext CreateContext(Style style = null)
         {
             var context = new Mock<IValueContext>();
@@ -77,7 +111,9 @@ namespace Avalonia.Markup.Xaml.UnitTests.Converters
             typeRepository.Setup(x => x.GetByQualifiedName("AttachedOwner")).Returns(attachedOwnerXamlType);
             return context.Object;
         }
+
 #endif
+
         private class Class1 : AvaloniaObject, IStyleable
         {
             public static readonly StyledProperty<string> FooProperty =

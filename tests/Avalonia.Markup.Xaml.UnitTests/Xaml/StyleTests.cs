@@ -90,7 +90,9 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         [Fact]
         public void StyleResource_Can_Be_Assigned_To_Setter()
         {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            //skip default theme and styles, they are not needed
+            using (UnitTestApplication.Start(TestServices.StyledWindow
+                                        .With(theme: () => new Styles())))
             {
                 var xaml = @"
 <Window xmlns='https://github.com/avaloniaui'

@@ -51,6 +51,22 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         }
 
         [Fact]
+        public void Attached_Property_Supports_Binding()
+        {
+            using (UnitTestApplication.Start(TestServices.MockWindowingPlatform))
+            {
+                var xaml =
+            @"<Window xmlns='https://github.com/avaloniaui' TextBlock.FontSize='{Binding}'/>";
+
+                var target = AvaloniaXamlLoader.Parse<ContentControl>(xaml);
+
+                target.DataContext = 21.0;
+
+                Assert.Equal(21.0, TextBlock.GetFontSize(target));
+            }
+        }
+
+        [Fact]
         public void Attached_Property_In_Panel_Is_Set()
         {
             var xaml = @"
@@ -396,8 +412,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         [Fact]
         public void Xaml_Binding_Is_Delayed()
         {
-            using (UnitTestApplication.Start(TestServices.MockPlatformWrapper
-                                    .With(windowingPlatform: new MockWindowingPlatform())))
+            using (UnitTestApplication.Start(TestServices.MockWindowingPlatform))
             {
                 var xaml =
 @"<ContentControl xmlns='https://github.com/avaloniaui' Content='{Binding}'/>";
@@ -484,11 +499,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             Assert.Equal("Bar", bindings[1].Path);
         }
 
-#if OMNIXAML
-        [Fact(Skip ="OmniXaml doesn't support set property with base class prefix ...")]
-#else
         [Fact]
-#endif
         public void Control_Template_Is_Operational()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformWrapper
@@ -497,12 +508,12 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 var xaml = @"
 <Window xmlns='https://github.com/avaloniaui'
                 xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
-    <ContentControl.Template>
+    <Window.Template>
         <ControlTemplate>
             <ContentPresenter Name='PART_ContentPresenter'
                         Content='{TemplateBinding Content}'/>
         </ControlTemplate>
-    </ContentControl.Template>
+    </Window.Template>
 </Window>";
 
                 var target = AvaloniaXamlLoader.Parse<ContentControl>(xaml);
@@ -594,6 +605,26 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 Assert.NotEqual(-1, widthChanged);
                 Assert.True(attached < widthChanged);
             }
+        }
+
+        [Fact]
+        public void Control_Is_Added_To_Parent_Before_Properties_Are_Set_Simple()
+        {
+                var xaml = @"
+<ContentControl xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+             xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'>
+    <local:InitializationOrderTracker Width='100'/>
+</ContentControl>";
+
+                var window = AvaloniaXamlLoader.Parse<ContentControl>(xaml);
+                var tracker = (InitializationOrderTracker)window.Content;
+
+                var parentSet = tracker.Order.IndexOf("Property Parent Changed");
+                var widthChanged = tracker.Order.IndexOf("Property Width Changed");
+
+                Assert.Equal(0, parentSet);
+                Assert.Equal(1, widthChanged);
         }
     }
 }
