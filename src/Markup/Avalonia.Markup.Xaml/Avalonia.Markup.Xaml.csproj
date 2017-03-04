@@ -52,6 +52,8 @@
     </Compile>
     <Compile Include="AvaloniaXamlLoaderPortableXaml.cs" />
     <Compile Include="AvaloniaXamlLoader.cs" />
+    <Compile Include="PortableXaml\XamlBinding.cs" />
+    <Compile Include="PortableXaml\AttributeExtensions.cs" />
     <Compile Include="PortableXaml\AvaloniaMemberAttributeProvider.cs" />
     <Compile Include="PortableXaml\AvaloniaNameScope.cs" />
     <Compile Include="PortableXaml\AvaloniaDefaultTypeConverters.cs" />

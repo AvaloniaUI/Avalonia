@@ -1,17 +1,17 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Reflection;
-using System.Text;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml.Context;
 using Avalonia.Markup.Xaml.Data;
 using Avalonia.Markup.Xaml.PortableXaml;
 using Avalonia.Platform;
 using Portable.Xaml;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
+using System.Text;
 
 namespace Avalonia.Markup.Xaml
 {
@@ -88,7 +88,14 @@ namespace Avalonia.Markup.Xaml
                     {
                         var initialize = rootInstance as ISupportInitialize;
                         initialize?.BeginInit();
-                        return Load(stream, type, rootInstance, uri);
+                        try
+                        {
+                            return Load(stream, type, rootInstance, uri);
+                        }
+                        finally
+                        {
+                            initialize?.EndInit();
+                        }
                     }
                 }
             }
@@ -197,16 +204,17 @@ namespace Avalonia.Markup.Xaml
 
         internal static object LoadFromReader(XamlReader reader, object instance)
         {
-            var writer = AvaloniaXamlObjectWriter.Create(_context, instance);
+            var writer = AvaloniaXamlObjectWriter.Create(reader.SchemaContext, instance);
 
-             XamlServices.Transform(reader, writer);
+            XamlServices.Transform(reader, writer);
 
-            return writer.Result;           
+            return writer.Result;
         }
 
         internal static object LoadFromReader(XamlReader reader)
         {
-            return XamlServices.Load(reader);
+            //return XamlServices.Load(reader);
+            return LoadFromReader(reader, null);
         }
 
         /// <summary>

@@ -1,21 +1,18 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using System;
-using System.Reactive.Linq;
-
-using Avalonia.LogicalTree;
 using Avalonia.Markup.Xaml.Data;
-using Avalonia.Styling;
-
+using System;
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions
 {
+    using Avalonia.Data;
 #if !OMNIXAML
 
     using Portable.Xaml.Markup;
+    using PortableXaml;
 
-    [MarkupExtensionReturnType(typeof(StyleResourceBinding))]
+    [MarkupExtensionReturnType(typeof(IBinding))]
     public class StyleResourceExtension : MarkupExtension
     {
         public StyleResourceExtension(string name)
@@ -25,7 +22,9 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
 
         public override object ProvideValue(IServiceProvider serviceProvider)
         {
-            return new StyleResourceBinding(this.Name);
+            return XamlBinding.FromMarkupExtensionContext(
+                            new StyleResourceBinding(Name),
+                            serviceProvider);
         }
 
         [ConstructorArgument("name")]

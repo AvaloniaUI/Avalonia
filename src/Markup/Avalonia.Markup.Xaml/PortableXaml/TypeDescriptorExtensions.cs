@@ -1,5 +1,7 @@
 ﻿using System;
 using Portable.Xaml.Markup;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace Portable.Xaml.ComponentModel
 {
@@ -32,6 +34,27 @@ namespace Portable.Xaml.ComponentModel
             string name = string.IsNullOrEmpty(namespacePrefix) ? type : $"{namespacePrefix}:{type}";
 
             return tr?.Resolve(name);
+        }
+
+        public static T GetFirstAmbientValue<T>(this ITypeDescriptorContext ctx) where T : class
+        {
+            var amb = ctx.GetService<IAmbientProvider>();
+            var sc = ctx.GetService<IXamlSchemaContextProvider>().SchemaContext;
+
+            return amb.GetFirstAmbientValue(sc.GetXamlType(typeof(T))) as T;
+        }
+
+        public static T GetLastOrDefaultAmbientValue<T>(this ITypeDescriptorContext ctx) where T : class
+        {
+            return ctx.GetAllambientValues<T>().LastOrDefault() as T;
+        }
+
+        public static IEnumerable<T> GetAllambientValues<T>(this ITypeDescriptorContext ctx) where T : class
+        {
+            var amb = ctx.GetService<IAmbientProvider>();
+            var sc = ctx.GetService<IXamlSchemaContextProvider>().SchemaContext;
+
+            return amb.GetAllAmbientValues(sc.GetXamlType(typeof(T))).OfType<T>();
         }
     }
 }

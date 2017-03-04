@@ -1,20 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
+﻿using Avalonia.Data;
 using Avalonia.Markup.Xaml.Context;
 using Portable.Xaml;
 using Portable.Xaml.ComponentModel;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using am = Avalonia.Metadata;
-using Avalonia.Data;
-using Avalonia.Markup.Xaml.Data;
 
 namespace Avalonia.Markup.Xaml.PortableXaml
 {
     internal class AvaloniaXamlSchemaContext : XamlSchemaContext
     {
         public AvaloniaXamlSchemaContext(IRuntimeTypeProvider typeProvider)
-            : base(typeProvider.ReferencedAssemblies)
+        //better not set the references assemblies
+        //: base(typeProvider.ReferencedAssemblies)
         {
             _avaloniaTypeProvider = typeProvider;
         }
@@ -64,7 +64,6 @@ namespace Avalonia.Markup.Xaml.PortableXaml
 
             if (type == null)
             {
-
                 //let's try the simple types
                 //in Portable xaml like xmlns:sys='clr-namespace:System;assembly=mscorlib'
                 //and sys:Double is not resolved properly
@@ -145,9 +144,9 @@ namespace Avalonia.Markup.Xaml.PortableXaml
 
         private XamlType GetAvaloniaXamlType(Type type)
         {
-            if (type == typeof(Binding))
+            if (typeof(IBinding).GetTypeInfo().IsAssignableFrom(type.GetTypeInfo()))
             {
-                return new BindingXamlType(type, this);
+                return BindingXamlType.Create(type, this);
             }
 
             //TODO: do we need it ???
@@ -161,7 +160,33 @@ namespace Avalonia.Markup.Xaml.PortableXaml
 
         protected override XamlMember GetAttachableProperty(string attachablePropertyName, MethodInfo getter, MethodInfo setter)
         {
-            return base.GetAttachableProperty(attachablePropertyName, getter, setter);
+            var key = new Tuple<MemberInfo, MemberInfo>(getter, setter);
+
+            XamlMember result;
+
+            if (_cachedMembers.TryGetValue(key, out result))
+            {
+                return result;
+            }
+
+            var type = (getter ?? setter).DeclaringType;
+
+            var prop = AvaloniaPropertyRegistry.Instance.GetAttached(type)
+                    .FirstOrDefault(v => v.Name == attachablePropertyName);
+
+            if (prop != null)
+            {
+                result = new AvaloniaAttachedPropertyXamlMember(
+                                        prop, attachablePropertyName,
+                                        getter, setter, this);
+            }
+
+            if (result == null)
+            {
+                result = base.GetAttachableProperty(attachablePropertyName, getter, setter);
+            }
+
+            return _cachedMembers[key] = result;
         }
 
         protected override XamlMember GetProperty(PropertyInfo pi)
@@ -169,28 +194,48 @@ namespace Avalonia.Markup.Xaml.PortableXaml
             Type objType = pi.DeclaringType;
             string name = pi.Name;
 
+            XamlMember result;
+
+            var key = new Tuple<MemberInfo, MemberInfo>(pi, null);
+
+            if (_cachedMembers.TryGetValue(key, out result))
+            {
+                return result;
+            }
+
             var avProp = AvaloniaPropertyRegistry.Instance.FindRegistered(objType, name);
 
             var assignBindingAttr = pi.GetCustomAttribute<AssignBindingAttribute>();
 
             if (avProp != null)
             {
-                return new AvaloniaPropertyXamlMember(avProp, pi, this)
+                result = new AvaloniaPropertyXamlMember(avProp, pi, this)
                 {
                     AssignBinding = assignBindingAttr != null
                 };
             }
 
-            var dependAttr = pi.GetCustomAttribute<am.DependsOnAttribute>();
-
-            if (dependAttr != null)
+            if (result == null)
             {
-                return new DependOnXamlMember(dependAttr.Name, pi, this);
+                var dependAttr = pi.GetCustomAttribute<am.DependsOnAttribute>();
+
+                if (dependAttr != null)
+                {
+                    result = new DependOnXamlMember(dependAttr.Name, pi, this);
+                }
             }
 
-            return base.GetProperty(pi);
+            if (result == null)
+            {
+                result = new PropertyXamlMember(pi, this);
+            }
+
+            return _cachedMembers[key] = result;
         }
 
         private Dictionary<Type, XamlType> _cachedTypes = new Dictionary<Type, XamlType>();
+
+        private Dictionary<Tuple<MemberInfo, MemberInfo>, XamlMember> _cachedMembers =
+                        new Dictionary<Tuple<MemberInfo, MemberInfo>, XamlMember>();
     }
 }

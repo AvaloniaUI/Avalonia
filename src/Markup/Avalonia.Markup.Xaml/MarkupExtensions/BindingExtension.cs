@@ -7,12 +7,12 @@ using System;
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions
 {
-
 #if !OMNIXAML
 
     using Portable.Xaml.Markup;
+    using PortableXaml;
 
-    [MarkupExtensionReturnType(typeof(Binding))]
+    [MarkupExtensionReturnType(typeof(IBinding))]
     public class BindingExtension : MarkupExtension
     {
         public BindingExtension()
@@ -26,7 +26,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
 
         public override object ProvideValue(IServiceProvider serviceProvider)
         {
-            return new Binding
+            var b = new Binding
             {
                 Converter = Converter,
                 ConverterParameter = ConverterParameter,
@@ -35,7 +35,10 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
                 Mode = Mode,
                 Path = Path,
                 Priority = Priority,
+                RelativeSource = RelativeSource
             };
+
+            return XamlBinding.FromMarkupExtensionContext(b, serviceProvider);
         }
 
         public IValueConverter Converter { get; set; }
@@ -54,7 +57,10 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
         public BindingPriority Priority { get; set; } = BindingPriority.LocalValue;
 
         public object Source { get; set; }
+
+        public RelativeSource RelativeSource { get; set; }
     }
+
 #else
 
     using OmniXaml;

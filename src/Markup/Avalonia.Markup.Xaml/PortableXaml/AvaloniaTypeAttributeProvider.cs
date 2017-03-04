@@ -1,11 +1,11 @@
 ﻿// Copyright (c) The Perspex Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using Portable.Xaml.ComponentModel;
 using System;
 using System.Linq;
 using System.Reflection;
-using Avalonia.Metadata;
-using Portable.Xaml.ComponentModel;
+using avm = Avalonia.Metadata;
 using pm = Portable.Xaml.Markup;
 
 namespace Avalonia.Markup.Xaml.PortableXaml
@@ -24,47 +24,50 @@ namespace Avalonia.Markup.Xaml.PortableXaml
 
         public object[] GetCustomAttributes(Type attributeType, bool inherit)
         {
+            Attribute result = null;
+
+            var ti = _type.GetTypeInfo();
+
             if (attributeType == typeof(pm.ContentPropertyAttribute))
             {
-                var cp = GetContentPropertyAttribute(inherit);
-
-                if (cp != null)
-                {
-                    return new object[] { cp };
-                }
+                result = GetContentPropertyAttribute(inherit);
             }
             else if (attributeType == typeof(pm.RuntimeNamePropertyAttribute))
             {
-                if (_namedType.IsAssignableFrom(_type.GetTypeInfo()))
+                if (_namedType.IsAssignableFrom(ti))
                 {
-                    return new object[]
-                         {
-                             new pm.RuntimeNamePropertyAttribute(nameof(INamed.Name))
-                         };
+                    result = new pm.RuntimeNamePropertyAttribute(nameof(INamed.Name));
                 }
             }
             else if (attributeType == typeof(TypeConverterAttribute))
             {
-                var attribs = _type.GetTypeInfo().GetCustomAttributes(attributeType, inherit);
+                result = ti.GetCustomAttribute(attributeType, inherit);
 
-                if (attribs?.Any() != true)
+                if (result == null)
                 {
                     var convType = AvaloniaDefaultTypeConverters.GetTypeConverter(_type);
 
                     if (convType != null)
                     {
-                        return new object[]
-                        {
-                            new TypeConverterAttribute(convType)
-                        };
+                        result = new TypeConverterAttribute(convType);
                     }
                 }
-
-                return (attribs as object[]) ?? attribs.ToArray();
+            }
+            else if (attributeType == typeof(pm.AmbientAttribute))
+            {
+                result = ti.GetCustomAttribute<avm.AmbientAttribute>(inherit)
+                                                    .ToPortableXaml();
             }
 
-            var attr = _type.GetTypeInfo().GetCustomAttributes(attributeType, inherit);
-            return (attr as object[]) ?? attr.ToArray();
+            if (result == null)
+            {
+                var attr = ti.GetCustomAttributes(attributeType, inherit);
+                return (attr as object[]) ?? attr.ToArray();
+            }
+            else
+            {
+                return new object[] { result };
+            }
         }
 
         public bool IsDefined(Type attributeType, bool inherit)
@@ -83,7 +86,7 @@ namespace Avalonia.Markup.Xaml.PortableXaml
             while (type != null)
             {
                 var properties = type.GetTypeInfo().DeclaredProperties
-                    .Where(x => x.GetCustomAttribute<ContentAttribute>() != null);
+                    .Where(x => x.GetCustomAttribute<avm.ContentAttribute>() != null);
                 string result = null;
 
                 foreach (var property in properties)

@@ -33,10 +33,7 @@ namespace Avalonia.Markup.Xaml.Converters
 
             if (typeName == null)
             {
-                var amb = context.GetService<IAmbientProvider>();
-                var sc = context.GetService<IXamlSchemaContextProvider>().SchemaContext;
-                var xamlStyleType = sc.GetXamlType(typeof(Style));
-                var style = amb.GetFirstAmbientValue(xamlStyleType) as Style;
+                var style = context.GetFirstAmbientValue<Style>();
 
                 type = style?.Selector?.TargetType;
 
