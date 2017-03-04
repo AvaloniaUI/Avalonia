@@ -118,7 +118,7 @@ namespace Avalonia.Direct2D1
         {
             if (UseImmediateRenderer)
             {
-                return new ImmediateRenderer(root, renderLoop);
+                return new ImmediateRenderer(root);
             }
             else
             {

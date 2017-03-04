@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using Avalonia.Threading;
 using Avalonia.Media;
 using System.Linq;
-using Avalonia.Media.Imaging;
 
 namespace Avalonia.Rendering
 {
@@ -22,45 +21,65 @@ namespace Avalonia.Rendering
     /// </remarks>
     public class ImmediateRenderer : RendererBase, IRenderer, IVisualBrushRenderer
     {
-        private readonly IRenderLoop _renderLoop;
         private readonly IVisual _root;
+        private readonly IRenderRoot _renderRoot;
         private IRenderTarget _renderTarget;
-        private bool _dirty = true;
-        private bool _renderQueued;
-
-        public ImmediateRenderer(IRenderRoot root, IRenderLoop renderLoop)
-        {
-            Contract.Requires<ArgumentNullException>(root != null);
-            Contract.Requires<ArgumentNullException>(renderLoop != null);
-
-            _root = root;
-            _renderLoop = renderLoop;
-            _renderLoop.Tick += OnRenderLoopTick;
-        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ImmediateRenderer"/> class.
         /// </summary>
         /// <param name="root">The control to render.</param>
-        private ImmediateRenderer(IVisual root)
+        public ImmediateRenderer(IVisual root)
         {
             Contract.Requires<ArgumentNullException>(root != null);
 
             _root = root;
+            _renderRoot = root as IRenderRoot;
         }
 
         /// <inheritdoc/>
         public bool DrawFps { get; set; }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether the renderer should a visual representation
-        /// of its dirty rectangles. Not currently supported in <see cref="ImmediateRenderer"/>.
-        /// </summary>
+        /// <inheritdoc/>
         public bool DrawDirtyRects { get; set; }
 
         /// <inheritdoc/>
         public void Paint(Rect rect)
         {
+            if (_renderTarget == null)
+            {
+                _renderTarget = ((IRenderRoot)_root).CreateRenderTarget(this);
+            }
+
+            try
+            {
+                using (var context = new DrawingContext(_renderTarget.CreateDrawingContext(this)))
+                {
+                    using (context.PushTransformContainer())
+                    {
+                        Render(context, _root, _root.Bounds);
+                    }
+
+                    if (DrawDirtyRects)
+                    {
+                        var color = (uint)new Random().Next(0xffffff) | 0x44000000;
+                        context.FillRectangle(
+                            new SolidColorBrush(color),
+                            rect);
+                    }
+
+                    if (DrawFps)
+                    {
+                        RenderFps(context.PlatformImpl, _root.Bounds, true);
+                    }
+                }
+            }
+            catch (RenderTargetCorruptedException ex)
+            {
+                Logging.Logger.Information("Renderer", this, "Render target was corrupted. Exception: {0}", ex);
+                _renderTarget.Dispose();
+                _renderTarget = null;
+            }
         }
 
         /// <inheritdoc/>
@@ -98,7 +117,16 @@ namespace Avalonia.Rendering
         /// <inheritdoc/>
         public void AddDirty(IVisual visual)
         {
-            _dirty = true;
+            if (visual.Bounds != Rect.Empty)
+            {
+                var m = visual.TransformToVisual(_root);
+
+                if (m.HasValue)
+                {
+                    var bounds = new Rect(visual.Bounds.Size).TransformToAABB(m.Value);
+                    _renderRoot?.Invalidate(bounds);
+                }
+            }
         }
 
         /// <summary>
@@ -106,10 +134,6 @@ namespace Avalonia.Rendering
         /// </summary>
         public void Dispose()
         {
-            if (_renderLoop != null)
-            {
-                _renderLoop.Tick -= OnRenderLoopTick;
-            }
         }
 
         /// <inheritdoc/>
@@ -184,38 +208,6 @@ namespace Avalonia.Rendering
             }
         }
 
-        private void Render()
-        {
-            if (_renderTarget == null)
-            {
-                _renderTarget = ((IRenderRoot)_root).CreateRenderTarget(this);
-            }
-
-            try
-            {
-                using (var context = new DrawingContext(_renderTarget.CreateDrawingContext(this)))
-                {
-                    Render(context, _root, _root.Bounds);
-
-                    if (DrawFps)
-                    {
-                        RenderFps(context.PlatformImpl, _root.Bounds, true);
-                    }
-                }
-            }
-            catch (RenderTargetCorruptedException ex)
-            {
-                Logging.Logger.Information("Renderer", this, "Render target was corrupted. Exception: {0}", ex);
-                _renderTarget.Dispose();
-                _renderTarget = null;
-            }
-            finally
-            {
-                _dirty = false;
-                _renderQueued = false;
-            }
-        }
-
         private void Render(DrawingContext context, IVisual visual, Rect clipRect)
         {
             var opacity = visual.Opacity;
@@ -281,15 +273,6 @@ namespace Avalonia.Rendering
             if (!visual.IsVisible)
             {
                 ClearTransformedBounds(visual);
-            }
-        }
-
-        private void OnRenderLoopTick(object sender, EventArgs e)
-        {
-            if ((_dirty || DrawFps) && !_renderQueued)
-            {
-                _renderQueued = true;
-                Dispatcher.UIThread.InvokeAsync(() => Render());
             }
         }
     }
