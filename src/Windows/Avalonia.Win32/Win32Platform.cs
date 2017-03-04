@@ -35,7 +35,7 @@ namespace Avalonia
 
 namespace Avalonia.Win32
 {
-    partial class Win32Platform : IPlatformThreadingInterface, IPlatformSettings, IWindowingPlatform, IPlatformIconLoader
+    partial class Win32Platform : IPlatformThreadingInterface, IPlatformSettings, IWindowingPlatform, IPlatformIconLoader, IRendererFactory
     {
         private static readonly Win32Platform s_instance = new Win32Platform();
         private static uint _uiThread;
@@ -70,6 +70,7 @@ namespace Avalonia.Win32
                 .Bind<IPlatformSettings>().ToConstant(s_instance)
                 .Bind<IPlatformThreadingInterface>().ToConstant(s_instance)
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop(60))
+                .Bind<IRendererFactory>().ToConstant(s_instance)
                 .Bind<ISystemDialogImpl>().ToSingleton<SystemDialogImpl>()
                 .Bind<IWindowingPlatform>().ToConstant(s_instance)
                 .Bind<IPlatformIconLoader>().ToConstant(s_instance);
@@ -196,6 +197,11 @@ namespace Avalonia.Win32
         public IPopupImpl CreatePopup()
         {
             return new PopupImpl();
+        }
+
+        public IRenderer CreateRenderer(IRenderRoot root, IRenderLoop renderLoop)
+        {
+            return new DeferredRenderer(root, renderLoop);
         }
     }
 }

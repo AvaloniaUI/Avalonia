@@ -9,9 +9,7 @@ using Avalonia.Direct2D1.Media;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Controls;
-using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Direct2D1.Media.Imaging;
-using Avalonia.Rendering;
 
 namespace Avalonia
 {
@@ -27,7 +25,7 @@ namespace Avalonia
 
 namespace Avalonia.Direct2D1
 {
-    public class Direct2D1Platform : IPlatformRenderInterface, IRendererFactory
+    public class Direct2D1Platform : IPlatformRenderInterface
     {
         private static readonly Direct2D1Platform s_instance = new Direct2D1Platform();
 
@@ -41,13 +39,10 @@ namespace Avalonia.Direct2D1
 
         private static readonly SharpDX.WIC.ImagingFactory s_imagingFactory = new SharpDX.WIC.ImagingFactory();
 
-        public static bool UseImmediateRenderer { get; set; }
-
         public static void Initialize()
         {
             AvaloniaLocator.CurrentMutable
                 .Bind<IPlatformRenderInterface>().ToConstant(s_instance)
-                .Bind<IRendererFactory>().ToConstant(s_instance)
                 .Bind<SharpDX.Direct2D1.Factory>().ToConstant(s_d2D1Factory)
                 .Bind<SharpDX.Direct2D1.Factory1>().ToConstant(s_d2D1Factory)
                 .BindToSelf(s_dwfactory)
@@ -112,18 +107,6 @@ namespace Avalonia.Direct2D1
                 fontWeight,
                 wrapping,
                 constraint);
-        }
-
-        public IRenderer CreateRenderer(IRenderRoot root, IRenderLoop renderLoop)
-        {
-            if (UseImmediateRenderer)
-            {
-                return new ImmediateRenderer(root);
-            }
-            else
-            {
-                return new DeferredRenderer(root, renderLoop);
-            }
         }
 
         public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)

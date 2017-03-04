@@ -5,12 +5,11 @@ using System.Linq;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Media;
 using Avalonia.Platform;
-using Avalonia.Rendering;
 using SkiaSharp;
 
 namespace Avalonia.Skia
 {
-    public partial class PlatformRenderInterface : IPlatformRenderInterface, IRendererFactory
+    public partial class PlatformRenderInterface : IPlatformRenderInterface
     {
         public IBitmapImpl CreateBitmap(int width, int height)
         {
@@ -60,11 +59,6 @@ namespace Avalonia.Skia
                     , data, stride);
                 return new BitmapImpl(tmp.Copy());
             }
-        }
-
-        public IRenderer CreateRenderer(IRenderRoot root, IRenderLoop renderLoop)
-        {
-            return new DeferredRenderer(root, renderLoop);
         }
 
         public IRenderTargetBitmapImpl CreateRenderTargetBitmap(
