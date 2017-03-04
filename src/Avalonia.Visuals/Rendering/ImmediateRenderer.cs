@@ -12,6 +12,14 @@ using Avalonia.Media.Imaging;
 
 namespace Avalonia.Rendering
 {
+    /// <summary>
+    /// A renderer which renders the state of the visual tree without an intermediate scene graph
+    /// representation.
+    /// </summary>
+    /// <remarks>
+    /// The immediate renderer supports only clip-bound-based hit testing; a control's geometry is
+    /// not taken into account.
+    /// </remarks>
     public class ImmediateRenderer : RendererBase, IRenderer, IVisualBrushRenderer
     {
         private readonly IRenderLoop _renderLoop;
@@ -30,6 +38,10 @@ namespace Avalonia.Rendering
             _renderLoop.Tick += OnRenderLoopTick;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ImmediateRenderer"/> class.
+        /// </summary>
+        /// <param name="root">The control to render.</param>
         private ImmediateRenderer(IVisual root)
         {
             Contract.Requires<ArgumentNullException>(root != null);
@@ -37,17 +49,30 @@ namespace Avalonia.Rendering
             _root = root;
         }
 
+        /// <inheritdoc/>
         public bool DrawFps { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the renderer should a visual representation
+        /// of its dirty rectangles. Not currently supported in <see cref="ImmediateRenderer"/>.
+        /// </summary>
         public bool DrawDirtyRects { get; set; }
 
+        /// <inheritdoc/>
         public void Paint(Rect rect)
         {
         }
 
+        /// <inheritdoc/>
         public void Resized(Size size)
         {
         }
 
+        /// <summary>
+        /// Renders a visual to a render target.
+        /// </summary>
+        /// <param name="visual">The visual.</param>
+        /// <param name="target">The render target.</param>
         public static void Render(IVisual visual, IRenderTarget target)
         {
             using (var renderer = new ImmediateRenderer(visual))
@@ -57,6 +82,11 @@ namespace Avalonia.Rendering
             }
         }
 
+        /// <summary>
+        /// Renders a visual to a drawing context.
+        /// </summary>
+        /// <param name="visual">The visual.</param>
+        /// <param name="context">The drawing context.</param>
         public static void Render(IVisual visual, DrawingContext context)
         {
             using (var renderer = new ImmediateRenderer(visual))
@@ -65,11 +95,15 @@ namespace Avalonia.Rendering
             }
         }
 
+        /// <inheritdoc/>
         public void AddDirty(IVisual visual)
         {
             _dirty = true;
         }
 
+        /// <summary>
+        /// Ends the operation of the renderer.
+        /// </summary>
         public void Dispose()
         {
             if (_renderLoop != null)
@@ -78,17 +112,20 @@ namespace Avalonia.Rendering
             }
         }
 
+        /// <inheritdoc/>
         public IEnumerable<IVisual> HitTest(Point p, Func<IVisual, bool> filter)
         {
             return HitTest(_root, p, filter);
         }
 
+        /// <inheritdoc/>
         Size IVisualBrushRenderer.GetRenderTargetSize(IVisualBrush brush)
         {
             (brush.Visual as IVisualBrushInitialize)?.EnsureInitialized();
             return brush.Visual?.Bounds.Size ?? Size.Empty;
         }
 
+        /// <inheritdoc/>
         void IVisualBrushRenderer.RenderVisualBrush(IDrawingContextImpl context, IVisualBrush brush)
         {
             var visual = brush.Visual;
