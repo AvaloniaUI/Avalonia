@@ -1,7 +1,6 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Markup.Xaml.Data;
@@ -10,6 +9,7 @@ using Avalonia.Markup.Xaml.Templates;
 using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
+using System.Linq;
 using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Xaml
@@ -48,6 +48,21 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
             Assert.NotNull(target);
             Assert.Equal(21.0, TextBlock.GetFontSize(target));
+        }
+
+        [Fact]
+        public void Attached_Property_In_Panel_Is_Set()
+        {
+            var xaml = @"
+<Panel xmlns='https://github.com/avaloniaui'>
+    <ToolTip.Tip>Foo</ToolTip.Tip>
+</Panel>";
+
+            var target = AvaloniaXamlLoader.Parse<Panel>(xaml);
+
+            Assert.Equal(0, target.Children.Count);
+
+            Assert.Equal("Foo", ToolTip.GetTip(target));
         }
 
         [Fact]
@@ -379,38 +394,137 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         }
 
         [Fact]
+        public void Xaml_Binding_Is_Delayed()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformWrapper
+                                    .With(windowingPlatform: new MockWindowingPlatform())))
+            {
+                var xaml =
+@"<ContentControl xmlns='https://github.com/avaloniaui' Content='{Binding}'/>";
+
+                var target = AvaloniaXamlLoader.Parse<ContentControl>(xaml);
+
+                Assert.Null(target.Content);
+
+                target.DataContext = "Foo";
+
+                Assert.Null(target.Content);
+
+                DelayedBinding.ApplyBindings(target);
+
+                Assert.Equal("Foo", target.Content);
+            }
+        }
+
+        [Fact]
+        public void Double_Xaml_Binding_Is_Operational()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformWrapper
+                                    .With(windowingPlatform: new MockWindowingPlatform())))
+            {
+                var xaml =
+@"<Window xmlns='https://github.com/avaloniaui' Width='{Binding}'/>";
+
+                var target = AvaloniaXamlLoader.Parse<ContentControl>(xaml);
+
+                Assert.Null(target.Content);
+
+                target.DataContext = 55.0;
+
+                Assert.Equal(55.0, target.Width);
+            }
+        }
+
+        [Fact]
+        public void Collection_Xaml_Binding_Is_Operational()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformWrapper
+                                    .With(windowingPlatform: new MockWindowingPlatform())))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'>
+    <ItemsControl Name='itemsControl' Items='{Binding}'>
+    </ItemsControl>
+</Window>
+";
+
+                var target = AvaloniaXamlLoader.Parse<Window>(xaml);
+
+                Assert.NotNull(target.Content);
+
+                var itemsControl = target.FindControl<ItemsControl>("itemsControl");
+
+                var items = new string[] { "Foo", "Bar" };
+
+                target.DataContext = items;
+
+                Assert.Equal(items, itemsControl.Items);
+            }
+        }
+
+        [Fact]
+        public void Multi_Xaml_Binding_Is_Parsed()
+        {
+            var xaml =
+@"<MultiBinding xmlns='https://github.com/avaloniaui'
+        Converter='{Static BoolConverters.And}'>
+     <Binding Path='Foo' />
+     <Binding Path='Bar' />
+</MultiBinding>";
+
+            var target = AvaloniaXamlLoader.Parse<MultiBinding>(xaml);
+
+            Assert.Equal(2, target.Bindings.Count);
+
+            Assert.Equal(BoolConverters.And, target.Converter);
+
+            var bindings = target.Bindings.Cast<Binding>().ToArray();
+
+            Assert.Equal("Foo", bindings[0].Path);
+            Assert.Equal("Bar", bindings[1].Path);
+        }
+
+#if OMNIXAML
+        [Fact(Skip ="OmniXaml doesn't support set property with base class prefix ...")]
+#else
+        [Fact]
+#endif
         public void Control_Template_Is_Operational()
         {
-            var xaml = @"
-<ContentControl xmlns='https://github.com/avaloniaui' 
+            using (UnitTestApplication.Start(TestServices.MockPlatformWrapper
+                                    .With(windowingPlatform: new MockWindowingPlatform())))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
                 xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
     <ContentControl.Template>
         <ControlTemplate>
-            <ContentPresenter Name='PART_ContentPresenter' 
+            <ContentPresenter Name='PART_ContentPresenter'
                         Content='{TemplateBinding Content}'/>
         </ControlTemplate>
     </ContentControl.Template>
-</ContentControl>";
+</Window>";
 
-            var target = AvaloniaXamlLoader.Parse<ContentControl>(xaml);
+                var target = AvaloniaXamlLoader.Parse<ContentControl>(xaml);
 
-            Assert.NotNull(target.Template);
+                Assert.NotNull(target.Template);
 
-            Assert.Null(target.Presenter);
+                Assert.Null(target.Presenter);
 
-            target.ApplyTemplate();
+                target.ApplyTemplate();
 
-            Assert.NotNull(target.Presenter);
+                Assert.NotNull(target.Presenter);
 
-            target.Content = "Foo";
+                target.Content = "Foo";
 
-            Assert.Equal("Foo", target.Presenter.Content);
+                Assert.Equal("Foo", target.Presenter.Content);
+            }
         }
 
         [Fact]
         public void Style_ControlTemplate_Is_Build()
         {
-                var xaml = @"
+            var xaml = @"
 <Style xmlns='https://github.com/avaloniaui' Selector='ContentControl'>
   <Setter Property='Template'>
      <ControlTemplate>
@@ -421,23 +535,23 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
   </Setter>
 </Style> ";
 
-                var style = AvaloniaXamlLoader.Parse<Style>(xaml);
+            var style = AvaloniaXamlLoader.Parse<Style>(xaml);
 
-                Assert.Equal(1, style.Setters.Count());
+            Assert.Equal(1, style.Setters.Count());
 
-                var setter = (Setter)style.Setters.First();
+            var setter = (Setter)style.Setters.First();
 
-                Assert.Equal(ContentControl.TemplateProperty, setter.Property);
+            Assert.Equal(ContentControl.TemplateProperty, setter.Property);
 
-                Assert.IsType<ControlTemplate>(setter.Value);
+            Assert.IsType<ControlTemplate>(setter.Value);
 
-                var template = (ControlTemplate)setter.Value;
+            var template = (ControlTemplate)setter.Value;
 
-                var control = new ContentControl();
+            var control = new ContentControl();
 
-                var result = (ContentPresenter)template.Build(control);
+            var result = (ContentPresenter)template.Build(control);
 
-                Assert.NotNull(result);
+            Assert.NotNull(result);
         }
 
         [Fact]
