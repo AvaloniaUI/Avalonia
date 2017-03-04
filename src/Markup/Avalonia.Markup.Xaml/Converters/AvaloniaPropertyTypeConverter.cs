@@ -48,7 +48,8 @@ namespace Avalonia.Markup.Xaml.Converters
             }
             else
             {
-                //type = context.TypeRepository.GetByQualifiedName(typeName)?.UnderlyingType;
+                var typeResolver = context.GetService<IXamlTypeResolver>();
+                type = typeResolver.Resolve(typeName);
 
                 if (type == null)
                 {

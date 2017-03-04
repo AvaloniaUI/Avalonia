@@ -222,6 +222,31 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         }
 
         [Fact]
+        public void Style_Setter_With_AttachedProperty_Is_Parsed()
+        {
+            var xaml = @"
+<Styles xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Style Selector='ContentControl'>
+        <Setter Property='TextBlock.FontSize' Value='21'/>
+    </Style>
+</Styles>";
+
+            var styles = AvaloniaXamlLoader.Parse<Styles>(xaml);
+
+            Assert.Equal(1, styles.Count);
+
+            var style = (Style)styles[0];
+
+            var setters = style.Setters.Cast<Setter>().ToArray();
+
+            Assert.Equal(1, setters.Length);
+
+            Assert.Equal(TextBlock.FontSizeProperty, setters[0].Property);
+            Assert.Equal(21.0, setters[0].Value);
+        }
+
+        [Fact]
         public void Complex_Style_Is_Parsed()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
@@ -317,7 +342,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 var xaml = @"
 <Styles xmlns='https://github.com/avaloniaui'
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
-    <StyleInclude Source='resm:Avalonia.Themes.Default.Accents.BaseLight.xaml?assembly=Avalonia.Themes.Default'/>
+    <StyleInclude Source='resm:Avalonia.Themes.Default.ContextMenu.xaml?assembly=Avalonia.Themes.Default'/>
 </Styles>";
 
                 var styles = AvaloniaXamlLoader.Parse<Styles>(xaml);
