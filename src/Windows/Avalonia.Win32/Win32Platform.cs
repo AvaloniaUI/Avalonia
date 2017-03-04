@@ -25,10 +25,14 @@ namespace Avalonia
 {
     public static class Win32ApplicationExtensions
     {
-        public static T UseWin32<T>(this T builder) where T : AppBuilderBase<T>, new()
+        public static T UseWin32<T>(
+            this T builder,
+            bool deferredRendering = true) 
+                where T : AppBuilderBase<T>, new()
         {
-            builder.UseWindowingSubsystem(Win32.Win32Platform.Initialize, "Win32");
-            return builder;
+            return builder.UseWindowingSubsystem(
+                () => Win32.Win32Platform.Initialize(deferredRendering),
+                "Win32");
         }
     }
 }
@@ -38,6 +42,7 @@ namespace Avalonia.Win32
     partial class Win32Platform : IPlatformThreadingInterface, IPlatformSettings, IWindowingPlatform, IPlatformIconLoader, IRendererFactory
     {
         private static readonly Win32Platform s_instance = new Win32Platform();
+        private static bool s_deferredRendering = true;
         private static uint _uiThread;
         private UnmanagedMethods.WndProc _wndProcDelegate;
         private IntPtr _hwnd;
@@ -62,6 +67,11 @@ namespace Avalonia.Win32
 
         public static void Initialize()
         {
+            Initialize(true);
+        }
+
+        public static void Initialize(bool deferredRendering = true)
+        {
             AvaloniaLocator.CurrentMutable
                 .Bind<IClipboard>().ToSingleton<ClipboardImpl>()
                 .Bind<IStandardCursorFactory>().ToConstant(CursorFactory.Instance)
@@ -74,7 +84,8 @@ namespace Avalonia.Win32
                 .Bind<ISystemDialogImpl>().ToSingleton<SystemDialogImpl>()
                 .Bind<IWindowingPlatform>().ToConstant(s_instance)
                 .Bind<IPlatformIconLoader>().ToConstant(s_instance);
-            
+
+            s_deferredRendering = deferredRendering;
             _uiThread = UnmanagedMethods.GetCurrentThreadId();
         }
 
@@ -201,7 +212,9 @@ namespace Avalonia.Win32
 
         public IRenderer CreateRenderer(IRenderRoot root, IRenderLoop renderLoop)
         {
-            return new DeferredRenderer(root, renderLoop);
+            return s_deferredRendering ?
+                (IRenderer)new DeferredRenderer(root, renderLoop) :
+                (IRenderer)new ImmediateRenderer(root);
         }
     }
 }
