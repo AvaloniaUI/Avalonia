@@ -38,7 +38,7 @@ namespace Avalonia.Markup.Xaml.Converters
         private WindowIcon CreateIconFromPath(ITypeDescriptorContext context, string path)
         {
             var uri = new Uri(path, UriKind.RelativeOrAbsolute);
-            var baseUri = GetBaseUri(context);
+            var baseUri = GetBaseUri(uri, context);
             var scheme = uri.IsAbsoluteUri ? uri.Scheme : "file";
 
             switch (scheme)
@@ -51,9 +51,14 @@ namespace Avalonia.Markup.Xaml.Converters
             }
         }
 
-        private Uri GetBaseUri(ITypeDescriptorContext context)
+        private Uri GetBaseUri(Uri uri, ITypeDescriptorContext context)
         {
-            throw new NotImplementedException();
+            if (uri.IsAbsoluteUri)
+            {
+                return null;
+            }
+
+            throw new NotImplementedException("Relative base uri Not implemented!");
             //object result;
             //context.ParsingDictionary.TryGetValue("Uri", out result);
             //return result as Uri;
@@ -63,6 +68,7 @@ namespace Avalonia.Markup.Xaml.Converters
 #else
 
     using OmniXaml.TypeConversion;
+    using System.Reflection;
 
     class IconTypeConverter : ITypeConverter
     {
