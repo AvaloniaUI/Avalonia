@@ -105,6 +105,11 @@ csx
 # Windows Store app package directory
 AppPackages/
 
+# NCrunch
+_NCrunch_*/
+*.ncrunchsolution.user
+nCrunchTemp_*/
+
 # Others
 sql/
 *.Cache
