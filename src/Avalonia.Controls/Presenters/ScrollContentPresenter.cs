@@ -133,7 +133,7 @@ namespace Avalonia.Controls.Presenters
                 return false;
             }
 
-            var rect = targetRect * transform.Value;
+            var rect = targetRect.TransformToAABB(transform.Value);
             var offset = Offset;
             var result = false;
 
