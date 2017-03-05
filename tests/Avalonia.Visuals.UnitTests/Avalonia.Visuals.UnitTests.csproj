@@ -81,6 +81,7 @@
     <Compile Include="Media\PathMarkupParserTests.cs" />
     <Compile Include="RelativeRectComparer.cs" />
     <Compile Include="SizeTests.cs" />
+    <Compile Include="RectTests.cs" />
     <Compile Include="RelativeRectTests.cs" />
     <Compile Include="ThicknessTests.cs" />
     <Compile Include="Media\BrushTests.cs" />
