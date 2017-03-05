@@ -107,7 +107,7 @@
     <Compile Include="Media\FormattedTextLine.cs" />
     <Compile Include="Media\FormattedText.cs" />
     <Compile Include="Media\Geometry.cs" />
-    <Compile Include="Media\IDrawingContext.cs" />
+    <Compile Include="Media\IDrawingContextImpl.cs" />
     <Compile Include="Platform\ExportRenderingSubsystemAttribute.cs" />
     <Compile Include="Platform\ILockedFramebuffer.cs" />
     <Compile Include="Platform\IModuleEnvironmentChecker.cs" />
