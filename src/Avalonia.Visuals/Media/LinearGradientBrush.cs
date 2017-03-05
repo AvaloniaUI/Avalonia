@@ -6,7 +6,7 @@ namespace Avalonia.Media
     /// <summary>
     /// A brush that draws with a linear gradient.
     /// </summary>
-    public sealed class LinearGradientBrush : GradientBrush
+    public sealed class LinearGradientBrush : GradientBrush, ILinearGradientBrush
     {
         /// <summary>
         /// Defines the <see cref="StartPoint"/> property.

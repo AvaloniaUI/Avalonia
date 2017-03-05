@@ -69,7 +69,13 @@
     <Compile Include="Media\BrushMappingMode.cs" />
     <Compile Include="Media\Color.cs" />
     <Compile Include="Media\Colors.cs" />
+    <Compile Include="Media\IGradientBrush.cs" />
+    <Compile Include="Media\ILinearGradientBrush.cs" />
+    <Compile Include="Media\Imaging\IImageBrush.cs" />
     <Compile Include="Media\Imaging\WritableBitmap.cs" />
+    <Compile Include="Media\IRadialGradientBrush.cs" />
+    <Compile Include="Media\ITileBrush.cs" />
+    <Compile Include="Media\IVisualBrush.cs" />
     <Compile Include="Media\TextWrapping.cs" />
     <Compile Include="Media\TransformGroup.cs" />
     <Compile Include="Media\DashStyle.cs" />
@@ -133,7 +139,7 @@
     <Compile Include="Media\TextHitTestResult.cs" />
     <Compile Include="Media\Transform.cs" />
     <Compile Include="Media\TileBrush.cs" />
-    <Compile Include="Media\ImageBush.cs" />
+    <Compile Include="Media\ImageBrush.cs" />
     <Compile Include="Media\VisualBrush.cs" />
     <Compile Include="Platform\IPlatformSettings.cs" />
     <Compile Include="RelativePoint.cs" />
