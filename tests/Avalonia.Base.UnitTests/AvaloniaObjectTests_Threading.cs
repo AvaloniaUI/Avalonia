@@ -50,23 +50,6 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
-        public void StyledProperty_Binding_Producing_Value_Should_Throw()
-        {
-            var ti = new ThreadingInterface(true);
-            using (UnitTestApplication.Start(new TestServices(threadingInterface: ti)))
-            {
-                var target = new Class1();
-
-                var source = new BehaviorSubject<string>("foo");
-
-                target.Bind(Class1.StyledProperty, source);
-
-                ti.CurrentThreadIsLoopThread = false;
-                Assert.Throws<InvalidOperationException>(() => source.OnNext("bar"));
-            }
-        }
-
-        [Fact]
         public void StyledProperty_ClearValue_Should_Throw()
         {
             using (UnitTestApplication.Start(new TestServices(threadingInterface: new ThreadingInterface())))
@@ -121,23 +104,6 @@ namespace Avalonia.Base.UnitTests
                     target.Bind(
                         Class1.DirectProperty,
                         new BehaviorSubject<string>("foo")));
-            }
-        }
-
-        [Fact]
-        public void DirectProperty_Binding_Producing_Value_Should_Throw()
-        {
-            var ti = new ThreadingInterface(true);
-            using (UnitTestApplication.Start(new TestServices(threadingInterface: ti)))
-            {
-                var target = new Class1();
-
-                var source = new BehaviorSubject<string>("foo");
-
-                target.Bind(Class1.DirectProperty, source);
-
-                ti.CurrentThreadIsLoopThread = false;
-                Assert.Throws<InvalidOperationException>(() => source.OnNext("bar"));
             }
         }
 

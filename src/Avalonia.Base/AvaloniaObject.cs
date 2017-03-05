@@ -335,7 +335,6 @@ namespace Avalonia
                 }
 
                 subscription = source
-                    .Do(_ => VerifyAccess())
                     .Select(x => CastOrDefault(x, property.PropertyType))
                     .Do(_ => { }, () => _directBindings.Remove(subscription))
                     .Subscribe(x => SetDirectValue(property, x));
