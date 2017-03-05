@@ -48,7 +48,7 @@ namespace Avalonia.Rendering
         {
             if (_renderTarget == null)
             {
-                _renderTarget = ((IRenderRoot)_root).CreateRenderTarget(this);
+                _renderTarget = ((IRenderRoot)_root).CreateRenderTarget();
             }
 
             try

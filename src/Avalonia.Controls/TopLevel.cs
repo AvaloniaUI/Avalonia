@@ -189,7 +189,7 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        IRenderTarget IRenderRoot.CreateRenderTarget(IVisualBrushRenderer visualBrushRenderer)
+        IRenderTarget IRenderRoot.CreateRenderTarget()
         {
             return _renderInterface.CreateRenderTarget(PlatformImpl.Surfaces);
         }

@@ -64,7 +64,7 @@ namespace Avalonia.UnitTests
 
         public bool ShowAccessKeys { get; set; }
 
-        public IRenderTarget CreateRenderTarget(IVisualBrushRenderer visualBrushRenderer) => _renderTarget;
+        public IRenderTarget CreateRenderTarget() => _renderTarget;
 
         public void Invalidate(Rect rect)
         {
