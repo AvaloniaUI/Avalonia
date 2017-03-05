@@ -8,7 +8,7 @@ namespace Avalonia.Media
     /// <summary>
     /// Paints an area with an <see cref="IBitmap"/>.
     /// </summary>
-    public class ImageBrush : TileBrush
+    public class ImageBrush : TileBrush, IImageBrush
     {
         /// <summary>
         /// Defines the <see cref="Visual"/> property.

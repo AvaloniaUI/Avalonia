@@ -7,7 +7,7 @@ namespace Avalonia.Media
     /// Paints an area with a radial gradient. A focal point defines the beginning of the gradient, 
     /// and a circle defines the end point of the gradient.
     /// </summary>
-    public sealed class RadialGradientBrush : GradientBrush
+    public sealed class RadialGradientBrush : GradientBrush, IRadialGradientBrush
     {
         /// <summary>
         /// Defines the <see cref="Center"/> property.
@@ -43,7 +43,8 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        /// Gets or sets the location of the two-dimensional focal point that defines the beginning of the gradient.
+        /// Gets or sets the location of the two-dimensional focal point that defines the beginning
+        /// of the gradient.
         /// </summary>
         public RelativePoint GradientOrigin
         {
@@ -52,7 +53,8 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        /// Gets or sets the horizontal and vertical radius of the outermost circle of the radial gradient.
+        /// Gets or sets the horizontal and vertical radius of the outermost circle of the radial
+        /// gradient.
         /// </summary>
         public double Radius
         {

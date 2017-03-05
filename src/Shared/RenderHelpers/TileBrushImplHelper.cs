@@ -17,17 +17,17 @@ namespace Avalonia.RenderHelpers
         private readonly Vector _scale;
         private readonly Vector _translate;
         private readonly Size _imageSize;
-        private readonly VisualBrush _visualBrush;
-        private readonly ImageBrush _imageBrush;
+        private readonly IVisualBrush _visualBrush;
+        private readonly IImageBrush _imageBrush;
         private readonly Matrix _transform;
         private readonly Rect _drawRect;
 
         public bool IsValid { get; }
         
-        public TileBrushImplHelper(TileBrush brush, Size targetSize)
+        public TileBrushImplHelper(ITileBrush brush, Size targetSize)
         {
-            _imageBrush = brush as ImageBrush;
-            _visualBrush = brush as VisualBrush;
+            _imageBrush = brush as IImageBrush;
+            _visualBrush = brush as IVisualBrush;
             if (_imageBrush != null)
             {
                 if (_imageBrush.Source == null)
@@ -112,7 +112,7 @@ namespace Avalonia.RenderHelpers
 
 
         /// <summary>
-        /// Calculates a translate based on a <see cref="TileBrush"/>, a source and destination
+        /// Calculates a translate based on an <see cref="ITileBrush"/>, a source and destination
         /// rectangle and a scale.
         /// </summary>
         /// <param name="brush">The brush.</param>
@@ -122,7 +122,7 @@ namespace Avalonia.RenderHelpers
         /// <returns>A vector with the X and Y _translate.</returns>
 
         public static Vector CalculateTranslate(
-            TileBrush brush,
+            ITileBrush brush,
             Rect sourceRect,
             Rect destinationRect,
             Vector scale)

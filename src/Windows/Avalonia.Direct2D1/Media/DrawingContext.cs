@@ -311,11 +311,11 @@ namespace Avalonia.Direct2D1.Media
         /// <returns>The Direct2D brush wrapper.</returns>
         public BrushImpl CreateBrush(IBrush brush, Size destinationSize)
         {
-            var solidColorBrush = brush as Avalonia.Media.ISolidColorBrush;
-            var linearGradientBrush = brush as Avalonia.Media.LinearGradientBrush;
-            var radialGradientBrush = brush as Avalonia.Media.RadialGradientBrush;
-            var imageBrush = brush as Avalonia.Media.ImageBrush;
-            var visualBrush = brush as Avalonia.Media.VisualBrush;
+            var solidColorBrush = brush as ISolidColorBrush;
+            var linearGradientBrush = brush as ILinearGradientBrush;
+            var radialGradientBrush = brush as IRadialGradientBrush;
+            var imageBrush = brush as IImageBrush;
+            var visualBrush = brush as IVisualBrush;
 
             if (solidColorBrush != null)
             {
@@ -339,7 +339,7 @@ namespace Avalonia.Direct2D1.Media
             }
             else
             {
-                return new SolidColorBrushImpl((Avalonia.Media.SolidColorBrush)null, _renderTarget);
+                return new SolidColorBrushImpl(null, _renderTarget);
             }
         }
 

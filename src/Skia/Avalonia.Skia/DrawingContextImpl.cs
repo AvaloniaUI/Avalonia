@@ -148,14 +148,14 @@ namespace Avalonia.Skia
                 return rv;
             }
 
-            var gradient = brush as GradientBrush;
+            var gradient = brush as IGradientBrush;
             if (gradient != null)
             {
                 var tileMode = gradient.SpreadMethod.ToSKShaderTileMode();
                 var stopColors = gradient.GradientStops.Select(s => s.Color.ToSKColor()).ToArray();
                 var stopOffsets = gradient.GradientStops.Select(s => (float)s.Offset).ToArray();
 
-                var linearGradient = brush as LinearGradientBrush;
+                var linearGradient = brush as ILinearGradientBrush;
                 if (linearGradient != null)
                 {
                     var start = linearGradient.StartPoint.ToPixels(targetSize).ToSKPoint();
@@ -168,7 +168,7 @@ namespace Avalonia.Skia
                 }
                 else
                 {
-                    var radialGradient = brush as RadialGradientBrush;
+                    var radialGradient = brush as IRadialGradientBrush;
                     if (radialGradient != null)
                     {
                         var center = radialGradient.Center.ToPixels(targetSize).ToSKPoint();
@@ -187,7 +187,7 @@ namespace Avalonia.Skia
                 return rv;
             }
 
-            var tileBrush = brush as TileBrush;
+            var tileBrush = brush as ITileBrush;
             if (tileBrush != null)
             {
                 var helper = new TileBrushImplHelper(tileBrush, targetSize);

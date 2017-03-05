@@ -1,11 +1,12 @@
 using System;
+using Avalonia.Media;
 using global::Cairo;
 
 namespace Avalonia.Cairo
 {
 	public class LinearGradientBrushImpl : BrushImpl
 	{
-		public LinearGradientBrushImpl(Avalonia.Media.LinearGradientBrush brush, Size destinationSize)
+		public LinearGradientBrushImpl(ILinearGradientBrush brush, Size destinationSize)
 		{
 			var start = brush.StartPoint.ToPixels(destinationSize);
 			var end = brush.EndPoint.ToPixels(destinationSize);
