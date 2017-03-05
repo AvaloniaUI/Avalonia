@@ -22,5 +22,21 @@ namespace Avalonia.Visuals.UnitTests
 
             Assert.Equal(new Rect(0, 0, 250, 250), result);
         }
+
+        [Fact]
+        public void Union_Should_Ignore_Empty_This_rect()
+        {
+            var result = new Rect(0, 0, 0, 0).Union(new Rect(150, 150, 100, 100));
+
+            Assert.Equal(new Rect(150, 150, 100, 100), result);
+        }
+
+        [Fact]
+        public void Union_Should_Ignore_Empty_Other_rect()
+        {
+            var result = new Rect(0, 0, 100, 100).Union(new Rect(150, 150, 0, 0));
+
+            Assert.Equal(new Rect(0, 0, 100, 100), result);
+        }
     }
 }
