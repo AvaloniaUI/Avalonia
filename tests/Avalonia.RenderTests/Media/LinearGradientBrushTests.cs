@@ -42,7 +42,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                     {
                         StartPoint = new RelativePoint(0, 0.5, RelativeUnit.Relative),
                         EndPoint = new RelativePoint(1, 0.5, RelativeUnit.Relative),
-                        GradientStops =
+                        GradientStops = new[]
                         {
                             new GradientStop { Color = Colors.Red, Offset = 0 },
                             new GradientStop { Color = Colors.Blue, Offset = 1 }
@@ -73,7 +73,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                     {
                         StartPoint = new RelativePoint(0.5, 0, RelativeUnit.Relative),
                         EndPoint = new RelativePoint(0.5, 1, RelativeUnit.Relative),
-                        GradientStops =
+                        GradientStops = new[]
                         {
                             new GradientStop { Color = Colors.Red, Offset = 0 },
                             new GradientStop { Color = Colors.Blue, Offset = 1 }
