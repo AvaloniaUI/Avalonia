@@ -11,7 +11,8 @@
         RelativePoint Center { get; }
 
         /// <summary>
-        /// Gets the location of the two-dimensional focal point that defines the beginning of the gradient.
+        /// Gets the location of the two-dimensional focal point that defines the beginning of the
+        /// gradient.
         /// </summary>
         RelativePoint GradientOrigin { get; }
 

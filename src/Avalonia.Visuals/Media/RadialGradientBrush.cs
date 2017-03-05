@@ -44,7 +44,8 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        /// Gets or sets the location of the two-dimensional focal point that defines the beginning of the gradient.
+        /// Gets or sets the location of the two-dimensional focal point that defines the beginning
+        /// of the gradient.
         /// </summary>
         public RelativePoint GradientOrigin
         {
@@ -53,7 +54,8 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        /// Gets or sets the horizontal and vertical radius of the outermost circle of the radial gradient.
+        /// Gets or sets the horizontal and vertical radius of the outermost circle of the radial
+        /// gradient.
         /// </summary>
         // TODO: This appears to always be relative so should use a RelativeSize struct or something.
         public double Radius

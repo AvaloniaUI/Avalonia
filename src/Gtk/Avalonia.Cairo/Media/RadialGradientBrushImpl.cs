@@ -1,11 +1,12 @@
 using System;
+using Avalonia.Media;
 using global::Cairo;
 
 namespace Avalonia.Cairo
 {
 	public class RadialGradientBrushImpl : BrushImpl
 	{
-		public RadialGradientBrushImpl(Avalonia.Media.IRadialGradientBrush brush, Size destinationSize)
+		public RadialGradientBrushImpl(IRadialGradientBrush brush, Size destinationSize)
 		{
 			var center = brush.Center.ToPixels(destinationSize);
 			var gradientOrigin = brush.GradientOrigin.ToPixels(destinationSize);

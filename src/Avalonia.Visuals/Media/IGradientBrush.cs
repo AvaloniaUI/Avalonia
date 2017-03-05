@@ -3,7 +3,7 @@
 namespace Avalonia.Media
 {
     /// <summary>
-    /// A brush that draws with a linear gradient.
+    /// A brush that draws with a gradient.
     /// </summary>
     public interface IGradientBrush : IBrush
     {

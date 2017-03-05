@@ -105,7 +105,7 @@ namespace Avalonia.RenderHelpers
 
 
         /// <summary>
-        /// Calculates a translate based on a <see cref="TileBrush"/>, a source and destination
+        /// Calculates a translate based on an <see cref="ITileBrush"/>, a source and destination
         /// rectangle and a scale.
         /// </summary>
         /// <param name="brush">The brush.</param>
