@@ -63,10 +63,10 @@ namespace Avalonia.Controls
                 Vector scale = Stretch.CalculateScaling(Bounds.Size, sourceSize);
                 Size scaledSize = sourceSize * scale;
                 Rect destRect = viewPort
-                    .CenterIn(new Rect(scaledSize))
+                    .CenterRect(new Rect(scaledSize))
                     .Intersect(viewPort);
                 Rect sourceRect = new Rect(sourceSize)
-                    .CenterIn(new Rect(destRect.Size / scale));
+                    .CenterRect(new Rect(destRect.Size / scale));
 
                 context.DrawImage(source, 1, sourceRect, destRect);
             }
