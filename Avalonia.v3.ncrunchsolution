@@ -3,7 +3,7 @@
     <AdditionalFilesToIncludeForSolution>
       <Value>tests\TestFiles\**.*</Value>
     </AdditionalFilesToIncludeForSolution>
-    <AllowParallelTestExecution>False</AllowParallelTestExecution>
+    <AllowParallelTestExecution>True</AllowParallelTestExecution>
     <ProjectConfigStoragePathRelativeToSolutionDir>.ncrunch</ProjectConfigStoragePathRelativeToSolutionDir>
     <SolutionConfigured>True</SolutionConfigured>
   </Settings>
