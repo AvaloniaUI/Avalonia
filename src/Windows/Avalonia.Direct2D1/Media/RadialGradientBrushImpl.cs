@@ -2,13 +2,14 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System.Linq;
+using Avalonia.Media;
 
 namespace Avalonia.Direct2D1.Media
 {
     public class RadialGradientBrushImpl : BrushImpl
     {
         public RadialGradientBrushImpl(
-            Avalonia.Media.RadialGradientBrush brush,
+            IRadialGradientBrush brush,
             SharpDX.Direct2D1.RenderTarget target,
             Size destinationSize)
         {
