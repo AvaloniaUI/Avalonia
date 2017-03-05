@@ -23,6 +23,7 @@ namespace Avalonia.Markup.Xaml.PortableXaml
         {
             Attribute result = null;
 
+            
             if (attributeType == typeof(pm.XamlDeferLoadAttribute))
             {
                 result = _info.GetCustomAttribute<avm.TemplateContentAttribute>(inherit)
@@ -31,6 +32,11 @@ namespace Avalonia.Markup.Xaml.PortableXaml
             else if (attributeType == typeof(pm.AmbientAttribute))
             {
                 result = _info.GetCustomAttribute<avm.AmbientAttribute>(inherit)
+                                .ToPortableXaml();
+            }
+            else if(attributeType == typeof(pm.DependsOnAttribute))
+            {
+                result = _info.GetCustomAttribute<avm.DependsOnAttribute>(inherit)
                                 .ToPortableXaml();
             }
 

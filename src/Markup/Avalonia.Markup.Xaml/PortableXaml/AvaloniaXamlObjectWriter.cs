@@ -195,10 +195,6 @@ namespace Avalonia.Markup.Xaml.PortableXaml
                 {
                     EndInit();
                 }
-                //else
-                //{
-                //    AddTargetIfNeeded(target);
-                //}
             }
 
             private void AddTargetIfNeeded(object target)
@@ -227,7 +223,7 @@ namespace Avalonia.Markup.Xaml.PortableXaml
                 //TODO: revisit this
                 //apply delayed values and clear
                 //that's the last object let's set all delayed bindings
-                foreach (var dv in Values.Reverse().Where(v => v.Member != null))
+                foreach (var dv in Values.Where(v => v.Member != null))
                 {
                     dv.Member.Invoker.SetValue(dv.Target, dv.Value);
                 }
@@ -235,7 +231,7 @@ namespace Avalonia.Markup.Xaml.PortableXaml
                 //TODO: check/add some order of end init
                 //currently we are sending end init in the order of
                 //objects creation
-                foreach (var v in Values.Reverse())
+                foreach (var v in Values)
                 {
                     var target = v.Target;
 

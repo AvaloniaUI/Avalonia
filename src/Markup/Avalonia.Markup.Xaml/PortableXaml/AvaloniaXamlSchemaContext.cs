@@ -14,6 +14,7 @@ namespace Avalonia.Markup.Xaml.PortableXaml
     {
         public AvaloniaXamlSchemaContext(IRuntimeTypeProvider typeProvider)
         //better not set the references assemblies
+        //TODO: check this on iOS 
         //: base(typeProvider.ReferencedAssemblies)
         {
             _avaloniaTypeProvider = typeProvider;
@@ -160,7 +161,7 @@ namespace Avalonia.Markup.Xaml.PortableXaml
 
         protected override XamlMember GetAttachableProperty(string attachablePropertyName, MethodInfo getter, MethodInfo setter)
         {
-            var key = new Tuple<MemberInfo, MemberInfo>(getter, setter);
+            var key = MemberKey.Create(getter ?? setter, attachablePropertyName, "a");
 
             XamlMember result;
 
@@ -196,7 +197,7 @@ namespace Avalonia.Markup.Xaml.PortableXaml
 
             XamlMember result;
 
-            var key = new Tuple<MemberInfo, MemberInfo>(pi, null);
+            var key = MemberKey.Create(pi, "p");
 
             if (_cachedMembers.TryGetValue(key, out result))
             {
@@ -205,24 +206,9 @@ namespace Avalonia.Markup.Xaml.PortableXaml
 
             var avProp = AvaloniaPropertyRegistry.Instance.FindRegistered(objType, name);
 
-            var assignBindingAttr = pi.GetCustomAttribute<AssignBindingAttribute>();
-
             if (avProp != null)
             {
-                result = new AvaloniaPropertyXamlMember(avProp, pi, this)
-                {
-                    AssignBinding = assignBindingAttr != null
-                };
-            }
-
-            if (result == null)
-            {
-                var dependAttr = pi.GetCustomAttribute<am.DependsOnAttribute>();
-
-                if (dependAttr != null)
-                {
-                    result = new DependOnXamlMember(dependAttr.Name, pi, this);
-                }
+                result = new AvaloniaPropertyXamlMember(avProp, pi, this);
             }
 
             if (result == null)
@@ -235,7 +221,37 @@ namespace Avalonia.Markup.Xaml.PortableXaml
 
         private Dictionary<Type, XamlType> _cachedTypes = new Dictionary<Type, XamlType>();
 
-        private Dictionary<Tuple<MemberInfo, MemberInfo>, XamlMember> _cachedMembers =
-                        new Dictionary<Tuple<MemberInfo, MemberInfo>, XamlMember>();
+        private Dictionary<MemberKey, XamlMember> _cachedMembers = new Dictionary<MemberKey, XamlMember>();
+
+        private struct MemberKey
+        {
+            public static MemberKey Create(MemberInfo m, string name, string memberType)
+            {
+                return new MemberKey(m.DeclaringType, name, memberType);
+            }
+
+            public static MemberKey Create(MemberInfo m, string memberType)
+            {
+                return Create(m, m.Name, memberType);
+            }
+
+            public MemberKey(Type type, object member, string memberType)
+            {
+                Type = type;
+                Member = member;
+                MemberType = memberType;
+            }
+
+            public Type Type { get; }
+
+            public object Member { get; }
+
+            public string MemberType { get; }
+
+            public override string ToString()
+            {
+                return $"{MemberType}:{Type.Namespace}:{Type.Name}.{Member}";
+            }
+        }
     }
 }

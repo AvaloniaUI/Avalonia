@@ -1,9 +1,12 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Styling;
+using Portable.Xaml;
 using Portable.Xaml.ComponentModel;
 using Portable.Xaml.Markup;
 using System;
+using System.Linq;
+
 
 namespace Avalonia.Markup.Xaml.PortableXaml
 {
@@ -45,7 +48,9 @@ namespace Avalonia.Markup.Xaml.PortableXaml
             //        .Select(x => x.Instance)
             //        .OfType<IStyle>()
             //        .FirstOrDefault();
-            return anchor ?? context.GetLastOrDefaultAmbientValue<IStyle>();
+            var rs = context.GetService<IRootObjectProvider>().RootObject as IStyle;
+
+            return anchor ?? rs ?? context.GetLastOrDefaultAmbientValue<IStyle>();
         }
 
         private XamlBinding(IBinding binding, object anchor)

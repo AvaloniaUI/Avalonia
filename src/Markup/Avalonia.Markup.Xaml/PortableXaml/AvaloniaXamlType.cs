@@ -3,15 +3,18 @@ using Avalonia.Data;
 using Avalonia.Markup.Xaml.Data;
 using Avalonia.Markup.Xaml.MarkupExtensions;
 using Portable.Xaml;
-using Portable.Xaml.ComponentModel;
 using Portable.Xaml.Schema;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Xml.Serialization;
 
 namespace Avalonia.Markup.Xaml.PortableXaml
 {
+    using Metadata;
+    using PropertyKey = Tuple<Type, string>;
+
     public class AvaloniaXamlType : XamlType
     {
         public AvaloniaXamlType(Type underlyingType, XamlSchemaContext schemaContext) :
@@ -80,26 +83,131 @@ namespace Avalonia.Markup.Xaml.PortableXaml
         {
         }
 
+        private static readonly List<PropertyKey> _readonlyProps =
+            new List<PropertyKey>()
+            {
+                new PropertyKey(typeof(MultiBinding),nameof(MultiBinding.Bindings)),
+                new PropertyKey(typeof(Panel),nameof(Panel.Children)),
+            };
+
         protected override MethodInfo LookupUnderlyingSetter()
         {
+            var key = new PropertyKey(DeclaringType.UnderlyingType, Name);
+
             //if we have content property a list
             //we have some issues in portable.xaml
             //but if the list is read only, this is solving the problem
             //TODO: investigate is this good enough as solution ???
             //We can add ReadOnyAttribute to cover this
-            if ((Type.IsCollection || Type.IsDictionary) &&
-                 Name == DeclaringType.ContentProperty?.Name)
+            if (_readonlyProps.Contains(key))
             {
                 return null;
             }
 
             return base.LookupUnderlyingSetter();
         }
+
+        protected override XamlMemberInvoker LookupInvoker()
+        {
+            return new PropertyInvoker(this);
+        }
+
+        protected override XamlType LookupType()
+        {
+            var pi = UnderlyingMember as PropertyInfo;
+            if (pi != null)
+            {
+                if (pi.PropertyType == typeof(IEnumerable))
+                {
+                    //let's threat IEnumerable property as list
+                    return DeclaringType.SchemaContext.GetXamlType(typeof(IList));
+                }
+            }
+
+            return base.LookupType();
+        }
+
+        private IList<XamlMember> _dependsOn;
+
+        protected override IList<XamlMember> LookupDependsOn()
+        {
+            if (_dependsOn == null)
+            {
+                var attrib = UnderlyingMember.GetCustomAttribute<DependsOnAttribute>(true);
+
+                if (attrib != null)
+                {
+                    var member = DeclaringType.GetMember(attrib.Name);
+
+                    _dependsOn = new XamlMember[] { member };
+                }
+                else
+                {
+                    _dependsOn = base.LookupDependsOn();
+                }
+            }
+
+            return _dependsOn;
+        }
+
+        private class PropertyInvoker : XamlMemberInvoker
+        {
+            public PropertyInvoker(XamlMember member) : base(member)
+            {
+            }
+
+            public override void SetValue(object instance, object value)
+            {
+                if (Member.DependsOn.Count == 1 &&
+                    value is string)
+                {
+                    value = TransformDependsOnValue(instance, value);
+                }
+
+                if (value is XamlBinding)
+                {
+                    value = (value as XamlBinding).Value;
+                }
+
+                base.SetValue(instance, value);
+            }
+
+            private object TransformDependsOnValue(object instance, object value)
+            {
+                if (value is string &&
+                        (Member.UnderlyingMember as PropertyInfo)
+                                        .PropertyType != typeof(string))
+                {
+                    var dpm = Member.DependsOn[0];
+
+                    object depPropValue = dpm.Invoker.GetValue(instance);
+
+                    Type targetType = (depPropValue as AvaloniaProperty)?.PropertyType ??
+                                                    (depPropValue as Type);
+
+                    if (targetType == null)
+                    {
+                        return value;
+                    }
+
+                    var xamTargetType = Member.DeclaringType.SchemaContext.GetXamlType(targetType);
+                    var ttConv = xamTargetType?.TypeConverter?.ConverterInstance;
+                    if (ttConv != null)
+                    {
+                        value = ttConv.ConvertFromString(value as string);
+                    }
+                }
+
+                return value;
+            }
+        }
     }
 
     public class AvaloniaPropertyXamlMember : PropertyXamlMember
     {
-        public bool AssignBinding { get; set; } = false;
+        private bool? _assignBinding;
+
+        public bool AssignBinding => (bool)(_assignBinding ?? (_assignBinding = UnderlyingMember.GetCustomAttribute<AssignBindingAttribute>() != null));
 
         public AvaloniaProperty Property { get; }
 
@@ -191,11 +299,6 @@ namespace Avalonia.Markup.Xaml.PortableXaml
                     obj.Bind(property, binding);
             }
 
-            public void SetValue(ITypeDescriptorContext context, object instance, object value)
-            {
-                throw new NotImplementedException();
-            }
-
             private AvaloniaProperty Property => Member.Property;
 
             private new AvaloniaPropertyXamlMember Member =>
@@ -209,7 +312,7 @@ namespace Avalonia.Markup.Xaml.PortableXaml
 
         public AvaloniaAttachedPropertyXamlMember(AvaloniaProperty property,
                                                     string attachablePropertyName,
-                                                    MethodInfo getter, MethodInfo setter, 
+                                                    MethodInfo getter, MethodInfo setter,
                                                     XamlSchemaContext schemaContext)
             : base(property, attachablePropertyName, getter, setter, schemaContext)
         {
@@ -218,75 +321,9 @@ namespace Avalonia.Markup.Xaml.PortableXaml
 
         protected override MethodInfo LookupUnderlyingSetter()
         {
+            return base.LookupUnderlyingSetter();
             //TODO: investigate don't call base stack overflow
             return _setter;
-        }
-    }
-
-    public class DependOnXamlMember : PropertyXamlMember
-    {
-        private string _dependOn;
-
-        public DependOnXamlMember(string dependOn,
-            PropertyInfo propertyInfo,
-            XamlSchemaContext schemaContext) :
-            base(propertyInfo, schemaContext)
-        {
-            _dependOn = dependOn;
-        }
-
-        private XamlMember _dependOnMember;
-
-        public XamlMember DependOnMember
-        {
-            get
-            {
-                return _dependOnMember ??
-                        (_dependOnMember = DeclaringType.GetMember(_dependOn));
-            }
-        }
-
-        protected override IList<XamlMember> LookupDependsOn()
-        {
-            return new List<XamlMember>() { DeclaringType.GetMember(_dependOn) };
-        }
-
-        protected override XamlMemberInvoker LookupInvoker()
-        {
-            return new DependOnInvoker(this);
-        }
-
-        private class DependOnInvoker : XamlMemberInvoker
-        {
-            public DependOnInvoker(XamlMember member) : base(member)
-            {
-            }
-
-            public override void SetValue(object instance, object value)
-            {
-                if (value is string &&
-                    (Member.UnderlyingMember as PropertyInfo).PropertyType != typeof(string))
-                {
-                    var dpm = (Member as DependOnXamlMember).DependOnMember.UnderlyingMember;
-                    var pi = (dpm as PropertyInfo);
-                    var avp = pi.GetValue(instance) as AvaloniaProperty;
-
-                    Type targetType = avp != null ? avp.PropertyType : pi.PropertyType;
-
-                    var xamTargetType = Member.DeclaringType.SchemaContext.GetXamlType(targetType);
-                    var ttConv = xamTargetType?.TypeConverter?.ConverterInstance;
-                    if (ttConv != null)
-                    {
-                        value = ttConv.ConvertFromString(value as string);
-                    }
-                }
-                if (value is XamlBinding)
-                {
-                    value = (value as XamlBinding).Value;
-                }
-
-                base.SetValue(instance, value);
-            }
         }
     }
 }

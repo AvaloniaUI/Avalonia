@@ -118,6 +118,32 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         }
 
         [Fact]
+        public void Direct_Content_In_ItemsControl_Is_Operational()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'>
+     <ItemsControl Name='items'>
+         <ContentControl>Foo</ContentControl>
+         <ContentControl>Bar</ContentControl>
+      </ItemsControl>
+</Window>";
+
+                var control = AvaloniaXamlLoader.Parse<Window>(xaml);
+
+                var itemsControl = control.FindControl<ItemsControl>("items");
+
+                Assert.NotNull(itemsControl);
+
+                var items = itemsControl.Items.Cast<ContentControl>().ToArray();
+
+                Assert.Equal("Foo", items[0].Content);
+                Assert.Equal("Bar", items[1].Content);
+            }
+        }
+
+        [Fact]
         public void Panel_Children_Are_Added()
         {
             var xaml = @"
@@ -471,6 +497,8 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
                 var items = new string[] { "Foo", "Bar" };
 
+                //DelayedBinding.ApplyBindings(itemsControl);
+
                 target.DataContext = items;
 
                 Assert.Equal(items, itemsControl.Items);
@@ -625,6 +653,50 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
                 Assert.Equal(0, parentSet);
                 Assert.Equal(1, widthChanged);
+        }
+
+
+        [Fact]
+        public void BeginInit_Matches_EndInit()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+             xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'>
+    <local:InitializationOrderTracker />
+</Window>";
+
+                var window = AvaloniaXamlLoader.Parse<Window>(xaml);
+                var tracker = (InitializationOrderTracker)window.Content;
+
+                Assert.Equal(0, tracker.InitState);
+            }
+        }
+
+
+        [Fact]
+        public void DeferedXamlLoader_Should_Preserve_NamespacesContext()
+        {
+            var xaml =
+@"<ContentControl xmlns='https://github.com/avaloniaui'
+            xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'>
+    <ContentControl.ContentTemplate>
+        <DataTemplate>
+            <TextBlock  Tag='{Static local:NonControl.StringProperty}'/>
+        </DataTemplate>
+    </ContentControl.ContentTemplate>
+</ContentControl>";
+
+            var contentControl = AvaloniaXamlLoader.Parse<ContentControl>(xaml);
+            var template = contentControl.ContentTemplate;
+
+            Assert.NotNull(template);
+
+            var txt = (TextBlock)template.Build(null);
+
+            Assert.Equal((object)NonControl.StringProperty, txt.Tag);
         }
     }
 }

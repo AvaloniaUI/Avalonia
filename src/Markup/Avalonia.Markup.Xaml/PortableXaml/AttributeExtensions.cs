@@ -25,5 +25,15 @@ namespace Avalonia.Markup.Xaml.PortableXaml
 
             return new pm.AmbientAttribute();
         }
+
+        public static pm.DependsOnAttribute ToPortableXaml(this avm.DependsOnAttribute attrib)
+        {
+            if (attrib == null)
+            {
+                return null;
+            }
+
+            return new pm.DependsOnAttribute(attrib.Name);
+        }
     }
 }
