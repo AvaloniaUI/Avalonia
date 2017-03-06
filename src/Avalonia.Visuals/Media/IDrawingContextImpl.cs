@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 
 namespace Avalonia.Media
 {
@@ -17,13 +17,19 @@ namespace Avalonia.Media
         Matrix Transform { get; set; }
 
         /// <summary>
+        /// Clears the render target to the specified color.
+        /// </summary>
+        /// <param name="color">The color.</param>
+        void Clear(Color color);
+
+        /// <summary>
         /// Draws a bitmap image.
         /// </summary>
         /// <param name="source">The bitmap image.</param>
         /// <param name="opacity">The opacity to draw with.</param>
         /// <param name="sourceRect">The rect in the image to draw.</param>
         /// <param name="destRect">The rect in the output to draw to.</param>
-        void DrawImage(IBitmap source, double opacity, Rect sourceRect, Rect destRect);
+        void DrawImage(IBitmapImpl source, double opacity, Rect sourceRect, Rect destRect);
 
         /// <summary>
         /// Draws a line.
@@ -39,7 +45,7 @@ namespace Avalonia.Media
         /// <param name="brush">The fill brush.</param>
         /// <param name="pen">The stroke pen.</param>
         /// <param name="geometry">The geometry.</param>
-        void DrawGeometry(IBrush brush, Pen pen, Geometry geometry);
+        void DrawGeometry(IBrush brush, Pen pen, IGeometryImpl geometry);
 
         /// <summary>
         /// Draws the outline of a rectangle.
@@ -55,7 +61,7 @@ namespace Avalonia.Media
         /// <param name="foreground">The foreground brush.</param>
         /// <param name="origin">The upper-left corner of the text.</param>
         /// <param name="text">The text.</param>
-        void DrawText(IBrush foreground, Point origin, FormattedText text);
+        void DrawText(IBrush foreground, Point origin, IFormattedTextImpl text);
 
         /// <summary>
         /// Draws a filled rectangle.
@@ -89,7 +95,7 @@ namespace Avalonia.Media
         /// Pushes a clip geometry.
         /// </summary>
         /// <param name="clip">The clip geometry.</param>
-        void PushGeometryClip(Geometry clip);
+        void PushGeometryClip(IGeometryImpl clip);
 
         void PopGeometryClip();
     }

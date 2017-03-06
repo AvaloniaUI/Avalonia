@@ -15,10 +15,10 @@ namespace Avalonia.Skia
         public FormattedTextImpl(string text, string fontFamilyName, double fontSize, FontStyle fontStyle,
                     TextAlignment textAlignment, FontWeight fontWeight, TextWrapping wrapping)
         {
-            _text = text ?? string.Empty;
+            Text = text ?? string.Empty;
 
             // Replace 0 characters with zero-width spaces (200B)
-            _text = _text.Replace((char)0, (char)0x200B);
+            Text = Text.Replace((char)0, (char)0x200B);
 
             var typeface = TypefaceCache.GetTypeface(fontFamilyName, fontStyle, fontWeight);
 
@@ -53,6 +53,8 @@ namespace Avalonia.Skia
                 Rebuild();
             }
         }
+
+        public string Text { get; }
 
         public void Dispose()
         {
@@ -98,7 +100,7 @@ namespace Avalonia.Skia
                 {
                     IsInside = false,
                     TextPosition = line.Start + offset,
-                    IsTrailing = _text.Length == (line.Start + offset + 1)
+                    IsTrailing = Text.Length == (line.Start + offset + 1)
                 };
             }
 
@@ -108,7 +110,7 @@ namespace Avalonia.Skia
             {
                 IsInside = false,
                 IsTrailing = end,
-                TextPosition = end ? _text.Length - 1 : 0
+                TextPosition = end ? Text.Length - 1 : 0
             };
         }
 
@@ -182,7 +184,7 @@ namespace Avalonia.Skia
 
         public override string ToString()
         {
-            return _text;
+            return Text;
         }
 
         internal void Draw(DrawingContextImpl context,
@@ -231,7 +233,7 @@ namespace Avalonia.Skia
 
                     if (!hasCusomFGBrushes)
                     {
-                        var subString = _text.Substring(line.Start, line.Length);
+                        var subString = Text.Substring(line.Start, line.Length);
                         canvas.DrawText(subString, x, origin.Y + line.Top + _lineOffset, paint);
                     }
                     else
@@ -255,7 +257,7 @@ namespace Avalonia.Skia
                                 currentWrapper = foreground;
                             }
 
-                            subStr = _text.Substring(i, len);
+                            subStr = Text.Substring(i, len);
 
                             if (currFGPaint != currentWrapper.Paint)
                             {
@@ -284,7 +286,6 @@ namespace Avalonia.Skia
         private readonly List<FormattedTextLine> _lines = new List<FormattedTextLine>();
         private readonly SKPaint _paint;
         private readonly List<Rect> _rects = new List<Rect>();
-        private readonly string _text;
         private readonly TextWrapping _wrapping;
         private Size _constraint = new Size(double.PositiveInfinity, double.PositiveInfinity);
         private float _lineHeight = 0;
@@ -434,7 +435,7 @@ namespace Avalonia.Skia
 
                 for (int i = line.Start; i < line.Start + line.TextLength; i++)
                 {
-                    float w = _paint.MeasureText(_text[i].ToString());
+                    float w = _paint.MeasureText(Text[i].ToString());
 
                     _rects.Add(new Rect(
                         prevRight,
@@ -490,7 +491,7 @@ namespace Avalonia.Skia
 
         private List<Rect> GetRects()
         {
-            if (_text.Length > _rects.Count)
+            if (Text.Length > _rects.Count)
             {
                 BuildRects();
             }
@@ -500,7 +501,7 @@ namespace Avalonia.Skia
 
         private void Rebuild()
         {
-            var length = _text.Length;
+            var length = Text.Length;
 
             _lines.Clear();
             _rects.Clear();
@@ -536,7 +537,7 @@ namespace Avalonia.Skia
                 int measured;
                 int trailingnumber = 0;
 
-                subString = _text.Substring(curOff);
+                subString = Text.Substring(curOff);
 
                 float constraint = -1;
 
@@ -547,12 +548,12 @@ namespace Avalonia.Skia
                         constraint = MAX_LINE_WIDTH;
                 }
 
-                measured = LineBreak(_text, curOff, length, _paint, constraint, out trailingnumber);
+                measured = LineBreak(Text, curOff, length, _paint, constraint, out trailingnumber);
 
                 AvaloniaFormattedTextLine line = new AvaloniaFormattedTextLine();
                 line.TextLength = measured;
 
-                subString = _text.Substring(line.Start, line.TextLength);
+                subString = Text.Substring(line.Start, line.TextLength);
                 lineWidth = _paint.MeasureText(subString);
                 line.Start = curOff;
                 line.Length = measured - trailingnumber;
