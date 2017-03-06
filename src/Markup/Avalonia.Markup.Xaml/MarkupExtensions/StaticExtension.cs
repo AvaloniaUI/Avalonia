@@ -1,18 +1,12 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using Portable.Xaml;
-using Portable.Xaml.ComponentModel;
-using Portable.Xaml.Markup;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions
 {
 #if !OMNIXAML
 
-    //TODO: check do we need something more than std Portable.xaml static??
     public class StaticExtension : Portable.Xaml.Markup.StaticExtension
     {
         public StaticExtension()
@@ -26,19 +20,6 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
 
         public override object ProvideValue(IServiceProvider serviceProvider)
         {
-            var tdc = (ITypeDescriptorContext)serviceProvider;
-            var ns = tdc.GetService<IXamlNamespaceResolver>();
-
-            if (!ns.GetNamespacePrefixes().Any())
-            {
-               //TODO: issue of portable.xaml ??? investigate
-                var cvp = tdc.GetService<IRootObjectProvider>();
-                var pvt = tdc.GetService<IProvideValueTarget>(); 
-                //ok we have a problem namespaces shouldn't be empty
-                var nslist = ns.GetNamespacePrefixes() as IList<NamespaceDeclaration>;
-                nslist.Add(new NamespaceDeclaration("https://github.com/avaloniaui", ""));
-                //this is just a hack
-            }
             return base.ProvideValue(serviceProvider);
         }
     }

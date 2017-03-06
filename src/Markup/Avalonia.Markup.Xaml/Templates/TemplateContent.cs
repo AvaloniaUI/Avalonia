@@ -1,9 +1,8 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using System.Collections.Generic;
 using Avalonia.Controls;
-using Avalonia.Markup.Xaml.Context;
+using System.Collections.Generic;
 
 namespace Avalonia.Markup.Xaml.Templates
 {
@@ -12,21 +11,24 @@ namespace Avalonia.Markup.Xaml.Templates
 
     public class TemplateContent
     {
-        public TemplateContent()
-        {
-        }
-
-        public TemplateContent(XamlReader reader)
+        public TemplateContent(IEnumerable<NamespaceDeclaration> namespaces, XamlReader reader)
         {
             List = new XamlNodeList(reader.SchemaContext);
+
+            //we need to rpeserve all namespace and prefixes to writer
+            //otherwise they are lost. a bug in Portable.xaml or by design ??
+            foreach (var ns in namespaces)
+            {
+                List.Writer.WriteNamespace(ns);
+            }
+
             XamlServices.Transform(reader, List.Writer);
         }
 
-        public XamlNodeList List { get; set; }
+        public XamlNodeList List { get; }
 
         public IControl Load()
         {
-            //return (IControl)XamlServices.Load(List.GetReader());
             return (IControl)AvaloniaXamlLoader.LoadFromReader(List.GetReader());
         }
 
@@ -37,6 +39,7 @@ namespace Avalonia.Markup.Xaml.Templates
     }
 #else
 
+    using Avalonia.Markup.Xaml.Context;
     using OmniXaml;
     using OmniXaml.ObjectAssembler;
 
