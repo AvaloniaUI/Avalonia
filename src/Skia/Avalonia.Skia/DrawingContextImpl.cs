@@ -5,6 +5,7 @@ using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Avalonia.Platform;
 
 namespace Avalonia.Skia
 {
@@ -26,9 +27,14 @@ namespace Avalonia.Skia
             Transform = Matrix.Identity;
         }
 
-        public void DrawImage(IBitmap source, double opacity, Rect sourceRect, Rect destRect)
+        public void Clear(Color color)
         {
-            var impl = (BitmapImpl)source.PlatformImpl;
+            Canvas.Clear(color.ToSKColor());
+        }
+
+        public void DrawImage(IBitmapImpl source, double opacity, Rect sourceRect, Rect destRect)
+        {
+            var impl = (BitmapImpl)source;
             var s = sourceRect.ToSKRect();
             var d = destRect.ToSKRect();
             using (var paint = new SKPaint()
@@ -46,9 +52,9 @@ namespace Avalonia.Skia
             }
         }
 
-        public void DrawGeometry(IBrush brush, Pen pen, Geometry geometry)
+        public void DrawGeometry(IBrush brush, Pen pen, IGeometryImpl geometry)
         {
-            var impl = ((StreamGeometryImpl)geometry.PlatformImpl);
+            var impl = (StreamGeometryImpl)geometry;
             var size = geometry.Bounds.Size;
 
             using (var fill = brush != null ? CreatePaint(brush, size) : default(PaintWrapper))
@@ -284,11 +290,11 @@ namespace Avalonia.Skia
             }
         }
 
-        public void DrawText(IBrush foreground, Point origin, FormattedText text)
+        public void DrawText(IBrush foreground, Point origin, IFormattedTextImpl text)
         {
             using (var paint = CreatePaint(foreground, text.Measure()))
             {
-                var textImpl = text.PlatformImpl as FormattedTextImpl;
+                var textImpl = (FormattedTextImpl)text;
                 textImpl.Draw(this, Canvas, origin.ToSKPoint(), paint);
             }
         }
@@ -325,10 +331,10 @@ namespace Avalonia.Skia
                     disposable?.Dispose();
         }
 
-        public void PushGeometryClip(Geometry clip)
+        public void PushGeometryClip(IGeometryImpl clip)
         {
             Canvas.Save();
-            Canvas.ClipPath(((StreamGeometryImpl)clip.PlatformImpl).EffectivePath);
+            Canvas.ClipPath(((StreamGeometryImpl)clip).EffectivePath);
         }
 
         public void PopGeometryClip()

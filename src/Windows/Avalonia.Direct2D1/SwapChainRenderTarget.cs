@@ -69,7 +69,7 @@ namespace Avalonia.Direct2D1
                 CreateSwapChain();
             }
 
-            return new DrawingContext(new Media.DrawingContext(_deviceContext, DirectWriteFactory, _swapChain));
+            return new DrawingContext(new Media.DrawingContextImpl(_deviceContext, DirectWriteFactory, _swapChain));
         }
 
         public void Dispose()

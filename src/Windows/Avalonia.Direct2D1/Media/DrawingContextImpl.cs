@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Avalonia.Media;
+using Avalonia.Platform;
 using SharpDX;
 using SharpDX.Direct2D1;
 using SharpDX.Mathematics.Interop;
@@ -15,7 +16,7 @@ namespace Avalonia.Direct2D1.Media
     /// <summary>
     /// Draws using Direct2D1.
     /// </summary>
-    public class DrawingContext : IDrawingContextImpl, IDisposable
+    public class DrawingContextImpl : IDrawingContextImpl, IDisposable
     {
         /// <summary>
         /// The Direct2D1 render target.
@@ -30,12 +31,12 @@ namespace Avalonia.Direct2D1.Media
         private SharpDX.DXGI.SwapChain1 _swapChain;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DrawingContext"/> class.
+        /// Initializes a new instance of the <see cref="DrawingContextImpl"/> class.
         /// </summary>
         /// <param name="renderTarget">The render target to draw to.</param>
         /// <param name="directWriteFactory">The DirectWrite factory.</param>
         /// <param name="swapChain">An optional swap chain associated with this drawing context.</param>
-        public DrawingContext(
+        public DrawingContextImpl(
             SharpDX.Direct2D1.RenderTarget renderTarget,
             SharpDX.DirectWrite.Factory directWriteFactory,
             SharpDX.DXGI.SwapChain1 swapChain = null)
@@ -53,6 +54,12 @@ namespace Avalonia.Direct2D1.Media
         {
             get { return _renderTarget.Transform.ToAvalonia(); }
             set { _renderTarget.Transform = value.ToDirect2D(); }
+        }
+
+        /// <inheritdoc/>
+        public void Clear(Color color)
+        {
+            _renderTarget.Clear(color.ToDirect2D());
         }
 
         /// <summary>
@@ -81,9 +88,9 @@ namespace Avalonia.Direct2D1.Media
         /// <param name="opacity">The opacity to draw with.</param>
         /// <param name="sourceRect">The rect in the image to draw.</param>
         /// <param name="destRect">The rect in the output to draw to.</param>
-        public void DrawImage(IBitmap source, double opacity, Rect sourceRect, Rect destRect)
+        public void DrawImage(IBitmapImpl source, double opacity, Rect sourceRect, Rect destRect)
         {
-            var impl = (BitmapImpl)source.PlatformImpl;
+            var impl = (BitmapImpl)source;
             Bitmap d2d = impl.GetDirect2DBitmap(_renderTarget);
             _renderTarget.DrawBitmap(
                 d2d,
@@ -127,7 +134,7 @@ namespace Avalonia.Direct2D1.Media
         /// <param name="brush">The fill brush.</param>
         /// <param name="pen">The stroke pen.</param>
         /// <param name="geometry">The geometry.</param>
-        public void DrawGeometry(IBrush brush, Pen pen, Avalonia.Media.Geometry geometry)
+        public void DrawGeometry(IBrush brush, Pen pen, IGeometryImpl geometry)
         {
             if (brush != null)
             {
@@ -135,7 +142,7 @@ namespace Avalonia.Direct2D1.Media
                 {
                     if (d2dBrush.PlatformBrush != null)
                     {
-                        var impl = (GeometryImpl)geometry.PlatformImpl;
+                        var impl = (GeometryImpl)geometry;
                         _renderTarget.FillGeometry(impl.Geometry, d2dBrush.PlatformBrush);
                     }
                 }
@@ -148,7 +155,7 @@ namespace Avalonia.Direct2D1.Media
                 {
                     if (d2dBrush.PlatformBrush != null)
                     {
-                        var impl = (GeometryImpl)geometry.PlatformImpl;
+                        var impl = (GeometryImpl)geometry;
                         _renderTarget.DrawGeometry(impl.Geometry, d2dBrush.PlatformBrush, (float)pen.Thickness, d2dStroke);
                     }
                 }
@@ -194,11 +201,11 @@ namespace Avalonia.Direct2D1.Media
         /// <param name="foreground">The foreground brush.</param>
         /// <param name="origin">The upper-left corner of the text.</param>
         /// <param name="text">The text.</param>
-        public void DrawText(IBrush foreground, Point origin, FormattedText text)
+        public void DrawText(IBrush foreground, Point origin, IFormattedTextImpl text)
         {
             if (!string.IsNullOrEmpty(text.Text))
             {
-                var impl = (FormattedTextImpl)text.PlatformImpl;
+                var impl = (FormattedTextImpl)text;
 
                 using (var brush = CreateBrush(foreground, impl.Measure()))
                 using (var renderer = new AvaloniaTextRenderer(this, _renderTarget, brush.PlatformBrush))
@@ -343,14 +350,14 @@ namespace Avalonia.Direct2D1.Media
             }
         }
 
-        public void PushGeometryClip(Avalonia.Media.Geometry clip)
+        public void PushGeometryClip(IGeometryImpl clip)
         {
             var parameters = new LayerParameters
             {
                 ContentBounds = PrimitiveExtensions.RectangleInfinite,
                 MaskTransform = PrimitiveExtensions.Matrix3x2Identity,
                 Opacity = 1,
-                GeometricMask = ((GeometryImpl)clip.PlatformImpl).Geometry
+                GeometricMask = ((GeometryImpl)clip).Geometry
             };
             var layer = _layerPool.Count != 0 ? _layerPool.Pop() : new Layer(_renderTarget);
             _renderTarget.PushLayer(ref parameters, layer);

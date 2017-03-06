@@ -65,7 +65,7 @@
     <Compile Include="HwndRenderTarget.cs" />
     <Compile Include="Media\BrushImpl.cs" />
     <Compile Include="Media\BrushWrapper.cs" />
-    <Compile Include="Media\DrawingContext.cs" />
+    <Compile Include="Media\DrawingContextImpl.cs" />
     <Compile Include="Media\Imaging\BitmapImpl.cs" />
     <Compile Include="Media\Imaging\D2DBitmapImpl.cs" />
     <Compile Include="Media\Imaging\RenderTargetBitmapImpl.cs" />

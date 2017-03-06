@@ -51,7 +51,7 @@ namespace Avalonia.Direct2D1
         /// <returns>An <see cref="Avalonia.Media.DrawingContext"/>.</returns>
         public DrawingContext CreateDrawingContext()
         {
-            return new DrawingContext(new Media.DrawingContext(_renderTarget, DirectWriteFactory));
+            return new DrawingContext(new Media.DrawingContextImpl(_renderTarget, DirectWriteFactory));
         }
 
         public void Dispose()
