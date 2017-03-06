@@ -13,5 +13,5 @@
 	url = https://github.com/SuperJMN/glass
 [submodule "src/Markup/Portable.Xaml"]
 	path = src/Markup/Portable.Xaml
-	url = https://github.com/cwensley/Portable.Xaml.git
+	url = https://github.com/donandren/Portable.Xaml.git
 	branch = develop
