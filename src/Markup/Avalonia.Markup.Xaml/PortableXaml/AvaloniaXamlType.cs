@@ -273,12 +273,7 @@ namespace Avalonia.Markup.Xaml.PortableXaml
 
         protected override bool LookupIsReadOnly()
         {
-            if (Property.IsReadOnly)
-            {
-                return true;
-            }
-
-            return base.LookupIsReadOnly();
+            return Property.IsReadOnly;
         }
 
         private class AvaloniaPropertyInvoker : XamlMemberInvoker
