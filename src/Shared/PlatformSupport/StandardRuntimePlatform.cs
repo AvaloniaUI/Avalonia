@@ -13,7 +13,7 @@ namespace Avalonia.Shared.PlatformSupport
     {
 
 #if NETSTANDARD
-        public void PostThreadPoolItem(Action cb) => ThreadPool.QueueUserWorkItem(_ => cb(), null);
+        public void PostThreadPoolItem(Action cb) =>  ThreadPool.QueueUserWorkItem(_ => cb(), null);
 #else
         public Assembly[] GetLoadedAssemblies() => AppDomain.CurrentDomain.GetAssemblies();
         public void PostThreadPoolItem(Action cb) => ThreadPool.UnsafeQueueUserWorkItem(_ => cb(), null);

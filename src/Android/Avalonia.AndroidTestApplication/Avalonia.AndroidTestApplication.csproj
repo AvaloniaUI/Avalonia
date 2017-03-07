@@ -162,8 +162,8 @@
   </Target>
   -->
   <ItemGroup>
-    <PackageReference Include="Serilog" Version="1.5.14" />
-    <PackageReference Include="Splat" Version="1.6.2" />
+    <PackageReference Include="Serilog" Version="2.4.0" />
+    <PackageReference Include="Splat" Version="2.0.0" />
     <PackageReference Include="Sprache" Version="2.1.0" />
     <PackageReference Include="System.Collections" Version="4.0.11" />
     <PackageReference Include="System.Collections.Concurrent" Version="4.0.12" />

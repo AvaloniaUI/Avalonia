@@ -234,6 +234,6 @@
   </Target>
   -->
   <ItemGroup>
-    <PackageReference Include="Serilog" Version="1.5.14" />
+    <PackageReference Include="Serilog" Version="2.4.0" />
   </ItemGroup>
 </Project>

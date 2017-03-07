@@ -149,6 +149,9 @@
   </Target>
   -->
   <ItemGroup>
-    <PackageReference Include="Serilog" Version="1.5.14" />
+    <PackageReference Include="Serilog" Version="2.4.0" />
+    <PackageReference Include="Serilog.Sinks.Trace">
+      <Version>2.1.0</Version>
+    </PackageReference>
   </ItemGroup>
 </Project>

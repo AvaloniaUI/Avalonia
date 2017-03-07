@@ -132,6 +132,6 @@
   </Target>
   -->
   <ItemGroup>
-    <PackageReference Include="JetBrains.Annotations" Version="10.0.0" />
+    <PackageReference Include="JetBrains.Annotations" Version="10.3.0" />
   </ItemGroup>
 </Project>
