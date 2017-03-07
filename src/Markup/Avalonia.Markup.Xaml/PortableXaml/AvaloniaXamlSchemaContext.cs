@@ -12,11 +12,18 @@ namespace Avalonia.Markup.Xaml.PortableXaml
 {
     internal class AvaloniaXamlSchemaContext : XamlSchemaContext
     {
-        public AvaloniaXamlSchemaContext(IRuntimeTypeProvider typeProvider)
+        public static AvaloniaXamlSchemaContext Create(IRuntimeTypeProvider typeProvider = null)
+        {
+            return new AvaloniaXamlSchemaContext(typeProvider ?? new AvaloniaRuntimeTypeProvider());
+        }
+
+        private AvaloniaXamlSchemaContext(IRuntimeTypeProvider typeProvider)
         //better not set the references assemblies
         //TODO: check this on iOS 
         //: base(typeProvider.ReferencedAssemblies)
         {
+            Contract.Requires<ArgumentNullException>(typeProvider != null);
+
             _avaloniaTypeProvider = typeProvider;
         }
 

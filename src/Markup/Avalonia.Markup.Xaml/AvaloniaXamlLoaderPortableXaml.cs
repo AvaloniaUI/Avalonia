@@ -20,8 +20,23 @@ namespace Avalonia.Markup.Xaml
     /// </summary>
     public class AvaloniaXamlLoaderPortableXaml
     {
-        internal static readonly AvaloniaXamlSchemaContext _context
-            = new AvaloniaXamlSchemaContext(new AvaloniaRuntimeTypeProvider());
+        private readonly AvaloniaXamlSchemaContext _context = GetContext();
+
+        private static AvaloniaXamlSchemaContext GetContext()
+        {
+            var result = AvaloniaLocator.Current.GetService<AvaloniaXamlSchemaContext>();
+
+            if (result == null)
+            {
+                result = AvaloniaXamlSchemaContext.Create();
+
+                AvaloniaLocator.CurrentMutable
+                    .Bind<AvaloniaXamlSchemaContext>()
+                    .ToConstant(result);
+            }
+
+            return result;
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AvaloniaXamlLoader"/> class.
