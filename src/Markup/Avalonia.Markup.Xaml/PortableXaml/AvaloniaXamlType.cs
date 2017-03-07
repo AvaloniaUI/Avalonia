@@ -90,16 +90,21 @@ namespace Avalonia.Markup.Xaml.PortableXaml
                 new PropertyKey(typeof(Panel),nameof(Panel.Children)),
             };
 
+        private static readonly List<PropertyKey> _updateListInsteadSet =
+            new List<PropertyKey>()
+            {
+                new PropertyKey(typeof(Grid),nameof(Grid.RowDefinitions)),
+                new PropertyKey(typeof(Grid),nameof(Grid.ColumnDefinitions)),
+            };
+
         protected override MethodInfo LookupUnderlyingSetter()
         {
-            var key = new PropertyKey(DeclaringType.UnderlyingType, Name);
-
             //if we have content property a list
             //we have some issues in portable.xaml
             //but if the list is read only, this is solving the problem
             //TODO: investigate is this good enough as solution ???
             //We can add ReadOnyAttribute to cover this
-            if (_readonlyProps.Contains(key))
+            if (_readonlyProps.Contains(PropertyKey()))
             {
                 return null;
             }
@@ -109,7 +114,10 @@ namespace Avalonia.Markup.Xaml.PortableXaml
 
         protected override XamlMemberInvoker LookupInvoker()
         {
-            return new PropertyInvoker(this);
+            return new PropertyInvoker(this)
+            {
+                UpdateListInsteadSet = _updateListInsteadSet.Contains(PropertyKey())
+            };
         }
 
         protected override XamlType LookupType()
@@ -150,8 +158,13 @@ namespace Avalonia.Markup.Xaml.PortableXaml
             return _dependsOn;
         }
 
+        private PropertyKey PropertyKey()
+            => new PropertyKey(DeclaringType.UnderlyingType, Name);
+
         private class PropertyInvoker : XamlMemberInvoker
         {
+            public bool UpdateListInsteadSet { get; set; } = false;
+
             public PropertyInvoker(XamlMember member) : base(member)
             {
             }
@@ -167,6 +180,32 @@ namespace Avalonia.Markup.Xaml.PortableXaml
                 if (value is XamlBinding)
                 {
                     value = (value as XamlBinding).Value;
+                }
+
+                if (UpdateListInsteadSet && value != null)
+                {
+                    object old = GetValue(instance);
+
+                    if (Equals(old, value))
+                    {
+                        //don't set the same value
+                        //usually a collections
+                        return;
+                    }
+                    else if (old is IList && value is IList)
+                    {
+                        var oldList = (IList)old;
+                        var curList = (IList)value;
+
+                        oldList.Clear();
+
+                        foreach (object item in curList)
+                        {
+                            oldList.Add(item);
+                        }
+
+                        return;
+                    }
                 }
 
                 base.SetValue(instance, value);
