@@ -105,7 +105,7 @@ namespace Avalonia.Markup.Xaml
                         initialize?.BeginInit();
                         try
                         {
-                            return Load(stream, type, rootInstance, uri);
+                            return Load(stream, rootInstance, uri);
                         }
                         finally
                         {
@@ -143,7 +143,7 @@ namespace Avalonia.Markup.Xaml
 
             using (var stream = assetLocator.Open(uri, baseUri))
             {
-                return Load(stream, null, rootInstance, uri);
+                return Load(stream, rootInstance, uri);
             }
         }
 
@@ -155,13 +155,13 @@ namespace Avalonia.Markup.Xaml
         /// The optional instance into which the XAML should be loaded.
         /// </param>
         /// <returns>The loaded object.</returns>
-        public object Load(string xaml, Type type = null, object rootInstance = null)
+        public object Load(string xaml, object rootInstance = null)
         {
             Contract.Requires<ArgumentNullException>(xaml != null);
 
             using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(xaml)))
             {
-                return Load(stream, type, rootInstance);
+                return Load(stream, rootInstance);
             }
         }
 
@@ -174,7 +174,7 @@ namespace Avalonia.Markup.Xaml
         /// </param>
         /// <param name="uri">The URI of the XAML</param>
         /// <returns>The loaded object.</returns>
-        public object Load(Stream stream, Type type = null, object rootInstance = null, Uri uri = null)
+        public object Load(Stream stream, object rootInstance = null, Uri uri = null)
         {
             try
             {
@@ -185,10 +185,7 @@ namespace Avalonia.Markup.Xaml
 
                 var readerSettings = new XamlXmlReaderSettings();
 
-                if (rootInstance != null && type == null)
-                {
-                    type = rootInstance.GetType();
-                }
+                Type type = rootInstance?.GetType();
 
                 if (type != null)
                 {
