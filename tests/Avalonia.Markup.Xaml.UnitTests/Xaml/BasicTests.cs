@@ -1,6 +1,7 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Markup.Xaml.Data;
@@ -9,6 +10,8 @@ using Avalonia.Markup.Xaml.Templates;
 using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
+using System.Collections;
+using System.ComponentModel;
 using System.Linq;
 using Xunit;
 
@@ -679,6 +682,51 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             var txt = (TextBlock)template.Build(null);
 
             Assert.Equal((object)NonControl.StringProperty, txt.Tag);
+        }
+
+        [Fact]
+        public void Binding_To_List_AvaloniaProperty_Is_Operational()
+        {
+            using (UnitTestApplication.Start(TestServices.MockWindowingPlatform))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'>
+    <ListBox Items='{Binding Items}' SelectedItems='{Binding SelectedItems}'/>
+</Window>";
+
+                var window = AvaloniaXamlLoader.Parse<Window>(xaml);
+                var listBox = (ListBox)window.Content;
+
+                var vm = new SelectedItemsViewModel()
+                {
+                    Items = new string[] { "foo", "bar", "baz" }
+                };
+
+                window.DataContext = vm;
+
+                Assert.Equal(vm.Items, listBox.Items);
+
+                Assert.Equal(vm.SelectedItems, listBox.SelectedItems);
+            }
+        }
+
+        private class SelectedItemsViewModel : INotifyPropertyChanged
+        {
+            public string[] Items { get; set; }
+
+            public event PropertyChangedEventHandler PropertyChanged;
+
+            private IList _selectedItems = new AvaloniaList<string>();
+
+            public IList SelectedItems
+            {
+                get { return _selectedItems; }
+                set
+                {
+                    _selectedItems = value;
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedItems)));
+                }
+            }
         }
     }
 }
