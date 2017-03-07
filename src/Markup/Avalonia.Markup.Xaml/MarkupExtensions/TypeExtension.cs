@@ -7,7 +7,6 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
 {
 #if !OMNIXAML
 
-    //TODO: check do we need something more than std Portable.xaml type??
     public class TypeExtension : Portable.Xaml.Markup.TypeExtension
     {
         public TypeExtension()
@@ -16,7 +15,6 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
 
         public TypeExtension(string typeName) : base(typeName)
         {
-
         }
 
         public override object ProvideValue(IServiceProvider serviceProvider)

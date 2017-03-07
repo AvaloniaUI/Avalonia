@@ -3,6 +3,7 @@
 
 namespace Avalonia.Markup.Xaml.Context
 {
+#if OMNIXAML
     internal class NameScopeWrapper : OmniXaml.INameScope
     {
         private readonly Avalonia.Controls.INameScope _inner;
@@ -27,4 +28,5 @@ namespace Avalonia.Markup.Xaml.Context
             _inner.Unregister(name);
         }
     }
+#endif
 }

@@ -8,6 +8,7 @@ using Glass.Core;
 
 namespace Avalonia.Markup.Xaml.Context
 {
+#if OMNIXAML
     public class AvaloniaTypeRepository : TypeRepository
     {
         private readonly ITypeFactory _typeFactory;
@@ -25,4 +26,5 @@ namespace Avalonia.Markup.Xaml.Context
             return new AvaloniaXamlType(type, this, _typeFactory, FeatureProvider);
         }
     }
+#endif
 }

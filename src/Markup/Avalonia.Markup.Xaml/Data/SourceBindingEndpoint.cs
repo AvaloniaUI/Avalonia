@@ -6,6 +6,7 @@ using System.ComponentModel;
 
 namespace Avalonia.Markup.Xaml.Data
 {
+#if OMNIXAML
     public class SourceBindingEndpoint
     {
         public Type PropertyType { get; }
@@ -24,4 +25,5 @@ namespace Avalonia.Markup.Xaml.Data
             PropertySetter = propertySetter;
         }
     }
+#endif
 }

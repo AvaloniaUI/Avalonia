@@ -8,6 +8,7 @@ using System.Reflection;
 
 namespace Avalonia.Markup.Xaml.Context
 {
+#if OMNIXAML
     public class AvaloniaAttachableXamlMember : AttachableMember
     {
         public AvaloniaAttachableXamlMember(string name,
@@ -30,4 +31,5 @@ namespace Avalonia.Markup.Xaml.Context
             return new AvaloniaMemberValuePlugin(this);
         }
     }
+#endif
 }

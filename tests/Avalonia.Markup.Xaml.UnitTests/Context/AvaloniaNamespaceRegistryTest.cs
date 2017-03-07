@@ -6,6 +6,7 @@ using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Context
 {
+#if OMNIXAML
     public class AvaloniaNamespaceRegistryTest
     {
         [Fact]
@@ -23,4 +24,5 @@ namespace Avalonia.Markup.Xaml.UnitTests.Context
             Assert.Same(ns1, ns2);
         }
     }
+#endif
 }

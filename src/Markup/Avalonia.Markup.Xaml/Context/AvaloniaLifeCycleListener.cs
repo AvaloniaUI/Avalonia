@@ -6,6 +6,7 @@ using OmniXaml;
 
 namespace Avalonia.Markup.Xaml.Context
 {
+#if OMNIXAML
     public class AvaloniaLifeCycleListener : IInstanceLifeCycleListener
     {
         public void OnAfterProperties(object instance)
@@ -28,4 +29,5 @@ namespace Avalonia.Markup.Xaml.Context
             isi?.EndInit();
         }
     }
+#endif
 }

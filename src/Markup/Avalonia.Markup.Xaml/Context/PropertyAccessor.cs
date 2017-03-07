@@ -15,6 +15,7 @@ using Avalonia.Styling;
 
 namespace Avalonia.Markup.Xaml.Context
 {
+#if OMNIXAML
     internal static class PropertyAccessor
     {
         public static void SetValue(
@@ -171,4 +172,5 @@ namespace Avalonia.Markup.Xaml.Context
             return true;
         }
     }
+#endif
 }
