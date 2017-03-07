@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Avalonia.LeakTests</RootNamespace>
     <AssemblyName>Avalonia.LeakTests</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
@@ -137,11 +137,11 @@
     <PackageReference Include="System.Reactive.Linq" Version="3.0.0" />
     <PackageReference Include="System.Reactive.PlatformServices" Version="3.0.0" />
     <PackageReference Include="System.Reactive.Windows.Threading" Version="3.0.0" />
-    <PackageReference Include="xunit" Version="2.1.0" />
-    <PackageReference Include="xunit.abstractions" Version="2.0.0" />
-    <PackageReference Include="xunit.assert" Version="2.1.0" />
-    <PackageReference Include="xunit.core" Version="2.1.0" />
-    <PackageReference Include="xunit.extensibility.core" Version="2.1.0" />
-    <PackageReference Include="xunit.extensibility.execution" Version="2.1.0" />
+    <PackageReference Include="xunit" Version="2.2.0" />
+    <PackageReference Include="xunit.abstractions" Version="2.0.1" />
+    <PackageReference Include="xunit.assert" Version="2.2.0" />
+    <PackageReference Include="xunit.core" Version="2.2.0" />
+    <PackageReference Include="xunit.extensibility.core" Version="2.2.0" />
+    <PackageReference Include="xunit.extensibility.execution" Version="2.2.0" />
   </ItemGroup>
 </Project>
