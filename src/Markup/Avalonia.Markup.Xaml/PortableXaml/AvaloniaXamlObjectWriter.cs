@@ -18,6 +18,10 @@ namespace Avalonia.Markup.Xaml.PortableXaml
             return new AvaloniaXamlObjectWriter(schemaContext, writerSettings, nameScope);
         }
 
+        private readonly DelayedValuesHelper _delayedValuesHelper = new DelayedValuesHelper();
+
+        private AvaloniaNameScope _nameScope;
+
         private AvaloniaXamlObjectWriter(
             XamlSchemaContext schemaContext,
             XamlObjectWriterSettings settings,
@@ -28,13 +32,32 @@ namespace Avalonia.Markup.Xaml.PortableXaml
             _nameScope = nameScope;
         }
 
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (_nameScope != null && Result != null)
+                {
+                    _nameScope.RegisterOnNameScope(Result);
+                }
+            }
+
+            base.Dispose(disposing);
+        }
+
         protected override void OnAfterBeginInit(object value)
         {
+            //not called for avalonia objects
+            //as it's called inly for
+            //Portable.Xaml.ComponentModel.ISupportInitialize
             base.OnAfterBeginInit(value);
         }
 
         protected override void OnAfterEndInit(object value)
         {
+            //not called for avalonia objects
+            //as it's called inly for
+            //Portable.Xaml.ComponentModel.ISupportInitialize
             base.OnAfterEndInit(value);
         }
 
@@ -48,8 +71,6 @@ namespace Avalonia.Markup.Xaml.PortableXaml
             //Portable.Xaml.ComponentModel.ISupportInitialize
             //and we have Avalonia.ISupportInitialize so we need some hacks
             HandleEndEdit(value);
-
-            _objects.Pop();
         }
 
         protected override void OnBeforeProperties(object value)
@@ -57,48 +78,22 @@ namespace Avalonia.Markup.Xaml.PortableXaml
             //OnAfterBeginInit is not called as it supports only
             //Portable.Xaml.ComponentModel.ISupportInitialize
             //and we have Avalonia.ISupportInitialize so we need some hacks
-
             HandleBeginInit(value);
 
             _delayedValuesHelper.BeginInit(value);
 
             base.OnBeforeProperties(value);
-
-            var target = Current;
-
-            var member = _lastStartMember;
-            _lastStartMember = null;
-
-            //if (target != null && value != null && member != null &&
-            //    member is PropertyXamlMember && !(value is MarkupExtension) &&
-            //    member.DeclaringType.ContentProperty?.Name == member.Name &&
-            //    !member.IsReadOnly &&
-            //    member.Invoker?.UnderlyingSetter != null)
-            //{
-            //    //set default content before start properties
-            //    try
-            //    {
-            //        if (!OnSetValue(target, member, value))
-            //        {
-            //            member.Invoker.SetValue(target, value);
-            //        }
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        throw new XamlObjectWriterException($"Set value of member '{member}' threw an exception", ex);
-            //    }
-            //}
-
-            _objects.Push(value);
         }
 
-        private AvaloniaNameScope _nameScope;
+        protected override bool OnSetValue(object target, XamlMember member, object value)
+        {
+            if (_delayedValuesHelper.TryAdd(target, member, value))
+            {
+                return true;
+            }
 
-        private Stack<object> _objects = new Stack<object>();
-
-        private object Current => _objects.Count > 0 ? _objects.Peek() : null;
-
-        private XamlMember _lastStartMember = null;
+            return base.OnSetValue(target, member, value);
+        }
 
         private void HandleBeginInit(object value)
         {
@@ -110,102 +105,46 @@ namespace Avalonia.Markup.Xaml.PortableXaml
             (value as Avalonia.ISupportInitialize)?.EndInit();
         }
 
-        private void HandleFinished()
-        {
-            if (_nameScope != null && Result != null)
-            {
-                _nameScope.RegisterOnNameScope(Result);
-            }
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                HandleFinished();
-            }
-
-            base.Dispose(disposing);
-        }
-
-        public override void WriteStartMember(XamlMember property)
-        {
-            base.WriteStartMember(property);
-
-            _lastStartMember = property;
-        }
-
-        public override void WriteEndMember()
-        {
-            base.WriteEndMember();
-
-            _lastStartMember = null;
-        }
-
-        protected override bool OnSetValue(object target, XamlMember member, object value)
-        {
-            if (value is IBinding)
-            {
-                //delay bindings
-                _delayedValuesHelper.Add(new DelayedValue(target, member, value));
-                return true;
-            }
-
-            return base.OnSetValue(target, member, value);
-        }
-
-        private readonly DelayedValuesHelper _delayedValuesHelper = new DelayedValuesHelper();
-
-        private class DelayedValue
-        {
-            public DelayedValue(object target, XamlMember member, object value)
-            {
-                Target = target;
-                Member = member;
-                Value = value;
-            }
-
-            public object Target { get; }
-
-            public XamlMember Member { get; }
-
-            public object Value { get; }
-        }
-
         private class DelayedValuesHelper
         {
+            private int _cnt;
+
             private HashSet<object> _targets = new HashSet<object>();
 
             private IList<DelayedValue> _values = new List<DelayedValue>();
 
-            private int cnt;
+            private IEnumerable<DelayedValue> Values => _values;
 
             public void BeginInit(object target)
             {
-                ++cnt;
+                ++_cnt;
 
                 AddTargetIfNeeded(target);
             }
 
             public void EndInit(object target)
             {
-                --cnt;
+                --_cnt;
 
-                if (cnt == 0)
+                if (_cnt == 0)
                 {
                     EndInit();
                 }
             }
 
-            private void AddTargetIfNeeded(object target)
+            public bool TryAdd(object target, XamlMember member, object value)
             {
-                if (!_targets.Contains(target))
+                if (value is IBinding)
                 {
-                    Add(new DelayedValue(target, null, null));
+                    Add(new DelayedValue(target, member, value));
+
+                    return true;
                 }
+
+                return false;
             }
 
-            public void Add(DelayedValue value)
+            private void Add(DelayedValue value)
             {
                 _values.Add(value);
 
@@ -215,6 +154,14 @@ namespace Avalonia.Markup.Xaml.PortableXaml
                 {
                     _targets.Add(target);
                     (target as ISupportInitialize)?.BeginInit();
+                }
+            }
+
+            private void AddTargetIfNeeded(object target)
+            {
+                if (!_targets.Contains(target))
+                {
+                    Add(new DelayedValue(target, null, null));
                 }
             }
 
@@ -246,7 +193,19 @@ namespace Avalonia.Markup.Xaml.PortableXaml
                 _values.Clear();
             }
 
-            private IEnumerable<DelayedValue> Values => _values;
+            private class DelayedValue
+            {
+                public DelayedValue(object target, XamlMember member, object value)
+                {
+                    Target = target;
+                    Member = member;
+                    Value = value;
+                }
+
+                public XamlMember Member { get; }
+                public object Target { get; }
+                public object Value { get; }
+            }
         }
     }
 }
