@@ -324,15 +324,15 @@ namespace Avalonia.Markup.Xaml.PortableXaml
                 }
             }
 
-            public void ApplyBinding(IAvaloniaObject obj, IBinding binding)
+            private void ApplyBinding(IAvaloniaObject obj, IBinding binding)
             {
                 var control = obj as IControl;
                 var property = Property;
                 var xamlBinding = binding as XamlBinding;
-                //if (control != null && property != Control.DataContextProperty)
-                //    DelayedBinding.Add(control, property, binding);
-                //else
-                if (xamlBinding != null)
+
+                if (control != null && property != Control.DataContextProperty)
+                    DelayedBinding.Add(control, property, binding);
+                else if (xamlBinding != null)
                     obj.Bind(property, xamlBinding.Value, xamlBinding.Anchor?.Target);
                 else
                     obj.Bind(property, binding);

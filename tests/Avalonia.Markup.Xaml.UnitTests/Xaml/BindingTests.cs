@@ -147,26 +147,27 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         }
 
 #if  OMNIXAML
-
         [Fact(Skip = "OmniXaml doesn't support nested markup extensions. #119")]
 #else
-
         [Fact]
 #endif
         public void Binding_To_Self_Works()
         {
-            var xaml = @"
-<ContentControl xmlns='https://github.com/avaloniaui'
+            using (UnitTestApplication.Start(TestServices.MockWindowingPlatform))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
     <TextBlock Name='textblock' Text='{Binding Tag, RelativeSource={RelativeSource Self}}'/>
-</ContentControl>";
+</Window>";
 
-            var window = AvaloniaXamlLoader.Parse<ContentControl>(xaml);
-            var textBlock = (TextBlock)window.Content;
+                var window = AvaloniaXamlLoader.Parse<ContentControl>(xaml);
+                var textBlock = (TextBlock)window.Content;
 
-            textBlock.Tag = "foo";
+                textBlock.Tag = "foo";
 
-            Assert.Equal("foo", textBlock.Text);
+                Assert.Equal("foo", textBlock.Text);
+            }
         }
 
         [Fact]

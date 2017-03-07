@@ -5,8 +5,6 @@ using Portable.Xaml;
 using Portable.Xaml.ComponentModel;
 using Portable.Xaml.Markup;
 using System;
-using System.Linq;
-
 
 namespace Avalonia.Markup.Xaml.PortableXaml
 {
@@ -32,25 +30,16 @@ namespace Avalonia.Markup.Xaml.PortableXaml
         {
             object anchor = null;
 
-            //// The target is not a control, so we need to find an anchor that will let us look
-            //// up named controls and style resources. First look for the closest IControl in
-            //// the TopDownValueContext.
-
-            //anchor = context.TopDownValueContext.StoredInstances
-            //    .Select(x => x.Instance)
-            //    .OfType<IControl>()
-            //    .LastOrDefault();
+            // The target is not a control, so we need to find an anchor that will let us look
+            // up named controls and style resources. First look for the closest IControl in
+            // the context.
             anchor = context.GetFirstAmbientValue<IControl>();
 
-            //// If a control was not found, then try to find the highest-level style as the XAML
-            //// file could be a XAML file containing only styles.
-            //    anchor = context.TopDownValueContext.StoredInstances
-            //        .Select(x => x.Instance)
-            //        .OfType<IStyle>()
-            //        .FirstOrDefault();
-            var rs = context.GetService<IRootObjectProvider>().RootObject as IStyle;
-
-            return anchor ?? rs ?? context.GetLastOrDefaultAmbientValue<IStyle>();
+            // If a control was not found, then try to find the highest-level style as the XAML
+            // file could be a XAML file containing only styles.
+            return anchor ??
+                    context.GetService<IRootObjectProvider>()?.RootObject as IStyle ??
+                    context.GetLastOrDefaultAmbientValue<IStyle>();
         }
 
         private XamlBinding(IBinding binding, object anchor)
