@@ -4,6 +4,7 @@
 
 #addin "nuget:?package=Polly&version=4.2.0"
 #addin "nuget:?package=NuGet.Core&version=2.12.0"
+#tool "nuget:https://dotnet.myget.org/F/nuget-build/?package=NuGet.CommandLine&version=4.3.0-beta1-2361&prerelease"
 
 ///////////////////////////////////////////////////////////////////////////////
 // TOOLS
@@ -117,15 +118,10 @@ Task("Restore-NuGet-Packages")
                 toolTimeout+=0.5;
             }})
         .Execute(()=> {
-            MSBuild(parameters.MSBuildSolution, settings => {
-                settings.SetConfiguration(parameters.Configuration);
-                settings.WithProperty("Platform", "\"" + parameters.Platform + "\"");
-                settings.SetVerbosity(Verbosity.Minimal);
-                settings.WithProperty("Windows", "True");
-                settings.UseToolVersion(MSBuildToolVersion.VS2017);
-                settings.WithTarget("restore");
-                settings.SetNodeReuse(false);
-            });
+                NuGetRestore(parameters.MSBuildSolution, new NuGetRestoreSettings {
+                    ToolPath = "./tools/NuGet.CommandLine/tools/NuGet.exe",
+                    ToolTimeout = TimeSpan.FromMinutes(toolTimeout)
+                });
         });
 });
 
