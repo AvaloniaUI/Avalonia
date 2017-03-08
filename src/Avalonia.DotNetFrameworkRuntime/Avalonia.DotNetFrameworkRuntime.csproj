@@ -82,4 +82,5 @@
     <PackageReference Include="System.Reactive.Core" Version="3.0.0" />
     <PackageReference Include="System.Reactive.Interfaces" Version="3.0.0" />
   </ItemGroup>
+  <Import Project="$(MSBuildThisFileDirectory)..\Shared\nuget.workaround.targets" />
 </Project>

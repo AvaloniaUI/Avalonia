@@ -113,4 +113,5 @@
     <PackageReference Include="BenchmarkDotNet" Version="0.9.2" />
     <PackageReference Include="Moq" Version="4.2.1510.2205" />
   </ItemGroup>
+  <Import Project="$(MSBuildThisFileDirectory)..\..\src\Shared\nuget.workaround.targets" />
 </Project>

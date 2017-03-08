@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- https://github.com/NuGet/Home/issues/4532 -->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+   <UsingTask TaskName="Microsoft.NuGet.Build.Tasks.ResolveNuGetPackageAssetsPatched" AssemblyFile="Microsoft.NuGet.Build.Tasks.Patched.dll" />
+
+  <Target Name="ResolveNuGetPackageAssets"
+          DependsOnTargets="$(ResolveNuGetPackageAssetsDependsOn)"
+          Condition="'$(ResolveNuGetPackages)' == 'true' and exists('$(ProjectLockFile)')">
+
+    <ResolveNuGetPackageAssetsPatched AllowFallbackOnTargetSelection="$(DesignTimeBuild)"
+                               ContinueOnError="$(ContinueOnError)"
+                               IncludeFrameworkReferences="$(IncludeFrameworkReferencesFromNuGet)"
+                               NuGetPackagesDirectory="$(NuGetPackagesDirectory)"
+                               RuntimeIdentifier="$(NuGetRuntimeIdentifier)"
+                               ProjectLanguage="$(Language)"
+                               ProjectLockFile="$(ProjectLockFile)"
+                               ContentPreprocessorValues="@(NuGetPreprocessorValue)"
+                               ContentPreprocessorOutputDirectory="$(IntermediateOutputPath)\NuGet"
+                               TargetMonikers="$(NuGetTargetMoniker);$(_NuGetTargetFallbackMoniker)">
+
+      <Output TaskParameter="ResolvedAnalyzers" ItemName="Analyzer" />
+      <Output TaskParameter="ResolvedCopyLocalItems" ItemName="ReferenceCopyLocalPaths" />
+      <Output TaskParameter="ResolvedReferences" ItemName="_ReferencesFromNuGetPackages" />
+      <Output TaskParameter="ReferencedPackages" ItemName="ReferencedNuGetPackages" />
+      <Output TaskParameter="ContentItems" ItemName="_NuGetContentItems" />
+      <Output TaskParameter="FileWrites" ItemName="FileWrites" />
+    </ResolveNuGetPackageAssetsPatched>
+
+    <ItemGroup>
+      <!-- Remove exact references, such as if a package had a framework reference to 'System' that we already have -->
+      <Reference Remove="@(_ReferencesFromNuGetPackages)" />
+      
+      <!-- Remove simple name references that are already implicitly added -->
+      <_ReferencesFromNuGetPackages Remove="%(ReferencePath.FileName)" Condition="'%(ReferencePath.ResolvedFrom)' == 'ImplicitlyExpandTargetFramework'" />
+
+      <!-- Include NuGet references in the proper groups. Project-to-project references must go in the
+           _ResolvedProjectReferencePaths group which matches the behavior of the ResolveProjectReferences
+           target. This ensures that even if the assembly is missing on disk, it still makes it to the compiler. -->
+      <Reference Include="@(_ReferencesFromNuGetPackages)" Condition="'%(_ReferencesFromNuGetPackages.NuGetSourceType)' != 'Project'" />
+      <_ResolvedProjectReferencePaths Include="@(_ReferencesFromNuGetPackages)" Condition="'%(_ReferencesFromNuGetPackages.NuGetSourceType)' == 'Project'" />
+
+    <Reference Include="@(_ReferencesFromNuGetPackages)" />
+      <!-- Remove simple name references if we're directly providing a reference assembly to the compiler. For example,
+           consider a project with an Reference Include="System", and some NuGet package is providing System.dll -->
+      <Reference Remove="%(_ReferencesFromNuGetPackages.FileName)" Condition="'%(_ReferencesFromNuGetPackages.NuGetIsFrameworkReference)' == 'false'"/>
+    </ItemGroup>
+
+    <PropertyGroup Condition=" '$(AutoUnifyAssemblyReferences)' == 'true' ">
+      <!-- Normally Design Time Assembly Resolution (DTAR) won't consider these references.
+           Put DTAR in a mode where it will prefer the output of RAR and unify. -->
+      <DTARUseReferencesFromProject>true</DTARUseReferencesFromProject>
+    </PropertyGroup>
+
+    <!-- The items in _NuGetContentItems need to go into the appropriately-named item group, but the names depend upon the items
+         themselves. Split it apart. -->
+    <CreateItem Include="@(_NuGetContentItems)" Condition="'@(_NuGetContentItems)' != ''">
+      <Output TaskParameter="Include" ItemName="%(_NuGetContentItems.NuGetItemType)" />
+    </CreateItem>
+  </Target>
+  <PropertyGroup>
+    <CscToolPath Condition="$(VsInstallRoot) != ''">$(MSBuildToolsPath)\..\Roslyn</CscToolPath>
+  </PropertyGroup>
+</Project>

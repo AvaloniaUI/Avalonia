@@ -158,4 +158,5 @@
     <PackageReference Include="System.Threading" Version="4.0.11" />
     <PackageReference Include="System.Threading.Tasks" Version="4.0.11" />
   </ItemGroup>
+  <Import Project="$(MSBuildThisFileDirectory)..\..\Shared\nuget.workaround.targets" />
 </Project>

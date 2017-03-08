@@ -12,8 +12,7 @@
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
+    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
     <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -132,6 +131,9 @@
   </Target>
   -->
   <ItemGroup>
-    <PackageReference Include="JetBrains.Annotations" Version="10.3.0" />
+    <PackageReference Include="JetBrains.Annotations">
+		<Version>10.3.0</Version>
+	</PackageReference>
   </ItemGroup>
+  <Import Project="$(MSBuildThisFileDirectory)..\..\Shared\nuget.workaround.targets" />
 </Project>

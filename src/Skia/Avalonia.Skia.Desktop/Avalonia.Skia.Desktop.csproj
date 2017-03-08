@@ -12,9 +12,7 @@
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
-    <ShouldIncludeNativeSkiaSharp>True</ShouldIncludeNativeSkiaSharp>
+    <ShouldIncludeNativeSkiaSharp>false</ShouldIncludeNativeSkiaSharp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -111,4 +109,8 @@
   </Target>
   <Target Name="AfterBuild">
   </Target>
+  <ItemGroup>
+    <PackageReference Include="SkiaSharp" Version="1.56.1-beta" />
+  </ItemGroup>
+  <Import Project="$(MSBuildThisFileDirectory)..\..\Shared\nuget.workaround.targets" />
 </Project>

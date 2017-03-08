@@ -199,4 +199,5 @@
     <PackageReference Include="System.Reactive.PlatformServices" Version="3.0.0" />
     <PackageReference Include="System.Reactive.Windows.Threading" Version="3.0.0" />
   </ItemGroup>
+  <Import Project="$(MSBuildThisFileDirectory)..\..\src\Shared\nuget.workaround.targets" />
 </Project>

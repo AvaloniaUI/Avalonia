@@ -15,9 +15,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Direct2D1", "src\Windows\Avalonia.Direct2D1\Avalonia.Direct2D1.csproj", "{3E908F67-5543-4879-A1DC-08EACE79B3CD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Designer", "src\Windows\Avalonia.Designer\Avalonia.Designer.csproj", "{EC42600F-049B-43FF-AED1-8314D61B2749}"
-	ProjectSection(ProjectDependencies) = postProject
-		{2B888490-D14A-4BCA-AB4B-48676FA93C9B} = {2B888490-D14A-4BCA-AB4B-48676FA93C9B}
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Input", "src\Avalonia.Input\Avalonia.Input.csproj", "{62024B2D-53EB-4638-B26B-85EEAA54866E}"
 EndProject
@@ -85,9 +82,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Markup.UnitTests", "tests\Avalonia.Markup.UnitTests\Avalonia.Markup.UnitTests.csproj", "{8EF392D5-1416-45AA-9956-7CBBC3229E8A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BindingTest", "samples\BindingTest\BindingTest.csproj", "{08B3E6B9-1CD5-443C-9F61-6D49D1C5F162}"
-	ProjectSection(ProjectDependencies) = postProject
-		{B61B66A3-B82D-4875-8001-89D3394FE0C9} = {B61B66A3-B82D-4875-8001-89D3394FE0C9}
-	EndProjectSection
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "RenderHelpers", "src\Shared\RenderHelpers\RenderHelpers.shproj", "{3C4C0CB4-0C0F-4450-A37B-148C84FF905F}"
 EndProject
@@ -126,9 +120,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ControlCatalog", "samples\ControlCatalog\ControlCatalog.csproj", "{D0A739B9-3C68-4BA6-A328-41606954B6BD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ControlCatalog.Desktop", "samples\ControlCatalog.Desktop\ControlCatalog.Desktop.csproj", "{2B888490-D14A-4BCA-AB4B-48676FA93C9B}"
-	ProjectSection(ProjectDependencies) = postProject
-		{BB1F7BB5-6AD4-4776-94D9-C09D0A972658} = {BB1F7BB5-6AD4-4776-94D9-C09D0A972658}
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ControlCatalog.iOS", "samples\ControlCatalog.iOS\ControlCatalog.iOS.csproj", "{57E0455D-D565-44BB-B069-EE1AA20F8337}"
 EndProject

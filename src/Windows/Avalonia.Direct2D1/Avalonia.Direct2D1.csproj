@@ -127,4 +127,5 @@
     <PackageReference Include="SharpDX.Direct3D11" Version="3.1.1" />
     <PackageReference Include="SharpDX.DXGI" Version="3.1.1" />
   </ItemGroup>
+  <Import Project="$(MSBuildThisFileDirectory)..\..\Shared\nuget.workaround.targets" />
 </Project>

@@ -187,4 +187,5 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <Import Project="$(MSBuildThisFileDirectory)..\..\..\src\Shared\nuget.workaround.targets" />
 </Project>
