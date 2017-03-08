@@ -57,7 +57,7 @@
       <Output TaskParameter="Include" ItemName="%(_NuGetContentItems.NuGetItemType)" />
     </CreateItem>
   </Target>
-  <PropertyGroup>
-    <CscToolPath Condition="!Exists('$(CscToolPath)')">$(MSBuildToolsPath)\..\Roslyn</CscToolPath>
+  <PropertyGroup Condition="'$(UseRoslynPathHack)' == 'true'">
+    <CscToolPath>$(MSBuildToolsPath)\..\Roslyn</CscToolPath>
   </PropertyGroup>
 </Project>

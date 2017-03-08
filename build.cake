@@ -142,6 +142,7 @@ Task("Build")
         MSBuild(parameters.MSBuildSolution, settings => {
             settings.SetConfiguration(parameters.Configuration);
             settings.WithProperty("Platform", "\"" + parameters.Platform + "\"");
+            settings.WithProperty("UseRoslynPathHack", "true");
             settings.SetVerbosity(Verbosity.Minimal);
             settings.WithProperty("Windows", "True");
             settings.UseToolVersion(MSBuildToolVersion.VS2017);

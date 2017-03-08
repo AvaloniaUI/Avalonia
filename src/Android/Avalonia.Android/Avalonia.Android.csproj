@@ -159,4 +159,7 @@
     <PackageReference Include="System.Threading.Tasks" Version="4.0.11" />
   </ItemGroup>
   <Import Project="$(MSBuildThisFileDirectory)..\..\Shared\nuget.workaround.targets" />
+  <PropertyGroup Condition="'$(UseRoslynPathHack)' == ''">
+    <CscToolPath>$(MSBuildToolsPath)\Roslyn</CscToolPath>
+  </PropertyGroup>
 </Project>
