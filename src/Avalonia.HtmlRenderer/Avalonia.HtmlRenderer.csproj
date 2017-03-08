@@ -2,6 +2,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard1.1</TargetFramework>
     <EnableDefaultCompileItems>False</EnableDefaultCompileItems>
+    <EnableDefaultItems>False</EnableDefaultItems>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -161,9 +162,4 @@
     <PackageReference Include="System.Reactive.Core" Version="3.0.0" />
     <PackageReference Include="System.Reactive.Interfaces" Version="3.0.0" />
   </ItemGroup>
-  <Target Name="CleansingHeresy" BeforeTargets="CoreResGen">
-    <ItemGroup>
-       <EmbeddedResource Remove="external\\**"/>
-    </ItemGroup>
-  </Target>
 </Project>

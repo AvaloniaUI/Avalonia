@@ -2,6 +2,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard1.1</TargetFramework>
     <EnableDefaultCompileItems>False</EnableDefaultCompileItems>
+    <EnableDefaultItems>false</EnableDefaultItems>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -326,10 +327,4 @@
     <PackageReference Include="System.Runtime" Version="4.1.0" />
     <PackageReference Include="System.Text.RegularExpressions" Version="4.1.0" />
   </ItemGroup>
-  <Target Name="CleansingHeresy" BeforeTargets="CoreResGen">
-    <ItemGroup>
-       <EmbeddedResource Remove="glass\\**"/>
-       <EmbeddedResource Remove="OmniXAML\\**"/>
-    </ItemGroup>
-  </Target>
 </Project>
