@@ -31,6 +31,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Animation", "src\Avalonia.Animation\Avalonia.Animation.csproj", "{D211E587-D8BC-45B9-95A4-F297C8FA5200}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}"
+	ProjectSection(SolutionItems) = preProject
+		tests\coretests.props = tests\coretests.props
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Styling.UnitTests", "tests\Avalonia.Styling.UnitTests\Avalonia.Styling.UnitTests.csproj", "{47ECDF59-DEF8-4C53-87B1-2098A3429059}"
 EndProject
@@ -163,9 +166,6 @@ Global
 		src\Shared\RenderHelpers\RenderHelpers.projitems*{3c4c0cb4-0c0f-4450-a37b-148c84ff905f}*SharedItemsImports = 13
 		src\Shared\RenderHelpers\RenderHelpers.projitems*{3e908f67-5543-4879-a1dc-08eace79b3cd}*SharedItemsImports = 4
 		src\Windows\Avalonia.Win32\Avalonia.Win32.Shared.projitems*{40759a76-d0f2-464e-8000-6ff0f5c4bd7c}*SharedItemsImports = 4
-		src\Shared\PlatformSupport\PlatformSupport.projitems*{4488ad85-1495-4809-9aa4-ddfe0a48527e}*SharedItemsImports = 4
-		src\Shared\RenderHelpers\RenderHelpers.projitems*{47be08a7-5985-410b-9ffc-2264b8ea595f}*SharedItemsImports = 4
-		src\Skia\Avalonia.Skia\Avalonia.Skia.projitems*{47be08a7-5985-410b-9ffc-2264b8ea595f}*SharedItemsImports = 4
 		tests\Avalonia.RenderTests\Avalonia.RenderTests.projitems*{48840edd-24bf-495d-911e-2eb12ae75d3b}*SharedItemsImports = 13
 		src\Shared\PlatformSupport\PlatformSupport.projitems*{4a1abb09-9047-4bd5-a4ad-a055e52c5ee0}*SharedItemsImports = 4
 		src\Shared\PlatformSupport\PlatformSupport.projitems*{7863ea94-f0fb-4386-bf8c-e5bfa761560a}*SharedItemsImports = 4
@@ -176,11 +176,6 @@ Global
 		src\Shared\RenderHelpers\RenderHelpers.projitems*{925dd807-b651-475f-9f7c-cbeb974ce43d}*SharedItemsImports = 4
 		src\Skia\Avalonia.Skia\Avalonia.Skia.projitems*{925dd807-b651-475f-9f7c-cbeb974ce43d}*SharedItemsImports = 4
 		src\Windows\Avalonia.Win32\Avalonia.Win32.Shared.projitems*{9defc6b7-845b-4d8f-afc0-d32bf0032b8c}*SharedItemsImports = 13
-		src\Shared\RenderHelpers\RenderHelpers.projitems*{bd43f7c0-396b-4aa1-bad9-dfde54d51298}*SharedItemsImports = 4
-		src\Skia\Avalonia.Skia\Avalonia.Skia.projitems*{bd43f7c0-396b-4aa1-bad9-dfde54d51298}*SharedItemsImports = 4
-		tests\Avalonia.RenderTests\Avalonia.RenderTests.projitems*{d35a9f3d-8bb0-496e-bf72-444038a7debb}*SharedItemsImports = 4
-		tests\Avalonia.RenderTests\Avalonia.RenderTests.projitems*{dabfd304-d6a4-4752-8123-c2ccf7ac7831}*SharedItemsImports = 4
-		tests\Avalonia.RenderTests\Avalonia.RenderTests.projitems*{e106cf37-4066-4615-b684-172a6d30b058}*SharedItemsImports = 4
 		src\Shared\PlatformSupport\PlatformSupport.projitems*{e4d9629c-f168-4224-3f51-a5e482ffbc42}*SharedItemsImports = 13
 		src\Shared\RenderHelpers\RenderHelpers.projitems*{fb05ac90-89ba-4f2f-a924-f37875fb547c}*SharedItemsImports = 4
 	EndGlobalSection

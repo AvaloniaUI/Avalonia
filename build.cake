@@ -127,6 +127,8 @@ Task("Restore-NuGet-Packages")
 
 void DotNetCoreBuild()
 {
+    DotNetCoreRestore("samples\\ControlCatalog.NetCore");
+    DotNetBuild("samples\\ControlCatalog.NetCore");
 }
 
 Task("DotNetCoreBuild")
@@ -155,8 +157,23 @@ Task("Build")
     }
 });
 
+void RunCoreTest(string dir)
+{
+    DotNetCoreRestore(dir);
+    var frameworks = new List<string>{"netcoreapp1.1"};
+    if(parameters.IsRunningOnWindows)
+        frameworks.Add("net461");
+    foreach(var fw in frameworks)
+    {
+        Information("Running for " + fw);
+        DotNetCoreTest(System.IO.Path.Combine(dir, System.IO.Path.GetFileName(dir)+".csproj"),
+            new DotNetCoreTestSettings{Framework = fw});
+    }
+}
+
 void RunDotNetCoreTest()
 {
+    RunCoreTest("./tests/Avalonia.Base.UnitTests");
 }
 
 Task("Run-Net-Core-Unit-Tests")
@@ -164,14 +181,13 @@ Task("Run-Net-Core-Unit-Tests")
     .Does(() => RunDotNetCoreTest());
 
 Task("Run-Unit-Tests")
+    .IsDependentOn("Run-Net-Core-Unit-Tests")
     .IsDependentOn("Build")
     .WithCriteria(() => !parameters.SkipTests)
     .Does(() =>
 {
-    if(parameters.IsRunningOnWindows)
-    {
-        RunDotNetCoreTest();
-    }
+    if(!parameters.IsRunningOnWindows)
+       return;
 
     var unitTests = GetDirectories("./tests/Avalonia.*.UnitTests")
         .Select(dir => System.IO.Path.GetFileName(dir.FullPath))
@@ -342,9 +358,13 @@ Task("Publish-NuGet")
 Task("Package")
   .IsDependentOn("Create-NuGet-Packages");
 
-Task("Default")
-  .IsDependentOn("Package");
-
+Task("Default").Does(() =>
+{
+    if(parameters.IsRunningOnWindows)
+        RunTarget("Package");
+    else
+        RunTarget("Run-Net-Core-Unit-Tests");
+});
 Task("AppVeyor")
   .IsDependentOn("Zip-Files")
   .IsDependentOn("Publish-MyGet")

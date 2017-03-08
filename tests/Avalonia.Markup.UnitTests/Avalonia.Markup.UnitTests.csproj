@@ -113,7 +113,7 @@
   -->
   <ItemGroup>
     <PackageReference Include="Microsoft.Reactive.Testing" Version="3.0.0" />
-    <PackageReference Include="Moq" Version="4.2.1510.2205" />
+    <PackageReference Include="Moq" Version="4.7.1" />
     <PackageReference Include="System.ComponentModel.Annotations" Version="4.1.0" />
     <PackageReference Include="System.Reactive" Version="3.0.0" />
     <PackageReference Include="System.Reactive.Core" Version="3.0.0" />

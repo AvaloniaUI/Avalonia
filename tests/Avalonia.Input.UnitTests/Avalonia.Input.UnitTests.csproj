@@ -105,7 +105,7 @@
   </Target>
   -->
   <ItemGroup>
-    <PackageReference Include="Moq" Version="4.2.1510.2205" />
+    <PackageReference Include="Moq" Version="4.7.1" />
     <PackageReference Include="System.Reactive" Version="3.0.0" />
     <PackageReference Include="System.Reactive.Core" Version="3.0.0" />
     <PackageReference Include="System.Reactive.Interfaces" Version="3.0.0" />
