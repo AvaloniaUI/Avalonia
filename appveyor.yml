@@ -1,4 +1,4 @@
-os: Visual Studio 2017
+os: Visual Studio 2017 RC
 platform:
 - Any CPU
 configuration:
