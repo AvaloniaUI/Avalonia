@@ -127,8 +127,6 @@
   </Target>
   -->
   <ItemGroup>
-    <PackageReference Include="AutoFixture" Version="3.40.0" />
-    <PackageReference Include="AutoFixture.AutoMoq" Version="3.40.0" />
     <PackageReference Include="JetBrains.dotMemoryUnit" Version="2.1.20150828.125449" />
     <PackageReference Include="Moq" Version="4.7.1" />
     <PackageReference Include="System.Reactive" Version="3.0.0" />

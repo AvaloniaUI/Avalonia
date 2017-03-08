@@ -159,12 +159,11 @@ Task("Build")
 
 void RunCoreTest(string dir, Parameters parameters)
 {
+    Information("Running tests from " + dir);
     DotNetCoreRestore(dir);
-    var frameworks = new List<string>();;
+    var frameworks = new List<string>(){"netcoreapp1.1"};
     if(parameters.IsRunningOnWindows)
         frameworks.Add("net461");
-    else
-        frameworks.Add("netcoreapp1.1");
     foreach(var fw in frameworks)
     {
         Information("Running for " + fw);
@@ -178,6 +177,8 @@ Task("Run-Net-Core-Unit-Tests")
     .IsDependentOn("Clean")
     .Does(() => {
         RunCoreTest("./tests/Avalonia.Base.UnitTests", parameters);
+        RunCoreTest("./tests/Avalonia.Controls.UnitTests", parameters);
+        RunCoreTest("./tests/Avalonia.Layout.UnitTests", parameters);
     });
 
 Task("Run-Unit-Tests")
