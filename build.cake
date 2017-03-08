@@ -157,7 +157,7 @@ Task("Build")
     }
 });
 
-void RunCoreTest(string dir, Parameters parameters)
+void RunCoreTest(string dir, Parameters parameters, bool net461Only)
 {
     Information("Running tests from " + dir);
     DotNetCoreRestore(dir);
@@ -166,6 +166,8 @@ void RunCoreTest(string dir, Parameters parameters)
         frameworks.Add("net461");
     foreach(var fw in frameworks)
     {
+        if(fw != "net461" && net461Only)
+            continue;
         Information("Running for " + fw);
         DotNetCoreTest(System.IO.Path.Combine(dir, System.IO.Path.GetFileName(dir)+".csproj"),
             new DotNetCoreTestSettings{Framework = fw});
@@ -176,9 +178,9 @@ void RunCoreTest(string dir, Parameters parameters)
 Task("Run-Net-Core-Unit-Tests")
     .IsDependentOn("Clean")
     .Does(() => {
-        RunCoreTest("./tests/Avalonia.Base.UnitTests", parameters);
-        RunCoreTest("./tests/Avalonia.Controls.UnitTests", parameters);
-        RunCoreTest("./tests/Avalonia.Layout.UnitTests", parameters);
+        RunCoreTest("./tests/Avalonia.Base.UnitTests", parameters, false);
+        RunCoreTest("./tests/Avalonia.Controls.UnitTests", parameters, true);
+        RunCoreTest("./tests/Avalonia.Layout.UnitTests", parameters, true);
     });
 
 Task("Run-Unit-Tests")
