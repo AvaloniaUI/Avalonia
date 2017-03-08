@@ -32,6 +32,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="SkiaSharp" Version="1.56.1-beta" />
+    <PackageReference Include="Avalonia.Skia.Linux.Natives" Version="1.56.1.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Avalonia.Base\Avalonia.Base.csproj">
