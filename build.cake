@@ -157,7 +157,7 @@ Task("Build")
     }
 });
 
-void RunCoreTest(string dir)
+void RunCoreTest(string dir, Parameters parameters)
 {
     DotNetCoreRestore(dir);
     var frameworks = new List<string>{"netcoreapp1.1"};
@@ -171,14 +171,12 @@ void RunCoreTest(string dir)
     }
 }
 
-void RunDotNetCoreTest()
-{
-    RunCoreTest("./tests/Avalonia.Base.UnitTests");
-}
 
 Task("Run-Net-Core-Unit-Tests")
     .IsDependentOn("Clean")
-    .Does(() => RunDotNetCoreTest());
+    .Does(() => {
+        RunCoreTest("./tests/Avalonia.Base.UnitTests", parameters);
+    });
 
 Task("Run-Unit-Tests")
     .IsDependentOn("Run-Net-Core-Unit-Tests")
@@ -371,7 +369,7 @@ Task("AppVeyor")
   .IsDependentOn("Publish-NuGet");
 
 Task("Travis")
-  .IsDependentOn("Run-Unit-Tests");
+  .IsDependentOn("Run-Net-Core-Unit-Tests");
 
 ///////////////////////////////////////////////////////////////////////////////
 // EXECUTE

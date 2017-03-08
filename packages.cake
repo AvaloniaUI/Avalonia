@@ -91,7 +91,7 @@ public class Packages
         context.Information("Package: SharpDX.DXGI, version: {0}", SharpDXDXGIVersion);
 
         var nugetPackagesDir = System.Environment.GetEnvironmentVariable("NUGET_HOME")
-            ?? System.IO.Path.Combine(System.Environment.GetEnvironmentVariable("USERPROFILE"), ".nuget");
+            ?? System.IO.Path.Combine(System.Environment.GetEnvironmentVariable("USERPROFILE") ?? System.Environment.GetEnvironmentVariable("HOME"), ".nuget");
         
         NugetPackagesDir = System.IO.Path.Combine(nugetPackagesDir, "packages");
         
