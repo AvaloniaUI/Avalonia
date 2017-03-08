@@ -22,9 +22,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <None Remove="Compat\Api.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <!-- A reference to the entire .NET Framework is automatically included -->
     <Content Include="external\Source\HtmlRenderer\Core\Utils\ImageError.png" />
     <Content Include="external\Source\HtmlRenderer\Core\Utils\ImageLoad.png" />
@@ -164,4 +161,9 @@
     <PackageReference Include="System.Reactive.Core" Version="3.0.0" />
     <PackageReference Include="System.Reactive.Interfaces" Version="3.0.0" />
   </ItemGroup>
+  <Target Name="CleansingHeresy" BeforeTargets="CoreResGen">
+    <ItemGroup>
+       <EmbeddedResource Remove="external\\**"/>
+    </ItemGroup>
+  </Target>
 </Project>

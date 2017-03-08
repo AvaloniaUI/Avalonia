@@ -326,4 +326,10 @@
     <PackageReference Include="System.Runtime" Version="4.1.0" />
     <PackageReference Include="System.Text.RegularExpressions" Version="4.1.0" />
   </ItemGroup>
+  <Target Name="CleansingHeresy" BeforeTargets="CoreResGen">
+    <ItemGroup>
+       <EmbeddedResource Remove="glass\\**"/>
+       <EmbeddedResource Remove="OmniXAML\\**"/>
+    </ItemGroup>
+  </Target>
 </Project>
