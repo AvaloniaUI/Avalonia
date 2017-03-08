@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <TargetFramework>netstandard1.6</TargetFramework>
+        <TargetFramework>netcoreapp1.0</TargetFramework>
         <EnableDefaultCompileItems>False</EnableDefaultCompileItems>
         <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     </PropertyGroup>

@@ -96,46 +96,10 @@ Task("Clean")
     CleanDirectory(parameters.TestsRoot);
 });
 
-Task("Prepare-XBuild-Solution")
-    .Does(() =>
-{
-    var blacklistedProjects = new[]
-    {
-        "Avalonia.Win32.NetStandard",
-        "Avalonia.DotNetCoreRuntime",
-        "Avalonia.Skia.Desktop.NetStandard",
-        "Avalonia.Gtk3"
-    };
-    var blacklistedGuids = System.IO.File.ReadAllLines(parameters.MSBuildSolution)
-        .Where(l=>l.StartsWith("Project") && blacklistedProjects.Any(p=>l.Contains(p)))
-        .Select(l => l.Split(',').Select(part => part.Trim()).FirstOrDefault(part => part.StartsWith("\"{")))
-        .Where(g=>g!=null)
-        .Select(l=>l.Trim(new[]{'"', '}', '{'}).ToLower()).ToArray();
-
-    Console.WriteLine("Blacklisted guids are: " + string.Join(",", blacklistedGuids));
-    var removeUntilEndProject = false;
-
-    System.IO.File.WriteAllLines(parameters.XBuildSolution, System.IO.File.ReadAllLines(parameters.MSBuildSolution)
-        .Where(l => 
-        {
-            if(removeUntilEndProject)
-            {
-                if(l.StartsWith("EndProject"))
-                    removeUntilEndProject = false;
-                return false;
-            }
-            
-            var blacklist = blacklistedGuids.Any(g => l.ToLower().Contains(g));
-            if(blacklist && l.StartsWith("Project"))
-                removeUntilEndProject = true;
-            
-            return !blacklist;
-        }));
-});
 
 Task("Restore-NuGet-Packages")
     .IsDependentOn("Clean")
-    .IsDependentOn("Prepare-XBuild-Solution")
+    .WithCriteria(parameters.IsRunningOnWindows)
     .Does(() =>
 {
     var maxRetryCount = 5;
@@ -168,6 +132,14 @@ Task("Restore-NuGet-Packages")
         });
 });
 
+void DotNetCoreBuild()
+{
+}
+
+Task("DotNetCoreBuild")
+    .IsDependentOn("Clean")
+    .Does(() => DotNetCoreBuild());
+
 Task("Build")
     .IsDependentOn("Restore-NuGet-Packages")
     .Does(() =>
@@ -179,25 +151,34 @@ Task("Build")
             settings.WithProperty("Platform", "\"" + parameters.Platform + "\"");
             settings.SetVerbosity(Verbosity.Minimal);
             settings.WithProperty("Windows", "True");
-            settings.UseToolVersion(MSBuildToolVersion.VS2015);
+            settings.UseToolVersion(MSBuildToolVersion.VS2017);
             settings.SetNodeReuse(false);
         });
     }
     else
     {
-        XBuild(parameters.XBuildSolution, settings => {
-            settings.SetConfiguration(parameters.Configuration);
-            settings.WithProperty("Platform", "\"" + parameters.Platform + "\"");
-            settings.SetVerbosity(Verbosity.Minimal);
-        });
+        DotNetCoreBuild();
     }
 });
+
+void RunDotNetCoreTest()
+{
+}
+
+Task("Run-Net-Core-Unit-Tests")
+    .IsDependentOn("Clean")
+    .Does(() => RunDotNetCoreTest());
 
 Task("Run-Unit-Tests")
     .IsDependentOn("Build")
     .WithCriteria(() => !parameters.SkipTests)
     .Does(() =>
 {
+    if(parameters.IsRunningOnWindows)
+    {
+        RunDotNetCoreTest();
+    }
+
     var unitTests = GetDirectories("./tests/Avalonia.*.UnitTests")
         .Select(dir => System.IO.Path.GetFileName(dir.FullPath))
         .Where(name => parameters.IsRunningOnWindows ? true : !(name.IndexOf("Direct2D", StringComparison.OrdinalIgnoreCase) >= 0))
@@ -236,7 +217,11 @@ Task("Run-Unit-Tests")
     {
         CopyDirectory(test.GetDirectory(), parameters.TestsRoot);
     }
-
+    
+    CopyFile(System.IO.Path.Combine(packages.NugetPackagesDir, "SkiaSharp", packages.SkiaSharpVersion,
+        "runtimes", "win7-x86", "native", "libSkiaSharp.dll"),
+        System.IO.Path.Combine(parameters.TestsRoot.ToString(), "libSkiaSharp.dll"));
+    
     var testsInDirectoryToRun = new List<FilePath>();
     if(parameters.IsRunningOnWindows)
     {

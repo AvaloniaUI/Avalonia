@@ -3,6 +3,8 @@
     <TargetFramework>netstandard1.1</TargetFramework>
     <EnableDefaultCompileItems>False</EnableDefaultCompileItems>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <RootNamespace>Avalonia.Win32</RootNamespace>
+    <AssemblyName>Avalonia.Win32</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
