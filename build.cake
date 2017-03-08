@@ -160,9 +160,11 @@ Task("Build")
 void RunCoreTest(string dir, Parameters parameters)
 {
     DotNetCoreRestore(dir);
-    var frameworks = new List<string>{"netcoreapp1.1"};
+    var frameworks = new List<string>();;
     if(parameters.IsRunningOnWindows)
         frameworks.Add("net461");
+    else
+        frameworks.Add("netcoreapp1.1");
     foreach(var fw in frameworks)
     {
         Information("Running for " + fw);
