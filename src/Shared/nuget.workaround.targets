@@ -58,6 +58,6 @@
     </CreateItem>
   </Target>
   <PropertyGroup>
-    <CscToolPath Condition="$(VsInstallRoot) != ''">$(MSBuildToolsPath)\..\Roslyn</CscToolPath>
+    <CscToolPath Condition="!Exists('$(CscToolPath)')">$(MSBuildToolsPath)\..\Roslyn</CscToolPath>
   </PropertyGroup>
 </Project>
