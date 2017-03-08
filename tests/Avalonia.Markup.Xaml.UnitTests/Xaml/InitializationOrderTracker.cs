@@ -30,12 +30,14 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         {
             ++InitState;
             base.BeginInit();
+            Order.Add($"BeginInit {InitState}");
         }
 
         void ISupportInitialize.EndInit()
         {
             --InitState;
             base.EndInit();
+            Order.Add($"EndInit {InitState}");
         }
     }
 }

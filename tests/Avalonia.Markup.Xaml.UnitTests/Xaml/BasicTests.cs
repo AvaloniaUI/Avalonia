@@ -617,7 +617,10 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 #if OMNIXAML
         [Fact]
 #else
-        [Fact(Skip = "Doesn't work with Portable.xaml, it's working in different order, do we need it?")]
+        [Fact(Skip =
+@"Doesn't work with Portable.xaml, it's working in different creation order -
+Handled in test 'Control_Is_Added_To_Parent_Before_Final_EndEdit'
+do we need it?")]
 #endif
         public void Control_Is_Added_To_Parent_Before_Properties_Are_Set()
         {
@@ -639,6 +642,61 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 Assert.NotEqual(-1, attached);
                 Assert.NotEqual(-1, widthChanged);
                 Assert.True(attached < widthChanged);
+            }
+        }
+
+        [Fact]
+        public void Control_Is_Added_To_Parent_Before_Final_EndEdit()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+             xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'>
+    <local:InitializationOrderTracker Width='100'/>
+</Window>";
+
+                var window = AvaloniaXamlLoader.Parse<Window>(xaml);
+                var tracker = (InitializationOrderTracker)window.Content;
+
+                var attached = tracker.Order.IndexOf("AttachedToLogicalTree");
+                var endInit = tracker.Order.IndexOf("EndInit 0");
+
+                Assert.NotEqual(-1, attached);
+                Assert.NotEqual(-1, endInit);
+                Assert.True(attached < endInit);
+            }
+        }
+
+        [Fact]
+        public void All_Properties_Are_Set_Before_Final_EndEdit()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+                xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'>
+    <Window.Styles>
+        <Style>
+            <Style.Resources>
+                <x:Double x:Key='Double'>100</x:Double>
+            </Style.Resources>
+        </Style>
+    </Window.Styles>
+    <local:InitializationOrderTracker Width='100' Height='{StyleResource Double}'
+                     Tag='{Binding Height, RelativeSource={RelativeSource Self}}' />
+</Window>";
+
+
+                var window = AvaloniaXamlLoader.Parse<Window>(xaml);
+                var tracker = (InitializationOrderTracker)window.Content;
+
+                //ensure binding is set and operational first
+                Assert.Equal(100.0, tracker.Tag);
+
+                Assert.Equal("EndInit 0", tracker.Order.Last());
             }
         }
 
