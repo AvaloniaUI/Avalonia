@@ -117,18 +117,15 @@ Task("Restore-NuGet-Packages")
                 toolTimeout+=0.5;
             }})
         .Execute(()=> {
-            if(parameters.IsRunningOnWindows)
-            {
-                NuGetRestore(parameters.MSBuildSolution, new NuGetRestoreSettings {
-                    ToolTimeout = TimeSpan.FromMinutes(toolTimeout)
-                });
-            }
-            else
-            {
-                NuGetRestore(parameters.XBuildSolution, new NuGetRestoreSettings {
-                    ToolTimeout = TimeSpan.FromMinutes(toolTimeout)
-                });
-            }
+            MSBuild(parameters.MSBuildSolution, settings => {
+                settings.SetConfiguration(parameters.Configuration);
+                settings.WithProperty("Platform", "\"" + parameters.Platform + "\"");
+                settings.SetVerbosity(Verbosity.Minimal);
+                settings.WithProperty("Windows", "True");
+                settings.UseToolVersion(MSBuildToolVersion.VS2017);
+                settings.WithTarget("restore");
+                settings.SetNodeReuse(false);
+            });
         });
 });
 
