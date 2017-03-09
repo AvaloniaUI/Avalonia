@@ -7,8 +7,7 @@ using System.Collections.Generic;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 {
-    public class InitializationOrderTracker : Control,
-        ISupportInitialize
+    public class InitializationOrderTracker : Control, ISupportInitialize
     {
         public IList<string> Order { get; } = new List<string>();
 

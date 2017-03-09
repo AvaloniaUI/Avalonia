@@ -42,6 +42,32 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         }
 
         [Fact]
+        public void AvaloniaProperty_Without_Getter_And_Setter_Is_Set()
+        {
+            var xaml =
+ @"<local:NonControl xmlns='https://github.com/avaloniaui' 
+    xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'
+    Foo='55' />";
+
+            var target = AvaloniaXamlLoader.Parse<NonControl>(xaml);
+
+            Assert.Equal(55, target.GetValue(NonControl.FooProperty));
+        }
+
+        [Fact]
+        public void AvaloniaProperty_With_Getter_And_No_Setter_Is_Set()
+        {
+            var xaml =
+@"<local:NonControl xmlns='https://github.com/avaloniaui' 
+    xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'
+    Bar='bar' />";
+
+            var target = AvaloniaXamlLoader.Parse<NonControl>(xaml);
+
+            Assert.Equal("bar", target.Bar);
+        }
+
+        [Fact]
         public void Attached_Property_Is_Set()
         {
             var xaml =
