@@ -180,8 +180,4 @@ namespace Avalonia.Styling
             _applied.Remove(control);
         }
     }
-
-    public class StyleResources : Dictionary<string, object>
-    {
-    }
 }

@@ -55,6 +55,7 @@
     <Compile Include="Controls\INameScope.cs" />
     <Compile Include="Styling\ITemplate.cs" />
     <Compile Include="Controls\NameScope.cs" />
+    <Compile Include="Styling\StyleResources.cs" />
     <Compile Include="Styling\TemplateSelector.cs" />
     <Compile Include="Styling\DescendentSelector.cs" />
     <Compile Include="Styling\ChildSelector.cs" />
