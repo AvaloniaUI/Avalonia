@@ -1,6 +1,7 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System.Reactive.Subjects;
 using Avalonia.Controls;
 using Avalonia.UnitTests;
 using Xunit;
@@ -191,6 +192,30 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 window.ApplyTemplate();
 
                 Assert.Equal("foo", textBlock.Text);
+            }
+        }
+
+        [Fact]
+        public void Stream_Binding_To_Observable_Works()
+        {
+            using (UnitTestApplication.Start(TestServices.MockWindowingPlatform))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <TextBlock Name='textblock' Text='{Binding Observable^}'/>
+</Window>";
+                var loader = new AvaloniaXamlLoader();
+                var window = (Window)loader.Load(xaml);
+                var textBlock = (TextBlock)window.Content;
+                var observable = new BehaviorSubject<string>("foo");
+
+                window.DataContext = new { Observable = observable };
+                window.ApplyTemplate();
+
+                Assert.Equal("foo", textBlock.Text);
+                observable.OnNext("bar");
+                Assert.Equal("bar", textBlock.Text);
             }
         }
     }
