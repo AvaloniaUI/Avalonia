@@ -21,26 +21,47 @@ namespace Avalonia.Markup.Xaml.PortableXaml
             base(underlyingType, schemaContext)
         {
         }
+
+        protected override XamlMember LookupMember(string name, bool skipReadOnlyCheck)
+        {
+            var m = base.LookupMember(name, skipReadOnlyCheck);
+
+            if (m == null)
+            {
+                //so far Portable.xaml haven't found the member/property
+                //but what if we have AvaloniaProperty
+                //without setter and/or without getter
+                //let's try to find the AvaloniaProperty as a fallback
+                var avProp = AvaloniaPropertyRegistry.Instance.FindRegistered(UnderlyingType, name);
+
+                if (avProp != null && !(skipReadOnlyCheck && avProp.IsReadOnly))
+                {
+                    m = new AvaloniaPropertyXamlMember(avProp, this);
+                }
+            }
+
+            return m;
+        }
     }
 
-    public class BindingXamlType : AvaloniaXamlType
+    public class BindingXamlType : XamlType
     {
         public static BindingXamlType Create(Type type, XamlSchemaContext schemaContext)
         {
             if (type == typeof(Binding))
             {
-                //in xmal we need to use the extension
+                //in xaml we need to use the extension
                 type = typeof(BindingExtension);
             }
 
             return new BindingXamlType(type, schemaContext);
         }
 
-        private static HashSet<Type> _notAssignable =
-        new HashSet<Type>()
-        {
-            typeof (IXmlSerializable)
-        };
+        private static List<Type> _notAssignable =
+                                new List<Type>
+                                {
+                                    typeof (IXmlSerializable)
+                                };
 
         private BindingXamlType(Type underlyingType, XamlSchemaContext schemaContext) :
             base(underlyingType, schemaContext)
@@ -49,37 +70,25 @@ namespace Avalonia.Markup.Xaml.PortableXaml
 
         public override bool CanAssignTo(XamlType xamlType)
         {
-            if (_notAssignable.Contains(xamlType.UnderlyingType))
-            {
-                return false;
-            }
-
-            return true;
-        }
-
-        protected override XamlMember LookupAliasedProperty(XamlDirective directive)
-        {
-            return base.LookupAliasedProperty(directive);
-        }
-
-        protected override bool LookupIsMarkupExtension()
-        {
-            return base.LookupIsMarkupExtension();
+            return !_notAssignable.Contains(xamlType.UnderlyingType);
         }
     }
 
     public class PropertyXamlMember : XamlMember
     {
+        public PropertyXamlMember(PropertyInfo propertyInfo, XamlSchemaContext schemaContext)
+            : base(propertyInfo, schemaContext)
+        {
+        }
+
         protected PropertyXamlMember(string attachablePropertyName,
             MethodInfo getter, MethodInfo setter, XamlSchemaContext schemaContext)
             : base(attachablePropertyName, getter, setter, schemaContext)
         {
         }
 
-        public PropertyXamlMember(
-                PropertyInfo propertyInfo,
-                XamlSchemaContext schemaContext) :
-            base(propertyInfo, schemaContext)
+        protected PropertyXamlMember(string name, XamlType declaringType, bool isAttachable)
+            : base(name, declaringType, isAttachable)
         {
         }
 
@@ -122,17 +131,27 @@ namespace Avalonia.Markup.Xaml.PortableXaml
 
         protected override XamlType LookupType()
         {
-            var pi = UnderlyingMember as PropertyInfo;
-            if (pi != null)
+            var propType = GetPropertyType();
+
+            if (propType != null)
             {
-                if (pi.PropertyType == typeof(IEnumerable))
+                if (propType == typeof(IEnumerable))
                 {
+                    //TODO: Portable.xaml is not handling well IEnumerable
                     //let's threat IEnumerable property as list
-                    return DeclaringType.SchemaContext.GetXamlType(typeof(IList));
+                    //revisit this when smarter solution is found
+                    propType = typeof(IList);
                 }
+
+                return DeclaringType.SchemaContext.GetXamlType(propType);
             }
 
             return base.LookupType();
+        }
+
+        protected virtual Type GetPropertyType()
+        {
+            return (UnderlyingMember as PropertyInfo)?.PropertyType;
         }
 
         private IList<XamlMember> _dependsOn;
@@ -246,22 +265,28 @@ namespace Avalonia.Markup.Xaml.PortableXaml
     {
         private bool? _assignBinding;
 
-        public bool AssignBinding => (bool)(_assignBinding ?? (_assignBinding = UnderlyingMember.GetCustomAttribute<AssignBindingAttribute>() != null));
+        public bool AssignBinding => (bool)(_assignBinding ?? (_assignBinding = UnderlyingMember?.GetCustomAttribute<AssignBindingAttribute>() != null));
 
         public AvaloniaProperty Property { get; }
-
-        protected AvaloniaPropertyXamlMember(AvaloniaProperty property,
-            string attachablePropertyName,
-            MethodInfo getter, MethodInfo setter, XamlSchemaContext schemaContext)
-            : base(attachablePropertyName, getter, setter, schemaContext)
-        {
-            Property = property;
-        }
 
         public AvaloniaPropertyXamlMember(AvaloniaProperty property,
                         PropertyInfo propertyInfo,
                         XamlSchemaContext schemaContext) :
             base(propertyInfo, schemaContext)
+        {
+            Property = property;
+        }
+
+        public AvaloniaPropertyXamlMember(AvaloniaProperty property, XamlType type) :
+                    base(property.Name, type, false)
+        {
+            Property = property;
+        }
+
+        protected AvaloniaPropertyXamlMember(AvaloniaProperty property,
+                string attachablePropertyName,
+                MethodInfo getter, MethodInfo setter, XamlSchemaContext schemaContext)
+                : base(attachablePropertyName, getter, setter, schemaContext)
         {
             Property = property;
         }
@@ -274,6 +299,11 @@ namespace Avalonia.Markup.Xaml.PortableXaml
         protected override bool LookupIsReadOnly()
         {
             return Property.IsReadOnly;
+        }
+
+        protected override Type GetPropertyType()
+        {
+            return Property.PropertyType;
         }
 
         private class AvaloniaPropertyInvoker : XamlMemberInvoker
@@ -342,22 +372,12 @@ namespace Avalonia.Markup.Xaml.PortableXaml
 
     public class AvaloniaAttachedPropertyXamlMember : AvaloniaPropertyXamlMember
     {
-        private MethodInfo _setter;
-
         public AvaloniaAttachedPropertyXamlMember(AvaloniaProperty property,
                                                     string attachablePropertyName,
                                                     MethodInfo getter, MethodInfo setter,
                                                     XamlSchemaContext schemaContext)
             : base(property, attachablePropertyName, getter, setter, schemaContext)
         {
-            _setter = setter;
-        }
-
-        protected override MethodInfo LookupUnderlyingSetter()
-        {
-            return base.LookupUnderlyingSetter();
-            //TODO: investigate don't call base stack overflow
-            return _setter;
         }
     }
 }

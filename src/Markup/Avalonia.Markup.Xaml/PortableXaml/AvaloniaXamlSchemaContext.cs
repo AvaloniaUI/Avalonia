@@ -157,11 +157,10 @@ namespace Avalonia.Markup.Xaml.PortableXaml
                 return BindingXamlType.Create(type, this);
             }
 
-            //TODO: do we need it ???
-            //if (type.FullName.StartsWith("Avalonia."))
-            //{
-            //    return new AvaloniaXamlType(type, this);
-            //}
+            if (typeof(AvaloniaObject).GetTypeInfo().IsAssignableFrom(type.GetTypeInfo()))
+            {
+                return new AvaloniaXamlType(type, this);
+            }
 
             return null;
         }
