@@ -73,6 +73,14 @@
     <Compile Include="Media\ILinearGradientBrush.cs" />
     <Compile Include="Media\Imaging\IImageBrush.cs" />
     <Compile Include="Media\Imaging\WritableBitmap.cs" />
+    <Compile Include="Media\Immutable\ImmutableGradientBrush.cs" />
+    <Compile Include="Media\Immutable\ImmutableImageBrush.cs" />
+    <Compile Include="Media\Immutable\ImmutableLinearGradientBrush.cs" />
+    <Compile Include="Media\Immutable\ImmutableRadialGradientBrush.cs" />
+    <Compile Include="Media\Immutable\ImmutableSolidColorBrush.cs" />
+    <Compile Include="Media\Immutable\ImmutableTileBrush.cs" />
+    <Compile Include="Media\Immutable\ImmutableVisualBrush.cs" />
+    <Compile Include="Media\IMutableBrush.cs" />
     <Compile Include="Media\IRadialGradientBrush.cs" />
     <Compile Include="Media\ITileBrush.cs" />
     <Compile Include="Media\IVisualBrush.cs" />
@@ -88,7 +96,6 @@
     <Compile Include="Media\ISolidColorBrush.cs" />
     <Compile Include="Media\LineGeometry.cs" />
     <Compile Include="Media\LineSegment.cs" />
-    <Compile Include="Media\Mutable\SolidColorBrush.cs" />
     <Compile Include="Media\PathGeometryCollections.cs" />
     <Compile Include="Media\PathFigure.cs" />
     <Compile Include="Media\PathGeometry.cs" />
