@@ -2,6 +2,8 @@
 using Avalonia.Data;
 using Avalonia.Markup.Xaml.Data;
 using Avalonia.Markup.Xaml.MarkupExtensions;
+using Avalonia.Metadata;
+using Avalonia.Styling;
 using Portable.Xaml;
 using Portable.Xaml.Schema;
 using System;
@@ -12,7 +14,7 @@ using System.Xml.Serialization;
 
 namespace Avalonia.Markup.Xaml.PortableXaml
 {
-    using Metadata;
+    using Converters;
     using PropertyKey = Tuple<Type, string>;
 
     public class AvaloniaXamlType : XamlType
@@ -190,10 +192,18 @@ namespace Avalonia.Markup.Xaml.PortableXaml
 
             public override void SetValue(object instance, object value)
             {
-                if (Member.DependsOn.Count == 1 &&
+                //can't make it work to assign TypeConverter to Setter.Value
+                //so we need it hard coded
+                //TODO: try to assosiate TypeConverter with Setter.Value 
+                //and remove this lines
+                if (instance is Setter &&
+                    Member.Name == nameof(Setter.Value) &&
                     value is string)
                 {
-                    value = TransformDependsOnValue(instance, value);
+                    value = SetterValueTypeConverter.ConvertSetterValue(
+                                            Member.DeclaringType.SchemaContext,
+                                            instance as Setter,
+                                            value);
                 }
 
                 if (value is XamlBinding)
@@ -201,62 +211,42 @@ namespace Avalonia.Markup.Xaml.PortableXaml
                     value = (value as XamlBinding).Value;
                 }
 
-                if (UpdateListInsteadSet && value != null)
+                if (UpdateListInsteadSet &&
+                    value != null &&
+                    UpdateListInsteadSetValue(instance, value))
                 {
-                    object old = GetValue(instance);
-
-                    if (Equals(old, value))
-                    {
-                        //don't set the same value
-                        //usually a collections
-                        return;
-                    }
-                    else if (old is IList && value is IList)
-                    {
-                        var oldList = (IList)old;
-                        var curList = (IList)value;
-
-                        oldList.Clear();
-
-                        foreach (object item in curList)
-                        {
-                            oldList.Add(item);
-                        }
-
-                        return;
-                    }
+                    return;
                 }
 
                 base.SetValue(instance, value);
             }
 
-            private object TransformDependsOnValue(object instance, object value)
+            private bool UpdateListInsteadSetValue(object instance, object value)
             {
-                if (value is string &&
-                        (Member.UnderlyingMember as PropertyInfo)
-                                        .PropertyType != typeof(string))
+                object old = GetValue(instance);
+
+                if (Equals(old, value))
                 {
-                    var dpm = Member.DependsOn[0];
+                    //don't set the same value
+                    //usually a collections
+                    return true;
+                }
+                else if (old is IList && value is IList)
+                {
+                    var oldList = (IList)old;
+                    var curList = (IList)value;
 
-                    object depPropValue = dpm.Invoker.GetValue(instance);
+                    oldList.Clear();
 
-                    Type targetType = (depPropValue as AvaloniaProperty)?.PropertyType ??
-                                                    (depPropValue as Type);
-
-                    if (targetType == null)
+                    foreach (object item in curList)
                     {
-                        return value;
+                        oldList.Add(item);
                     }
 
-                    var xamTargetType = Member.DeclaringType.SchemaContext.GetXamlType(targetType);
-                    var ttConv = xamTargetType?.TypeConverter?.ConverterInstance;
-                    if (ttConv != null)
-                    {
-                        value = ttConv.ConvertFromString(value as string);
-                    }
+                    return true;
                 }
 
-                return value;
+                return false;
             }
         }
     }

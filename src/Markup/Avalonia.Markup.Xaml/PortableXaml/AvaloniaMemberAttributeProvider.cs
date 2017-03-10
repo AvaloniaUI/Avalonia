@@ -1,4 +1,6 @@
-﻿using Portable.Xaml.ComponentModel;
+﻿using Avalonia.Markup.Xaml.Converters;
+using Avalonia.Styling;
+using Portable.Xaml.ComponentModel;
 using System;
 using System.Linq;
 using System.Reflection;
@@ -23,7 +25,6 @@ namespace Avalonia.Markup.Xaml.PortableXaml
         {
             Attribute result = null;
 
-            
             if (attributeType == typeof(pm.XamlDeferLoadAttribute))
             {
                 result = _info.GetCustomAttribute<avm.TemplateContentAttribute>(inherit)
@@ -34,10 +35,18 @@ namespace Avalonia.Markup.Xaml.PortableXaml
                 result = _info.GetCustomAttribute<avm.AmbientAttribute>(inherit)
                                 .ToPortableXaml();
             }
-            else if(attributeType == typeof(pm.DependsOnAttribute))
+            else if (attributeType == typeof(pm.DependsOnAttribute))
             {
                 result = _info.GetCustomAttribute<avm.DependsOnAttribute>(inherit)
                                 .ToPortableXaml();
+            }
+            else if (attributeType == typeof(TypeConverterAttribute) &&
+                        _info.DeclaringType == typeof(Setter) &&
+                        _info.Name == nameof(Setter.Value))
+            {
+                //actually it never comes here looks like if property type is object
+                //Portable.Xaml is not searching for Type Converter
+                result = new TypeConverterAttribute(typeof(SetterValueTypeConverter));
             }
 
             if (result == null)
