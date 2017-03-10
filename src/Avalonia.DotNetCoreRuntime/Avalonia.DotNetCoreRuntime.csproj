@@ -32,18 +32,12 @@
     <Compile Include="RuntimeInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj">
-    </ProjectReference>
-    <ProjectReference Include="..\Avalonia.Controls\Avalonia.Controls.csproj">
-    </ProjectReference>
-    <ProjectReference Include="..\Avalonia.Visuals\Avalonia.Visuals.csproj">
-    </ProjectReference>
-    <ProjectReference Include="..\Gtk\Avalonia.Gtk3\Avalonia.Gtk3.csproj">
-    </ProjectReference>
-    <ProjectReference Include="..\Skia\Avalonia.Skia.Desktop.NetStandard\Avalonia.Skia.Desktop.NetStandard.csproj">
-    </ProjectReference>
-    <ProjectReference Include="..\Windows\Avalonia.Win32.NetStandard\Avalonia.Win32.NetStandard.csproj">
-    </ProjectReference>
+    <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj" />
+    <ProjectReference Include="..\Avalonia.Controls\Avalonia.Controls.csproj" />
+    <ProjectReference Include="..\Avalonia.Visuals\Avalonia.Visuals.csproj" />
+    <ProjectReference Include="..\Gtk\Avalonia.Gtk3\Avalonia.Gtk3.csproj" />
+    <ProjectReference Include="..\Skia\Avalonia.Skia.Desktop.NetStandard\Avalonia.Skia.Desktop.NetStandard.csproj" />
+    <ProjectReference Include="..\Windows\Avalonia.Win32.NetStandard\Avalonia.Win32.NetStandard.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />

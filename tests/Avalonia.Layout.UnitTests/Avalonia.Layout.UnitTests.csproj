@@ -13,32 +13,19 @@
         <Compile Include="TestLayoutRoot.cs" />
     </ItemGroup>
     <ItemGroup>
-        <ProjectReference Include="..\..\src\Avalonia.Animation\Avalonia.Animation.csproj">
-        </ProjectReference>
-        <ProjectReference Include="..\..\src\Avalonia.Base\Avalonia.Base.csproj">
-        </ProjectReference>
-        <ProjectReference Include="..\..\src\Avalonia.Controls\Avalonia.Controls.csproj">
-        </ProjectReference>
-        <ProjectReference Include="..\..\src\Avalonia.Diagnostics\Avalonia.Diagnostics.csproj">
-        </ProjectReference>
-        <ProjectReference Include="..\..\src\Avalonia.Input\Avalonia.Input.csproj">
-        </ProjectReference>
-        <ProjectReference Include="..\..\src\Avalonia.Interactivity\Avalonia.Interactivity.csproj">
-        </ProjectReference>
-        <ProjectReference Include="..\..\src\Avalonia.Layout\Avalonia.Layout.csproj">
-        </ProjectReference>
-        <ProjectReference Include="..\..\src\Avalonia.ReactiveUI\Avalonia.ReactiveUI.csproj">
-        </ProjectReference>
-        <ProjectReference Include="..\..\src\Avalonia.Visuals\Avalonia.Visuals.csproj">
-        </ProjectReference>
-        <ProjectReference Include="..\..\src\Avalonia.Styling\Avalonia.Styling.csproj">
-        </ProjectReference>
-        <ProjectReference Include="..\..\src\Avalonia.Themes.Default\Avalonia.Themes.Default.csproj">
-        </ProjectReference>
-        <ProjectReference Include="..\Avalonia.UnitTests\Avalonia.UnitTests.csproj">
-        </ProjectReference>
-        <ProjectReference Include="..\Avalonia.Controls.UnitTests\Avalonia.Controls.UnitTests.csproj">
-        </ProjectReference>
+        <ProjectReference Include="..\..\src\Avalonia.Animation\Avalonia.Animation.csproj" />
+        <ProjectReference Include="..\..\src\Avalonia.Base\Avalonia.Base.csproj" />
+        <ProjectReference Include="..\..\src\Avalonia.Controls\Avalonia.Controls.csproj" />
+        <ProjectReference Include="..\..\src\Avalonia.Diagnostics\Avalonia.Diagnostics.csproj" />
+        <ProjectReference Include="..\..\src\Avalonia.Input\Avalonia.Input.csproj" />
+        <ProjectReference Include="..\..\src\Avalonia.Interactivity\Avalonia.Interactivity.csproj" />
+        <ProjectReference Include="..\..\src\Avalonia.Layout\Avalonia.Layout.csproj" />
+        <ProjectReference Include="..\..\src\Avalonia.ReactiveUI\Avalonia.ReactiveUI.csproj" />
+        <ProjectReference Include="..\..\src\Avalonia.Visuals\Avalonia.Visuals.csproj" />
+        <ProjectReference Include="..\..\src\Avalonia.Styling\Avalonia.Styling.csproj" />
+        <ProjectReference Include="..\..\src\Avalonia.Themes.Default\Avalonia.Themes.Default.csproj" />
+        <ProjectReference Include="..\Avalonia.UnitTests\Avalonia.UnitTests.csproj" />
+        <ProjectReference Include="..\Avalonia.Controls.UnitTests\Avalonia.Controls.UnitTests.csproj" />
     </ItemGroup>
     <ItemGroup>
       <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />

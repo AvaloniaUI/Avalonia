@@ -29,10 +29,8 @@
     <Compile Include="WeakSubscriptionManagerTests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Avalonia.Base\Avalonia.Base.csproj">
-    </ProjectReference>
-    <ProjectReference Include="..\Avalonia.UnitTests\Avalonia.UnitTests.csproj">
-    </ProjectReference>
+    <ProjectReference Include="..\..\src\Avalonia.Base\Avalonia.Base.csproj" />
+    <ProjectReference Include="..\Avalonia.UnitTests\Avalonia.UnitTests.csproj" />
   </ItemGroup>
 
 </Project>
