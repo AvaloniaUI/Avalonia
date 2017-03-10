@@ -1,5 +1,6 @@
 ﻿using Avalonia.Data;
 using Portable.Xaml;
+using Portable.Xaml.ComponentModel;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -7,15 +8,23 @@ namespace Avalonia.Markup.Xaml.PortableXaml
 {
     public class AvaloniaXamlObjectWriter : XamlObjectWriter
     {
-        public static AvaloniaXamlObjectWriter Create(XamlSchemaContext schemaContext, object instance)
+        public static AvaloniaXamlObjectWriter Create(
+            XamlSchemaContext schemaContext,
+            object instance,
+            AvaloniaXamlContext context)
         {
-            var writerSettings = new XamlObjectWriterSettings();
             var nameScope = new AvaloniaNameScope { Instance = instance };
-            writerSettings.ExternalNameScope = nameScope;
-            writerSettings.RegisterNamesOnExternalNamescope = true;
-            writerSettings.RootObjectInstance = instance;
 
-            return new AvaloniaXamlObjectWriter(schemaContext, writerSettings, nameScope);
+            var writerSettings = new XamlObjectWriterSettings()
+            {
+                ExternalNameScope = nameScope,
+                RegisterNamesOnExternalNamescope = true,
+                RootObjectInstance = instance
+            };
+
+            return new AvaloniaXamlObjectWriter(schemaContext,
+                                                writerSettings.WithContext(context),
+                                                nameScope);
         }
 
         private readonly DelayedValuesHelper _delayedValuesHelper = new DelayedValuesHelper();

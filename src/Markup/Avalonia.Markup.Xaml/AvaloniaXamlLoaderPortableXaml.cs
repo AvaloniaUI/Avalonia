@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using Avalonia.Controls;
-using Avalonia.Markup.Xaml.Context;
 using Avalonia.Markup.Xaml.Data;
 using Avalonia.Markup.Xaml.PortableXaml;
 using Avalonia.Platform;
@@ -44,21 +43,6 @@ namespace Avalonia.Markup.Xaml
         public AvaloniaXamlLoaderPortableXaml()
         {
         }
-
-        /// <summary>
-        /// Gets the URI of the XAML file currently being loaded.
-        /// </summary>
-        /// <remarks>
-        /// TODO: Making this internal for now as I'm not sure that this is the correct
-        /// thing to do, but its needed by <see cref="StyleInclude"/> to get the URL of
-        /// the currently loading XAML file, as we can't use the OmniXAML parsing context
-        /// there. Maybe we need a way to inject OmniXAML context into the objects its
-        /// constructing?
-        /// </remarks>
-        [Obsolete]
-        internal static Uri UriContext => s_uriStack.Count > 0 ? s_uriStack.Peek() : null;
-
-        private static Stack<Uri> s_uriStack = new Stack<Uri>();
 
         /// <summary>
         /// Loads the XAML into a Avalonia component.
@@ -176,47 +160,34 @@ namespace Avalonia.Markup.Xaml
         /// <returns>The loaded object.</returns>
         public object Load(Stream stream, object rootInstance = null, Uri uri = null)
         {
-            try
+            var readerSettings = new XamlXmlReaderSettings()
             {
-                if (uri != null)
-                {
-                    s_uriStack.Push(uri);
-                }
+                BaseUri = uri,
+                LocalAssembly = rootInstance?.GetType().GetTypeInfo().Assembly
+            };
 
-                var readerSettings = new XamlXmlReaderSettings();
+            var reader = new XamlXmlReader(stream, _context, readerSettings);
 
-                Type type = rootInstance?.GetType();
+            object result = LoadFromReader(reader, rootInstance, readerSettings);
 
-                if (type != null)
-                {
-                    readerSettings.LocalAssembly = type.GetTypeInfo().Assembly;
-                }
+            var topLevel = result as TopLevel;
 
-                var reader = new XamlXmlReader(stream, _context, readerSettings);
-
-                object result = LoadFromReader(reader, rootInstance);
-
-                var topLevel = result as TopLevel;
-
-                if (topLevel != null)
-                {
-                    DelayedBinding.ApplyBindings(topLevel);
-                }
-
-                return result;
-            }
-            finally
+            if (topLevel != null)
             {
-                if (uri != null)
-                {
-                    s_uriStack.Pop();
-                }
+                DelayedBinding.ApplyBindings(topLevel);
             }
+
+            return result;
         }
 
-        internal static object LoadFromReader(XamlReader reader, object instance)
+        internal static object LoadFromReader(XamlReader reader,
+                        object instance,
+                        AvaloniaXamlContext context = null)
         {
-            var writer = AvaloniaXamlObjectWriter.Create(reader.SchemaContext, instance);
+            var writer = AvaloniaXamlObjectWriter.Create(
+                                    reader.SchemaContext,
+                                    instance,
+                                    context);
 
             XamlServices.Transform(reader, writer);
 

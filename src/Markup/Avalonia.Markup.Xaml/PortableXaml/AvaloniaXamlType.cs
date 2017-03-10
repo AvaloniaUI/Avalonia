@@ -1,7 +1,6 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Markup.Xaml.Data;
-using Avalonia.Markup.Xaml.MarkupExtensions;
 using Avalonia.Metadata;
 using Avalonia.Styling;
 using Portable.Xaml;
@@ -48,24 +47,13 @@ namespace Avalonia.Markup.Xaml.PortableXaml
 
     public class BindingXamlType : XamlType
     {
-        public static BindingXamlType Create(Type type, XamlSchemaContext schemaContext)
-        {
-            if (type == typeof(Binding))
-            {
-                //in xaml we need to use the extension
-                type = typeof(BindingExtension);
-            }
-
-            return new BindingXamlType(type, schemaContext);
-        }
-
         private static List<Type> _notAssignable =
                                 new List<Type>
                                 {
                                     typeof (IXmlSerializable)
                                 };
 
-        private BindingXamlType(Type underlyingType, XamlSchemaContext schemaContext) :
+        public BindingXamlType(Type underlyingType, XamlSchemaContext schemaContext) :
             base(underlyingType, schemaContext)
         {
         }
@@ -194,7 +182,7 @@ namespace Avalonia.Markup.Xaml.PortableXaml
             {
                 //can't make it work to assign TypeConverter to Setter.Value
                 //so we need it hard coded
-                //TODO: try to assosiate TypeConverter with Setter.Value 
+                //TODO: try to assosiate TypeConverter with Setter.Value
                 //and remove this lines
                 if (instance is Setter &&
                     Member.Name == nameof(Setter.Value) &&

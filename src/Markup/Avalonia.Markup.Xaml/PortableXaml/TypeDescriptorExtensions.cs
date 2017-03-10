@@ -1,7 +1,9 @@
-﻿using System;
+﻿using Avalonia.Markup.Xaml.PortableXaml;
 using Portable.Xaml.Markup;
-using System.Linq;
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 
 namespace Portable.Xaml.ComponentModel
 {
@@ -55,6 +57,42 @@ namespace Portable.Xaml.ComponentModel
             var sc = ctx.GetService<IXamlSchemaContextProvider>().SchemaContext;
 
             return amb.GetAllAmbientValues(sc.GetXamlType(typeof(T))).OfType<T>();
+        }
+
+        public static Uri GetBaseUri(this ITypeDescriptorContext ctx)
+        {
+            return ctx.GetWriterSettings()?.Context.BaseUri;
+        }
+
+        public static Assembly GetLocalAssembly(this ITypeDescriptorContext ctx)
+        {
+            return ctx.GetWriterSettings()?.Context.LocalAssembly;
+        }
+
+        public static AvaloniaXamlContext GetAvaloniaXamlContext(this ITypeDescriptorContext ctx)
+        {
+            return ctx.GetWriterSettings()?.Context;
+        }
+
+        public static XamlObjectWriterSettings WithContext(this XamlObjectWriterSettings settings, AvaloniaXamlContext context)
+        {
+            return new AvaloniaXamlObjectWriterSettings(settings, context);
+        }
+
+        private static AvaloniaXamlObjectWriterSettings GetWriterSettings(this ITypeDescriptorContext ctx)
+        {
+            return ctx.GetService<IXamlObjectWriterFactory>().GetParentSettings() as AvaloniaXamlObjectWriterSettings;
+        }
+
+        private class AvaloniaXamlObjectWriterSettings : XamlObjectWriterSettings
+        {
+            public AvaloniaXamlObjectWriterSettings(XamlObjectWriterSettings settings, AvaloniaXamlContext context)
+                : base(settings)
+            {
+                Context = context;
+            }
+
+            public AvaloniaXamlContext Context { get; }
         }
     }
 }

@@ -1,12 +1,14 @@
 ﻿using Avalonia.Data;
 using Avalonia.Markup.Xaml.Context;
+using Avalonia.Markup.Xaml.Data;
+using Avalonia.Markup.Xaml.MarkupExtensions;
+using Avalonia.Markup.Xaml.Styling;
 using Portable.Xaml;
 using Portable.Xaml.ComponentModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using am = Avalonia.Metadata;
 
 namespace Avalonia.Markup.Xaml.PortableXaml
 {
@@ -19,7 +21,7 @@ namespace Avalonia.Markup.Xaml.PortableXaml
 
         private AvaloniaXamlSchemaContext(IRuntimeTypeProvider typeProvider)
         //better not set the references assemblies
-        //TODO: check this on iOS 
+        //TODO: check this on iOS
         //: base(typeProvider.ReferencedAssemblies)
         {
             Contract.Requires<ArgumentNullException>(typeProvider != null);
@@ -150,16 +152,27 @@ namespace Avalonia.Markup.Xaml.PortableXaml
             return result;
         }
 
+        private static readonly Dictionary<Type, Type> _wellKnownExtensionTypes = new Dictionary<Type, Type>()
+        {
+            { typeof(Binding), typeof(BindingExtension) },
+            { typeof(StyleInclude), typeof(StyleIncludeExtension) },
+        };
+
         private XamlType GetAvaloniaXamlType(Type type)
         {
+            Type extType;
+
+            _wellKnownExtensionTypes.TryGetValue(type, out extType);
+
             if (typeof(IBinding).GetTypeInfo().IsAssignableFrom(type.GetTypeInfo()))
             {
-                return BindingXamlType.Create(type, this);
+                return new BindingXamlType(extType ?? type, this);
             }
 
-            if (typeof(AvaloniaObject).GetTypeInfo().IsAssignableFrom(type.GetTypeInfo()))
+            if (extType != null ||
+                typeof(AvaloniaObject).GetTypeInfo().IsAssignableFrom(type.GetTypeInfo()))
             {
-                return new AvaloniaXamlType(type, this);
+                return new AvaloniaXamlType(extType ?? type, this);
             }
 
             return null;
