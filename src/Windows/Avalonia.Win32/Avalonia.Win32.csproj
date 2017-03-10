@@ -99,10 +99,6 @@
       <Name>Avalonia.Styling</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-      <SubType>Designer</SubType>
-    </None>
-  </ItemGroup>
   <Import Project="Avalonia.Win32.Shared.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -33,27 +33,21 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj">
-      <Project>{b09b78d8-9b26-48b0-9149-d64a2f120f3f}</Project>
       <Name>Avalonia.Base</Name>
     </ProjectReference>
     <ProjectReference Include="..\Avalonia.Controls\Avalonia.Controls.csproj">
-      <Project>{d2221c82-4a25-4583-9b43-d791e3f6820c}</Project>
       <Name>Avalonia.Controls</Name>
     </ProjectReference>
     <ProjectReference Include="..\Avalonia.Visuals\Avalonia.Visuals.csproj">
-      <Project>{eb582467-6abb-43a1-b052-e981ba910e3a}</Project>
       <Name>Avalonia.Visuals</Name>
     </ProjectReference>
     <ProjectReference Include="..\Gtk\Avalonia.Gtk3\Avalonia.Gtk3.csproj">
-      <Project>{bb1f7bb5-6ad4-4776-94d9-c09d0a972658}</Project>
       <Name>Avalonia.Gtk3</Name>
     </ProjectReference>
     <ProjectReference Include="..\Skia\Avalonia.Skia.Desktop.NetStandard\Avalonia.Skia.Desktop.NetStandard.csproj">
-      <Project>{7d2d3083-71dd-4cc9-8907-39a0d86fb322}</Project>
       <Name>Avalonia.Skia.Desktop.NetStandard</Name>
     </ProjectReference>
     <ProjectReference Include="..\Windows\Avalonia.Win32.NetStandard\Avalonia.Win32.NetStandard.csproj">
-      <Project>{40759a76-d0f2-464e-8000-6ff0f5c4bd7c}</Project>
       <Name>Avalonia.Win32.NetStandard</Name>
     </ProjectReference>
   </ItemGroup>
