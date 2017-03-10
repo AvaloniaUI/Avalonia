@@ -393,7 +393,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         }
 
         [Fact]
-        public void Style_Resources_Are_Build()
+        public void Style_Resources_Are_Built()
         {
             var xaml = @"
 <Style xmlns='https://github.com/avaloniaui'
@@ -421,7 +421,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         }
 
         [Fact]
-        public void StyleInclude_Is_Build()
+        public void StyleInclude_Is_Built()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
@@ -590,7 +590,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         }
 
         [Fact]
-        public void Style_ControlTemplate_Is_Build()
+        public void Style_ControlTemplate_Is_Built()
         {
             var xaml = @"
 <Style xmlns='https://github.com/avaloniaui' Selector='ContentControl'>
@@ -645,7 +645,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 #else
         [Fact(Skip =
 @"Doesn't work with Portable.xaml, it's working in different creation order -
-Handled in test 'Control_Is_Added_To_Parent_Before_Final_EndEdit'
+Handled in test 'Control_Is_Added_To_Parent_Before_Final_EndInit'
 do we need it?")]
 #endif
         public void Control_Is_Added_To_Parent_Before_Properties_Are_Set()
@@ -672,7 +672,7 @@ do we need it?")]
         }
 
         [Fact]
-        public void Control_Is_Added_To_Parent_Before_Final_EndEdit()
+        public void Control_Is_Added_To_Parent_Before_Final_EndInit()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
@@ -696,7 +696,7 @@ do we need it?")]
         }
 
         [Fact]
-        public void All_Properties_Are_Set_Before_Final_EndEdit()
+        public void All_Properties_Are_Set_Before_Final_EndInit()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
