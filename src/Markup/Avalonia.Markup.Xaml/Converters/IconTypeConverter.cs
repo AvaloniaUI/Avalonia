@@ -1,11 +1,11 @@
 ﻿// Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using System;
-using System.Globalization;
 using Avalonia.Controls;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using System;
+using System.Globalization;
 
 namespace Avalonia.Markup.Xaml.Converters
 {
@@ -27,41 +27,30 @@ namespace Avalonia.Markup.Xaml.Converters
             {
                 return CreateIconFromPath(context, path);
             }
+
             var bitmap = value as IBitmap;
             if (bitmap != null)
             {
                 return new WindowIcon(bitmap);
             }
+
             throw new NotSupportedException();
         }
 
         private WindowIcon CreateIconFromPath(ITypeDescriptorContext context, string path)
         {
             var uri = new Uri(path, UriKind.RelativeOrAbsolute);
-            var baseUri = GetBaseUri(uri, context);
             var scheme = uri.IsAbsoluteUri ? uri.Scheme : "file";
 
             switch (scheme)
             {
                 case "file":
                     return new WindowIcon(path);
+
                 default:
                     var assets = AvaloniaLocator.Current.GetService<IAssetLoader>();
-                    return new WindowIcon(assets.Open(uri, baseUri));
+                    return new WindowIcon(assets.Open(uri, context.GetBaseUri()));
             }
-        }
-
-        private Uri GetBaseUri(Uri uri, ITypeDescriptorContext context)
-        {
-            if (uri.IsAbsoluteUri)
-            {
-                return null;
-            }
-
-            throw new NotImplementedException("Relative base uri Not implemented!");
-            //object result;
-            //context.ParsingDictionary.TryGetValue("Uri", out result);
-            //return result as Uri;
         }
     }
 

@@ -22,7 +22,6 @@ namespace Avalonia.Markup.Xaml.Converters
         public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
         {
             var uri = new Uri((string)value, UriKind.RelativeOrAbsolute);
-            var baseUri = GetBaseUri(context, value as string);
             var scheme = uri.IsAbsoluteUri ? uri.Scheme : "file";
 
             switch (scheme)
@@ -32,17 +31,8 @@ namespace Avalonia.Markup.Xaml.Converters
 
                 default:
                     var assets = AvaloniaLocator.Current.GetService<IAssetLoader>();
-                    return new Bitmap(assets.Open(uri, baseUri));
+                    return new Bitmap(assets.Open(uri, context.GetBaseUri()));
             }
-        }
-
-        private Uri GetBaseUri(ITypeDescriptorContext context, string value)
-        {
-            return (Uri)TypeDescriptor.GetConverter(typeof(Uri)).ConvertFrom(value);
-            //TODO: 
-            //object result;
-            //context.ParsingDictionary.TryGetValue("Uri", out result);
-            //return result as Uri;
         }
     }
 
