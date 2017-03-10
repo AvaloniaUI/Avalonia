@@ -49,9 +49,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\..\src\Avalonia.Animation\Avalonia.Animation.csproj">
       <Project>{D211E587-D8BC-45B9-95A4-F297C8FA5200}</Project>
       <Name>Avalonia.Animation</Name>

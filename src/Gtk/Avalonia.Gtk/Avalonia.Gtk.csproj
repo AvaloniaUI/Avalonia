@@ -98,9 +98,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
     <PackageReference Include="System.Reactive.Core" Version="3.0.0" />
     <PackageReference Include="System.Reactive.Interfaces" Version="3.0.0" />
   </ItemGroup>

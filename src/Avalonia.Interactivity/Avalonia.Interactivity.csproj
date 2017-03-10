@@ -58,11 +58,6 @@
     <Compile Include="EventSubscription.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-  </ItemGroup>
-  <ItemGroup>
     <PackageReference Include="System.Reactive" Version="3.0.0" />
     <PackageReference Include="System.Reactive.Core" Version="3.0.0" />
     <PackageReference Include="System.Reactive.Interfaces" Version="3.0.0" />
