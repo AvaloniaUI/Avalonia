@@ -33,22 +33,16 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj">
-      <Name>Avalonia.Base</Name>
     </ProjectReference>
     <ProjectReference Include="..\Avalonia.Controls\Avalonia.Controls.csproj">
-      <Name>Avalonia.Controls</Name>
     </ProjectReference>
     <ProjectReference Include="..\Avalonia.Visuals\Avalonia.Visuals.csproj">
-      <Name>Avalonia.Visuals</Name>
     </ProjectReference>
     <ProjectReference Include="..\Gtk\Avalonia.Gtk3\Avalonia.Gtk3.csproj">
-      <Name>Avalonia.Gtk3</Name>
     </ProjectReference>
     <ProjectReference Include="..\Skia\Avalonia.Skia.Desktop.NetStandard\Avalonia.Skia.Desktop.NetStandard.csproj">
-      <Name>Avalonia.Skia.Desktop.NetStandard</Name>
     </ProjectReference>
     <ProjectReference Include="..\Windows\Avalonia.Win32.NetStandard\Avalonia.Win32.NetStandard.csproj">
-      <Name>Avalonia.Win32.NetStandard</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

@@ -29,7 +29,6 @@
   <ItemGroup>
     <!-- A reference to the entire .NET Framework is automatically included -->
     <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj">
-      <Name>Avalonia.Base</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

@@ -32,7 +32,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj">
-      <Name>Avalonia.Base</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

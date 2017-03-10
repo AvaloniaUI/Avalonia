@@ -69,13 +69,10 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Avalonia.Animation\Avalonia.Animation.csproj">
-      <Name>Avalonia.Animation</Name>
     </ProjectReference>
     <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj">
-      <Name>Avalonia.Base</Name>
     </ProjectReference>
     <ProjectReference Include="..\Avalonia.Visuals\Avalonia.Visuals.csproj">
-      <Name>Avalonia.Visuals</Name>
     </ProjectReference>
   </ItemGroup>
   <Target Name="BeforeBuild">

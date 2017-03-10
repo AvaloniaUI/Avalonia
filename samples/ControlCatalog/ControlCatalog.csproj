@@ -142,46 +142,32 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj">
-      <Name>Avalonia.Markup.Xaml</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\Markup\Avalonia.Markup\Avalonia.Markup.csproj">
-      <Name>Avalonia.Markup</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\Avalonia.Animation\Avalonia.Animation.csproj">
-      <Name>Avalonia.Animation</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\Avalonia.Base\Avalonia.Base.csproj">
-      <Name>Avalonia.Base</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\Avalonia.Controls\Avalonia.Controls.csproj">
-      <Name>Avalonia.Controls</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\Avalonia.Diagnostics\Avalonia.Diagnostics.csproj">
-      <Name>Avalonia.Diagnostics</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\Avalonia.HtmlRenderer\Avalonia.HtmlRenderer.csproj">
-      <Name>Avalonia.HtmlRenderer</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\Avalonia.Input\Avalonia.Input.csproj">
-      <Name>Avalonia.Input</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\Avalonia.Interactivity\Avalonia.Interactivity.csproj">
-      <Name>Avalonia.Interactivity</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\Avalonia.Layout\Avalonia.Layout.csproj">
-      <Name>Avalonia.Layout</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\Avalonia.ReactiveUI\Avalonia.ReactiveUI.csproj">
-      <Name>Avalonia.ReactiveUI</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\Avalonia.Visuals\Avalonia.Visuals.csproj">
-      <Name>Avalonia.Visuals</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\Avalonia.Styling\Avalonia.Styling.csproj">
-      <Name>Avalonia.Styling</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\Avalonia.Themes.Default\Avalonia.Themes.Default.csproj">
-      <Name>Avalonia.Themes.Default</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

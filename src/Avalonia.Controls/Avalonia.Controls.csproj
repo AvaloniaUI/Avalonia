@@ -203,25 +203,18 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Avalonia.Animation\Avalonia.Animation.csproj">
-      <Name>Avalonia.Animation</Name>
     </ProjectReference>
     <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj">
-      <Name>Avalonia.Base</Name>
     </ProjectReference>
     <ProjectReference Include="..\Avalonia.Input\Avalonia.Input.csproj">
-      <Name>Avalonia.Input</Name>
     </ProjectReference>
     <ProjectReference Include="..\Avalonia.Interactivity\Avalonia.Interactivity.csproj">
-      <Name>Avalonia.Interactivity</Name>
     </ProjectReference>
     <ProjectReference Include="..\Avalonia.Layout\Avalonia.Layout.csproj">
-      <Name>Avalonia.Layout</Name>
     </ProjectReference>
     <ProjectReference Include="..\Avalonia.Visuals\Avalonia.Visuals.csproj">
-      <Name>Avalonia.Visuals</Name>
     </ProjectReference>
     <ProjectReference Include="..\Avalonia.Styling\Avalonia.Styling.csproj">
-      <Name>Avalonia.Styling</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

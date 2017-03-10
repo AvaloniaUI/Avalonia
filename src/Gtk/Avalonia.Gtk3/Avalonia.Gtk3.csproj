@@ -59,19 +59,14 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Avalonia.Base\Avalonia.Base.csproj">
-      <Name>Avalonia.Base</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Avalonia.Controls\Avalonia.Controls.csproj">
-      <Name>Avalonia.Controls</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Avalonia.Input\Avalonia.Input.csproj">
-      <Name>Avalonia.Input</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Avalonia.Interactivity\Avalonia.Interactivity.csproj">
-      <Name>Avalonia.Interactivity</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Avalonia.Visuals\Avalonia.Visuals.csproj">
-      <Name>Avalonia.SceneGraph</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>

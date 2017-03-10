@@ -29,16 +29,12 @@
   <ItemGroup>
     <!-- A reference to the entire .NET Framework is automatically included -->
     <ProjectReference Include="..\Avalonia.Animation\Avalonia.Animation.csproj">
-      <Name>Avalonia.Animation</Name>
     </ProjectReference>
     <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj">
-      <Name>Avalonia.Base</Name>
     </ProjectReference>
     <ProjectReference Include="..\Avalonia.Layout\Avalonia.Layout.csproj">
-      <Name>Avalonia.Layout</Name>
     </ProjectReference>
     <ProjectReference Include="..\Avalonia.Visuals\Avalonia.Visuals.csproj">
-      <Name>Avalonia.Visuals</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

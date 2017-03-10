@@ -30,10 +30,8 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Avalonia.Base\Avalonia.Base.csproj">
-      <Name>Avalonia.Base</Name>
     </ProjectReference>
     <ProjectReference Include="..\Avalonia.UnitTests\Avalonia.UnitTests.csproj">
-      <Name>Avalonia.UnitTests</Name>
     </ProjectReference>
   </ItemGroup>
 
