@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard1.1</TargetFramework>
-    <EnableDefaultCompileItems>False</EnableDefaultCompileItems>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -27,27 +26,12 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
-    <!-- A reference to the entire .NET Framework is automatically included -->
-    <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj" />
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="..\Shared\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="Animation`1.cs" />
-    <Compile Include="Animation.cs" />
-    <Compile Include="Animate.cs" />
-    <Compile Include="Animatable.cs" />
-    <Compile Include="AnimationExtensions.cs" />
-    <Compile Include="IEasing`1.cs" />
-    <Compile Include="LinearEasing.cs" />
-    <Compile Include="LinearDoubleEasing.cs" />
-    <Compile Include="IEasing.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="PropertyTransitions.cs" />
-    <Compile Include="PropertyTransition.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="System.Reactive" Version="3.0.0" />

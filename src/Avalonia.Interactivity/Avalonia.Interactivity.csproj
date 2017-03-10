@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard1.1</TargetFramework>
-    <EnableDefaultCompileItems>False</EnableDefaultCompileItems>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -27,7 +26,6 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
-    <!-- A reference to the entire .NET Framework is automatically included -->
     <ProjectReference Include="..\Avalonia.Animation\Avalonia.Animation.csproj" />
     <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj" />
     <ProjectReference Include="..\Avalonia.Layout\Avalonia.Layout.csproj" />
@@ -37,13 +35,6 @@
     <Compile Include="..\Shared\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="IInteractive.cs" />
-    <Compile Include="InteractiveExtensions.cs" />
-    <Compile Include="Interactive.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RoutedEvent.cs" />
-    <Compile Include="RoutedEventArgs.cs" />
-    <Compile Include="EventSubscription.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="System.Reactive" Version="3.0.0" />

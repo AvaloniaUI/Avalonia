@@ -23,7 +23,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <!-- A reference to the entire .NET Framework is automatically included -->
     <Content Include="external\Source\HtmlRenderer\Core\Utils\ImageError.png" />
     <Content Include="external\Source\HtmlRenderer\Core\Utils\ImageLoad.png" />
   </ItemGroup>

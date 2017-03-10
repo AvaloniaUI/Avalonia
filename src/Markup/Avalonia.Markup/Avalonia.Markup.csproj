@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard1.1</TargetFramework>
-    <EnableDefaultCompileItems>False</EnableDefaultCompileItems>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -30,46 +29,6 @@
     <Compile Include="..\..\Shared\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="Data\ISettableNode.cs" />
-    <Compile Include="Data\StreamNode.cs" />
-    <Compile Include="Data\MarkupBindingChainException.cs" />
-    <Compile Include="Data\CommonPropertyNames.cs" />
-    <Compile Include="Data\EmptyExpressionNode.cs" />
-    <Compile Include="Data\ExpressionNodeBuilder.cs" />
-    <Compile Include="Data\ExpressionParseException.cs" />
-    <Compile Include="Data\BindingExpression.cs" />
-    <Compile Include="ControlLocator.cs" />
-    <Compile Include="Data\Plugins\DataAnnotationsValidationPlugin.cs" />
-    <Compile Include="Data\Plugins\ExceptionValidationPlugin.cs" />
-    <Compile Include="Data\Plugins\IndeiValidationPlugin.cs" />
-    <Compile Include="Data\Plugins\IDataValidationPlugin.cs" />
-    <Compile Include="Data\Plugins\AvaloniaPropertyAccessorPlugin.cs" />
-    <Compile Include="Data\Plugins\InpcPropertyAccessorPlugin.cs" />
-    <Compile Include="Data\Plugins\IPropertyAccessor.cs" />
-    <Compile Include="Data\Plugins\IPropertyAccessorPlugin.cs" />
-    <Compile Include="Data\LogicalNotNode.cs" />
-    <Compile Include="Data\IndexerNode.cs" />
-    <Compile Include="Data\Parsers\ArgumentListParser.cs" />
-    <Compile Include="Data\Parsers\IdentifierParser.cs" />
-    <Compile Include="Data\Parsers\ExpressionParser.cs" />
-    <Compile Include="Data\Parsers\Reader.cs" />
-    <Compile Include="Data\Plugins\ObservableStreamPlugin.cs" />
-    <Compile Include="Data\Plugins\TaskStreamPlugin.cs" />
-    <Compile Include="Data\Plugins\IStreamPlugin.cs" />
-    <Compile Include="Data\Plugins\PropertyAccessorBase.cs" />
-    <Compile Include="Data\Plugins\PropertyError.cs" />
-    <Compile Include="Data\Plugins\DataValidatiorBase.cs" />
-    <Compile Include="Data\PropertyAccessorNode.cs" />
-    <Compile Include="Data\ExpressionNode.cs" />
-    <Compile Include="Data\ExpressionObserver.cs" />
-    <Compile Include="FuncMultiValueConverter.cs" />
-    <Compile Include="FuncValueConverter.cs" />
-    <Compile Include="IMultiValueConverter.cs" />
-    <Compile Include="BoolConverters.cs" />
-    <Compile Include="StringConverters.cs" />
-    <Compile Include="DefaultValueConverter.cs" />
-    <Compile Include="IValueConverter.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Avalonia.Base\Avalonia.Base.csproj" />
@@ -80,10 +39,6 @@
     <ProjectReference Include="..\..\Avalonia.Visuals\Avalonia.Visuals.csproj" />
     <ProjectReference Include="..\..\Avalonia.Styling\Avalonia.Styling.csproj" />
   </ItemGroup>
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
   <ItemGroup>
     <PackageReference Include="System.ComponentModel.Annotations" Version="4.3.0" />
     <PackageReference Include="System.Reactive" Version="3.0.0" />
