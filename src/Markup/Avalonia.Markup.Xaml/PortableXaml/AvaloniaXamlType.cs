@@ -82,29 +82,39 @@ namespace Avalonia.Markup.Xaml.PortableXaml
         {
         }
 
-        private static readonly List<PropertyKey> _readonlyProps =
-            new List<PropertyKey>()
+        private bool IsReadOnlyCollectionProperty
+        {
+            get
             {
-                new PropertyKey(typeof(MultiBinding), nameof(MultiBinding.Bindings)),
-                new PropertyKey(typeof(Panel), nameof(Panel.Children)),
-                new PropertyKey(typeof(Control), nameof(Control.Styles)),
-            };
+                //Collection properties like:
+                //MultiBinding.Bindings, Panel.Children, Control.Styles,
+                //need to be readonly for Portable.Xaml
+                //Collection properties like: 
+                //Grid.RowDefinitions, Grid.ColumnDefinitions
+                //need to be set only once, and subsequent changes to be
+                //added to collection  
+                //TODO: investigate is this good enough as solution ???
+                //We can add some ReadOnyXamlPropertyCollectionAttribute to cover this            
+                return Type.IsCollection;
+            }
+        }
 
-        private static readonly List<PropertyKey> _updateListInsteadSet =
-            new List<PropertyKey>()
+        private bool HasCollectionTypeConverter
+        {
+            get
             {
-                new PropertyKey(typeof(Grid),nameof(Grid.RowDefinitions)),
-                new PropertyKey(typeof(Grid),nameof(Grid.ColumnDefinitions)),
-            };
+                return Type.IsCollection && Type.TypeConverter != null;
+            }
+        }
 
         protected override MethodInfo LookupUnderlyingSetter()
         {
             //if we have content property a list
             //we have some issues in portable.xaml
             //but if the list is read only, this is solving the problem
-            //TODO: investigate is this good enough as solution ???
-            //We can add ReadOnyAttribute to cover this
-            if (_readonlyProps.Contains(PropertyKey()))
+           
+            if (IsReadOnlyCollectionProperty &&
+                !HasCollectionTypeConverter)
             {
                 return null;
             }
@@ -114,9 +124,13 @@ namespace Avalonia.Markup.Xaml.PortableXaml
 
         protected override XamlMemberInvoker LookupInvoker()
         {
+            //if we have a IList property and it has TypeConverter
+            //Portable.xaml need to be able to set the value
+            //but instead directly set new value we'll sync the lists
+            bool updateListInsteadSet = HasCollectionTypeConverter;
             return new PropertyInvoker(this)
             {
-                UpdateListInsteadSet = _updateListInsteadSet.Contains(PropertyKey())
+                UpdateListInsteadSet = updateListInsteadSet
             };
         }
 
@@ -216,8 +230,7 @@ namespace Avalonia.Markup.Xaml.PortableXaml
 
                 if (Equals(old, value))
                 {
-                    //don't set the same value
-                    //usually a collections
+                    //don't set the same collection value
                     return true;
                 }
                 else if (old is IList && value is IList)
