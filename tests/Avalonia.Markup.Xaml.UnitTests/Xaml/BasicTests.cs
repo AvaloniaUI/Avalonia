@@ -197,6 +197,77 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         }
 
         [Fact]
+        public void Grid_Row_Col_Definitions_Are_Built()
+        {
+            var xaml = @"
+<Grid xmlns='https://github.com/avaloniaui'>
+    <Grid.ColumnDefinitions>
+        <ColumnDefinition Width='100' />
+        <ColumnDefinition Width='Auto' />
+        <ColumnDefinition Width='*' />
+        <ColumnDefinition Width='100*' />
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+        <RowDefinition Height='100' />
+        <RowDefinition Height='Auto' />
+        <RowDefinition Height='*' />
+        <RowDefinition Height='100*' />
+    </Grid.RowDefinitions>
+</Grid>";
+
+            var grid = AvaloniaXamlLoader.Parse<Grid>(xaml);
+
+            Assert.Equal(4, grid.ColumnDefinitions.Count);
+            Assert.Equal(4, grid.RowDefinitions.Count);
+
+            var expected1 = new GridLength(100);
+            var expected2 = GridLength.Auto;
+            var expected3 = new GridLength(1, GridUnitType.Star);
+            var expected4 = new GridLength(100, GridUnitType.Star);
+
+            Assert.Equal(expected1, grid.ColumnDefinitions[0].Width);
+            Assert.Equal(expected2, grid.ColumnDefinitions[1].Width);
+            Assert.Equal(expected3, grid.ColumnDefinitions[2].Width);
+            Assert.Equal(expected4, grid.ColumnDefinitions[3].Width);
+
+            Assert.Equal(expected1, grid.RowDefinitions[0].Height);
+            Assert.Equal(expected2, grid.RowDefinitions[1].Height);
+            Assert.Equal(expected3, grid.RowDefinitions[2].Height);
+            Assert.Equal(expected4, grid.RowDefinitions[3].Height);
+        }
+
+        [Fact]
+        public void Grid_Row_Col_Definitions_Are_Parsed()
+        {
+            var xaml = @"
+<Grid xmlns='https://github.com/avaloniaui'
+        ColumnDefinitions='100,Auto,*,100*'
+        RowDefinitions='100,Auto,*,100*'>
+</Grid>";
+
+            var grid = AvaloniaXamlLoader.Parse<Grid>(xaml);
+
+
+            Assert.Equal(4, grid.ColumnDefinitions.Count);
+            Assert.Equal(4, grid.RowDefinitions.Count);
+
+            var expected1 = new GridLength(100);
+            var expected2 = GridLength.Auto;
+            var expected3 = new GridLength(1, GridUnitType.Star);
+            var expected4 = new GridLength(100, GridUnitType.Star);
+
+            Assert.Equal(expected1, grid.ColumnDefinitions[0].Width);
+            Assert.Equal(expected2, grid.ColumnDefinitions[1].Width);
+            Assert.Equal(expected3, grid.ColumnDefinitions[2].Width);
+            Assert.Equal(expected4, grid.ColumnDefinitions[3].Width);
+
+            Assert.Equal(expected1, grid.RowDefinitions[0].Height);
+            Assert.Equal(expected2, grid.RowDefinitions[1].Height);
+            Assert.Equal(expected3, grid.RowDefinitions[2].Height);
+            Assert.Equal(expected4, grid.RowDefinitions[3].Height);
+        }
+
+        [Fact]
         public void ControlTemplate_With_Nested_Child_Is_Operational()
         {
             var xaml = @"
