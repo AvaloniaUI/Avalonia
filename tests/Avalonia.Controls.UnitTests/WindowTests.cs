@@ -4,33 +4,21 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
+using Avalonia.Platform;
+using Moq;
+using Xunit;
+
 namespace Avalonia.Controls.UnitTests
 {
-    using System.Reactive;
-    using System.Reactive.Subjects;
-    using Moq;
-    using Avalonia.Controls.Presenters;
-    using Avalonia.Controls.Templates;
-    using Avalonia.Input;
-    using Avalonia.Input.Raw;
-    using Avalonia.Layout;
-    using Avalonia.Platform;
-    using Avalonia.Rendering;
-    using Avalonia.Styling;
-    using Ploeh.AutoFixture;
-    using Ploeh.AutoFixture.AutoMoq;
-    using Splat;
-    using Xunit;
-
     public class WindowTests
     {
         [Fact]
         public void Setting_Title_Should_Set_Impl_Title()
         {
-            using (Locator.CurrentMutable.WithResolver())
+            using (AvaloniaLocator.EnterScope())
             {
                 var windowImpl = new Mock<IWindowImpl>();
-                Locator.CurrentMutable.RegisterConstant(windowImpl.Object, typeof(IWindowImpl));
+                AvaloniaLocator.CurrentMutable.Bind<IWindowImpl>().ToConstant(windowImpl.Object);
 
                 var target = new Window();
 

@@ -1,36 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
   <PropertyGroup>
     <TargetFrameworks>net461;netcoreapp1.1</TargetFrameworks>
-    <ProjectGuid>{2905FF23-53FB-45E6-AA49-6AF47A172056}</ProjectGuid>
   </PropertyGroup>
   <Import Project="$(MSBuildThisFileDirectory)..\coretests.props" />
-  <ItemGroup>
-    <Compile Include="AvaloniaObjectTests_DataValidation.cs" />
-    <Compile Include="Collections\CollectionChangedTracker.cs" />
-    <Compile Include="Collections\AvaloniaDictionaryTests.cs" />
-    <Compile Include="Collections\AvaloniaListTests.cs" />
-    <Compile Include="Collections\PropertyChangedTracker.cs" />
-    <Compile Include="AttachedPropertyTests.cs" />
-    <Compile Include="AvaloniaObjectTests_Direct.cs" />
-    <Compile Include="AvaloniaObjectTests_GetSubject.cs" />
-    <Compile Include="AvaloniaObjectTests_GetObservable.cs" />
-    <Compile Include="AvaloniaPropertyRegistryTests.cs" />
-    <Compile Include="AvaloniaObjectTests_Validation.cs" />
-    <Compile Include="AvaloniaObjectTests_Binding.cs" />
-    <Compile Include="AvaloniaObjectTests_Inheritance.cs" />
-    <Compile Include="AvaloniaObjectTests_SetValue.cs" />
-    <Compile Include="AvaloniaObjectTests_GetValue.cs" />
-    <Compile Include="AvaloniaObjectTests_Metadata.cs" />
-    <Compile Include="DirectPropertyTests.cs" />
-    <Compile Include="StyledPropertyTests.cs" />
-    <Compile Include="AvaloniaPropertyTests.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="PriorityValueTests.cs" />
-    <Compile Include="WeakSubscriptionManagerTests.cs" />
-  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Avalonia.Base\Avalonia.Base.csproj" />
     <ProjectReference Include="..\Avalonia.UnitTests\Avalonia.UnitTests.csproj" />
   </ItemGroup>
-
+  <ItemGroup>
+    <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
+  </ItemGroup>
 </Project>
