@@ -1,24 +1,31 @@
 ﻿using Portable.Xaml;
+using Portable.Xaml.Markup;
 using System;
 using System.Reflection;
 
 namespace Avalonia.Markup.Xaml.PortableXaml
 {
-    public class AvaloniaXamlContext
+    public class AvaloniaXamlContext : IUriContext
     {
-        internal AvaloniaXamlContext(Uri baseUri, Assembly localAssembly)
+        private AvaloniaXamlContext()
         {
-            LocalAssembly = localAssembly;
-            BaseUri = baseUri;
         }
 
-        public Assembly LocalAssembly { get; }
+        public Assembly LocalAssembly { get; private set; }
 
-        public Uri BaseUri { get; }
+        public Uri BaseUri { get; set; }
 
-        public static implicit operator AvaloniaXamlContext(XamlXmlReaderSettings sett)
+        public object RootInstance { get; private set; }
+
+        internal static AvaloniaXamlContext For(XamlXmlReaderSettings sett,
+                                                object rootInstance)
         {
-            return new AvaloniaXamlContext(sett.BaseUri, sett.LocalAssembly);
+            return new AvaloniaXamlContext()
+            {
+                BaseUri = sett.BaseUri,
+                LocalAssembly = sett.LocalAssembly,
+                RootInstance = rootInstance
+            };
         }
     }
 }

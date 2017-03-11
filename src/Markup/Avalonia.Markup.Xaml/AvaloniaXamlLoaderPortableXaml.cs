@@ -168,7 +168,9 @@ namespace Avalonia.Markup.Xaml
 
             var reader = new XamlXmlReader(stream, _context, readerSettings);
 
-            object result = LoadFromReader(reader, rootInstance, readerSettings);
+            object result = LoadFromReader(
+                reader,
+                AvaloniaXamlContext.For(readerSettings, rootInstance));
 
             var topLevel = result as TopLevel;
 
@@ -180,13 +182,10 @@ namespace Avalonia.Markup.Xaml
             return result;
         }
 
-        internal static object LoadFromReader(XamlReader reader,
-                        object instance,
-                        AvaloniaXamlContext context = null)
+        internal static object LoadFromReader(XamlReader reader, AvaloniaXamlContext context = null)
         {
             var writer = AvaloniaXamlObjectWriter.Create(
                                     reader.SchemaContext,
-                                    instance,
                                     context);
 
             XamlServices.Transform(reader, writer);

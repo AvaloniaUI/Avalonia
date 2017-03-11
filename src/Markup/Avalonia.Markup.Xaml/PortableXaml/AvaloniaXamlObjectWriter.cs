@@ -10,16 +10,15 @@ namespace Avalonia.Markup.Xaml.PortableXaml
     {
         public static AvaloniaXamlObjectWriter Create(
             XamlSchemaContext schemaContext,
-            object instance,
             AvaloniaXamlContext context)
         {
-            var nameScope = new AvaloniaNameScope { Instance = instance };
+            var nameScope = new AvaloniaNameScope { Instance = context?.RootInstance };
 
             var writerSettings = new XamlObjectWriterSettings()
             {
                 ExternalNameScope = nameScope,
                 RegisterNamesOnExternalNamescope = true,
-                RootObjectInstance = instance
+                RootObjectInstance = context?.RootInstance
             };
 
             return new AvaloniaXamlObjectWriter(schemaContext,
