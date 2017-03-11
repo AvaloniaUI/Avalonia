@@ -85,8 +85,9 @@ namespace Avalonia.Markup.Xaml.PortableXaml
         private static readonly List<PropertyKey> _readonlyProps =
             new List<PropertyKey>()
             {
-                new PropertyKey(typeof(MultiBinding),nameof(MultiBinding.Bindings)),
-                new PropertyKey(typeof(Panel),nameof(Panel.Children)),
+                new PropertyKey(typeof(MultiBinding), nameof(MultiBinding.Bindings)),
+                new PropertyKey(typeof(Panel), nameof(Panel.Children)),
+                new PropertyKey(typeof(Control), nameof(Control.Styles)),
             };
 
         private static readonly List<PropertyKey> _updateListInsteadSet =

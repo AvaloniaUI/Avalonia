@@ -3,6 +3,7 @@
 
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml.Data;
+using Avalonia.Markup.Xaml.Styling;
 using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
@@ -228,6 +229,26 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         }
 
         [Fact]
+        public void StyleInclude_Is_Built()
+        {
+            var xaml = @"
+<ContentControl xmlns='https://github.com/avaloniaui'>
+    <ContentControl.Styles>
+        <StyleInclude Source='resm:Avalonia.Markup.Xaml.UnitTests.Xaml.Style1.xaml?assembly=Avalonia.Markup.Xaml.UnitTests'/>
+    </ContentControl.Styles>
+</ContentControl>";
+
+            var window = AvaloniaXamlLoader.Parse<ContentControl>(xaml);
+
+            Assert.Equal(1, window.Styles.Count);
+
+            var styleInclude = window.Styles[0] as StyleInclude;
+
+            Assert.NotNull(styleInclude);
+            Assert.NotNull(styleInclude.Source);
+        }
+
+        [Fact]
         public void Setter_Can_Contain_Template()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
@@ -245,7 +266,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         </Style>
     </Window.Styles>
 
-    <ContentControl Name='target'/>    
+    <ContentControl Name='target'/>
 </Window>";
 
                 var loader = new AvaloniaXamlLoader();
@@ -277,7 +298,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 		</Style>
 	</Window.Styles>
 
-    <TextBlock Name='target'/>    
+    <TextBlock Name='target'/>
 </Window>";
 
                 var loader = new AvaloniaXamlLoader();
