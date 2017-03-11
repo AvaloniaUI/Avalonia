@@ -72,6 +72,15 @@ namespace Avalonia.Markup.Xaml.PortableXaml
                                                         xmlLocalName + "Extension",
                                                         genArgs);
 
+            if (type != null)
+            {
+                Type extType;
+                if (_wellKnownExtensionTypes.TryGetValue(type, out extType))
+                {
+                    type = extType;
+                }
+            }
+
             if (type == null)
             {
                 //let's try the simple types
@@ -160,19 +169,18 @@ namespace Avalonia.Markup.Xaml.PortableXaml
 
         private XamlType GetAvaloniaXamlType(Type type)
         {
-            Type extType;
+            //if type is extension get the original type to check
+            var origType = _wellKnownExtensionTypes.FirstOrDefault(v => v.Value == type).Key;
 
-            _wellKnownExtensionTypes.TryGetValue(type, out extType);
-
-            if (typeof(IBinding).GetTypeInfo().IsAssignableFrom(type.GetTypeInfo()))
+            if (typeof(IBinding).GetTypeInfo().IsAssignableFrom((origType ?? type).GetTypeInfo()))
             {
-                return new BindingXamlType(extType ?? type, this);
+                return new BindingXamlType(type, this);
             }
 
-            if (extType != null ||
+            if (origType != null ||
                 typeof(AvaloniaObject).GetTypeInfo().IsAssignableFrom(type.GetTypeInfo()))
             {
-                return new AvaloniaXamlType(extType ?? type, this);
+                return new AvaloniaXamlType(type, this);
             }
 
             return null;
