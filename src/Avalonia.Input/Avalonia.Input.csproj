@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard1.1</TargetFramework>
-    <EnableDefaultCompileItems>False</EnableDefaultCompileItems>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -27,7 +26,6 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
-    <!-- A reference to the entire .NET Framework is automatically included -->
     <ProjectReference Include="..\Avalonia.Animation\Avalonia.Animation.csproj" />
     <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj" />
     <ProjectReference Include="..\Avalonia.Interactivity\Avalonia.Interactivity.csproj" />
@@ -38,55 +36,6 @@
     <Compile Include="..\Shared\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="Cursors.cs" />
-    <Compile Include="AccessKeyHandler.cs" />
-    <Compile Include="Gestures.cs" />
-    <Compile Include="KeyBinding.cs" />
-    <Compile Include="KeyGesture.cs" />
-    <Compile Include="Platform\IClipboard.cs" />
-    <Compile Include="Platform\IStandardCursorFactory.cs" />
-    <Compile Include="Raw\RawTextInputEventArgs.cs" />
-    <Compile Include="NavigationMethod.cs" />
-    <Compile Include="IInputRoot.cs" />
-    <Compile Include="IMainMenu.cs" />
-    <Compile Include="IAccessKeyHandler.cs" />
-    <Compile Include="FocusManager.cs" />
-    <Compile Include="NavigationDirection.cs" />
-    <Compile Include="ICloseable.cs" />
-    <Compile Include="IFocusManager.cs" />
-    <Compile Include="IFocusScope.cs" />
-    <Compile Include="IInputDevice.cs" />
-    <Compile Include="IInputElement.cs" />
-    <Compile Include="IInputManager.cs" />
-    <Compile Include="IKeyboardDevice.cs" />
-    <Compile Include="IKeyboardNavigationHandler.cs" />
-    <Compile Include="IMouseDevice.cs" />
-    <Compile Include="INavigableContainer.cs" />
-    <Compile Include="InputElement.cs" />
-    <Compile Include="InputExtensions.cs" />
-    <Compile Include="InputManager.cs" />
-    <Compile Include="IPointerDevice.cs" />
-    <Compile Include="Key.cs" />
-    <Compile Include="KeyboardDevice.cs" />
-    <Compile Include="KeyboardNavigation.cs" />
-    <Compile Include="KeyboardNavigationHandler.cs" />
-    <Compile Include="GotFocusEventArgs.cs" />
-    <Compile Include="Navigation\FocusExtensions.cs" />
-    <Compile Include="Navigation\DirectionalNavigation.cs" />
-    <Compile Include="Navigation\TabNavigation.cs" />
-    <Compile Include="PointerWheelEventArgs.cs" />
-    <Compile Include="Raw\RawMouseWheelEventArgs.cs" />
-    <Compile Include="Raw\RawSizeEventArgs.cs" />
-    <Compile Include="KeyboardNavigationMode.cs" />
-    <Compile Include="TextInputEventArgs.cs" />
-    <Compile Include="VectorEventArgs.cs" />
-    <Compile Include="KeyEventArgs.cs" />
-    <Compile Include="MouseDevice.cs" />
-    <Compile Include="PointerEventArgs.cs" />
-    <Compile Include="Raw\RawInputEventArgs.cs" />
-    <Compile Include="Raw\RawKeyEventArgs.cs" />
-    <Compile Include="Raw\RawMouseEventArgs.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="System.Reactive" Version="3.0.0" />

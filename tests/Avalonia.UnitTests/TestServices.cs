@@ -67,7 +67,6 @@ namespace Avalonia.UnitTests
             IStyler styler = null,
             Func<Styles> theme = null,
             IPlatformThreadingInterface threadingInterface = null,
-            IWindowImpl windowImpl = null,
             IWindowingPlatform windowingPlatform = null)
         {
             AssetLoader = assetLoader;
@@ -83,7 +82,6 @@ namespace Avalonia.UnitTests
             Styler = styler;
             Theme = theme;
             ThreadingInterface = threadingInterface;
-            WindowImpl = windowImpl;
             WindowingPlatform = windowingPlatform;
         }
 
@@ -100,7 +98,6 @@ namespace Avalonia.UnitTests
         public IStyler Styler { get; }
         public Func<Styles> Theme { get; }
         public IPlatformThreadingInterface ThreadingInterface { get; }
-        public IWindowImpl WindowImpl { get; }
         public IWindowingPlatform WindowingPlatform { get; }
 
         public TestServices With(
@@ -134,7 +131,6 @@ namespace Avalonia.UnitTests
                 styler: styler ?? Styler,
                 theme: theme ?? Theme,
                 threadingInterface: threadingInterface ?? ThreadingInterface,
-                windowImpl: windowImpl ?? WindowImpl,
                 windowingPlatform: windowingPlatform ?? WindowingPlatform);
         }
 

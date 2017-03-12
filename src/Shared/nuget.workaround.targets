@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- https://github.com/NuGet/Home/issues/4532 -->
+<!-- 
+  This file is for a workaround for this NuGet issue https://github.com/NuGet/Home/issues/4532
+  It is built from the master branch of NuGet.BuildTasks with a different class name as not to conflict with the original.
+  It can most likely be removed when the next version of NuGet.BuildTasks is released: https://github.com/NuGet/NuGet.BuildTasks/pull/29
+-->
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
    <UsingTask TaskName="Microsoft.NuGet.Build.Tasks.ResolveNuGetPackageAssetsPatched" AssemblyFile="Microsoft.NuGet.Build.Tasks.Patched.dll" />
 
