@@ -28,6 +28,7 @@ namespace Avalonia.AndroidTestApplication
 		{
 			global::Avalonia.Android.Resource.String.ApplicationName = global::Avalonia.AndroidTestApplication.Resource.String.ApplicationName;
 			global::Avalonia.Android.Resource.String.Hello = global::Avalonia.AndroidTestApplication.Resource.String.Hello;
+			global::Avalonia.Android.Resource.String.library_name = global::Avalonia.AndroidTestApplication.Resource.String.library_name;
 			global::Splat.Resource.String.library_name = global::Avalonia.AndroidTestApplication.Resource.String.library_name;
 		}
 		
