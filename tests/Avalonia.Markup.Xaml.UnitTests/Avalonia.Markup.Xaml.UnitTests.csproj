@@ -159,7 +159,7 @@
   -->
   <ItemGroup>
     <PackageReference Include="Moq" Version="4.7.1" />
-    <PackageReference Include="Splat" Version="1.6.2" />
+    <PackageReference Include="Splat" Version="2.0.0" />
     <PackageReference Include="Sprache" Version="2.1.0" />
     <PackageReference Include="System.Reactive.Core" Version="3.0.0" />
     <PackageReference Include="System.Reactive.Interfaces" Version="3.0.0" />
