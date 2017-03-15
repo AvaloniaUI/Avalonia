@@ -31,8 +31,8 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="SkiaSharp" Version="1.56.1-beta" />
-    <PackageReference Include="Avalonia.Skia.Linux.Natives" Version="0.56.1.2" />
+    <PackageReference Include="SkiaSharp" Version="1.56.2" />
+    <PackageReference Include="Avalonia.Skia.Linux.Natives" Version="1.56.1.3" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Avalonia.Base\Avalonia.Base.csproj" />
