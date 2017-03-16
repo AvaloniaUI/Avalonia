@@ -6,6 +6,7 @@ using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Rendering;
 using Xunit;
+using Avalonia.Platform;
 
 namespace Avalonia.Visuals.UnitTests
 {

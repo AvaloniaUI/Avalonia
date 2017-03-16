@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 
 namespace Avalonia.Media
 {
