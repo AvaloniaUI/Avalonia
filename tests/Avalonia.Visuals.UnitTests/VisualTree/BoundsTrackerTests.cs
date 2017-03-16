@@ -13,6 +13,7 @@ using Xunit;
 using Avalonia.Media;
 using Moq;
 using Avalonia.UnitTests;
+using Avalonia.Platform;
 
 namespace Avalonia.Visuals.UnitTests.VisualTree
 {
