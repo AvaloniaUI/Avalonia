@@ -18,8 +18,6 @@ namespace Avalonia.Direct2D1.Media
     {
         private readonly ImagingFactory _factory;
 
-        private SharpDX.Direct2D1.Bitmap _direct2D;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="WicBitmapImpl"/> class.
         /// </summary>
@@ -101,7 +99,6 @@ namespace Avalonia.Direct2D1.Media
         public override void Dispose()
         {
             WicImpl.Dispose();
-            _direct2D?.Dispose();
         }
 
         /// <summary>
