@@ -17,8 +17,8 @@ namespace Avalonia.Threading
     /// </remarks>
     public class Dispatcher
     {
-        private readonly IPlatformThreadingInterface _platform;
         private readonly JobRunner _jobRunner;
+        private IPlatformThreadingInterface _platform;
 
         public static Dispatcher UIThread { get; } =
             new Dispatcher(AvaloniaLocator.Current.GetService<IPlatformThreadingInterface>());
@@ -26,21 +26,30 @@ namespace Avalonia.Threading
         public Dispatcher(IPlatformThreadingInterface platform)
         {
             _platform = platform;
-            if(_platform == null)
-                //TODO: Unit test mode, fix that somehow
-                return;
             _jobRunner = new JobRunner(platform);
-            _platform.Signaled += _jobRunner.RunJobs;
+
+            if (_platform != null)
+            {
+                _platform.Signaled += _jobRunner.RunJobs;
+            }
         }
 
+        /// <summary>
+        /// Checks that the current thread is the UI thread.
+        /// </summary>
         public bool CheckAccess() => _platform?.CurrentThreadIsLoopThread ?? true;
 
+        /// <summary>
+        /// Checks that the current thread is the UI thread and throws if not.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">
+        /// The current thread is not the UI thread.
+        /// </exception>
         public void VerifyAccess()
         {
             if (!CheckAccess())
                 throw new InvalidOperationException("Call from invalid thread");
         }
-
 
         /// <summary>
         /// Runs the dispatcher's main loop.
@@ -82,6 +91,25 @@ namespace Avalonia.Threading
         public void InvokeAsync(Action action, DispatcherPriority priority = DispatcherPriority.Normal)
         {
             _jobRunner?.Post(action, priority);
+        }
+
+        /// <summary>
+        /// Allows unit tests to change the platform threading interface.
+        /// </summary>
+        internal void UpdateServices()
+        {
+            if (_platform != null)
+            {
+                _platform.Signaled -= _jobRunner.RunJobs;
+            }
+
+            _platform = AvaloniaLocator.Current.GetService<IPlatformThreadingInterface>();
+            _jobRunner.UpdateServices();
+
+            if (_platform != null)
+            {
+                _platform.Signaled += _jobRunner.RunJobs;
+            }
         }
     }
 }
