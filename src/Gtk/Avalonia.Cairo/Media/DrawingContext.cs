@@ -294,7 +294,7 @@ namespace Avalonia.Cairo.Media
 
         private BrushImpl CreateBrushImpl(IBrush brush, Size destinationSize)
         {
-            var solid = brush as SolidColorBrush;
+            var solid = brush as ISolidColorBrush;
             var linearGradientBrush = brush as ILinearGradientBrush;
             var radialGradientBrush = brush as IRadialGradientBrush;
             var imageBrush = brush as IImageBrush;
