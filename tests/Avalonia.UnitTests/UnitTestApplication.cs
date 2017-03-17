@@ -8,6 +8,9 @@ using Avalonia.Platform;
 using Avalonia.Styling;
 using Avalonia.Controls;
 using Avalonia.Rendering;
+using Avalonia.Threading;
+using System.Reactive.Disposables;
+using System.Reactive.Concurrency;
 
 namespace Avalonia.UnitTests
 {
@@ -30,7 +33,12 @@ namespace Avalonia.UnitTests
             var scope = AvaloniaLocator.EnterScope();
             var app = new UnitTestApplication(services);
             AvaloniaLocator.CurrentMutable.BindToSelf<Application>(app);
-            return scope;
+            Dispatcher.UIThread.UpdateServices();
+            return Disposable.Create(() =>
+            {
+                scope.Dispose();
+                Dispatcher.UIThread.UpdateServices();
+            });
         }
 
         public override void RegisterServices()
@@ -48,6 +56,7 @@ namespace Avalonia.UnitTests
                 .Bind<IPlatformRenderInterface>().ToConstant(Services.RenderInterface)
                 .Bind<IRenderLoop>().ToConstant(Services.RenderLoop)
                 .Bind<IPlatformThreadingInterface>().ToConstant(Services.ThreadingInterface)
+                .Bind<IScheduler>().ToConstant(Services.Scheduler)
                 .Bind<IStandardCursorFactory>().ToConstant(Services.StandardCursorFactory)
                 .Bind<IStyler>().ToConstant(Services.Styler)
                 .Bind<IWindowingPlatform>().ToConstant(Services.WindowingPlatform)

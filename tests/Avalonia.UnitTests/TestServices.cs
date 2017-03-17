@@ -12,6 +12,7 @@ using Avalonia.Shared.PlatformSupport;
 using Avalonia.Styling;
 using Avalonia.Themes.Default;
 using Avalonia.Rendering;
+using System.Reactive.Concurrency;
 
 namespace Avalonia.UnitTests
 {
@@ -70,6 +71,7 @@ namespace Avalonia.UnitTests
             Func<IRenderRoot, IRenderLoop, IRenderer> renderer = null,
             IPlatformRenderInterface renderInterface = null,
             IRenderLoop renderLoop = null,
+            IScheduler scheduler = null,
             IStandardCursorFactory standardCursorFactory = null,
             IStyler styler = null,
             Func<Styles> theme = null,
@@ -86,6 +88,7 @@ namespace Avalonia.UnitTests
             Renderer = renderer;
             RenderInterface = renderInterface;
             RenderLoop = renderLoop;
+            Scheduler = scheduler;
             StandardCursorFactory = standardCursorFactory;
             Styler = styler;
             Theme = theme;
@@ -103,6 +106,7 @@ namespace Avalonia.UnitTests
         public Func<IRenderRoot, IRenderLoop, IRenderer> Renderer { get; }
         public IPlatformRenderInterface RenderInterface { get; }
         public IRenderLoop RenderLoop { get; }
+        public IScheduler Scheduler { get; }
         public IStandardCursorFactory StandardCursorFactory { get; }
         public IStyler Styler { get; }
         public Func<Styles> Theme { get; }
@@ -120,6 +124,7 @@ namespace Avalonia.UnitTests
             Func<IRenderRoot, IRenderLoop, IRenderer> renderer = null,
             IPlatformRenderInterface renderInterface = null,
             IRenderLoop renderLoop = null,
+            IScheduler scheduler = null,
             IStandardCursorFactory standardCursorFactory = null,
             IStyler styler = null,
             Func<Styles> theme = null,
@@ -138,6 +143,7 @@ namespace Avalonia.UnitTests
                 renderer: renderer ?? Renderer,
                 renderInterface: renderInterface ?? RenderInterface,
                 renderLoop: renderLoop ?? RenderLoop,
+                scheduler: scheduler ?? Scheduler,
                 standardCursorFactory: standardCursorFactory ?? StandardCursorFactory,
                 styler: styler ?? Styler,
                 theme: theme ?? Theme,
