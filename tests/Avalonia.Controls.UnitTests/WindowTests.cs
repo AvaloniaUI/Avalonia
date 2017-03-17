@@ -4,7 +4,6 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-using Avalonia.Layout;
 using Avalonia.Platform;
 using Avalonia.UnitTests;
 using Moq;
@@ -18,13 +17,10 @@ namespace Avalonia.Controls.UnitTests
         public void Setting_Title_Should_Set_Impl_Title()
         {
             var windowImpl = new Mock<IWindowImpl>();
-            var services = new TestServices(
-                windowingPlatform: new MockWindowingPlatform(() => windowImpl.Object));
+            var windowingPlatform = new MockWindowingPlatform(() => windowImpl.Object);
 
-            using (UnitTestApplication.Start(services))
+            using (UnitTestApplication.Start(new TestServices(windowingPlatform: windowingPlatform)))
             {
-                AvaloniaLocator.CurrentMutable.BindToSelf(windowImpl.Object);
-
                 var target = new Window();
 
                 target.Title = "Hello World";

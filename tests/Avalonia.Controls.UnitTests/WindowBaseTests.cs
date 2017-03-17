@@ -14,8 +14,6 @@ using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
-using Ploeh.AutoFixture;
-using Ploeh.AutoFixture.AutoMoq;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests

@@ -1,13 +1,14 @@
 using System;
 using System.Collections.Generic;
 using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 
 namespace Avalonia.Media
 {
     public sealed class DrawingContext : IDisposable
     {
         private int _currentLevel;
-        
+
 
         static readonly Stack<Stack<PushedState>> StateStackPool = new Stack<Stack<PushedState>>();
         static readonly Stack<Stack<TransformContainer>> TransformStackPool = new Stack<Stack<TransformContainer>>();
@@ -40,7 +41,7 @@ namespace Avalonia.Media
         private Matrix _currentTransform = Matrix.Identity;
 
         private Matrix _currentContainerTransform = Matrix.Identity;
-        
+
         /// <summary>
         /// Gets the current transform of the drawing context.
         /// </summary>
@@ -50,7 +51,7 @@ namespace Avalonia.Media
             private set
             {
                 _currentTransform = value;
-                var transform = _currentTransform*_currentContainerTransform;
+                var transform = _currentTransform * _currentContainerTransform;
                 PlatformImpl.Transform = transform;
             }
         }
@@ -58,7 +59,7 @@ namespace Avalonia.Media
         //HACK: This is a temporary hack that is used in the render loop 
         //to update TransformedBounds property
         [Obsolete("HACK for render loop, don't use")]
-        internal Matrix CurrentContainerTransform => _currentContainerTransform;        
+        internal Matrix CurrentContainerTransform => _currentContainerTransform;
 
         /// <summary>
         /// Draws a bitmap image.
@@ -175,7 +176,7 @@ namespace Avalonia.Media
 
             public void Dispose()
             {
-                if(_type == PushedStateType.None)
+                if (_type == PushedStateType.None)
                     return;
                 if (_context._currentLevel != _level)
                     throw new InvalidOperationException("Wrong Push/Pop state order");
@@ -230,7 +231,7 @@ namespace Avalonia.Media
         /// <param name="opacity">The opacity.</param>
         /// <returns>A disposable used to undo the opacity.</returns>
         public PushedState PushOpacity(double opacity)
-            //TODO: Eliminate platform-specific push opacity call
+        //TODO: Eliminate platform-specific push opacity call
         {
             PlatformImpl.PushOpacity(opacity);
             return new PushedState(this, PushedState.PushedStateType.Opacity);
@@ -255,14 +256,14 @@ namespace Avalonia.Media
         /// </summary>
         /// <param name="matrix">The matrix</param>
         /// <returns>A disposable used to undo the transformation.</returns>
-        public PushedState PushPostTransform(Matrix matrix) => PushSetTransform(CurrentTransform*matrix);
+        public PushedState PushPostTransform(Matrix matrix) => PushSetTransform(CurrentTransform * matrix);
 
         /// <summary>
         /// Pushes a matrix pre-transformation.
         /// </summary>
         /// <param name="matrix">The matrix</param>
         /// <returns>A disposable used to undo the transformation.</returns>
-        public PushedState PushPreTransform(Matrix matrix) => PushSetTransform(matrix*CurrentTransform);
+        public PushedState PushPreTransform(Matrix matrix) => PushSetTransform(matrix * CurrentTransform);
 
         /// <summary>
         /// Sets the current matrix transformation.
@@ -273,7 +274,7 @@ namespace Avalonia.Media
         {
             var oldMatrix = CurrentTransform;
             CurrentTransform = matrix;
-            
+
             return new PushedState(this, PushedState.PushedStateType.Matrix, oldMatrix);
         }
 
@@ -284,7 +285,7 @@ namespace Avalonia.Media
         public PushedState PushTransformContainer()
         {
             _transformContainers.Push(new TransformContainer(CurrentTransform, _currentContainerTransform));
-            _currentContainerTransform = CurrentTransform*_currentContainerTransform;
+            _currentContainerTransform = CurrentTransform * _currentContainerTransform;
             _currentTransform = Matrix.Identity;
             return new PushedState(this, PushedState.PushedStateType.MatrixContainer);
         }

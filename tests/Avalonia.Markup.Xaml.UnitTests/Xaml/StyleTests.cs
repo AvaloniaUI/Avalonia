@@ -138,12 +138,12 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
                 var loader = new AvaloniaXamlLoader();
                 var window = (Window)loader.Load(xaml);
-                var brush = (Avalonia.Media.ISolidColorBrush)window.FindStyleResource("brush");
+                var brush = (ISolidColorBrush)window.FindStyleResource("brush");
                 var button = window.FindControl<Button>("button");
 
                 DelayedBinding.ApplyBindings(button);
 
-                var buttonBrush = (Avalonia.Media.ISolidColorBrush)button.Background;
+                var buttonBrush = (ISolidColorBrush)button.Background;
 
                 Assert.Equal(0xff506070, brush.Color.ToUint32());
                 Assert.Equal(0xff506070, buttonBrush.Color.ToUint32());
@@ -166,7 +166,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
             var loader = new AvaloniaXamlLoader();
             var styles = (Styles)loader.Load(xaml);
-            var brush = (Avalonia.Media.ISolidColorBrush)styles.FindResource("brush");
+            var brush = (ISolidColorBrush)styles.FindResource("brush");
 
             Assert.Equal(0xff506070, brush.Color.ToUint32());
         }
@@ -191,7 +191,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
             var loader = new AvaloniaXamlLoader();
             var styles = (Styles)loader.Load(xaml);
-            var brush = (Avalonia.Media.ISolidColorBrush)styles.FindResource("brush");
+            var brush = (ISolidColorBrush)styles.FindResource("brush");
 
             Assert.Equal(0xff506070, brush.Color.ToUint32());
         }
@@ -214,7 +214,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 var loader = new AvaloniaXamlLoader();
                 var window = (Window)loader.Load(xaml);
                 var border = window.FindControl<Border>("border");
-                var borderBrush = (Avalonia.Media.ISolidColorBrush)border.Background;
+                var borderBrush = (ISolidColorBrush)border.Background;
 
                 Assert.NotNull(borderBrush);
                 Assert.Equal(0xffff0000, borderBrush.Color.ToUint32());
