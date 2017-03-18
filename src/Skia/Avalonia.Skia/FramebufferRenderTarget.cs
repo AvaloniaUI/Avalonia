@@ -22,19 +22,6 @@ namespace Avalonia.Skia
             //Nothing to do here, since we don't own framebuffer
         }
 
-
-        SKColorType TranslatePixelFormat(PixelFormat fmt)
-        {
-            if(fmt == PixelFormat.Rgb565)
-                return SKColorType.Rgb565;
-            if(fmt == PixelFormat.Bgra8888)
-                return SKColorType.Bgra8888;
-            if (fmt == PixelFormat.Rgba8888)
-                return SKColorType.Rgba8888;
-            throw new ArgumentException("Unknown pixel format: " + fmt);
-        }
-
-
         class PixelFormatShim : IDisposable
         {
             private readonly SKImageInfo _nfo;
@@ -73,8 +60,8 @@ namespace Avalonia.Skia
         {
             var fb = _surface.Lock();
             PixelFormatShim shim = null;
-            SKImageInfo framebuffer = new SKImageInfo(fb.Width, fb.Height, TranslatePixelFormat(fb.Format),
-                SKAlphaType.Opaque);
+            SKImageInfo framebuffer = new SKImageInfo(fb.Width, fb.Height, fb.Format.ToSkColorType(),
+                SKAlphaType.Premul);
             var surface = SKSurface.Create(framebuffer, fb.Address, fb.RowBytes) ??
                           (shim = new PixelFormatShim(framebuffer, fb.Address, fb.RowBytes))
                           .CreateSurface();
@@ -89,9 +76,8 @@ namespace Avalonia.Skia
             canvas.Save();
             canvas.Clear(SKColors.Red);
             canvas.ResetMatrix();
-            
-            return new DrawingContext(new DrawingContextImpl(canvas, canvas, surface, shim, fb),
-                Matrix.CreateScale(fb.Dpi.Width / 96, fb.Dpi.Height / 96));
+            var scale = Matrix.CreateScale(fb.Dpi.Width / 96, fb.Dpi.Height / 96);
+            return new DrawingContext(new DrawingContextImpl(canvas, scale, canvas, surface, shim, fb));
         }
     }
 }

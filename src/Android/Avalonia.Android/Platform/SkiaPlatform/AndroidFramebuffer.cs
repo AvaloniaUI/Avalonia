@@ -2,7 +2,7 @@ using System;
 using System.Runtime.InteropServices;
 using Android.Runtime;
 using Android.Views;
-using Avalonia.Controls.Platform.Surfaces;
+using Avalonia.Platform;
 
 namespace Avalonia.Android.Platform.SkiaPlatform
 {
@@ -12,7 +12,11 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public AndroidFramebuffer(Surface surface)
         {
+            if(surface == null)
+                throw new ArgumentNullException(nameof(surface));
             _window = ANativeWindow_fromSurface(JNIEnv.Handle, surface.Handle);
+            if (_window == IntPtr.Zero)
+                throw new Exception("Unable to obtain ANativeWindow");
             ANativeWindow_Buffer buffer;
             var rc = new ARect()
             {

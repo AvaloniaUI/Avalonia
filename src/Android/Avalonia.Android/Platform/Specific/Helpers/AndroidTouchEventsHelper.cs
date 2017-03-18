@@ -8,7 +8,7 @@ using System;
 
 namespace Avalonia.Android.Platform.Specific.Helpers
 {
-    public class AndroidTouchEventsHelper<TView> : IDisposable where TView : View, ITopLevelImpl, IAndroidView
+    public class AndroidTouchEventsHelper<TView> : IDisposable where TView : ITopLevelImpl, IAndroidView
     {
         private TView _view;
         public bool HandleEvents { get; set; }
@@ -63,10 +63,10 @@ namespace Avalonia.Android.Platform.Specific.Helpers
                 //if point is in view otherwise it's possible avalonia not to find the proper window to dispatch the event
                 _point = _getPointFunc(e);
 
-                double x = _view.GetX();
-                double y = _view.GetY();
-                double r = x + _view.Width;
-                double b = y + _view.Height;
+                double x = _view.View.GetX();
+                double y = _view.View.GetY();
+                double r = x + _view.View.Width;
+                double b = y + _view.View.Height;
 
                 if (x <= _point.X && r >= _point.X && y <= _point.Y && b >= _point.Y)
                 {

@@ -2,8 +2,10 @@ language: csharp
 os:
   - linux
   - osx
+dist: trusty
 mono:
   - latest
+dotnet: 1.0.1
 script:
   - ./build.sh --target "Travis" --platform "Mono" --configuration "Release"
 notifications:

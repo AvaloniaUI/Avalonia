@@ -37,7 +37,7 @@ namespace Avalonia.Media
     /// <summary>
     /// Base class for brushes which display repeating images.
     /// </summary>
-    public abstract class TileBrush : Brush
+    public abstract class TileBrush : Brush, ITileBrush
     {
         /// <summary>
         /// Defines the <see cref="AlignmentX"/> property.

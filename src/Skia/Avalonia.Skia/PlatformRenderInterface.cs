@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
@@ -50,6 +52,16 @@ namespace Avalonia.Skia
             }
         }
 
+        public IBitmapImpl LoadBitmap(PixelFormat format, IntPtr data, int width, int height, int stride)
+        {
+            using (var tmp = new SKBitmap())
+            {
+                tmp.InstallPixels(new SKImageInfo(width, height, format.ToSkColorType(), SKAlphaType.Premul)
+                    , data, stride);
+                return new BitmapImpl(tmp.Copy());
+            }
+        }
+
         public IRenderer CreateRenderer(IRenderRoot root, IRenderLoop renderLoop)
         {
             return new Renderer(root, renderLoop);
@@ -63,6 +75,19 @@ namespace Avalonia.Skia
                 throw new ArgumentException("Height can't be less than 1", nameof(height));
 
             return new BitmapImpl(width, height);
+        }
+
+        public virtual IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)
+        {
+            var fb = surfaces?.OfType<IFramebufferPlatformSurface>().FirstOrDefault();
+            if (fb == null)
+                throw new Exception("Skia backend currently only supports framebuffer render target");
+            return new FramebufferRenderTarget(fb);
+        }
+
+        public IWritableBitmapImpl CreateWritableBitmap(int width, int height, PixelFormat? format = null)
+        {
+            return new BitmapImpl(width, height, format);
         }
     }
 }

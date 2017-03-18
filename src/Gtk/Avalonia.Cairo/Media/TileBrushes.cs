@@ -14,7 +14,7 @@ namespace Avalonia.Cairo.Media
 {
     internal static class TileBrushes
     {
-        public static SurfacePattern CreateTileBrush(TileBrush brush, Size targetSize)
+        public static SurfacePattern CreateTileBrush(ITileBrush brush, Size targetSize)
         {
             var helper = new TileBrushImplHelper(brush, targetSize);
             if (!helper.IsValid)

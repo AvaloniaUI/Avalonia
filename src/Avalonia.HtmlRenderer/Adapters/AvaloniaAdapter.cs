@@ -80,7 +80,7 @@ namespace TheArtOfDev.HtmlRenderer.Avalonia.Adapters
             {
                 StartPoint = new RelativePoint(x, y, RelativeUnit.Relative), 
                 EndPoint = new RelativePoint(1 - x, 1 - y, RelativeUnit.Relative),
-                GradientStops =
+                GradientStops = new[]
                 {
                     new GradientStop(startColor, 0),
                     new GradientStop(endColor, 1)

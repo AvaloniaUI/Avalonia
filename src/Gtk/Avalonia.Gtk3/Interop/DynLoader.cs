@@ -13,7 +13,7 @@ namespace Avalonia.Gtk3.Interop
     internal interface IDynLoader
     {
         IntPtr LoadLibrary(string dll);
-        IntPtr GetProcAddress(IntPtr dll, string proc);
+        IntPtr GetProcAddress(IntPtr dll, string proc, bool optional);
 
     }
 
@@ -91,10 +91,10 @@ namespace Avalonia.Gtk3.Interop
             return handle;
         }
 
-        public IntPtr GetProcAddress(IntPtr dll, string proc)
+        public IntPtr GetProcAddress(IntPtr dll, string proc, bool optional)
         {
             var ptr = DlSym(dll, proc);
-            if (ptr == IntPtr.Zero)
+            if (ptr == IntPtr.Zero && !optional)
                 throw new NativeException(DlErrorString());
             return ptr;
         }
@@ -118,10 +118,10 @@ namespace Avalonia.Gtk3.Interop
             throw new NativeException("Error loading " + dll + " error " + err);
         }
 
-        IntPtr IDynLoader.GetProcAddress(IntPtr dll, string proc)
+        IntPtr IDynLoader.GetProcAddress(IntPtr dll, string proc, bool optional)
         {
             var ptr = GetProcAddress(dll, proc);
-            if (ptr == IntPtr.Zero)
+            if (ptr == IntPtr.Zero && !optional)
                 throw new NativeException("Error " + Marshal.GetLastWin32Error());
             return ptr;
         }

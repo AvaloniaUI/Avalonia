@@ -909,6 +909,9 @@ namespace Avalonia.Win32.Interop
             uint dwMaximumSizeLow,
             string lpName);
 
+        [DllImport("kernel32.dll", EntryPoint = "CopyMemory", SetLastError = false)]
+        public static extern void CopyMemory(IntPtr dest, IntPtr src, uint count);
+
         public enum MONITOR
         {
             MONITOR_DEFAULTTONULL = 0x00000000,

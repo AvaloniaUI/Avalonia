@@ -89,23 +89,23 @@ namespace Avalonia.Win32
                 UnmanagedMethods.GetClientRect(_hwnd, out rect);
                 return new Size(rect.right, rect.bottom) / Scaling;
             }
+        }
 
-            set
+        public void Resize(Size value)
+        {
+            if (value != ClientSize)
             {
-                if (value != ClientSize)
-                {
-                    value *= Scaling;
-                    value += BorderThickness;
+                value *= Scaling;
+                value += BorderThickness;
 
-                    UnmanagedMethods.SetWindowPos(
-                        _hwnd,
-                        IntPtr.Zero,
-                        0,
-                        0,
-                        (int)value.Width,
-                        (int)value.Height,
-                        UnmanagedMethods.SetWindowPosFlags.SWP_RESIZE);
-                }
+                UnmanagedMethods.SetWindowPos(
+                    _hwnd,
+                    IntPtr.Zero,
+                    0,
+                    0,
+                    (int)value.Width,
+                    (int)value.Height,
+                    UnmanagedMethods.SetWindowPosFlags.SWP_RESIZE);
             }
         }
 
@@ -551,9 +551,8 @@ namespace Avalonia.Win32
 
                     if (UnmanagedMethods.BeginPaint(_hwnd, out ps) != IntPtr.Zero)
                     {
-                        UnmanagedMethods.RECT r;
-                        UnmanagedMethods.GetUpdateRect(_hwnd, out r, false);
                         var f = Scaling;
+                        var r = ps.rcPaint;
                         Paint?.Invoke(new Rect(r.left / f, r.top / f, (r.right - r.left) / f, (r.bottom - r.top) / f));
                         UnmanagedMethods.EndPaint(_hwnd, ref ps);
                     }

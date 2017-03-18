@@ -365,6 +365,16 @@ namespace Avalonia.Input.UnitTests
                 throw new NotImplementedException();
             }
 
+            public IBitmapImpl LoadBitmap(PixelFormat format, IntPtr data, int width, int height, int stride)
+            {
+                throw new NotImplementedException();
+            }
+
+            public IWritableBitmapImpl CreateWritableBitmap(int width, int height, PixelFormat? fmt)
+            {
+                throw new NotImplementedException();
+            }
+
             class MockStreamGeometry : Avalonia.Platform.IStreamGeometryImpl
             {
                 private MockStreamGeometryContext _impl = new MockStreamGeometryContext();

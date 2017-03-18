@@ -29,7 +29,7 @@
     <WarningLevel>4</WarningLevel>
     <AndroidUseSharedRuntime>True</AndroidUseSharedRuntime>
     <AndroidLinkMode>None</AndroidLinkMode>
-    <EmbedAssembliesIntoApk>False</EmbedAssembliesIntoApk>
+    <EmbedAssembliesIntoApk>True</EmbedAssembliesIntoApk>
     <BundleAssemblies>False</BundleAssemblies>
     <AndroidCreatePackagePerAbi>False</AndroidCreatePackagePerAbi>
     <AndroidSupportedAbis>armeabi;armeabi-v7a;x86</AndroidSupportedAbis>
@@ -73,7 +73,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="GettingStarted.Xamarin" />
     <None Include="Resources\AboutResources.txt" />
     <None Include="Assets\AboutAssets.txt" />
   </ItemGroup>
@@ -111,10 +110,6 @@
     <ProjectReference Include="..\..\src\Avalonia.Diagnostics\Avalonia.Diagnostics.csproj">
       <Project>{7062ae20-5dcc-4442-9645-8195bdece63e}</Project>
       <Name>Avalonia.Diagnostics</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Avalonia.DotNetFrameworkRuntime\Avalonia.DotNetFrameworkRuntime.csproj">
-      <Project>{4a1abb09-9047-4bd5-a4ad-a055e52c5ee0}</Project>
-      <Name>Avalonia.DotNetFrameworkRuntime</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\Avalonia.HtmlRenderer\Avalonia.HtmlRenderer.csproj">
       <Project>{5fb2b005-0a7f-4dad-add4-3ed01444e63d}</Project>
@@ -161,6 +156,11 @@
       <Name>ControlCatalog</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="System.Reactive">
+      <Version>3.0.0</Version>
+    </PackageReference>
+  </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
      Other similar extension points exist, see Microsoft.Common.targets.
@@ -169,4 +169,5 @@
 		<Target Name="AfterBuild">
 		</Target>
  -->
+  <Import Project="$(MSBuildThisFileDirectory)..\..\src\Shared\nuget.workaround.targets" />
 </Project>

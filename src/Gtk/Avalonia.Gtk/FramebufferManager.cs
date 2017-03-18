@@ -1,14 +1,15 @@
 ﻿using System;
 using Avalonia.Controls.Platform.Surfaces;
+using Avalonia.Platform;
 
 namespace Avalonia.Gtk
 {
     class FramebufferManager : IFramebufferPlatformSurface, IDisposable
     {
-        private readonly WindowImplBase _window;
+        private readonly TopLevelImpl _window;
         private SurfaceFramebuffer _fb;
 
-        public FramebufferManager(WindowImplBase window)
+        public FramebufferManager(TopLevelImpl window)
         {
             _window = window;
         }

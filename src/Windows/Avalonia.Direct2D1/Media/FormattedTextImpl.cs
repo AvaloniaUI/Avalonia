@@ -30,6 +30,7 @@ namespace Avalonia.Direct2D1.Media
                 (DWrite.FontStyle)fontStyle,
                 (float)fontSize))
             {
+                Text = text;
                 format.WordWrapping = wrapping == TextWrapping.Wrap ? 
                     DWrite.WordWrapping.Wrap : DWrite.WordWrapping.NoWrap;
 
@@ -57,6 +58,8 @@ namespace Avalonia.Direct2D1.Media
                 TextLayout.MaxHeight = (float)value.Height;
             }
         }
+
+        public string Text { get; }
 
         public DWrite.TextLayout TextLayout { get; }
 

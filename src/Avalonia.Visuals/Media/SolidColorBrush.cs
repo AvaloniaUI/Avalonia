@@ -1,13 +1,28 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
+
 namespace Avalonia.Media
 {
     /// <summary>
     /// Fills an area with a solid color.
     /// </summary>
-    public class SolidColorBrush : ISolidColorBrush
+    public class SolidColorBrush : Brush, ISolidColorBrush, IMutableBrush
     {
+        /// <summary>
+        /// Defines the <see cref="Color"/> property.
+        /// </summary>
+        public static readonly StyledProperty<Color> ColorProperty =
+            AvaloniaProperty.Register<SolidColorBrush, Color>(nameof(Color));
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SolidColorBrush"/> class.
+        /// </summary>
+        public SolidColorBrush()
+        {
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="SolidColorBrush"/> class.
         /// </summary>
@@ -29,14 +44,13 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        /// Gets the color of the brush.
+        /// Gets or sets the color of the brush.
         /// </summary>
-        public Color Color { get; }
-
-        /// <summary>
-        /// Gets the opacity of the brush.
-        /// </summary>
-        public double Opacity { get; }
+        public Color Color
+        {
+            get { return GetValue(ColorProperty); }
+            set { SetValue(ColorProperty, value); }
+        }
 
         /// <summary>
         /// Returns a string representation of the brush.
@@ -45,6 +59,12 @@ namespace Avalonia.Media
         public override string ToString()
         {
             return Color.ToString();
+        }
+
+        /// <inheritdoc/>
+        IBrush IMutableBrush.ToImmutable()
+        {
+            return new Immutable.ImmutableSolidColorBrush(this);
         }
     }
 }

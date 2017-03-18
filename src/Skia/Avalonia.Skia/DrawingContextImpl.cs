@@ -5,26 +5,36 @@ using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Avalonia.Platform;
 
 namespace Avalonia.Skia
 {
     internal class DrawingContextImpl : IDrawingContextImpl
     {
+        private readonly Matrix? _postTransform;
         private readonly IDisposable[] _disposables;
         private Stack<PaintWrapper> maskStack = new Stack<PaintWrapper>();
         
         public SKCanvas Canvas { get; private set; }
 
-        public DrawingContextImpl(SKCanvas canvas, params IDisposable[] disposables)
+        public DrawingContextImpl(SKCanvas canvas, Matrix? postTransform = null, params IDisposable[] disposables)
         {
+            if (postTransform.HasValue && !postTransform.Value.IsIdentity)
+                _postTransform = postTransform;
             _disposables = disposables;
             Canvas = canvas;
             Canvas.Clear();
+            Transform = Matrix.Identity;
         }
 
-        public void DrawImage(IBitmap source, double opacity, Rect sourceRect, Rect destRect)
+        public void Clear(Color color)
         {
-            var impl = (BitmapImpl)source.PlatformImpl;
+            Canvas.Clear(color.ToSKColor());
+        }
+
+        public void DrawImage(IBitmapImpl source, double opacity, Rect sourceRect, Rect destRect)
+        {
+            var impl = (BitmapImpl)source;
             var s = sourceRect.ToSKRect();
             var d = destRect.ToSKRect();
             using (var paint = new SKPaint()
@@ -42,9 +52,9 @@ namespace Avalonia.Skia
             }
         }
 
-        public void DrawGeometry(IBrush brush, Pen pen, Geometry geometry)
+        public void DrawGeometry(IBrush brush, Pen pen, IGeometryImpl geometry)
         {
-            var impl = ((StreamGeometryImpl)geometry.PlatformImpl);
+            var impl = (StreamGeometryImpl)geometry;
             var size = geometry.Bounds.Size;
 
             using (var fill = brush != null ? CreatePaint(brush, size) : default(PaintWrapper))
@@ -144,27 +154,27 @@ namespace Avalonia.Skia
                 return rv;
             }
 
-            var gradient = brush as GradientBrush;
+            var gradient = brush as IGradientBrush;
             if (gradient != null)
             {
                 var tileMode = gradient.SpreadMethod.ToSKShaderTileMode();
                 var stopColors = gradient.GradientStops.Select(s => s.Color.ToSKColor()).ToArray();
                 var stopOffsets = gradient.GradientStops.Select(s => (float)s.Offset).ToArray();
 
-                var linearGradient = brush as LinearGradientBrush;
+                var linearGradient = brush as ILinearGradientBrush;
                 if (linearGradient != null)
                 {
                     var start = linearGradient.StartPoint.ToPixels(targetSize).ToSKPoint();
                     var end = linearGradient.EndPoint.ToPixels(targetSize).ToSKPoint();
 
                     // would be nice to cache these shaders possibly?
-                    var shader = SKShader.CreateLinearGradient(start, end, stopColors, stopOffsets, tileMode);
-                    paint.Shader = shader;
-                    shader.Dispose();
+                    using (var shader = SKShader.CreateLinearGradient(start, end, stopColors, stopOffsets, tileMode))
+                        paint.Shader = shader;
+
                 }
                 else
                 {
-                    var radialGradient = brush as RadialGradientBrush;
+                    var radialGradient = brush as IRadialGradientBrush;
                     if (radialGradient != null)
                     {
                         var center = radialGradient.Center.ToPixels(targetSize).ToSKPoint();
@@ -174,16 +184,16 @@ namespace Avalonia.Skia
                         //paint.setAlpha(128);
 
                         // would be nice to cache these shaders possibly?
-                        var shader = SKShader.CreateRadialGradient(center, radius, stopColors, stopOffsets, tileMode);
-                        paint.Shader = shader;
-                        shader.Dispose();
+                        using (var shader = SKShader.CreateRadialGradient(center, radius, stopColors, stopOffsets, tileMode))
+                            paint.Shader = shader;
+
                     }
                 }
 
                 return rv;
             }
 
-            var tileBrush = brush as TileBrush;
+            var tileBrush = brush as ITileBrush;
             if (tileBrush != null)
             {
                 var helper = new TileBrushImplHelper(tileBrush, targetSize);
@@ -205,8 +215,8 @@ namespace Avalonia.Skia
                         : tileBrush.TileMode == TileMode.FlipY || tileBrush.TileMode == TileMode.FlipXY
                             ? SKShaderTileMode.Mirror
                             : SKShaderTileMode.Repeat;
-                paint.Shader = SKShader.CreateBitmap(bitmap.Bitmap, tileX, tileY, translation);
-                paint.Shader.Dispose();
+                using (var shader = SKShader.CreateBitmap(bitmap.Bitmap, tileX, tileY, translation))
+                    paint.Shader = shader;
             }
 
             return rv;
@@ -280,11 +290,11 @@ namespace Avalonia.Skia
             }
         }
 
-        public void DrawText(IBrush foreground, Point origin, FormattedText text)
+        public void DrawText(IBrush foreground, Point origin, IFormattedTextImpl text)
         {
             using (var paint = CreatePaint(foreground, text.Measure()))
             {
-                var textImpl = text.PlatformImpl as FormattedTextImpl;
+                var textImpl = (FormattedTextImpl)text;
                 textImpl.Draw(this, Canvas, origin.ToSKPoint(), paint);
             }
         }
@@ -321,10 +331,10 @@ namespace Avalonia.Skia
                     disposable?.Dispose();
         }
 
-        public void PushGeometryClip(Geometry clip)
+        public void PushGeometryClip(IGeometryImpl clip)
         {
             Canvas.Save();
-            Canvas.ClipPath(((StreamGeometryImpl)clip.PlatformImpl).EffectivePath);
+            Canvas.ClipPath(((StreamGeometryImpl)clip).EffectivePath);
         }
 
         public void PopGeometryClip()
@@ -349,7 +359,7 @@ namespace Avalonia.Skia
             Canvas.Restore();
         }
 
-        private Matrix _currentTransform = Matrix.Identity;
+        private Matrix _currentTransform;
 
         public Matrix Transform
         {
@@ -360,7 +370,10 @@ namespace Avalonia.Skia
                     return;
 
                 _currentTransform = value;
-                Canvas.SetMatrix(value.ToSKMatrix());
+                var transform = value;
+                if (_postTransform.HasValue)
+                    transform *= _postTransform.Value;
+                Canvas.SetMatrix(transform.ToSKMatrix());
             }
         }
     }

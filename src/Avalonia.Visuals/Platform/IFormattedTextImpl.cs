@@ -18,6 +18,11 @@ namespace Avalonia.Platform
         Size Constraint { get; set; }
 
         /// <summary>
+        /// Gets the text.
+        /// </summary>
+        string Text { get; }
+
+        /// <summary>
         /// Gets the lines in the text.
         /// </summary>
         /// <returns>

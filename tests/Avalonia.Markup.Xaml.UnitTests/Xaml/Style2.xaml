@@ -1,9 +1,8 @@
 <Style xmlns="https://github.com/avaloniaui"
-       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-       xmlns:mut="https://github.com/avaloniaui/mutable">
+       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <Style.Resources>
-    <mut:SolidColorBrush x:Key="RedBrush" Color="{StyleResource Red}"/>
-    <mut:SolidColorBrush x:Key="GreenBrush" Color="{StyleResource Green}"/>
-    <mut:SolidColorBrush x:Key="BlueBrush" Color="{StyleResource Blue}"/>
+    <SolidColorBrush x:Key="RedBrush" Color="{StyleResource Red}"/>
+    <SolidColorBrush x:Key="GreenBrush" Color="{StyleResource Green}"/>
+    <SolidColorBrush x:Key="BlueBrush" Color="{StyleResource Blue}"/>
   </Style.Resources>
 </Style>

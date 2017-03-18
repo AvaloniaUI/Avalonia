@@ -14,91 +14,59 @@ namespace Avalonia.iOS
 {
     class PlatformThreadingInterface :  IPlatformThreadingInterface
     {
-        static Stopwatch St = Stopwatch.StartNew();
-        class Timer
-        {
-            readonly Action _tick;
-            readonly TimeSpan _interval;
-            TimeSpan _nextTick;
-
-            public Timer(Action tick, TimeSpan interval)
-            {
-                _tick = tick;
-                _interval = interval;
-                _nextTick = St.Elapsed + _interval;
-            }
-
-            public void Tick(TimeSpan now)
-            {
-                if (now > _nextTick)
-                {
-                    _nextTick = now + _interval;
-                    _tick();
-                }
-            }
-        }
-
-        readonly List<Timer> _timers = new List<Timer>();
-        bool _signaled;
-        readonly object _lock = new object();
-        private CADisplayLink _link;
-        public Action Render { get; set; }
-
-        PlatformThreadingInterface()
-        {
-            // For some reason it doesn't work when I specify OnFrame method directly
-            // ReSharper disable once ConvertClosureToMethodGroup
-            (_link = CADisplayLink.Create(() => OnFrame())).AddToRunLoop(NSRunLoop.Main, NSRunLoop.NSDefaultRunLoopMode);
-        }
-
-        private void OnFrame()
-        {
-            var now = St.Elapsed;
-            List<Timer> timers;
-            lock (_lock)
-                timers = _timers.ToList();
-
-            foreach (var timer in timers)
-                timer.Tick(now);
-
-            do
-            {
-                lock (_lock)
-                    if (!_signaled)
-                        break;
-                    else
-                        _signaled = false;
-                Signaled?.Invoke();
-            } while (false);
-            Render?.Invoke();
-        }
-
+        private bool _signaled;
+        public static PlatformThreadingInterface Instance { get; } = new PlatformThreadingInterface();
+        public bool CurrentThreadIsLoopThread => NSThread.Current.IsMainThread;
+        
+        public event Action Signaled;
         public void RunLoop(CancellationToken cancellationToken)
         {
+            //Mobile platforms are using external main loop
+            throw new NotSupportedException(); 
         }
+        /*
+        class Timer : NSObject
+        {
+            private readonly Action _tick;
+            private NSTimer _timer;
+
+            public Timer(TimeSpan interval, Action tick)
+            {
+                _tick = tick;
+                _timer = new NSTimer(NSDate.Now, interval.TotalSeconds, true, OnTick);
+            }
+
+            [Export("onTick")]
+            private void OnTick(NSTimer nsTimer)
+            {
+                _tick();
+            }
+
+            protected override void Dispose(bool disposing)
+            {
+                if(disposing)
+                    _timer.Dispose();
+                base.Dispose(disposing);
+            }
+        }*/
 
         public IDisposable StartTimer(TimeSpan interval, Action tick)
-        {
-            lock (_lock)
-            {
-                var timer = new Timer(tick, interval);
-                _timers.Add(timer);
-                return Disposable.Create(() =>
-                {
-                    lock (_lock) _timers.Remove(timer);
-                });
-            }
-        }
+            => NSTimer.CreateRepeatingScheduledTimer(interval, _ => tick());
 
         public void Signal()
         {
-            lock (_lock)
+            lock (this)
+            {
+                if(_signaled)
+                    return;
                 _signaled = true;
+            }
+            NSRunLoop.Main.BeginInvokeOnMainThread(() =>
+            {
+                lock (this)
+                    _signaled = false;
+                Signaled?.Invoke();
+            });
         }
-
-        public bool CurrentThreadIsLoopThread => NSThread.Current.IsMainThread;
-        public static PlatformThreadingInterface Instance { get; } = new PlatformThreadingInterface();
-
-        public event Action Signaled;
     }
 }

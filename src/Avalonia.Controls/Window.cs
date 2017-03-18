@@ -44,7 +44,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// A top-level window.
     /// </summary>
-    public class Window : TopLevel, IStyleable, IFocusScope, ILayoutRoot, INameScope
+    public class Window : WindowBase, IStyleable, IFocusScope, ILayoutRoot, INameScope
     {
         private static IList<Window> s_windows = new List<Window>();
 

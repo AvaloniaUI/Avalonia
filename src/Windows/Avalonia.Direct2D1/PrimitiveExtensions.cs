@@ -88,6 +88,17 @@ namespace Avalonia.Direct2D1
                 return CapStyle.Triangle;
         }
 
+        public static Guid ToWic(this Platform.PixelFormat format)
+        {
+            if (format == Platform.PixelFormat.Rgb565)
+                return SharpDX.WIC.PixelFormat.Format16bppBGR565;
+            if (format == Platform.PixelFormat.Bgra8888)
+                return SharpDX.WIC.PixelFormat.Format32bppPBGRA;
+            if (format == Platform.PixelFormat.Rgba8888)
+                return SharpDX.WIC.PixelFormat.Format32bppPRGBA;
+            throw new ArgumentException("Unknown pixel format");
+        }
+
         /// <summary>
         /// Converts a pen to a Direct2D stroke style.
         /// </summary>
