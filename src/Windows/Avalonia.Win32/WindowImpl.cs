@@ -33,7 +33,6 @@ namespace Avalonia.Win32
         private IntPtr _hwnd;
         private IInputRoot _owner;
         private bool _trackingMouse;
-        private bool _isActive;
         private bool _decorated = true;
         private double _scaling = 1;
         private WindowState _showWindowState;
@@ -393,12 +392,10 @@ namespace Avalonia.Win32
                     {
                         case UnmanagedMethods.WindowActivate.WA_ACTIVE:
                         case UnmanagedMethods.WindowActivate.WA_CLICKACTIVE:
-                            _isActive = true;
                             Activated?.Invoke();
                             break;
 
                         case UnmanagedMethods.WindowActivate.WA_INACTIVE:
-                            _isActive = false;
                             Deactivated?.Invoke();
                             break;
                     }
