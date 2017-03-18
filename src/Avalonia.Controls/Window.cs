@@ -11,6 +11,7 @@ using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Styling;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Avalonia.Controls
 {
@@ -268,6 +269,10 @@ namespace Avalonia.Controls
 
             using (BeginAutoSizing())
             {
+                var affectedWindows = s_windows.Where(w => w.IsEnabled && w != this).ToList();
+                var activated = affectedWindows.Where(w => w.IsActive).FirstOrDefault();
+                SetIsEnabled(affectedWindows, false);
+
                 var modal = PlatformImpl.ShowDialog();
                 var result = new TaskCompletionSource<TResult>();
 
@@ -276,10 +281,20 @@ namespace Avalonia.Controls
                     .Subscribe(_ =>
                     {
                         modal.Dispose();
+                        SetIsEnabled(affectedWindows, true);
+                        activated?.Activate();
                         result.SetResult((TResult)_dialogResult);
                     });
 
                 return result.Task;
+            }
+        }
+
+        void SetIsEnabled(IEnumerable<Window> windows, bool isEnabled)
+        {
+            foreach (var window in windows)
+            {
+                window.IsEnabled = isEnabled;
             }
         }
 
