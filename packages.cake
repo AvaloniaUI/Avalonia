@@ -146,7 +146,7 @@ public class Packages
             return (FilePath)context.File(lib[0] + lib[1] + "/bin/" + parameters.DirSuffix + "/netstandard1.1/" + lib[1] + lib[2]);
         }).ToList();
 
-        var coreLibrariesNuSpecContent = coreLibrariesFiles.Select((file) => {
+        var netstandardCoreLibrariesNuSpecContent = coreLibrariesFiles.Select((file) => {
             return new NuSpecContent { 
                 Source = file.FullPath, Target = "lib/netstandard1.1" 
             };
@@ -155,12 +155,6 @@ public class Packages
         var win32CoreLibrariesNuSpecContent = coreLibrariesFiles.Select((file) => {
             return new NuSpecContent { 
                 Source = file.FullPath, Target = "lib/net45" 
-            };
-        });
-
-        var netcoreappCoreLibrariesNuSpecContent = coreLibrariesFiles.Select((file) => {
-            return new NuSpecContent { 
-                Source = file.FullPath, Target = "lib/netcoreapp1.0" 
             };
         });
 
@@ -175,8 +169,8 @@ public class Packages
         var netCoreRuntimePlatformExtensions = new [] {".xml", ".dll"};
         var netCoreRuntimePlatform = netCoreRuntimePlatformExtensions.Select(libSuffix => {
             return new NuSpecContent {
-                Source = ((FilePath)context.File("./src/Avalonia.DotNetCoreRuntime/bin/" + parameters.DirSuffix + "/netcoreapp1.0/Avalonia.DotNetCoreRuntime" + libSuffix)).FullPath, 
-                Target = "lib/netcoreapp1.0" 
+                Source = ((FilePath)context.File("./src/Avalonia.DotNetCoreRuntime/bin/" + parameters.DirSuffix + "/netstandard1.5/Avalonia.DotNetCoreRuntime" + libSuffix)).FullPath, 
+                Target = "lib/netstandard1.3" 
             };
         });
 
@@ -194,18 +188,18 @@ public class Packages
                     new NuSpecDependency() { Id = "Splat", Version = SplatVersion },
                     new NuSpecDependency() { Id = "Sprache", Version = SpracheVersion },
                     new NuSpecDependency() { Id = "System.Reactive", Version = SystemReactiveVersion },
-                    //.NET Core
-                    new NuSpecDependency() { Id = "System.Threading.ThreadPool", TargetFramework = "netcoreapp1.0", Version = "4.3.0" },
-                    new NuSpecDependency() { Id = "NETStandard.Library", TargetFramework = "netcoreapp1.0", Version = "1.6.0" },
-                    new NuSpecDependency() { Id = "Microsoft.NETCore.Portable.Compatibility", TargetFramework = "netcoreapp1.0", Version = "1.0.1" },
-                    new NuSpecDependency() { Id = "Splat", TargetFramework = "netcoreapp1.0", Version = SplatVersion },
-                    new NuSpecDependency() { Id = "Serilog", TargetFramework = "netcoreapp1.0", Version = SerilogVersion },
-                    new NuSpecDependency() { Id = "Sprache", TargetFramework = "netcoreapp1.0", Version = SpracheVersion },
-                    new NuSpecDependency() { Id = "System.Reactive", TargetFramework = "netcoreapp1.0", Version = SystemReactiveVersion }
+                    //netstandard1.5
+                    new NuSpecDependency() { Id = "System.Threading.ThreadPool", TargetFramework = "netstandard1.5", Version = "4.3.0" },
+                    new NuSpecDependency() { Id = "NETStandard.Library", TargetFramework = "netstandard1.5", Version = "1.6.0" },
+                    new NuSpecDependency() { Id = "Microsoft.NETCore.Portable.Compatibility", TargetFramework = "netstandard1.5", Version = "1.0.1" },
+                    new NuSpecDependency() { Id = "Splat", TargetFramework = "netstandard1.5", Version = SplatVersion },
+                    new NuSpecDependency() { Id = "Serilog", TargetFramework = "netstandard1.5", Version = SerilogVersion },
+                    new NuSpecDependency() { Id = "Sprache", TargetFramework = "netstandard1.5", Version = SpracheVersion },
+                    new NuSpecDependency() { Id = "System.Reactive", TargetFramework = "netstandard1.5", Version = SystemReactiveVersion }
                 },
-                Files = coreLibrariesNuSpecContent
+                Files = netstandardCoreLibrariesNuSpecContent
                     .Concat(win32CoreLibrariesNuSpecContent).Concat(net45RuntimePlatform)
-                    .Concat(netcoreappCoreLibrariesNuSpecContent).Concat(netCoreRuntimePlatform)
+                    .Concat(netstandardCoreLibrariesNuSpecContent).Concat(netCoreRuntimePlatform)
                     .ToList(),
                 BasePath = context.Directory("./"),
                 OutputDirectory = parameters.NugetRoot
