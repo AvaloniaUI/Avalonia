@@ -90,7 +90,7 @@
   <Import Project="..\..\Shared\RenderHelpers\RenderHelpers.projitems" Label="Shared" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
   <ItemGroup>
-    <PackageReference Include="SkiaSharp" Version="1.56.1-beta" />
+    <PackageReference Include="SkiaSharp" Version="1.56.2" />
   </ItemGroup>
   <Import Project="$(MSBuildThisFileDirectory)..\..\Shared\nuget.workaround.targets" />
 </Project>
