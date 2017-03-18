@@ -37,6 +37,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="System.Threading.ThreadPool" Version="4.3.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="1.1.0" />
   </ItemGroup>
   <Import Project="..\Shared\PlatformSupport\PlatformSupport.projitems" Label="Shared" />
 </Project>
