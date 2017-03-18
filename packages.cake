@@ -425,11 +425,6 @@ public class Packages
                 {
                     new NuSpecDependency() { Id = "Avalonia", Version = parameters.Version },
                     new NuSpecDependency() { Id = "SkiaSharp", Version = SkiaSharpVersion },
-                    //.NET Core
-                    new NuSpecDependency() { Id = "Avalonia", TargetFramework = "netcoreapp1.0", Version = parameters.Version },
-                    new NuSpecDependency() { Id = "SkiaSharp", TargetFramework = "netcoreapp1.0", Version = SkiaSharpVersion },
-                    new NuSpecDependency() { Id = "NETStandard.Library", TargetFramework = "netcoreapp1.0", Version = "1.6.0" },
-                    new NuSpecDependency() { Id = "Microsoft.NETCore.Portable.Compatibility", TargetFramework = "netcoreapp1.0", Version = "1.0.1" },
                     //netstandard1.3
                     new NuSpecDependency() { Id = "Avalonia", TargetFramework = "netstandard1.3", Version = parameters.Version },
                     new NuSpecDependency() { Id = "SkiaSharp", TargetFramework = "netstandard1.3", Version = SkiaSharpVersion },
@@ -439,7 +434,6 @@ public class Packages
                 Files = new []
                 {
                     new NuSpecContent { Source = "Avalonia.Skia.Desktop/bin/" + parameters.DirSuffixSkia + "/Avalonia.Skia.Desktop.dll", Target = "lib/net45" },
-                    new NuSpecContent { Source = "Avalonia.Skia.Desktop.NetStandard/bin/" + parameters.DirSuffix + "/netstandard1.3/Avalonia.Skia.Desktop.dll", Target = "lib/netcoreapp1.0" },
                     new NuSpecContent { Source = "Avalonia.Skia.Desktop.NetStandard/bin/" + parameters.DirSuffix + "/netstandard1.3/Avalonia.Skia.Desktop.dll", Target = "lib/netstandard1.3" }
                 },
                 BasePath = context.Directory("./src/Skia/"),
