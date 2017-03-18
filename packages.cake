@@ -169,8 +169,8 @@ public class Packages
         var netCoreRuntimePlatformExtensions = new [] {".xml", ".dll"};
         var netCoreRuntimePlatform = netCoreRuntimePlatformExtensions.Select(libSuffix => {
             return new NuSpecContent {
-                Source = ((FilePath)context.File("./src/Avalonia.DotNetCoreRuntime/bin/" + parameters.DirSuffix + "/netstandard1.5/Avalonia.DotNetCoreRuntime" + libSuffix)).FullPath, 
-                Target = "lib/netstandard1.3" 
+                Source = ((FilePath)context.File("./src/Avalonia.DotNetCoreRuntime/bin/" + parameters.DirSuffix + "/netstandard1.6/Avalonia.DotNetCoreRuntime" + libSuffix)).FullPath, 
+                Target = "lib/netstandard1.6" 
             };
         });
 
@@ -189,13 +189,13 @@ public class Packages
                     new NuSpecDependency() { Id = "Sprache", Version = SpracheVersion },
                     new NuSpecDependency() { Id = "System.Reactive", Version = SystemReactiveVersion },
                     //netstandard1.5
-                    new NuSpecDependency() { Id = "System.Threading.ThreadPool", TargetFramework = "netstandard1.5", Version = "4.3.0" },
-                    new NuSpecDependency() { Id = "NETStandard.Library", TargetFramework = "netstandard1.5", Version = "1.6.0" },
-                    new NuSpecDependency() { Id = "Microsoft.NETCore.Portable.Compatibility", TargetFramework = "netstandard1.5", Version = "1.0.1" },
-                    new NuSpecDependency() { Id = "Splat", TargetFramework = "netstandard1.5", Version = SplatVersion },
-                    new NuSpecDependency() { Id = "Serilog", TargetFramework = "netstandard1.5", Version = SerilogVersion },
-                    new NuSpecDependency() { Id = "Sprache", TargetFramework = "netstandard1.5", Version = SpracheVersion },
-                    new NuSpecDependency() { Id = "System.Reactive", TargetFramework = "netstandard1.5", Version = SystemReactiveVersion }
+                    new NuSpecDependency() { Id = "System.Threading.ThreadPool", TargetFramework = "netstandard1.6", Version = "4.3.0" },
+                    new NuSpecDependency() { Id = "NETStandard.Library", TargetFramework = "netstandard1.6", Version = "1.6.0" },
+                    new NuSpecDependency() { Id = "Microsoft.NETCore.Portable.Compatibility", TargetFramework = "netstandard1.6", Version = "1.0.1" },
+                    new NuSpecDependency() { Id = "Splat", TargetFramework = "netstandard1.6", Version = SplatVersion },
+                    new NuSpecDependency() { Id = "Serilog", TargetFramework = "netstandard1.6", Version = SerilogVersion },
+                    new NuSpecDependency() { Id = "Sprache", TargetFramework = "netstandard1.6", Version = SpracheVersion },
+                    new NuSpecDependency() { Id = "System.Reactive", TargetFramework = "netstandard1.6", Version = SystemReactiveVersion }
                 },
                 Files = netstandardCoreLibrariesNuSpecContent
                     .Concat(win32CoreLibrariesNuSpecContent).Concat(net45RuntimePlatform)
