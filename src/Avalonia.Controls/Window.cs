@@ -269,8 +269,8 @@ namespace Avalonia.Controls
 
             using (BeginAutoSizing())
             {
-                var affectedWindows = s_windows.Where(w => w.IsEnabled && w != this);
-                Window activated = affectedWindows.Where(w => w.IsActive).FirstOrDefault();
+                var affectedWindows = s_windows.Where(w => w.IsEnabled && w != this).ToList();
+                var activated = affectedWindows.Where(w => w.IsActive).FirstOrDefault();
                 SetIsEnabled(affectedWindows, false);
 
                 var modal = PlatformImpl.ShowDialog();
