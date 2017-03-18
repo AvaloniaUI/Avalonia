@@ -15,7 +15,7 @@ namespace Avalonia.Threading
     /// In Avalonia, there is usually only a single <see cref="Dispatcher"/> in the application -
     /// the one for the UI thread, retrieved via the <see cref="UIThread"/> property.
     /// </remarks>
-    public class Dispatcher
+    public class Dispatcher : IDispatcher
     {
         private readonly JobRunner _jobRunner;
         private IPlatformThreadingInterface _platform;
@@ -72,22 +72,13 @@ namespace Avalonia.Threading
             _jobRunner?.RunJobs();
         }
 
-        /// <summary>
-        /// Invokes a method on the dispatcher thread.
-        /// </summary>
-        /// <param name="action">The method.</param>
-        /// <param name="priority">The priority with which to invoke the method.</param>
-        /// <returns>A task that can be used to track the method's execution.</returns>
+        /// <inheritdoc/>
         public Task InvokeTaskAsync(Action action, DispatcherPriority priority = DispatcherPriority.Normal)
         {
             return _jobRunner?.InvokeAsync(action, priority);
         }
 
-        /// <summary>
-        /// Post action that will be invoked on main thread
-        /// </summary>
-        /// <param name="action">The method.</param>
-        /// <param name="priority">The priority with which to invoke the method.</param>
+        /// <inheritdoc/>
         public void InvokeAsync(Action action, DispatcherPriority priority = DispatcherPriority.Normal)
         {
             _jobRunner?.Post(action, priority);
