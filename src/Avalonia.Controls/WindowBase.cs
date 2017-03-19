@@ -30,6 +30,11 @@ namespace Avalonia.Controls
 
         private bool _isActive;
 
+        static WindowBase()
+        {
+            IsVisibleProperty.OverrideDefaultValue<WindowBase>(false);
+        }
+
         public WindowBase(IWindowBaseImpl impl) : this(impl, AvaloniaLocator.Current)
         {
         }
@@ -58,7 +63,6 @@ namespace Avalonia.Controls
         public event EventHandler<PointEventArgs> PositionChanged;
 
         public new IWindowBaseImpl PlatformImpl => (IWindowBaseImpl) base.PlatformImpl;
-
 
         /// <summary>
         /// Gets a value that indicates whether the window is active.
@@ -95,6 +99,25 @@ namespace Avalonia.Controls
             PlatformImpl.Activate();
         }
 
+        /// <summary>
+        /// Hides the popup.
+        /// </summary>
+        public virtual void Hide()
+        {
+            PlatformImpl.Hide();
+            IsVisible = false;
+        }
+
+        /// <summary>
+        /// Shows the popup.
+        /// </summary>
+        public virtual void Show()
+        {
+            EnsureInitialized();
+            IsVisible = true;
+            LayoutManager.Instance.ExecuteInitialLayoutPass(this);
+            PlatformImpl.Show();
+        }
 
         /// <summary>
         /// Begins an auto-resize operation.
@@ -124,6 +147,25 @@ namespace Avalonia.Controls
             }
 
             return base.ArrangeOverride(PlatformImpl.ClientSize);
+        }
+
+        /// <summary>
+        /// Ensures that the window is initialized.
+        /// </summary>
+        protected void EnsureInitialized()
+        {
+            if (!this.IsInitialized)
+            {
+                var init = (ISupportInitialize)this;
+                init.BeginInit();
+                init.EndInit();
+            }
+        }
+
+        protected override void HandleClosed()
+        {
+            IsVisible = false;
+            base.HandleClosed();
         }
 
         /// <summary>

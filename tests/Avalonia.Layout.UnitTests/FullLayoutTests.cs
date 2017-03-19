@@ -55,6 +55,7 @@ namespace Avalonia.Layout.UnitTests
                     }
                 };
 
+                window.Show();
                 LayoutManager.Instance.ExecuteInitialLayoutPass(window);
 
                 Assert.Equal(new Size(400, 400), border.Bounds.Size);
@@ -96,6 +97,7 @@ namespace Avalonia.Layout.UnitTests
                     }
                 };
 
+                window.Show();
                 LayoutManager.Instance.ExecuteInitialLayoutPass(window);
 
                 Assert.Equal(new Size(800, 600), window.Bounds.Size);

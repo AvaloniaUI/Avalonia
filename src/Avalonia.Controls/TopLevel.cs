@@ -208,6 +208,16 @@ namespace Avalonia.Controls
             return PlatformImpl.PointToScreen(p);
         }
 
+        /// <summary>
+        /// Handles a closed notification from <see cref="ITopLevelImpl.Closed"/>.
+        /// </summary>
+        protected virtual void HandleClosed()
+        {
+            Closed?.Invoke(this, EventArgs.Empty);
+            Renderer?.Dispose();
+            Renderer = null;
+            _applicationLifecycle.OnExit -= OnApplicationExiting;
+        }
 
         /// <summary>
         /// Handles a resize notification from <see cref="ITopLevelImpl.Resized"/>.
@@ -265,17 +275,6 @@ namespace Avalonia.Controls
             }
 
             return result;
-        }
-
-        /// <summary>
-        /// Handles a closed notification from <see cref="ITopLevelImpl.Closed"/>.
-        /// </summary>
-        private void HandleClosed()
-        {
-            Closed?.Invoke(this, EventArgs.Empty);
-            Renderer?.Dispose();
-            Renderer = null;
-            _applicationLifecycle.OnExit -= OnApplicationExiting;
         }
 
         private void OnApplicationExiting(object sender, EventArgs args)
