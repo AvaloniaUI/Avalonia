@@ -1,0 +1,5 @@
+﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <PackageReference Include="Avalonia.Skia.Linux.Natives" Version="1.56.1.3" />
+  </ItemGroup>
+</Project>

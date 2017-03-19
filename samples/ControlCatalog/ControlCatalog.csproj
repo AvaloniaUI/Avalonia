@@ -171,7 +171,5 @@
       </SubType>
     </EmbeddedResource>
   </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Serilog" Version="2.4.0" />
-  </ItemGroup>
+  <Import Project="..\..\build\Serilog.props" />
 </Project>

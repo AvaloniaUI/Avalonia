@@ -31,10 +31,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="SkiaSharp" Version="1.56.1-beta" />
-    <PackageReference Include="Avalonia.Skia.Linux.Natives" Version="0.56.1.2" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\..\Avalonia.Base\Avalonia.Base.csproj" />
     <ProjectReference Include="..\..\Avalonia.Controls\Avalonia.Controls.csproj" />
     <ProjectReference Include="..\..\Avalonia.Input\Avalonia.Input.csproj" />
@@ -43,6 +39,8 @@
     <ProjectReference Include="..\..\Avalonia.Styling\Avalonia.Styling.csproj" />
     <ProjectReference Include="..\..\Avalonia.Visuals\Avalonia.Visuals.csproj" />
   </ItemGroup>
+  <Import Project="..\..\..\build\SkiaSharp.props" />
+  <Import Project="..\..\..\build\SkiaSharp.Linux.props" />
   <Import Project="..\Avalonia.Skia\Avalonia.Skia.projitems" Label="Shared" />
   <Import Project="..\..\Shared\RenderHelpers\RenderHelpers.projitems" Label="Shared" />
 </Project>

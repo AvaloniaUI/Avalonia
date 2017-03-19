@@ -131,27 +131,9 @@
   </Choose>
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Reactive.Testing" Version="3.0.0" />
-    <PackageReference Include="Moq" Version="4.7.1" />
-    <PackageReference Include="System.Reactive.Core" Version="3.0.0" />
-    <PackageReference Include="System.Reactive.Interfaces" Version="3.0.0" />
-    <PackageReference Include="System.Reactive.Linq" Version="3.0.0" />
-    <PackageReference Include="System.Reactive.PlatformServices" Version="3.0.0" />
-    <PackageReference Include="xunit" Version="2.2.0" />
-    <PackageReference Include="xunit.abstractions" Version="2.0.1" />
-    <PackageReference Include="xunit.assert" Version="2.2.0" />
-    <PackageReference Include="xunit.core" Version="2.2.0" />
-    <PackageReference Include="xunit.extensibility.core" Version="2.2.0" />
-    <PackageReference Include="xunit.extensibility.execution" Version="2.2.0" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0" />
-  </ItemGroup>
+  <Import Project="..\..\build\Moq.props" />
+  <Import Project="..\..\build\Rx.props" />
+  <Import Project="..\..\build\XUnit.props" />
+  <Import Project="..\..\build\Microsoft.Reactive.Testing.props" />
   <Import Project="$(MSBuildThisFileDirectory)..\..\src\Shared\nuget.workaround.targets" />
 </Project>

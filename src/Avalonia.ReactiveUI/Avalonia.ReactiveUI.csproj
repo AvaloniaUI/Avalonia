@@ -76,18 +76,6 @@
     <Compile Include="src\ReactiveUI\WeakEventManager.cs" />
     <Compile Include="src\ReactiveUI\Legacy\ReactiveCommand.cs" />
   </ItemGroup>
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  <ItemGroup>
-    <PackageReference Include="Splat" Version="2.0.0" />
-    <PackageReference Include="System.Reactive" Version="3.0.0" />
-    <PackageReference Include="System.Reactive.Core" Version="3.0.0" />
-    <PackageReference Include="System.Reactive.Interfaces" Version="3.0.0" />
-    <PackageReference Include="System.Reactive.Linq" Version="3.0.0" />
-    <PackageReference Include="System.Reactive.PlatformServices" Version="3.0.0" />
-  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Avalonia.Animation\Avalonia.Animation.csproj" />
     <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj" />
@@ -98,4 +86,6 @@
     <ProjectReference Include="..\Avalonia.Styling\Avalonia.Styling.csproj" />
     <ProjectReference Include="..\Avalonia.Visuals\Avalonia.Visuals.csproj" />
   </ItemGroup>
+  <Import Project="..\..\build\Rx.props" />
+  <Import Project="..\..\build\Splat.props" />
 </Project>

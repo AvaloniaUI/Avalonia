@@ -97,9 +97,6 @@
       <Name>Avalonia.Interactivity</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="System.Reactive.Core" Version="3.0.0" />
-    <PackageReference Include="System.Reactive.Interfaces" Version="3.0.0" />
-  </ItemGroup>
+  <Import Project="..\..\..\build\Rx.props" />
   <Import Project="$(MSBuildThisFileDirectory)..\..\Shared\nuget.workaround.targets" />
 </Project>
