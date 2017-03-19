@@ -22,9 +22,5 @@
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
-  <Import Project="Moq.props" />
-  <Import Project="Rx.props" />
-  <Import Project="Microsoft.Reactive.Testing.props" />
-  <Import Project="XUnit.props" />
   <Import Condition="'$(TargetFramework)' == 'net461'" Project="$(MSBuildThisFileDirectory)..\src\Shared\nuget.workaround.targets" />
 </Project>
