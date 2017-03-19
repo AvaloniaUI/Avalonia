@@ -184,6 +184,7 @@ Task("Run-Net-Core-Unit-Tests")
         RunCoreTest("./tests/Avalonia.Interactivity.UnitTests", parameters, true);
         RunCoreTest("./tests/Avalonia.Layout.UnitTests", parameters, true);
         RunCoreTest("./tests/Avalonia.Markup.UnitTests", parameters, true);
+        RunCoreTest("./tests/Avalonia.Markup.Xaml.UnitTests", parameters, true);
     });
 
 Task("Run-Unit-Tests")
