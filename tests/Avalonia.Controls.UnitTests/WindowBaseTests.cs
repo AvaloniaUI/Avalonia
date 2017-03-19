@@ -152,6 +152,37 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Setting_IsVisible_True_Shows_Window()
+        {
+            var windowImpl = new Mock<IPopupImpl>();
+            windowImpl.Setup(x => x.Scaling).Returns(1);
+
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var target = new TestWindowBase(windowImpl.Object);
+                target.IsVisible = true;
+
+                windowImpl.Verify(x => x.Show());
+            }
+        }
+
+        [Fact]
+        public void Setting_IsVisible_False_Hides_Window()
+        {
+            var windowImpl = new Mock<IPopupImpl>();
+            windowImpl.Setup(x => x.Scaling).Returns(1);
+
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var target = new TestWindowBase(windowImpl.Object);
+                target.Show();
+                target.IsVisible = false;
+
+                windowImpl.Verify(x => x.Hide());
+            }
+        }
+
         private FuncControlTemplate<TestWindowBase> CreateTemplate()
         {
             return new FuncControlTemplate<TestWindowBase>(x =>

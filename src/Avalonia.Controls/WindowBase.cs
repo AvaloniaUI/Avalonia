@@ -29,10 +29,12 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterDirect<WindowBase, bool>(nameof(IsActive), o => o.IsActive);
 
         private bool _isActive;
+        private bool _ignoreVisibilityChange;
 
         static WindowBase()
         {
             IsVisibleProperty.OverrideDefaultValue<WindowBase>(false);
+            IsVisibleProperty.Changed.AddClassHandler<WindowBase>(x => x.IsVisibleChanged);
         }
 
         public WindowBase(IWindowBaseImpl impl) : this(impl, AvaloniaLocator.Current)
@@ -104,8 +106,17 @@ namespace Avalonia.Controls
         /// </summary>
         public virtual void Hide()
         {
-            PlatformImpl.Hide();
-            IsVisible = false;
+            _ignoreVisibilityChange = true;
+
+            try
+            {
+                PlatformImpl.Hide();
+                IsVisible = false;
+            }
+            finally
+            {
+                _ignoreVisibilityChange = false;
+            }
         }
 
         /// <summary>
@@ -113,10 +124,19 @@ namespace Avalonia.Controls
         /// </summary>
         public virtual void Show()
         {
-            EnsureInitialized();
-            IsVisible = true;
-            LayoutManager.Instance.ExecuteInitialLayoutPass(this);
-            PlatformImpl.Show();
+            _ignoreVisibilityChange = true;
+
+            try
+            {
+                EnsureInitialized();
+                IsVisible = true;
+                LayoutManager.Instance.ExecuteInitialLayoutPass(this);
+                PlatformImpl.Show();
+            }
+            finally
+            {
+                _ignoreVisibilityChange = false;
+            }
         }
 
         /// <summary>
@@ -164,8 +184,17 @@ namespace Avalonia.Controls
 
         protected override void HandleClosed()
         {
-            IsVisible = false;
-            base.HandleClosed();
+            _ignoreVisibilityChange = true;
+
+            try
+            {
+                IsVisible = false;
+                base.HandleClosed();
+            }
+            finally
+            {
+                _ignoreVisibilityChange = false;
+            }
         }
 
         /// <summary>
@@ -220,6 +249,21 @@ namespace Avalonia.Controls
             IsActive = false;
 
             Deactivated?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void IsVisibleChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            if (!_ignoreVisibilityChange)
+            {
+                if ((bool)e.NewValue)
+                {
+                    Show();
+                }
+                else
+                {
+                    Hide();
+                }
+            }
         }
 
         /// <summary>
