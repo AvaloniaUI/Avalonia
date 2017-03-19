@@ -181,6 +181,7 @@ Task("Run-Net-Core-Unit-Tests")
         RunCoreTest("./tests/Avalonia.Base.UnitTests", parameters, false);
         RunCoreTest("./tests/Avalonia.Controls.UnitTests", parameters, true);
         RunCoreTest("./tests/Avalonia.Input.UnitTests", parameters, true);
+        RunCoreTest("./tests/Avalonia.Interactivity.UnitTests", parameters, true);
         RunCoreTest("./tests/Avalonia.Layout.UnitTests", parameters, true);
     });
 
