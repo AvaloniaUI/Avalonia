@@ -1,8 +1,6 @@
 ### MSBuild Props
 
 ```XML
-<Import Project="..\..\build\Android.props" />
-<Import Project="..\..\build\iOS.props" />
 <Import Project="..\..\build\JetBrains.Annotations.props" />
 <Import Project="..\..\build\JetBrains.dotMemoryUnit.props" />
 <Import Project="..\..\build\Magick.NET-Q16-AnyCPU.props" />

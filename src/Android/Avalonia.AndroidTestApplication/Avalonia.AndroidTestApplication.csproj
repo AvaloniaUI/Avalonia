@@ -153,7 +153,6 @@
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
-  <Import Project="..\..\..\build\Android.props" />
   <Import Project="..\..\..\build\Serilog.props" />
   <Import Project="..\..\..\build\Splat.props" />
   <Import Project="..\..\..\build\Sprache.props" />
