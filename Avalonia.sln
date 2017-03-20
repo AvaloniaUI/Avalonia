@@ -161,8 +161,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{74487168
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Props", "Props", "{F3AC8BC1-27F5-4255-9AFC-04ABFD11683A}"
 	ProjectSection(SolutionItems) = preProject
-		build\Android.props = build\Android.props
-		build\iOS.props = build\iOS.props
 		build\JetBrains.Annotations.props = build\JetBrains.Annotations.props
 		build\JetBrains.dotMemoryUnit.props = build\JetBrains.dotMemoryUnit.props
 		build\Magick.NET-Q16-AnyCPU.props = build\Magick.NET-Q16-AnyCPU.props
@@ -175,7 +173,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Props", "Props", "{F3AC8BC1
 		build\Serilog.props = build\Serilog.props
 		build\Serilog.Sinks.Trace.props = build\Serilog.Sinks.Trace.props
 		build\SharpDX.props = build\SharpDX.props
-		build\SkiaSharp.Linux.props = build\SkiaSharp.Linux.props
+		build\SkiaSharp.Desktop.props = build\SkiaSharp.Desktop.props
 		build\SkiaSharp.props = build\SkiaSharp.props
 		build\Splat.props = build\Splat.props
 		build\Sprache.props = build\Sprache.props
