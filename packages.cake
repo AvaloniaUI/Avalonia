@@ -23,11 +23,11 @@ public class Packages
             path => path.Replace(System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar).ToUpperInvariant());
 
         // Key: Package Id
-        // Value is Tuple where Item1: Package Version, Item2: The packages.config file path.
+        // Value is Tuple where Item1: Package Version, Item2: The *.csproj/*.props file path.
         var packageVersions = new Dictionary<string, IList<Tuple<string,string>>>();
 
-        System.IO.Directory.EnumerateFiles(((DirectoryPath)context.Directory("./src")).FullPath,
-            "*.csproj", SearchOption.AllDirectories).ToList().ForEach(fileName =>
+        System.IO.Directory.EnumerateFiles(((DirectoryPath)context.Directory("./build")).FullPath,
+            "*.props", SearchOption.AllDirectories).ToList().ForEach(fileName =>
         {
             if (!ignoredSubModulesPaths.Any(i => normalizePath(fileName).Contains(normalizePath(i))))
             {

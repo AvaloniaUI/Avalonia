@@ -113,18 +113,6 @@
   </ItemGroup>
   <Import Project="..\..\Shared\RenderHelpers\RenderHelpers.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
-  <ItemGroup>
-    <PackageReference Include="SharpDX" Version="3.1.1" />
-    <PackageReference Include="SharpDX.Direct2D1" Version="3.1.1" />
-    <PackageReference Include="SharpDX.Direct3D11" Version="3.1.1" />
-    <PackageReference Include="SharpDX.DXGI" Version="3.1.1" />
-  </ItemGroup>
+  <Import Project="..\..\..\build\SharpDX.props" />
   <Import Project="$(MSBuildThisFileDirectory)..\..\Shared\nuget.workaround.targets" />
 </Project>
