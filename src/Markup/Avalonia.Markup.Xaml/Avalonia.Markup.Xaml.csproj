@@ -284,20 +284,7 @@
   <ItemGroup>
     <Content Include="glass\Glass.Core\Glass.Core.csproj" />
   </ItemGroup>
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  <ItemGroup>
-    <PackageReference Include="Sprache" Version="2.1.0" />
-    <PackageReference Include="System.Globalization" Version="4.3.0" />
-    <PackageReference Include="System.Linq" Version="4.3.0" />
-    <PackageReference Include="System.Reactive" Version="3.0.0" />
-    <PackageReference Include="System.Reactive.Core" Version="3.0.0" />
-    <PackageReference Include="System.Reactive.Interfaces" Version="3.0.0" />
-    <PackageReference Include="System.Reactive.Linq" Version="3.0.0" />
-    <PackageReference Include="System.Reactive.PlatformServices" Version="3.0.0" />
-    <PackageReference Include="System.Runtime" Version="4.3.0" />
-    <PackageReference Include="System.Text.RegularExpressions" Version="4.3.0" />
-  </ItemGroup>
+  <Import Project="..\..\..\build\Markup.props" />
+  <Import Project="..\..\..\build\Sprache.props" />
+  <Import Project="..\..\..\build\Rx.props" />
 </Project>

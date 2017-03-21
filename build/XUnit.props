@@ -1,0 +1,13 @@
+﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <PackageReference Include="xunit" Version="2.2.0" />
+    <PackageReference Include="xunit.abstractions" Version="2.0.1" />
+    <PackageReference Include="xunit.assert" Version="2.2.0" />
+    <PackageReference Include="xunit.core" Version="2.2.0" />
+    <PackageReference Include="xunit.extensibility.core" Version="2.2.0" />
+    <PackageReference Include="xunit.extensibility.execution" Version="2.2.0" />
+    <PackageReference Include="xunit.runner.console" Version="2.2.0" />
+    <PackageReference Condition="'$(TargetFramework)' == 'net461'" Include="xunit.runner.visualstudio" Version="2.2.0" />
+    <PackageReference Condition="'$(TargetFramework)' == 'netcoreapp1.1'" Include="Microsoft.NET.Test.Sdk" Version="15.0.0" />
+  </ItemGroup>
+</Project>
