@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Avalonia;
 
 namespace ControlCatalog.NetCore
@@ -7,9 +8,13 @@ namespace ControlCatalog.NetCore
     {
         static void Main(string[] args)
         {
-            AppBuilder.Configure<App>()
-                .UsePlatformDetect()
-                .Start<MainWindow>();
+            if (args.Contains("--fbdev"))
+                AppBuilder.Configure<App>()
+                    .InitializeWithLinuxFramebuffer(tl => tl.Content = new MainView());
+            else
+                AppBuilder.Configure<App>()
+                    .UsePlatformDetect()
+                    .Start<MainWindow>();
         }
     }
 }
