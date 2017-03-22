@@ -180,7 +180,13 @@ Task("Run-Net-Core-Unit-Tests")
     .Does(() => {
         RunCoreTest("./tests/Avalonia.Base.UnitTests", parameters, false);
         RunCoreTest("./tests/Avalonia.Controls.UnitTests", parameters, true);
+        RunCoreTest("./tests/Avalonia.Input.UnitTests", parameters, true);
+        RunCoreTest("./tests/Avalonia.Interactivity.UnitTests", parameters, true);
         RunCoreTest("./tests/Avalonia.Layout.UnitTests", parameters, true);
+        //RunCoreTest("./tests/Avalonia.Markup.UnitTests", parameters, true);
+        //RunCoreTest("./tests/Avalonia.Markup.Xaml.UnitTests", parameters, true);
+        RunCoreTest("./tests/Avalonia.Styling.UnitTests", parameters, true);
+        RunCoreTest("./tests/Avalonia.Visuals.UnitTests", parameters, true);
     });
 
 Task("Run-Unit-Tests")
