@@ -23,7 +23,7 @@ namespace ControlCatalog.NetCore
         {
             Console.CursorVisible = false;
             while (true)
-                Console.ReadKey();
+                Console.ReadKey(true);
         }
     }
 }
