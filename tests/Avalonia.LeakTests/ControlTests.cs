@@ -42,6 +42,8 @@ namespace Avalonia.LeakTests
                         Content = new Canvas()
                     };
 
+                    window.Show();
+
                     // Do a layout and make sure that Canvas gets added to visual tree.
                     LayoutManager.Instance.ExecuteInitialLayoutPass(window);
                     Assert.IsType<Canvas>(window.Presenter.Child);
@@ -76,6 +78,8 @@ namespace Avalonia.LeakTests
                             Name = "foo"
                         }
                     };
+
+                    window.Show();
 
                     // Do a layout and make sure that Canvas gets added to visual tree.
                     LayoutManager.Instance.ExecuteInitialLayoutPass(window);
@@ -113,6 +117,8 @@ namespace Avalonia.LeakTests
                         }
                     };
 
+                    window.Show();
+
                     // Do a layout and make sure that ScrollViewer gets added to visual tree and its 
                     // template applied.
                     LayoutManager.Instance.ExecuteInitialLayoutPass(window);
@@ -148,6 +154,8 @@ namespace Avalonia.LeakTests
                     {
                         Content = new TextBox()
                     };
+
+                    window.Show();
 
                     // Do a layout and make sure that TextBox gets added to visual tree and its 
                     // template applied.
@@ -192,6 +200,8 @@ namespace Avalonia.LeakTests
                     var textBox = (TextBox)window.Content;
                     textBox.Bind(TextBox.TextProperty, binding);
 
+                    window.Show();
+
                     // Do a layout and make sure that TextBox gets added to visual tree and its 
                     // Text property set.
                     LayoutManager.Instance.ExecuteInitialLayoutPass(window);
@@ -228,6 +238,8 @@ namespace Avalonia.LeakTests
                 {
                     Content = textBox = new TextBox()
                 };
+
+                window.Show();
 
                 // Do a layout and make sure that TextBox gets added to visual tree and its 
                 // template applied.
@@ -281,6 +293,8 @@ namespace Avalonia.LeakTests
                             Items = nodes
                         }
                     };
+
+                    window.Show();
 
                     // Do a layout and make sure that TreeViewItems get realized.
                     LayoutManager.Instance.ExecuteInitialLayoutPass(window);

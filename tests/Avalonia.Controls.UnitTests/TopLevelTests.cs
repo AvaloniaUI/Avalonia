@@ -89,6 +89,7 @@ namespace Avalonia.Controls.UnitTests
 
                 var target = new TestTopLevel(impl.Object)
                 {
+                    IsVisible = true,
                     Template = CreateTemplate(),
                     Content = new TextBlock
                     {
@@ -102,8 +103,6 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(new Rect(0, 0, 321, 432), target.Bounds);
             }
         }
-
-       
 
         [Fact]
         public void Width_And_Height_Should_Not_Be_Set_After_Layout_Pass()
