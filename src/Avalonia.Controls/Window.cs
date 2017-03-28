@@ -190,6 +190,7 @@ namespace Avalonia.Controls
         {
             s_windows.Remove(this);
             PlatformImpl.Dispose();
+            IsVisible = false;
         }
 
         protected override void HandleApplicationExiting()
@@ -216,22 +217,25 @@ namespace Avalonia.Controls
         /// <summary>
         /// Hides the window but does not close it.
         /// </summary>
-        public void Hide()
+        public override void Hide()
         {
             using (BeginAutoSizing())
             {
                 PlatformImpl.Hide();
             }
+
+            IsVisible = false;
         }
 
         /// <summary>
         /// Shows the window.
         /// </summary>
-        public void Show()
+        public override void Show()
         {
             s_windows.Add(this);
 
             EnsureInitialized();
+            IsVisible = true;
             LayoutManager.Instance.ExecuteInitialLayoutPass(this);
 
             using (BeginAutoSizing())
@@ -265,6 +269,7 @@ namespace Avalonia.Controls
             s_windows.Add(this);
 
             EnsureInitialized();
+            IsVisible = true;
             LayoutManager.Instance.ExecuteInitialLayoutPass(this);
 
             using (BeginAutoSizing())
@@ -344,6 +349,12 @@ namespace Avalonia.Controls
             return size;
         }
 
+        protected override void HandleClosed()
+        {
+            IsVisible = false;
+            base.HandleClosed();
+        }
+
         /// <inheritdoc/>
         protected override void HandleResized(Size clientSize)
         {
@@ -353,16 +364,6 @@ namespace Avalonia.Controls
             }
 
             base.HandleResized(clientSize);
-        }
-
-        private void EnsureInitialized()
-        {
-            if (!this.IsInitialized)
-            {
-                var init = (ISupportInitialize)this;
-                init.BeginInit();
-                init.EndInit();
-            }
         }
     }
 }
