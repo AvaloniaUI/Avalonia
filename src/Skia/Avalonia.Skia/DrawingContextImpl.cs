@@ -1,11 +1,11 @@
 using Avalonia.Media;
-using Avalonia.Media.Imaging;
-using Avalonia.RenderHelpers;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Platform;
+using Avalonia.Rendering;
+using Avalonia.Rendering.Utilities;
 
 namespace Avalonia.Skia
 {
@@ -13,17 +13,22 @@ namespace Avalonia.Skia
     {
         private readonly Matrix? _postTransform;
         private readonly IDisposable[] _disposables;
+        private readonly IVisualBrushRenderer _visualBrushRenderer;
         private Stack<PaintWrapper> maskStack = new Stack<PaintWrapper>();
         
         public SKCanvas Canvas { get; private set; }
 
-        public DrawingContextImpl(SKCanvas canvas, Matrix? postTransform = null, params IDisposable[] disposables)
+        public DrawingContextImpl(
+            SKCanvas canvas,
+            IVisualBrushRenderer visualBrushRenderer,
+            Matrix? postTransform = null,
+            params IDisposable[] disposables)
         {
             if (postTransform.HasValue && !postTransform.Value.IsIdentity)
                 _postTransform = postTransform;
+            _visualBrushRenderer = visualBrushRenderer;
             _disposables = disposables;
             Canvas = canvas;
-            Canvas.Clear();
             Transform = Matrix.Identity;
         }
 
@@ -194,14 +199,56 @@ namespace Avalonia.Skia
             }
 
             var tileBrush = brush as ITileBrush;
-            if (tileBrush != null)
+            var visualBrush = brush as IVisualBrush;
+            var tileBrushImage = default(BitmapImpl);
+
+            if (visualBrush != null)
             {
-                var helper = new TileBrushImplHelper(tileBrush, targetSize);
-                var bitmap = new BitmapImpl((int)helper.IntermediateSize.Width, (int)helper.IntermediateSize.Height);
+                if (_visualBrushRenderer != null)
+                {
+                    var intermediateSize = _visualBrushRenderer.GetRenderTargetSize(visualBrush);
+
+                    if (intermediateSize.Width >= 1 && intermediateSize.Height >= 1)
+                    {
+                        var intermediate = new BitmapImpl((int)intermediateSize.Width, (int)intermediateSize.Height);
+
+                        using (var ctx = intermediate.CreateDrawingContext(_visualBrushRenderer))
+                        {
+                            ctx.Clear(Colors.Transparent);
+                            _visualBrushRenderer.RenderVisualBrush(ctx, visualBrush);
+                        }
+
+                        rv.AddDisposable(tileBrushImage);
+                        tileBrushImage = intermediate;
+                    }
+                }
+                else
+                {
+                    throw new NotSupportedException("No IVisualBrushRenderer was supplied to DrawingContextImpl.");
+                }
+            }
+            else
+            {
+                tileBrushImage = (BitmapImpl)((tileBrush as IImageBrush)?.Source?.PlatformImpl);
+            }
+
+            if (tileBrush != null && tileBrushImage != null)
+            {
+                var calc = new TileBrushCalculator(tileBrush, new Size(tileBrushImage.PixelWidth, tileBrushImage.PixelHeight), targetSize);
+                var bitmap = new BitmapImpl((int)calc.IntermediateSize.Width, (int)calc.IntermediateSize.Height);
                 rv.AddDisposable(bitmap);
-                using (var ctx = bitmap.CreateDrawingContext())
-                    helper.DrawIntermediate(ctx);
-                SKMatrix translation = SKMatrix.MakeTranslation(-(float)helper.DestinationRect.X, -(float)helper.DestinationRect.Y);
+                using (var context = bitmap.CreateDrawingContext(null))
+                {
+                    var rect = new Rect(0, 0, tileBrushImage.PixelWidth, tileBrushImage.PixelHeight);
+
+                    context.Clear(Colors.Transparent);
+                    context.PushClip(calc.IntermediateClip);
+                    context.Transform = calc.IntermediateTransform;
+                    context.DrawImage(tileBrushImage, 1, rect, rect);
+                    context.PopClip();
+                }
+
+                SKMatrix translation = SKMatrix.MakeTranslation(-(float)calc.DestinationRect.X, -(float)calc.DestinationRect.Y);
                 SKShaderTileMode tileX =
                     tileBrush.TileMode == TileMode.None
                         ? SKShaderTileMode.Clamp

@@ -79,7 +79,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             var fb = new Framebuffer(fmt, 80, 80);
             var r = Avalonia.AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
             using (var target = r.CreateRenderTarget(new object[] { fb }))
-            using (var ctx = target.CreateDrawingContext())
+            using (var ctx = target.CreateDrawingContext(null))
             {
                 ctx.PushOpacity(0.8);
                 ctx.FillRectangle(Brushes.Chartreuse, new Rect(0, 0, 20, 100));
@@ -91,13 +91,13 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             fb.Deallocate();
             using (var rtb = new RenderTargetBitmap(100, 100))
             {
-                using (var ctx = rtb.CreateDrawingContext())
+                using (var ctx = rtb.CreateDrawingContext(null))
                 {
                     ctx.FillRectangle(Brushes.Blue, new Rect(0, 0, 100, 100));
                     ctx.FillRectangle(Brushes.Pink, new Rect(0, 20, 100, 10));
 
                     var rc = new Rect(0, 0, 60, 60);
-                    ctx.DrawImage(bmp, 1, rc, rc);
+                    ctx.DrawImage(bmp.PlatformImpl, 1, rc, rc);
                 }
                 rtb.Save(System.IO.Path.Combine(OutputPath, testName + ".out.png"));
             }

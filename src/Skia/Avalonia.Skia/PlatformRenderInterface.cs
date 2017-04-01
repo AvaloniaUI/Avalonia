@@ -5,16 +5,15 @@ using System.Linq;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Media;
 using Avalonia.Platform;
-using Avalonia.Rendering;
 using SkiaSharp;
 
 namespace Avalonia.Skia
 {
-    public partial class PlatformRenderInterface : IPlatformRenderInterface, IRendererFactory
+    public partial class PlatformRenderInterface : IPlatformRenderInterface
     {
         public IBitmapImpl CreateBitmap(int width, int height)
         {
-            return CreateRenderTargetBitmap(width, height);
+            return CreateRenderTargetBitmap(width, height, 96, 96);
         }
 
         public IFormattedTextImpl CreateFormattedText(
@@ -67,12 +66,11 @@ namespace Avalonia.Skia
             }
         }
 
-        public IRenderer CreateRenderer(IRenderRoot root, IRenderLoop renderLoop)
-        {
-            return new Renderer(root, renderLoop);
-        }
-
-        public IRenderTargetBitmapImpl CreateRenderTargetBitmap(int width, int height)
+        public IRenderTargetBitmapImpl CreateRenderTargetBitmap(
+            int width,
+            int height,
+            double dpiX,
+            double dpiY)
         {
             if (width < 1)
                 throw new ArgumentException("Width can't be less than 1", nameof(width));

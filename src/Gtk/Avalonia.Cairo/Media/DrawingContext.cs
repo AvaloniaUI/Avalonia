@@ -8,6 +8,7 @@ using System.Reactive.Disposables;
 using Avalonia.Cairo.Media.Imaging;
 using Avalonia.Media;
 using Avalonia.Platform;
+using Avalonia.Rendering;
 
 namespace Avalonia.Cairo.Media
 {
@@ -18,31 +19,29 @@ namespace Avalonia.Cairo.Media
     /// </summary>
     public class DrawingContext : IDrawingContextImpl, IDisposable
     {
-        /// <summary>
-        /// The cairo context.
-        /// </summary>
         private readonly Cairo.Context _context;
-
+        private readonly IVisualBrushRenderer _visualBrushRenderer;
         private readonly Stack<BrushImpl> _maskStack = new Stack<BrushImpl>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DrawingContext"/> class.
         /// </summary>
         /// <param name="surface">The target surface.</param>
-        public DrawingContext(Cairo.Surface surface)
+        public DrawingContext(Cairo.Surface surface, IVisualBrushRenderer visualBrushRenderer)
         {
             _context = new Cairo.Context(surface);
+            _visualBrushRenderer = visualBrushRenderer;
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DrawingContext"/> class.
         /// </summary>
         /// <param name="surface">The GDK drawable.</param>
-        public DrawingContext(Gdk.Drawable drawable)
+        public DrawingContext(Gdk.Drawable drawable, IVisualBrushRenderer visualBrushRenderer)
         {
             _context = Gdk.CairoHelper.Create(drawable);
+            _visualBrushRenderer = visualBrushRenderer;
         }
-
 
         private Matrix _transform = Matrix.Identity;
         /// <summary>
@@ -55,7 +54,7 @@ namespace Avalonia.Cairo.Media
             {
                 _transform = value;
                 _context.Matrix = value.ToCairo();
-                
+
             }
         }
 
@@ -82,40 +81,45 @@ namespace Avalonia.Cairo.Media
         /// <param name="destRect">The rect in the output to draw to.</param>
         public void DrawImage(IBitmapImpl bitmap, double opacity, Rect sourceRect, Rect destRect)
         {
-            var impl = bitmap as BitmapImpl;
-            var size = new Size(impl.PixelWidth, impl.PixelHeight);
+            var pixbuf = bitmap as Gdk.Pixbuf;
+            var rtb = bitmap as RenderTargetBitmapImpl;
+            var size = new Size(pixbuf?.Width ?? rtb.PixelWidth, pixbuf?.Height ?? rtb.PixelHeight);
             var scale = new Vector(destRect.Width / sourceRect.Width, destRect.Height / sourceRect.Height);
 
             _context.Save();
             _context.Scale(scale.X, scale.Y);
             destRect /= scale;
 
-			if (opacityOverride < 1.0f) {
-				_context.PushGroup ();
-				Gdk.CairoHelper.SetSourcePixbuf (
-					_context, 
-					impl, 
-					-sourceRect.X + destRect.X, 
-					-sourceRect.Y + destRect.Y);
+            _context.PushGroup();
 
-				_context.Rectangle (destRect.ToCairo ());
-				_context.Fill ();
-				_context.PopGroupToSource ();
-				_context.PaintWithAlpha (opacityOverride);
-			} else {
-				_context.PushGroup ();
-				Gdk.CairoHelper.SetSourcePixbuf (
-					_context, 
-					impl, 
-					-sourceRect.X + destRect.X, 
-					-sourceRect.Y + destRect.Y);
-
-                _context.Rectangle (destRect.ToCairo ());
-                _context.Fill ();
-                _context.PopGroupToSource ();
-                _context.PaintWithAlpha (opacityOverride);			
+            if (pixbuf != null)
+            {
+                Gdk.CairoHelper.SetSourcePixbuf(
+                    _context,
+                    pixbuf,
+                    -sourceRect.X + destRect.X,
+                    -sourceRect.Y + destRect.Y);
             }
+            else
+            {
+                _context.SetSourceSurface(
+                        rtb.Surface,
+                        (int)(-sourceRect.X + destRect.X),
+                        (int)(-sourceRect.Y + destRect.Y));
+            }
+
+            _context.Rectangle(destRect.ToCairo());
+            _context.Fill();
+            _context.PopGroupToSource();
+            _context.PaintWithAlpha(opacityOverride);
             _context.Restore();
+        }
+
+        public void DrawImage(IBitmapImpl source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect)
+        {
+            PushOpacityMask(opacityMask, opacityMaskRect);
+            DrawImage(source, 1, new Rect(0, 0, source.PixelWidth, source.PixelHeight), destRect);
+            PopOpacityMask();
         }
 
         /// <summary>
@@ -127,8 +131,8 @@ namespace Avalonia.Cairo.Media
         public void DrawLine(Pen pen, Point p1, Point p2)
         {
             var size = new Rect(p1, p2).Size;
-            
-            using (var p = SetPen(pen, size)) 
+
+            using (var p = SetPen(pen, size))
             {
                 _context.MoveTo(p1.ToCairo());
                 _context.LineTo(p2.ToCairo());
@@ -149,7 +153,7 @@ namespace Avalonia.Cairo.Media
             var oldMatrix = Transform;
             Transform = impl.Transform * Transform;
 
-            
+
             if (brush != null)
             {
                 _context.AppendPath(impl.Path);
@@ -184,9 +188,9 @@ namespace Avalonia.Cairo.Media
         /// <param name="rect">The rectangle bounds.</param>
         public void DrawRectangle(Pen pen, Rect rect, float cornerRadius)
         {
-            using (var p = SetPen(pen, rect.Size)) 
+            using (var p = SetPen(pen, rect.Size))
             {
-                _context.Rectangle(rect.ToCairo ());
+                _context.Rectangle(rect.ToCairo());
                 _context.Stroke();
             }
         }
@@ -202,7 +206,7 @@ namespace Avalonia.Cairo.Media
             var layout = ((FormattedTextImpl)text).Layout;
             _context.MoveTo(origin.X, origin.Y);
 
-            using (var b = SetBrush(foreground, new Size(0, 0))) 
+            using (var b = SetBrush(foreground, new Size(0, 0)))
             {
                 Pango.CairoHelper.ShowLayout(_context, layout);
             }
@@ -215,9 +219,9 @@ namespace Avalonia.Cairo.Media
         /// <param name="rect">The rectangle bounds.</param>
         public void FillRectangle(IBrush brush, Rect rect, float cornerRadius)
         {
-            using (var b = SetBrush(brush, rect.Size)) 
+            using (var b = SetBrush(brush, rect.Size))
             {
-                _context.Rectangle(rect.ToCairo ());
+                _context.Rectangle(rect.ToCairo());
                 _context.Fill();
             }
         }
@@ -272,10 +276,10 @@ namespace Avalonia.Cairo.Media
 
             return Disposable.Create(() =>
             {
-               _context.Restore();
+                _context.Restore();
             });
         }
-        
+
         private double opacityOverride = 1.0f;
 
         private IDisposable SetBrush(IBrush brush, Size destinationSize)
@@ -315,11 +319,35 @@ namespace Avalonia.Cairo.Media
             }
             else if (imageBrush != null)
             {
-                impl = new ImageBrushImpl(imageBrush, destinationSize);
+                impl = new ImageBrushImpl(imageBrush, (BitmapImpl)imageBrush.Source.PlatformImpl, destinationSize);
             }
             else if (visualBrush != null)
             {
-                impl = new VisualBrushImpl(visualBrush, destinationSize);
+                if (_visualBrushRenderer != null)
+                {
+                    var intermediateSize = _visualBrushRenderer.GetRenderTargetSize(visualBrush);
+
+                    if (intermediateSize.Width >= 1 && intermediateSize.Height >= 1)
+                    {
+                        using (var intermediate = new Cairo.ImageSurface(Cairo.Format.ARGB32, (int)intermediateSize.Width, (int)intermediateSize.Height))
+                        {
+                            using (var ctx = new RenderTarget(intermediate).CreateDrawingContext(_visualBrushRenderer))
+                            {
+                                ctx.Clear(Colors.Transparent);
+                                _visualBrushRenderer.RenderVisualBrush(ctx, visualBrush);
+                            }
+
+                            return new ImageBrushImpl(
+                                visualBrush,
+                                new RenderTargetBitmapImpl(intermediate),
+                                destinationSize);
+                        }
+                    }
+                }
+                else
+                {
+                    throw new NotSupportedException("No IVisualBrushRenderer was supplied to DrawingContextImpl.");
+                }
             }
             else
             {
@@ -351,7 +379,7 @@ namespace Avalonia.Cairo.Media
 
             if (pen.Brush == null)
                 return Disposable.Empty;
-            
+
             return SetBrush(pen.Brush, destinationSize);
         }
 
@@ -377,10 +405,10 @@ namespace Avalonia.Cairo.Media
         public void PopOpacityMask()
         {
             _context.PopGroupToSource();
-			var brushImpl = _maskStack.Pop ();
+            var brushImpl = _maskStack.Pop();
 
             _context.Mask(brushImpl.PlatformBrush);
-			brushImpl.Dispose ();
+            brushImpl.Dispose();
         }
     }
 }

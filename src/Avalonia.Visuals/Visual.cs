@@ -498,14 +498,14 @@ namespace Avalonia
 
             if (VisualRoot != null)
             {
-                var e = new VisualTreeAttachmentEventArgs(VisualRoot);
+                var e = new VisualTreeAttachmentEventArgs(old, VisualRoot);
                 OnDetachedFromVisualTreeCore(e);
             }
 
             if (_visualParent is IRenderRoot || _visualParent?.IsAttachedToVisualTree == true)
             {
                 var root = this.GetVisualAncestors().OfType<IRenderRoot>().FirstOrDefault();
-                var e = new VisualTreeAttachmentEventArgs(root);
+                var e = new VisualTreeAttachmentEventArgs(_visualParent, root);
                 OnAttachedToVisualTreeCore(e);
             }
 

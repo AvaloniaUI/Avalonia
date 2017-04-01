@@ -96,10 +96,10 @@ namespace Avalonia.Controls
 
             PlatformImpl.Closed = HandleClosed;
             PlatformImpl.Input = HandleInput;
-            PlatformImpl.Paint = Renderer != null ? (Action<Rect>)Renderer.Render : null;
+            PlatformImpl.Paint = HandlePaint;
             PlatformImpl.Resized = HandleResized;
             PlatformImpl.ScalingChanged = HandleScalingChanged;
-            
+
 
             _keyboardNavigationHandler?.SetOwner(this);
             _accessKeyHandler?.SetOwner(this);
@@ -209,6 +209,15 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Handles a paint notification from <see cref="ITopLevelImpl.Resized"/>.
+        /// </summary>
+        /// <param name="rect">The dirty area.</param>
+        protected virtual void HandlePaint(Rect rect)
+        {
+            Renderer?.Paint(rect);
+        }
+
+        /// <summary>
         /// Handles a closed notification from <see cref="ITopLevelImpl.Closed"/>.
         /// </summary>
         protected virtual void HandleClosed()
@@ -229,7 +238,7 @@ namespace Avalonia.Controls
             Width = clientSize.Width;
             Height = clientSize.Height;
             LayoutManager.Instance.ExecuteLayoutPass();
-            PlatformImpl.Invalidate(new Rect(clientSize));
+            Renderer?.Resized(clientSize);
         }
 
         /// <summary>
