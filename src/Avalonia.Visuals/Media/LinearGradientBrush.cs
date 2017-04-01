@@ -6,7 +6,7 @@ namespace Avalonia.Media
     /// <summary>
     /// A brush that draws with a linear gradient.
     /// </summary>
-    public sealed class LinearGradientBrush : GradientBrush, ILinearGradientBrush
+    public sealed class LinearGradientBrush : GradientBrush, ILinearGradientBrush, IMutableBrush
     {
         /// <summary>
         /// Defines the <see cref="StartPoint"/> property.
@@ -40,6 +40,12 @@ namespace Avalonia.Media
         {
             get { return GetValue(EndPointProperty); }
             set { SetValue(EndPointProperty, value); }
+        }
+
+        /// <inheritdoc/>
+        IBrush IMutableBrush.ToImmutable()
+        {
+            return new Immutable.ImmutableLinearGradientBrush(this);
         }
     }
 }

@@ -7,7 +7,7 @@ namespace Avalonia.Media
     /// Paints an area with a radial gradient. A focal point defines the beginning of the gradient, 
     /// and a circle defines the end point of the gradient.
     /// </summary>
-    public sealed class RadialGradientBrush : GradientBrush, IRadialGradientBrush
+    public sealed class RadialGradientBrush : GradientBrush, IRadialGradientBrush, IMutableBrush
     {
         /// <summary>
         /// Defines the <see cref="Center"/> property.
@@ -60,6 +60,12 @@ namespace Avalonia.Media
         {
             get { return GetValue(RadiusProperty); }
             set { SetValue(RadiusProperty, value); }
+        }
+
+        /// <inheritdoc/>
+        IBrush IMutableBrush.ToImmutable()
+        {
+            return new Immutable.ImmutableRadialGradientBrush(this);
         }
     }
 }
