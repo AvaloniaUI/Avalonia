@@ -222,6 +222,17 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Handles a closed notification from <see cref="ITopLevelImpl.Closed"/>.
+        /// </summary>
+        protected virtual void HandleClosed()
+        {
+            Closed?.Invoke(this, EventArgs.Empty);
+            Renderer?.Dispose();
+            Renderer = null;
+            _applicationLifecycle.OnExit -= OnApplicationExiting;
+        }
+
+        /// <summary>
         /// Handles a resize notification from <see cref="ITopLevelImpl.Resized"/>.
         /// </summary>
         /// <param name="clientSize">The new client size.</param>
@@ -277,18 +288,6 @@ namespace Avalonia.Controls
             }
 
             return result;
-        }
-
-        /// <summary>
-        /// Handles a closed notification from <see cref="ITopLevelImpl.Closed"/>.
-        /// </summary>
-        private void HandleClosed()
-        {
-            IsVisible = false;
-            Closed?.Invoke(this, EventArgs.Empty);
-            Renderer?.Dispose();
-            Renderer = null;
-            _applicationLifecycle.OnExit -= OnApplicationExiting;
         }
 
         private void OnApplicationExiting(object sender, EventArgs args)

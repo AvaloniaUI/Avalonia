@@ -11,6 +11,7 @@ using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Styling;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Avalonia.Controls
 {
@@ -216,7 +217,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Hides the window but does not close it.
         /// </summary>
-        public void Hide()
+        public override void Hide()
         {
             using (BeginAutoSizing())
             {
@@ -229,11 +230,12 @@ namespace Avalonia.Controls
         /// <summary>
         /// Shows the window.
         /// </summary>
-        public void Show()
+        public override void Show()
         {
             s_windows.Add(this);
 
             EnsureInitialized();
+            IsVisible = true;
             LayoutManager.Instance.ExecuteInitialLayoutPass(this);
 
             using (BeginAutoSizing())
@@ -269,10 +271,15 @@ namespace Avalonia.Controls
             s_windows.Add(this);
 
             EnsureInitialized();
+            IsVisible = true;
             LayoutManager.Instance.ExecuteInitialLayoutPass(this);
 
             using (BeginAutoSizing())
             {
+                var affectedWindows = s_windows.Where(w => w.IsEnabled && w != this).ToList();
+                var activated = affectedWindows.Where(w => w.IsActive).FirstOrDefault();
+                SetIsEnabled(affectedWindows, false);
+
                 var modal = PlatformImpl.ShowDialog();
                 var result = new TaskCompletionSource<TResult>();
 
@@ -281,11 +288,21 @@ namespace Avalonia.Controls
                     .Subscribe(_ =>
                     {
                         modal.Dispose();
+                        SetIsEnabled(affectedWindows, true);
+                        activated?.Activate();
                         result.SetResult((TResult)_dialogResult);
                     });
 
                 IsVisible = true;
                 return result.Task;
+            }
+        }
+
+        void SetIsEnabled(IEnumerable<Window> windows, bool isEnabled)
+        {
+            foreach (var window in windows)
+            {
+                window.IsEnabled = isEnabled;
             }
         }
 
@@ -335,6 +352,12 @@ namespace Avalonia.Controls
             return size;
         }
 
+        protected override void HandleClosed()
+        {
+            IsVisible = false;
+            base.HandleClosed();
+        }
+
         /// <inheritdoc/>
         protected override void HandleResized(Size clientSize)
         {
@@ -344,16 +367,6 @@ namespace Avalonia.Controls
             }
 
             base.HandleResized(clientSize);
-        }
-
-        private void EnsureInitialized()
-        {
-            if (!this.IsInitialized)
-            {
-                var init = (ISupportInitialize)this;
-                init.BeginInit();
-                init.EndInit();
-            }
         }
     }
 }

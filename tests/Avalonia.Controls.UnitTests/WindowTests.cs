@@ -99,6 +99,7 @@ namespace Avalonia.Controls.UnitTests
         {
             var windowImpl = new Mock<IWindowImpl>();
             windowImpl.SetupProperty(x => x.Closed);
+            windowImpl.Setup(x => x.Scaling).Returns(1);
 
             var services = TestServices.StyledWindow.With(
                 windowingPlatform: new MockWindowingPlatform(() => windowImpl.Object));

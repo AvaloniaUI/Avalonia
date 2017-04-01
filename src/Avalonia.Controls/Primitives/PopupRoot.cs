@@ -70,32 +70,12 @@ namespace Avalonia.Controls.Primitives
             this.PlatformImpl.Dispose();
         }
 
-        /// <summary>
-        /// Hides the popup.
-        /// </summary>
-        public void Hide()
-        {
-            PlatformImpl.Hide();
-            IsVisible = false;
-        }
-
-        /// <summary>
-        /// Shows the popup.
-        /// </summary>
-        public void Show()
-        {
-            EnsureInitialized();
-            PlatformImpl.Show();
-            IsVisible = true;
-            LayoutManager.Instance.ExecuteInitialLayoutPass(this);
-        }
-
         /// <inheritdoc/>
         protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
         {
             base.OnTemplateApplied(e);
 
-            if (Parent.TemplatedParent != null)
+            if (Parent?.TemplatedParent != null)
             {
                 if (_presenterSubscription != null)
                 {
@@ -106,16 +86,6 @@ namespace Avalonia.Controls.Primitives
                 Presenter?.ApplyTemplate();
                 Presenter?.GetObservable(ContentPresenter.ChildProperty)
                     .Subscribe(SetTemplatedParentAndApplyChildTemplates);
-            }
-        }
-
-        private void EnsureInitialized()
-        {
-            if (!this.IsInitialized)
-            {
-                var init = (ISupportInitialize)this;
-                init.BeginInit();
-                init.EndInit();
             }
         }
 

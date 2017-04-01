@@ -33,7 +33,6 @@ namespace Avalonia.Win32
         private IntPtr _hwnd;
         private IInputRoot _owner;
         private bool _trackingMouse;
-        private bool _isActive;
         private bool _decorated = true;
         private double _scaling = 1;
         private WindowState _showWindowState;
@@ -344,30 +343,9 @@ namespace Avalonia.Win32
 
         public virtual IDisposable ShowDialog()
         {
-            var disabled = s_instances.Where(x => x != this && x.IsEnabled).ToList();
-            WindowImpl activated = null;
-
-            foreach (var window in disabled)
-            {
-                if (window._isActive)
-                {
-                    activated = window;
-                }
-
-                window.IsEnabled = false;
-            }
-
             Show();
 
-            return Disposable.Create(() =>
-            {
-                foreach (var window in disabled)
-                {
-                    window.IsEnabled = true;
-                }
-
-                activated?.Activate();
-            });
+            return Disposable.Empty;
         }
 
         public void SetCursor(IPlatformHandle cursor)
@@ -414,12 +392,10 @@ namespace Avalonia.Win32
                     {
                         case UnmanagedMethods.WindowActivate.WA_ACTIVE:
                         case UnmanagedMethods.WindowActivate.WA_CLICKACTIVE:
-                            _isActive = true;
                             Activated?.Invoke();
                             break;
 
                         case UnmanagedMethods.WindowActivate.WA_INACTIVE:
-                            _isActive = false;
                             Deactivated?.Invoke();
                             break;
                     }

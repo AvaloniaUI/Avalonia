@@ -35,10 +35,12 @@ namespace Avalonia.Visuals.UnitTests.Rendering
 
             RunFrame(loop);
 
+#if !NETCOREAPP1_1 // Delegate.Method is not available in netcoreapp1.1
             dispatcher.Verify(x => 
                 x.InvokeAsync(
                     It.Is<Action>(a => a.Method.Name == "UpdateScene"),
                     DispatcherPriority.Render));
+#endif
         }
 
         [Fact]
