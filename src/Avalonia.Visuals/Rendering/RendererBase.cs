@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using Avalonia.Media;
+using Avalonia.Platform;
 
 namespace Avalonia.Rendering
 {

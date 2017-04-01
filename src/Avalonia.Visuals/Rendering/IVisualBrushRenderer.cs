@@ -3,6 +3,7 @@
 
 using System;
 using Avalonia.Media;
+using Avalonia.Platform;
 
 namespace Avalonia.Rendering
 {

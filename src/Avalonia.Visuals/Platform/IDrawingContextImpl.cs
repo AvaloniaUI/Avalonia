@@ -2,9 +2,9 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using Avalonia.Platform;
+using Avalonia.Media;
 
-namespace Avalonia.Media
+namespace Avalonia.Platform
 {
     /// <summary>
     /// Defines the interface through which drawing occurs.

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Avalonia.Media;
+using Avalonia.Platform;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering.SceneGraph
