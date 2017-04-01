@@ -8,7 +8,7 @@ namespace Avalonia.Media
     /// <summary>
     /// Paints an area with an <see cref="IBitmap"/>.
     /// </summary>
-    public class ImageBrush : TileBrush, IImageBrush
+    public class ImageBrush : TileBrush, IImageBrush, IMutableBrush
     {
         /// <summary>
         /// Defines the <see cref="Visual"/> property.
@@ -17,14 +17,14 @@ namespace Avalonia.Media
             AvaloniaProperty.Register<ImageBrush, IBitmap>("Source");
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="VisualBrush"/> class.
+        /// Initializes a new instance of the <see cref="ImageBrush"/> class.
         /// </summary>
         public ImageBrush()
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="VisualBrush"/> class.
+        /// Initializes a new instance of the <see cref="ImageBrush"/> class.
         /// </summary>
         /// <param name="source">The image to draw.</param>
         public ImageBrush(IBitmap source)
@@ -39,6 +39,12 @@ namespace Avalonia.Media
         {
             get { return GetValue(SourceProperty); }
             set { SetValue(SourceProperty, value); }
+        }
+
+        /// <inheritdoc/>
+        IBrush IMutableBrush.ToImmutable()
+        {
+            return new Immutable.ImmutableImageBrush(this);
         }
     }
 }
