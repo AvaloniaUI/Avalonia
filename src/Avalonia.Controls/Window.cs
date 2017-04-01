@@ -242,8 +242,6 @@ namespace Avalonia.Controls
             {
                 PlatformImpl.Show();
             }
-
-            IsVisible = true;
         }
 
         /// <summary>
@@ -293,7 +291,6 @@ namespace Avalonia.Controls
                         result.SetResult((TResult)_dialogResult);
                     });
 
-                IsVisible = true;
                 return result.Task;
             }
         }
