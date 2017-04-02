@@ -460,6 +460,29 @@ public class Packages
                 },
                 BasePath = context.Directory("./"),
                 OutputDirectory = parameters.NugetRoot
+            },
+            ///////////////////////////////////////////////////////////////////////////////
+            // Avalonia.LinuxFramebuffer
+            ///////////////////////////////////////////////////////////////////////////////
+            new NuGetPackSettings()
+            {
+                Id = "Avalonia.LinuxFramebuffer",
+                Dependencies = new []
+                {
+                    new NuSpecDependency() { Id = "Avalonia", Version = parameters.Version },
+                    new NuSpecDependency() { Id = "Avalonia.Skia.Desktop", Version = parameters.Version },
+                    //netstandard1.3
+                    new NuSpecDependency() { Id = "Avalonia", TargetFramework = "netstandard1.3", Version = parameters.Version },
+                    new NuSpecDependency() { Id = "Avalonia.Skia.Desktop", TargetFramework = "netstandard1.3", Version = parameters.Version },
+                    new NuSpecDependency() { Id = "NETStandard.Library", TargetFramework = "netstandard1.3", Version = "1.6.0" },
+                    new NuSpecDependency() { Id = "Microsoft.NETCore.Portable.Compatibility", TargetFramework = "netstandard1.3", Version = "1.0.1" }
+                },
+                Files = new []
+                {
+                    new NuSpecContent { Source = "Avalonia.LinuxFramebuffer/bin/" + parameters.DirSuffix + "/netstandard1.3/Avalonia.LinuxFramebuffer.dll", Target = "lib/netstandard1.3" }
+                },
+                BasePath = context.Directory("./src/Linux/"),
+                OutputDirectory = parameters.NugetRoot
             }
         };
 
