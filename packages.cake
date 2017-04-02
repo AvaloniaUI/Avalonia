@@ -468,10 +468,7 @@ public class Packages
                 Dependencies = new []
                 {
                     new NuSpecDependency() { Id = "Avalonia", Version = parameters.Version },
-                    new NuSpecDependency() { Id = "Avalonia.Skia.Desktop", Version = parameters.Version },
-                    //netstandard1.3
-                    new NuSpecDependency() { Id = "Avalonia", TargetFramework = "netstandard1.3", Version = parameters.Version },
-                    new NuSpecDependency() { Id = "Avalonia.Skia.Desktop", TargetFramework = "netstandard1.3", Version = parameters.Version }
+                    new NuSpecDependency() { Id = "Avalonia.Skia.Desktop", Version = parameters.Version }
                 },
                 Files = new []
                 {
