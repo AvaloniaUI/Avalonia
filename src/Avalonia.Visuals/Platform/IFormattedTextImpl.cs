@@ -58,20 +58,5 @@ namespace Avalonia.Platform
         /// <param name="length">The number of characters in the text range.</param>
         /// <returns>The character bounds.</returns>
         IEnumerable<Rect> HitTestTextRange(int index, int length);
-
-        /// <summary>
-        /// Sets the foreground brush for the specified text range.
-        /// </summary>
-        /// <param name="brush">The brush.</param>
-        /// <param name="startIndex">The start of the text range.</param>
-        /// <param name="length">The length of the text range.</param>
-        void SetForegroundBrush(IBrush brush, int startIndex, int length);
-
-        /// <summary>
-        /// Makes a clone of the formatted text with the specified constraint.
-        /// </summary>
-        /// <param name="constraint">The constraint.</param>
-        /// <returns>The cloned formatted text.</returns>
-        IFormattedTextImpl WithConstraint(Size constraint);
     }
 }

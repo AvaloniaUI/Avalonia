@@ -157,23 +157,20 @@ namespace Avalonia.Layout.UnitTests
             public IEnumerable<Rect> HitTestTextRange(int index, int length) => new Rect[0];
 
             public Size Measure() => Constraint;
-
-            public void SetForegroundBrush(IBrush brush, int startIndex, int length)
-            {
-            }
-
-            public IFormattedTextImpl WithConstraint(Size constraint)
-            {
-                return this;
-            }
         }
 
         private void RegisterServices()
         {
             var globalStyles = new Mock<IGlobalStyles>();
             var renderInterface = new Mock<IPlatformRenderInterface>();
-            renderInterface.Setup(x => x.CreateFormattedText(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<double>(), It.IsAny<FontStyle>(),
-                It.IsAny<TextAlignment>(), It.IsAny<FontWeight>(), It.IsAny<TextWrapping>(), It.IsAny<Size>()))
+            renderInterface.Setup(x => 
+                x.CreateFormattedText(
+                    It.IsAny<string>(),
+                    It.IsAny<Typeface>(),
+                    It.IsAny<TextAlignment>(),
+                    It.IsAny<TextWrapping>(),
+                    It.IsAny<Size>(),
+                    It.IsAny<IReadOnlyList<FormattedTextStyleSpan>>()))
                 .Returns(new FormattedTextMock("TEST"));
                 
             var windowImpl = new Mock<IWindowImpl>();

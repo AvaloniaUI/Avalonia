@@ -14,32 +14,45 @@ namespace Avalonia.Direct2D1.Media
     {
         public FormattedTextImpl(
             string text,
-            string fontFamily,
-            double fontSize,
-            FontStyle fontStyle,
+            Typeface typeface,
             TextAlignment textAlignment,
-            FontWeight fontWeight,
             TextWrapping wrapping,
-            Size constraint)
+            Size constraint,
+            IReadOnlyList<FormattedTextStyleSpan> spans)
         {
             Text = text;
-            TextLayout = Create(
-                text,
-                fontFamily,
-                fontSize,
-                (DWrite.FontStyle)fontStyle,
-                textAlignment.ToDirect2D(),
-                (DWrite.FontWeight)fontWeight,
-                wrapping == TextWrapping.Wrap ? DWrite.WordWrapping.Wrap : DWrite.WordWrapping.NoWrap,
-                (float)constraint.Width,
-                (float)constraint.Height);
-            Size = Measure();
-        }
+            var factory = AvaloniaLocator.Current.GetService<DWrite.Factory>();
 
-        public FormattedTextImpl(string text, DWrite.TextLayout textLayout)
-        {
-            Text = text;
-            TextLayout = textLayout;
+            using (var format = new DWrite.TextFormat(
+                factory,
+                typeface?.FontFamilyName ?? "Courier New",
+                (DWrite.FontWeight)(typeface?.Weight ?? FontWeight.Normal),
+                (DWrite.FontStyle)(typeface?.Style ?? FontStyle.Normal),
+                (float)(typeface?.FontSize ?? 12)))
+            {
+                format.WordWrapping = wrapping == TextWrapping.Wrap ? 
+                    DWrite.WordWrapping.Wrap :
+                    DWrite.WordWrapping.NoWrap;
+
+                TextLayout = new DWrite.TextLayout(
+                    factory,
+                    text ?? string.Empty,
+                    format,
+                    (float)constraint.Width,
+                    (float)constraint.Height)
+                {
+                    TextAlignment = textAlignment.ToDirect2D()
+                };
+            }
+
+            if (spans != null)
+            {
+                foreach (var span in spans)
+                {
+                    ApplySpan(span);
+                }
+            }
+
             Size = Measure();
         }
 
@@ -101,58 +114,16 @@ namespace Avalonia.Direct2D1.Media
             return result.Select(x => new Rect(x.Left, x.Top, x.Width, x.Height));
         }
 
-        public void SetForegroundBrush(IBrush brush, int startIndex, int count)
+        private void ApplySpan(FormattedTextStyleSpan span)
         {
-            TextLayout.SetDrawingEffect(
-                new BrushWrapper(brush),
-                new DWrite.TextRange(startIndex, count));
-        }
-
-        public IFormattedTextImpl WithConstraint(Size constraint)
-        {
-            var factory = AvaloniaLocator.Current.GetService<DWrite.Factory>();
-            return new FormattedTextImpl(Text, Create(
-                Text,
-                TextLayout.FontFamilyName,
-                TextLayout.FontSize,
-                TextLayout.FontStyle,
-                TextLayout.TextAlignment,
-                TextLayout.FontWeight,
-                TextLayout.WordWrapping,
-                (float)constraint.Width,
-                (float)constraint.Height));
-        }
-
-        private static DWrite.TextLayout Create(
-            string text,
-            string fontFamily,
-            double fontSize,
-            DWrite.FontStyle fontStyle,
-            DWrite.TextAlignment textAlignment,
-            DWrite.FontWeight fontWeight,
-            DWrite.WordWrapping wrapping,
-            float constraintX,
-            float constraintY)
-        {
-            var factory = AvaloniaLocator.Current.GetService<DWrite.Factory>();
-
-            using (var format = new DWrite.TextFormat(
-                factory,
-                fontFamily,
-                fontWeight,
-                fontStyle,
-                (float)fontSize))
+            if (span.Length > 0)
             {
-                format.WordWrapping = wrapping;
-
-                var result = new DWrite.TextLayout(
-                    factory,
-                    text ?? string.Empty,
-                    format,
-                    constraintX,
-                    constraintY);
-                result.TextAlignment = textAlignment;
-                return result;
+                if (span.ForegroundBrush != null)
+                {
+                    TextLayout.SetDrawingEffect(
+                        new BrushWrapper(span.ForegroundBrush),
+                        new DWrite.TextRange(span.StartIndex, span.Length));
+                }
             }
         }
 

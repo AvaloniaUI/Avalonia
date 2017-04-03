@@ -22,25 +22,48 @@ namespace Avalonia.Cairo.Media
         public FormattedTextImpl(
             Pango.Context context,
             string text,
-            string fontFamily,
-            double fontSize,
-            FontStyle fontStyle,
+            Typeface typeface,
             TextAlignment textAlignment,
-            FontWeight fontWeight,
-            Size constraint)
+            TextWrapping wrapping,
+            Size constraint,
+            IReadOnlyList<FormattedTextStyleSpan> spans)
         {
             Contract.Requires<ArgumentNullException>(context != null);
             Contract.Requires<ArgumentNullException>(text != null);
 
-            Layout = Create(
-                context,
-                text,
-                fontFamily,
-                fontSize,
-                (Pango.Style)fontStyle,
-                textAlignment.ToCairo(),
-                fontWeight.ToCairo(),
-                constraint);
+            Layout = new Pango.Layout(context);
+            Layout.SetText(text);
+
+            Layout.FontDescription = new Pango.FontDescription
+            {
+                Family = typeface?.FontFamilyName ?? "monospace",
+                Size = Pango.Units.FromDouble(CorrectScale(typeface?.FontSize ?? 12)),
+                Style = (Pango.Style)(typeface?.Style ?? FontStyle.Normal),
+                Weight = (typeface?.Weight ?? FontWeight.Normal).ToCairo(),
+            };
+
+            Layout.Alignment = textAlignment.ToCairo();
+            Layout.Attributes = new Pango.AttrList();
+            Layout.Width = double.IsPositiveInfinity(constraint.Width) ? -1 : Pango.Units.FromDouble(constraint.Width);
+
+            if (spans != null)
+            {
+                foreach (var span in spans)
+                {
+                    if (span.ForegroundBrush is SolidColorBrush scb)
+                    {
+                        var color = new Pango.Color();
+                        color.Parse(string.Format("#{0}", scb.Color.ToString().Substring(3)));
+
+                        var brushAttr = new Pango.AttrForeground(color);
+                        brushAttr.StartIndex = (uint)TextIndexToPangoIndex(span.StartIndex);
+                        brushAttr.EndIndex = (uint)TextIndexToPangoIndex(span.StartIndex + span.Length);
+
+                        this.Layout.Attributes.Insert(brushAttr);
+                    }
+                }
+            }
+
             Size = Measure();
         }
 
@@ -109,66 +132,6 @@ namespace Avalonia.Cairo.Media
             }
 
             return ranges;
-        }
-
-        public void SetForegroundBrush(IBrush brush, int startIndex, int count)
-        {
-            var scb = brush as SolidColorBrush;
-            if (scb != null)
-            {
-
-                var color = new Pango.Color();
-                color.Parse(string.Format("#{0}", scb.Color.ToString().Substring(3)));
-
-                var brushAttr = new Pango.AttrForeground(color);
-                brushAttr.StartIndex = (uint)TextIndexToPangoIndex(startIndex);
-                brushAttr.EndIndex = (uint)TextIndexToPangoIndex(startIndex + count);
-
-                Layout.Attributes.Insert(brushAttr);
-            }
-        }
-
-        public IFormattedTextImpl WithConstraint(Size constraint)
-        {
-            return new FormattedTextImpl(Create(
-                Layout.Context,
-                Layout.Text,
-                Layout.FontDescription.Family,
-                Layout.FontDescription.Size,
-                Layout.FontDescription.Style,
-                Layout.Alignment,
-                Layout.FontDescription.Weight,
-                constraint));
-        }
-
-        private Pango.Layout Create(
-            Pango.Context context,
-            string text,
-            string fontFamily,
-            double fontSize,
-            Pango.Style fontStyle,
-            Pango.Alignment textAlignment,
-            Pango.Weight fontWeight,
-            Size constraint)
-        {
-            Contract.Requires<ArgumentNullException>(context != null);
-            Contract.Requires<ArgumentNullException>(text != null);
-            var result = new Pango.Layout(context);
-
-            result.SetText(text);
-
-            result.FontDescription = new Pango.FontDescription
-            {
-                Family = fontFamily,
-                Size = Pango.Units.FromDouble(CorrectScale(fontSize)),
-                Style = (Pango.Style)fontStyle,
-                Weight = fontWeight
-            };
-
-            result.Alignment = textAlignment;
-            result.Attributes = new Pango.AttrList();
-            result.Width = double.IsPositiveInfinity(constraint.Width) ? -1 : Pango.Units.FromDouble(constraint.Width);
-            return result;
         }
 
         private Size Measure()

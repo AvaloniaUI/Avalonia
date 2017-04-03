@@ -212,7 +212,10 @@ namespace Avalonia.Controls.Presenters
 
             if (length > 0)
             {
-                result.SetForegroundBrush(Brushes.White, start, length);
+                result.Spans = new[]
+                {
+                    new FormattedTextStyleSpan(start, length, foregroundBrush: Brushes.White),
+                };
             }
 
             return result;
@@ -228,15 +231,13 @@ namespace Avalonia.Controls.Presenters
             }
             else
             {
-                // TODO: Pretty sure that measuring "X" isn't the right way to do this...
-                return new FormattedText(
-                    "X",
-                    FontFamily,
-                    FontSize,
-                    availableSize,
-                    FontStyle,
-                    TextAlignment,
-                    FontWeight).Measure();
+                return new FormattedText
+                {
+                    Text = "X",
+                    Typeface = new Typeface(FontFamily, FontSize, FontStyle, FontWeight),
+                    TextAlignment = TextAlignment,
+                    Constraint = availableSize,
+                }.Measure();
             }
         }
 

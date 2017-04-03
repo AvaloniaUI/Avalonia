@@ -90,24 +90,21 @@ namespace Avalonia.Direct2D1
 
         public IFormattedTextImpl CreateFormattedText(
             string text,
-            string fontFamily,
-            double fontSize,
-            FontStyle fontStyle,
+            Typeface typeface,
             TextAlignment textAlignment,
-            FontWeight fontWeight,
             TextWrapping wrapping,
-            Size constraint)
+            Size constraint,
+            IReadOnlyList<FormattedTextStyleSpan> spans)
         {
             return new FormattedTextImpl(
                 text,
-                fontFamily,
-                fontSize,
-                fontStyle,
+                typeface,
                 textAlignment,
-                fontWeight,
                 wrapping,
-                constraint);
+                constraint,
+                spans);
         }
+
 
         public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)
         {

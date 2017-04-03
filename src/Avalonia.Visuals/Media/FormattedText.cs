@@ -12,64 +12,30 @@ namespace Avalonia.Media
     /// </summary>
     public class FormattedText
     {
+        private readonly IPlatformRenderInterface _platform;
+        private Size _constraint = Size.Infinity;
+        private IFormattedTextImpl _platformImpl;
+        private IReadOnlyList<FormattedTextStyleSpan> _spans;
+        private Typeface _typeface;
+        private string _text;
+        private TextAlignment _textAlignment;
+        private TextWrapping _wrapping;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="FormattedText"/> class.
         /// </summary>
-        /// <param name="text">The text.</param>
-        /// <param name="fontFamilyName">The font family.</param>
-        /// <param name="fontSize">The font size.</param>
-        /// <param name="constraint">The text layout constraints.</param>
-        /// <param name="fontStyle">The font style.</param>
-        /// <param name="textAlignment">The text alignment.</param>
-        /// <param name="fontWeight">The font weight.</param>
-        /// <param name="wrapping">The text wrapping mode.</param>
-        public FormattedText(
-            string text,
-            string fontFamilyName,
-            double fontSize,
-            Size constraint,
-            FontStyle fontStyle = FontStyle.Normal,
-            TextAlignment textAlignment = TextAlignment.Left,
-            FontWeight fontWeight = FontWeight.Normal,
-            TextWrapping wrapping = TextWrapping.Wrap)
+        public FormattedText()
         {
-            Contract.Requires<ArgumentNullException>(text != null);
-            Contract.Requires<ArgumentNullException>(fontFamilyName != null);
+            _platform = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
+        }
 
-            if (fontSize <= 0)
-            {
-                throw new ArgumentException("FontSize must be greater than 0");
-            }
-
-            if (fontWeight <= 0)
-            {
-                throw new ArgumentException("FontWeight must be greater than 0");
-            }
-
-            Text = text;
-            FontFamilyName = fontFamilyName;
-            FontSize = fontSize;
-            FontStyle = fontStyle;
-            FontWeight = fontWeight;
-            TextAlignment = textAlignment;
-            Wrapping = wrapping;
-
-            var platform = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
-
-            if (platform == null)
-            {
-                throw new Exception("Could not create FormattedText: IPlatformRenderInterface not registered.");
-            }
-
-            PlatformImpl = platform.CreateFormattedText(
-                text,
-                fontFamilyName,
-                fontSize,
-                fontStyle,
-                textAlignment,
-                fontWeight,
-                wrapping,
-                constraint);
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FormattedText"/> class.
+        /// </summary>
+        /// <param name="platform">The platform render interface.</param>
+        public FormattedText(IPlatformRenderInterface platform)
+        {
+            _platform = platform;
         }
 
         /// <summary>
@@ -77,49 +43,77 @@ namespace Avalonia.Media
         /// </summary>
         public Size Constraint
         {
-            get { return PlatformImpl.Constraint; }
-            set { PlatformImpl = PlatformImpl.WithConstraint(value); }
+            get => _constraint;
+            set => Set(ref _constraint, value);
         }
 
         /// <summary>
-        /// Gets the font family.
+        /// Gets or sets the base typeface.
         /// </summary>
-        public string FontFamilyName { get; }
+        public Typeface Typeface
+        {
+            get => _typeface;
+            set => Set(ref _typeface, value);
+        }
 
         /// <summary>
-        /// Gets the font size.
+        /// Gets or sets a collection of spans that describe the formatting of subsections of the
+        /// text.
         /// </summary>
-        public double FontSize { get; }
+        public IReadOnlyList<FormattedTextStyleSpan> Spans
+        {
+            get => _spans;
+            set => Set(ref _spans, value);
+        }
 
         /// <summary>
-        /// Gets the font style.
+        /// Gets or sets the text.
         /// </summary>
-        public FontStyle FontStyle { get; }
+        public string Text
+        {
+            get => _text;
+            set => Set(ref _text, value);
+        }
 
         /// <summary>
-        /// Gets the font weight.
+        /// Gets or sets the aligment of the text.
         /// </summary>
-        public FontWeight FontWeight { get; }
+        public TextAlignment TextAlignment
+        {
+            get => _textAlignment;
+            set => Set(ref _textAlignment, value);
+        }
 
         /// <summary>
-        /// Gets the text.
+        /// Gets or sets the text wrapping.
         /// </summary>
-        public string Text { get; }
+        public TextWrapping Wrapping
+        {
+            get => _wrapping;
+            set => Set(ref _wrapping, value);
+        }
 
         /// <summary>
         /// Gets platform-specific platform implementation.
         /// </summary>
-        public IFormattedTextImpl PlatformImpl { get; private set; }
+        public IFormattedTextImpl PlatformImpl
+        {
+            get
+            {
+                if (_platformImpl == null)
+                {
+                    _platformImpl = _platform.CreateFormattedText(
+                        _text,
+                        _typeface,
+                        _textAlignment,
+                        _wrapping,
+                        _constraint,
+                        _spans);
+                }
 
-        /// <summary>
-        /// Gets the text alignment.
-        /// </summary>
-        public TextAlignment TextAlignment { get; }
-
-        /// <summary>
-        /// Gets the text wrapping.
-        /// </summary>
-        public TextWrapping Wrapping { get; }
+                return _platformImpl;
+            }
+        }
 
         /// <summary>
         /// Gets the lines in the text.
@@ -174,15 +168,10 @@ namespace Avalonia.Media
             return PlatformImpl.Size;
         }
 
-        /// <summary>
-        /// Sets the foreground brush for the specified text range.
-        /// </summary>
-        /// <param name="brush">The brush.</param>
-        /// <param name="startIndex">The start of the text range.</param>
-        /// <param name="length">The length of the text range.</param>
-        public void SetForegroundBrush(IBrush brush, int startIndex, int length)
+        private void Set<T>(ref T field, T value)
         {
-            PlatformImpl.SetForegroundBrush(brush, startIndex, length);
+            field = value;
+            _platformImpl = null;
         }
     }
 }

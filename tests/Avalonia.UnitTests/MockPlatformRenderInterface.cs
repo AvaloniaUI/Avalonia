@@ -11,17 +11,13 @@ namespace Avalonia.UnitTests
     {
         public IFormattedTextImpl CreateFormattedText(
             string text,
-            string fontFamilyName,
-            double fontSize,
-            FontStyle fontStyle,
+            Typeface typeface,
             TextAlignment textAlignment,
-            FontWeight fontWeight,
             TextWrapping wrapping,
-            Size constraint)
+            Size constraint,
+            IReadOnlyList<FormattedTextStyleSpan> spans)
         {
-            var result = new Mock<IFormattedTextImpl>();
-            result.Setup(x => x.WithConstraint(It.IsAny<Size>())).Returns(() => result.Object);
-            return result.Object;
+            return Mock.Of<IFormattedTextImpl>();
         }
 
         public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)

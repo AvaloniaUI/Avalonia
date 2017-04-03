@@ -10,13 +10,11 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
     {
         public IFormattedTextImpl CreateFormattedText(
             string text,
-            string fontFamilyName,
-            double fontSize,
-            FontStyle fontStyle,
+            Typeface typeface,
             TextAlignment textAlignment,
-            FontWeight fontWeight,
             TextWrapping wrapping,
-            Size constraint)
+            Size constraint,
+            IReadOnlyList<FormattedTextStyleSpan> spans)
         {
             throw new NotImplementedException();
         }

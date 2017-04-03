@@ -350,17 +350,14 @@ namespace Avalonia.Controls
         /// <returns>A <see cref="FormattedText"/> object.</returns>
         protected virtual FormattedText CreateFormattedText(Size constraint)
         {
-            var result = new FormattedText(
-                Text ?? string.Empty,
-                FontFamily,
-                FontSize,
-                constraint,
-                FontStyle,
-                TextAlignment,
-                FontWeight,
-                TextWrapping);
-            result.Constraint = constraint;
-            return result;
+            return new FormattedText
+            {
+                Constraint = constraint,
+                Typeface = new Typeface(FontFamily, FontSize, FontStyle, FontWeight),
+                Text = Text ?? string.Empty,
+                TextAlignment = TextAlignment,
+                Wrapping = TextWrapping,
+            };
         }
 
         /// <summary>
