@@ -2,14 +2,23 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
-using Avalonia.Media;
 using Avalonia.Platform;
 
 namespace Avalonia.Rendering.SceneGraph
 {
+    /// <summary>
+    /// A node in the scene graph which represents an image draw.
+    /// </summary>
     internal class ImageNode : IDrawOperation
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ImageNode"/> class.
+        /// </summary>
+        /// <param name="transform">The transform.</param>
+        /// <param name="source">The image to draw.</param>
+        /// <param name="opacity">The draw opacity.</param>
+        /// <param name="sourceRect">The source rect.</param>
+        /// <param name="destRect">The destination rect.</param>
         public ImageNode(Matrix transform, IBitmapImpl source, double opacity, Rect sourceRect, Rect destRect)
         {
             Bounds = destRect.TransformToAABB(transform);
@@ -20,14 +29,47 @@ namespace Avalonia.Rendering.SceneGraph
             DestRect = destRect;
         }
 
+        /// <inheritdoc/>
         public Rect Bounds { get; }
-        public Matrix Transform { get; }
-        public IBitmapImpl Source { get; }
-        public double Opacity { get; }
-        public Rect SourceRect { get; }
-        public Rect DestRect { get; }
-        public IDictionary<VisualBrush, Scene> ChildScenes => null;
 
+        /// <summary>
+        /// Gets the transform with which the node will be drawn.
+        /// </summary>
+        public Matrix Transform { get; }
+
+        /// <summary>
+        /// Gets the image to draw.
+        /// </summary>
+        public IBitmapImpl Source { get; }
+
+        /// <summary>
+        /// Gets the draw opacity.
+        /// </summary>
+        public double Opacity { get; }
+
+        /// <summary>
+        /// Gets the source rect.
+        /// </summary>
+        public Rect SourceRect { get; }
+
+        /// <summary>
+        /// Gets the destination rect.
+        /// </summary>
+        public Rect DestRect { get; }
+
+        /// <summary>
+        /// Determines if this draw operation equals another.
+        /// </summary>
+        /// <param name="transform">The transform of the other draw operation.</param>
+        /// <param name="source">The image of the other draw operation.</param>
+        /// <param name="opacity">The opacity of the other draw operation.</param>
+        /// <param name="sourceRect">The source rect of the other draw operation.</param>
+        /// <param name="destRect">The dest rect of the other draw operation.</param>
+        /// <returns>True if the draw operations are the same, otherwise false.</returns>
+        /// <remarks>
+        /// The properties of the other draw operation are passed in as arguments to prevent
+        /// allocation of a not-yet-constructed draw operation object.
+        /// </remarks>
         public bool Equals(Matrix transform, IBitmapImpl source, double opacity, Rect sourceRect, Rect destRect)
         {
             return transform == Transform &&
@@ -37,12 +79,14 @@ namespace Avalonia.Rendering.SceneGraph
                 destRect == DestRect;
         }
 
+        /// <inheritdoc/>
         public void Render(IDrawingContextImpl context)
         {
             context.Transform = Transform;
             context.DrawImage(Source, Opacity, SourceRect, DestRect);
         }
 
+        /// <inheritdoc/>
         public bool HitTest(Point p) => Bounds.Contains(p);
     }
 }

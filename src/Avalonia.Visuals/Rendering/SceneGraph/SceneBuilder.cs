@@ -10,8 +10,12 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering.SceneGraph
 {
+    /// <summary>
+    /// Builds a scene graph from a visual tree.
+    /// </summary>
     public class SceneBuilder : ISceneBuilder
     {
+        /// <inheritdoc/>
         public void UpdateAll(Scene scene)
         {
             Contract.Requires<ArgumentNullException>(scene != null);
@@ -27,6 +31,7 @@ namespace Avalonia.Rendering.SceneGraph
             }
         }
 
+        /// <inheritdoc/>
         public bool Update(Scene scene, IVisual visual)
         {
             Contract.Requires<ArgumentNullException>(scene != null);

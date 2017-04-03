@@ -9,6 +9,9 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering.SceneGraph
 {
+    /// <summary>
+    /// A drawing context which builds a scene graph.
+    /// </summary>
     internal class DeferredDrawingContextImpl : IDrawingContextImpl
     {
         private readonly ISceneBuilder _sceneBuilder;
@@ -16,16 +19,34 @@ namespace Avalonia.Rendering.SceneGraph
         private int _childIndex;
         private int _drawOperationindex;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DeferredDrawingContextImpl"/> class.
+        /// </summary>
+        /// <param name="sceneBuilder">
+        /// A scene builder used for constructing child scenes for visual brushes.
+        /// </param>
+        /// <param name="layers">The scene layers.</param>
         public DeferredDrawingContextImpl(ISceneBuilder sceneBuilder, SceneLayers layers)
         {
             _sceneBuilder = sceneBuilder;
             Layers = layers;
         }
 
+        /// <inheritdoc/>
         public Matrix Transform { get; set; } = Matrix.Identity;
 
+        /// <summary>
+        /// Gets the layers in the scene being built.
+        /// </summary>
         public SceneLayers Layers { get; }
 
+        /// <summary>
+        /// Informs the drawing context of the visual node that is about to be rendered.
+        /// </summary>
+        /// <param name="node">The visual node.</param>
+        /// <returns>
+        /// An object which when disposed will commit the changes to visual node.
+        /// </returns>
         public UpdateState BeginUpdate(VisualNode node)
         {
             Contract.Requires<ArgumentNullException>(node != null);
@@ -50,21 +71,33 @@ namespace Avalonia.Rendering.SceneGraph
             return state;
         }
 
+        /// <inheritdoc/>
         public void Clear(Color color)
         {
             // Cannot clear a deferred scene.
         }
 
+        /// <inheritdoc/>
         public void Dispose()
         {
             // Nothing to do here as we allocate no unmanaged resources.
         }
 
+        /// <summary>
+        /// Removes any remaining drawing operations from the visual node.
+        /// </summary>
+        /// <remarks>
+        /// Drawing operations are updated in place, overwriting existing drawing operations if
+        /// they are different. Once drawing has completed for the current visual node, it is
+        /// possible that there are stale drawing operations at the end of the list. This method
+        /// trims these stale drawing operations.
+        /// </remarks>
         public void TrimChildren()
         {
             _node.TrimChildren(_childIndex);
         }
 
+        /// <inheritdoc/>
         public void DrawGeometry(IBrush brush, Pen pen, IGeometryImpl geometry)
         {
             var next = NextDrawAs<GeometryNode>();
@@ -79,6 +112,7 @@ namespace Avalonia.Rendering.SceneGraph
             }
         }
 
+        /// <inheritdoc/>
         public void DrawImage(IBitmapImpl source, double opacity, Rect sourceRect, Rect destRect)
         {
             var next = NextDrawAs<ImageNode>();
@@ -93,18 +127,20 @@ namespace Avalonia.Rendering.SceneGraph
             }
         }
 
+        /// <inheritdoc/>
         public void DrawImage(IBitmapImpl source, IBrush opacityMask, Rect opacityMaskRect, Rect sourceRect)
         {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc/>
         public void DrawLine(Pen pen, Point p1, Point p2)
         {
             var next = NextDrawAs<LineNode>();
 
             if (next == null || !next.Equals(Transform, pen, p1, p2))
             {
-                Add(new LineNode(Transform, pen, p1, p2));
+                Add(new LineNode(Transform, pen, p1, p2, CreateChildScene(pen.Brush)));
             }
             else
             {
@@ -112,6 +148,7 @@ namespace Avalonia.Rendering.SceneGraph
             }
         }
 
+        /// <inheritdoc/>
         public void DrawRectangle(Pen pen, Rect rect, float cornerRadius = 0)
         {
             var next = NextDrawAs<RectangleNode>();
@@ -126,13 +163,14 @@ namespace Avalonia.Rendering.SceneGraph
             }
         }
 
+        /// <inheritdoc/>
         public void DrawText(IBrush foreground, Point origin, IFormattedTextImpl text)
         {
             var next = NextDrawAs<TextNode>();
 
             if (next == null || !next.Equals(Transform, foreground, origin, text))
             {
-                Add(new TextNode(Transform, foreground, origin, text));
+                Add(new TextNode(Transform, foreground, origin, text, CreateChildScene(foreground)));
             }
             else
             {
@@ -140,6 +178,7 @@ namespace Avalonia.Rendering.SceneGraph
             }
         }
 
+        /// <inheritdoc/>
         public void FillRectangle(IBrush brush, Rect rect, float cornerRadius = 0)
         {
             var next = NextDrawAs<RectangleNode>();
@@ -154,41 +193,49 @@ namespace Avalonia.Rendering.SceneGraph
             }
         }
 
+        /// <inheritdoc/>
         public void PopClip()
         {
             // TODO: Implement
         }
 
+        /// <inheritdoc/>
         public void PopGeometryClip()
         {
             // TODO: Implement
         }
 
+        /// <inheritdoc/>
         public void PopOpacity()
         {
             // TODO: Implement
         }
 
+        /// <inheritdoc/>
         public void PopOpacityMask()
         {
             // TODO: Implement
         }
 
+        /// <inheritdoc/>
         public void PushClip(Rect clip)
         {
             // TODO: Implement
         }
 
+        /// <inheritdoc/>
         public void PushGeometryClip(IGeometryImpl clip)
         {
             // TODO: Implement
         }
 
+        /// <inheritdoc/>
         public void PushOpacity(double opacity)
         {
             // TODO: Implement
         }
 
+        /// <inheritdoc/>
         public void PushOpacityMask(IBrush mask, Rect bounds)
         {
             // TODO: Implement

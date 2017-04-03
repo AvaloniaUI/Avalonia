@@ -3,15 +3,21 @@
 
 using System;
 using System.Collections.Generic;
-using Avalonia;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering.SceneGraph
 {
+    /// <summary>
+    /// Represents a scene graph used by the <see cref="DeferredRenderer"/>.
+    /// </summary>
     public class Scene
     {
         private Dictionary<IVisual, IVisualNode> _index;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Scene"/> class.
+        /// </summary>
+        /// <param name="rootVisual">The root visual to draw.</param>
         public Scene(IVisual rootVisual)
             : this(
                 new VisualNode(rootVisual, null),
@@ -22,7 +28,7 @@ namespace Avalonia.Rendering.SceneGraph
             _index.Add(rootVisual, Root);
         }
 
-        internal Scene(VisualNode root, Dictionary<IVisual, IVisualNode> index, SceneLayers layers, int id)
+        private Scene(VisualNode root, Dictionary<IVisual, IVisualNode> index, SceneLayers layers, int id)
         {
             Contract.Requires<ArgumentNullException>(root != null);
 
@@ -35,12 +41,35 @@ namespace Avalonia.Rendering.SceneGraph
             root.LayerRoot = root.Visual;
         }
 
+        /// <summary>
+        /// Gets an ID identifying the scene. This is incremented each time the scene is cloned.
+        /// </summary>
         public int Id { get; }
+
+        /// <summary>
+        /// Gets the layers for the scene.
+        /// </summary>
         public SceneLayers Layers { get; }
+
+        /// <summary>
+        /// Gets the root node of the scene graph.
+        /// </summary>
         public IVisualNode Root { get; }
+
+        /// <summary>
+        /// Gets or sets the size of the scene in device independent pixels.
+        /// </summary>
         public Size Size { get; set; }
+
+        /// <summary>
+        /// Gets or sets the scene scaling.
+        /// </summary>
         public double Scaling { get; set; } = 1;
 
+        /// <summary>
+        /// Adds a node to the scene index.
+        /// </summary>
+        /// <param name="node">The node.</param>
         public void Add(IVisualNode node)
         {
             Contract.Requires<ArgumentNullException>(node != null);
@@ -48,6 +77,10 @@ namespace Avalonia.Rendering.SceneGraph
             _index.Add(node.Visual, node);
         }
 
+        /// <summary>
+        /// Clones the scene.
+        /// </summary>
+        /// <returns>The cloned scene.</returns>
         public Scene Clone()
         {
             var index = new Dictionary<IVisual, IVisualNode>();
@@ -62,6 +95,13 @@ namespace Avalonia.Rendering.SceneGraph
             return result;
         }
 
+        /// <summary>
+        /// Tries to find a node in the scene graph representing the specified visual.
+        /// </summary>
+        /// <param name="visual">The visual.</param>
+        /// <returns>
+        /// The node representing the visual or null if it could not be found.
+        /// </returns>
         public IVisualNode FindNode(IVisual visual)
         {
             IVisualNode node;
@@ -69,11 +109,21 @@ namespace Avalonia.Rendering.SceneGraph
             return node;
         }
 
+        /// <summary>
+        /// Gets the visuals at a point in the scene.
+        /// </summary>
+        /// <param name="p">The point.</param>
+        /// <param name="filter">A filter. May be null.</param>
+        /// <returns>The visuals at the specified point.</returns>
         public IEnumerable<IVisual> HitTest(Point p, Func<IVisual, bool> filter)
         {
             return HitTest(Root, p, null, filter);
         }
 
+        /// <summary>
+        /// Removes a node from the scene index.
+        /// </summary>
+        /// <param name="node">The node.</param>
         public void Remove(IVisualNode node)
         {
             Contract.Requires<ArgumentNullException>(node != null);

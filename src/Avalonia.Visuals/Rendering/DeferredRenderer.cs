@@ -14,6 +14,10 @@ using System.Threading;
 
 namespace Avalonia.Rendering
 {
+    /// <summary>
+    /// A renderer which renders the state of the visual tree to an intermediate scene graph
+    /// representation which is then rendered on a rendering thread.
+    /// </summary>
     public class DeferredRenderer : RendererBase, IRenderer, IVisualBrushRenderer
     {
         private readonly IDispatcher _dispatcher;
@@ -33,6 +37,14 @@ namespace Avalonia.Rendering
         private DisplayDirtyRects _dirtyRectsDisplay = new DisplayDirtyRects();
         private IDrawOperation _currentDraw;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DeferredRenderer"/> class.
+        /// </summary>
+        /// <param name="root">The control to render.</param>
+        /// <param name="renderLoop">The render loop.</param>
+        /// <param name="sceneBuilder">The scene builder to use. Optional.</param>
+        /// <param name="layerFactory">The layer factory to use. Optional.</param>
+        /// <param name="dispatcher">The dispatcher to use. Optional.</param>
         public DeferredRenderer(
             IRenderRoot root,
             IRenderLoop renderLoop,
@@ -56,6 +68,16 @@ namespace Avalonia.Rendering
             }
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DeferredRenderer"/> class.
+        /// </summary>
+        /// <param name="root">The control to render.</param>
+        /// <param name="renderTarget">The render target.</param>
+        /// <param name="sceneBuilder">The scene builder to use. Optional.</param>
+        /// <param name="layerFactory">The layer factory to use. Optional.</param>
+        /// <remarks>
+        /// This constructor is intended to be used for unit testing.
+        /// </remarks>
         public DeferredRenderer(
             IVisual root,
             IRenderTarget renderTarget,
@@ -73,15 +95,26 @@ namespace Avalonia.Rendering
             _layers = new RenderLayers(_layerFactory);
         }
 
+        /// <inheritdoc/>
         public bool DrawFps { get; set; }
+
+        /// <inheritdoc/>
         public bool DrawDirtyRects { get; set; }
+
+        /// <summary>
+        /// Gets or sets a path to which rendered frame should be rendered for debugging.
+        /// </summary>
         public string DebugFramesPath { get; set; }
 
+        /// <inheritdoc/>
         public void AddDirty(IVisual visual)
         {
             _dirty?.Add(visual);
         }
 
+        /// <summary>
+        /// Disposes of the renderer and detaches from the render loop.
+        /// </summary>
         public void Dispose()
         {
             if (_renderLoop != null)
@@ -90,6 +123,7 @@ namespace Avalonia.Rendering
             }
         }
 
+        /// <inheritdoc/>
         public IEnumerable<IVisual> HitTest(Point p, Func<IVisual, bool> filter)
         {
             if (_renderLoop == null && (_dirty == null || _dirty.Count > 0))
@@ -101,19 +135,23 @@ namespace Avalonia.Rendering
             return _scene.HitTest(p, filter);
         }
 
+        /// <inheritdoc/>
         public void Paint(Rect rect)
         {
         }
 
+        /// <inheritdoc/>
         public void Resized(Size size)
         {
         }
 
+        /// <inheritdoc/>
         Size IVisualBrushRenderer.GetRenderTargetSize(IVisualBrush brush)
         {
             return (_currentDraw as BrushDrawOperation)?.ChildScenes?[brush.Visual]?.Size ?? Size.Empty;
         }
 
+        /// <inheritdoc/>
         void IVisualBrushRenderer.RenderVisualBrush(IDrawingContextImpl context, IVisualBrush brush)
         {
             var childScene = (_currentDraw as BrushDrawOperation)?.ChildScenes?[brush.Visual];
