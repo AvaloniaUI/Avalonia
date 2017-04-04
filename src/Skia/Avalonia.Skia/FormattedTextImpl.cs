@@ -47,11 +47,14 @@ namespace Avalonia.Skia
             _wrapping = wrapping;
             _constraint = constraint;
 
-            foreach (var span in spans)
+            if (spans != null)
             {
-                if (span.ForegroundBrush != null)
+                foreach (var span in spans)
                 {
-                    SetForegroundBrush(span.ForegroundBrush, span.StartIndex, span.Length);
+                    if (span.ForegroundBrush != null)
+                    {
+                        SetForegroundBrush(span.ForegroundBrush, span.StartIndex, span.Length);
+                    }
                 }
             }
 
