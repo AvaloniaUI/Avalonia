@@ -13,6 +13,7 @@ using Avalonia.Styling;
 using Avalonia.Themes.Default;
 using Avalonia.Rendering;
 using System.Reactive.Concurrency;
+using System.Collections.Generic;
 
 namespace Avalonia.UnitTests
 {
@@ -163,12 +164,11 @@ namespace Avalonia.UnitTests
             return Mock.Of<IPlatformRenderInterface>(x => 
                 x.CreateFormattedText(
                     It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.IsAny<double>(),
-                    It.IsAny<FontStyle>(),
+                    It.IsAny<Typeface>(),
                     It.IsAny<TextAlignment>(),
-                    It.IsAny<FontWeight>(),
-                    It.IsAny<TextWrapping>()) == Mock.Of<IFormattedTextImpl>() &&
+                    It.IsAny<TextWrapping>(),
+                    It.IsAny<Size>(),
+                    It.IsAny<IReadOnlyList<FormattedTextStyleSpan>>()) == Mock.Of<IFormattedTextImpl>() &&
                 x.CreateStreamGeometry() == Mock.Of<IStreamGeometryImpl>(
                     y => y.Open() == Mock.Of<IStreamGeometryContextImpl>()));
         }

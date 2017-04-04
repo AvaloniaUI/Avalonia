@@ -17,10 +17,15 @@ namespace Avalonia.Skia
             return CreateRenderTargetBitmap(width, height);
         }
 
-        public IFormattedTextImpl CreateFormattedText(string text, string fontFamilyName, double fontSize, FontStyle fontStyle,
-            TextAlignment textAlignment, FontWeight fontWeight, TextWrapping wrapping)
+        public IFormattedTextImpl CreateFormattedText(
+            string text,
+            Typeface typeface,
+            TextAlignment textAlignment,
+            TextWrapping wrapping,
+            Size constraint,
+            IReadOnlyList<FormattedTextStyleSpan> spans)
         {
-            return new FormattedTextImpl(text, fontFamilyName, fontSize, fontStyle, textAlignment, fontWeight, wrapping);
+            return new FormattedTextImpl(text, typeface, textAlignment, wrapping, constraint, spans);
         }
 
         public IStreamGeometryImpl CreateStreamGeometry()

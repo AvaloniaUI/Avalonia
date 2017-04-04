@@ -50,37 +50,40 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             FontStyle fontStyle,
             TextAlignment textAlignment,
             FontWeight fontWeight,
-            TextWrapping wrapping)
+            TextWrapping wrapping,
+            double widthConstraint)
         {
             var r = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
             return r.CreateFormattedText(text,
-                fontFamily,
-                fontSize,
-                fontStyle,
+                new Typeface(fontFamily, fontSize, fontStyle, fontWeight),
                 textAlignment,
-                fontWeight,
-                wrapping);
+                wrapping,
+                widthConstraint == -1 ? Size.Infinity : new Size(widthConstraint, double.PositiveInfinity),
+                null);
         }
 
         private IFormattedTextImpl Create(string text, double fontSize)
         {
             return Create(text, FontName, fontSize,
                 FontStyle.Normal, TextAlignment.Left,
-                FontWeight.Normal, TextWrapping.NoWrap);
+                FontWeight.Normal, TextWrapping.NoWrap,
+                -1);
         }
 
-        private IFormattedTextImpl Create(string text, double fontSize, TextAlignment alignment)
+        private IFormattedTextImpl Create(string text, double fontSize, TextAlignment alignment, double widthConstraint)
         {
             return Create(text, FontName, fontSize,
                 FontStyle.Normal, alignment,
-                FontWeight.Normal, TextWrapping.NoWrap);
+                FontWeight.Normal, TextWrapping.NoWrap,
+                widthConstraint);
         }
 
-        private IFormattedTextImpl Create(string text, double fontSize, TextWrapping wrap)
+        private IFormattedTextImpl Create(string text, double fontSize, TextWrapping wrap, double widthConstraint)
         {
             return Create(text, FontName, fontSize,
                 FontStyle.Normal, TextAlignment.Left,
-                FontWeight.Normal, wrap);
+                FontWeight.Normal, wrap,
+                widthConstraint);
         }
 
 #if AVALONIA_CAIRO
@@ -101,17 +104,15 @@ namespace Avalonia.Direct2D1.RenderTests.Media
         [InlineData(stringmiddlenewlines, FontSize, 72.01, 4 * FontSizeHeight)]
         public void Should_Measure_String_Correctly(string input, double fontSize, double expWidth, double expHeight)
         {
-            using (var fmt = Create(input, fontSize))
-            {
-                var size = fmt.Measure();
+            var fmt = Create(input, fontSize);
+            var size = fmt.Size;
 
-                Assert.Equal(expWidth, size.Width, 2);
-                Assert.Equal(expHeight, size.Height, 2);
+            Assert.Equal(expWidth, size.Width, 2);
+            Assert.Equal(expHeight, size.Height, 2);
 
-                var linesHeight = fmt.GetLines().Sum(l => l.Height);
+            var linesHeight = fmt.GetLines().Sum(l => l.Height);
 
-                Assert.Equal(expHeight, linesHeight, 2);
-            }
+            Assert.Equal(expHeight, linesHeight, 2);
         }
 
 #if AVALONIA_CAIRO
@@ -135,16 +136,11 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                                                             double widthConstraint,
                                                             TextWrapping wrap)
         {
-            using (var fmt = Create(input, FontSize, wrap))
-            {
-                if (widthConstraint != -1)
-                {
-                    fmt.Constraint = new Size(widthConstraint, 10000);
-                }
+            var fmt = Create(input, FontSize, wrap, widthConstraint);
+            var constrained = fmt;
 
-                var lines = fmt.GetLines().ToArray();
-                Assert.Equal(linesCount, lines.Count());
-            }
+            var lines = constrained.GetLines().ToArray();
+            Assert.Equal(linesCount, lines.Count());
         }
 
 #if AVALONIA_CAIRO
@@ -178,14 +174,12 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                                     double x, double y,
                                     bool isInside, bool isTrailing, int pos)
         {
-            using (var fmt = Create(input, FontSize))
-            {
-                var htRes = fmt.HitTestPoint(new Point(x, y));
+            var fmt = Create(input, FontSize);
+            var htRes = fmt.HitTestPoint(new Point(x, y));
 
-                Assert.Equal(pos, htRes.TextPosition);
-                Assert.Equal(isInside, htRes.IsInside);
-                Assert.Equal(isTrailing, htRes.IsTrailing);
-            }
+            Assert.Equal(pos, htRes.TextPosition);
+            Assert.Equal(isInside, htRes.IsInside);
+            Assert.Equal(isTrailing, htRes.IsTrailing);
         }
 
 #if AVALONIA_CAIRO
@@ -205,15 +199,13 @@ namespace Avalonia.Direct2D1.RenderTests.Media
         public void Should_HitTestPosition_Correctly(string input,
                     int index, double x, double y, double width, double height)
         {
-            using (var fmt = Create(input, FontSize))
-            {
-                var r = fmt.HitTestTextPosition(index);
+            var fmt = Create(input, FontSize);
+            var r = fmt.HitTestTextPosition(index);
 
-                Assert.Equal(x, r.X, 2);
-                Assert.Equal(y, r.Y, 2);
-                Assert.Equal(width, r.Width, 2);
-                Assert.Equal(height, r.Height, 2);
-            }
+            Assert.Equal(x, r.X, 2);
+            Assert.Equal(y, r.Y, 2);
+            Assert.Equal(width, r.Width, 2);
+            Assert.Equal(height, r.Height, 2);
         }
 
 #if AVALONIA_CAIRO
@@ -229,17 +221,14 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                                                     double x, double y, double width, double height)
         {
             //parse expected
-            using (var fmt = Create(input, FontSize, TextAlignment.Right))
-            {
-                fmt.Constraint = new Size(widthConstraint, 100);
+            var fmt = Create(input, FontSize, TextAlignment.Right, widthConstraint);
+            var constrained = fmt;
+            var r = constrained.HitTestTextPosition(index);
 
-                var r = fmt.HitTestTextPosition(index);
-
-                Assert.Equal(x, r.X, 2);
-                Assert.Equal(y, r.Y, 2);
-                Assert.Equal(width, r.Width, 2);
-                Assert.Equal(height, r.Height, 2);
-            }
+            Assert.Equal(x, r.X, 2);
+            Assert.Equal(y, r.Y, 2);
+            Assert.Equal(width, r.Width, 2);
+            Assert.Equal(height, r.Height, 2);
         }
 
 #if AVALONIA_CAIRO
@@ -255,17 +244,14 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                                                     double x, double y, double width, double height)
         {
             //parse expected
-            using (var fmt = Create(input, FontSize, TextAlignment.Center))
-            {
-                fmt.Constraint = new Size(widthConstraint, 100);
+            var fmt = Create(input, FontSize, TextAlignment.Center, widthConstraint);
+            var constrained = fmt;
+            var r = constrained.HitTestTextPosition(index);
 
-                var r = fmt.HitTestTextPosition(index);
-
-                Assert.Equal(x, r.X, 2);
-                Assert.Equal(y, r.Y, 2);
-                Assert.Equal(width, r.Width, 2);
-                Assert.Equal(height, r.Height, 2);
-            }
+            Assert.Equal(x, r.X, 2);
+            Assert.Equal(y, r.Y, 2);
+            Assert.Equal(width, r.Width, 2);
+            Assert.Equal(height, r.Height, 2);
         }
 
 #if AVALONIA_CAIRO
@@ -291,22 +277,20 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 return new Rect(v[0], v[1], v[2], v[3]);
             }).ToArray();
 
-            using (var fmt = Create(input, FontSize))
+            var fmt = Create(input, FontSize);
+            var htRes = fmt.HitTestTextRange(index, length).ToArray();
+
+            Assert.Equal(rects.Length, htRes.Length);
+
+            for (int i = 0; i < rects.Length; i++)
             {
-                var htRes = fmt.HitTestTextRange(index, length).ToArray();
+                var exr = rects[i];
+                var r = htRes[i];
 
-                Assert.Equal(rects.Length, htRes.Length);
-
-                for (int i = 0; i < rects.Length; i++)
-                {
-                    var exr = rects[i];
-                    var r = htRes[i];
-
-                    Assert.Equal(exr.X, r.X, 2);
-                    Assert.Equal(exr.Y, r.Y, 2);
-                    Assert.Equal(exr.Width, r.Width, 2);
-                    Assert.Equal(exr.Height, r.Height, 2);
-                }
+                Assert.Equal(exr.X, r.X, 2);
+                Assert.Equal(exr.Y, r.Y, 2);
+                Assert.Equal(exr.Width, r.Width, 2);
+                Assert.Equal(exr.Height, r.Height, 2);
             }
         }
     }
