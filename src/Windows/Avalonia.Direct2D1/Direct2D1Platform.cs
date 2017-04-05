@@ -72,14 +72,18 @@ namespace Avalonia.Direct2D1
             }
         }
 
-        public static void Initialize() => AvaloniaLocator.CurrentMutable
-            .Bind<IPlatformRenderInterface>().ToConstant(s_instance)
-            .Bind<IRendererFactory>().ToConstant(s_instance)
-            .BindToSelf(s_d2D1Factory)
-            .BindToSelf(s_dwfactory)
-            .BindToSelf(s_imagingFactory)
-            .BindToSelf(s_dxgiDevice)
-            .BindToSelf(s_d2D1Device);
+        public static void Initialize()
+        {
+            AvaloniaLocator.CurrentMutable
+                        .Bind<IPlatformRenderInterface>().ToConstant(s_instance)
+                        .Bind<IRendererFactory>().ToConstant(s_instance)
+                        .BindToSelf(s_d2D1Factory)
+                        .BindToSelf(s_dwfactory)
+                        .BindToSelf(s_imagingFactory)
+                        .BindToSelf(s_dxgiDevice)
+                        .BindToSelf(s_d2D1Device);
+            SharpDX.Configuration.EnableReleaseOnFinalizer = true;
+        }
 
         public IBitmapImpl CreateBitmap(int width, int height)
         {
