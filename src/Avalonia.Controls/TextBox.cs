@@ -522,7 +522,7 @@ namespace Avalonia.Controls
             }
         }
 
-        protected override void OnPointerReleased(PointerEventArgs e)
+        protected override void OnPointerReleased(PointerReleasedEventArgs e)
         {
             if (_presenter != null && e.Device.Captured == _presenter)
             {
