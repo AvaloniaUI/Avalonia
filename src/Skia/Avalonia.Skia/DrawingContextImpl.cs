@@ -292,7 +292,7 @@ namespace Avalonia.Skia
 
         public void DrawText(IBrush foreground, Point origin, IFormattedTextImpl text)
         {
-            using (var paint = CreatePaint(foreground, text.Measure()))
+            using (var paint = CreatePaint(foreground, text.Size))
             {
                 var textImpl = (FormattedTextImpl)text;
                 textImpl.Draw(this, Canvas, origin.ToSKPoint(), paint);

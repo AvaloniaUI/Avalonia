@@ -22,10 +22,7 @@ namespace Avalonia.Media
         /// </summary>
         static Geometry()
         {
-            TransformProperty.Changed.Subscribe(x =>
-            {
-                ((Geometry)x.Sender).PlatformImpl.Transform = ((Transform)x.NewValue).Value;
-            });
+            TransformProperty.Changed.AddClassHandler<Geometry>(x => x.TransformChanged);
         }
 
         /// <summary>
@@ -68,13 +65,30 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        /// Indicates whether the geometry contains the specified point.
+        /// Indicates whether the geometry's fill contains the specified point.
         /// </summary>
         /// <param name="point">The point.</param>
         /// <returns><c>true</c> if the geometry contains the point; otherwise, <c>false</c>.</returns>
         public bool FillContains(Point point)
         {
             return PlatformImpl.FillContains(point);
+        }
+
+        /// <summary>
+        /// Indicates whether the geometry's stroke contains the specified point.
+        /// </summary>
+        /// <param name="pen">The pen to use.</param>
+        /// <param name="point">The point.</param>
+        /// <returns><c>true</c> if the geometry contains the point; otherwise, <c>false</c>.</returns>
+        public bool StrokeContains(Pen pen, Point point)
+        {
+            return PlatformImpl.StrokeContains(pen, point);
+        }
+
+        private void TransformChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            var transform = (Transform)e.NewValue;
+            PlatformImpl = PlatformImpl.WithTransform(transform.Value);
         }
     }
 }

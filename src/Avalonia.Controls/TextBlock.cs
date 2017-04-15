@@ -116,7 +116,7 @@ namespace Avalonia.Controls
                 this.GetObservable(TextAlignmentProperty).Select(_ => Unit.Default),
                 this.GetObservable(FontSizeProperty).Select(_ => Unit.Default),
                 this.GetObservable(FontStyleProperty).Select(_ => Unit.Default),
-                this.GetObservable(FontWeightProperty).Select(_=>Unit.Default))
+                this.GetObservable(FontWeightProperty).Select(_ => Unit.Default))
                 .Subscribe(_ =>
                 {
                     InvalidateFormattedText();
@@ -350,16 +350,14 @@ namespace Avalonia.Controls
         /// <returns>A <see cref="FormattedText"/> object.</returns>
         protected virtual FormattedText CreateFormattedText(Size constraint)
         {
-            var result = new FormattedText(
-                Text ?? string.Empty,
-                FontFamily,
-                FontSize,
-                FontStyle,
-                TextAlignment,
-                FontWeight,
-                TextWrapping);
-            result.Constraint = constraint;
-            return result;
+            return new FormattedText
+            {
+                Constraint = constraint,
+                Typeface = new Typeface(FontFamily, FontSize, FontStyle, FontWeight),
+                Text = Text ?? string.Empty,
+                TextAlignment = TextAlignment,
+                Wrapping = TextWrapping,
+            };
         }
 
         /// <summary>
@@ -370,7 +368,6 @@ namespace Avalonia.Controls
             if (_formattedText != null)
             {
                 _constraint = _formattedText.Constraint;
-                _formattedText.Dispose();
                 _formattedText = null;
             }
 

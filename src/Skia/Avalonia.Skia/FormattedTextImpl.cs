@@ -12,15 +12,23 @@ namespace Avalonia.Skia
 {
     public class FormattedTextImpl : IFormattedTextImpl
     {
-        public FormattedTextImpl(string text, string fontFamilyName, double fontSize, FontStyle fontStyle,
-                    TextAlignment textAlignment, FontWeight fontWeight, TextWrapping wrapping)
+        public FormattedTextImpl(
+            string text,
+            Typeface typeface,
+            TextAlignment textAlignment,
+            TextWrapping wrapping,
+            Size constraint,
+            IReadOnlyList<FormattedTextStyleSpan> spans)
         {
             Text = text ?? string.Empty;
 
             // Replace 0 characters with zero-width spaces (200B)
             Text = Text.Replace((char)0, (char)0x200B);
 
-            var typeface = TypefaceCache.GetTypeface(fontFamilyName, fontStyle, fontWeight);
+            var skiaTypeface = TypefaceCache.GetTypeface(
+                typeface?.FontFamilyName ?? "monospace",
+                typeface?.Style ?? FontStyle.Normal,
+                typeface?.Weight ?? FontWeight.Normal);
 
             _paint = new SKPaint();
 
@@ -31,34 +39,31 @@ namespace Avalonia.Skia
             _paint.IsAntialias = true;            
             _paint.LcdRenderText = true;            
             _paint.SubpixelText = true;
-            _paint.Typeface = typeface;
-            _paint.TextSize = (float)fontSize;
+            _paint.Typeface = skiaTypeface;
+            _paint.TextSize = (float)(typeface?.FontSize ?? 12);
             _paint.TextAlign = textAlignment.ToSKTextAlign();
+            _paint.XferMode = SKXferMode.Src;
 
             _wrapping = wrapping;
+            _constraint = constraint;
+
+            if (spans != null)
+            {
+                foreach (var span in spans)
+                {
+                    if (span.ForegroundBrush != null)
+                    {
+                        SetForegroundBrush(span.ForegroundBrush, span.StartIndex, span.Length);
+                    }
+                }
+            }
 
             Rebuild();
         }
 
-        public Size Constraint
-        {
-            get { return _constraint; }
-            set
-            {
-                if (_constraint == value)
-                    return;
+        public Size Constraint => _constraint;
 
-                _constraint = value;
-
-                Rebuild();
-            }
-        }
-
-        public string Text { get; }
-
-        public void Dispose()
-        {
-        }
+        public Size Size => _size;
 
         public IEnumerable<FormattedTextLine> GetLines()
         {
@@ -159,27 +164,6 @@ namespace Avalonia.Skia
             }
 
             return result;
-        }
-
-        public Size Measure()
-        {
-            return _size;
-        }
-
-        public void SetForegroundBrush(IBrush brush, int startIndex, int length)
-        {
-            var key = new FBrushRange(startIndex, length);
-            int index = _foregroundBrushes.FindIndex(v => v.Key.Equals(key));
-
-            if (index > -1)
-            {
-                _foregroundBrushes.RemoveAt(index);
-            }
-
-            if (brush != null)
-            {
-                _foregroundBrushes.Insert(0, new KeyValuePair<FBrushRange, IBrush>(key, brush));
-            }
         }
 
         public override string ToString()
@@ -286,6 +270,7 @@ namespace Avalonia.Skia
         private readonly List<FormattedTextLine> _lines = new List<FormattedTextLine>();
         private readonly SKPaint _paint;
         private readonly List<Rect> _rects = new List<Rect>();
+        public string Text { get; }
         private readonly TextWrapping _wrapping;
         private Size _constraint = new Size(double.PositiveInfinity, double.PositiveInfinity);
         private float _lineHeight = 0;
@@ -617,6 +602,22 @@ namespace Avalonia.Skia
             }
 
             return x;
+        }
+
+        private void SetForegroundBrush(IBrush brush, int startIndex, int length)
+        {
+            var key = new FBrushRange(startIndex, length);
+            int index = _foregroundBrushes.FindIndex(v => v.Key.Equals(key));
+
+            if (index > -1)
+            {
+                _foregroundBrushes.RemoveAt(index);
+            }
+
+            if (brush != null)
+            {
+                _foregroundBrushes.Insert(0, new KeyValuePair<FBrushRange, IBrush>(key, brush));
+            }
         }
 
         private struct AvaloniaFormattedTextLine

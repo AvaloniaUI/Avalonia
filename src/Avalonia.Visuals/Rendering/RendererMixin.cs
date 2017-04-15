@@ -58,16 +58,13 @@ namespace Avalonia.Rendering
                         s_lastMeasure = now;
                     }
                     var pt = new Point(40, 40);
-                    using (
-                        var txt = new FormattedText("Frame #" + s_frameNum + " FPS: " + s_fps, "Arial", 18,
-                            FontStyle.Normal,
-                            TextAlignment.Left,
-                            FontWeight.Normal,
-                            TextWrapping.NoWrap))
+                    var txt = new FormattedText
                     {
-                        ctx.FillRectangle(Brushes.White, new Rect(pt, txt.Measure()));
-                        ctx.DrawText(Brushes.Black, pt, txt);
-                    }
+                        Text = "Frame #" + s_frameNum + " FPS: " + s_fps,
+                        Typeface = new Typeface("Arial", 18)
+                    };
+                    ctx.FillRectangle(Brushes.White, new Rect(pt, txt.Measure()));
+                    ctx.DrawText(Brushes.Black, pt, txt);
                 }
             }
         }
