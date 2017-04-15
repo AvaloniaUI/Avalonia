@@ -335,7 +335,7 @@ namespace Avalonia.Input.UnitTests
 
         class MockRenderInterface : IPlatformRenderInterface
         {
-            public IFormattedTextImpl CreateFormattedText(string text, string fontFamilyName, double fontSize, FontStyle fontStyle, TextAlignment textAlignment, FontWeight fontWeight, TextWrapping wrapping)
+            public IFormattedTextImpl CreateFormattedText(string text, Typeface typeface, TextAlignment textAlignment, TextWrapping wrapping, Size constraint, IReadOnlyList<FormattedTextStyleSpan> spans)
             {
                 throw new NotImplementedException();
             }
@@ -414,9 +414,24 @@ namespace Avalonia.Input.UnitTests
                     throw new NotImplementedException();
                 }
 
+                public IGeometryImpl Intersect(IGeometryImpl geometry)
+                {
+                    throw new NotImplementedException();
+                }
+
                 public IStreamGeometryContextImpl Open()
                 {
                     return _impl;
+                }
+
+                public bool StrokeContains(Pen pen, Point point)
+                {
+                    throw new NotImplementedException();
+                }
+
+                public IGeometryImpl WithTransform(Matrix transform)
+                {
+                    throw new NotImplementedException();
                 }
 
                 class MockStreamGeometryContext : IStreamGeometryContextImpl

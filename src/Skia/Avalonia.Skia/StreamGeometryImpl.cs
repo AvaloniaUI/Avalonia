@@ -13,16 +13,15 @@ namespace Avalonia.Skia
     class StreamGeometryImpl : IStreamGeometryImpl
     {
         SKPath _path;
-        SKPath _transformedPath;
 
         private Matrix _transform = Matrix.Identity;
 
-        public SKPath EffectivePath => (_transformedPath ?? _path);
+        public SKPath EffectivePath => _path;
 
         public Rect GetRenderBounds(double strokeThickness)
         {
             // TODO: Calculate properly.
-            return Bounds.Inflate(strokeThickness);
+            return Bounds.TransformToAABB(Transform).Inflate(strokeThickness);
         }
 
         public Rect Bounds { get; private set; }
@@ -30,32 +29,6 @@ namespace Avalonia.Skia
         public Matrix Transform
         {
             get { return _transform; }
-            set
-            {
-                if (_transform == value)
-                    return;
-
-                _transform = value;
-                ApplyTransform();
-            }
-        }
-
-        void ApplyTransform()
-        {
-            if (_path == null)
-                return;
-
-            if (_transformedPath != null)
-            {
-                _transformedPath.Dispose();
-                _transformedPath = null;
-            }
-
-            if (!Transform.IsIdentity)
-            {
-                _transformedPath = new SKPath(_path);
-                _transformedPath.Transform(Transform.ToSKMatrix());
-            }
         }
 
         public IStreamGeometryImpl Clone()
@@ -63,7 +36,6 @@ namespace Avalonia.Skia
             return new StreamGeometryImpl
             {
                 _path = _path?.Clone(),
-                _transformedPath = _transformedPath?.Clone(),
                 _transform = Transform,
                 Bounds = Bounds
             };
@@ -84,6 +56,36 @@ namespace Avalonia.Skia
             return GetRenderBounds(0).Contains(point);
         }
 
+        public bool StrokeContains(Pen pen, Point point)
+        {
+            // TODO: Not supported by SkiaSharp yet, so use expanded Rect
+            // return EffectivePath.Contains(point.X, point.Y);
+            return GetRenderBounds(0).Contains(point);
+        }
+
+        public IGeometryImpl Intersect(IGeometryImpl geometry)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IGeometryImpl WithTransform(Matrix transform)
+        {
+            var result = (StreamGeometryImpl)Clone();
+
+            if (result.Transform != Matrix.Identity)
+            {
+                result._path.Transform(result.Transform.Invert().ToSKMatrix());
+            }
+
+            if (transform != Matrix.Identity)
+            {
+                result._path.Transform(transform.ToSKMatrix());
+            }
+
+            result._transform = transform;
+            return result;
+        }
+
         class StreamContext : IStreamGeometryContextImpl
         {
             private readonly StreamGeometryImpl _geometryImpl;
@@ -100,7 +102,6 @@ namespace Avalonia.Skia
             {
                 SKRect rc;
                 _path.GetBounds(out rc);
-                _geometryImpl.ApplyTransform();
                 _geometryImpl.Bounds = rc.ToAvaloniaRect();
             }
 

@@ -207,7 +207,7 @@ namespace Avalonia.Direct2D1.Media
             {
                 var impl = (FormattedTextImpl)text;
 
-                using (var brush = CreateBrush(foreground, impl.Measure()))
+                using (var brush = CreateBrush(foreground, impl.Size))
                 using (var renderer = new AvaloniaTextRenderer(this, _renderTarget, brush.PlatformBrush))
                 {
                     if (brush.PlatformBrush != null)
