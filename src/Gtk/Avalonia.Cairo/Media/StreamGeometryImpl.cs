@@ -52,7 +52,7 @@ namespace Avalonia.Cairo.Media
         public Rect GetRenderBounds(double strokeThickness)
         {
             // TODO: Calculate properly.
-			return Bounds.TransformToAABB(Transform).Inflate(strokeThickness);
+            return Bounds.TransformToAABB(Transform).Inflate(strokeThickness);
         }
 
         public IStreamGeometryContextImpl Open()

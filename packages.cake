@@ -198,7 +198,6 @@ public class Packages
                     new NuSpecDependency() { Id = "System.Threading.ThreadPool", TargetFramework = "netcoreapp1.0", Version = "4.3.0" },
                     new NuSpecDependency() { Id = "Microsoft.Extensions.DependencyModel", TargetFramework = "netcoreapp1.0", Version = "1.1.0" },
                     new NuSpecDependency() { Id = "NETStandard.Library", TargetFramework = "netcoreapp1.0", Version = "1.6.0" },
-                    new NuSpecDependency() { Id = "Microsoft.NETCore.Portable.Compatibility", TargetFramework = "netcoreapp1.0", Version = "1.0.1" },
                     new NuSpecDependency() { Id = "Splat", TargetFramework = "netcoreapp1.0", Version = SplatVersion },
                     new NuSpecDependency() { Id = "Serilog", TargetFramework = "netcoreapp1.0", Version = SerilogVersion },
                     new NuSpecDependency() { Id = "Sprache", TargetFramework = "netcoreapp1.0", Version = SpracheVersion },
@@ -429,8 +428,7 @@ public class Packages
                     //netstandard1.3
                     new NuSpecDependency() { Id = "Avalonia", TargetFramework = "netstandard1.3", Version = parameters.Version },
                     new NuSpecDependency() { Id = "SkiaSharp", TargetFramework = "netstandard1.3", Version = SkiaSharpVersion },
-                    new NuSpecDependency() { Id = "NETStandard.Library", TargetFramework = "netstandard1.3", Version = "1.6.0" },
-                    new NuSpecDependency() { Id = "Microsoft.NETCore.Portable.Compatibility", TargetFramework = "netstandard1.3", Version = "1.0.1" }
+                    new NuSpecDependency() { Id = "NETStandard.Library", TargetFramework = "netstandard1.3", Version = "1.6.0" }
                 },
                 Files = new []
                 {
@@ -459,6 +457,24 @@ public class Packages
                     new NuSpecContent { Source = "licence.md", Target = "" }
                 },
                 BasePath = context.Directory("./"),
+                OutputDirectory = parameters.NugetRoot
+            },
+            ///////////////////////////////////////////////////////////////////////////////
+            // Avalonia.LinuxFramebuffer
+            ///////////////////////////////////////////////////////////////////////////////
+            new NuGetPackSettings()
+            {
+                Id = "Avalonia.LinuxFramebuffer",
+                Dependencies = new []
+                {
+                    new NuSpecDependency() { Id = "Avalonia", Version = parameters.Version },
+                    new NuSpecDependency() { Id = "Avalonia.Skia.Desktop", Version = parameters.Version }
+                },
+                Files = new []
+                {
+                    new NuSpecContent { Source = "Avalonia.LinuxFramebuffer/bin/" + parameters.DirSuffix + "/netstandard1.3/Avalonia.LinuxFramebuffer.dll", Target = "lib/netstandard1.3" }
+                },
+                BasePath = context.Directory("./src/Linux/"),
                 OutputDirectory = parameters.NugetRoot
             }
         };

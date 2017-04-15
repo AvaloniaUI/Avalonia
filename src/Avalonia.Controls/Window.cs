@@ -281,7 +281,9 @@ namespace Avalonia.Controls
                 var modal = PlatformImpl.ShowDialog();
                 var result = new TaskCompletionSource<TResult>();
 
-                Observable.FromEventPattern(this, nameof(Closed))
+                Observable.FromEventPattern<EventHandler, EventArgs>(
+                    x => this.Closed += x,
+                    x => this.Closed -= x)
                     .Take(1)
                     .Subscribe(_ =>
                     {

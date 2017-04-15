@@ -13,6 +13,7 @@ using Avalonia.Styling;
 using Avalonia.Themes.Default;
 using Avalonia.Rendering;
 using System.Reactive.Concurrency;
+using System.Collections.Generic;
 
 namespace Avalonia.UnitTests
 {
@@ -164,6 +165,20 @@ namespace Avalonia.UnitTests
             result.Add(baseLight);
 
             return result;
+        }
+
+        private static IPlatformRenderInterface CreateRenderInterfaceMock()
+        {
+            return Mock.Of<IPlatformRenderInterface>(x => 
+                x.CreateFormattedText(
+                    It.IsAny<string>(),
+                    It.IsAny<Typeface>(),
+                    It.IsAny<TextAlignment>(),
+                    It.IsAny<TextWrapping>(),
+                    It.IsAny<Size>(),
+                    It.IsAny<IReadOnlyList<FormattedTextStyleSpan>>()) == Mock.Of<IFormattedTextImpl>() &&
+                x.CreateStreamGeometry() == Mock.Of<IStreamGeometryImpl>(
+                    y => y.Open() == Mock.Of<IStreamGeometryContextImpl>()));
         }
     }
 }

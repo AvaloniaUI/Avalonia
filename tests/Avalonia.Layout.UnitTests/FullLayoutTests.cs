@@ -163,7 +163,7 @@ namespace Avalonia.Layout.UnitTests
         {
             var globalStyles = new Mock<IGlobalStyles>();
             var renderInterface = new Mock<IPlatformRenderInterface>();
-            renderInterface.Setup(x => 
+            renderInterface.Setup(x =>
                 x.CreateFormattedText(
                     It.IsAny<string>(),
                     It.IsAny<Typeface>(),
@@ -172,7 +172,7 @@ namespace Avalonia.Layout.UnitTests
                     It.IsAny<Size>(),
                     It.IsAny<IReadOnlyList<FormattedTextStyleSpan>>()))
                 .Returns(new FormattedTextMock("TEST"));
-                
+
             var windowImpl = new Mock<IWindowImpl>();
 
             Size clientSize = default(Size);

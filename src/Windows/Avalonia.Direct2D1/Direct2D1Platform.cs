@@ -39,19 +39,6 @@ namespace Avalonia.Direct2D1
 
         private static readonly SharpDX.WIC.ImagingFactory s_imagingFactory = new SharpDX.WIC.ImagingFactory();
 
-        public static void Initialize()
-        {
-            AvaloniaLocator.CurrentMutable
-                .Bind<IPlatformRenderInterface>().ToConstant(s_instance)
-                .Bind<SharpDX.Direct2D1.Factory>().ToConstant(s_d2D1Factory)
-                .Bind<SharpDX.Direct2D1.Factory1>().ToConstant(s_d2D1Factory)
-                .BindToSelf(s_dwfactory)
-                .BindToSelf(s_imagingFactory)
-                .BindToSelf(s_dxgiDevice)
-                .BindToSelf(s_d2D1Device);
-            SharpDX.Configuration.EnableReleaseOnFinalizer = true;
-        }
-
         private static readonly SharpDX.DXGI.Device s_dxgiDevice;
 
         private static readonly SharpDX.Direct2D1.Device s_d2D1Device;
@@ -81,6 +68,19 @@ namespace Avalonia.Direct2D1
             {
                 s_d2D1Device = new SharpDX.Direct2D1.Device(factory1, s_dxgiDevice);
             }
+        }
+
+        public static void Initialize()
+        {
+            AvaloniaLocator.CurrentMutable
+                .Bind<IPlatformRenderInterface>().ToConstant(s_instance)
+                .Bind<SharpDX.Direct2D1.Factory>().ToConstant(s_d2D1Factory)
+                .Bind<SharpDX.Direct2D1.Factory1>().ToConstant(s_d2D1Factory)
+                .BindToSelf(s_dwfactory)
+                .BindToSelf(s_imagingFactory)
+                .BindToSelf(s_dxgiDevice)
+                .BindToSelf(s_d2D1Device);
+            SharpDX.Configuration.EnableReleaseOnFinalizer = true;
         }
 
         public IBitmapImpl CreateBitmap(int width, int height)

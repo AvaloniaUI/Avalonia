@@ -116,7 +116,7 @@ namespace Avalonia.Controls
                 this.GetObservable(TextAlignmentProperty).Select(_ => Unit.Default),
                 this.GetObservable(FontSizeProperty).Select(_ => Unit.Default),
                 this.GetObservable(FontStyleProperty).Select(_ => Unit.Default),
-                this.GetObservable(FontWeightProperty).Select(_=>Unit.Default))
+                this.GetObservable(FontWeightProperty).Select(_ => Unit.Default))
                 .Subscribe(_ =>
                 {
                     InvalidateFormattedText();

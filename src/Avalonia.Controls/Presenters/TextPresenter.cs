@@ -127,11 +127,11 @@ namespace Avalonia.Controls.Presenters
             base.Render(context);
 
             if (selectionStart == selectionEnd)
-            {                
+            {
                 var backgroundColor = (((Control)TemplatedParent).GetValue(BackgroundProperty) as SolidColorBrush)?.Color;
                 var caretBrush = Brushes.Black;
 
-                if(backgroundColor.HasValue)
+                if (backgroundColor.HasValue)
                 {
                     byte red = (byte)~(backgroundColor.Value.R);
                     byte green = (byte)~(backgroundColor.Value.G);
@@ -139,7 +139,7 @@ namespace Avalonia.Controls.Presenters
 
                     caretBrush = new SolidColorBrush(Color.FromRgb(red, green, blue));
                 }
-                
+
                 if (_caretBlink)
                 {
                     var charPos = FormattedText.HitTestTextPosition(CaretIndex);
