@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using SharpDX.Direct2D1;
@@ -49,6 +48,6 @@ namespace Avalonia.Direct2D1.Media
         public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
         {
             return new DrawingContextImpl(visualBrushRenderer, _target, _dwriteFactory);
-        }        
+        }
     }
 }

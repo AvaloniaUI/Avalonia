@@ -3,7 +3,6 @@
 
 using System;
 using Avalonia.Direct2D1.Media;
-using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using SharpDX.Direct2D1;
@@ -48,7 +47,7 @@ namespace Avalonia.Direct2D1
         /// <summary>
         /// Creates a drawing context for a rendering session.
         /// </summary>
-        /// <returns>An <see cref="Avalonia.Media.DrawingContext"/>.</returns>
+        /// <returns>An <see cref="Avalonia.Platform.IDrawingContextImpl"/>.</returns>
         public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
         {
             return new DrawingContextImpl(visualBrushRenderer, _renderTarget, DirectWriteFactory);

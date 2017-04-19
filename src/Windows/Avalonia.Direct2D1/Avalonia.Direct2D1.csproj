@@ -81,6 +81,7 @@
     <Compile Include="Media\DrawingContextImpl.cs" />
     <Compile Include="Media\GeometryImpl.cs" />
     <Compile Include="Media\Imaging\RenderTargetBitmapImpl.cs" />
+    <Compile Include="Media\ImageBrushImpl.cs" />
     <Compile Include="Media\Imaging\BitmapImpl.cs" />
     <Compile Include="Media\Imaging\D2DBitmapImpl.cs" />
     <Compile Include="Media\Imaging\WicBitmapImpl.cs" />

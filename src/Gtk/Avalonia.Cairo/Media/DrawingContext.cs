@@ -54,7 +54,7 @@ namespace Avalonia.Cairo.Media
             {
                 _transform = value;
                 _context.Matrix = value.ToCairo();
-                
+
             }
         }
 
@@ -90,7 +90,7 @@ namespace Avalonia.Cairo.Media
             _context.Scale(scale.X, scale.Y);
             destRect /= scale;
 
-			_context.PushGroup ();
+            _context.PushGroup();
 
             if (pixbuf != null)
             {
@@ -108,10 +108,10 @@ namespace Avalonia.Cairo.Media
                         (int)(-sourceRect.Y + destRect.Y));
             }
 
-            _context.Rectangle (destRect.ToCairo ());
-			_context.Fill ();
-			_context.PopGroupToSource ();
-			_context.PaintWithAlpha (opacityOverride);
+            _context.Rectangle(destRect.ToCairo());
+            _context.Fill();
+            _context.PopGroupToSource();
+            _context.PaintWithAlpha(opacityOverride);
             _context.Restore();
         }
 
@@ -131,8 +131,8 @@ namespace Avalonia.Cairo.Media
         public void DrawLine(Pen pen, Point p1, Point p2)
         {
             var size = new Rect(p1, p2).Size;
-            
-            using (var p = SetPen(pen, size)) 
+
+            using (var p = SetPen(pen, size))
             {
                 _context.MoveTo(p1.ToCairo());
                 _context.LineTo(p2.ToCairo());
@@ -153,7 +153,7 @@ namespace Avalonia.Cairo.Media
             var oldMatrix = Transform;
             Transform = impl.Transform * Transform;
 
-            
+
             if (brush != null)
             {
                 _context.AppendPath(impl.Path);
@@ -188,9 +188,9 @@ namespace Avalonia.Cairo.Media
         /// <param name="rect">The rectangle bounds.</param>
         public void DrawRectangle(Pen pen, Rect rect, float cornerRadius)
         {
-            using (var p = SetPen(pen, rect.Size)) 
+            using (var p = SetPen(pen, rect.Size))
             {
-                _context.Rectangle(rect.ToCairo ());
+                _context.Rectangle(rect.ToCairo());
                 _context.Stroke();
             }
         }
@@ -206,7 +206,7 @@ namespace Avalonia.Cairo.Media
             var layout = ((FormattedTextImpl)text).Layout;
             _context.MoveTo(origin.X, origin.Y);
 
-            using (var b = SetBrush(foreground, new Size(0, 0))) 
+            using (var b = SetBrush(foreground, new Size(0, 0)))
             {
                 Pango.CairoHelper.ShowLayout(_context, layout);
             }
@@ -219,9 +219,9 @@ namespace Avalonia.Cairo.Media
         /// <param name="rect">The rectangle bounds.</param>
         public void FillRectangle(IBrush brush, Rect rect, float cornerRadius)
         {
-            using (var b = SetBrush(brush, rect.Size)) 
+            using (var b = SetBrush(brush, rect.Size))
             {
-                _context.Rectangle(rect.ToCairo ());
+                _context.Rectangle(rect.ToCairo());
                 _context.Fill();
             }
         }
@@ -276,10 +276,10 @@ namespace Avalonia.Cairo.Media
 
             return Disposable.Create(() =>
             {
-               _context.Restore();
+                _context.Restore();
             });
         }
-        
+
         private double opacityOverride = 1.0f;
 
         private IDisposable SetBrush(IBrush brush, Size destinationSize)
@@ -379,7 +379,7 @@ namespace Avalonia.Cairo.Media
 
             if (pen.Brush == null)
                 return Disposable.Empty;
-            
+
             return SetBrush(pen.Brush, destinationSize);
         }
 
@@ -405,10 +405,10 @@ namespace Avalonia.Cairo.Media
         public void PopOpacityMask()
         {
             _context.PopGroupToSource();
-			var brushImpl = _maskStack.Pop ();
+            var brushImpl = _maskStack.Pop();
 
             _context.Mask(brushImpl.PlatformBrush);
-			brushImpl.Dispose ();
+            brushImpl.Dispose();
         }
     }
 }

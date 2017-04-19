@@ -5,7 +5,6 @@ using System;
 using Avalonia.Platform;
 using Avalonia.VisualTree;
 using System.Collections.Generic;
-using Avalonia.Threading;
 using Avalonia.Media;
 using System.Linq;
 

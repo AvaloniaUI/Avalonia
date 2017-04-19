@@ -1,16 +1,12 @@
-using System;
-using Avalonia.Cairo.Media.Imaging;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering.Utilities;
-using Gdk;
-using Avalonia.Media;
 using global::Cairo;
 
 namespace Avalonia.Cairo.Media
 {
-	public class ImageBrushImpl : BrushImpl
-	{
+    public class ImageBrushImpl : BrushImpl
+    {
         public ImageBrushImpl(
             ITileBrush brush,
             IBitmapImpl bitmap,

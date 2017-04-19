@@ -71,10 +71,10 @@ namespace Avalonia.Direct2D1.Media
             try
             {
                 _renderTarget.EndDraw();
-                
+
                 _swapChain?.Present(1, SharpDX.DXGI.PresentFlags.None);
             }
-            catch (SharpDXException ex) when((uint)ex.HResult == 0x8899000C) // D2DERR_RECREATE_TARGET
+            catch (SharpDXException ex) when ((uint)ex.HResult == 0x8899000C) // D2DERR_RECREATE_TARGET
             {
                 throw new RenderTargetCorruptedException(ex);
             }
@@ -306,7 +306,7 @@ namespace Avalonia.Direct2D1.Media
                 {
                     ContentBounds = PrimitiveExtensions.RectangleInfinite,
                     MaskTransform = PrimitiveExtensions.Matrix3x2Identity,
-                    Opacity = (float) opacity,
+                    Opacity = (float)opacity,
                 };
 
                 var layer = _layerPool.Count != 0 ? _layerPool.Pop() : new Layer(_renderTarget);

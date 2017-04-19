@@ -70,9 +70,9 @@ namespace Avalonia.Skia
                 throw new Exception("Unable to create a surface for pixel format " + fb.Format +
                                     " or pixel format translator");
             var canvas = surface.Canvas;
-            
-            
-            
+
+
+
             canvas.RestoreToCount(0);
             canvas.Save();
             canvas.ResetMatrix();

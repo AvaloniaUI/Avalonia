@@ -1,13 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Avalonia.Direct2D1.Media;
-using Avalonia.Media;
 using Avalonia.Platform;
-using Avalonia.Rendering;
-using Avalonia.Win32.Interop;
 using SharpDX;
 using SharpDX.Direct2D1;
 using SharpDX.DXGI;
@@ -16,6 +8,8 @@ using AlphaMode = SharpDX.Direct2D1.AlphaMode;
 using Device = SharpDX.Direct2D1.Device;
 using Factory = SharpDX.Direct2D1.Factory;
 using Factory2 = SharpDX.DXGI.Factory2;
+using Avalonia.Rendering;
+using Avalonia.Direct2D1.Media;
 
 namespace Avalonia.Direct2D1
 {
@@ -58,7 +52,7 @@ namespace Avalonia.Direct2D1
         /// <summary>
         /// Creates a drawing context for a rendering session.
         /// </summary>
-        /// <returns>An <see cref="Avalonia.Media.DrawingContext"/>.</returns>
+        /// <returns>An <see cref="Avalonia.Platform.IDrawingContextImpl"/>.</returns>
         public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
         {
             var size = GetWindowSize();

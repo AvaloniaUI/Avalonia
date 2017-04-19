@@ -100,7 +100,7 @@ namespace Avalonia.Controls
             PlatformImpl.Paint = HandlePaint;
             PlatformImpl.Resized = HandleResized;
             PlatformImpl.ScalingChanged = HandleScalingChanged;
-            
+
 
             _keyboardNavigationHandler?.SetOwner(this);
             _accessKeyHandler?.SetOwner(this);

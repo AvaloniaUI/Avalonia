@@ -1,13 +1,11 @@
 using Avalonia.Media;
-using Avalonia.Media.Imaging;
-using Avalonia.RenderHelpers;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Platform;
-using Avalonia.Rendering.Utilities;
 using Avalonia.Rendering;
+using Avalonia.Rendering.Utilities;
 
 namespace Avalonia.Skia
 {

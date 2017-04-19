@@ -55,7 +55,7 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
                 var container = new TestRoot
                 {
                     Width = 200,
-                    Height = 200,                    
+                    Height = 200,
                     Child = new Border
                     {
                         Width = 100,

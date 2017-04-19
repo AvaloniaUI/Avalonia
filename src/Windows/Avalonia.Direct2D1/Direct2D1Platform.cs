@@ -105,7 +105,6 @@ namespace Avalonia.Direct2D1
                 spans);
         }
 
-
         public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)
         {
             var nativeWindow = surfaces?.OfType<IPlatformHandle>().FirstOrDefault();

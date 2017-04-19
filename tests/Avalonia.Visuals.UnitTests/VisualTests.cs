@@ -161,7 +161,7 @@ namespace Avalonia.Visuals.UnitTests
                 root.Child = child;
 
                 renderer.Verify(x => x.AddDirty(child));
-            }                
+            }
         }
 
         [Fact]

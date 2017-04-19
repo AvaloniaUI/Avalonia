@@ -72,10 +72,10 @@ namespace Avalonia.Skia
         {
             private readonly SKSurface _surface;
 
-            public BitmapDrawingContext(SKBitmap bitmap, IVisualBrushRenderer visualBrushRenderer) 
+            public BitmapDrawingContext(SKBitmap bitmap, IVisualBrushRenderer visualBrushRenderer)
                 : this(CreateSurface(bitmap), visualBrushRenderer)
             {
-                
+
             }
 
             private static SKSurface CreateSurface(SKBitmap bitmap)
