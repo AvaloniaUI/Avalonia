@@ -31,21 +31,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ImmediateDispatcher.cs" />
-    <Compile Include="InvariantCultureFixture.cs" />
-    <Compile Include="MockRendererFactory.cs" />
-    <Compile Include="MockPlatformRenderInterface.cs" />
-    <Compile Include="MockStreamGeometryImpl.cs" />
-    <Compile Include="NotifyingBase.cs" />
-    <Compile Include="TestLogSink.cs" />
-    <Compile Include="TestTemplatedRoot.cs" />
-    <Compile Include="TestRoot.cs" />
-    <Compile Include="TestServices.cs" />
-    <Compile Include="UnitTestApplication.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="MockWindowingPlatform.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Condition="'$(TargetFramework)' == 'net461'" Include="..\..\src\Avalonia.DotNetFrameworkRuntime\Avalonia.DotNetFrameworkRuntime.csproj" />
 	<ProjectReference Condition="'$(TargetFramework)' == 'netcoreapp1.1'" Include="..\..\src\Avalonia.DotNetCoreRuntime\Avalonia.DotNetCoreRuntime.csproj" />
     <ProjectReference Include="..\..\src\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj" />
