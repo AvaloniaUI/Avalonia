@@ -223,6 +223,19 @@ namespace Avalonia.Controls.UnitTests
 
                 scrollable.Verify(x => x.GetControlInDirection(NavigationDirection.Next, from));
             }
+
+            [Fact]
+            public void Reports_IsFull_False_When_Children_Empty()
+            {
+                var target = (IVirtualizingPanel)new VirtualizingStackPanel();
+
+                target.Measure(new Size(100, 0));
+
+                Assert.Equal(new Size(0, 0), target.DesiredSize);
+                Assert.Equal(new Size(0, 0), target.Bounds.Size);
+
+                Assert.False(target.IsFull);
+            }
         }
     }
 }

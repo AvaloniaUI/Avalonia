@@ -26,9 +26,10 @@ namespace Avalonia.Controls
         {
             get
             {
-                return Orientation == Orientation.Horizontal ?
+                return Children.Count > 0 &&
+                    (Orientation == Orientation.Horizontal ?
                     _takenSpace >= _availableSpace.Width :
-                    _takenSpace >= _availableSpace.Height;
+                    _takenSpace >= _availableSpace.Height);
             }
         }
 
