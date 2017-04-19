@@ -99,6 +99,17 @@ namespace Avalonia.Controls.Presenters
 
         public override void Render(DrawingContext context)
         {
+            // partial fix for issue #600: 'Incorrect TextBox selection coloring for non-left aligned text'
+            // the problem is caused by FormattedText.Constraints has Infinity Width and Height
+            // so later when we get hightlight rect var FormattedText.HitTestTextRange(start, length);
+            // it causes the rect has Infinity X coord...
+            // and it is really strange.
+            // --Mikel785
+            if (double.IsInfinity(FormattedText.Constraint.Height))
+            {
+                base.Render(context);
+            }
+
             var selectionStart = SelectionStart;
             var selectionEnd = SelectionEnd;
 
