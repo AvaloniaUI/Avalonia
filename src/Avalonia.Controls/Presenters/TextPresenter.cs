@@ -250,7 +250,7 @@ namespace Avalonia.Controls.Presenters
 
         private void CaretTimerTick(object sender, EventArgs e)
         {
-            _caretBlink = !_caretBlink;
+			_caretBlink = !_caretBlink;
             InvalidateVisual();
         }
     }
