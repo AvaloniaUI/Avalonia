@@ -184,11 +184,25 @@ namespace Avalonia.Cairo.Media
         /// <param name="rect">The rectangle bounds.</param>
         public void DrawRectangle(Pen pen, Rect rect, float cornerRadius)
         {
-            using (var p = SetPen(pen, rect.Size)) 
-            {
-                _context.Rectangle(rect.ToCairo ());
-                _context.Stroke();
-            }
+			if (cornerRadius == 0) {
+				using (var p = SetPen (pen, rect.Size)) {
+					_context.Rectangle (rect.ToCairo ());
+					_context.Stroke ();
+				}
+			} else {
+				using (var p = SetPen (pen, rect.Size)) {
+					double degrees = Math.PI / 180.0;
+					var cairoRect = rect.ToCairo ();
+
+					_context.NewSubPath ();
+					_context.Arc (cairoRect.X + cairoRect.Width - cornerRadius, cairoRect.Y + cornerRadius, cornerRadius, -90 * degrees, 0 * degrees);
+					_context.Arc (cairoRect.X + cairoRect.Width - cornerRadius, cairoRect.Y + cairoRect.Height - cornerRadius, cornerRadius, 0 * degrees, 90 * degrees);
+					_context.Arc (cairoRect.X + cornerRadius, cairoRect.Y + cairoRect.Height - cornerRadius, cornerRadius, 90 * degrees, 180 * degrees);
+					_context.Arc (cairoRect.X + cornerRadius, cairoRect.Y + cornerRadius, cornerRadius, 180 * degrees, 270 * degrees);
+					_context.ClosePath ();
+					_context.Stroke ();
+				}
+			}
         }
 
         /// <summary>
@@ -215,11 +229,25 @@ namespace Avalonia.Cairo.Media
         /// <param name="rect">The rectangle bounds.</param>
         public void FillRectangle(IBrush brush, Rect rect, float cornerRadius)
         {
-            using (var b = SetBrush(brush, rect.Size)) 
-            {
-                _context.Rectangle(rect.ToCairo ());
-                _context.Fill();
-            }
+			if (cornerRadius == 0) {
+				using (var b = SetBrush (brush, rect.Size)) {
+					_context.Rectangle (rect.ToCairo ());
+					_context.Fill ();
+				}
+			} else {
+				using (var b = SetBrush (brush, rect.Size)) {
+					double degrees = Math.PI / 180.0;
+					var cairoRect = rect.ToCairo ();
+
+					_context.NewSubPath ();
+					_context.Arc (cairoRect.X + cairoRect.Width - cornerRadius, cairoRect.Y + cornerRadius, cornerRadius, -90 * degrees, 0 * degrees);
+					_context.Arc (cairoRect.X + cairoRect.Width - cornerRadius, cairoRect.Y + cairoRect.Height - cornerRadius, cornerRadius, 0 * degrees, 90 * degrees);
+					_context.Arc (cairoRect.X + cornerRadius, cairoRect.Y + cairoRect.Height - cornerRadius, cornerRadius, 90 * degrees, 180 * degrees);
+					_context.Arc (cairoRect.X + cornerRadius, cairoRect.Y + cornerRadius, cornerRadius, 180 * degrees, 270 * degrees);
+					_context.ClosePath ();
+					_context.Fill ();
+				}
+			}
         }
 
         /// <summary>
