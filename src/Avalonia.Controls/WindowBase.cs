@@ -210,8 +210,7 @@ namespace Avalonia.Controls
             }
             ClientSize = clientSize;
             LayoutManager.Instance.ExecuteLayoutPass();
-            PlatformImpl.Invalidate(new Rect(clientSize));
-
+            Renderer?.Resized(clientSize);
         }
 
         /// <summary>

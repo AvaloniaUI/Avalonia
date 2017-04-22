@@ -12,6 +12,8 @@ using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Moq;
 using Xunit;
+using System;
+using Avalonia.Controls.Shapes;
 
 namespace Avalonia.Visuals.UnitTests.VisualTree
 {
@@ -20,9 +22,37 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
         [Fact]
         public void GetVisualsAt_Should_Find_Controls_At_Point()
         {
-            using (var application = UnitTestApplication.Start(new TestServices(renderInterface: new MockRenderInterface())))
+            using (TestApplication())
             {
-                var container = new Decorator
+                var container = new TestRoot
+                {
+                    Width = 200,
+                    Height = 200,
+                    Child = new Border
+                    {
+                        Width = 100,
+                        Height = 100,
+                        Background = Brushes.Red,
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        VerticalAlignment = VerticalAlignment.Center
+                    }
+                };
+
+                container.Measure(Size.Infinity);
+                container.Arrange(new Rect(container.DesiredSize));
+
+                var result = container.GetVisualsAt(new Point(100, 100));
+
+                Assert.Equal(new[] { container.Child }, result);
+            }
+        }
+
+        [Fact]
+        public void GetVisualsAt_Should_Not_Find_Empty_Controls_At_Point()
+        {
+            using (TestApplication())
+            {
+                var container = new TestRoot
                 {
                     Width = 200,
                     Height = 200,
@@ -38,21 +68,19 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
                 container.Measure(Size.Infinity);
                 container.Arrange(new Rect(container.DesiredSize));
 
-                var context = new DrawingContext(Mock.Of<IDrawingContextImpl>());
-                context.Render(container);
-
                 var result = container.GetVisualsAt(new Point(100, 100));
 
-                Assert.Equal(new[] { container.Child, container }, result);
+                Assert.Empty(result);
             }
         }
 
         [Fact]
         public void GetVisualsAt_Should_Not_Find_Invisible_Controls_At_Point()
         {
-            using (var application = UnitTestApplication.Start(new TestServices(renderInterface: new MockRenderInterface())))
+            using (TestApplication())
             {
-                var container = new Decorator
+                Border visible;
+                var container = new TestRoot
                 {
                     Width = 200,
                     Height = 200,
@@ -60,11 +88,13 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
                     {
                         Width = 100,
                         Height = 100,
+                        Background = Brushes.Red,
                         HorizontalAlignment = HorizontalAlignment.Center,
                         VerticalAlignment = VerticalAlignment.Center,
                         IsVisible = false,
-                        Child = new Border
+                        Child = visible = new Border
                         {
+                            Background = Brushes.Red,
                             HorizontalAlignment = HorizontalAlignment.Stretch,
                             VerticalAlignment = VerticalAlignment.Stretch,
                         }
@@ -74,21 +104,18 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
                 container.Measure(Size.Infinity);
                 container.Arrange(new Rect(container.DesiredSize));
 
-                var context = new DrawingContext(Mock.Of<IDrawingContextImpl>());
-                context.Render(container);
-
                 var result = container.GetVisualsAt(new Point(100, 100));
 
-                Assert.Equal(new[] { container }, result);
+                Assert.Empty(result);
             }
         }
 
         [Fact]
         public void GetVisualsAt_Should_Not_Find_Control_Outside_Point()
         {
-            using (UnitTestApplication.Start(new TestServices(renderInterface: new MockRenderInterface())))
+            using (TestApplication())
             {
-                var container = new Decorator
+                var container = new TestRoot
                 {
                     Width = 200,
                     Height = 200,
@@ -96,6 +123,7 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
                     {
                         Width = 100,
                         Height = 100,
+                        Background = Brushes.Red,
                         HorizontalAlignment = HorizontalAlignment.Center,
                         VerticalAlignment = VerticalAlignment.Center
                     }
@@ -104,141 +132,149 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
                 container.Measure(Size.Infinity);
                 container.Arrange(new Rect(container.DesiredSize));
 
-                var context = new DrawingContext(Mock.Of<IDrawingContextImpl>());
-                context.Render(container);
-
                 var result = container.GetVisualsAt(new Point(10, 10));
 
-                Assert.Equal(new[] { container }, result);
+                Assert.Empty(result);
             }
         }
 
         [Fact]
         public void GetVisualsAt_Should_Return_Top_Controls_First()
         {
-            using (UnitTestApplication.Start(new TestServices(renderInterface: new MockRenderInterface())))
+            using (TestApplication())
             {
-                var container = new Panel
+                Panel container;
+                var root = new TestRoot
                 {
-                    Width = 200,
-                    Height = 200,
-                    Children = new Controls.Controls
+                    Child = container = new Panel
                     {
-                        new Border
+                        Width = 200,
+                        Height = 200,
+                        Children = new Controls.Controls
                         {
-                            Width = 100,
-                            Height = 100,
-                            HorizontalAlignment = HorizontalAlignment.Center,
-                            VerticalAlignment = VerticalAlignment.Center
-                        },
-                        new Border
-                        {
-                            Width = 50,
-                            Height = 50,
-                            HorizontalAlignment = HorizontalAlignment.Center,
-                            VerticalAlignment = VerticalAlignment.Center
+                            new Border
+                            {
+                                Width = 100,
+                                Height = 100,
+                                Background = Brushes.Red,
+                                HorizontalAlignment = HorizontalAlignment.Center,
+                                VerticalAlignment = VerticalAlignment.Center
+                            },
+                            new Border
+                            {
+                                Width = 50,
+                                Height = 50,
+                                Background = Brushes.Red,
+                                HorizontalAlignment = HorizontalAlignment.Center,
+                                VerticalAlignment = VerticalAlignment.Center
+                            }
                         }
                     }
                 };
 
-                container.Measure(Size.Infinity);
-                container.Arrange(new Rect(container.DesiredSize));
-
-                var context = new DrawingContext(Mock.Of<IDrawingContextImpl>());
-                context.Render(container);
+                root.Measure(Size.Infinity);
+                root.Arrange(new Rect(container.DesiredSize));
 
                 var result = container.GetVisualsAt(new Point(100, 100));
 
-                Assert.Equal(new[] { container.Children[1], container.Children[0], container }, result);
+                Assert.Equal(new[] { container.Children[1], container.Children[0] }, result);
             }
         }
 
         [Fact]
         public void GetVisualsAt_Should_Return_Top_Controls_First_With_ZIndex()
         {
-            using (UnitTestApplication.Start(new TestServices(renderInterface: new MockRenderInterface())))
+            using (TestApplication())
             {
-                var container = new Panel
+                Panel container;
+                var root = new TestRoot
                 {
-                    Width = 200,
-                    Height = 200,
-                    Children = new Controls.Controls
+                    Child = container = new Panel
                     {
-                        new Border
+                        Width = 200,
+                        Height = 200,
+                        Children = new Controls.Controls
                         {
-                            Width = 100,
-                            Height = 100,
-                            ZIndex = 1,
-                            HorizontalAlignment = HorizontalAlignment.Center,
-                            VerticalAlignment = VerticalAlignment.Center
-                        },
-                        new Border
-                        {
-                            Width = 50,
-                            Height = 50,
-                            HorizontalAlignment = HorizontalAlignment.Center,
-                            VerticalAlignment = VerticalAlignment.Center
-                        },
-                        new Border
-                        {
-                            Width = 75,
-                            Height = 75,
-                            ZIndex = 2,
-                            HorizontalAlignment = HorizontalAlignment.Center,
-                            VerticalAlignment = VerticalAlignment.Center
+                            new Border
+                            {
+                                Width = 100,
+                                Height = 100,
+                                ZIndex = 1,
+                                Background = Brushes.Red,
+                                HorizontalAlignment = HorizontalAlignment.Center,
+                                VerticalAlignment = VerticalAlignment.Center
+                            },
+                            new Border
+                            {
+                                Width = 50,
+                                Height = 50,
+                                Background = Brushes.Red,
+                                HorizontalAlignment = HorizontalAlignment.Center,
+                                VerticalAlignment = VerticalAlignment.Center
+                            },
+                            new Border
+                            {
+                                Width = 75,
+                                Height = 75,
+                                ZIndex = 2,
+                                Background = Brushes.Red,
+                                HorizontalAlignment = HorizontalAlignment.Center,
+                                VerticalAlignment = VerticalAlignment.Center
+                            }
                         }
                     }
                 };
 
-                container.Measure(Size.Infinity);
-                container.Arrange(new Rect(container.DesiredSize));
-
-                var context = new DrawingContext(Mock.Of<IDrawingContextImpl>());
-                context.Render(container);
+                root.Measure(Size.Infinity);
+                root.Arrange(new Rect(container.DesiredSize));
 
                 var result = container.GetVisualsAt(new Point(100, 100));
 
-                Assert.Equal(new[] { container.Children[2], container.Children[0], container.Children[1], container }, result);
+                Assert.Equal(new[] { container.Children[2], container.Children[0], container.Children[1] }, result);
             }
         }
 
         [Fact]
         public void GetVisualsAt_Should_Find_Control_Translated_Outside_Parent_Bounds()
         {
-            using (UnitTestApplication.Start(new TestServices(renderInterface: new MockRenderInterface())))
+            using (TestApplication())
             {
                 Border target;
-                var container = new Panel
+                Panel container;
+                var root = new TestRoot
                 {
-                    Width = 200,
-                    Height = 200,
-                    ClipToBounds = false,
-                    Children = new Controls.Controls
+                    Child = container = new Panel
                     {
-                        new Border
+                        Width = 200,
+                        Height = 200,
+                        Background = Brushes.Red,
+                        ClipToBounds = false,
+                        Children = new Controls.Controls
                         {
-                            Width = 100,
-                            Height = 100,
-                            ZIndex = 1,
-                            HorizontalAlignment = HorizontalAlignment.Left,
-                            VerticalAlignment = VerticalAlignment.Top,
-                            Child = target = new Border
+                            new Border
                             {
-                                Width = 50,
-                                Height = 50,
+                                Width = 100,
+                                Height = 100,
+                                ZIndex = 1,
+                                Background = Brushes.Red,
                                 HorizontalAlignment = HorizontalAlignment.Left,
                                 VerticalAlignment = VerticalAlignment.Top,
-                                RenderTransform = new TranslateTransform(110, 110),
-                            }
-                        },
+                                Child = target = new Border
+                                {
+                                    Width = 50,
+                                    Height = 50,
+                                    Background = Brushes.Red,
+                                    HorizontalAlignment = HorizontalAlignment.Left,
+                                    VerticalAlignment = VerticalAlignment.Top,
+                                    RenderTransform = new TranslateTransform(110, 110),
+                                }
+                            },
+                        }
                     }
                 };
 
                 container.Measure(Size.Infinity);
                 container.Arrange(new Rect(container.DesiredSize));
-
-                var context = new DrawingContext(Mock.Of<IDrawingContextImpl>());
-                context.Render(container);
 
                 var result = container.GetVisualsAt(new Point(120, 120));
 
@@ -249,40 +285,43 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
         [Fact]
         public void GetVisualsAt_Should_Not_Find_Control_Outside_Parent_Bounds_When_Clipped()
         {
-            using (UnitTestApplication.Start(new TestServices(renderInterface: new MockRenderInterface())))
+            using (TestApplication())
             {
                 Border target;
-
-                var container = new Panel
+                Panel container;
+                var root = new TestRoot
                 {
-                    Width = 100,
-                    Height = 200,
-                    Children = new Controls.Controls
+                    Child = container = new Panel
                     {
-                        new Panel()
+                        Width = 100,
+                        Height = 200,
+                        Background = Brushes.Red,
+                        Children = new Controls.Controls
                         {
-                            Width = 100,
-                            Height = 100,
-                            Margin = new Thickness(0, 100, 0, 0),
-                            ClipToBounds = true,
-                            Children = new Controls.Controls
+                            new Panel()
                             {
-                                (target = new Border()
+                                Width = 100,
+                                Height = 100,
+                                Background = Brushes.Red,
+                                Margin = new Thickness(0, 100, 0, 0),
+                                ClipToBounds = true,
+                                Children = new Controls.Controls
                                 {
-                                    Width = 100,
-                                    Height = 100,
-                                    Margin = new Thickness(0, -100, 0, 0)
-                                })
+                                    (target = new Border()
+                                    {
+                                        Width = 100,
+                                        Height = 100,
+                                        Background = Brushes.Red,
+                                        Margin = new Thickness(0, -100, 0, 0)
+                                    })
+                                }
                             }
                         }
                     }
                 };
 
-                container.Measure(Size.Infinity);
-                container.Arrange(new Rect(container.DesiredSize));
-
-                var context = new DrawingContext(Mock.Of<IDrawingContextImpl>());
-                context.Render(container);
+                root.Measure(Size.Infinity);
+                root.Arrange(new Rect(container.DesiredSize));
 
                 var result = container.GetVisualsAt(new Point(50, 50));
 
@@ -293,45 +332,57 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
         [Fact]
         public void GetVisualsAt_Should_Not_Find_Control_Outside_Scroll_Viewport()
         {
-            using (UnitTestApplication.Start(new TestServices(renderInterface: new MockRenderInterface())))
+            using (TestApplication())
             {
                 Border target;
                 Border item1;
                 Border item2;
                 ScrollContentPresenter scroll;
-
-                var container = new Panel
+                Panel container;
+                var root = new TestRoot
                 {
-                    Width = 100,
-                    Height = 200,
-                    Children = new Controls.Controls
+                    Child = container = new Panel
                     {
-                        (target = new Border()
+                        Width = 100,
+                        Height = 200,
+                        Background = Brushes.Red,
+                        Children = new Controls.Controls
                         {
-                            Width = 100,
-                            Height = 100
-                        }),
-                        new Border()
-                        {
-                            Width = 100,
-                            Height = 100,
-                            Margin = new Thickness(0, 100, 0, 0),
-                            Child = scroll = new ScrollContentPresenter()
+                            (target = new Border()
                             {
-                                Content = new StackPanel()
+                                Name = "b1",
+                                Width = 100,
+                                Height = 100,
+                                Background = Brushes.Red,
+                            }),
+                            new Border()
+                            {
+                                Name = "b2",
+                                Width = 100,
+                                Height = 100,
+                                Background = Brushes.Red,
+                                Margin = new Thickness(0, 100, 0, 0),
+                                Child = scroll = new ScrollContentPresenter()
                                 {
-                                    Children = new Controls.Controls
+                                    Content = new StackPanel()
                                     {
-                                        (item1 = new Border()
+                                        Children = new Controls.Controls
                                         {
-                                            Width = 100,
-                                            Height = 100,
-                                        }),
-                                        (item2 = new Border()
-                                        {
-                                            Width = 100,
-                                            Height = 100,
-                                        }),
+                                            (item1 = new Border()
+                                            {
+                                                Name = "b3",
+                                                Width = 100,
+                                                Height = 100,
+                                                Background = Brushes.Red,
+                                            }),
+                                            (item2 = new Border()
+                                            {
+                                                Name = "b4",
+                                                Width = 100,
+                                                Height = 100,
+                                                Background = Brushes.Red,
+                                            }),
+                                        }
                                     }
                                 }
                             }
@@ -341,11 +392,8 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
 
                 scroll.UpdateChild();
 
-                container.Measure(Size.Infinity);
-                container.Arrange(new Rect(container.DesiredSize));
-
-                var context = new DrawingContext(Mock.Of<IDrawingContextImpl>());
-                context.Render(container);
+                root.Measure(Size.Infinity);
+                root.Arrange(new Rect(container.DesiredSize));
 
                 var result = container.GetVisualsAt(new Point(50, 150)).First();
 
@@ -357,22 +405,96 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
 
                 scroll.Offset = new Vector(0, 100);
 
-                //we don't have setup LayoutManager so we will make it manually
+                // We don't have LayoutManager set up so do the layout pass manually.
                 scroll.Parent.InvalidateArrange();
                 container.InvalidateArrange();
-
                 container.Arrange(new Rect(container.DesiredSize));
-                context.Render(container);
 
                 result = container.GetVisualsAt(new Point(50, 150)).First();
-
                 Assert.Equal(item2, result);
 
                 result = container.GetVisualsAt(new Point(50, 50)).First();
-
-                Assert.NotEqual(item1, result);
                 Assert.Equal(target, result);
             }
+        }
+
+        [Fact]
+        public void GetVisualsAt_Should_Not_Find_Path_When_Outside_Fill()
+        {
+            using (TestApplication())
+            {
+                Path path;
+                var container = new TestRoot
+                {
+                    Width = 200,
+                    Height = 200,
+                    Child = path = new Path
+                    {
+                        Width = 200,
+                        Height = 200,
+                        Fill = Brushes.Red,
+                        Data = StreamGeometry.Parse("M100,0 L0,100 100,100")
+                    }
+                };
+
+                container.Measure(Size.Infinity);
+                container.Arrange(new Rect(container.DesiredSize));
+
+                var context = new DrawingContext(Mock.Of<IDrawingContextImpl>());
+
+                var result = container.GetVisualsAt(new Point(100, 100));
+                Assert.Equal(new[] { path }, result);
+
+                result = container.GetVisualsAt(new Point(10, 10));
+                Assert.Empty(result);
+            }
+        }
+
+        [Fact]
+        public void GetVisualsAt_Should_Respect_Geometry_Clip()
+        {
+            using (TestApplication())
+            {
+                Border border;
+                Canvas canvas;
+                var container = new TestRoot
+                {
+                    Width = 400,
+                    Height = 400,
+                    Child = border = new Border
+                    {
+                        Background = Brushes.Red,
+                        Clip = StreamGeometry.Parse("M100,0 L0,100 100,100"),
+                        Width = 200,
+                        Height = 200,
+                        Child = canvas = new Canvas
+                        {
+                            Background = Brushes.Yellow,
+                            Margin = new Thickness(10),
+                        }
+                    }
+                };
+
+                container.Measure(Size.Infinity);
+                container.Arrange(new Rect(container.DesiredSize));
+                Assert.Equal(new Rect(100, 100, 200, 200), border.Bounds);
+
+                var context = new DrawingContext(Mock.Of<IDrawingContextImpl>());
+
+                var result = container.GetVisualsAt(new Point(200, 200));
+                Assert.Equal(new IVisual[] { canvas, border }, result);
+
+                result = container.GetVisualsAt(new Point(110, 110));
+                Assert.Empty(result);
+            }
+        }
+
+        private IDisposable TestApplication()
+        {
+            return UnitTestApplication.Start(
+                new TestServices(
+                    renderInterface: new MockPlatformRenderInterface(),
+                    renderer: (root, loop) => new ImmediateRenderer(root)));
         }
     }
 }

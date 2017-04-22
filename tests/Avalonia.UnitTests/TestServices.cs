@@ -23,7 +23,7 @@ namespace Avalonia.UnitTests
             assetLoader: new AssetLoader(),
             layoutManager: new LayoutManager(),
             platform: new AppBuilder().RuntimePlatform,
-            renderer: Mock.Of<IRenderer>(),
+            renderer: (_, __) => Mock.Of<IRenderer>(),
             renderInterface: CreateRenderInterfaceMock(),
             renderLoop: Mock.Of<IRenderLoop>(),
             standardCursorFactory: Mock.Of<IStandardCursorFactory>(),
@@ -65,7 +65,7 @@ namespace Avalonia.UnitTests
             Func<IKeyboardDevice> keyboardDevice = null,
             ILayoutManager layoutManager = null,
             IRuntimePlatform platform = null,
-            IRenderer renderer = null,
+            Func<IRenderRoot, IRenderLoop, IRenderer> renderer = null,
             IPlatformRenderInterface renderInterface = null,
             IRenderLoop renderLoop = null,
             IScheduler scheduler = null,
@@ -98,7 +98,7 @@ namespace Avalonia.UnitTests
         public Func<IKeyboardDevice> KeyboardDevice { get; }
         public ILayoutManager LayoutManager { get; }
         public IRuntimePlatform Platform { get; }
-        public IRenderer Renderer { get; }
+        public Func<IRenderRoot, IRenderLoop, IRenderer> Renderer { get; }
         public IPlatformRenderInterface RenderInterface { get; }
         public IRenderLoop RenderLoop { get; }
         public IScheduler Scheduler { get; }
@@ -115,7 +115,7 @@ namespace Avalonia.UnitTests
             Func<IKeyboardDevice> keyboardDevice = null,
             ILayoutManager layoutManager = null,
             IRuntimePlatform platform = null,
-            IRenderer renderer = null,
+            Func<IRenderRoot, IRenderLoop, IRenderer> renderer = null,
             IPlatformRenderInterface renderInterface = null,
             IRenderLoop renderLoop = null,
             IScheduler scheduler = null,

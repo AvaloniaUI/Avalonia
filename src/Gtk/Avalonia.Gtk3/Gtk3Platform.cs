@@ -15,7 +15,7 @@ using Avalonia.Gtk3;
 
 namespace Avalonia.Gtk3
 {
-    public class Gtk3Platform : IWindowingPlatform, IPlatformSettings, IPlatformThreadingInterface
+    public class Gtk3Platform : IWindowingPlatform, IPlatformSettings, IPlatformThreadingInterface, IRendererFactory
     {
         internal static readonly Gtk3Platform Instance = new Gtk3Platform();
         internal static readonly MouseDevice Mouse = new MouseDevice();
@@ -52,7 +52,10 @@ namespace Avalonia.Gtk3
 
         public IPopupImpl CreatePopup() => new PopupImpl();
 
-        
+        public IRenderer CreateRenderer(IRenderRoot root, IRenderLoop renderLoop)
+        {
+            return new ImmediateRenderer(root);
+        }
 
         public Size DoubleClickSize => new Size(4, 4);
 
