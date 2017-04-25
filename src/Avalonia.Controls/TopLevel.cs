@@ -184,8 +184,10 @@ namespace Avalonia.Controls
             get { return AvaloniaLocator.Current.GetService<IGlobalStyles>(); }
         }
 
+        IRenderTarget IRenderRoot.CreateRenderTarget() => CreateRenderTarget();
+
         /// <inheritdoc/>
-        IRenderTarget IRenderRoot.CreateRenderTarget()
+        protected virtual IRenderTarget CreateRenderTarget()
         {
             return _renderInterface.CreateRenderTarget(PlatformImpl.Surfaces);
         }
