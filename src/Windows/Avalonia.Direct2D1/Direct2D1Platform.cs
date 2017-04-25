@@ -27,7 +27,7 @@ namespace Avalonia
 
 namespace Avalonia.Direct2D1
 {
-    public class Direct2D1Platform : IPlatformRenderInterface, IRendererFactory
+    public class Direct2D1Platform : IPlatformRenderInterface
     {
         private static readonly Direct2D1Platform s_instance = new Direct2D1Platform();
 
@@ -76,7 +76,6 @@ namespace Avalonia.Direct2D1
         {
             AvaloniaLocator.CurrentMutable
                         .Bind<IPlatformRenderInterface>().ToConstant(s_instance)
-                        .Bind<IRendererFactory>().ToConstant(s_instance)
                         .BindToSelf(s_d2D1Factory)
                         .BindToSelf(s_dwfactory)
                         .BindToSelf(s_imagingFactory)
@@ -107,11 +106,6 @@ namespace Avalonia.Direct2D1
                 spans);
         }
 
-        public IRenderer CreateRenderer(IRenderRoot root, IRenderLoop renderLoop)
-        {
-            return new Renderer(root, renderLoop);
-        }
-
         public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)
         {
             var nativeWindow = surfaces?.OfType<IPlatformHandle>().FirstOrDefault();
@@ -124,9 +118,20 @@ namespace Avalonia.Direct2D1
             throw new NotSupportedException("Don't know how to create a Direct2D1 renderer from any of provided surfaces");
         }
 
-        public IRenderTargetBitmapImpl CreateRenderTargetBitmap(int width, int height)
+        public IRenderTargetBitmapImpl CreateRenderTargetBitmap(
+            int width,
+            int height,
+            double dpiX,
+            double dpiY)
         {
-            return new RenderTargetBitmapImpl(s_imagingFactory, s_d2D1Device.Factory, width, height);
+            return new RenderTargetBitmapImpl(
+                s_imagingFactory,
+                s_d2D1Factory,
+                s_dwfactory,
+                width,
+                height,
+                dpiX,
+                dpiY);
         }
 
         public IWritableBitmapImpl CreateWritableBitmap(int width, int height, PixelFormat? format = null)

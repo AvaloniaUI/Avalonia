@@ -24,7 +24,7 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
             throw new NotImplementedException();
         }
 
-        public IRenderTargetBitmapImpl CreateRenderTargetBitmap(int width, int height)
+        public IRenderTargetBitmapImpl CreateRenderTargetBitmap(int width, int height, double dpiX, double dpiY)
         {
             throw new NotImplementedException();
         }

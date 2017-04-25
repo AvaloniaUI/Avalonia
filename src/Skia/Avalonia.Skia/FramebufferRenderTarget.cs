@@ -4,6 +4,7 @@ using System.Text;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Media;
 using Avalonia.Platform;
+using Avalonia.Rendering;
 using SkiaSharp;
 
 namespace Avalonia.Skia
@@ -56,7 +57,7 @@ namespace Avalonia.Skia
             
         }
 
-        public DrawingContext CreateDrawingContext()
+        public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
         {
             var fb = _surface.Lock();
             PixelFormatShim shim = null;
@@ -69,15 +70,14 @@ namespace Avalonia.Skia
                 throw new Exception("Unable to create a surface for pixel format " + fb.Format +
                                     " or pixel format translator");
             var canvas = surface.Canvas;
-            
-            
-            
+
+
+
             canvas.RestoreToCount(0);
             canvas.Save();
-            canvas.Clear(SKColors.Red);
             canvas.ResetMatrix();
             var scale = Matrix.CreateScale(fb.Dpi.Width / 96, fb.Dpi.Height / 96);
-            return new DrawingContext(new DrawingContextImpl(canvas, scale, canvas, surface, shim, fb));
+            return new DrawingContextImpl(canvas, visualBrushRenderer, scale, canvas, surface, shim, fb);
         }
     }
 }

@@ -51,8 +51,14 @@ namespace Avalonia.Platform
         /// </summary>
         /// <param name="width">The width of the bitmap.</param>
         /// <param name="height">The height of the bitmap.</param>
+        /// <param name="dpiX">The horizontal DPI of the bitmap.</param>
+        /// <param name="dpiY">The vertical DPI of the bitmap.</param>
         /// <returns>An <see cref="IRenderTargetBitmapImpl"/>.</returns>
-        IRenderTargetBitmapImpl CreateRenderTargetBitmap(int width, int height);
+        IRenderTargetBitmapImpl CreateRenderTargetBitmap(
+            int width,
+            int height,
+            double dpiX,
+            double dpiY);
 
         /// <summary>
         /// Creates a writable bitmap implementation.
