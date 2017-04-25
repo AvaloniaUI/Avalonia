@@ -76,6 +76,7 @@ namespace Direct3DInteropSample
             this.GetObservable(ClientSizeProperty).Subscribe(Resize);
             Resize(ClientSize);
             AvaloniaXamlLoader.Load(this);
+            Background = Avalonia.Media.Brushes.Transparent;
         }
 
 
@@ -258,6 +259,6 @@ namespace Direct3DInteropSample
         }
 
 
-        public override IRenderTarget CreateRenderTarget() => new D3DRenderTarget(this);
+        protected override IRenderTarget CreateRenderTarget() => new D3DRenderTarget(this);
     }
 }

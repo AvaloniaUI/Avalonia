@@ -1,4 +1,4 @@
-﻿<Window xmlns="https://github.com/avaloniaui" Background="Transparent" Title="Avalonia Direct3D Demo">
+﻿<Window xmlns="https://github.com/avaloniaui" Background="White" Title="Avalonia Direct3D Demo">
     <Grid ColumnDefinitions="*,Auto" Margin="20">
         <StackPanel Grid.Column="1" MinWidth="200">
             <TextBlock>Rotation X</TextBlock>

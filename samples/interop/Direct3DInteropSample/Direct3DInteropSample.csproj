@@ -20,6 +20,7 @@
       <EmbeddedResource Include="MiniCube.fx" />
     </ItemGroup>
     <ItemGroup>
+        <ProjectReference Include="..\..\..\src\Avalonia.DesignerSupport\Avalonia.DesignerSupport.csproj" />
         <ProjectReference Include="..\..\..\src\Avalonia.DotNetFrameworkRuntime\Avalonia.DotNetFrameworkRuntime.csproj" />
         <ProjectReference Include="..\..\..\src\Avalonia.Themes.Default\Avalonia.Themes.Default.csproj" />
         <ProjectReference Include="..\..\..\src\Windows\Avalonia.Direct2D1\Avalonia.Direct2D1.csproj" />
