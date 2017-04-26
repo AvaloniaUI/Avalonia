@@ -15,16 +15,16 @@ using Xunit;
 using System;
 using Avalonia.Controls.Shapes;
 
-namespace Avalonia.Visuals.UnitTests.VisualTree
+namespace Avalonia.Visuals.UnitTests.Rendering
 {
-    public class VisualExtensionsTests_GetVisualsAt
+    public class DeferredRendererTests_HitTesting
     {
         [Fact]
-        public void GetVisualsAt_Should_Find_Controls_At_Point()
+        public void HitTest_Should_Find_Controls_At_Point()
         {
             using (TestApplication())
             {
-                var container = new TestRoot
+                var root = new TestRoot
                 {
                     Width = 200,
                     Height = 200,
@@ -38,21 +38,21 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
                     }
                 };
 
-                container.Measure(Size.Infinity);
-                container.Arrange(new Rect(container.DesiredSize));
+                root.Measure(Size.Infinity);
+                root.Arrange(new Rect(root.DesiredSize));
 
-                var result = container.GetVisualsAt(new Point(100, 100));
+                var result = root.Renderer.HitTest(new Point(100, 100), null);
 
-                Assert.Equal(new[] { container.Child }, result);
+                Assert.Equal(new[] { root.Child }, result);
             }
         }
 
         [Fact]
-        public void GetVisualsAt_Should_Not_Find_Empty_Controls_At_Point()
+        public void HitTest_Should_Not_Find_Empty_Controls_At_Point()
         {
             using (TestApplication())
             {
-                var container = new TestRoot
+                var root = new TestRoot
                 {
                     Width = 200,
                     Height = 200,
@@ -65,22 +65,22 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
                     }
                 };
 
-                container.Measure(Size.Infinity);
-                container.Arrange(new Rect(container.DesiredSize));
+                root.Measure(Size.Infinity);
+                root.Arrange(new Rect(root.DesiredSize));
 
-                var result = container.GetVisualsAt(new Point(100, 100));
+                var result = root.Renderer.HitTest(new Point(100, 100), null);
 
                 Assert.Empty(result);
             }
         }
 
         [Fact]
-        public void GetVisualsAt_Should_Not_Find_Invisible_Controls_At_Point()
+        public void HitTest_Should_Not_Find_Invisible_Controls_At_Point()
         {
             using (TestApplication())
             {
                 Border visible;
-                var container = new TestRoot
+                var root = new TestRoot
                 {
                     Width = 200,
                     Height = 200,
@@ -101,21 +101,21 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
                     }
                 };
 
-                container.Measure(Size.Infinity);
-                container.Arrange(new Rect(container.DesiredSize));
+                root.Measure(Size.Infinity);
+                root.Arrange(new Rect(root.DesiredSize));
 
-                var result = container.GetVisualsAt(new Point(100, 100));
+                var result = root.Renderer.HitTest(new Point(100, 100), null);
 
                 Assert.Empty(result);
             }
         }
 
         [Fact]
-        public void GetVisualsAt_Should_Not_Find_Control_Outside_Point()
+        public void HitTest_Should_Not_Find_Control_Outside_Point()
         {
             using (TestApplication())
             {
-                var container = new TestRoot
+                var root = new TestRoot
                 {
                     Width = 200,
                     Height = 200,
@@ -129,17 +129,17 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
                     }
                 };
 
-                container.Measure(Size.Infinity);
-                container.Arrange(new Rect(container.DesiredSize));
+                root.Measure(Size.Infinity);
+                root.Arrange(new Rect(root.DesiredSize));
 
-                var result = container.GetVisualsAt(new Point(10, 10));
+                var result = root.Renderer.HitTest(new Point(10, 10), null);
 
                 Assert.Empty(result);
             }
         }
 
         [Fact]
-        public void GetVisualsAt_Should_Return_Top_Controls_First()
+        public void HitTest_Should_Return_Top_Controls_First()
         {
             using (TestApplication())
             {
@@ -175,14 +175,14 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
                 root.Measure(Size.Infinity);
                 root.Arrange(new Rect(container.DesiredSize));
 
-                var result = container.GetVisualsAt(new Point(100, 100));
+                var result = root.Renderer.HitTest(new Point(100, 100), null);
 
                 Assert.Equal(new[] { container.Children[1], container.Children[0] }, result);
             }
         }
 
         [Fact]
-        public void GetVisualsAt_Should_Return_Top_Controls_First_With_ZIndex()
+        public void HitTest_Should_Return_Top_Controls_First_With_ZIndex()
         {
             using (TestApplication())
             {
@@ -228,14 +228,14 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
                 root.Measure(Size.Infinity);
                 root.Arrange(new Rect(container.DesiredSize));
 
-                var result = container.GetVisualsAt(new Point(100, 100));
+                var result = root.Renderer.HitTest(new Point(100, 100), null);
 
                 Assert.Equal(new[] { container.Children[2], container.Children[0], container.Children[1] }, result);
             }
         }
 
         [Fact]
-        public void GetVisualsAt_Should_Find_Control_Translated_Outside_Parent_Bounds()
+        public void HitTest_Should_Find_Control_Translated_Outside_Parent_Bounds()
         {
             using (TestApplication())
             {
@@ -276,14 +276,14 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
                 container.Measure(Size.Infinity);
                 container.Arrange(new Rect(container.DesiredSize));
 
-                var result = container.GetVisualsAt(new Point(120, 120));
+                var result = root.Renderer.HitTest(new Point(120, 120), null);
 
                 Assert.Equal(new IVisual[] { target, container }, result);
             }
         }
 
         [Fact]
-        public void GetVisualsAt_Should_Not_Find_Control_Outside_Parent_Bounds_When_Clipped()
+        public void HitTest_Should_Not_Find_Control_Outside_Parent_Bounds_When_Clipped()
         {
             using (TestApplication())
             {
@@ -323,14 +323,14 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
                 root.Measure(Size.Infinity);
                 root.Arrange(new Rect(container.DesiredSize));
 
-                var result = container.GetVisualsAt(new Point(50, 50));
+                var result = root.Renderer.HitTest(new Point(50, 50), null);
 
                 Assert.Equal(new[] { container }, result);
             }
         }
 
         [Fact]
-        public void GetVisualsAt_Should_Not_Find_Control_Outside_Scroll_Viewport()
+        public void HitTest_Should_Not_Find_Control_Outside_Scroll_Viewport()
         {
             using (TestApplication())
             {
@@ -395,11 +395,11 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
                 root.Measure(Size.Infinity);
                 root.Arrange(new Rect(container.DesiredSize));
 
-                var result = container.GetVisualsAt(new Point(50, 150)).First();
+                var result = root.Renderer.HitTest(new Point(50, 150), null).First();
 
                 Assert.Equal(item1, result);
 
-                result = container.GetVisualsAt(new Point(50, 50)).First();
+                result = root.Renderer.HitTest(new Point(50, 50), null).First();
 
                 Assert.Equal(target, result);
 
@@ -410,21 +410,21 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
                 container.InvalidateArrange();
                 container.Arrange(new Rect(container.DesiredSize));
 
-                result = container.GetVisualsAt(new Point(50, 150)).First();
+                result = root.Renderer.HitTest(new Point(50, 150), null).First();
                 Assert.Equal(item2, result);
 
-                result = container.GetVisualsAt(new Point(50, 50)).First();
+                result = root.Renderer.HitTest(new Point(50, 50), null).First();
                 Assert.Equal(target, result);
             }
         }
 
         [Fact]
-        public void GetVisualsAt_Should_Not_Find_Path_When_Outside_Fill()
+        public void HitTest_Should_Not_Find_Path_When_Outside_Fill()
         {
             using (TestApplication())
             {
                 Path path;
-                var container = new TestRoot
+                var root = new TestRoot
                 {
                     Width = 200,
                     Height = 200,
@@ -437,27 +437,27 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
                     }
                 };
 
-                container.Measure(Size.Infinity);
-                container.Arrange(new Rect(container.DesiredSize));
+                root.Measure(Size.Infinity);
+                root.Arrange(new Rect(root.DesiredSize));
 
                 var context = new DrawingContext(Mock.Of<IDrawingContextImpl>());
 
-                var result = container.GetVisualsAt(new Point(100, 100));
+                var result = root.Renderer.HitTest(new Point(100, 100), null);
                 Assert.Equal(new[] { path }, result);
 
-                result = container.GetVisualsAt(new Point(10, 10));
+                result = root.Renderer.HitTest(new Point(10, 10), null);
                 Assert.Empty(result);
             }
         }
 
         [Fact]
-        public void GetVisualsAt_Should_Respect_Geometry_Clip()
+        public void HitTest_Should_Respect_Geometry_Clip()
         {
             using (TestApplication())
             {
                 Border border;
                 Canvas canvas;
-                var container = new TestRoot
+                var root = new TestRoot
                 {
                     Width = 400,
                     Height = 400,
@@ -475,16 +475,16 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
                     }
                 };
 
-                container.Measure(Size.Infinity);
-                container.Arrange(new Rect(container.DesiredSize));
+                root.Measure(Size.Infinity);
+                root.Arrange(new Rect(root.DesiredSize));
                 Assert.Equal(new Rect(100, 100, 200, 200), border.Bounds);
 
                 var context = new DrawingContext(Mock.Of<IDrawingContextImpl>());
 
-                var result = container.GetVisualsAt(new Point(200, 200));
+                var result = root.Renderer.HitTest(new Point(200, 200), null);
                 Assert.Equal(new IVisual[] { canvas, border }, result);
 
-                result = container.GetVisualsAt(new Point(110, 110));
+                result = root.Renderer.HitTest(new Point(110, 110), null);
                 Assert.Empty(result);
             }
         }
