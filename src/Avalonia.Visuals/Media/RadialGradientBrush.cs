@@ -4,8 +4,7 @@
 namespace Avalonia.Media
 {
     /// <summary>
-    /// Paints an area with a radial gradient. A focal point defines the beginning of the gradient, 
-    /// and a circle defines the end point of the gradient.
+    /// Paints an area with a radial gradient.
     /// </summary>
     public sealed class RadialGradientBrush : GradientBrush, IRadialGradientBrush, IMutableBrush
     {
@@ -56,6 +55,7 @@ namespace Avalonia.Media
         /// Gets or sets the horizontal and vertical radius of the outermost circle of the radial
         /// gradient.
         /// </summary>
+        // TODO: This appears to always be relative so should use a RelativeSize struct or something.
         public double Radius
         {
             get { return GetValue(RadiusProperty); }

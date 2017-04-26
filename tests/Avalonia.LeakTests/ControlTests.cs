@@ -4,18 +4,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using JetBrains.dotMemoryUnit;
-using Avalonia.Collections;
 using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Diagnostics;
 using Avalonia.Layout;
 using Avalonia.Platform;
 using Avalonia.Rendering;
-using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
+using JetBrains.dotMemoryUnit;
 using Moq;
 using Xunit;
 using Xunit.Abstractions;
@@ -57,7 +54,6 @@ namespace Avalonia.LeakTests
                 };
 
                 var result = run();
-                PurgeMoqReferences();
 
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Canvas>()).ObjectsCount));
@@ -95,7 +91,6 @@ namespace Avalonia.LeakTests
                 };
 
                 var result = run();
-                PurgeMoqReferences();
 
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Canvas>()).ObjectsCount));
@@ -134,7 +129,6 @@ namespace Avalonia.LeakTests
                 };
 
                 var result = run();
-                PurgeMoqReferences();
 
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<TextBox>()).ObjectsCount));
@@ -172,7 +166,6 @@ namespace Avalonia.LeakTests
                 };
 
                 var result = run();
-                PurgeMoqReferences();
 
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<TextBox>()).ObjectsCount));
@@ -218,7 +211,6 @@ namespace Avalonia.LeakTests
                 };
 
                 var result = run();
-                PurgeMoqReferences();
 
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<TextBox>()).ObjectsCount));
@@ -309,7 +301,6 @@ namespace Avalonia.LeakTests
                 };
 
                 var result = run();
-                PurgeMoqReferences();
 
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<TreeView>()).ObjectsCount));
@@ -341,14 +332,6 @@ namespace Avalonia.LeakTests
                 window.Close();
                 renderer.Verify(r => r.Dispose());
             }
-        }
-
-        private static void PurgeMoqReferences()
-        {
-            // Moq holds onto references in its mock of IRenderer in case we want to check if a method has been called;
-            // clear these.
-            var renderer = Mock.Get(AvaloniaLocator.Current.GetService<IRenderer>());
-            renderer.ResetCalls();
         }
 
         private class Node
