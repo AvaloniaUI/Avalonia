@@ -97,6 +97,7 @@ namespace Avalonia.Skia
 
         public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
         {
+            Bitmap.Erase(SKColor.Empty);
             return new BitmapDrawingContext(Bitmap, visualBrushRenderer);
         }
 
