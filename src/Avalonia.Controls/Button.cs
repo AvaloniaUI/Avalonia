@@ -249,7 +249,10 @@ namespace Avalonia.Controls
             base.UpdateDataValidation(property, status);
             if(property == CommandProperty)
             {
-                IsEnabled = status?.ErrorType != BindingErrorType.Error;
+                if(status?.ErrorType == BindingErrorType.Error)
+                {
+                    IsEnabled = false;
+                }
             }
         }
 
