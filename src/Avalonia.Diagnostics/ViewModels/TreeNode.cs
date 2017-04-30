@@ -7,6 +7,7 @@ using System.Reactive;
 using System.Reactive.Linq;
 using Avalonia.Controls;
 using Avalonia.Styling;
+using Avalonia.VisualTree;
 using ReactiveUI;
 
 namespace Avalonia.Diagnostics.ViewModels
@@ -16,32 +17,35 @@ namespace Avalonia.Diagnostics.ViewModels
         private string _classes;
         private bool _isExpanded;
 
-        public TreeNode(Control control, TreeNode parent)
+        public TreeNode(IVisual control, TreeNode parent)
         {
-            Control = control;
             Parent = parent;
             Type = control.GetType().Name;
+            Control = control;
 
-            var classesChanged = Observable.FromEventPattern<
-                    NotifyCollectionChangedEventHandler, 
-                    NotifyCollectionChangedEventArgs>(
-                x => control.Classes.CollectionChanged += x,
-                x => control.Classes.CollectionChanged -= x)
-                .TakeUntil(((IStyleable)control).StyleDetach);
+            if (control is IStyleable styleable)
+            {
+                var classesChanged = Observable.FromEventPattern<
+                        NotifyCollectionChangedEventHandler,
+                        NotifyCollectionChangedEventArgs>(
+                    x => styleable.Classes.CollectionChanged += x,
+                    x => styleable.Classes.CollectionChanged -= x)
+                    .TakeUntil(((IStyleable)styleable).StyleDetach);
 
-            classesChanged.Select(_ => Unit.Default)
-                .StartWith(Unit.Default)
-                .Subscribe(_ =>
-                {
-                    if (control.Classes.Count > 0)
+                classesChanged.Select(_ => Unit.Default)
+                    .StartWith(Unit.Default)
+                    .Subscribe(_ =>
                     {
-                        Classes = "(" + string.Join(" ", control.Classes) + ")";
-                    }
-                    else
-                    {
-                        Classes = string.Empty;
-                    }
-                });
+                        if (styleable.Classes.Count > 0)
+                        {
+                            Classes = "(" + string.Join(" ", styleable.Classes) + ")";
+                        }
+                        else
+                        {
+                            Classes = string.Empty;
+                        }
+                    });
+            }
         }
 
         public IReadOnlyReactiveList<TreeNode> Children
@@ -56,7 +60,7 @@ namespace Avalonia.Diagnostics.ViewModels
             private set { this.RaiseAndSetIfChanged(ref _classes, value); }
         }
 
-        public Control Control
+        public IVisual Control
         {
             get;
         }
