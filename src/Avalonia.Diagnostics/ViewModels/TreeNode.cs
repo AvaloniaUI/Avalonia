@@ -5,7 +5,6 @@ using System;
 using System.Collections.Specialized;
 using System.Reactive;
 using System.Reactive.Linq;
-using Avalonia.Controls;
 using Avalonia.Styling;
 using Avalonia.VisualTree;
 using ReactiveUI;
@@ -17,13 +16,13 @@ namespace Avalonia.Diagnostics.ViewModels
         private string _classes;
         private bool _isExpanded;
 
-        public TreeNode(IVisual control, TreeNode parent)
+        public TreeNode(IVisual visual, TreeNode parent)
         {
             Parent = parent;
-            Type = control.GetType().Name;
-            Control = control;
+            Type = visual.GetType().Name;
+            Visual = visual;
 
-            if (control is IStyleable styleable)
+            if (visual is IStyleable styleable)
             {
                 var classesChanged = Observable.FromEventPattern<
                         NotifyCollectionChangedEventHandler,
@@ -60,7 +59,7 @@ namespace Avalonia.Diagnostics.ViewModels
             private set { this.RaiseAndSetIfChanged(ref _classes, value); }
         }
 
-        public IVisual Control
+        public IVisual Visual
         {
             get;
         }

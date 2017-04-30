@@ -24,7 +24,7 @@ namespace Avalonia.Diagnostics.ViewModels
                 Children = new ReactiveList<VisualTreeNode>(new[] { new VisualTreeNode(host.Root, this) });
             }
 
-            if ((Control is IStyleable styleable))
+            if ((Visual is IStyleable styleable))
             {
                 IsInTemplate = styleable.TemplatedParent != null;
             }
