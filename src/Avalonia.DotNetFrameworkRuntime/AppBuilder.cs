@@ -31,6 +31,20 @@ namespace Avalonia
             Instance = app;
         }
 
+        bool CheckEnvironment(Type checkerType)
+        {
+            if (checkerType == null)
+                return true;
+            try
+            {
+                return ((IModuleEnvironmentChecker) Activator.CreateInstance(checkerType)).IsCompatible;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         /// <summary>
         /// Instructs the <see cref="AppBuilder"/> to use the best settings for the platform.
         /// </summary>
@@ -43,13 +57,13 @@ namespace Avalonia
 
             var windowingSubsystemAttribute = (from assembly in RuntimePlatform.GetLoadedAssemblies()
                                                from attribute in assembly.GetCustomAttributes<ExportWindowingSubsystemAttribute>()
-                                               where attribute.RequiredOS == os
+                                               where attribute.RequiredOS == os && CheckEnvironment(attribute.EnvironmentChecker)
                                                orderby attribute.Priority ascending
                                                select attribute).First();
 
             var renderingSubsystemAttribute = (from assembly in RuntimePlatform.GetLoadedAssemblies()
                                                from attribute in assembly.GetCustomAttributes<ExportRenderingSubsystemAttribute>()
-                                               where attribute.RequiredOS == os
+                                               where attribute.RequiredOS == os && CheckEnvironment(attribute.EnvironmentChecker)
                                                where attribute.RequiresWindowingSubsystem == null
                                                 || attribute.RequiresWindowingSubsystem == windowingSubsystemAttribute.Name
                                                orderby attribute.Priority ascending
