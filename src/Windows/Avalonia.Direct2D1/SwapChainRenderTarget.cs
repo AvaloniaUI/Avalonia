@@ -99,9 +99,9 @@ namespace Avalonia.Direct2D1
                         Quality = 0,
                     },
                     Usage = Usage.RenderTargetOutput,
-                    BufferCount = 2,
-                    Scaling = Scaling.None,
-                    SwapEffect = SwapEffect.FlipSequential,
+                    BufferCount = 1,
+                    Scaling = Scaling.Stretch,
+                    SwapEffect = SwapEffect.Discard,
                     Flags = 0,
                 };
 
