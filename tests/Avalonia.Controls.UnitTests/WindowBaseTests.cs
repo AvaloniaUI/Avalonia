@@ -198,7 +198,7 @@ namespace Avalonia.Controls.UnitTests
             public bool IsClosed { get; private set; }
 
             public TestWindowBase()
-                : base(Mock.Of<IWindowBaseImpl>())
+                : base(Mock.Of<IWindowBaseImpl>(x => x.Scaling == 1))
             {
             }
 
