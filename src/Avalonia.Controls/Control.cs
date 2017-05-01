@@ -17,7 +17,9 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Logging;
 using Avalonia.LogicalTree;
+using Avalonia.Rendering;
 using Avalonia.Styling;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -33,7 +35,7 @@ namespace Avalonia.Controls
     /// - Implements <see cref="IStyleable"/> to allow styling to work on the control.
     /// - Implements <see cref="ILogical"/> to form part of a logical tree.
     /// </remarks>
-    public class Control : InputElement, IControl, INamed, ISetInheritanceParent, ISetLogicalParent, ISupportInitialize
+    public class Control : InputElement, IControl, INamed, ISetInheritanceParent, ISetLogicalParent, ISupportInitialize, IVisualBrushInitialize
     {
         /// <summary>
         /// Defines the <see cref="DataContext"/> property.
@@ -460,6 +462,38 @@ namespace Avalonia.Controls
             InheritanceParent = parent;
         }
 
+        /// <inheritdoc/>
+        void IVisualBrushInitialize.EnsureInitialized()
+        {
+            if (VisualRoot == null)
+            {
+                if (!IsInitialized)
+                {
+                    foreach (var i in this.GetSelfAndVisualDescendents())
+                    {
+                        var c = i as IControl;
+
+                        if (c?.IsInitialized == false)
+                        {
+                            var init = c as ISupportInitialize;
+
+                            if (init != null)
+                            {
+                                init.BeginInit();
+                                init.EndInit();
+                            }
+                        }
+                    }
+                }
+
+                if (!IsArrangeValid)
+                {
+                    Measure(Size.Infinity);
+                    Arrange(new Rect(DesiredSize));
+                }
+            }
+        }
+
         /// <summary>
         /// Adds a pseudo-class to be set when a property is true.
         /// </summary>
@@ -671,6 +705,23 @@ namespace Avalonia.Controls
             if (Name != null)
             {
                 _nameScope?.Register(Name, this);
+
+                var visualParent = Parent as Visual;
+
+                if (this is INameScope && visualParent != null)
+                {
+                    // If we have e.g. a named UserControl in a window then we want that control
+                    // to be findable by name from the Window, so register with both name scopes.
+                    // This differs from WPF's behavior in that XAML manually registers controls 
+                    // with name scopes based on the XAML file in which the name attribute appears,
+                    // but we're trying to avoid XAML magic in Avalonia in order to made code-
+                    // created UIs easy. This will cause problems if a UserControl declares a name
+                    // in its XAML and that control is included multiple times in a parent control
+                    // (as the name will be duplicated), however at the moment I'm fine with saying
+                    // "don't do that".
+                    var parentNameScope = NameScope.FindNameScope(visualParent);
+                    parentNameScope?.Register(Name, this);
+                }
             }
         }
 

@@ -10,12 +10,22 @@ namespace Avalonia.Platform
     /// <summary>
     /// Defines the platform-specific interface for <see cref="FormattedText"/>.
     /// </summary>
-    public interface IFormattedTextImpl : IDisposable
+    public interface IFormattedTextImpl
     {
         /// <summary>
-        /// Gets or sets the constraint of the text.
+        /// Gets the constraint of the text.
         /// </summary>
-        Size Constraint { get; set; }
+        Size Constraint { get; }
+
+        /// <summary>
+        /// The measured size of the text.
+        /// </summary>
+        Size Size { get; }
+
+        /// <summary>
+        /// Gets the text.
+        /// </summary>
+        string Text { get; }
 
         /// <summary>
         /// Gets the lines in the text.
@@ -48,19 +58,5 @@ namespace Avalonia.Platform
         /// <param name="length">The number of characters in the text range.</param>
         /// <returns>The character bounds.</returns>
         IEnumerable<Rect> HitTestTextRange(int index, int length);
-
-        /// <summary>
-        /// Gets the size of the text, taking <see cref="Constraint"/> into account.
-        /// </summary>
-        /// <returns>The bounds box of the text.</returns>
-        Size Measure();
-
-        /// <summary>
-        /// Sets the foreground brush for the specified text range.
-        /// </summary>
-        /// <param name="brush">The brush.</param>
-        /// <param name="startIndex">The start of the text range.</param>
-        /// <param name="length">The length of the text range.</param>
-        void SetForegroundBrush(IBrush brush, int startIndex, int length);
     }
 }

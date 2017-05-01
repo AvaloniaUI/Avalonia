@@ -9,6 +9,7 @@
 *.suo
 *.user
 *.sln.docstates
+.vs/
 
 # Build results
 
@@ -104,6 +105,11 @@ csx
 # Windows Store app package directory
 AppPackages/
 
+# NCrunch
+_NCrunch_*/
+*.ncrunchsolution.user
+nCrunchTemp_*/
+
 # Others
 sql/
 *.Cache
@@ -160,3 +166,5 @@ tools/
 .nuget
 artifacts/
 nuget
+Avalonia.XBuild.sln
+project.lock.json

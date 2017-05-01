@@ -8,6 +8,7 @@ using Avalonia.Shared.PlatformSupport;
 using Avalonia.Skia;
 using UIKit;
 using Avalonia.Controls;
+using Avalonia.Rendering;
 
 namespace Avalonia
 {
@@ -18,7 +19,7 @@ namespace Avalonia
             builder.UseWindowingSubsystem(iOSPlatform.Initialize, "iOS");
             return builder;
         }
-
+        /*
         // TODO: Can we merge this with UseSkia somehow once HW/platform cleanup is done?
         public static T UseSkiaViewHost<T>(this T builder) where T : AppBuilderBase<T>, new()
         {
@@ -33,16 +34,13 @@ namespace Avalonia
             SkiaPlatform.Initialize();
 
             return builder;
-        }
+        }*/
     }
 }
 
 namespace Avalonia.iOS
 {
-    // TODO: Perhaps we should make this class handle all these interfaces directly, like we 
-    // do for Win32 and Gtk platforms
-    //
-    public class iOSPlatform //: IPlatformThreadingInterface, IPlatformSettings, IWindowingPlatform
+    public class iOSPlatform
     {
         internal static MouseDevice MouseDevice;
         internal static KeyboardDevice KeyboardDevice;
@@ -62,7 +60,9 @@ namespace Avalonia.iOS
                 .Bind<IMouseDevice>().ToConstant(MouseDevice)
                 .Bind<IPlatformSettings>().ToSingleton<PlatformSettings>()
                 .Bind<IPlatformThreadingInterface>().ToConstant(PlatformThreadingInterface.Instance)
-                .Bind<IPlatformIconLoader>().ToSingleton<PlatformIconLoader>();
+                .Bind<IPlatformIconLoader>().ToSingleton<PlatformIconLoader>()
+                .Bind<IWindowingPlatform>().ToSingleton<WindowingPlatformImpl>()
+                .Bind<IRenderLoop>().ToSingleton<DisplayLinkRenderLoop>();
         }
     }
 }

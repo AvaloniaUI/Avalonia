@@ -60,10 +60,10 @@ namespace Avalonia.Controls
         /// </summary>
         public Action<TAppBuilder> BeforeStartCallback { get; private set; } = builder => { };
 
-        protected AppBuilderBase(IRuntimePlatform platform, Action platformSevices)
+        protected AppBuilderBase(IRuntimePlatform platform, Action<TAppBuilder> platformSevices)
         {
             RuntimePlatform = platform;
-            RuntimePlatformServicesInitializer = platformSevices;
+            RuntimePlatformServicesInitializer = () => platformSevices((TAppBuilder)this);
         }
 
         /// <summary>
@@ -115,13 +115,16 @@ namespace Avalonia.Controls
         /// Starts the application with an instance of <typeparamref name="TMainWindow"/>.
         /// </summary>
         /// <typeparam name="TMainWindow">The window type.</typeparam>
-        public void Start<TMainWindow>()
+        /// <param name="dataContextProvider">A delegate that will be called to create a data context for the window (optional).</param>
+        public void Start<TMainWindow>(Func<object> dataContextProvider = null)
             where TMainWindow : Window, new()
         {
             Setup();
             BeforeStartCallback(Self);
 
             var window = new TMainWindow();
+            if (dataContextProvider != null)
+                window.DataContext = dataContextProvider();
             window.Show();
             Instance.Run(window);
         }

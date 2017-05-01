@@ -1,0 +1,10 @@
+﻿<SolutionConfiguration>
+  <Settings>
+    <AdditionalFilesToIncludeForSolution>
+      <Value>tests\TestFiles\**.*</Value>
+    </AdditionalFilesToIncludeForSolution>
+    <AllowParallelTestExecution>True</AllowParallelTestExecution>
+    <ProjectConfigStoragePathRelativeToSolutionDir>.ncrunch</ProjectConfigStoragePathRelativeToSolutionDir>
+    <SolutionConfigured>True</SolutionConfigured>
+  </Settings>
+</SolutionConfiguration>

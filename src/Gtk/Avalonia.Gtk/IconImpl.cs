@@ -18,9 +18,10 @@ namespace Avalonia.Gtk
 
         public Pixbuf Pixbuf { get; }
 
-        public Stream Save()
+        public void Save(Stream stream)
         {
-            return new MemoryStream(Pixbuf.SaveToBuffer("png"));
+            var buffer = Pixbuf.SaveToBuffer("png");
+            stream.Write(buffer, 0, buffer.Length);
         }
     }
 }

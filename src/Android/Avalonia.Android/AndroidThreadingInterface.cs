@@ -51,10 +51,16 @@ namespace Avalonia.Android
                     scheduled = true;
                     EnsureInvokeOnMainThread(() =>
                     {
-                        tick();
-                        lock (l)
+                        try
                         {
-                            scheduled = false;
+                            tick();
+                        }
+                        finally
+                        {
+                            lock (l)
+                            {
+                                scheduled = false;
+                            }
                         }
                     });
                 }

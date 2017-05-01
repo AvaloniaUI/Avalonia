@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using Avalonia.Media;
+using Avalonia.Rendering;
 
 namespace Avalonia.Platform
 {
@@ -15,8 +15,12 @@ namespace Avalonia.Platform
     public interface IRenderTarget : IDisposable
     {
         /// <summary>
-        /// Creates an <see cref="DrawingContext"/> for a rendering session.
+        /// Creates an <see cref="IDrawingContextImpl"/> for a rendering session.
         /// </summary>
-        DrawingContext CreateDrawingContext();
+        /// <param name="visualBrushRenderer">
+        /// A render to be used to render visual brushes. May be null if no visual brushes are
+        /// to be drawn.
+        /// </param>
+        IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer);
     }
 }

@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Platform;
 
@@ -14,8 +13,8 @@ namespace Avalonia.Threading
     /// </summary>
     internal class JobRunner
     {
-        private readonly IPlatformThreadingInterface _platform;
         private readonly Queue<Job> _queue = new Queue<Job>();
+        private IPlatformThreadingInterface _platform;
 
         public JobRunner(IPlatformThreadingInterface platform)
         {
@@ -82,6 +81,14 @@ namespace Avalonia.Threading
             AddJob(new Job(action, priority, true));
         }
 
+        /// <summary>
+        /// Allows unit tests to change the platform threading interface.
+        /// </summary>
+        internal void UpdateServices()
+        {
+            _platform = AvaloniaLocator.Current.GetService<IPlatformThreadingInterface>();
+        }
+
         private void AddJob(Job job)
         {
             var needWake = false;
@@ -91,7 +98,7 @@ namespace Avalonia.Threading
                 _queue.Enqueue(job);
             }
             if (needWake)
-                _platform.Signal();
+                _platform?.Signal();
         }
 
         /// <summary>

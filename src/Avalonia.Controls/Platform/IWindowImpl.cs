@@ -9,7 +9,7 @@ namespace Avalonia.Platform
     /// <summary>
     /// Defines a platform-specific window implementation.
     /// </summary>
-    public interface IWindowImpl : ITopLevelImpl
+    public interface IWindowImpl : IWindowBaseImpl
     {
         /// <summary>
         /// Gets or sets the minimized/maximized state of the window.
@@ -34,11 +34,6 @@ namespace Avalonia.Platform
         /// Enables of disables system window decorations (title bar, buttons, etc)
         /// </summary>
         void SetSystemDecorations(bool enabled);
-
-        /// <summary>
-        /// When system decorations are disabled sets if the maximized state covers the entire screen or just the working area.
-        /// </summary>        
-        void SetCoverTaskbarWhenMaximized(bool enable);
 
         /// <summary>
         /// Sets the icon of this window.

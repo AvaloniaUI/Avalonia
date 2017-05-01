@@ -3,19 +3,19 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using Avalonia.Controls;
+using Avalonia.VisualTree;
 using ReactiveUI;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
     internal class ControlDetailsViewModel : ReactiveObject
     {
-        public ControlDetailsViewModel(Control control)
+        public ControlDetailsViewModel(IVisual control)
         {
-            if (control != null)
+            if (control is AvaloniaObject avaloniaObject)
             {
-                Properties = AvaloniaPropertyRegistry.Instance.GetRegistered(control)
-                    .Select(x => new PropertyDetails(control, x))
+                Properties = AvaloniaPropertyRegistry.Instance.GetRegistered(avaloniaObject)
+                    .Select(x => new PropertyDetails(avaloniaObject, x))
                     .OrderBy(x => x.IsAttached)
                     .ThenBy(x => x.Name);
             }

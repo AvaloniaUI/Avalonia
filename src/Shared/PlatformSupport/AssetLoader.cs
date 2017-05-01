@@ -85,7 +85,7 @@ namespace Avalonia.Shared.PlatformSupport
             {
                 var asm = GetAssembly(uri) ?? GetAssembly(baseUri) ?? _defaultAssembly;
 
-                if (asm == null && _defaultAssembly == null)
+                if (asm == null)
                 {
                     throw new ArgumentException(
                         "No default assembly, entry assembly or explicit assembly specified; " +
@@ -95,17 +95,6 @@ namespace Avalonia.Shared.PlatformSupport
                 IAssetDescriptor rv;
 
                 var resourceKey = uri.AbsolutePath;
-
-#if __IOS__
-                // TODO: HACK: to get iOS up and running. Using Shared projects for resources
-                // is flawed as this alters the reource key locations across platforms
-                // I think we need to use Portable libraries from now on to avoid that.
-                if(asm.Name.Contains("iOS"))
-                {
-                    resourceKey = resourceKey.Replace("TestApplication", "Avalonia.iOSTestApplication");
-                }
-#endif
-
                 asm.Resources.TryGetValue(resourceKey, out rv);
                 return rv;
             }
@@ -138,7 +127,7 @@ namespace Avalonia.Shared.PlatformSupport
             AssemblyDescriptor rv;
             if (!AssemblyNameCache.TryGetValue(name, out rv))
             {
-                var loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies();
+                var loadedAssemblies = AvaloniaLocator.Current.GetService<IRuntimePlatform>().GetLoadedAssemblies();
                 var match = loadedAssemblies.FirstOrDefault(a => a.GetName().Name == name);
                 if (match != null)
                 {
@@ -148,7 +137,12 @@ namespace Avalonia.Shared.PlatformSupport
                 {
                     // iOS does not support loading assemblies dynamically!
                     //
-#if !__IOS__
+#if NETSTANDARD
+                    AssemblyNameCache[name] = rv = new AssemblyDescriptor(Assembly.Load(new AssemblyName(name)));
+#elif __IOS__
+                    throw new InvalidOperationException(
+                        $"Assembly {name} needs to be referenced and explicitly loaded before loading resources");
+#else
                     AssemblyNameCache[name] = rv = new AssemblyDescriptor(Assembly.Load(name));
 #endif
                 }
