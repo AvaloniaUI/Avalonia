@@ -8,12 +8,22 @@ using Avalonia.Layout;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Styling;
+using Moq;
 
 namespace Avalonia.UnitTests
 {
     public class TestRoot : Decorator, IFocusScope, ILayoutRoot, INameScope, IRenderRoot, IStyleRoot
     {
         private readonly NameScope _nameScope = new NameScope();
+        private readonly IRenderTarget _renderTarget = Mock.Of<IRenderTarget>(
+            x => x.CreateDrawingContext(It.IsAny<IVisualBrushRenderer>()) == Mock.Of<IDrawingContextImpl>());
+
+        public TestRoot()
+        {
+            var rendererFactory = AvaloniaLocator.Current.GetService<IRendererFactory>();
+            var renderLoop = AvaloniaLocator.Current.GetService<IRenderLoop>();
+            Renderer = rendererFactory?.CreateRenderer(this, renderLoop);
+        }
 
         event EventHandler<NameScopeEventArgs> INameScope.Registered
         {
@@ -41,16 +51,12 @@ namespace Avalonia.UnitTests
 
         public IRenderTarget RenderTarget => null;
 
-        public IRenderer Renderer => null;
+        public IRenderer Renderer { get; set; }
 
-        public IRenderTarget CreateRenderTarget()
-        {
-            throw new NotImplementedException();
-        }
+        public IRenderTarget CreateRenderTarget() => _renderTarget;
 
         public void Invalidate(Rect rect)
         {
-            throw new NotImplementedException();
         }
 
         public Point PointToClient(Point p) => p;
