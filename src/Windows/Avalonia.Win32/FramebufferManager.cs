@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Controls.Platform.Surfaces;
+using Avalonia.Platform;
 using Avalonia.Win32.Interop;
 
 namespace Avalonia.Win32

@@ -33,7 +33,6 @@ namespace Avalonia.Win32
         private IntPtr _hwnd;
         private IInputRoot _owner;
         private bool _trackingMouse;
-        private bool _isActive;
         private bool _decorated = true;
         private double _scaling = 1;
         private WindowState _showWindowState;
@@ -89,23 +88,23 @@ namespace Avalonia.Win32
                 UnmanagedMethods.GetClientRect(_hwnd, out rect);
                 return new Size(rect.right, rect.bottom) / Scaling;
             }
+        }
 
-            set
+        public void Resize(Size value)
+        {
+            if (value != ClientSize)
             {
-                if (value != ClientSize)
-                {
-                    value *= Scaling;
-                    value += BorderThickness;
+                value *= Scaling;
+                value += BorderThickness;
 
-                    UnmanagedMethods.SetWindowPos(
-                        _hwnd,
-                        IntPtr.Zero,
-                        0,
-                        0,
-                        (int)value.Width,
-                        (int)value.Height,
-                        UnmanagedMethods.SetWindowPosFlags.SWP_RESIZE);
-                }
+                UnmanagedMethods.SetWindowPos(
+                    _hwnd,
+                    IntPtr.Zero,
+                    0,
+                    0,
+                    (int)value.Width,
+                    (int)value.Height,
+                    UnmanagedMethods.SetWindowPosFlags.SWP_RESIZE);
             }
         }
 
@@ -344,30 +343,9 @@ namespace Avalonia.Win32
 
         public virtual IDisposable ShowDialog()
         {
-            var disabled = s_instances.Where(x => x != this && x.IsEnabled).ToList();
-            WindowImpl activated = null;
-
-            foreach (var window in disabled)
-            {
-                if (window._isActive)
-                {
-                    activated = window;
-                }
-
-                window.IsEnabled = false;
-            }
-
             Show();
 
-            return Disposable.Create(() =>
-            {
-                foreach (var window in disabled)
-                {
-                    window.IsEnabled = true;
-                }
-
-                activated?.Activate();
-            });
+            return Disposable.Empty;
         }
 
         public void SetCursor(IPlatformHandle cursor)
@@ -414,12 +392,10 @@ namespace Avalonia.Win32
                     {
                         case UnmanagedMethods.WindowActivate.WA_ACTIVE:
                         case UnmanagedMethods.WindowActivate.WA_CLICKACTIVE:
-                            _isActive = true;
                             Activated?.Invoke();
                             break;
 
                         case UnmanagedMethods.WindowActivate.WA_INACTIVE:
-                            _isActive = false;
                             Deactivated?.Invoke();
                             break;
                     }
@@ -572,9 +548,8 @@ namespace Avalonia.Win32
 
                     if (UnmanagedMethods.BeginPaint(_hwnd, out ps) != IntPtr.Zero)
                     {
-                        UnmanagedMethods.RECT r;
-                        UnmanagedMethods.GetUpdateRect(_hwnd, out r, false);
                         var f = Scaling;
+                        var r = ps.rcPaint;
                         Paint?.Invoke(new Rect(r.left / f, r.top / f, (r.right - r.left) / f, (r.bottom - r.top) / f));
                         UnmanagedMethods.EndPaint(_hwnd, ref ps);
                     }

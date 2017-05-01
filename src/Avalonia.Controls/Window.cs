@@ -11,6 +11,7 @@ using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Styling;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Avalonia.Controls
 {
@@ -43,7 +44,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// A top-level window.
     /// </summary>
-    public class Window : TopLevel, IStyleable, IFocusScope, ILayoutRoot, INameScope
+    public class Window : WindowBase, IStyleable, IFocusScope, ILayoutRoot, INameScope
     {
         private static IList<Window> s_windows = new List<Window>();
 
@@ -189,6 +190,7 @@ namespace Avalonia.Controls
         {
             s_windows.Remove(this);
             PlatformImpl.Dispose();
+            IsVisible = false;
         }
 
         protected override void HandleApplicationExiting()
@@ -215,22 +217,25 @@ namespace Avalonia.Controls
         /// <summary>
         /// Hides the window but does not close it.
         /// </summary>
-        public void Hide()
+        public override void Hide()
         {
             using (BeginAutoSizing())
             {
                 PlatformImpl.Hide();
             }
+
+            IsVisible = false;
         }
 
         /// <summary>
         /// Shows the window.
         /// </summary>
-        public void Show()
+        public override void Show()
         {
             s_windows.Add(this);
 
             EnsureInitialized();
+            IsVisible = true;
             LayoutManager.Instance.ExecuteInitialLayoutPass(this);
 
             using (BeginAutoSizing())
@@ -264,22 +269,39 @@ namespace Avalonia.Controls
             s_windows.Add(this);
 
             EnsureInitialized();
+            IsVisible = true;
             LayoutManager.Instance.ExecuteInitialLayoutPass(this);
 
             using (BeginAutoSizing())
             {
+                var affectedWindows = s_windows.Where(w => w.IsEnabled && w != this).ToList();
+                var activated = affectedWindows.Where(w => w.IsActive).FirstOrDefault();
+                SetIsEnabled(affectedWindows, false);
+
                 var modal = PlatformImpl.ShowDialog();
                 var result = new TaskCompletionSource<TResult>();
 
-                Observable.FromEventPattern(this, nameof(Closed))
+                Observable.FromEventPattern<EventHandler, EventArgs>(
+                    x => this.Closed += x,
+                    x => this.Closed -= x)
                     .Take(1)
                     .Subscribe(_ =>
                     {
                         modal.Dispose();
+                        SetIsEnabled(affectedWindows, true);
+                        activated?.Activate();
                         result.SetResult((TResult)_dialogResult);
                     });
 
                 return result.Task;
+            }
+        }
+
+        void SetIsEnabled(IEnumerable<Window> windows, bool isEnabled)
+        {
+            foreach (var window in windows)
+            {
+                window.IsEnabled = isEnabled;
             }
         }
 
@@ -329,6 +351,12 @@ namespace Avalonia.Controls
             return size;
         }
 
+        protected override void HandleClosed()
+        {
+            IsVisible = false;
+            base.HandleClosed();
+        }
+
         /// <inheritdoc/>
         protected override void HandleResized(Size clientSize)
         {
@@ -338,16 +366,6 @@ namespace Avalonia.Controls
             }
 
             base.HandleResized(clientSize);
-        }
-
-        private void EnsureInitialized()
-        {
-            if (!this.IsInitialized)
-            {
-                var init = (ISupportInitialize)this;
-                init.BeginInit();
-                init.EndInit();
-            }
         }
     }
 }

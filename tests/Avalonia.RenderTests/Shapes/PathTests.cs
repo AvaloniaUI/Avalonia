@@ -299,11 +299,8 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
             RenderToFile(target);
             CompareImages();
         }
-#if AVALONIA_SKIA_SKIP_FAIL
-        [Fact(Skip = "Waiting for https://github.com/mono/SkiaSharp/pull/63")]
-#else
+
         [Fact]
-#endif
         public void Path_Tick_Scaled()
         {
             Decorator target = new Decorator
@@ -326,11 +323,7 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
             CompareImages();
         }
 
-#if AVALONIA_SKIA_SKIP_FAIL
-        [Fact(Skip = "Waiting for https://github.com/mono/SkiaSharp/pull/63")]
-#else
         [Fact]
-#endif
         public void Path_Tick_Scaled_Stroke_8px()
         {
             Decorator target = new Decorator

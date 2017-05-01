@@ -8,6 +8,9 @@ using Avalonia.Platform;
 using Avalonia.Styling;
 using Avalonia.Controls;
 using Avalonia.Rendering;
+using Avalonia.Threading;
+using System.Reactive.Disposables;
+using System.Reactive.Concurrency;
 
 namespace Avalonia.UnitTests
 {
@@ -30,7 +33,12 @@ namespace Avalonia.UnitTests
             var scope = AvaloniaLocator.EnterScope();
             var app = new UnitTestApplication(services);
             AvaloniaLocator.CurrentMutable.BindToSelf<Application>(app);
-            return scope;
+            Dispatcher.UIThread.UpdateServices();
+            return Disposable.Create(() =>
+            {
+                scope.Dispose();
+                Dispatcher.UIThread.UpdateServices();
+            });
         }
 
         public override void RegisterServices()
@@ -43,10 +51,11 @@ namespace Avalonia.UnitTests
                 .Bind<IKeyboardDevice>().ToConstant(Services.KeyboardDevice?.Invoke())
                 .Bind<ILayoutManager>().ToConstant(Services.LayoutManager)
                 .Bind<IRuntimePlatform>().ToConstant(Services.Platform)
-                .Bind<IRenderer>().ToConstant(Services.Renderer)
+                .Bind<IRendererFactory>().ToConstant(new RendererFactory(Services.Renderer))
                 .Bind<IPlatformRenderInterface>().ToConstant(Services.RenderInterface)
                 .Bind<IRenderLoop>().ToConstant(Services.RenderLoop)
                 .Bind<IPlatformThreadingInterface>().ToConstant(Services.ThreadingInterface)
+                .Bind<IScheduler>().ToConstant(Services.Scheduler)
                 .Bind<IStandardCursorFactory>().ToConstant(Services.StandardCursorFactory)
                 .Bind<IStyler>().ToConstant(Services.Styler)
                 .Bind<IWindowingPlatform>().ToConstant(Services.WindowingPlatform)
@@ -56,6 +65,21 @@ namespace Avalonia.UnitTests
             if (styles != null)
             {
                 Styles.AddRange(styles);
+            }
+        }
+
+        private class RendererFactory : IRendererFactory
+        {
+            Func<IRenderRoot, IRenderLoop, IRenderer> _func;
+
+            public RendererFactory(Func<IRenderRoot, IRenderLoop, IRenderer> func)
+            {
+                _func = func;
+            }
+
+            public IRenderer CreateRenderer(IRenderRoot root, IRenderLoop renderLoop)
+            {
+                return _func?.Invoke(root, renderLoop);
             }
         }
     }

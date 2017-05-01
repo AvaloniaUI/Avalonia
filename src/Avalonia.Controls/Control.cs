@@ -17,7 +17,9 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Logging;
 using Avalonia.LogicalTree;
+using Avalonia.Rendering;
 using Avalonia.Styling;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -33,7 +35,7 @@ namespace Avalonia.Controls
     /// - Implements <see cref="IStyleable"/> to allow styling to work on the control.
     /// - Implements <see cref="ILogical"/> to form part of a logical tree.
     /// </remarks>
-    public class Control : InputElement, IControl, INamed, ISetInheritanceParent, ISetLogicalParent, ISupportInitialize
+    public class Control : InputElement, IControl, INamed, ISetInheritanceParent, ISetLogicalParent, ISupportInitialize, IVisualBrushInitialize
     {
         /// <summary>
         /// Defines the <see cref="DataContext"/> property.
@@ -458,6 +460,38 @@ namespace Avalonia.Controls
         void ISetInheritanceParent.SetParent(IAvaloniaObject parent)
         {
             InheritanceParent = parent;
+        }
+
+        /// <inheritdoc/>
+        void IVisualBrushInitialize.EnsureInitialized()
+        {
+            if (VisualRoot == null)
+            {
+                if (!IsInitialized)
+                {
+                    foreach (var i in this.GetSelfAndVisualDescendents())
+                    {
+                        var c = i as IControl;
+
+                        if (c?.IsInitialized == false)
+                        {
+                            var init = c as ISupportInitialize;
+
+                            if (init != null)
+                            {
+                                init.BeginInit();
+                                init.EndInit();
+                            }
+                        }
+                    }
+                }
+
+                if (!IsArrangeValid)
+                {
+                    Measure(Size.Infinity);
+                    Arrange(new Rect(DesiredSize));
+                }
+            }
         }
 
         /// <summary>

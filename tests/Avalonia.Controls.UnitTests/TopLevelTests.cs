@@ -14,8 +14,6 @@ using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
-using Ploeh.AutoFixture;
-using Ploeh.AutoFixture.AutoMoq;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests
@@ -86,12 +84,12 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
                 var impl = new Mock<ITopLevelImpl>();
-                impl.SetupProperty(x => x.ClientSize);
                 impl.SetupProperty(x => x.Resized);
                 impl.SetupGet(x => x.Scaling).Returns(1);
 
                 var target = new TestTopLevel(impl.Object)
                 {
+                    IsVisible = true,
                     Template = CreateTemplate(),
                     Content = new TextBlock
                     {
@@ -103,29 +101,6 @@ namespace Avalonia.Controls.UnitTests
                 LayoutManager.Instance.ExecuteInitialLayoutPass(target);
 
                 Assert.Equal(new Rect(0, 0, 321, 432), target.Bounds);
-            }
-        }
-
-        [Fact]
-        public void Impl_ClientSize_Should_Be_Set_After_Layout_Pass()
-        {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
-            {
-                var impl = Mock.Of<ITopLevelImpl>(x => x.Scaling == 1);
-
-                var target = new TestTopLevel(impl)
-                {
-                    Template = CreateTemplate(),
-                    Content = new TextBlock
-                    {
-                        Width = 321,
-                        Height = 432,
-                    }
-                };
-
-                LayoutManager.Instance.ExecuteInitialLayoutPass(target);
-
-                Mock.Get(impl).VerifySet(x => x.ClientSize = new Size(321, 432));
             }
         }
 
@@ -164,38 +139,6 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Activate_Should_Call_Impl_Activate()
-        {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
-            {
-                var impl = new Mock<ITopLevelImpl>();
-                var target = new TestTopLevel(impl.Object);
-
-                target.Activate();
-
-                impl.Verify(x => x.Activate());
-            }
-        }
-
-        [Fact]
-        public void Impl_Activate_Should_Call_Raise_Activated_Event()
-        {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
-            {
-                var impl = new Mock<ITopLevelImpl>();
-                impl.SetupAllProperties();
-
-                bool raised = false;
-                var target = new TestTopLevel(impl.Object);
-                target.Activated += (s, e) => raised = true;
-
-                impl.Object.Activated();
-
-                Assert.True(raised);
-            }
-        }
-
-        [Fact]
         public void Impl_Close_Should_Call_Raise_Closed_Event()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
@@ -208,24 +151,6 @@ namespace Avalonia.Controls.UnitTests
                 target.Closed += (s, e) => raised = true;
 
                 impl.Object.Closed();
-
-                Assert.True(raised);
-            }
-        }
-
-        [Fact]
-        public void Impl_Deactivate_Should_Call_Raise_Activated_Event()
-        {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
-            {
-                var impl = new Mock<ITopLevelImpl>();
-                impl.SetupAllProperties();
-
-                bool raised = false;
-                var target = new TestTopLevel(impl.Object);
-                target.Deactivated += (s, e) => raised = true;
-
-                impl.Object.Deactivated();
 
                 Assert.True(raised);
             }

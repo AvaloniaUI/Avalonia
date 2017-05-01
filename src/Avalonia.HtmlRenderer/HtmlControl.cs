@@ -413,7 +413,7 @@ namespace Avalonia.Controls.Html
         /// <summary>
         /// Handle mouse up to handle selection and link click. 
         /// </summary>
-        protected override void OnPointerReleased(PointerEventArgs e)
+        protected override void OnPointerReleased(PointerReleasedEventArgs e)
         {
             base.OnPointerReleased(e);
             LeftMouseButton = false;

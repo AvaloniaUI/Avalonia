@@ -75,8 +75,7 @@ namespace Avalonia.DesignerSupport
         private static void SetScalingFactor(double factor)
         {
             PlatformManager.SetDesignerScalingFactor(factor);
-            if (s_currentWindow != null)
-                s_currentWindow.PlatformImpl.ClientSize = s_currentWindow.ClientSize;
+            s_currentWindow?.PlatformImpl.Resize(s_currentWindow.ClientSize);
         }
 
         static Window s_currentWindow;

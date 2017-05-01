@@ -32,6 +32,7 @@ namespace Avalonia.iOS
         {
             _keyboardHelper = new KeyboardEventsHelper<TopLevelImpl>(this);
             AutoresizingMask = UIViewAutoresizing.All;
+            _keyboardHelper.ActivateAutoShowKeybord();
         }
 
         [Export("hasText")]
@@ -44,37 +45,21 @@ namespace Avalonia.iOS
         public void DeleteBackward() => _keyboardHelper.DeleteBackward();
 
         public override bool CanBecomeFirstResponder => _keyboardHelper.CanBecomeFirstResponder();
-
-        public Action Activated { get; set; }
+        
         public Action Closed { get; set; }
-        public Action Deactivated { get; set; }
         public Action<RawInputEventArgs> Input { get; set; }
         public Action<Rect> Paint { get; set; }
         public Action<Size> Resized { get; set; }
         public Action<double> ScalingChanged { get; set; }
-        public Action<Point> PositionChanged { get; set; }
 
         public IPlatformHandle Handle => null;
 
         public double Scaling => UIScreen.MainScreen.Scale;
 
-        public WindowState WindowState
-        {
-            get { return WindowState.Normal; }
-            set { }
-        }
-
+       
         public override void LayoutSubviews() => Resized?.Invoke(ClientSize);
 
-        public Size ClientSize
-        {
-            get { return Bounds.Size.ToAvalonia(); }
-            set { InvokeOnMainThread(() => Resized?.Invoke(ClientSize)); }
-        }
-
-        public void Activate()
-        {
-        }
+        public Size ClientSize => Bounds.Size.ToAvalonia();
 
         public override void Draw(CGRect rect)
         {
@@ -93,42 +78,9 @@ namespace Avalonia.iOS
         {
             //Not supported
         }
-
-        public void Show()
-        {
-            _keyboardHelper.ActivateAutoShowKeybord();
-        }
-
-        public void BeginMoveDrag()
-        {
-            //Not supported
-        }
-
-        public void BeginResizeDrag(WindowEdge edge)
-        {
-            //Not supported
-        }
-
-        public Point Position
-        {
-            get { return _position; }
-            set
-            {
-                _position = value;
-                PositionChanged?.Invoke(_position);
-            }
-        }
-
-        public Size MaxClientSize => Bounds.Size.ToAvalonia();
-
+        
         public IEnumerable<object> Surfaces => new object[] { this };
-
-
-        public void Hide()
-        {
-            //Not supported
-        }
-
+        
         public override void TouchesEnded(NSSet touches, UIEvent evt)
         {
             var touch = touches.AnyObject as UITouch;
@@ -182,11 +134,7 @@ namespace Avalonia.iOS
                 _touchLastPoint = location;
             }
         }
-
-        public void SetIcon(IWindowIconImpl icon)
-        {
-        }
-
+        
         public ILockedFramebuffer Lock() => new EmulatedFramebuffer(this);
     }
 }

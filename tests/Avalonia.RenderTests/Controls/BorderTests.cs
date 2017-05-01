@@ -181,8 +181,6 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
 
 #if AVALONIA_CAIRO
         [Fact(Skip = "Font scaling currently broken on cairo")]
-#elif AVALONIA_SKIA_SKIP_FAIL
-        [Fact(Skip = "Waiting for new FormattedText")]
 #else
         [Fact]
 #endif
@@ -338,8 +336,6 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
 
 #if AVALONIA_CAIRO
         [Fact(Skip = "Font scaling currently broken on cairo")]
-#elif AVALONIA_SKIA_SKIP_FAIL
-        [Fact(Skip = "Waiting for new FormattedText")]
 #else
         [Fact]
 #endif
@@ -371,8 +367,6 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
 
 #if AVALONIA_CAIRO
         [Fact(Skip = "Font scaling currently broken on cairo")]
-#elif AVALONIA_SKIA_SKIP_FAIL
-        [Fact(Skip = "Waiting for new FormattedText")]
 #else
         [Fact]
 #endif

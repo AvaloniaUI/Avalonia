@@ -5,6 +5,8 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.DotNet.PlatformAbstractions;
+using Microsoft.Extensions.DependencyModel;
 
 namespace Avalonia.Shared.PlatformSupport
 {
@@ -15,33 +17,26 @@ namespace Avalonia.Shared.PlatformSupport
 
         static Assembly[] LoadAssemblies()
         {
+            var assemblies = new List<Assembly>();
+            // Mostly copy-pasted from (MIT):
+            // https://github.com/StefH/System.AppDomain.Core/blob/0b35e676c2721aa367b96e62eb52c97ee0b43a70/src/System.AppDomain.NetCoreApp/AppDomain.cs
 
-            var rv = new List<Assembly>();
-            var entry = Assembly.GetEntryAssembly();
-            rv.Add(entry);
-            var queue = new Queue<AssemblyName>(entry.GetReferencedAssemblies());
-            var aset = new HashSet<string>(queue.Select(r => r.ToString()));
-
-            while (queue.Count > 0)
+            foreach (var assemblyName in
+                DependencyContext.Default.GetRuntimeAssemblyNames(RuntimeEnvironment.GetRuntimeIdentifier()))
             {
-                Assembly asm;
                 try
                 {
-                    asm = Assembly.Load(queue.Dequeue());
+                    var assembly = Assembly.Load(assemblyName);
+                    // just load all types and skip this assembly if one or more types cannot be resolved
+                    assembly.DefinedTypes.ToArray();
+                    assemblies.Add(assembly);
                 }
-                catch (Exception e)
+                catch (Exception ex)
                 {
-                    Debug.Write(e.ToString());
-                    continue;
-                }
-                rv.Add(asm);
-                foreach (var r in asm.GetReferencedAssemblies())
-                {
-                    if (aset.Add(r.ToString()))
-                        queue.Enqueue(r);
+                    Debug.Write(ex.Message);
                 }
             }
-            return rv.Distinct().ToArray();
+            return assemblies.ToArray();
         }
     }
 }

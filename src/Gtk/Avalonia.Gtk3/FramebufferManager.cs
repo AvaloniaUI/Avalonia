@@ -4,13 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Controls.Platform.Surfaces;
+using Avalonia.Platform;
 
 namespace Avalonia.Gtk3
 {
     class FramebufferManager : IFramebufferPlatformSurface, IDisposable
     {
-        private readonly TopLevelImpl _window;
-        public FramebufferManager(TopLevelImpl window)
+        private readonly WindowBaseImpl _window;
+        public FramebufferManager(WindowBaseImpl window)
         {
             _window = window;
         }
