@@ -9,13 +9,13 @@ using Avalonia.Rendering;
 namespace Avalonia.VisualTree
 {
     /// <summary>
-    /// Represents a node in the visual scene graph.
+    /// Represents control that has a visual on-screen representation.
     /// </summary>
     /// <remarks>
     /// The <see cref="IVisual"/> interface defines the interface required for a renderer to
-    /// render a scene graph. You should not usually need to reference this interface unless
+    /// render a control. You should not usually need to reference this interface unless
     /// you are writing a renderer; instead use the extension methods defined in
-    /// <see cref="VisualExtensions"/> to traverse the scene graph. This interface is
+    /// <see cref="VisualExtensions"/> to traverse the visual tree. This interface is
     /// implemented by <see cref="Visual"/>. It should not be necessary to implement it
     /// anywhere else.
     /// </remarks>
@@ -32,12 +32,12 @@ namespace Avalonia.VisualTree
         event EventHandler<VisualTreeAttachmentEventArgs> DetachedFromVisualTree;
 
         /// <summary>
-        /// Gets the bounds of the scene graph node relative to its parent.
+        /// Gets the bounds of the control relative to its parent.
         /// </summary>
         Rect Bounds { get; }
 
         /// <summary>
-        /// Gets a value indicating whether the scene graph node should be clipped to its bounds.
+        /// Gets a value indicating whether the control should be clipped to its bounds.
         /// </summary>
         bool ClipToBounds { get; set; }
 
@@ -47,47 +47,47 @@ namespace Avalonia.VisualTree
         Geometry Clip { get; set; }
 
         /// <summary>
-        /// Gets a value indicating whether this scene graph node is attached to a visual root.
+        /// Gets a value indicating whether this control is attached to a visual root.
         /// </summary>
         bool IsAttachedToVisualTree { get; }
 
         /// <summary>
-        /// Gets a value indicating whether this scene graph node and all its parents are visible.
+        /// Gets a value indicating whether this control and all its parents are visible.
         /// </summary>
         bool IsEffectivelyVisible { get; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this scene graph node is visible.
+        /// Gets or sets a value indicating whether this control is visible.
         /// </summary>
         bool IsVisible { get; set; }
 
         /// <summary>
-        /// Gets or sets the opacity of the scene graph node.
+        /// Gets or sets the opacity of the control.
         /// </summary>
         double Opacity { get; set; }
 
         /// <summary>
-        /// Gets or sets the opacity mask of the scene graph node.
+        /// Gets or sets the opacity mask for the control.
         /// </summary>
         IBrush OpacityMask { get; set; }
 
         /// <summary>
-        /// Gets or sets the render transform of the scene graph node.
+        /// Gets or sets the render transform of the control.
         /// </summary>
         Transform RenderTransform { get; set; }
 
         /// <summary>
-        /// Gets or sets the render transform origin of the scene graph node.
+        /// Gets or sets the render transform origin of the control.
         /// </summary>
         RelativePoint RenderTransformOrigin { get; set; }
 
         /// <summary>
-        /// Gets the scene graph node's child nodes.
+        /// Gets the control's child visuals.
         /// </summary>
         IAvaloniaReadOnlyList<IVisual> VisualChildren { get; }
 
         /// <summary>
-        /// Gets the scene graph node's parent node.
+        /// Gets the control's parent visual.
         /// </summary>
         IVisual VisualParent { get; }
 
@@ -107,7 +107,7 @@ namespace Avalonia.VisualTree
         void InvalidateVisual();
 
         /// <summary>
-        /// Renders the scene graph node to a <see cref="DrawingContext"/>.
+        /// Renders the control to a <see cref="DrawingContext"/>.
         /// </summary>
         /// <param name="context">The context.</param>
         void Render(DrawingContext context);
