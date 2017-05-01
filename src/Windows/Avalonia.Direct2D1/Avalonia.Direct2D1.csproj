@@ -73,7 +73,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RenderTarget.cs" />
     <Compile Include="SwapChainRenderTarget.cs" />
-    <Compile Include="WindowsVersionChecker.cs" />
+    <Compile Include="Direct2DChecker.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
