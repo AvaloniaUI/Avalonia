@@ -31,49 +31,76 @@ namespace Avalonia.Direct2D1
     {
         private static readonly Direct2D1Platform s_instance = new Direct2D1Platform();
 
-        private static readonly SharpDX.Direct2D1.Factory s_d2D1Factory =
-#if DEBUG
-            new SharpDX.Direct2D1.Factory1(SharpDX.Direct2D1.FactoryType.MultiThreaded, SharpDX.Direct2D1.DebugLevel.Error);
-#else
-            new SharpDX.Direct2D1.Factory1(SharpDX.Direct2D1.FactoryType.MultiThreaded, SharpDX.Direct2D1.DebugLevel.None);
-#endif
-        private static readonly SharpDX.DirectWrite.Factory s_dwfactory = new SharpDX.DirectWrite.Factory();
+        private static SharpDX.Direct2D1.Factory s_d2D1Factory;
 
-        private static readonly SharpDX.WIC.ImagingFactory s_imagingFactory = new SharpDX.WIC.ImagingFactory();
+        private static SharpDX.DirectWrite.Factory s_dwfactory;
 
-        private static readonly SharpDX.DXGI.Device s_dxgiDevice;
+        private static SharpDX.WIC.ImagingFactory s_imagingFactory;
 
-        private static readonly SharpDX.Direct2D1.Device s_d2D1Device;
+        private static SharpDX.DXGI.Device s_dxgiDevice;
 
-        static Direct2D1Platform()
+        private static SharpDX.Direct2D1.Device s_d2D1Device;
+
+        private static readonly object s_initLock = new object();
+        private static bool s_initialized = false;
+
+        internal static void InitializeDirect2D()
         {
-            var featureLevels = new[]
+            lock (s_initLock)
             {
-                SharpDX.Direct3D.FeatureLevel.Level_11_1,
-                SharpDX.Direct3D.FeatureLevel.Level_11_0,
-                SharpDX.Direct3D.FeatureLevel.Level_10_1,
-                SharpDX.Direct3D.FeatureLevel.Level_10_0,
-                SharpDX.Direct3D.FeatureLevel.Level_9_3,
-                SharpDX.Direct3D.FeatureLevel.Level_9_2,
-                SharpDX.Direct3D.FeatureLevel.Level_9_1,
-            };
+                if (s_initialized)
+                    return;
+#if DEBUG
+                try
+                {
+                    s_d2D1Factory =
 
-            using (var d3dDevice = new SharpDX.Direct3D11.Device(
-                SharpDX.Direct3D.DriverType.Hardware,
-                SharpDX.Direct3D11.DeviceCreationFlags.BgraSupport | SharpDX.Direct3D11.DeviceCreationFlags.VideoSupport,
-                featureLevels))
-            {
-                s_dxgiDevice = d3dDevice.QueryInterface<SharpDX.DXGI.Device>();
-            }
+                        new SharpDX.Direct2D1.Factory1(SharpDX.Direct2D1.FactoryType.MultiThreaded,
+                            SharpDX.Direct2D1.DebugLevel.Error);
+                }
+                catch
+                {
+                    //
+                }
+#endif
+                s_dwfactory = new SharpDX.DirectWrite.Factory();
+                s_imagingFactory = new SharpDX.WIC.ImagingFactory();
+                if (s_d2D1Factory == null)
+                    s_d2D1Factory = new SharpDX.Direct2D1.Factory1(SharpDX.Direct2D1.FactoryType.MultiThreaded,
+                        SharpDX.Direct2D1.DebugLevel.None);
 
-            using (var factory1 = s_d2D1Factory.QueryInterface<SharpDX.Direct2D1.Factory1>())
-            {
-                s_d2D1Device = new SharpDX.Direct2D1.Device(factory1, s_dxgiDevice);
+
+                var featureLevels = new[]
+                {
+                    SharpDX.Direct3D.FeatureLevel.Level_11_1,
+                    SharpDX.Direct3D.FeatureLevel.Level_11_0,
+                    SharpDX.Direct3D.FeatureLevel.Level_10_1,
+                    SharpDX.Direct3D.FeatureLevel.Level_10_0,
+                    SharpDX.Direct3D.FeatureLevel.Level_9_3,
+                    SharpDX.Direct3D.FeatureLevel.Level_9_2,
+                    SharpDX.Direct3D.FeatureLevel.Level_9_1,
+                };
+
+                using (var d3dDevice = new SharpDX.Direct3D11.Device(
+                    SharpDX.Direct3D.DriverType.Hardware,
+                    SharpDX.Direct3D11.DeviceCreationFlags.BgraSupport |
+                    SharpDX.Direct3D11.DeviceCreationFlags.VideoSupport,
+                    featureLevels))
+                {
+                    s_dxgiDevice = d3dDevice.QueryInterface<SharpDX.DXGI.Device>();
+                }
+
+                using (var factory1 = s_d2D1Factory.QueryInterface<SharpDX.Direct2D1.Factory1>())
+                {
+                    s_d2D1Device = new SharpDX.Direct2D1.Device(factory1, s_dxgiDevice);
+                }
+                s_initialized = true;
             }
         }
 
         public static void Initialize()
         {
+            InitializeDirect2D();
             AvaloniaLocator.CurrentMutable
                         .Bind<IPlatformRenderInterface>().ToConstant(s_instance)
                         .BindToSelf(s_d2D1Factory)
