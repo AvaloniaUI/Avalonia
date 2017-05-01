@@ -30,7 +30,7 @@ namespace Avalonia.LeakTests
         [Fact]
         public void Canvas_Is_Freed()
         {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            using (Start())
             {
                 Func<Window> run = () =>
                 {
@@ -63,7 +63,7 @@ namespace Avalonia.LeakTests
         [Fact]
         public void Named_Canvas_Is_Freed()
         {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            using (Start())
             {
                 Func<Window> run = () =>
                 {
@@ -100,7 +100,7 @@ namespace Avalonia.LeakTests
         [Fact]
         public void ScrollViewer_With_Content_Is_Freed()
         {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            using (Start())
             {
                 Func<Window> run = () =>
                 {
@@ -140,7 +140,7 @@ namespace Avalonia.LeakTests
         [Fact]
         public void TextBox_Is_Freed()
         {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            using (Start())
             {
                 Func<Window> run = () =>
                 {
@@ -175,7 +175,7 @@ namespace Avalonia.LeakTests
         [Fact]
         public void TextBox_With_Xaml_Binding_Is_Freed()
         {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            using (Start())
             {
                 Func<Window> run = () =>
                 {
@@ -222,7 +222,7 @@ namespace Avalonia.LeakTests
         [Fact]
         public void TextBox_Class_Listeners_Are_Freed()
         {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            using (Start())
             {
                 TextBox textBox;
 
@@ -258,7 +258,7 @@ namespace Avalonia.LeakTests
         [Fact]
         public void TreeView_Is_Freed()
         {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            using (Start())
             {
                 Func<Window> run = () =>
                 {
@@ -311,7 +311,7 @@ namespace Avalonia.LeakTests
         [Fact]
         public void RendererIsDisposed()
         {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            using (Start())
             {
                 var renderer = new Mock<IRenderer>();
                 renderer.Setup(x => x.Dispose());
@@ -334,10 +334,40 @@ namespace Avalonia.LeakTests
             }
         }
 
+        private IDisposable Start()
+        {
+            var services = TestServices.StyledWindow.With(renderer: (root, loop) => new NullRenderer());
+            return UnitTestApplication.Start(services);
+        }
+
         private class Node
         {
             public string Name { get; set; }
             public IEnumerable<Node> Children { get; set; }
+        }
+
+        private class NullRenderer : IRenderer
+        {
+            public bool DrawFps { get; set; }
+            public bool DrawDirtyRects { get; set; }
+
+            public void AddDirty(IVisual visual)
+            {
+            }
+
+            public void Dispose()
+            {
+            }
+
+            public IEnumerable<IVisual> HitTest(Point p, Func<IVisual, bool> filter) => null;
+
+            public void Paint(Rect rect)
+            {
+            }
+
+            public void Resized(Size size)
+            {
+            }
         }
     }
 }
