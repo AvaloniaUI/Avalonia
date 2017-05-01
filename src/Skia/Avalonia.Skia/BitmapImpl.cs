@@ -30,6 +30,7 @@ namespace Avalonia.Skia
             if (runtime?.IsDesktop == true && runtime?.OperatingSystem == OperatingSystemType.Linux)
                 colorType = SKColorType.Bgra8888;
             Bitmap = new SKBitmap(width, height, colorType, SKAlphaType.Premul);
+            Bitmap.Erase(SKColor.Empty);
         }
 
         public void Dispose()
