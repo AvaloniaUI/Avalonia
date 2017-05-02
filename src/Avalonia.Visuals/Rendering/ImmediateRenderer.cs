@@ -20,6 +20,11 @@ namespace Avalonia.Rendering
     /// </remarks>
     public class ImmediateRenderer : RendererBase, IRenderer, IVisualBrushRenderer
     {
+        class ImmediateRendererFactory : IRendererFactory
+        {
+            public IRenderer CreateRenderer(IRenderRoot root, IRenderLoop renderLoop) => new ImmediateRenderer(root);
+        }
+
         private readonly IVisual _root;
         private readonly IRenderRoot _renderRoot;
         private IRenderTarget _renderTarget;
@@ -35,6 +40,8 @@ namespace Avalonia.Rendering
             _root = root;
             _renderRoot = root as IRenderRoot;
         }
+
+        public static IRendererFactory Factory { get; } = new ImmediateRendererFactory();
 
         /// <inheritdoc/>
         public bool DrawFps { get; set; }
