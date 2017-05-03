@@ -281,5 +281,32 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 Assert.NotNull(target.FocusAdorner);
             }
         }
+
+        [Fact]
+        public void Style_Applies_To_Child_Of_Named_Element()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Window.Styles>
+        <Style Selector='StackPanel#foo Button'>
+		  <Setter Property='Background' Value='Red'/>
+		</Style>
+	</Window.Styles>
+
+    <StackPanel Name='foo'>
+        <Button Name='target'/>
+    </StackPanel>
+</Window>";
+
+                var loader = new AvaloniaXamlLoader();
+                var window = (Window)loader.Load(xaml);
+                var target = window.Find<Button>("target");
+
+                Assert.Equal(Colors.Red, ((ISolidColorBrush)target.Background).Color);
+            }
+        }
     }
 }
