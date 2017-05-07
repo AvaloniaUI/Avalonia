@@ -4,18 +4,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using JetBrains.dotMemoryUnit;
-using Avalonia.Collections;
 using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Diagnostics;
 using Avalonia.Layout;
 using Avalonia.Platform;
 using Avalonia.Rendering;
-using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
+using JetBrains.dotMemoryUnit;
 using Moq;
 using Xunit;
 using Xunit.Abstractions;
@@ -33,7 +30,7 @@ namespace Avalonia.LeakTests
         [Fact]
         public void Canvas_Is_Freed()
         {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            using (Start())
             {
                 Func<Window> run = () =>
                 {
@@ -66,7 +63,7 @@ namespace Avalonia.LeakTests
         [Fact]
         public void Named_Canvas_Is_Freed()
         {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            using (Start())
             {
                 Func<Window> run = () =>
                 {
@@ -103,7 +100,7 @@ namespace Avalonia.LeakTests
         [Fact]
         public void ScrollViewer_With_Content_Is_Freed()
         {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            using (Start())
             {
                 Func<Window> run = () =>
                 {
@@ -143,7 +140,7 @@ namespace Avalonia.LeakTests
         [Fact]
         public void TextBox_Is_Freed()
         {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            using (Start())
             {
                 Func<Window> run = () =>
                 {
@@ -178,7 +175,7 @@ namespace Avalonia.LeakTests
         [Fact]
         public void TextBox_With_Xaml_Binding_Is_Freed()
         {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            using (Start())
             {
                 Func<Window> run = () =>
                 {
@@ -225,7 +222,7 @@ namespace Avalonia.LeakTests
         [Fact]
         public void TextBox_Class_Listeners_Are_Freed()
         {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            using (Start())
             {
                 TextBox textBox;
 
@@ -261,7 +258,7 @@ namespace Avalonia.LeakTests
         [Fact]
         public void TreeView_Is_Freed()
         {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            using (Start())
             {
                 Func<Window> run = () =>
                 {
@@ -313,7 +310,7 @@ namespace Avalonia.LeakTests
         [Fact]
         public void RendererIsDisposed()
         {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            using (Start())
             {
                 var renderer = new Mock<IRenderer>();
                 renderer.Setup(x => x.Dispose());
@@ -336,18 +333,40 @@ namespace Avalonia.LeakTests
             }
         }
 
-        private static void PurgeMoqReferences()
+        private IDisposable Start()
         {
-            // Moq holds onto references in its mock of IRenderer in case we want to check if a method has been called;
-            // clear these.
-            var renderer = Mock.Get(AvaloniaLocator.Current.GetService<IRenderer>());
-            renderer.ResetCalls();
+            var services = TestServices.StyledWindow.With(renderer: (root, loop) => new NullRenderer());
+            return UnitTestApplication.Start(services);
         }
 
         private class Node
         {
             public string Name { get; set; }
             public IEnumerable<Node> Children { get; set; }
+        }
+
+        private class NullRenderer : IRenderer
+        {
+            public bool DrawFps { get; set; }
+            public bool DrawDirtyRects { get; set; }
+
+            public void AddDirty(IVisual visual)
+            {
+            }
+
+            public void Dispose()
+            {
+            }
+
+            public IEnumerable<IVisual> HitTest(Point p, Func<IVisual, bool> filter) => null;
+
+            public void Paint(Rect rect)
+            {
+            }
+
+            public void Resized(Size size)
+            {
+            }
         }
     }
 }

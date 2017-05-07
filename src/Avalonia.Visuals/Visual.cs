@@ -494,7 +494,7 @@ namespace Avalonia
             {
                 return;
             }
-            
+
             var old = _visualParent;
             _visualParent = value;
 

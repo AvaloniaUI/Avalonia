@@ -17,6 +17,7 @@ namespace Avalonia.Direct2D1.Media
     public class WicBitmapImpl : BitmapImpl
     {
         private readonly ImagingFactory _factory;
+        
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WicBitmapImpl"/> class.
