@@ -43,11 +43,6 @@ namespace Avalonia.Rendering.SceneGraph
         public IVisual LayerRoot { get; }
 
         /// <summary>
-        /// Gets the dirty rectangles for the layer.
-        /// </summary>
-        public DirtyRects Dirty { get; }
-
-        /// <summary>
         /// Gets the distance of the layer root from the root of the scene.
         /// </summary>
         public int DistanceFromRoot { get; }
@@ -71,5 +66,10 @@ namespace Avalonia.Rendering.SceneGraph
         /// Gets the layer's geometry clip.
         /// </summary>
         public IGeometryImpl GeometryClip { get; set; }
+
+        /// <summary>
+        /// Gets the dirty rectangles for the layer.
+        /// </summary>
+        internal DirtyRects Dirty { get; }
     }
 }

@@ -7,12 +7,28 @@ using System.Collections.Generic;
 
 namespace Avalonia.Rendering
 {
-    public class DirtyRects : IEnumerable<Rect>
+    /// <summary>
+    /// Tracks dirty rectangles.
+    /// </summary>
+    internal class DirtyRects : IEnumerable<Rect>
     {
         private List<Rect> _rects = new List<Rect>();
 
         public bool IsEmpty => _rects.Count == 0;
 
+        /// <summary>
+        /// Adds a dirty rectangle, extending an existing dirty rectangle if it intersects.
+        /// </summary>
+        /// <param name="rect">The dirt rectangle.</param>
+        /// <remarks>
+        /// We probably want to do this more intellegently because:
+        /// - Adding e.g. the top left quarter of a scene and the bottom left quarter of a scene
+        ///   will cause the whole scene to be invalidated if they overlap by a single pixel
+        /// - Adding two adjacent rectangles that don't overlap will not cause them to be 
+        /// coalesced
+        /// - It only coaleces the first intersecting rectangle found - one needs to
+        ///  call <see cref="Coalesce"/> at the end of the draw cycle to coalesce the rest.
+        /// </remarks>
         public void Add(Rect rect)
         {
             if (!rect.IsEmpty)
@@ -32,6 +48,12 @@ namespace Avalonia.Rendering
             }
         }
 
+        /// <summary>
+        /// Works around our flimsy dirt-rect coalescing algorithm.
+        /// </summary>
+        /// <remarks>
+        /// See the comments in <see cref="Add(Rect)"/>.
+        /// </remarks>
         public void Coalesce()
         {
             for (var i = _rects.Count - 1; i >= 0; --i)
@@ -51,7 +73,16 @@ namespace Avalonia.Rendering
             }
         }
 
+        /// <summary>
+        /// Gets the dirty rectangles.
+        /// </summary>
+        /// <returns>A collection of dirty rectangles</returns>
         public IEnumerator<Rect> GetEnumerator() => _rects.GetEnumerator();
+
+        /// <summary>
+        /// Gets the dirty rectangles.
+        /// </summary>
+        /// <returns>A collection of dirty rectangles</returns>
         IEnumerator IEnumerable.GetEnumerator() => _rects.GetEnumerator();
     }
 }
