@@ -22,6 +22,9 @@ namespace Avalonia.Rendering
         /// </summary>
         IRenderer Renderer { get; }
 
+        /// <summary>
+        /// The scaling factor to use in rendering.
+        /// </summary>
         double RenderScaling { get; }
 
         /// <summary>
