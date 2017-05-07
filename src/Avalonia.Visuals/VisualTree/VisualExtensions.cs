@@ -189,7 +189,7 @@ namespace Avalonia.VisualTree
         {
             Contract.Requires<ArgumentNullException>(visual != null);
 
-            return visual.VisualRoot as IRenderRoot ?? visual.VisualRoot;
+            return visual as IRenderRoot ?? visual.VisualRoot;
         }
 
         /// <summary>
