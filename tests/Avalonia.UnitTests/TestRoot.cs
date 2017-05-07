@@ -42,7 +42,7 @@ namespace Avalonia.UnitTests
 
         public int NameScopeUnregisteredSubscribers { get; private set; }
 
-        public Size ClientSize => new Size(100, 100);
+        public Size ClientSize { get; set; } = new Size(100, 100);
 
         public Size MaxClientSize => Size.Infinity;
 
