@@ -51,7 +51,5 @@ namespace Avalonia.Media
             get { return GetValue(GradientStopsProperty); }
             set { SetValue(GradientStopsProperty, value); }
         }
-
-        IReadOnlyList<GradientStop> IGradientBrush.GradientStops => GradientStops;
     }
 }

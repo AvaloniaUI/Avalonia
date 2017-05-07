@@ -7,16 +7,17 @@ using Avalonia.Platform;
 namespace Avalonia.Cairo.Media.Imaging
 {
     using System.IO;
-    using Gdk;
+    using Cairo = global::Cairo;
 
-    public class BitmapImpl : Pixbuf, IBitmapImpl
+    public class BitmapImpl : Gdk.Pixbuf, IBitmapImpl
     {
-        public BitmapImpl(Pixbuf pixbuf)
+        public BitmapImpl(Gdk.Pixbuf pixbuf)
             :base(pixbuf.SaveToBuffer("png"))
         {
         }
 
         public int PixelWidth => Width;
+
         public int PixelHeight => Height;
 
         public void Save(string fileName)

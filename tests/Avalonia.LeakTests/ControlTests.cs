@@ -307,6 +307,7 @@ namespace Avalonia.LeakTests
             }
         }
 
+
         [Fact]
         public void RendererIsDisposed()
         {

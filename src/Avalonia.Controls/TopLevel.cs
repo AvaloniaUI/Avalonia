@@ -52,7 +52,6 @@ namespace Avalonia.Controls
         static TopLevel()
         {
             AffectsMeasure(ClientSizeProperty);
-            IsVisibleProperty.OverrideDefaultValue<TopLevel>(false);
         }
 
         /// <summary>

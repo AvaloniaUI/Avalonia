@@ -34,11 +34,7 @@ namespace Avalonia.Cairo
 
         private static readonly Pango.Context s_pangoContext = CreatePangoContext();
 
-        public static void Initialize()
-        {
-            AvaloniaLocator.CurrentMutable
-                .Bind<IPlatformRenderInterface>().ToConstant(s_instance);
-        }
+        public static void Initialize() => AvaloniaLocator.CurrentMutable.Bind<IPlatformRenderInterface>().ToConstant(s_instance);
 
         public IBitmapImpl CreateBitmap(int width, int height)
         {
