@@ -447,9 +447,9 @@ public class Packages
                 Dependencies = new []
                 {
                     new NuSpecDependency() { Id = "Avalonia.Win32", Version = parameters.Version },
-                    new NuSpecDependency() { Id = "Avalonia.Direct2D1", Version = parameters.Version },
-                    new NuSpecDependency() { Id = "Avalonia.Gtk", Version = parameters.Version },
-                    new NuSpecDependency() { Id = "Avalonia.Cairo", Version = parameters.Version },
+                    new NuSpecDependency() { Id = "Avalonia.Direct2D1", TargetFramework = "net", Version = parameters.Version },
+                    new NuSpecDependency() { Id = "Avalonia.Gtk", TargetFramework = "net", Version = parameters.Version },
+                    new NuSpecDependency() { Id = "Avalonia.Cairo", TargetFramework = "net", Version = parameters.Version },
                     new NuSpecDependency() { Id = "Avalonia.Skia.Desktop", Version = parameters.Version }
                 },
                 Files = new NuSpecContent[]
