@@ -47,9 +47,6 @@ namespace Avalonia.UnitTests
         public static readonly TestServices MockThreadingInterface = new TestServices(
             threadingInterface: Mock.Of<IPlatformThreadingInterface>(x => x.CurrentThreadIsLoopThread == true));
 
-        public static readonly TestServices MockWindowingPlatform = new TestServices(
-            windowingPlatform: new MockWindowingPlatform());
-
         public static readonly TestServices RealFocus = new TestServices(
             focusManager: new FocusManager(),
             keyboardDevice: () => new KeyboardDevice(),

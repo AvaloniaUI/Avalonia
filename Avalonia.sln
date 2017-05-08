@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26228.4
+VisualStudioVersion = 15.0.26403.7
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Base", "src\Avalonia.Base\Avalonia.Base.csproj", "{B09B78D8-9B26-48B0-9149-D64A2F120F3F}"
 EndProject
@@ -156,6 +156,7 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Gtk3", "src\Gtk\Avalonia.Gtk3\Avalonia.Gtk3.csproj", "{BB1F7BB5-6AD4-4776-94D9-C09D0A972658}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Portable.Xaml-pcl259", "src\Markup\Portable.Xaml\src\Portable.Xaml\Portable.Xaml-pcl259.csproj", "{179484EC-DB00-451A-AD2D-2E2AB20DE519}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ControlCatalog.NetCore", "samples\ControlCatalog.NetCore\ControlCatalog.NetCore.csproj", "{39D7B147-1A5B-47C2-9D01-21FB7C47C4B3}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{74487168-7D91-487E-BF93-055F2251461E}"
