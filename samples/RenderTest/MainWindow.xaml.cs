@@ -7,7 +7,6 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using RenderTest.ViewModels;
 using ReactiveUI;
-using Avalonia.Rendering;
 
 namespace RenderTest
 {
@@ -19,7 +18,8 @@ namespace RenderTest
             this.AttachDevTools();
 
             var vm = new MainWindowViewModel();
-            vm.WhenAnyValue(x => x.DrawFps).Subscribe(x => RendererMixin.DrawFpsCounter = x);
+            vm.WhenAnyValue(x => x.DrawDirtyRects).Subscribe(x => Renderer.DrawDirtyRects = x);
+            vm.WhenAnyValue(x => x.DrawFps).Subscribe(x => Renderer.DrawFps = x);
             this.DataContext = vm;
         }
 

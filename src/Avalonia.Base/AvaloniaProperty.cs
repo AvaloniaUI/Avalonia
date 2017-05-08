@@ -476,7 +476,7 @@ namespace Avalonia
         /// <returns>True if the value is valid, otherwise false.</returns>
         public bool IsValidValue(object value)
         {
-            return TypeUtilities.TryCast(PropertyType, value, out value);
+            return TypeUtilities.TryConvertImplicit(PropertyType, value, out value);
         }
 
         /// <summary>

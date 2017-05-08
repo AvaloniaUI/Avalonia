@@ -2,7 +2,7 @@
 
 ## Windows
 
-Avalonia requires at least Visual Studio 2015 to build on Windows.
+Avalonia requires at least Visual Studio 2017 to build on Windows.
 
 ### Install GTK Sharp
 

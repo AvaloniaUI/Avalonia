@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Avalonia.Media;
 using Avalonia.Platform;
+using Avalonia.Rendering;
 using SkiaSharp;
 
 namespace Avalonia.Skia
@@ -29,6 +30,7 @@ namespace Avalonia.Skia
             if (runtime?.IsDesktop == true && runtime?.OperatingSystem == OperatingSystemType.Linux)
                 colorType = SKColorType.Bgra8888;
             Bitmap = new SKBitmap(width, height, colorType, SKAlphaType.Premul);
+            Bitmap.Erase(SKColor.Empty);
         }
 
         public void Dispose()
@@ -66,9 +68,10 @@ namespace Avalonia.Skia
         {
             private readonly SKSurface _surface;
 
-            public BitmapDrawingContext(SKBitmap bitmap) : this(CreateSurface(bitmap))
+            public BitmapDrawingContext(SKBitmap bitmap, IVisualBrushRenderer visualBrushRenderer)
+                : this(CreateSurface(bitmap), visualBrushRenderer)
             {
-                
+
             }
 
             private static SKSurface CreateSurface(SKBitmap bitmap)
@@ -80,7 +83,8 @@ namespace Avalonia.Skia
                 return rv;
             }
 
-            public BitmapDrawingContext(SKSurface surface) : base(surface.Canvas)
+            public BitmapDrawingContext(SKSurface surface, IVisualBrushRenderer visualBrushRenderer)
+                : base(surface.Canvas, visualBrushRenderer)
             {
                 _surface = surface;
             }
@@ -92,10 +96,9 @@ namespace Avalonia.Skia
             }
         }
 
-        public DrawingContext CreateDrawingContext()
+        public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
         {
-
-            return new DrawingContext(new BitmapDrawingContext(Bitmap));
+            return new BitmapDrawingContext(Bitmap, visualBrushRenderer);
         }
 
         public void Save(Stream stream)

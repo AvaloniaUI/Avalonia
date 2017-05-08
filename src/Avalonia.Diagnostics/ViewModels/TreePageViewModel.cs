@@ -18,7 +18,7 @@ namespace Avalonia.Diagnostics.ViewModels
         {
             Nodes = nodes;
             _details = this.WhenAnyValue(x => x.SelectedNode)
-                .Select(x => x != null ? new ControlDetailsViewModel(x.Control) : null)
+                .Select(x => x != null ? new ControlDetailsViewModel(x.Visual) : null)
                 .ToProperty(this, x => x.Details);
         }
 
@@ -79,7 +79,7 @@ namespace Avalonia.Diagnostics.ViewModels
 
         private TreeNode FindNode(TreeNode node, IControl control)
         {
-            if (node.Control == control)
+            if (node.Visual == control)
             {
                 return node;
             }

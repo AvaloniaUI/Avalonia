@@ -127,13 +127,12 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             {
                 var xaml = @"
 <Window xmlns='https://github.com/avaloniaui'
-        xmlns:mut='https://github.com/avaloniaui/mutable'
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
     <Window.Styles>
         <Style>
             <Style.Resources>
                 <Color x:Key='color'>#ff506070</Color>
-                <mut:SolidColorBrush x:Key='brush' Color='{StyleResource color}'/>
+                <SolidColorBrush x:Key='brush' Color='{StyleResource color}'/>
             </Style.Resources>
         </Style>
     </Window.Styles>
@@ -142,12 +141,12 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
                 var loader = new AvaloniaXamlLoader();
                 var window = (Window)loader.Load(xaml);
-                var brush = (Avalonia.Media.Mutable.SolidColorBrush)window.FindStyleResource("brush");
+                var brush = (ISolidColorBrush)window.FindStyleResource("brush");
                 var button = window.FindControl<Button>("button");
 
                 DelayedBinding.ApplyBindings(button);
 
-                var buttonBrush = (Avalonia.Media.Mutable.SolidColorBrush)button.Background;
+                var buttonBrush = (ISolidColorBrush)button.Background;
 
                 Assert.Equal(0xff506070, brush.Color.ToUint32());
                 Assert.Equal(0xff506070, buttonBrush.Color.ToUint32());
@@ -159,19 +158,18 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         {
             var xaml = @"
 <Styles xmlns='https://github.com/avaloniaui'
-        xmlns:mut='https://github.com/avaloniaui/mutable'
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
     <Style>
         <Style.Resources>
             <Color x:Key='color'>#ff506070</Color>
-            <mut:SolidColorBrush x:Key='brush' Color='{StyleResource color}'/>
+            <SolidColorBrush x:Key='brush' Color='{StyleResource color}'/>
         </Style.Resources>
     </Style>
 </Styles>";
 
             var loader = new AvaloniaXamlLoader();
             var styles = (Styles)loader.Load(xaml);
-            var brush = (Avalonia.Media.Mutable.SolidColorBrush)styles.FindResource("brush");
+            var brush = (ISolidColorBrush)styles.FindResource("brush");
 
             Assert.Equal(0xff506070, brush.Color.ToUint32());
         }
@@ -181,7 +179,6 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         {
             var xaml = @"
 <Styles xmlns='https://github.com/avaloniaui'
-        xmlns:mut='https://github.com/avaloniaui/mutable'
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
     <Style>
         <Style.Resources>
@@ -190,14 +187,14 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     </Style>
     <Style>
         <Style.Resources>
-            <mut:SolidColorBrush x:Key='brush' Color='{StyleResource color}'/>
+            <SolidColorBrush x:Key='brush' Color='{StyleResource color}'/>
         </Style.Resources>
     </Style>
 </Styles>";
 
             var loader = new AvaloniaXamlLoader();
             var styles = (Styles)loader.Load(xaml);
-            var brush = (Avalonia.Media.Mutable.SolidColorBrush)styles.FindResource("brush");
+            var brush = (ISolidColorBrush)styles.FindResource("brush");
 
             Assert.Equal(0xff506070, brush.Color.ToUint32());
         }
@@ -209,7 +206,6 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             {
                 var xaml = @"
 <Window xmlns='https://github.com/avaloniaui'
-        xmlns:mut='https://github.com/avaloniaui/mutable'
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
     <Window.Styles>
         <StyleInclude Source='resm:Avalonia.Markup.Xaml.UnitTests.Xaml.Style1.xaml?assembly=Avalonia.Markup.Xaml.UnitTests'/>
@@ -221,7 +217,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 var loader = new AvaloniaXamlLoader();
                 var window = (Window)loader.Load(xaml);
                 var border = window.FindControl<Border>("border");
-                var borderBrush = (Avalonia.Media.Mutable.SolidColorBrush)border.Background;
+                var borderBrush = (ISolidColorBrush)border.Background;
 
                 Assert.NotNull(borderBrush);
                 Assert.Equal(0xffff0000, borderBrush.Color.ToUint32());

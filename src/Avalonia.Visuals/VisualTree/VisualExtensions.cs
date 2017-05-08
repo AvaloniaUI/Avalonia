@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Avalonia.Rendering;
 
 namespace Avalonia.VisualTree
 {
@@ -20,6 +21,8 @@ namespace Avalonia.VisualTree
         /// <returns>The common ancestor, or null if not found.</returns>
         public static IVisual FindCommonVisualAncestor(this IVisual visual, IVisual target)
         {
+            Contract.Requires<ArgumentNullException>(visual != null);
+
             return visual.GetSelfAndVisualAncestors().Intersect(target.GetSelfAndVisualAncestors())
                 .FirstOrDefault();
         }
@@ -49,6 +52,8 @@ namespace Avalonia.VisualTree
         /// <returns>The visual and its ancestors.</returns>
         public static IEnumerable<IVisual> GetSelfAndVisualAncestors(this IVisual visual)
         {
+            Contract.Requires<ArgumentNullException>(visual != null);
+
             yield return visual;
 
             foreach (var ancestor in visual.GetVisualAncestors())
@@ -102,26 +107,9 @@ namespace Avalonia.VisualTree
         {
             Contract.Requires<ArgumentNullException>(visual != null);
 
-            if (filter?.Invoke(visual) != false)
-            {
-                bool containsPoint = BoundsTracker.GetTransformedBounds((Visual)visual)?.Contains(p) == true;
-
-                if ((containsPoint || !visual.ClipToBounds) && visual.VisualChildren.Any())
-                {
-                    foreach (var child in visual.VisualChildren.SortByZIndex())
-                    {
-                        foreach (var result in child.GetVisualsAt(p, filter))
-                        {
-                            yield return result;
-                        }
-                    }
-                }
-
-                if (containsPoint)
-                {
-                    yield return visual;
-                }
-            }
+            var root = visual.GetVisualRoot();
+            p = visual.TranslatePoint(p, root);
+            return root.Renderer.HitTest(p, filter);
         }
 
         /// <summary>
@@ -197,11 +185,11 @@ namespace Avalonia.VisualTree
         /// <returns>
         /// The root visual or null if the visual is not rooted.
         /// </returns>
-        public static IVisual GetVisualRoot(this IVisual visual)
+        public static IRenderRoot GetVisualRoot(this IVisual visual)
         {
             Contract.Requires<ArgumentNullException>(visual != null);
 
-            return visual.VisualRoot as IVisual;
+            return visual as IRenderRoot ?? visual.VisualRoot;
         }
 
         /// <summary>

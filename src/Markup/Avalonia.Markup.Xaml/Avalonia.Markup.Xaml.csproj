@@ -1,20 +1,9 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <MinimumVisualStudioVersion>11.0</MinimumVisualStudioVersion>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{3E53A01A-B331-47F3-B828-4A5717E77A24}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Avalonia.Markup.Xaml</RootNamespace>
-    <AssemblyName>Avalonia.Markup.Xaml</AssemblyName>
-    <DefaultLanguage>en-US</DefaultLanguage>
-    <FileAlignment>512</FileAlignment>
-    <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <TargetFrameworkProfile>Profile7</TargetFrameworkProfile>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFramework>netstandard1.1</TargetFramework>
+    <EnableDefaultCompileItems>False</EnableDefaultCompileItems>
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -306,8 +295,15 @@
     <Compile Include="Templates\TreeDataTemplate.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="glass\Glass.Core\Glass.Core.nuspec" />
-    <None Include="packages.config" />
+    <ProjectReference Include="..\..\Avalonia.Animation\Avalonia.Animation.csproj" />
+    <ProjectReference Include="..\..\Avalonia.Base\Avalonia.Base.csproj" />
+    <ProjectReference Include="..\..\Avalonia.Controls\Avalonia.Controls.csproj" />
+    <ProjectReference Include="..\..\Avalonia.Input\Avalonia.Input.csproj" />
+    <ProjectReference Include="..\..\Avalonia.Interactivity\Avalonia.Interactivity.csproj" />
+    <ProjectReference Include="..\..\Avalonia.Layout\Avalonia.Layout.csproj" />
+    <ProjectReference Include="..\..\Avalonia.Visuals\Avalonia.Visuals.csproj" />
+    <ProjectReference Include="..\..\Avalonia.Styling\Avalonia.Styling.csproj" />
+    <ProjectReference Include="..\Avalonia.Markup\Avalonia.Markup.csproj" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Avalonia.Animation\Avalonia.Animation.csproj">
@@ -375,12 +371,7 @@
   <ItemGroup>
     <Content Include="glass\Glass.Core\Glass.Core.csproj" />
   </ItemGroup>
-  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+  <Import Project="..\..\..\build\Markup.props" />
+  <Import Project="..\..\..\build\Sprache.props" />
+  <Import Project="..\..\..\build\Rx.props" />
 </Project>

@@ -1,9 +1,12 @@
+using System.Xml.Linq;
+
 public class Packages
 {
     public List<NuGetPackSettings> NuspecNuGetSettings { get; private set; }
     public FilePath[] NugetPackages { get; private set; }
     public FilePath[] BinFiles { get; private set; }
-
+    public string NugetPackagesDir {get; private set;}
+    public string SkiaSharpVersion {get; private set; }
     public Packages(ICakeContext context, Parameters parameters)
     {
         // NUGET NUSPECS
@@ -20,24 +23,30 @@ public class Packages
             path => path.Replace(System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar).ToUpperInvariant());
 
         // Key: Package Id
-        // Value is Tuple where Item1: Package Version, Item2: The packages.config file path.
+        // Value is Tuple where Item1: Package Version, Item2: The *.csproj/*.props file path.
         var packageVersions = new Dictionary<string, IList<Tuple<string,string>>>();
 
-        System.IO.Directory.EnumerateFiles(((DirectoryPath)context.Directory("./src")).FullPath, "packages.config", SearchOption.AllDirectories).ToList().ForEach(fileName =>
+        System.IO.Directory.EnumerateFiles(((DirectoryPath)context.Directory("./build")).FullPath,
+            "*.props", SearchOption.AllDirectories).ToList().ForEach(fileName =>
         {
             if (!ignoredSubModulesPaths.Any(i => normalizePath(fileName).Contains(normalizePath(i))))
             {
-                var file = new PackageReferenceFile(fileName);
-                foreach (PackageReference packageReference in file.GetPackageReferences())
+                var xdoc = XDocument.Load(fileName);
+                foreach (var reference in xdoc.Descendants().Where(x => x.Name.LocalName == "PackageReference"))
                 {
+                    var name = reference.Attribute("Include").Value;
+                    var versionAttribute = reference.Attribute("Version");
+                    var version = versionAttribute != null 
+                        ? versionAttribute.Value 
+                        : reference.Elements().First(x=>x.Name.LocalName == "Version").Value;
                     IList<Tuple<string, string>> versions;
-                    packageVersions.TryGetValue(packageReference.Id, out versions);
+                    packageVersions.TryGetValue(name, out versions);
                     if (versions == null)
                     {
                         versions = new List<Tuple<string, string>>();
-                        packageVersions[packageReference.Id] = versions;
+                        packageVersions[name] = versions;
                     }
-                    versions.Add(Tuple.Create(packageReference.Version.ToString(), fileName));
+                    versions.Add(Tuple.Create(version, fileName));
                 }
             }
         });
@@ -65,7 +74,7 @@ public class Packages
         var SplatVersion = packageVersions["Splat"].FirstOrDefault().Item1;
         var SpracheVersion = packageVersions["Sprache"].FirstOrDefault().Item1;
         var SystemReactiveVersion = packageVersions["System.Reactive"].FirstOrDefault().Item1;
-        var SkiaSharpVersion = packageVersions["SkiaSharp"].FirstOrDefault().Item1;
+        SkiaSharpVersion = packageVersions["SkiaSharp"].FirstOrDefault().Item1;
         var SharpDXVersion = packageVersions["SharpDX"].FirstOrDefault().Item1;
         var SharpDXDirect2D1Version = packageVersions["SharpDX.Direct2D1"].FirstOrDefault().Item1;
         var SharpDXDirect3D11Version = packageVersions["SharpDX.Direct3D11"].FirstOrDefault().Item1;
@@ -81,6 +90,11 @@ public class Packages
         context.Information("Package: SharpDX.Direct3D11, version: {0}", SharpDXDirect3D11Version);
         context.Information("Package: SharpDX.DXGI, version: {0}", SharpDXDXGIVersion);
 
+        var nugetPackagesDir = System.Environment.GetEnvironmentVariable("NUGET_HOME")
+            ?? System.IO.Path.Combine(System.Environment.GetEnvironmentVariable("USERPROFILE") ?? System.Environment.GetEnvironmentVariable("HOME"), ".nuget");
+        
+        NugetPackagesDir = System.IO.Path.Combine(nugetPackagesDir, "packages");
+        
         var SetNuGetNuspecCommonProperties = new Action<NuGetPackSettings> ((nuspec) => {
             nuspec.Version = parameters.Version;
             nuspec.Authors = new [] { "Avalonia Team" };
@@ -129,12 +143,12 @@ public class Packages
         };
 
         var coreLibrariesFiles = coreLibraries.Select((lib) => {
-            return (FilePath)context.File(lib[0] + lib[1] + "/bin/" + parameters.DirSuffix + "/" + lib[1] + lib[2]);
+            return (FilePath)context.File(lib[0] + lib[1] + "/bin/" + parameters.DirSuffix + "/netstandard1.1/" + lib[1] + lib[2]);
         }).ToList();
 
         var coreLibrariesNuSpecContent = coreLibrariesFiles.Select((file) => {
             return new NuSpecContent { 
-                Source = file.FullPath, Target = "lib/portable-windows8+net45" 
+                Source = file.FullPath, Target = "lib/netstandard1.1" 
             };
         });
 
@@ -161,7 +175,7 @@ public class Packages
         var netCoreRuntimePlatformExtensions = new [] {".xml", ".dll"};
         var netCoreRuntimePlatform = netCoreRuntimePlatformExtensions.Select(libSuffix => {
             return new NuSpecContent {
-                Source = ((FilePath)context.File("./src/Avalonia.DotNetCoreRuntime/bin/" + parameters.DirSuffix + "/Avalonia.DotNetCoreRuntime" + libSuffix)).FullPath, 
+                Source = ((FilePath)context.File("./src/Avalonia.DotNetCoreRuntime/bin/" + parameters.DirSuffix + "/netcoreapp1.0/Avalonia.DotNetCoreRuntime" + libSuffix)).FullPath, 
                 Target = "lib/netcoreapp1.0" 
             };
         });
@@ -180,12 +194,12 @@ public class Packages
                     new NuSpecDependency() { Id = "Splat", Version = SplatVersion },
                     new NuSpecDependency() { Id = "Sprache", Version = SpracheVersion },
                     new NuSpecDependency() { Id = "System.Reactive", Version = SystemReactiveVersion },
-                    new NuSpecDependency() { Id = "System.Threading.ThreadPool", TargetFramework = "netcoreapp1.0", Version = "4.3.0" },
                     //.NET Core
+                    new NuSpecDependency() { Id = "System.Threading.ThreadPool", TargetFramework = "netcoreapp1.0", Version = "4.3.0" },
+                    new NuSpecDependency() { Id = "Microsoft.Extensions.DependencyModel", TargetFramework = "netcoreapp1.0", Version = "1.1.0" },
                     new NuSpecDependency() { Id = "NETStandard.Library", TargetFramework = "netcoreapp1.0", Version = "1.6.0" },
-                    new NuSpecDependency() { Id = "Microsoft.NETCore.Portable.Compatibility", TargetFramework = "netcoreapp1.0", Version = "1.0.1" },
-                    new NuSpecDependency() { Id = "Splat", TargetFramework = "netcoreapp1.0", Version = "2.0.0" },
-                    new NuSpecDependency() { Id = "Serilog", TargetFramework = "netcoreapp1.0", Version = "2.3.0" },
+                    new NuSpecDependency() { Id = "Splat", TargetFramework = "netcoreapp1.0", Version = SplatVersion },
+                    new NuSpecDependency() { Id = "Serilog", TargetFramework = "netcoreapp1.0", Version = SerilogVersion },
                     new NuSpecDependency() { Id = "Sprache", TargetFramework = "netcoreapp1.0", Version = SpracheVersion },
                     new NuSpecDependency() { Id = "System.Reactive", TargetFramework = "netcoreapp1.0", Version = SystemReactiveVersion }
                 },
@@ -208,9 +222,9 @@ public class Packages
                 },
                 Files = new []
                 {
-                    new NuSpecContent { Source = "Avalonia.HtmlRenderer.dll", Target = "lib/portable-windows8+net45" }
+                    new NuSpecContent { Source = "Avalonia.HtmlRenderer.dll", Target = "lib/netstandard1.1" }
                 },
-                BasePath = context.Directory("./src/Avalonia.HtmlRenderer/bin/" + parameters.DirSuffix),
+                BasePath = context.Directory("./src/Avalonia.HtmlRenderer/bin/" + parameters.DirSuffix + "/netstandard1.1"),
                 OutputDirectory = parameters.NugetRoot
             }
         };
@@ -324,7 +338,7 @@ public class Packages
                 Files = new []
                 {
                     new NuSpecContent { Source = "Avalonia.Win32/bin/" + parameters.DirSuffix + "/Avalonia.Win32.dll", Target = "lib/net45" },
-                    new NuSpecContent { Source = "Avalonia.Win32.NetStandard/bin/" + parameters.DirSuffix + "/Avalonia.Win32.dll", Target = "lib/netstandard1.1" }
+                    new NuSpecContent { Source = "Avalonia.Win32.NetStandard/bin/" + parameters.DirSuffix + "/netstandard1.1/Avalonia.Win32.dll", Target = "lib/netstandard1.1" }
                 },
                 BasePath = context.Directory("./src/Windows"),
                 OutputDirectory = parameters.NugetRoot
@@ -381,7 +395,7 @@ public class Packages
                 {
                     new NuSpecContent { Source = "Avalonia.Gtk3.dll", Target = "lib/netstandard1.1" }
                 },
-                BasePath = context.Directory("./src/Gtk/Avalonia.Gtk3/bin/" + parameters.DirSuffix),
+                BasePath = context.Directory("./src/Gtk/Avalonia.Gtk3/bin/" + parameters.DirSuffix + "/netstandard1.1"),
                 OutputDirectory = parameters.NugetRoot
             },
             ///////////////////////////////////////////////////////////////////////////////
@@ -411,16 +425,15 @@ public class Packages
                 {
                     new NuSpecDependency() { Id = "Avalonia", Version = parameters.Version },
                     new NuSpecDependency() { Id = "SkiaSharp", Version = SkiaSharpVersion },
-                    //.NET Core
-                    new NuSpecDependency() { Id = "Avalonia", TargetFramework = "netcoreapp1.0", Version = parameters.Version },
-                    new NuSpecDependency() { Id = "SkiaSharp", TargetFramework = "netcoreapp1.0", Version = SkiaSharpVersion },
-                    new NuSpecDependency() { Id = "NETStandard.Library", TargetFramework = "netcoreapp1.0", Version = "1.6.0" },
-                    new NuSpecDependency() { Id = "Microsoft.NETCore.Portable.Compatibility", TargetFramework = "netcoreapp1.0", Version = "1.0.1" }
+                    //netstandard1.3
+                    new NuSpecDependency() { Id = "Avalonia", TargetFramework = "netstandard1.3", Version = parameters.Version },
+                    new NuSpecDependency() { Id = "SkiaSharp", TargetFramework = "netstandard1.3", Version = SkiaSharpVersion },
+                    new NuSpecDependency() { Id = "NETStandard.Library", TargetFramework = "netstandard1.3", Version = "1.6.0" }
                 },
                 Files = new []
                 {
                     new NuSpecContent { Source = "Avalonia.Skia.Desktop/bin/" + parameters.DirSuffixSkia + "/Avalonia.Skia.Desktop.dll", Target = "lib/net45" },
-                    new NuSpecContent { Source = "Avalonia.Skia.Desktop.NetStandard/bin/" + parameters.DirSuffix + "/Avalonia.Skia.Desktop.dll", Target = "lib/netcoreapp1.0" }
+                    new NuSpecContent { Source = "Avalonia.Skia.Desktop.NetStandard/bin/" + parameters.DirSuffix + "/netstandard1.3/Avalonia.Skia.Desktop.dll", Target = "lib/netstandard1.3" }
                 },
                 BasePath = context.Directory("./src/Skia/"),
                 OutputDirectory = parameters.NugetRoot
@@ -444,6 +457,24 @@ public class Packages
                     new NuSpecContent { Source = "licence.md", Target = "" }
                 },
                 BasePath = context.Directory("./"),
+                OutputDirectory = parameters.NugetRoot
+            },
+            ///////////////////////////////////////////////////////////////////////////////
+            // Avalonia.LinuxFramebuffer
+            ///////////////////////////////////////////////////////////////////////////////
+            new NuGetPackSettings()
+            {
+                Id = "Avalonia.LinuxFramebuffer",
+                Dependencies = new []
+                {
+                    new NuSpecDependency() { Id = "Avalonia", Version = parameters.Version },
+                    new NuSpecDependency() { Id = "Avalonia.Skia.Desktop", Version = parameters.Version }
+                },
+                Files = new []
+                {
+                    new NuSpecContent { Source = "Avalonia.LinuxFramebuffer/bin/" + parameters.DirSuffix + "/netstandard1.3/Avalonia.LinuxFramebuffer.dll", Target = "lib/netstandard1.3" }
+                },
+                BasePath = context.Directory("./src/Linux/"),
                 OutputDirectory = parameters.NugetRoot
             }
         };

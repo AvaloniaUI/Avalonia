@@ -6,6 +6,8 @@ using System.Collections;
 using System.Collections.Generic;
 using Avalonia.Media;
 using Avalonia.Platform;
+using Avalonia.RenderHelpers;
+using Avalonia.Rendering;
 using SharpDX;
 using SharpDX.Direct2D1;
 using SharpDX.Mathematics.Interop;
@@ -18,30 +20,27 @@ namespace Avalonia.Direct2D1.Media
     /// </summary>
     public class DrawingContextImpl : IDrawingContextImpl, IDisposable
     {
-        /// <summary>
-        /// The Direct2D1 render target.
-        /// </summary>
+        private readonly IVisualBrushRenderer _visualBrushRenderer;
         private readonly SharpDX.Direct2D1.RenderTarget _renderTarget;
-
-        /// <summary>
-        /// The DirectWrite factory.
-        /// </summary>
+        private readonly SharpDX.DXGI.SwapChain1 _swapChain;
         private SharpDX.DirectWrite.Factory _directWriteFactory;
-
-        private SharpDX.DXGI.SwapChain1 _swapChain;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DrawingContextImpl"/> class.
         /// </summary>
+        /// <param name="visualBrushRenderer">The visual brush renderer.</param>
         /// <param name="renderTarget">The render target to draw to.</param>
         /// <param name="directWriteFactory">The DirectWrite factory.</param>
         /// <param name="swapChain">An optional swap chain associated with this drawing context.</param>
         public DrawingContextImpl(
+            IVisualBrushRenderer visualBrushRenderer,
             SharpDX.Direct2D1.RenderTarget renderTarget,
             SharpDX.DirectWrite.Factory directWriteFactory,
             SharpDX.DXGI.SwapChain1 swapChain = null)
         {
+            _visualBrushRenderer = visualBrushRenderer;
             _renderTarget = renderTarget;
+            _swapChain = swapChain;
             _directWriteFactory = directWriteFactory;
             _swapChain = swapChain;
             _renderTarget.BeginDraw();
@@ -72,10 +71,10 @@ namespace Avalonia.Direct2D1.Media
             try
             {
                 _renderTarget.EndDraw();
-                
+
                 _swapChain?.Present(1, SharpDX.DXGI.PresentFlags.None);
             }
-            catch (SharpDXException ex) when((uint)ex.HResult == 0x8899000C) // D2DERR_RECREATE_TARGET
+            catch (SharpDXException ex) when ((uint)ex.HResult == 0x8899000C) // D2DERR_RECREATE_TARGET
             {
                 throw new RenderTargetCorruptedException(ex);
             }
@@ -90,14 +89,38 @@ namespace Avalonia.Direct2D1.Media
         /// <param name="destRect">The rect in the output to draw to.</param>
         public void DrawImage(IBitmapImpl source, double opacity, Rect sourceRect, Rect destRect)
         {
-            var impl = (BitmapImpl)source;
-            Bitmap d2d = impl.GetDirect2DBitmap(_renderTarget);
-            _renderTarget.DrawBitmap(
-                d2d,
-                destRect.ToSharpDX(),
-                (float)opacity,
-                BitmapInterpolationMode.Linear,
-                sourceRect.ToSharpDX());
+            using (var d2d = ((BitmapImpl)source).GetDirect2DBitmap(_renderTarget))
+            {
+                _renderTarget.DrawBitmap(
+                    d2d,
+                    destRect.ToSharpDX(),
+                    (float)opacity,
+                    BitmapInterpolationMode.Linear,
+                    sourceRect.ToSharpDX());
+            }
+        }
+
+        /// <summary>
+        /// Draws a bitmap image.
+        /// </summary>
+        /// <param name="source">The bitmap image.</param>
+        /// <param name="opacityMask">The opacity mask to draw with.</param>
+        /// <param name="opacityMaskRect">The destination rect for the opacity mask.</param>
+        /// <param name="destRect">The rect in the output to draw to.</param>
+        public void DrawImage(IBitmapImpl source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect)
+        {
+            using (var d2dSource = ((BitmapImpl)source).GetDirect2DBitmap(_renderTarget))
+            using (var sourceBrush = new BitmapBrush(_renderTarget, d2dSource))
+            using (var d2dOpacityMask = CreateBrush(opacityMask, opacityMaskRect.Size))
+            using (var geometry = new SharpDX.Direct2D1.RectangleGeometry(_renderTarget.Factory, destRect.ToDirect2D()))
+            {
+                d2dOpacityMask.PlatformBrush.Transform = Matrix.CreateTranslation(opacityMaskRect.Position).ToDirect2D();
+
+                _renderTarget.FillGeometry(
+                    geometry,
+                    sourceBrush,
+                    d2dOpacityMask.PlatformBrush);
+            }
         }
 
         /// <summary>
@@ -207,7 +230,7 @@ namespace Avalonia.Direct2D1.Media
             {
                 var impl = (FormattedTextImpl)text;
 
-                using (var brush = CreateBrush(foreground, impl.Measure()))
+                using (var brush = CreateBrush(foreground, impl.Size))
                 using (var renderer = new AvaloniaTextRenderer(this, _renderTarget, brush.PlatformBrush))
                 {
                     if (brush.PlatformBrush != null)
@@ -283,7 +306,7 @@ namespace Avalonia.Direct2D1.Media
                 {
                     ContentBounds = PrimitiveExtensions.RectangleInfinite,
                     MaskTransform = PrimitiveExtensions.Matrix3x2Identity,
-                    Opacity = (float) opacity,
+                    Opacity = (float)opacity,
                 };
 
                 var layer = _layerPool.Count != 0 ? _layerPool.Pop() : new Layer(_renderTarget);
@@ -338,16 +361,46 @@ namespace Avalonia.Direct2D1.Media
             }
             else if (imageBrush != null)
             {
-                return new TileBrushImpl(imageBrush, _renderTarget, destinationSize);
+                return new ImageBrushImpl(
+                    imageBrush,
+                    _renderTarget,
+                    (BitmapImpl)imageBrush.Source.PlatformImpl,
+                    destinationSize);
             }
             else if (visualBrush != null)
             {
-                return new TileBrushImpl(visualBrush, _renderTarget, destinationSize);
+                if (_visualBrushRenderer != null)
+                {
+                    var intermediateSize = _visualBrushRenderer.GetRenderTargetSize(visualBrush);
+
+                    if (intermediateSize.Width >= 1 && intermediateSize.Height >= 1)
+                    {
+                        using (var intermediate = new BitmapRenderTarget(
+                            _renderTarget,
+                            CompatibleRenderTargetOptions.None,
+                            intermediateSize.ToSharpDX()))
+                        {
+                            using (var ctx = new RenderTarget(intermediate).CreateDrawingContext(_visualBrushRenderer))
+                            {
+                                intermediate.Clear(null);
+                                _visualBrushRenderer.RenderVisualBrush(ctx, visualBrush);
+                            }
+
+                            return new ImageBrushImpl(
+                                visualBrush,
+                                _renderTarget,
+                                new D2DBitmapImpl(intermediate.Bitmap),
+                                destinationSize);
+                        }
+                    }
+                }
+                else
+                {
+                    throw new NotSupportedException("No IVisualBrushRenderer was supplied to DrawingContextImpl.");
+                }
             }
-            else
-            {
-                return new SolidColorBrushImpl(null, _renderTarget);
-            }
+
+            return new SolidColorBrushImpl(null, _renderTarget);
         }
 
         public void PushGeometryClip(IGeometryImpl clip)

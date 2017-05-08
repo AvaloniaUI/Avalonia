@@ -42,14 +42,20 @@ namespace Avalonia.Cairo
 
         public IFormattedTextImpl CreateFormattedText(
             string text,
-            string fontFamily,
-            double fontSize,
-            FontStyle fontStyle,
+            Typeface typeface,
             TextAlignment textAlignment,
-            Avalonia.Media.FontWeight fontWeight,
-            TextWrapping wrapping)
+            TextWrapping wrapping,
+            Size constraint,
+            IReadOnlyList<FormattedTextStyleSpan> spans)
         {
-            return new FormattedTextImpl(s_pangoContext, text, fontFamily, fontSize, fontStyle, textAlignment, fontWeight);
+            return new FormattedTextImpl(
+                s_pangoContext,
+                text,
+                typeface,
+                textAlignment,
+                wrapping,
+                constraint,
+                spans);
         }
 
         public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)
@@ -62,7 +68,7 @@ namespace Avalonia.Cairo
                 "Don't know how to create a Cairo renderer from any of the provided surfaces."));
         }
 
-        public IRenderTargetBitmapImpl CreateRenderTargetBitmap(int width, int height)
+        public IRenderTargetBitmapImpl CreateRenderTargetBitmap(int width, int height, double dpiX, double dpiY)
         {
             return new RenderTargetBitmapImpl(new ImageSurface(Format.Argb32, width, height));
         }

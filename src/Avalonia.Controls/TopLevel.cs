@@ -96,10 +96,10 @@ namespace Avalonia.Controls
 
             PlatformImpl.Closed = HandleClosed;
             PlatformImpl.Input = HandleInput;
-            PlatformImpl.Paint = Renderer != null ? (Action<Rect>)Renderer.Render : null;
+            PlatformImpl.Paint = HandlePaint;
             PlatformImpl.Resized = HandleResized;
             PlatformImpl.ScalingChanged = HandleScalingChanged;
-            
+
 
             _keyboardNavigationHandler?.SetOwner(this);
             _accessKeyHandler?.SetOwner(this);
@@ -184,8 +184,10 @@ namespace Avalonia.Controls
             get { return AvaloniaLocator.Current.GetService<IGlobalStyles>(); }
         }
 
+        IRenderTarget IRenderRoot.CreateRenderTarget() => CreateRenderTarget();
+
         /// <inheritdoc/>
-        IRenderTarget IRenderRoot.CreateRenderTarget()
+        protected virtual IRenderTarget CreateRenderTarget()
         {
             return _renderInterface.CreateRenderTarget(PlatformImpl.Surfaces);
         }
@@ -208,6 +210,25 @@ namespace Avalonia.Controls
             return PlatformImpl.PointToScreen(p);
         }
 
+        /// <summary>
+        /// Handles a paint notification from <see cref="ITopLevelImpl.Resized"/>.
+        /// </summary>
+        /// <param name="rect">The dirty area.</param>
+        protected virtual void HandlePaint(Rect rect)
+        {
+            Renderer?.Paint(rect);
+        }
+
+        /// <summary>
+        /// Handles a closed notification from <see cref="ITopLevelImpl.Closed"/>.
+        /// </summary>
+        protected virtual void HandleClosed()
+        {
+            Closed?.Invoke(this, EventArgs.Empty);
+            Renderer?.Dispose();
+            Renderer = null;
+            _applicationLifecycle.OnExit -= OnApplicationExiting;
+        }
 
         /// <summary>
         /// Handles a resize notification from <see cref="ITopLevelImpl.Resized"/>.
@@ -219,7 +240,7 @@ namespace Avalonia.Controls
             Width = clientSize.Width;
             Height = clientSize.Height;
             LayoutManager.Instance.ExecuteLayoutPass();
-            PlatformImpl.Invalidate(new Rect(clientSize));
+            Renderer?.Resized(clientSize);
         }
 
         /// <summary>
@@ -265,17 +286,6 @@ namespace Avalonia.Controls
             }
 
             return result;
-        }
-
-        /// <summary>
-        /// Handles a closed notification from <see cref="ITopLevelImpl.Closed"/>.
-        /// </summary>
-        private void HandleClosed()
-        {
-            Closed?.Invoke(this, EventArgs.Empty);
-            Renderer?.Dispose();
-            Renderer = null;
-            _applicationLifecycle.OnExit -= OnApplicationExiting;
         }
 
         private void OnApplicationExiting(object sender, EventArgs args)

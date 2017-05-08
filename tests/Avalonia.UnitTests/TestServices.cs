@@ -12,6 +12,8 @@ using Avalonia.Shared.PlatformSupport;
 using Avalonia.Styling;
 using Avalonia.Themes.Default;
 using Avalonia.Rendering;
+using System.Reactive.Concurrency;
+using System.Collections.Generic;
 
 namespace Avalonia.UnitTests
 {
@@ -21,7 +23,7 @@ namespace Avalonia.UnitTests
             assetLoader: new AssetLoader(),
             layoutManager: new LayoutManager(),
             platform: new AppBuilder().RuntimePlatform,
-            renderer: Mock.Of<IRenderer>(),
+            renderer: (_, __) => Mock.Of<IRenderer>(),
             renderInterface: CreateRenderInterfaceMock(),
             renderLoop: Mock.Of<IRenderLoop>(),
             standardCursorFactory: Mock.Of<IStandardCursorFactory>(),
@@ -45,6 +47,9 @@ namespace Avalonia.UnitTests
         public static readonly TestServices MockThreadingInterface = new TestServices(
             threadingInterface: Mock.Of<IPlatformThreadingInterface>(x => x.CurrentThreadIsLoopThread == true));
 
+        public static readonly TestServices MockWindowingPlatform = new TestServices(
+            windowingPlatform: new MockWindowingPlatform());
+
         public static readonly TestServices RealFocus = new TestServices(
             focusManager: new FocusManager(),
             keyboardDevice: () => new KeyboardDevice(),
@@ -63,14 +68,14 @@ namespace Avalonia.UnitTests
             Func<IKeyboardDevice> keyboardDevice = null,
             ILayoutManager layoutManager = null,
             IRuntimePlatform platform = null,
-            IRenderer renderer = null,
+            Func<IRenderRoot, IRenderLoop, IRenderer> renderer = null,
             IPlatformRenderInterface renderInterface = null,
             IRenderLoop renderLoop = null,
+            IScheduler scheduler = null,
             IStandardCursorFactory standardCursorFactory = null,
             IStyler styler = null,
             Func<Styles> theme = null,
             IPlatformThreadingInterface threadingInterface = null,
-            IWindowImpl windowImpl = null,
             IWindowingPlatform windowingPlatform = null)
         {
             AssetLoader = assetLoader;
@@ -82,11 +87,11 @@ namespace Avalonia.UnitTests
             Renderer = renderer;
             RenderInterface = renderInterface;
             RenderLoop = renderLoop;
+            Scheduler = scheduler;
             StandardCursorFactory = standardCursorFactory;
             Styler = styler;
             Theme = theme;
             ThreadingInterface = threadingInterface;
-            WindowImpl = windowImpl;
             WindowingPlatform = windowingPlatform;
         }
 
@@ -96,14 +101,14 @@ namespace Avalonia.UnitTests
         public Func<IKeyboardDevice> KeyboardDevice { get; }
         public ILayoutManager LayoutManager { get; }
         public IRuntimePlatform Platform { get; }
-        public IRenderer Renderer { get; }
+        public Func<IRenderRoot, IRenderLoop, IRenderer> Renderer { get; }
         public IPlatformRenderInterface RenderInterface { get; }
         public IRenderLoop RenderLoop { get; }
+        public IScheduler Scheduler { get; }
         public IStandardCursorFactory StandardCursorFactory { get; }
         public IStyler Styler { get; }
         public Func<Styles> Theme { get; }
         public IPlatformThreadingInterface ThreadingInterface { get; }
-        public IWindowImpl WindowImpl { get; }
         public IWindowingPlatform WindowingPlatform { get; }
 
         public TestServices With(
@@ -113,9 +118,10 @@ namespace Avalonia.UnitTests
             Func<IKeyboardDevice> keyboardDevice = null,
             ILayoutManager layoutManager = null,
             IRuntimePlatform platform = null,
-            IRenderer renderer = null,
+            Func<IRenderRoot, IRenderLoop, IRenderer> renderer = null,
             IPlatformRenderInterface renderInterface = null,
             IRenderLoop renderLoop = null,
+            IScheduler scheduler = null,
             IStandardCursorFactory standardCursorFactory = null,
             IStyler styler = null,
             Func<Styles> theme = null,
@@ -133,11 +139,11 @@ namespace Avalonia.UnitTests
                 renderer: renderer ?? Renderer,
                 renderInterface: renderInterface ?? RenderInterface,
                 renderLoop: renderLoop ?? RenderLoop,
+                scheduler: scheduler ?? Scheduler,
                 standardCursorFactory: standardCursorFactory ?? StandardCursorFactory,
                 styler: styler ?? Styler,
                 theme: theme ?? Theme,
                 threadingInterface: threadingInterface ?? ThreadingInterface,
-                windowImpl: windowImpl ?? WindowImpl,
                 windowingPlatform: windowingPlatform ?? WindowingPlatform);
         }
 
@@ -161,12 +167,11 @@ namespace Avalonia.UnitTests
             return Mock.Of<IPlatformRenderInterface>(x => 
                 x.CreateFormattedText(
                     It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.IsAny<double>(),
-                    It.IsAny<FontStyle>(),
+                    It.IsAny<Typeface>(),
                     It.IsAny<TextAlignment>(),
-                    It.IsAny<FontWeight>(),
-                    It.IsAny<TextWrapping>()) == Mock.Of<IFormattedTextImpl>() &&
+                    It.IsAny<TextWrapping>(),
+                    It.IsAny<Size>(),
+                    It.IsAny<IReadOnlyList<FormattedTextStyleSpan>>()) == Mock.Of<IFormattedTextImpl>() &&
                 x.CreateStreamGeometry() == Mock.Of<IStreamGeometryImpl>(
                     y => y.Open() == Mock.Of<IStreamGeometryContextImpl>()));
         }

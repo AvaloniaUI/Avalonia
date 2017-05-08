@@ -53,6 +53,7 @@ namespace Avalonia.Android
                 .Bind<IKeyboardDevice>().ToSingleton<AndroidKeyboardDevice>()
                 .Bind<IMouseDevice>().ToSingleton<AndroidMouseDevice>()
                 .Bind<IPlatformSettings>().ToConstant(Instance)
+                .Bind<IRendererFactory>().ToConstant(ImmediateRenderer.Factory)
                 .Bind<IPlatformThreadingInterface>().ToConstant(new AndroidThreadingInterface())
                 .Bind<ISystemDialogImpl>().ToTransient<SystemDialogImpl>()
                 .Bind<IWindowingPlatform>().ToConstant(Instance)

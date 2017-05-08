@@ -35,19 +35,11 @@ namespace Avalonia.Cairo.Media
         private readonly StreamGeometryContextImpl _impl;
 
         private Matrix _transform = Matrix.Identity;
+
         public Matrix Transform
         {
             get { return _transform; }
-            set
-            {
-                if (value != Transform)
-                {
-                    if (!value.IsIdentity)
-                    {
-                        _transform = value;
-                    }
-                }
-            }
+            private set { _transform = value; }
         }
 
         public FillRule FillRule { get; set; }
@@ -60,7 +52,7 @@ namespace Avalonia.Cairo.Media
         public Rect GetRenderBounds(double strokeThickness)
         {
             // TODO: Calculate properly.
-			return Bounds.Inflate(strokeThickness);
+            return Bounds.TransformToAABB(Transform).Inflate(strokeThickness);
         }
 
         public IStreamGeometryContextImpl Open()
@@ -71,6 +63,24 @@ namespace Avalonia.Cairo.Media
         public bool FillContains(Point point)
         {
             return _impl.FillContains(point);
+        }
+
+        public IGeometryImpl Intersect(IGeometryImpl geometry)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool StrokeContains(Pen pen, Point point)
+        {
+            return _impl.StrokeContains(pen, point);
+        }
+
+        /// <inheritdoc/>
+        public IGeometryImpl WithTransform(Matrix transform)
+        {
+            var result = (StreamGeometryImpl)Clone();
+            result.Transform = transform;
+            return result;
         }
     }
 }
