@@ -372,7 +372,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             Assert.Equal(2, setters.Length);
 
             Assert.Equal(TextBlock.BackgroundProperty, setters[0].Property);
-            Assert.Equal(Brushes.White, setters[0].Value);
+            Assert.Equal(Brushes.White.Color, ((ISolidColorBrush)setters[0].Value).Color);
 
             Assert.Equal(TextBlock.WidthProperty, setters[1].Property);
             Assert.Equal(100.0, setters[1].Value);
