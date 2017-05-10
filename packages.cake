@@ -7,6 +7,7 @@ public class Packages
     public FilePath[] BinFiles { get; private set; }
     public string NugetPackagesDir {get; private set;}
     public string SkiaSharpVersion {get; private set; }
+    public string SkiaSharpLinuxVersion {get; private set; }
     public Packages(ICakeContext context, Parameters parameters)
     {
         // NUGET NUSPECS
@@ -75,6 +76,7 @@ public class Packages
         var SpracheVersion = packageVersions["Sprache"].FirstOrDefault().Item1;
         var SystemReactiveVersion = packageVersions["System.Reactive"].FirstOrDefault().Item1;
         SkiaSharpVersion = packageVersions["SkiaSharp"].FirstOrDefault().Item1;
+		SkiaSharpLinuxVersion = packageVersions["Avalonia.Skia.Linux.Natives"].FirstOrDefault().Item1;
         var SharpDXVersion = packageVersions["SharpDX"].FirstOrDefault().Item1;
         var SharpDXDirect2D1Version = packageVersions["SharpDX.Direct2D1"].FirstOrDefault().Item1;
         var SharpDXDirect3D11Version = packageVersions["SharpDX.Direct3D11"].FirstOrDefault().Item1;
@@ -85,6 +87,7 @@ public class Packages
         context.Information("Package: Sprache, version: {0}", SpracheVersion);
         context.Information("Package: System.Reactive, version: {0}", SystemReactiveVersion);
         context.Information("Package: SkiaSharp, version: {0}", SkiaSharpVersion);
+        context.Information("Package: Avalonia.Skia.Linux.Natives, version: {0}", SkiaSharpLinuxVersion);
         context.Information("Package: SharpDX, version: {0}", SharpDXVersion);
         context.Information("Package: SharpDX.Direct2D1, version: {0}", SharpDXDirect2D1Version);
         context.Information("Package: SharpDX.Direct3D11, version: {0}", SharpDXDirect3D11Version);
@@ -425,7 +428,7 @@ public class Packages
                 {
                     new NuSpecDependency() { Id = "Avalonia", Version = parameters.Version },
                     new NuSpecDependency() { Id = "SkiaSharp", Version = SkiaSharpVersion },
-                    new NuSpecDependency() { Id = "Avalonia.Skia.Linux.Natives", Version = SkiaSharpVersion }
+                    new NuSpecDependency() { Id = "Avalonia.Skia.Linux.Natives", Version = SkiaSharpLinuxVersion }
                 },
                 Files = new []
                 {

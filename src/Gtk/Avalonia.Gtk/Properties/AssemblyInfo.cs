@@ -22,7 +22,7 @@ using System.Runtime.CompilerServices;
 // and "{Major}.{Minor}.{Build}.*" will update just the revision.
 [assembly: AssemblyVersion("1.0.*")]
 
-[assembly: ExportWindowingSubsystem(OperatingSystemType.WinNT, 2, "GTK", typeof(GtkPlatform), nameof(GtkPlatform.Initialize))]
-[assembly: ExportWindowingSubsystem(OperatingSystemType.Linux, 1, "GTK", typeof(GtkPlatform), nameof(GtkPlatform.Initialize))]
-[assembly: ExportWindowingSubsystem(OperatingSystemType.OSX, 2, "GTK", typeof(GtkPlatform), nameof(GtkPlatform.Initialize))]
+[assembly: ExportWindowingSubsystem(OperatingSystemType.WinNT, 3, "GTK", typeof(GtkPlatform), nameof(GtkPlatform.Initialize))]
+[assembly: ExportWindowingSubsystem(OperatingSystemType.Linux, 2, "GTK", typeof(GtkPlatform), nameof(GtkPlatform.Initialize))]
+[assembly: ExportWindowingSubsystem(OperatingSystemType.OSX, 3, "GTK", typeof(GtkPlatform), nameof(GtkPlatform.Initialize))]
 
