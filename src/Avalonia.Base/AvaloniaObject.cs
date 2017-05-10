@@ -578,13 +578,13 @@ namespace Avalonia
 
             if (notification == null)
             {
-                return TypeUtilities.CastOrDefault(value, type);
+                return TypeUtilities.ConvertImplicitOrDefault(value, type);
             }
             else
             {
                 if (notification.HasValue)
                 {
-                    notification.SetValue(TypeUtilities.CastOrDefault(notification.Value, type));
+                    notification.SetValue(TypeUtilities.ConvertImplicitOrDefault(notification.Value, type));
                 }
 
                 return notification;
@@ -735,7 +735,7 @@ namespace Avalonia
                 ThrowNotRegistered(property);
             }
 
-            if (!TypeUtilities.TryCast(property.PropertyType, value, out value))
+            if (!TypeUtilities.TryConvertImplicit(property.PropertyType, value, out value))
             {
                 throw new ArgumentException(string.Format(
                     "Invalid value for Property '{0}': '{1}' ({2})",
