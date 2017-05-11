@@ -279,6 +279,8 @@ Task("Zip-Files")
     Zip(parameters.ZipSourceControlCatalogDesktopDirs, 
         parameters.ZipTargetControlCatalogDesktopDirs, 
         GetFiles(parameters.ZipSourceControlCatalogDesktopDirs.FullPath + "/*.dll") + 
+        GetFiles(parameters.ZipSourceControlCatalogDesktopDirs.FullPath + "/*.so") + 
+        GetFiles(parameters.ZipSourceControlCatalogDesktopDirs.FullPath + "/*.dylib") + 
         GetFiles(parameters.ZipSourceControlCatalogDesktopDirs.FullPath + "/*.exe"));
 });
 
