@@ -26,7 +26,7 @@ namespace Avalonia
             Type ownerType,            
             StyledPropertyMetadata<TValue> metadata,
             bool inherits = false,
-            Action<IAvaloniaObject, bool> notifying = null)
+            Action<IAvaloniaObject, bool, object, object> notifying = null)
                 : base(name, ownerType, metadata, notifying)
         {
             Contract.Requires<ArgumentNullException>(name != null);

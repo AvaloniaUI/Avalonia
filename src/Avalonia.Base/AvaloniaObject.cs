@@ -517,7 +517,7 @@ namespace Avalonia
                 newValue,
                 priority);
 
-            property.Notifying?.Invoke(this, true);
+            property.Notifying?.Invoke(this, true, oldValue, newValue);
 
             try
             {
@@ -534,7 +534,7 @@ namespace Avalonia
             }
             finally
             {
-                property.Notifying?.Invoke(this, false);
+                property.Notifying?.Invoke(this, false, oldValue, newValue);
             }
         }
 
