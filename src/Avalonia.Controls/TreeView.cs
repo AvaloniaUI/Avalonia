@@ -30,7 +30,7 @@ namespace Avalonia.Controls
         public static readonly DirectProperty<TreeView, object> SelectedItemProperty =
             SelectingItemsControl.SelectedItemProperty.AddOwner<TreeView>(
                 o => o.SelectedItem,
-                (o, v) => o.SelectedItem = v);
+                (o, v) => o.SelectedItem = v, defaultBindingMode: Data.BindingMode.TwoWay);
 
         private object _selectedItem;
 
