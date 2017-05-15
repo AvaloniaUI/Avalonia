@@ -2,16 +2,16 @@
 // ADDINS
 ///////////////////////////////////////////////////////////////////////////////
 
-#addin "nuget:?package=Polly&version=4.2.0"
-#addin "nuget:?package=NuGet.Core&version=2.12.0"
-#tool "nuget:https://dotnet.myget.org/F/nuget-build/?package=NuGet.CommandLine&version=4.3.0-preview1-3980&prerelease"
+#addin "nuget:?package=Polly&version=5.1.0"
+#addin "nuget:?package=NuGet.Core&version=2.14.0"
 #tool "nuget:?package=JetBrains.dotMemoryUnit&version=2.1.20150828.125449"
+
 ///////////////////////////////////////////////////////////////////////////////
 // TOOLS
 ///////////////////////////////////////////////////////////////////////////////
 
-#tool "nuget:?package=xunit.runner.console&version=2.1.0"
-#tool "nuget:?package=OpenCover"
+#tool "nuget:?package=xunit.runner.console&version=2.2.0"
+#tool "nuget:?package=OpenCover&version=4.6.519"
 
 ///////////////////////////////////////////////////////////////////////////////
 // USINGS
@@ -119,7 +119,6 @@ Task("Restore-NuGet-Packages")
             }})
         .Execute(()=> {
                 NuGetRestore(parameters.MSBuildSolution, new NuGetRestoreSettings {
-                    ToolPath = "./tools/NuGet.CommandLine/tools/NuGet.exe",
                     ToolTimeout = TimeSpan.FromMinutes(toolTimeout)
                 });
         });
@@ -144,7 +143,6 @@ Task("Build")
         MSBuild(parameters.MSBuildSolution, settings => {
             settings.SetConfiguration(parameters.Configuration);
             settings.WithProperty("Platform", "\"" + parameters.Platform + "\"");
-            settings.WithProperty("UseRoslynPathHack", "true");
             settings.SetVerbosity(Verbosity.Minimal);
             settings.WithProperty("Windows", "True");
             settings.UseToolVersion(MSBuildToolVersion.VS2017);

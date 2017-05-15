@@ -98,5 +98,4 @@
     </ProjectReference>
   </ItemGroup>
   <Import Project="..\..\..\build\Rx.props" />
-  <Import Project="$(MSBuildThisFileDirectory)..\..\Shared\nuget.workaround.targets" />
 </Project>

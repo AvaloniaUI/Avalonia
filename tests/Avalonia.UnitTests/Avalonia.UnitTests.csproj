@@ -54,5 +54,4 @@
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp1.1'">
       <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0" />
   </ItemGroup>
-  <Import Condition="'$(TargetFramework)' == 'net461'" Project="$(MSBuildThisFileDirectory)..\..\src\Shared\nuget.workaround.targets" />
 </Project>
