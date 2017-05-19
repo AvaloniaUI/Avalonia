@@ -36,7 +36,7 @@ namespace Avalonia.Markup.Data.Plugins
 
             if (task != null)
             {
-                var resultProperty = task.GetType().GetTypeInfo().GetDeclaredProperty("Result");
+                var resultProperty = task.GetType().GetRuntimeProperty("Result");
 
                 if (resultProperty != null)
                 {
@@ -61,7 +61,7 @@ namespace Avalonia.Markup.Data.Plugins
 
         protected IObservable<object> HandleCompleted(Task task)
         {
-            var resultProperty = task.GetType().GetTypeInfo().GetDeclaredProperty("Result");
+            var resultProperty = task.GetType().GetRuntimeProperty("Result");
             
             if (resultProperty != null)
             {
