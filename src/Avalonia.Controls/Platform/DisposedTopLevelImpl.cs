@@ -151,6 +151,10 @@ namespace Avalonia.Controls.Platform
 
         public void SetIcon(IWindowIconImpl icon) => Log();
 
-        public event Action LostFocus;
+        public event Action LostFocus
+        {
+            add { }
+            remove { }
+        }
     }
 }
