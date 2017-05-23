@@ -14,10 +14,6 @@ using System.Runtime.CompilerServices;
 [assembly: AssemblyTrademark("")]
 [assembly: NeutralResourcesLanguage("en")]
 
-[assembly: AssemblyVersion("0.4.1")]
-[assembly: AssemblyFileVersion("0.4.1")]
-[assembly: AssemblyInformationalVersion("0.4.1")]
-
-[assembly: InternalsVisibleTo("Avalonia.Cairo.RenderTests")]
-[assembly: InternalsVisibleTo("Avalonia.Direct2D1.RenderTests")]
-[assembly: InternalsVisibleTo("Avalonia.Skia.RenderTests")]
+[assembly: AssemblyVersion("0.5.1")]
+[assembly: AssemblyFileVersion("0.5.1")]
+[assembly: AssemblyInformationalVersion("0.5.1")]
