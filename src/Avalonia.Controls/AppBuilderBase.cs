@@ -136,7 +136,7 @@ namespace Avalonia.Controls
         /// <param name="mainWindow">Instance of type TMainWindow to use when starting the app</param>
         /// <param name="dataContextProvider">A delegate that will be called to create a data context for the window (optional).</param>
         public void Start<TMainWindow>(TMainWindow mainWindow, Func<object> dataContextProvider = null)
-            where TMainWindow : Window, new()
+            where TMainWindow : Window
         {
             Setup();
             BeforeStartCallback(Self);
