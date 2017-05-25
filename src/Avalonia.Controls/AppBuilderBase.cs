@@ -130,6 +130,24 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Starts the application with the provided instance of <typeparamref name="TMainWindow"/>.
+        /// </summary>
+        /// <typeparam name="TMainWindow">The window type.</typeparam>
+        /// <param name="mainWindow">Instance of type TMainWindow to use when starting the app</param>
+        /// <param name="dataContextProvider">A delegate that will be called to create a data context for the window (optional).</param>
+        public void Start<TMainWindow>(TMainWindow mainWindow, Func<object> dataContextProvider = null)
+            where TMainWindow : Window, new()
+        {
+            Setup();
+            BeforeStartCallback(Self);
+
+            if (dataContextProvider != null)
+                mainWindow.DataContext = dataContextProvider();
+            mainWindow.Show();
+            Instance.Run(mainWindow);
+        }
+
+        /// <summary>
         /// Sets up the platform-specific services for the application, but does not run it.
         /// </summary>
         /// <returns></returns>
