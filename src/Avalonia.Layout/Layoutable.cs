@@ -460,6 +460,11 @@ namespace Avalonia.Layout
                     .ApplyLayoutConstraints(this, availableSize)
                     .Deflate(margin);
 
+                if (!double.IsNaN(Width))
+                    constrained = constrained.WithWidth(Width);
+                if (!double.IsNaN(Height))
+                    constrained = constrained.WithHeight(Height);
+
                 var measured = MeasureOverride(constrained);
 
                 var width = measured.Width;
