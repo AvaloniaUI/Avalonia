@@ -6,6 +6,7 @@
 #addin "nuget:?package=NuGet.Core&version=2.12.0"
 #tool "nuget:https://dotnet.myget.org/F/nuget-build/?package=NuGet.CommandLine&version=4.3.0-preview1-3980&prerelease"
 #tool "nuget:?package=JetBrains.dotMemoryUnit&version=2.1.20150828.125449"
+#tool "JetBrains.ReSharper.CommandLineTools"
 ///////////////////////////////////////////////////////////////////////////////
 // TOOLS
 ///////////////////////////////////////////////////////////////////////////////
@@ -104,7 +105,7 @@ Task("Restore-NuGet-Packages")
     .Does(() =>
 {
     var maxRetryCount = 5;
-    var toolTimeout = 1d;
+    var toolTimeout = 2d;
     Policy
         .Handle<Exception>()
         .Retry(maxRetryCount, (exception, retryCount, context) => {
@@ -287,6 +288,7 @@ Task("Zip-Files")
 
 Task("Create-NuGet-Packages")
     .IsDependentOn("Run-Unit-Tests")
+    .IsDependentOn("Inspect")
     .Does(() =>
 {
     foreach(var nuspec in packages.NuspecNuGetSettings)
@@ -362,6 +364,39 @@ Task("Publish-NuGet")
 {
     Information("Publish-NuGet Task failed, but continuing with next Task...");
 });
+
+Task("Inspect")
+    .WithCriteria(parameters.IsRunningOnWindows)
+    .IsDependentOn("Restore-NuGet-Packages")
+    .Does(() =>
+    {
+        var badIssues = new []{"PossibleNullReferenceException"};
+        var whitelist = new []{"tests\\", "src\\android", "src\\ios",
+            @"src\windows\avalonia.designer", @"src\avalonia.htmlrenderer\external"};
+        Information("Running code inspections");
+        
+        
+        StartProcess(@"tools\JetBrains.ReSharper.CommandLineTools\tools\inspectcode.exe",
+            new ProcessSettings{ Arguments = @"--output=artifacts\inspectcode.xml --profile=Avalonia.sln.DotSettings Avalonia.sln" });
+        Information("Analyzing report");
+        var doc = XDocument.Parse(System.IO.File.ReadAllText(@"artifacts\inspectcode.xml"));
+        var failBuild = false;
+        foreach(var xml in doc.Descendants("Issue"))
+        {
+            var typeId = xml.Attribute("TypeId").Value.ToString();
+            if(badIssues.Contains(typeId))
+            {
+                var file = xml.Attribute("File").Value.ToString().ToLower();
+                if(whitelist.Any(wh => file.StartsWith(wh)))
+                    continue;
+                var line = xml.Attribute("Line").Value.ToString();
+                Error(typeId + " - " + file + " on line " + line);
+                failBuild = true;
+            }
+        }
+        if(failBuild)
+            throw new Exception("Issues found");
+    });
 
 ///////////////////////////////////////////////////////////////////////////////
 // TARGETS
