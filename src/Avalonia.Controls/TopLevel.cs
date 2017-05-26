@@ -106,7 +106,7 @@ namespace Avalonia.Controls
             _accessKeyHandler?.SetOwner(this);
             styler?.ApplyStyles(this);
 
-            ClientSize = PlatformImpl.ClientSize;
+            ClientSize = impl.ClientSize;
             
             this.GetObservable(PointerOverElementProperty)
                 .Select(

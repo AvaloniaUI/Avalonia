@@ -645,7 +645,7 @@ namespace Avalonia.Controls
 
             if (_focusAdorner != null)
             {
-                var adornerLayer = _focusAdorner.Parent as Panel;
+                var adornerLayer = (Panel)_focusAdorner.Parent;
                 adornerLayer.Children.Remove(_focusAdorner);
                 _focusAdorner = null;
             }
