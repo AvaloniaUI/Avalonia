@@ -135,11 +135,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the platform-specific window implementation.
         /// </summary>
-        public ITopLevelImpl PlatformImpl
-        {
-            get;
-        }
-        
+        public ITopLevelImpl PlatformImpl { get; private set; }
+
         /// <summary>
         /// Gets the renderer for the window.
         /// </summary>
@@ -219,11 +216,15 @@ namespace Avalonia.Controls
             Renderer?.Paint(rect);
         }
 
+
+        protected virtual ITopLevelImpl CreateDisposedToplevelReplacement() => new DisposedTopLevelImpl();
+
         /// <summary>
         /// Handles a closed notification from <see cref="ITopLevelImpl.Closed"/>.
         /// </summary>
         protected virtual void HandleClosed()
         {
+            PlatformImpl = CreateDisposedToplevelReplacement();
             Closed?.Invoke(this, EventArgs.Empty);
             Renderer?.Dispose();
             Renderer = null;
