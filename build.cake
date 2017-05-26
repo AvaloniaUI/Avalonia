@@ -371,15 +371,15 @@ Task("Inspect")
     .Does(() =>
     {
         var badIssues = new []{"PossibleNullReferenceException"};
-        var whitelist = new []{"tests\\", "src\\android", "src\\ios",
-            @"src\windows\avalonia.designer", @"src\avalonia.htmlrenderer\external"};
+        var whitelist = new []{"tests", "src\\android", "src\\ios",
+            "src\\windows\\avalonia.designer", "src\\avalonia.htmlrenderer\\external"};
         Information("Running code inspections");
         
         
-        StartProcess(@"tools\JetBrains.ReSharper.CommandLineTools\tools\inspectcode.exe",
-            new ProcessSettings{ Arguments = @"--output=artifacts\inspectcode.xml --profile=Avalonia.sln.DotSettings Avalonia.sln" });
+        StartProcess("tools\\JetBrains.ReSharper.CommandLineTools\\tools\\inspectcode.exe",
+            new ProcessSettings{ Arguments = "--output=artifacts\\inspectcode.xml --profile=Avalonia.sln.DotSettings Avalonia.sln" });
         Information("Analyzing report");
-        var doc = XDocument.Parse(System.IO.File.ReadAllText(@"artifacts\inspectcode.xml"));
+        var doc = XDocument.Parse(System.IO.File.ReadAllText("artifacts\\inspectcode.xml"));
         var failBuild = false;
         foreach(var xml in doc.Descendants("Issue"))
         {
