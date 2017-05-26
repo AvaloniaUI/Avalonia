@@ -75,7 +75,7 @@ namespace Avalonia.DesignerSupport
         private static void SetScalingFactor(double factor)
         {
             PlatformManager.SetDesignerScalingFactor(factor);
-            s_currentWindow?.PlatformImpl.Resize(s_currentWindow.ClientSize);
+            s_currentWindow?.PlatformImpl?.Resize(s_currentWindow.ClientSize);
         }
 
         static Window s_currentWindow;
@@ -149,6 +149,8 @@ namespace Avalonia.DesignerSupport
             s_currentWindow = window;
             window.Show();
             Design.ApplyDesignerProperties(window, control);
+            // ReSharper disable once PossibleNullReferenceException
+            // Always not null at this point
             Api.OnWindowCreated?.Invoke(window.PlatformImpl.Handle.Handle);
             Api.OnResize?.Invoke();
         }
