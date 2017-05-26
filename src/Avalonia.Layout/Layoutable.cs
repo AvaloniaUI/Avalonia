@@ -456,10 +456,9 @@ namespace Avalonia.Layout
 
                 ApplyTemplate();
 
-                var constrained = LayoutHelper
-                    .ApplyLayoutConstraints(this, availableSize)
-                    .Deflate(margin);
-
+                var constrained = LayoutHelper.ApplyLayoutConstraints(
+                    this,
+                    availableSize.Deflate(margin));
                 var measured = MeasureOverride(constrained);
 
                 var width = measured.Width;
