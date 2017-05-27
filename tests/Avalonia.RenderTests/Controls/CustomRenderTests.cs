@@ -53,6 +53,37 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
         }
 
         [Fact]
+        public async Task GeometryClip()
+        {
+            Decorator target = new Decorator
+            {
+                Padding = new Thickness(8),
+                Width = 200,
+                Height = 200,
+                Child = new CustomRenderer((control, context) =>
+                {
+                    var clip = new EllipseGeometry(new Rect(control.Bounds.Size));
+
+                    context.FillRectangle(
+                        Brushes.Red,
+                        new Rect(control.Bounds.Size),
+                        4);
+
+                    using (context.PushGeometryClip(clip))
+                    {
+                        context.FillRectangle(
+                            Brushes.Blue,
+                            new Rect(control.Bounds.Size),
+                            4);
+                    }
+                }),
+            };
+
+            await RenderToFile(target);
+            CompareImages();
+        }
+
+        [Fact]
         public async Task Opacity()
         {
             Decorator target = new Decorator
@@ -68,6 +99,46 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                         4);
 
                     using (context.PushOpacity(0.5))
+                    {
+                        context.FillRectangle(
+                            Brushes.Blue,
+                            new Rect(control.Bounds.Size).Deflate(20),
+                            4);
+                    }
+                }),
+            };
+
+            await RenderToFile(target);
+            CompareImages();
+        }
+
+        [Fact]
+        public async Task OpacityMask()
+        {
+            Decorator target = new Decorator
+            {
+                Padding = new Thickness(8),
+                Width = 200,
+                Height = 200,
+                Child = new CustomRenderer((control, context) =>
+                {
+                    var mask = new LinearGradientBrush
+                    {
+                        StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative),
+                        EndPoint = new RelativePoint(1, 1, RelativeUnit.Relative),
+                        GradientStops = new[]
+                        {
+                            new GradientStop(Color.FromUInt32(0xffffffff), 0),
+                            new GradientStop(Color.FromUInt32(0x00ffffff), 1)
+                        },
+                    };
+
+                    context.FillRectangle(
+                        Brushes.Red,
+                        new Rect(control.Bounds.Size),
+                        4);
+
+                    using (context.PushOpacityMask(mask, new Rect(control.Bounds.Size)))
                     {
                         context.FillRectangle(
                             Brushes.Blue,
