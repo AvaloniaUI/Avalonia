@@ -11,6 +11,8 @@ namespace Avalonia.Skia
 {
     internal class DrawingContextImpl : IDrawingContextImpl
     {
+        private readonly double _dpiX;
+        private readonly double _dpiY;
         private readonly Matrix? _postTransform;
         private readonly IDisposable[] _disposables;
         private readonly IVisualBrushRenderer _visualBrushRenderer;
@@ -20,12 +22,16 @@ namespace Avalonia.Skia
 
         public DrawingContextImpl(
             SKCanvas canvas,
+            double dpiX,
+            double dpiY,
             IVisualBrushRenderer visualBrushRenderer,
-            Matrix? postTransform = null,
             params IDisposable[] disposables)
         {
-            if (postTransform.HasValue && !postTransform.Value.IsIdentity)
-                _postTransform = postTransform;
+            _dpiX = dpiX;
+            _dpiY = dpiY;
+
+            if (dpiX != 96 || dpiY != 96)
+                _postTransform = Matrix.CreateScale(dpiX / 96, dpiY / 96);
             _visualBrushRenderer = visualBrushRenderer;
             _disposables = disposables;
             Canvas = canvas;
@@ -217,7 +223,7 @@ namespace Avalonia.Skia
 
                     if (intermediateSize.Width >= 1 && intermediateSize.Height >= 1)
                     {
-                        var intermediate = new BitmapImpl((int)intermediateSize.Width, (int)intermediateSize.Height);
+                        var intermediate = new BitmapImpl((int)intermediateSize.Width, (int)intermediateSize.Height, _dpiX, _dpiY);
 
                         using (var ctx = intermediate.CreateDrawingContext(_visualBrushRenderer))
                         {
@@ -242,7 +248,7 @@ namespace Avalonia.Skia
             if (tileBrush != null && tileBrushImage != null)
             {
                 var calc = new TileBrushCalculator(tileBrush, new Size(tileBrushImage.PixelWidth, tileBrushImage.PixelHeight), targetSize);
-                var bitmap = new BitmapImpl((int)calc.IntermediateSize.Width, (int)calc.IntermediateSize.Height);
+                var bitmap = new BitmapImpl((int)calc.IntermediateSize.Width, (int)calc.IntermediateSize.Height, _dpiX, _dpiY);
                 rv.AddDisposable(bitmap);
                 using (var context = bitmap.CreateDrawingContext(null))
                 {

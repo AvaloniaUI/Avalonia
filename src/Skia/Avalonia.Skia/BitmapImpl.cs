@@ -1,9 +1,5 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Runtime.InteropServices;
-using System.Text;
-using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using SkiaSharp;
@@ -12,6 +8,9 @@ namespace Avalonia.Skia
 {
     class BitmapImpl : IRenderTargetBitmapImpl, IWritableBitmapImpl
     {
+        private double _dpiX;
+        private double _dpiY;
+
         public SKBitmap Bitmap { get; private set; }
 
         public BitmapImpl(SKBitmap bm)
@@ -19,12 +18,16 @@ namespace Avalonia.Skia
             Bitmap = bm;
             PixelHeight = bm.Height;
             PixelWidth = bm.Width;
+            _dpiX = 96;
+            _dpiY = 96;
         }
 
-        public BitmapImpl(int width, int height, PixelFormat? fmt = null)
+        public BitmapImpl(int width, int height, double dpiX, double dpiY, PixelFormat? fmt = null)
         {
             PixelHeight = height;
             PixelWidth = width;
+            _dpiX = dpiX;
+            _dpiY = dpiY;
             var colorType = fmt?.ToSkColorType() ?? SKImageInfo.PlatformColorType;
             var runtime = AvaloniaLocator.Current?.GetService<IRuntimePlatform>()?.GetRuntimeInfo();
             if (runtime?.IsDesktop == true && runtime?.OperatingSystem == OperatingSystemType.Linux)
@@ -68,8 +71,8 @@ namespace Avalonia.Skia
         {
             private readonly SKSurface _surface;
 
-            public BitmapDrawingContext(SKBitmap bitmap, IVisualBrushRenderer visualBrushRenderer)
-                : this(CreateSurface(bitmap), visualBrushRenderer)
+            public BitmapDrawingContext(SKBitmap bitmap, double dpiX, double dpiY, IVisualBrushRenderer visualBrushRenderer)
+                : this(CreateSurface(bitmap), dpiX, dpiY, visualBrushRenderer)
             {
 
             }
@@ -83,8 +86,8 @@ namespace Avalonia.Skia
                 return rv;
             }
 
-            public BitmapDrawingContext(SKSurface surface, IVisualBrushRenderer visualBrushRenderer)
-                : base(surface.Canvas, visualBrushRenderer)
+            public BitmapDrawingContext(SKSurface surface, double dpiX, double dpiY, IVisualBrushRenderer visualBrushRenderer)
+                : base(surface.Canvas, dpiX, dpiY, visualBrushRenderer)
             {
                 _surface = surface;
             }
@@ -98,7 +101,7 @@ namespace Avalonia.Skia
 
         public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
         {
-            return new BitmapDrawingContext(Bitmap, visualBrushRenderer);
+            return new BitmapDrawingContext(Bitmap, _dpiX, _dpiY, visualBrushRenderer);
         }
 
         public void Save(Stream stream)
