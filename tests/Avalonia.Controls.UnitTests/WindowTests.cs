@@ -114,5 +114,72 @@ namespace Avalonia.Controls.UnitTests
                 Assert.False(window.IsVisible);
             }
         }
+
+        [Fact]
+        public void Show_Should_Add_Window_To_OpenWindows()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = new Window();
+
+                window.Show();
+
+                Assert.Equal(new[] { window }, Window.OpenWindows);
+
+                window.Close();
+            }
+        }
+
+        [Fact]
+        public void Window_Should_Be_Added_To_OpenWindows_Only_Once()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = new Window();
+
+                window.Show();
+                window.Show();
+                window.IsVisible = true;
+
+                Assert.Equal(new[] { window }, Window.OpenWindows);
+
+                window.Close();
+            }
+        }
+
+        [Fact]
+        public void Close_Should_Remove_Window_From_OpenWindows()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = new Window();
+
+                window.Show();
+                window.Close();
+
+                Assert.Empty(Window.OpenWindows);
+            }
+        }
+
+        [Fact]
+        public void Impl_Closing_Should_Remove_Window_From_OpenWindows()
+        {
+            var windowImpl = new Mock<IWindowImpl>();
+            windowImpl.SetupProperty(x => x.Closed);
+            windowImpl.Setup(x => x.Scaling).Returns(1);
+
+            var services = TestServices.StyledWindow.With(
+                windowingPlatform: new MockWindowingPlatform(() => windowImpl.Object));
+
+            using (UnitTestApplication.Start(services))
+            {
+                var window = new Window();
+
+                window.Show();
+                windowImpl.Object.Closed();
+
+                Assert.Empty(Window.OpenWindows);
+            }
+        }
     }
 }
