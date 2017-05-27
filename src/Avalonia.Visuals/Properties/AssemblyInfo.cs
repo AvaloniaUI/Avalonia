@@ -9,3 +9,7 @@ using Avalonia.Metadata;
 [assembly: InternalsVisibleTo("Avalonia.Visuals.UnitTests")]
 [assembly: XmlnsDefinition("https://github.com/avaloniaui", "Avalonia.Animation")]
 [assembly: XmlnsDefinition("https://github.com/avaloniaui", "Avalonia.Media")]
+
+[assembly: InternalsVisibleTo("Avalonia.Cairo.RenderTests")]
+[assembly: InternalsVisibleTo("Avalonia.Direct2D1.RenderTests")]
+[assembly: InternalsVisibleTo("Avalonia.Skia.RenderTests")]
