@@ -68,7 +68,7 @@ namespace Avalonia.Markup.Xaml.Parsers
                 }
                 else if (property != null)
                 {
-                    var type = result.TargetType;
+                    var type = result?.TargetType;
 
                     if (type == null)
                     {
