@@ -58,7 +58,7 @@ namespace Direct3DInteropSample
                    new ModeDescription((int)ClientSize.Width, (int)ClientSize.Height,
                             new Rational(60, 1), Format.R8G8B8A8_UNorm),
                 IsWindowed = true,
-                OutputHandle = PlatformImpl.Handle.Handle,
+                OutputHandle = PlatformImpl?.Handle.Handle ?? IntPtr.Zero,
                 SampleDescription = new SampleDescription(1, 0),
                 SwapEffect = SwapEffect.Discard,
                 Usage = Usage.RenderTargetOutput

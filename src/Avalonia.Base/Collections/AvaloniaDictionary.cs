@@ -103,11 +103,9 @@ namespace Avalonia.Collections
 
             _inner = new Dictionary<TKey, TValue>();
 
-            if (PropertyChanged != null)
-            {
-                PropertyChanged(this, new PropertyChangedEventArgs("Count"));
-                PropertyChanged(this, new PropertyChangedEventArgs($"Item[]"));
-            }
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Count"));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs($"Item[]"));
+            
 
             if (CollectionChanged != null)
             {
@@ -144,12 +142,9 @@ namespace Avalonia.Collections
 
             if (_inner.TryGetValue(key, out value))
             {
-                if (PropertyChanged != null)
-                {
-                    PropertyChanged(this, new PropertyChangedEventArgs("Count"));
-                    PropertyChanged(this, new PropertyChangedEventArgs($"Item[{key}]"));
-                }
-
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Count"));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs($"Item[{key}]"));
+                
                 if (CollectionChanged != null)
                 {
                     var e = new NotifyCollectionChangedEventArgs(
@@ -199,11 +194,9 @@ namespace Avalonia.Collections
 
         private void NotifyAdd(TKey key, TValue value)
         {
-            if (PropertyChanged != null)
-            {
-                PropertyChanged(this, new PropertyChangedEventArgs("Count"));
-                PropertyChanged(this, new PropertyChangedEventArgs($"Item[{key}]"));
-            }
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Count"));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs($"Item[{key}]"));
+            
 
             if (CollectionChanged != null)
             {

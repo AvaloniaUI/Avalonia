@@ -8,6 +8,6 @@ namespace Avalonia.Rendering
     {
         public static readonly ZIndexComparer Instance = new ZIndexComparer();
 
-        public int Compare(IVisual x, IVisual y) => x.ZIndex.CompareTo(y.ZIndex);
+        public int Compare(IVisual x, IVisual y) => (x?.ZIndex ?? 0).CompareTo(y?.ZIndex ?? 0);
     }
 }
