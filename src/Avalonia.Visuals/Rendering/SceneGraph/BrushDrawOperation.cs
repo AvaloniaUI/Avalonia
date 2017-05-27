@@ -46,7 +46,7 @@ namespace Avalonia.Rendering.SceneGraph
         protected Pen ToImmutable(Pen pen)
         {
             var brush = pen?.Brush != null ? ToImmutable(pen.Brush) : null;
-            return ReferenceEquals(pen?.Brush, brush) ?
+            return pen == null || ReferenceEquals(pen?.Brush, brush) ?
                 pen :
                 new Pen(
                     brush,

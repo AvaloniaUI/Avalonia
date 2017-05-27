@@ -327,7 +327,7 @@ namespace Avalonia.Rendering
             catch (RenderTargetCorruptedException ex)
             {
                 Logging.Logger.Information("Renderer", this, "Render target was corrupted. Exception: {0}", ex);
-                _renderTarget.Dispose();
+                _renderTarget?.Dispose();
                 _renderTarget = null;
             }
         }

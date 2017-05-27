@@ -179,7 +179,7 @@ namespace Avalonia.Controls
         double ILayoutRoot.LayoutScaling => PlatformImpl?.Scaling ?? 1;
 
         /// <inheritdoc/>
-        double IRenderRoot.RenderScaling => PlatformImpl.Scaling;
+        double IRenderRoot.RenderScaling => PlatformImpl?.Scaling ?? 1;
 
         IStyleHost IStyleHost.StylingParent
         {
