@@ -83,7 +83,7 @@ namespace Avalonia
         private void LoadAssembliesInDirectory()
         {
             var location = Assembly.GetEntryAssembly().Location;
-            if(location == null)
+            if (string.IsNullOrWhiteSpace(location))
                 return;
             var dir = new FileInfo(location).Directory;
             if (dir == null)

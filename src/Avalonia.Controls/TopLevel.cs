@@ -189,7 +189,7 @@ namespace Avalonia.Controls
         protected virtual IRenderTarget CreateRenderTarget()
         {
             if(PlatformImpl == null)
-                throw new InvalidOperationException("PlatformImpl isn't available");
+                throw new InvalidOperationException("Cann't create render target, PlatformImpl is null (might be already disposed)");
             return _renderInterface.CreateRenderTarget(PlatformImpl.Surfaces);
         }
 
