@@ -11,7 +11,7 @@ namespace Direct3DInteropSample
     {
         static void Main(string[] args)
         {
-            AppBuilder.Configure<App>().UseWin32().UseDirect2D1().Start<MainWindow>();
+            AppBuilder.Configure<App>().UseWin32(deferredRendering: false).UseDirect2D1().Start<MainWindow>();
         }
     }
 }
