@@ -4,25 +4,25 @@ using Avalonia.Platform;
 namespace Avalonia.Rendering.SceneGraph
 {
     /// <summary>
-    /// A node in the scene graph which represents a clip push or pop.
+    /// A node in the scene graph which represents a geometry clip push or pop.
     /// </summary>
-    internal class ClipNode : IDrawOperation
+    internal class GeometryClipNode : IDrawOperation
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ClipNode"/> class that represents a
-        /// clip push.
+        /// Initializes a new instance of the <see cref="GeometryClipNode"/> class that represents a
+        /// geometry clip push.
         /// </summary>
         /// <param name="clip">The clip to push.</param>
-        public ClipNode(Rect clip)
+        public GeometryClipNode(IGeometryImpl clip)
         {
             Clip = clip;
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ClipNode"/> class that represents a
-        /// clip pop.
+        /// Initializes a new instance of the <see cref="GeometryClipNode"/> class that represents a
+        /// geometry clip pop.
         /// </summary>
-        public ClipNode()
+        public GeometryClipNode()
         {
         }
 
@@ -32,7 +32,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <summary>
         /// Gets the clip to be pushed or null if the operation represents a pop.
         /// </summary>
-        public Rect? Clip { get; }
+        public IGeometryImpl Clip { get; }
 
         /// <inheritdoc/>
         public bool HitTest(Point p) => false;
@@ -46,18 +46,18 @@ namespace Avalonia.Rendering.SceneGraph
         /// The properties of the other draw operation are passed in as arguments to prevent
         /// allocation of a not-yet-constructed draw operation object.
         /// </remarks>
-        public bool Equals(Rect? clip) => Clip == clip;
+        public bool Equals(IGeometryImpl clip) => Clip == clip;
 
         /// <inheritdoc/>
         public void Render(IDrawingContextImpl context)
         {
-            if (Clip.HasValue)
+            if (Clip != null)
             {
-                context.PushClip(Clip.Value);
+                context.PushGeometryClip(Clip);
             }
             else
             {
-                context.PopClip();
+                context.PopGeometryClip();
             }
         }
     }

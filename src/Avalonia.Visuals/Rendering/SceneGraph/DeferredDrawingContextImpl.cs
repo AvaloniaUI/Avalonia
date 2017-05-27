@@ -211,7 +211,16 @@ namespace Avalonia.Rendering.SceneGraph
         /// <inheritdoc/>
         public void PopGeometryClip()
         {
-            // TODO: Implement
+            var next = NextDrawAs<GeometryClipNode>();
+
+            if (next == null || !next.Equals(null))
+            {
+                Add(new GeometryClipNode());
+            }
+            else
+            {
+                ++_drawOperationindex;
+            }
         }
 
         /// <inheritdoc/>
@@ -232,7 +241,16 @@ namespace Avalonia.Rendering.SceneGraph
         /// <inheritdoc/>
         public void PopOpacityMask()
         {
-            // TODO: Implement
+            var next = NextDrawAs<OpacityMaskNode>();
+
+            if (next == null || !next.Equals(null, null))
+            {
+                Add(new OpacityMaskNode());
+            }
+            else
+            {
+                ++_drawOperationindex;
+            }
         }
 
         /// <inheritdoc/>
@@ -253,7 +271,16 @@ namespace Avalonia.Rendering.SceneGraph
         /// <inheritdoc/>
         public void PushGeometryClip(IGeometryImpl clip)
         {
-            // TODO: Implement
+            var next = NextDrawAs<GeometryClipNode>();
+
+            if (next == null || !next.Equals(clip))
+            {
+                Add(new GeometryClipNode(clip));
+            }
+            else
+            {
+                ++_drawOperationindex;
+            }
         }
 
         /// <inheritdoc/>
@@ -274,7 +301,16 @@ namespace Avalonia.Rendering.SceneGraph
         /// <inheritdoc/>
         public void PushOpacityMask(IBrush mask, Rect bounds)
         {
-            // TODO: Implement
+            var next = NextDrawAs<OpacityMaskNode>();
+
+            if (next == null || !next.Equals(mask, bounds))
+            {
+                Add(new OpacityMaskNode(mask, bounds, CreateChildScene(mask)));
+            }
+            else
+            {
+                ++_drawOperationindex;
+            }
         }
 
         public struct UpdateState : IDisposable
