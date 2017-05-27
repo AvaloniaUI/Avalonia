@@ -4,6 +4,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
+using System.Collections.Generic;
 using Avalonia.Platform;
 using Avalonia.UnitTests;
 using Moq;
@@ -120,13 +121,12 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
+                ClearOpenWindows();
                 var window = new Window();
 
                 window.Show();
 
                 Assert.Equal(new[] { window }, Window.OpenWindows);
-
-                window.Close();
             }
         }
 
@@ -135,6 +135,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
+                ClearOpenWindows();
                 var window = new Window();
 
                 window.Show();
@@ -152,6 +153,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
+                ClearOpenWindows();
                 var window = new Window();
 
                 window.Show();
@@ -173,6 +175,7 @@ namespace Avalonia.Controls.UnitTests
 
             using (UnitTestApplication.Start(services))
             {
+                ClearOpenWindows();
                 var window = new Window();
 
                 window.Show();
@@ -180,6 +183,13 @@ namespace Avalonia.Controls.UnitTests
 
                 Assert.Empty(Window.OpenWindows);
             }
+        }
+
+        private void ClearOpenWindows()
+        {
+            // HACK: We really need a decent way to have "statics" that can be scoped to
+            // AvaloniaLocator scopes.
+            ((IList<Window>)Window.OpenWindows).Clear();
         }
     }
 }

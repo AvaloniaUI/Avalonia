@@ -47,12 +47,12 @@ namespace Avalonia.Controls
     /// </summary>
     public class Window : WindowBase, IStyleable, IFocusScope, ILayoutRoot, INameScope
     {
-        private static IList<Window> s_windows = new List<Window>();
+        private static List<Window> s_windows = new List<Window>();
 
         /// <summary>
         /// Retrieves an enumeration of all Windows in the currently running application.
         /// </summary>
-        public static IList<Window> OpenWindows => s_windows;
+        public static IReadOnlyList<Window> OpenWindows => s_windows;
 
         /// <summary>
         /// Defines the <see cref="SizeToContent"/> property.
