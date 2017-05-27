@@ -35,14 +35,14 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                 {
                     context.FillRectangle(
                         Brushes.Red,
-                        control.Bounds,
+                        new Rect(control.Bounds.Size),
                         4);
 
-                    using (context.PushClip(control.Bounds.Deflate(20)))
+                    using (context.PushClip(new Rect(control.Bounds.Size).Deflate(20)))
                     {
                         context.FillRectangle(
                             Brushes.Blue,
-                            control.Bounds,
+                            new Rect(control.Bounds.Size),
                             4);
                     }
                 }),
@@ -64,14 +64,14 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                 {
                     context.FillRectangle(
                         Brushes.Red,
-                        control.Bounds,
+                        new Rect(control.Bounds.Size),
                         4);
 
                     using (context.PushOpacity(0.5))
                     {
                         context.FillRectangle(
                             Brushes.Blue,
-                            control.Bounds.Deflate(20),
+                            new Rect(control.Bounds.Size).Deflate(20),
                             4);
                     }
                 }),

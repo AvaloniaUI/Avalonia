@@ -196,7 +196,16 @@ namespace Avalonia.Rendering.SceneGraph
         /// <inheritdoc/>
         public void PopClip()
         {
-            // TODO: Implement
+            var next = NextDrawAs<ClipNode>();
+
+            if (next == null || !next.Equals(null))
+            {
+                Add(new ClipNode());
+            }
+            else
+            {
+                ++_drawOperationindex;
+            }
         }
 
         /// <inheritdoc/>
@@ -229,7 +238,16 @@ namespace Avalonia.Rendering.SceneGraph
         /// <inheritdoc/>
         public void PushClip(Rect clip)
         {
-            // TODO: Implement
+            var next = NextDrawAs<ClipNode>();
+
+            if (next == null || !next.Equals(clip))
+            {
+                Add(new ClipNode(clip));
+            }
+            else
+            {
+                ++_drawOperationindex;
+            }
         }
 
         /// <inheritdoc/>
