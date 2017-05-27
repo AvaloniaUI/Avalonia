@@ -208,7 +208,16 @@ namespace Avalonia.Rendering.SceneGraph
         /// <inheritdoc/>
         public void PopOpacity()
         {
-            // TODO: Implement
+            var next = NextDrawAs<OpacityNode>();
+
+            if (next == null || !next.Equals(null))
+            {
+                Add(new OpacityNode());
+            }
+            else
+            {
+                ++_drawOperationindex;
+            }
         }
 
         /// <inheritdoc/>
@@ -232,7 +241,16 @@ namespace Avalonia.Rendering.SceneGraph
         /// <inheritdoc/>
         public void PushOpacity(double opacity)
         {
-            // TODO: Implement
+            var next = NextDrawAs<OpacityNode>();
+
+            if (next == null || !next.Equals(opacity))
+            {
+                Add(new OpacityNode(opacity));
+            }
+            else
+            {
+                ++_drawOperationindex;
+            }
         }
 
         /// <inheritdoc/>
