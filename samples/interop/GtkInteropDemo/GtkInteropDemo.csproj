@@ -149,6 +149,7 @@
       <Name>ControlCatalog</Name>
     </ProjectReference>
   </ItemGroup>
+  <Import Project="..\..\..\build\Rx.props" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildThisFileDirectory)..\..\..\src\Shared\nuget.workaround.targets" />
 </Project>
