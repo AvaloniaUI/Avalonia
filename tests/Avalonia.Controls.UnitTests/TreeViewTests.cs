@@ -80,7 +80,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Root_TreeContainerFromItem_Should_Return_Descendent_Item()
+        public void Root_TreeContainerFromItem_Should_Return_Descendant_Item()
         {
             var tree = CreateTestTreeData();
             var target = new TreeView

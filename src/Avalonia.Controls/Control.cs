@@ -469,7 +469,7 @@ namespace Avalonia.Controls
             {
                 if (!IsInitialized)
                 {
-                    foreach (var i in this.GetSelfAndVisualDescendents())
+                    foreach (var i in this.GetSelfAndVisualDescendants())
                     {
                         var c = i as IControl;
 
