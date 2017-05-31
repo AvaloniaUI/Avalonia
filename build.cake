@@ -334,7 +334,6 @@ Task("Publish-NuGet")
     .WithCriteria(() => !parameters.IsLocalBuild)
     .WithCriteria(() => !parameters.IsPullRequest)
     .WithCriteria(() => parameters.IsMainRepo)
-    .WithCriteria(() => parameters.IsMasterBranch)
     .WithCriteria(() => parameters.IsNuGetRelease)
     .Does(() =>
 {
