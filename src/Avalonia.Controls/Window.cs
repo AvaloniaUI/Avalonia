@@ -47,12 +47,12 @@ namespace Avalonia.Controls
     /// </summary>
     public class Window : WindowBase, IStyleable, IFocusScope, ILayoutRoot, INameScope
     {
-        private static IList<Window> s_windows = new List<Window>();
+        private static List<Window> s_windows = new List<Window>();
 
         /// <summary>
         /// Retrieves an enumeration of all Windows in the currently running application.
         /// </summary>
-        public static IList<Window> OpenWindows => s_windows;
+        public static IReadOnlyList<Window> OpenWindows => s_windows;
 
         /// <summary>
         /// Defines the <see cref="SizeToContent"/> property.
@@ -238,6 +238,11 @@ namespace Avalonia.Controls
         /// </summary>
         public override void Show()
         {
+            if (IsVisible)
+            {
+                return;
+            }
+
             s_windows.Add(this);
 
             EnsureInitialized();
@@ -272,6 +277,11 @@ namespace Avalonia.Controls
         /// </returns>
         public Task<TResult> ShowDialog<TResult>()
         {
+            if (IsVisible)
+            {
+                throw new InvalidOperationException("The window is already being shown.");
+            }
+
             s_windows.Add(this);
 
             EnsureInitialized();
@@ -360,6 +370,7 @@ namespace Avalonia.Controls
         protected override void HandleClosed()
         {
             IsVisible = false;
+            s_windows.Remove(this);
             base.HandleClosed();
         }
 

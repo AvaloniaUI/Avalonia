@@ -147,33 +147,33 @@ namespace Avalonia.VisualTree
         }
 
         /// <summary>
-        /// Enumerates the descendents of an <see cref="IVisual"/> in the visual tree.
+        /// Enumerates the descendants of an <see cref="IVisual"/> in the visual tree.
         /// </summary>
         /// <param name="visual">The visual.</param>
         /// <returns>The visual's ancestors.</returns>
-        public static IEnumerable<IVisual> GetVisualDescendents(this IVisual visual)
+        public static IEnumerable<IVisual> GetVisualDescendants(this IVisual visual)
         {
             foreach (IVisual child in visual.VisualChildren)
             {
                 yield return child;
 
-                foreach (IVisual descendent in child.GetVisualDescendents())
+                foreach (IVisual descendant in child.GetVisualDescendants())
                 {
-                    yield return descendent;
+                    yield return descendant;
                 }
             }
         }
 
         /// <summary>
-        /// Enumerates an <see cref="IVisual"/> and its descendents in the visual tree.
+        /// Enumerates an <see cref="IVisual"/> and its descendants in the visual tree.
         /// </summary>
         /// <param name="visual">The visual.</param>
         /// <returns>The visual and its ancestors.</returns>
-        public static IEnumerable<IVisual> GetSelfAndVisualDescendents(this IVisual visual)
+        public static IEnumerable<IVisual> GetSelfAndVisualDescendants(this IVisual visual)
         {
             yield return visual;
 
-            foreach (var ancestor in visual.GetVisualDescendents())
+            foreach (var ancestor in visual.GetVisualDescendants())
             {
                 yield return ancestor;
             }
@@ -220,7 +220,7 @@ namespace Avalonia.VisualTree
         /// Tests whether an <see cref="IVisual"/> is an ancestor of another visual.
         /// </summary>
         /// <param name="visual">The visual.</param>
-        /// <param name="target">The potential descendent.</param>
+        /// <param name="target">The potential descendant.</param>
         /// <returns>
         /// True if <paramref name="visual"/> is an ancestor of <paramref name="target"/>;
         /// otherwise false.

@@ -93,9 +93,9 @@ namespace Avalonia.Markup.Xaml.Parsers
 
         public static readonly Parser<ChildSyntax> Child = Parse.Char('>').Token().Return(new ChildSyntax());
 
-        public static readonly Parser<DescendentSyntax> Descendent =
+        public static readonly Parser<DescendantSyntax> Descendant =
             from child in Parse.WhiteSpace.Many()
-            select new DescendentSyntax();
+            select new DescendantSyntax();
 
         public static readonly Parser<TemplateSyntax> Template =
             from template in Parse.String("/template/").Token()
@@ -115,7 +115,7 @@ namespace Avalonia.Markup.Xaml.Parsers
             .Or<ISyntax>(Property)
             .Or<ISyntax>(Child)
             .Or<ISyntax>(Template)
-            .Or<ISyntax>(Descendent);
+            .Or<ISyntax>(Descendant);
 
         public static readonly Parser<IEnumerable<ISyntax>> Selector = SingleSelector.Many().End();
         
@@ -191,11 +191,11 @@ namespace Avalonia.Markup.Xaml.Parsers
             }
         }
 
-        public class DescendentSyntax : ISyntax
+        public class DescendantSyntax : ISyntax
         {
             public override bool Equals(object obj)
             {
-                return obj is DescendentSyntax;
+                return obj is DescendantSyntax;
             }
         }
 

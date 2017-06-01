@@ -157,7 +157,7 @@ namespace Avalonia.Xaml.Base.UnitTest.Parsers
         }
 
         [Fact]
-        public void OfType_Descendent_Class()
+        public void OfType_Descendant_Class()
         {
             var result = SelectorGrammar.Selector.Parse("Button .foo").ToList();
 
@@ -165,7 +165,7 @@ namespace Avalonia.Xaml.Base.UnitTest.Parsers
                 new SelectorGrammar.ISyntax[]
                 {
                     new SelectorGrammar.OfTypeSyntax { TypeName = "Button" },
-                    new SelectorGrammar.DescendentSyntax { },
+                    new SelectorGrammar.DescendantSyntax { },
                     new SelectorGrammar.ClassSyntax { Class = "foo" },
                 },
                 result);

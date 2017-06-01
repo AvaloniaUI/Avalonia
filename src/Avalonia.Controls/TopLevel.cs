@@ -256,7 +256,7 @@ namespace Avalonia.Controls
         /// <param name="scaling">The window scaling.</param>
         protected virtual void HandleScalingChanged(double scaling)
         {
-            foreach (ILayoutable control in this.GetSelfAndVisualDescendents())
+            foreach (ILayoutable control in this.GetSelfAndVisualDescendants())
             {
                 control.InvalidateMeasure();
             }
