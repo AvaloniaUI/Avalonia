@@ -222,7 +222,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 popup.Open();
                 var popupRoot = popup.PopupRoot;
 
-                var children = popupRoot.GetVisualDescendents().ToList();
+                var children = popupRoot.GetVisualDescendants().ToList();
                 var types = children.Select(x => x.GetType().Name).ToList();
 
                 Assert.Equal(

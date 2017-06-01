@@ -391,7 +391,7 @@ namespace Avalonia.Interactivity.UnitTests
 
             if (handler != null)
             {
-                foreach (var i in tree.GetSelfAndVisualDescendents().Cast<Interactive>())
+                foreach (var i in tree.GetSelfAndVisualDescendants().Cast<Interactive>())
                 {
                     i.AddHandler(ev, handler, handlerRoutes, handledEventsToo);
                 }

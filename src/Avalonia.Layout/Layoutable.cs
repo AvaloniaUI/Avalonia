@@ -612,7 +612,7 @@ namespace Avalonia.Layout
         /// <inheritdoc/>
         protected override sealed void OnVisualParentChanged(IVisual oldParent, IVisual newParent)
         {
-            foreach (ILayoutable i in this.GetSelfAndVisualDescendents())
+            foreach (ILayoutable i in this.GetSelfAndVisualDescendants())
             {
                 i.InvalidateMeasure();
             }

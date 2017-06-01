@@ -245,7 +245,7 @@ namespace Avalonia.Controls.UnitTests
 
             // The items were created before the template was applied, so now we need to go back
             // and re-arrange everything.
-            foreach (IControl i in target.GetSelfAndVisualDescendents())
+            foreach (IControl i in target.GetSelfAndVisualDescendants())
             {
                 i.InvalidateMeasure();
             }
