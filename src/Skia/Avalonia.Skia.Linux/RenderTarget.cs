@@ -1,10 +1,21 @@
 using System;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
+using System.Text;
 using Avalonia.Media;
 using Avalonia.Platform;
 using SkiaSharp;
 using Gdk;
 using Gtk;
-#if WIN32
+using System.IO;
+//using Cairo;
+
+// TODO: I'm not sure the best way to bring in the platform specific rendering
+//
+#if __IOS__
+using CoreGraphics;
+using UIKit;
+#elif WIN32
 using Avalonia.Win32.Interop;
 #endif
 
@@ -26,27 +37,47 @@ namespace Avalonia.Skia
             // Nothing to do here.
         }
     }
+		
 
     internal class WindowRenderTarget : RenderTarget
     {
-        //private readonly IPlatformHandle _hwnd;
 		private readonly Gtk.Window _hwnd;
         SKBitmap _bitmap;
+
         int Width { get; set; }
         int Height { get; set; }
 
-        public WindowRenderTarget(IPlatformHandle hwnd)
+		public WindowRenderTarget(Gtk.Window hwnd)
         {
-			_hwnd = (Gtk.Window) hwnd;
+			_hwnd = hwnd;
             FixSize();
         }
+
+#if __IOS__
+        private CGRect GetApplicationFrame()
+        {
+            // if we are excluding Status Bar then we use ApplicationFrame
+            // otherwise we use full screen bounds. Note that this must also match
+            // the Skia/AvaloniaView!!!
+            //
+            bool excludeStatusArea = false; // TODO: make this configurable later
+            if (excludeStatusArea)
+            {
+                return UIScreen.MainScreen.ApplicationFrame;
+            }
+            else
+            {
+                return UIScreen.MainScreen.Bounds;
+            }
+        }
+#endif
 
         private void FixSize()
         {
             int width, height;
-            GetPlatformWindowSize(out width, out height);
-            /*if (Width == width && Height == height)
-                return;*/
+            GetPlatformWindowSize(_hwnd, out width, out height);
+            if (Width == width && Height == height)
+                return;
 
             Width = width;
             Height = height;
@@ -67,47 +98,30 @@ namespace Avalonia.Skia
             var pixels = _bitmap.GetPixels(out length);
 
             // Wrap the bitmap in a Surface and keep it cached
-            //Surface = SKSurface.Create(_bitmap.Info, pixels, _bitmap.RowBytes);
 			Surface = SKSurface.Create (_bitmap.Info.Width, _bitmap.Info.Height, SKColorType.Bgra8888, SKAlphaType.Premul, pixels, _bitmap.RowBytes);
+
         }
 
-        private void GetPlatformWindowSize(out int w, out int h)
+		private void GetPlatformWindowSize(Gtk.Window hwnd, out int w, out int h)
         {
-#if WIN32
-            UnmanagedMethods.RECT rc;
-            UnmanagedMethods.GetClientRect(_hwnd.Handle, out rc);
+			hwnd.GetSize (out w, out h);
+#if __IOS__
+            var bounds = GetApplicationFrame();
+            w = (int)bounds.Width;
+            h = (int)bounds.Height;
+
+#elif WIN32
+            /*UnmanagedMethods.RECT rc;
+            UnmanagedMethods.GetClientRect(_hwnd, out rc);
             w = rc.right - rc.left;
-            h = rc.bottom - rc.top;
-#else
+            h = rc.bottom - rc.top;*/
+
 			w = 800;
 			h = 600;
+#else
+			//throw new NotImplementedException();
 #endif
         }
-
-#if WIN32
-        private Size GetWindowDpiWin32()
-        {
-            if (UnmanagedMethods.ShCoreAvailable)
-            {
-                uint dpix, dpiy;
-
-                var monitor = UnmanagedMethods.MonitorFromWindow(
-                    _hwnd.Handle,
-                    UnmanagedMethods.MONITOR.MONITOR_DEFAULTTONEAREST);
-
-                if (UnmanagedMethods.GetDpiForMonitor(
-                        monitor,
-                        UnmanagedMethods.MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI,
-                        out dpix,
-                        out dpiy) == 0)
-                {
-                    return new Size(dpix, dpiy);
-                }
-            }
-
-            return new Size(96, 96);
-        }
-#endif
 
         public override DrawingContext CreateDrawingContext()
         {
@@ -116,31 +130,18 @@ namespace Avalonia.Skia
             var canvas = Surface.Canvas;
             canvas.RestoreToCount(0);
             canvas.Save();
+
+#if __IOS__
+            var screenScale = UIScreen.MainScreen.Scale;
+            canvas.Scale((float)screenScale, (float)screenScale);
+#endif
+
             canvas.Clear(SKColors.Red);
             canvas.ResetMatrix();
 
-            double scale = 1.0;
-
-            var runtimeService = AvaloniaLocator.Current.GetService<IRuntimePlatform>();
-
-            if (runtimeService != null)
-            {
-                switch (runtimeService.GetRuntimeInfo().OperatingSystem)
-                {
-                    case OperatingSystemType.WinNT:
-					#if WIN32
-                        var dpi = GetWindowDpiWin32();
-                        scale = dpi.Width / 96.0;
-					#endif
-                        break;
-                }
-            }
-
-            var result =
+			return
                 new DrawingContext(
-                    new WindowDrawingContextImpl(this), Matrix.CreateScale(scale, scale));
-            
-            return result;
+                    new WindowDrawingContextImpl(this));
         }
 
         public void Present()
@@ -149,8 +150,24 @@ namespace Avalonia.Skia
             IntPtr length;
             var pixels = _bitmap.GetPixels(out length);
 
-#if WIN32
-            UnmanagedMethods.BITMAPINFO bmi = new UnmanagedMethods.BITMAPINFO();
+#if __IOS__
+            const int bitmapInfo = ((int)CGBitmapFlags.ByteOrder32Big) | ((int)CGImageAlphaInfo.PremultipliedLast);
+            var bounds = GetApplicationFrame();
+            var statusBarOffset = UIScreen.MainScreen.Bounds.Height - bounds.Height;
+
+            using (var colorSpace = CGColorSpace.CreateDeviceRGB())
+            using (var bContext = new CGBitmapContext(pixels, _bitmap.Width, _bitmap.Height, 8, _bitmap.Width * 4, colorSpace, (CGImageAlphaInfo)bitmapInfo))
+            using (var image = bContext.ToImage())
+            using (var context = UIGraphics.GetCurrentContext())
+            {
+                // flip the image for CGContext.DrawImage
+                context.TranslateCTM(0, bounds.Height + statusBarOffset);
+                context.ScaleCTM(1, -1);
+                context.DrawImage(bounds, image);
+            }
+
+#elif WIN32
+            /*UnmanagedMethods.BITMAPINFO bmi = new UnmanagedMethods.BITMAPINFO();
             bmi.biSize = UnmanagedMethods.SizeOf_BITMAPINFOHEADER;
             bmi.biWidth = _bitmap.Width;
             bmi.biHeight = -_bitmap.Height; // top-down image
@@ -159,7 +176,7 @@ namespace Avalonia.Skia
             bmi.biCompression = (uint)UnmanagedMethods.BitmapCompressionMode.BI_RGB;
             bmi.biSizeImage = 0;
 
-            IntPtr hdc = UnmanagedMethods.GetDC(_hwnd.Handle);
+            IntPtr hdc = UnmanagedMethods.GetDC(_hwnd);
 
             int ret = UnmanagedMethods.SetDIBitsToDevice(hdc,
                 0, 0,
@@ -170,21 +187,28 @@ namespace Avalonia.Skia
                 ref bmi,
                 (uint)UnmanagedMethods.DIBColorTable.DIB_RGB_COLORS);
 
-            UnmanagedMethods.ReleaseDC(_hwnd.Handle, hdc);
-#else
-            //throw new NotImplementedException();
-#endif
+            UnmanagedMethods.ReleaseDC(_hwnd, hdc);*/
 
+#endif
 			var gdk = _hwnd.GdkWindow;
 
 			Gdk.GC gc = new Gdk.GC ((Drawable)gdk);
 
-			// Is the _bitmap.Bytes[] a reference or will this be a copy??? its a byte[] array
+												// Is the _bitmap.Bytes[] a reference or will this be a copy??? its a byte[] array
 			global::Gdk.Pixbuf pb = new Pixbuf (_bitmap.Bytes, Gdk.Colorspace.Rgb, true, 8, _bitmap.Width, _bitmap.Height, _bitmap.RowBytes);
 			gdk.DrawPixbuf (gc, pb, 0, 0, 0, 0, _bitmap.Width, _bitmap.Height, RgbDither.None, 0, 0);
 
-			_bitmap.UnlockPixels();
-
+            _bitmap.UnlockPixels();
         }
+
     }
 }
+
+
+
+
+
+
+
+
+
