@@ -39,6 +39,7 @@ namespace Avalonia.Gtk3
                 .Bind<IPlatformThreadingInterface>().ToConstant(Instance)
                 .Bind<ISystemDialogImpl>().ToSingleton<SystemDialog>()
                 .Bind<IRenderLoop>().ToConstant(new DefaultRenderLoop(60))
+                .Bind<IRendererFactory>().ToConstant(ImmediateRenderer.Factory)
                 .Bind<IPlatformIconLoader>().ToConstant(new PlatformIconLoader());
 
         }

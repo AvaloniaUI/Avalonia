@@ -249,7 +249,7 @@ namespace Avalonia
                 value = (notification.HasValue) ? notification.Value : null;
             }
 
-            if (TypeUtilities.TryCast(_valueType, value, out castValue))
+            if (TypeUtilities.TryConvertImplicit(_valueType, value, out castValue))
             {
                 var old = _value;
 
@@ -285,7 +285,7 @@ namespace Avalonia
                     Property.Name, 
                     _valueType, 
                     value,
-                    value.GetType());
+                    value?.GetType());
             }
         }
     }

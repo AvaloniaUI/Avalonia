@@ -9,6 +9,7 @@ using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.VisualTree;
+using JetBrains.Annotations;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -49,6 +50,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Gets the platform-specific window implementation.
         /// </summary>
+        [CanBeNull]
         public new IPopupImpl PlatformImpl => (IPopupImpl)base.PlatformImpl;
 
         /// <summary>
@@ -65,10 +67,7 @@ namespace Avalonia.Controls.Primitives
         IVisual IHostedVisualTreeRoot.Host => Parent;
 
         /// <inheritdoc/>
-        public void Dispose()
-        {
-            this.PlatformImpl.Dispose();
-        }
+        public void Dispose() => PlatformImpl?.Dispose();
 
         /// <inheritdoc/>
         protected override void OnTemplateApplied(TemplateAppliedEventArgs e)

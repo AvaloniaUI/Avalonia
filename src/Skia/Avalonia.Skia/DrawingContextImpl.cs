@@ -285,7 +285,7 @@ namespace Avalonia.Skia
                 paint.StrokeCap = SKStrokeCap.Butt;
 
             if (pen.LineJoin == PenLineJoin.Miter)
-                paint.StrokeJoin = SKStrokeJoin.Mitter;
+                paint.StrokeJoin = SKStrokeJoin.Miter;
             else if (pen.LineJoin == PenLineJoin.Round)
                 paint.StrokeJoin = SKStrokeJoin.Round;
             else
@@ -397,7 +397,7 @@ namespace Avalonia.Skia
 
         public void PopOpacityMask()
         {
-            Canvas.SaveLayer(new SKPaint { XferMode = SKXferMode.DstIn });
+            Canvas.SaveLayer(new SKPaint { BlendMode = SKBlendMode.DstIn });
             using (var paintWrapper = maskStack.Pop())
             {
                 Canvas.DrawPaint(paintWrapper.Paint);

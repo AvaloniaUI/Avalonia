@@ -720,7 +720,7 @@ namespace Avalonia.Controls
                         if (pos < text.Length)
                         {
                             --pos;
-                            if (pos > 0 && Text[pos - 1] == '\r' && Text[pos] == '\n')
+                            if (pos > 0 && text[pos - 1] == '\r' && text[pos] == '\n')
                             {
                                 --pos;
                             }
@@ -771,6 +771,9 @@ namespace Avalonia.Controls
 
         private string GetSelection()
         {
+            var text = Text;
+            if (string.IsNullOrEmpty(text))
+                return "";
             var selectionStart = SelectionStart;
             var selectionEnd = SelectionEnd;
             var start = Math.Min(selectionStart, selectionEnd);
@@ -779,7 +782,7 @@ namespace Avalonia.Controls
             {
                 return "";
             }
-            return Text.Substring(start, end - start);
+            return text.Substring(start, end - start);
         }
 
         private int GetLine(int caretIndex, IList<FormattedTextLine> lines)

@@ -291,7 +291,7 @@ namespace Avalonia.Controls
         {
             var button = e.Sender as Button;
             var isDefault = (bool)e.NewValue;
-            var inputRoot = button.VisualRoot as IInputElement;
+            var inputRoot = button?.VisualRoot as IInputElement;
 
             if (inputRoot != null)
             {

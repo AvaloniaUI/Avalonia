@@ -9,6 +9,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Platform;
+using JetBrains.Annotations;
 
 namespace Avalonia.Controls
 {
@@ -43,10 +44,10 @@ namespace Avalonia.Controls
 
         public WindowBase(IWindowBaseImpl impl, IAvaloniaDependencyResolver dependencyResolver) : base(impl, dependencyResolver)
         {
-            PlatformImpl.Activated = HandleActivated;
-            PlatformImpl.Deactivated = HandleDeactivated;
-            PlatformImpl.PositionChanged = HandlePositionChanged;
-            this.GetObservable(ClientSizeProperty).Skip(1).Subscribe(x => PlatformImpl.Resize(x));
+            impl.Activated = HandleActivated;
+            impl.Deactivated = HandleDeactivated;
+            impl.PositionChanged = HandlePositionChanged;
+            this.GetObservable(ClientSizeProperty).Skip(1).Subscribe(x => PlatformImpl?.Resize(x));
         }
 
         /// <summary>
@@ -64,6 +65,7 @@ namespace Avalonia.Controls
         /// </summary>
         public event EventHandler<PointEventArgs> PositionChanged;
 
+        [CanBeNull]
         public new IWindowBaseImpl PlatformImpl => (IWindowBaseImpl) base.PlatformImpl;
 
         /// <summary>
@@ -80,8 +82,12 @@ namespace Avalonia.Controls
         /// </summary>
         public Point Position
         {
-            get { return PlatformImpl.Position; }
-            set { PlatformImpl.Position = value; }
+            get { return PlatformImpl?.Position ?? default(Point); }
+            set
+            {
+                if (PlatformImpl is IWindowBaseImpl impl)
+                    impl.Position = value;
+            }
         }
 
         /// <summary>
@@ -98,7 +104,7 @@ namespace Avalonia.Controls
         /// </summary>
         public void Activate()
         {
-            PlatformImpl.Activate();
+            PlatformImpl?.Activate();
         }
 
         /// <summary>
@@ -110,7 +116,7 @@ namespace Avalonia.Controls
 
             try
             {
-                PlatformImpl.Hide();
+                PlatformImpl?.Hide();
                 IsVisible = false;
             }
             finally
@@ -131,7 +137,7 @@ namespace Avalonia.Controls
                 EnsureInitialized();
                 IsVisible = true;
                 LayoutManager.Instance.ExecuteInitialLayoutPass(this);
-                PlatformImpl.Show();
+                PlatformImpl?.Show();
             }
             finally
             {
@@ -163,10 +169,10 @@ namespace Avalonia.Controls
         {
             using (BeginAutoSizing())
             {
-                PlatformImpl.Resize(finalSize);
+                PlatformImpl?.Resize(finalSize);
             }
 
-            return base.ArrangeOverride(PlatformImpl.ClientSize);
+            return base.ArrangeOverride(PlatformImpl?.ClientSize ?? default(Size));
         }
 
         /// <summary>
@@ -174,7 +180,7 @@ namespace Avalonia.Controls
         /// </summary>
         protected void EnsureInitialized()
         {
-            if (!this.IsInitialized)
+            if (!IsInitialized)
             {
                 var init = (ISupportInitialize)this;
                 init.BeginInit();
@@ -268,12 +274,12 @@ namespace Avalonia.Controls
         /// <summary>
         /// Starts moving a window with left button being held. Should be called from left mouse button press event handler
         /// </summary>
-        public void BeginMoveDrag() => PlatformImpl.BeginMoveDrag();
+        public void BeginMoveDrag() => PlatformImpl?.BeginMoveDrag();
 
         /// <summary>
         /// Starts resizing a window. This function is used if an application has window resizing controls. 
         /// Should be called from left mouse button press event handler
         /// </summary>
-        public void BeginResizeDrag(WindowEdge edge) => PlatformImpl.BeginResizeDrag(edge);
+        public void BeginResizeDrag(WindowEdge edge) => PlatformImpl?.BeginResizeDrag(edge);
     }
 }
