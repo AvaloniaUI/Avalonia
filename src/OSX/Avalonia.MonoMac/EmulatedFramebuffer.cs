@@ -8,15 +8,15 @@ namespace Avalonia.MonoMac
 {
     class EmulatedFramebuffer : ILockedFramebuffer
     {
+        private readonly CGSize _logicalSize;
         public EmulatedFramebuffer(NSView view)
         {
-            //TODO: Check if this is correct
-            var factor = view.Window.UserSpaceScaleFactor;
-            var frame = view.Frame;
-            Width = (int) (frame.Width * factor);
-            Height = (int) (frame.Height * factor);
+            _logicalSize = view.Frame.Size;
+            var pixelSize = view.ConvertSizeToBacking(_logicalSize);
+            Width = (int)pixelSize.Width;
+            Height = (int)pixelSize.Height;
             RowBytes = Width * 4;
-            Dpi = new Size(96, 96) * factor;
+            Dpi = new Size(96 * pixelSize.Width / _logicalSize.Width, 96 * pixelSize.Height / _logicalSize.Height);
             Format = PixelFormat.Rgba8888;
             Address = Marshal.AllocHGlobal(Height * RowBytes);
         }
@@ -35,8 +35,8 @@ namespace Avalonia.MonoMac
             using (var context = nscontext.GraphicsPort)
             {
                 context.SetFillColor(255, 255, 255, 255);
-                context.FillRect(new CGRect(0, 0, Width, Height));
-                context.DrawImage(new CGRect(0, 0, Width, Height), image);
+                context.FillRect(new CGRect(default(CGPoint), _logicalSize));
+                context.DrawImage(new CGRect(default(CGPoint), _logicalSize), image);
             }
             Marshal.FreeHGlobal(Address);
             Address = IntPtr.Zero;
