@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using Avalonia.Controls;
-using Avalonia.Input;
-using Avalonia.Input.Raw;
 using Avalonia.Platform;
 using MonoMac.AppKit;
 using MonoMac.ObjCRuntime;
@@ -13,14 +10,17 @@ namespace Avalonia.MonoMac
     {
         public CustomWindow Window { get; private set; }
 
-		public WindowBaseImpl()
-		{
-            Window = new CustomWindow(this);
-            Window.StyleMask = NSWindowStyle.Titled;
-            Window.BackingType = NSBackingStore.Buffered;
-            Window.ContentView = View;
-            Window.Delegate = CreateWindowDelegate();
-		}
+        public WindowBaseImpl()
+        {
+            Window = new CustomWindow(this)
+            {
+                StyleMask = NSWindowStyle.Titled,
+                BackingType = NSBackingStore.Buffered,
+                ContentView = View,
+                // ReSharper disable once VirtualMemberCallInConstructor
+                Delegate = CreateWindowDelegate()
+            };
+        }
 
         public class CustomWindow : NSWindow
         {
@@ -71,49 +71,28 @@ namespace Avalonia.MonoMac
 
         public Point Position
         {
-            get
-            {
-                var pos = Window.Frame.ToAvaloniaRect().BottomLeft.ConvertPointY();
-                //Console.WriteLine($"GET pos {pos}");
-                return pos;
-            }
-            set
-            {
-                //Console.WriteLine($"SET pos {value}");
-                Window.CascadeTopLeftFromPoint(value.ToMonoMacPoint().ConvertPointY());
-            }
+            get => Window.Frame.ToAvaloniaRect().BottomLeft.ConvertPointY();
+            set => Window.CascadeTopLeftFromPoint(value.ToMonoMacPoint().ConvertPointY());
         }
 
 
-        protected virtual NSWindowStyle GetStyle()
-        {
-            return NSWindowStyle.Borderless;
-        }
+        protected virtual NSWindowStyle GetStyle() => NSWindowStyle.Borderless;
 
-        protected void UpdateStyle()
-        {
-            Window.StyleMask = GetStyle();
-        }
+        protected void UpdateStyle() => Window.StyleMask = GetStyle();
 
 
         IPlatformHandle IWindowBaseImpl.Handle => new PlatformHandle(Window.Handle, "NSWindow");
         public Size MaxClientSize => NSScreen.Screens[0].Frame.ToAvaloniaRect().Size;
-		public Action<Point> PositionChanged { get; set; }
-		public Action Deactivated { get; set; }
-		public Action Activated { get; set; }
+        public Action<Point> PositionChanged { get; set; }
+        public Action Deactivated { get; set; }
+        public Action Activated { get; set; }
 
-		public override Size ClientSize => Window.ContentRectFor(Window.Frame).Size.ToAvaloniaSize();
+        public override Size ClientSize => Window.ContentRectFor(Window.Frame).Size.ToAvaloniaSize();
 
 
-		public void Show()
-        {
-            Window.MakeKeyAndOrderFront(Window);
-        }
+        public void Show() => Window.MakeKeyAndOrderFront(Window);
 
-        public void Hide()
-        {
-            Window?.OrderOut(Window);
-        }
+        public void Hide() => Window?.OrderOut(Window);
 
 
         public void BeginMoveDrag()
@@ -130,10 +109,7 @@ namespace Avalonia.MonoMac
             //TODO: Intercept mouse events and implement resize drag manually
         }
 
-        public void Activate()
-        {
-            Window.MakeKeyWindow();
-        }
+        public void Activate() => Window.MakeKeyWindow();
 
         public void Resize(Size clientSize)
         {
@@ -162,7 +138,7 @@ namespace Avalonia.MonoMac
         {
             Window?.Close();
             Window?.Dispose();
-			base.Dispose();
+            base.Dispose();
         }
     }
 }

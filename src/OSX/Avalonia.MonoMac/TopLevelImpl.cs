@@ -15,7 +15,8 @@ namespace Avalonia.MonoMac
     abstract class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
     {
         public TopLevelView View { get; }
-        public TopLevelImpl()
+
+        protected TopLevelImpl()
         {
             View = new TopLevelView(this);
         }
@@ -29,12 +30,13 @@ namespace Avalonia.MonoMac
             private readonly IKeyboardDevice _keyboard;
             private NSTrackingArea _area;
             private NSCursor _cursor;
+
             public TopLevelView(TopLevelImpl tl)
             {
                 _tl = tl;
                 _mouse = AvaloniaLocator.Current.GetService<IMouseDevice>();
                 _keyboard = AvaloniaLocator.Current.GetService<IKeyboardDevice>();
-			}
+            }
 
             public override bool ConformsToProtocol(IntPtr protocol)
             {
@@ -60,7 +62,8 @@ namespace Avalonia.MonoMac
                     AddCursorRect(Frame, _cursor);
             }
 
-            static NSCursor ArrowCursor = NSCursor.ArrowCursor;
+            static readonly NSCursor ArrowCursor = NSCursor.ArrowCursor;
+
             public void SetCursor(NSCursor cursor)
             {
                 _cursor = cursor ?? ArrowCursor;
@@ -74,12 +77,12 @@ namespace Avalonia.MonoMac
                 if (_area != null)
                 {
                     RemoveTrackingArea(_area);
-                    _area.Dispose(); ;
+                    _area.Dispose();
                 }
                 _area = new NSTrackingArea(new CGRect(default(CGPoint), newSize),
-                                           NSTrackingAreaOptions.ActiveAlways |
-                                           NSTrackingAreaOptions.MouseMoved |
-                                           NSTrackingAreaOptions.EnabledDuringMouseDrag, this, null);
+                    NSTrackingAreaOptions.ActiveAlways |
+                    NSTrackingAreaOptions.MouseMoved |
+                    NSTrackingAreaOptions.EnabledDuringMouseDrag, this, null);
                 AddTrackingArea(_area);
                 UpdateCursor();
                 _tl?.Resized?.Invoke(_tl.ClientSize);
@@ -116,7 +119,7 @@ namespace Avalonia.MonoMac
                 return rv;
             }
 
-            uint GetTimeStamp(NSEvent ev) => (uint)(ev.Timestamp * 1000);
+            uint GetTimeStamp(NSEvent ev) => (uint) (ev.Timestamp * 1000);
 
             void MouseEvent(NSEvent ev, RawMouseEventType type)
             {
@@ -127,10 +130,12 @@ namespace Avalonia.MonoMac
                 if (type == RawMouseEventType.Wheel)
                 {
                     var delta = GetDelta(ev);
+                    // ReSharper disable CompareOfFloatsByEqualityOperator
                     if (delta.X == 0 && delta.Y == 0)
                         return;
+                    // ReSharper restore CompareOfFloatsByEqualityOperator
                     _tl.Input?.Invoke(new RawMouseWheelEventArgs(_mouse, ts, _tl.InputRoot, loc,
-                                                                 delta, mod));
+                        delta, mod));
                 }
                 else
                     _tl.Input?.Invoke(new RawMouseEventArgs(_mouse, ts, _tl.InputRoot, type, loc, mod));
@@ -224,7 +229,7 @@ namespace Avalonia.MonoMac
                 if (!code.HasValue)
                     return;
                 _tl.Input?.Invoke(new RawKeyEventArgs(_keyboard, GetTimeStamp(ev),
-                     type, code.Value, GetModifiers(ev.ModifierFlags)));
+                    type, code.Value, GetModifiers(ev.ModifierFlags)));
             }
 
             public override void KeyDown(NSEvent theEvent)
@@ -246,43 +251,36 @@ namespace Avalonia.MonoMac
 
             public override bool AcceptsFirstResponder() => true;
 
-            public bool HasMarkedText 
+            public bool HasMarkedText
             {
-                [Export("hasMarkedText")]
-                get { return false; } 
+                [Export("hasMarkedText")] get => false;
             }
 
-			public NSRange MarkedRange
-			{
-				[Export("markedRange")]
-				get { return new NSRange(NSRange.NotFound, 0); }
-			}
+            public NSRange MarkedRange
+            {
+                [Export("markedRange")] get => new NSRange(NSRange.NotFound, 0);
+            }
 
             public NSRange SelectedRange
-			{
-				[Export("selectedRange")]
-                get { return new NSRange(NSRange.NotFound, 0); }
-			}
+            {
+                [Export("selectedRange")] get => new NSRange(NSRange.NotFound, 0);
+            }
 
             [Export("setMarkedText:selectedRange:replacementRange:")]
             public void SetMarkedText(NSString str, NSRange a1, NSRange a2)
             {
-                
+
             }
 
             [Export("unmarkText")]
             public void UnmarkText()
             {
-                
+
             }
 
             public NSArray ValidAttributesForMarkedText
             {
-                [Export("validAttributesForMarkedText")]
-                get
-                {
-                    return new NSArray();
-                }
+                [Export("validAttributesForMarkedText")] get => new NSArray();
             }
 
             [Export("attributedSubstringForProposedRange:actualRange:")]
@@ -310,14 +308,14 @@ namespace Avalonia.MonoMac
                 return new CGRect();
             }
 
-			#endregion
-		}
+            #endregion
+        }
 
         public IInputRoot InputRoot { get; private set; }
 
         public abstract Size ClientSize { get; }
 
-        public double Scaling 
+        public double Scaling
         {
             get
             {
@@ -327,41 +325,34 @@ namespace Avalonia.MonoMac
             }
         }
 
-        public IEnumerable<object> Surfaces => new[] { this };
+        public IEnumerable<object> Surfaces => new[] {this};
 
-		#region Events
-		public Action<RawInputEventArgs> Input { get; set; }
-		public Action<Rect> Paint { get; set; }
-		public Action<Size> Resized { get; set; }
-		public Action<double> ScalingChanged { get; set; }
-		public Action Closed { get; set; }
-		#endregion
+        #region Events
 
-		public virtual void Dispose()
+        public Action<RawInputEventArgs> Input { get; set; }
+        public Action<Rect> Paint { get; set; }
+        public Action<Size> Resized { get; set; }
+        public Action<double> ScalingChanged { get; set; }
+        public Action Closed { get; set; }
+
+        #endregion
+
+        public virtual void Dispose()
         {
             Closed?.Invoke();
             Closed = null;
             View.Dispose();
         }
 
-        public void Invalidate(Rect rect)
-        {
-            View.SetNeedsDisplayInRect(View.Frame);
-        }
+        public void Invalidate(Rect rect) => View.SetNeedsDisplayInRect(View.Frame);
 
         public abstract Point PointToClient(Point point);
 
         public abstract Point PointToScreen(Point point);
 
-        public void SetCursor(IPlatformHandle cursor)
-        {
-            View.SetCursor((cursor as Cursor)?.Native);
-        }
+        public void SetCursor(IPlatformHandle cursor) => View.SetCursor((cursor as Cursor)?.Native);
 
-        public void SetInputRoot(IInputRoot inputRoot)
-        {
-            InputRoot = inputRoot;
-        }
+        public void SetInputRoot(IInputRoot inputRoot) => InputRoot = inputRoot;
 
         public ILockedFramebuffer Lock() => new EmulatedFramebuffer(View);
     }

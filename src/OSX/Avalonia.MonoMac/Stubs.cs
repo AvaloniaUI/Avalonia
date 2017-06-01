@@ -1,8 +1,5 @@
-﻿using System;
-using System.IO;
-using Avalonia.Input;
+﻿using System.IO;
 using Avalonia.Platform;
-using MonoMac.AppKit;
 
 namespace Avalonia.MonoMac
 {
@@ -35,8 +32,8 @@ namespace Avalonia.MonoMac
 
         public IWindowIconImpl LoadIcon(Stream stream)
         {
-			return new IconStub(
-				AvaloniaLocator.Current.GetService<IPlatformRenderInterface>().LoadBitmap(stream));
+            return new IconStub(
+                AvaloniaLocator.Current.GetService<IPlatformRenderInterface>().LoadBitmap(stream));
         }
 
         public IWindowIconImpl LoadIcon(IBitmapImpl bitmap)
@@ -47,5 +44,4 @@ namespace Avalonia.MonoMac
             return LoadIcon(ms);
         }
     }
-
 }

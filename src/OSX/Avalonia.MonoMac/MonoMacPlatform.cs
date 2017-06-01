@@ -3,17 +3,15 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Platform;
 using Avalonia.Rendering;
-using MonoMac.Foundation;
 using MonoMac.AppKit;
-using System.Drawing;
 
 namespace Avalonia.MonoMac
 {
     public class MonoMacPlatform : IWindowingPlatform, IPlatformSettings
     {
         internal static MonoMacPlatform Instance { get; private set; }
-        MouseDevice _mouseDevice = new MouseDevice();
-        KeyboardDevice _keyboardDevice = new KeyboardDevice();
+        readonly MouseDevice _mouseDevice = new MouseDevice();
+        readonly KeyboardDevice _keyboardDevice = new KeyboardDevice();
         NSApplication _app;
         void DoInitialize()
         {
@@ -46,8 +44,8 @@ namespace Avalonia.MonoMac
         }
 
 
-		public Size DoubleClickSize => new Size(4, 4);
-		public TimeSpan DoubleClickTime => TimeSpan.FromSeconds(NSEvent.DoubleClickInterval);
+        public Size DoubleClickSize => new Size(4, 4);
+        public TimeSpan DoubleClickTime => TimeSpan.FromSeconds(NSEvent.DoubleClickInterval);
 
         public IWindowImpl CreateWindow() => new WindowImpl();
 
@@ -70,8 +68,7 @@ namespace Avalonia
     {
         public static AppBuilderBase<T> UseMonoMac<T>(this AppBuilderBase<T> builder) where T : AppBuilderBase<T>, new()
         {
-            return builder.UseWindowingSubsystem(Avalonia.MonoMac.MonoMacPlatform.Initialize);
+            return builder.UseWindowingSubsystem(MonoMac.MonoMacPlatform.Initialize);
         }
     }
 }
- 

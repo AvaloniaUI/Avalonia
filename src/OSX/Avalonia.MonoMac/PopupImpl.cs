@@ -1,5 +1,4 @@
-﻿using System;
-using Avalonia.Platform;
+﻿using Avalonia.Platform;
 using MonoMac.AppKit;
 
 namespace Avalonia.MonoMac
@@ -11,9 +10,9 @@ namespace Avalonia.MonoMac
             UpdateStyle();
         }
 
-		protected override NSWindowStyle GetStyle()
-		{
+        protected override NSWindowStyle GetStyle()
+        {
             return NSWindowStyle.Borderless;
-		}
+        }
     }
 }

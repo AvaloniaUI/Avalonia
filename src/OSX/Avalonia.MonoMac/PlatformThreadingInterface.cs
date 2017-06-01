@@ -9,26 +9,26 @@ namespace Avalonia.MonoMac
 {
     class PlatformThreadingInterface : IPlatformThreadingInterface
     {
-		private bool _signaled;
-		public static PlatformThreadingInterface Instance { get; } = new PlatformThreadingInterface();
-		public bool CurrentThreadIsLoopThread => NSThread.Current.IsMainThread;
+        private bool _signaled;
+        public static PlatformThreadingInterface Instance { get; } = new PlatformThreadingInterface();
+        public bool CurrentThreadIsLoopThread => NSThread.Current.IsMainThread;
 
-		public event Action Signaled;
+        public event Action Signaled;
 
         public IDisposable StartTimer(TimeSpan interval, Action tick)
-			=> NSTimer.CreateRepeatingScheduledTimer(interval, () => tick());
+            => NSTimer.CreateRepeatingScheduledTimer(interval, () => tick());
 
-		public void Signal()
-		{
-			lock (this)
-			{
-				if (_signaled)
-					return;
-				_signaled = true;
-			}
+        public void Signal()
+        {
+            lock (this)
+            {
+                if (_signaled)
+                    return;
+                _signaled = true;
+            }
             NSApplication.SharedApplication.BeginInvokeOnMainThread(() =>
             {
-                lock(this)
+                lock (this)
                 {
                     if (!_signaled)
                         return;
@@ -36,7 +36,7 @@ namespace Avalonia.MonoMac
                 }
                 Signaled?.Invoke();
             });
-		}
+        }
 
 
 
@@ -49,7 +49,7 @@ namespace Avalonia.MonoMac
             cancellationToken.Register(() =>
             {
                 app.PostEvent(NSEvent.OtherEvent(NSEventType.ApplicationDefined, default(CGPoint),
-                                                 default(NSEventModifierMask), 0, 0, null, 0, 0, 0), true);
+                    default(NSEventModifierMask), 0, 0, null, 0, 0, 0), true);
             });
             while (!cancellationToken.IsCancellationRequested)
             {

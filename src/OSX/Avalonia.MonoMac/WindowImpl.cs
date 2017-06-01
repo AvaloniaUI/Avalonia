@@ -8,6 +8,7 @@ namespace Avalonia.MonoMac
     class WindowImpl : WindowBaseImpl, IWindowImpl
     {
         bool _decorated = true;
+
         public WindowImpl()
         {
             UpdateStyle();
@@ -45,13 +46,14 @@ namespace Avalonia.MonoMac
 
         public void SetIcon(IWindowIconImpl icon)
         {
-			//No-OP, see http://stackoverflow.com/a/7038671/2231814
-		}
+            //No-OP, see http://stackoverflow.com/a/7038671/2231814
+        }
 
         protected override NSWindowStyle GetStyle()
         {
             if (_decorated)
-                return NSWindowStyle.Closable | NSWindowStyle.Resizable | NSWindowStyle.Miniaturizable | NSWindowStyle.Titled;
+                return NSWindowStyle.Closable | NSWindowStyle.Resizable | NSWindowStyle.Miniaturizable |
+                       NSWindowStyle.Titled;
             return NSWindowStyle.Borderless;
         }
 
@@ -61,23 +63,20 @@ namespace Avalonia.MonoMac
             UpdateStyle();
         }
 
-        public void SetTitle(string title)
-        {
-            Window.Title = title;
-        }
+        public void SetTitle(string title) => Window.Title = title;
 
         class ModalDisposable : IDisposable
         {
-            readonly WindowImpl impl;
+            readonly WindowImpl _impl;
 
             public ModalDisposable(WindowImpl impl)
             {
-                this.impl = impl;
+                _impl = impl;
             }
 
             public void Dispose()
             {
-                impl.Window.OrderOut(impl.Window);
+                _impl.Window.OrderOut(_impl.Window);
             }
         }
 

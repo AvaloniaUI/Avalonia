@@ -21,9 +21,10 @@ namespace Avalonia.MonoMac
         }
     }
 
-	class CursorFactoryStub : IStandardCursorFactory
-	{
+    class CursorFactoryStub : IStandardCursorFactory
+    {
         Dictionary<StandardCursorType, NSCursor> _cache;
+
         public CursorFactoryStub()
         {
             //TODO: Load diagonal cursors from webkit
@@ -33,8 +34,8 @@ namespace Avalonia.MonoMac
                 [StandardCursorType.Arrow] = NSCursor.ArrowCursor,
                 [StandardCursorType.AppStarting] = NSCursor.ArrowCursor, //TODO
                 [StandardCursorType.BottomLeftCorner] = NSCursor.CrosshairCursor, //TODO
-                [StandardCursorType.BottomRightCorner]= NSCursor.CrosshairCursor, //TODO
-				[StandardCursorType.BottomSize] = NSCursor.ResizeDownCursor,
+                [StandardCursorType.BottomRightCorner] = NSCursor.CrosshairCursor, //TODO
+                [StandardCursorType.BottomSize] = NSCursor.ResizeDownCursor,
                 [StandardCursorType.Cross] = NSCursor.CrosshairCursor,
                 [StandardCursorType.Hand] = NSCursor.PointingHandCursor,
                 [StandardCursorType.Help] = NSCursor.ContextualMenuCursor,
@@ -50,12 +51,12 @@ namespace Avalonia.MonoMac
                 [StandardCursorType.TopSide] = NSCursor.ResizeUpCursor,
                 [StandardCursorType.UpArrow] = NSCursor.ResizeUpCursor,
                 [StandardCursorType.Wait] = NSCursor.ArrowCursor, //TODO
-			};
+            };
         }
 
         public IPlatformHandle GetCursor(StandardCursorType cursorType)
-		{
+        {
             return new Cursor(_cache[cursorType]);
-		}
-	}
+        }
+    }
 }
