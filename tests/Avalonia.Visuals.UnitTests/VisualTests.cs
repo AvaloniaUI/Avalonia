@@ -135,7 +135,7 @@ namespace Avalonia.Visuals.UnitTests
         }
 
         [Fact]
-        public void Descendents_Should_RetunVisualRoot()
+        public void Descendants_Should_RetunVisualRoot()
         {
             var root = new TestRoot();
             var child1 = new Decorator();

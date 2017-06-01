@@ -78,7 +78,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             target.ApplyTemplate();
 
-            var types = target.GetVisualDescendents().Select(x => x.GetType()).ToList();
+            var types = target.GetVisualDescendants().Select(x => x.GetType()).ToList();
 
             Assert.Equal(
                 new[]
@@ -135,7 +135,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             target.ApplyTemplate();
 
-            var templatedParents = target.GetVisualDescendents()
+            var templatedParents = target.GetVisualDescendants()
                 .OfType<IControl>()
                 .Select(x => x.TemplatedParent)
                 .ToList();
