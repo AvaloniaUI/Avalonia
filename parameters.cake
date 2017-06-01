@@ -75,17 +75,25 @@ public class Parameters
         IsReleasable = StringComparer.OrdinalIgnoreCase.Equals(ReleasePlatform, Platform) 
                     && StringComparer.OrdinalIgnoreCase.Equals(ReleaseConfiguration, Configuration);
         IsMyGetRelease = !IsTagged && IsReleasable;
-        IsNuGetRelease = IsTagged && IsReleasable;
+        
 
         // VERSION
         Version = context.Argument("force-nuget-version", context.ParseAssemblyInfo(AssemblyInfoPath).AssemblyVersion);
 
         if (IsRunningOnAppVeyor)
         {
+            string tagVersion = null;
             if (IsTagged)
             {
-                // Use Tag Name as version
-                Version = buildSystem.AppVeyor.Environment.Repository.Tag.Name;
+                var tag = buildSystem.AppVeyor.Environment.Repository.Tag.Name;
+                var nugetReleasePrefix = "nuget-release-";
+                IsNuGetRelease = IsTagged && IsReleasable && tag.StartsWith(nugetReleasePrefix);
+                if(IsNuGetRelease)
+                    tagVersion = tag.Substring(nugetReleasePrefix.Length);
+            }
+            if(tagVersion != null)
+            {
+                Version = tagVersion;
             }
             else
             {
