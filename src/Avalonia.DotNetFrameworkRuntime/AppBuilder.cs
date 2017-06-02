@@ -51,7 +51,8 @@ namespace Avalonia
         /// <returns>An <see cref="AppBuilder"/> instance.</returns>
         public AppBuilder UsePlatformDetect()
         {
-            var os = RuntimePlatform.GetRuntimeInfo().OperatingSystem;
+            var runtimeInfo = RuntimePlatform.GetRuntimeInfo();
+            var os = runtimeInfo.OperatingSystem;
 
             LoadAssembliesInDirectory();
 
@@ -61,22 +62,26 @@ namespace Avalonia
                                                orderby attribute.Priority ascending
                                                select attribute).First();
 
-            var renderingSubsystemAttribute = (from assembly in RuntimePlatform.GetLoadedAssemblies()
+            var renderingSubsystemAttributes = from assembly in RuntimePlatform.GetLoadedAssemblies()
                                                from attribute in assembly.GetCustomAttributes<ExportRenderingSubsystemAttribute>()
                                                where attribute.RequiredOS == os && CheckEnvironment(attribute.EnvironmentChecker)
                                                where attribute.RequiresWindowingSubsystem == null
                                                 || attribute.RequiresWindowingSubsystem == windowingSubsystemAttribute.Name
                                                orderby attribute.Priority ascending
-                                               select attribute).First();
+                                               select attribute;
 
             UseWindowingSubsystem(() => windowingSubsystemAttribute.InitializationType
                 .GetRuntimeMethod(windowingSubsystemAttribute.InitializationMethod, Type.EmptyTypes).Invoke(null, null),
                 windowingSubsystemAttribute.Name);
 
+            if (!runtimeInfo.IsDirectXCompositionAvailable && renderingSubsystemAttributes.Count() > 1)
+                renderingSubsystemAttributes = renderingSubsystemAttributes.Skip(1); // Not use DirectX for Windows < 8.1
+            var renderingSubsystemAttribute = renderingSubsystemAttributes.First();
+
             UseRenderingSubsystem(() => renderingSubsystemAttribute.InitializationType
                 .GetRuntimeMethod(renderingSubsystemAttribute.InitializationMethod, Type.EmptyTypes).Invoke(null, null),
                 renderingSubsystemAttribute.Name);
-            
+
             return this;
         }
 
