@@ -4,7 +4,7 @@
 
 #addin "nuget:?package=Polly&version=5.1.0"
 #addin "nuget:?package=NuGet.Core&version=2.14.0"
-#tool "nuget:?package=JetBrains.dotMemoryUnit&version=2.1.20150828.125449"
+#tool "nuget:?package=JetBrains.dotMemoryUnit&version=2.3.20160517.113140"
 #tool "JetBrains.ReSharper.CommandLineTools"
 
 ///////////////////////////////////////////////////////////////////////////////
