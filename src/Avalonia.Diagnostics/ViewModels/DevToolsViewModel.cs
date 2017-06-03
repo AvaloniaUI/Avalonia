@@ -38,7 +38,7 @@ namespace Avalonia.Diagnostics.ViewModels
         public ViewModelBase Content
         {
             get { return _content; }
-            private set { _content = value; RaisePropertyChanged(); }
+            private set { RaiseAndSetIfChanged(ref _content, value); }
         }
 
         public int SelectedTab
@@ -65,13 +65,13 @@ namespace Avalonia.Diagnostics.ViewModels
         public string FocusedControl
         {
             get { return _focusedControl; }
-            private set { _focusedControl = value; RaisePropertyChanged(); }
+            private set { RaiseAndSetIfChanged(ref _focusedControl, value); }
         }
 
         public string PointerOverElement
         {
             get { return _pointerOverElement; }
-            private set { _pointerOverElement = value; RaisePropertyChanged(); }
+            private set { RaiseAndSetIfChanged(ref _pointerOverElement, value); }
         }
 
         public void SelectControl(IControl control)

@@ -56,7 +56,7 @@ namespace Avalonia.Diagnostics.ViewModels
         public string Classes
         {
             get { return _classes; }
-            private set { _classes = value; RaisePropertyChanged(); }
+            private set { RaiseAndSetIfChanged(ref _classes, value); }
         }
 
         public IVisual Visual
@@ -67,7 +67,7 @@ namespace Avalonia.Diagnostics.ViewModels
         public bool IsExpanded
         {
             get { return _isExpanded; }
-            set { _isExpanded = value; RaisePropertyChanged(); }
+            set { RaiseAndSetIfChanged(ref _isExpanded, value); }
         }
 
         public TreeNode Parent

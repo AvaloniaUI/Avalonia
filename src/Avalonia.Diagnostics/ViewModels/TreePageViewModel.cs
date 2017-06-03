@@ -1,7 +1,6 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using System.Reactive.Linq;
 using Avalonia.Controls;
 using Avalonia.VisualTree;
 
@@ -24,16 +23,17 @@ namespace Avalonia.Diagnostics.ViewModels
             get { return _selected; }
             set
             {
-                _selected = value;
-                RaisePropertyChanged();
-                Details = value != null ? new ControlDetailsViewModel(value.Visual) : null;
+                if (RaiseAndSetIfChanged(ref _selected, value))
+                {
+                    Details = value != null ? new ControlDetailsViewModel(value.Visual) : null;
+                }
             }
         }
 
         public ControlDetailsViewModel Details
         {
             get { return _details; }
-            private set { _details = value; RaisePropertyChanged(); }
+            private set { RaiseAndSetIfChanged(ref _details, value); }
         }
 
         public TreeNode FindNode(IControl control)

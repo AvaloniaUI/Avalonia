@@ -38,19 +38,19 @@ namespace Avalonia.Diagnostics.ViewModels
         public string Priority
         {
             get { return _priority; }
-            private set { _priority = value; RaisePropertyChanged(); }
+            private set { RaiseAndSetIfChanged(ref _priority, value); }
         }
 
         public string Diagnostic
         {
             get { return _diagnostic; }
-            private set { _diagnostic = value; RaisePropertyChanged(); }
+            private set { RaiseAndSetIfChanged(ref _diagnostic, value); }
         }
 
         public object Value
         {
             get { return _value; }
-            private set { _value = value; RaisePropertyChanged(); }
+            private set { RaiseAndSetIfChanged(ref _value, value); }
         }
     }
 }
