@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using JetBrains.Annotations;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
@@ -9,6 +10,7 @@ namespace Avalonia.Diagnostics.ViewModels
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
+        [NotifyPropertyChangedInvocator]
         protected bool RaiseAndSetIfChanged<T>(ref T field, T value, [CallerMemberName] string propertyName = null)
         {
             if (!EqualityComparer<T>.Default.Equals(field, value))
@@ -21,6 +23,7 @@ namespace Avalonia.Diagnostics.ViewModels
             return false;
         }
 
+        [NotifyPropertyChangedInvocator]
         protected void RaisePropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
