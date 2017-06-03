@@ -23,6 +23,7 @@ namespace Avalonia.Direct2D1.Media
         private readonly IVisualBrushRenderer _visualBrushRenderer;
         private readonly SharpDX.Direct2D1.RenderTarget _renderTarget;
         private readonly SharpDX.DXGI.SwapChain1 _swapChain;
+        private readonly Action _finishedCallback;
         private SharpDX.DirectWrite.Factory _directWriteFactory;
 
         /// <summary>
@@ -32,15 +33,18 @@ namespace Avalonia.Direct2D1.Media
         /// <param name="renderTarget">The render target to draw to.</param>
         /// <param name="directWriteFactory">The DirectWrite factory.</param>
         /// <param name="swapChain">An optional swap chain associated with this drawing context.</param>
+        /// <param name="finishedCallback">An optional delegate to be called when context is disposed.</param>
         public DrawingContextImpl(
             IVisualBrushRenderer visualBrushRenderer,
             SharpDX.Direct2D1.RenderTarget renderTarget,
             SharpDX.DirectWrite.Factory directWriteFactory,
-            SharpDX.DXGI.SwapChain1 swapChain = null)
+            SharpDX.DXGI.SwapChain1 swapChain = null,
+            Action finishedCallback = null)
         {
             _visualBrushRenderer = visualBrushRenderer;
             _renderTarget = renderTarget;
             _swapChain = swapChain;
+            _finishedCallback = finishedCallback;
             _directWriteFactory = directWriteFactory;
             _swapChain = swapChain;
             _renderTarget.BeginDraw();
@@ -73,6 +77,7 @@ namespace Avalonia.Direct2D1.Media
                 _renderTarget.EndDraw();
 
                 _swapChain?.Present(1, SharpDX.DXGI.PresentFlags.None);
+                _finishedCallback?.Invoke();
             }
             catch (SharpDXException ex) when ((uint)ex.HResult == 0x8899000C) // D2DERR_RECREATE_TARGET
             {

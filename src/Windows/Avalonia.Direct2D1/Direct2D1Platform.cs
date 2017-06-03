@@ -142,6 +142,11 @@ namespace Avalonia.Direct2D1
                     throw new NotSupportedException("Don't know how to create a Direct2D1 renderer from " + nativeWindow.HandleDescriptor);
                 return new HwndRenderTarget(nativeWindow);
             }
+            var external = surfaces?.OfType<IExternalDirect2DRenderTargetSurface>();
+            if (external != null)
+            {
+                
+            }
             throw new NotSupportedException("Don't know how to create a Direct2D1 renderer from any of provided surfaces");
         }
 
