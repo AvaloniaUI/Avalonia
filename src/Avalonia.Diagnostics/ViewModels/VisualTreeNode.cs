@@ -1,10 +1,9 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using Avalonia.Controls;
+using Avalonia.Collections;
 using Avalonia.Styling;
 using Avalonia.VisualTree;
-using ReactiveUI;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
@@ -17,11 +16,11 @@ namespace Avalonia.Diagnostics.ViewModels
 
             if (host?.Root == null)
             {
-                Children = visual.VisualChildren.CreateDerivedCollection(x => new VisualTreeNode(x, this));
+                Children = visual.VisualChildren.CreateDerivedList(x => new VisualTreeNode(x, this));
             }
             else
             {
-                Children = new ReactiveList<VisualTreeNode>(new[] { new VisualTreeNode(host.Root, this) });
+                Children = new AvaloniaList<VisualTreeNode>(new[] { new VisualTreeNode(host.Root, this) });
             }
 
             if ((Visual is IStyleable styleable))
