@@ -11,7 +11,6 @@ using Avalonia.Input.Raw;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.VisualTree;
-using ReactiveUI;
 
 namespace Avalonia
 {
@@ -74,7 +73,7 @@ namespace Avalonia.Diagnostics
                         Content = devTools,
                         DataTemplates = new DataTemplates
                         {
-                            new ViewLocator<ReactiveObject>(),
+                            new ViewLocator<ViewModelBase>(),
                         }
                     };
 
