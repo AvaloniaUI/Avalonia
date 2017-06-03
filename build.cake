@@ -2,17 +2,17 @@
 // ADDINS
 ///////////////////////////////////////////////////////////////////////////////
 
-#addin "nuget:?package=Polly&version=5.1.0"
-#addin "nuget:?package=NuGet.Core&version=2.14.0"
+#addin "nuget:?package=Polly&version=4.2.0"
+#addin "nuget:?package=NuGet.Core&version=2.12.0"
+#tool "nuget:https://dotnet.myget.org/F/nuget-build/?package=NuGet.CommandLine&version=4.3.0-preview1-3980&prerelease"
 #tool "nuget:?package=JetBrains.dotMemoryUnit&version=2.3.20160517.113140"
 #tool "JetBrains.ReSharper.CommandLineTools"
-
 ///////////////////////////////////////////////////////////////////////////////
 // TOOLS
 ///////////////////////////////////////////////////////////////////////////////
 
-#tool "nuget:?package=xunit.runner.console&version=2.2.0"
-#tool "nuget:?package=OpenCover&version=4.6.519"
+#tool "nuget:?package=xunit.runner.console&version=2.1.0"
+#tool "nuget:?package=OpenCover"
 
 ///////////////////////////////////////////////////////////////////////////////
 // USINGS
