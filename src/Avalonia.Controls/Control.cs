@@ -469,7 +469,7 @@ namespace Avalonia.Controls
             {
                 if (!IsInitialized)
                 {
-                    foreach (var i in this.GetSelfAndVisualDescendents())
+                    foreach (var i in this.GetSelfAndVisualDescendants())
                     {
                         var c = i as IControl;
 
@@ -645,7 +645,7 @@ namespace Avalonia.Controls
 
             if (_focusAdorner != null)
             {
-                var adornerLayer = _focusAdorner.Parent as Panel;
+                var adornerLayer = (IPanel)_focusAdorner.Parent;
                 adornerLayer.Children.Remove(_focusAdorner);
                 _focusAdorner = null;
             }

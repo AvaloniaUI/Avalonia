@@ -14,6 +14,7 @@ using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Styling;
 using Avalonia.VisualTree;
+using JetBrains.Annotations;
 
 namespace Avalonia.Controls
 {
@@ -92,25 +93,25 @@ namespace Avalonia.Controls
             var rendererFactory = TryGetService<IRendererFactory>(dependencyResolver);
             Renderer = rendererFactory?.CreateRenderer(this, renderLoop);
 
-            PlatformImpl.SetInputRoot(this);
+            impl.SetInputRoot(this);
 
-            PlatformImpl.Closed = HandleClosed;
-            PlatformImpl.Input = HandleInput;
-            PlatformImpl.Paint = HandlePaint;
-            PlatformImpl.Resized = HandleResized;
-            PlatformImpl.ScalingChanged = HandleScalingChanged;
+            impl.Closed = HandleClosed;
+            impl.Input = HandleInput;
+            impl.Paint = HandlePaint;
+            impl.Resized = HandleResized;
+            impl.ScalingChanged = HandleScalingChanged;
 
 
             _keyboardNavigationHandler?.SetOwner(this);
             _accessKeyHandler?.SetOwner(this);
             styler?.ApplyStyles(this);
 
-            ClientSize = PlatformImpl.ClientSize;
+            ClientSize = impl.ClientSize;
             
             this.GetObservable(PointerOverElementProperty)
                 .Select(
                     x => (x as InputElement)?.GetObservable(CursorProperty) ?? Observable.Empty<Cursor>())
-                .Switch().Subscribe(cursor => PlatformImpl.SetCursor(cursor?.PlatformCursor));
+                .Switch().Subscribe(cursor => PlatformImpl?.SetCursor(cursor?.PlatformCursor));
 
             if (_applicationLifecycle != null)
             {
@@ -135,10 +136,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the platform-specific window implementation.
         /// </summary>
-        public ITopLevelImpl PlatformImpl
-        {
-            get;
-        }
+        [CanBeNull]
+        public ITopLevelImpl PlatformImpl { get; private set; }
         
         /// <summary>
         /// Gets the renderer for the window.
@@ -177,7 +176,7 @@ namespace Avalonia.Controls
         Size ILayoutRoot.MaxClientSize => Size.Infinity;
 
         /// <inheritdoc/>
-        double ILayoutRoot.LayoutScaling => PlatformImpl.Scaling;
+        double ILayoutRoot.LayoutScaling => PlatformImpl?.Scaling ?? 1;
 
         IStyleHost IStyleHost.StylingParent
         {
@@ -189,25 +188,27 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         protected virtual IRenderTarget CreateRenderTarget()
         {
+            if(PlatformImpl == null)
+                throw new InvalidOperationException("Cann't create render target, PlatformImpl is null (might be already disposed)");
             return _renderInterface.CreateRenderTarget(PlatformImpl.Surfaces);
         }
 
         /// <inheritdoc/>
         void IRenderRoot.Invalidate(Rect rect)
         {
-            PlatformImpl.Invalidate(rect);
+            PlatformImpl?.Invalidate(rect);
         }
 
         /// <inheritdoc/>
         Point IRenderRoot.PointToClient(Point p)
         {
-            return PlatformImpl.PointToClient(p);
+            return PlatformImpl?.PointToClient(p) ?? default(Point);
         }
 
         /// <inheritdoc/>
         Point IRenderRoot.PointToScreen(Point p)
         {
-            return PlatformImpl.PointToScreen(p);
+            return PlatformImpl?.PointToScreen(p) ?? default(Point);
         }
 
         /// <summary>
@@ -224,6 +225,8 @@ namespace Avalonia.Controls
         /// </summary>
         protected virtual void HandleClosed()
         {
+            PlatformImpl = null;
+
             Closed?.Invoke(this, EventArgs.Empty);
             Renderer?.Dispose();
             Renderer = null;
@@ -250,7 +253,7 @@ namespace Avalonia.Controls
         /// <param name="scaling">The window scaling.</param>
         protected virtual void HandleScalingChanged(double scaling)
         {
-            foreach (ILayoutable control in this.GetSelfAndVisualDescendents())
+            foreach (ILayoutable control in this.GetSelfAndVisualDescendants())
             {
                 control.InvalidateMeasure();
             }

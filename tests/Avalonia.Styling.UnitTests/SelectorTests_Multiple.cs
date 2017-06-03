@@ -91,11 +91,11 @@ namespace Avalonia.Styling.UnitTests
         }
 
         [Fact]
-        public void TargetType_Descendent()
+        public void TargetType_Descendant()
         {
             var selector = default(Selector)
                 .OfType<Button>()
-                .Descendent()
+                .Descendant()
                 .OfType<TextBlock>();
 
             Assert.Equal(typeof(TextBlock), selector.TargetType);

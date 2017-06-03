@@ -28,6 +28,7 @@ namespace Avalonia.Gtk3
             List<IDisposable> disposables = null;
             Action dispose = () =>
             {
+                // ReSharper disable once PossibleNullReferenceException
                 foreach (var d in disposables)
                     d.Dispose();
                 disposables.Clear();

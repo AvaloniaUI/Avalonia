@@ -4,11 +4,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.VisualTree;
-using ReactiveUI;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
-    internal class ControlDetailsViewModel : ReactiveObject
+    internal class ControlDetailsViewModel : ViewModelBase
     {
         public ControlDetailsViewModel(IVisual control)
         {

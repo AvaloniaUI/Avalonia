@@ -622,14 +622,9 @@ namespace Avalonia
         /// <returns>The default value.</returns>
         private object GetDefaultValue(AvaloniaProperty property)
         {
-            if (property.Inherits && _inheritanceParent != null)
-            {
-                return (_inheritanceParent as AvaloniaObject).GetValueInternal(property);
-            }
-            else
-            {
-                return ((IStyledPropertyAccessor)property).GetDefaultValue(GetType());
-            }
+            if (property.Inherits && _inheritanceParent is AvaloniaObject aobj)
+                return aobj.GetValueInternal(property);
+            return ((IStyledPropertyAccessor) property).GetDefaultValue(GetType());
         }
 
         /// <summary>

@@ -149,5 +149,6 @@
       <Name>ControlCatalog</Name>
     </ProjectReference>
   </ItemGroup>
+  <Import Project="..\..\..\build\Rx.props" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

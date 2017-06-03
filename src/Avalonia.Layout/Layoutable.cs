@@ -456,10 +456,9 @@ namespace Avalonia.Layout
 
                 ApplyTemplate();
 
-                var constrained = LayoutHelper
-                    .ApplyLayoutConstraints(this, availableSize)
-                    .Deflate(margin);
-
+                var constrained = LayoutHelper.ApplyLayoutConstraints(
+                    this,
+                    availableSize.Deflate(margin));
                 var measured = MeasureOverride(constrained);
 
                 var width = measured.Width;
@@ -613,7 +612,7 @@ namespace Avalonia.Layout
         /// <inheritdoc/>
         protected override sealed void OnVisualParentChanged(IVisual oldParent, IVisual newParent)
         {
-            foreach (ILayoutable i in this.GetSelfAndVisualDescendents())
+            foreach (ILayoutable i in this.GetSelfAndVisualDescendants())
             {
                 i.InvalidateMeasure();
             }

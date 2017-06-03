@@ -47,7 +47,7 @@ namespace Avalonia.Markup.Xaml.Parsers
                 var name = i as SelectorGrammar.NameSyntax;
                 var property = i as SelectorGrammar.PropertySyntax;
                 var child = i as SelectorGrammar.ChildSyntax;
-                var descendent = i as SelectorGrammar.DescendentSyntax;
+                var descendant = i as SelectorGrammar.DescendantSyntax;
                 var template = i as SelectorGrammar.TemplateSyntax;
 
                 if (ofType != null)
@@ -68,7 +68,7 @@ namespace Avalonia.Markup.Xaml.Parsers
                 }
                 else if (property != null)
                 {
-                    var type = result.TargetType;
+                    var type = result?.TargetType;
 
                     if (type == null)
                     {
@@ -102,9 +102,9 @@ namespace Avalonia.Markup.Xaml.Parsers
                 {
                     result = result.Child();
                 }
-                else if (descendent != null)
+                else if (descendant != null)
                 {
-                    result = result.Descendent();
+                    result = result.Descendant();
                 }
                 else if (template != null)
                 {

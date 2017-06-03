@@ -33,6 +33,7 @@ test: off
 artifacts:
   - path: artifacts\nuget\*.nupkg
   - path: artifacts\zip\*.zip
+  - path: artifacts\inspectcode.xml
 cache:
   - gtk-sharp-2.12.26.msi
   - dotnet-1.0.1.exe

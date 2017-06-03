@@ -45,7 +45,7 @@ namespace Avalonia.Layout.UnitTests
         }
 
         [Fact]
-        public void Removing_From_Parent_Should_Invalidate_Measure_Of_Control_And_Descendents()
+        public void Removing_From_Parent_Should_Invalidate_Measure_Of_Control_And_Descendants()
         {
             var panel = new StackPanel();
             var child2 = new Border();
@@ -99,6 +99,59 @@ namespace Avalonia.Layout.UnitTests
             outer.Measure(Size.Infinity);
 
             Assert.Equal(0, target.DesiredSize.Height);
+        }
+
+        [Fact]
+        public void Margin_Should_Affect_AvailableSize()
+        {
+            MeasureTest target;
+
+            var outer = new Decorator
+            {
+                Width = 100,
+                Height = 100,
+                Child = target = new MeasureTest
+                {
+                    Margin = new Thickness(10),
+                }
+            };
+
+            outer.Measure(Size.Infinity);
+
+            Assert.Equal(new Size(80, 80), target.AvailableSize);
+        }
+
+        [Fact]
+        public void Margin_Should_Be_Applied_Before_Width_Height()
+        {
+            MeasureTest target;
+
+            var outer = new Decorator
+            {
+                Width = 100,
+                Height = 100,
+                Child = target = new MeasureTest
+                {
+                    Width = 80,
+                    Height = 80,
+                    Margin = new Thickness(10),
+                }
+            };
+
+            outer.Measure(Size.Infinity);
+
+            Assert.Equal(new Size(80, 80), target.AvailableSize);
+        }
+
+        class MeasureTest : Control
+        {
+            public Size? AvailableSize { get; private set; }
+
+            protected override Size MeasureOverride(Size availableSize)
+            {
+                AvailableSize = availableSize;
+                return availableSize;
+            }
         }
     }
 }
