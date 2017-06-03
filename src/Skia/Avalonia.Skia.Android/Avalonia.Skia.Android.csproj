@@ -86,7 +86,4 @@
   <Import Project="..\..\Shared\RenderHelpers\RenderHelpers.projitems" Label="Shared" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <Import Project="..\..\..\build\SkiaSharp.props" />
-  <PropertyGroup Condition="'$(UseRoslynPathHack)' == ''">
-    <CscToolPath>$(MSBuildToolsPath)\Roslyn</CscToolPath>
-  </PropertyGroup>
 </Project>
