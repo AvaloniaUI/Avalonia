@@ -133,7 +133,7 @@ namespace Avalonia.Layout
 
             if (!control.IsMeasureValid)
             {
-                control.Measure(control.PreviousMeasure.Value);
+                control.Measure(control.PreviousMeasure ?? default(Size));
             }
 
             _toMeasure.Remove(control);
