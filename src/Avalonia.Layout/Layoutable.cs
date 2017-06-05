@@ -378,7 +378,7 @@ namespace Avalonia.Layout
 
                 IsMeasureValid = false;
                 IsArrangeValid = false;
-                LayoutManager.Instance?.InvalidateMeasure(this);
+                (VisualRoot as ILayoutRoot)?.LayoutManager.InvalidateMeasure(this);
                 InvalidateVisual();
             }
         }
@@ -393,7 +393,7 @@ namespace Avalonia.Layout
                 Logger.Verbose(LogArea.Layout, this, "Invalidated arrange");
 
                 IsArrangeValid = false;
-                LayoutManager.Instance?.InvalidateArrange(this);
+                (VisualRoot as ILayoutRoot)?.LayoutManager?.InvalidateArrange(this);
                 InvalidateVisual();
             }
         }
@@ -618,6 +618,15 @@ namespace Avalonia.Layout
             }
 
             base.OnVisualParentChanged(oldParent, newParent);
+        }
+
+        protected override void OnAttachedToVisualTreeCore(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTreeCore(e);
+            if(!IsMeasureValid)
+                (VisualRoot as ILayoutRoot)?.LayoutManager.InvalidateMeasure(this);
+            else if (!IsArrangeValid)
+                (VisualRoot as ILayoutRoot)?.LayoutManager.InvalidateArrange(this);
         }
 
         /// <summary>

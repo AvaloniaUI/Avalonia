@@ -136,7 +136,7 @@ namespace Avalonia.Controls
             {
                 EnsureInitialized();
                 IsVisible = true;
-                LayoutManager.Instance.ExecuteInitialLayoutPass(this);
+                LayoutManager.ExecuteInitialLayoutPass(this);
                 PlatformImpl?.Show();
             }
             finally
@@ -215,7 +215,7 @@ namespace Avalonia.Controls
                 Height = clientSize.Height;
             }
             ClientSize = clientSize;
-            LayoutManager.Instance.ExecuteLayoutPass();
+            LayoutManager.ExecuteLayoutPass();
             Renderer?.Resized(clientSize);
         }
 

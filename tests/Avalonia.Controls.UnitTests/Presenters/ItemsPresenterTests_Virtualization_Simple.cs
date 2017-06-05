@@ -564,11 +564,10 @@ namespace Avalonia.Controls.UnitTests.Presenters
         [Fact]
         public void Scrolling_To_Item_In_Zero_Sized_Presenter_Doesnt_Throw()
         {
-            using (UnitTestApplication.Start(TestServices.RealLayoutManager))
+            using (UnitTestApplication.Start(new TestServices()))
             {
                 var target = CreateTarget(itemCount: 10);
                 var items = (IList<string>)target.Items;
-
                 target.ApplyTemplate();
                 target.Measure(Size.Empty);
                 target.Arrange(Rect.Empty);
@@ -757,7 +756,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             [Fact]
             public void GetControlInDirection_Down_Should_Scroll_If_Partially_Visible()
             {
-                using (UnitTestApplication.Start(TestServices.RealLayoutManager))
+                using (UnitTestApplication.Start(new TestServices()))
                 {
                     var target = CreateTarget();
                     var scroller = (ScrollContentPresenter)target.Parent;
@@ -778,7 +777,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             [Fact]
             public void GetControlInDirection_Up_Should_Scroll_If_Partially_Visible_Item_Is_Currently_Shown()
             {
-                using (UnitTestApplication.Start(TestServices.RealLayoutManager))
+                using (UnitTestApplication.Start(new TestServices()))
                 {
                     var target = CreateTarget();
                     var scroller = (ScrollContentPresenter)target.Parent;
@@ -869,7 +868,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             [Fact]
             public void GetControlInDirection_Right_Should_Scroll_If_Partially_Visible()
             {
-                using (UnitTestApplication.Start(TestServices.RealLayoutManager))
+                using (UnitTestApplication.Start(new TestServices()))
                 {
                     var target = CreateTarget(orientation: Orientation.Horizontal);
                     var scroller = (ScrollContentPresenter)target.Parent;
@@ -1008,6 +1007,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             };
 
             scroller.UpdateChild();
+            new TestRoot().Child = scroller;
 
             return result;
         }

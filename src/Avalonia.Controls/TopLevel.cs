@@ -46,6 +46,7 @@ namespace Avalonia.Controls
         private readonly IApplicationLifecycle _applicationLifecycle;
         private readonly IPlatformRenderInterface _renderInterface;
         private Size _clientSize;
+        private ILayoutManager _layoutManager;
 
         /// <summary>
         /// Initializes static members of the <see cref="TopLevel"/> class.
@@ -131,6 +132,18 @@ namespace Avalonia.Controls
         {
             get { return _clientSize; }
             protected set { SetAndRaise(ClientSizeProperty, ref _clientSize, value); }
+        }
+
+        protected virtual ILayoutManager CreateLayoutManager() => new LayoutManager();
+
+        public ILayoutManager LayoutManager
+        {
+            get
+            {
+                if (_layoutManager == null)
+                    _layoutManager = CreateLayoutManager();
+                return _layoutManager;
+            }
         }
 
         /// <summary>
@@ -245,7 +258,7 @@ namespace Avalonia.Controls
             ClientSize = clientSize;
             Width = clientSize.Width;
             Height = clientSize.Height;
-            LayoutManager.Instance.ExecuteLayoutPass();
+            LayoutManager.ExecuteLayoutPass();
             Renderer?.Resized(clientSize);
         }
 

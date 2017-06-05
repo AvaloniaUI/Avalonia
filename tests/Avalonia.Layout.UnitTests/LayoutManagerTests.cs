@@ -11,12 +11,9 @@ namespace Avalonia.Layout.UnitTests
         [Fact]
         public void Invalidating_Child_Should_Remeasure_Parent()
         {
-            var layoutManager = new LayoutManager();
-
             using (AvaloniaLocator.EnterScope())
             {
-                AvaloniaLocator.CurrentMutable.Bind<ILayoutManager>().ToConstant(layoutManager);
-
+                
                 Border border;
                 StackPanel panel;
 
@@ -30,14 +27,14 @@ namespace Avalonia.Layout.UnitTests
                     }
                     }
                 };
-
-                layoutManager.ExecuteInitialLayoutPass(root);
+                
+                root.LayoutManager.ExecuteInitialLayoutPass(root);
                 Assert.Equal(new Size(0, 0), root.DesiredSize);
 
                 border.Width = 100;
                 border.Height = 100;
 
-                layoutManager.ExecuteLayoutPass();
+                root.LayoutManager.ExecuteLayoutPass();
                 Assert.Equal(new Size(100, 100), panel.DesiredSize);
             }                
         }

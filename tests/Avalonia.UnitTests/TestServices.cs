@@ -21,7 +21,6 @@ namespace Avalonia.UnitTests
     {
         public static readonly TestServices StyledWindow = new TestServices(
             assetLoader: new AssetLoader(),
-            layoutManager: new LayoutManager(),
             platform: new AppBuilder().RuntimePlatform,
             renderer: (_, __) => Mock.Of<IRenderer>(),
             renderInterface: CreateRenderInterfaceMock(),
@@ -51,10 +50,7 @@ namespace Avalonia.UnitTests
             focusManager: new FocusManager(),
             keyboardDevice: () => new KeyboardDevice(),
             inputManager: new InputManager());
-
-        public static readonly TestServices RealLayoutManager = new TestServices(
-            layoutManager: new LayoutManager());
-
+        
         public static readonly TestServices RealStyler = new TestServices(
             styler: new Styler());
 
@@ -63,7 +59,6 @@ namespace Avalonia.UnitTests
             IFocusManager focusManager = null,
             IInputManager inputManager = null,
             Func<IKeyboardDevice> keyboardDevice = null,
-            ILayoutManager layoutManager = null,
             IRuntimePlatform platform = null,
             Func<IRenderRoot, IRenderLoop, IRenderer> renderer = null,
             IPlatformRenderInterface renderInterface = null,
@@ -79,7 +74,6 @@ namespace Avalonia.UnitTests
             FocusManager = focusManager;
             InputManager = inputManager;
             KeyboardDevice = keyboardDevice;
-            LayoutManager = layoutManager;
             Platform = platform;
             Renderer = renderer;
             RenderInterface = renderInterface;
@@ -96,7 +90,6 @@ namespace Avalonia.UnitTests
         public IInputManager InputManager { get; }
         public IFocusManager FocusManager { get; }
         public Func<IKeyboardDevice> KeyboardDevice { get; }
-        public ILayoutManager LayoutManager { get; }
         public IRuntimePlatform Platform { get; }
         public Func<IRenderRoot, IRenderLoop, IRenderer> Renderer { get; }
         public IPlatformRenderInterface RenderInterface { get; }
@@ -113,7 +106,6 @@ namespace Avalonia.UnitTests
             IFocusManager focusManager = null,
             IInputManager inputManager = null,
             Func<IKeyboardDevice> keyboardDevice = null,
-            ILayoutManager layoutManager = null,
             IRuntimePlatform platform = null,
             Func<IRenderRoot, IRenderLoop, IRenderer> renderer = null,
             IPlatformRenderInterface renderInterface = null,
@@ -131,7 +123,6 @@ namespace Avalonia.UnitTests
                 focusManager: focusManager ?? FocusManager,
                 inputManager: inputManager ?? InputManager,
                 keyboardDevice: keyboardDevice ?? KeyboardDevice,
-                layoutManager: layoutManager ?? LayoutManager,
                 platform: platform ?? Platform,
                 renderer: renderer ?? Renderer,
                 renderInterface: renderInterface ?? RenderInterface,

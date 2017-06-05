@@ -12,6 +12,7 @@ using Avalonia.Layout;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.UnitTests;
+using Avalonia.VisualTree;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Presenters
@@ -219,7 +220,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
         [Fact]
         public void Changing_VirtualizationMode_None_To_Simple_Should_Add_Correct_Number_Of_Controls()
         {
-            using (UnitTestApplication.Start(TestServices.RealLayoutManager))
+            using (UnitTestApplication.Start(new TestServices()))
             {
                 var target = CreateTarget(mode: ItemVirtualizationMode.None);
                 var scroll = (ScrollContentPresenter)target.Parent;
@@ -237,7 +238,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
                 };
 
                 target.VirtualizationMode = ItemVirtualizationMode.Simple;
-                LayoutManager.Instance.ExecuteLayoutPass();
+                ((ILayoutRoot)scroll.GetVisualRoot()).LayoutManager.ExecuteLayoutPass();
 
                 Assert.Equal(10, target.Panel.Children.Count);
             }
@@ -313,11 +314,16 @@ namespace Avalonia.Controls.UnitTests.Presenters
             });
         }
 
-        private class TestScroller : ScrollContentPresenter, IRenderRoot
+        private class TestScroller : ScrollContentPresenter, IRenderRoot, ILayoutRoot
         {
             public IRenderer Renderer { get; }
             public Size ClientSize { get; }
 
+            public Size MaxClientSize => Size.Infinity;
+
+            public double LayoutScaling => 1;
+
+            public ILayoutManager LayoutManager { get; } = new LayoutManager();
             public IRenderTarget CreateRenderTarget()
             {
                 throw new NotImplementedException();

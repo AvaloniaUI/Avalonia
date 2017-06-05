@@ -39,7 +39,7 @@ namespace Avalonia.UnitTests
 
         public double LayoutScaling => 1;
 
-        public ILayoutManager LayoutManager => AvaloniaLocator.Current.GetService<ILayoutManager>();
+        public ILayoutManager LayoutManager { get; set; } = new LayoutManager();
 
         public IRenderTarget RenderTarget => null;
 
