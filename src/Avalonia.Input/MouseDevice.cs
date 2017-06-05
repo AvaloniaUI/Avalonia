@@ -81,7 +81,7 @@ namespace Avalonia.Input
             return root.PointToClient(Position) - p;
         }
 
-        public void ProcessOwnRawEvent(RawInputEventArgs e)
+        public void ProcessRawEvent(RawInputEventArgs e)
         {
             if (!e.Handled && e is RawMouseEventArgs margs)
                 ProcessRawEvent(margs);

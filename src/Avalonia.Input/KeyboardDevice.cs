@@ -69,7 +69,7 @@ namespace Avalonia.Input
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        public void ProcessOwnRawEvent(RawInputEventArgs e)
+        public void ProcessRawEvent(RawInputEventArgs e)
         {
             if(e.Handled)
                 return;

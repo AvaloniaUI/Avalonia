@@ -47,9 +47,6 @@ namespace Avalonia.iOS
         public override bool CanBecomeFirstResponder => _keyboardHelper.CanBecomeFirstResponder();
         
         public Action Closed { get; set; }
-
-        public IMouseDevice MouseDevice => iOSPlatform.MouseDevice;
-
         public Action<RawInputEventArgs> Input { get; set; }
         public Action<Rect> Paint { get; set; }
         public Action<Size> Resized { get; set; }
@@ -64,6 +61,8 @@ namespace Avalonia.iOS
 
         public Size ClientSize => Bounds.Size.ToAvalonia();
 
+        public IMouseDevice MouseDevice => iOSPlatform.MouseDevice;
+        
         public override void Draw(CGRect rect)
         {
             Paint?.Invoke(new Rect(rect.X, rect.Y, rect.Width, rect.Height));

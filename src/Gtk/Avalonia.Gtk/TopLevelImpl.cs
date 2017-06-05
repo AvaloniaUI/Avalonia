@@ -75,6 +75,8 @@ namespace Avalonia.Gtk
             }
         }
 
+        public IMouseDevice MouseDevice => GtkMouseDevice.Instance;
+
         public Avalonia.Controls.WindowState WindowState
         {
             get
@@ -114,7 +116,6 @@ namespace Avalonia.Gtk
 
         public Action Closed { get; set; }
 
-        public IMouseDevice MouseDevice => GtkMouseDevice.Instance;
 
         public Action Deactivated { get; set; }
 

@@ -49,8 +49,6 @@ namespace Avalonia.Win32
 
         public Action Closed { get; set; }
 
-        public IMouseDevice MouseDevice => WindowsMouseDevice.Instance;
-
         public Action Deactivated { get; set; }
 
         public Action<RawInputEventArgs> Input { get; set; }
@@ -134,6 +132,8 @@ namespace Avalonia.Win32
                     - BorderThickness) / Scaling;
             }
         }
+
+        public IMouseDevice MouseDevice => WindowsMouseDevice.Instance;
 
         public WindowState WindowState
         {
