@@ -16,9 +16,9 @@ namespace Avalonia
 {
 	public static class WindowExtensions
 	{
-		public static void AttachDevTools(this Window window)
+		public static void AttachDevTools(this Control control)
 		{
-			Avalonia.Diagnostics.DevTools.Attach(window);
+			Avalonia.Diagnostics.DevTools.Attach((TopLevel)control.GetVisualRoot());
 		}
 	}
 }
@@ -27,7 +27,7 @@ namespace Avalonia.Diagnostics
 {
 	public class DevTools : UserControl
     {
-        private static Dictionary<Window, Window> s_open = new Dictionary<Window, Window>();
+        private static Dictionary<TopLevel, Window> s_open = new Dictionary<TopLevel, Window>();
         private IDisposable _keySubscription;
 
         public DevTools(IControl root)
@@ -43,9 +43,9 @@ namespace Avalonia.Diagnostics
 
         public IControl Root { get; }
 
-        public static IDisposable Attach(Window window)
+        public static IDisposable Attach(TopLevel control)
         {
-            return window.AddHandler(
+            return control.AddHandler(
                 KeyDownEvent,
                 WindowPreviewKeyDown,
                 RoutingStrategies.Tunnel);
@@ -55,16 +55,16 @@ namespace Avalonia.Diagnostics
         {
             if (e.Key == Key.F12)
             {
-                var window = (Window)sender;
+                var control = (TopLevel)sender;
                 var devToolsWindow = default(Window);
 
-                if (s_open.TryGetValue(window, out devToolsWindow))
+                if (s_open.TryGetValue(control, out devToolsWindow))
                 {
                     devToolsWindow.Activate();
                 }
                 else
                 {
-                    var devTools = new DevTools(window);
+                    var devTools = new DevTools(control);
 
                     devToolsWindow = new Window
                     {
@@ -78,7 +78,7 @@ namespace Avalonia.Diagnostics
                     };
 
                     devToolsWindow.Closed += devTools.DevToolsClosed;
-                    s_open.Add((Window)sender, devToolsWindow);
+                    s_open.Add(control, devToolsWindow);
                     devToolsWindow.Show();
                 }
             }
