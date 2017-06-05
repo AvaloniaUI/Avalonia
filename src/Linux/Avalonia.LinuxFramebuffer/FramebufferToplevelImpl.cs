@@ -63,6 +63,9 @@ namespace Avalonia.LinuxFramebuffer
         public Action<Size> Resized { get; set; }
         public Action<double> ScalingChanged { get; set; }
         public Action Closed { get; set; }
+
+        public IMouseDevice MouseDevice => LinuxFramebufferPlatform.MouseDevice;
+
         public event Action LostFocus;
     }
 }

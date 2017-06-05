@@ -114,6 +114,8 @@ namespace Avalonia.Gtk
 
         public Action Closed { get; set; }
 
+        public IMouseDevice MouseDevice => GtkMouseDevice.Instance;
+
         public Action Deactivated { get; set; }
 
         public Action<RawInputEventArgs> Input { get; set; }

@@ -31,12 +31,7 @@ namespace Avalonia.Input
                 .Where(e => e.Device == this && !e.Handled)
                 .Subscribe(ProcessRawEvent);
         }
-
-        /// <summary>
-        /// Gets the current mouse device instance.
-        /// </summary>
-        public static IMouseDevice Instance => AvaloniaLocator.Current.GetService<IMouseDevice>();
-
+        
         /// <summary>
         /// Gets the control that is currently capturing by the mouse, if any.
         /// </summary>

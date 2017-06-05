@@ -47,6 +47,9 @@ namespace Avalonia.iOS
         public override bool CanBecomeFirstResponder => _keyboardHelper.CanBecomeFirstResponder();
         
         public Action Closed { get; set; }
+
+        public IMouseDevice MouseDevice => iOSPlatform.MouseDevice;
+
         public Action<RawInputEventArgs> Input { get; set; }
         public Action<Rect> Paint { get; set; }
         public Action<Size> Resized { get; set; }

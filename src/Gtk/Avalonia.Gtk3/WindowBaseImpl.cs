@@ -242,6 +242,9 @@ namespace Avalonia.Gtk3
 
         public Action Activated { get; set; }
         public Action Closed { get; set; }
+
+        public IMouseDevice MouseDevice => Gtk3Platform.Mouse;
+
         public Action Deactivated { get; set; }
         public Action<RawInputEventArgs> Input { get; set; }
         public Action<Rect> Paint { get; set; }
