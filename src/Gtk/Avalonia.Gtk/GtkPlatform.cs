@@ -51,7 +51,6 @@ namespace Avalonia.Gtk
                 .Bind<IClipboard>().ToSingleton<ClipboardImpl>()
                 .Bind<IStandardCursorFactory>().ToConstant(CursorFactory.Instance)
                 .Bind<IKeyboardDevice>().ToConstant(GtkKeyboardDevice.Instance)
-                .Bind<IMouseDevice>().ToConstant(GtkMouseDevice.Instance)
                 .Bind<IPlatformSettings>().ToConstant(s_instance)
                 .Bind<IPlatformThreadingInterface>().ToConstant(s_instance)
                 .Bind<IRendererFactory>().ToConstant(s_instance)

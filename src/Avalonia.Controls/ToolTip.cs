@@ -109,8 +109,7 @@ namespace Avalonia.Controls
                 {
                     throw new AvaloniaInternalException("Previous ToolTip not disposed.");
                 }
-
-                var cp = MouseDevice.Instance?.GetPosition(control);
+                var cp = (control.GetVisualRoot() as IInputRoot)?.MouseDevice?.GetPosition(control);
                 var position = control.PointToScreen(cp ?? new Point(0, 0)) + new Vector(0, 22);
 
                 s_popup = new PopupRoot();

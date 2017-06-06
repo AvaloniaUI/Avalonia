@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
+using JetBrains.Annotations;
 
 namespace Avalonia.Platform
 {
@@ -93,5 +94,11 @@ namespace Avalonia.Platform
         /// Gets or sets a method called when the underlying implementation is destroyed.
         /// </summary>
         Action Closed { get; set; }
+
+        /// <summary>
+        /// Gets a mouse device associated with toplevel
+        /// </summary>
+        [CanBeNull]
+        IMouseDevice MouseDevice { get; }
     }
 }
