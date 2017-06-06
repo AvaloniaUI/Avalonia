@@ -344,7 +344,7 @@ namespace Avalonia.Controls.Primitives
                     {
                         // Scales the Horizontal and Vertical offset to screen co-ordinates.
                         var screenOffset = new Point(HorizontalOffset * (PopupRoot as ILayoutRoot).LayoutScaling, VerticalOffset * (PopupRoot as ILayoutRoot).LayoutScaling);
-                        return ((IInputRoot)PopupRoot).MouseDevice.Position + screenOffset;
+                        return (((IInputRoot)PopupRoot)?.MouseDevice?.Position ?? default(Point)) + screenOffset;
                     }
 
                     return default(Point);
