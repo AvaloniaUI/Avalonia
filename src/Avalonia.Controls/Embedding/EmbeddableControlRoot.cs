@@ -39,6 +39,8 @@ namespace Avalonia.Controls.Embedding
             }
         }
 
+        public Size MeasureBase(Size availableSize) => base.MeasureOverride(availableSize);
+
         protected override Size MeasureOverride(Size availableSize)
         {
             var cs = PlatformImpl?.ClientSize ?? default(Size);

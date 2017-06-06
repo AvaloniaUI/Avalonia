@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:WindowsInteropTest"
              xmlns:embedding="clr-namespace:Avalonia.Win32.Embedding;assembly=Avalonia.Win32"
+             xmlns:wpf="clr-namespace:Avalonia.Win32.Interop.Wpf;assembly=Avalonia.Win32.Interop"
              mc:Ignorable="d" 
              d:DesignHeight="400" d:DesignWidth="400" MinWidth="500" MinHeight="400">
     <DockPanel>
@@ -15,7 +16,7 @@
             </StackPanel>
         </GroupBox>
         <GroupBox Header="Avalonia">
-            <embedding:WpfAvaloniaControlHost x:Name="Host"/>
+            <wpf:WpfAvaloniaHost x:Name="Host"/>
         </GroupBox>
     </DockPanel>
 </Window>
