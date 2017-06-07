@@ -35,10 +35,16 @@ namespace Avalonia.Win32.Interop.Wpf
 
         public class CustomControlRoot : EmbeddableControlRoot
         {
+            public CustomControlRoot()
+            {
+                EnforceClientSize = false;
+                
+            }
+
             public override void InvalidateMeasure()
             {
-                base.InvalidateMeasure();
                 ((FrameworkElement)PlatformImpl)?.InvalidateMeasure();
+                base.InvalidateMeasure();
             }
         }
 
@@ -95,10 +101,16 @@ namespace Avalonia.Win32.Interop.Wpf
             return base.ArrangeOverride(finalSize);
         }
 
-        protected override System.Windows.Size MeasureOverride(System.Windows.Size availableSize) => ControlRoot.MeasureBase(availableSize.ToAvaloniaSize()).ToWpfSize();
+        protected override System.Windows.Size MeasureOverride(System.Windows.Size availableSize)
+        {
+            ControlRoot.Measure(availableSize.ToAvaloniaSize());
+            return ControlRoot.DesiredSize.ToWpfSize();
+        }
 
         protected override void OnRender(DrawingContext drawingContext)
         {
+            if(ActualHeight == 0 || ActualWidth == 0)
+                return;
             _ttl.Paint?.Invoke(new Rect(0, 0, ActualWidth, ActualHeight));
             if (ImageSource != null)
                 drawingContext.DrawImage(ImageSource, new System.Windows.Rect(0, 0, ActualWidth, ActualHeight));
