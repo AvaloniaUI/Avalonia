@@ -399,7 +399,7 @@ namespace Avalonia.Layout
         }
 
         /// <inheritdoc/>
-        void ILayoutable.ChildDesiredSizeChanged(ILayoutable control)
+        public virtual void ChildDesiredSizeChanged(ILayoutable control)
         {
             if (!_measuring)
             {
