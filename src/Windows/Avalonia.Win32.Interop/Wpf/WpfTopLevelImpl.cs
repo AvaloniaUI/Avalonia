@@ -54,6 +54,10 @@ namespace Avalonia.Win32.Interop.Wpf
             ControlRoot = new EmbeddableControlRoot(this);
             SnapsToDevicePixels = true;
             Focusable = true;
+            DataContextChanged += delegate
+            {
+                ControlRoot.DataContext = DataContext;
+            };
         }
 
         private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wparam, IntPtr lparam, ref bool handled)
@@ -80,15 +84,18 @@ namespace Avalonia.Win32.Interop.Wpf
 
         IEnumerable<object> ITopLevelImpl.Surfaces => _surfaces;
 
+        private Size _previousSize;
         protected override System.Windows.Size ArrangeOverride(System.Windows.Size finalSize)
         {
             _finalSize = finalSize.ToAvaloniaSize();
+            if (_finalSize == _previousSize)
+                return finalSize;
+            _previousSize = _finalSize;
             _ttl.Resized?.Invoke(finalSize.ToAvaloniaSize());
             return base.ArrangeOverride(finalSize);
         }
 
-        protected override System.Windows.Size MeasureOverride(System.Windows.Size availableSize) 
-            => ControlRoot.MeasureBase(availableSize.ToAvaloniaSize()).ToWpfSize();
+        protected override System.Windows.Size MeasureOverride(System.Windows.Size availableSize) => ControlRoot.MeasureBase(availableSize.ToAvaloniaSize()).ToWpfSize();
 
         protected override void OnRender(DrawingContext drawingContext)
         {

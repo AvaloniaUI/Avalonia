@@ -29,6 +29,7 @@ namespace Avalonia.Win32.Interop.Wpf
             _impl.Visibility = Visibility.Visible;
             AddLogicalChild(_impl);
             AddVisualChild(_impl);
+            SnapsToDevicePixels = true;
         }
 
         public object Content
