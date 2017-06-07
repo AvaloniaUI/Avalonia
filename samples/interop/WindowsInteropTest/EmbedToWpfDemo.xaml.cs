@@ -32,6 +32,11 @@ namespace WindowsInteropTest
             {
                 view.AttachDevTools();
             };
+            var btn = (Avalonia.Controls.Button) RightBtn.Content;
+            btn.Click += delegate
+            {
+                btn.Content += "!";
+            };
 
         }
     }

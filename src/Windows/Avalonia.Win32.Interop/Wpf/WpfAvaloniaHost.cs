@@ -1,29 +1,35 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Markup;
 using System.Windows.Media;
+using Avalonia.Markup.Xaml.Styling;
+using Avalonia.Platform;
+using Avalonia.Styling;
 
 namespace Avalonia.Win32.Interop.Wpf
 {
-    public class WpfAvaloniaHost : FrameworkElement, IDisposable
+    [ContentProperty("Content")]
+    public class WpfAvaloniaHost : FrameworkElement, IDisposable, IAddChild
     {
-        private WpfTopLevelImpl _impl = new WpfTopLevelImpl();
+        private WpfTopLevelImpl _impl;
         private readonly SynchronizationContext _sync;
         public WpfAvaloniaHost()
         {
             _sync = SynchronizationContext.Current;
+            _impl = new WpfTopLevelImpl();
             _impl.ControlRoot.Prepare();
             _impl.Visibility = Visibility.Visible;
             AddLogicalChild(_impl);
             AddVisualChild(_impl);
         }
-        
 
         public object Content
         {
@@ -47,9 +53,13 @@ namespace Avalonia.Win32.Interop.Wpf
             }
         }
 
-        protected override System.Windows.Size MeasureOverride(System.Windows.Size constraint) 
-            => _impl.ControlRoot.MeasureBase(constraint.ToAvaloniaSize()).ToWpfSize();
-        
+        protected override System.Windows.Size MeasureOverride(System.Windows.Size constraint)
+        {
+            _impl.InvalidateMeasure();
+            _impl.Measure(constraint);
+            return _impl.DesiredSize;
+        }
+
         protected override System.Windows.Size ArrangeOverride(System.Windows.Size arrangeSize)
         {
             _impl.Arrange(new System.Windows.Rect(arrangeSize));
@@ -75,6 +85,19 @@ namespace Avalonia.Win32.Interop.Wpf
                 _impl = null;
                 GC.SuppressFinalize(this);
             }
+        }
+
+        void IAddChild.AddChild(object value)
+        {
+            if (Content == null)
+                Content = value;
+            else
+                throw new InvalidOperationException();
+        }
+
+        void IAddChild.AddText(string text)
+        {
+            //
         }
     }
 }

@@ -33,6 +33,15 @@ namespace Avalonia.Win32.Interop.Wpf
         public EmbeddableControlRoot ControlRoot { get; }
         internal ImageSource ImageSource { get; set; }
 
+        public class CustomControlRoot : EmbeddableControlRoot
+        {
+            public override void InvalidateMeasure()
+            {
+                base.InvalidateMeasure();
+                ((FrameworkElement)PlatformImpl)?.InvalidateMeasure();
+            }
+        }
+
         public WpfTopLevelImpl()
         {
             PresentationSource.AddSourceChangedHandler(this, OnSourceChanged);
@@ -157,6 +166,8 @@ namespace Avalonia.Win32.Interop.Wpf
         protected override void OnMouseWheel(MouseWheelEventArgs e) =>
             _ttl.Input?.Invoke(new RawMouseWheelEventArgs(_mouse, (uint) e.Timestamp, _inputRoot,
                 e.GetPosition(this).ToAvaloniaPoint(), new Vector(0, e.Delta), GetModifiers()));
+
+        protected override void OnMouseLeave(MouseEventArgs e) => MouseEvent(RawMouseEventType.LeaveWindow, e);
 
         protected override void OnKeyDown(KeyEventArgs e)
             => _ttl.Input?.Invoke(new RawKeyEventArgs(_keyboard, (uint) e.Timestamp, RawKeyEventType.KeyDown,

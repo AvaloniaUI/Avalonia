@@ -68,6 +68,10 @@
       <Project>{d2221c82-4a25-4583-9b43-d791e3f6820c}</Project>
       <Name>Avalonia.Controls</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\Avalonia.DotNetFrameworkRuntime\Avalonia.DotNetFrameworkRuntime.csproj">
+      <Project>{4a1abb09-9047-4bd5-a4ad-a055e52c5ee0}</Project>
+      <Name>Avalonia.DotNetFrameworkRuntime</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Avalonia.Input\Avalonia.Input.csproj">
       <Project>{62024b2d-53eb-4638-b26b-85eeaa54866e}</Project>
       <Name>Avalonia.Input</Name>
@@ -91,6 +95,14 @@
     <ProjectReference Include="..\..\Gtk\Avalonia.Cairo\Avalonia.Cairo.csproj">
       <Project>{fb05ac90-89ba-4f2f-a924-f37875fb547c}</Project>
       <Name>Avalonia.Cairo</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj">
+      <Project>{3e53a01a-b331-47f3-b828-4a5717e77a24}</Project>
+      <Name>Avalonia.Markup.Xaml</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Markup\Avalonia.Markup\Avalonia.Markup.csproj">
+      <Project>{6417e941-21bc-467b-a771-0de389353ce6}</Project>
+      <Name>Avalonia.Markup</Name>
     </ProjectReference>
     <ProjectReference Include="..\Avalonia.Win32\Avalonia.Win32.csproj">
       <Project>{811a76cf-1cf6-440f-963b-bbe31bd72a82}</Project>
