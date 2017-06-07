@@ -170,7 +170,10 @@ void RunCoreTest(string dir, Parameters parameters, bool net461Only)
             continue;
         Information("Running for " + fw);
         DotNetCoreTest(System.IO.Path.Combine(dir, System.IO.Path.GetFileName(dir)+".csproj"),
-            new DotNetCoreTestSettings{Framework = fw});
+            new DotNetCoreTestSettings {
+                Configuration = parameters.Configuration,
+                Framework = fw
+            });
     }
 }
 
