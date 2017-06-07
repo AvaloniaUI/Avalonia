@@ -40,10 +40,10 @@ namespace Avalonia.Win32.Interop.Wpf
                 EnforceClientSize = false;
             }
 
-            public override void ChildDesiredSizeChanged(ILayoutable control)
+            public override void InvalidateMeasure()
             {
                 ((FrameworkElement)PlatformImpl)?.InvalidateMeasure();
-                base.ChildDesiredSizeChanged(control);
+                base.InvalidateMeasure();
             }
 
             protected override void HandleResized(Size clientSize)
@@ -51,12 +51,6 @@ namespace Avalonia.Win32.Interop.Wpf
                 ClientSize = clientSize;
                 LayoutManager.Instance.ExecuteLayoutPass();
                 Renderer?.Resized(clientSize);
-            }
-
-            protected override void ArrangeCore(Rect finalRect)
-            {
-                base.ArrangeOverride(finalRect.Size);
-                Bounds = finalRect;
             }
         }
 

@@ -151,7 +151,7 @@ namespace Avalonia.Layout
 
             if (root != null)
             {
-                root.Arrange(new Rect(root.DesiredSize));
+                root.Arrange(new Rect(root.ClientSize));
             }
             else if (parent != null)
             {
