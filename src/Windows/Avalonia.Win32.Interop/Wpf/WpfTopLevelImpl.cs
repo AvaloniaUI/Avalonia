@@ -35,15 +35,14 @@ namespace Avalonia.Win32.Interop.Wpf
 
         public class CustomControlRoot : EmbeddableControlRoot
         {
-            public CustomControlRoot()
+            public CustomControlRoot(WpfTopLevelImpl impl) : base(impl)
             {
                 EnforceClientSize = false;
-                
             }
 
             public override void InvalidateMeasure()
             {
-                ((FrameworkElement)PlatformImpl)?.InvalidateMeasure();
+                ((FrameworkElement) PlatformImpl)?.InvalidateMeasure();
                 base.InvalidateMeasure();
             }
         }
@@ -57,7 +56,7 @@ namespace Avalonia.Win32.Interop.Wpf
             _mouse = new WpfMouseDevice(this);
             _keyboard = AvaloniaLocator.Current.GetService<IKeyboardDevice>();
 
-            ControlRoot = new EmbeddableControlRoot(this);
+            ControlRoot = new CustomControlRoot(this);
             SnapsToDevicePixels = true;
             Focusable = true;
             DataContextChanged += delegate
