@@ -2,9 +2,9 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Logging;
+using Avalonia.Rendering;
 using Avalonia.Threading;
 
 namespace Avalonia.Layout
@@ -14,8 +14,8 @@ namespace Avalonia.Layout
     /// </summary>
     public class LayoutManager : ILayoutManager
     {
-        private readonly HashSet<ILayoutable> _toMeasure = new HashSet<ILayoutable>();
-        private readonly HashSet<ILayoutable> _toArrange = new HashSet<ILayoutable>();
+        private readonly DirtyVisuals _toMeasure = new DirtyVisuals();
+        private readonly DirtyVisuals _toArrange = new DirtyVisuals();
         private bool _queued;
         private bool _running;
 
@@ -30,9 +30,12 @@ namespace Avalonia.Layout
             Contract.Requires<ArgumentNullException>(control != null);
             Dispatcher.UIThread.VerifyAccess();
 
-            _toMeasure.Add(control);
-            _toArrange.Add(control);
-            QueueLayoutPass();
+            if (control.IsAttachedToVisualTree)
+            {
+                _toMeasure.Add(control);
+                _toArrange.Add(control);
+                QueueLayoutPass();
+            }
         }
 
         /// <inheritdoc/>
@@ -41,8 +44,11 @@ namespace Avalonia.Layout
             Contract.Requires<ArgumentNullException>(control != null);
             Dispatcher.UIThread.VerifyAccess();
 
-            _toArrange.Add(control);
-            QueueLayoutPass();
+            if (control.IsAttachedToVisualTree)
+            {
+                _toArrange.Add(control);
+                QueueLayoutPass();
+            }
         }
 
         /// <inheritdoc/>
@@ -94,8 +100,8 @@ namespace Avalonia.Layout
         /// <inheritdoc/>
         public void ExecuteInitialLayoutPass(ILayoutRoot root)
         {
-            Measure(root);
-            Arrange(root);
+            root.Measure(Size.Infinity);
+            root.Arrange(new Rect(root.DesiredSize));
 
             // Running the initial layout pass may have caused some control to be invalidated
             // so run a full layout pass now (this usually due to scrollbars; its not known 
@@ -109,7 +115,7 @@ namespace Avalonia.Layout
             while (_toMeasure.Count > 0)
             {
                 var next = _toMeasure.First();
-                Measure(next);
+                Measure((ILayoutable)next);
             }
         }
 
@@ -118,27 +124,31 @@ namespace Avalonia.Layout
             while (_toArrange.Count > 0 && _toMeasure.Count == 0)
             {
                 var next = _toArrange.First();
-                Arrange(next);
+                Arrange((ILayoutable)next);
             }
         }
 
         private void Measure(ILayoutable control)
         {
-            var root = control as ILayoutRoot;
-            var parent = control.VisualParent as ILayoutable;
-
-            if (root != null)
+            if (!control.IsMeasureValid && control.IsAttachedToVisualTree)
             {
-                root.Measure(root.MaxClientSize);
-            }
-            else if (parent != null)
-            {
-                Measure(parent);
-            }
-
-            if (!control.IsMeasureValid)
-            {
-                control.Measure(control.PreviousMeasure.Value);
+                if (control.PreviousMeasure.HasValue)
+                {
+                    control.Measure(control.PreviousMeasure.Value);
+                }
+                else if (control is ILayoutRoot root)
+                {
+                    control.Measure(Size.Infinity);
+                }
+                else
+                {
+                    Logger.Error(
+                        LogArea.Layout,
+                        this,
+                        "A control of type {Type} was queued for measure but its parent of type {ParentType} did not queue itself.",
+                        control.GetType(),
+                        control.VisualParent?.GetType());
+                }
             }
 
             _toMeasure.Remove(control);
@@ -146,21 +156,21 @@ namespace Avalonia.Layout
 
         private void Arrange(ILayoutable control)
         {
-            var root = control as ILayoutRoot;
-            var parent = control.VisualParent as ILayoutable;
-
-            if (root != null)
+            if (!control.IsArrangeValid && control.IsAttachedToVisualTree)
             {
-                root.Arrange(new Rect(root.DesiredSize));
-            }
-            else if (parent != null)
-            {
-                Arrange(parent);
-            }
-
-            if (control.PreviousArrange.HasValue)
-            {
-                control.Arrange(control.PreviousArrange.Value);
+                if (control.PreviousArrange.HasValue)
+                {
+                    control.Arrange(control.PreviousArrange.Value);
+                }
+                else
+                {
+                    Logger.Error(
+                        LogArea.Layout,
+                        this,
+                        "A control of type {Type} was queued for arrange but its parent of type {ParentType} did not queue itself.",
+                        control.GetType(),
+                        control.VisualParent?.GetType());
+                }
             }
 
             _toArrange.Remove(control);
