@@ -296,7 +296,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
             target.Subscribe(_ => { });
 
-            converter.Verify(x => x.Convert(5.6, typeof(string), "foo", CultureInfo.CurrentUICulture));
+            converter.Verify(x => x.Convert(5.6, typeof(string), "foo", CultureInfo.InvariantCulture));
         }
 
         [Fact]
@@ -312,7 +312,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
             target.OnNext("bar");
 
-            converter.Verify(x => x.ConvertBack("bar", typeof(double), "foo", CultureInfo.CurrentUICulture));
+            converter.Verify(x => x.ConvertBack("bar", typeof(double), "foo", CultureInfo.InvariantCulture));
         }
 
         [Fact]
