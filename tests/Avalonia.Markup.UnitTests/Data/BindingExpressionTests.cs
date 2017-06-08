@@ -200,6 +200,7 @@ namespace Avalonia.Markup.UnitTests.Data
                 DefaultValueConverter.Instance);
             var result = await target.Take(1);
 
+#if NET461
             Assert.Equal(
                 new BindingNotification(
                     new AggregateException(
@@ -207,6 +208,13 @@ namespace Avalonia.Markup.UnitTests.Data
                         new InvalidCastException("Could not convert FallbackValue 'bar' to 'System.Int32'")),
                     BindingErrorType.Error),
                 result);
+#else
+            Assert.Equal(
+                new BindingNotification(
+                    new InvalidCastException("Could not convert FallbackValue 'bar' to 'System.Int32'"),
+                    BindingErrorType.Error),
+                result);
+#endif
         }
 
         [Fact]
@@ -226,6 +234,7 @@ namespace Avalonia.Markup.UnitTests.Data
                 DefaultValueConverter.Instance);
             var result = await target.Take(1);
 
+#if NET461
             Assert.Equal(
                 new BindingNotification(
                     new AggregateException(
@@ -233,6 +242,13 @@ namespace Avalonia.Markup.UnitTests.Data
                         new InvalidCastException("Could not convert FallbackValue 'bar' to 'System.Int32'")),
                     BindingErrorType.Error),
                 result);
+#else
+            Assert.Equal(
+                new BindingNotification(
+                    new InvalidCastException("Could not convert FallbackValue 'bar' to 'System.Int32'"),
+                    BindingErrorType.Error),
+                result);
+#endif
         }
 
         [Fact]
