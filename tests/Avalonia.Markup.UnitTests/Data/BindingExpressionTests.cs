@@ -203,7 +203,7 @@ namespace Avalonia.Markup.UnitTests.Data
             Assert.Equal(
                 new BindingNotification(
                     new AggregateException(
-                        new InvalidCastException("Could not convert 'foo' to 'System.Int32'"),
+                        new InvalidCastException("'foo' is not a valid number."),
                         new InvalidCastException("Could not convert FallbackValue 'bar' to 'System.Int32'")),
                     BindingErrorType.Error),
                 result);
@@ -229,7 +229,7 @@ namespace Avalonia.Markup.UnitTests.Data
             Assert.Equal(
                 new BindingNotification(
                     new AggregateException(
-                        new InvalidCastException("Could not convert 'foo' to 'System.Int32'"),
+                        new InvalidCastException("'foo' is not a valid number."),
                         new InvalidCastException("Could not convert FallbackValue 'bar' to 'System.Int32'")),
                     BindingErrorType.Error),
                 result);
