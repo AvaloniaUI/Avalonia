@@ -286,6 +286,12 @@ namespace Avalonia.Markup.UnitTests.Data
         [Fact]
         public void Should_Pass_ConverterParameter_To_Convert()
         {
+#if NET461
+            Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
+#else
+            CultureInfo.CurrentUICulture = CultureInfo.InvariantCulture;
+#endif
+
             var data = new Class1 { DoubleValue = 5.6 };
             var converter = new Mock<IValueConverter>();
             var target = new BindingExpression(
@@ -302,6 +308,12 @@ namespace Avalonia.Markup.UnitTests.Data
         [Fact]
         public void Should_Pass_ConverterParameter_To_ConvertBack()
         {
+#if NET461
+            Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
+#else
+            CultureInfo.CurrentUICulture = CultureInfo.InvariantCulture;
+#endif
+
             var data = new Class1 { DoubleValue = 5.6 };
             var converter = new Mock<IValueConverter>();
             var target = new BindingExpression(
@@ -318,6 +330,12 @@ namespace Avalonia.Markup.UnitTests.Data
         [Fact]
         public void Should_Handle_DataValidation()
         {
+#if NET461
+            Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
+#else
+            CultureInfo.CurrentUICulture = CultureInfo.InvariantCulture;
+#endif
+
             var data = new Class1 { DoubleValue = 5.6 };
             var converter = new Mock<IValueConverter>();
             var target = new BindingExpression(new ExpressionObserver(data, "DoubleValue", true), typeof(string));
