@@ -38,3 +38,4 @@ using Xunit;
 
 // Don't run tests in parallel.
 [assembly: CollectionBehavior(DisableTestParallelization = true)]
+[assembly: CollectionBehavior(MaxParallelThreads = 1)]
