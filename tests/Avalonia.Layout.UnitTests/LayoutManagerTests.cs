@@ -229,6 +229,38 @@ namespace Avalonia.Layout.UnitTests
         }
 
         [Fact]
+        public void Measures_Root_With_EmbeddedLayoutConstraint_If_Implements_IEmbeddedLayoutRoot()
+        {
+            var target = new LayoutManager();
+
+            using (Start(target))
+            {
+                var root = new EmbeddedTestRoot();
+                var availableSize = default(Size);
+
+                // Should not measure with this size.
+                root.EmbeddedConstraint = new Size(123, 456);
+                root.MaxClientSize = new Size(789, 123);
+
+                root.DoMeasureOverride = (_, s) =>
+                {
+                    availableSize = s;
+                    return new Size(100, 100);
+                };
+
+                target.ExecuteInitialLayoutPass(root);
+
+                Assert.Equal(new Size(123, 456), availableSize);
+
+                root.EmbeddedConstraint = new Size(12, 34);
+                root.InvalidateMeasure();
+                target.ExecuteLayoutPass();
+
+                Assert.Equal(new Size(12, 34), availableSize);
+            }
+        }
+
+        [Fact]
         public void Arranges_Root_With_DesiredSize()
         {
             var target = new LayoutManager();
@@ -298,6 +330,11 @@ namespace Avalonia.Layout.UnitTests
             var result = AvaloniaLocator.EnterScope();
             AvaloniaLocator.CurrentMutable.Bind<ILayoutManager>().ToConstant(layoutManager);
             return result;
+        }
+
+        private class EmbeddedTestRoot : LayoutTestRoot, IEmbeddedLayoutRoot
+        {
+            public Size EmbeddedConstraint { get; set; } = Size.Infinity;
         }
     }
 }

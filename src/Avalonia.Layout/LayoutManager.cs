@@ -100,7 +100,7 @@ namespace Avalonia.Layout
         /// <inheritdoc/>
         public void ExecuteInitialLayoutPass(ILayoutRoot root)
         {
-            root.Measure(Size.Infinity);
+            root.Measure((root as IEmbeddedLayoutRoot)?.EmbeddedConstraint ?? Size.Infinity);
             root.Arrange(new Rect(root.DesiredSize));
 
             // Running the initial layout pass may have caused some control to be invalidated
@@ -134,7 +134,7 @@ namespace Avalonia.Layout
             {
                 if (control is ILayoutRoot root)
                 {
-                    control.Measure(Size.Infinity);
+                    control.Measure((control as IEmbeddedLayoutRoot)?.EmbeddedConstraint ?? Size.Infinity);
                 }
                 else if (control.PreviousMeasure.HasValue)
                 {
