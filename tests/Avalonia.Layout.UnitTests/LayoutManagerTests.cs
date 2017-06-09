@@ -229,6 +229,37 @@ namespace Avalonia.Layout.UnitTests
         }
 
         [Fact]
+        public void Arranges_Root_With_DesiredSize()
+        {
+            var target = new LayoutManager();
+
+            using (Start(target))
+            {
+                var root = new LayoutTestRoot
+                {
+                    Width = 100,
+                    Height = 100,
+                };
+
+                var arrangeSize = default(Size);
+
+                root.DoArrangeOverride = (_, s) =>
+                {
+                    arrangeSize = s;
+                    return s;
+                };
+
+                target.ExecuteInitialLayoutPass(root);
+                Assert.Equal(new Size(100, 100), arrangeSize);
+
+                root.Width = 120;
+
+                target.ExecuteLayoutPass();
+                Assert.Equal(new Size(120, 100), arrangeSize);
+            }
+        }
+
+        [Fact]
         public void Invalidating_Child_Remeasures_Parent()
         {
             var target = new LayoutManager();
