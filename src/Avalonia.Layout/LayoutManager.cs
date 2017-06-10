@@ -2,10 +2,10 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Linq;
 using Avalonia.Logging;
-using Avalonia.Rendering;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
+using Avalonia.VisualTree.Collections;
 
 namespace Avalonia.Layout
 {
@@ -14,8 +14,8 @@ namespace Avalonia.Layout
     /// </summary>
     public class LayoutManager : ILayoutManager
     {
-        private readonly DirtyVisuals _toMeasure = new DirtyVisuals();
-        private readonly DirtyVisuals _toArrange = new DirtyVisuals();
+        private readonly VisualInvalidationList _toMeasure = new VisualInvalidationList();
+        private readonly VisualInvalidationList _toArrange = new VisualInvalidationList();
         private bool _queued;
         private bool _running;
 
@@ -110,74 +110,89 @@ namespace Avalonia.Layout
             ExecuteLayoutPass();
         }
 
+        /// <inheritdoc/>
+        public void Dequeue(ILayoutable control)
+        {
+            _toMeasure.Remove(control);
+            _toArrange.Remove(control);
+        }
+
         private void ExecuteMeasurePass()
         {
-            while (_toMeasure.Count > 0)
+            ILayoutable control;
+
+            while ((control = (ILayoutable)_toMeasure.TryDequeue()) != null)
             {
-                var next = _toMeasure.First();
-                Measure((ILayoutable)next);
+                if (!control.IsAttachedToVisualTree)
+                {
+#if DEBUG
+                    throw new AvaloniaInternalException(
+                        "Control did not dequeue itself from LayoutManager when removed from visual tree.");
+#else
+                    continue;
+#endif
+                }
+
+                if (!control.IsMeasureValid)
+                {
+                    if (control is ILayoutRoot root)
+                    {
+                        control.Measure((control as IEmbeddedLayoutRoot)?.EmbeddedConstraint ?? Size.Infinity);
+                    }
+                    else if (control.PreviousMeasure.HasValue)
+                    {
+                        control.Measure(control.PreviousMeasure.Value);
+                    }
+                    else
+                    {
+                        Logger.Error(
+                            LogArea.Layout,
+                            this,
+                            "A control of type {Type} was queued for measure but its parent of type {ParentType} did not queue itself.",
+                            control.GetType(),
+                            control.VisualParent?.GetType());
+                    }
+                }
             }
         }
 
         private void ExecuteArrangePass()
         {
-            while (_toArrange.Count > 0 && _toMeasure.Count == 0)
-            {
-                var next = _toArrange.First();
-                Arrange((ILayoutable)next);
-            }
-        }
+            ILayoutable control;
 
-        private void Measure(ILayoutable control)
-        {
-            if (!control.IsMeasureValid && control.IsAttachedToVisualTree)
+            while ((control = (ILayoutable)_toArrange.TryDequeue()) != null)
             {
-                if (control is ILayoutRoot root)
+                if (!control.IsAttachedToVisualTree)
                 {
-                    control.Measure((control as IEmbeddedLayoutRoot)?.EmbeddedConstraint ?? Size.Infinity);
+#if DEBUG
+                    throw new AvaloniaInternalException(
+                        "Control did not dequeue itself from LayoutManager when removed from visual tree.");
+#else
+                    continue;
+#endif
                 }
-                else if (control.PreviousMeasure.HasValue)
-                {
-                    control.Measure(control.PreviousMeasure.Value);
-                }
-                else
-                {
-                    Logger.Error(
-                        LogArea.Layout,
-                        this,
-                        "A control of type {Type} was queued for measure but its parent of type {ParentType} did not queue itself.",
-                        control.GetType(),
-                        control.VisualParent?.GetType());
-                }
-            }
 
-            _toMeasure.Remove(control);
-        }
-
-        private void Arrange(ILayoutable control)
-        {
-            if (!control.IsArrangeValid && control.IsAttachedToVisualTree)
-            {
-                if (control is ILayoutRoot root)
+                if (!control.IsArrangeValid && control.IsAttachedToVisualTree)
                 {
-                    control.Arrange(new Rect(root.DesiredSize));
-                }
-                else if (control.PreviousArrange.HasValue)
-                {
-                    control.Arrange(control.PreviousArrange.Value);
-                }
-                else
-                {
-                    Logger.Error(
-                        LogArea.Layout,
-                        this,
-                        "A control of type {Type} was queued for arrange but its parent of type {ParentType} did not queue itself.",
-                        control.GetType(),
-                        control.VisualParent?.GetType());
+                    if (control is ILayoutRoot root)
+                    {
+                        control.Arrange(new Rect(root.DesiredSize));
+                    }
+                    else if (control.PreviousArrange.HasValue)
+                    {
+                        control.Arrange(control.PreviousArrange.Value);
+                    }
+                    else
+                    {
+                        Logger.Error(
+                            LogArea.Layout,
+                            this,
+                            "A control of type {Type} was queued for arrange but its parent of type {ParentType} did not queue itself.",
+                            control.GetType(),
+                            control.VisualParent?.GetType());
+                    }
                 }
             }
-
-            _toArrange.Remove(control);
         }
 
         private void QueueLayoutPass()

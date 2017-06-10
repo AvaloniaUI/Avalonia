@@ -609,6 +609,12 @@ namespace Avalonia.Layout
             return finalSize;
         }
 
+        protected override void OnDetachedFromVisualTreeCore(VisualTreeAttachmentEventArgs e)
+        {
+            LayoutManager.Instance?.Dequeue(this);
+            base.OnDetachedFromVisualTreeCore(e);
+        }
+
         /// <inheritdoc/>
         protected override sealed void OnVisualParentChanged(IVisual oldParent, IVisual newParent)
         {

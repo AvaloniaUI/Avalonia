@@ -41,5 +41,14 @@ namespace Avalonia.Layout
         /// it to carry out the initial layout of the control.
         /// </remarks>
         void ExecuteInitialLayoutPass(ILayoutRoot root);
+
+        /// <summary>
+        /// Removes the control from the measure and arrange queues.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <remarks>
+        /// This method is called when a control is removed from its visual tree.
+        /// </remarks>
+        void Dequeue(ILayoutable control);
     }
 }
