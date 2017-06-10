@@ -124,21 +124,21 @@ namespace Avalonia.Layout
 
         private void Measure(ILayoutable control)
         {
-            var root = control as ILayoutRoot;
-            var parent = control.VisualParent as ILayoutable;
-
-            if (root != null)
-            {
-                root.Measure(root.MaxClientSize);
-            }
-            else if (parent != null)
+            if (control.VisualParent is ILayoutable parent)
             {
                 Measure(parent);
             }
 
             if (!control.IsMeasureValid)
             {
-                control.Measure(control.PreviousMeasure.Value);
+                if (control is ILayoutRoot root)
+                {
+                    root.Measure(Size.Infinity);
+                }
+                else if (!control.IsMeasureValid && control.IsAttachedToVisualTree)
+                {
+                    control.Measure(control.PreviousMeasure.Value);
+                }
             }
 
             _toMeasure.Remove(control);
@@ -146,21 +146,21 @@ namespace Avalonia.Layout
 
         private void Arrange(ILayoutable control)
         {
-            var root = control as ILayoutRoot;
-            var parent = control.VisualParent as ILayoutable;
-
-            if (root != null)
-            {
-                root.Arrange(new Rect(root.DesiredSize));
-            }
-            else if (parent != null)
+            if (control.VisualParent is ILayoutable parent)
             {
                 Arrange(parent);
             }
 
-            if (control.PreviousArrange.HasValue)
+            if (!control.IsArrangeValid)
             {
-                control.Arrange(control.PreviousArrange.Value);
+                if (control is ILayoutRoot root)
+                {
+                    root.Arrange(new Rect(control.DesiredSize));
+                }
+                else if (!control.IsArrangeValid && control.IsAttachedToVisualTree)
+                {
+                    control.Arrange(control.PreviousArrange.Value);
+                }
             }
 
             _toArrange.Remove(control);
