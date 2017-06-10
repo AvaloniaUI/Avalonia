@@ -32,7 +32,7 @@ namespace Avalonia.Rendering
         /// <param name="visual">The dirty visual.</param>
         public void Add(IVisual visual)
         {
-            var distance = visual.CalculateDistanceFromAncestor(visual.VisualRoot);
+            var distance = visual.DistanceFromRoot;
 
             if (_index.TryGetValue(visual, out int existingDistance))
             {

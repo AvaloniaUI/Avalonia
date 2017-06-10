@@ -89,6 +89,7 @@ namespace Avalonia
         private Rect _bounds;
         private IRenderRoot _visualRoot;
         private IVisual _visualParent;
+        private int _distanceFromRoot;
 
         /// <summary>
         /// Initializes static members of the <see cref="Visual"/> class.
@@ -254,6 +255,9 @@ namespace Avalonia
         /// </summary>
         IRenderRoot IVisual.VisualRoot => VisualRoot;
 
+        /// <inheritdoc/>
+        int IVisual.DistanceFromRoot => _distanceFromRoot;
+
         /// <summary>
         /// Invalidates the visual and queues a repaint.
         /// </summary>
@@ -322,6 +326,7 @@ namespace Avalonia
             Logger.Verbose(LogArea.Visual, this, "Attached to visual tree");
 
             _visualRoot = e.Root;
+            _distanceFromRoot = _visualParent.DistanceFromRoot + 1;
 
             if (RenderTransform != null)
             {
@@ -350,6 +355,7 @@ namespace Avalonia
             Logger.Verbose(LogArea.Visual, this, "Detached from visual tree");
 
             _visualRoot = null;
+            _distanceFromRoot = 0;
 
             if (RenderTransform != null)
             {

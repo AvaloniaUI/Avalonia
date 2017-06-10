@@ -97,6 +97,17 @@ namespace Avalonia.VisualTree
         IRenderRoot VisualRoot { get; }
 
         /// <summary>
+        /// Gets the distance of the control from the root of the visual tree.
+        /// </summary>
+        /// <remarks>
+        /// This property returns the number of parent traversals required to reach the root of the
+        /// visual tree. For example if the root is the parent of the control, this would return 1,
+        /// of the root is the grandparent, it would return 2. If the control is not attached to a
+        /// visual tree or the control is the root of a visual tree, returns 0.
+        /// </remarks>
+        int DistanceFromRoot { get; }
+
+        /// <summary>
         /// Gets or sets the Z index of the node.
         /// </summary>
         int ZIndex { get; set; }
