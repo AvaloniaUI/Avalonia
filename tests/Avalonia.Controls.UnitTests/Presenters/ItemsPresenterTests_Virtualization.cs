@@ -223,10 +223,10 @@ namespace Avalonia.Controls.UnitTests.Presenters
             using (UnitTestApplication.Start(new TestServices()))
             {
                 var target = CreateTarget(mode: ItemVirtualizationMode.None);
-                var scroll = (ScrollContentPresenter)target.Parent;
+                var scroll = (TestScroller)target.Parent;
 
-                scroll.Measure(new Size(100, 100));
-                scroll.Arrange(new Rect(0, 0, 100, 100));
+                scroll.Width = scroll.Height = 100;
+                scroll.LayoutManager.ExecuteInitialLayoutPass(scroll);
 
                 // Ensure than an intermediate measure pass doesn't add more controls than it
                 // should. This can happen if target gets measured with Size.Infinity which
