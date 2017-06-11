@@ -129,13 +129,13 @@ namespace Avalonia.Layout
                 Measure(parent);
             }
 
-            if (!control.IsMeasureValid)
+            if (!control.IsMeasureValid && control.IsAttachedToVisualTree)
             {
                 if (control is ILayoutRoot root)
                 {
                     root.Measure(Size.Infinity);
                 }
-                else if (!control.IsMeasureValid && control.IsAttachedToVisualTree)
+                else
                 {
                     control.Measure(control.PreviousMeasure.Value);
                 }
@@ -151,13 +151,13 @@ namespace Avalonia.Layout
                 Arrange(parent);
             }
 
-            if (!control.IsArrangeValid)
+            if (!control.IsArrangeValid && control.IsAttachedToVisualTree)
             {
                 if (control is ILayoutRoot root)
                 {
                     root.Arrange(new Rect(control.DesiredSize));
                 }
-                else if (!control.IsArrangeValid && control.IsAttachedToVisualTree)
+                else
                 {
                     control.Arrange(control.PreviousArrange.Value);
                 }
