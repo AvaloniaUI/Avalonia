@@ -14,8 +14,8 @@ namespace Avalonia.Layout
     /// </summary>
     public class LayoutManager : ILayoutManager
     {
-        private readonly HashSet<ILayoutable> _toMeasure = new HashSet<ILayoutable>();
-        private readonly HashSet<ILayoutable> _toArrange = new HashSet<ILayoutable>();
+        private readonly Queue<ILayoutable> _toMeasure = new Queue<ILayoutable>();
+        private readonly Queue<ILayoutable> _toArrange = new Queue<ILayoutable>();
         private bool _queued;
         private bool _running;
 
@@ -30,9 +30,12 @@ namespace Avalonia.Layout
             Contract.Requires<ArgumentNullException>(control != null);
             Dispatcher.UIThread.VerifyAccess();
 
-            _toMeasure.Add(control);
-            _toArrange.Add(control);
-            QueueLayoutPass();
+            if (control.IsAttachedToVisualTree)
+            {
+                _toMeasure.Enqueue(control);
+                _toArrange.Enqueue(control);
+                QueueLayoutPass();
+            }
         }
 
         /// <inheritdoc/>
@@ -41,8 +44,11 @@ namespace Avalonia.Layout
             Contract.Requires<ArgumentNullException>(control != null);
             Dispatcher.UIThread.VerifyAccess();
 
-            _toArrange.Add(control);
-            QueueLayoutPass();
+            if (control.IsAttachedToVisualTree)
+            {
+                _toArrange.Enqueue(control);
+                QueueLayoutPass();
+            }
         }
 
         /// <inheritdoc/>
@@ -108,8 +114,12 @@ namespace Avalonia.Layout
         {
             while (_toMeasure.Count > 0)
             {
-                var next = _toMeasure.First();
-                Measure(next);
+                var control = _toMeasure.Dequeue();
+
+                if (!control.IsMeasureValid && control.IsAttachedToVisualTree)
+                {
+                    Measure(control);
+                }
             }
         }
 
@@ -117,8 +127,12 @@ namespace Avalonia.Layout
         {
             while (_toArrange.Count > 0 && _toMeasure.Count == 0)
             {
-                var next = _toArrange.First();
-                Arrange(next);
+                var control = _toArrange.Dequeue();
+
+                if (!control.IsArrangeValid && control.IsAttachedToVisualTree)
+                {
+                    Arrange(control);
+                }
             }
         }
 
@@ -140,8 +154,6 @@ namespace Avalonia.Layout
                     control.Measure(control.PreviousMeasure.Value);
                 }
             }
-
-            _toMeasure.Remove(control);
         }
 
         private void Arrange(ILayoutable control)
@@ -162,8 +174,6 @@ namespace Avalonia.Layout
                     control.Arrange(control.PreviousArrange.Value);
                 }
             }
-
-            _toArrange.Remove(control);
         }
 
         private void QueueLayoutPass()
