@@ -30,12 +30,19 @@ namespace Avalonia.Layout
             Contract.Requires<ArgumentNullException>(control != null);
             Dispatcher.UIThread.VerifyAccess();
 
-            if (control.IsAttachedToVisualTree)
+            if (!control.IsAttachedToVisualTree)
             {
-                _toMeasure.Enqueue(control);
-                _toArrange.Enqueue(control);
-                QueueLayoutPass();
+#if DEBUG
+                throw new AvaloniaInternalException(
+                    "LayoutManager.InvalidateMeasure called on a control that is detached from the visual tree.");
+#else
+                return;
+#endif
             }
+
+            _toMeasure.Enqueue(control);
+            _toArrange.Enqueue(control);
+            QueueLayoutPass();
         }
 
         /// <inheritdoc/>
@@ -44,11 +51,18 @@ namespace Avalonia.Layout
             Contract.Requires<ArgumentNullException>(control != null);
             Dispatcher.UIThread.VerifyAccess();
 
-            if (control.IsAttachedToVisualTree)
+            if (!control.IsAttachedToVisualTree)
             {
-                _toArrange.Enqueue(control);
-                QueueLayoutPass();
+#if DEBUG
+                throw new AvaloniaInternalException(
+                    "LayoutManager.InvalidateArrange called on a control that is detached from the visual tree.");
+#else
+                return;
+#endif
             }
+
+            _toArrange.Enqueue(control);
+            QueueLayoutPass();
         }
 
         /// <inheritdoc/>
