@@ -264,8 +264,6 @@ namespace Avalonia.Layout.UnitTests
         {
             using (AvaloniaLocator.EnterScope())
             {
-                AvaloniaLocator.CurrentMutable.Bind<ILayoutManager>().ToConstant(layoutManager);
-
                 Border border;
                 StackPanel panel;
 
