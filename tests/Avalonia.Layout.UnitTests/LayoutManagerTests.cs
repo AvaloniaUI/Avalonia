@@ -14,15 +14,14 @@ namespace Avalonia.Layout.UnitTests
         [Fact]
         public void Measures_And_Arranges_InvalidateMeasured_Control()
         {
-            var target = new LayoutManager();
             var control = new LayoutTestControl();
             var root = new LayoutTestRoot { Child = control };
 
-            target.ExecuteInitialLayoutPass(root);
+            root.LayoutManager.ExecuteInitialLayoutPass(root);
             control.Measured = control.Arranged = false;
 
             control.InvalidateMeasure();
-            target.ExecuteLayoutPass();
+            root.LayoutManager.ExecuteLayoutPass();
 
             Assert.True(control.Measured);
             Assert.True(control.Arranged);
@@ -31,15 +30,14 @@ namespace Avalonia.Layout.UnitTests
         [Fact]
         public void Arranges_InvalidateArranged_Control()
         {
-            var target = new LayoutManager();
             var control = new LayoutTestControl();
             var root = new LayoutTestRoot { Child = control };
 
-            target.ExecuteInitialLayoutPass(root);
+            root.LayoutManager.ExecuteInitialLayoutPass(root);
             control.Measured = control.Arranged = false;
 
             control.InvalidateArrange();
-            target.ExecuteLayoutPass();
+            root.LayoutManager.ExecuteLayoutPass();
 
             Assert.False(control.Measured);
             Assert.True(control.Arranged);
@@ -48,15 +46,14 @@ namespace Avalonia.Layout.UnitTests
         [Fact]
         public void Measures_Parent_Of_Newly_Added_Control()
         {
-            var target = new LayoutManager();
             var control = new LayoutTestControl();
             var root = new LayoutTestRoot();
 
-            target.ExecuteInitialLayoutPass(root);
+            root.LayoutManager.ExecuteInitialLayoutPass(root);
             root.Child = control;
             root.Measured = root.Arranged = false;
 
-            target.ExecuteLayoutPass();
+            root.LayoutManager.ExecuteLayoutPass();
 
             Assert.True(root.Measured);
             Assert.True(root.Arranged);
@@ -67,7 +64,6 @@ namespace Avalonia.Layout.UnitTests
         [Fact]
         public void Measures_In_Correct_Order()
         {
-            var target = new LayoutManager();
             LayoutTestControl control1;
             LayoutTestControl control2;
             var root = new LayoutTestRoot
@@ -89,14 +85,14 @@ namespace Avalonia.Layout.UnitTests
             root.DoMeasureOverride = MeasureOverride;
             control1.DoMeasureOverride = MeasureOverride;
             control2.DoMeasureOverride = MeasureOverride;
-            target.ExecuteInitialLayoutPass(root);
+            root.LayoutManager.ExecuteInitialLayoutPass(root);
 
             control2.InvalidateMeasure();
             control1.InvalidateMeasure();
             root.InvalidateMeasure();
 
             order.Clear();
-            target.ExecuteLayoutPass();
+            root.LayoutManager.ExecuteLayoutPass();
 
             Assert.Equal(new ILayoutable[] { root, control1, control2 }, order);
         }
@@ -104,7 +100,6 @@ namespace Avalonia.Layout.UnitTests
         [Fact]
         public void Measures_Root_And_Grandparent_In_Correct_Order()
         {
-            var target = new LayoutManager();
             LayoutTestControl control1;
             LayoutTestControl control2;
             var root = new LayoutTestRoot
@@ -126,13 +121,13 @@ namespace Avalonia.Layout.UnitTests
             root.DoMeasureOverride = MeasureOverride;
             control1.DoMeasureOverride = MeasureOverride;
             control2.DoMeasureOverride = MeasureOverride;
-            target.ExecuteInitialLayoutPass(root);
+            root.LayoutManager.ExecuteInitialLayoutPass(root);
 
             control2.InvalidateMeasure();
             root.InvalidateMeasure();
 
             order.Clear();
-            target.ExecuteLayoutPass();
+            root.LayoutManager.ExecuteLayoutPass();
 
             Assert.Equal(new ILayoutable[] { root, control2 }, order);
         }
@@ -140,16 +135,15 @@ namespace Avalonia.Layout.UnitTests
         [Fact]
         public void Doesnt_Measure_Non_Invalidated_Root()
         {
-            var target = new LayoutManager();
             var control = new LayoutTestControl();
             var root = new LayoutTestRoot { Child = control };
 
-            target.ExecuteInitialLayoutPass(root);
+            root.LayoutManager.ExecuteInitialLayoutPass(root);
             root.Measured = root.Arranged = false;
             control.Measured = control.Arranged = false;
 
             control.InvalidateMeasure();
-            target.ExecuteLayoutPass();
+            root.LayoutManager.ExecuteLayoutPass();
 
             Assert.False(root.Measured);
             Assert.False(root.Arranged);
@@ -160,16 +154,15 @@ namespace Avalonia.Layout.UnitTests
         [Fact]
         public void Doesnt_Measure_Removed_Control()
         {
-            var target = new LayoutManager();
             var control = new LayoutTestControl();
             var root = new LayoutTestRoot { Child = control };
 
-            target.ExecuteInitialLayoutPass(root);
+            root.LayoutManager.ExecuteInitialLayoutPass(root);
             control.Measured = control.Arranged = false;
 
             control.InvalidateMeasure();
             root.Child = null;
-            target.ExecuteLayoutPass();
+            root.LayoutManager.ExecuteLayoutPass();
 
             Assert.False(control.Measured);
             Assert.False(control.Arranged);
@@ -178,7 +171,6 @@ namespace Avalonia.Layout.UnitTests
         [Fact]
         public void Measures_Root_With_Infinity()
         {
-            var target = new LayoutManager();
             var root = new LayoutTestRoot();
             var availableSize = default(Size);
 
@@ -191,7 +183,7 @@ namespace Avalonia.Layout.UnitTests
                 return new Size(100, 100);
             };
 
-            target.ExecuteInitialLayoutPass(root);
+            root.LayoutManager.ExecuteInitialLayoutPass(root);
 
             Assert.Equal(Size.Infinity, availableSize);
         }
@@ -199,7 +191,6 @@ namespace Avalonia.Layout.UnitTests
         [Fact]
         public void Arranges_Root_With_DesiredSize()
         {
-            var target = new LayoutManager();
             var root = new LayoutTestRoot
             {
                 Width = 100,
@@ -213,13 +204,13 @@ namespace Avalonia.Layout.UnitTests
                 arrangeSize = s;
                 return s;
             };
- 
-            target.ExecuteInitialLayoutPass(root);
+
+            root.LayoutManager.ExecuteInitialLayoutPass(root);
             Assert.Equal(new Size(100, 100), arrangeSize);
  
             root.Width = 120;
- 
-            target.ExecuteLayoutPass();
+
+            root.LayoutManager.ExecuteLayoutPass();
             Assert.Equal(new Size(120, 100), arrangeSize);
         }
 
