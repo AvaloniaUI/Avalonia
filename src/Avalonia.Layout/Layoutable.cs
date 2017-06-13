@@ -620,15 +620,6 @@ namespace Avalonia.Layout
             base.OnVisualParentChanged(oldParent, newParent);
         }
 
-        protected override void OnAttachedToVisualTreeCore(VisualTreeAttachmentEventArgs e)
-        {
-            base.OnAttachedToVisualTreeCore(e);
-            if(!IsMeasureValid)
-                (VisualRoot as ILayoutRoot)?.LayoutManager.InvalidateMeasure(this);
-            else if (!IsArrangeValid)
-                (VisualRoot as ILayoutRoot)?.LayoutManager.InvalidateArrange(this);
-        }
-
         /// <summary>
         /// Calls <see cref="InvalidateMeasure"/> on the control on which a property changed.
         /// </summary>
