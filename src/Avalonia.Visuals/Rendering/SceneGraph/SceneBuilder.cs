@@ -274,7 +274,7 @@ namespace Avalonia.Rendering.SceneGraph
                 }
             }
 
-            if (node.LayerRoot == node.Visual)
+            if (node.LayerRoot == node.Visual && node.Visual != scene.Root.Visual)
             {
                 scene.Layers.Remove(node.LayerRoot);
             }
