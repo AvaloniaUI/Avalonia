@@ -165,7 +165,7 @@ namespace Avalonia.Layout
                 {
                     root.Measure(Size.Infinity);
                 }
-                else
+                else if (control.PreviousMeasure.HasValue)
                 {
                     control.Measure(control.PreviousMeasure.Value);
                 }
@@ -185,7 +185,7 @@ namespace Avalonia.Layout
                 {
                     root.Arrange(new Rect(control.DesiredSize));
                 }
-                else
+                else if (control.PreviousArrange.HasValue)
                 {
                     control.Arrange(control.PreviousArrange.Value);
                 }
