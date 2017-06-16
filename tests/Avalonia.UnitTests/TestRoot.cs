@@ -44,7 +44,7 @@ namespace Avalonia.UnitTests
 
         public Size ClientSize { get; set; } = new Size(100, 100);
 
-        public Size MaxClientSize => Size.Infinity;
+        public Size MaxClientSize { get; set; } = Size.Infinity;
 
         public double LayoutScaling => 1;
 
@@ -61,6 +61,8 @@ namespace Avalonia.UnitTests
         public IKeyboardNavigationHandler KeyboardNavigationHandler => null;
 
         public IInputElement PointerOverElement { get; set; }
+
+        public IMouseDevice MouseDevice { get; set; }
 
         public bool ShowAccessKeys { get; set; }
 

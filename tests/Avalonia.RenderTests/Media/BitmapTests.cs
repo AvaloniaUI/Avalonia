@@ -43,7 +43,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
 
             public IntPtr Address { get; }
 
-            public Size Dpi { get; } = new Size(96, 96);
+            public Vector Dpi { get; } = new Vector(96, 96);
 
             public PixelFormat Format { get; }
 

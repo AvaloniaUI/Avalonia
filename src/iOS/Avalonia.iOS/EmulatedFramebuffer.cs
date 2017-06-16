@@ -24,7 +24,7 @@ namespace Avalonia.iOS
             Width = (int) frame.Width * factor;
             Height = (int) frame.Height * factor;
             RowBytes = Width * 4;
-            Dpi = new Size(96, 96) * factor;
+            Dpi = new Vector(96, 96) * factor;
             Format = PixelFormat.Rgba8888;
             Address = Marshal.AllocHGlobal(Height * RowBytes);
         }
@@ -53,7 +53,7 @@ namespace Avalonia.iOS
         public int Width { get; }
         public int Height { get; }
         public int RowBytes { get; }
-        public Size Dpi { get; }
+        public Vector Dpi { get; }
         public PixelFormat Format { get; }
     }
 }

@@ -368,6 +368,14 @@ namespace Avalonia.LeakTests
             public void Resized(Size size)
             {
             }
+
+            public void Start()
+            {
+            }
+
+            public void Stop()
+            {
+            }
         }
     }
 }

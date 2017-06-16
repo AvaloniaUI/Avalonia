@@ -44,7 +44,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         public int Width { get; }
         public int Height { get; }
         public int RowBytes { get; }
-        public Size Dpi { get; } = new Size(96, 96);
+        public Vector Dpi { get; } = new Vector(96, 96);
         public PixelFormat Format { get; }
 
         [DllImport("android")]
