@@ -33,6 +33,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
                 layerFactory: MockLayerFactory(root).Object,
                 dispatcher: dispatcher.Object);
 
+            target.Start();
             RunFrame(loop);
 
 #if !NETCOREAPP1_1 // Delegate.Method is not available in netcoreapp1.1
@@ -57,6 +58,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
                 layerFactory: MockLayerFactory(root).Object,
                 dispatcher: dispatcher);
 
+            target.Start();
             RunFrame(loop);
 
             sceneBuilder.Verify(x => x.UpdateAll(It.IsAny<Scene>()));
@@ -76,6 +78,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
                 layerFactory: MockLayerFactory(root).Object,
                 dispatcher: dispatcher);
 
+            target.Start();
             IgnoreFirstFrame(loop, sceneBuilder);
             RunFrame(loop);
 
@@ -111,6 +114,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
                 layerFactory: MockLayerFactory(root).Object,
                 dispatcher: dispatcher);
 
+            target.Start();
             IgnoreFirstFrame(loop, sceneBuilder);
             target.AddDirty(border);
             target.AddDirty(canvas);
@@ -154,6 +158,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
                 layerFactory: layers.Object,
                 dispatcher: dispatcher);
 
+            target.Start();
             RunFrame(loop);
 
             layers.Verify(x => x.CreateLayer(root, root.ClientSize, 96, 96));
@@ -194,6 +199,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
                 dispatcher: new ImmediateDispatcher());
             root.Renderer = target;
 
+            target.Start();
             RunFrame(loop);
 
             var rootContext = layerFactory.GetMockDrawingContext(root);

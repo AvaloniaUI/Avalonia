@@ -116,6 +116,7 @@ namespace Avalonia.Controls
 
             try
             {
+                Renderer?.Stop();
                 PlatformImpl?.Hide();
                 IsVisible = false;
             }
@@ -138,6 +139,7 @@ namespace Avalonia.Controls
                 IsVisible = true;
                 LayoutManager.Instance.ExecuteInitialLayoutPass(this);
                 PlatformImpl?.Show();
+                Renderer?.Start();
             }
             finally
             {

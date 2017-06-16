@@ -225,8 +225,14 @@ namespace Avalonia.Controls
         /// </summary>
         public override void Hide()
         {
+            if (!IsVisible)
+            {
+                return;
+            }
+
             using (BeginAutoSizing())
             {
+                Renderer?.Stop();
                 PlatformImpl?.Hide();
             }
 
@@ -252,6 +258,7 @@ namespace Avalonia.Controls
             using (BeginAutoSizing())
             {
                 PlatformImpl?.Show();
+                Renderer?.Start();
             }
         }
 
@@ -296,6 +303,8 @@ namespace Avalonia.Controls
 
                 var modal = PlatformImpl?.ShowDialog();
                 var result = new TaskCompletionSource<TResult>();
+
+                Renderer?.Start();
 
                 Observable.FromEventPattern<EventHandler, EventArgs>(
                     x => this.Closed += x,

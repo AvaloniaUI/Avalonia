@@ -149,6 +149,16 @@ namespace Avalonia.Rendering
         }
 
         /// <inheritdoc/>
+        public void Start()
+        {
+        }
+
+        /// <inheritdoc/>
+        public void Stop()
+        {
+        }
+
+        /// <inheritdoc/>
         Size IVisualBrushRenderer.GetRenderTargetSize(IVisualBrush brush)
         {
             (brush.Visual as IVisualBrushInitialize)?.EnsureInitialized();

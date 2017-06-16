@@ -27,6 +27,7 @@ namespace Avalonia.Rendering
         private readonly RenderLayers _layers;
         private readonly IRenderLayerFactory _layerFactory;
 
+        private bool _running;
         private Scene _scene;
         private IRenderTarget _renderTarget;
         private DirtyVisuals _dirty;
@@ -60,12 +61,7 @@ namespace Avalonia.Rendering
             _scene = new Scene(root);
             _layerFactory = layerFactory ?? new DefaultRenderLayerFactory();
             _layers = new RenderLayers(_layerFactory);
-
-            if (renderLoop != null)
-            {
-                _renderLoop = renderLoop;
-                _renderLoop.Tick += OnRenderLoopTick;
-            }
+            _renderLoop = renderLoop;
         }
 
         /// <summary>
@@ -115,13 +111,7 @@ namespace Avalonia.Rendering
         /// <summary>
         /// Disposes of the renderer and detaches from the render loop.
         /// </summary>
-        public void Dispose()
-        {
-            if (_renderLoop != null)
-            {
-                _renderLoop.Tick -= OnRenderLoopTick;
-            }
-        }
+        public void Dispose() => Stop();
 
         /// <inheritdoc/>
         public IEnumerable<IVisual> HitTest(Point p, Func<IVisual, bool> filter)
@@ -143,6 +133,26 @@ namespace Avalonia.Rendering
         /// <inheritdoc/>
         public void Resized(Size size)
         {
+        }
+
+        /// <inheritdoc/>
+        public void Start()
+        {
+            if (!_running && _renderLoop != null)
+            {
+                _renderLoop.Tick += OnRenderLoopTick;
+                _running = true;
+            }
+        }
+
+        /// <inheritdoc/>
+        public void Stop()
+        {
+            if (_running && _renderLoop != null)
+            {
+                _renderLoop.Tick -= OnRenderLoopTick;
+                _running = false;
+            }
         }
 
         /// <inheritdoc/>

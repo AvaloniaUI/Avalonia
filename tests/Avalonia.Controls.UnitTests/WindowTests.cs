@@ -6,6 +6,7 @@
 
 using System.Collections.Generic;
 using Avalonia.Platform;
+using Avalonia.Rendering;
 using Avalonia.UnitTests;
 using Moq;
 using Xunit;
@@ -182,6 +183,55 @@ namespace Avalonia.Controls.UnitTests
                 windowImpl.Object.Closed();
 
                 Assert.Empty(Window.OpenWindows);
+            }
+        }
+
+        [Fact]
+        public void Showing_Should_Start_Renderer()
+        {
+            var renderer = new Mock<IRenderer>();
+
+            using (UnitTestApplication.Start(TestServices.StyledWindow
+                .With(renderer: (root, loop) => renderer.Object)))
+            {
+                var target = new Window();
+
+                target.Show();
+
+                renderer.Verify(x => x.Start(), Times.Once);
+            }
+        }
+
+        [Fact]
+        public void ShowDialog_Should_Start_Renderer()
+        {
+            var renderer = new Mock<IRenderer>();
+
+            using (UnitTestApplication.Start(TestServices.StyledWindow
+                .With(renderer: (root, loop) => renderer.Object)))
+            {
+                var target = new Window();
+
+                target.Show();
+
+                renderer.Verify(x => x.Start(), Times.Once);
+            }
+        }
+
+        [Fact]
+        public void Hiding_Should_Stop_Renderer()
+        {
+            var renderer = new Mock<IRenderer>();
+
+            using (UnitTestApplication.Start(TestServices.StyledWindow
+                .With(renderer: (root, loop) => renderer.Object)))
+            {
+                var target = new Window();
+
+                target.Show();
+                target.Hide();
+
+                renderer.Verify(x => x.Stop(), Times.Once);
             }
         }
 
