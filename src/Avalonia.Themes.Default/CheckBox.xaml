@@ -1,10 +1,11 @@
 <Styles xmlns="https://github.com/avaloniaui">
   <Style Selector="CheckBox">
+    <Setter Property="Background" Value="Transparent"/>
     <Setter Property="BorderBrush" Value="{StyleResource ThemeBorderMidBrush}"/>
     <Setter Property="BorderThickness" Value="{StyleResource ThemeBorderThickness}"/>
     <Setter Property="Template">
       <ControlTemplate>
-        <Grid ColumnDefinitions="Auto,*">
+        <Grid ColumnDefinitions="Auto,*" Background="{TemplateBinding Background}">
           <Border Name="border"
                   BorderBrush="{TemplateBinding BorderBrush}"
                   BorderThickness="{TemplateBinding BorderThickness}"
