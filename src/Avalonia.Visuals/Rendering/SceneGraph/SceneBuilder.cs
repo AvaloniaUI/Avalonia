@@ -199,6 +199,12 @@ namespace Avalonia.Rendering.SceneGraph
                     }
                     catch { }
 
+                    if (visual is Visual)
+                    {
+                        var transformed = new TransformedBounds(new Rect(visual.Bounds.Size), clip, node.Transform);
+                        BoundsTracker.SetTransformedBounds((Visual)visual, transformed);
+                    }
+
                     if (forceRecurse)
                     {
                         foreach (var child in visual.VisualChildren.OrderBy(x => x, ZIndexComparer.Instance))
@@ -263,12 +269,16 @@ namespace Avalonia.Rendering.SceneGraph
 
             scene.Layers[node.LayerRoot].Dirty.Add(node.Bounds);
 
+            if (node.Visual is Visual v)
+            {
+                BoundsTracker.SetTransformedBounds(v, null);
+            }
+
             foreach (VisualNode child in node.Children)
             {
                 var geometry = child as IDrawOperation;
-                var visual = child as VisualNode;
 
-                if (visual != null)
+                if (child is VisualNode visual)
                 {
                     Deindex(scene, visual);
                 }
