@@ -105,13 +105,10 @@ namespace Avalonia.Controls
         {
             if (control != null && control.IsVisible && control.GetVisualRoot() != null)
             {
-                if (s_popup != null)
-                {
-                    throw new AvaloniaInternalException("Previous ToolTip not disposed.");
-                }
                 var cp = (control.GetVisualRoot() as IInputRoot)?.MouseDevice?.GetPosition(control);
                 var position = control.PointToScreen(cp ?? new Point(0, 0)) + new Vector(0, 22);
 
+                DisposeTooltip();
                 s_popup = new PopupRoot();
                 ((ISetLogicalParent)s_popup).SetParent(control);
                 s_popup.Content = new ToolTip { Content = GetTip(control) };
@@ -144,18 +141,22 @@ namespace Avalonia.Controls
 
             if (control == s_current)
             {
-                if (s_popup != null)
-                {
-                    // Clear the ToolTip's Content in case it has control content: this will
-                    // reset its visual parent allowing it to be used again.
-                    ((ToolTip)s_popup.Content).Content = null;
-
-                    // Dispose of the popup.
-                    s_popup.Dispose();
-                    s_popup = null;
-                }
-
+                DisposeTooltip();
                 s_show.OnNext(null);
+            }
+        }
+
+        private static void DisposeTooltip()
+        {
+            if (s_popup != null)
+            {
+                // Clear the ToolTip's Content in case it has control content: this will
+                // reset its visual parent allowing it to be used again.
+                ((ToolTip)s_popup.Content).Content = null;
+
+                // Dispose of the popup.
+                s_popup.Dispose();
+                s_popup = null;
             }
         }
     }
