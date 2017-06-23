@@ -165,6 +165,32 @@ namespace Avalonia.Controls.UnitTests.Presenters
         }
 
         [Fact]
+        public void Should_Use_ContentTemplate_If_Specified()
+        {
+            var (target, _) = CreateTarget();
+
+            target.ContentTemplate = new FuncDataTemplate<string>(_ => new Canvas());
+            target.Content = "Foo";
+
+            Assert.IsType<Canvas>(target.Child);
+        }
+
+        [Fact]
+        public void Should_Update_If_ContentTemplate_Changed()
+        {
+            var (target, _) = CreateTarget();
+
+            target.Content = "Foo";
+            Assert.IsType<TextBlock>(target.Child);
+
+            target.ContentTemplate = new FuncDataTemplate<string>(_ => new Canvas());
+            Assert.IsType<Canvas>(target.Child);
+
+            target.ContentTemplate = null;
+            Assert.IsType<TextBlock>(target.Child);
+        }
+
+        [Fact]
         public void Assigning_Control_To_Content_After_NonControl_Should_Clear_DataContext()
         {
             var (target, _) = CreateTarget();

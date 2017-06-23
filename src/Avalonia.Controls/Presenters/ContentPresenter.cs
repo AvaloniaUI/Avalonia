@@ -89,6 +89,7 @@ namespace Avalonia.Controls.Presenters
         static ContentPresenter()
         {
             ContentProperty.Changed.AddClassHandler<ContentPresenter>(x => x.ContentChanged);
+            ContentTemplateProperty.Changed.AddClassHandler<ContentPresenter>(x => x.ContentChanged);
             TemplatedParentProperty.Changed.AddClassHandler<ContentPresenter>(x => x.TemplatedParentChanged);
         }
 
