@@ -527,6 +527,34 @@ namespace Avalonia.Controls.UnitTests.Primitives
             }
         }
 
+        [Fact]
+        public void Moving_To_New_LogicalTree_Should_Detach_Attach_Template_Child()
+        {
+            using (UnitTestApplication.Start(TestServices.RealStyler))
+            {
+                TestTemplatedControl target;
+                var root = new TestRoot
+                {
+                    Child = target = new TestTemplatedControl
+                    {
+                        Template = new FuncControlTemplate(_ => new Decorator()),
+                    }
+                };
+
+                Assert.NotNull(target.Template);
+                target.ApplyTemplate();
+
+                var templateChild = (ILogical)target.GetVisualChildren().Single();
+                Assert.True(templateChild.IsAttachedToLogicalTree);
+
+                root.Child = null;
+                Assert.False(templateChild.IsAttachedToLogicalTree);
+
+                var newRoot = new TestRoot { Child = target };
+                Assert.True(templateChild.IsAttachedToLogicalTree);
+            }
+        }
+
         private static IControl ScrollingContentControlTemplate(ContentControl control)
         {
             return new Border

@@ -144,6 +144,11 @@ namespace Avalonia.Styling.UnitTests
                 throw new NotImplementedException();
             }
 
+            public void NotifyAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
+            {
+                throw new NotImplementedException();
+            }
+
             public void NotifyDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
             {
                 throw new NotImplementedException();
