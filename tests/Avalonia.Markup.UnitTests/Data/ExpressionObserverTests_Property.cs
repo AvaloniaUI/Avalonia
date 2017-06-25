@@ -11,13 +11,14 @@ using Avalonia.Data;
 using Avalonia.Markup.Data;
 using Avalonia.UnitTests;
 using Xunit;
+using System.Threading.Tasks;
 
 namespace Avalonia.Markup.UnitTests.Data
 {
     public class ExpressionObserverTests_Property
     {
         [Fact]
-        public async void Should_Get_Simple_Property_Value()
+        public async Task Should_Get_Simple_Property_Value()
         {
             var data = new { Foo = "foo" };
             var target = new ExpressionObserver(data, "Foo");
@@ -38,7 +39,7 @@ namespace Avalonia.Markup.UnitTests.Data
         }
 
         [Fact]
-        public async void Should_Get_Simple_Property_Value_Null()
+        public async Task Should_Get_Simple_Property_Value_Null()
         {
             var data = new { Foo = (string)null };
             var target = new ExpressionObserver(data, "Foo");
@@ -48,7 +49,7 @@ namespace Avalonia.Markup.UnitTests.Data
         }
 
         [Fact]
-        public async void Should_Get_Simple_Property_From_Base_Class()
+        public async Task Should_Get_Simple_Property_From_Base_Class()
         {
             var data = new Class3 { Foo = "foo" };
             var target = new ExpressionObserver(data, "Foo");
@@ -58,7 +59,7 @@ namespace Avalonia.Markup.UnitTests.Data
         }
 
         [Fact]
-        public async void Should_Return_UnsetValue_For_Root_Null()
+        public async Task Should_Return_UnsetValue_For_Root_Null()
         {
             var data = new Class3 { Foo = "foo" };
             var target = new ExpressionObserver(default(object), "Foo");
@@ -68,7 +69,7 @@ namespace Avalonia.Markup.UnitTests.Data
         }
 
         [Fact]
-        public async void Should_Return_UnsetValue_For_Root_UnsetValue()
+        public async Task Should_Return_UnsetValue_For_Root_UnsetValue()
         {
             var data = new Class3 { Foo = "foo" };
             var target = new ExpressionObserver(AvaloniaProperty.UnsetValue, "Foo");
@@ -78,7 +79,7 @@ namespace Avalonia.Markup.UnitTests.Data
         }
 
         [Fact]
-        public async void Should_Return_UnsetValue_For_Observable_Root_Null()
+        public async Task Should_Return_UnsetValue_For_Observable_Root_Null()
         {
             var data = new Class3 { Foo = "foo" };
             var target = new ExpressionObserver(Observable.Return(default(object)), "Foo");
@@ -88,7 +89,7 @@ namespace Avalonia.Markup.UnitTests.Data
         }
 
         [Fact]
-        public async void Should_Return_UnsetValue_For_Observable_Root_UnsetValue()
+        public async Task Should_Return_UnsetValue_For_Observable_Root_UnsetValue()
         {
             var data = new Class3 { Foo = "foo" };
             var target = new ExpressionObserver(Observable.Return(AvaloniaProperty.UnsetValue), "Foo");
@@ -98,7 +99,7 @@ namespace Avalonia.Markup.UnitTests.Data
         }
 
         [Fact]
-        public async void Should_Get_Simple_Property_Chain()
+        public async Task Should_Get_Simple_Property_Chain()
         {
             var data = new { Foo = new { Bar = new { Baz = "baz" } }  };
             var target = new ExpressionObserver(data, "Foo.Bar.Baz");
@@ -119,7 +120,7 @@ namespace Avalonia.Markup.UnitTests.Data
         }
 
         [Fact]
-        public async void Should_Return_BindingNotification_Error_For_Broken_Chain()
+        public async Task Should_Return_BindingNotification_Error_For_Broken_Chain()
         {
             var data = new { Foo = new { Bar = 1 } };
             var target = new ExpressionObserver(data, "Foo.Bar.Baz");

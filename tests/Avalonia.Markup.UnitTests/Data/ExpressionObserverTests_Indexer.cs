@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Reactive.Linq;
+using System.Threading.Tasks;
 using Avalonia.Collections;
 using Avalonia.Diagnostics;
 using Avalonia.Markup.Data;
@@ -16,7 +17,7 @@ namespace Avalonia.Markup.UnitTests.Data
     public class ExpressionObserverTests_Indexer
     {
         [Fact]
-        public async void Should_Get_Array_Value()
+        public async Task Should_Get_Array_Value()
         {
             var data = new { Foo = new [] { "foo", "bar" } };
             var target = new ExpressionObserver(data, "Foo[1]");
@@ -26,7 +27,7 @@ namespace Avalonia.Markup.UnitTests.Data
         }
 
         [Fact]
-        public async void Should_Get_UnsetValue_For_Invalid_Array_Index()
+        public async Task Should_Get_UnsetValue_For_Invalid_Array_Index()
         {
             var data = new { Foo = new[] { "foo", "bar" } };
             var target = new ExpressionObserver(data, "Foo[invalid]");
@@ -36,7 +37,7 @@ namespace Avalonia.Markup.UnitTests.Data
         }
 
         [Fact]
-        public async void Should_Get_UnsetValue_For_Invalid_Dictionary_Index()
+        public async Task Should_Get_UnsetValue_For_Invalid_Dictionary_Index()
         {
             var data = new { Foo = new Dictionary<int, string> { { 1, "foo" } } };
             var target = new ExpressionObserver(data, "Foo[invalid]");
@@ -46,7 +47,7 @@ namespace Avalonia.Markup.UnitTests.Data
         }
 
         [Fact]
-        public async void Should_Get_UnsetValue_For_Object_Without_Indexer()
+        public async Task Should_Get_UnsetValue_For_Object_Without_Indexer()
         {
             var data = new { Foo = 5 };
             var target = new ExpressionObserver(data, "Foo[noindexer]");
@@ -56,7 +57,7 @@ namespace Avalonia.Markup.UnitTests.Data
         }
 
         [Fact]
-        public async void Should_Get_MultiDimensional_Array_Value()
+        public async Task Should_Get_MultiDimensional_Array_Value()
         {
             var data = new { Foo = new[,] { { "foo", "bar" }, { "baz", "qux" } } };
             var target = new ExpressionObserver(data, "Foo[1, 1]");
@@ -66,7 +67,7 @@ namespace Avalonia.Markup.UnitTests.Data
         }
 
         [Fact]
-        public async void Should_Get_Value_For_String_Indexer()
+        public async Task Should_Get_Value_For_String_Indexer()
         {
             var data = new { Foo = new Dictionary<string, string> { { "foo", "bar" }, { "baz", "qux" } } };
             var target = new ExpressionObserver(data, "Foo[foo]");
@@ -76,7 +77,7 @@ namespace Avalonia.Markup.UnitTests.Data
         }
 
         [Fact]
-        public async void Should_Get_Value_For_Non_String_Indexer()
+        public async Task Should_Get_Value_For_Non_String_Indexer()
         {
             var data = new { Foo = new Dictionary<double, string> { { 1.0, "bar" }, { 2.0, "qux" } } };
             var target = new ExpressionObserver(data, "Foo[1.0]");
@@ -86,7 +87,7 @@ namespace Avalonia.Markup.UnitTests.Data
         }
 
         [Fact]
-        public async void Array_Out_Of_Bounds_Should_Return_UnsetValue()
+        public async Task Array_Out_Of_Bounds_Should_Return_UnsetValue()
         {
             var data = new { Foo = new[] { "foo", "bar" } };
             var target = new ExpressionObserver(data, "Foo[2]");
@@ -96,7 +97,7 @@ namespace Avalonia.Markup.UnitTests.Data
         }
 
         [Fact]
-        public async void Array_With_Wrong_Dimensions_Should_Return_UnsetValue()
+        public async Task Array_With_Wrong_Dimensions_Should_Return_UnsetValue()
         {
             var data = new { Foo = new[] { "foo", "bar" } };
             var target = new ExpressionObserver(data, "Foo[1,2]");
@@ -106,7 +107,7 @@ namespace Avalonia.Markup.UnitTests.Data
         }
 
         [Fact]
-        public async void List_Out_Of_Bounds_Should_Return_UnsetValue()
+        public async Task List_Out_Of_Bounds_Should_Return_UnsetValue()
         {
             var data = new { Foo = new List<string> { "foo", "bar" } };
             var target = new ExpressionObserver(data, "Foo[2]");
@@ -116,7 +117,7 @@ namespace Avalonia.Markup.UnitTests.Data
         }
 
         [Fact]
-        public async void Should_Get_List_Value()
+        public async Task Should_Get_List_Value()
         {
             var data = new { Foo = new List<string> { "foo", "bar" } };
             var target = new ExpressionObserver(data, "Foo[1]");

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Reactive.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Avalonia.Data;
 using Avalonia.Markup.Data;
 using Avalonia.UnitTests;
@@ -17,7 +18,7 @@ namespace Avalonia.Markup.UnitTests.Data
     public class BindingExpressionTests : IClassFixture<InvariantCultureFixture>
     {
         [Fact]
-        public async void Should_Get_Simple_Property_Value()
+        public async Task Should_Get_Simple_Property_Value()
         {
             var data = new Class1 { StringValue = "foo" };
             var target = new BindingExpression(new ExpressionObserver(data, "StringValue"), typeof(string));
@@ -49,7 +50,7 @@ namespace Avalonia.Markup.UnitTests.Data
         }
 
         [Fact]
-        public async void Should_Convert_Get_String_To_Double()
+        public async Task Should_Convert_Get_String_To_Double()
         {
             var data = new Class1 { StringValue = "5.6" };
             var target = new BindingExpression(new ExpressionObserver(data, "StringValue"), typeof(double));
@@ -59,7 +60,7 @@ namespace Avalonia.Markup.UnitTests.Data
         }
 
         [Fact]
-        public async void Getting_Invalid_Double_String_Should_Return_BindingError()
+        public async Task Getting_Invalid_Double_String_Should_Return_BindingError()
         {
             var data = new Class1 { StringValue = "foo" };
             var target = new BindingExpression(new ExpressionObserver(data, "StringValue"), typeof(double));
@@ -69,7 +70,7 @@ namespace Avalonia.Markup.UnitTests.Data
         }
 
         [Fact]
-        public async void Should_Coerce_Get_Null_Double_String_To_UnsetValue()
+        public async Task Should_Coerce_Get_Null_Double_String_To_UnsetValue()
         {
             var data = new Class1 { StringValue = null };
             var target = new BindingExpression(new ExpressionObserver(data, "StringValue"), typeof(double));
@@ -90,7 +91,7 @@ namespace Avalonia.Markup.UnitTests.Data
         }
 
         [Fact]
-        public async void Should_Convert_Get_Double_To_String()
+        public async Task Should_Convert_Get_Double_To_String()
         {
             var data = new Class1 { DoubleValue = 5.6 };
             var target = new BindingExpression(new ExpressionObserver(data, "DoubleValue"), typeof(string));
@@ -111,7 +112,7 @@ namespace Avalonia.Markup.UnitTests.Data
         }
 
         [Fact]
-        public async void Should_Return_BindingNotification_With_FallbackValue_For_NonConvertibe_Target_Value()
+        public async Task Should_Return_BindingNotification_With_FallbackValue_For_NonConvertibe_Target_Value()
         {
             var data = new Class1 { StringValue = "foo" };
             var target = new BindingExpression(
@@ -130,7 +131,7 @@ namespace Avalonia.Markup.UnitTests.Data
         }
 
         [Fact]
-        public async void Should_Return_BindingNotification_With_FallbackValue_For_NonConvertibe_Target_Value_With_Data_Validation()
+        public async Task Should_Return_BindingNotification_With_FallbackValue_For_NonConvertibe_Target_Value_With_Data_Validation()
         {
             var data = new Class1 { StringValue = "foo" };
             var target = new BindingExpression(
@@ -149,7 +150,7 @@ namespace Avalonia.Markup.UnitTests.Data
         }
 
         [Fact(Skip="Result is not always AggregateException.")]
-        public async void Should_Return_BindingNotification_For_Invalid_FallbackValue()
+        public async Task Should_Return_BindingNotification_For_Invalid_FallbackValue()
         {
             var data = new Class1 { StringValue = "foo" };
             var target = new BindingExpression(
@@ -169,7 +170,7 @@ namespace Avalonia.Markup.UnitTests.Data
         }
 
         [Fact(Skip="Result is not always AggregateException.")]
-        public async void Should_Return_BindingNotification_For_Invalid_FallbackValue_With_Data_Validation()
+        public async Task Should_Return_BindingNotification_For_Invalid_FallbackValue_With_Data_Validation()
         {
             var data = new Class1 { StringValue = "foo" };
             var target = new BindingExpression(
@@ -236,11 +237,12 @@ namespace Avalonia.Markup.UnitTests.Data
             Assert.Equal(0, data.DoubleValue);
         }
 
-        [Fact(Skip="Moq.MockException")]
+        [Fact]
         public void Should_Pass_ConverterParameter_To_Convert()
         {
             var data = new Class1 { DoubleValue = 5.6 };
             var converter = new Mock<IValueConverter>();
+
             var target = new BindingExpression(
                 new ExpressionObserver(data, "DoubleValue"),
                 typeof(string),
@@ -249,10 +251,10 @@ namespace Avalonia.Markup.UnitTests.Data
 
             target.Subscribe(_ => { });
 
-            converter.Verify(x => x.Convert(5.6, typeof(string), "foo", CultureInfo.InvariantCulture));
+            converter.Verify(x => x.Convert(5.6, typeof(string), "foo", CultureInfo.CurrentCulture));
         }
 
-        [Fact(Skip="Moq.MockException")]
+        [Fact]
         public void Should_Pass_ConverterParameter_To_ConvertBack()
         {
             var data = new Class1 { DoubleValue = 5.6 };
@@ -265,7 +267,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
             target.OnNext("bar");
 
-            converter.Verify(x => x.ConvertBack("bar", typeof(double), "foo", CultureInfo.InvariantCulture));
+            converter.Verify(x => x.ConvertBack("bar", typeof(double), "foo", CultureInfo.CurrentCulture));
         }
 
         [Fact(Skip="Moq.MockException")]
