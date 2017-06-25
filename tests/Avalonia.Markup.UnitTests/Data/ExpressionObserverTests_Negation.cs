@@ -20,6 +20,8 @@ namespace Avalonia.Markup.UnitTests.Data
             var result = await target.Take(1);
 
             Assert.Equal(false, result);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -30,6 +32,8 @@ namespace Avalonia.Markup.UnitTests.Data
             var result = await target.Take(1);
 
             Assert.Equal(true, result);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -40,6 +44,8 @@ namespace Avalonia.Markup.UnitTests.Data
             var result = await target.Take(1);
 
             Assert.Equal(false, result);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -50,6 +56,8 @@ namespace Avalonia.Markup.UnitTests.Data
             var result = await target.Take(1);
 
             Assert.Equal(true, result);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -60,6 +68,8 @@ namespace Avalonia.Markup.UnitTests.Data
             var result = await target.Take(1);
 
             Assert.Equal(false, result);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -74,6 +84,8 @@ namespace Avalonia.Markup.UnitTests.Data
                     new InvalidCastException($"Unable to convert 'foo' to bool."),
                     BindingErrorType.Error), 
                 result);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -88,6 +100,8 @@ namespace Avalonia.Markup.UnitTests.Data
                     new InvalidCastException($"Unable to convert 'System.Object' to bool."),
                     BindingErrorType.Error),
                 result);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -97,6 +111,8 @@ namespace Avalonia.Markup.UnitTests.Data
             var target = new ExpressionObserver(data, "!Foo");
 
             Assert.False(target.SetValue("bar"));
+
+            GC.KeepAlive(data);
         }
     }
 }
