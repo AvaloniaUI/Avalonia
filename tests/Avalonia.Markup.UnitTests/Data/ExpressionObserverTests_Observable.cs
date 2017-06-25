@@ -29,6 +29,8 @@ namespace Avalonia.Markup.UnitTests.Data
                 sync.ExecutePostedCallbacks();
 
                 Assert.Equal(new[] { source }, result);
+
+                GC.KeepAlive(data);
             }
         }
 
@@ -47,6 +49,8 @@ namespace Avalonia.Markup.UnitTests.Data
                 sync.ExecutePostedCallbacks();
 
                 Assert.Equal(new[] { "foo", "bar" }, result);
+
+                GC.KeepAlive(data);
             }
         }
 
@@ -67,6 +71,8 @@ namespace Avalonia.Markup.UnitTests.Data
 
                 sub.Dispose();
                 Assert.Equal(0, data.PropertyChangedSubscriptionCount);
+
+                GC.KeepAlive(data);
             }
         }
 
@@ -87,6 +93,8 @@ namespace Avalonia.Markup.UnitTests.Data
                 // What does it mean to have data validation on an observable? Without a use-case
                 // it's hard to know what to do here so for the moment the value is returned.
                 Assert.Equal(new[] { "foo", "bar" }, result);
+
+                GC.KeepAlive(data);
             }
         }
 
@@ -107,6 +115,8 @@ namespace Avalonia.Markup.UnitTests.Data
 
                 sub.Dispose();
                 Assert.Equal(0, data.PropertyChangedSubscriptionCount);
+
+                GC.KeepAlive(data);
             }
         }
 
@@ -132,6 +142,8 @@ namespace Avalonia.Markup.UnitTests.Data
                     result);
 
                 sub.Dispose();
+
+                GC.KeepAlive(data);
             }
         }
 

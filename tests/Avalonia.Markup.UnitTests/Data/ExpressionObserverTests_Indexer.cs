@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Reactive.Linq;
+using System.Threading.Tasks;
 using Avalonia.Collections;
 using Avalonia.Diagnostics;
 using Avalonia.Markup.Data;
@@ -16,113 +17,135 @@ namespace Avalonia.Markup.UnitTests.Data
     public class ExpressionObserverTests_Indexer
     {
         [Fact]
-        public async void Should_Get_Array_Value()
+        public async Task Should_Get_Array_Value()
         {
             var data = new { Foo = new [] { "foo", "bar" } };
             var target = new ExpressionObserver(data, "Foo[1]");
             var result = await target.Take(1);
 
             Assert.Equal("bar", result);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
-        public async void Should_Get_UnsetValue_For_Invalid_Array_Index()
+        public async Task Should_Get_UnsetValue_For_Invalid_Array_Index()
         {
             var data = new { Foo = new[] { "foo", "bar" } };
             var target = new ExpressionObserver(data, "Foo[invalid]");
             var result = await target.Take(1);
 
             Assert.Equal(AvaloniaProperty.UnsetValue, result);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
-        public async void Should_Get_UnsetValue_For_Invalid_Dictionary_Index()
+        public async Task Should_Get_UnsetValue_For_Invalid_Dictionary_Index()
         {
             var data = new { Foo = new Dictionary<int, string> { { 1, "foo" } } };
             var target = new ExpressionObserver(data, "Foo[invalid]");
             var result = await target.Take(1);
 
             Assert.Equal(AvaloniaProperty.UnsetValue, result);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
-        public async void Should_Get_UnsetValue_For_Object_Without_Indexer()
+        public async Task Should_Get_UnsetValue_For_Object_Without_Indexer()
         {
             var data = new { Foo = 5 };
             var target = new ExpressionObserver(data, "Foo[noindexer]");
             var result = await target.Take(1);
 
             Assert.Equal(AvaloniaProperty.UnsetValue, result);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
-        public async void Should_Get_MultiDimensional_Array_Value()
+        public async Task Should_Get_MultiDimensional_Array_Value()
         {
             var data = new { Foo = new[,] { { "foo", "bar" }, { "baz", "qux" } } };
             var target = new ExpressionObserver(data, "Foo[1, 1]");
             var result = await target.Take(1);
 
             Assert.Equal("qux", result);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
-        public async void Should_Get_Value_For_String_Indexer()
+        public async Task Should_Get_Value_For_String_Indexer()
         {
             var data = new { Foo = new Dictionary<string, string> { { "foo", "bar" }, { "baz", "qux" } } };
             var target = new ExpressionObserver(data, "Foo[foo]");
             var result = await target.Take(1);
 
             Assert.Equal("bar", result);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
-        public async void Should_Get_Value_For_Non_String_Indexer()
+        public async Task Should_Get_Value_For_Non_String_Indexer()
         {
             var data = new { Foo = new Dictionary<double, string> { { 1.0, "bar" }, { 2.0, "qux" } } };
             var target = new ExpressionObserver(data, "Foo[1.0]");
             var result = await target.Take(1);
 
             Assert.Equal("bar", result);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
-        public async void Array_Out_Of_Bounds_Should_Return_UnsetValue()
+        public async Task Array_Out_Of_Bounds_Should_Return_UnsetValue()
         {
             var data = new { Foo = new[] { "foo", "bar" } };
             var target = new ExpressionObserver(data, "Foo[2]");
             var result = await target.Take(1);
 
             Assert.Equal(AvaloniaProperty.UnsetValue, result);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
-        public async void Array_With_Wrong_Dimensions_Should_Return_UnsetValue()
+        public async Task Array_With_Wrong_Dimensions_Should_Return_UnsetValue()
         {
             var data = new { Foo = new[] { "foo", "bar" } };
             var target = new ExpressionObserver(data, "Foo[1,2]");
             var result = await target.Take(1);
 
             Assert.Equal(AvaloniaProperty.UnsetValue, result);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
-        public async void List_Out_Of_Bounds_Should_Return_UnsetValue()
+        public async Task List_Out_Of_Bounds_Should_Return_UnsetValue()
         {
             var data = new { Foo = new List<string> { "foo", "bar" } };
             var target = new ExpressionObserver(data, "Foo[2]");
             var result = await target.Take(1);
 
             Assert.Equal(AvaloniaProperty.UnsetValue, result);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
-        public async void Should_Get_List_Value()
+        public async Task Should_Get_List_Value()
         {
             var data = new { Foo = new List<string> { "foo", "bar" } };
             var target = new ExpressionObserver(data, "Foo[1]");
             var result = await target.Take(1);
 
             Assert.Equal("bar", result);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -139,6 +162,8 @@ namespace Avalonia.Markup.UnitTests.Data
 
             Assert.Equal(new[] { AvaloniaProperty.UnsetValue, "baz" }, result);
             Assert.Null(((INotifyCollectionChangedDebug)data.Foo).GetCollectionChangedSubscribers());
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -155,6 +180,8 @@ namespace Avalonia.Markup.UnitTests.Data
 
             Assert.Equal(new[] { "foo", "bar" }, result);
             Assert.Null(((INotifyCollectionChangedDebug)data.Foo).GetCollectionChangedSubscribers());
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -171,6 +198,8 @@ namespace Avalonia.Markup.UnitTests.Data
 
             Assert.Equal(new[] { "bar", "baz" }, result);
             Assert.Null(((INotifyCollectionChangedDebug)data.Foo).GetCollectionChangedSubscribers());
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -187,6 +216,9 @@ namespace Avalonia.Markup.UnitTests.Data
             data.Foo.Move(0, 1);
 
             Assert.Equal(new[] { "bar", "foo" }, result);
+
+            GC.KeepAlive(sub);
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -200,6 +232,9 @@ namespace Avalonia.Markup.UnitTests.Data
             data.Foo.Clear();
 
             Assert.Equal(new[] { "bar", AvaloniaProperty.UnsetValue }, result);
+
+            GC.KeepAlive(sub);
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -220,6 +255,8 @@ namespace Avalonia.Markup.UnitTests.Data
             var expected = new[] { "bar", "bar2" };
             Assert.Equal(expected, result);
             Assert.Equal(0, data.Foo.PropertyChangedSubscriptionCount);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -234,6 +271,8 @@ namespace Avalonia.Markup.UnitTests.Data
             }
 
             Assert.Equal("baz", data.Foo[1]);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -254,6 +293,8 @@ namespace Avalonia.Markup.UnitTests.Data
             }
 
             Assert.Equal(4, data.Foo["foo"]);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -274,6 +315,8 @@ namespace Avalonia.Markup.UnitTests.Data
             }
 
             Assert.Equal(4, data.Foo["bar"]);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -291,6 +334,8 @@ namespace Avalonia.Markup.UnitTests.Data
             }
             
             Assert.Equal("bar2", data.Foo["foo"]);
+
+            GC.KeepAlive(data);
         }
 
         private class NonIntegerIndexer : NotifyingBase
