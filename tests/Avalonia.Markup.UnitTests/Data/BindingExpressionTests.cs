@@ -308,7 +308,7 @@ namespace Avalonia.Markup.UnitTests.Data
             GC.KeepAlive(data);
         }
 
-        [Fact(Skip="Moq.MockException")]
+        [Fact]
         public void Should_Handle_DataValidation()
         {
             var data = new Class1 { DoubleValue = 5.6 };
