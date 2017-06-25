@@ -25,6 +25,8 @@ namespace Avalonia.Markup.UnitTests.Data
             var result = await target.Take(1);
 
             Assert.Equal("foo", result);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -36,6 +38,8 @@ namespace Avalonia.Markup.UnitTests.Data
             target.OnNext("bar");
 
             Assert.Equal("bar", data.StringValue);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -47,6 +51,8 @@ namespace Avalonia.Markup.UnitTests.Data
             target.OnNext("bar");
 
             Assert.Equal("bar", data.Foo[0]);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -57,6 +63,8 @@ namespace Avalonia.Markup.UnitTests.Data
             var result = await target.Take(1);
 
             Assert.Equal(5.6, result);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -67,6 +75,8 @@ namespace Avalonia.Markup.UnitTests.Data
             var result = await target.Take(1);
 
             Assert.IsType<BindingNotification>(result);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -77,6 +87,8 @@ namespace Avalonia.Markup.UnitTests.Data
             var result = await target.Take(1);
 
             Assert.Equal(AvaloniaProperty.UnsetValue, result);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -88,6 +100,8 @@ namespace Avalonia.Markup.UnitTests.Data
             target.OnNext(6.7);
 
             Assert.Equal((6.7).ToString(), data.StringValue);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -98,6 +112,8 @@ namespace Avalonia.Markup.UnitTests.Data
             var result = await target.Take(1);
 
             Assert.Equal((5.6).ToString(), result);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -109,6 +125,8 @@ namespace Avalonia.Markup.UnitTests.Data
             target.OnNext("6.7");
 
             Assert.Equal(6.7, data.DoubleValue);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -128,6 +146,8 @@ namespace Avalonia.Markup.UnitTests.Data
                     BindingErrorType.Error,
                     42),
                 result);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -147,6 +167,8 @@ namespace Avalonia.Markup.UnitTests.Data
                     BindingErrorType.Error,
                     42),
                 result);
+
+            GC.KeepAlive(data);
         }
 
         [Fact(Skip="Result is not always AggregateException.")]
@@ -167,6 +189,8 @@ namespace Avalonia.Markup.UnitTests.Data
                         new InvalidCastException("Could not convert FallbackValue 'bar' to 'System.Int32'")),
                     BindingErrorType.Error),
                 result);
+
+            GC.KeepAlive(data);
         }
 
         [Fact(Skip="Result is not always AggregateException.")]
@@ -187,6 +211,8 @@ namespace Avalonia.Markup.UnitTests.Data
                         new InvalidCastException("Could not convert FallbackValue 'bar' to 'System.Int32'")),
                     BindingErrorType.Error),
                 result);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -198,6 +224,8 @@ namespace Avalonia.Markup.UnitTests.Data
             target.OnNext("foo");
 
             Assert.Equal(5.6, data.DoubleValue);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -213,6 +241,8 @@ namespace Avalonia.Markup.UnitTests.Data
             target.OnNext("foo");
 
             Assert.Equal(9.8, data.DoubleValue);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -224,6 +254,8 @@ namespace Avalonia.Markup.UnitTests.Data
             target.OnNext(null);
 
             Assert.Equal(0, data.DoubleValue);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -235,6 +267,8 @@ namespace Avalonia.Markup.UnitTests.Data
             target.OnNext(AvaloniaProperty.UnsetValue);
 
             Assert.Equal(0, data.DoubleValue);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -252,6 +286,8 @@ namespace Avalonia.Markup.UnitTests.Data
             target.Subscribe(_ => { });
 
             converter.Verify(x => x.Convert(5.6, typeof(string), "foo", CultureInfo.CurrentCulture));
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -268,6 +304,8 @@ namespace Avalonia.Markup.UnitTests.Data
             target.OnNext("bar");
 
             converter.Verify(x => x.ConvertBack("bar", typeof(double), "foo", CultureInfo.CurrentCulture));
+
+            GC.KeepAlive(data);
         }
 
         [Fact(Skip="Moq.MockException")]
@@ -294,6 +332,8 @@ namespace Avalonia.Markup.UnitTests.Data
                         BindingErrorType.Error)
                 },
                 result);
+
+            GC.KeepAlive(data);
         }
 
         private class Class1 : NotifyingBase

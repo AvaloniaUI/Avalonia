@@ -25,6 +25,8 @@ namespace Avalonia.Markup.UnitTests.Data
             var result = await target.Take(1);
 
             Assert.Equal("foo", result);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -36,6 +38,8 @@ namespace Avalonia.Markup.UnitTests.Data
             target.Subscribe(_ => { });
 
             Assert.Equal(typeof(string), target.ResultType);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -46,6 +50,8 @@ namespace Avalonia.Markup.UnitTests.Data
             var result = await target.Take(1);
 
             Assert.Null(result);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -56,6 +62,8 @@ namespace Avalonia.Markup.UnitTests.Data
             var result = await target.Take(1);
 
             Assert.Equal("foo", result);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -66,6 +74,8 @@ namespace Avalonia.Markup.UnitTests.Data
             var result = await target.Take(1);
 
             Assert.Equal(AvaloniaProperty.UnsetValue, result);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -76,6 +86,8 @@ namespace Avalonia.Markup.UnitTests.Data
             var result = await target.Take(1);
 
             Assert.Equal(AvaloniaProperty.UnsetValue, result);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -86,6 +98,8 @@ namespace Avalonia.Markup.UnitTests.Data
             var result = await target.Take(1);
 
             Assert.Equal(AvaloniaProperty.UnsetValue, result);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -96,6 +110,8 @@ namespace Avalonia.Markup.UnitTests.Data
             var result = await target.Take(1);
 
             Assert.Equal(AvaloniaProperty.UnsetValue, result);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -106,6 +122,8 @@ namespace Avalonia.Markup.UnitTests.Data
             var result = await target.Take(1);
 
             Assert.Equal("baz", result);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -117,6 +135,8 @@ namespace Avalonia.Markup.UnitTests.Data
             target.Subscribe(_ => { });
 
             Assert.Equal(typeof(string), target.ResultType);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -132,6 +152,8 @@ namespace Avalonia.Markup.UnitTests.Data
                 new BindingNotification(
                     new MissingMemberException("Could not find CLR property 'Baz' on '1'"), BindingErrorType.Error),
                 result);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -152,6 +174,8 @@ namespace Avalonia.Markup.UnitTests.Data
                         AvaloniaProperty.UnsetValue),
                 },
                 result);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -161,6 +185,8 @@ namespace Avalonia.Markup.UnitTests.Data
             var target = new ExpressionObserver(data, "Foo.Bar.Baz");
 
             Assert.Null(target.ResultType);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -178,6 +204,8 @@ namespace Avalonia.Markup.UnitTests.Data
             sub.Dispose();
 
             Assert.Equal(0, data.PropertyChangedSubscriptionCount);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -206,6 +234,8 @@ namespace Avalonia.Markup.UnitTests.Data
             sub.Dispose();
 
             Assert.Equal(0, data.PropertyChangedSubscriptionCount);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -225,6 +255,8 @@ namespace Avalonia.Markup.UnitTests.Data
 
             Assert.Equal(0, data.PropertyChangedSubscriptionCount);
             Assert.Equal(0, data.Next.PropertyChangedSubscriptionCount);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -246,6 +278,8 @@ namespace Avalonia.Markup.UnitTests.Data
             Assert.Equal(0, data.PropertyChangedSubscriptionCount);
             Assert.Equal(0, data.Next.PropertyChangedSubscriptionCount);
             Assert.Equal(0, old.PropertyChangedSubscriptionCount);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -287,6 +321,8 @@ namespace Avalonia.Markup.UnitTests.Data
             Assert.Equal(0, data.PropertyChangedSubscriptionCount);
             Assert.Equal(0, data.Next.PropertyChangedSubscriptionCount);
             Assert.Equal(0, old.PropertyChangedSubscriptionCount);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -319,6 +355,8 @@ namespace Avalonia.Markup.UnitTests.Data
             Assert.Equal(0, data.Next.PropertyChangedSubscriptionCount);
             Assert.Equal(0, breaking.PropertyChangedSubscriptionCount);
             Assert.Equal(0, old.PropertyChangedSubscriptionCount);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -335,6 +373,8 @@ namespace Avalonia.Markup.UnitTests.Data
             update.OnNext(Unit.Default);
 
             Assert.Equal(new[] { "foo", "bar" }, result);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -375,6 +415,8 @@ namespace Avalonia.Markup.UnitTests.Data
             Assert.Equal(new[] { "foo", "bar" }, result1);
             Assert.Equal(new[] { "foo", "bar" }, result2);
             Assert.Equal(new[] { "bar" }, result3);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -392,6 +434,8 @@ namespace Avalonia.Markup.UnitTests.Data
             sub2.Dispose();
 
             Assert.Equal(0, data.PropertyChangedSubscriptionCount);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -406,6 +450,8 @@ namespace Avalonia.Markup.UnitTests.Data
             }
 
             Assert.Equal("bar", data.Foo);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -420,6 +466,8 @@ namespace Avalonia.Markup.UnitTests.Data
             }
 
             Assert.Equal("baz", ((Class2)data.Next).Bar);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -432,6 +480,8 @@ namespace Avalonia.Markup.UnitTests.Data
             {
                 Assert.False(target.SetValue("baz"));
             }
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -445,6 +495,8 @@ namespace Avalonia.Markup.UnitTests.Data
             target.SetValue("bar");
 
             Assert.Equal(new[] { null, "bar" }, result);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -458,6 +510,8 @@ namespace Avalonia.Markup.UnitTests.Data
             target.SetValue("bar");
 
             Assert.Equal(new[] { null, "bar" }, result);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -470,6 +524,8 @@ namespace Avalonia.Markup.UnitTests.Data
             {
                 Assert.False(target.SetValue("baz"));
             }
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -499,6 +555,9 @@ namespace Avalonia.Markup.UnitTests.Data
 
             Assert.Equal(0, first.PropertyChangedSubscriptionCount);
             Assert.Equal(0, second.PropertyChangedSubscriptionCount);
+
+            GC.KeepAlive(first);
+            GC.KeepAlive(second);
         }
 
         [Fact]
