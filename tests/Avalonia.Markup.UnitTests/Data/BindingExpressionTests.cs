@@ -171,7 +171,7 @@ namespace Avalonia.Markup.UnitTests.Data
             GC.KeepAlive(data);
         }
 
-        [Fact(Skip="Result is not always AggregateException.")]
+        [Fact]
         public async Task Should_Return_BindingNotification_For_Invalid_FallbackValue()
         {
             var data = new Class1 { StringValue = "foo" };
@@ -193,7 +193,7 @@ namespace Avalonia.Markup.UnitTests.Data
             GC.KeepAlive(data);
         }
 
-        [Fact(Skip="Result is not always AggregateException.")]
+        [Fact]
         public async Task Should_Return_BindingNotification_For_Invalid_FallbackValue_With_Data_Validation()
         {
             var data = new Class1 { StringValue = "foo" };
