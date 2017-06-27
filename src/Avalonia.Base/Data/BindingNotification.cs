@@ -226,7 +226,7 @@ namespace Avalonia.Data
         /// </summary>
         public void ClearValue()
         {
-            _value = null;
+            _value = AvaloniaProperty.UnsetValue;
         }
 
         /// <summary>

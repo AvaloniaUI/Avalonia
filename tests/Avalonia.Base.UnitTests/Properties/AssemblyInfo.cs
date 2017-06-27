@@ -7,4 +7,4 @@ using Xunit;
 [assembly: AssemblyTitle("Avalonia.UnitTests")]
 
 // Don't run tests in parallel.
-[assembly: CollectionBehavior(MaxParallelThreads = 1)]
+[assembly: CollectionBehavior(DisableTestParallelization = true)]
