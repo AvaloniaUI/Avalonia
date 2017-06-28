@@ -922,7 +922,9 @@ namespace Avalonia.Win32.Interop
         [StructLayout(LayoutKind.Sequential)]
         internal class MONITORINFO
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             public int cbSize = Marshal.SizeOf(typeof(MONITORINFO));
+#pragma warning restore CS0618 // Type or member is obsolete
             public RECT rcMonitor = new RECT();
             public RECT rcWork = new RECT();
             public int dwFlags = 0;
