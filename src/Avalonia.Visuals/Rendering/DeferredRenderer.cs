@@ -236,19 +236,22 @@ namespace Avalonia.Rendering
                     var renderTarget = _layers[layer.LayerRoot].Bitmap;
                     var node = (VisualNode)scene.FindNode(layer.LayerRoot);
 
-                    using (var context = renderTarget.CreateDrawingContext(this))
+                    if (node != null)
                     {
-                        foreach (var rect in layer.Dirty)
+                        using (var context = renderTarget.CreateDrawingContext(this))
                         {
-                            context.Transform = Matrix.Identity;
-                            context.PushClip(rect);
-                            context.Clear(Colors.Transparent);
-                            Render(context, node, layer.LayerRoot, rect);
-                            context.PopClip();
-
-                            if (DrawDirtyRects)
+                            foreach (var rect in layer.Dirty)
                             {
-                                _dirtyRectsDisplay.Add(rect);
+                                context.Transform = Matrix.Identity;
+                                context.PushClip(rect);
+                                context.Clear(Colors.Transparent);
+                                Render(context, node, layer.LayerRoot, rect);
+                                context.PopClip();
+
+                                if (DrawDirtyRects)
+                                {
+                                    _dirtyRectsDisplay.Add(rect);
+                                }
                             }
                         }
                     }
