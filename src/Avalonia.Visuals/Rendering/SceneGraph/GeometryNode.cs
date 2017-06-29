@@ -29,7 +29,7 @@ namespace Avalonia.Rendering.SceneGraph
             IGeometryImpl geometry,
             IDictionary<IVisual, Scene> childScenes = null)
         {
-            Bounds = geometry.GetRenderBounds(pen.Thickness).TransformToAABB(transform);
+            Bounds = geometry.GetRenderBounds(pen?.Thickness ?? 0).TransformToAABB(transform);
             Transform = transform;
             Brush = ToImmutable(brush);
             Pen = ToImmutable(pen);
