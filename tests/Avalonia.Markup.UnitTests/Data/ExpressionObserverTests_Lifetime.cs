@@ -90,7 +90,8 @@ namespace Avalonia.Markup.UnitTests.Data
         {
             var scheduler = new TestScheduler();
             var update = scheduler.CreateColdObservable<Unit>();
-            var target = new ExpressionObserver(() => new { Foo = "foo" }, "Foo", update);
+            var data = new { Foo = "foo" };
+            var target = new ExpressionObserver(() => data, "Foo", update);
             var result = new List<object>();
 
             using (target.Subscribe(x => result.Add(x)))
@@ -101,6 +102,8 @@ namespace Avalonia.Markup.UnitTests.Data
 
             Assert.Equal(new[] { "foo" }, result);
             Assert.All(update.Subscriptions, x => Assert.NotEqual(Subscription.Infinite, x.Unsubscribe));
+
+            GC.KeepAlive(data);
         }
 
         private Recorded<Notification<object>> OnNext(long time, object value)
