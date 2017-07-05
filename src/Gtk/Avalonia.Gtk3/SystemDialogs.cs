@@ -78,14 +78,14 @@ namespace Avalonia.Gtk3
 
         public Task<string[]> ShowFileDialogAsync(FileDialog dialog, IWindowImpl parent)
         {
-            return ShowDialog(dialog.Title, ((WindowBaseImpl) parent)?.GtkWidget,
+            return ShowDialog(dialog.Title, ((WindowBaseImpl) parent)?.GtkWidget ?? GtkWindow.Null,
                 dialog is OpenFileDialog ? GtkFileChooserAction.Open : GtkFileChooserAction.Save,
                 (dialog as OpenFileDialog)?.AllowMultiple ?? false, dialog.InitialFileName);
         }
 
         public async Task<string> ShowFolderDialogAsync(OpenFolderDialog dialog, IWindowImpl parent)
         {
-            var res = await ShowDialog(dialog.Title, ((WindowBaseImpl) parent)?.GtkWidget,
+            var res = await ShowDialog(dialog.Title, ((WindowBaseImpl) parent)?.GtkWidget ?? GtkWindow.Null,
                 GtkFileChooserAction.SelectFolder, false, dialog.InitialDirectory);
             return res?.FirstOrDefault();
         }
