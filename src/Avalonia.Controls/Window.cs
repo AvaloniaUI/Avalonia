@@ -183,6 +183,15 @@ namespace Avalonia.Controls
             set { SetValue(IconProperty, value); }
         }
 
+        /// <summary>
+        /// Gets or sets the startup location of the window.
+        /// </summary>
+        public WindowStartupLocation WindowStartupLocation
+        {
+            get;
+            set;
+        }
+
         /// <inheritdoc/>
         Size ILayoutRoot.MaxClientSize => _maxPlatformClientSize;
 
@@ -246,6 +255,7 @@ namespace Avalonia.Controls
             s_windows.Add(this);
 
             EnsureInitialized();
+            SetWindowStartupLocation();
             IsVisible = true;
             LayoutManager.Instance.ExecuteInitialLayoutPass(this);
 
@@ -285,6 +295,7 @@ namespace Avalonia.Controls
             s_windows.Add(this);
 
             EnsureInitialized();
+            SetWindowStartupLocation();
             IsVisible = true;
             LayoutManager.Instance.ExecuteInitialLayoutPass(this);
 
@@ -318,6 +329,23 @@ namespace Avalonia.Controls
             foreach (var window in windows)
             {
                 window.IsEnabled = isEnabled;
+            }
+        }
+
+        void SetWindowStartupLocation()
+        {
+            if (WindowStartupLocation == WindowStartupLocation.CenterScreen)
+            {
+                var positionAsSize = PlatformImpl.MaxClientSize / 2 - ClientSize / 2;
+                Position = new Point(positionAsSize.Width, positionAsSize.Height);
+            }
+            else if (WindowStartupLocation == WindowStartupLocation.CenterOwner)
+            {
+                if (Owner != null)
+                {
+                    var positionAsSize = Owner.ClientSize / 2 - ClientSize / 2;
+                    Position = Owner.Position + new Point(positionAsSize.Width, positionAsSize.Height);
+                }
             }
         }
 

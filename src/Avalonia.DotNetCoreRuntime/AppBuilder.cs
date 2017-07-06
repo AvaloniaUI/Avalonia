@@ -10,6 +10,9 @@ using Avalonia.Shared.PlatformSupport;
 
 namespace Avalonia
 {
+    /// <summary>
+    /// Initializes platform-specific services for an <see cref="Application"/>.
+    /// </summary>
     public sealed class AppBuilder : AppBuilderBase<AppBuilder>
     {
         /// <summary>
