@@ -41,7 +41,7 @@ namespace Avalonia.Gtk3.Interop
 
     class GtkWindow : GtkWidget
     {
-        
+        public static GtkWindow Null { get; } = new GtkWindow();
     }
 
     class GtkImContext : GObject
