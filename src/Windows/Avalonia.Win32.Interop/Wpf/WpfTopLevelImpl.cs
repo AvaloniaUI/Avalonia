@@ -33,7 +33,7 @@ namespace Avalonia.Win32.Interop.Wpf
         public EmbeddableControlRoot ControlRoot { get; }
         internal ImageSource ImageSource { get; set; }
 
-        public class CustomControlRoot : EmbeddableControlRoot
+        public class CustomControlRoot : EmbeddableControlRoot, IEmbeddedLayoutRoot
         {
             public CustomControlRoot(WpfTopLevelImpl impl) : base(impl)
             {
@@ -52,6 +52,8 @@ namespace Avalonia.Win32.Interop.Wpf
                 LayoutManager.Instance.ExecuteLayoutPass();
                 Renderer?.Resized(clientSize);
             }
+
+            public Size AllocatedSize => ClientSize;
         }
 
         public WpfTopLevelImpl()

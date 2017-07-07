@@ -88,9 +88,7 @@ namespace Avalonia.Diagnostics
         {
             var devToolsWindow = (Window)sender;
             var devTools = (DevTools)devToolsWindow.Content;
-            var window = (Window)devTools.Root;
-
-            s_open.Remove(window);
+            s_open.Remove((TopLevel)devTools.Root);
             _keySubscription.Dispose();
             devToolsWindow.Closed -= DevToolsClosed;
         }

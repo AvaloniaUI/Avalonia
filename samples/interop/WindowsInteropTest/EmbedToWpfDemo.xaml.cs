@@ -27,11 +27,12 @@ namespace WindowsInteropTest
         {
             InitializeComponent();
             var view = new MainView();
-            Host.Content = view;
+            
             view.AttachedToVisualTree += delegate
             {
                 view.AttachDevTools();
             };
+            Host.Content = view;
             var btn = (Avalonia.Controls.Button) RightBtn.Content;
             btn.Click += delegate
             {
