@@ -33,7 +33,7 @@ placed in a `DataTemplates` collection on each control (and on `Application`):
                     <TextBox Text="{Binding Name}"/>
                 </Border>
             </DataTemplate>
-        </UserControl.Styles>
+        </UserControl.DataTemplates>
         <!-- Assuming that DataContext.Foo is an object of type
              MyApp.ViewModels.FooViewModel then a red border with a corner
              radius of 8 containing a TextBox will be displayed here -->
