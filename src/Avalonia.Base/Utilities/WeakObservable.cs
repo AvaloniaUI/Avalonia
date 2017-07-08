@@ -16,12 +16,13 @@ namespace Avalonia.Utilities
         /// Converts a .NET event conforming to the standard .NET event pattern into an observable
         /// sequence, subscribing weakly.
         /// </summary>
+        /// <typeparam name="TTarget">The type of target.</typeparam>
         /// <typeparam name="TEventArgs">The type of the event args.</typeparam>
         /// <param name="target">Object instance that exposes the event to convert.</param>
         /// <param name="eventName">Name of the event to convert.</param>
         /// <returns></returns>
-        public static IObservable<EventPattern<object, TEventArgs>> FromEventPattern<TEventArgs>(
-            object target, 
+        public static IObservable<EventPattern<object, TEventArgs>> FromEventPattern<TTarget, TEventArgs>(
+            TTarget target, 
             string eventName)
             where TEventArgs : EventArgs
         {

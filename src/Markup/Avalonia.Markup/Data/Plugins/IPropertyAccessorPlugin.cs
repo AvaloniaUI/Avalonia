@@ -14,9 +14,10 @@ namespace Avalonia.Markup.Data.Plugins
         /// <summary>
         /// Checks whether this plugin can handle accessing the properties of the specified object.
         /// </summary>
-        /// <param name="reference">A weak reference to the object.</param>
-        /// <returns>True if the plugin can handle the object; otherwise false.</returns>
-        bool Match(WeakReference reference);
+        /// <param name="obj">The object.</param>
+        /// <param name="propertyName">The property name.</param>
+        /// <returns>True if the plugin can handle the property on the object; otherwise false.</returns>
+        bool Match(object obj, string propertyName);
 
         /// <summary>
         /// Starts monitoring the value of a property on an object.

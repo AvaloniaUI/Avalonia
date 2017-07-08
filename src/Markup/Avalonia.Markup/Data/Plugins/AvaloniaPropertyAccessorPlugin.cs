@@ -13,7 +13,15 @@ namespace Avalonia.Markup.Data.Plugins
     public class AvaloniaPropertyAccessorPlugin : IPropertyAccessorPlugin
     {
         /// <inheritdoc/>
-        public bool Match(WeakReference reference) => reference.Target is AvaloniaObject;
+        public bool Match(object obj, string propertyName)
+        {
+            if (obj is AvaloniaObject a)
+            {
+                return AvaloniaPropertyRegistry.Instance.FindRegistered(a, propertyName) != null;
+            }
+
+            return false;
+        }
 
         /// <summary>
         /// Starts monitoring the value of a property on an object.
