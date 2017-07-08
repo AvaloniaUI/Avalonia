@@ -49,6 +49,7 @@ namespace Avalonia.UnitTests
                 .BindToSelf<IGlobalStyles>(this)
                 .Bind<IInputManager>().ToConstant(Services.InputManager)
                 .Bind<IKeyboardDevice>().ToConstant(Services.KeyboardDevice?.Invoke())
+                .Bind<IKeyboardNavigationHandler>().ToConstant(Services.KeyboardNavigation)
                 .Bind<ILayoutManager>().ToConstant(Services.LayoutManager)
                 .Bind<IRuntimePlatform>().ToConstant(Services.Platform)
                 .Bind<IRendererFactory>().ToConstant(new RendererFactory(Services.Renderer))
