@@ -347,6 +347,7 @@ namespace Avalonia.Controls.UnitTests
                 var node = target.ItemContainerGenerator.Index.ContainerFromItem(item);
                 Assert.NotNull(node);
 
+                target.SelectedItem = item;
                 node.Focus();
                 Assert.Same(node, focus.Current);
 
