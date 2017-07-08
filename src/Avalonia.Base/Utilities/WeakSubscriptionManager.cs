@@ -17,12 +17,11 @@ namespace Avalonia.Utilities
         /// <summary>
         /// Subscribes to an event on an object using a weak subscription.
         /// </summary>
-        /// <typeparam name="T">The type of the event arguments.</typeparam>
+        /// <typeparam name="TTarget">The type of the target.</typeparam>
+        /// <typeparam name="TEventArgs">The type of the event arguments.</typeparam>
         /// <param name="target">The event source.</param>
         /// <param name="eventName">The name of the event.</param>
         /// <param name="subscriber">The subscriber.</param>
-        /// <typeparam name="TTarget">The type of the target.</typeparam>
-        /// <typeparam name="TEventArgs">The type of the event args.</typeparam>
         public static void Subscribe<TTarget, TEventArgs>(TTarget target, string eventName, IWeakSubscriber<TEventArgs> subscriber)
             where TEventArgs : EventArgs
         {
