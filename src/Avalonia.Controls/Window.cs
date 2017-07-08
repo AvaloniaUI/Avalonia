@@ -336,8 +336,11 @@ namespace Avalonia.Controls
         {
             if (WindowStartupLocation == WindowStartupLocation.CenterScreen)
             {
-                var positionAsSize = PlatformImpl.MaxClientSize / 2 - ClientSize / 2;
-                Position = new Point(positionAsSize.Width, positionAsSize.Height);
+                if (PlatformImpl != null)
+                {
+                    var positionAsSize = PlatformImpl.MaxClientSize / 2 - ClientSize / 2;
+                    Position = new Point(positionAsSize.Width, positionAsSize.Height);
+                }
             }
             else if (WindowStartupLocation == WindowStartupLocation.CenterOwner)
             {
