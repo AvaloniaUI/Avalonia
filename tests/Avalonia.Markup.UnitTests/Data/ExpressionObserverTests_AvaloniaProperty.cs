@@ -31,6 +31,16 @@ namespace Avalonia.Markup.UnitTests.Data
         }
 
         [Fact]
+        public async Task Should_Get_Simple_ClrProperty_Value()
+        {
+            var data = new Class1();
+            var target = new ExpressionObserver(data, "ClrProperty");
+            var result = await target.Take(1);
+
+            Assert.Equal("clr-property", result);
+        }
+
+        [Fact]
         public void Should_Track_Simple_Property_Value()
         {
             var data = new Class1();
@@ -69,6 +79,8 @@ namespace Avalonia.Markup.UnitTests.Data
         {
             public static readonly StyledProperty<string> FooProperty =
                 AvaloniaProperty.Register<Class1, string>("Foo", defaultValue: "foo");
+
+            public string ClrProperty { get; } = "clr-property";
         }
     }
 }
