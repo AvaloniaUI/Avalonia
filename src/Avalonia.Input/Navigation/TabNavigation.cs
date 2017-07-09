@@ -78,6 +78,7 @@ namespace Avalonia.Input.Navigation
         /// Gets the focusable descendants of the specified element.
         /// </summary>
         /// <param name="element">The element.</param>
+        /// <param name="direction">The tab direction. Must be Next or Previous.</param>
         /// <returns>The element's focusable descendants.</returns>
         private static IEnumerable<IInputElement> GetFocusableDescendants(IInputElement element, NavigationDirection direction)
         {
