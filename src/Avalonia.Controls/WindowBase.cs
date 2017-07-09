@@ -32,12 +32,13 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Owner"/> property.
         /// </summary>
-        public static readonly StyledProperty<WindowBase> OwnerProperty =
-            AvaloniaProperty.Register<WindowBase, WindowBase>(nameof(Owner));
+        public static readonly DirectProperty<WindowBase, WindowBase> OwnerProperty =
+            AvaloniaProperty.RegisterDirect<WindowBase, WindowBase>(nameof(Owner), o => o.Owner);
 
         private bool _hasExecutedInitialLayoutPass;
         private bool _isActive;
         private bool _ignoreVisibilityChange;
+        private WindowBase _owner;
 
         static WindowBase()
         {
@@ -111,8 +112,8 @@ namespace Avalonia.Controls
         /// </summary>
         public WindowBase Owner
         {
-            get { return GetValue(OwnerProperty); }
-            set { SetValue(OwnerProperty, value); }
+            get { return _owner; }
+            set { SetAndRaise(OwnerProperty, ref _owner, value); }
         }
 
         /// <summary>

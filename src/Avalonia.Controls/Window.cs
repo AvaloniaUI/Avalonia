@@ -78,9 +78,16 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<WindowIcon> IconProperty =
             AvaloniaProperty.Register<Window, WindowIcon>(nameof(Icon));
 
+        /// <summary>
+        /// Defines the <see cref="WindowStartupLocation"/> proeprty.
+        /// </summary>
+        public static readonly DirectProperty<Window, WindowStartupLocation> WindowStartupLocationProperty =
+            AvaloniaProperty.RegisterDirect<Window, WindowStartupLocation>(nameof(WindowStartupLocation), o => o.WindowStartupLocation);
+
         private readonly NameScope _nameScope = new NameScope();
         private object _dialogResult;
         private readonly Size _maxPlatformClientSize;
+        private WindowStartupLocation _windowStartupLoction;
 
         /// <summary>
         /// Initializes static members of the <see cref="Window"/> class.
@@ -188,8 +195,8 @@ namespace Avalonia.Controls
         /// </summary>
         public WindowStartupLocation WindowStartupLocation
         {
-            get;
-            set;
+            get { return _windowStartupLoction; }
+            set { SetAndRaise(WindowStartupLocationProperty, ref _windowStartupLoction, value); }
         }
 
         /// <inheritdoc/>
@@ -336,6 +343,8 @@ namespace Avalonia.Controls
         {
             if (WindowStartupLocation == WindowStartupLocation.CenterScreen)
             {
+                // This should be using a Screen API, but we don't have one yet and
+                // PlatformImpl.MaxClientSize is the best we have.
                 if (PlatformImpl != null)
                 {
                     var positionAsSize = PlatformImpl.MaxClientSize / 2 - ClientSize / 2;
