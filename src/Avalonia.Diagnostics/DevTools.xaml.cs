@@ -11,7 +11,6 @@ using Avalonia.Input.Raw;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.VisualTree;
-using ReactiveUI;
 
 namespace Avalonia
 {
@@ -74,7 +73,7 @@ namespace Avalonia.Diagnostics
                         Content = devTools,
                         DataTemplates = new DataTemplates
                         {
-                            new ViewLocator<ReactiveObject>(),
+                            new ViewLocator<ViewModelBase>(),
                         }
                     };
 
@@ -107,7 +106,8 @@ namespace Avalonia.Diagnostics
 
             if ((e.Modifiers) == modifiers)
             {
-                var point = MouseDevice.Instance.GetPosition(Root);
+
+                var point = (Root.VisualRoot as IInputRoot)?.MouseDevice?.GetPosition(Root) ?? default(Point);
                 var control = Root.GetVisualsAt(point, x => (!(x is AdornerLayer) && x.IsVisible))
                     .FirstOrDefault();
 

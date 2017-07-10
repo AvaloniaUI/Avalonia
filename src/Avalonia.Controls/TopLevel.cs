@@ -163,6 +163,9 @@ namespace Avalonia.Controls
             set { SetValue(PointerOverElementProperty, value); }
         }
 
+        /// <inheritdoc/>
+        IMouseDevice IInputRoot.MouseDevice => PlatformImpl?.MouseDevice;
+
         /// <summary>
         /// Gets or sets a value indicating whether access keys are shown in the window.
         /// </summary>
@@ -253,7 +256,7 @@ namespace Avalonia.Controls
         /// <param name="scaling">The window scaling.</param>
         protected virtual void HandleScalingChanged(double scaling)
         {
-            foreach (ILayoutable control in this.GetSelfAndVisualDescendents())
+            foreach (ILayoutable control in this.GetSelfAndVisualDescendants())
             {
                 control.InvalidateMeasure();
             }

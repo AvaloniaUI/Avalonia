@@ -378,8 +378,12 @@ namespace Avalonia.Layout
 
                 IsMeasureValid = false;
                 IsArrangeValid = false;
-                LayoutManager.Instance?.InvalidateMeasure(this);
-                InvalidateVisual();
+
+                if (((ILayoutable)this).IsAttachedToVisualTree)
+                {
+                    LayoutManager.Instance?.InvalidateMeasure(this);
+                    InvalidateVisual();
+                }
             }
         }
 
@@ -393,8 +397,12 @@ namespace Avalonia.Layout
                 Logger.Verbose(LogArea.Layout, this, "Invalidated arrange");
 
                 IsArrangeValid = false;
-                LayoutManager.Instance?.InvalidateArrange(this);
-                InvalidateVisual();
+
+                if (((ILayoutable)this).IsAttachedToVisualTree)
+                {
+                    LayoutManager.Instance?.InvalidateArrange(this);
+                    InvalidateVisual();
+                }
             }
         }
 
@@ -612,7 +620,7 @@ namespace Avalonia.Layout
         /// <inheritdoc/>
         protected override sealed void OnVisualParentChanged(IVisual oldParent, IVisual newParent)
         {
-            foreach (ILayoutable i in this.GetSelfAndVisualDescendents())
+            foreach (ILayoutable i in this.GetSelfAndVisualDescendants())
             {
                 i.InvalidateMeasure();
             }

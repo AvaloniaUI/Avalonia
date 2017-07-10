@@ -30,6 +30,8 @@ namespace Avalonia.Markup.UnitTests.Data
 
                 Assert.Equal(1, result.Count);
                 Assert.IsType<Task<string>>(result[0]);
+
+                GC.KeepAlive(data);
             }
         }
 
@@ -45,6 +47,8 @@ namespace Avalonia.Markup.UnitTests.Data
                 var sub = target.Subscribe(x => result.Add(x));
 
                 Assert.Equal(new[] { "foo" }, result);
+
+                GC.KeepAlive(data);
             }
         }
 
@@ -63,6 +67,8 @@ namespace Avalonia.Markup.UnitTests.Data
                 sync.ExecutePostedCallbacks();
 
                 Assert.Equal(new[] { "foo" }, result);
+
+                GC.KeepAlive(data);
             }
         }
 
@@ -88,6 +94,8 @@ namespace Avalonia.Markup.UnitTests.Data
                             BindingErrorType.Error)
                     }, 
                     result);
+
+                GC.KeepAlive(data);
             }
         }
 
@@ -110,6 +118,8 @@ namespace Avalonia.Markup.UnitTests.Data
                             BindingErrorType.Error)
                     },
                     result);
+
+                GC.KeepAlive(data);
             }
         }
 
@@ -130,6 +140,8 @@ namespace Avalonia.Markup.UnitTests.Data
                 // What does it mean to have data validation on a Task? Without a use-case it's
                 // hard to know what to do here so for the moment the value is returned.
                 Assert.Equal(new [] { "foo" }, result);
+
+                GC.KeepAlive(data);
             }
         }
 

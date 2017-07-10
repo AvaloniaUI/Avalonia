@@ -131,7 +131,7 @@ namespace Avalonia.Skia
             public int Width => _bmp.Width;
             public int Height => _bmp.Height;
             public int RowBytes => _bmp.RowBytes;
-            public Size Dpi { get; } = new Size(96, 96);
+            public Vector Dpi { get; } = new Vector(96, 96);
             public PixelFormat Format => _bmp.ColorType.ToPixelFormat();
         }
 

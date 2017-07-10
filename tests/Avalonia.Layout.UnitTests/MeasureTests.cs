@@ -45,7 +45,7 @@ namespace Avalonia.Layout.UnitTests
         }
 
         [Fact]
-        public void Removing_From_Parent_Should_Invalidate_Measure_Of_Control_And_Descendents()
+        public void Removing_From_Parent_Should_Invalidate_Measure_Of_Control_And_Descendants()
         {
             var panel = new StackPanel();
             var child2 = new Border();

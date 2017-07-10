@@ -61,6 +61,8 @@ namespace Avalonia.iOS
 
         public Size ClientSize => Bounds.Size.ToAvalonia();
 
+        public IMouseDevice MouseDevice => iOSPlatform.MouseDevice;
+        
         public override void Draw(CGRect rect)
         {
             Paint?.Invoke(new Rect(rect.X, rect.Y, rect.Width, rect.Height));

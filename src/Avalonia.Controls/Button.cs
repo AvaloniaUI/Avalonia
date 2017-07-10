@@ -238,7 +238,7 @@ namespace Avalonia.Controls
             PseudoClasses.Remove(":pressed");
             e.Handled = true;
 
-            if (ClickMode == ClickMode.Release && Classes.Contains(":pointerover"))
+            if (ClickMode == ClickMode.Release && new Rect(Bounds.Size).Contains(e.GetPosition(this)))
             {
                 RaiseClickEvent();
             }

@@ -286,6 +286,17 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <inheritdoc/>
+        protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
+        {
+            if (VisualChildren.Count > 0)
+            {
+                ((ILogical)VisualChildren[0]).NotifyAttachedToLogicalTree(e);
+            }
+
+            base.OnAttachedToLogicalTree(e);
+        }
+
+        /// <inheritdoc/>
         protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
             if (VisualChildren.Count > 0)

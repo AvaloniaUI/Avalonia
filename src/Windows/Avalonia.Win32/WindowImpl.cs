@@ -133,6 +133,8 @@ namespace Avalonia.Win32
             }
         }
 
+        public IMouseDevice MouseDevice => WindowsMouseDevice.Instance;
+
         public WindowState WindowState
         {
             get

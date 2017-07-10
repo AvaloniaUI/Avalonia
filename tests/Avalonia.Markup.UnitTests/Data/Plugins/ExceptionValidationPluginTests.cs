@@ -35,6 +35,8 @@ namespace Avalonia.Markup.UnitTests.Data.Plugins
                 new BindingNotification(new ArgumentOutOfRangeException("value"), BindingErrorType.DataValidationError),
                 new BindingNotification(6),
             }, result);
+
+            GC.KeepAlive(data);
         }
 
         public class Data : NotifyingBase

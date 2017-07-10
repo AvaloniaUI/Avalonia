@@ -48,7 +48,7 @@ namespace Avalonia.Gtk
         public int Height => _surface.Height;
         public int RowBytes => _surface.Stride;
         //TODO: Proper DPI detect
-        public Size Dpi => new Size(96, 96);
+        public Vector Dpi => new Vector(96, 96);
         public PixelFormat Format => PixelFormat.Bgra8888;
     }
 }

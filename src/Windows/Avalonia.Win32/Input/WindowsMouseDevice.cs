@@ -10,7 +10,7 @@ namespace Avalonia.Win32.Input
 {
     class WindowsMouseDevice : MouseDevice
     {
-        public new static WindowsMouseDevice Instance { get; } = new WindowsMouseDevice();
+        public static WindowsMouseDevice Instance { get; } = new WindowsMouseDevice();
 
         public WindowImpl CurrentWindow
         {
