@@ -169,6 +169,7 @@ namespace Avalonia.Win32.Interop.Wpf
             else
                 return;
             MouseEvent(type, e);
+            Focus();
         }
 
         protected override void OnMouseUp(MouseButtonEventArgs e)
@@ -183,6 +184,7 @@ namespace Avalonia.Win32.Interop.Wpf
             else
                 return;
             MouseEvent(type, e);
+            Focus();
         }
 
         protected override void OnMouseMove(MouseEventArgs e)
