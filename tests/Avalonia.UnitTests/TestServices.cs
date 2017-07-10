@@ -50,6 +50,7 @@ namespace Avalonia.UnitTests
         public static readonly TestServices RealFocus = new TestServices(
             focusManager: new FocusManager(),
             keyboardDevice: () => new KeyboardDevice(),
+            keyboardNavigation: new KeyboardNavigationHandler(),
             inputManager: new InputManager());
 
         public static readonly TestServices RealLayoutManager = new TestServices(
@@ -63,6 +64,7 @@ namespace Avalonia.UnitTests
             IFocusManager focusManager = null,
             IInputManager inputManager = null,
             Func<IKeyboardDevice> keyboardDevice = null,
+            IKeyboardNavigationHandler keyboardNavigation = null,
             ILayoutManager layoutManager = null,
             IRuntimePlatform platform = null,
             Func<IRenderRoot, IRenderLoop, IRenderer> renderer = null,
@@ -79,6 +81,7 @@ namespace Avalonia.UnitTests
             FocusManager = focusManager;
             InputManager = inputManager;
             KeyboardDevice = keyboardDevice;
+            KeyboardNavigation = keyboardNavigation;
             LayoutManager = layoutManager;
             Platform = platform;
             Renderer = renderer;
@@ -96,6 +99,7 @@ namespace Avalonia.UnitTests
         public IInputManager InputManager { get; }
         public IFocusManager FocusManager { get; }
         public Func<IKeyboardDevice> KeyboardDevice { get; }
+        public IKeyboardNavigationHandler KeyboardNavigation { get; }
         public ILayoutManager LayoutManager { get; }
         public IRuntimePlatform Platform { get; }
         public Func<IRenderRoot, IRenderLoop, IRenderer> Renderer { get; }
@@ -113,6 +117,7 @@ namespace Avalonia.UnitTests
             IFocusManager focusManager = null,
             IInputManager inputManager = null,
             Func<IKeyboardDevice> keyboardDevice = null,
+            IKeyboardNavigationHandler keyboardNavigation = null,
             ILayoutManager layoutManager = null,
             IRuntimePlatform platform = null,
             Func<IRenderRoot, IRenderLoop, IRenderer> renderer = null,
@@ -131,6 +136,7 @@ namespace Avalonia.UnitTests
                 focusManager: focusManager ?? FocusManager,
                 inputManager: inputManager ?? InputManager,
                 keyboardDevice: keyboardDevice ?? KeyboardDevice,
+                keyboardNavigation: keyboardNavigation ?? KeyboardNavigation,
                 layoutManager: layoutManager ?? LayoutManager,
                 platform: platform ?? Platform,
                 renderer: renderer ?? Renderer,

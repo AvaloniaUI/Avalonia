@@ -378,8 +378,12 @@ namespace Avalonia.Layout
 
                 IsMeasureValid = false;
                 IsArrangeValid = false;
-                LayoutManager.Instance?.InvalidateMeasure(this);
-                InvalidateVisual();
+
+                if (((ILayoutable)this).IsAttachedToVisualTree)
+                {
+                    LayoutManager.Instance?.InvalidateMeasure(this);
+                    InvalidateVisual();
+                }
             }
         }
 
@@ -393,8 +397,12 @@ namespace Avalonia.Layout
                 Logger.Verbose(LogArea.Layout, this, "Invalidated arrange");
 
                 IsArrangeValid = false;
-                LayoutManager.Instance?.InvalidateArrange(this);
-                InvalidateVisual();
+
+                if (((ILayoutable)this).IsAttachedToVisualTree)
+                {
+                    LayoutManager.Instance?.InvalidateArrange(this);
+                    InvalidateVisual();
+                }
             }
         }
 

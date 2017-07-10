@@ -2,7 +2,9 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Linq;
 using Avalonia.Input.Navigation;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Input
 {
@@ -51,6 +53,31 @@ namespace Avalonia.Input
             NavigationDirection direction)
         {
             Contract.Requires<ArgumentNullException>(element != null);
+
+            var customHandler = element.GetSelfAndVisualAncestors()
+                .OfType<ICustomKeyboardNavigation>()
+                .FirstOrDefault();
+
+            if (customHandler != null)
+            {
+                var (handled, next) = customHandler.GetNext(element, direction);
+
+                if (handled)
+                {
+                    if (next != null)
+                    {
+                        return next;
+                    }
+                    else if (direction == NavigationDirection.Next || direction == NavigationDirection.Previous)
+                    {
+                        return TabNavigation.GetNextInTabOrder((IInputElement)customHandler, direction, true);
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+            }
 
             if (direction == NavigationDirection.Next || direction == NavigationDirection.Previous)
             {

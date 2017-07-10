@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reactive.Linq;
+using System.Threading.Tasks;
 using Avalonia.Diagnostics;
 using Avalonia.Markup.Data;
 using Xunit;
@@ -18,7 +19,7 @@ namespace Avalonia.Markup.UnitTests.Data
         }
 
         [Fact]
-        public async void Should_Get_Attached_Property_Value()
+        public async Task Should_Get_Attached_Property_Value()
         {
             var data = new Class1();
             var target = new ExpressionObserver(data, "(Owner.Foo)");
@@ -30,7 +31,7 @@ namespace Avalonia.Markup.UnitTests.Data
         }
 
         [Fact]
-        public async void Should_Get_Chained_Attached_Property_Value()
+        public async Task Should_Get_Chained_Attached_Property_Value()
         {
             var data = new Class1
             {
