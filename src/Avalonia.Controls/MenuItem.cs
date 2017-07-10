@@ -102,6 +102,11 @@ namespace Avalonia.Controls
             AccessKeyHandler.AccessKeyPressedEvent.AddClassHandler<MenuItem>(x => x.AccessKeyPressed);
         }
 
+        public MenuItem()
+        {
+
+        }
+
         /// <summary>
         /// Occurs when a <see cref="MenuItem"/> without a submenu is clicked.
         /// </summary>
@@ -192,7 +197,11 @@ namespace Avalonia.Controls
         /// <param name="e">The click event args.</param>
         protected virtual void OnClick(RoutedEventArgs e)
         {
-            Command?.Execute(CommandParameter);
+            if (Command != null)
+            {
+                Command.Execute(CommandParameter);
+                e.Handled = true;
+            }
         }
 
         /// <summary>
