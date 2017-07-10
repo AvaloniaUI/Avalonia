@@ -37,7 +37,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
             LogCallback checkLogMessage = (level, area, src, mt, pv) =>
             {
-                if (level == LogEventLevel.Error &&
+                if (level == LogEventLevel.Warning &&
                     area == LogArea.Binding &&
                     mt == "Error in binding to {Target}.{Property}: {Message}" &&
                     pv.Length == 3 &&

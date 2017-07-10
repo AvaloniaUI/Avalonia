@@ -32,10 +32,12 @@ namespace Avalonia.Markup.Data
         public void Commit(string expression)
         {
             Expression = expression;
-            ExpressionErrorPoint = string.Join(".", _nodes.Reverse())
-                .Replace(".!", "!")
-                .Replace(".[", "[")
-                .Replace(".^", "^");
+            ExpressionErrorPoint = _nodes != null ?
+                string.Join(".", _nodes.Reverse())
+                    .Replace(".!", "!")
+                    .Replace(".[", "[")
+                    .Replace(".^", "^") :
+                string.Empty;
             _nodes = null;
         }
     }

@@ -664,16 +664,7 @@ namespace Avalonia
 
             if (notification != null)
             {
-                if (notification.ErrorType == BindingErrorType.Error)
-                {
-                    Logger.Error(
-                        LogArea.Binding,
-                        this,
-                        "Error in binding to {Target}.{Property}: {Message}",
-                        this,
-                        property,
-                        ExceptionUtilities.GetMessage(notification.Error));
-                }
+                notification.LogIfError(this, property);
 
                 if (notification.HasValue)
                 {
