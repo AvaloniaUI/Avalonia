@@ -219,13 +219,16 @@ namespace Avalonia.Controls
         {
             base.OnPointerPressed(e);
 
-            PseudoClasses.Add(":pressed");
-            e.Device.Capture(this);
-            e.Handled = true;
-
-            if (ClickMode == ClickMode.Press)
+            if (e.MouseButton == MouseButton.Left)
             {
-                RaiseClickEvent();
+                PseudoClasses.Add(":pressed");
+                e.Device.Capture(this);
+                e.Handled = true;
+
+                if (ClickMode == ClickMode.Press)
+                {
+                    RaiseClickEvent();
+                }
             }
         }
 
@@ -234,13 +237,16 @@ namespace Avalonia.Controls
         {
             base.OnPointerReleased(e);
 
-            e.Device.Capture(null);
-            PseudoClasses.Remove(":pressed");
-            e.Handled = true;
-
-            if (ClickMode == ClickMode.Release && new Rect(Bounds.Size).Contains(e.GetPosition(this)))
+            if (e.MouseButton == MouseButton.Left)
             {
-                RaiseClickEvent();
+                e.Device.Capture(null);
+                PseudoClasses.Remove(":pressed");
+                e.Handled = true;
+
+                if (ClickMode == ClickMode.Release && new Rect(Bounds.Size).Contains(e.GetPosition(this)))
+                {
+                    RaiseClickEvent();
+                }
             }
         }
 

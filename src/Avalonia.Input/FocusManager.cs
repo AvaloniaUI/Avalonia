@@ -176,9 +176,10 @@ namespace Avalonia.Input
         /// <param name="e">The event args.</param>
         private void OnPreviewPointerPressed(object sender, RoutedEventArgs e)
         {
-            if (sender == e.Source)
+            var ev = (PointerPressedEventArgs)e;
+
+            if (sender == e.Source && ev.MouseButton == MouseButton.Left)
             {
-                var ev = (PointerPressedEventArgs)e;
                 var element = (ev.Device?.Captured as IInputElement) ?? (e.Source as IInputElement);
 
                 if (element == null || !CanFocus(element))
