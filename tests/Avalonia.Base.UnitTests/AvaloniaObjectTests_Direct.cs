@@ -352,14 +352,14 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
-        public void BindingError_Does_Not_Cause_Target_Update()
+        public void DataValidationError_Does_Not_Cause_Target_Update()
         {
             var target = new Class1();
             var source = new Subject<object>();
 
             target.Bind(Class1.FooProperty, source);
             source.OnNext("initial");
-            source.OnNext(new BindingNotification(new InvalidOperationException("Foo"), BindingErrorType.Error));
+            source.OnNext(new BindingNotification(new InvalidOperationException("Foo"), BindingErrorType.DataValidationError));
 
             Assert.Equal("initial", target.GetValue(Class1.FooProperty));
         }

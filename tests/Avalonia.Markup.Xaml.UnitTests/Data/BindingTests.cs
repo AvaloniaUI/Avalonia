@@ -302,12 +302,12 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
 
             // Bind Foo and Bar to the VM.
             target.Bind(OldDataContextTest.FooProperty, fooBinding);
-            //target.Bind(OldDataContextTest.BarProperty, barBinding);
+            target.Bind(OldDataContextTest.BarProperty, barBinding);
             target.DataContext = vm;
 
             // Make sure the control's Foo and Bar properties are read from the VM
             Assert.Equal(1, target.GetValue(OldDataContextTest.FooProperty));
-            //Assert.Equal(2, target.GetValue(OldDataContextTest.BarProperty));
+            Assert.Equal(2, target.GetValue(OldDataContextTest.BarProperty));
 
             // Set DataContext to null.
             target.DataContext = null;

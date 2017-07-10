@@ -665,14 +665,10 @@ namespace Avalonia
             if (notification != null)
             {
                 notification.LogIfError(this, property);
-
-                if (notification.HasValue)
-                {
-                    value = notification.Value;
-                }
+                value = notification.Value;
             }
 
-            if (notification == null || notification.HasValue)
+            if (notification == null || notification.ErrorType == BindingErrorType.Error || notification.HasValue)
             {
                 var metadata = (IDirectPropertyMetadata)property.GetMetadata(GetType());
                 var accessor = (IDirectPropertyAccessor)GetRegistered(property);

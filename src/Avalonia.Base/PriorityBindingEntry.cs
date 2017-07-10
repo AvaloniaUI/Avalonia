@@ -98,7 +98,7 @@ namespace Avalonia
 
             if (notification != null)
             {
-                if (notification.HasValue)
+                if (notification.HasValue || notification.ErrorType == BindingErrorType.Error)
                 {
                     Value = notification.Value;
                     _owner.Changed(this);
