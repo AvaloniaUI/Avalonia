@@ -343,7 +343,7 @@ namespace Avalonia.Base.UnitTests
 
             LogCallback checkLogMessage = (level, area, src, mt, pv) =>
             {
-                if (level == LogEventLevel.Error &&
+                if (level == LogEventLevel.Warning &&
                     area == LogArea.Binding &&
                     mt == expectedMessageTemplate)
                 {
