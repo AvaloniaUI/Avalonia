@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Avalonia.Skia.Linux.Natives" Version="1.57.1.4" />
     <ProjectReference Include="..\..\src\Avalonia.DotNetCoreRuntime\Avalonia.DotNetCoreRuntime.csproj" />
     <ProjectReference Include="..\..\src\Linux\Avalonia.LinuxFramebuffer\Avalonia.LinuxFramebuffer.csproj" />
     <ProjectReference Include="..\ControlCatalog\ControlCatalog.csproj" />
