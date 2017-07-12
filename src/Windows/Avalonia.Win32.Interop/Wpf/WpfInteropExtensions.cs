@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Avalonia.Win32.Interop.Wpf
 {
-    static class Helpers
+    static class WpfInteropExtensions
     {
         public static System.Windows.Point ToWpfPoint(this Point pt) => new System.Windows.Point(pt.X, pt.Y);
         public static Point ToAvaloniaPoint(this System.Windows.Point pt) => new Point(pt.X, pt.Y);

@@ -49,7 +49,7 @@
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Wpf\CursorShim.cs" />
-    <Compile Include="Wpf\Helpers.cs" />
+    <Compile Include="Wpf\WpfInteropExtensions.cs" />
     <Compile Include="Wpf\WpfAvaloniaHost.cs" />
     <Compile Include="Wpf\WpfMouseDevice.cs" />
     <Compile Include="Wpf\WpfTopLevelImpl.cs" />

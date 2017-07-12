@@ -14,12 +14,21 @@ using Avalonia.VisualTree;
 
 namespace Avalonia
 {
-	public static class WindowExtensions
+	public static class DevToolsExtensions
 	{
-		public static void AttachDevTools(this Control control)
+		public static void AttachDevTools(this TopLevel control)
 		{
-			Avalonia.Diagnostics.DevTools.Attach((TopLevel)control.GetVisualRoot());
+			Avalonia.Diagnostics.DevTools.Attach(control);
 		}
+
+	    public static void AttachDevToolsToTopLevelOnVisualTreeAttachment(this Control control)
+	    {
+	        (control.GetVisualRoot() as TopLevel)?.AttachDevTools();
+            control.AttachedToVisualTree += delegate
+	        {
+                (control.GetVisualRoot() as TopLevel)?.AttachDevTools();
+	        };
+	    }
 	}
 }
 

@@ -28,10 +28,7 @@ namespace WindowsInteropTest
             InitializeComponent();
             var view = new MainView();
             
-            view.AttachedToVisualTree += delegate
-            {
-                view.AttachDevTools();
-            };
+            view.AttachDevToolsToTopLevelOnVisualTreeAttachment();
             Host.Content = view;
             var btn = (Avalonia.Controls.Button) RightBtn.Content;
             btn.Click += delegate
