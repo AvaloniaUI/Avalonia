@@ -40,10 +40,9 @@ namespace Avalonia.Win32.Interop.Wpf
                 EnforceClientSize = false;
             }
 
-            public override void InvalidateMeasure()
+            protected override void OnMeasureInvalidated()
             {
                 ((FrameworkElement)PlatformImpl)?.InvalidateMeasure();
-                base.InvalidateMeasure();
             }
 
             protected override void HandleResized(Size clientSize)
