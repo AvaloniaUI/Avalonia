@@ -14,7 +14,7 @@
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>x86</PlatformTarget>
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -163,10 +163,6 @@
     <ProjectReference Include="..\..\..\src\Windows\Avalonia.Direct2D1\Avalonia.Direct2D1.csproj">
       <Project>{3e908f67-5543-4879-a1dc-08eace79b3cd}</Project>
       <Name>Avalonia.Direct2D1</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\src\Windows\Avalonia.Win32.Interop\Avalonia.Win32.Interop.csproj">
-      <Project>{cbc4ff2f-92d4-420b-be21-9fe0b930b04e}</Project>
-      <Name>Avalonia.Win32.Interop</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\..\src\Windows\Avalonia.Win32\Avalonia.Win32.csproj">
       <Project>{811a76cf-1cf6-440f-963b-bbe31bd72a82}</Project>

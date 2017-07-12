@@ -14,20 +14,20 @@ using Avalonia.VisualTree;
 
 namespace Avalonia
 {
-    public static class WindowExtensions
-    {
-        public static void AttachDevTools(this Control control)
-        {
-            Avalonia.Diagnostics.DevTools.Attach((TopLevel)control.GetVisualRoot());
-        }
-    }
+	public static class WindowExtensions
+	{
+		public static void AttachDevTools(this Window window)
+		{
+			Avalonia.Diagnostics.DevTools.Attach(window);
+		}
+	}
 }
 
 namespace Avalonia.Diagnostics
 {
     public class DevTools : UserControl
     {
-        private static Dictionary<TopLevel, Window> s_open = new Dictionary<TopLevel, Window>();
+        private static Dictionary<Window, Window> s_open = new Dictionary<Window, Window>();
         private IDisposable _keySubscription;
 
         public DevTools(IControl root)
@@ -43,9 +43,9 @@ namespace Avalonia.Diagnostics
 
         public IControl Root { get; }
 
-        public static IDisposable Attach(TopLevel control)
+        public static IDisposable Attach(Window window)
         {
-            return control.AddHandler(
+            return window.AddHandler(
                 KeyDownEvent,
                 WindowPreviewKeyDown,
                 RoutingStrategies.Tunnel);
@@ -84,16 +84,16 @@ namespace Avalonia.Diagnostics
         {
             if (e.Key == Key.F12)
             {
-                var control = (TopLevel)sender;
+                var window = (Window)sender;
                 var devToolsWindow = default(Window);
 
-                if (s_open.TryGetValue(control, out devToolsWindow))
+                if (s_open.TryGetValue(window, out devToolsWindow))
                 {
                     devToolsWindow.Activate();
                 }
                 else
                 {
-                    var devTools = new DevTools(control);
+                    var devTools = new DevTools(window);
 
                     devToolsWindow = new Window
                     {
@@ -107,7 +107,7 @@ namespace Avalonia.Diagnostics
                     };
 
                     devToolsWindow.Closed += devTools.DevToolsClosed;
-                    s_open.Add(control, devToolsWindow);
+                    s_open.Add((Window)sender, devToolsWindow);
                     devToolsWindow.Show();
                 }
             }
@@ -117,7 +117,9 @@ namespace Avalonia.Diagnostics
         {
             var devToolsWindow = (Window)sender;
             var devTools = (DevTools)devToolsWindow.Content;
-            s_open.Remove((TopLevel)devTools.Root);
+            var window = (Window)devTools.Root;
+
+            s_open.Remove(window);
             _keySubscription.Dispose();
             devToolsWindow.Closed -= DevToolsClosed;
         }

@@ -186,12 +186,14 @@ namespace Avalonia.Layout
 
             if (!control.IsArrangeValid && control.IsAttachedToVisualTree)
             {
-                if (control is IEmbeddedLayoutRoot embeddedRoot)
-                    control.Arrange(new Rect(embeddedRoot.AllocatedSize));
-                else if (control is ILayoutRoot root)
-                    control.Arrange(new Rect(root.DesiredSize));
+                if (control is ILayoutRoot root)
+                {
+                    root.Arrange(new Rect(control.DesiredSize));
+                }
                 else
+                {
                     control.Arrange(control.PreviousArrange.Value);
+                }
             }
         }
 

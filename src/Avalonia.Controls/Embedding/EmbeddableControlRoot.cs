@@ -22,8 +22,6 @@ namespace Avalonia.Controls.Embedding
         [CanBeNull]
         public new IEmbeddableWindowImpl PlatformImpl => (IEmbeddableWindowImpl) base.PlatformImpl;
 
-        protected bool EnforceClientSize { get; set; } = true;
-
         public void Prepare()
         {
             EnsureInitialized();
@@ -40,12 +38,12 @@ namespace Avalonia.Controls.Embedding
                 init.EndInit();
             }
         }
-        
+
         protected override Size MeasureOverride(Size availableSize)
         {
-            if (EnforceClientSize)
-                availableSize = PlatformImpl?.ClientSize ?? default(Size);
-            return base.MeasureOverride(availableSize);
+            var cs = PlatformImpl?.ClientSize ?? default(Size);
+            base.MeasureOverride(cs);
+            return cs;
         }
 
         private readonly NameScope _nameScope = new NameScope();

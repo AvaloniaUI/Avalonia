@@ -370,7 +370,7 @@ namespace Avalonia.Layout
         /// <summary>
         /// Invalidates the measurement of the control and queues a new layout pass.
         /// </summary>
-        public virtual void InvalidateMeasure()
+        public void InvalidateMeasure()
         {
             if (IsMeasureValid)
             {
