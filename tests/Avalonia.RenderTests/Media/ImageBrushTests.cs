@@ -35,7 +35,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
         }
 
         [Fact]
-        public void ImageBrush_Tile_Fill()
+        public async Task ImageBrush_Tile_Fill()
         {
             Decorator target = new Decorator
             {
@@ -54,12 +54,12 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
 
         [Fact]
-        public void ImageBrush_Tile_UniformToFill()
+        public async Task ImageBrush_Tile_UniformToFill()
         {
             Decorator target = new Decorator
             {
@@ -78,12 +78,12 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
 
         [Fact]
-        public void ImageBrush_Tile_Small_Image()
+        public async Task ImageBrush_Tile_Small_Image()
         {
             Decorator target = new Decorator
             {
@@ -101,7 +101,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
 
