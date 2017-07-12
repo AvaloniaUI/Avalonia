@@ -25,7 +25,7 @@ namespace Avalonia
 
 namespace Avalonia.Diagnostics
 {
-    public class DevTools : UserControl
+	public class DevTools : UserControl
     {
         private static Dictionary<Window, Window> s_open = new Dictionary<Window, Window>();
         private IDisposable _keySubscription;
@@ -49,35 +49,6 @@ namespace Avalonia.Diagnostics
                 KeyDownEvent,
                 WindowPreviewKeyDown,
                 RoutingStrategies.Tunnel);
-        }
-
-        public static void ForceOpen(TopLevel control)
-        {
-            var devToolsWindow = default(Window);
-
-            if (s_open.TryGetValue(control, out devToolsWindow))
-            {
-                devToolsWindow.Activate();
-            }
-            else
-            {
-                var devTools = new DevTools(control);
-
-                devToolsWindow = new Window
-                {
-                    Width = 1024,
-                    Height = 512,
-                    Content = devTools,
-                    DataTemplates = new DataTemplates
-                        {
-                            new ViewLocator<ViewModelBase>(),
-                        }
-                };
-
-                devToolsWindow.Closed += devTools.DevToolsClosed;
-                s_open.Add(control, devToolsWindow);
-                devToolsWindow.Show();
-            }
         }
 
         private static void WindowPreviewKeyDown(object sender, KeyEventArgs e)
