@@ -465,6 +465,21 @@ public class Packages
                 BasePath = context.Directory("./"),
                 OutputDirectory = parameters.NugetRoot
             },
+            new NuGetPackSettings()
+            {
+                Id = "Avalonia.Win32.Interoperability",
+                Dependencies = new []
+                {
+                    new NuSpecDependency() { Id = "Avalonia.Win32", Version = parameters.Version },
+                    new NuSpecDependency() { Id = "Avalonia.Direct2D1", Version = parameters.Version },
+                },
+                Files = new []
+                {
+                    new NuSpecContent { Source = "Avalonia.Win32.Interop/bin/" + parameters.DirSuffix + "/Avalonia.Win32.Interop.dll", Target = "lib/net45" }
+                },
+                BasePath = context.Directory("./src/Windows"),
+                OutputDirectory = parameters.NugetRoot
+            },
             ///////////////////////////////////////////////////////////////////////////////
             // Avalonia.LinuxFramebuffer
             ///////////////////////////////////////////////////////////////////////////////
