@@ -53,6 +53,7 @@ namespace Avalonia.UnitTests
         public static readonly TestServices RealFocus = new TestServices(
             focusManager: new FocusManager(),
             keyboardDevice: () => new KeyboardDevice(),
+            keyboardNavigation: new KeyboardNavigationHandler(),
             inputManager: new InputManager());
 
         public static readonly TestServices RealLayoutManager = new TestServices(
@@ -66,6 +67,7 @@ namespace Avalonia.UnitTests
             IFocusManager focusManager = null,
             IInputManager inputManager = null,
             Func<IKeyboardDevice> keyboardDevice = null,
+            IKeyboardNavigationHandler keyboardNavigation = null,
             ILayoutManager layoutManager = null,
             Func<IMouseDevice> mouseDevice = null,
             IRuntimePlatform platform = null,
@@ -83,6 +85,7 @@ namespace Avalonia.UnitTests
             FocusManager = focusManager;
             InputManager = inputManager;
             KeyboardDevice = keyboardDevice;
+            KeyboardNavigation = keyboardNavigation;
             LayoutManager = layoutManager;
             MouseDevice = mouseDevice;
             Platform = platform;
@@ -101,6 +104,7 @@ namespace Avalonia.UnitTests
         public IInputManager InputManager { get; }
         public IFocusManager FocusManager { get; }
         public Func<IKeyboardDevice> KeyboardDevice { get; }
+        public IKeyboardNavigationHandler KeyboardNavigation { get; }
         public ILayoutManager LayoutManager { get; }
         public Func<IMouseDevice> MouseDevice { get; }
         public IRuntimePlatform Platform { get; }
@@ -119,6 +123,7 @@ namespace Avalonia.UnitTests
             IFocusManager focusManager = null,
             IInputManager inputManager = null,
             Func<IKeyboardDevice> keyboardDevice = null,
+            IKeyboardNavigationHandler keyboardNavigation = null,
             ILayoutManager layoutManager = null,
             Func<IMouseDevice> mouseDevice = null,
             IRuntimePlatform platform = null,
@@ -138,6 +143,7 @@ namespace Avalonia.UnitTests
                 focusManager: focusManager ?? FocusManager,
                 inputManager: inputManager ?? InputManager,
                 keyboardDevice: keyboardDevice ?? KeyboardDevice,
+                keyboardNavigation: keyboardNavigation ?? KeyboardNavigation,
                 layoutManager: layoutManager ?? LayoutManager,
                 mouseDevice: mouseDevice ?? MouseDevice,
                 platform: platform ?? Platform,

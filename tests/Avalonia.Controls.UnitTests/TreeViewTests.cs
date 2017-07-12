@@ -315,6 +315,50 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(new[] { "NewChild1" }, ExtractItemHeader(target, 1));
         }
 
+        [Fact]
+        public void Keyboard_Navigation_Should_Move_To_Last_Selected_Node()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var focus = FocusManager.Instance;
+                var navigation = AvaloniaLocator.Current.GetService<IKeyboardNavigationHandler>();
+                var data = CreateTestTreeData();
+
+                var target = new TreeView
+                {
+                    Template = CreateTreeViewTemplate(),
+                    Items = data,
+                    DataTemplates = CreateNodeDataTemplate(),
+                };
+
+                var button = new Button();
+
+                var root = new TestRoot
+                {
+                    Child = new StackPanel
+                    {
+                        Children = { target, button },
+                    }
+                };
+
+                ApplyTemplates(target);
+
+                var item = data[0].Children[0];
+                var node = target.ItemContainerGenerator.Index.ContainerFromItem(item);
+                Assert.NotNull(node);
+
+                target.SelectedItem = item;
+                node.Focus();
+                Assert.Same(node, focus.Current);
+
+                navigation.Move(focus.Current, NavigationDirection.Next);
+                Assert.Same(button, focus.Current);
+
+                navigation.Move(focus.Current, NavigationDirection.Next);
+                Assert.Same(node, focus.Current);
+            }
+        }
+
         private void ApplyTemplates(TreeView tree)
         {
             tree.ApplyTemplate();

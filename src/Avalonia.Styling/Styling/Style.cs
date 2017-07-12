@@ -61,12 +61,12 @@ namespace Avalonia.Styling
         }
 
         /// <summary>
-        /// Gets or sets style's selector.
+        /// Gets or sets the style's selector.
         /// </summary>
         public Selector Selector { get; set; }
 
         /// <summary>
-        /// Gets or sets style's setters.
+        /// Gets or sets the style's setters.
         /// </summary>
         [Content]
         public IEnumerable<ISetter> Setters { get; set; } = new List<ISetter>();
