@@ -190,8 +190,10 @@ namespace Avalonia.Layout
                 {
                     root.Arrange(new Rect(control.DesiredSize));
                 }
-                else
+                else if(control.PreviousArrange != null)
                 {
+                    // Has been observed that PreviousArrange sometimes is null, probably a bug somewhere else.
+                    // Condition observed: control.VisualParent is Scrollbar, control is Border.
                     control.Arrange(control.PreviousArrange.Value);
                 }
             }
