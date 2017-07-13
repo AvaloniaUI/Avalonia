@@ -3,7 +3,6 @@
     <ControlTemplate>
       <Grid ColumnDefinitions="*,Auto" RowDefinitions="*,Auto" Background="{TemplateBinding Background}">
         <ScrollContentPresenter Name="PART_ContentPresenter"
-                                Background="{TemplateBinding Background}"
                                 Content="{TemplateBinding Content}"
                                 Extent="{TemplateBinding Path=Extent, Mode=TwoWay}"
                                 Margin="{TemplateBinding Padding}"
