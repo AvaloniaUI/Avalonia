@@ -1,5 +1,6 @@
 <Styles xmlns="https://github.com/avaloniaui">
   <Style Selector="ListBoxItem">
+    <Setter Property="Background" Value="Transparent"/>
     <Setter Property="Template">
       <ControlTemplate>
         <ContentPresenter Name="PART_ContentPresenter"
