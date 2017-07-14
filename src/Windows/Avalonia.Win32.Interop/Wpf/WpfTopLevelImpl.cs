@@ -142,17 +142,13 @@ namespace Avalonia.Win32.Interop.Wpf
                 return;
             if (_wbImage != null)
                 _ttl.Paint?.Invoke(new Rect(0, 0, ActualWidth, ActualHeight));
+            else
+                _dxImage.Render();
             if (ImageSource != null)
                 drawingContext.DrawImage(ImageSource, new System.Windows.Rect(0, 0, ActualWidth, ActualHeight));
         }
 
-        void ITopLevelImpl.Invalidate(Rect rect)
-        {
-            if (_dxImage != null)
-                _dxImage.MakeDirty();
-            else
-                InvalidateVisual();
-        }
+        void ITopLevelImpl.Invalidate(Rect rect) => InvalidateVisual();
 
         void ITopLevelImpl.SetInputRoot(IInputRoot inputRoot) => _inputRoot = inputRoot;
 

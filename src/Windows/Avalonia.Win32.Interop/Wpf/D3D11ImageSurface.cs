@@ -22,7 +22,6 @@ namespace Avalonia.Win32.Interop.Wpf
 
         private RenderTarget _renderTarget;
         private Size _imageSize = Size.Empty;
-        private bool _isDirty = false;
 
         public D3D11ImageSurface(WpfTopLevelImpl root)
         {
@@ -54,7 +53,6 @@ namespace Avalonia.Win32.Interop.Wpf
             _root.ImageSource = _image;
             _image.WindowOwner = s_dummy.Handle;
             _image.OnRender = OnImageRender;
-            CompositionTarget.Rendering += OnCompositionTargetRendering; // TODO[F]: Remove handler on dispose?
         }
 
         Size GetSize() => new Size(_root.ActualWidth, _root.ActualHeight);
@@ -101,30 +99,21 @@ namespace Avalonia.Win32.Interop.Wpf
             }
             _root.ControlRoot.PlatformImpl?.Paint?.Invoke(new Rect(0, 0, _root.ActualWidth,
                 _root.ActualHeight));
-            _isDirty = false;
         }
-
-        private void OnCompositionTargetRendering(object sender, EventArgs e)
-        {
-            if (_root.Parent == null)
-                return;
-            UpdateImageSize();
-            if (_isDirty)
-            {
-                _image.RequestRender();
-                _root.InvalidateVisual();
-            }
-        }
-
+        
         public void Dispose()
         {
             _renderTarget?.Dispose();
             _renderTarget = null;
             _image?.Dispose();
             _image = null;
-            CompositionTarget.Rendering -= OnCompositionTargetRendering;
         }
+        
 
-        public void MakeDirty() => _isDirty = true;
+        public void Render()
+        {
+            UpdateImageSize();
+            _image.RequestRender();
+        }
     }
 }
