@@ -14,6 +14,7 @@ namespace Avalonia.Direct2D1.Media
     {
         private readonly DirectWriteFactory _dwriteFactory;
         private readonly WicRenderTarget _target;
+        public WicRenderTarget RenderTarget => _target;
 
         public RenderTargetBitmapImpl(
             ImagingFactory imagingFactory,

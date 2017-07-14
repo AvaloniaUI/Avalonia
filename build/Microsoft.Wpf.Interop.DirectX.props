@@ -1,0 +1,5 @@
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Wpf.Interop.DirectX-x86" Version="0.9.0-beta-22856" />
+  </ItemGroup>
+</Project>

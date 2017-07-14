@@ -150,6 +150,10 @@ namespace Avalonia.Direct2D1
             throw new NotSupportedException("Don't know how to create a Direct2D1 renderer from any of provided surfaces");
         }
 
+        public bool SupportsSurface(object surface) =>
+            surface is IExternalDirect2DRenderTargetSurface ||
+            (surface is IPlatformHandle handle && handle.HandleDescriptor == "HWND");
+
         public IRenderTargetBitmapImpl CreateRenderTargetBitmap(
             int width,
             int height,

@@ -68,6 +68,8 @@ namespace Avalonia.Cairo
                 "Don't know how to create a Cairo renderer from any of the provided surfaces."));
         }
 
+        public bool SupportsSurface(object surface) => surface is Func<Gdk.Drawable>;
+
         public IRenderTargetBitmapImpl CreateRenderTargetBitmap(int width, int height, double dpiX, double dpiY)
         {
             return new RenderTargetBitmapImpl(new ImageSurface(Format.Argb32, width, height));

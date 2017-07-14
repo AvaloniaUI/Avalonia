@@ -25,7 +25,8 @@ namespace Avalonia.Win32.Interop.Wpf
         private readonly HwndSourceHook _hook;
         private readonly IEmbeddableWindowImpl _ttl;
         private IInputRoot _inputRoot;
-        private readonly IEnumerable<object> _surfaces;
+        private readonly D3D11ImageSurface _dxImage;
+        private readonly WritableBitmapSurface _wbImage;
         private readonly IMouseDevice _mouse;
         private readonly IKeyboardDevice _keyboard;
         private Size _finalSize;
@@ -60,7 +61,16 @@ namespace Avalonia.Win32.Interop.Wpf
             PresentationSource.AddSourceChangedHandler(this, OnSourceChanged);
             _hook = WndProc;
             _ttl = this;
-            _surfaces = new object[] {new WritableBitmapSurface(this)};
+            var dxImage = new D3D11ImageSurface(this);
+            if (AvaloniaLocator.Current.GetService<IPlatformRenderInterface>().SupportsSurface(dxImage))
+            {
+                _dxImage = dxImage;
+                _dxImage.Initialize();
+            }
+            else
+            {
+                _wbImage = new WritableBitmapSurface(this);
+            }
             _mouse = new WpfMouseDevice(this);
             _keyboard = AvaloniaLocator.Current.GetService<IKeyboardDevice>();
 
@@ -71,6 +81,14 @@ namespace Avalonia.Win32.Interop.Wpf
             {
                 ControlRoot.DataContext = DataContext;
             };
+        }
+
+        internal Vector GetScaling()
+        {
+            var src = PresentationSource.FromVisual(this)?.CompositionTarget;
+            if (src == null)
+                return new Vector(1, 1);
+            return new Vector(src.TransformToDevice.M11, src.TransformToDevice.M22);
         }
 
         private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wparam, IntPtr lparam, ref bool handled)
@@ -88,15 +106,19 @@ namespace Avalonia.Win32.Interop.Wpf
             _ttl.ScalingChanged?.Invoke(_ttl.Scaling);
         }
 
-        public void Dispose() => _ttl.Closed?.Invoke();
+        public void Dispose()
+        {
+            _ttl.Closed?.Invoke();
+            _dxImage?.Dispose();
+        }
 
         Size ITopLevelImpl.ClientSize => _finalSize;
         IMouseDevice ITopLevelImpl.MouseDevice => _mouse;
 
         double ITopLevelImpl.Scaling => PresentationSource.FromVisual(this)?.CompositionTarget?.TransformToDevice.M11 ?? 1;
 
-        IEnumerable<object> ITopLevelImpl.Surfaces => _surfaces;
-
+        IEnumerable<object> ITopLevelImpl.Surfaces => new[] {(object)_dxImage ?? _wbImage};
+         
         private Size _previousSize;
         protected override System.Windows.Size ArrangeOverride(System.Windows.Size finalSize)
         {
@@ -118,7 +140,10 @@ namespace Avalonia.Win32.Interop.Wpf
         {
             if(ActualHeight == 0 || ActualWidth == 0)
                 return;
-            _ttl.Paint?.Invoke(new Rect(0, 0, ActualWidth, ActualHeight));
+            if (_wbImage != null)
+                _ttl.Paint?.Invoke(new Rect(0, 0, ActualWidth, ActualHeight));
+            else
+                _dxImage.Render();
             if (ImageSource != null)
                 drawingContext.DrawImage(ImageSource, new System.Windows.Rect(0, 0, ActualWidth, ActualHeight));
         }

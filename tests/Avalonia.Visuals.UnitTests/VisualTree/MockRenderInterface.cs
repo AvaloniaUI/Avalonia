@@ -24,6 +24,11 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
             throw new NotImplementedException();
         }
 
+        public bool SupportsSurface(object surface)
+        {
+            return true;
+        }
+
         public IRenderTargetBitmapImpl CreateRenderTargetBitmap(int width, int height, double dpiX, double dpiY)
         {
             throw new NotImplementedException();

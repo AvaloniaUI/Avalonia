@@ -24,7 +24,7 @@ namespace Avalonia.Win32.Interop.Wpf
 
         public ILockedFramebuffer Lock()
         {
-            var scale = GetScaling();
+            var scale = _impl.GetScaling();
             var size = new Size(_impl.ActualWidth * scale.X, _impl.ActualHeight * scale.Y);
             var dpi = scale * 96;
             if (_bitmap == null || _bitmap.PixelWidth != (int) size.Width || _bitmap.PixelHeight != (int) size.Height)
@@ -68,14 +68,6 @@ namespace Avalonia.Win32.Interop.Wpf
             public int RowBytes => _bitmap.BackBufferStride;
             public Vector Dpi { get; }
             public PixelFormat Format => PixelFormat.Bgra8888;
-        }
-
-        Vector GetScaling()
-        {
-            var src = PresentationSource.FromVisual(_impl)?.CompositionTarget;
-            if (src == null)
-                return new Vector(1, 1);
-            return new Vector(src.TransformToDevice.M11, src.TransformToDevice.M22);
         }
     }
 }

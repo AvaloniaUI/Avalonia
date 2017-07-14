@@ -25,6 +25,11 @@ namespace Avalonia.UnitTests
             return Mock.Of<IRenderTarget>();
         }
 
+        public bool SupportsSurface(object surface)
+        {
+            return true;
+        }
+
         public IRenderTargetBitmapImpl CreateRenderTargetBitmap(
             int width,
             int height,

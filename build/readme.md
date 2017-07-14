@@ -7,6 +7,7 @@
 <Import Project="..\..\build\Markup.props" />
 <Import Project="..\..\build\Microsoft.CSharp.props" />
 <Import Project="..\..\build\Microsoft.Reactive.Testing.props" />
+<Import Project="..\..\build\Microsoft.Wpf.Interop.DirectX.props" />
 <Import Project="..\..\build\Moq.props" />
 <Import Project="..\..\build\NetCore.props" />
 <Import Project="..\..\build\Rx.props" />
