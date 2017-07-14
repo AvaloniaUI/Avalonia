@@ -13,6 +13,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.VisualTree;
 using ControlCatalog;
 using Window = System.Windows.Window;
 
@@ -27,8 +28,10 @@ namespace WindowsInteropTest
         {
             InitializeComponent();
             var view = new MainView();
-            
-            view.AttachDevToolsToTopLevelOnVisualTreeAttachment();
+            view.AttachedToVisualTree += delegate
+            {
+                ((TopLevel) view.GetVisualRoot()).AttachDevTools(); 
+            };
             Host.Content = view;
             var btn = (Avalonia.Controls.Button) RightBtn.Content;
             btn.Click += delegate

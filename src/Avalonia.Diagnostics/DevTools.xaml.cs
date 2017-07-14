@@ -20,15 +20,6 @@ namespace Avalonia
 		{
 			Avalonia.Diagnostics.DevTools.Attach(control);
 		}
-
-	    public static void AttachDevToolsToTopLevelOnVisualTreeAttachment(this Control control)
-	    {
-	        (control.GetVisualRoot() as TopLevel)?.AttachDevTools();
-            control.AttachedToVisualTree += delegate
-	        {
-                (control.GetVisualRoot() as TopLevel)?.AttachDevTools();
-	        };
-	    }
 	}
 }
 
