@@ -8,19 +8,16 @@ using Avalonia.Platform;
 using Microsoft.Wpf.Interop.DirectX;
 using SharpDX;
 using SharpDX.Direct2D1;
-using SharpDX.Direct3D11;
-using SharpDX.DXGI;
 using SharpDX.Mathematics.Interop;
 using AlphaMode = SharpDX.Direct2D1.AlphaMode;
-using Device = SharpDX.Direct3D11.Device;
 using Factory = SharpDX.Direct2D1.Factory;
 using RenderTarget = SharpDX.Direct2D1.RenderTarget;
 
 namespace Avalonia.Win32.Interop.Wpf
 {
-    class D3D11ImageSurface : IExternalDirect2DRenderTargetSurface
+    class D3D11ImageSurface : IExternalDirect2DRenderTargetSurface, IDisposable
     {
-        private readonly D3D11Image _image = new D3D11Image();
+        private D3D11Image _image;
         private Direct2D1Platform _platform;
         private Factory _factory;
         private readonly WpfTopLevelImpl _root;
@@ -45,7 +42,10 @@ namespace Avalonia.Win32.Interop.Wpf
 
         public void DestroyRenderTarget()
         {
-            //TODO
+            _backBuffer?.Dispose();
+            _frontRenderTarget?.Dispose();
+            _backBuffer = null;
+            _frontRenderTarget = null;
         }
 
         public void BeforeDrawing()
@@ -58,6 +58,8 @@ namespace Avalonia.Win32.Interop.Wpf
             _isDirty = true;
         }
 
+        private static readonly System.Windows.Forms.Control s_dummy = new System.Windows.Forms.Control();
+
         private void InitializeRenderTarget()
         {
             if (_platform == null)
@@ -67,14 +69,16 @@ namespace Avalonia.Win32.Interop.Wpf
             }
             var window = Window.GetWindow(_root.Parent);
             if (window == null)
-                return;
-            
+                throw new InvalidOperationException("Attempted to render to unattached visual");
+
+            _image = _image ?? new D3D11Image();
             UpdateImageSize();
             if (_initialized)
                 return;
+            
             _root.ImageSource = _image;
 
-            _image.WindowOwner = new System.Windows.Interop.WindowInteropHelper(window).Handle;
+            _image.WindowOwner = s_dummy.Handle;
             _image.OnRender = OnImageRender;
             CompositionTarget.Rendering += OnCompositionTargetRendering; // TODO[F]: Remove handler on dispose?
             _initialized = true;
@@ -103,7 +107,7 @@ namespace Avalonia.Win32.Interop.Wpf
 
         private void OnImageRender(IntPtr handle, bool isNewSurface)
         {
-            if (isNewSurface)
+            if (isNewSurface || _frontRenderTarget == null)
             {
                 _frontRenderTarget?.Dispose();
                 _frontRenderTarget = null;
@@ -140,6 +144,14 @@ namespace Avalonia.Win32.Interop.Wpf
         {
             if (_isDirty)
                 _image.RequestRender();
+        }
+
+        public void Dispose()
+        {
+            DestroyRenderTarget();
+            _image?.Dispose();
+            _image = null;
+            CompositionTarget.Rendering -= OnCompositionTargetRendering;
         }
     }
 }
