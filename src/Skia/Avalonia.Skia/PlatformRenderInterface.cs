@@ -66,6 +66,8 @@ namespace Avalonia.Skia
             }
         }
 
+        public bool SupportsSurface(object surface) => (surface is IFramebufferPlatformSurface);
+
         public IRenderTargetBitmapImpl CreateRenderTargetBitmap(
             int width,
             int height,

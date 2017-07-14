@@ -47,6 +47,13 @@ namespace Avalonia.Platform
         IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces);
 
         /// <summary>
+        /// Checks if rendering platform can render to particular native surface
+        /// </summary>
+        /// <param name="surface"></param>
+        /// <returns></returns>
+        bool SupportsSurface(object surface);
+
+        /// <summary>
         /// Creates a render target bitmap implementation.
         /// </summary>
         /// <param name="width">The width of the bitmap.</param>

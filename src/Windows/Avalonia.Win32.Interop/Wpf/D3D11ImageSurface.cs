@@ -19,22 +19,17 @@ namespace Avalonia.Win32.Interop.Wpf
     {
         private D3D11Image _image;
         private readonly WpfTopLevelImpl _root;
-        private bool _initialized = false;
 
         private RenderTarget _renderTarget;
         private Size _imageSize = Size.Empty;
         private bool _isDirty = false;
-        private bool _isTriggeredByTick;
 
         public D3D11ImageSurface(WpfTopLevelImpl root)
         {
-            _root = root;
-        }
+            _root = root;        }
 
         public RenderTarget GetOrCreateRenderTarget()
         {
-            InitializeRenderTarget();
-            Debug.Assert(_renderTarget != null);
             return _renderTarget;
         }
 
@@ -45,7 +40,6 @@ namespace Avalonia.Win32.Interop.Wpf
 
         public void BeforeDrawing()
         {
-            UpdateImageSize();
         }
 
         public void AfterDrawing()
@@ -54,29 +48,19 @@ namespace Avalonia.Win32.Interop.Wpf
 
         private static readonly System.Windows.Forms.Control s_dummy = new System.Windows.Forms.Control();
 
-        private void InitializeRenderTarget()
+        public void Initialize()
         {
             _image = _image ?? new D3D11Image();
             UpdateImageSize();
-            if (_initialized)
-                return;
-            
             _root.ImageSource = _image;
             _image.WindowOwner = s_dummy.Handle;
             _image.OnRender = OnImageRender;
             CompositionTarget.Rendering += OnCompositionTargetRendering; // TODO[F]: Remove handler on dispose?
-            _initialized = true;
-            _root.TriggerPaintOnRender = false;
-            _root.InvalidateVisualImpl = () =>
-            {
-                _isDirty = true;
-            };
-            _image.RequestRender();
         }
 
         Size GetSize() => new Size(_root.ActualWidth, _root.ActualHeight);
         
-        private void UpdateImageSize()
+        public void UpdateImageSize()
         {
             
             var virtualSize = GetSize();
@@ -116,7 +100,6 @@ namespace Avalonia.Win32.Interop.Wpf
                     _renderTarget = new RenderTarget(AvaloniaLocator.Current.GetService<Factory>(), surface, properties);
                 }
             }
-            if (_isTriggeredByTick)
                 _root.ControlRoot.PlatformImpl?.Paint?.Invoke(new Rect(0, 0, _root.ActualWidth,
                     _root.ActualHeight));
             _isDirty = false;
@@ -124,16 +107,12 @@ namespace Avalonia.Win32.Interop.Wpf
 
         private void OnCompositionTargetRendering(object sender, EventArgs e)
         {
+            UpdateImageSize();
             if (_isDirty)
-                try
-                {
-                    _isTriggeredByTick = true;
-                    _image.RequestRender();
-                }
-                finally
-                {
-                    _isTriggeredByTick = false;
-                }
+            {
+                _image.RequestRender();
+                _root.InvalidateVisual();
+            }
         }
 
         public void Dispose()
@@ -142,6 +121,11 @@ namespace Avalonia.Win32.Interop.Wpf
             _image?.Dispose();
             _image = null;
             CompositionTarget.Rendering -= OnCompositionTargetRendering;
+        }
+
+        public void MakeDirty()
+        {
+            _isDirty = true;
         }
     }
 }
