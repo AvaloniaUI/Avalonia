@@ -10,12 +10,12 @@
     <TabItem Header="Canvas"><pages:CanvasPage/></TabItem>
     <TabItem Header="Carousel"><pages:CarouselPage/></TabItem>
     <TabItem Header="CheckBox"><pages:CheckBoxPage/></TabItem>
+    <TabItem Header="ContextMenu"><pages:ContextMenuPage/></TabItem>
     <TabItem Header="DropDown"><pages:DropDownPage/></TabItem>
     <TabItem Header="Expander"><pages:ExpanderPage/></TabItem>
     <TabItem Header="Image"><pages:ImagePage/></TabItem>
     <TabItem Header="LayoutTransformControl"><pages:LayoutTransformControlPage/></TabItem>
     <TabItem Header="Menu"><pages:MenuPage/></TabItem>
-    <TabItem Header="ContextMenu"><pages:ContextMenuPage/></TabItem>
     <TabItem Header="RadioButton"><pages:RadioButtonPage/></TabItem>
     <TabItem Header="Slider"><pages:SliderPage/></TabItem>
     <TabItem Header="TextBox"><pages:TextBoxPage/></TabItem>
