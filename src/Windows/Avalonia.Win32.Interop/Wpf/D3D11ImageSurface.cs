@@ -18,15 +18,13 @@ namespace Avalonia.Win32.Interop.Wpf
     class D3D11ImageSurface : IExternalDirect2DRenderTargetSurface, IDisposable
     {
         private D3D11Image _image;
-        private Direct2D1Platform _platform;
-        private Factory _factory;
         private readonly WpfTopLevelImpl _root;
         private bool _initialized = false;
 
-        private RenderTarget _frontRenderTarget;
-        private RenderTargetBitmapImpl _backBuffer;
+        private RenderTarget _renderTarget;
         private Size _imageSize = Size.Empty;
         private bool _isDirty = false;
+        private bool _isTriggeredByTick;
 
         public D3D11ImageSurface(WpfTopLevelImpl root)
         {
@@ -36,16 +34,13 @@ namespace Avalonia.Win32.Interop.Wpf
         public RenderTarget GetOrCreateRenderTarget()
         {
             InitializeRenderTarget();
-            Debug.Assert(_backBuffer != null);
-            return _backBuffer.RenderTarget;
+            Debug.Assert(_renderTarget != null);
+            return _renderTarget;
         }
 
         public void DestroyRenderTarget()
         {
-            _backBuffer?.Dispose();
-            _frontRenderTarget?.Dispose();
-            _backBuffer = null;
-            _frontRenderTarget = null;
+           
         }
 
         public void BeforeDrawing()
@@ -55,33 +50,28 @@ namespace Avalonia.Win32.Interop.Wpf
 
         public void AfterDrawing()
         {
-            _isDirty = true;
         }
 
         private static readonly System.Windows.Forms.Control s_dummy = new System.Windows.Forms.Control();
 
         private void InitializeRenderTarget()
         {
-            if (_platform == null)
-            {
-                _platform = (Direct2D1Platform) AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
-                _factory = AvaloniaLocator.Current.GetService<Factory>();
-            }
-            var window = Window.GetWindow(_root.Parent);
-            if (window == null)
-                throw new InvalidOperationException("Attempted to render to unattached visual");
-
             _image = _image ?? new D3D11Image();
             UpdateImageSize();
             if (_initialized)
                 return;
             
             _root.ImageSource = _image;
-
             _image.WindowOwner = s_dummy.Handle;
             _image.OnRender = OnImageRender;
             CompositionTarget.Rendering += OnCompositionTargetRendering; // TODO[F]: Remove handler on dispose?
             _initialized = true;
+            _root.TriggerPaintOnRender = false;
+            _root.InvalidateVisualImpl = () =>
+            {
+                _isDirty = true;
+            };
+            _image.RequestRender();
         }
 
         Size GetSize() => new Size(_root.ActualWidth, _root.ActualHeight);
@@ -96,21 +86,16 @@ namespace Avalonia.Win32.Interop.Wpf
             {
                 _image.SetPixelSize((int)currentSize.Width, (int)currentSize.Height);
                 _imageSize = currentSize;
-                _backBuffer?.Dispose();
-                _backBuffer = null;
-                _backBuffer = (RenderTargetBitmapImpl) _platform.CreateRenderTargetBitmap((int) virtualSize.Width,
-                    (int) virtualSize.Height,
-                    scaling.X * 96, scaling.Y * 96);
             }
         }
         
 
         private void OnImageRender(IntPtr handle, bool isNewSurface)
         {
-            if (isNewSurface || _frontRenderTarget == null)
+            if (isNewSurface)
             {
-                _frontRenderTarget?.Dispose();
-                _frontRenderTarget = null;
+                _renderTarget?.Dispose();
+                _renderTarget = null;
 
                 using (var comObject = new ComObject(handle))
                 using (var surface = comObject.QueryInterface<SharpDX.DXGI.Surface>())
@@ -128,22 +113,27 @@ namespace Avalonia.Win32.Interop.Wpf
                         Type = RenderTargetType.Default,
                         Usage = RenderTargetUsage.None
                     };
-                    _frontRenderTarget = new RenderTarget(_factory, surface, properties);
+                    _renderTarget = new RenderTarget(AvaloniaLocator.Current.GetService<Factory>(), surface, properties);
                 }
             }
-            _frontRenderTarget.BeginDraw();
-            using (var bitmap = _backBuffer.GetDirect2DBitmap(_frontRenderTarget))
-                _frontRenderTarget.DrawBitmap(bitmap,
-                    new RawRectangleF(0, 0, bitmap.Size.Width, bitmap.Size.Height),
-                    1, BitmapInterpolationMode.Linear);
-            _frontRenderTarget.EndDraw();
+            if (_isTriggeredByTick)
+                _root.ControlRoot.PlatformImpl?.Paint?.Invoke(new Rect(0, 0, _root.ActualWidth,
+                    _root.ActualHeight));
             _isDirty = false;
         }
 
         private void OnCompositionTargetRendering(object sender, EventArgs e)
         {
             if (_isDirty)
-                _image.RequestRender();
+                try
+                {
+                    _isTriggeredByTick = true;
+                    _image.RequestRender();
+                }
+                finally
+                {
+                    _isTriggeredByTick = false;
+                }
         }
 
         public void Dispose()

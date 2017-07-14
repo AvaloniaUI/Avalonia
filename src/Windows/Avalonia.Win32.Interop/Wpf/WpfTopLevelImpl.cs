@@ -32,6 +32,8 @@ namespace Avalonia.Win32.Interop.Wpf
 
         public EmbeddableControlRoot ControlRoot { get; }
         internal ImageSource ImageSource { get; set; }
+        internal bool TriggerPaintOnRender { get; set; } = true;
+        internal Action InvalidateVisualImpl { get; set; }
 
         public class CustomControlRoot : EmbeddableControlRoot, IEmbeddedLayoutRoot
         {
@@ -131,12 +133,19 @@ namespace Avalonia.Win32.Interop.Wpf
         {
             if(ActualHeight == 0 || ActualWidth == 0)
                 return;
-            _ttl.Paint?.Invoke(new Rect(0, 0, ActualWidth, ActualHeight));
+            if (TriggerPaintOnRender)
+                _ttl.Paint?.Invoke(new Rect(0, 0, ActualWidth, ActualHeight));
             if (ImageSource != null)
                 drawingContext.DrawImage(ImageSource, new System.Windows.Rect(0, 0, ActualWidth, ActualHeight));
         }
 
-        void ITopLevelImpl.Invalidate(Rect rect) => InvalidateVisual();
+        void ITopLevelImpl.Invalidate(Rect rect)
+        {
+            if (InvalidateVisualImpl != null)
+                InvalidateVisualImpl();
+            else
+                InvalidateVisual();
+        }
 
         void ITopLevelImpl.SetInputRoot(IInputRoot inputRoot) => _inputRoot = inputRoot;
 
