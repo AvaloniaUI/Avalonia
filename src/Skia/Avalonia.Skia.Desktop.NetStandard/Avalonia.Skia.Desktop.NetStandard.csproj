@@ -5,6 +5,7 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <RootNamespace>Avalonia.Skia.Desktop</RootNamespace>
     <AssemblyName>Avalonia.Skia.Desktop</AssemblyName>
+    <IncludeLinuxSkia>true</IncludeLinuxSkia>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>

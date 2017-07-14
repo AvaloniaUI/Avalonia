@@ -45,6 +45,7 @@ namespace Avalonia.Gtk3
             ConnectEvent("window-state-event", OnStateChanged);
             ConnectEvent("key-press-event", OnKeyEvent);
             ConnectEvent("key-release-event", OnKeyEvent);
+            ConnectEvent("leave-notify-event", OnLeaveNotifyEvent);
             Connect<Native.D.signal_generic>("destroy", OnDestroy);
             Native.GtkWidgetRealize(gtkWidget);
             _lastSize = ClientSize;
@@ -191,6 +192,18 @@ namespace Avalonia.Gtk3
                 evnt->type == GdkEventType.KeyPress ? RawKeyEventType.KeyDown : RawKeyEventType.KeyUp,
                 Avalonia.Gtk.Common.KeyTransform.ConvertKey((GdkKey)evnt->keyval), GetModifierKeys((GdkModifierType)evnt->state));
             Input(e);
+            return true;
+        }
+
+        private unsafe bool OnLeaveNotifyEvent(IntPtr w, IntPtr pev, IntPtr userData)
+        {
+            var evnt = (GdkEventCrossing*) pev;
+            var position = new Point(evnt->x, evnt->y);
+            Input(new RawMouseEventArgs(Gtk3Platform.Mouse,
+                evnt->time,
+                _inputRoot,
+                RawMouseEventType.Move,
+                position, GetModifierKeys(evnt->state)));
             return true;
         }
 
