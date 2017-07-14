@@ -186,11 +186,11 @@ namespace Avalonia.Layout
 
             if (!control.IsArrangeValid && control.IsAttachedToVisualTree)
             {
-                if (control is ILayoutRoot root)
-                {
-                    root.Arrange(new Rect(control.DesiredSize));
-                }
-                else if(control.PreviousArrange != null)
+                if (control is IEmbeddedLayoutRoot embeddedRoot)
+                    control.Arrange(new Rect(embeddedRoot.AllocatedSize));
+                else if (control is ILayoutRoot root)
+                    control.Arrange(new Rect(root.DesiredSize));
+                else if (control.PreviousArrange != null)
                 {
                     // Has been observed that PreviousArrange sometimes is null, probably a bug somewhere else.
                     // Condition observed: control.VisualParent is Scrollbar, control is Border.
