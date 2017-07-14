@@ -35,7 +35,6 @@ namespace Avalonia.Win32.Interop.Wpf
 
         public void DestroyRenderTarget()
         {
-           
         }
 
         public void BeforeDrawing()
@@ -100,13 +99,15 @@ namespace Avalonia.Win32.Interop.Wpf
                     _renderTarget = new RenderTarget(AvaloniaLocator.Current.GetService<Factory>(), surface, properties);
                 }
             }
-                _root.ControlRoot.PlatformImpl?.Paint?.Invoke(new Rect(0, 0, _root.ActualWidth,
-                    _root.ActualHeight));
+            _root.ControlRoot.PlatformImpl?.Paint?.Invoke(new Rect(0, 0, _root.ActualWidth,
+                _root.ActualHeight));
             _isDirty = false;
         }
 
         private void OnCompositionTargetRendering(object sender, EventArgs e)
         {
+            if (_root.Parent == null)
+                return;
             UpdateImageSize();
             if (_isDirty)
             {
@@ -117,15 +118,13 @@ namespace Avalonia.Win32.Interop.Wpf
 
         public void Dispose()
         {
-            DestroyRenderTarget();
+            _renderTarget?.Dispose();
+            _renderTarget = null;
             _image?.Dispose();
             _image = null;
             CompositionTarget.Rendering -= OnCompositionTargetRendering;
         }
 
-        public void MakeDirty()
-        {
-            _isDirty = true;
-        }
+        public void MakeDirty() => _isDirty = true;
     }
 }
