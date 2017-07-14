@@ -60,7 +60,7 @@ namespace Avalonia.Win32.Interop.Wpf
             PresentationSource.AddSourceChangedHandler(this, OnSourceChanged);
             _hook = WndProc;
             _ttl = this;
-            _surfaces = new object[] {new WritableBitmapSurface(this)};
+            _surfaces = new object[] { new D3D11ImageSurface(this), new WritableBitmapSurface(this) };
             _mouse = new WpfMouseDevice(this);
             _keyboard = AvaloniaLocator.Current.GetService<IKeyboardDevice>();
 
