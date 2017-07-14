@@ -73,6 +73,14 @@ namespace Avalonia.Win32.Interop.Wpf
             };
         }
 
+        internal Vector GetScaling()
+        {
+            var src = PresentationSource.FromVisual(this)?.CompositionTarget;
+            if (src == null)
+                return new Vector(1, 1);
+            return new Vector(src.TransformToDevice.M11, src.TransformToDevice.M22);
+        }
+
         private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wparam, IntPtr lparam, ref bool handled)
         {
             if (msg == (int)UnmanagedMethods.WindowsMessage.WM_DPICHANGED)
