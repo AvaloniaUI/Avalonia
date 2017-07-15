@@ -207,7 +207,7 @@ public class Packages
                     new NuSpecDependency() { Id = "Splat", TargetFramework = "netcoreapp1.0", Version = SplatVersion },
                     new NuSpecDependency() { Id = "Serilog", TargetFramework = "netcoreapp1.0", Version = SerilogVersion },
                     new NuSpecDependency() { Id = "Sprache", TargetFramework = "netcoreapp1.0", Version = SpracheVersion },
-                    new NuSpecDependency() { Id = "System.Reactive", TargetFramework = "netcoreapp1.0", Version = SystemReactiveVersion }
+                    new NuSpecDependency() { Id = "System.Reactive", TargetFramework = "netcoreapp1.0", Version = SystemReactiveVersion },
                     new NuSpecDependency() { Id = "System.ValueTuple", TargetFramework = "netcoreapp1.0", Version = SystemValueTupleVersion }
                 },
                 Files = coreLibrariesNuSpecContent
