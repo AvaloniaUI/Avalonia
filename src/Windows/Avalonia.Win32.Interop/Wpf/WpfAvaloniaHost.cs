@@ -29,6 +29,7 @@ namespace Avalonia.Win32.Interop.Wpf
             _impl.ControlRoot.Prepare();
             _impl.Visibility = Visibility.Visible;
             SnapsToDevicePixels = true;
+            UseLayoutRounding = true;
             PresentationSource.AddSourceChangedHandler(this, OnSourceChanged);
         }
 

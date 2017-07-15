@@ -35,9 +35,9 @@ namespace Avalonia.Win32.Interop.Wpf
             private readonly SharpDX.Direct3D11.Resource _sharedResource;
             public SharpDX.Direct3D9.Surface Texture { get; }
             public RenderTarget Target { get;}
-            public Size Size { get; }
+            public IntSize Size { get; }
 
-            public SwapBuffer(Size size, Vector dpi)
+            public SwapBuffer(IntSize size, Vector dpi)
             {
                 int width = (int) size.Width;
                 int height = (int) size.Height;
@@ -116,6 +116,7 @@ namespace Avalonia.Win32.Interop.Wpf
         private static Device s_dxDevice;
         private static Direct3DEx s_d3DContext;
         private static DeviceEx s_d3DDevice;
+        private Vector _oldDpi;
 
 
         [DllImport("user32.dll", SetLastError = false)]
@@ -148,18 +149,20 @@ namespace Avalonia.Win32.Interop.Wpf
         {
             EnsureDirectX();
             var scale = _impl.GetScaling();
-            var size = new Size(_impl.ActualWidth * scale.X, _impl.ActualHeight * scale.Y);
+            var size = new IntSize(_impl.ActualWidth * scale.X, _impl.ActualHeight * scale.Y);
             var dpi = scale * 96;
 
             if (_backBuffer!=null && _backBuffer.Size == size)
                 return _backBuffer.Target;
-            
-            if (_image == null)
-                _image = new D3DImage();
+
+            if (_image == null || _oldDpi.X != dpi.X || _oldDpi.Y != dpi.Y)
+            {
+                _image = new D3DImage(dpi.X, dpi.Y);
+            }
             _impl.ImageSource = _image;
             
             RemoveAndDispose(ref _backBuffer);
-            if (size == default(Size))
+            if (size == default(IntSize))
             {
                 _image.Lock();
                 _image.SetBackBuffer(D3DResourceType.IDirect3DSurface9, IntPtr.Zero);

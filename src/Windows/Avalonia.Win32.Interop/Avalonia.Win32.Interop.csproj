@@ -50,6 +50,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Wpf\CursorShim.cs" />
     <Compile Include="Wpf\Direct2DImageSurface.cs" />
+    <Compile Include="Wpf\IntSize.cs" />
     <Compile Include="Wpf\WpfInteropExtensions.cs" />
     <Compile Include="Wpf\WpfAvaloniaHost.cs" />
     <Compile Include="Wpf\WpfMouseDevice.cs" />
