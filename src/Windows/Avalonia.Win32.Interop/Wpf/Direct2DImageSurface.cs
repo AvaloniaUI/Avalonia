@@ -30,7 +30,7 @@ namespace Avalonia.Win32.Interop.Wpf
     {
         class SwapBuffer: IDisposable
         {
-            private Query _event;
+            private readonly Query _event;
             private readonly SharpDX.Direct3D11.Resource _resource;
             private readonly SharpDX.Direct3D11.Resource _sharedResource;
             public SharpDX.Direct3D9.Surface Texture { get; }
@@ -98,6 +98,7 @@ namespace Avalonia.Win32.Interop.Wpf
                 Target?.Dispose();
                 _resource?.Dispose();
                 _sharedResource?.Dispose();
+                _event?.Dispose();
             }
 
             public void Flush()
