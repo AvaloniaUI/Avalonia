@@ -75,6 +75,7 @@ public class Packages
         var SplatVersion = packageVersions["Splat"].FirstOrDefault().Item1;
         var SpracheVersion = packageVersions["Sprache"].FirstOrDefault().Item1;
         var SystemReactiveVersion = packageVersions["System.Reactive"].FirstOrDefault().Item1;
+        var SystemValueTupleVersion = packageVersions["System.ValueTuple"].FirstOrDefault().Item1;
         SkiaSharpVersion = packageVersions["SkiaSharp"].FirstOrDefault().Item1;
 		SkiaSharpLinuxVersion = packageVersions["Avalonia.Skia.Linux.Natives"].FirstOrDefault().Item1;
         var SharpDXVersion = packageVersions["SharpDX"].FirstOrDefault().Item1;
@@ -87,6 +88,7 @@ public class Packages
         context.Information("Package: Splat, version: {0}", SplatVersion);
         context.Information("Package: Sprache, version: {0}", SpracheVersion);
         context.Information("Package: System.Reactive, version: {0}", SystemReactiveVersion);
+        context.Information("Package: System.ValueTuple, version: {0}", SystemValueTupleVersion);
         context.Information("Package: SkiaSharp, version: {0}", SkiaSharpVersion);
         context.Information("Package: Avalonia.Skia.Linux.Natives, version: {0}", SkiaSharpLinuxVersion);
         context.Information("Package: SharpDX, version: {0}", SharpDXVersion);
@@ -199,6 +201,7 @@ public class Packages
                     new NuSpecDependency() { Id = "Splat", Version = SplatVersion },
                     new NuSpecDependency() { Id = "Sprache", Version = SpracheVersion },
                     new NuSpecDependency() { Id = "System.Reactive", Version = SystemReactiveVersion },
+                    new NuSpecDependency() { Id = "System.ValueTuple", Version = SystemValueTupleVersion },
                     //.NET Core
                     new NuSpecDependency() { Id = "System.Threading.ThreadPool", TargetFramework = "netcoreapp1.0", Version = "4.3.0" },
                     new NuSpecDependency() { Id = "Microsoft.Extensions.DependencyModel", TargetFramework = "netcoreapp1.0", Version = "1.1.0" },
@@ -206,7 +209,8 @@ public class Packages
                     new NuSpecDependency() { Id = "Splat", TargetFramework = "netcoreapp1.0", Version = SplatVersion },
                     new NuSpecDependency() { Id = "Serilog", TargetFramework = "netcoreapp1.0", Version = SerilogVersion },
                     new NuSpecDependency() { Id = "Sprache", TargetFramework = "netcoreapp1.0", Version = SpracheVersion },
-                    new NuSpecDependency() { Id = "System.Reactive", TargetFramework = "netcoreapp1.0", Version = SystemReactiveVersion }
+                    new NuSpecDependency() { Id = "System.Reactive", TargetFramework = "netcoreapp1.0", Version = SystemReactiveVersion },
+                    new NuSpecDependency() { Id = "System.ValueTuple", TargetFramework = "netcoreapp1.0", Version = SystemValueTupleVersion }
                 },
                 Files = coreLibrariesNuSpecContent
                     .Concat(win32CoreLibrariesNuSpecContent).Concat(net45RuntimePlatform)
