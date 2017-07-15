@@ -24,17 +24,18 @@ using Usage = SharpDX.Direct3D9.Usage;
 
 namespace Avalonia.Win32.Interop.Wpf
 {
-    class Direct2DImageSurface : IExternalDirect2DRenderTargetSurface
+    class Direct2DImageSurface : IExternalDirect2DRenderTargetSurface, IDisposable
     {
-        class Pair: IDisposable
+        class SwapBuffer: IDisposable
         {
+
+            private readonly SharpDX.Direct3D11.Resource _resource;
+            private readonly SharpDX.Direct3D11.Resource _stagingResource;
             public SharpDX.Direct3D9.Surface Texture { get; }
-            public SharpDX.Direct3D11.Resource D3D11Resource { get; }
-            public SharpDX.Direct3D11.Resource StagingResource { get; }
             public RenderTarget Target { get;}
             public Size Size { get; }
 
-            public Pair(Size size, Vector dpi)
+            public SwapBuffer(Size size, Vector dpi)
             {
                 int width = (int) size.Width;
                 int height = (int) size.Height;
@@ -53,7 +54,7 @@ namespace Avalonia.Win32.Interop.Wpf
                 using (var surface = texture.QueryInterface<Surface>())
                 using (var resource = texture.QueryInterface<SharpDX.DXGI.Resource>())
                 {
-                    D3D11Resource = texture.QueryInterface<SharpDX.Direct3D11.Resource>();
+                    _resource = texture.QueryInterface<SharpDX.Direct3D11.Resource>();
                     var handle = resource.SharedHandle;
                     using (var texture9 = new Texture(s_d3DDevice, texture.Description.Width,
                         texture.Description.Height, 1,
@@ -80,7 +81,7 @@ namespace Avalonia.Win32.Interop.Wpf
                     SampleDescription = new SampleDescription(1, 0),
                     CpuAccessFlags = CpuAccessFlags.Read
                 }))
-                    StagingResource = texture.QueryInterface<SharpDX.Direct3D11.Resource>();
+                    _stagingResource = texture.QueryInterface<SharpDX.Direct3D11.Resource>();
                 Size = size;
             }
 
@@ -88,24 +89,22 @@ namespace Avalonia.Win32.Interop.Wpf
             {
                 Texture?.Dispose();
                 Target?.Dispose();
-                D3D11Resource?.Dispose();
-                StagingResource?.Dispose();
+                _resource?.Dispose();
+                _stagingResource?.Dispose();
             }
 
             public void Flush()
             {
-
-                s_dxDevice.ImmediateContext.CopySubresourceRegion(D3D11Resource, 0,
-                    new ResourceRegion(0, 0, 0, 1, 1, 1), StagingResource, 0, 0, 0, 0);
-                s_dxDevice.ImmediateContext.MapSubresource(StagingResource, 0, MapMode.Read, MapFlags.None);
-                s_dxDevice.ImmediateContext.UnmapSubresource(StagingResource, 0);
-
+                s_dxDevice.ImmediateContext.CopySubresourceRegion(_resource, 0,
+                    new ResourceRegion(0, 0, 0, 1, 1, 1), _stagingResource, 0, 0, 0, 0);
+                s_dxDevice.ImmediateContext.MapSubresource(_stagingResource, 0, MapMode.Read, MapFlags.None);
+                s_dxDevice.ImmediateContext.UnmapSubresource(_stagingResource, 0);
             }
         }
 
         private D3DImage _image;
-        private Pair _backBuffer;
-        private Pair _frontBuffer;
+        private SwapBuffer _backBuffer;
+        private SwapBuffer _frontBuffer;
         private readonly WpfTopLevelImpl _impl;
         private static Device s_dxDevice;
         private static Direct3DEx s_d3DContext;
@@ -149,11 +148,9 @@ namespace Avalonia.Win32.Interop.Wpf
                 return _backBuffer.Target;
             
             if (_image == null)
-                _image = new DX11Image();
+                _image = new D3DImage();
             _impl.ImageSource = _image;
             
-
-          
             RemoveAndDispose(ref _backBuffer);
             if (size == default(Size))
             {
@@ -163,7 +160,7 @@ namespace Avalonia.Win32.Interop.Wpf
                 _image.Unlock();
                 return null;
             }
-            _backBuffer = new Pair(size, dpi);
+            _backBuffer = new SwapBuffer(size, dpi);
 
             return _backBuffer.Target;
         }
@@ -172,11 +169,6 @@ namespace Avalonia.Win32.Interop.Wpf
         {
             d?.Dispose();
             d = default(T);
-        }
-
-        void DoSwap()
-        {
-
         }
 
         void Swap()
@@ -193,6 +185,8 @@ namespace Avalonia.Win32.Interop.Wpf
 
         public void DestroyRenderTarget()
         {
+            RemoveAndDispose(ref _backBuffer);
+            RemoveAndDispose(ref _frontBuffer);
             //?
         }
 
@@ -202,5 +196,10 @@ namespace Avalonia.Win32.Interop.Wpf
         }
 
         public void AfterDrawing() => Swap();
+        public void Dispose()
+        {
+            RemoveAndDispose(ref _frontBuffer);
+            RemoveAndDispose(ref _backBuffer);
+        }
     }
 }

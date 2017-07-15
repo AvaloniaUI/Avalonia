@@ -88,7 +88,12 @@ namespace Avalonia.Win32.Interop.Wpf
             _ttl.ScalingChanged?.Invoke(_ttl.Scaling);
         }
 
-        public void Dispose() => _ttl.Closed?.Invoke();
+        public void Dispose()
+        {
+            _ttl.Closed?.Invoke();
+            foreach(var d in _surfaces.OfType<IDisposable>())
+                d.Dispose();
+        }
 
         Size ITopLevelImpl.ClientSize => _finalSize;
         IMouseDevice ITopLevelImpl.MouseDevice => _mouse;
