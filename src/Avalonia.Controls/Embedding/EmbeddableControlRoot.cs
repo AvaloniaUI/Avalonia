@@ -4,6 +4,7 @@ using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Platform;
 using Avalonia.Styling;
+using JetBrains.Annotations;
 
 namespace Avalonia.Controls.Embedding
 {
@@ -18,7 +19,10 @@ namespace Avalonia.Controls.Embedding
         {
         }
 
+        [CanBeNull]
         public new IEmbeddableWindowImpl PlatformImpl => (IEmbeddableWindowImpl) base.PlatformImpl;
+
+        protected bool EnforceClientSize { get; set; } = true;
 
         public void Prepare()
         {
@@ -36,11 +40,12 @@ namespace Avalonia.Controls.Embedding
                 init.EndInit();
             }
         }
-
+        
         protected override Size MeasureOverride(Size availableSize)
         {
-            base.MeasureOverride(PlatformImpl.ClientSize);
-            return PlatformImpl.ClientSize;
+            if (EnforceClientSize)
+                availableSize = PlatformImpl?.ClientSize ?? default(Size);
+            return base.MeasureOverride(availableSize);
         }
 
         private readonly NameScope _nameScope = new NameScope();
@@ -63,9 +68,6 @@ namespace Avalonia.Controls.Embedding
         public void Unregister(string name) => _nameScope.Unregister(name);
 
         Type IStyleable.StyleKey => typeof(EmbeddableControlRoot);
-        public void Dispose()
-        {
-            PlatformImpl.Dispose();
-        }
+        public void Dispose() => PlatformImpl?.Dispose();
     }
 }

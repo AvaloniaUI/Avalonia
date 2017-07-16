@@ -2,6 +2,8 @@
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Avalonia.Gtk3;
+using Avalonia.Platform;
 
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
@@ -28,3 +30,6 @@ using System.Runtime.InteropServices;
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: ExportWindowingSubsystem(OperatingSystemType.WinNT, 2, "GTK3", typeof(Gtk3Platform), nameof(Gtk3Platform.Initialize))]
+[assembly: ExportWindowingSubsystem(OperatingSystemType.Linux, 1, "GTK3", typeof(Gtk3Platform), nameof(Gtk3Platform.Initialize))]
+[assembly: ExportWindowingSubsystem(OperatingSystemType.OSX, 2, "GTK3", typeof(Gtk3Platform), nameof(Gtk3Platform.Initialize))]

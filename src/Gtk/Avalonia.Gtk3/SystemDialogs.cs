@@ -18,7 +18,8 @@ namespace Avalonia.Gtk3
             bool multiselect, string initialFileName)
         {
             GtkFileChooser dlg;
-            using (var name = title != null ? new Utf8Buffer(title) : null)
+            parent = parent ?? GtkWindow.Null;
+            using (var name = new Utf8Buffer(title))
                 dlg = Native.GtkFileChooserDialogNew(name, parent, action, IntPtr.Zero);
             if (multiselect)
                 Native.GtkFileChooserSetSelectMultiple(dlg, true);
@@ -28,6 +29,7 @@ namespace Avalonia.Gtk3
             List<IDisposable> disposables = null;
             Action dispose = () =>
             {
+                // ReSharper disable once PossibleNullReferenceException
                 foreach (var d in disposables)
                     d.Dispose();
                 disposables.Clear();

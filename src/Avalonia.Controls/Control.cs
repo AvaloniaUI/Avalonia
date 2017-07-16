@@ -118,6 +118,7 @@ namespace Avalonia.Controls
         public Control()
         {
             _nameScope = this as INameScope;
+            _isAttachedToLogicalTree = this is IStyleRoot;
         }
 
         /// <summary>
@@ -380,6 +381,12 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
+        void ILogical.NotifyAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
+        {
+            this.OnAttachedToLogicalTreeCore(e);
+        }
+
+        /// <inheritdoc/>
         void ILogical.NotifyDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
             this.OnDetachedFromLogicalTreeCore(e);
@@ -428,7 +435,7 @@ namespace Avalonia.Controls
 
                 if (_isAttachedToLogicalTree)
                 {
-                    var oldRoot = FindStyleRoot(old);
+                    var oldRoot = FindStyleRoot(old) ?? this as IStyleRoot;
 
                     if (oldRoot == null)
                     {
@@ -446,7 +453,7 @@ namespace Avalonia.Controls
 
                 _parent = (IControl)parent;
 
-                if (_parent is IStyleRoot || _parent?.IsAttachedToLogicalTree == true)
+                if (_parent is IStyleRoot || _parent?.IsAttachedToLogicalTree == true || this is IStyleRoot)
                 {
                     var newRoot = FindStyleRoot(this);
 
@@ -479,7 +486,7 @@ namespace Avalonia.Controls
             {
                 if (!IsInitialized)
                 {
-                    foreach (var i in this.GetSelfAndVisualDescendents())
+                    foreach (var i in this.GetSelfAndVisualDescendants())
                     {
                         var c = i as IControl;
 
@@ -651,7 +658,7 @@ namespace Avalonia.Controls
 
             if (_focusAdorner != null)
             {
-                var adornerLayer = _focusAdorner.Parent as Panel;
+                var adornerLayer = (IPanel)_focusAdorner.Parent;
                 adornerLayer.Children.Remove(_focusAdorner);
                 _focusAdorner = null;
             }

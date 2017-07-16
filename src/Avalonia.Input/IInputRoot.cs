@@ -1,6 +1,8 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using JetBrains.Annotations;
+
 namespace Avalonia.Input
 {
     /// <summary>
@@ -27,5 +29,11 @@ namespace Avalonia.Input
         /// Gets or sets a value indicating whether access keys are shown in the window.
         /// </summary>
         bool ShowAccessKeys { get; set; }
+
+        /// <summary>
+        /// Gets associated mouse device
+        /// </summary>
+        [CanBeNull]
+        IMouseDevice MouseDevice { get; }
     }
 }

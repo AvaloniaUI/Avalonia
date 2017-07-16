@@ -11,7 +11,9 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.VisualTree;
 using ControlCatalog;
 using Window = System.Windows.Window;
 
@@ -25,7 +27,18 @@ namespace WindowsInteropTest
         public EmbedToWpfDemo()
         {
             InitializeComponent();
-            Host.Content =  new MainView();
+            var view = new MainView();
+            view.AttachedToVisualTree += delegate
+            {
+                ((TopLevel) view.GetVisualRoot()).AttachDevTools(); 
+            };
+            Host.Content = view;
+            var btn = (Avalonia.Controls.Button) RightBtn.Content;
+            btn.Click += delegate
+            {
+                btn.Content += "!";
+            };
+
         }
     }
 }

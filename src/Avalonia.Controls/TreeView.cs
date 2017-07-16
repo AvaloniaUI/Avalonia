@@ -16,7 +16,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// Displays a hierachical tree of data.
     /// </summary>
-    public class TreeView : ItemsControl
+    public class TreeView : ItemsControl, ICustomKeyboardNavigation
     {
         /// <summary>
         /// Defines the <see cref="AutoScrollToSelectedItem"/> property.
@@ -88,6 +88,26 @@ namespace Avalonia.Controls
                     }
                 }
             }
+        }
+
+        (bool handled, IInputElement next) ICustomKeyboardNavigation.GetNext(IInputElement element, NavigationDirection direction)
+        {
+            if (direction == NavigationDirection.Next || direction == NavigationDirection.Previous)
+            {
+                if (!this.IsVisualAncestorOf(element))
+                {
+                    IControl result = _selectedItem != null ?
+                        ItemContainerGenerator.Index.ContainerFromItem(_selectedItem) :
+                        ItemContainerGenerator.ContainerFromIndex(0);
+                    return (true, result);
+                }
+                else
+                {
+                    return (true, null);
+                }
+            }
+
+            return (false, null);
         }
 
         /// <inheritdoc/>

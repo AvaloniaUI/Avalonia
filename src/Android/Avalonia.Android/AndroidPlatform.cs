@@ -51,7 +51,6 @@ namespace Avalonia.Android
                 .Bind<IClipboard>().ToTransient<ClipboardImpl>()
                 .Bind<IStandardCursorFactory>().ToTransient<CursorFactory>()
                 .Bind<IKeyboardDevice>().ToSingleton<AndroidKeyboardDevice>()
-                .Bind<IMouseDevice>().ToSingleton<AndroidMouseDevice>()
                 .Bind<IPlatformSettings>().ToConstant(Instance)
                 .Bind<IRendererFactory>().ToConstant(ImmediateRenderer.Factory)
                 .Bind<IPlatformThreadingInterface>().ToConstant(new AndroidThreadingInterface())

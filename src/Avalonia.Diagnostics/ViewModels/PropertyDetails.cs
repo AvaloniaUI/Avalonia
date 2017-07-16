@@ -3,16 +3,13 @@
 
 using System;
 using Avalonia.Data;
-using ReactiveUI;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
-    internal class PropertyDetails : ReactiveObject
+    internal class PropertyDetails : ViewModelBase
     {
         private object _value;
-
         private string _priority;
-
         private string _diagnostic;
 
         public PropertyDetails(AvaloniaObject o, AvaloniaProperty property)
@@ -41,19 +38,19 @@ namespace Avalonia.Diagnostics.ViewModels
         public string Priority
         {
             get { return _priority; }
-            private set { this.RaiseAndSetIfChanged(ref _priority, value); }
+            private set { RaiseAndSetIfChanged(ref _priority, value); }
         }
 
         public string Diagnostic
         {
             get { return _diagnostic; }
-            private set { this.RaiseAndSetIfChanged(ref _diagnostic, value); }
+            private set { RaiseAndSetIfChanged(ref _diagnostic, value); }
         }
 
         public object Value
         {
             get { return _value; }
-            private set { this.RaiseAndSetIfChanged(ref _value, value); }
+            private set { RaiseAndSetIfChanged(ref _value, value); }
         }
     }
 }

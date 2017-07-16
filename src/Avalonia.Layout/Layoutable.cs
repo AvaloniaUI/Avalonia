@@ -367,6 +367,14 @@ namespace Avalonia.Layout
             }
         }
 
+
+        /// <summary>
+        /// Called by InvalidateMeasure
+        /// </summary>
+        protected virtual void OnMeasureInvalidated()
+        {
+        }
+
         /// <summary>
         /// Invalidates the measurement of the control and queues a new layout pass.
         /// </summary>
@@ -378,8 +386,13 @@ namespace Avalonia.Layout
 
                 IsMeasureValid = false;
                 IsArrangeValid = false;
-                LayoutManager.Instance?.InvalidateMeasure(this);
-                InvalidateVisual();
+
+                if (((ILayoutable)this).IsAttachedToVisualTree)
+                {
+                    LayoutManager.Instance?.InvalidateMeasure(this);
+                    InvalidateVisual();
+                }
+                OnMeasureInvalidated();
             }
         }
 
@@ -393,8 +406,12 @@ namespace Avalonia.Layout
                 Logger.Verbose(LogArea.Layout, this, "Invalidated arrange");
 
                 IsArrangeValid = false;
-                LayoutManager.Instance?.InvalidateArrange(this);
-                InvalidateVisual();
+
+                if (((ILayoutable)this).IsAttachedToVisualTree)
+                {
+                    LayoutManager.Instance?.InvalidateArrange(this);
+                    InvalidateVisual();
+                }
             }
         }
 
@@ -456,10 +473,9 @@ namespace Avalonia.Layout
 
                 ApplyTemplate();
 
-                var constrained = LayoutHelper
-                    .ApplyLayoutConstraints(this, availableSize)
-                    .Deflate(margin);
-
+                var constrained = LayoutHelper.ApplyLayoutConstraints(
+                    this,
+                    availableSize.Deflate(margin));
                 var measured = MeasureOverride(constrained);
 
                 var width = measured.Width;
@@ -613,7 +629,7 @@ namespace Avalonia.Layout
         /// <inheritdoc/>
         protected override sealed void OnVisualParentChanged(IVisual oldParent, IVisual newParent)
         {
-            foreach (ILayoutable i in this.GetSelfAndVisualDescendents())
+            foreach (ILayoutable i in this.GetSelfAndVisualDescendants())
             {
                 i.InvalidateMeasure();
             }

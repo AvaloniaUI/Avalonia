@@ -354,7 +354,7 @@ namespace Avalonia.Controls
             }
 
             var collection = sender as ICollection;
-            PseudoClasses.Set(":empty", collection.Count == 0);
+            PseudoClasses.Set(":empty", collection == null || collection.Count == 0);
         }
 
         /// <summary>

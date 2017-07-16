@@ -28,6 +28,82 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             get { return System.IO.Path.Combine(OutputPath, "github_icon.png"); }
         }
 
+        private string SmallBitmapPath
+        {
+            get { return System.IO.Path.Combine(OutputPath, "github_icon_small.png"); }
+        }
+
+        [Fact]
+        public void ImageBrush_Tile_Fill()
+        {
+            Decorator target = new Decorator
+            {
+                Width = 200,
+                Height = 200,
+                Child = new Rectangle
+                {
+                    Margin = new Thickness(8),
+                    Fill = new ImageBrush
+                    {
+                        Stretch = Stretch.Fill,
+                        TileMode = TileMode.Tile,
+                        DestinationRect = new RelativeRect(0, 0, 25, 30, RelativeUnit.Absolute),
+                        Source = new Bitmap(BitmapPath),
+                    }
+                }
+            };
+
+            RenderToFile(target);
+            CompareImages();
+        }
+
+        [Fact]
+        public void ImageBrush_Tile_UniformToFill()
+        {
+            Decorator target = new Decorator
+            {
+                Width = 200,
+                Height = 200,
+                Child = new Rectangle
+                {
+                    Margin = new Thickness(8),
+                    Fill = new ImageBrush
+                    {
+                        Stretch = Stretch.Uniform,
+                        TileMode = TileMode.Tile,
+                        DestinationRect = new RelativeRect(0, 0, 25, 30, RelativeUnit.Absolute),
+                        Source = new Bitmap(BitmapPath),
+                    }
+                }
+            };
+
+            RenderToFile(target);
+            CompareImages();
+        }
+
+        [Fact]
+        public void ImageBrush_Tile_Small_Image()
+        {
+            Decorator target = new Decorator
+            {
+                Width = 200,
+                Height = 200,
+                Child = new Rectangle
+                {
+                    Margin = new Thickness(8),
+                    Fill = new ImageBrush
+                    {
+                        Stretch = Stretch.None,
+                        TileMode = TileMode.Tile,
+                        Source = new Bitmap(SmallBitmapPath),
+                    }
+                }
+            };
+
+            RenderToFile(target);
+            CompareImages();
+        }
+
         [Fact]
         public void ImageBrush_NoStretch_NoTile_Alignment_TopLeft()
         {

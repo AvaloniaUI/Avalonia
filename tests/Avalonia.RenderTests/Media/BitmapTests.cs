@@ -43,7 +43,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
 
             public IntPtr Address { get; }
 
-            public Size Dpi { get; } = new Size(96, 96);
+            public Vector Dpi { get; } = new Vector(96, 96);
 
             public PixelFormat Format { get; }
 
@@ -81,6 +81,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             using (var target = r.CreateRenderTarget(new object[] { fb }))
             using (var ctx = target.CreateDrawingContext(null))
             {
+                ctx.Clear(Colors.Transparent);
                 ctx.PushOpacity(0.8);
                 ctx.FillRectangle(Brushes.Chartreuse, new Rect(0, 0, 20, 100));
                 ctx.FillRectangle(Brushes.Crimson, new Rect(20, 0, 20, 100));
