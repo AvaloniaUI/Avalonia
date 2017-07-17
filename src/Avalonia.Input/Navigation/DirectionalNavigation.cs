@@ -41,7 +41,7 @@ namespace Avalonia.Input.Navigation
                 {
                     case KeyboardNavigationMode.Continue:
                         return GetNextInContainer(element, container, direction) ??
-                               GetFirstInNextContainer(element, direction);
+                               GetFirstInNextContainer(element, element, direction);
                     case KeyboardNavigationMode.Cycle:
                         return GetNextInContainer(element, container, direction) ??
                                GetFocusableDescendant(container, direction);
@@ -173,10 +173,12 @@ namespace Avalonia.Input.Navigation
         /// <summary>
         /// Gets the first item that should be focused in the next container.
         /// </summary>
+        /// <param name="element">The element being navigated away from.</param>
         /// <param name="container">The container.</param>
         /// <param name="direction">The direction of the search.</param>
         /// <returns>The first element, or null if there are no more elements.</returns>
         private static IInputElement GetFirstInNextContainer(
+            IInputElement element,
             IInputElement container,
             NavigationDirection direction)
         {
@@ -200,6 +202,16 @@ namespace Avalonia.Input.Navigation
 
                 if (sibling != null)
                 {
+                    if (sibling is ICustomKeyboardNavigation custom)
+                    {
+                        var (handled, customNext) = custom.GetNext(element, direction);
+
+                        if (handled)
+                        {
+                            return customNext;
+                        }
+                    }
+
                     if (sibling.CanFocus())
                     {
                         next = sibling;
@@ -214,7 +226,7 @@ namespace Avalonia.Input.Navigation
 
                 if (next == null)
                 {
-                    next = GetFirstInNextContainer(parent, direction);
+                    next = GetFirstInNextContainer(element, parent, direction);
                 }
             }
             else
