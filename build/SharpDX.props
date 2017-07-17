@@ -3,6 +3,7 @@
     <PackageReference Include="SharpDX" Version="3.1.1" />
     <PackageReference Include="SharpDX.Direct2D1" Version="3.1.1" />
     <PackageReference Include="SharpDX.Direct3D11" Version="3.1.1" />
+    <PackageReference Include="SharpDX.Direct3D9" Version="3.1.1" Condition="'$(UseDirect3D9)' == 'true'" />
     <PackageReference Include="SharpDX.DXGI" Version="3.1.1" />
   </ItemGroup>
 </Project>
