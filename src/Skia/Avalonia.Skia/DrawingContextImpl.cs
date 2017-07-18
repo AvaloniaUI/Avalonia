@@ -141,23 +141,17 @@ namespace Avalonia.Skia
             var rv = new PaintWrapper(paint);
             paint.IsStroke = false;
 
-            // TODO: SkiaSharp does not contain alpha yet!
+            
             double opacity = brush.Opacity * _currentOpacity;
-            //paint.SetAlpha(paint.GetAlpha() * opacity);
             paint.IsAntialias = true;
-
-            SKColor color = new SKColor(255, 255, 255, 255);
 
             var solid = brush as ISolidColorBrush;
             if (solid != null)
-                color = solid.Color.ToSKColor();
-
-            paint.Color = (new SKColor(color.Red, color.Green, color.Blue, (byte)(color.Alpha * opacity)));
-
-            if (solid != null)
             {
+                paint.Color = new SKColor(solid.Color.R, solid.Color.G, solid.Color.B, (byte) (solid.Color.A * opacity));
                 return rv;
             }
+            paint.Color = (new SKColor(255, 255, 255, (byte)(255 * opacity)));
 
             var gradient = brush as IGradientBrush;
             if (gradient != null)
