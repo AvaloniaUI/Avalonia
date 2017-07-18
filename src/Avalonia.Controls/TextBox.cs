@@ -268,7 +268,7 @@ namespace Avalonia.Controls
             base.OnLostFocus(e);
             SelectionStart = 0;
             SelectionEnd = 0;
-            _presenter.HideCaret();
+            _presenter?.HideCaret();
         }
 
         protected override void OnTextInput(TextInputEventArgs e)
