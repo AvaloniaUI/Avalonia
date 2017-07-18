@@ -236,6 +236,11 @@ namespace Avalonia.Controls
         {
             _presenter = e.NameScope.Get<TextPresenter>("PART_TextPresenter");
             _presenter.Cursor = new Cursor(StandardCursorType.Ibeam);
+
+            if(IsFocused)
+            {
+                _presenter.ShowCaret();
+            }
         }
 
         protected override void OnGotFocus(GotFocusEventArgs e)
@@ -254,7 +259,7 @@ namespace Avalonia.Controls
             }
             else
             {
-                _presenter.ShowCaret();
+                _presenter?.ShowCaret();
             }
         }
 
