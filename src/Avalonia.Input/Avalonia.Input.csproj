@@ -37,8 +37,5 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
   </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="System.ValueTuple" Version="4.3.1" />
-  </ItemGroup>
   <Import Project="..\..\build\Rx.props" />
 </Project>
