@@ -12,7 +12,6 @@ using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Media;
 using Avalonia.Platform;
-using Avalonia.Skia.iOS;
 using UIKit;
 using Avalonia.iOS.Specific;
 using ObjCRuntime;
