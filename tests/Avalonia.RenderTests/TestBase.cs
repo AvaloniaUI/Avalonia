@@ -44,7 +44,7 @@ namespace Avalonia.Direct2D1.RenderTests
 #if AVALONIA_CAIRO
             string testFiles = Path.GetFullPath(@"..\..\tests\TestFiles\Cairo");
 #elif AVALONIA_SKIA
-            string testFiles = Path.GetFullPath(@"..\..\tests\TestFiles\Skia");
+            string testFiles = Path.GetFullPath(@"..\..\..\..\TestFiles\Skia");
 #else
             string testFiles = Path.GetFullPath(@"..\..\tests\TestFiles\Direct2D1");
 #endif
@@ -63,7 +63,8 @@ namespace Avalonia.Direct2D1.RenderTests
                 Directory.CreateDirectory(OutputPath);
             }
 
-            string path = Path.Combine(OutputPath, testName + ".out.png");
+            string path = Path.GetFullPath(Path.Combine(OutputPath, testName + ".out.png"));
+            System.Console.WriteLine("Rendering to "+path);
 
             using (RenderTargetBitmap bitmap = new RenderTargetBitmap(
                 (int)target.Width,
