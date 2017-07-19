@@ -106,24 +106,28 @@ namespace Avalonia.Controls
             if (control != null && control.IsVisible && control.GetVisualRoot() != null)
             {
                 var cp = (control.GetVisualRoot() as IInputRoot)?.MouseDevice?.GetPosition(control);
-                var position = control.PointToScreen(cp ?? new Point(0, 0)) + new Vector(0, 22);
 
-                if (s_popup == null)
+                if (cp.HasValue && control.IsVisible && new Rect(control.Bounds.Size).Contains(cp.Value))
                 {
-                    s_popup = new PopupRoot();
-                    s_popup.Content = new ToolTip();
-                }
-                else
-                {
-                    ((ISetLogicalParent)s_popup).SetParent(null);
-                }
+                    var position = control.PointToScreen(cp.Value) + new Vector(0, 22);
+
+                    if (s_popup == null)
+                    {
+                        s_popup = new PopupRoot();
+                        s_popup.Content = new ToolTip();
+                    }
+                    else
+                    {
+                        ((ISetLogicalParent)s_popup).SetParent(null);
+                    }
 
                 ((ISetLogicalParent)s_popup).SetParent(control);
-                ((ToolTip)s_popup.Content).Content = GetTip(control);
-                s_popup.Position = position;
-                s_popup.Show();
+                    ((ToolTip)s_popup.Content).Content = GetTip(control);
+                    s_popup.Position = position;
+                    s_popup.Show();
 
-                s_current = control;
+                    s_current = control;
+                }
             }
         }
 
