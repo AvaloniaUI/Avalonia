@@ -4,7 +4,7 @@ using Avalonia.Platform;
 using SkiaSharp;
 
 
-namespace Avalonia.Skia
+namespace Avalonia
 {
     public static class SkiaSharpExtensions
     {

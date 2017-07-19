@@ -169,9 +169,9 @@
       <Project>{3E10A5FA-E8DA-48B1-AD44-6A5B6CB7750F}</Project>
       <Name>Avalonia.Themes.Default</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\Skia\Avalonia.Skia.iOS\Avalonia.Skia.iOS.csproj">
-      <Project>{47BE08A7-5985-410B-9FFC-2264B8EA595F}</Project>
-      <Name>Avalonia.Skia.iOS</Name>
+    <ProjectReference Include="..\..\src\Skia\Avalonia.Skia\Avalonia.Skia.csproj">
+      <Project>{D2D3083-71DD-4CC9-8907-39A0D86FB322}</Project>
+      <Name>Avalonia.Skia</Name>
       <IsAppExtension>false</IsAppExtension>
       <IsWatchApp>false</IsWatchApp>
     </ProjectReference>
