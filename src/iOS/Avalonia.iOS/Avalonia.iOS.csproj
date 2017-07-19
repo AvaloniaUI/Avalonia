@@ -91,7 +91,7 @@
     </ProjectReference>
     <ProjectReference Include="..\..\Skia\Avalonia.Skia\Avalonia.Skia.csproj">
       <Project>{7d2d3083-71dd-4cc9-8907-39a0d86fb322}</Project>
-      <Name>Avalonia.Ski</Name>
+      <Name>Avalonia.Skia</Name>
       <IsAppExtension>false</IsAppExtension>
       <IsWatchApp>false</IsWatchApp>
     </ProjectReference>
