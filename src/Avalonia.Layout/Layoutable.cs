@@ -367,6 +367,14 @@ namespace Avalonia.Layout
             }
         }
 
+
+        /// <summary>
+        /// Called by InvalidateMeasure
+        /// </summary>
+        protected virtual void OnMeasureInvalidated()
+        {
+        }
+
         /// <summary>
         /// Invalidates the measurement of the control and queues a new layout pass.
         /// </summary>
@@ -384,6 +392,7 @@ namespace Avalonia.Layout
                     LayoutManager.Instance?.InvalidateMeasure(this);
                     InvalidateVisual();
                 }
+                OnMeasureInvalidated();
             }
         }
 
