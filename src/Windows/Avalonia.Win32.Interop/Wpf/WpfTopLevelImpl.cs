@@ -60,7 +60,7 @@ namespace Avalonia.Win32.Interop.Wpf
             PresentationSource.AddSourceChangedHandler(this, OnSourceChanged);
             _hook = WndProc;
             _ttl = this;
-            _surfaces = new object[] {new WritableBitmapSurface(this)};
+            _surfaces = new object[] {new WritableBitmapSurface(this), new Direct2DImageSurface(this)};
             _mouse = new WpfMouseDevice(this);
             _keyboard = AvaloniaLocator.Current.GetService<IKeyboardDevice>();
 
@@ -88,7 +88,12 @@ namespace Avalonia.Win32.Interop.Wpf
             _ttl.ScalingChanged?.Invoke(_ttl.Scaling);
         }
 
-        public void Dispose() => _ttl.Closed?.Invoke();
+        public void Dispose()
+        {
+            _ttl.Closed?.Invoke();
+            foreach(var d in _surfaces.OfType<IDisposable>())
+                d.Dispose();
+        }
 
         Size ITopLevelImpl.ClientSize => _finalSize;
         IMouseDevice ITopLevelImpl.MouseDevice => _mouse;
@@ -224,6 +229,13 @@ namespace Avalonia.Win32.Interop.Wpf
         Action<double> ITopLevelImpl.ScalingChanged { get; set; }
         Action ITopLevelImpl.Closed { get; set; }
         public new event Action LostFocus;
-        
+
+        internal Vector GetScaling()
+        {
+            var src = PresentationSource.FromVisual(this)?.CompositionTarget;
+            if (src == null)
+                return new Vector(1, 1);
+            return new Vector(src.TransformToDevice.M11, src.TransformToDevice.M22);
+        }
     }
 }
