@@ -14,7 +14,6 @@ environment:
     secure: OtVfyN3ErqQrDTnWH2HDfJDlCiu/i4/X4wFmK3ZXXP7HmCiXYPSbTjMPwwdOxRaK
   MYGET_API_URL: https://www.myget.org/F/avalonia-ci/api/v2/package
 init:
-- ps: (New-Object Net.WebClient).DownloadFile('https://raw.githubusercontent.com/appveyor/ci/master/scripts/xamarin-vs2017-151-fixed.targets', "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\MSBuild\15.0\Microsoft.Common.Targets\ImportAfter\Xamarin.Common.targets")
 - ps: if (Test-Path env:nuget_address) {[System.IO.File]::AppendAllText("C:\Windows\System32\drivers\etc\hosts", "`n$($env:nuget_address)`tapi.nuget.org")}
 install:
   - if not exist gtk-sharp-2.12.26.msi appveyor DownloadFile http://download.xamarin.com/GTKforWindows/Windows/gtk-sharp-2.12.26.msi
