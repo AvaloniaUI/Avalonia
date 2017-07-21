@@ -20,13 +20,22 @@ namespace Avalonia.UnitTests
 
         public InvariantCultureFixture()
         {
-            _restore = CultureInfo.CurrentUICulture;
-            CultureInfo.CurrentUICulture = CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
+#if NET461
+            _restore = Thread.CurrentThread.CurrentCulture;
+            Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
+#else
+            _restore = CultureInfo.CurrentCulture;
+            CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
+#endif
         }
 
         public void Dispose()
         {
-            CultureInfo.CurrentUICulture = CultureInfo.CurrentCulture = _restore;
+#if NET461
+            Thread.CurrentThread.CurrentCulture = _restore;
+#else
+            CultureInfo.CurrentCulture = _restore;
+#endif
         }
     }
 }

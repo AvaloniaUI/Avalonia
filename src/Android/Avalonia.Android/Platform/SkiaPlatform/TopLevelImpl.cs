@@ -10,6 +10,7 @@ using Avalonia.Platform;
 using System;
 using System.Collections.Generic;
 using System.Reactive.Disposables;
+using Avalonia.Android.Platform.Input;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform.Surfaces;
 
@@ -64,6 +65,8 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 
             }
         }
+
+        public IMouseDevice MouseDevice => AndroidMouseDevice.Instance;
 
         public Action Closed { get; set; }
 

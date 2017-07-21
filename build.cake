@@ -11,7 +11,7 @@
 // TOOLS
 ///////////////////////////////////////////////////////////////////////////////
 
-#tool "nuget:?package=xunit.runner.console&version=2.1.0"
+#tool "nuget:?package=xunit.runner.console&version=2.2.0"
 #tool "nuget:?package=OpenCover"
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -98,7 +98,6 @@ Task("Clean")
     CleanDirectory(parameters.TestsRoot);
 });
 
-
 Task("Restore-NuGet-Packages")
     .IsDependentOn("Clean")
     .WithCriteria(parameters.IsRunningOnWindows)
@@ -170,23 +169,25 @@ void RunCoreTest(string dir, Parameters parameters, bool net461Only)
             continue;
         Information("Running for " + fw);
         DotNetCoreTest(System.IO.Path.Combine(dir, System.IO.Path.GetFileName(dir)+".csproj"),
-            new DotNetCoreTestSettings{Framework = fw});
+            new DotNetCoreTestSettings {
+                Configuration = parameters.Configuration,
+                Framework = fw
+            });
     }
 }
-
 
 Task("Run-Net-Core-Unit-Tests")
     .IsDependentOn("Clean")
     .Does(() => {
         RunCoreTest("./tests/Avalonia.Base.UnitTests", parameters, false);
-        RunCoreTest("./tests/Avalonia.Controls.UnitTests", parameters, true);
-        RunCoreTest("./tests/Avalonia.Input.UnitTests", parameters, true);
-        RunCoreTest("./tests/Avalonia.Interactivity.UnitTests", parameters, true);
-        RunCoreTest("./tests/Avalonia.Layout.UnitTests", parameters, true);
-        //RunCoreTest("./tests/Avalonia.Markup.UnitTests", parameters, true);
-        //RunCoreTest("./tests/Avalonia.Markup.Xaml.UnitTests", parameters, true);
-        RunCoreTest("./tests/Avalonia.Styling.UnitTests", parameters, true);
-        RunCoreTest("./tests/Avalonia.Visuals.UnitTests", parameters, true);
+        RunCoreTest("./tests/Avalonia.Controls.UnitTests", parameters, false);
+        RunCoreTest("./tests/Avalonia.Input.UnitTests", parameters, false);
+        RunCoreTest("./tests/Avalonia.Interactivity.UnitTests", parameters, false);
+        RunCoreTest("./tests/Avalonia.Layout.UnitTests", parameters, false);
+        RunCoreTest("./tests/Avalonia.Markup.UnitTests", parameters, false);
+        RunCoreTest("./tests/Avalonia.Markup.Xaml.UnitTests", parameters, false);
+        RunCoreTest("./tests/Avalonia.Styling.UnitTests", parameters, false);
+        RunCoreTest("./tests/Avalonia.Visuals.UnitTests", parameters, false);
     });
 
 Task("Run-Unit-Tests")

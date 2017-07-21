@@ -102,7 +102,7 @@ namespace Avalonia.Markup.Xaml.Data
 
         private object ConvertValue(IList<object> values, Type targetType)
         {
-            var converted = Converter.Convert(values, targetType, null, CultureInfo.CurrentUICulture);
+            var converted = Converter.Convert(values, targetType, null, CultureInfo.CurrentCulture);
 
             if (converted == AvaloniaProperty.UnsetValue && FallbackValue != null)
             {

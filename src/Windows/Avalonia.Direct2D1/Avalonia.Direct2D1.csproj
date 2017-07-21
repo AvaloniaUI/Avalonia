@@ -50,7 +50,9 @@
     </Compile>
     <Compile Include="Direct2D1Platform.cs" />
     <Compile Include="Disposable.cs" />
+    <Compile Include="ExternalRenderTarget.cs" />
     <Compile Include="HwndRenderTarget.cs" />
+    <Compile Include="IExternalDirect2DRenderTargetSurface.cs" />
     <Compile Include="Media\BrushImpl.cs" />
     <Compile Include="Media\BrushWrapper.cs" />
     <Compile Include="Media\DrawingContextImpl.cs" />

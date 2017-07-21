@@ -75,22 +75,26 @@ public class Packages
         var SplatVersion = packageVersions["Splat"].FirstOrDefault().Item1;
         var SpracheVersion = packageVersions["Sprache"].FirstOrDefault().Item1;
         var SystemReactiveVersion = packageVersions["System.Reactive"].FirstOrDefault().Item1;
+        var SystemValueTupleVersion = packageVersions["System.ValueTuple"].FirstOrDefault().Item1;
         SkiaSharpVersion = packageVersions["SkiaSharp"].FirstOrDefault().Item1;
 		SkiaSharpLinuxVersion = packageVersions["Avalonia.Skia.Linux.Natives"].FirstOrDefault().Item1;
         var SharpDXVersion = packageVersions["SharpDX"].FirstOrDefault().Item1;
         var SharpDXDirect2D1Version = packageVersions["SharpDX.Direct2D1"].FirstOrDefault().Item1;
         var SharpDXDirect3D11Version = packageVersions["SharpDX.Direct3D11"].FirstOrDefault().Item1;
+        var SharpDXDirect3D9Version = packageVersions["SharpDX.Direct3D9"].FirstOrDefault().Item1;
         var SharpDXDXGIVersion = packageVersions["SharpDX.DXGI"].FirstOrDefault().Item1;
 
         context.Information("Package: Serilog, version: {0}", SerilogVersion);
         context.Information("Package: Splat, version: {0}", SplatVersion);
         context.Information("Package: Sprache, version: {0}", SpracheVersion);
         context.Information("Package: System.Reactive, version: {0}", SystemReactiveVersion);
+        context.Information("Package: System.ValueTuple, version: {0}", SystemValueTupleVersion);
         context.Information("Package: SkiaSharp, version: {0}", SkiaSharpVersion);
         context.Information("Package: Avalonia.Skia.Linux.Natives, version: {0}", SkiaSharpLinuxVersion);
         context.Information("Package: SharpDX, version: {0}", SharpDXVersion);
         context.Information("Package: SharpDX.Direct2D1, version: {0}", SharpDXDirect2D1Version);
         context.Information("Package: SharpDX.Direct3D11, version: {0}", SharpDXDirect3D11Version);
+        context.Information("Package: SharpDX.Direct3D9, version: {0}", SharpDXDirect3D9Version);
         context.Information("Package: SharpDX.DXGI, version: {0}", SharpDXDXGIVersion);
 
         var nugetPackagesDir = System.Environment.GetEnvironmentVariable("NUGET_HOME")
@@ -197,6 +201,7 @@ public class Packages
                     new NuSpecDependency() { Id = "Splat", Version = SplatVersion },
                     new NuSpecDependency() { Id = "Sprache", Version = SpracheVersion },
                     new NuSpecDependency() { Id = "System.Reactive", Version = SystemReactiveVersion },
+                    new NuSpecDependency() { Id = "System.ValueTuple", Version = SystemValueTupleVersion },
                     //.NET Core
                     new NuSpecDependency() { Id = "System.Threading.ThreadPool", TargetFramework = "netcoreapp1.0", Version = "4.3.0" },
                     new NuSpecDependency() { Id = "Microsoft.Extensions.DependencyModel", TargetFramework = "netcoreapp1.0", Version = "1.1.0" },
@@ -204,7 +209,8 @@ public class Packages
                     new NuSpecDependency() { Id = "Splat", TargetFramework = "netcoreapp1.0", Version = SplatVersion },
                     new NuSpecDependency() { Id = "Serilog", TargetFramework = "netcoreapp1.0", Version = SerilogVersion },
                     new NuSpecDependency() { Id = "Sprache", TargetFramework = "netcoreapp1.0", Version = SpracheVersion },
-                    new NuSpecDependency() { Id = "System.Reactive", TargetFramework = "netcoreapp1.0", Version = SystemReactiveVersion }
+                    new NuSpecDependency() { Id = "System.Reactive", TargetFramework = "netcoreapp1.0", Version = SystemReactiveVersion },
+                    new NuSpecDependency() { Id = "System.ValueTuple", TargetFramework = "netcoreapp1.0", Version = SystemValueTupleVersion }
                 },
                 Files = coreLibrariesNuSpecContent
                     .Concat(win32CoreLibrariesNuSpecContent).Concat(net45RuntimePlatform)
@@ -463,6 +469,22 @@ public class Packages
                     new NuSpecContent { Source = "licence.md", Target = "" }
                 },
                 BasePath = context.Directory("./"),
+                OutputDirectory = parameters.NugetRoot
+            },
+            new NuGetPackSettings()
+            {
+                Id = "Avalonia.Win32.Interoperability",
+                Dependencies = new []
+                {
+                    new NuSpecDependency() { Id = "Avalonia.Win32", Version = parameters.Version },
+                    new NuSpecDependency() { Id = "Avalonia.Direct2D1", Version = parameters.Version },
+                    new NuSpecDependency() { Id = "SharpDX.Direct3D9", Version = SharpDXDirect3D9Version },
+                },
+                Files = new []
+                {
+                    new NuSpecContent { Source = "Avalonia.Win32.Interop/bin/" + parameters.DirSuffix + "/Avalonia.Win32.Interop.dll", Target = "lib/net45" }
+                },
+                BasePath = context.Directory("./src/Windows"),
                 OutputDirectory = parameters.NugetRoot
             },
             ///////////////////////////////////////////////////////////////////////////////

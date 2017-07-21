@@ -19,7 +19,7 @@ namespace Avalonia.Controls
         {
             ContextMenuProperty.Changed.Subscribe(ContextMenuChanged);
 
-            MenuItem.ClickEvent.AddClassHandler<ContextMenu>(x => x.OnContextMenuClick);            
+            MenuItem.ClickEvent.AddClassHandler<ContextMenu>(x => x.OnContextMenuClick, handledEventsToo: true);            
         }
 
         /// <summary>

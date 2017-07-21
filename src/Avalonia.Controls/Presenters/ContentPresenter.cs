@@ -8,6 +8,7 @@ using Avalonia.Controls.Templates;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Presenters
 {
@@ -88,6 +89,7 @@ namespace Avalonia.Controls.Presenters
         static ContentPresenter()
         {
             ContentProperty.Changed.AddClassHandler<ContentPresenter>(x => x.ContentChanged);
+            ContentTemplateProperty.Changed.AddClassHandler<ContentPresenter>(x => x.ContentChanged);
             TemplatedParentProperty.Changed.AddClassHandler<ContentPresenter>(x => x.TemplatedParentChanged);
         }
 
@@ -313,27 +315,22 @@ namespace Avalonia.Controls.Presenters
 
             if (content != null && newChild == null)
             {
-                // We have content and it isn't a control, so first try to recycle the existing
-                // child control to display the new data by querying if the template that created
-                // the child can recycle items and that it also matches the new data.
-                if (oldChild != null &&
-                    _dataTemplate != null &&
-                    _dataTemplate.SupportsRecycling &&
-                    _dataTemplate.Match(content))
+                var dataTemplate = this.FindDataTemplate(content, ContentTemplate) ?? FuncDataTemplate.Default;
+
+                // We have content and it isn't a control, so if the new data template is the same
+                // as the old data template, try to recycle the existing child control to display
+                // the new data.
+                if (dataTemplate == _dataTemplate && dataTemplate.SupportsRecycling)
                 {
                     newChild = oldChild;
                 }
                 else
                 {
-                    // We couldn't recycle an existing control so find a data template for the data
-                    // and use it to create a control.
-                    _dataTemplate = this.FindDataTemplate(content, ContentTemplate) ?? FuncDataTemplate.Default;
+                    _dataTemplate = dataTemplate;
                     newChild = _dataTemplate.Build(content);
 
-                    // Try to give the new control its own name scope.
-                    var controlResult = newChild as Control;
-
-                    if (controlResult != null)
+                    // Give the new control its own name scope.
+                    if (newChild is Control controlResult)
                     {
                         NameScope.SetNameScope(controlResult, new NameScope());
                     }
@@ -424,6 +421,19 @@ namespace Avalonia.Controls.Presenters
         private void ContentChanged(AvaloniaPropertyChangedEventArgs e)
         {
             _createdChild = false;
+
+            if (((ILogical)this).IsAttachedToLogicalTree)
+            {
+                UpdateChild();
+            }
+            else if (Child != null)
+            {
+                VisualChildren.Remove(Child);
+                LogicalChildren.Remove(Child);
+                Child = null;
+                _dataTemplate = null;
+            }
+
             InvalidateMeasure();
         }
 
