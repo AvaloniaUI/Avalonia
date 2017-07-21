@@ -27,7 +27,7 @@ before_build:
 build_script:
 - ps: .\build.ps1 -Target "AppVeyor" -Platform "$env:platform" -Configuration "$env:configuration"
 after_build:
-- tools\JetBrains.dotMemoryUnit\tools\dotMemoryUnit.exe -targetExecutable="%xunit20%\xunit.console.x86.exe" -returnTargetExitCode  --"tests\Avalonia.LeakTests\bin\Release\Avalonia.LeakTests.dll"
+- tests\Avalonia.LeakTests\bin\Release\dotMemoryUnit.exe -targetExecutable="%xunit20%\xunit.console.x86.exe" -returnTargetExitCode  --"tests\Avalonia.LeakTests\bin\Release\Avalonia.LeakTests.dll"
 - "SET PATH=C:\\Python34;C:\\Python34\\Scripts;%PATH%"
 - pip install codecov
 - codecov -f "./artifacts/coverage.xml"
