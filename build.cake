@@ -119,7 +119,6 @@ Task("Restore-NuGet-Packages")
             }})
         .Execute(()=> {
                 NuGetRestore(parameters.MSBuildSolution, new NuGetRestoreSettings {
-                    ToolPath = "./tools/NuGet.CommandLine/tools/NuGet.exe",
                     ToolTimeout = TimeSpan.FromMinutes(toolTimeout)
                 });
         });

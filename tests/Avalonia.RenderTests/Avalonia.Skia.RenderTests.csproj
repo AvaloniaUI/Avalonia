@@ -44,4 +44,5 @@
     <Target Name="FixSkiaSharp"  AfterTargets="Build">
       <Copy SourceFiles="$(OutputPath)\x86\libSkiaSharp.dll" DestinationFolder="$(OutputPath)" Condition="'$(TargetFramework)' == 'net461'"/>
   </Target>
+  <Import Project="..\..\build\XUnit.props" />
 </Project>
