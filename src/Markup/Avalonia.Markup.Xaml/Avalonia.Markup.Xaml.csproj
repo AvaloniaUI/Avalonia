@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netstandard1.1</TargetFramework>
+    <TargetFramework>netstandard1.3</TargetFramework>
     <EnableDefaultCompileItems>False</EnableDefaultCompileItems>
     <EnableDefaultItems>false</EnableDefaultItems>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
@@ -304,7 +304,7 @@
     <ProjectReference Include="..\..\Avalonia.Visuals\Avalonia.Visuals.csproj" />
     <ProjectReference Include="..\..\Avalonia.Styling\Avalonia.Styling.csproj" />
     <ProjectReference Include="..\Avalonia.Markup\Avalonia.Markup.csproj" />
-    <ProjectReference Include="..\Portable.Xaml\src\Portable.Xaml\Portable.Xaml-pcl259.csproj" />
+    <PackageReference Include="Portable.Xaml" Version="0.16.0" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="glass\Glass.Core\Glass.Core.csproj" />

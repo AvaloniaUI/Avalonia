@@ -1,6 +1,7 @@
 ﻿using Avalonia.Data;
 using Portable.Xaml;
 using Portable.Xaml.ComponentModel;
+using System.ComponentModel;
 using System.Collections.Generic;
 using System.Linq;
 

@@ -31,7 +31,6 @@
     <ProjectReference Include="..\..\src\Avalonia.Styling\Avalonia.Styling.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Themes.Default\Avalonia.Themes.Default.csproj" />
     <ProjectReference Include="..\Avalonia.UnitTests\Avalonia.UnitTests.csproj" />
-    <ProjectReference Include="..\..\src\Markup\Portable.Xaml\src\Portable.Xaml\Portable.Xaml-pcl259.csproj" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Xaml\Style1.xaml">

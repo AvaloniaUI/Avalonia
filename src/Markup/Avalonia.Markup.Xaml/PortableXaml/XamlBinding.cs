@@ -3,6 +3,7 @@ using Avalonia.Data;
 using Avalonia.Styling;
 using Portable.Xaml;
 using Portable.Xaml.ComponentModel;
+using System.ComponentModel;
 using Portable.Xaml.Markup;
 using System;
 

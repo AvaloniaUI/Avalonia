@@ -7,6 +7,7 @@ namespace Avalonia.Markup.Xaml.Templates
 
     using Portable.Xaml;
     using Portable.Xaml.ComponentModel;
+	using System.ComponentModel;
     using System;
 
     public class TemplateLoader : XamlDeferringLoader

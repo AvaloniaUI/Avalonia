@@ -11,6 +11,7 @@ namespace Avalonia.Markup.Xaml.Converters
 #if !OMNIXAML
 
     using Portable.Xaml.ComponentModel;
+	using System.ComponentModel;
 
     public class BitmapTypeConverter : TypeConverter
     {

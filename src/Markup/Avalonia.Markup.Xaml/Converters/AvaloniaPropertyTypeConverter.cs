@@ -10,8 +10,8 @@ namespace Avalonia.Markup.Xaml.Converters
     using Avalonia.Styling;
     using Portable.Xaml;
 #if !OMNIXAML
-
     using Portable.Xaml.ComponentModel;
+	using System.ComponentModel;
     using Portable.Xaml.Markup;
 
     public class AvaloniaPropertyTypeConverter : TypeConverter

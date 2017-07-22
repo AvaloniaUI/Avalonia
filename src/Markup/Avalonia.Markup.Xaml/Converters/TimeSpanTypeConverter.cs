@@ -9,8 +9,9 @@ namespace Avalonia.Markup.Xaml.Converters
 #if !OMNIXAML
 
     using Portable.Xaml.ComponentModel;
+	using System.ComponentModel;
 
-    public class TimeSpanTypeConverter : Portable.Xaml.ComponentModel.TimeSpanConverter
+    public class TimeSpanTypeConverter : System.ComponentModel.TimeSpanConverter
     {
         public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
         {

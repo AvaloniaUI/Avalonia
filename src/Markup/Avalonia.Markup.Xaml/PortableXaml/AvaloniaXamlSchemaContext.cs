@@ -5,6 +5,7 @@ using Avalonia.Markup.Xaml.MarkupExtensions;
 using Avalonia.Markup.Xaml.Styling;
 using Portable.Xaml;
 using Portable.Xaml.ComponentModel;
+using System.ComponentModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;

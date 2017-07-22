@@ -1,6 +1,7 @@
 ﻿using Avalonia.Markup.Xaml.Converters;
 using Avalonia.Styling;
 using Portable.Xaml.ComponentModel;
+using System.ComponentModel;
 using System;
 using System.Linq;
 using System.Reflection;

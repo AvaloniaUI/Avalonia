@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using Portable.Xaml.ComponentModel;
+using System.ComponentModel;
 using System;
 using System.Linq;
 using System.Reflection;
