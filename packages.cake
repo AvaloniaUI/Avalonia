@@ -81,6 +81,7 @@ public class Packages
         var SharpDXVersion = packageVersions["SharpDX"].FirstOrDefault().Item1;
         var SharpDXDirect2D1Version = packageVersions["SharpDX.Direct2D1"].FirstOrDefault().Item1;
         var SharpDXDirect3D11Version = packageVersions["SharpDX.Direct3D11"].FirstOrDefault().Item1;
+        var SharpDXDirect3D9Version = packageVersions["SharpDX.Direct3D9"].FirstOrDefault().Item1;
         var SharpDXDXGIVersion = packageVersions["SharpDX.DXGI"].FirstOrDefault().Item1;
 
         context.Information("Package: Serilog, version: {0}", SerilogVersion);
@@ -93,6 +94,7 @@ public class Packages
         context.Information("Package: SharpDX, version: {0}", SharpDXVersion);
         context.Information("Package: SharpDX.Direct2D1, version: {0}", SharpDXDirect2D1Version);
         context.Information("Package: SharpDX.Direct3D11, version: {0}", SharpDXDirect3D11Version);
+        context.Information("Package: SharpDX.Direct3D9, version: {0}", SharpDXDirect3D9Version);
         context.Information("Package: SharpDX.DXGI, version: {0}", SharpDXDXGIVersion);
 
         var nugetPackagesDir = System.Environment.GetEnvironmentVariable("NUGET_HOME")
@@ -476,6 +478,7 @@ public class Packages
                 {
                     new NuSpecDependency() { Id = "Avalonia.Win32", Version = parameters.Version },
                     new NuSpecDependency() { Id = "Avalonia.Direct2D1", Version = parameters.Version },
+                    new NuSpecDependency() { Id = "SharpDX.Direct3D9", Version = SharpDXDirect3D9Version },
                 },
                 Files = new []
                 {
