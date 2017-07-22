@@ -40,12 +40,10 @@
   <Import Project="..\..\build\Moq.props" />
   <Import Project="..\..\build\Rx.props" />
   <Import Project="..\..\build\XUnit.props" />
-  <Import Condition="'$(TargetFramework)' == 'net461'" Project="$(MSBuildThisFileDirectory)..\..\src\Shared\nuget.workaround.targets" />
   <Import Project="Avalonia.RenderTests.projitems" Label="Shared" />
   <Import Project="..\..\build\Magick.NET-Q16-AnyCPU.props" />
   <Import Project="..\..\build\SkiaSharp.props" />
     <Target Name="FixSkiaSharp" AfterTargets="Build">
       <Copy SourceFiles="$(OutputPath)\x86\libSkiaSharp.dll" DestinationFolder="$(OutputPath)" Condition="'$(TargetFramework)' == 'net461'" />
   </Target>
-  <Import Project="..\..\build\XUnit.props" />
 </Project>
