@@ -5,7 +5,7 @@
     <EnableDefaultItems>false</EnableDefaultItems>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -15,7 +15,7 @@
     <WarningLevel>4</WarningLevel>
     <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -25,7 +25,7 @@
     <DocumentationFile>bin\Release\Avalonia.Markup.Xaml.XML</DocumentationFile>
     <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'DebugOmniXaml|AnyCPU'">
+  <PropertyGroup Condition="'$(Configuration)' == 'DebugOmniXaml'">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\DebugOmniXaml\</OutputPath>
     <DefineConstants>TRACE;DEBUG;OMNIXAML</DefineConstants>
