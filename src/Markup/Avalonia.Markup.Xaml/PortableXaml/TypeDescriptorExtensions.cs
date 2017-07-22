@@ -62,12 +62,12 @@ namespace Portable.Xaml.ComponentModel
 
         public static Uri GetBaseUri(this ITypeDescriptorContext ctx)
         {
-            return ctx.GetWriterSettings()?.Context.BaseUri;
+            return ctx.GetWriterSettings()?.Context?.BaseUri;
         }
 
         public static Assembly GetLocalAssembly(this ITypeDescriptorContext ctx)
         {
-            return ctx.GetWriterSettings()?.Context.LocalAssembly;
+            return ctx.GetWriterSettings()?.Context?.LocalAssembly;
         }
 
         public static AvaloniaXamlContext GetAvaloniaXamlContext(this ITypeDescriptorContext ctx)
