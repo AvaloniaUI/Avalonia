@@ -54,7 +54,7 @@ namespace Avalonia.Markup.Xaml.PortableXaml
             base.Dispose(disposing);
         }
 
-        protected override void OnAfterBeginInit(object value)
+        protected internal override void OnAfterBeginInit(object value)
         {
             //not called for avalonia objects
             //as it's called inly for
@@ -62,7 +62,7 @@ namespace Avalonia.Markup.Xaml.PortableXaml
             base.OnAfterBeginInit(value);
         }
 
-        protected override void OnAfterEndInit(object value)
+        protected internal override void OnAfterEndInit(object value)
         {
             //not called for avalonia objects
             //as it's called inly for
@@ -70,7 +70,7 @@ namespace Avalonia.Markup.Xaml.PortableXaml
             base.OnAfterEndInit(value);
         }
 
-        protected override void OnAfterProperties(object value)
+        protected internal override void OnAfterProperties(object value)
         {
             _delayedValuesHelper.EndInit(value);
 
@@ -82,7 +82,7 @@ namespace Avalonia.Markup.Xaml.PortableXaml
             HandleEndEdit(value);
         }
 
-        protected override void OnBeforeProperties(object value)
+        protected internal override void OnBeforeProperties(object value)
         {
             //OnAfterBeginInit is not called as it supports only
             //Portable.Xaml.ComponentModel.ISupportInitialize
@@ -94,7 +94,7 @@ namespace Avalonia.Markup.Xaml.PortableXaml
             base.OnBeforeProperties(value);
         }
 
-        protected override bool OnSetValue(object target, XamlMember member, object value)
+        protected internal override bool OnSetValue(object target, XamlMember member, object value)
         {
             if (_delayedValuesHelper.TryAdd(target, member, value))
             {

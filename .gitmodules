@@ -11,3 +11,6 @@
 [submodule "src/Markup/Avalonia.Markup.Xaml/glass"]
 	path = src/Markup/Avalonia.Markup.Xaml/glass
 	url = https://github.com/SuperJMN/glass
+[submodule "src/Markup/Avalonia.Markup.Xaml/PortableXaml/portable.xaml.github"]
+	path = src/Markup/Avalonia.Markup.Xaml/PortableXaml/portable.xaml.github
+	url = https://github.com/cwensley/Portable.Xaml.git

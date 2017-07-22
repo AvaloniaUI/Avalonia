@@ -32,7 +32,7 @@ namespace Avalonia.Markup.Xaml.PortableXaml
 
         private IRuntimeTypeProvider _avaloniaTypeProvider;
 
-        protected override XamlType GetXamlType(string xamlNamespace, string name, params XamlType[] typeArguments)
+        protected internal override XamlType GetXamlType(string xamlNamespace, string name, params XamlType[] typeArguments)
         {
             XamlType type = null;
             try
@@ -142,10 +142,10 @@ namespace Avalonia.Markup.Xaml.PortableXaml
 
         #endregion Workaround for bug in Portablexaml system types like double,int etc ...
 
-        protected override ICustomAttributeProvider GetCustomAttributeProvider(Type type)
+        protected internal override ICustomAttributeProvider GetCustomAttributeProvider(Type type)
                                     => new AvaloniaTypeAttributeProvider(type);
 
-        protected override ICustomAttributeProvider GetCustomAttributeProvider(MemberInfo member)
+        protected internal override ICustomAttributeProvider GetCustomAttributeProvider(MemberInfo member)
                                     => new AvaloniaMemberAttributeProvider(member);
 
         public override XamlType GetXamlType(Type type)
@@ -187,7 +187,7 @@ namespace Avalonia.Markup.Xaml.PortableXaml
             return null;
         }
 
-        protected override XamlMember GetAttachableProperty(string attachablePropertyName, MethodInfo getter, MethodInfo setter)
+        protected internal override XamlMember GetAttachableProperty(string attachablePropertyName, MethodInfo getter, MethodInfo setter)
         {
             var key = MemberKey.Create(getter ?? setter, attachablePropertyName, "a");
 
@@ -218,7 +218,7 @@ namespace Avalonia.Markup.Xaml.PortableXaml
             return _cachedMembers[key] = result;
         }
 
-        protected override XamlMember GetProperty(PropertyInfo pi)
+        protected internal override XamlMember GetProperty(PropertyInfo pi)
         {
             Type objType = pi.DeclaringType;
             string name = pi.Name;
