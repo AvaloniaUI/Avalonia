@@ -9,7 +9,7 @@ using Avalonia.Styling;
 using Xunit;
 
 #if !OMNIXAML
-
+using System.ComponentModel;
 using Portable.Xaml.ComponentModel;
 using Portable.Xaml;
 using Portable.Xaml.Markup;

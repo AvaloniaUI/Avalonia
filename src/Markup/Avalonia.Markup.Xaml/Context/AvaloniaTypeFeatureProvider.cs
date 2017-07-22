@@ -15,12 +15,13 @@ using Avalonia.Media.Imaging;
 using Avalonia.Metadata;
 using Avalonia.Styling;
 using OmniXaml;
+#if OMNIXAML
 using OmniXaml.Builder;
 using OmniXaml.TypeConversion;
 using OmniXaml.TypeConversion.BuiltInConverters;
 using OmniXaml.Typing;
 using OmniMetadata = OmniXaml.Typing.Metadata;
-
+#endif
 namespace Avalonia.Markup.Xaml.Context
 {
 #if OMNIXAML
