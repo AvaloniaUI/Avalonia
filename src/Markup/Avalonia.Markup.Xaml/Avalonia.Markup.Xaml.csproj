@@ -10,7 +10,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <NoWarn>CS1591</NoWarn>
@@ -25,10 +25,33 @@
     <DocumentationFile>bin\Release\Avalonia.Markup.Xaml.XML</DocumentationFile>
     <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'DebugOmniXaml|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\DebugOmniXaml\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;OMNIXAML</DefineConstants>
+    <NoWarn>CS1591</NoWarn>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\..\Shared\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="AvaloniaXamlLoaderPortableXaml.cs" />
+    <Compile Include="AvaloniaXamlLoader.cs" />
+    <Compile Include="Converters\SetterValueTypeConverter.cs" />
+    <Compile Include="MarkupExtensions\StyleIncludeExtension.cs" />
+    <Compile Include="PortableXaml\AvaloniaXamlContext.cs" />
+    <Compile Include="PortableXaml\XamlBinding.cs" />
+    <Compile Include="PortableXaml\AttributeExtensions.cs" />
+    <Compile Include="PortableXaml\AvaloniaMemberAttributeProvider.cs" />
+    <Compile Include="PortableXaml\AvaloniaNameScope.cs" />
+    <Compile Include="PortableXaml\AvaloniaDefaultTypeConverters.cs" />
+    <Compile Include="PortableXaml\AvaloniaXamlObjectWriter.cs" />
+    <Compile Include="PortableXaml\AvaloniaRuntimeTypeProvider.cs" />
+    <Compile Include="PortableXaml\AvaloniaXamlSchemaContext.cs" />
     <Compile Include="Context\NameScopeWrapper.cs" />
     <Compile Include="Context\AvaloniaAttachableXamlMember.cs" />
     <Compile Include="Context\AvaloniaLifeCycleListener.cs" />
@@ -255,8 +278,11 @@
     <Compile Include="OmniXAML\Source\OmniXaml\XmlParser.cs" />
     <Compile Include="Parsers\SelectorGrammar.cs" />
     <Compile Include="Parsers\SelectorParser.cs" />
+    <Compile Include="PortableXaml\AvaloniaTypeAttributeProvider.cs" />
+    <Compile Include="PortableXaml\AvaloniaXamlType.cs" />
+    <Compile Include="PortableXaml\TypeDescriptorExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="AvaloniaXamlLoader.cs" />
+    <Compile Include="AvaloniaXamlLoaderOmniXaml.cs" />
     <Compile Include="Styling\StyleInclude.cs" />
     <Compile Include="Templates\ControlTemplate.cs" />
     <Compile Include="Templates\DataTemplate.cs" />
@@ -278,8 +304,7 @@
     <ProjectReference Include="..\..\Avalonia.Visuals\Avalonia.Visuals.csproj" />
     <ProjectReference Include="..\..\Avalonia.Styling\Avalonia.Styling.csproj" />
     <ProjectReference Include="..\Avalonia.Markup\Avalonia.Markup.csproj" />
-  </ItemGroup>
-  <ItemGroup>
+    <ProjectReference Include="..\Portable.Xaml\src\Portable.Xaml\Portable.Xaml-pcl259.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="glass\Glass.Core\Glass.Core.csproj" />

@@ -9,6 +9,7 @@ using Glass.Core;
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions.Standard
 {
+#if OMNIXAML
     public class StaticExtension : MarkupExtension
     {
         public StaticExtension()
@@ -83,4 +84,5 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.Standard
             throw new ArgumentException($"Static member '{type}.{name}' not found.");
         }
     }
+#endif
 }

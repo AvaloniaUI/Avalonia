@@ -7,6 +7,7 @@ using OmniXaml.Typing;
 
 namespace Avalonia.Markup.Xaml.Context
 {
+#if OMNIXAML
     public class AvaloniaMemberValuePlugin : MemberValuePlugin
     {
         private readonly MutableMember _xamlMember;
@@ -22,4 +23,5 @@ namespace Avalonia.Markup.Xaml.Context
             PropertyAccessor.SetValue(instance, _xamlMember, value, valueContext);
         }
     }
+#endif
 }

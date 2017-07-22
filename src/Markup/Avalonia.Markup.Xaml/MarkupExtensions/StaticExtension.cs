@@ -2,13 +2,35 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Linq;
-using System.Reflection;
-using OmniXaml;
-using Glass.Core;
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions
 {
+#if !OMNIXAML
+
+    public class StaticExtension : Portable.Xaml.Markup.StaticExtension
+    {
+        public StaticExtension()
+        {
+        }
+
+        public StaticExtension(string member)
+            : base(member)
+        {
+        }
+
+        public override object ProvideValue(IServiceProvider serviceProvider)
+        {
+            return base.ProvideValue(serviceProvider);
+        }
+    }
+
+#else
+
+    using System.Linq;
+    using System.Reflection;
+    using OmniXaml;
+    using Glass.Core;
+
     public class StaticExtension : MarkupExtension
     {
         public StaticExtension()
@@ -66,7 +88,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
                 if (result is PropertyInfo)
                 {
                     var property = ((PropertyInfo)result);
-                    
+
                     if (property.GetMethod.IsStatic)
                     {
                         return ((PropertyInfo)result).GetValue(null);
@@ -83,4 +105,5 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             throw new ArgumentException($"Static member '{type}.{name}' not found.");
         }
     }
+#endif
 }

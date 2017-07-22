@@ -17,6 +17,7 @@ using Glass.Core;
 
 namespace Avalonia.Markup.Xaml.Context
 {
+#if OMNIXAML
     public class AvaloniaNamespaceRegistry : INamespaceRegistry
     {
         private const string ClrNamespace = "clr-namespace:";
@@ -178,4 +179,5 @@ namespace Avalonia.Markup.Xaml.Context
             }
         }
     }
+#endif
 }

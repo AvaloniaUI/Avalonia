@@ -12,6 +12,7 @@ using System.Collections.ObjectModel;
 
 namespace Avalonia.Markup.Xaml.Context
 {
+#if OMNIXAML
     public class AvaloniaObjectAssembler : IObjectAssembler
     {
         private readonly TemplateHostingObjectAssembler objectAssembler;
@@ -76,4 +77,5 @@ namespace Avalonia.Markup.Xaml.Context
             return dict;
         }
     }
+#endif
 }

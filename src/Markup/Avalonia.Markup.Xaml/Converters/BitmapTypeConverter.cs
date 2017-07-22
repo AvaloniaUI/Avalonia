@@ -3,12 +3,43 @@
 
 using System;
 using System.Globalization;
-using OmniXaml.TypeConversion;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 
 namespace Avalonia.Markup.Xaml.Converters
 {
+#if !OMNIXAML
+
+    using Portable.Xaml.ComponentModel;
+
+    public class BitmapTypeConverter : TypeConverter
+    {
+        public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+        {
+            return sourceType == typeof(string);
+        }
+
+        public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+        {
+            var uri = new Uri((string)value, UriKind.RelativeOrAbsolute);
+            var scheme = uri.IsAbsoluteUri ? uri.Scheme : "file";
+
+            switch (scheme)
+            {
+                case "file":
+                    return new Bitmap((string)value);
+
+                default:
+                    var assets = AvaloniaLocator.Current.GetService<IAssetLoader>();
+                    return new Bitmap(assets.Open(uri, context.GetBaseUri()));
+            }
+        }
+    }
+
+#else
+
+    using OmniXaml.TypeConversion;
+
     public class BitmapTypeConverter : ITypeConverter
     {
         public bool CanConvertFrom(IValueContext context, Type sourceType)
@@ -31,6 +62,7 @@ namespace Avalonia.Markup.Xaml.Converters
             {
                 case "file":
                     return new Bitmap((string)value);
+
                 default:
                     var assets = AvaloniaLocator.Current.GetService<IAssetLoader>();
                     return new Bitmap(assets.Open(uri, baseUri));
@@ -49,4 +81,5 @@ namespace Avalonia.Markup.Xaml.Converters
             return result as Uri;
         }
     }
+#endif
 }

@@ -1,5 +1,6 @@
 namespace Avalonia.Markup.Xaml.Context
 {
+#if OMNIXAML
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -88,4 +89,5 @@ namespace Avalonia.Markup.Xaml.Context
             return inner.GetAttachableMember(name, getter, setter);
         }
     }
+#endif
 }

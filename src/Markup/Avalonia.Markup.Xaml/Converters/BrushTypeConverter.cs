@@ -3,11 +3,32 @@
 
 using System;
 using System.Globalization;
-using OmniXaml.TypeConversion;
+
 using Avalonia.Media;
 
 namespace Avalonia.Markup.Xaml.Converters
 {
+#if !OMNIXAML
+
+    using Portable.Xaml.ComponentModel;
+
+    public class BrushTypeConverter : TypeConverter
+    {
+        public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+        {
+            return sourceType == typeof(string);
+        }
+
+        public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+        {
+            return Brush.Parse((string)value);
+        }
+    }
+
+#else
+
+    using OmniXaml.TypeConversion;
+
     public class BrushTypeConverter : ITypeConverter
     {
         public bool CanConvertFrom(IValueContext context, Type sourceType)
@@ -30,4 +51,5 @@ namespace Avalonia.Markup.Xaml.Converters
             throw new NotImplementedException();
         }
     }
+#endif
 }

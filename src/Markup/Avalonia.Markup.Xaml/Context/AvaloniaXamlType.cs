@@ -9,6 +9,7 @@ using Avalonia.Controls;
 
 namespace Avalonia.Markup.Xaml.Context
 {
+#if OMNIXAML
     public class AvaloniaXamlType : XamlType
     {
         public AvaloniaXamlType(Type type,
@@ -58,4 +59,5 @@ namespace Avalonia.Markup.Xaml.Context
             return "Avalonia XAML Type " + base.ToString();
         }
     }
+#endif
 }

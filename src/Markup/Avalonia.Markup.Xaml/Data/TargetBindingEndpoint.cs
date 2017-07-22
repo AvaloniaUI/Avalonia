@@ -3,6 +3,7 @@
 
 namespace Avalonia.Markup.Xaml.Data
 {
+#if OMNIXAML
     public class TargetBindingEndpoint
     {
         public AvaloniaObject Object { get; }
@@ -15,4 +16,5 @@ namespace Avalonia.Markup.Xaml.Data
             Property = property;
         }
     }
+#endif
 }

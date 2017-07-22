@@ -8,6 +8,7 @@ using System;
 
 namespace Avalonia.Markup.Xaml.Context
 {
+#if OMNIXAML
     public class AvaloniaXamlMember : Member
     {
         public AvaloniaXamlMember(string name,
@@ -28,4 +29,5 @@ namespace Avalonia.Markup.Xaml.Context
             return "Avalonia XAML Member " + base.ToString();
         }
     }
+#endif
 }

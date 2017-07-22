@@ -23,6 +23,7 @@ using OmniMetadata = OmniXaml.Typing.Metadata;
 
 namespace Avalonia.Markup.Xaml.Context
 {
+#if OMNIXAML
     public class AvaloniaTypeFeatureProvider : ITypeFeatureProvider
     {
         private Dictionary<Type, OmniMetadata> _metadata =
@@ -171,10 +172,11 @@ namespace Avalonia.Markup.Xaml.Context
             RegisterTypeConverter(typeof(SolidColorBrush), new BrushTypeConverter());
             RegisterTypeConverter(typeof(Thickness), new ThicknessTypeConverter());
             RegisterTypeConverter(typeof(TimeSpan), new TimeSpanTypeConverter());
-            RegisterTypeConverter(typeof(Uri), new UriTypeConverter());
+            RegisterTypeConverter(typeof(Uri), new Converters.UriTypeConverter());
             RegisterTypeConverter(typeof(Cursor), new CursorTypeConverter());
             RegisterTypeConverter(typeof(WindowIcon), new IconTypeConverter());
             RegisterTypeConverter(typeof(FontWeight), new FontWeightConverter());
         }
     }
+#endif
 }

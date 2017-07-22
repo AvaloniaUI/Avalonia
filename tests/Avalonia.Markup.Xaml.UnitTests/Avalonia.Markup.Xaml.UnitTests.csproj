@@ -3,6 +3,13 @@
     <TargetFrameworks>net461;netcoreapp1.1</TargetFrameworks>
     <OutputType>Library</OutputType>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'DebugOmniXaml|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <DefineConstants>TRACE;DEBUG;OMNIXAML</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
   <Import Project="..\..\build\UnitTests.NetCore.targets" />
   <Import Project="..\..\build\Moq.props" />
   <Import Project="..\..\build\XUnit.props" />
@@ -24,6 +31,7 @@
     <ProjectReference Include="..\..\src\Avalonia.Styling\Avalonia.Styling.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Themes.Default\Avalonia.Themes.Default.csproj" />
     <ProjectReference Include="..\Avalonia.UnitTests\Avalonia.UnitTests.csproj" />
+    <ProjectReference Include="..\..\src\Markup\Portable.Xaml\src\Portable.Xaml\Portable.Xaml-pcl259.csproj" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Xaml\Style1.xaml">

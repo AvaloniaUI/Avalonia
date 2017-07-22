@@ -2,8 +2,6 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Collections;
-using System.Reactive.Linq;
 using System.Reflection;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
@@ -19,12 +17,13 @@ namespace Avalonia.Markup.Xaml.Templates
         public Type DataType { get; set; }
 
         [Content]
-        public TemplateContent Content { get; set; }
+        [TemplateContent]
+        public object Content { get; set; }
 
         [AssignBinding]
         public Binding ItemsSource { get; set; }
 
-        public bool SupportsRecycling => true;
+        public bool SupportsRecycling { get; set; } = true;
 
         public bool Match(object data)
         {
@@ -56,7 +55,7 @@ namespace Avalonia.Markup.Xaml.Templates
 
         public IControl Build(object data)
         {
-            var visualTreeForItem = Content.Load();
+            var visualTreeForItem = TemplateContent.Load(Content);
             visualTreeForItem.DataContext = data;
             return visualTreeForItem;
         }

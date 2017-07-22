@@ -3,13 +3,32 @@
 
 using System;
 using System.Globalization;
-using OmniXaml.TypeConversion;
 using Avalonia.Input;
-using Avalonia.Media.Imaging;
-using Avalonia.Platform;
 
 namespace Avalonia.Markup.Xaml.Converters
 {
+#if !OMNIXAML
+
+    using Portable.Xaml.ComponentModel;
+
+    public class CursorTypeConverter : TypeConverter
+    {
+        public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+        {
+            return sourceType == typeof(string);
+        }
+
+        public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+        {
+            var cursor = (StandardCursorType)Enum.Parse(typeof(StandardCursorType), ((string)value).Trim(), true);
+            return new Cursor(cursor);
+        }
+    }
+
+#else
+
+    using OmniXaml.TypeConversion;
+
     public class CursorTypeConverter : ITypeConverter
     {
         public bool CanConvertFrom(IValueContext context, Type sourceType)
@@ -33,4 +52,6 @@ namespace Avalonia.Markup.Xaml.Converters
             throw new NotImplementedException();
         }
     }
+
+#endif
 }
