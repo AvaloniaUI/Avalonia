@@ -355,18 +355,28 @@ namespace Avalonia.Controls
 
             if (--_initCount == 0 && _isAttachedToLogicalTree)
             {
-                if (!_styled)
-                {
-                    RegisterWithNameScope();
-                    ApplyStyling();
-                    _styled = true;
-                }
+                InitializeStylesIfNeeded();
 
-                if (!IsInitialized)
-                {
-                    IsInitialized = true;
-                    Initialized?.Invoke(this, EventArgs.Empty);
-                }
+                InitializeIfNeeded();
+            }
+        }
+
+        private void InitializeStylesIfNeeded(bool force = false)
+        {
+            if (_initCount == 0 && (!_styled || force))
+            {
+                RegisterWithNameScope();
+                ApplyStyling();
+                _styled = true;
+            }
+        }
+
+        private void InitializeIfNeeded()
+        {
+            if (_initCount == 0 && !IsInitialized)
+            {
+                IsInitialized = true;
+                Initialized?.Invoke(this, EventArgs.Empty);
             }
         }
 
@@ -580,11 +590,7 @@ namespace Avalonia.Controls
         {
             base.OnAttachedToVisualTreeCore(e);
 
-            if (!IsInitialized)
-            {
-                IsInitialized = true;
-                Initialized?.Invoke(this, EventArgs.Empty);
-            }
+            InitializeIfNeeded();
         }
 
         /// <inheritdoc/>
@@ -752,12 +758,7 @@ namespace Avalonia.Controls
             {
                 _isAttachedToLogicalTree = true;
 
-                if (_initCount == 0)
-                {
-                    RegisterWithNameScope();
-                    ApplyStyling();
-                    _styled = true;
-                }
+                InitializeStylesIfNeeded(true);
 
                 OnAttachedToLogicalTree(e);
             }

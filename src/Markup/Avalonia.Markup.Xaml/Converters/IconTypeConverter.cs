@@ -1,70 +1,55 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+﻿// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
 using Avalonia.Controls;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
-using OmniXaml.TypeConversion;
+using System;
+using System.Globalization;
 
 namespace Avalonia.Markup.Xaml.Converters
 {
-    class IconTypeConverter : ITypeConverter
+    using Portable.Xaml.ComponentModel;
+	using System.ComponentModel;
+
+    public class IconTypeConverter : TypeConverter
     {
-        public bool CanConvertFrom(IValueContext context, Type sourceType)
+        public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
         {
-            return sourceType == typeof(string) || typeof(IBitmap).GetTypeInfo().IsAssignableFrom(sourceType.GetTypeInfo());
+            return sourceType == typeof(string);
         }
 
-        public bool CanConvertTo(IValueContext context, Type destinationType)
-        {
-            return false;
-        }
-
-        public object ConvertFrom(IValueContext context, CultureInfo culture, object value)
+        public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
         {
             var path = value as string;
             if (path != null)
             {
-                return CreateIconFromPath(context, path); 
+                return CreateIconFromPath(context, path);
             }
+
             var bitmap = value as IBitmap;
             if (bitmap != null)
             {
                 return new WindowIcon(bitmap);
             }
+
             throw new NotSupportedException();
         }
 
-        private WindowIcon CreateIconFromPath(IValueContext context, string path)
+        private WindowIcon CreateIconFromPath(ITypeDescriptorContext context, string path)
         {
             var uri = new Uri(path, UriKind.RelativeOrAbsolute);
-            var baseUri = GetBaseUri(context);
             var scheme = uri.IsAbsoluteUri ? uri.Scheme : "file";
 
             switch (scheme)
             {
                 case "file":
                     return new WindowIcon(path);
+
                 default:
                     var assets = AvaloniaLocator.Current.GetService<IAssetLoader>();
-                    return new WindowIcon(assets.Open(uri, baseUri));
+                    return new WindowIcon(assets.Open(uri, context.GetBaseUri()));
             }
-        }
-
-        public object ConvertTo(IValueContext context, CultureInfo culture, object value, Type destinationType)
-        {
-            throw new NotImplementedException();
-        }
-
-        private Uri GetBaseUri(IValueContext context)
-        {
-            object result;
-            context.ParsingDictionary.TryGetValue("Uri", out result);
-            return result as Uri;
         }
     }
 }
