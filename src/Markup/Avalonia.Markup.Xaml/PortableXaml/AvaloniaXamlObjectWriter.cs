@@ -88,8 +88,8 @@ namespace Avalonia.Markup.Xaml.PortableXaml
             //Portable.Xaml.ComponentModel.ISupportInitialize
             //and we have Avalonia.ISupportInitialize so we need some hacks
             HandleBeginInit(value);
-
-            _delayedValuesHelper.BeginInit(value);
+            if (value != null)
+                _delayedValuesHelper.BeginInit(value);
 
             base.OnBeforeProperties(value);
         }
