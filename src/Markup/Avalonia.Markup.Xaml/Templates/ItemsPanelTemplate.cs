@@ -10,12 +10,11 @@ namespace Avalonia.Markup.Xaml.Templates
     public class ItemsPanelTemplate : ITemplate<IPanel>
     {
         [Content]
-        public TemplateContent Content { get; set; }
+        [TemplateContent]
+        public object Content { get; set; }
 
         public IPanel Build()
-        {
-            return (IPanel)Content.Load();
-        }
+                => (IPanel)TemplateContent.Load(Content);
 
         object ITemplate.Build() => Build();
     }

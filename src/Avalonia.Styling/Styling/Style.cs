@@ -13,10 +13,10 @@ namespace Avalonia.Styling
     /// </summary>
     public class Style : IStyle
     {
-        private static Dictionary<IStyleable, List<IDisposable>> _applied = 
+        private static Dictionary<IStyleable, List<IDisposable>> _applied =
             new Dictionary<IStyleable, List<IDisposable>>();
 
-        private Dictionary<string, object> _resources;
+        private StyleResources _resources;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Style"/> class.
@@ -37,13 +37,13 @@ namespace Avalonia.Styling
         /// <summary>
         /// Gets or sets a dictionary of style resources.
         /// </summary>
-        public IDictionary<string, object> Resources
+        public StyleResources Resources
         {
             get
             {
                 if (_resources == null)
                 {
-                    _resources = new Dictionary<string, object>();
+                    _resources = new StyleResources();
                 }
 
                 return _resources;
@@ -51,25 +51,30 @@ namespace Avalonia.Styling
 
             set
             {
+                
                 var resources = Resources;
-
-                foreach (var i in value)
+                if (!Equals(resources, value))
                 {
-                    resources.Add(i);
+                    foreach (var i in value)
+                    {
+                        resources[i.Key] = i.Value;
+                        //resources.Add(i.Key, i.Value);
+                        //(resources as IDictionary<string,object>).Add(i);
+                    }
                 }
             }
         }
 
         /// <summary>
-        /// Gets or sets style's selector.
+        /// Gets or sets the style's selector.
         /// </summary>
         public Selector Selector { get; set; }
 
         /// <summary>
-        /// Gets or sets style's setters.
+        /// Gets or sets the style's setters.
         /// </summary>
         [Content]
-        public IEnumerable<ISetter> Setters { get; set; } = new List<ISetter>();
+        public IList<ISetter> Setters { get; set; } = new List<ISetter>();
 
         /// <summary>
         /// Attaches the style to a control if the style's selector matches.
