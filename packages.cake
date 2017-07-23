@@ -8,6 +8,42 @@ public class Packages
     public string NugetPackagesDir {get; private set;}
     public string SkiaSharpVersion {get; private set; }
     public string SkiaSharpLinuxVersion {get; private set; }
+    public Dictionary<string, IList<Tuple<string,string>>> PackageVersions{get; private set;}
+    
+       
+    
+    class DependencyBuilder : List<NuSpecDependency>
+    {
+        Packages _parent;
+        public DependencyBuilder(Packages parent)
+        {
+            _parent = parent;
+        }
+        
+        string GetVersion(string name)
+        {
+            return _parent.PackageVersions[name].First().Item1;
+        }
+        
+        
+        public DependencyBuilder Dep(string name, params string[] fws)
+        {
+            if(fws.Length == 0)
+                Add(new NuSpecDependency() { Id = name, Version = GetVersion(name) });
+            foreach(var fw in fws)
+                Add(new NuSpecDependency() { Id = name, TargetFramework = fw, Version = GetVersion(name) });
+            return this;
+        }
+        public DependencyBuilder Deps(string[] fws, params string[] deps)
+        {
+            foreach(var fw in fws)
+                foreach(var name in deps)
+                    Add(new NuSpecDependency() { Id = name, TargetFramework = fw, Version = GetVersion(name) });
+            return this;
+        }
+    }
+        
+    //new NuSpecDependency() { Id = "System.Threading.ThreadPool", TargetFramework = "netcoreapp1.0", Version = "4.3.0" },
     public Packages(ICakeContext context, Parameters parameters)
     {
         // NUGET NUSPECS
@@ -26,7 +62,7 @@ public class Packages
         // Key: Package Id
         // Value is Tuple where Item1: Package Version, Item2: The *.csproj/*.props file path.
         var packageVersions = new Dictionary<string, IList<Tuple<string,string>>>();
-
+        PackageVersions = packageVersions;
         System.IO.Directory.EnumerateFiles(((DirectoryPath)context.Directory("./build")).FullPath,
             "*.props", SearchOption.AllDirectories).ToList().ForEach(fileName =>
         {
@@ -195,13 +231,12 @@ public class Packages
             new NuGetPackSettings()
             {
                 Id = "Avalonia",
-                Dependencies = new []
+                Dependencies = new DependencyBuilder(this)
                 {
                     new NuSpecDependency() { Id = "Serilog", Version = SerilogVersion },
                     new NuSpecDependency() { Id = "Splat", Version = SplatVersion },
                     new NuSpecDependency() { Id = "Sprache", Version = SpracheVersion },
                     new NuSpecDependency() { Id = "System.Reactive", Version = SystemReactiveVersion },
-                    new NuSpecDependency() { Id = "System.ValueTuple", Version = SystemValueTupleVersion },
                     //.NET Core
                     new NuSpecDependency() { Id = "System.Threading.ThreadPool", TargetFramework = "netcoreapp1.0", Version = "4.3.0" },
                     new NuSpecDependency() { Id = "Microsoft.Extensions.DependencyModel", TargetFramework = "netcoreapp1.0", Version = "1.1.0" },
@@ -210,8 +245,11 @@ public class Packages
                     new NuSpecDependency() { Id = "Serilog", TargetFramework = "netcoreapp1.0", Version = SerilogVersion },
                     new NuSpecDependency() { Id = "Sprache", TargetFramework = "netcoreapp1.0", Version = SpracheVersion },
                     new NuSpecDependency() { Id = "System.Reactive", TargetFramework = "netcoreapp1.0", Version = SystemReactiveVersion },
-                    new NuSpecDependency() { Id = "System.ValueTuple", TargetFramework = "netcoreapp1.0", Version = SystemValueTupleVersion }
-                },
+                }
+                .Deps(new string[]{null, "netcoreapp1.0"},
+                    "System.ValueTuple", "System.ComponentModel.TypeConverter", "System.ComponentModel.Primitives",
+                    "System.Runtime.Serialization.Primitives", "System.Xml.XmlDocument")
+                .ToArray(),
                 Files = coreLibrariesNuSpecContent
                     .Concat(win32CoreLibrariesNuSpecContent).Concat(net45RuntimePlatform)
                     .Concat(netcoreappCoreLibrariesNuSpecContent).Concat(netCoreRuntimePlatform)
@@ -460,9 +498,9 @@ public class Packages
                     new NuSpecDependency() { Id = "Avalonia.Skia.Desktop", TargetFramework="net45", Version = parameters.Version },
                     new NuSpecDependency() { Id = "Avalonia.Gtk3", TargetFramework="net45", Version = parameters.Version },
                     //.NET Core
-                    new NuSpecDependency() { Id = "Avalonia.Win32", TargetFramework="netcoreapp1.1", Version = parameters.Version },
-                    new NuSpecDependency() { Id = "Avalonia.Skia.Desktop", TargetFramework="netcoreapp1.1", Version = parameters.Version },
-                    new NuSpecDependency() { Id = "Avalonia.Gtk3", TargetFramework="netcoreapp1.1", Version = parameters.Version }
+                    new NuSpecDependency() { Id = "Avalonia.Win32", TargetFramework="netcoreapp1.0", Version = parameters.Version },
+                    new NuSpecDependency() { Id = "Avalonia.Skia.Desktop", TargetFramework="netcoreapp1.0", Version = parameters.Version },
+                    new NuSpecDependency() { Id = "Avalonia.Gtk3", TargetFramework="netcoreapp1.0", Version = parameters.Version }
                 },
                 Files = new NuSpecContent[]
                 {
