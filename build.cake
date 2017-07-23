@@ -403,7 +403,8 @@ Task("Inspect")
     {
         var badIssues = new []{"PossibleNullReferenceException"};
         var whitelist = new []{"tests", "src\\android", "src\\ios",
-            "src\\windows\\avalonia.designer", "src\\avalonia.htmlrenderer\\external"};
+            "src\\windows\\avalonia.designer", "src\\avalonia.htmlrenderer\\external",
+            "src\\markup\\avalonia.markup.xaml\\portablexaml\\portable.xaml.github"};
         Information("Running code inspections");
         
         
