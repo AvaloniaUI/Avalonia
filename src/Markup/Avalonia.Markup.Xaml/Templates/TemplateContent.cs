@@ -6,7 +6,6 @@ using System.Collections.Generic;
 
 namespace Avalonia.Markup.Xaml.Templates
 {
-#if !OMNIXAML
     using Portable.Xaml;
 
     public class TemplateContent
@@ -37,42 +36,4 @@ namespace Avalonia.Markup.Xaml.Templates
             return ((TemplateContent)templateContent).Load();
         }
     }
-#else
-
-    using Avalonia.Markup.Xaml.Context;
-    using OmniXaml;
-    using OmniXaml.ObjectAssembler;
-
-    public class TemplateContent
-    {
-        private readonly IEnumerable<Instruction> nodes;
-        private readonly IRuntimeTypeSource runtimeTypeSource;
-
-        public TemplateContent(IEnumerable<Instruction> nodes, IRuntimeTypeSource runtimeTypeSource)
-        {
-            this.nodes = nodes;
-            this.runtimeTypeSource = runtimeTypeSource;
-        }
-
-        public Control Load()
-        {
-            var assembler = new AvaloniaObjectAssembler(
-                runtimeTypeSource,
-                new TopDownValueContext());
-
-            foreach (var xamlNode in nodes)
-            {
-                assembler.Process(xamlNode);
-            }
-
-            return (Control)assembler.Result;
-        }
-
-        public static IControl Load(object templateContent)
-        {
-            return ((TemplateContent)templateContent).Load();
-        }
-    }
-
-#endif
 }

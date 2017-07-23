@@ -147,11 +147,8 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             }
         }
 
-#if  OMNIXAML
-        [Fact(Skip = "OmniXaml doesn't support nested markup extensions. #119")]
-#else
+
         [Fact]
-#endif
         public void Binding_To_Self_Works()
         {
             using (UnitTestApplication.Start(TestServices.MockWindowingPlatform))

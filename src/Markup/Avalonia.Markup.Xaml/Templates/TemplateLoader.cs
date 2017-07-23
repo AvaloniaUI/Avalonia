@@ -3,8 +3,6 @@
 
 namespace Avalonia.Markup.Xaml.Templates
 {
-#if !OMNIXAML
-
     using Portable.Xaml;
     using Portable.Xaml.ComponentModel;
 	using System.ComponentModel;
@@ -24,19 +22,4 @@ namespace Avalonia.Markup.Xaml.Templates
             return ((TemplateContent)value).List.GetReader();
         }
     }
-
-#else
-
-    using System.Collections.Generic;
-    using OmniXaml;
-
-    public class TemplateLoader : IDeferredLoader
-    {
-        public object Load(IEnumerable<Instruction> nodes, IRuntimeTypeSource runtimeTypeSource)
-        {
-            return new TemplateContent(nodes, runtimeTypeSource);
-        }
-    }
-
-#endif
 }

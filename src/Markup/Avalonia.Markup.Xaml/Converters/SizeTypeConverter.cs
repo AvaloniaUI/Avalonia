@@ -6,9 +6,6 @@ using System.Globalization;
 
 namespace Avalonia.Markup.Xaml.Converters
 {
-#if !OMNIXAML
-
-    using Portable.Xaml.ComponentModel;
 	using System.ComponentModel;
 
     public class SizeTypeConverter : TypeConverter
@@ -23,32 +20,4 @@ namespace Avalonia.Markup.Xaml.Converters
             return Size.Parse((string)value, culture);
         }
     }
-
-#else
-
-    using OmniXaml.TypeConversion;
-
-    public class SizeTypeConverter : ITypeConverter
-    {
-        public bool CanConvertFrom(IValueContext context, Type sourceType)
-        {
-            return sourceType == typeof(string);
-        }
-
-        public bool CanConvertTo(IValueContext context, Type destinationType)
-        {
-            return false;
-        }
-
-        public object ConvertFrom(IValueContext context, CultureInfo culture, object value)
-        {
-            return Size.Parse((string)value, culture);
-        }
-
-        public object ConvertTo(IValueContext context, CultureInfo culture, object value, Type destinationType)
-        {
-            throw new NotImplementedException();
-        }
-    }
-#endif
 }

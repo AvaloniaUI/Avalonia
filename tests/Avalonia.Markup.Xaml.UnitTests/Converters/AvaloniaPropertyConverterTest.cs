@@ -7,21 +7,10 @@ using Avalonia.Collections;
 using Avalonia.Markup.Xaml.Converters;
 using Avalonia.Styling;
 using Xunit;
-
-#if !OMNIXAML
 using System.ComponentModel;
 using Portable.Xaml.ComponentModel;
 using Portable.Xaml;
 using Portable.Xaml.Markup;
-
-#else
-
-using OmniXaml;
-using OmniXaml.ObjectAssembler.Commands;
-using OmniXaml.TypeConversion;
-using OmniXaml.Typing;
-
-#endif
 
 namespace Avalonia.Markup.Xaml.UnitTests.Converters
 {
@@ -64,8 +53,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Converters
 
             Assert.Equal(AttachedOwner.AttachedProperty, result);
         }
-
-#if !OMNIXAML
+        
         private ITypeDescriptorContext CreateContext(Style style = null)
         {
             var tdMock = new Mock<ITypeDescriptorContext>();
@@ -94,25 +82,6 @@ namespace Avalonia.Markup.Xaml.UnitTests.Converters
 
             return tdMock.Object;
         }
-#else
-
-        private IValueContext CreateContext(Style style = null)
-        {
-            var context = new Mock<IValueContext>();
-            var topDownValueContext = new Mock<ITopDownValueContext>();
-            var typeRepository = new Mock<ITypeRepository>();
-            var featureProvider = new Mock<ITypeFeatureProvider>();
-            var class1XamlType = new XamlType(typeof(Class1), typeRepository.Object, null, featureProvider.Object);
-            var attachedOwnerXamlType = new XamlType(typeof(AttachedOwner), typeRepository.Object, null, featureProvider.Object);
-            context.Setup(x => x.TopDownValueContext).Returns(topDownValueContext.Object);
-            context.Setup(x => x.TypeRepository).Returns(typeRepository.Object);
-            topDownValueContext.Setup(x => x.GetLastInstance(It.IsAny<XamlType>())).Returns(style);
-            typeRepository.Setup(x => x.GetByQualifiedName("Class1")).Returns(class1XamlType);
-            typeRepository.Setup(x => x.GetByQualifiedName("AttachedOwner")).Returns(attachedOwnerXamlType);
-            return context.Object;
-        }
-
-#endif
 
         private class Class1 : AvaloniaObject, IStyleable
         {

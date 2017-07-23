@@ -7,9 +7,6 @@ using Avalonia.Controls;
 
 namespace Avalonia.Markup.Xaml.Converters
 {
-#if !OMNIXAML
-
-    using Portable.Xaml.ComponentModel;
 	using System.ComponentModel;
 
     public class GridLengthTypeConverter : TypeConverter
@@ -24,32 +21,4 @@ namespace Avalonia.Markup.Xaml.Converters
             return GridLength.Parse((string)value, culture);
         }
     }
-
-#else
-
-    using OmniXaml.TypeConversion;
-
-    public class GridLengthTypeConverter : ITypeConverter
-    {
-        public bool CanConvertFrom(IValueContext context, Type sourceType)
-        {
-            return sourceType == typeof(string);
-        }
-
-        public bool CanConvertTo(IValueContext context, Type destinationType)
-        {
-            return false;
-        }
-
-        public object ConvertFrom(IValueContext context, CultureInfo culture, object value)
-        {
-            return GridLength.Parse((string)value, culture);
-        }
-
-        public object ConvertTo(IValueContext context, CultureInfo culture, object value, Type destinationType)
-        {
-            throw new NotImplementedException();
-        }
-    }
-#endif
 }

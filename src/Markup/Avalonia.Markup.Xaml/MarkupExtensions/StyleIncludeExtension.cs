@@ -20,13 +20,8 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
 
         public override object ProvideValue(IServiceProvider serviceProvider)
         {
-#if !OMNIXAML
             var tdc = (ITypeDescriptorContext)serviceProvider;
-
             return new StyleInclude(tdc.GetBaseUri()) { Source = Source };
-#else
-            throw new NotImplementedException("Just to support some time Omnixaml Compile!");
-#endif
         }
 
         public Uri Source { get; set; }

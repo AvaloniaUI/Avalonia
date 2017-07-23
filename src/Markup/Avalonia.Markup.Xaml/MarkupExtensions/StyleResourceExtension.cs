@@ -7,8 +7,6 @@ using System;
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions
 {
-#if !OMNIXAML
-
     using Portable.Xaml.Markup;
     using PortableXaml;
 
@@ -30,24 +28,4 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
         [ConstructorArgument("name")]
         public string Name { get; set; }
     }
-
-#else
-
-    using OmniXaml;
-
-    public class StyleResourceExtension : MarkupExtension
-    {
-        public StyleResourceExtension(string name)
-        {
-            Name = name;
-        }
-
-        public override object ProvideValue(MarkupExtensionContext extensionContext)
-        {
-            return new StyleResourceBinding(this.Name);
-        }
-
-        public string Name { get; set; }
-    }
-#endif
 }

@@ -18,24 +18,11 @@ namespace Avalonia.Markup.Xaml.Styling
         /// Initializes a new instance of the <see cref="StyleInclude"/> class.
         /// </summary>
         /// <param name="baseUri"></param>
-#if OMNIXAML
-
-        public StyleInclude()
-        {
-            // StyleInclude will usually be loaded from XAML and its URI can be relative to the
-            // XAML file that its included in, so store the current XAML file's URI if any as
-            // a base URI.
-            _baseUri = AvaloniaXamlLoader.UriContext;
-        }
-
-#else
 
         public StyleInclude(Uri baseUri)
         {
             _baseUri = baseUri;
         }
-
-#endif
 
         /// <summary>
         /// Gets or sets the source URL.

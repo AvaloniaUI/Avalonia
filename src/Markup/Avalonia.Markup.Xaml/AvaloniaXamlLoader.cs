@@ -1,11 +1,6 @@
 ﻿namespace Avalonia.Markup.Xaml
 {
-    public class AvaloniaXamlLoader :
-#if OMNIXAML
-        AvaloniaXamlLoaderOmniXaml
-#else
-        AvaloniaXamlLoaderPortableXaml
-#endif
+    public class AvaloniaXamlLoader : AvaloniaXamlLoaderPortableXaml
     {
         public static object Parse(string xaml)
                 => new AvaloniaXamlLoader().Load(xaml);

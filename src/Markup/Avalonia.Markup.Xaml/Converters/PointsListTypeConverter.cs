@@ -7,9 +7,6 @@ using System.Globalization;
 
 namespace Avalonia.Markup.Xaml.Converters
 {
-#if !OMNIXAML
-
-    using Portable.Xaml.ComponentModel;
 	using System.ComponentModel;
 
     public class PointsListTypeConverter : TypeConverter
@@ -32,39 +29,4 @@ namespace Avalonia.Markup.Xaml.Converters
             return result;
         }
     }
-
-#else
-
-    using OmniXaml.TypeConversion;
-
-    public class PointsListTypeConverter : ITypeConverter
-    {
-        public bool CanConvertFrom(IValueContext context, Type sourceType)
-        {
-            return sourceType == typeof(string);
-        }
-
-        public bool CanConvertTo(IValueContext context, Type destinationType)
-        {
-            return false;
-        }
-
-        public object ConvertFrom(IValueContext context, CultureInfo culture, object value)
-        {
-            string strValue = (string)value;
-            string[] pointStrs = strValue.Split(new[] { ' ', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-            var result = new List<Point>(pointStrs.Length);
-            foreach (var pointStr in pointStrs)
-            {
-                result.Add(Point.Parse(pointStr, culture));
-            }
-            return result;
-        }
-
-        public object ConvertTo(IValueContext context, CultureInfo culture, object value, Type destinationType)
-        {
-            throw new NotImplementedException();
-        }
-    }
-#endif
 }

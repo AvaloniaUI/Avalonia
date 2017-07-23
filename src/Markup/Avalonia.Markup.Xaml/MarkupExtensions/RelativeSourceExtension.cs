@@ -5,8 +5,6 @@ using Avalonia.Markup.Xaml.Data;
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions
 {
-#if !OMNIXAML
-
     using Portable.Xaml.Markup;
     using System;
 
@@ -32,31 +30,4 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
         [ConstructorArgument("mode")]
         public RelativeSourceMode Mode { get; set; }
     }
-
-#else
-
-    using OmniXaml;
-
-    public class RelativeSourceExtension : MarkupExtension
-    {
-        public RelativeSourceExtension()
-        {
-        }
-
-        public RelativeSourceExtension(RelativeSourceMode mode)
-        {
-            Mode = mode;
-        }
-
-        public override object ProvideValue(MarkupExtensionContext extensionContext)
-        {
-            return new RelativeSource
-            {
-                Mode = Mode,
-            };
-        }
-
-        public RelativeSourceMode Mode { get; set; }
-    }
-#endif
 }

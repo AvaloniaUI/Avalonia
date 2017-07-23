@@ -4,13 +4,11 @@
 using System;
 using System.Globalization;
 using Avalonia.Media;
+using System.ComponentModel;
 
 namespace Avalonia.Markup.Xaml.Converters
 {
-#if !OMNIXAML
-
-    using Portable.Xaml.ComponentModel;
-	using System.ComponentModel;
+	
 
     public class ColorTypeConverter : TypeConverter
     {
@@ -24,33 +22,5 @@ namespace Avalonia.Markup.Xaml.Converters
             return Color.Parse((string)value);
         }
     }
-
-#else
-
-    using OmniXaml.TypeConversion;
-
-    public class ColorTypeConverter : ITypeConverter
-    {
-        public bool CanConvertFrom(IValueContext context, Type sourceType)
-        {
-            return sourceType == typeof(string);
-        }
-
-        public bool CanConvertTo(IValueContext context, Type destinationType)
-        {
-            return false;
-        }
-
-        public object ConvertFrom(IValueContext context, CultureInfo culture, object value)
-        {
-            return Color.Parse((string)value);
-        }
-
-        public object ConvertTo(IValueContext context, CultureInfo culture, object value, Type destinationType)
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-#endif
+    
 }
