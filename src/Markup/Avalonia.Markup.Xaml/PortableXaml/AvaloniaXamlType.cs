@@ -331,7 +331,7 @@ namespace Avalonia.Markup.Xaml.PortableXaml
 
             public override object GetValue(object instance)
             {
-                if (Property != null)
+                if (Property != null && !Property.IsAttached)
                 {
                     return ((IAvaloniaObject)instance).GetValue(Property);
                 }
