@@ -150,12 +150,12 @@ public class Packages
         };
 
         var coreLibrariesFiles = coreLibraries.Select((lib) => {
-            return (FilePath)context.File(lib[0] + lib[1] + "/bin/" + parameters.DirSuffix + "/netstandard1.1/" + lib[1] + lib[2]);
+            return (FilePath)context.File(lib[0] + lib[1] + "/bin/" + parameters.DirSuffix + "/netstandard1.3/" + lib[1] + lib[2]);
         }).ToList();
 
         var coreLibrariesNuSpecContent = coreLibrariesFiles.Select((file) => {
             return new NuSpecContent { 
-                Source = file.FullPath, Target = "lib/netstandard1.1" 
+                Source = file.FullPath, Target = "lib/netstandard1.3" 
             };
         });
 
@@ -231,9 +231,9 @@ public class Packages
                 },
                 Files = new []
                 {
-                    new NuSpecContent { Source = "Avalonia.HtmlRenderer.dll", Target = "lib/netstandard1.1" }
+                    new NuSpecContent { Source = "Avalonia.HtmlRenderer.dll", Target = "lib/netstandard1.3" }
                 },
-                BasePath = context.Directory("./src/Avalonia.HtmlRenderer/bin/" + parameters.DirSuffix + "/netstandard1.1"),
+                BasePath = context.Directory("./src/Avalonia.HtmlRenderer/bin/" + parameters.DirSuffix + "/netstandard1.3"),
                 OutputDirectory = parameters.NugetRoot
             }
         };
@@ -347,7 +347,7 @@ public class Packages
                 Files = new []
                 {
                     new NuSpecContent { Source = "Avalonia.Win32/bin/" + parameters.DirSuffix + "/Avalonia.Win32.dll", Target = "lib/net45" },
-                    new NuSpecContent { Source = "Avalonia.Win32.NetStandard/bin/" + parameters.DirSuffix + "/netstandard1.1/Avalonia.Win32.dll", Target = "lib/netstandard1.1" }
+                    new NuSpecContent { Source = "Avalonia.Win32.NetStandard/bin/" + parameters.DirSuffix + "/netstandard1.3/Avalonia.Win32.dll", Target = "lib/netstandard1.3" }
                 },
                 BasePath = context.Directory("./src/Windows"),
                 OutputDirectory = parameters.NugetRoot
@@ -402,9 +402,9 @@ public class Packages
                 },
                 Files = new []
                 {
-                    new NuSpecContent { Source = "Avalonia.Gtk3.dll", Target = "lib/netstandard1.1" }
+                    new NuSpecContent { Source = "Avalonia.Gtk3.dll", Target = "lib/netstandard1.3" }
                 },
-                BasePath = context.Directory("./src/Gtk/Avalonia.Gtk3/bin/" + parameters.DirSuffix + "/netstandard1.1"),
+                BasePath = context.Directory("./src/Gtk/Avalonia.Gtk3/bin/" + parameters.DirSuffix + "/netstandard1.3"),
                 OutputDirectory = parameters.NugetRoot
             },
             ///////////////////////////////////////////////////////////////////////////////
