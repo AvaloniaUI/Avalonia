@@ -68,9 +68,7 @@
         <Compile Include="Data\DelayedBinding.cs" />
         <Compile Include="Data\MultiBinding.cs" />
         <Compile Include="Data\RelativeSource.cs" />
-        <Compile Include="Data\SourceBindingEndpoint.cs" />
         <Compile Include="Data\StyleResourceBinding.cs" />
-        <Compile Include="Data\TargetBindingEndpoint.cs" />
         <Compile Include="MarkupExtensions\StyleResourceExtension.cs" />
         <Compile Include="MarkupExtensions\BindingExtension.cs" />
         <Compile Include="MarkupExtensions\RelativeSourceExtension.cs" />
