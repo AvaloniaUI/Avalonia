@@ -189,7 +189,7 @@ namespace Avalonia.Markup.Xaml
                                     context);
 
             XamlServices.Transform(reader, writer);
-
+            writer.ApplyAllDelayedProperties();
             return writer.Result;
         }
 
