@@ -5,8 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using OmniXaml;
-using OmniXaml.ObjectAssembler;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Markup.Xaml;

@@ -103,5 +103,4 @@
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" Version="0.10.8" />
   </ItemGroup>
-  <Import Project="$(MSBuildThisFileDirectory)..\..\src\Shared\nuget.workaround.targets" />
 </Project>
