@@ -54,6 +54,12 @@ namespace Avalonia.Markup.Xaml.PortableXaml
             base.Dispose(disposing);
         }
 
+        public void ApplyAllDelayedProperties()
+        {
+            //HACK: We need this because Begin/EndInit ordering is broken
+            _delayedValuesHelper.ApplyAll();
+        }
+
         protected internal override void OnAfterBeginInit(object value)
         {
             //not called for avalonia objects
@@ -88,8 +94,8 @@ namespace Avalonia.Markup.Xaml.PortableXaml
             //Portable.Xaml.ComponentModel.ISupportInitialize
             //and we have Avalonia.ISupportInitialize so we need some hacks
             HandleBeginInit(value);
-
-            _delayedValuesHelper.BeginInit(value);
+            if (value != null)
+                _delayedValuesHelper.BeginInit(value);
 
             base.OnBeforeProperties(value);
         }
@@ -137,7 +143,7 @@ namespace Avalonia.Markup.Xaml.PortableXaml
 
                 if (_cnt == 0)
                 {
-                    EndInit();
+                    ApplyAll();
                 }
             }
 
@@ -174,7 +180,7 @@ namespace Avalonia.Markup.Xaml.PortableXaml
                 }
             }
 
-            private void EndInit()
+            public void ApplyAll()
             {
                 //TODO: revisit this
                 //apply delayed values and clear

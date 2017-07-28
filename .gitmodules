@@ -7,4 +7,4 @@
 	branch = perspex-pcl
 [submodule "src/Markup/Avalonia.Markup.Xaml/PortableXaml/portable.xaml.github"]
 	path = src/Markup/Avalonia.Markup.Xaml/PortableXaml/portable.xaml.github
-	url = https://github.com/cwensley/Portable.Xaml.git
+	url = https://github.com/AvaloniaUI/Portable.Xaml.git

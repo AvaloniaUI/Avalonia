@@ -23,11 +23,11 @@ namespace Avalonia.Markup.Xaml.Converters
             object setter = context.GetService<IProvideValueTarget>().TargetObject;
             var schemaContext = context.GetService<IXamlSchemaContextProvider>().SchemaContext;
 
-            return ConvertSetterValue(schemaContext, (setter as Setter), value);
+            return ConvertSetterValue(context, schemaContext, culture, (setter as Setter), value);
         }
 
         [Obsolete("TODO: try assosiate Setter.Value property with SetterValueTypeConverter, so far coouldn't make it :(")]
-        internal static object ConvertSetterValue(XamlSchemaContext context, Setter setter, object value)
+        internal static object ConvertSetterValue(ITypeDescriptorContext dcontext, XamlSchemaContext context, CultureInfo info, Setter setter, object value)
         {
             Type targetType = setter?.Property?.PropertyType;
 
@@ -40,7 +40,7 @@ namespace Avalonia.Markup.Xaml.Converters
 
             if (ttConv != null)
             {
-                value = ttConv.ConvertFromString(value as string);
+                value = ttConv.ConvertFromString(dcontext, info, value as string);
             }
 
             return value;

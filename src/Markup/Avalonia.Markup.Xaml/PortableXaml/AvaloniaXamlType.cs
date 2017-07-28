@@ -8,6 +8,7 @@ using Portable.Xaml.Schema;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Reflection;
 using System.Xml.Serialization;
 
@@ -203,8 +204,8 @@ namespace Avalonia.Markup.Xaml.PortableXaml
                     Member.Name == nameof(Setter.Value) &&
                     value is string)
                 {
-                    value = SetterValueTypeConverter.ConvertSetterValue(
-                                            Member.DeclaringType.SchemaContext,
+                    value = SetterValueTypeConverter.ConvertSetterValue(null,
+                                            Member.DeclaringType.SchemaContext, CultureInfo.InvariantCulture,
                                             instance as Setter,
                                             value);
                 }
@@ -331,7 +332,7 @@ namespace Avalonia.Markup.Xaml.PortableXaml
 
             public override object GetValue(object instance)
             {
-                if (Property != null)
+                if (Property != null && !Property.IsAttached)
                 {
                     return ((IAvaloniaObject)instance).GetValue(Property);
                 }
