@@ -44,6 +44,8 @@
           <StackPanel Margin="18" Gap="4" Width="200" HorizontalAlignment="Left">
             <TextBlock FontSize="16" Text="Scheduler"/>
             <TextBox Watermark="Background Thread" Text="{Binding CurrentTime, Mode=OneWay}"/>
+            <TextBlock FontSize="16" Text="Stream Operator"/>
+            <TextBox Watermark="StreamOperator" Text="{Binding CurrentTimeObservable^, Mode=OneWay}"/>
           </StackPanel>
         </StackPanel>
       </StackPanel>

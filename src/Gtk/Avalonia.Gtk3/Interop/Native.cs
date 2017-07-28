@@ -501,6 +501,24 @@ namespace Avalonia.Gtk3.Interop
     }
 
     [StructLayout(LayoutKind.Sequential)]
+    unsafe  struct GdkEventCrossing 
+    {
+        public GdkEventType type;
+        public IntPtr window;
+        public gint8 send_event;
+        public IntPtr subwindow;
+        public guint32 time;
+        public gdouble x;
+        public gdouble y;
+        public gdouble x_root;
+        public gdouble y_root;
+        public int mode;
+        public int detail;
+        public bool focus;
+        public GdkModifierType state;
+    };
+    
+    [StructLayout(LayoutKind.Sequential)]
     unsafe struct GdkEventWindowState
     {
         public GdkEventType type;
