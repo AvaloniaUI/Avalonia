@@ -406,9 +406,9 @@ public class Packages
                 },
                 Files = new []
                 {
-                    new NuSpecContent { Source = "Avalonia.Direct2D1.dll", Target = "lib/net45" }
+                    new NuSpecContent { Source = "Avalonia.Direct2D1.dll", Target = "lib/netstandard1.3" }
                 },
-                BasePath = context.Directory("./src/Windows/Avalonia.Direct2D1/bin/" + parameters.DirSuffix),
+                BasePath = context.Directory("./src/Windows/Avalonia.Direct2D1/bin/" + parameters.DirSuffix + "/netstandard1.3"),
                 OutputDirectory = parameters.NugetRoot
             },
             ///////////////////////////////////////////////////////////////////////////////
