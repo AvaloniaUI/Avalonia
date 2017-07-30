@@ -157,5 +157,4 @@
   <Import Project="..\..\..\build\Splat.props" />
   <Import Project="..\..\..\build\Sprache.props" />
   <Import Project="..\..\..\build\Rx.props" />
-  <Import Project="$(MSBuildThisFileDirectory)..\..\Shared\nuget.workaround.targets" />
 </Project>

@@ -25,5 +25,4 @@
   <ItemGroup>
     <PackageReference Include="System.Threading.Thread" Version="4.3.0" />
   </ItemGroup>
-  <Import Condition="'$(TargetFramework)' == 'net461'" Project="$(MSBuildThisFileDirectory)..\src\Shared\nuget.workaround.targets" />
 </Project>
