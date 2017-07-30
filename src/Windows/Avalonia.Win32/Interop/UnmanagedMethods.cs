@@ -811,7 +811,7 @@ namespace Avalonia.Win32.Interop
 
             return SetClassLong64(hWnd, nIndex, dwNewLong);
         }
-#if !NETSTANDARD
+#if !NETSTANDARD && !NETSTANDARD1_3
         [ComImport, ClassInterface(ClassInterfaceType.None), TypeLibType(TypeLibTypeFlags.FCanCreate), Guid("DC1C5A9C-E88A-4DDE-A5A1-60F82A20AEF7")]
         internal class FileOpenDialogRCW { }
 
@@ -1155,7 +1155,7 @@ namespace Avalonia.Win32.Interop
             public int flagsEx;
         }        
     }
-#if !NETSTANDARD
+#if !NETSTANDARD && !NETSTANDARD1_3
     [ComImport(), Guid("42F85136-DB7E-439C-85F1-E4075D135FC8"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     internal interface IFileDialog
     {
