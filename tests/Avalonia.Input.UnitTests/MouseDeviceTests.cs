@@ -20,7 +20,6 @@ namespace Avalonia.Input.UnitTests
             using (TestApplication(renderer.Object))
             {
                 var inputManager = InputManager.Instance;
-                var mouseDevice = AvaloniaLocator.Current.GetService<IMouseDevice>();
 
                 Canvas canvas;
                 Border border;
@@ -28,6 +27,7 @@ namespace Avalonia.Input.UnitTests
 
                 var root = new TestRoot
                 {
+                    MouseDevice = new MouseDevice(),
                     Child = new Panel
                     {
                         Children =
@@ -45,7 +45,7 @@ namespace Avalonia.Input.UnitTests
                     .Returns(new[] { decorator });
 
                 inputManager.ProcessInput(new RawMouseEventArgs(
-                    mouseDevice,
+                    root.MouseDevice,
                     0,
                     root,
                     RawMouseEventType.Move,
@@ -61,7 +61,7 @@ namespace Avalonia.Input.UnitTests
                     .Returns(new[] { canvas });
 
                 inputManager.ProcessInput(new RawMouseEventArgs(
-                    mouseDevice,
+                    root.MouseDevice,
                     0,
                     root,
                     RawMouseEventType.Move,
@@ -80,7 +80,6 @@ namespace Avalonia.Input.UnitTests
             return UnitTestApplication.Start(
                 new TestServices(
                     inputManager: new InputManager(),
-                    mouseDevice: () => new MouseDevice(),
                     renderer: (root, loop) => renderer));
         }
     }
