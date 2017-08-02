@@ -75,6 +75,17 @@ namespace Avalonia
         }
 
         /// <summary>
+        /// Scales a vector.
+        /// </summary>
+        /// <param name="vector">The vector</param>
+        /// <param name="scale">The divisor.</param>
+        /// <returns>The scaled vector.</returns>
+        public static Vector operator /(Vector vector, double scale)
+        {
+            return new Vector(vector._x / scale, vector._y / scale);
+        }
+
+        /// <summary>
         /// Length of the vector
         /// </summary>
         public double Length => Math.Sqrt(X*X + Y*Y);
