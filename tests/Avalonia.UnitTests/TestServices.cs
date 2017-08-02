@@ -38,9 +38,6 @@ namespace Avalonia.UnitTests
         public static readonly TestServices MockPlatformWrapper = new TestServices(
             platform: Mock.Of<IRuntimePlatform>());
 
-        public static readonly TestServices MockWindowingPlatform = new TestServices(
-                    windowingPlatform: new MockWindowingPlatform());
-
         public static readonly TestServices MockStyler = new TestServices(
             styler: Mock.Of<IStyler>());
 
