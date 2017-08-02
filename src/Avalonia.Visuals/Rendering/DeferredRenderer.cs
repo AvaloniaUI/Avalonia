@@ -182,17 +182,17 @@ namespace Avalonia.Rendering
 
             if (scene.Size != Size.Empty)
             {
-                if (scene.Id != _lastSceneId)
+                if (scene.Generation != _lastSceneId)
                 {
                     _layers.Update(scene);
                     RenderToLayers(scene);
 
                     if (DebugFramesPath != null)
                     {
-                        SaveDebugFrames(scene.Id);
+                        SaveDebugFrames(scene.Generation);
                     }
 
-                    _lastSceneId = scene.Id;
+                    _lastSceneId = scene.Generation;
                 }
 
                 RenderOverlay(scene);

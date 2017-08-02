@@ -28,7 +28,7 @@ namespace Avalonia.Rendering.SceneGraph
             _index.Add(rootVisual, Root);
         }
 
-        private Scene(VisualNode root, Dictionary<IVisual, IVisualNode> index, SceneLayers layers, int id)
+        private Scene(VisualNode root, Dictionary<IVisual, IVisualNode> index, SceneLayers layers, int generation)
         {
             Contract.Requires<ArgumentNullException>(root != null);
 
@@ -37,14 +37,14 @@ namespace Avalonia.Rendering.SceneGraph
             _index = index;
             Root = root;
             Layers = layers;
-            Id = id;
+            Generation = generation;
             root.LayerRoot = root.Visual;
         }
 
         /// <summary>
-        /// Gets an ID identifying the scene. This is incremented each time the scene is cloned.
+        /// Gets a value identifying the scene's generation. This is incremented each time the scene is cloned.
         /// </summary>
-        public int Id { get; }
+        public int Generation { get; }
 
         /// <summary>
         /// Gets the layers for the scene.
@@ -86,7 +86,7 @@ namespace Avalonia.Rendering.SceneGraph
             var index = new Dictionary<IVisual, IVisualNode>();
             var root = Clone((VisualNode)Root, null, index);
 
-            var result = new Scene(root, index, Layers.Clone(), Id + 1)
+            var result = new Scene(root, index, Layers.Clone(), Generation + 1)
             {
                 Size = Size,
                 Scaling = Scaling,
