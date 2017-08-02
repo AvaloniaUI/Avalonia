@@ -28,7 +28,10 @@ namespace Avalonia.Controls
         /// Defines the <see cref="Text"/> property.
         /// </summary>
         public static readonly DirectProperty<ComboBox, string> TextProperty =
-            AvaloniaProperty.RegisterDirect<ComboBox, string>("Text", o => o._text);
+            AvaloniaProperty.RegisterDirect<ComboBox, string>(
+                nameof(Text),
+                o => o._text,
+                (o, v) => o.Text = v);
 
         private string _text;
         private bool _isDropDownOpen;
@@ -158,12 +161,15 @@ namespace Avalonia.Controls
 
         private void UpdateSelectionBoxText(object item)
         {
-            Contract.Requires<ArgumentException>(item is ComboBoxItem);
+            if (item != null)
+            {
+                Contract.Requires<ArgumentException>(item is ComboBoxItem);
 
-            var comboBoxItem = (ComboBoxItem)item;
-            Contract.Requires<NotSupportedException>(comboBoxItem.Content is string);
+                var comboBoxItem = (ComboBoxItem)item;
+                Contract.Requires<NotSupportedException>(comboBoxItem.Content is string);
 
-            Text = (string)comboBoxItem.Content;
+                Text = (string)comboBoxItem.Content;
+            }
         }
     }
 }

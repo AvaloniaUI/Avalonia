@@ -11,7 +11,7 @@
           <Grid ColumnDefinitions="*,Auto">
             <TextBox BorderThickness="0"
                      Text="{TemplateBinding Text, Mode=TwoWay}"
-                     HorizontalAlignment="Left"
+                     HorizontalAlignment="Stretch"
                      VerticalAlignment="Center"/>
             <ToggleButton Name="toggle"
                           BorderThickness="0"
