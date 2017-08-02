@@ -326,7 +326,7 @@ namespace Avalonia.Rendering.SceneGraph
 
             if (node.Visual.OpacityMask != null)
             {
-                layer.OpacityMask = ToImmutable(node.Visual.OpacityMask);
+                layer.OpacityMask = node.Visual.OpacityMask?.ToImmutable();
                 layer.OpacityMaskRect = node.ClipBounds;
             }
             else
@@ -379,11 +379,6 @@ namespace Avalonia.Rendering.SceneGraph
             }
 
             return result;
-        }
-
-        private static IBrush ToImmutable(IBrush brush)
-        {
-            return (brush as IMutableBrush)?.ToImmutable() ?? brush;
         }
     }
 }

@@ -31,7 +31,7 @@ namespace Avalonia.Rendering.SceneGraph
         {
             Bounds = new Rect(P1, P2);
             Transform = transform;
-            Pen = ToImmutable(pen);
+            Pen = pen?.ToImmutable();
             P1 = p1;
             P2 = p2;
             ChildScenes = childScenes;

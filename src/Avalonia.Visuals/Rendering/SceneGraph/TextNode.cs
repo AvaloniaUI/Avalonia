@@ -31,7 +31,7 @@ namespace Avalonia.Rendering.SceneGraph
         {
             Bounds = new Rect(origin, text.Size).TransformToAABB(transform);
             Transform = transform;
-            Foreground = ToImmutable(foreground);
+            Foreground = foreground?.ToImmutable();
             Origin = origin;
             Text = text;
             ChildScenes = childScenes;

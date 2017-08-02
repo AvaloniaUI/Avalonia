@@ -20,7 +20,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="childScenes">Child scenes for drawing visual brushes.</param>
         public OpacityMaskNode(IBrush mask, Rect bounds, IDictionary<IVisual, Scene> childScenes = null)
         {
-            Mask = ToImmutable(mask);
+            Mask = mask?.ToImmutable();
             MaskBounds = bounds;
             ChildScenes = childScenes;
         }
