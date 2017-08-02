@@ -130,7 +130,8 @@ namespace Avalonia.Rendering.SceneGraph
         /// <inheritdoc/>
         public void DrawImage(IBitmapImpl source, IBrush opacityMask, Rect opacityMaskRect, Rect sourceRect)
         {
-            throw new NotImplementedException();
+            // This method is currently only used to composite layers so shouldn't be called here.
+            throw new NotSupportedException();
         }
 
         /// <inheritdoc/>
