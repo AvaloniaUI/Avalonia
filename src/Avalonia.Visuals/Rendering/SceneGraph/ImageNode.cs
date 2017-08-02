@@ -82,6 +82,8 @@ namespace Avalonia.Rendering.SceneGraph
         /// <inheritdoc/>
         public void Render(IDrawingContextImpl context)
         {
+            // TODO: Probably need to introduce some kind of locking mechanism in the case of
+            // WriteableBitmap.
             context.Transform = Transform;
             context.DrawImage(Source, Opacity, SourceRect, DestRect);
         }
