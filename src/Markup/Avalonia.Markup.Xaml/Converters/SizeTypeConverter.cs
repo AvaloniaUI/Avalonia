@@ -3,30 +3,21 @@
 
 using System;
 using System.Globalization;
-using OmniXaml.TypeConversion;
 
 namespace Avalonia.Markup.Xaml.Converters
 {
-    public class SizeTypeConverter : ITypeConverter
+	using System.ComponentModel;
+
+    public class SizeTypeConverter : TypeConverter
     {
-        public bool CanConvertFrom(IValueContext context, Type sourceType)
+        public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
         {
             return sourceType == typeof(string);
         }
 
-        public bool CanConvertTo(IValueContext context, Type destinationType)
-        {
-            return false;
-        }
-
-        public object ConvertFrom(IValueContext context, CultureInfo culture, object value)
+        public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
         {
             return Size.Parse((string)value, culture);
-        }
-
-        public object ConvertTo(IValueContext context, CultureInfo culture, object value, Type destinationType)
-        {
-            throw new NotImplementedException();
         }
     }
 }

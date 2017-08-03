@@ -1,46 +1,8 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{3E908F67-5543-4879-A1DC-08EACE79B3CD}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Avalonia.Direct2D1</RootNamespace>
-    <AssemblyName>Avalonia.Direct2D1</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
+    <TargetFramework>netstandard1.3</TargetFramework>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Debug\Avalonia.Direct2D1.XML</DocumentationFile>
-    <NoWarn>CS1591</NoWarn>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Release\Avalonia.Direct2D1.XML</DocumentationFile>
-    <NoWarn>CS1591</NoWarn>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-  </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="Microsoft.CSharp" />
-  </ItemGroup>
   <ItemGroup>
     <Compile Include="..\..\Shared\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
@@ -48,74 +10,19 @@
     <Compile Include="..\Avalonia.Win32\Interop\UnmanagedMethods.cs">
       <Link>UnmanagedMethods.cs</Link>
     </Compile>
-    <Compile Include="Direct2D1Platform.cs" />
-    <Compile Include="Disposable.cs" />
-    <Compile Include="ExternalRenderTarget.cs" />
-    <Compile Include="HwndRenderTarget.cs" />
-    <Compile Include="IExternalDirect2DRenderTargetSurface.cs" />
-    <Compile Include="Media\BrushImpl.cs" />
-    <Compile Include="Media\BrushWrapper.cs" />
-    <Compile Include="Media\DrawingContextImpl.cs" />
-    <Compile Include="Media\ImageBrushImpl.cs" />
-    <Compile Include="Media\Imaging\BitmapImpl.cs" />
-    <Compile Include="Media\Imaging\D2DBitmapImpl.cs" />
-    <Compile Include="Media\Imaging\RenderTargetBitmapImpl.cs" />
-    <Compile Include="Media\Imaging\WicBitmapImpl.cs" />
-    <Compile Include="Media\Imaging\WritableWicBitmapImpl.cs" />
-    <Compile Include="Media\RadialGradientBrushImpl.cs" />
-    <Compile Include="Media\LinearGradientBrushImpl.cs" />
-    <Compile Include="Media\AvaloniaTextRenderer.cs" />
-    <Compile Include="Media\SolidColorBrushImpl.cs" />
-    <Compile Include="Media\StreamGeometryContextImpl.cs" />
-    <Compile Include="Media\GeometryImpl.cs" />
-    <Compile Include="Media\StreamGeometryImpl.cs" />
-    <Compile Include="Media\FormattedTextImpl.cs" />
-    <Compile Include="Media\TransformedGeometryImpl.cs" />
-    <Compile Include="PrimitiveExtensions.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RenderTarget.cs" />
-    <Compile Include="SwapChainRenderTarget.cs" />
-    <Compile Include="Direct2DChecker.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
+    <ProjectReference Include="..\..\Avalonia.Animation\Avalonia.Animation.csproj" />
+    <ProjectReference Include="..\..\Avalonia.Base\Avalonia.Base.csproj" />
+    <ProjectReference Include="..\..\Avalonia.Controls\Avalonia.Controls.csproj" />
+    <ProjectReference Include="..\..\Avalonia.Input\Avalonia.Input.csproj" />
+    <ProjectReference Include="..\..\Avalonia.Interactivity\Avalonia.Interactivity.csproj" />
+    <ProjectReference Include="..\..\Avalonia.Layout\Avalonia.Layout.csproj" />
+    <ProjectReference Include="..\..\Avalonia.Visuals\Avalonia.Visuals.csproj" />
+    <ProjectReference Include="..\..\Avalonia.Styling\Avalonia.Styling.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\Avalonia.Animation\Avalonia.Animation.csproj">
-      <Project>{D211E587-D8BC-45B9-95A4-F297C8FA5200}</Project>
-      <Name>Avalonia.Animation</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Avalonia.Base\Avalonia.Base.csproj">
-      <Project>{B09B78D8-9B26-48B0-9149-D64A2F120F3F}</Project>
-      <Name>Avalonia.Base</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Avalonia.Controls\Avalonia.Controls.csproj">
-      <Project>{d2221c82-4a25-4583-9b43-d791e3f6820c}</Project>
-      <Name>Avalonia.Controls</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Avalonia.Input\Avalonia.Input.csproj">
-      <Project>{62024b2d-53eb-4638-b26b-85eeaa54866e}</Project>
-      <Name>Avalonia.Input</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Avalonia.Interactivity\Avalonia.Interactivity.csproj">
-      <Project>{6b0ed19d-a08b-461c-a9d9-a9ee40b0c06b}</Project>
-      <Name>Avalonia.Interactivity</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Avalonia.Layout\Avalonia.Layout.csproj">
-      <Project>{42472427-4774-4C81-8AFF-9F27B8E31721}</Project>
-      <Name>Avalonia.Layout</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Avalonia.Visuals\Avalonia.Visuals.csproj">
-      <Project>{EB582467-6ABB-43A1-B052-E981BA910E3A}</Project>
-      <Name>Avalonia.Visuals</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Avalonia.Styling\Avalonia.Styling.csproj">
-      <Project>{f1baa01a-f176-4c6a-b39d-5b40bb1b148f}</Project>
-      <Name>Avalonia.Styling</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <Import Project="..\..\Shared\RenderHelpers\RenderHelpers.projitems" Label="Shared" />
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="..\..\..\build\Rx.props" />
   <Import Project="..\..\..\build\SharpDX.props" />
-  <Import Project="$(MSBuildThisFileDirectory)..\..\Shared\nuget.workaround.targets" />
+  <Import Project="..\..\Shared\RenderHelpers\RenderHelpers.projitems" Label="Shared" />
+  <Import Project="..\..\..\build\JetBrains.Annotations.props" />
 </Project>

@@ -4,8 +4,8 @@
         <TargetFramework>net461</TargetFramework>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="SharpDX.Mathematics" Version="3.1.1" />
-        <PackageReference Include="SharpDX.D3DCompiler" Version="3.1.1" />
+        <PackageReference Include="SharpDX.Mathematics" Version="4.0.1" />
+        <PackageReference Include="SharpDX.D3DCompiler" Version="4.0.1" />
         <Compile Update="**\*.paml.cs">
             <DependentUpon>%(Filename)</DependentUpon>
         </Compile>
@@ -31,5 +31,4 @@
     <Import Project="..\..\..\build\Serilog.Sinks.Trace.props" />
     <Import Project="..\..\..\build\Splat.props" />
     <Import Project="..\..\..\build\Rx.props" />
-    <Import Project="$(MSBuildThisFileDirectory)..\..\..\src\Shared\nuget.workaround.targets" />
 </Project>
