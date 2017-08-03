@@ -13,6 +13,7 @@ using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Layout;
 using Avalonia.Platform;
+using Avalonia.Rendering;
 using Key = Avalonia.Input.Key;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using MouseButton = System.Windows.Input.MouseButton;
@@ -86,6 +87,11 @@ namespace Avalonia.Win32.Interop.Wpf
             _currentHwndSource = e.NewSource as HwndSource;
             _currentHwndSource?.AddHook(_hook);
             _ttl.ScalingChanged?.Invoke(_ttl.Scaling);
+        }
+
+        public IRenderer CreateRenderer(IRenderRoot root)
+        {
+            return new ImmediateRenderer(root);
         }
 
         public void Dispose()

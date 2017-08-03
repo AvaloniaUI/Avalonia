@@ -4,6 +4,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
+using System;
 using System.Collections.Generic;
 using Avalonia.Platform;
 using Avalonia.Rendering;
@@ -189,12 +190,10 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Showing_Should_Start_Renderer()
         {
-            var renderer = new Mock<IRenderer>();
-
-            using (UnitTestApplication.Start(TestServices.StyledWindow
-                .With(renderer: (root, loop) => renderer.Object)))
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var target = new Window();
+                var renderer = new Mock<IRenderer>();
+                var target = new Window(CreateImpl(renderer));
 
                 target.Show();
 
@@ -205,12 +204,11 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void ShowDialog_Should_Start_Renderer()
         {
-            var renderer = new Mock<IRenderer>();
 
-            using (UnitTestApplication.Start(TestServices.StyledWindow
-                .With(renderer: (root, loop) => renderer.Object)))
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var target = new Window();
+                var renderer = new Mock<IRenderer>();
+                var target = new Window(CreateImpl(renderer));
 
                 target.Show();
 
@@ -221,12 +219,10 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Hiding_Should_Stop_Renderer()
         {
-            var renderer = new Mock<IRenderer>();
-
-            using (UnitTestApplication.Start(TestServices.StyledWindow
-                .With(renderer: (root, loop) => renderer.Object)))
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var target = new Window();
+                var renderer = new Mock<IRenderer>();
+                var target = new Window(CreateImpl(renderer));
 
                 target.Show();
                 target.Hide();
@@ -240,6 +236,13 @@ namespace Avalonia.Controls.UnitTests
             // HACK: We really need a decent way to have "statics" that can be scoped to
             // AvaloniaLocator scopes.
             ((IList<Window>)Window.OpenWindows).Clear();
+        }
+
+        private IWindowImpl CreateImpl(Mock<IRenderer> renderer)
+        {
+            return Mock.Of<IWindowImpl>(x =>
+                x.Scaling == 1 &&
+                x.CreateRenderer(It.IsAny<IRenderRoot>()) == renderer.Object);
         }
     }
 }

@@ -28,6 +28,7 @@ namespace Avalonia.Input.UnitTests
                 var root = new TestRoot
                 {
                     MouseDevice = new MouseDevice(),
+                    Renderer = renderer.Object,
                     Child = new Panel
                     {
                         Children =
@@ -78,9 +79,7 @@ namespace Avalonia.Input.UnitTests
         private IDisposable TestApplication(IRenderer renderer)
         {
             return UnitTestApplication.Start(
-                new TestServices(
-                    inputManager: new InputManager(),
-                    renderer: (root, loop) => renderer));
+                new TestServices(inputManager: new InputManager()));
         }
     }
 }

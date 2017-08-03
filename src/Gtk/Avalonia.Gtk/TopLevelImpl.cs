@@ -10,6 +10,7 @@ using Gdk;
 using Action = System.Action;
 using WindowEdge = Avalonia.Controls.WindowEdge;
 using GLib;
+using Avalonia.Rendering;
 
 namespace Avalonia.Gtk
 {
@@ -139,6 +140,11 @@ namespace Avalonia.Gtk
         public IPopupImpl CreatePopup()
         {
             return new PopupImpl();
+        }
+
+        public IRenderer CreateRenderer(IRenderRoot root)
+        {
+            return new ImmediateRenderer(root);
         }
 
         public void Invalidate(Rect rect)

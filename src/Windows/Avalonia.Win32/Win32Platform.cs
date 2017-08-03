@@ -39,10 +39,9 @@ namespace Avalonia
 
 namespace Avalonia.Win32
 {
-    partial class Win32Platform : IPlatformThreadingInterface, IPlatformSettings, IWindowingPlatform, IPlatformIconLoader, IRendererFactory
+    partial class Win32Platform : IPlatformThreadingInterface, IPlatformSettings, IWindowingPlatform, IPlatformIconLoader
     {
         private static readonly Win32Platform s_instance = new Win32Platform();
-        private static bool s_deferredRendering = true;
         private static uint _uiThread;
         private UnmanagedMethods.WndProc _wndProcDelegate;
         private IntPtr _hwnd;
@@ -58,6 +57,8 @@ namespace Avalonia.Win32
 
             CreateMessageWindow();
         }
+
+        public static bool UseDeferredRendering { get; set; }
 
         public Size DoubleClickSize => new Size(
             UnmanagedMethods.GetSystemMetrics(UnmanagedMethods.SystemMetric.SM_CXDOUBLECLK),
@@ -79,12 +80,11 @@ namespace Avalonia.Win32
                 .Bind<IPlatformSettings>().ToConstant(s_instance)
                 .Bind<IPlatformThreadingInterface>().ToConstant(s_instance)
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop(60))
-                .Bind<IRendererFactory>().ToConstant(s_instance)
                 .Bind<ISystemDialogImpl>().ToSingleton<SystemDialogImpl>()
                 .Bind<IWindowingPlatform>().ToConstant(s_instance)
                 .Bind<IPlatformIconLoader>().ToConstant(s_instance);
 
-            s_deferredRendering = deferredRendering;
+            UseDeferredRendering = deferredRendering;
             _uiThread = UnmanagedMethods.GetCurrentThreadId();
         }
 
@@ -207,13 +207,6 @@ namespace Avalonia.Win32
         public IPopupImpl CreatePopup()
         {
             return new PopupImpl();
-        }
-
-        public IRenderer CreateRenderer(IRenderRoot root, IRenderLoop renderLoop)
-        {
-            return s_deferredRendering ?
-                (IRenderer)new DeferredRenderer(root, renderLoop) :
-                (IRenderer)new ImmediateRenderer(root);
         }
     }
 }

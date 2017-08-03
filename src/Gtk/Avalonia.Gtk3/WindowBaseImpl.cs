@@ -9,6 +9,7 @@ using Avalonia.Gtk3.Interop;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
+using Avalonia.Rendering;
 
 namespace Avalonia.Gtk3
 {
@@ -354,5 +355,10 @@ namespace Avalonia.Gtk3
 
         IntPtr IPlatformHandle.Handle => Native.GetNativeGdkWindowHandle(Native.GtkWidgetGetWindow(GtkWidget));
         public IEnumerable<object> Surfaces => new object[] {Handle, _framebuffer};
+
+        public IRenderer CreateRenderer(IRenderRoot root)
+        {
+            return new ImmediateRenderer(root);
+        }
     }
 }

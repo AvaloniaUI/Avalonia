@@ -28,7 +28,7 @@ namespace Avalonia.Gtk
     using Rendering;
     using Gtk = global::Gtk;
 
-    public class GtkPlatform : IPlatformThreadingInterface, IPlatformSettings, IWindowingPlatform, IPlatformIconLoader, IRendererFactory
+    public class GtkPlatform : IPlatformThreadingInterface, IPlatformSettings, IWindowingPlatform, IPlatformIconLoader
     {
         private static readonly GtkPlatform s_instance = new GtkPlatform();
         private static Thread _uiThread;
@@ -53,7 +53,6 @@ namespace Avalonia.Gtk
                 .Bind<IKeyboardDevice>().ToConstant(GtkKeyboardDevice.Instance)
                 .Bind<IPlatformSettings>().ToConstant(s_instance)
                 .Bind<IPlatformThreadingInterface>().ToConstant(s_instance)
-                .Bind<IRendererFactory>().ToConstant(s_instance)
                 .Bind<IRenderLoop>().ToConstant(new DefaultRenderLoop(60))
                 .Bind<ISystemDialogImpl>().ToSingleton<SystemDialogImpl>()
                 .Bind<IPlatformIconLoader>().ToConstant(s_instance);
@@ -110,11 +109,6 @@ namespace Avalonia.Gtk
         public IPopupImpl CreatePopup()
         {
             return new PopupImpl();
-        }
-
-        public IRenderer CreateRenderer(IRenderRoot root, IRenderLoop renderLoop)
-        {
-            return new ImmediateRenderer(root);
         }
 
         public IWindowIconImpl LoadIcon(string fileName)

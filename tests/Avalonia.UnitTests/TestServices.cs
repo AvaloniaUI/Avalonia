@@ -23,9 +23,7 @@ namespace Avalonia.UnitTests
             assetLoader: new AssetLoader(),
             layoutManager: new LayoutManager(),
             platform: new AppBuilder().RuntimePlatform,
-            renderer: (_, __) => Mock.Of<IRenderer>(),
             renderInterface: new MockPlatformRenderInterface(),
-            renderLoop: Mock.Of<IRenderLoop>(),
             standardCursorFactory: Mock.Of<IStandardCursorFactory>(),
             styler: new Styler(),
             theme: () => CreateDefaultTheme(),
@@ -46,9 +44,6 @@ namespace Avalonia.UnitTests
 
         public static readonly TestServices MockWindowingPlatform = new TestServices(
             windowingPlatform: new MockWindowingPlatform());
-
-        public static readonly TestServices RealDeferredRenderer = new TestServices(
-            renderer: (root, loop) => new DeferredRenderer(root, loop));
 
         public static readonly TestServices RealFocus = new TestServices(
             focusManager: new FocusManager(),
@@ -71,7 +66,6 @@ namespace Avalonia.UnitTests
             ILayoutManager layoutManager = null,
             Func<IMouseDevice> mouseDevice = null,
             IRuntimePlatform platform = null,
-            Func<IRenderRoot, IRenderLoop, IRenderer> renderer = null,
             IPlatformRenderInterface renderInterface = null,
             IRenderLoop renderLoop = null,
             IScheduler scheduler = null,
@@ -79,6 +73,7 @@ namespace Avalonia.UnitTests
             IStyler styler = null,
             Func<Styles> theme = null,
             IPlatformThreadingInterface threadingInterface = null,
+            IWindowImpl windowImpl = null,
             IWindowingPlatform windowingPlatform = null)
         {
             AssetLoader = assetLoader;
@@ -89,14 +84,13 @@ namespace Avalonia.UnitTests
             LayoutManager = layoutManager;
             MouseDevice = mouseDevice;
             Platform = platform;
-            Renderer = renderer;
             RenderInterface = renderInterface;
-            RenderLoop = renderLoop;
             Scheduler = scheduler;
             StandardCursorFactory = standardCursorFactory;
             Styler = styler;
             Theme = theme;
             ThreadingInterface = threadingInterface;
+            WindowImpl = windowImpl;
             WindowingPlatform = windowingPlatform;
         }
 
@@ -108,14 +102,13 @@ namespace Avalonia.UnitTests
         public ILayoutManager LayoutManager { get; }
         public Func<IMouseDevice> MouseDevice { get; }
         public IRuntimePlatform Platform { get; }
-        public Func<IRenderRoot, IRenderLoop, IRenderer> Renderer { get; }
         public IPlatformRenderInterface RenderInterface { get; }
-        public IRenderLoop RenderLoop { get; }
         public IScheduler Scheduler { get; }
         public IStandardCursorFactory StandardCursorFactory { get; }
         public IStyler Styler { get; }
         public Func<Styles> Theme { get; }
         public IPlatformThreadingInterface ThreadingInterface { get; }
+        public IWindowImpl WindowImpl { get; }
         public IWindowingPlatform WindowingPlatform { get; }
 
         public TestServices With(
@@ -127,7 +120,6 @@ namespace Avalonia.UnitTests
             ILayoutManager layoutManager = null,
             Func<IMouseDevice> mouseDevice = null,
             IRuntimePlatform platform = null,
-            Func<IRenderRoot, IRenderLoop, IRenderer> renderer = null,
             IPlatformRenderInterface renderInterface = null,
             IRenderLoop renderLoop = null,
             IScheduler scheduler = null,
@@ -147,15 +139,14 @@ namespace Avalonia.UnitTests
                 layoutManager: layoutManager ?? LayoutManager,
                 mouseDevice: mouseDevice ?? MouseDevice,
                 platform: platform ?? Platform,
-                renderer: renderer ?? Renderer,
                 renderInterface: renderInterface ?? RenderInterface,
-                renderLoop: renderLoop ?? RenderLoop,
                 scheduler: scheduler ?? Scheduler,
                 standardCursorFactory: standardCursorFactory ?? StandardCursorFactory,
                 styler: styler ?? Styler,
                 theme: theme ?? Theme,
                 threadingInterface: threadingInterface ?? ThreadingInterface,
-                windowingPlatform: windowingPlatform ?? WindowingPlatform);
+                windowingPlatform: windowingPlatform ?? WindowingPlatform,
+                windowImpl: windowImpl ?? WindowImpl);
         }
 
         private static Styles CreateDefaultTheme()

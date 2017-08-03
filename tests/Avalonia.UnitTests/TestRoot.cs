@@ -21,9 +21,6 @@ namespace Avalonia.UnitTests
 
         public TestRoot()
         {
-            var rendererFactory = AvaloniaLocator.Current.GetService<IRendererFactory>();
-            var renderLoop = AvaloniaLocator.Current.GetService<IRenderLoop>();
-            Renderer = rendererFactory?.CreateRenderer(this, renderLoop);
         }
 
         event EventHandler<NameScopeEventArgs> INameScope.Registered

@@ -15,6 +15,7 @@ using Avalonia.Platform;
 using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
+using Avalonia.Rendering;
 #if NETSTANDARD
 using Win32Exception = Avalonia.Win32.NetStandard.AvaloniaWin32Exception;
 #endif
@@ -88,6 +89,15 @@ namespace Avalonia.Win32
                 UnmanagedMethods.GetClientRect(_hwnd, out rect);
                 return new Size(rect.right, rect.bottom) / Scaling;
             }
+        }
+
+
+        public IRenderer CreateRenderer(IRenderRoot root)
+        {
+            var loop = AvaloniaLocator.Current.GetService<IRenderLoop>();
+            return Win32Platform.UseDeferredRendering ?
+                (IRenderer)new DeferredRenderer(root, loop) :
+                new ImmediateRenderer(root);
         }
 
         public void Resize(Size value)
