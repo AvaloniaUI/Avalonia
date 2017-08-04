@@ -163,12 +163,13 @@ namespace Avalonia.Controls
         {
             if (item != null)
             {
-                Contract.Requires<ArgumentException>(item is ComboBoxItem);
-
-                var comboBoxItem = (ComboBoxItem)item;
-                Contract.Requires<NotSupportedException>(comboBoxItem.Content is string);
-
-                Text = (string)comboBoxItem.Content;
+                if (item is ComboBoxItem)
+                {
+                    item = ((ComboBoxItem)item).Content;
+                    Contract.Requires<NotSupportedException>(!(item is IControl));
+                }
+                
+                Text = Convert.ToString(item);
             }
         }
     }
