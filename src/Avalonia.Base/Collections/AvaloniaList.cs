@@ -220,7 +220,7 @@ namespace Avalonia.Collections
         /// <summary>
         /// Removes all items from the collection.
         /// </summary>
-        public void Clear()
+        public virtual void Clear()
         {
             if (this.Count > 0)
             {
