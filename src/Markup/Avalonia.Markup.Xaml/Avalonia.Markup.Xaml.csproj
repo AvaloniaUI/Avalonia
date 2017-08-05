@@ -32,6 +32,7 @@
         <Compile Include="AvaloniaXamlLoaderPortableXaml.cs" />
         <Compile Include="AvaloniaXamlLoader.cs" />
         <Compile Include="Converters\SetterValueTypeConverter.cs" />
+        <Compile Include="Data\XBinding.cs" />
         <Compile Include="MarkupExtensions\StyleIncludeExtension.cs" />
         <Compile Include="PortableXaml\AvaloniaXamlContext.cs" />
         <Compile Include="PortableXaml\XamlBinding.cs" />
