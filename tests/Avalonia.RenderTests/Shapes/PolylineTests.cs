@@ -1,6 +1,7 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
 using Avalonia.Media;
@@ -26,7 +27,7 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
 #else
         [Fact]
 #endif
-        public void Polyline_1px_Stroke()
+        public async Task Polyline_1px_Stroke()
         {
             var polylinePoints = new Point[] { new Point(0, 0), new Point(5, 0), new Point(6, -2), new Point(7, 3), new Point(8, -3),
                 new Point(9, 1), new Point(10, 0), new Point(15, 0) };
@@ -45,7 +46,7 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
 
@@ -54,7 +55,7 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
 #else
         [Fact]
 #endif
-        public void Polyline_10px_Stroke_PenLineJoin()
+        public async Task Polyline_10px_Stroke_PenLineJoin()
         {
             var polylinePoints = new Point[] { new Point(0, 0), new Point(5, 0), new Point(6, -2), new Point(7, 3), new Point(8, -3),
                 new Point(9, 1), new Point(10, 0), new Point(15, 0) };
@@ -76,7 +77,7 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
     }
