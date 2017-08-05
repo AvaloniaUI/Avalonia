@@ -2,11 +2,14 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
+using System.Reflection;
 using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Markup.Data;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Markup.Xaml.Data
 {
@@ -122,6 +125,17 @@ namespace Avalonia.Markup.Xaml.Data
             else if (RelativeSource.Mode == RelativeSourceMode.TemplatedParent)
             {
                 observer = CreateTemplatedParentObserver(target, pathInfo.Path);
+            }
+            else if (RelativeSource.Mode == RelativeSourceMode.FindAncestor)
+            {
+                if (RelativeSource.AncestorType == null)
+                {
+                    throw new InvalidOperationException("AncestorType must be set for RelativeSourceModel.FindAncestor.");
+                }
+
+                observer = CreateFindAncestorObserver(
+                    (target as IControl) ?? (anchor as IControl),
+                    pathInfo.Path);
             }
             else
             {
@@ -249,6 +263,17 @@ namespace Avalonia.Markup.Xaml.Data
                 false,
                 description);
             return result;
+        }
+
+        private ExpressionObserver CreateFindAncestorObserver(
+            IControl target,
+            string path)
+        {
+            Contract.Requires<ArgumentNullException>(target != null);
+
+            return new ExpressionObserver(
+                ControlLocator.Track(target, RelativeSource.AncestorType, RelativeSource.AncestorLevel -1),
+                path);
         }
 
         private ExpressionObserver CreateSourceObserver(
