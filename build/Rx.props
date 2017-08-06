@@ -5,7 +5,6 @@
     <PackageReference Include="System.Reactive.Interfaces" Version="3.1.0" />
     <PackageReference Include="System.Reactive.Linq" Version="3.1.0" />
     <PackageReference Include="System.Reactive.PlatformServices" Version="3.1.0" />
-    <PackageReference Condition="'$(TargetFramework)' == 'net45'" Include="System.Reactive.Windows.Threading" Version="3.1.0" />
-    <PackageReference Condition="'$(TargetFramework)' == 'net461'" Include="System.Reactive.Windows.Threading" Version="3.1.0" />
+    <PackageReference Condition="$(TargetFramework.StartsWith('net4'))" Include="System.Reactive.Windows.Threading" Version="3.1.0" />
   </ItemGroup>
 </Project>
