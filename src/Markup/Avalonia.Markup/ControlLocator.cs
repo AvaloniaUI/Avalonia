@@ -4,8 +4,10 @@
 using System;
 using System.Linq;
 using System.Reactive.Linq;
+using System.Reflection;
 using Avalonia.Controls;
 using Avalonia.LogicalTree;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Markup
 {
@@ -58,6 +60,45 @@ namespace Avalonia.Markup
                     return Observable.Return<IControl>(null);
                 }
             }).Switch();
+        }
+
+        /// <summary>
+        /// Tracks a typed visual ancestor control.
+        /// </summary>
+        /// <param name="relativeTo">
+        /// The control relative from which the other control should be found.
+        /// </param>
+        /// <param name="ancestorType">The type of the ancestor to find.</param>
+        /// <param name="ancestorLevel">
+        /// The level of ancestor control to look for. Use 0 for the first ancestor of the
+        /// requested type.
+        /// </param>
+        public static IObservable<IControl> Track(IControl relativeTo, Type ancestorType, int ancestorLevel)
+        {
+            var attached = Observable.FromEventPattern<VisualTreeAttachmentEventArgs>(
+                x => relativeTo.AttachedToVisualTree += x,
+                x => relativeTo.DetachedFromVisualTree += x)
+                .Select(x => true)
+                .StartWith(relativeTo.IsAttachedToVisualTree);
+
+            var detached = Observable.FromEventPattern<VisualTreeAttachmentEventArgs>(
+                x => relativeTo.DetachedFromVisualTree += x,
+                x => relativeTo.DetachedFromVisualTree += x)
+                .Select(x => false);
+
+            return attached.Merge(detached).Select(isAttachedToVisualTree =>
+            {
+                if (isAttachedToVisualTree)
+                {
+                    return relativeTo.GetVisualAncestors()
+                        .Where(x => ancestorType.GetTypeInfo().IsAssignableFrom(x.GetType().GetTypeInfo()))
+                        .ElementAtOrDefault(ancestorLevel) as IControl;
+                }
+                else
+                {
+                    return null;
+                }
+            });
         }
     }
 }
