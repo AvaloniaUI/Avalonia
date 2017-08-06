@@ -82,7 +82,10 @@ namespace Avalonia.Controls
         /// Defines the <see cref="WindowStartupLocation"/> proeprty.
         /// </summary>
         public static readonly DirectProperty<Window, WindowStartupLocation> WindowStartupLocationProperty =
-            AvaloniaProperty.RegisterDirect<Window, WindowStartupLocation>(nameof(WindowStartupLocation), o => o.WindowStartupLocation);
+            AvaloniaProperty.RegisterDirect<Window, WindowStartupLocation>(
+                nameof(WindowStartupLocation),
+                o => o.WindowStartupLocation,
+                (o, v) => o.WindowStartupLocation = v);
 
         private readonly NameScope _nameScope = new NameScope();
         private object _dialogResult;
