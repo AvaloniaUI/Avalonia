@@ -45,7 +45,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Layout.UnitTests",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Interactivity.UnitTests", "tests\Avalonia.Interactivity.UnitTests\Avalonia.Interactivity.UnitTests.csproj", "{08478EF5-44E8-42E9-92D6-15E00EC038D8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Direct2D1.RenderTests", "tests\Avalonia.RenderTests\Avalonia.Direct2D1.RenderTests.csproj", "{DABFD304-D6A4-4752-8123-C2CCF7AC7831}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Direct2D1.RenderTests", "tests\Avalonia.RenderTests\Avalonia.Direct2D1.RenderTests.csproj", "{DABFD304-D6A4-4752-8123-C2CCF7AC7831}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Input.UnitTests", "tests\Avalonia.Input.UnitTests\Avalonia.Input.UnitTests.csproj", "{AC18926A-E784-40FE-B09D-BB0FE2B599F0}"
 EndProject
