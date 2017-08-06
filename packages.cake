@@ -281,11 +281,10 @@ public class Packages
             new NuGetPackSettings()
             {
                 Id = "Avalonia.ReactiveUI",
-                Dependencies = new []
+                Dependencies = new DependencyBuilder(this)
                 {
                     new NuSpecDependency() { Id = "Avalonia", Version = parameters.Version },
-                    new NuSpecDependency() { Id = "reactiveui", Version = ReactiveUIVersion }
-                },
+                }.Deps(new string[] {null}, "reactiveui"),
                 Files = new []
                 {
                     new NuSpecContent { Source = "Avalonia.ReactiveUI.dll", Target = "lib/netstandard1.3" }
