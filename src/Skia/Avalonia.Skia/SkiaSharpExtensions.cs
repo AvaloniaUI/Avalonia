@@ -90,6 +90,17 @@ namespace Avalonia.Skia
             }
         }
 
+        public static TextAlignment ToAvalonia(this SKTextAlign a)
+        {
+            switch (a)
+            {
+                default:
+                case SKTextAlign.Left: return TextAlignment.Left;
+                case SKTextAlign.Center: return TextAlignment.Center;
+                case SKTextAlign.Right: return TextAlignment.Right;
+            }
+        }
+
         public static SKPath Clone(this SKPath src)
         {
             return src != null ? new SKPath(src) : null;

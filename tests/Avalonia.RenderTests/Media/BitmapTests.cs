@@ -102,7 +102,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 }
                 rtb.Save(System.IO.Path.Combine(OutputPath, testName + ".out.png"));
             }
-            CompareImages(testName);
+            CompareImagesNoRenderer(testName);
         }
 
 #if AVALONIA_CAIRO
@@ -133,7 +133,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             var name = nameof(WritableBitmapShouldBeUsable) + "_" + fmt;
 
             writableBitmap.Save(System.IO.Path.Combine(OutputPath, name + ".out.png"));
-            CompareImages(name);
+            CompareImagesNoRenderer(name);
 
         }
     }

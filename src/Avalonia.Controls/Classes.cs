@@ -87,6 +87,20 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Remvoes all non-pseudoclasses from the collection.
+        /// </summary>
+        public override void Clear()
+        {
+            for (var i = Count - 1; i >= 0; --i)
+            {
+                if (!this[i].StartsWith(":"))
+                {
+                    RemoveAt(i);
+                }
+            }
+        }
+
+        /// <summary>
         /// Inserts a style class into the collection.
         /// </summary>
         /// <param name="index">The index to insert the class at.</param>

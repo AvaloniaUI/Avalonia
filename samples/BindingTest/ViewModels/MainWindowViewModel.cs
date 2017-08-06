@@ -28,15 +28,13 @@ namespace BindingTest.ViewModels
 
             SelectedItems = new ObservableCollection<TestItem>();
 
-            ShuffleItems = ReactiveCommand.Create();
-            ShuffleItems.Subscribe(_ =>
+            ShuffleItems = ReactiveCommand.Create(() =>
             {
                 var r = new Random();
                 Items.Move(r.Next(Items.Count), 1);
             });
 
-            StringValueCommand = ReactiveCommand.Create();
-            StringValueCommand.Subscribe(param =>
+            StringValueCommand = ReactiveCommand.Create<object>(param =>
             {
                 BooleanFlag = !BooleanFlag;
                 StringValue = param.ToString();
@@ -58,7 +56,7 @@ namespace BindingTest.ViewModels
 
         public ObservableCollection<TestItem> Items { get; }
         public ObservableCollection<TestItem> SelectedItems { get; }
-        public ReactiveCommand<object> ShuffleItems { get; }
+        public ReactiveCommand ShuffleItems { get; }
 
         public string BooleanString
         {
@@ -91,7 +89,7 @@ namespace BindingTest.ViewModels
         }
 
         public IObservable<string> CurrentTimeObservable { get; }
-        public ReactiveCommand<object> StringValueCommand { get; }
+        public ReactiveCommand StringValueCommand { get; }
 
         public DataAnnotationsErrorViewModel DataAnnotationsValidation { get; } = new DataAnnotationsErrorViewModel();
         public ExceptionErrorViewModel ExceptionDataValidation { get; } = new ExceptionErrorViewModel();

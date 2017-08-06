@@ -5,6 +5,7 @@ using System;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Layout;
+using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Styling;
@@ -12,7 +13,7 @@ using Moq;
 
 namespace Avalonia.UnitTests
 {
-    public class TestRoot : Decorator, IFocusScope, ILayoutRoot, INameScope, IRenderRoot, IStyleRoot
+    public class TestRoot : Decorator, IFocusScope, ILayoutRoot, IInputRoot, INameScope, IRenderRoot, IStyleRoot
     {
         private readonly NameScope _nameScope = new NameScope();
         private readonly IRenderTarget _renderTarget = Mock.Of<IRenderTarget>(
@@ -20,9 +21,6 @@ namespace Avalonia.UnitTests
 
         public TestRoot()
         {
-            var rendererFactory = AvaloniaLocator.Current.GetService<IRendererFactory>();
-            var renderLoop = AvaloniaLocator.Current.GetService<IRenderLoop>();
-            Renderer = rendererFactory?.CreateRenderer(this, renderLoop);
         }
 
         event EventHandler<NameScopeEventArgs> INameScope.Registered
@@ -41,17 +39,29 @@ namespace Avalonia.UnitTests
 
         public int NameScopeUnregisteredSubscribers { get; private set; }
 
-        public Size ClientSize => new Size(100, 100);
+        public Size ClientSize { get; set; } = new Size(100, 100);
 
         public Size MaxClientSize { get; set; } = Size.Infinity;
 
         public double LayoutScaling => 1;
+
+        public double RenderScaling => 1;
 
         public ILayoutManager LayoutManager => AvaloniaLocator.Current.GetService<ILayoutManager>();
 
         public IRenderTarget RenderTarget => null;
 
         public IRenderer Renderer { get; set; }
+
+        public IAccessKeyHandler AccessKeyHandler => null;
+
+        public IKeyboardNavigationHandler KeyboardNavigationHandler => null;
+
+        public IInputElement PointerOverElement { get; set; }
+
+        public IMouseDevice MouseDevice { get; set; }
+
+        public bool ShowAccessKeys { get; set; }
 
         public IRenderTarget CreateRenderTarget() => _renderTarget;
 
