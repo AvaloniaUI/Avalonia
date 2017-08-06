@@ -57,7 +57,6 @@ namespace Avalonia.iOS
                 //.Bind<ISystemDialogImpl>().ToTransient<SystemDialogImpl>()
                 .Bind<IStandardCursorFactory>().ToTransient<CursorFactory>()
                 .Bind<IKeyboardDevice>().ToConstant(KeyboardDevice)
-                .Bind<IRendererFactory>().ToConstant(ImmediateRenderer.Factory)
                 .Bind<IPlatformSettings>().ToSingleton<PlatformSettings>()
                 .Bind<IPlatformThreadingInterface>().ToConstant(PlatformThreadingInterface.Instance)
                 .Bind<IPlatformIconLoader>().ToSingleton<PlatformIconLoader>()

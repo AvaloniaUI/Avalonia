@@ -26,6 +26,7 @@ namespace Avalonia.Cairo
 {
     using System.IO;
     using global::Cairo;
+    using Rendering;
 
     public class CairoPlatform : IPlatformRenderInterface
     {

@@ -193,7 +193,7 @@ Task("Run-Net-Core-Unit-Tests")
 Task("Run-Unit-Tests")
     .IsDependentOn("Run-Net-Core-Unit-Tests")
     .IsDependentOn("Build")
-    .IsDependentOn("Run-Leak-Tests")
+    //.IsDependentOn("Run-Leak-Tests")
     .WithCriteria(() => !parameters.SkipTests)
     .Does(() =>
 {

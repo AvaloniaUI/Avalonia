@@ -317,6 +317,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
         {
             public IRenderer Renderer { get; }
             public Size ClientSize { get; }
+            public double RenderScaling => 1;
 
             public IRenderTarget CreateRenderTarget()
             {

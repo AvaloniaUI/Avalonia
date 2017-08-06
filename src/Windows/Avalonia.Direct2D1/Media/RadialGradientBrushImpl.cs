@@ -25,11 +25,11 @@ namespace Avalonia.Direct2D1.Media
             }).ToArray();
 
             var centerPoint = brush.Center.ToPixels(destinationSize);
-            var GradientOriginOffset = brush.GradientOrigin.ToPixels(destinationSize);
+            var gradientOrigin = brush.GradientOrigin.ToPixels(destinationSize) - centerPoint;
             
             // Note: Direct2D supports RadiusX and RadiusY but Cairo backend supports only Radius property
-            var radiusX = brush.Radius;
-            var radiusY = brush.Radius;
+            var radiusX = brush.Radius * destinationSize.Width;
+            var radiusY = brush.Radius * destinationSize.Height;
 
             using (var stops = new SharpDX.Direct2D1.GradientStopCollection(
                 target,
@@ -41,7 +41,7 @@ namespace Avalonia.Direct2D1.Media
                     new SharpDX.Direct2D1.RadialGradientBrushProperties
                     {
                         Center = centerPoint.ToSharpDX(),
-                        GradientOriginOffset = GradientOriginOffset.ToSharpDX(),
+                        GradientOriginOffset = gradientOrigin.ToSharpDX(),
                         RadiusX = (float)radiusX,
                         RadiusY = (float)radiusY
                     },
