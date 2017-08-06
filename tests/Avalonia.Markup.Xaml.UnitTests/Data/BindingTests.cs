@@ -360,7 +360,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
                 get { return _foo; }
                 set
                 {
-                    _foo = Foo;
+                    _foo = value;
                     RaisePropertyChanged();
                 }
             }
