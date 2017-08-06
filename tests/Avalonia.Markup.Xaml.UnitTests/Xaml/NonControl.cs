@@ -13,6 +13,14 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         public static readonly StyledProperty<string> StringProperty =
             AvaloniaProperty.Register<NonControl, string>("String");
 
+        //No getter or setter Avalonia property
+        public static readonly StyledProperty<int> FooProperty =
+            AvaloniaProperty.Register<NonControl, int>("Foo");
+
+        //getter only Avalonia property
+        public static readonly StyledProperty<string> BarProperty =
+                AvaloniaProperty.Register<NonControl, string>("Bar");
+
         public Control Control
         {
             get { return GetValue(ControlProperty); }
@@ -23,6 +31,11 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         {
             get { return GetValue(StringProperty); }
             set { SetValue(StringProperty, value); }
+        }
+
+        public string Bar
+        {
+            get { return GetValue(BarProperty); }
         }
     }
 }

@@ -4,8 +4,8 @@
 
 #addin "nuget:?package=Polly&version=4.2.0"
 #addin "nuget:?package=NuGet.Core&version=2.12.0"
+#tool "nuget:?package=xunit.runner.console&version=2.2.0"
 #tool "nuget:https://dotnet.myget.org/F/nuget-build/?package=NuGet.CommandLine&version=4.3.0-preview1-3980&prerelease"
-#tool "nuget:?package=JetBrains.dotMemoryUnit&version=2.3.20160517.113140"
 #tool "JetBrains.ReSharper.CommandLineTools"
 ///////////////////////////////////////////////////////////////////////////////
 // TOOLS
@@ -119,7 +119,6 @@ Task("Restore-NuGet-Packages")
             }})
         .Execute(()=> {
                 NuGetRestore(parameters.MSBuildSolution, new NuGetRestoreSettings {
-                    ToolPath = "./tools/NuGet.CommandLine/tools/NuGet.exe",
                     ToolTimeout = TimeSpan.FromMinutes(toolTimeout)
                 });
         });
@@ -194,6 +193,7 @@ Task("Run-Net-Core-Unit-Tests")
 Task("Run-Unit-Tests")
     .IsDependentOn("Run-Net-Core-Unit-Tests")
     .IsDependentOn("Build")
+    //.IsDependentOn("Run-Leak-Tests")
     .WithCriteria(() => !parameters.SkipTests)
     .Does(() =>
 {
@@ -205,13 +205,6 @@ Task("Run-Unit-Tests")
         .Where(name => parameters.IsRunningOnWindows ? true : !(name.IndexOf("Direct2D", StringComparison.OrdinalIgnoreCase) >= 0))
         .Select(name => MakeAbsolute(File("./tests/" + name + "/bin/" + parameters.DirSuffix + "/" + name + ".dll")))
         .ToList();
-
-    if (parameters.IsRunningOnWindows)
-    {
-        var leakTests = GetFiles("./tests/Avalonia.LeakTests/bin/" + parameters.DirSuffix + "/*.LeakTests.dll");
-
-        unitTests.AddRange(leakTests);
-    }
 
     var toolPath = (parameters.IsPlatformAnyCPU || parameters.IsPlatformX86) ? 
         "./tools/xunit.runner.console/tools/xunit.console.x86.exe" :
@@ -365,6 +358,44 @@ Task("Publish-NuGet")
     Information("Publish-NuGet Task failed, but continuing with next Task...");
 });
 
+Task("Run-Leak-Tests")
+    .WithCriteria(parameters.IsRunningOnWindows)
+    .IsDependentOn("Build")
+    .Does(() =>
+    {
+        DotNetCoreRestore("tests\\Avalonia.LeakTests\\toolproject\\tool.csproj");
+        DotNetBuild("tests\\Avalonia.LeakTests\\toolproject\\tool.csproj", settings => settings.SetConfiguration("Release"));
+        var report = "tests\\Avalonia.LeakTests\\bin\\Release\\report.xml";
+        if(System.IO.File.Exists(report))
+            System.IO.File.Delete(report);
+        var proc = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+        {
+            FileName="tests\\Avalonia.LeakTests\\toolproject\\bin\\dotMemoryUnit.exe",
+            Arguments="-targetExecutable=\"tools\\xunit.runner.console\\tools\\xunit.console.x86.exe\" -returnTargetExitCode  -- tests\\Avalonia.LeakTests\\bin\\Release\\Avalonia.LeakTests.dll -xml tests\\Avalonia.LeakTests\\bin\\Release\\report.xml ",
+            UseShellExecute = false,
+        });
+        var st = System.Diagnostics.Stopwatch.StartNew();
+        while(!proc.HasExited && !System.IO.File.Exists(report))
+        {
+            if(st.Elapsed.TotalSeconds>60)
+            {
+                Error("Timed out, probably a bug in dotMemoryUnit");
+                proc.Kill();
+                throw new Exception("dotMemory issue");
+            }
+            proc.WaitForExit(100);
+        }
+        try{
+            proc.Kill();
+        }catch{}
+        var doc =  System.Xml.Linq.XDocument.Load(report);
+        if(doc.Root.Descendants("assembly").Any(x=>x.Attribute("failed").Value.ToString() != "0"))
+        {
+            throw new Exception("Tests failed");
+        }
+
+    });
+
 Task("Inspect")
     .WithCriteria(parameters.IsRunningOnWindows)
     .IsDependentOn("Restore-NuGet-Packages")
@@ -372,7 +403,8 @@ Task("Inspect")
     {
         var badIssues = new []{"PossibleNullReferenceException"};
         var whitelist = new []{"tests", "src\\android", "src\\ios",
-            "src\\windows\\avalonia.designer", "src\\avalonia.htmlrenderer\\external"};
+            "src\\windows\\avalonia.designer", "src\\avalonia.htmlrenderer\\external",
+            "src\\markup\\avalonia.markup.xaml\\portablexaml\\portable.xaml.github"};
         Information("Running code inspections");
         
         

@@ -48,5 +48,15 @@ namespace Avalonia.Rendering
         /// </summary>
         /// <param name="rect">The dirty rectangle.</param>
         void Paint(Rect rect);
+
+        /// <summary>
+        /// Starts the renderer.
+        /// </summary>
+        void Start();
+
+        /// <summary>
+        /// Stops the renderer.
+        /// </summary>
+        void Stop();
     }
 }

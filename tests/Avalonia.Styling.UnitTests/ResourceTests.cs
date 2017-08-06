@@ -20,7 +20,7 @@ namespace Avalonia.Styling.UnitTests
                 {
                     new Style
                     {
-                        Resources = new Dictionary<string, object>
+                        Resources = new StyleResources
                         {
                             { "Foo", "foo resource" },
                             { "Bar", "overridden" },
@@ -33,14 +33,14 @@ namespace Avalonia.Styling.UnitTests
                     {
                         new Style
                         {
-                            Resources = new Dictionary<string, object>
+                            Resources = new StyleResources
                             {
                                 { "Bar", "again overridden" },
                             }
                         },
                         new Style
                         {
-                            Resources = new Dictionary<string, object>
+                            Resources = new StyleResources
                             {
                                 { "Bar", "bar resource" },
                             }
@@ -64,7 +64,7 @@ namespace Avalonia.Styling.UnitTests
                     {
                         new Style
                         {
-                            Resources = new Dictionary<string, object>
+                            Resources = new StyleResources
                             {
                                 { "Foo", "foo" },
                             }
