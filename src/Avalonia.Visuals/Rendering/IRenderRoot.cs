@@ -23,6 +23,11 @@ namespace Avalonia.Rendering
         IRenderer Renderer { get; }
 
         /// <summary>
+        /// The scaling factor to use in rendering.
+        /// </summary>
+        double RenderScaling { get; }
+
+        /// <summary>
         /// Creates a render target for the window.
         /// </summary>
         /// <returns>An <see cref="IRenderTarget"/>.</returns>

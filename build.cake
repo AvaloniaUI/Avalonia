@@ -119,7 +119,6 @@ Task("Restore-NuGet-Packages")
             }})
         .Execute(()=> {
                 NuGetRestore(parameters.MSBuildSolution, new NuGetRestoreSettings {
-                    ToolPath = "./tools/NuGet.CommandLine/tools/NuGet.exe",
                     ToolTimeout = TimeSpan.FromMinutes(toolTimeout)
                 });
         });
@@ -200,7 +199,7 @@ Task("Run-Net-Core-Unit-Tests")
 Task("Run-Unit-Tests")
     .IsDependentOn("Run-Net-Core-Unit-Tests")
     .IsDependentOn("Build")
-    .IsDependentOn("Run-Leak-Tests")
+    //.IsDependentOn("Run-Leak-Tests")
     .WithCriteria(() => !parameters.SkipTests)
     .Does(() =>
 {
@@ -410,7 +409,8 @@ Task("Inspect")
     {
         var badIssues = new []{"PossibleNullReferenceException"};
         var whitelist = new []{"tests", "src\\android", "src\\ios",
-            "src\\windows\\avalonia.designer", "src\\avalonia.htmlrenderer\\external"};
+            "src\\windows\\avalonia.designer", "src\\avalonia.htmlrenderer\\external",
+            "src\\markup\\avalonia.markup.xaml\\portablexaml\\portable.xaml.github"};
         Information("Running code inspections");
         
         

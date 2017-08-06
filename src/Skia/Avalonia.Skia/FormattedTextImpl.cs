@@ -615,6 +615,7 @@ namespace Avalonia.Skia
 
             if (brush != null)
             {
+                brush = brush.ToImmutable();
                 _foregroundBrushes.Insert(0, new KeyValuePair<FBrushRange, IBrush>(key, brush));
             }
         }

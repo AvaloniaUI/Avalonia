@@ -10,8 +10,9 @@ using Avalonia.Data;
 using Avalonia.Markup.Data;
 using Avalonia.Markup.Xaml.Data;
 using Moq;
-using ReactiveUI;
 using Xunit;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Data
 {
@@ -350,14 +351,25 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
             }
         }
 
-        public class Source : ReactiveObject
+        public class Source : INotifyPropertyChanged
         {
             private string _foo;
 
             public string Foo
             {
                 get { return _foo; }
-                set { this.RaiseAndSetIfChanged(ref _foo, value); }
+                set
+                {
+                    _foo = value;
+                    RaisePropertyChanged();
+                }
+            }
+
+            public event PropertyChangedEventHandler PropertyChanged;
+
+            private void RaisePropertyChanged([CallerMemberName] string prop = "")
+            {
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
             }
         }
 

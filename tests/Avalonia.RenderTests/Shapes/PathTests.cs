@@ -15,6 +15,7 @@ namespace Avalonia.Skia.RenderTests
 namespace Avalonia.Direct2D1.RenderTests.Shapes
 #endif
 {
+    using System.Threading.Tasks;
     using Avalonia.Collections;
 
     public class PathTests : TestBase
@@ -29,7 +30,7 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
 #else
         [Fact]
 #endif
-        public void Line_Absolute()
+        public async Task Line_Absolute()
         {
             Decorator target = new Decorator
             {
@@ -45,7 +46,7 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
 
@@ -54,7 +55,7 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
 #else
         [Fact]
 #endif
-        public void Line_Relative()
+        public async Task Line_Relative()
         {
             Decorator target = new Decorator
             {
@@ -70,7 +71,7 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
 
@@ -79,7 +80,7 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
 #else
         [Fact]
 #endif
-        public void HorizontalLine_Absolute()
+        public async Task HorizontalLine_Absolute()
         {
             Decorator target = new Decorator
             {
@@ -95,7 +96,7 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
 
@@ -104,7 +105,7 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
 #else
         [Fact]
 #endif
-        public void HorizontalLine_Relative()
+        public async Task HorizontalLine_Relative()
         {
             Decorator target = new Decorator
             {
@@ -120,7 +121,7 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
 
@@ -129,7 +130,7 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
 #else
         [Fact]
 #endif
-        public void VerticalLine_Absolute()
+        public async Task VerticalLine_Absolute()
         {
             Decorator target = new Decorator
             {
@@ -145,7 +146,7 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
 
@@ -154,7 +155,7 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
 #else
         [Fact]
 #endif
-        public void VerticalLine_Relative()
+        public async Task VerticalLine_Relative()
         {
             Decorator target = new Decorator
             {
@@ -170,7 +171,7 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
 
@@ -179,7 +180,7 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
 #else
         [Fact]
 #endif
-        public void CubicBezier_Absolute()
+        public async Task CubicBezier_Absolute()
         {
             Decorator target = new Decorator
             {
@@ -196,7 +197,7 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
 
@@ -205,7 +206,7 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
 #else
         [Fact]
 #endif
-        public void CubicBezier_Relative()
+        public async Task CubicBezier_Relative()
         {
             Decorator target = new Decorator
             {
@@ -222,7 +223,7 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
 
@@ -231,7 +232,7 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
 #else
         [Fact]
 #endif
-        public void Arc_Absolute()
+        public async Task Arc_Absolute()
         {
             Decorator target = new Decorator
             {
@@ -248,7 +249,7 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
 
@@ -257,7 +258,7 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
 #else
         [Fact]
 #endif
-        public void Arc_Relative()
+        public async Task Arc_Relative()
         {
             Decorator target = new Decorator
             {
@@ -274,12 +275,12 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
 
         [Fact]
-        public void Path_100px_Triangle_Centered()
+        public async Task Path_100px_Triangle_Centered()
         {
             Decorator target = new Decorator
             {
@@ -296,12 +297,12 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
 
         [Fact]
-        public void Path_Tick_Scaled()
+        public async Task Path_Tick_Scaled()
         {
             Decorator target = new Decorator
             {
@@ -319,12 +320,12 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
 
         [Fact]
-        public void Path_Tick_Scaled_Stroke_8px()
+        public async Task Path_Tick_Scaled_Stroke_8px()
         {
             Decorator target = new Decorator
             {
@@ -342,12 +343,12 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
 
         [Fact]
-        public void Path_Expander_With_Border()
+        public async Task Path_Expander_With_Border()
         {
             Decorator target = new Decorator
             {
@@ -370,7 +371,7 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
 
@@ -381,7 +382,7 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
 #else
         [Fact]
 #endif
-        public void Path_With_PenLineCap()
+        public async Task Path_With_PenLineCap()
         {
             Decorator target = new Decorator
             {
@@ -401,7 +402,7 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
     }

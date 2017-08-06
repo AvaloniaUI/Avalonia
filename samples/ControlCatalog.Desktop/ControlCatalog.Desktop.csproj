@@ -144,5 +144,4 @@
   <Import Project="..\..\build\Serilog.props" />
   <Import Project="..\..\build\SkiaSharp.props" />
   <Import Project="..\..\build\Serilog.Sinks.Trace.props" />
-  <Import Project="$(MSBuildThisFileDirectory)..\..\src\Shared\nuget.workaround.targets" />
 </Project>

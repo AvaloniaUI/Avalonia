@@ -9,6 +9,10 @@ using Avalonia.Media.Imaging;
 using Avalonia.Rendering;
 
 using Xunit;
+using Avalonia.Platform;
+using System.Threading.Tasks;
+using System;
+using System.Threading;
 
 #if AVALONIA_CAIRO
 using Avalonia.Cairo;
@@ -28,6 +32,9 @@ namespace Avalonia.Direct2D1.RenderTests
 {
     public class TestBase
     {
+        private static readonly TestThreadingInterface threadingInterface =
+            new TestThreadingInterface();
+
         static TestBase()
         {
 #if AVALONIA_CAIRO
@@ -37,6 +44,10 @@ namespace Avalonia.Direct2D1.RenderTests
 #else
             Direct2D1Platform.Initialize();
 #endif
+            AvaloniaLocator.CurrentMutable
+                .Bind<IPlatformThreadingInterface>()
+                .ToConstant(threadingInterface);
+
         }
 
         public TestBase(string outputPath)
@@ -49,6 +60,8 @@ namespace Avalonia.Direct2D1.RenderTests
             string testFiles = Path.GetFullPath(@"..\..\tests\TestFiles\Direct2D1");
 #endif
             OutputPath = Path.Combine(testFiles, outputPath);
+
+            threadingInterface.MainThread = Thread.CurrentThread;
         }
 
         public string OutputPath
@@ -56,15 +69,16 @@ namespace Avalonia.Direct2D1.RenderTests
             get;
         }
 
-        protected void RenderToFile(Control target, [CallerMemberName] string testName = "")
+        protected async Task RenderToFile(Control target, [CallerMemberName] string testName = "")
         {
             if (!Directory.Exists(OutputPath))
             {
                 Directory.CreateDirectory(OutputPath);
             }
 
-            string path = Path.GetFullPath(Path.Combine(OutputPath, testName + ".out.png"));
-            System.Console.WriteLine("Rendering to "+path);
+            var immediatePath = Path.Combine(OutputPath, testName + ".immediate.out.png");
+            var deferredPath = Path.Combine(OutputPath, testName + ".deferred.out.png");
+            var factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
 
             using (RenderTargetBitmap bitmap = new RenderTargetBitmap(
                 (int)target.Width,
@@ -74,23 +88,88 @@ namespace Avalonia.Direct2D1.RenderTests
                 target.Measure(size);
                 target.Arrange(new Rect(size));
                 bitmap.Render(target);
-                bitmap.Save(path);
+                bitmap.Save(immediatePath);
+            }
+
+            using (var rtb = factory.CreateRenderTargetBitmap((int)target.Width, (int)target.Height, 96, 96))
+            using (var renderer = new DeferredRenderer(target, rtb))
+            {
+                Size size = new Size(target.Width, target.Height);
+                target.Measure(size);
+                target.Arrange(new Rect(size));
+                renderer.UnitTestUpdateScene();
+
+                // Do the deferred render on a background thread to expose any threading errors in
+                // the deferred rendering path.
+                await Task.Run((Action)renderer.UnitTestRender);
+
+                rtb.Save(deferredPath);
             }
         }
 
         protected void CompareImages([CallerMemberName] string testName = "")
         {
-            string expectedPath = Path.Combine(OutputPath, testName + ".expected.png");
-            string actualPath = Path.Combine(OutputPath, testName + ".out.png");
-            using (MagickImage expected = new MagickImage(expectedPath))
-            using (MagickImage actual = new MagickImage(actualPath))
-            {
-                double error = expected.Compare(actual, ErrorMetric.RootMeanSquared);
+            var expectedPath = Path.Combine(OutputPath, testName + ".expected.png");
+            var immediatePath = Path.Combine(OutputPath, testName + ".immediate.out.png");
+            var deferredPath = Path.Combine(OutputPath, testName + ".deferred.out.png");
 
-                if (error > 0.022)
+            using (var expected = new MagickImage(expectedPath))
+            using (var immediate = new MagickImage(immediatePath))
+            using (var deferred = new MagickImage(deferredPath))
+            {
+                double immediateError = expected.Compare(immediate, ErrorMetric.RootMeanSquared);
+                double deferredError = expected.Compare(deferred, ErrorMetric.RootMeanSquared);
+
+                if (immediateError > 0.022)
                 {
-                    Assert.True(false, actualPath + ": Error = " + error);
+                    Assert.True(false, immediatePath + ": Error = " + immediateError);
                 }
+
+                if (deferredError > 0.022)
+                {
+                    Assert.True(false, deferredPath + ": Error = " + deferredError);
+                }
+            }
+        }
+
+        protected void CompareImagesNoRenderer([CallerMemberName] string testName = "")
+        {
+            var expectedPath = Path.Combine(OutputPath, testName + ".expected.png");
+            var actualPath = Path.Combine(OutputPath, testName + ".out.png");
+
+            using (var expected = new MagickImage(expectedPath))
+            using (var actual = new MagickImage(actualPath))
+            {
+                double immediateError = expected.Compare(actual, ErrorMetric.RootMeanSquared);
+
+                if (immediateError > 0.022)
+                {
+                    Assert.True(false, actualPath + ": Error = " + immediateError);
+                }
+            }
+        }
+
+        private class TestThreadingInterface : IPlatformThreadingInterface
+        {
+            public bool CurrentThreadIsLoopThread => MainThread.ManagedThreadId == Thread.CurrentThread.ManagedThreadId;
+
+            public Thread MainThread { get; set; }
+
+            public event Action Signaled;
+
+            public void RunLoop(CancellationToken cancellationToken)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void Signal()
+            {
+                throw new NotImplementedException();
+            }
+
+            public IDisposable StartTimer(TimeSpan interval, Action tick)
+            {
+                throw new NotImplementedException();
             }
         }
     }

@@ -52,5 +52,7 @@
   <Import Project="..\..\build\Moq.props" />
   <Import Project="..\..\build\Rx.props" />
   <Import Project="..\..\build\XUnit.props" />
-  <Import Condition="'$(TargetFramework)' == 'net461'" Project="$(MSBuildThisFileDirectory)..\..\src\Shared\nuget.workaround.targets" />
+  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp1.1'">
+      <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0" />
+  </ItemGroup>
 </Project>

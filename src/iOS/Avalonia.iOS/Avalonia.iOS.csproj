@@ -105,5 +105,7 @@
   <Import Project="..\..\Shared\PlatformSupport\PlatformSupport.projitems" Label="Shared" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
   <Import Project="..\..\..\build\Rx.props" />
-  <Import Project="$(MSBuildThisFileDirectory)..\..\Shared\nuget.workaround.targets" />
+  <PropertyGroup Condition="'$(UseRoslynPathHack)' == 'true'">
+    <CscToolPath>$(MSBuildToolsPath)\..\Roslyn</CscToolPath>
+  </PropertyGroup>
 </Project>
