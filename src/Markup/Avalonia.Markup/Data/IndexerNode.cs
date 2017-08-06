@@ -33,8 +33,8 @@ namespace Avalonia.Markup.Data
 
             if (incc != null)
             {
-                inputs.Add(WeakObservable.FromEventPattern<NotifyCollectionChangedEventArgs>(
-                    target,
+                inputs.Add(WeakObservable.FromEventPattern<INotifyCollectionChanged, NotifyCollectionChangedEventArgs>(
+                    incc,
                     nameof(incc.CollectionChanged))
                     .Where(x => ShouldUpdate(x.Sender, x.EventArgs))
                     .Select(_ => GetValue(target)));
@@ -42,8 +42,8 @@ namespace Avalonia.Markup.Data
 
             if (inpc != null)
             {
-                inputs.Add(WeakObservable.FromEventPattern<PropertyChangedEventArgs>(
-                    target,
+                inputs.Add(WeakObservable.FromEventPattern<INotifyPropertyChanged, PropertyChangedEventArgs>(
+                    inpc,
                     nameof(inpc.PropertyChanged))
                     .Where(x => ShouldUpdate(x.Sender, x.EventArgs))
                     .Select(_ => GetValue(target)));
