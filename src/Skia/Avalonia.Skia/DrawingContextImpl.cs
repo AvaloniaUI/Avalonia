@@ -11,6 +11,7 @@ namespace Avalonia.Skia
 {
     internal class DrawingContextImpl : IDrawingContextImpl
     {
+        private readonly Vector _dpi;
         private readonly Matrix? _postTransform;
         private readonly IDisposable[] _disposables;
         private readonly IVisualBrushRenderer _visualBrushRenderer;
@@ -20,12 +21,13 @@ namespace Avalonia.Skia
 
         public DrawingContextImpl(
             SKCanvas canvas,
+            Vector dpi,
             IVisualBrushRenderer visualBrushRenderer,
-            Matrix? postTransform = null,
             params IDisposable[] disposables)
         {
-            if (postTransform.HasValue && !postTransform.Value.IsIdentity)
-                _postTransform = postTransform;
+            _dpi = dpi;
+            if (dpi.X != 96 || dpi.Y != 96)
+                _postTransform = Matrix.CreateScale(dpi.X / 96, dpi.Y / 96);
             _visualBrushRenderer = visualBrushRenderer;
             _disposables = disposables;
             Canvas = canvas;
@@ -47,6 +49,13 @@ namespace Avalonia.Skia
             {
                 Canvas.DrawBitmap(impl.Bitmap, s, d, paint);
             }
+        }
+
+        public void DrawImage(IBitmapImpl source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect)
+        {
+            PushOpacityMask(opacityMask, opacityMaskRect);
+            DrawImage(source, 1, new Rect(0, 0, source.PixelWidth, source.PixelHeight), destRect);
+            PopOpacityMask();
         }
 
         public void DrawLine(Pen pen, Point p1, Point p2)
@@ -141,23 +150,17 @@ namespace Avalonia.Skia
             var rv = new PaintWrapper(paint);
             paint.IsStroke = false;
 
-            // TODO: SkiaSharp does not contain alpha yet!
+            
             double opacity = brush.Opacity * _currentOpacity;
-            //paint.SetAlpha(paint.GetAlpha() * opacity);
             paint.IsAntialias = true;
-
-            SKColor color = new SKColor(255, 255, 255, 255);
 
             var solid = brush as ISolidColorBrush;
             if (solid != null)
-                color = solid.Color.ToSKColor();
-
-            paint.Color = (new SKColor(color.Red, color.Green, color.Blue, (byte)(color.Alpha * opacity)));
-
-            if (solid != null)
             {
+                paint.Color = new SKColor(solid.Color.R, solid.Color.G, solid.Color.B, (byte) (solid.Color.A * opacity));
                 return rv;
             }
+            paint.Color = (new SKColor(255, 255, 255, (byte)(255 * opacity)));
 
             var gradient = brush as IGradientBrush;
             if (gradient != null)
@@ -210,7 +213,7 @@ namespace Avalonia.Skia
 
                     if (intermediateSize.Width >= 1 && intermediateSize.Height >= 1)
                     {
-                        var intermediate = new BitmapImpl((int)intermediateSize.Width, (int)intermediateSize.Height);
+                        var intermediate = new BitmapImpl((int)intermediateSize.Width, (int)intermediateSize.Height, _dpi);
 
                         using (var ctx = intermediate.CreateDrawingContext(_visualBrushRenderer))
                         {
@@ -235,7 +238,7 @@ namespace Avalonia.Skia
             if (tileBrush != null && tileBrushImage != null)
             {
                 var calc = new TileBrushCalculator(tileBrush, new Size(tileBrushImage.PixelWidth, tileBrushImage.PixelHeight), targetSize);
-                var bitmap = new BitmapImpl((int)calc.IntermediateSize.Width, (int)calc.IntermediateSize.Height);
+                var bitmap = new BitmapImpl((int)calc.IntermediateSize.Width, (int)calc.IntermediateSize.Height, _dpi);
                 rv.AddDisposable(bitmap);
                 using (var context = bitmap.CreateDrawingContext(null))
                 {

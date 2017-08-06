@@ -15,7 +15,6 @@ namespace Avalonia.Direct2D1
     {
         private readonly IExternalDirect2DRenderTargetSurface _externalRenderTargetProvider;
         private readonly DirectWriteFactory _dwFactory;
-        private SharpDX.Direct2D1.RenderTarget _target;
         public ExternalRenderTarget(IExternalDirect2DRenderTargetSurface externalRenderTargetProvider,
             DirectWriteFactory dwFactory)
         {
@@ -25,15 +24,14 @@ namespace Avalonia.Direct2D1
 
         public void Dispose()
         {
-            _target?.Dispose();
-            _target = null;
+            _externalRenderTargetProvider.DestroyRenderTarget();
         }
 
         public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
         {
-            _target = _target ?? _externalRenderTargetProvider.CreateRenderTarget();
+            var target =  _externalRenderTargetProvider.GetOrCreateRenderTarget();
             _externalRenderTargetProvider.BeforeDrawing();
-            return new DrawingContextImpl(visualBrushRenderer, _target, _dwFactory, null, () =>
+            return new DrawingContextImpl(visualBrushRenderer, target, _dwFactory, null, () =>
             {
                 try
                 {
@@ -41,8 +39,7 @@ namespace Avalonia.Direct2D1
                 }
                 catch (SharpDXException ex) when ((uint) ex.HResult == 0x8899000C) // D2DERR_RECREATE_TARGET
                 {
-                    _target?.Dispose();
-                    _target = null;
+                    _externalRenderTargetProvider.DestroyRenderTarget();
                 }
             });
         }

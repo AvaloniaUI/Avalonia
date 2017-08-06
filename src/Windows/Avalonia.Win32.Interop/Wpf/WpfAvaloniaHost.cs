@@ -21,15 +21,32 @@ namespace Avalonia.Win32.Interop.Wpf
     {
         private WpfTopLevelImpl _impl;
         private readonly SynchronizationContext _sync;
+        private bool _hasChildren;
         public WpfAvaloniaHost()
         {
             _sync = SynchronizationContext.Current;
             _impl = new WpfTopLevelImpl();
             _impl.ControlRoot.Prepare();
             _impl.Visibility = Visibility.Visible;
-            AddLogicalChild(_impl);
-            AddVisualChild(_impl);
             SnapsToDevicePixels = true;
+            UseLayoutRounding = true;
+            PresentationSource.AddSourceChangedHandler(this, OnSourceChanged);
+        }
+
+        private void OnSourceChanged(object sender, SourceChangedEventArgs e)
+        {
+            if (e.NewSource != null && !_hasChildren)
+            {
+                AddLogicalChild(_impl);
+                AddVisualChild(_impl);
+                _hasChildren = true;
+            }
+            else
+            {
+                RemoveVisualChild(_impl);
+                RemoveLogicalChild(_impl);
+                _hasChildren = false;
+            }
         }
 
         public object Content

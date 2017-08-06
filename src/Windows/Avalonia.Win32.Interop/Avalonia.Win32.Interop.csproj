@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Avalonia.Win32.Interop</RootNamespace>
     <AssemblyName>Avalonia.Win32.Interop</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -49,6 +49,8 @@
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Wpf\CursorShim.cs" />
+    <Compile Include="Wpf\Direct2DImageSurface.cs" />
+    <Compile Include="Wpf\IntSize.cs" />
     <Compile Include="Wpf\WpfInteropExtensions.cs" />
     <Compile Include="Wpf\WpfAvaloniaHost.cs" />
     <Compile Include="Wpf\WpfMouseDevice.cs" />
@@ -104,10 +106,18 @@
       <Project>{6417e941-21bc-467b-a771-0de389353ce6}</Project>
       <Name>Avalonia.Markup</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Avalonia.Direct2D1\Avalonia.Direct2D1.csproj">
+      <Project>{3e908f67-5543-4879-a1dc-08eace79b3cd}</Project>
+      <Name>Avalonia.Direct2D1</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Avalonia.Win32\Avalonia.Win32.csproj">
       <Project>{811a76cf-1cf6-440f-963b-bbe31bd72a82}</Project>
       <Name>Avalonia.Win32</Name>
     </ProjectReference>
   </ItemGroup>
+  <PropertyGroup>
+    <UseDirect3D9>true</UseDirect3D9>
+  </PropertyGroup>
+  <Import Project="..\..\..\build\SharpDX.props" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

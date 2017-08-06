@@ -4,8 +4,10 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
+using System;
 using System.Collections.Generic;
 using Avalonia.Platform;
+using Avalonia.Rendering;
 using Avalonia.UnitTests;
 using Moq;
 using Xunit;
@@ -185,6 +187,50 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Showing_Should_Start_Renderer()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var renderer = new Mock<IRenderer>();
+                var target = new Window(CreateImpl(renderer));
+
+                target.Show();
+
+                renderer.Verify(x => x.Start(), Times.Once);
+            }
+        }
+
+        [Fact]
+        public void ShowDialog_Should_Start_Renderer()
+        {
+
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var renderer = new Mock<IRenderer>();
+                var target = new Window(CreateImpl(renderer));
+
+                target.Show();
+
+                renderer.Verify(x => x.Start(), Times.Once);
+            }
+        }
+
+        [Fact]
+        public void Hiding_Should_Stop_Renderer()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var renderer = new Mock<IRenderer>();
+                var target = new Window(CreateImpl(renderer));
+
+                target.Show();
+                target.Hide();
+
+                renderer.Verify(x => x.Stop(), Times.Once);
+            }
+        }
+
         private void ClearOpenWindows()
         {
             // HACK: We really need a decent way to have "statics" that can be scoped to
@@ -261,6 +307,13 @@ namespace Avalonia.Controls.UnitTests
                     Assert.Equal(window.Position, expectedPosition);
                 }
             }
+        }
+
+        private IWindowImpl CreateImpl(Mock<IRenderer> renderer)
+        {
+            return Mock.Of<IWindowImpl>(x =>
+                x.Scaling == 1 &&
+                x.CreateRenderer(It.IsAny<IRenderRoot>()) == renderer.Object);
         }
     }
 }

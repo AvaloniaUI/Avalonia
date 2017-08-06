@@ -1,6 +1,7 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Media;
@@ -22,7 +23,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
         }
 
         [Fact]
-        public void Border_1px_Border()
+        public async Task Border_1px_Border()
         {
             Decorator target = new Decorator
             {
@@ -36,12 +37,12 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
 
         [Fact]
-        public void Border_2px_Border()
+        public async Task Border_2px_Border()
         {
             Decorator target = new Decorator
             {
@@ -55,12 +56,12 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
 
         [Fact]
-        public void Border_Fill()
+        public async Task Border_Fill()
         {
             Decorator target = new Decorator
             {
@@ -73,12 +74,12 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
 
         [Fact]
-        public void Border_Brush_Offsets_Content()
+        public async Task Border_Brush_Offsets_Content()
         {
             Decorator target = new Decorator
             {
@@ -96,12 +97,12 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
 
         [Fact]
-        public void Border_Padding_Offsets_Content()
+        public async Task Border_Padding_Offsets_Content()
         {
             Decorator target = new Decorator
             {
@@ -120,12 +121,12 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
 
         [Fact]
-        public void Border_Margin_Offsets_Content()
+        public async Task Border_Margin_Offsets_Content()
         {
             Decorator target = new Decorator
             {
@@ -144,7 +145,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
 
@@ -153,7 +154,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
 #else
         [Fact]
 #endif
-        public void Border_Centers_Content_Horizontally()
+        public async Task Border_Centers_Content_Horizontally()
         {
             Decorator target = new Decorator
             {
@@ -175,7 +176,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
 
@@ -184,7 +185,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
 #else
         [Fact]
 #endif
-        public void Border_Centers_Content_Vertically()
+        public async Task Border_Centers_Content_Vertically()
         {
             Decorator target = new Decorator
             {
@@ -206,7 +207,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
 
@@ -215,7 +216,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
 #else
         [Fact]
 #endif
-        public void Border_Stretches_Content_Horizontally()
+        public async Task Border_Stretches_Content_Horizontally()
         {
             Decorator target = new Decorator
             {
@@ -237,7 +238,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
 
@@ -246,7 +247,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
 #else
         [Fact]
 #endif
-        public void Border_Stretches_Content_Vertically()
+        public async Task Border_Stretches_Content_Vertically()
         {
             Decorator target = new Decorator
             {
@@ -268,7 +269,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
 
@@ -277,7 +278,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
 #else
         [Fact]
 #endif
-        public void Border_Left_Aligns_Content()
+        public async Task Border_Left_Aligns_Content()
         {
             Decorator target = new Decorator
             {
@@ -299,7 +300,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
 
@@ -308,7 +309,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
 #else
         [Fact]
 #endif
-        public void Border_Right_Aligns_Content()
+        public async Task Border_Right_Aligns_Content()
         {
             Decorator target = new Decorator
             {
@@ -330,7 +331,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
 
@@ -339,7 +340,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
 #else
         [Fact]
 #endif
-        public void Border_Top_Aligns_Content()
+        public async Task Border_Top_Aligns_Content()
         {
             Decorator target = new Decorator
             {
@@ -361,7 +362,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
 
@@ -370,7 +371,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
 #else
         [Fact]
 #endif
-        public void Border_Bottom_Aligns_Content()
+        public async Task Border_Bottom_Aligns_Content()
         {
             Decorator target = new Decorator
             {
@@ -392,12 +393,12 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
 
         [Fact]
-        public void Border_Nested_Rotate()
+        public async Task Border_Nested_Rotate()
         {
             Decorator target = new Decorator
             {
@@ -420,7 +421,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
     }
