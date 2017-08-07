@@ -14,6 +14,30 @@ namespace Avalonia.VisualTree
     public static class VisualExtensions
     {
         /// <summary>
+        /// Calculates the distance from a visual's <see cref="IRenderRoot"/>.
+        /// </summary>
+        /// <param name="visual">The visual.</param>
+        /// <param name="ancestor">The ancestor visual.</param>
+        /// <returns>
+        /// The number of steps from the visual to the ancestor or -1 if
+        /// <paramref name="visual"/> is not a descendent of <paramref name="ancestor"/>.
+        /// </returns>
+        public static int CalculateDistanceFromAncestor(this IVisual visual, IVisual ancestor)
+        {
+            Contract.Requires<ArgumentNullException>(visual != null);
+
+            var result = 0;
+
+            while (visual != null && visual != ancestor)
+            {
+                ++result;
+                visual = visual.VisualParent;
+            }
+
+            return visual != null ? result : -1;
+        }
+
+        /// <summary>
         /// Tries to get the first common ancestor of two visuals.
         /// </summary>
         /// <param name="visual">The first visual.</param>
