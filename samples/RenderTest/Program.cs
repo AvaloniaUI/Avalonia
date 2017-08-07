@@ -18,7 +18,6 @@ namespace RenderTest
             // again.
             AppBuilder.Configure<App>()
                 .UsePlatformDetect()
-                .UseReactiveUI()
                 .Start<MainWindow>();
         }
 

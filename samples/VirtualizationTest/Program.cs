@@ -17,7 +17,6 @@ namespace VirtualizationTest
 
             AppBuilder.Configure<App>()
                .UsePlatformDetect()
-               .UseReactiveUI()
                .Start<MainWindow>();
         }
 
