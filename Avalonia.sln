@@ -143,7 +143,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Win32.NetStandard"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.DotNetCoreRuntime", "src\Avalonia.DotNetCoreRuntime\Avalonia.DotNetCoreRuntime.csproj", "{7863EA94-F0FB-4386-BF8C-E5BFA761560A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Skia.Desktop.NetStandard", "src\Skia\Avalonia.Skia.Desktop.NetStandard\Avalonia.Skia.Desktop.NetStandard.csproj", "{7D2D3083-71DD-4CC9-8907-39A0D86FB322}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Skia", "src\Skia\Avalonia.Skia\Avalonia.Skia.csproj", "{7D2D3083-71DD-4CC9-8907-39A0D86FB322}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Gtk3", "src\Gtk\Avalonia.Gtk3\Avalonia.Gtk3.csproj", "{BB1F7BB5-6AD4-4776-94D9-C09D0A972658}"
 EndProject
