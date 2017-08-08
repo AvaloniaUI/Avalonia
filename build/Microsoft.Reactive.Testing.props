@@ -1,0 +1,5 @@
+﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Reactive.Testing" Version="3.0.0" />
+  </ItemGroup>
+</Project>

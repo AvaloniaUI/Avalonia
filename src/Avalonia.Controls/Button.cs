@@ -207,7 +207,11 @@ namespace Avalonia.Controls
         /// <param name="e">The event args.</param>
         protected virtual void OnClick(RoutedEventArgs e)
         {
-            Command?.Execute(CommandParameter);
+            if (Command != null)
+            {
+                Command.Execute(CommandParameter);
+                e.Handled = true;
+            }
         }
 
         /// <inheritdoc/>
@@ -215,28 +219,34 @@ namespace Avalonia.Controls
         {
             base.OnPointerPressed(e);
 
-            PseudoClasses.Add(":pressed");
-            e.Device.Capture(this);
-            e.Handled = true;
-
-            if (ClickMode == ClickMode.Press)
+            if (e.MouseButton == MouseButton.Left)
             {
-                RaiseClickEvent();
+                PseudoClasses.Add(":pressed");
+                e.Device.Capture(this);
+                e.Handled = true;
+
+                if (ClickMode == ClickMode.Press)
+                {
+                    RaiseClickEvent();
+                }
             }
         }
 
         /// <inheritdoc/>
-        protected override void OnPointerReleased(PointerEventArgs e)
+        protected override void OnPointerReleased(PointerReleasedEventArgs e)
         {
             base.OnPointerReleased(e);
 
-            e.Device.Capture(null);
-            PseudoClasses.Remove(":pressed");
-            e.Handled = true;
-
-            if (ClickMode == ClickMode.Release && Classes.Contains(":pointerover"))
+            if (e.MouseButton == MouseButton.Left)
             {
-                RaiseClickEvent();
+                e.Device.Capture(null);
+                PseudoClasses.Remove(":pressed");
+                e.Handled = true;
+
+                if (ClickMode == ClickMode.Release && new Rect(Bounds.Size).Contains(e.GetPosition(this)))
+                {
+                    RaiseClickEvent();
+                }
             }
         }
 
@@ -275,7 +285,7 @@ namespace Avalonia.Controls
         {
             var button = e.Sender as Button;
             var isDefault = (bool)e.NewValue;
-            var inputRoot = button.VisualRoot as IInputElement;
+            var inputRoot = button?.VisualRoot as IInputElement;
 
             if (inputRoot != null)
             {

@@ -5,7 +5,7 @@ namespace Avalonia.Cairo
 {
 	public class SolidColorBrushImpl : BrushImpl
 	{
-		public SolidColorBrushImpl(Avalonia.Media.SolidColorBrush brush, double opacityOverride = 1.0f)
+		public SolidColorBrushImpl(Avalonia.Media.ISolidColorBrush brush, double opacityOverride = 1.0f)
 		{
 			var color = brush?.Color.ToCairo() ?? new Color();
 

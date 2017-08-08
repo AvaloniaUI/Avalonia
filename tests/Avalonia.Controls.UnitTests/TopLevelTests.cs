@@ -2,26 +2,33 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Reactive;
-using System.Reactive.Subjects;
-using Moq;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Layout;
+using Avalonia.LogicalTree;
 using Avalonia.Platform;
-using Avalonia.Rendering;
-using Avalonia.Styling;
 using Avalonia.UnitTests;
-using Ploeh.AutoFixture;
-using Ploeh.AutoFixture.AutoMoq;
+using Moq;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
     public class TopLevelTests
     {
+        [Fact]
+        public void IsAttachedToLogicalTree_Is_True()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var impl = new Mock<ITopLevelImpl>();
+                var target = new TestTopLevel(impl.Object);
+
+                Assert.True(((ILogical)target).IsAttachedToLogicalTree);
+            }
+        }
+
         [Fact]
         public void ClientSize_Should_Be_Set_On_Construction()
         {
@@ -91,6 +98,7 @@ namespace Avalonia.Controls.UnitTests
 
                 var target = new TestTopLevel(impl.Object)
                 {
+                    IsVisible = true,
                     Template = CreateTemplate(),
                     Content = new TextBlock
                     {
@@ -104,8 +112,6 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(new Rect(0, 0, 321, 432), target.Bounds);
             }
         }
-
-       
 
         [Fact]
         public void Width_And_Height_Should_Not_Be_Set_After_Layout_Pass()

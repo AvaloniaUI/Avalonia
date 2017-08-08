@@ -16,10 +16,10 @@ namespace Avalonia.Input.Navigation
         public static bool CanFocus(this IInputElement e) => e.Focusable && e.IsEnabledCore && e.IsVisible;
 
         /// <summary>
-        /// Checks if descendents of the specified element can be focused.
+        /// Checks if descendants of the specified element can be focused.
         /// </summary>
         /// <param name="e">The element.</param>
-        /// <returns>True if descendents of the element can be focused.</returns>
-        public static bool CanFocusDescendents(this IInputElement e) => e.IsEnabledCore && e.IsVisible;
+        /// <returns>True if descendants of the element can be focused.</returns>
+        public static bool CanFocusDescendants(this IInputElement e) => e.IsEnabledCore && e.IsVisible;
     }
 }

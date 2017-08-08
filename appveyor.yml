@@ -1,26 +1,31 @@
-os: Visual Studio 2015
+os: Visual Studio 2017
 platform:
 - Any CPU
+skip_branch_with_pr: true
 configuration:
 - Release
 environment:
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
   NUGET_API_KEY:
     secure: Xv89dlP2MSBZKhl1nrWSxqcDgCXB0HRhOd4SWQ+jRJ7QoLxQel5mLTipXM++J3G5
   NUGET_API_URL: https://www.nuget.org/api/v2/package
   MYGET_API_KEY:
     secure: OtVfyN3ErqQrDTnWH2HDfJDlCiu/i4/X4wFmK3ZXXP7HmCiXYPSbTjMPwwdOxRaK
   MYGET_API_URL: https://www.myget.org/F/avalonia-ci/api/v2/package
+init:
+- ps: if (Test-Path env:nuget_address) {[System.IO.File]::AppendAllText("C:\Windows\System32\drivers\etc\hosts", "`n$($env:nuget_address)`tapi.nuget.org")}
 install:
   - if not exist gtk-sharp-2.12.26.msi appveyor DownloadFile http://download.xamarin.com/GTKforWindows/Windows/gtk-sharp-2.12.26.msi
-  - msiexec /i gtk-sharp-2.12.26.msi /qn /norestart
+  - if not exist dotnet-1.0.1.exe appveyor DownloadFile https://go.microsoft.com/fwlink/?linkid=843448 -FileName "dotnet-1.0.1.exe"
+  - ps: Start-Process -FilePath "msiexec" -ArgumentList "/i gtk-sharp-2.12.26.msi /quiet /qn /norestart" -Wait
+  - ps: Start-Process -FilePath "dotnet-1.0.1.exe" -ArgumentList "/quiet" -Wait
   - cmd: set PATH=%programfiles(x86)%\GtkSharp\2.12\bin\;%PATH%
 before_build:
 - git submodule update --init
 build_script:
 - ps: .\build.ps1 -Target "AppVeyor" -Platform "$env:platform" -Configuration "$env:configuration"
 after_build:
-- .\packages\JetBrains.dotMemoryUnit.2.1.20150828.125449\tools\dotMemoryUnit.exe -targetExecutable="%xunit20%\xunit.console.x86.exe" -returnTargetExitCode  --"tests\Avalonia.LeakTests\bin\Release\Avalonia.LeakTests.dll"
-
 - "SET PATH=C:\\Python34;C:\\Python34\\Scripts;%PATH%"
 - pip install codecov
 - codecov -f "./artifacts/coverage.xml"
@@ -29,5 +34,7 @@ test: off
 artifacts:
   - path: artifacts\nuget\*.nupkg
   - path: artifacts\zip\*.zip
+  - path: artifacts\inspectcode.xml
 cache:
   - gtk-sharp-2.12.26.msi
+  - dotnet-1.0.1.exe

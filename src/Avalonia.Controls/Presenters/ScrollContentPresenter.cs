@@ -111,7 +111,7 @@ namespace Avalonia.Controls.Presenters
         /// <param name="target">The target visual.</param>
         /// <param name="targetRect">The portion of the target visual to bring into view.</param>
         /// <returns>True if the scroll offset was changed; otherwise false.</returns>
-        public bool BringDescendentIntoView(IVisual target, Rect targetRect)
+        public bool BringDescendantIntoView(IVisual target, Rect targetRect)
         {
             if (Child == null)
             {
@@ -133,7 +133,7 @@ namespace Avalonia.Controls.Presenters
                 return false;
             }
 
-            var rect = targetRect * transform.Value;
+            var rect = targetRect.TransformToAABB(transform.Value);
             var offset = Offset;
             var result = false;
 
@@ -262,7 +262,7 @@ namespace Avalonia.Controls.Presenters
 
         private void BringIntoViewRequested(object sender, RequestBringIntoViewEventArgs e)
         {
-            e.Handled = BringDescendentIntoView(e.TargetObject, e.TargetRect);
+            e.Handled = BringDescendantIntoView(e.TargetObject, e.TargetRect);
         }
 
         private void ChildChanged(AvaloniaPropertyChangedEventArgs e)

@@ -17,7 +17,9 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Logging;
 using Avalonia.LogicalTree;
+using Avalonia.Rendering;
 using Avalonia.Styling;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -33,7 +35,7 @@ namespace Avalonia.Controls
     /// - Implements <see cref="IStyleable"/> to allow styling to work on the control.
     /// - Implements <see cref="ILogical"/> to form part of a logical tree.
     /// </remarks>
-    public class Control : InputElement, IControl, INamed, ISetInheritanceParent, ISetLogicalParent, ISupportInitialize
+    public class Control : InputElement, IControl, INamed, ISetInheritanceParent, ISetLogicalParent, ISupportInitialize, IVisualBrushInitialize
     {
         /// <summary>
         /// Defines the <see cref="DataContext"/> property.
@@ -116,6 +118,7 @@ namespace Avalonia.Controls
         public Control()
         {
             _nameScope = this as INameScope;
+            _isAttachedToLogicalTree = this is IStyleRoot;
         }
 
         /// <summary>
@@ -352,19 +355,35 @@ namespace Avalonia.Controls
 
             if (--_initCount == 0 && _isAttachedToLogicalTree)
             {
-                if (!_styled)
-                {
-                    RegisterWithNameScope();
-                    ApplyStyling();
-                    _styled = true;
-                }
+                InitializeStylesIfNeeded();
 
-                if (!IsInitialized)
-                {
-                    IsInitialized = true;
-                    Initialized?.Invoke(this, EventArgs.Empty);
-                }
+                InitializeIfNeeded();
             }
+        }
+
+        private void InitializeStylesIfNeeded(bool force = false)
+        {
+            if (_initCount == 0 && (!_styled || force))
+            {
+                RegisterWithNameScope();
+                ApplyStyling();
+                _styled = true;
+            }
+        }
+
+        private void InitializeIfNeeded()
+        {
+            if (_initCount == 0 && !IsInitialized)
+            {
+                IsInitialized = true;
+                Initialized?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        /// <inheritdoc/>
+        void ILogical.NotifyAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
+        {
+            this.OnAttachedToLogicalTreeCore(e);
         }
 
         /// <inheritdoc/>
@@ -416,7 +435,7 @@ namespace Avalonia.Controls
 
                 if (_isAttachedToLogicalTree)
                 {
-                    var oldRoot = FindStyleRoot(old);
+                    var oldRoot = FindStyleRoot(old) ?? this as IStyleRoot;
 
                     if (oldRoot == null)
                     {
@@ -434,7 +453,7 @@ namespace Avalonia.Controls
 
                 _parent = (IControl)parent;
 
-                if (_parent is IStyleRoot || _parent?.IsAttachedToLogicalTree == true)
+                if (_parent is IStyleRoot || _parent?.IsAttachedToLogicalTree == true || this is IStyleRoot)
                 {
                     var newRoot = FindStyleRoot(this);
 
@@ -458,6 +477,38 @@ namespace Avalonia.Controls
         void ISetInheritanceParent.SetParent(IAvaloniaObject parent)
         {
             InheritanceParent = parent;
+        }
+
+        /// <inheritdoc/>
+        void IVisualBrushInitialize.EnsureInitialized()
+        {
+            if (VisualRoot == null)
+            {
+                if (!IsInitialized)
+                {
+                    foreach (var i in this.GetSelfAndVisualDescendants())
+                    {
+                        var c = i as IControl;
+
+                        if (c?.IsInitialized == false)
+                        {
+                            var init = c as ISupportInitialize;
+
+                            if (init != null)
+                            {
+                                init.BeginInit();
+                                init.EndInit();
+                            }
+                        }
+                    }
+                }
+
+                if (!IsArrangeValid)
+                {
+                    Measure(Size.Infinity);
+                    Arrange(new Rect(DesiredSize));
+                }
+            }
         }
 
         /// <summary>
@@ -539,11 +590,7 @@ namespace Avalonia.Controls
         {
             base.OnAttachedToVisualTreeCore(e);
 
-            if (!IsInitialized)
-            {
-                IsInitialized = true;
-                Initialized?.Invoke(this, EventArgs.Empty);
-            }
+            InitializeIfNeeded();
         }
 
         /// <inheritdoc/>
@@ -611,7 +658,7 @@ namespace Avalonia.Controls
 
             if (_focusAdorner != null)
             {
-                var adornerLayer = _focusAdorner.Parent as Panel;
+                var adornerLayer = (IPanel)_focusAdorner.Parent;
                 adornerLayer.Children.Remove(_focusAdorner);
                 _focusAdorner = null;
             }
@@ -711,12 +758,7 @@ namespace Avalonia.Controls
             {
                 _isAttachedToLogicalTree = true;
 
-                if (_initCount == 0)
-                {
-                    RegisterWithNameScope();
-                    ApplyStyling();
-                    _styled = true;
-                }
+                InitializeStylesIfNeeded(true);
 
                 OnAttachedToLogicalTree(e);
             }

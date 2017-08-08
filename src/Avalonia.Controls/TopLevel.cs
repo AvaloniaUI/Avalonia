@@ -14,6 +14,7 @@ using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Styling;
 using Avalonia.VisualTree;
+using JetBrains.Annotations;
 
 namespace Avalonia.Controls
 {
@@ -89,28 +90,27 @@ namespace Avalonia.Controls
             _renderInterface = TryGetService<IPlatformRenderInterface>(dependencyResolver);
 
             var renderLoop = TryGetService<IRenderLoop>(dependencyResolver);
-            var rendererFactory = TryGetService<IRendererFactory>(dependencyResolver);
-            Renderer = rendererFactory?.CreateRenderer(this, renderLoop);
+            Renderer = impl.CreateRenderer(this);
 
-            PlatformImpl.SetInputRoot(this);
+            impl.SetInputRoot(this);
 
-            PlatformImpl.Closed = HandleClosed;
-            PlatformImpl.Input = HandleInput;
-            PlatformImpl.Paint = Renderer != null ? (Action<Rect>)Renderer.Render : null;
-            PlatformImpl.Resized = HandleResized;
-            PlatformImpl.ScalingChanged = HandleScalingChanged;
-            
+            impl.Closed = HandleClosed;
+            impl.Input = HandleInput;
+            impl.Paint = HandlePaint;
+            impl.Resized = HandleResized;
+            impl.ScalingChanged = HandleScalingChanged;
+
 
             _keyboardNavigationHandler?.SetOwner(this);
             _accessKeyHandler?.SetOwner(this);
             styler?.ApplyStyles(this);
 
-            ClientSize = PlatformImpl.ClientSize;
+            ClientSize = impl.ClientSize;
             
             this.GetObservable(PointerOverElementProperty)
                 .Select(
                     x => (x as InputElement)?.GetObservable(CursorProperty) ?? Observable.Empty<Cursor>())
-                .Switch().Subscribe(cursor => PlatformImpl.SetCursor(cursor?.PlatformCursor));
+                .Switch().Subscribe(cursor => PlatformImpl?.SetCursor(cursor?.PlatformCursor));
 
             if (_applicationLifecycle != null)
             {
@@ -135,10 +135,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the platform-specific window implementation.
         /// </summary>
-        public ITopLevelImpl PlatformImpl
-        {
-            get;
-        }
+        [CanBeNull]
+        public ITopLevelImpl PlatformImpl { get; private set; }
         
         /// <summary>
         /// Gets the renderer for the window.
@@ -164,6 +162,9 @@ namespace Avalonia.Controls
             set { SetValue(PointerOverElementProperty, value); }
         }
 
+        /// <inheritdoc/>
+        IMouseDevice IInputRoot.MouseDevice => PlatformImpl?.MouseDevice;
+
         /// <summary>
         /// Gets or sets a value indicating whether access keys are shown in the window.
         /// </summary>
@@ -177,37 +178,65 @@ namespace Avalonia.Controls
         Size ILayoutRoot.MaxClientSize => Size.Infinity;
 
         /// <inheritdoc/>
-        double ILayoutRoot.LayoutScaling => PlatformImpl.Scaling;
+        double ILayoutRoot.LayoutScaling => PlatformImpl?.Scaling ?? 1;
+
+        /// <inheritdoc/>
+        double IRenderRoot.RenderScaling => PlatformImpl?.Scaling ?? 1;
 
         IStyleHost IStyleHost.StylingParent
         {
             get { return AvaloniaLocator.Current.GetService<IGlobalStyles>(); }
         }
 
+        IRenderTarget IRenderRoot.CreateRenderTarget() => CreateRenderTarget();
+
         /// <inheritdoc/>
-        IRenderTarget IRenderRoot.CreateRenderTarget()
+        protected virtual IRenderTarget CreateRenderTarget()
         {
+            if(PlatformImpl == null)
+                throw new InvalidOperationException("Cann't create render target, PlatformImpl is null (might be already disposed)");
             return _renderInterface.CreateRenderTarget(PlatformImpl.Surfaces);
         }
 
         /// <inheritdoc/>
         void IRenderRoot.Invalidate(Rect rect)
         {
-            PlatformImpl.Invalidate(rect);
+            PlatformImpl?.Invalidate(rect);
         }
 
         /// <inheritdoc/>
         Point IRenderRoot.PointToClient(Point p)
         {
-            return PlatformImpl.PointToClient(p);
+            return PlatformImpl?.PointToClient(p) ?? default(Point);
         }
 
         /// <inheritdoc/>
         Point IRenderRoot.PointToScreen(Point p)
         {
-            return PlatformImpl.PointToScreen(p);
+            return PlatformImpl?.PointToScreen(p) ?? default(Point);
         }
 
+        /// <summary>
+        /// Handles a paint notification from <see cref="ITopLevelImpl.Resized"/>.
+        /// </summary>
+        /// <param name="rect">The dirty area.</param>
+        protected virtual void HandlePaint(Rect rect)
+        {
+            Renderer?.Paint(rect);
+        }
+
+        /// <summary>
+        /// Handles a closed notification from <see cref="ITopLevelImpl.Closed"/>.
+        /// </summary>
+        protected virtual void HandleClosed()
+        {
+            PlatformImpl = null;
+
+            Closed?.Invoke(this, EventArgs.Empty);
+            Renderer?.Dispose();
+            Renderer = null;
+            _applicationLifecycle.OnExit -= OnApplicationExiting;
+        }
 
         /// <summary>
         /// Handles a resize notification from <see cref="ITopLevelImpl.Resized"/>.
@@ -219,7 +248,7 @@ namespace Avalonia.Controls
             Width = clientSize.Width;
             Height = clientSize.Height;
             LayoutManager.Instance.ExecuteLayoutPass();
-            PlatformImpl.Invalidate(new Rect(clientSize));
+            Renderer?.Resized(clientSize);
         }
 
         /// <summary>
@@ -229,7 +258,7 @@ namespace Avalonia.Controls
         /// <param name="scaling">The window scaling.</param>
         protected virtual void HandleScalingChanged(double scaling)
         {
-            foreach (ILayoutable control in this.GetSelfAndVisualDescendents())
+            foreach (ILayoutable control in this.GetSelfAndVisualDescendants())
             {
                 control.InvalidateMeasure();
             }
@@ -265,17 +294,6 @@ namespace Avalonia.Controls
             }
 
             return result;
-        }
-
-        /// <summary>
-        /// Handles a closed notification from <see cref="ITopLevelImpl.Closed"/>.
-        /// </summary>
-        private void HandleClosed()
-        {
-            Closed?.Invoke(this, EventArgs.Empty);
-            Renderer?.Dispose();
-            Renderer = null;
-            _applicationLifecycle.OnExit -= OnApplicationExiting;
         }
 
         private void OnApplicationExiting(object sender, EventArgs args)

@@ -46,7 +46,8 @@ namespace Avalonia.Media
 
                 if (member != null)
                 {
-                    return (IBrush)member.GetValue(null);
+                    var brush = (ISolidColorBrush)member.GetValue(null);
+                    return new SolidColorBrush(brush.Color, brush.Opacity);
                 }
                 else
                 {

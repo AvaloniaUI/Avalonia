@@ -1,247 +1,30 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\..\packages\xunit.runner.visualstudio.2.1.0\build\net20\xunit.runner.visualstudio.props" Condition="Exists('..\..\packages\xunit.runner.visualstudio.2.1.0\build\net20\xunit.runner.visualstudio.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{5CCB5571-7C30-4E7D-967D-0E2158EBD91F}</ProjectGuid>
+    <TargetFrameworks>net461;netcoreapp1.1</TargetFrameworks>
     <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Avalonia.Controls.UnitTests</RootNamespace>
-    <AssemblyName>Avalonia.Controls.UnitTests</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
-    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
-    <ReferencePath>$(ProgramFiles)\Common Files\microsoft shared\VSTT\$(VisualStudioVersion)\UITestExtensionPackages</ReferencePath>
-    <IsCodedUITest>False</IsCodedUITest>
-    <TestProjectType>UnitTest</TestProjectType>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Debug\Avalonia.Controls.UnitTests.XML</DocumentationFile>
-    <NoWarn>CS1591</NoWarn>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
+  <Import Project="..\..\build\UnitTests.NetCore.targets" />
+  <Import Project="..\..\build\Moq.props" />
+  <Import Project="..\..\build\XUnit.props" />
+  <Import Project="..\..\build\Rx.props" />
+  <Import Project="..\..\build\Microsoft.Reactive.Testing.props" />
   <ItemGroup>
-    <Reference Include="Moq, Version=4.2.1510.2205, Culture=neutral, PublicKeyToken=69f491c39445e920, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Moq.4.2.1510.2205\lib\net40\Moq.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Ploeh.AutoFixture, Version=3.40.0.0, Culture=neutral, PublicKeyToken=b24654c590009d4f, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\AutoFixture.3.40.0\lib\net40\Ploeh.AutoFixture.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Ploeh.AutoFixture.AutoMoq, Version=3.40.0.0, Culture=neutral, PublicKeyToken=b24654c590009d4f, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\AutoFixture.AutoMoq.3.40.0\lib\net40\Ploeh.AutoFixture.AutoMoq.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Reactive.Core, Version=3.0.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Reactive.Core.3.0.0\lib\net45\System.Reactive.Core.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Reactive.Interfaces, Version=3.0.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Reactive.Interfaces.3.0.0\lib\net45\System.Reactive.Interfaces.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Reactive.Linq, Version=3.0.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Reactive.Linq.3.0.0\lib\net45\System.Reactive.Linq.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Reactive.PlatformServices, Version=3.0.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Reactive.PlatformServices.3.0.0\lib\net45\System.Reactive.PlatformServices.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="WindowsBase" />
-    <Reference Include="xunit.abstractions, Version=2.0.0.0, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c">
-      <HintPath>..\..\packages\xunit.abstractions.2.0.0\lib\net35\xunit.abstractions.dll</HintPath>
-    </Reference>
-    <Reference Include="xunit.assert, Version=2.1.0.3179, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\xunit.assert.2.1.0\lib\dotnet\xunit.assert.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="xunit.core, Version=2.1.0.3179, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\xunit.extensibility.core.2.1.0\lib\dotnet\xunit.core.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="xunit.execution.desktop, Version=2.1.0.3179, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\xunit.extensibility.execution.2.1.0\lib\net45\xunit.execution.desktop.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-  </ItemGroup>
-  <Choose>
-    <When Condition="('$(VisualStudioVersion)' == '10.0' or '$(VisualStudioVersion)' == '') and '$(TargetFrameworkVersion)' == 'v3.5'">
-      <ItemGroup>
-        <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
-      </ItemGroup>
-    </When>
-    <Otherwise />
-  </Choose>
-  <ItemGroup>
-    <Compile Include="AppBuilderTests.cs" />
-    <Compile Include="CanvasTests.cs" />
-    <Compile Include="ClassesTests.cs" />
-    <Compile Include="LayoutTransformControlTests.cs" />
-    <Compile Include="Presenters\ItemsPresenterTests_Virtualization_Simple.cs" />
-    <Compile Include="Presenters\ItemsPresenterTests_Virtualization.cs" />
-    <Compile Include="TextBoxTests_DataValidation.cs" />
-    <Compile Include="WindowBaseTests.cs" />
-    <Compile Include="UserControlTests.cs" />
-    <Compile Include="DockPanelTests.cs" />
-    <Compile Include="EnumerableExtensions.cs" />
-    <Compile Include="GridSplitterTests.cs" />
-    <Compile Include="GridTests.cs" />
-    <Compile Include="HeaderedItemsControlTests .cs" />
-    <Compile Include="ControlTests_NameScope.cs" />
-    <Compile Include="Generators\ItemContainerGeneratorTests.cs" />
-    <Compile Include="GridLengthTests.cs" />
-    <Compile Include="ImageTests.cs" />
-    <Compile Include="Presenters\ContentPresenterTests.cs" />
-    <Compile Include="BorderTests.cs" />
-    <Compile Include="ListBoxTests_Single.cs" />
-    <Compile Include="NameScopeTests.cs" />
-    <Compile Include="Primitives\SelectingItemsControlTests_Multiple.cs" />
-    <Compile Include="Presenters\ScrollContentPresenterTests_ILogicalScrollable.cs" />
-    <Compile Include="TextBoxTests.cs" />
-    <Compile Include="TextBlockTests.cs" />
-    <Compile Include="WindowingPlatformMock.cs" />
-    <Compile Include="TreeViewTests.cs" />
-    <Compile Include="Mixins\SelectableMixinTests.cs" />
-    <Compile Include="StackPanelTests.cs" />
-    <Compile Include="Primitives\TrackTests.cs" />
-    <Compile Include="Primitives\PopupTests.cs" />
-    <Compile Include="DropDownTests.cs" />
-    <Compile Include="Presenters\CarouselPresenterTests.cs" />
-    <Compile Include="Presenters\ItemsPresenterTests.cs" />
-    <Compile Include="Presenters\ScrollContentPresenterTests.cs" />
-    <Compile Include="Primitives\TemplatedControlTests.cs" />
-    <Compile Include="Primitives\ScrollBarTests.cs" />
-    <Compile Include="Primitives\RangeBaseTests.cs" />
-    <Compile Include="Primitives\SelectingItemsControlTests_AutoSelect.cs" />
-    <Compile Include="ScrollViewerTests.cs" />
-    <Compile Include="Primitives\SelectingItemsControlTests.cs" />
-    <Compile Include="ListBoxTests.cs" />
-    <Compile Include="ItemsControlTests.cs" />
-    <Compile Include="ContentControlTests.cs" />
-    <Compile Include="DecoratorTests.cs" />
-    <Compile Include="CarouselTests.cs" />
-    <Compile Include="TopLevelTests.cs" />
-    <Compile Include="Primitives\TabStripTests.cs" />
-    <Compile Include="TabControlTests.cs" />
-    <Compile Include="PanelTests.cs" />
-    <Compile Include="ControlTests.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Templates\TemplateExtensionsTests.cs" />
-    <Compile Include="TestTemplatedControl.cs" />
-    <Compile Include="Utils\AncestorFinderTests.cs" />
-    <Compile Include="Utils\HotKeyManagerTests.cs" />
-    <Compile Include="VirtualizingStackPanelTests.cs" />
-    <Compile Include="WrapPanelTests.cs" />
+    <PackageReference Include="System.ValueTuple" Version="4.3.1" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Avalonia.DotNetFrameworkRuntime\Avalonia.DotNetFrameworkRuntime.csproj">
-      <Project>{4a1abb09-9047-4bd5-a4ad-a055e52c5ee0}</Project>
-      <Name>Avalonia.DotNetFrameworkRuntime</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj">
-      <Project>{3e53a01a-b331-47f3-b828-4a5717e77a24}</Project>
-      <Name>Avalonia.Markup.Xaml</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Markup\Avalonia.Markup\Avalonia.Markup.csproj">
-      <Project>{6417e941-21bc-467b-a771-0de389353ce6}</Project>
-      <Name>Avalonia.Markup</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Avalonia.Animation\Avalonia.Animation.csproj">
-      <Project>{D211E587-D8BC-45B9-95A4-F297C8FA5200}</Project>
-      <Name>Avalonia.Animation</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Avalonia.Base\Avalonia.Base.csproj">
-      <Project>{B09B78D8-9B26-48B0-9149-D64A2F120F3F}</Project>
-      <Name>Avalonia.Base</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Avalonia.Controls\Avalonia.Controls.csproj">
-      <Project>{D2221C82-4A25-4583-9B43-D791E3F6820C}</Project>
-      <Name>Avalonia.Controls</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Avalonia.Input\Avalonia.Input.csproj">
-      <Project>{62024B2D-53EB-4638-B26B-85EEAA54866E}</Project>
-      <Name>Avalonia.Input</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Avalonia.Interactivity\Avalonia.Interactivity.csproj">
-      <Project>{6B0ED19D-A08B-461C-A9D9-A9EE40B0C06B}</Project>
-      <Name>Avalonia.Interactivity</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Avalonia.Layout\Avalonia.Layout.csproj">
-      <Project>{42472427-4774-4C81-8AFF-9F27B8E31721}</Project>
-      <Name>Avalonia.Layout</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Avalonia.Visuals\Avalonia.Visuals.csproj">
-      <Project>{EB582467-6ABB-43A1-B052-E981BA910E3A}</Project>
-      <Name>Avalonia.Visuals</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Avalonia.Styling\Avalonia.Styling.csproj">
-      <Project>{F1BAA01A-F176-4C6A-B39D-5B40BB1B148F}</Project>
-      <Name>Avalonia.Styling</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Avalonia.UnitTests\Avalonia.UnitTests.csproj">
-      <Project>{88060192-33d5-4932-b0f9-8bd2763e857d}</Project>
-      <Name>Avalonia.UnitTests</Name>
-    </ProjectReference>
+    <ProjectReference Include="..\..\src\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj" />
+    <ProjectReference Include="..\..\src\Markup\Avalonia.Markup\Avalonia.Markup.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.Animation\Avalonia.Animation.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.Base\Avalonia.Base.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.Controls\Avalonia.Controls.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.Input\Avalonia.Input.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.Interactivity\Avalonia.Interactivity.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.Layout\Avalonia.Layout.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.Visuals\Avalonia.Visuals.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.Styling\Avalonia.Styling.csproj" />
+    <ProjectReference Include="..\Avalonia.UnitTests\Avalonia.UnitTests.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
-    <None Include="packages.config" />
+    <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
   </ItemGroup>
-  <ItemGroup>
-    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
-  </ItemGroup>
-  <Choose>
-    <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
-      <ItemGroup>
-        <Reference Include="Microsoft.VisualStudio.QualityTools.CodedUITestFramework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-          <Private>False</Private>
-        </Reference>
-        <Reference Include="Microsoft.VisualStudio.TestTools.UITest.Common, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-          <Private>False</Private>
-        </Reference>
-        <Reference Include="Microsoft.VisualStudio.TestTools.UITest.Extension, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-          <Private>False</Private>
-        </Reference>
-        <Reference Include="Microsoft.VisualStudio.TestTools.UITesting, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-          <Private>False</Private>
-        </Reference>
-      </ItemGroup>
-    </When>
-  </Choose>
-  <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\..\packages\xunit.runner.visualstudio.2.1.0\build\net20\xunit.runner.visualstudio.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\xunit.runner.visualstudio.2.1.0\build\net20\xunit.runner.visualstudio.props'))" />
-  </Target>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
 </Project>

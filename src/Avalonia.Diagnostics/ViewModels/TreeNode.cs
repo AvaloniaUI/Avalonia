@@ -5,46 +5,49 @@ using System;
 using System.Collections.Specialized;
 using System.Reactive;
 using System.Reactive.Linq;
-using Avalonia.Controls;
+using Avalonia.Collections;
 using Avalonia.Styling;
-using ReactiveUI;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
-    internal class TreeNode : ReactiveObject
+    internal class TreeNode : ViewModelBase
     {
         private string _classes;
         private bool _isExpanded;
 
-        public TreeNode(Control control, TreeNode parent)
+        public TreeNode(IVisual visual, TreeNode parent)
         {
-            Control = control;
             Parent = parent;
-            Type = control.GetType().Name;
+            Type = visual.GetType().Name;
+            Visual = visual;
 
-            var classesChanged = Observable.FromEventPattern<
-                    NotifyCollectionChangedEventHandler, 
-                    NotifyCollectionChangedEventArgs>(
-                x => control.Classes.CollectionChanged += x,
-                x => control.Classes.CollectionChanged -= x)
-                .TakeUntil(((IStyleable)control).StyleDetach);
+            if (visual is IStyleable styleable)
+            {
+                var classesChanged = Observable.FromEventPattern<
+                        NotifyCollectionChangedEventHandler,
+                        NotifyCollectionChangedEventArgs>(
+                    x => styleable.Classes.CollectionChanged += x,
+                    x => styleable.Classes.CollectionChanged -= x)
+                    .TakeUntil(((IStyleable)styleable).StyleDetach);
 
-            classesChanged.Select(_ => Unit.Default)
-                .StartWith(Unit.Default)
-                .Subscribe(_ =>
-                {
-                    if (control.Classes.Count > 0)
+                classesChanged.Select(_ => Unit.Default)
+                    .StartWith(Unit.Default)
+                    .Subscribe(_ =>
                     {
-                        Classes = "(" + string.Join(" ", control.Classes) + ")";
-                    }
-                    else
-                    {
-                        Classes = string.Empty;
-                    }
-                });
+                        if (styleable.Classes.Count > 0)
+                        {
+                            Classes = "(" + string.Join(" ", styleable.Classes) + ")";
+                        }
+                        else
+                        {
+                            Classes = string.Empty;
+                        }
+                    });
+            }
         }
 
-        public IReadOnlyReactiveList<TreeNode> Children
+        public IAvaloniaReadOnlyList<TreeNode> Children
         {
             get;
             protected set;
@@ -53,10 +56,10 @@ namespace Avalonia.Diagnostics.ViewModels
         public string Classes
         {
             get { return _classes; }
-            private set { this.RaiseAndSetIfChanged(ref _classes, value); }
+            private set { RaiseAndSetIfChanged(ref _classes, value); }
         }
 
-        public Control Control
+        public IVisual Visual
         {
             get;
         }
@@ -64,7 +67,7 @@ namespace Avalonia.Diagnostics.ViewModels
         public bool IsExpanded
         {
             get { return _isExpanded; }
-            set { this.RaiseAndSetIfChanged(ref _isExpanded, value); }
+            set { RaiseAndSetIfChanged(ref _isExpanded, value); }
         }
 
         public TreeNode Parent

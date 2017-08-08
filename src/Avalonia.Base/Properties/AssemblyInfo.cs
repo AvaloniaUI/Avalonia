@@ -6,4 +6,5 @@ using System.Runtime.CompilerServices;
 
 [assembly: AssemblyTitle("Avalonia.Base")]
 [assembly: InternalsVisibleTo("Avalonia.Base.UnitTests")]
+[assembly: InternalsVisibleTo("Avalonia.UnitTests")]
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")] 

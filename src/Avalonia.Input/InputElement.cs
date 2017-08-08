@@ -473,7 +473,7 @@ namespace Avalonia.Input
         /// Called before the <see cref="PointerReleased"/> event occurs.
         /// </summary>
         /// <param name="e">The event args.</param>
-        protected virtual void OnPointerReleased(PointerEventArgs e)
+        protected virtual void OnPointerReleased(PointerReleasedEventArgs e)
         {
         }
 

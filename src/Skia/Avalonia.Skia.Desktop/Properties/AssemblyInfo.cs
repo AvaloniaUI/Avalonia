@@ -37,4 +37,6 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
 
-[assembly: ExportRenderingSubsystem(OperatingSystemType.WinNT, 3, "Skia", typeof(SkiaPlatform), nameof(SkiaPlatform.Initialize))]
+[assembly: ExportRenderingSubsystem(OperatingSystemType.WinNT, 2, "Skia", typeof(SkiaPlatform), nameof(SkiaPlatform.Initialize))]
+[assembly: ExportRenderingSubsystem(OperatingSystemType.OSX, 1, "Skia", typeof(SkiaPlatform), nameof(SkiaPlatform.Initialize))]
+[assembly: ExportRenderingSubsystem(OperatingSystemType.Linux, 1, "Skia", typeof(SkiaPlatform), nameof(SkiaPlatform.Initialize))]

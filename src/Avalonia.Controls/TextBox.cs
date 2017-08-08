@@ -236,6 +236,11 @@ namespace Avalonia.Controls
         {
             _presenter = e.NameScope.Get<TextPresenter>("PART_TextPresenter");
             _presenter.Cursor = new Cursor(StandardCursorType.Ibeam);
+
+            if(IsFocused)
+            {
+                _presenter.ShowCaret();
+            }
         }
 
         protected override void OnGotFocus(GotFocusEventArgs e)
@@ -254,7 +259,7 @@ namespace Avalonia.Controls
             }
             else
             {
-                _presenter.ShowCaret();
+                _presenter?.ShowCaret();
             }
         }
 
@@ -263,7 +268,7 @@ namespace Avalonia.Controls
             base.OnLostFocus(e);
             SelectionStart = 0;
             SelectionEnd = 0;
-            _presenter.HideCaret();
+            _presenter?.HideCaret();
         }
 
         protected override void OnTextInput(TextInputEventArgs e)
@@ -522,7 +527,7 @@ namespace Avalonia.Controls
             }
         }
 
-        protected override void OnPointerReleased(PointerEventArgs e)
+        protected override void OnPointerReleased(PointerReleasedEventArgs e)
         {
             if (_presenter != null && e.Device.Captured == _presenter)
             {
@@ -720,7 +725,7 @@ namespace Avalonia.Controls
                         if (pos < text.Length)
                         {
                             --pos;
-                            if (pos > 0 && Text[pos - 1] == '\r' && Text[pos] == '\n')
+                            if (pos > 0 && text[pos - 1] == '\r' && text[pos] == '\n')
                             {
                                 --pos;
                             }
@@ -771,6 +776,9 @@ namespace Avalonia.Controls
 
         private string GetSelection()
         {
+            var text = Text;
+            if (string.IsNullOrEmpty(text))
+                return "";
             var selectionStart = SelectionStart;
             var selectionEnd = SelectionEnd;
             var start = Math.Min(selectionStart, selectionEnd);
@@ -779,7 +787,7 @@ namespace Avalonia.Controls
             {
                 return "";
             }
-            return Text.Substring(start, end - start);
+            return text.Substring(start, end - start);
         }
 
         private int GetLine(int caretIndex, IList<FormattedTextLine> lines)

@@ -86,7 +86,7 @@ namespace Avalonia.Controls.Primitives
             RaiseEvent(ev);
         }
 
-        protected override void OnPointerReleased(PointerEventArgs e)
+        protected override void OnPointerReleased(PointerReleasedEventArgs e)
         {
             if (_lastPoint.HasValue)
             {

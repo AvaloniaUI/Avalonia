@@ -25,5 +25,10 @@ namespace Avalonia
         /// <param name="sender">The source of the change.</param>
         /// <param name="notification">The notification.</param>
         void BindingNotificationReceived(PriorityValue sender, BindingNotification notification);
+
+        /// <summary>
+        /// Ensures that the current thread is the UI thread.
+        /// </summary>
+        void VerifyAccess();
     }
 }

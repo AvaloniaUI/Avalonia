@@ -1,7 +1,5 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System.Diagnostics.Contracts;
 using System;
 using System.Collections.Generic;
 using Avalonia.Interactivity;
@@ -95,17 +93,17 @@ namespace Avalonia.Input
         bool IsEnabledCore { get; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the control is focused.
+        /// Gets a value indicating whether the control is focused.
         /// </summary>
         bool IsFocused { get; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the control is considered for hit testing.
+        /// Gets a value indicating whether the control is considered for hit testing.
         /// </summary>
         bool IsHitTestVisible { get; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the pointer is currently over the control.
+        /// Gets a value indicating whether the pointer is currently over the control.
         /// </summary>
         bool IsPointerOver { get; }
 

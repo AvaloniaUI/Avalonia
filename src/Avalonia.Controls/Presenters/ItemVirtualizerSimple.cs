@@ -155,8 +155,7 @@ namespace Avalonia.Controls.Presenters
                     case NotifyCollectionChangedAction.Add:
                         CreateAndRemoveContainers();
 
-                        if (e.NewStartingIndex >= FirstIndex &&
-                            e.NewStartingIndex < NextIndex)
+                        if (e.NewStartingIndex < NextIndex)
                         {
                             RecycleContainers();
                         }

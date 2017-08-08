@@ -34,7 +34,6 @@ namespace Avalonia.Gtk3
                 .Bind<IClipboard>().ToSingleton<ClipboardImpl>()
                 .Bind<IStandardCursorFactory>().ToConstant(new CursorFactory())
                 .Bind<IKeyboardDevice>().ToConstant(Keyboard)
-                .Bind<IMouseDevice>().ToConstant(Mouse)
                 .Bind<IPlatformSettings>().ToConstant(Instance)
                 .Bind<IPlatformThreadingInterface>().ToConstant(Instance)
                 .Bind<ISystemDialogImpl>().ToSingleton<SystemDialog>()
@@ -51,8 +50,6 @@ namespace Avalonia.Gtk3
         }
 
         public IPopupImpl CreatePopup() => new PopupImpl();
-
-        
 
         public Size DoubleClickSize => new Size(4, 4);
 

@@ -9,6 +9,7 @@ using Avalonia.Gtk3.Interop;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
+using Avalonia.Rendering;
 
 namespace Avalonia.Gtk3
 {
@@ -45,6 +46,7 @@ namespace Avalonia.Gtk3
             ConnectEvent("window-state-event", OnStateChanged);
             ConnectEvent("key-press-event", OnKeyEvent);
             ConnectEvent("key-release-event", OnKeyEvent);
+            ConnectEvent("leave-notify-event", OnLeaveNotifyEvent);
             Connect<Native.D.signal_generic>("destroy", OnDestroy);
             Native.GtkWidgetRealize(gtkWidget);
             _lastSize = ClientSize;
@@ -194,6 +196,18 @@ namespace Avalonia.Gtk3
             return true;
         }
 
+        private unsafe bool OnLeaveNotifyEvent(IntPtr w, IntPtr pev, IntPtr userData)
+        {
+            var evnt = (GdkEventCrossing*) pev;
+            var position = new Point(evnt->x, evnt->y);
+            Input(new RawMouseEventArgs(Gtk3Platform.Mouse,
+                evnt->time,
+                _inputRoot,
+                RawMouseEventType.Move,
+                position, GetModifierKeys(evnt->state)));
+            return true;
+        }
+
         private unsafe bool OnCommit(IntPtr gtkwidget, IntPtr utf8string, IntPtr userdata)
         {
             Input(new RawTextInputEventArgs(Gtk3Platform.Keyboard, _lastKbdEvent, Utf8Buffer.StringFromPtr(utf8string)));
@@ -233,6 +247,7 @@ namespace Avalonia.Gtk3
             }
         }
 
+        public IMouseDevice MouseDevice => Gtk3Platform.Mouse;
 
         public double Scaling => (double) 1 / (Native.GtkWidgetGetScaleFactor?.Invoke(GtkWidget) ?? 1);
 
@@ -340,5 +355,10 @@ namespace Avalonia.Gtk3
 
         IntPtr IPlatformHandle.Handle => Native.GetNativeGdkWindowHandle(Native.GtkWidgetGetWindow(GtkWidget));
         public IEnumerable<object> Surfaces => new object[] {Handle, _framebuffer};
+
+        public IRenderer CreateRenderer(IRenderRoot root)
+        {
+            return new ImmediateRenderer(root);
+        }
     }
 }

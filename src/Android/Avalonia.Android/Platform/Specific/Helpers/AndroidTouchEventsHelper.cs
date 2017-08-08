@@ -71,7 +71,7 @@ namespace Avalonia.Android.Platform.Specific.Helpers
                 if (x <= _point.X && r >= _point.X && y <= _point.Y && b >= _point.Y)
                 {
                     var inputRoot = _getInputRoot();
-                    var mouseDevice = MouseDevice.Instance;
+                    var mouseDevice = Avalonia.Android.Platform.Input.AndroidMouseDevice.Instance;
 
                     //in order the controls to work in a predictable way
                     //we need to generate mouse move before first mouse down event

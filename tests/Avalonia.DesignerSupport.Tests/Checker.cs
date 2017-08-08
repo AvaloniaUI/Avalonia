@@ -23,7 +23,7 @@ namespace Avalonia.DesignerSupport.Tests
                 {
                     Assembly.LoadFrom(asm);
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                 }
             var dic = new Dictionary<string, object>();

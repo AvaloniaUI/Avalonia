@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reactive.Linq;
+using System.Threading.Tasks;
 using Avalonia.Diagnostics;
 using Avalonia.Markup.Data;
 using Xunit;
@@ -18,7 +19,7 @@ namespace Avalonia.Markup.UnitTests.Data
         }
 
         [Fact]
-        public async void Should_Get_Simple_Property_Value()
+        public async Task Should_Get_Simple_Property_Value()
         {
             var data = new Class1();
             var target = new ExpressionObserver(data, "Foo");
@@ -27,6 +28,16 @@ namespace Avalonia.Markup.UnitTests.Data
             Assert.Equal("foo", result);
 
             Assert.Null(((IAvaloniaObjectDebug)data).GetPropertyChangedSubscribers());
+        }
+
+        [Fact]
+        public async Task Should_Get_Simple_ClrProperty_Value()
+        {
+            var data = new Class1();
+            var target = new ExpressionObserver(data, "ClrProperty");
+            var result = await target.Take(1);
+
+            Assert.Equal("clr-property", result);
         }
 
         [Fact]
@@ -68,6 +79,8 @@ namespace Avalonia.Markup.UnitTests.Data
         {
             public static readonly StyledProperty<string> FooProperty =
                 AvaloniaProperty.Register<Class1, string>("Foo", defaultValue: "foo");
+
+            public string ClrProperty { get; } = "clr-property";
         }
     }
 }

@@ -1,20 +1,8 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <MinimumVisualStudioVersion>10.0</MinimumVisualStudioVersion>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{D0A739B9-3C68-4BA6-A328-41606954B6BD}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ControlCatalog</RootNamespace>
-    <AssemblyName>ControlCatalog</AssemblyName>
-    <DefaultLanguage>en-US</DefaultLanguage>
-    <FileAlignment>512</FileAlignment>
-    <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <TargetFrameworkProfile>Profile7</TargetFrameworkProfile>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFramework>netstandard1.3</TargetFramework>
+    <EnableDefaultCompileItems>False</EnableDefaultCompileItems>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -33,6 +21,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <ItemGroup>
+    <None Remove="Pages\ContextMenuPage.xaml" />
+  </ItemGroup>
   <ItemGroup>
     <!-- A reference to the entire .NET Framework is automatically included -->
     <EmbeddedResource Include="App.xaml">
@@ -56,6 +47,7 @@
     <EmbeddedResource Include="Pages\CheckBoxPage.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <EmbeddedResource Include="Pages\ContextMenuPage.xaml" />
     <EmbeddedResource Include="Pages\DropDownPage.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
@@ -106,6 +98,9 @@
     <Compile Include="Pages\CarouselPage.xaml.cs">
       <DependentUpon>CarouselPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Pages\ContextMenuPage.xaml.cs">
+      <DependentUpon>ContextMenuPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Pages\CheckBoxPage.xaml.cs">
       <DependentUpon>CheckBoxPage.xaml</DependentUpon>
     </Compile>
@@ -129,7 +124,7 @@
     </Compile>
     <Compile Include="Pages\SliderPage.xaml.cs">
       <DependentUpon>SliderPage.xaml</DependentUpon>
-    </Compile>
+    </Compile>    
     <Compile Include="Pages\TreeViewPage.xaml.cs">
       <DependentUpon>TreeViewPage.xaml</DependentUpon>
     </Compile>
@@ -153,62 +148,20 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj">
-      <Project>{3E53A01A-B331-47F3-B828-4A5717E77A24}</Project>
-      <Name>Avalonia.Markup.Xaml</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Markup\Avalonia.Markup\Avalonia.Markup.csproj">
-      <Project>{6417E941-21BC-467B-A771-0DE389353CE6}</Project>
-      <Name>Avalonia.Markup</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Avalonia.Animation\Avalonia.Animation.csproj">
-      <Project>{D211E587-D8BC-45B9-95A4-F297C8FA5200}</Project>
-      <Name>Avalonia.Animation</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Avalonia.Base\Avalonia.Base.csproj">
-      <Project>{B09B78D8-9B26-48B0-9149-D64A2F120F3F}</Project>
-      <Name>Avalonia.Base</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Avalonia.Controls\Avalonia.Controls.csproj">
-      <Project>{D2221C82-4A25-4583-9B43-D791E3F6820C}</Project>
-      <Name>Avalonia.Controls</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Avalonia.Diagnostics\Avalonia.Diagnostics.csproj">
-      <Project>{7062AE20-5DCC-4442-9645-8195BDECE63E}</Project>
-      <Name>Avalonia.Diagnostics</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Avalonia.HtmlRenderer\Avalonia.HtmlRenderer.csproj">
-      <Project>{5FB2B005-0A7F-4DAD-ADD4-3ED01444E63D}</Project>
-      <Name>Avalonia.HtmlRenderer</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Avalonia.Input\Avalonia.Input.csproj">
-      <Project>{62024B2D-53EB-4638-B26B-85EEAA54866E}</Project>
-      <Name>Avalonia.Input</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Avalonia.Interactivity\Avalonia.Interactivity.csproj">
-      <Project>{6B0ED19D-A08B-461C-A9D9-A9EE40B0C06B}</Project>
-      <Name>Avalonia.Interactivity</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Avalonia.Layout\Avalonia.Layout.csproj">
-      <Project>{42472427-4774-4C81-8AFF-9F27B8E31721}</Project>
-      <Name>Avalonia.Layout</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Avalonia.ReactiveUI\Avalonia.ReactiveUI.csproj">
-      <Project>{6417B24E-49C2-4985-8DB2-3AB9D898EC91}</Project>
-      <Name>Avalonia.ReactiveUI</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Avalonia.Visuals\Avalonia.Visuals.csproj">
-      <Project>{EB582467-6ABB-43A1-B052-E981BA910E3A}</Project>
-      <Name>Avalonia.Visuals</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Avalonia.Styling\Avalonia.Styling.csproj">
-      <Project>{F1BAA01A-F176-4C6A-B39D-5B40BB1B148F}</Project>
-      <Name>Avalonia.Styling</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Avalonia.Themes.Default\Avalonia.Themes.Default.csproj">
-      <Project>{3E10A5FA-E8DA-48B1-AD44-6A5B6CB7750F}</Project>
-      <Name>Avalonia.Themes.Default</Name>
-    </ProjectReference>
+    <ProjectReference Include="..\..\src\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj" />
+    <ProjectReference Include="..\..\src\Markup\Avalonia.Markup\Avalonia.Markup.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.Animation\Avalonia.Animation.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.Base\Avalonia.Base.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.Controls\Avalonia.Controls.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.Diagnostics\Avalonia.Diagnostics.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.HtmlRenderer\Avalonia.HtmlRenderer.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.Input\Avalonia.Input.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.Interactivity\Avalonia.Interactivity.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.Layout\Avalonia.Layout.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.ReactiveUI\Avalonia.ReactiveUI.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.Visuals\Avalonia.Visuals.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.Styling\Avalonia.Styling.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.Themes.Default\Avalonia.Themes.Default.csproj" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Assets\test_icon.ico" />
@@ -225,12 +178,5 @@
       </SubType>
     </EmbeddedResource>
   </ItemGroup>
-  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+  <Import Project="..\..\build\Serilog.props" />
 </Project>

@@ -10,6 +10,7 @@ using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform.Surfaces;
+using Avalonia.Direct2D1.Media.Imaging;
 using Avalonia.Rendering;
 
 namespace Avalonia
@@ -26,59 +27,89 @@ namespace Avalonia
 
 namespace Avalonia.Direct2D1
 {
-    public class Direct2D1Platform : IPlatformRenderInterface, IRendererFactory
+    public class Direct2D1Platform : IPlatformRenderInterface
     {
         private static readonly Direct2D1Platform s_instance = new Direct2D1Platform();
 
-        private static readonly SharpDX.Direct2D1.Factory s_d2D1Factory =
-#if DEBUG
-            new SharpDX.Direct2D1.Factory1(SharpDX.Direct2D1.FactoryType.MultiThreaded, SharpDX.Direct2D1.DebugLevel.Error);
-#else
-            new SharpDX.Direct2D1.Factory1(SharpDX.Direct2D1.FactoryType.MultiThreaded, SharpDX.Direct2D1.DebugLevel.None);
-#endif
-        private static readonly SharpDX.DirectWrite.Factory s_dwfactory = new SharpDX.DirectWrite.Factory();
+        private static SharpDX.Direct2D1.Factory s_d2D1Factory;
 
-        private static readonly SharpDX.WIC.ImagingFactory s_imagingFactory = new SharpDX.WIC.ImagingFactory();
+        private static SharpDX.DirectWrite.Factory s_dwfactory;
 
-        private static readonly SharpDX.DXGI.Device s_dxgiDevice;
+        private static SharpDX.WIC.ImagingFactory s_imagingFactory;
 
-        private static readonly SharpDX.Direct2D1.Device s_d2D1Device;
+        private static SharpDX.DXGI.Device s_dxgiDevice;
 
-        static Direct2D1Platform()
+        private static SharpDX.Direct2D1.Device s_d2D1Device;
+
+        private static readonly object s_initLock = new object();
+        private static bool s_initialized = false;
+
+        internal static void InitializeDirect2D()
         {
-            var featureLevels = new[]
+            lock (s_initLock)
             {
-                SharpDX.Direct3D.FeatureLevel.Level_11_1,
-                SharpDX.Direct3D.FeatureLevel.Level_11_0,
-                SharpDX.Direct3D.FeatureLevel.Level_10_1,
-                SharpDX.Direct3D.FeatureLevel.Level_10_0,
-                SharpDX.Direct3D.FeatureLevel.Level_9_3,
-                SharpDX.Direct3D.FeatureLevel.Level_9_2,
-                SharpDX.Direct3D.FeatureLevel.Level_9_1,
-            };
+                if (s_initialized)
+                    return;
+#if DEBUG
+                try
+                {
+                    s_d2D1Factory =
 
-            using (var d3dDevice = new SharpDX.Direct3D11.Device(
-                SharpDX.Direct3D.DriverType.Hardware,
-                SharpDX.Direct3D11.DeviceCreationFlags.BgraSupport | SharpDX.Direct3D11.DeviceCreationFlags.VideoSupport,
-                featureLevels))
-            {
-                s_dxgiDevice = d3dDevice.QueryInterface<SharpDX.DXGI.Device>();
-            }
+                        new SharpDX.Direct2D1.Factory1(SharpDX.Direct2D1.FactoryType.MultiThreaded,
+                            SharpDX.Direct2D1.DebugLevel.Error);
+                }
+                catch
+                {
+                    //
+                }
+#endif
+                s_dwfactory = new SharpDX.DirectWrite.Factory();
+                s_imagingFactory = new SharpDX.WIC.ImagingFactory();
+                if (s_d2D1Factory == null)
+                    s_d2D1Factory = new SharpDX.Direct2D1.Factory1(SharpDX.Direct2D1.FactoryType.MultiThreaded,
+                        SharpDX.Direct2D1.DebugLevel.None);
 
-            using (var factory1 = s_d2D1Factory.QueryInterface<SharpDX.Direct2D1.Factory1>())
-            {
-                s_d2D1Device = new SharpDX.Direct2D1.Device(factory1, s_dxgiDevice);
+
+                var featureLevels = new[]
+                {
+                    SharpDX.Direct3D.FeatureLevel.Level_11_1,
+                    SharpDX.Direct3D.FeatureLevel.Level_11_0,
+                    SharpDX.Direct3D.FeatureLevel.Level_10_1,
+                    SharpDX.Direct3D.FeatureLevel.Level_10_0,
+                    SharpDX.Direct3D.FeatureLevel.Level_9_3,
+                    SharpDX.Direct3D.FeatureLevel.Level_9_2,
+                    SharpDX.Direct3D.FeatureLevel.Level_9_1,
+                };
+
+                using (var d3dDevice = new SharpDX.Direct3D11.Device(
+                    SharpDX.Direct3D.DriverType.Hardware,
+                    SharpDX.Direct3D11.DeviceCreationFlags.BgraSupport |
+                    SharpDX.Direct3D11.DeviceCreationFlags.VideoSupport,
+                    featureLevels))
+                {
+                    s_dxgiDevice = d3dDevice.QueryInterface<SharpDX.DXGI.Device>();
+                }
+
+                using (var factory1 = s_d2D1Factory.QueryInterface<SharpDX.Direct2D1.Factory1>())
+                {
+                    s_d2D1Device = new SharpDX.Direct2D1.Device(factory1, s_dxgiDevice);
+                }
+                s_initialized = true;
             }
         }
 
-        public static void Initialize() => AvaloniaLocator.CurrentMutable
-            .Bind<IPlatformRenderInterface>().ToConstant(s_instance)
-            .Bind<IRendererFactory>().ToConstant(s_instance)
-            .BindToSelf(s_d2D1Factory)
-            .BindToSelf(s_dwfactory)
-            .BindToSelf(s_imagingFactory)
-            .BindToSelf(s_dxgiDevice)
-            .BindToSelf(s_d2D1Device);
+        public static void Initialize()
+        {
+            InitializeDirect2D();
+            AvaloniaLocator.CurrentMutable
+                        .Bind<IPlatformRenderInterface>().ToConstant(s_instance)
+                        .BindToSelf(s_d2D1Factory)
+                        .BindToSelf(s_dwfactory)
+                        .BindToSelf(s_imagingFactory)
+                        .BindToSelf(s_dxgiDevice)
+                        .BindToSelf(s_d2D1Device);
+            SharpDX.Configuration.EnableReleaseOnFinalizer = true;
+        }
 
         public IBitmapImpl CreateBitmap(int width, int height)
         {
@@ -87,36 +118,57 @@ namespace Avalonia.Direct2D1
 
         public IFormattedTextImpl CreateFormattedText(
             string text,
-            string fontFamily,
-            double fontSize,
-            FontStyle fontStyle,
+            Typeface typeface,
             TextAlignment textAlignment,
-            FontWeight fontWeight,
-            TextWrapping wrapping)
+            TextWrapping wrapping,
+            Size constraint,
+            IReadOnlyList<FormattedTextStyleSpan> spans)
         {
-            return new FormattedTextImpl(text, fontFamily, fontSize, fontStyle, textAlignment, fontWeight, wrapping);
-        }
-
-        public IRenderer CreateRenderer(IRenderRoot root, IRenderLoop renderLoop)
-        {
-            return new Renderer(root, renderLoop);
+            return new FormattedTextImpl(
+                text,
+                typeface,
+                textAlignment,
+                wrapping,
+                constraint,
+                spans);
         }
 
         public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)
         {
-            var nativeWindow = surfaces?.OfType<IPlatformHandle>().FirstOrDefault();
-            if (nativeWindow != null)
+            foreach (var s in surfaces)
             {
-                if(nativeWindow.HandleDescriptor != "HWND")
-                    throw new NotSupportedException("Don't know how to create a Direct2D1 renderer from " + nativeWindow.HandleDescriptor);
-                return new HwndRenderTarget(nativeWindow);
+                if (s is IPlatformHandle nativeWindow)
+                {
+                    if (nativeWindow.HandleDescriptor != "HWND")
+                        throw new NotSupportedException("Don't know how to create a Direct2D1 renderer from " +
+                                                        nativeWindow.HandleDescriptor);
+                    return new HwndRenderTarget(nativeWindow);
+                }
+                if (s is IExternalDirect2DRenderTargetSurface external)
+                    return new ExternalRenderTarget(external, s_dwfactory);
             }
             throw new NotSupportedException("Don't know how to create a Direct2D1 renderer from any of provided surfaces");
         }
 
-        public IRenderTargetBitmapImpl CreateRenderTargetBitmap(int width, int height)
+        public IRenderTargetBitmapImpl CreateRenderTargetBitmap(
+            int width,
+            int height,
+            double dpiX,
+            double dpiY)
         {
-            return new RenderTargetBitmapImpl(s_imagingFactory, s_d2D1Device.Factory, width, height);
+            return new RenderTargetBitmapImpl(
+                s_imagingFactory,
+                s_d2D1Factory,
+                s_dwfactory,
+                width,
+                height,
+                dpiX,
+                dpiY);
+        }
+
+        public IWritableBitmapImpl CreateWritableBitmap(int width, int height, PixelFormat? format = null)
+        {
+            return new WritableWicBitmapImpl(s_imagingFactory, width, height, format);
         }
 
         public IStreamGeometryImpl CreateStreamGeometry()
@@ -132,6 +184,11 @@ namespace Avalonia.Direct2D1
         public IBitmapImpl LoadBitmap(Stream stream)
         {
             return new WicBitmapImpl(s_imagingFactory, stream);
+        }
+
+        public IBitmapImpl LoadBitmap(PixelFormat format, IntPtr data, int width, int height, int stride)
+        {
+            return new WicBitmapImpl(s_imagingFactory, format, data, width, height, stride);
         }
     }
 }

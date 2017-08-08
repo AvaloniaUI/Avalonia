@@ -14,49 +14,53 @@ namespace Avalonia.Direct2D1.Media
     {
         public FormattedTextImpl(
             string text,
-            string fontFamily,
-            double fontSize,
-            FontStyle fontStyle,
+            Typeface typeface,
             TextAlignment textAlignment,
-            FontWeight fontWeight,
-            TextWrapping wrapping)
+            TextWrapping wrapping,
+            Size constraint,
+            IReadOnlyList<FormattedTextStyleSpan> spans)
         {
+            Text = text;
             var factory = AvaloniaLocator.Current.GetService<DWrite.Factory>();
 
             using (var format = new DWrite.TextFormat(
                 factory,
-                fontFamily,
-                (DWrite.FontWeight)fontWeight,
-                (DWrite.FontStyle)fontStyle,
-                (float)fontSize))
+                typeface?.FontFamilyName ?? "Courier New",
+                (DWrite.FontWeight)(typeface?.Weight ?? FontWeight.Normal),
+                (DWrite.FontStyle)(typeface?.Style ?? FontStyle.Normal),
+                (float)(typeface?.FontSize ?? 12)))
             {
                 format.WordWrapping = wrapping == TextWrapping.Wrap ? 
-                    DWrite.WordWrapping.Wrap : DWrite.WordWrapping.NoWrap;
+                    DWrite.WordWrapping.Wrap :
+                    DWrite.WordWrapping.NoWrap;
 
                 TextLayout = new DWrite.TextLayout(
                     factory,
                     text ?? string.Empty,
                     format,
-                    float.MaxValue,
-                    float.MaxValue);
+                    (float)constraint.Width,
+                    (float)constraint.Height)
+                {
+                    TextAlignment = textAlignment.ToDirect2D()
+                };
             }
 
-            TextLayout.TextAlignment = textAlignment.ToDirect2D();
+            if (spans != null)
+            {
+                foreach (var span in spans)
+                {
+                    ApplySpan(span);
+                }
+            }
+
+            Size = Measure();
         }
 
-        public Size Constraint
-        {
-            get
-            {
-                return new Size(TextLayout.MaxWidth, TextLayout.MaxHeight);
-            }
+        public Size Constraint => new Size(TextLayout.MaxWidth, TextLayout.MaxHeight);
 
-            set
-            {
-                TextLayout.MaxWidth = (float)value.Width;
-                TextLayout.MaxHeight = (float)value.Height;
-            }
-        }
+        public Size Size { get; }
+
+        public string Text { get; }
 
         public DWrite.TextLayout TextLayout { get; }
 
@@ -110,7 +114,20 @@ namespace Avalonia.Direct2D1.Media
             return result.Select(x => new Rect(x.Left, x.Top, x.Width, x.Height));
         }
 
-        public Size Measure()
+        private void ApplySpan(FormattedTextStyleSpan span)
+        {
+            if (span.Length > 0)
+            {
+                if (span.ForegroundBrush != null)
+                {
+                    TextLayout.SetDrawingEffect(
+                        new BrushWrapper(span.ForegroundBrush),
+                        new DWrite.TextRange(span.StartIndex, span.Length));
+                }
+            }
+        }
+
+        private Size Measure()
         {
             var metrics = TextLayout.Metrics;
             var width = metrics.WidthIncludingTrailingWhitespace;
@@ -121,13 +138,6 @@ namespace Avalonia.Direct2D1.Media
             }
 
             return new Size(width, TextLayout.Metrics.Height);
-        }
-
-        public void SetForegroundBrush(IBrush brush, int startIndex, int count)
-        {
-            TextLayout.SetDrawingEffect(
-                new BrushWrapper(brush),
-                new DWrite.TextRange(startIndex, count));
         }
     }
 }

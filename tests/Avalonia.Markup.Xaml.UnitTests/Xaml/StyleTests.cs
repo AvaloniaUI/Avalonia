@@ -3,6 +3,7 @@
 
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml.Data;
+using Avalonia.Markup.Xaml.Styling;
 using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
@@ -90,7 +91,9 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         [Fact]
         public void StyleResource_Can_Be_Assigned_To_Setter()
         {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            //skip default theme and styles, they are not needed
+            using (UnitTestApplication.Start(TestServices.StyledWindow
+                                        .With(theme: () => new Styles())))
             {
                 var xaml = @"
 <Window xmlns='https://github.com/avaloniaui'
@@ -124,13 +127,12 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             {
                 var xaml = @"
 <Window xmlns='https://github.com/avaloniaui'
-        xmlns:mut='https://github.com/avaloniaui/mutable'
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
     <Window.Styles>
         <Style>
             <Style.Resources>
                 <Color x:Key='color'>#ff506070</Color>
-                <mut:SolidColorBrush x:Key='brush' Color='{StyleResource color}'/>
+                <SolidColorBrush x:Key='brush' Color='{StyleResource color}'/>
             </Style.Resources>
         </Style>
     </Window.Styles>
@@ -139,12 +141,12 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
                 var loader = new AvaloniaXamlLoader();
                 var window = (Window)loader.Load(xaml);
-                var brush = (Avalonia.Media.Mutable.SolidColorBrush)window.FindStyleResource("brush");
+                var brush = (ISolidColorBrush)window.FindStyleResource("brush");
                 var button = window.FindControl<Button>("button");
 
                 DelayedBinding.ApplyBindings(button);
 
-                var buttonBrush = (Avalonia.Media.Mutable.SolidColorBrush)button.Background;
+                var buttonBrush = (ISolidColorBrush)button.Background;
 
                 Assert.Equal(0xff506070, brush.Color.ToUint32());
                 Assert.Equal(0xff506070, buttonBrush.Color.ToUint32());
@@ -156,19 +158,18 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         {
             var xaml = @"
 <Styles xmlns='https://github.com/avaloniaui'
-        xmlns:mut='https://github.com/avaloniaui/mutable'
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
     <Style>
         <Style.Resources>
             <Color x:Key='color'>#ff506070</Color>
-            <mut:SolidColorBrush x:Key='brush' Color='{StyleResource color}'/>
+            <SolidColorBrush x:Key='brush' Color='{StyleResource color}'/>
         </Style.Resources>
     </Style>
 </Styles>";
 
             var loader = new AvaloniaXamlLoader();
             var styles = (Styles)loader.Load(xaml);
-            var brush = (Avalonia.Media.Mutable.SolidColorBrush)styles.FindResource("brush");
+            var brush = (ISolidColorBrush)styles.FindResource("brush");
 
             Assert.Equal(0xff506070, brush.Color.ToUint32());
         }
@@ -178,7 +179,6 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         {
             var xaml = @"
 <Styles xmlns='https://github.com/avaloniaui'
-        xmlns:mut='https://github.com/avaloniaui/mutable'
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
     <Style>
         <Style.Resources>
@@ -187,14 +187,14 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     </Style>
     <Style>
         <Style.Resources>
-            <mut:SolidColorBrush x:Key='brush' Color='{StyleResource color}'/>
+            <SolidColorBrush x:Key='brush' Color='{StyleResource color}'/>
         </Style.Resources>
     </Style>
 </Styles>";
 
             var loader = new AvaloniaXamlLoader();
             var styles = (Styles)loader.Load(xaml);
-            var brush = (Avalonia.Media.Mutable.SolidColorBrush)styles.FindResource("brush");
+            var brush = (ISolidColorBrush)styles.FindResource("brush");
 
             Assert.Equal(0xff506070, brush.Color.ToUint32());
         }
@@ -206,7 +206,6 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             {
                 var xaml = @"
 <Window xmlns='https://github.com/avaloniaui'
-        xmlns:mut='https://github.com/avaloniaui/mutable'
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
     <Window.Styles>
         <StyleInclude Source='resm:Avalonia.Markup.Xaml.UnitTests.Xaml.Style1.xaml?assembly=Avalonia.Markup.Xaml.UnitTests'/>
@@ -218,10 +217,35 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 var loader = new AvaloniaXamlLoader();
                 var window = (Window)loader.Load(xaml);
                 var border = window.FindControl<Border>("border");
-                var borderBrush = (Avalonia.Media.Mutable.SolidColorBrush)border.Background;
+                var borderBrush = (ISolidColorBrush)border.Background;
 
                 Assert.NotNull(borderBrush);
                 Assert.Equal(0xffff0000, borderBrush.Color.ToUint32());
+            }
+        }
+
+        [Fact]
+        public void StyleInclude_Is_Built()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow
+                                              .With(theme: () => new Styles())))
+            {
+                var xaml = @"
+<ContentControl xmlns='https://github.com/avaloniaui'>
+    <ContentControl.Styles>
+        <StyleInclude Source='resm:Avalonia.Markup.Xaml.UnitTests.Xaml.Style1.xaml?assembly=Avalonia.Markup.Xaml.UnitTests'/>
+    </ContentControl.Styles>
+</ContentControl>";
+
+                var window = AvaloniaXamlLoader.Parse<ContentControl>(xaml);
+
+                Assert.Equal(1, window.Styles.Count);
+
+                var styleInclude = window.Styles[0] as StyleInclude;
+
+                Assert.NotNull(styleInclude);
+                Assert.NotNull(styleInclude.Source);
+                Assert.NotNull(styleInclude.Loaded);
             }
         }
 
@@ -243,7 +267,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         </Style>
     </Window.Styles>
 
-    <ContentControl Name='target'/>    
+    <ContentControl Name='target'/>
 </Window>";
 
                 var loader = new AvaloniaXamlLoader();
@@ -275,7 +299,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 		</Style>
 	</Window.Styles>
 
-    <TextBlock Name='target'/>    
+    <TextBlock Name='target'/>
 </Window>";
 
                 var loader = new AvaloniaXamlLoader();

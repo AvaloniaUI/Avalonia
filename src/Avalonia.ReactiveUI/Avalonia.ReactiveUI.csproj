@@ -1,27 +1,15 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <MinimumVisualStudioVersion>10.0</MinimumVisualStudioVersion>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{6417B24E-49C2-4985-8DB2-3AB9D898EC91}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Avalonia.ReactiveUI</RootNamespace>
-    <AssemblyName>Avalonia.ReactiveUI</AssemblyName>
-    <DefaultLanguage>en-US</DefaultLanguage>
-    <FileAlignment>512</FileAlignment>
-    <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <TargetFrameworkProfile>Profile259</TargetFrameworkProfile>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFramework>netstandard1.3</TargetFramework>
+    <EnableDefaultCompileItems>False</EnableDefaultCompileItems>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;MONO PORTABLE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;MONO PORTABLE;NETSTANDARD1_1</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -29,15 +17,19 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE;MONO PORTABLE</DefineConstants>
+    <DefineConstants>TRACE;MONO PORTABLE;RELEASE;NETSTANDARD1_1</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <ItemGroup>
+    <None Remove="Shims.cs" />
+  </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Registrations.cs" />
+    <Compile Include="Shims.cs" />
     <Compile Include="src\ReactiveUI\ExpressionMixins.cs" />
     <Compile Include="src\ReactiveUI\ExpressionRewriter.cs" />
     <Compile Include="src\ReactiveUI\Activation.cs" />
@@ -65,9 +57,7 @@
     <Compile Include="src\ReactiveUI\PropertyBinding.cs" />
     <Compile Include="src\ReactiveUI\ReactiveList.cs" />
     <Compile Include="src\ReactiveUI\ReactiveCollectionMixins.cs" />
-    <Compile Include="src\ReactiveUI\ReactiveCommand.cs">
-      <SubType>Code</SubType>
-    </Compile>
+    <Compile Include="src\ReactiveUI\ReactiveCommand.cs" />
     <Compile Include="src\ReactiveUI\ReactiveNotifyPropertyChangedMixin.cs" />
     <Compile Include="src\ReactiveUI\ReactiveObject.cs" />
     <Compile Include="src\ReactiveUI\RefcountDisposeWrapper.cs" />
@@ -87,35 +77,15 @@
     <Compile Include="src\ReactiveUI\Legacy\ReactiveCommand.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Splat, Version=1.6.2.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\..\packages\Splat.1.6.2\lib\Portable-net45+win+wpa81+wp80\Splat.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Reactive.Core, Version=3.0.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Reactive.Core.3.0.0\lib\netstandard1.0\System.Reactive.Core.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Reactive.Interfaces, Version=3.0.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Reactive.Interfaces.3.0.0\lib\netstandard1.0\System.Reactive.Interfaces.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Reactive.Linq, Version=3.0.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Reactive.Linq.3.0.0\lib\netstandard1.0\System.Reactive.Linq.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Reactive.PlatformServices, Version=3.0.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Reactive.PlatformServices.3.0.0\lib\netstandard1.0\System.Reactive.PlatformServices.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
+    <ProjectReference Include="..\Avalonia.Animation\Avalonia.Animation.csproj" />
+    <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj" />
+    <ProjectReference Include="..\Avalonia.Controls\Avalonia.Controls.csproj" />
+    <ProjectReference Include="..\Avalonia.Input\Avalonia.Input.csproj" />
+    <ProjectReference Include="..\Avalonia.Interactivity\Avalonia.Interactivity.csproj" />
+    <ProjectReference Include="..\Avalonia.Layout\Avalonia.Layout.csproj" />
+    <ProjectReference Include="..\Avalonia.Styling\Avalonia.Styling.csproj" />
+    <ProjectReference Include="..\Avalonia.Visuals\Avalonia.Visuals.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+  <Import Project="..\..\build\Rx.props" />
+  <Import Project="..\..\build\Splat.props" />
 </Project>

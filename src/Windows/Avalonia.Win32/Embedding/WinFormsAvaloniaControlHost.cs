@@ -15,7 +15,7 @@ namespace Avalonia.Win32.Embedding
     {
         private readonly EmbeddableControlRoot _root = new EmbeddableControlRoot();
 
-        private IntPtr WindowHandle => ((WindowImpl) _root.PlatformImpl).Handle.Handle;
+        private IntPtr WindowHandle => ((WindowImpl) _root?.PlatformImpl)?.Handle?.Handle ?? IntPtr.Zero;
 
         public WinFormsAvaloniaControlHost()
         {
@@ -25,6 +25,8 @@ namespace Avalonia.Win32.Embedding
             if (_root.IsFocused)
                 FocusManager.Instance.Focus(null);
             _root.GotFocus += RootGotFocus;
+            // ReSharper disable once PossibleNullReferenceException
+            // Always non-null at this point
             _root.PlatformImpl.LostFocus += PlatformImpl_LostFocus;
             FixPosition();
         }

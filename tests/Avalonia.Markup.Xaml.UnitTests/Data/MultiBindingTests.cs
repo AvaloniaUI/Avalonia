@@ -10,13 +10,14 @@ using Moq;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml.Data;
 using Xunit;
+using System.Threading.Tasks;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Data
 {
     public class MultiBindingTests
     {
         [Fact]
-        public async void OneWay_Binding_Should_Be_Set_Up()
+        public async Task OneWay_Binding_Should_Be_Set_Up()
         {
             var source = new { A = 1, B = 2, C = 3 };
             var binding = new MultiBinding

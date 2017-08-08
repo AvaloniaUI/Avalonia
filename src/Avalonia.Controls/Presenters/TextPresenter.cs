@@ -127,11 +127,11 @@ namespace Avalonia.Controls.Presenters
             base.Render(context);
 
             if (selectionStart == selectionEnd)
-            {                
+            {
                 var backgroundColor = (((Control)TemplatedParent).GetValue(BackgroundProperty) as SolidColorBrush)?.Color;
                 var caretBrush = Brushes.Black;
 
-                if(backgroundColor.HasValue)
+                if (backgroundColor.HasValue)
                 {
                     byte red = (byte)~(backgroundColor.Value.R);
                     byte green = (byte)~(backgroundColor.Value.G);
@@ -139,7 +139,7 @@ namespace Avalonia.Controls.Presenters
 
                     caretBrush = new SolidColorBrush(Color.FromRgb(red, green, blue));
                 }
-                
+
                 if (_caretBlink)
                 {
                     var charPos = FormattedText.HitTestTextPosition(CaretIndex);
@@ -212,7 +212,10 @@ namespace Avalonia.Controls.Presenters
 
             if (length > 0)
             {
-                result.SetForegroundBrush(Brushes.White, start, length);
+                result.Spans = new[]
+                {
+                    new FormattedTextStyleSpan(start, length, foregroundBrush: Brushes.White),
+                };
             }
 
             return result;
@@ -228,17 +231,13 @@ namespace Avalonia.Controls.Presenters
             }
             else
             {
-                // TODO: Pretty sure that measuring "X" isn't the right way to do this...
-                using (var formattedText = new FormattedText(
-                    "X",
-                    FontFamily,
-                    FontSize,
-                    FontStyle,
-                    TextAlignment,
-                    FontWeight))
+                return new FormattedText
                 {
-                    return formattedText.Measure();
-                }
+                    Text = "X",
+                    Typeface = new Typeface(FontFamily, FontSize, FontStyle, FontWeight),
+                    TextAlignment = TextAlignment,
+                    Constraint = availableSize,
+                }.Measure();
             }
         }
 

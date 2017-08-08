@@ -364,7 +364,7 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
-        public async void Bind_With_Scheduler_Executes_On_Scheduler()
+        public async Task Bind_With_Scheduler_Executes_On_Scheduler()
         {
             var target = new Class1();
             var source = new Subject<object>();
@@ -374,11 +374,12 @@ namespace Avalonia.Base.UnitTests
             threadingInterfaceMock.SetupGet(mock => mock.CurrentThreadIsLoopThread)
                 .Returns(() => Thread.CurrentThread.ManagedThreadId == currentThreadId);
 
-            using (AvaloniaLocator.EnterScope())
-            {
-                AvaloniaLocator.CurrentMutable.Bind<IPlatformThreadingInterface>().ToConstant(threadingInterfaceMock.Object);
-                AvaloniaLocator.CurrentMutable.Bind<IScheduler>().ToConstant(AvaloniaScheduler.Instance);
+            var services = new TestServices(
+                scheduler: AvaloniaScheduler.Instance,
+                threadingInterface: threadingInterfaceMock.Object);
 
+            using (UnitTestApplication.Start(services))
+            {
                 target.Bind(Class1.QuxProperty, source);
 
                 await Task.Run(() => source.OnNext(6.7));

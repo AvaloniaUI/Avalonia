@@ -11,14 +11,14 @@ namespace Avalonia.Direct2D1.Media
 {
     internal class AvaloniaTextRenderer : TextRenderer
     {
-        private readonly DrawingContext _context;
+        private readonly DrawingContextImpl _context;
 
         private readonly SharpDX.Direct2D1.RenderTarget _renderTarget;
 
         private readonly Brush _foreground;
 
         public AvaloniaTextRenderer(
-            DrawingContext context,
+            DrawingContextImpl context,
             SharpDX.Direct2D1.RenderTarget target,
             Brush foreground)
         {

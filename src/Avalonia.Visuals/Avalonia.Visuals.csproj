@@ -1,22 +1,8 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <MinimumVisualStudioVersion>11.0</MinimumVisualStudioVersion>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{EB582467-6ABB-43A1-B052-E981BA910E3A}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <TargetFramework>netstandard1.3</TargetFramework>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <RootNamespace>Avalonia</RootNamespace>
-    <AssemblyName>Avalonia.Visuals</AssemblyName>
-    <DefaultLanguage>en-US</DefaultLanguage>
-    <FileAlignment>512</FileAlignment>
-    <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <TargetFrameworkProfile>Profile7</TargetFrameworkProfile>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -41,150 +27,13 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
-    <!-- A reference to the entire .NET Framework is automatically included -->
-    <ProjectReference Include="..\Avalonia.Animation\Avalonia.Animation.csproj">
-      <Project>{D211E587-D8BC-45B9-95A4-F297C8FA5200}</Project>
-      <Name>Avalonia.Animation</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj">
-      <Project>{B09B78D8-9B26-48B0-9149-D64A2F120F3F}</Project>
-      <Name>Avalonia.Base</Name>
-    </ProjectReference>
+    <ProjectReference Include="..\Avalonia.Animation\Avalonia.Animation.csproj" />
+    <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\Shared\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="Animation\PageSlide.cs" />
-    <Compile Include="Animation\CrossFade.cs" />
-    <Compile Include="Animation\IPageTransition.cs" />
-    <Compile Include="INamed.cs" />
-    <Compile Include="Matrix.cs" />
-    <Compile Include="Media\AlignmentY.cs" />
-    <Compile Include="Media\AlignmentX.cs" />
-    <Compile Include="Media\ArcSegment.cs" />
-    <Compile Include="Media\BezierSegment .cs" />
-    <Compile Include="Media\Brush.cs" />
-    <Compile Include="Media\Brushes.cs" />
-    <Compile Include="Media\BrushMappingMode.cs" />
-    <Compile Include="Media\Color.cs" />
-    <Compile Include="Media\Colors.cs" />
-    <Compile Include="Media\TextWrapping.cs" />
-    <Compile Include="Media\TransformGroup.cs" />
-    <Compile Include="Media\DashStyle.cs" />
-    <Compile Include="Media\DrawingContext.cs" />
-    <Compile Include="Media\FillRule.cs" />
-    <Compile Include="Media\GradientBrush.cs" />
-    <Compile Include="Media\GradientSpreadMethod.cs" />
-    <Compile Include="Media\GradientStop.cs" />
-    <Compile Include="Media\IBrush.cs" />
-    <Compile Include="Media\ISolidColorBrush.cs" />
-    <Compile Include="Media\LineGeometry.cs" />
-    <Compile Include="Media\LineSegment.cs" />
-    <Compile Include="Media\Mutable\SolidColorBrush.cs" />
-    <Compile Include="Media\PathGeometryCollections.cs" />
-    <Compile Include="Media\PathFigure.cs" />
-    <Compile Include="Media\PathGeometry.cs" />
-    <Compile Include="Media\PathSegment.cs" />
-    <Compile Include="Media\PenLineJoin.cs" />
-    <Compile Include="Media\PolylineGeometry.cs" />
-    <Compile Include="Media\QuadraticBezierSegment .cs" />
-    <Compile Include="Media\RadialGradientBrush.cs" />
-    <Compile Include="Media\LinearGradientBrush.cs" />
-    <Compile Include="Media\MediaExtensions.cs" />
-    <Compile Include="Media\PenLineCap.cs" />
-    <Compile Include="Media\ScaleTransform.cs" />
-    <Compile Include="Media\TextAlignment.cs" />
-    <Compile Include="Media\FontWeight.cs" />
-    <Compile Include="Media\FontStyle.cs" />
-    <Compile Include="Media\FormattedTextLine.cs" />
-    <Compile Include="Media\FormattedText.cs" />
-    <Compile Include="Media\Geometry.cs" />
-    <Compile Include="Media\IDrawingContext.cs" />
-    <Compile Include="Platform\ExportRenderingSubsystemAttribute.cs" />
-    <Compile Include="Platform\IModuleEnvironmentChecker.cs" />
-    <Compile Include="Rendering\IRenderer.cs" />
-    <Compile Include="Rendering\IRendererFactory.cs" />
-    <Compile Include="Rendering\IRenderLoop.cs" />
-    <Compile Include="Rendering\Renderer.cs" />
-    <Compile Include="Rendering\RendererMixin.cs" />
-    <Compile Include="Rendering\DefaultRenderLoop.cs" />
-    <Compile Include="RenderTargetCorruptedException.cs" />
-    <Compile Include="VisualTree\IVisual.cs" />
-    <Compile Include="Media\Imaging\Bitmap.cs" />
-    <Compile Include="Media\Imaging\IBitmap.cs" />
-    <Compile Include="Media\Imaging\RenderTargetBitmap.cs" />
-    <Compile Include="Media\TranslateTransform.cs" />
-    <Compile Include="Media\PathMarkupParser.cs" />
-    <Compile Include="Media\Pen.cs" />
-    <Compile Include="Media\EllipseGeometry.cs" />
-    <Compile Include="Media\RectangleGeometry.cs" />
-    <Compile Include="Media\MatrixTransform.cs" />
-    <Compile Include="Media\RotateTransform.cs" />
-    <Compile Include="Media\SolidColorBrush.cs" />
-    <Compile Include="Media\StreamGeometry.cs" />
-    <Compile Include="Media\StreamGeometryContext.cs" />
-    <Compile Include="Media\Stretch.cs" />
-    <Compile Include="Media\SweepDirection.cs" />
-    <Compile Include="Media\TextHitTestResult.cs" />
-    <Compile Include="Media\Transform.cs" />
-    <Compile Include="Media\TileBrush.cs" />
-    <Compile Include="Media\ImageBush.cs" />
-    <Compile Include="Media\VisualBrush.cs" />
-    <Compile Include="Platform\IPlatformSettings.cs" />
-    <Compile Include="RelativePoint.cs" />
-    <Compile Include="Platform\IFormattedTextImpl.cs" />
-    <Compile Include="Platform\IBitmapImpl.cs" />
-    <Compile Include="Platform\IGeometryImpl.cs" />
-    <Compile Include="Platform\IPlatformRenderInterface.cs" />
-    <Compile Include="Platform\IRenderTarget.cs" />
-    <Compile Include="Platform\IRenderTargetBitmapImpl.cs" />
-    <Compile Include="Platform\IStreamGeometryContextImpl.cs" />
-    <Compile Include="Platform\IStreamGeometryImpl.cs" />
-    <Compile Include="Point.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RelativeRect.cs" />
-    <Compile Include="Rect.cs" />
-    <Compile Include="Rendering\IRenderRoot.cs" />
-    <Compile Include="Size.cs" />
-    <Compile Include="Thickness.cs" />
-    <Compile Include="Vector.cs" />
-    <Compile Include="VisualExtensions.cs" />
-    <Compile Include="Visual.cs" />
-    <Compile Include="VisualTreeAttachmentEventArgs.cs" />
-    <Compile Include="VisualTree\IHostedVisualTreeRoot.cs" />
-    <Compile Include="VisualTree\IVisualTreeHost.cs" />
-    <Compile Include="VisualTree\TransformedBounds.cs" />
-    <Compile Include="VisualTree\BoundsTracker.cs" />
-    <Compile Include="VisualTree\VisualExtensions.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="System.Reactive.Core, Version=3.0.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Reactive.Core.3.0.0\lib\netstandard1.1\System.Reactive.Core.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Reactive.Interfaces, Version=3.0.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Reactive.Interfaces.3.0.0\lib\netstandard1.0\System.Reactive.Interfaces.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Reactive.Linq, Version=3.0.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Reactive.Linq.3.0.0\lib\netstandard1.1\System.Reactive.Linq.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Reactive.PlatformServices, Version=3.0.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Reactive.PlatformServices.3.0.0\lib\netstandard1.0\System.Reactive.PlatformServices.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-  </ItemGroup>
-  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+  <Import Project="..\..\build\Rx.props" />
 </Project>

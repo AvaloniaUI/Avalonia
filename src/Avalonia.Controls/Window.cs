@@ -11,6 +11,8 @@ using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Styling;
 using System.Collections.Generic;
+using System.Linq;
+using JetBrains.Annotations;
 
 namespace Avalonia.Controls
 {
@@ -45,12 +47,12 @@ namespace Avalonia.Controls
     /// </summary>
     public class Window : WindowBase, IStyleable, IFocusScope, ILayoutRoot, INameScope
     {
-        private static IList<Window> s_windows = new List<Window>();
+        private static List<Window> s_windows = new List<Window>();
 
         /// <summary>
         /// Retrieves an enumeration of all Windows in the currently running application.
         /// </summary>
-        public static IList<Window> OpenWindows => s_windows;
+        public static IReadOnlyList<Window> OpenWindows => s_windows;
 
         /// <summary>
         /// Defines the <see cref="SizeToContent"/> property.
@@ -86,11 +88,11 @@ namespace Avalonia.Controls
         static Window()
         {
             BackgroundProperty.OverrideDefaultValue(typeof(Window), Brushes.White);
-            TitleProperty.Changed.AddClassHandler<Window>((s, e) => s.PlatformImpl.SetTitle((string)e.NewValue));
+            TitleProperty.Changed.AddClassHandler<Window>((s, e) => s.PlatformImpl?.SetTitle((string)e.NewValue));
             HasSystemDecorationsProperty.Changed.AddClassHandler<Window>(
-                (s, e) => s.PlatformImpl.SetSystemDecorations((bool) e.NewValue));
+                (s, e) => s.PlatformImpl?.SetSystemDecorations((bool) e.NewValue));
 
-            IconProperty.Changed.AddClassHandler<Window>((s, e) => s.PlatformImpl.SetIcon(((WindowIcon)e.NewValue).PlatformImpl));
+            IconProperty.Changed.AddClassHandler<Window>((s, e) => s.PlatformImpl?.SetIcon(((WindowIcon)e.NewValue).PlatformImpl));
         }
 
         /// <summary>
@@ -108,7 +110,7 @@ namespace Avalonia.Controls
         public Window(IWindowImpl impl)
             : base(impl)
         {
-            _maxPlatformClientSize = this.PlatformImpl.MaxClientSize;
+            _maxPlatformClientSize = PlatformImpl?.MaxClientSize ?? default(Size);
         }
 
         /// <inheritdoc/>
@@ -128,6 +130,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the platform-specific window implementation.
         /// </summary>
+        [CanBeNull]
         public new IWindowImpl PlatformImpl => (IWindowImpl)base.PlatformImpl;
 
         /// <summary>
@@ -163,8 +166,12 @@ namespace Avalonia.Controls
         /// </summary>
         public WindowState WindowState
         {
-            get { return this.PlatformImpl.WindowState; }
-            set { this.PlatformImpl.WindowState = value; }
+            get { return PlatformImpl?.WindowState ?? WindowState.Normal; }
+            set
+            {
+                if (PlatformImpl != null)
+                    PlatformImpl.WindowState = value;
+            }
         }
 
         /// <summary>
@@ -188,7 +195,8 @@ namespace Avalonia.Controls
         public void Close()
         {
             s_windows.Remove(this);
-            PlatformImpl.Dispose();
+            PlatformImpl?.Dispose();
+            IsVisible = false;
         }
 
         protected override void HandleApplicationExiting()
@@ -215,27 +223,42 @@ namespace Avalonia.Controls
         /// <summary>
         /// Hides the window but does not close it.
         /// </summary>
-        public void Hide()
+        public override void Hide()
         {
+            if (!IsVisible)
+            {
+                return;
+            }
+
             using (BeginAutoSizing())
             {
-                PlatformImpl.Hide();
+                Renderer?.Stop();
+                PlatformImpl?.Hide();
             }
+
+            IsVisible = false;
         }
 
         /// <summary>
         /// Shows the window.
         /// </summary>
-        public void Show()
+        public override void Show()
         {
+            if (IsVisible)
+            {
+                return;
+            }
+
             s_windows.Add(this);
 
             EnsureInitialized();
+            IsVisible = true;
             LayoutManager.Instance.ExecuteInitialLayoutPass(this);
 
             using (BeginAutoSizing())
             {
-                PlatformImpl.Show();
+                PlatformImpl?.Show();
+                Renderer?.Start();
             }
         }
 
@@ -261,25 +284,49 @@ namespace Avalonia.Controls
         /// </returns>
         public Task<TResult> ShowDialog<TResult>()
         {
+            if (IsVisible)
+            {
+                throw new InvalidOperationException("The window is already being shown.");
+            }
+
             s_windows.Add(this);
 
             EnsureInitialized();
+            IsVisible = true;
             LayoutManager.Instance.ExecuteInitialLayoutPass(this);
 
             using (BeginAutoSizing())
             {
-                var modal = PlatformImpl.ShowDialog();
+                var affectedWindows = s_windows.Where(w => w.IsEnabled && w != this).ToList();
+                var activated = affectedWindows.Where(w => w.IsActive).FirstOrDefault();
+                SetIsEnabled(affectedWindows, false);
+
+                var modal = PlatformImpl?.ShowDialog();
                 var result = new TaskCompletionSource<TResult>();
 
-                Observable.FromEventPattern(this, nameof(Closed))
+                Renderer?.Start();
+
+                Observable.FromEventPattern<EventHandler, EventArgs>(
+                    x => this.Closed += x,
+                    x => this.Closed -= x)
                     .Take(1)
                     .Subscribe(_ =>
                     {
-                        modal.Dispose();
+                        modal?.Dispose();
+                        SetIsEnabled(affectedWindows, true);
+                        activated?.Activate();
                         result.SetResult((TResult)_dialogResult);
                     });
 
                 return result.Task;
+            }
+        }
+
+        void SetIsEnabled(IEnumerable<Window> windows, bool isEnabled)
+        {
+            foreach (var window in windows)
+            {
+                window.IsEnabled = isEnabled;
             }
         }
 
@@ -329,6 +376,13 @@ namespace Avalonia.Controls
             return size;
         }
 
+        protected override void HandleClosed()
+        {
+            IsVisible = false;
+            s_windows.Remove(this);
+            base.HandleClosed();
+        }
+
         /// <inheritdoc/>
         protected override void HandleResized(Size clientSize)
         {
@@ -338,16 +392,6 @@ namespace Avalonia.Controls
             }
 
             base.HandleResized(clientSize);
-        }
-
-        private void EnsureInitialized()
-        {
-            if (!this.IsInitialized)
-            {
-                var init = (ISupportInitialize)this;
-                init.BeginInit();
-                init.EndInit();
-            }
         }
     }
 }

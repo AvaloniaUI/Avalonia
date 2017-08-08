@@ -181,6 +181,7 @@ namespace Avalonia
         public void ClearValue(AvaloniaProperty property)
         {
             Contract.Requires<ArgumentNullException>(property != null);
+            VerifyAccess();
 
             SetValue(property, AvaloniaProperty.UnsetValue);
         }
@@ -193,6 +194,7 @@ namespace Avalonia
         public object GetValue(AvaloniaProperty property)
         {
             Contract.Requires<ArgumentNullException>(property != null);
+            VerifyAccess();
 
             if (property.IsDirect)
             {
@@ -234,7 +236,8 @@ namespace Avalonia
         public bool IsSet(AvaloniaProperty property)
         {
             Contract.Requires<ArgumentNullException>(property != null);
-            
+            VerifyAccess();
+
             PriorityValue value;
 
             if (_values.TryGetValue(property, out value))
@@ -575,13 +578,13 @@ namespace Avalonia
 
             if (notification == null)
             {
-                return TypeUtilities.CastOrDefault(value, type);
+                return TypeUtilities.ConvertImplicitOrDefault(value, type);
             }
             else
             {
                 if (notification.HasValue)
                 {
-                    notification.SetValue(TypeUtilities.CastOrDefault(notification.Value, type));
+                    notification.SetValue(TypeUtilities.ConvertImplicitOrDefault(notification.Value, type));
                 }
 
                 return notification;
@@ -619,14 +622,9 @@ namespace Avalonia
         /// <returns>The default value.</returns>
         private object GetDefaultValue(AvaloniaProperty property)
         {
-            if (property.Inherits && _inheritanceParent != null)
-            {
-                return (_inheritanceParent as AvaloniaObject).GetValueInternal(property);
-            }
-            else
-            {
-                return ((IStyledPropertyAccessor)property).GetDefaultValue(GetType());
-            }
+            if (property.Inherits && _inheritanceParent is AvaloniaObject aobj)
+                return aobj.GetValueInternal(property);
+            return ((IStyledPropertyAccessor) property).GetDefaultValue(GetType());
         }
 
         /// <summary>
@@ -732,7 +730,7 @@ namespace Avalonia
                 ThrowNotRegistered(property);
             }
 
-            if (!TypeUtilities.TryCast(property.PropertyType, value, out value))
+            if (!TypeUtilities.TryConvertImplicit(property.PropertyType, value, out value))
             {
                 throw new ArgumentException(string.Format(
                     "Invalid value for Property '{0}': '{1}' ({2})",

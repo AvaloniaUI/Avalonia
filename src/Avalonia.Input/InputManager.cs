@@ -35,6 +35,7 @@ namespace Avalonia.Input
         public void ProcessInput(RawInputEventArgs e)
         {
             _preProcess.OnNext(e);
+            e.Device?.ProcessRawEvent(e);
             _process.OnNext(e);
             _postProcess.OnNext(e);
         }

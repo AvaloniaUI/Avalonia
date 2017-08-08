@@ -9,7 +9,10 @@
     <Import_RootNamespace>Avalonia.RenderTests</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Controls\CustomRenderTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GeometryClippingTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Media\RadialGradientBrushTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Media\BitmapTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)OpacityMaskTests.cs" />
     <Compile Include="Media\FormattedTextImplTests.cs" />
     <Compile Include="Controls\ImageTests.cs" />

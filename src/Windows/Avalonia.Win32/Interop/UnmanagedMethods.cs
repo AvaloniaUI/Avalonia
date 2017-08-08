@@ -811,7 +811,7 @@ namespace Avalonia.Win32.Interop
 
             return SetClassLong64(hWnd, nIndex, dwNewLong);
         }
-#if !NETSTANDARD
+#if !NETSTANDARD && !NETSTANDARD1_3
         [ComImport, ClassInterface(ClassInterfaceType.None), TypeLibType(TypeLibTypeFlags.FCanCreate), Guid("DC1C5A9C-E88A-4DDE-A5A1-60F82A20AEF7")]
         internal class FileOpenDialogRCW { }
 
@@ -909,6 +909,9 @@ namespace Avalonia.Win32.Interop
             uint dwMaximumSizeLow,
             string lpName);
 
+        [DllImport("kernel32.dll", EntryPoint = "CopyMemory", SetLastError = false)]
+        public static extern void CopyMemory(IntPtr dest, IntPtr src, uint count);
+
         public enum MONITOR
         {
             MONITOR_DEFAULTTONULL = 0x00000000,
@@ -919,7 +922,9 @@ namespace Avalonia.Win32.Interop
         [StructLayout(LayoutKind.Sequential)]
         internal class MONITORINFO
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             public int cbSize = Marshal.SizeOf(typeof(MONITORINFO));
+#pragma warning restore CS0618 // Type or member is obsolete
             public RECT rcMonitor = new RECT();
             public RECT rcWork = new RECT();
             public int dwFlags = 0;
@@ -1150,7 +1155,7 @@ namespace Avalonia.Win32.Interop
             public int flagsEx;
         }        
     }
-#if !NETSTANDARD
+#if !NETSTANDARD && !NETSTANDARD1_3
     [ComImport(), Guid("42F85136-DB7E-439C-85F1-E4075D135FC8"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     internal interface IFileDialog
     {

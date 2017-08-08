@@ -105,6 +105,11 @@ csx
 # Windows Store app package directory
 AppPackages/
 
+# NCrunch
+_NCrunch_*/
+*.ncrunchsolution.user
+nCrunchTemp_*/
+
 # Others
 sql/
 *.Cache
@@ -157,7 +162,8 @@ $RECYCLE.BIN/
 #################
 ## Cake
 #################
-tools/
+tools/*
+!tools/packages.config
 .nuget
 artifacts/
 nuget

@@ -37,7 +37,7 @@ namespace Avalonia.Markup.Data
 
         protected override IObservable<object> StartListeningCore(WeakReference reference)
         {
-            var plugin = ExpressionObserver.PropertyAccessors.FirstOrDefault(x => x.Match(reference));
+            var plugin = ExpressionObserver.PropertyAccessors.FirstOrDefault(x => x.Match(reference.Target, PropertyName));
             var accessor = plugin?.Start(reference, PropertyName);
 
             if (_enableValidation && Next == null)

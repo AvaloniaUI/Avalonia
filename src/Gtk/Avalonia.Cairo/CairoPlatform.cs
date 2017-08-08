@@ -26,6 +26,7 @@ namespace Avalonia.Cairo
 {
     using System.IO;
     using global::Cairo;
+    using Rendering;
 
     public class CairoPlatform : IPlatformRenderInterface
     {
@@ -42,14 +43,20 @@ namespace Avalonia.Cairo
 
         public IFormattedTextImpl CreateFormattedText(
             string text,
-            string fontFamily,
-            double fontSize,
-            FontStyle fontStyle,
+            Typeface typeface,
             TextAlignment textAlignment,
-            Avalonia.Media.FontWeight fontWeight,
-            TextWrapping wrapping)
+            TextWrapping wrapping,
+            Size constraint,
+            IReadOnlyList<FormattedTextStyleSpan> spans)
         {
-            return new FormattedTextImpl(s_pangoContext, text, fontFamily, fontSize, fontStyle, textAlignment, fontWeight);
+            return new FormattedTextImpl(
+                s_pangoContext,
+                text,
+                typeface,
+                textAlignment,
+                wrapping,
+                constraint,
+                spans);
         }
 
         public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)
@@ -62,7 +69,7 @@ namespace Avalonia.Cairo
                 "Don't know how to create a Cairo renderer from any of the provided surfaces."));
         }
 
-        public IRenderTargetBitmapImpl CreateRenderTargetBitmap(int width, int height)
+        public IRenderTargetBitmapImpl CreateRenderTargetBitmap(int width, int height, double dpiX, double dpiY)
         {
             return new RenderTargetBitmapImpl(new ImageSurface(Format.Argb32, width, height));
         }
@@ -90,6 +97,16 @@ namespace Avalonia.Cairo
         {
             Gtk.Application.Init();
             return new Gtk.Invisible().CreatePangoContext();
+        }
+
+        public IBitmapImpl LoadBitmap(PixelFormat format, IntPtr data, int width, int height, int stride)
+        {
+            throw new NotSupportedException("No proper control over pixel format with Cairo, use Skia backend instead");
+        }
+
+        public IWritableBitmapImpl CreateWritableBitmap(int width, int height, PixelFormat? fmt)
+        {
+            throw new NotSupportedException("No proper support with Cairo, use Skia backend instead");
         }
     }
 }

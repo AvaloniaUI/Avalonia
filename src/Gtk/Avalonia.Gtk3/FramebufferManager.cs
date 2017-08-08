@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Controls.Platform.Surfaces;
+using Avalonia.Platform;
 
 namespace Avalonia.Gtk3
 {

@@ -12,8 +12,7 @@ namespace Avalonia.Cairo.Media
 {
     public class FormattedTextImpl : IFormattedTextImpl
     {
-        private Size _size;
-        private readonly string _text;
+        private Size _constraint;
 
         static double CorrectScale(double input)
         {
@@ -23,53 +22,64 @@ namespace Avalonia.Cairo.Media
         public FormattedTextImpl(
             Pango.Context context,
             string text,
-            string fontFamily,
-            double fontSize,
-            FontStyle fontStyle,
+            Typeface typeface,
             TextAlignment textAlignment,
-            FontWeight fontWeight)
+            TextWrapping wrapping,
+            Size constraint,
+            IReadOnlyList<FormattedTextStyleSpan> spans)
         {
             Contract.Requires<ArgumentNullException>(context != null);
             Contract.Requires<ArgumentNullException>(text != null);
+
             Layout = new Pango.Layout(context);
-            _text = text;
             Layout.SetText(text);
+
             Layout.FontDescription = new Pango.FontDescription
             {
-                Family = fontFamily,
-                Size = Pango.Units.FromDouble(CorrectScale(fontSize)),
-                Style = (Pango.Style)fontStyle,
-                Weight = fontWeight.ToCairo()
+                Family = typeface?.FontFamilyName ?? "monospace",
+                Size = Pango.Units.FromDouble(CorrectScale(typeface?.FontSize ?? 12)),
+                Style = (Pango.Style)(typeface?.Style ?? FontStyle.Normal),
+                Weight = (typeface?.Weight ?? FontWeight.Normal).ToCairo(),
             };
 
             Layout.Alignment = textAlignment.ToCairo();
             Layout.Attributes = new Pango.AttrList();
-        }
+            Layout.Width = double.IsPositiveInfinity(constraint.Width) ? -1 : Pango.Units.FromDouble(constraint.Width);
 
-        public Size Constraint
-        {
-            get
+            if (spans != null)
             {
-                return _size;
+                foreach (var span in spans)
+                {
+                    if (span.ForegroundBrush is SolidColorBrush scb)
+                    {
+                        var color = new Pango.Color();
+                        color.Parse(string.Format("#{0}", scb.Color.ToString().Substring(3)));
+
+                        var brushAttr = new Pango.AttrForeground(color);
+                        brushAttr.StartIndex = (uint)TextIndexToPangoIndex(span.StartIndex);
+                        brushAttr.EndIndex = (uint)TextIndexToPangoIndex(span.StartIndex + span.Length);
+
+                        this.Layout.Attributes.Insert(brushAttr);
+                    }
+                }
             }
 
-            set
-            {
-                _size = value;
-                Layout.Width = double.IsPositiveInfinity(value.Width) ?
-                    -1 : Pango.Units.FromDouble(value.Width);
-            }
+            Size = Measure();
         }
 
-        public Pango.Layout Layout
+        public FormattedTextImpl(Pango.Layout layout)
         {
-            get;
+            Layout = layout;
+            Size = Measure();
         }
 
-        public void Dispose()
-        {
-            Layout.Dispose();
-        }
+        public string Text => Layout.Text;
+
+        public Size Constraint => _constraint;
+
+        public Size Size { get; }
+
+        public Pango.Layout Layout { get; }
 
         public IEnumerable<FormattedTextLine> GetLines()
         {
@@ -99,7 +109,7 @@ namespace Avalonia.Cairo.Media
 
         int PangoIndexToTextIndex(int pangoIndex)
         {
-            return Encoding.UTF8.GetString(Encoding.UTF8.GetBytes(_text), 0, Math.Min(pangoIndex, _text.Length)).Length;
+            return Encoding.UTF8.GetString(Encoding.UTF8.GetBytes(Text), 0, Math.Min(pangoIndex, Text.Length)).Length;
         }
 
         public Rect HitTestTextPosition(int index)
@@ -109,7 +119,7 @@ namespace Avalonia.Cairo.Media
 
         int TextIndexToPangoIndex(int textIndex)
         {
-            return Encoding.UTF8.GetByteCount(textIndex < _text.Length ? _text.Remove(textIndex) : _text);
+            return Encoding.UTF8.GetByteCount(textIndex < Text.Length ? Text.Remove(textIndex) : Text);
         }
 
         public IEnumerable<Rect> HitTestTextRange(int index, int length)
@@ -124,30 +134,13 @@ namespace Avalonia.Cairo.Media
             return ranges;
         }
 
-        public Size Measure()
+        private Size Measure()
         {
             int width;
             int height;
             Layout.GetPixelSize(out width, out height);
 
             return new Size(width, height);
-        }
-
-        public void SetForegroundBrush(IBrush brush, int startIndex, int count)
-        {
-            var scb = brush as SolidColorBrush;
-            if (scb != null)
-            {
-
-                var color = new Pango.Color();
-                color.Parse(string.Format("#{0}", scb.Color.ToString().Substring(3)));
-
-                var brushAttr = new Pango.AttrForeground(color);
-                brushAttr.StartIndex = (uint)TextIndexToPangoIndex(startIndex);
-                brushAttr.EndIndex = (uint)TextIndexToPangoIndex(startIndex + count);
-
-                Layout.Attributes.Insert(brushAttr);
-            }
         }
     }
 }

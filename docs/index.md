@@ -10,7 +10,7 @@ What does alpha mean? Well, it means that it's now at a stage where you can have
 
 ## How do I try it out
 
-The easiest way to try out Avalonia is to install the [Visual Studio Extension](https://visualstudiogallery.msdn.microsoft.com/a4542e8a-b56c-4295-8df1-7e220178b873).
+The easiest way to try out Avalonia is to install the [Visual Studio Extension](https://marketplace.visualstudio.com/items?itemName=AvaloniaTeam.AvaloniaforVisualStudio).
 
 This will add a Avalonia project template and a Window template to the standard Visual Studo "Add" dialog (yes, icons still to come :) ):
 

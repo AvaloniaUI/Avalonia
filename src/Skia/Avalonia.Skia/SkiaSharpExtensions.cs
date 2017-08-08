@@ -1,4 +1,6 @@
+using System;
 using Avalonia.Media;
+using Avalonia.Platform;
 using SkiaSharp;
 
 
@@ -44,6 +46,28 @@ namespace Avalonia.Skia
             return new SKColor(c.R, c.G, c.B, c.A);
         }
 
+        public static SKColorType ToSkColorType(this PixelFormat fmt)
+        {
+            if (fmt == PixelFormat.Rgb565)
+                return SKColorType.Rgb565;
+            if (fmt == PixelFormat.Bgra8888)
+                return SKColorType.Bgra8888;
+            if (fmt == PixelFormat.Rgba8888)
+                return SKColorType.Rgba8888;
+            throw new ArgumentException("Unknown pixel format: " + fmt);
+        }
+
+        public static PixelFormat ToPixelFormat(this SKColorType fmt)
+        {
+            if (fmt == SKColorType.Rgb565)
+                return PixelFormat.Rgb565;
+            if (fmt == SKColorType.Bgra8888)
+                return PixelFormat.Bgra8888;
+            if (fmt == SKColorType.Rgba8888)
+                return PixelFormat.Rgba8888;
+            throw new ArgumentException("Unknown pixel format: " + fmt);
+        }
+
         public static SKShaderTileMode ToSKShaderTileMode(this Media.GradientSpreadMethod m)
         {
             switch (m)
@@ -63,6 +87,17 @@ namespace Avalonia.Skia
                 case TextAlignment.Left: return SKTextAlign.Left;
                 case TextAlignment.Center: return SKTextAlign.Center;
                 case TextAlignment.Right: return SKTextAlign.Right;
+            }
+        }
+
+        public static TextAlignment ToAvalonia(this SKTextAlign a)
+        {
+            switch (a)
+            {
+                default:
+                case SKTextAlign.Left: return TextAlignment.Left;
+                case SKTextAlign.Center: return TextAlignment.Center;
+                case SKTextAlign.Right: return TextAlignment.Right;
             }
         }
 

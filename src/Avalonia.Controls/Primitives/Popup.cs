@@ -340,11 +340,11 @@ namespace Avalonia.Controls.Primitives
             switch (mode)
             {
                 case PlacementMode.Pointer:
-                    if (MouseDevice.Instance != null)
+                    if(PopupRoot != null)
                     {
                         // Scales the Horizontal and Vertical offset to screen co-ordinates.
                         var screenOffset = new Point(HorizontalOffset * (PopupRoot as ILayoutRoot).LayoutScaling, VerticalOffset * (PopupRoot as ILayoutRoot).LayoutScaling);
-                        return MouseDevice.Instance.Position + screenOffset;
+                        return (((IInputRoot)PopupRoot)?.MouseDevice?.Position ?? default(Point)) + screenOffset;
                     }
 
                     return default(Point);

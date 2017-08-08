@@ -1,18 +1,8 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{88060192-33D5-4932-B0F9-8BD2763E857D}</ProjectGuid>
-    <ProjectGuid>{88060192-33D5-4932-B0F9-8BD2763E857D}</ProjectGuid>
+    <TargetFrameworks>net461;netcoreapp1.1</TargetFrameworks>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Avalonia.UnitTests</RootNamespace>
-    <AssemblyName>Avalonia.UnitTests</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -31,21 +21,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="Moq, Version=4.2.1510.2205, Culture=neutral, PublicKeyToken=69f491c39445e920, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Moq.4.2.1510.2205\lib\net40\Moq.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net461'">
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Reactive.Core, Version=3.0.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Reactive.Core.3.0.0\lib\net45\System.Reactive.Core.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Reactive.Interfaces, Version=3.0.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Reactive.Interfaces.3.0.0\lib\net45\System.Reactive.Interfaces.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -54,77 +32,27 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="InvariantCultureFixture.cs" />
-    <Compile Include="MockRendererFactory.cs" />
-    <Compile Include="NotifyingBase.cs" />
-    <Compile Include="TestLogSink.cs" />
-    <Compile Include="TestTemplatedRoot.cs" />
-    <Compile Include="TestRoot.cs" />
-    <Compile Include="TestServices.cs" />
-    <Compile Include="UnitTestApplication.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="MockWindowingPlatform.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\Avalonia.DotNetFrameworkRuntime\Avalonia.DotNetFrameworkRuntime.csproj">
-      <Project>{4a1abb09-9047-4bd5-a4ad-a055e52c5ee0}</Project>
-      <Name>Avalonia.DotNetFrameworkRuntime</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj">
-      <Project>{3e53a01a-b331-47f3-b828-4a5717e77a24}</Project>
-      <Name>Avalonia.Markup.Xaml</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Markup\Avalonia.Markup\Avalonia.Markup.csproj">
-      <Project>{6417e941-21bc-467b-a771-0de389353ce6}</Project>
-      <Name>Avalonia.Markup</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Avalonia.Animation\Avalonia.Animation.csproj">
-      <Project>{d211e587-d8bc-45b9-95a4-f297c8fa5200}</Project>
-      <Name>Avalonia.Animation</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Avalonia.Base\Avalonia.Base.csproj">
-      <Project>{b09b78d8-9b26-48b0-9149-d64a2f120f3f}</Project>
-      <Name>Avalonia.Base</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Avalonia.Controls\Avalonia.Controls.csproj">
-      <Project>{d2221c82-4a25-4583-9b43-d791e3f6820c}</Project>
-      <Name>Avalonia.Controls</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Avalonia.Input\Avalonia.Input.csproj">
-      <Project>{62024b2d-53eb-4638-b26b-85eeaa54866e}</Project>
-      <Name>Avalonia.Input</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Avalonia.Interactivity\Avalonia.Interactivity.csproj">
-      <Project>{6b0ed19d-a08b-461c-a9d9-a9ee40b0c06b}</Project>
-      <Name>Avalonia.Interactivity</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Avalonia.Layout\Avalonia.Layout.csproj">
-      <Project>{42472427-4774-4c81-8aff-9f27b8e31721}</Project>
-      <Name>Avalonia.Layout</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Avalonia.Visuals\Avalonia.Visuals.csproj">
-      <Project>{eb582467-6abb-43a1-b052-e981ba910e3a}</Project>
-      <Name>Avalonia.Visuals</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Avalonia.Styling\Avalonia.Styling.csproj">
-      <Project>{f1baa01a-f176-4c6a-b39d-5b40bb1b148f}</Project>
-      <Name>Avalonia.Styling</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Avalonia.Themes.Default\Avalonia.Themes.Default.csproj">
-      <Project>{3e10a5fa-e8da-48b1-ad44-6a5b6cb7750f}</Project>
-      <Name>Avalonia.Themes.Default</Name>
-    </ProjectReference>
+    <ProjectReference Condition="'$(TargetFramework)' == 'net461'" Include="..\..\src\Avalonia.DotNetFrameworkRuntime\Avalonia.DotNetFrameworkRuntime.csproj" />
+	<ProjectReference Condition="'$(TargetFramework)' == 'netcoreapp1.1'" Include="..\..\src\Avalonia.DotNetCoreRuntime\Avalonia.DotNetCoreRuntime.csproj" />
+    <ProjectReference Include="..\..\src\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj" />
+    <ProjectReference Include="..\..\src\Markup\Avalonia.Markup\Avalonia.Markup.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.Animation\Avalonia.Animation.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.Base\Avalonia.Base.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.Controls\Avalonia.Controls.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.Input\Avalonia.Input.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.Interactivity\Avalonia.Interactivity.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.Layout\Avalonia.Layout.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.Visuals\Avalonia.Visuals.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.Styling\Avalonia.Styling.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.Themes.Default\Avalonia.Themes.Default.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <None Include="packages.config" />
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+  <Import Project="..\..\build\Moq.props" />
+  <Import Project="..\..\build\Rx.props" />
+  <Import Project="..\..\build\XUnit.props" />
+  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp1.1'">
+      <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0" />
+  </ItemGroup>
 </Project>

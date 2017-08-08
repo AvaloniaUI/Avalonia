@@ -33,7 +33,7 @@ placed in a `DataTemplates` collection on each control (and on `Application`):
                     <TextBox Text="{Binding Name}"/>
                 </Border>
             </DataTemplate>
-        </UserControl.Styles>
+        </UserControl.DataTemplates>
         <!-- Assuming that DataContext.Foo is an object of type
              MyApp.ViewModels.FooViewModel then a red border with a corner
              radius of 8 containing a TextBox will be displayed here -->
@@ -161,7 +161,7 @@ the same way that event class listeners are added](../spec/working-with-properti
 
 ## RenderTransforms and RenderTransformOrigin
 
-RenderTransformOrigins are different in WPF and Avalonia: If you apply a `RenderTransform`, keep in mind that our default value for the RenderTransformOrigin is `RelativePoint.Middle`. In WPF the default value is `RelativePoint.TopLeft` (0, 0). In controls like Viewbox (currently being developed) the same code will lead to a different rendering behavior:
+RenderTransformOrigins are different in WPF and Avalonia: If you apply a `RenderTransform`, keep in mind that our default value for the RenderTransformOrigin is `RelativePoint.Center`. In WPF the default value is `RelativePoint.TopLeft` (0, 0). In controls like Viewbox (currently being developed) the same code will lead to a different rendering behavior:
 
 In WPF:
 ![WPF](https://files.gitter.im/AvaloniaUI/Avalonia/cDrM/image.png)

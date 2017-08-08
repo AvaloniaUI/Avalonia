@@ -1,20 +1,7 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <MinimumVisualStudioVersion>11.0</MinimumVisualStudioVersion>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{6417E941-21BC-467B-A771-0DE389353CE6}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Avalonia.Markup</RootNamespace>
-    <AssemblyName>Avalonia.Markup</AssemblyName>
-    <DefaultLanguage>en-US</DefaultLanguage>
-    <FileAlignment>512</FileAlignment>
-    <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <TargetFrameworkProfile>Profile7</TargetFrameworkProfile>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFramework>netstandard1.3</TargetFramework>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -42,104 +29,16 @@
     <Compile Include="..\..\Shared\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="Data\ISettableNode.cs" />
-    <Compile Include="Data\StreamNode.cs" />
-    <Compile Include="Data\MarkupBindingChainException.cs" />
-    <Compile Include="Data\CommonPropertyNames.cs" />
-    <Compile Include="Data\EmptyExpressionNode.cs" />
-    <Compile Include="Data\ExpressionNodeBuilder.cs" />
-    <Compile Include="Data\ExpressionParseException.cs" />
-    <Compile Include="Data\BindingExpression.cs" />
-    <Compile Include="ControlLocator.cs" />
-    <Compile Include="Data\Plugins\DataAnnotationsValidationPlugin.cs" />
-    <Compile Include="Data\Plugins\ExceptionValidationPlugin.cs" />
-    <Compile Include="Data\Plugins\IndeiValidationPlugin.cs" />
-    <Compile Include="Data\Plugins\IDataValidationPlugin.cs" />
-    <Compile Include="Data\Plugins\AvaloniaPropertyAccessorPlugin.cs" />
-    <Compile Include="Data\Plugins\InpcPropertyAccessorPlugin.cs" />
-    <Compile Include="Data\Plugins\IPropertyAccessor.cs" />
-    <Compile Include="Data\Plugins\IPropertyAccessorPlugin.cs" />
-    <Compile Include="Data\LogicalNotNode.cs" />
-    <Compile Include="Data\IndexerNode.cs" />
-    <Compile Include="Data\Parsers\ArgumentListParser.cs" />
-    <Compile Include="Data\Parsers\IdentifierParser.cs" />
-    <Compile Include="Data\Parsers\ExpressionParser.cs" />
-    <Compile Include="Data\Parsers\Reader.cs" />
-    <Compile Include="Data\Plugins\ObservableStreamPlugin.cs" />
-    <Compile Include="Data\Plugins\TaskStreamPlugin.cs" />
-    <Compile Include="Data\Plugins\IStreamPlugin.cs" />
-    <Compile Include="Data\Plugins\PropertyAccessorBase.cs" />
-    <Compile Include="Data\Plugins\PropertyError.cs" />
-    <Compile Include="Data\Plugins\DataValidatiorBase.cs" />
-    <Compile Include="Data\PropertyAccessorNode.cs" />
-    <Compile Include="Data\ExpressionNode.cs" />
-    <Compile Include="Data\ExpressionObserver.cs" />
-    <Compile Include="FuncMultiValueConverter.cs" />
-    <Compile Include="FuncValueConverter.cs" />
-    <Compile Include="IMultiValueConverter.cs" />
-    <Compile Include="BoolConverters.cs" />
-    <Compile Include="StringConverters.cs" />
-    <Compile Include="DefaultValueConverter.cs" />
-    <Compile Include="IValueConverter.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Avalonia.Base\Avalonia.Base.csproj">
-      <Project>{b09b78d8-9b26-48b0-9149-d64a2f120f3f}</Project>
-      <Name>Avalonia.Base</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Avalonia.Controls\Avalonia.Controls.csproj">
-      <Project>{d2221c82-4a25-4583-9b43-d791e3f6820c}</Project>
-      <Name>Avalonia.Controls</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Avalonia.Input\Avalonia.Input.csproj">
-      <Project>{62024b2d-53eb-4638-b26b-85eeaa54866e}</Project>
-      <Name>Avalonia.Input</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Avalonia.Interactivity\Avalonia.Interactivity.csproj">
-      <Project>{6b0ed19d-a08b-461c-a9d9-a9ee40b0c06b}</Project>
-      <Name>Avalonia.Interactivity</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Avalonia.Layout\Avalonia.Layout.csproj">
-      <Project>{42472427-4774-4c81-8aff-9f27b8e31721}</Project>
-      <Name>Avalonia.Layout</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Avalonia.Visuals\Avalonia.Visuals.csproj">
-      <Project>{eb582467-6abb-43a1-b052-e981ba910e3a}</Project>
-      <Name>Avalonia.Visuals</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Avalonia.Styling\Avalonia.Styling.csproj">
-      <Project>{f1baa01a-f176-4c6a-b39d-5b40bb1b148f}</Project>
-      <Name>Avalonia.Styling</Name>
-    </ProjectReference>
+    <ProjectReference Include="..\..\Avalonia.Base\Avalonia.Base.csproj" />
+    <ProjectReference Include="..\..\Avalonia.Controls\Avalonia.Controls.csproj" />
+    <ProjectReference Include="..\..\Avalonia.Input\Avalonia.Input.csproj" />
+    <ProjectReference Include="..\..\Avalonia.Interactivity\Avalonia.Interactivity.csproj" />
+    <ProjectReference Include="..\..\Avalonia.Layout\Avalonia.Layout.csproj" />
+    <ProjectReference Include="..\..\Avalonia.Visuals\Avalonia.Visuals.csproj" />
+    <ProjectReference Include="..\..\Avalonia.Styling\Avalonia.Styling.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <Reference Include="System.Reactive.Core, Version=3.0.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\System.Reactive.Core.3.0.0\lib\netstandard1.1\System.Reactive.Core.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Reactive.Interfaces, Version=3.0.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\System.Reactive.Interfaces.3.0.0\lib\netstandard1.0\System.Reactive.Interfaces.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Reactive.Linq, Version=3.0.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\System.Reactive.Linq.3.0.0\lib\netstandard1.1\System.Reactive.Linq.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Reactive.PlatformServices, Version=3.0.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\System.Reactive.PlatformServices.3.0.0\lib\netstandard1.0\System.Reactive.PlatformServices.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+  <Import Project="..\..\..\build\Markup.props" />
+  <Import Project="..\..\..\build\Rx.props" />
 </Project>

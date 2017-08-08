@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.ComponentModel;
 
 namespace Avalonia.Input
 {
@@ -26,7 +27,7 @@ namespace Avalonia.Input
         Toggled = 2,
     }
 
-    public interface IKeyboardDevice : IInputDevice
+    public interface IKeyboardDevice : IInputDevice, INotifyPropertyChanged
     {
         IInputElement FocusedElement { get; }
 

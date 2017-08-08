@@ -25,10 +25,14 @@ namespace Avalonia
 {
     public static class Win32ApplicationExtensions
     {
-        public static T UseWin32<T>(this T builder) where T : AppBuilderBase<T>, new()
+        public static T UseWin32<T>(
+            this T builder,
+            bool deferredRendering = true) 
+                where T : AppBuilderBase<T>, new()
         {
-            builder.UseWindowingSubsystem(Win32.Win32Platform.Initialize, "Win32");
-            return builder;
+            return builder.UseWindowingSubsystem(
+                () => Win32.Win32Platform.Initialize(deferredRendering),
+                "Win32");
         }
     }
 }
@@ -54,6 +58,8 @@ namespace Avalonia.Win32
             CreateMessageWindow();
         }
 
+        public static bool UseDeferredRendering { get; set; }
+
         public Size DoubleClickSize => new Size(
             UnmanagedMethods.GetSystemMetrics(UnmanagedMethods.SystemMetric.SM_CXDOUBLECLK),
             UnmanagedMethods.GetSystemMetrics(UnmanagedMethods.SystemMetric.SM_CYDOUBLECLK));
@@ -62,18 +68,23 @@ namespace Avalonia.Win32
 
         public static void Initialize()
         {
+            Initialize(true);
+        }
+
+        public static void Initialize(bool deferredRendering = true)
+        {
             AvaloniaLocator.CurrentMutable
                 .Bind<IClipboard>().ToSingleton<ClipboardImpl>()
                 .Bind<IStandardCursorFactory>().ToConstant(CursorFactory.Instance)
                 .Bind<IKeyboardDevice>().ToConstant(WindowsKeyboardDevice.Instance)
-                .Bind<IMouseDevice>().ToConstant(WindowsMouseDevice.Instance)
                 .Bind<IPlatformSettings>().ToConstant(s_instance)
                 .Bind<IPlatformThreadingInterface>().ToConstant(s_instance)
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop(60))
                 .Bind<ISystemDialogImpl>().ToSingleton<SystemDialogImpl>()
                 .Bind<IWindowingPlatform>().ToConstant(s_instance)
                 .Bind<IPlatformIconLoader>().ToConstant(s_instance);
-            
+
+            UseDeferredRendering = deferredRendering;
             _uiThread = UnmanagedMethods.GetCurrentThreadId();
         }
 

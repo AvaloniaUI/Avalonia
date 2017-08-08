@@ -40,6 +40,6 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
 
-[assembly: ExportRenderingSubsystem(OperatingSystemType.WinNT, 2, "Cairo", typeof(CairoPlatform), nameof(CairoPlatform.Initialize), RequiresWindowingSubsystem = "GTK")]
-[assembly: ExportRenderingSubsystem(OperatingSystemType.Linux, 1, "Cairo", typeof(CairoPlatform), nameof(CairoPlatform.Initialize), RequiresWindowingSubsystem = "GTK")]
-[assembly: ExportRenderingSubsystem(OperatingSystemType.OSX, 2, "Cairo", typeof(CairoPlatform), nameof(CairoPlatform.Initialize), RequiresWindowingSubsystem = "GTK")]
+[assembly: ExportRenderingSubsystem(OperatingSystemType.WinNT, 3, "Cairo", typeof(CairoPlatform), nameof(CairoPlatform.Initialize), RequiresWindowingSubsystem = "GTK")]
+[assembly: ExportRenderingSubsystem(OperatingSystemType.Linux, 2, "Cairo", typeof(CairoPlatform), nameof(CairoPlatform.Initialize), RequiresWindowingSubsystem = "GTK")]
+[assembly: ExportRenderingSubsystem(OperatingSystemType.OSX, 3, "Cairo", typeof(CairoPlatform), nameof(CairoPlatform.Initialize), RequiresWindowingSubsystem = "GTK")]

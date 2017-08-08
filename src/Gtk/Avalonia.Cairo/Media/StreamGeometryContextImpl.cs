@@ -71,6 +71,15 @@ namespace Avalonia.Cairo.Media
             }
         }
 
+        internal bool StrokeContains(Pen pen, Point point)
+        {
+            using (var context = new Cairo.Context(new Cairo.ImageSurface(Cairo.Format.Argb32, 0, 0)))
+            {
+                context.AppendPath(Path);
+                return context.InStroke(point.X, point.Y);
+            }
+        }
+
         public void LineTo(Point point)
         {
             if (this.Path == null)

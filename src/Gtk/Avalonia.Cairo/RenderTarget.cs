@@ -42,15 +42,14 @@ namespace Avalonia.Cairo
         /// <summary>
         /// Creates a cairo surface that targets a platform-specific resource.
         /// </summary>
+        /// <param name="visualBrushRenderer">The visual brush renderer to use.</param>
         /// <returns>A surface wrapped in an <see cref="Avalonia.Media.DrawingContext"/>.</returns>
-        public DrawingContext CreateDrawingContext() => new DrawingContext(CreateMediaDrawingContext());
-
-        public IDrawingContextImpl CreateMediaDrawingContext()
+        public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
         {
             if (_drawableAccessor != null)
-                return new Media.DrawingContext(_drawableAccessor());
+                return new Media.DrawingContext(_drawableAccessor(), visualBrushRenderer);
             if (_surface != null)
-                return new Media.DrawingContext(_surface);
+                return new Media.DrawingContext(_surface, visualBrushRenderer);
             throw new InvalidOperationException("Unspecified render target");
         }
 

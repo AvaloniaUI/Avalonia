@@ -1,22 +1,7 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <MinimumVisualStudioVersion>11.0</MinimumVisualStudioVersion>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{62024B2D-53EB-4638-B26B-85EEAA54866E}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Avalonia.Input</RootNamespace>
-    <AssemblyName>Avalonia.Input</AssemblyName>
-    <DefaultLanguage>en-US</DefaultLanguage>
-    <FileAlignment>512</FileAlignment>
-    <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <TargetFrameworkProfile>Profile7</TargetFrameworkProfile>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
+    <TargetFramework>netstandard1.3</TargetFramework>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -41,109 +26,16 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
-    <!-- A reference to the entire .NET Framework is automatically included -->
-    <ProjectReference Include="..\Avalonia.Animation\Avalonia.Animation.csproj">
-      <Project>{D211E587-D8BC-45B9-95A4-F297C8FA5200}</Project>
-      <Name>Avalonia.Animation</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj">
-      <Project>{B09B78D8-9B26-48B0-9149-D64A2F120F3F}</Project>
-      <Name>Avalonia.Base</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Avalonia.Interactivity\Avalonia.Interactivity.csproj">
-      <Project>{6B0ED19D-A08B-461C-A9D9-A9EE40B0C06B}</Project>
-      <Name>Avalonia.Interactivity</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Avalonia.Layout\Avalonia.Layout.csproj">
-      <Project>{42472427-4774-4C81-8AFF-9F27B8E31721}</Project>
-      <Name>Avalonia.Layout</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Avalonia.Visuals\Avalonia.Visuals.csproj">
-      <Project>{EB582467-6ABB-43A1-B052-E981BA910E3A}</Project>
-      <Name>Avalonia.Visuals</Name>
-    </ProjectReference>
+    <ProjectReference Include="..\Avalonia.Animation\Avalonia.Animation.csproj" />
+    <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj" />
+    <ProjectReference Include="..\Avalonia.Interactivity\Avalonia.Interactivity.csproj" />
+    <ProjectReference Include="..\Avalonia.Layout\Avalonia.Layout.csproj" />
+    <ProjectReference Include="..\Avalonia.Visuals\Avalonia.Visuals.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\Shared\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="Cursors.cs" />
-    <Compile Include="AccessKeyHandler.cs" />
-    <Compile Include="Gestures.cs" />
-    <Compile Include="KeyBinding.cs" />
-    <Compile Include="KeyGesture.cs" />
-    <Compile Include="Platform\IClipboard.cs" />
-    <Compile Include="Platform\IStandardCursorFactory.cs" />
-    <Compile Include="Raw\RawTextInputEventArgs.cs" />
-    <Compile Include="NavigationMethod.cs" />
-    <Compile Include="IInputRoot.cs" />
-    <Compile Include="IMainMenu.cs" />
-    <Compile Include="IAccessKeyHandler.cs" />
-    <Compile Include="FocusManager.cs" />
-    <Compile Include="NavigationDirection.cs" />
-    <Compile Include="ICloseable.cs" />
-    <Compile Include="IFocusManager.cs" />
-    <Compile Include="IFocusScope.cs" />
-    <Compile Include="IInputDevice.cs" />
-    <Compile Include="IInputElement.cs" />
-    <Compile Include="IInputManager.cs" />
-    <Compile Include="IKeyboardDevice.cs" />
-    <Compile Include="IKeyboardNavigationHandler.cs" />
-    <Compile Include="IMouseDevice.cs" />
-    <Compile Include="INavigableContainer.cs" />
-    <Compile Include="InputElement.cs" />
-    <Compile Include="InputExtensions.cs" />
-    <Compile Include="InputManager.cs" />
-    <Compile Include="IPointerDevice.cs" />
-    <Compile Include="Key.cs" />
-    <Compile Include="KeyboardDevice.cs" />
-    <Compile Include="KeyboardNavigation.cs" />
-    <Compile Include="KeyboardNavigationHandler.cs" />
-    <Compile Include="GotFocusEventArgs.cs" />
-    <Compile Include="Navigation\FocusExtensions.cs" />
-    <Compile Include="Navigation\DirectionalNavigation.cs" />
-    <Compile Include="Navigation\TabNavigation.cs" />
-    <Compile Include="PointerWheelEventArgs.cs" />
-    <Compile Include="Raw\RawMouseWheelEventArgs.cs" />
-    <Compile Include="Raw\RawSizeEventArgs.cs" />
-    <Compile Include="KeyboardNavigationMode.cs" />
-    <Compile Include="TextInputEventArgs.cs" />
-    <Compile Include="VectorEventArgs.cs" />
-    <Compile Include="KeyEventArgs.cs" />
-    <Compile Include="MouseDevice.cs" />
-    <Compile Include="PointerEventArgs.cs" />
-    <Compile Include="Raw\RawInputEventArgs.cs" />
-    <Compile Include="Raw\RawKeyEventArgs.cs" />
-    <Compile Include="Raw\RawMouseEventArgs.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="System.Reactive.Core, Version=3.0.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Reactive.Core.3.0.0\lib\netstandard1.1\System.Reactive.Core.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Reactive.Interfaces, Version=3.0.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Reactive.Interfaces.3.0.0\lib\netstandard1.0\System.Reactive.Interfaces.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Reactive.Linq, Version=3.0.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Reactive.Linq.3.0.0\lib\netstandard1.1\System.Reactive.Linq.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Reactive.PlatformServices, Version=3.0.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Reactive.PlatformServices.3.0.0\lib\netstandard1.0\System.Reactive.PlatformServices.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-  </ItemGroup>
-  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+  <Import Project="..\..\build\Rx.props" />
 </Project>

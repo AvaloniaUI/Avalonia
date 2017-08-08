@@ -1,22 +1,7 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <MinimumVisualStudioVersion>11.0</MinimumVisualStudioVersion>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{7062AE20-5DCC-4442-9645-8195BDECE63E}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Avalonia.Diagnostics</RootNamespace>
-    <AssemblyName>Avalonia.Diagnostics</AssemblyName>
-    <DefaultLanguage>en-US</DefaultLanguage>
-    <FileAlignment>512</FileAlignment>
-    <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <TargetFrameworkProfile>Profile7</TargetFrameworkProfile>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
+    <TargetFramework>netstandard1.3</TargetFramework>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -41,117 +26,29 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
-    <!-- A reference to the entire .NET Framework is automatically included -->
-    <ProjectReference Include="..\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj">
-      <Project>{3e53a01a-b331-47f3-b828-4a5717e77a24}</Project>
-      <Name>Avalonia.Markup.Xaml</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Markup\Avalonia.Markup\Avalonia.Markup.csproj">
-      <Project>{6417e941-21bc-467b-a771-0de389353ce6}</Project>
-      <Name>Avalonia.Markup</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Avalonia.Animation\Avalonia.Animation.csproj">
-      <Project>{D211E587-D8BC-45B9-95A4-F297C8FA5200}</Project>
-      <Name>Avalonia.Animation</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj">
-      <Project>{B09B78D8-9B26-48B0-9149-D64A2F120F3F}</Project>
-      <Name>Avalonia.Base</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Avalonia.Controls\Avalonia.Controls.csproj">
-      <Project>{D2221C82-4A25-4583-9B43-D791E3F6820C}</Project>
-      <Name>Avalonia.Controls</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Avalonia.Input\Avalonia.Input.csproj">
-      <Project>{62024B2D-53EB-4638-B26B-85EEAA54866E}</Project>
-      <Name>Avalonia.Input</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Avalonia.Interactivity\Avalonia.Interactivity.csproj">
-      <Project>{6B0ED19D-A08B-461C-A9D9-A9EE40B0C06B}</Project>
-      <Name>Avalonia.Interactivity</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Avalonia.Layout\Avalonia.Layout.csproj">
-      <Project>{42472427-4774-4C81-8AFF-9F27B8E31721}</Project>
-      <Name>Avalonia.Layout</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Avalonia.ReactiveUI\Avalonia.ReactiveUI.csproj">
-      <Project>{6417B24E-49C2-4985-8DB2-3AB9D898EC91}</Project>
-      <Name>Avalonia.ReactiveUI</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Avalonia.Visuals\Avalonia.Visuals.csproj">
-      <Project>{EB582467-6ABB-43A1-B052-E981BA910E3A}</Project>
-      <Name>Avalonia.Visuals</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Avalonia.Styling\Avalonia.Styling.csproj">
-      <Project>{F1BAA01A-F176-4C6A-B39D-5B40BB1B148F}</Project>
-      <Name>Avalonia.Styling</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Avalonia.Themes.Default\Avalonia.Themes.Default.csproj">
-      <Project>{3e10a5fa-e8da-48b1-ad44-6a5b6cb7750f}</Project>
-      <Name>Avalonia.Themes.Default</Name>
-    </ProjectReference>
+    <ProjectReference Include="..\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj" />
+    <ProjectReference Include="..\Markup\Avalonia.Markup\Avalonia.Markup.csproj" />
+    <ProjectReference Include="..\Avalonia.Animation\Avalonia.Animation.csproj" />
+    <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj" />
+    <ProjectReference Include="..\Avalonia.Controls\Avalonia.Controls.csproj" />
+    <ProjectReference Include="..\Avalonia.Input\Avalonia.Input.csproj" />
+    <ProjectReference Include="..\Avalonia.Interactivity\Avalonia.Interactivity.csproj" />
+    <ProjectReference Include="..\Avalonia.Layout\Avalonia.Layout.csproj" />
+    <ProjectReference Include="..\Avalonia.Visuals\Avalonia.Visuals.csproj" />
+    <ProjectReference Include="..\Avalonia.Styling\Avalonia.Styling.csproj" />
+    <ProjectReference Include="..\Avalonia.Themes.Default\Avalonia.Themes.Default.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\Shared\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="LogManager.cs" />
-    <Compile Include="Debug.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ViewLocator.cs" />
-    <Compile Include="ViewModels\DevToolsViewModel.cs" />
-    <Compile Include="ViewModels\TreePageViewModel.cs" />
-    <Compile Include="ViewModels\PropertyDetails.cs" />
-    <Compile Include="ViewModels\ControlDetailsViewModel.cs" />
-    <Compile Include="ViewModels\LogicalTreeNode.cs" />
-    <Compile Include="ViewModels\TreeNode.cs" />
-    <Compile Include="ViewModels\VisualTreeNode.cs" />
-    <Compile Include="Views\SimpleGrid.cs" />
-    <Compile Include="Views\TreePage.xaml.cs">
-      <DependentUpon>TreePageView.xaml</DependentUpon>
+    <Compile Update="**\*.xaml.cs">
+      <DependentUpon>%(Filename)</DependentUpon>
     </Compile>
-    <Compile Include="DevTools.xaml.cs">
-      <DependentUpon>DevTools.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\ControlDetailsView.cs" />
-    <Compile Include="Views\GridRepeater.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="Splat">
-      <HintPath>..\..\packages\Splat.1.6.2\lib\Portable-net45+win+wpa81+wp80\Splat.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Reactive.Core, Version=3.0.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Reactive.Core.3.0.0\lib\netstandard1.1\System.Reactive.Core.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Reactive.Interfaces, Version=3.0.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Reactive.Interfaces.3.0.0\lib\netstandard1.0\System.Reactive.Interfaces.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Reactive.Linq, Version=3.0.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Reactive.Linq.3.0.0\lib\netstandard1.1\System.Reactive.Linq.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Reactive.PlatformServices, Version=3.0.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Reactive.PlatformServices.3.0.0\lib\netstandard1.0\System.Reactive.PlatformServices.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-    <EmbeddedResource Include="DevTools.xaml">
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Views\TreePageView.xaml">
+    <EmbeddedResource Include="**\*.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
-  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+  <Import Project="..\..\build\Rx.props" />
+  <Import Project="..\..\build\Splat.props" />
 </Project>

@@ -4,18 +4,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using JetBrains.dotMemoryUnit;
-using Avalonia.Collections;
 using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Diagnostics;
 using Avalonia.Layout;
 using Avalonia.Platform;
 using Avalonia.Rendering;
-using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
+using JetBrains.dotMemoryUnit;
 using Moq;
 using Xunit;
 using Xunit.Abstractions;
@@ -33,7 +30,7 @@ namespace Avalonia.LeakTests
         [Fact]
         public void Canvas_Is_Freed()
         {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            using (Start())
             {
                 Func<Window> run = () =>
                 {
@@ -41,6 +38,8 @@ namespace Avalonia.LeakTests
                     {
                         Content = new Canvas()
                     };
+
+                    window.Show();
 
                     // Do a layout and make sure that Canvas gets added to visual tree.
                     LayoutManager.Instance.ExecuteInitialLayoutPass(window);
@@ -55,7 +54,6 @@ namespace Avalonia.LeakTests
                 };
 
                 var result = run();
-                PurgeMoqReferences();
 
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Canvas>()).ObjectsCount));
@@ -65,7 +63,7 @@ namespace Avalonia.LeakTests
         [Fact]
         public void Named_Canvas_Is_Freed()
         {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            using (Start())
             {
                 Func<Window> run = () =>
                 {
@@ -76,6 +74,8 @@ namespace Avalonia.LeakTests
                             Name = "foo"
                         }
                     };
+
+                    window.Show();
 
                     // Do a layout and make sure that Canvas gets added to visual tree.
                     LayoutManager.Instance.ExecuteInitialLayoutPass(window);
@@ -91,7 +91,6 @@ namespace Avalonia.LeakTests
                 };
 
                 var result = run();
-                PurgeMoqReferences();
 
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Canvas>()).ObjectsCount));
@@ -101,7 +100,7 @@ namespace Avalonia.LeakTests
         [Fact]
         public void ScrollViewer_With_Content_Is_Freed()
         {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            using (Start())
             {
                 Func<Window> run = () =>
                 {
@@ -112,6 +111,8 @@ namespace Avalonia.LeakTests
                             Content = new Canvas()
                         }
                     };
+
+                    window.Show();
 
                     // Do a layout and make sure that ScrollViewer gets added to visual tree and its 
                     // template applied.
@@ -128,7 +129,6 @@ namespace Avalonia.LeakTests
                 };
 
                 var result = run();
-                PurgeMoqReferences();
 
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<TextBox>()).ObjectsCount));
@@ -140,7 +140,7 @@ namespace Avalonia.LeakTests
         [Fact]
         public void TextBox_Is_Freed()
         {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            using (Start())
             {
                 Func<Window> run = () =>
                 {
@@ -148,6 +148,8 @@ namespace Avalonia.LeakTests
                     {
                         Content = new TextBox()
                     };
+
+                    window.Show();
 
                     // Do a layout and make sure that TextBox gets added to visual tree and its 
                     // template applied.
@@ -164,7 +166,6 @@ namespace Avalonia.LeakTests
                 };
 
                 var result = run();
-                PurgeMoqReferences();
 
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<TextBox>()).ObjectsCount));
@@ -174,7 +175,7 @@ namespace Avalonia.LeakTests
         [Fact]
         public void TextBox_With_Xaml_Binding_Is_Freed()
         {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            using (Start())
             {
                 Func<Window> run = () =>
                 {
@@ -192,6 +193,8 @@ namespace Avalonia.LeakTests
                     var textBox = (TextBox)window.Content;
                     textBox.Bind(TextBox.TextProperty, binding);
 
+                    window.Show();
+
                     // Do a layout and make sure that TextBox gets added to visual tree and its 
                     // Text property set.
                     LayoutManager.Instance.ExecuteInitialLayoutPass(window);
@@ -208,7 +211,6 @@ namespace Avalonia.LeakTests
                 };
 
                 var result = run();
-                PurgeMoqReferences();
 
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<TextBox>()).ObjectsCount));
@@ -220,7 +222,7 @@ namespace Avalonia.LeakTests
         [Fact]
         public void TextBox_Class_Listeners_Are_Freed()
         {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            using (Start())
             {
                 TextBox textBox;
 
@@ -228,6 +230,8 @@ namespace Avalonia.LeakTests
                 {
                     Content = textBox = new TextBox()
                 };
+
+                window.Show();
 
                 // Do a layout and make sure that TextBox gets added to visual tree and its 
                 // template applied.
@@ -254,7 +258,7 @@ namespace Avalonia.LeakTests
         [Fact]
         public void TreeView_Is_Freed()
         {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            using (Start())
             {
                 Func<Window> run = () =>
                 {
@@ -282,6 +286,8 @@ namespace Avalonia.LeakTests
                         }
                     };
 
+                    window.Show();
+
                     // Do a layout and make sure that TreeViewItems get realized.
                     LayoutManager.Instance.ExecuteInitialLayoutPass(window);
                     Assert.Equal(1, target.ItemContainerGenerator.Containers.Count());
@@ -295,7 +301,6 @@ namespace Avalonia.LeakTests
                 };
 
                 var result = run();
-                PurgeMoqReferences();
 
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<TreeView>()).ObjectsCount));
@@ -306,19 +311,18 @@ namespace Avalonia.LeakTests
         [Fact]
         public void RendererIsDisposed()
         {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            using (Start())
             {
                 var renderer = new Mock<IRenderer>();
                 renderer.Setup(x => x.Dispose());
                 var impl = new Mock<IWindowImpl>();
                 impl.SetupGet(x => x.Scaling).Returns(1);
                 impl.SetupProperty(x => x.Closed);
+                impl.Setup(x => x.CreateRenderer(It.IsAny<IRenderRoot>())).Returns(renderer.Object);
                 impl.Setup(x => x.Dispose()).Callback(() => impl.Object.Closed());
 
                 AvaloniaLocator.CurrentMutable.Bind<IWindowingPlatform>()
                     .ToConstant(new MockWindowingPlatform(() => impl.Object));
-                AvaloniaLocator.CurrentMutable.Bind<IRendererFactory>()
-                    .ToConstant(new MockRendererFactory(renderer.Object));
                 var window = new Window()
                 {
                     Content = new Button()
@@ -329,18 +333,47 @@ namespace Avalonia.LeakTests
             }
         }
 
-        private static void PurgeMoqReferences()
+        private IDisposable Start()
         {
-            // Moq holds onto references in its mock of IRenderer in case we want to check if a method has been called;
-            // clear these.
-            var renderer = Mock.Get(AvaloniaLocator.Current.GetService<IRenderer>());
-            renderer.ResetCalls();
+            return UnitTestApplication.Start(TestServices.StyledWindow);
         }
 
         private class Node
         {
             public string Name { get; set; }
             public IEnumerable<Node> Children { get; set; }
+        }
+
+        private class NullRenderer : IRenderer
+        {
+            public bool DrawFps { get; set; }
+            public bool DrawDirtyRects { get; set; }
+
+            public void AddDirty(IVisual visual)
+            {
+            }
+
+            public void Dispose()
+            {
+            }
+
+            public IEnumerable<IVisual> HitTest(Point p, Func<IVisual, bool> filter) => null;
+
+            public void Paint(Rect rect)
+            {
+            }
+
+            public void Resized(Size size)
+            {
+            }
+
+            public void Start()
+            {
+            }
+
+            public void Stop()
+            {
+            }
         }
     }
 }

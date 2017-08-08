@@ -18,6 +18,7 @@ using Avalonia.iOS.Specific;
 using ObjCRuntime;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform.Surfaces;
+using Avalonia.Rendering;
 
 namespace Avalonia.iOS
 {
@@ -60,6 +61,13 @@ namespace Avalonia.iOS
         public override void LayoutSubviews() => Resized?.Invoke(ClientSize);
 
         public Size ClientSize => Bounds.Size.ToAvalonia();
+
+        public IMouseDevice MouseDevice => iOSPlatform.MouseDevice;
+
+        public IRenderer CreateRenderer(IRenderRoot root)
+        {
+            return new ImmediateRenderer(root);
+        }
 
         public override void Draw(CGRect rect)
         {

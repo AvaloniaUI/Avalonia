@@ -1,8 +1,8 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using System;
 using Avalonia.Styling;
+using System;
 
 namespace Avalonia.Markup.Xaml.Styling
 {
@@ -17,12 +17,11 @@ namespace Avalonia.Markup.Xaml.Styling
         /// <summary>
         /// Initializes a new instance of the <see cref="StyleInclude"/> class.
         /// </summary>
-        public StyleInclude()
+        /// <param name="baseUri"></param>
+
+        public StyleInclude(Uri baseUri)
         {
-            // StyleInclude will usually be loaded from XAML and its URI can be relative to the
-            // XAML file that its included in, so store the current XAML file's URI if any as
-            // a base URI.
-            _baseUri = AvaloniaXamlLoader.UriContext;
+            _baseUri = baseUri;
         }
 
         /// <summary>
