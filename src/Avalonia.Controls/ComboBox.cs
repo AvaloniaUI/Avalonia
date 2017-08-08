@@ -36,6 +36,7 @@ namespace Avalonia.Controls
         private string _text;
         private bool _isDropDownOpen;
         private Popup _popup;
+        private TextBox _textBox;
 
         /// <summary>
         /// Initializes static members of the <see cref="ComboBox"/> class.
@@ -141,6 +142,14 @@ namespace Avalonia.Controls
 
             _popup = e.NameScope.Get<Popup>("PART_Popup");
             _popup.Opened += PopupOpened;
+
+            if (_textBox != null)
+            {
+                _textBox.TextInput -= TextBoxInput;
+            }
+
+            _textBox = e.NameScope.Get<TextBox>("PART_TextBox");
+            _textBox.TextInput += TextBoxInput;
         }
 
         private void PopupOpened(object sender, EventArgs e)
@@ -154,6 +163,22 @@ namespace Avalonia.Controls
             }
         }
 
+        private void TextBoxInput(object sender, TextInputEventArgs e)
+        {
+            int i = 0;
+
+            foreach (var item in Items)
+            {
+                if (item.ToString() == _textBox.Text)
+                {
+                    UpdateSelection(i);
+                    break;
+                }
+
+                i++;
+            }
+        }
+
         private void SelectedItemChanged(AvaloniaPropertyChangedEventArgs e)
         {
             UpdateSelectionBoxText(e.NewValue);
@@ -161,16 +186,7 @@ namespace Avalonia.Controls
 
         private void UpdateSelectionBoxText(object item)
         {
-            if (item != null)
-            {
-                if (item is ComboBoxItem)
-                {
-                    item = ((ComboBoxItem)item).Content;
-                    Contract.Requires<NotSupportedException>(!(item is IControl));
-                }
-                
-                Text = Convert.ToString(item);
-            }
+            Text = item?.ToString();
         }
     }
 }

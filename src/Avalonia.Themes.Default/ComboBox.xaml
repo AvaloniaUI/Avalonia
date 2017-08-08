@@ -9,7 +9,8 @@
                 BorderBrush="{TemplateBinding BorderBrush}"
                 BorderThickness="{TemplateBinding BorderThickness}">
           <Grid ColumnDefinitions="*,Auto">
-            <TextBox BorderThickness="0"
+            <TextBox Name="PART_TextBox"
+                     BorderThickness="0"
                      Text="{TemplateBinding Text, Mode=TwoWay}"
                      HorizontalAlignment="Stretch"
                      VerticalAlignment="Center"/>
