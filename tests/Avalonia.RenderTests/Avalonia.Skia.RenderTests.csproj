@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFrameworks>netcoreapp1.1;net461</TargetFrameworks>
     <Platform Condition="'$(TargetFramework)' == 'net461'">x86</Platform>
-    <OutputPath>bin\$(Configuration)</OutputPath>
+    <OutputPath>bin\Skia\$(Configuration)</OutputPath>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <EnableDefaultCompileItems>False</EnableDefaultCompileItems>
     <DefineConstants>$(DefineConstants);AVALONIA_SKIA;AVALONIA_SKIA_SKIP_FAIL</DefineConstants>
