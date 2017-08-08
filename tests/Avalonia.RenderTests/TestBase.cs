@@ -57,7 +57,7 @@ namespace Avalonia.Direct2D1.RenderTests
 #elif AVALONIA_SKIA
             string testFiles = Path.GetFullPath(@"..\..\tests\TestFiles\Skia");
 #else
-            string testFiles = Path.GetFullPath(@"..\..\tests\TestFiles\Direct2D1");
+            string testFiles = Path.GetFullPath(@"..\..\..\tests\TestFiles\Direct2D1");
 #endif
             OutputPath = Path.Combine(testFiles, outputPath);
 
