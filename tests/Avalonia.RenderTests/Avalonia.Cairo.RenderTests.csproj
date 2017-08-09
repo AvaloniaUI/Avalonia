@@ -4,7 +4,6 @@
     <OutputType>Library</OutputType>
     <OutputPath>..\..\artifacts\tests</OutputPath>
     <DefineConstants>AVALONIA_CAIRO</DefineConstants>
-    <ShouldIncludeNativeSkiaSharp>True</ShouldIncludeNativeSkiaSharp>
   </PropertyGroup>
   <Import Project="..\..\build\Magick.NET-Q16-AnyCPU.props" />
   <Import Project="..\..\build\XUnit.props" />
