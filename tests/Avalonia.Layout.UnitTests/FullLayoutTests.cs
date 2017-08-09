@@ -21,6 +21,7 @@ using Xunit;
 using Avalonia.Media;
 using System;
 using System.Collections.Generic;
+using Avalonia.UnitTests;
 
 namespace Avalonia.Layout.UnitTests
 {
@@ -187,7 +188,7 @@ namespace Avalonia.Layout.UnitTests
                 .Bind<IInputManager>().ToConstant(new Mock<IInputManager>().Object)
                 .Bind<IGlobalStyles>().ToConstant(globalStyles.Object)
                 .Bind<ILayoutManager>().ToConstant(new LayoutManager())
-                .Bind<IRuntimePlatform>().ToConstant(new AppBuilder().RuntimePlatform)
+                .Bind<IRuntimePlatform>().ToConstant(new MockRuntimePlatform())
                 .Bind<IPlatformRenderInterface>().ToConstant(renderInterface.Object)
                 .Bind<IStyler>().ToConstant(new Styler())
                 .Bind<IWindowingPlatform>().ToConstant(new Avalonia.Controls.UnitTests.WindowingPlatformMock(() => windowImpl.Object));

@@ -224,7 +224,7 @@ namespace Avalonia.Controls
                                                   where constructor.GetParameters().Length == 0 && !constructor.IsStatic
                                                   select constructor).Single() into constructor
                                           select (Action)(() => constructor.Invoke(new object[0]));
-            Delegate.Combine(moduleInitializers.ToArray()).DynamicInvoke();
+            Delegate.Combine(moduleInitializers.ToArray())?.DynamicInvoke();
         }
 
         /// <summary>

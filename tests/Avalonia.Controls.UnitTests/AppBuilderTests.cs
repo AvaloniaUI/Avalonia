@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Xunit;
 using Avalonia.Controls.UnitTests;
 using Avalonia.Platform;
+using Avalonia.UnitTests;
+using System.Reflection;
 
 [assembly: ExportAvaloniaModule("DefaultModule", typeof(AppBuilderTests.DefaultModule))]
 [assembly: ExportAvaloniaModule("RenderingModule", typeof(AppBuilderTests.Direct2DModule), ForRenderingSubsystem = "Direct2D1")]
@@ -15,7 +13,6 @@ using Avalonia.Platform;
 
 namespace Avalonia.Controls.UnitTests
 {
-
     public class AppBuilderTests
     {
         class App : Application
@@ -61,7 +58,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void LoadsDefaultModule()
         {
-            using (AvaloniaLocator.EnterScope())
+            using (Start())
             {
                 ResetModuleLoadStates();
                 AppBuilder.Configure<App>()
@@ -77,7 +74,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void LoadsRenderingModuleWithMatchingRenderingSubsystem()
         {
-            using (AvaloniaLocator.EnterScope())
+            using (Start())
             {
                 ResetModuleLoadStates();
                 var builder = AppBuilder.Configure<App>()
@@ -102,7 +99,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void LoadsRenderingModuleWithoutDependenciesWhenNoModuleMatches()
         {
-            using (AvaloniaLocator.EnterScope())
+            using (Start())
             {
                 ResetModuleLoadStates();
                 var builder = AppBuilder.Configure<App>()
@@ -115,12 +112,27 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        private IDisposable Start()
+        {
+            var assemblies = new[] { GetType().GetTypeInfo().Assembly };
+            var platform = new MockRuntimePlatform(assemblies);
+            return UnitTestApplication.Start(new TestServices(platform: platform));
+        }
+
         private static void ResetModuleLoadStates()
         {
             DefaultModule.IsLoaded = false;
             DefaultRenderingModule.IsLoaded = false;
             Direct2DModule.IsLoaded = false;
             SkiaModule.IsLoaded = false;
+        }
+
+        class AppBuilder : AppBuilderBase<AppBuilder>
+        {
+            public AppBuilder()
+                : base(new MockRuntimePlatform(), _ => { })
+            {
+            }
         }
     }
 }
