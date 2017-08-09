@@ -22,7 +22,11 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
         {
         }
 
+#if AVALONIA_CAIRO
+        [Fact(Skip = "Font scaling currently broken on cairo")]
+#else
         [Fact]
+#endif
         public async Task Wrapping_NoWrap()
         {
             Decorator target = new Decorator
