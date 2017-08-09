@@ -4,6 +4,7 @@
     <OutputType>Library</OutputType>
     <OutputPath>..\..\artifacts\tests</OutputPath>
   </PropertyGroup>
+  <Import Project="..\..\build\Magick.NET-Q16-AnyCPU.props" />
   <Import Project="..\..\build\XUnit.props" />
   <ItemGroup>
     <PackageReference Include="System.ValueTuple" Version="4.3.1" />

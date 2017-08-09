@@ -6,6 +6,7 @@
     <DefineConstants>AVALONIA_CAIRO</DefineConstants>
     <ShouldIncludeNativeSkiaSharp>True</ShouldIncludeNativeSkiaSharp>
   </PropertyGroup>
+  <Import Project="..\..\build\Magick.NET-Q16-AnyCPU.props" />
   <Import Project="..\..\build\XUnit.props" />
   <ItemGroup>
     <PackageReference Include="System.ValueTuple" Version="4.3.1" />
