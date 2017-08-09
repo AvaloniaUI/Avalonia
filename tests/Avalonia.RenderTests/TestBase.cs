@@ -53,9 +53,9 @@ namespace Avalonia.Direct2D1.RenderTests
         public TestBase(string outputPath)
         {
 #if AVALONIA_CAIRO
-            string testFiles = Path.GetFullPath(@"..\..\tests\TestFiles\Cairo");
+            string testFiles = Path.GetFullPath(@"..\..\..\tests\TestFiles\Cairo");
 #elif AVALONIA_SKIA
-            string testFiles = Path.GetFullPath(@"..\..\tests\TestFiles\Skia");
+            string testFiles = Path.GetFullPath(@"..\..\..\tests\TestFiles\Skia");
 #else
             string testFiles = Path.GetFullPath(@"..\..\..\tests\TestFiles\Direct2D1");
 #endif
