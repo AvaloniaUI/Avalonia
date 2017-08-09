@@ -4,7 +4,6 @@
     <OutputType>Library</OutputType>
     <OutputPath>..\..\artifacts\test</OutputPath>
   </PropertyGroup>
-  <Import Project="..\..\build\UnitTests.NetCore.targets" />
   <Import Project="..\..\build\XUnit.props" />
   <ItemGroup>
     <PackageReference Include="System.ValueTuple" Version="4.3.1" />

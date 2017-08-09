@@ -2,7 +2,6 @@
   <PropertyGroup>
     <TargetFrameworks>net461;netcoreapp1.1</TargetFrameworks>
   </PropertyGroup>
-  <Import Project="..\..\build\UnitTests.NetCore.targets" />
   <Import Project="..\..\build\Moq.props" />
   <Import Project="..\..\build\XUnit.props" />
   <Import Project="..\..\build\Rx.props" />
