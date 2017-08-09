@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFrameworks>net461</TargetFrameworks>
     <OutputType>Library</OutputType>
-    <OutputPath>..\..\artifacts\test</OutputPath>
+    <OutputPath>..\..\artifacts\tests</OutputPath>
   </PropertyGroup>
   <Import Project="..\..\build\XUnit.props" />
   <ItemGroup>

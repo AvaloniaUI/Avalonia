@@ -2,8 +2,9 @@
   <PropertyGroup>
     <TargetFrameworks>net461</TargetFrameworks>
     <OutputType>Library</OutputType>
-    <OutputPath>..\..\artifacts\test</OutputPath>
+    <OutputPath>..\..\artifacts\tests</OutputPath>
     <DefineConstants>AVALONIA_SKIA</DefineConstants>
+    <ShouldIncludeNativeSkiaSharp>True</ShouldIncludeNativeSkiaSharp>
   </PropertyGroup>
   <Import Project="..\..\build\XUnit.props" />
   <ItemGroup>
