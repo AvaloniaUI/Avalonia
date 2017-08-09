@@ -129,8 +129,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.DesignerSupport.Te
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.DesignerSupport.TestApp", "tests\Avalonia.DesignerSupport.TestApp\Avalonia.DesignerSupport.TestApp.csproj", "{F1381F98-4D24-409A-A6C5-1C5B1E08BB08}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Avalonia.RenderTests", "tests\Avalonia.RenderTests\Avalonia.RenderTests.shproj", "{48840EDD-24BF-495D-911E-2EB12AE75D3B}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VirtualizationTest", "samples\VirtualizationTest\VirtualizationTest.csproj", "{FBCAF3D0-2808-4934-8E96-3F607594517B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Interop", "Interop", "{A0CC0258-D18C-4AB3-854F-7101680FC3F9}"
@@ -196,7 +194,6 @@ Global
 		src\Shared\PlatformSupport\PlatformSupport.projitems*{4488ad85-1495-4809-9aa4-ddfe0a48527e}*SharedItemsImports = 4
 		src\Shared\RenderHelpers\RenderHelpers.projitems*{47be08a7-5985-410b-9ffc-2264b8ea595f}*SharedItemsImports = 4
 		src\Skia\Avalonia.Skia\Avalonia.Skia.projitems*{47be08a7-5985-410b-9ffc-2264b8ea595f}*SharedItemsImports = 4
-		tests\Avalonia.RenderTests\Avalonia.RenderTests.projitems*{48840edd-24bf-495d-911e-2eb12ae75d3b}*SharedItemsImports = 13
 		src\Shared\PlatformSupport\PlatformSupport.projitems*{4a1abb09-9047-4bd5-a4ad-a055e52c5ee0}*SharedItemsImports = 4
 		src\Shared\PlatformSupport\PlatformSupport.projitems*{7863ea94-f0fb-4386-bf8c-e5bfa761560a}*SharedItemsImports = 4
 		src\Shared\PlatformSupport\PlatformSupport.projitems*{7b92af71-6287-4693-9dcb-bd5b6e927e23}*SharedItemsImports = 4
@@ -209,7 +206,6 @@ Global
 		src\Shared\RenderHelpers\RenderHelpers.projitems*{bd43f7c0-396b-4aa1-bad9-dfde54d51298}*SharedItemsImports = 4
 		src\Skia\Avalonia.Skia\Avalonia.Skia.projitems*{bd43f7c0-396b-4aa1-bad9-dfde54d51298}*SharedItemsImports = 4
 		tests\Avalonia.RenderTests\Avalonia.RenderTests.projitems*{dabfd304-d6a4-4752-8123-c2ccf7ac7831}*SharedItemsImports = 4
-		tests\Avalonia.RenderTests\Avalonia.RenderTests.projitems*{e106cf37-4066-4615-b684-172a6d30b058}*SharedItemsImports = 4
 		src\Shared\PlatformSupport\PlatformSupport.projitems*{e4d9629c-f168-4224-3f51-a5e482ffbc42}*SharedItemsImports = 13
 		src\Shared\RenderHelpers\RenderHelpers.projitems*{fb05ac90-89ba-4f2f-a924-f37875fb547c}*SharedItemsImports = 4
 	EndGlobalSection
@@ -2668,7 +2664,6 @@ Global
 		{D35A9F3D-8BB0-496E-BF72-444038A7DEBB} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
 		{52F55355-D120-42AC-8116-8410A7D602FA} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
 		{F1381F98-4D24-409A-A6C5-1C5B1E08BB08} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
-		{48840EDD-24BF-495D-911E-2EB12AE75D3B} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
 		{FBCAF3D0-2808-4934-8E96-3F607594517B} = {9B9E3891-2366-4253-A952-D08BCEB71098}
 		{A0CC0258-D18C-4AB3-854F-7101680FC3F9} = {9B9E3891-2366-4253-A952-D08BCEB71098}
 		{C7A69145-60B6-4882-97D6-A3921DD43978} = {A0CC0258-D18C-4AB3-854F-7101680FC3F9}
