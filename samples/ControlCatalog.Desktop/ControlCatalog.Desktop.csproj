@@ -123,10 +123,6 @@
       <Project>{3E10A5FA-E8DA-48B1-AD44-6A5B6CB7750F}</Project>
       <Name>Avalonia.Themes.Default</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\Skia\Avalonia.Skia.Desktop\Avalonia.Skia.Desktop.csproj" Condition="'$(Platform)'!='Mono'">
-      <Project>{925DD807-B651-475F-9F7C-CBEB974CE43D}</Project>
-      <Name>Avalonia.Skia.Desktop</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\src\Windows\Avalonia.Direct2D1\Avalonia.Direct2D1.csproj" Condition="'$(Platform)'!='Mono'">
       <Project>{3E908F67-5543-4879-A1DC-08EACE79B3CD}</Project>
       <Name>Avalonia.Direct2D1</Name>

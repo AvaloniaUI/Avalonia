@@ -287,31 +287,13 @@ public class Packages
                 Dependencies = new []
                 {
                     new NuSpecDependency() { Id = "Avalonia", Version = parameters.Version },
-                    new NuSpecDependency() { Id = "Avalonia.Skia.Android", Version = parameters.Version }
+                    new NuSpecDependency() { Id = "Avalonia.Skia", Version = parameters.Version }
                 },
                 Files = new []
                 {
                     new NuSpecContent { Source = "Avalonia.Android.dll", Target = "lib/MonoAndroid10" }
                 },
                 BasePath = context.Directory("./src/Android/Avalonia.Android/bin/" + parameters.DirSuffix),
-                OutputDirectory = parameters.NugetRoot
-            },
-            ///////////////////////////////////////////////////////////////////////////////
-            // Avalonia.Skia.Android
-            ///////////////////////////////////////////////////////////////////////////////
-            new NuGetPackSettings()
-            {
-                Id = "Avalonia.Skia.Android",
-                Dependencies = new []
-                {
-                    new NuSpecDependency() { Id = "Avalonia", Version = parameters.Version },
-                    new NuSpecDependency() { Id = "SkiaSharp", Version = SkiaSharpVersion }
-                },
-                Files = new []
-                {
-                    new NuSpecContent { Source = "Avalonia.Skia.Android.dll", Target = "lib/MonoAndroid10" }
-                },
-                BasePath = context.Directory("./src/Skia/Avalonia.Skia.Android/bin/" + parameters.DirSuffix),
                 OutputDirectory = parameters.NugetRoot
             },
             ///////////////////////////////////////////////////////////////////////////////
@@ -323,49 +305,13 @@ public class Packages
                 Dependencies = new []
                 {
                     new NuSpecDependency() { Id = "Avalonia", Version = parameters.Version },
-                    new NuSpecDependency() { Id = "Avalonia.Skia.iOS", Version = parameters.Version }
+                    new NuSpecDependency() { Id = "Avalonia.Skia", Version = parameters.Version }
                 },
                 Files = new []
                 {
                     new NuSpecContent { Source = "Avalonia.iOS.dll", Target = "lib/Xamarin.iOS10" }
                 },
                 BasePath = context.Directory("./src/iOS/Avalonia.iOS/bin/" + parameters.DirSuffixIOS),
-                OutputDirectory = parameters.NugetRoot
-            },
-            ///////////////////////////////////////////////////////////////////////////////
-            // Avalonia.Skia.iOS
-            ///////////////////////////////////////////////////////////////////////////////
-            new NuGetPackSettings()
-            {
-                Id = "Avalonia.Skia.iOS",
-                Dependencies = new []
-                {
-                    new NuSpecDependency() { Id = "Avalonia", Version = parameters.Version },
-                    new NuSpecDependency() { Id = "SkiaSharp", Version = SkiaSharpVersion }
-                },
-                Files = new []
-                {
-                    new NuSpecContent { Source = "Avalonia.Skia.iOS.dll", Target = "lib/Xamarin.iOS10" }
-                },
-                BasePath = context.Directory("./src/Skia/Avalonia.Skia.iOS/bin/" + parameters.DirSuffixIOS),
-                OutputDirectory = parameters.NugetRoot
-            },
-            ///////////////////////////////////////////////////////////////////////////////
-            // Avalonia.Mobile
-            ///////////////////////////////////////////////////////////////////////////////
-            new NuGetPackSettings()
-            {
-                Id = "Avalonia.Mobile",
-                Dependencies = new []
-                {
-                    new NuSpecDependency() { Id = "Avalonia.Android", Version = parameters.Version },
-                    new NuSpecDependency() { Id = "Avalonia.iOS", Version = parameters.Version }
-                },
-                Files = new NuSpecContent[]
-                {
-                    new NuSpecContent { Source = "licence.md", Target = "" }
-                },
-                BasePath = context.Directory("./"),
                 OutputDirectory = parameters.NugetRoot
             }
         };
@@ -463,21 +409,25 @@ public class Packages
                 OutputDirectory = parameters.NugetRoot
             },
             ///////////////////////////////////////////////////////////////////////////////
-            // Avalonia.Skia.Desktop
+            // Avalonia.Skia
             ///////////////////////////////////////////////////////////////////////////////
             new NuGetPackSettings()
             {
-                Id = "Avalonia.Skia.Desktop",
+                Id = "Avalonia.Skia",
                 Dependencies = new []
                 {
                     new NuSpecDependency() { Id = "Avalonia", Version = parameters.Version },
                     new NuSpecDependency() { Id = "SkiaSharp", Version = SkiaSharpVersion },
-                    new NuSpecDependency() { Id = "Avalonia.Skia.Linux.Natives", Version = SkiaSharpLinuxVersion }
+                    new NuSpecDependency() { Id = "Avalonia", Version = parameters.Version, TargetFramework="netcoreapp1.1" },
+                    new NuSpecDependency() { Id = "SkiaSharp", Version = SkiaSharpVersion, TargetFramework="netcoreapp1.1" },
+                    new NuSpecDependency() { Id = "Avalonia.Skia.Linux.Natives", Version = SkiaSharpLinuxVersion, TargetFramework="netcoreapp1.1" },
+                    new NuSpecDependency() { Id = "Avalonia", Version = parameters.Version, TargetFramework="net461" },
+                    new NuSpecDependency() { Id = "SkiaSharp", Version = SkiaSharpVersion, TargetFramework="net461" },
+                    new NuSpecDependency() { Id = "Avalonia.Skia.Linux.Natives", Version = SkiaSharpLinuxVersion, TargetFramework="net461" }
                 },
                 Files = new []
                 {
-                    new NuSpecContent { Source = "Avalonia.Skia.Desktop/bin/" + parameters.DirSuffixSkia + "/Avalonia.Skia.Desktop.dll", Target = "lib/net45" },
-                    new NuSpecContent { Source = "Avalonia.Skia.Desktop.NetStandard/bin/" + parameters.DirSuffix + "/netstandard1.3/Avalonia.Skia.Desktop.dll", Target = "lib/netstandard1.3" }
+                    new NuSpecContent { Source = "Avalonia.Skia/bin/" + parameters.DirSuffixSkia + "/Avalonia.Skia.dll", Target = "lib/netstandard1.3" }
                 },
                 BasePath = context.Directory("./src/Skia/"),
                 OutputDirectory = parameters.NugetRoot
@@ -495,11 +445,11 @@ public class Packages
                     new NuSpecDependency() { Id = "Avalonia.Gtk", TargetFramework="net45", Version = parameters.Version },
                     new NuSpecDependency() { Id = "Avalonia.Cairo", TargetFramework="net45", Version = parameters.Version },
                     new NuSpecDependency() { Id = "Avalonia.Win32", TargetFramework="net45", Version = parameters.Version },
-                    new NuSpecDependency() { Id = "Avalonia.Skia.Desktop", TargetFramework="net45", Version = parameters.Version },
+                    new NuSpecDependency() { Id = "Avalonia.Skia", TargetFramework="net45", Version = parameters.Version },
                     new NuSpecDependency() { Id = "Avalonia.Gtk3", TargetFramework="net45", Version = parameters.Version },
                     //.NET Core
                     new NuSpecDependency() { Id = "Avalonia.Win32", TargetFramework="netcoreapp1.0", Version = parameters.Version },
-                    new NuSpecDependency() { Id = "Avalonia.Skia.Desktop", TargetFramework="netcoreapp1.0", Version = parameters.Version },
+                    new NuSpecDependency() { Id = "Avalonia.Skia", TargetFramework="netcoreapp1.0", Version = parameters.Version },
                     new NuSpecDependency() { Id = "Avalonia.Gtk3", TargetFramework="netcoreapp1.0", Version = parameters.Version }
                 },
                 Files = new NuSpecContent[]
@@ -534,7 +484,7 @@ public class Packages
                 Dependencies = new []
                 {
                     new NuSpecDependency() { Id = "Avalonia", Version = parameters.Version },
-                    new NuSpecDependency() { Id = "Avalonia.Skia.Desktop", Version = parameters.Version }
+                    new NuSpecDependency() { Id = "Avalonia.Skia", Version = parameters.Version }
                 },
                 Files = new []
                 {

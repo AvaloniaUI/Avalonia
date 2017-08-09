@@ -156,10 +156,13 @@ Task("Build")
     }
 });
 
-void RunCoreTest(string dir, Parameters parameters, bool net461Only)
+
+void RunCoreTest(string project, Parameters parameters, bool net461Only)
 {
-    Information("Running tests from " + dir);
-    DotNetCoreRestore(dir);
+    if(!project.EndsWith(".csproj"))
+        project = System.IO.Path.Combine(project, System.IO.Path.GetFileName(project)+".csproj");
+    Information("Running tests from " + project);
+    DotNetCoreRestore(project);
     var frameworks = new List<string>(){"netcoreapp1.1"};
     if(parameters.IsRunningOnWindows)
         frameworks.Add("net461");
@@ -168,7 +171,8 @@ void RunCoreTest(string dir, Parameters parameters, bool net461Only)
         if(fw != "net461" && net461Only)
             continue;
         Information("Running for " + fw);
-        DotNetCoreTest(System.IO.Path.Combine(dir, System.IO.Path.GetFileName(dir)+".csproj"),
+        
+        DotNetCoreTest(project,
             new DotNetCoreTestSettings {
                 Configuration = parameters.Configuration,
                 Framework = fw
@@ -188,6 +192,8 @@ Task("Run-Net-Core-Unit-Tests")
         RunCoreTest("./tests/Avalonia.Markup.Xaml.UnitTests", parameters, false);
         RunCoreTest("./tests/Avalonia.Styling.UnitTests", parameters, false);
         RunCoreTest("./tests/Avalonia.Visuals.UnitTests", parameters, false);
+        if(parameters.IsRunningOnWindows)
+            RunCoreTest("./tests/Avalonia.RenderTests/Avalonia.Skia.RenderTests.csproj", parameters, false);
     });
 
 Task("Run-Unit-Tests")

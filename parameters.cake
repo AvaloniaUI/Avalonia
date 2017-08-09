@@ -109,39 +109,7 @@ public class Parameters
         BinRoot = ArtifactsDir.Combine("bin");
         TestsRoot = ArtifactsDir.Combine("tests");
 
-        DirSuffix = Configuration;
-        DirSuffixSkia = (IsPlatformAnyCPU ? "x86" : Platform) + "/" + Configuration;
-        DirSuffixIOS = "iPhone" + "/" + Configuration;
-
-        BuildDirs = 
-            context.GetDirectories("./src/**/bin/" + DirSuffix) + 
-            context.GetDirectories("./src/**/obj/" + DirSuffix) + 
-            context.GetDirectories("./src/Markup/**/bin/" + DirSuffix) + 
-            context.GetDirectories("./src/Markup/**/obj/" + DirSuffix) + 
-            context.GetDirectories("./src/Android/**/bin/" + DirSuffix) + 
-            context.GetDirectories("./src/Android/**/obj/" + DirSuffix) + 
-            context.GetDirectories("./src/Gtk/**/bin/" + DirSuffix) + 
-            context.GetDirectories("./src/Gtk/**/obj/" + DirSuffix) + 
-            context.GetDirectories("./src/iOS/**/bin/" + DirSuffixIOS) + 
-            context.GetDirectories("./src/iOS/**/obj/" + DirSuffixIOS) + 
-            (DirectoryPath)context.Directory("./src/Skia/Avalonia.Skia.Android/bin/" + DirSuffix) + 
-            (DirectoryPath)context.Directory("./src/Skia/Avalonia.Skia.Android/obj/" + DirSuffix) + 
-            (DirectoryPath)context.Directory("./src/Skia/Avalonia.Skia.Android.TestApp/bin/" + DirSuffix) + 
-            (DirectoryPath)context.Directory("./src/Skia/Avalonia.Skia.Android.TestApp/obj/" + DirSuffix) + 
-            (DirectoryPath)context.Directory("./src/Skia/Avalonia.Skia.Desktop/bin/" + DirSuffixSkia) + 
-            (DirectoryPath)context.Directory("./src/Skia/Avalonia.Skia.Desktop/obj/" + DirSuffixSkia) + 
-            (DirectoryPath)context.Directory("./src/Skia/Avalonia.Skia.Desktop.NetStandard/bin/" + DirSuffix) + 
-            (DirectoryPath)context.Directory("./src/Skia/Avalonia.Skia.Desktop.NetStandard/obj/" + DirSuffix) + 
-            (DirectoryPath)context.Directory("./src/Skia/Avalonia.Skia.iOS/bin/" + DirSuffixIOS) + 
-            (DirectoryPath)context.Directory("./src/Skia/Avalonia.Skia.iOS/obj/" + DirSuffixIOS) + 
-            (DirectoryPath)context.Directory("./src/Skia/Avalonia.Skia.iOS.TestApp/bin/" + DirSuffixIOS) + 
-            (DirectoryPath)context.Directory("./src/Skia/Avalonia.Skia.iOS.TestApp/obj/" + DirSuffixIOS) + 
-            context.GetDirectories("./src/Windows/**/bin/" + DirSuffix) + 
-            context.GetDirectories("./src/Windows/**/obj/" + DirSuffix) + 
-            context.GetDirectories("./tests/**/bin/" + DirSuffix) + 
-            context.GetDirectories("./tests/**/obj/" + DirSuffix) + 
-            context.GetDirectories("./Samples/**/bin/" + DirSuffix) + 
-            context.GetDirectories("./Samples/**/obj/" + DirSuffix);
+        BuildDirs = context.GetDirectories("**/bin") + context.GetDirectories("**/obj");
 
         FileZipSuffix = Version + ".zip";
         ZipCoreArtifacts = ZipRoot.CombineWithFilePath("Avalonia-" + FileZipSuffix);

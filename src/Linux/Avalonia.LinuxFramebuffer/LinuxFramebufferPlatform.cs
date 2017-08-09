@@ -11,6 +11,7 @@ using Avalonia.LinuxFramebuffer;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Threading;
+using Avalonia;
 
 namespace Avalonia.LinuxFramebuffer
 {

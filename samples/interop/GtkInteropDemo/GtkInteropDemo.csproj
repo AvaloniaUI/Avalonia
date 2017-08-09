@@ -140,10 +140,6 @@
       <Project>{6417e941-21bc-467b-a771-0de389353ce6}</Project>
       <Name>Avalonia.Markup</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\src\Skia\Avalonia.Skia.Desktop\Avalonia.Skia.Desktop.csproj">
-      <Project>{925dd807-b651-475f-9f7c-cbeb974ce43d}</Project>
-      <Name>Avalonia.Skia.Desktop</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\ControlCatalog\ControlCatalog.csproj">
       <Project>{d0a739b9-3c68-4ba6-a328-41606954b6bd}</Project>
       <Name>ControlCatalog</Name>

@@ -147,10 +147,6 @@
       <Project>{5fb2b005-0a7f-4dad-add4-3ed01444e63d}</Project>
       <Name>Avalonia.HtmlRenderer</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Skia\Avalonia.Skia.Android\Avalonia.Skia.Android.csproj">
-      <Project>{bd43f7c0-396b-4aa1-bad9-dfde54d51298}</Project>
-      <Name>Avalonia.Skia.Android</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <Import Project="..\..\..\build\Serilog.props" />
