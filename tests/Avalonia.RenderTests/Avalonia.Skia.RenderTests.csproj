@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
   <PropertyGroup>
-    <TargetFrameworks>net461</TargetFrameworks>
+    <TargetFramework>net461</TargetFramework>
     <OutputType>Library</OutputType>
     <OutputPath>..\..\artifacts\tests</OutputPath>
     <DefineConstants>AVALONIA_SKIA</DefineConstants>
