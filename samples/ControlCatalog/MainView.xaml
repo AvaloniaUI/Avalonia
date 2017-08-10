@@ -11,6 +11,7 @@
     <TabItem Header="Carousel"><pages:CarouselPage/></TabItem>
     <TabItem Header="CheckBox"><pages:CheckBoxPage/></TabItem>
     <TabItem Header="ComboBox"><pages:ComboBoxPage/></TabItem>
+    <TabItem Header="ContextMenu"><pages:ContextMenuPage/></TabItem>
     <TabItem Header="DropDown"><pages:DropDownPage/></TabItem>
     <TabItem Header="Expander"><pages:ExpanderPage/></TabItem>
     <TabItem Header="Image"><pages:ImagePage/></TabItem>

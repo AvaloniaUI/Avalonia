@@ -77,7 +77,7 @@ namespace Avalonia.Skia
             if (height < 1)
                 throw new ArgumentException("Height can't be less than 1", nameof(height));
 
-            return new BitmapImpl(width, height);
+            return new BitmapImpl(width, height, new Vector(dpiX, dpiY));
         }
 
         public virtual IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)
@@ -90,7 +90,7 @@ namespace Avalonia.Skia
 
         public IWritableBitmapImpl CreateWritableBitmap(int width, int height, PixelFormat? format = null)
         {
-            return new BitmapImpl(width, height, format);
+            return new BitmapImpl(width, height, new Vector(96, 96), format);
         }
     }
 }

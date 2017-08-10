@@ -18,6 +18,7 @@ using Avalonia.iOS.Specific;
 using ObjCRuntime;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform.Surfaces;
+using Avalonia.Rendering;
 
 namespace Avalonia.iOS
 {
@@ -62,7 +63,12 @@ namespace Avalonia.iOS
         public Size ClientSize => Bounds.Size.ToAvalonia();
 
         public IMouseDevice MouseDevice => iOSPlatform.MouseDevice;
-        
+
+        public IRenderer CreateRenderer(IRenderRoot root)
+        {
+            return new ImmediateRenderer(root);
+        }
+
         public override void Draw(CGRect rect)
         {
             Paint?.Invoke(new Rect(rect.X, rect.Y, rect.Width, rect.Height));

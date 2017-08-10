@@ -13,6 +13,7 @@ using System.Reactive.Disposables;
 using Avalonia.Android.Platform.Input;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform.Surfaces;
+using Avalonia.Rendering;
 
 namespace Avalonia.Android.Platform.SkiaPlatform
 {
@@ -85,7 +86,12 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         public IPlatformHandle Handle => _view;
 
         public IEnumerable<object> Surfaces => new object[] {this};
-        
+
+        public IRenderer CreateRenderer(IRenderRoot root)
+        {
+            return new ImmediateRenderer(root);
+        }
+
         public virtual void Hide()
         {
             _view.Visibility = ViewStates.Invisible;

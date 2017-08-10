@@ -117,6 +117,7 @@ namespace Avalonia.Controls
 
             try
             {
+                Renderer?.Stop();
                 PlatformImpl?.Hide();
                 IsVisible = false;
             }
@@ -145,6 +146,7 @@ namespace Avalonia.Controls
                 }
 
                 PlatformImpl?.Show();
+                Renderer?.Start();
             }
             finally
             {
