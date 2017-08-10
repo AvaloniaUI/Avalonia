@@ -2,7 +2,6 @@
   <PropertyGroup>
     <TargetFramework>net461</TargetFramework>
     <OutputType>Library</OutputType>
-    <OutputPath>..\..\artifacts\tests</OutputPath>
     <DefineConstants>AVALONIA_CAIRO</DefineConstants>
   </PropertyGroup>
   <Import Project="..\..\build\Magick.NET-Q16-AnyCPU.props" />

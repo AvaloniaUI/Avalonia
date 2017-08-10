@@ -2,7 +2,6 @@
   <PropertyGroup>
     <TargetFramework>net461</TargetFramework>
     <OutputType>Library</OutputType>
-    <OutputPath>..\..\artifacts\tests</OutputPath>
     <DefineConstants>AVALONIA_SKIA</DefineConstants>
     <ShouldIncludeNativeSkiaSharp>True</ShouldIncludeNativeSkiaSharp>
   </PropertyGroup>
