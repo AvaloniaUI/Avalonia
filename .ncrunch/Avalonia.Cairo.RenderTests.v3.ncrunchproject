@@ -1,5 +1,6 @@
 ﻿<ProjectConfiguration>
   <Settings>
+    <DefaultTestTimeout>2000</DefaultTestTimeout>
     <HiddenComponentWarnings>
       <Value>AbnormalReferenceResolution</Value>
     </HiddenComponentWarnings>
