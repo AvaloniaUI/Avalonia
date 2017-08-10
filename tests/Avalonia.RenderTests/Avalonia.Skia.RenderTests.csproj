@@ -2,11 +2,13 @@
   <PropertyGroup>
     <TargetFramework>net461</TargetFramework>
     <OutputType>Library</OutputType>
-    <DefineConstants>AVALONIA_SKIA</DefineConstants>
+    <DefineConstants>AVALONIA_SKIA;AVALONIA_SKIA_SKIP_FAIL</DefineConstants>
     <ShouldIncludeNativeSkiaSharp>True</ShouldIncludeNativeSkiaSharp>
+    <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <Import Project="..\..\build\Magick.NET-Q16-AnyCPU.props" />
   <Import Project="..\..\build\XUnit.props" />
+  <Import Project="..\..\build\SkiaSharp.props" />
   <ItemGroup>
     <PackageReference Include="System.ValueTuple" Version="4.3.1" />
   </ItemGroup>
