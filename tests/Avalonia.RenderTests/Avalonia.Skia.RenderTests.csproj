@@ -18,8 +18,7 @@
     <None Remove="obj\**" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Condition="'$(TargetFramework)' == 'net461'" Include="..\..\src\Avalonia.DotNetFrameworkRuntime\Avalonia.DotNetFrameworkRuntime.csproj" />
-    <ProjectReference Condition="'$(TargetFramework)' == 'netcoreapp1.1'" Include="..\..\src\Avalonia.DotNetCoreRuntime\Avalonia.DotNetCoreRuntime.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.DotNetCoreRuntime\Avalonia.DotNetCoreRuntime.csproj" />
     <ProjectReference Include="..\..\src\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj" />
     <ProjectReference Include="..\..\src\Markup\Avalonia.Markup\Avalonia.Markup.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Animation\Avalonia.Animation.csproj" />
