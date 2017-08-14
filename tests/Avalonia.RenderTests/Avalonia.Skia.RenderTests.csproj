@@ -7,7 +7,7 @@
   
   <PropertyGroup>
     <TargetFrameworks>netcoreapp1.1;net461</TargetFrameworks>
-    <Platform Condition="'$(TargetFramework)' == 'net461'">x86</Platform>
+    <Platform Condition="'$(TargetFramework)' == 'net461'">x64</Platform>
     <OutputPath>bin\Skia\$(Configuration)</OutputPath>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <EnableDefaultCompileItems>False</EnableDefaultCompileItems>
