@@ -6,8 +6,7 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
   
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp1.1;net461</TargetFrameworks>
-    <Platform Condition="'$(TargetFramework)' == 'net461'">x64</Platform>
+    <TargetFrameworks>netcoreapp1.1</TargetFrameworks>
     <OutputPath>bin\Skia\$(Configuration)</OutputPath>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <EnableDefaultCompileItems>False</EnableDefaultCompileItems>
