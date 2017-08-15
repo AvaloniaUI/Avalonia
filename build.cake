@@ -12,7 +12,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #tool "nuget:?package=xunit.runner.console&version=2.2.0"
-#tool "nuget:?package=OpenCover"
 
 ///////////////////////////////////////////////////////////////////////////////
 // USINGS
@@ -156,19 +155,23 @@ Task("Build")
     }
 });
 
-void RunCoreTest(string dir, Parameters parameters, bool net461Only)
+
+void RunCoreTest(string project, Parameters parameters, bool coreOnly = false)
 {
-    Information("Running tests from " + dir);
-    DotNetCoreRestore(dir);
+    if(!project.EndsWith(".csproj"))
+        project = System.IO.Path.Combine(project, System.IO.Path.GetFileName(project)+".csproj");
+    Information("Running tests from " + project);
+    DotNetCoreRestore(project);
     var frameworks = new List<string>(){"netcoreapp1.1"};
     if(parameters.IsRunningOnWindows)
         frameworks.Add("net461");
     foreach(var fw in frameworks)
     {
-        if(fw != "net461" && net461Only)
+        if(!fw.StartsWith("netcoreapp") && coreOnly)
             continue;
         Information("Running for " + fw);
-        DotNetCoreTest(System.IO.Path.Combine(dir, System.IO.Path.GetFileName(dir)+".csproj"),
+        
+        DotNetCoreTest(project,
             new DotNetCoreTestSettings {
                 Configuration = parameters.Configuration,
                 Framework = fw
@@ -188,6 +191,8 @@ Task("Run-Net-Core-Unit-Tests")
         RunCoreTest("./tests/Avalonia.Markup.Xaml.UnitTests", parameters, false);
         RunCoreTest("./tests/Avalonia.Styling.UnitTests", parameters, false);
         RunCoreTest("./tests/Avalonia.Visuals.UnitTests", parameters, false);
+        if(parameters.IsRunningOnWindows)
+            RunCoreTest("./tests/Avalonia.RenderTests/Avalonia.Skia.RenderTests.csproj", parameters, true);
     });
 
 Task("Run-Unit-Tests")
@@ -202,7 +207,8 @@ Task("Run-Unit-Tests")
 
     var unitTests = GetDirectories("./tests/Avalonia.*.UnitTests")
         .Select(dir => System.IO.Path.GetFileName(dir.FullPath))
-        .Where(name => parameters.IsRunningOnWindows ? true : !(name.IndexOf("Direct2D", StringComparison.OrdinalIgnoreCase) >= 0))
+        .Where( name => !name.Contains("Skia")) // Run in the Run-Net-Core-Unit-Tests target
+        .Where(name => parameters.IsRunningOnWindows ? true : !name.Contains("Direct2D"))
         .Select(name => MakeAbsolute(File("./tests/" + name + "/bin/" + parameters.DirSuffix + "/" + name + ".dll")))
         .ToList();
 
@@ -219,23 +225,11 @@ Task("Run-Unit-Tests")
 
     xUnitSettings.NoAppDomain = !parameters.IsRunningOnWindows;
 
-    var openCoverOutput = parameters.ArtifactsDir.GetFilePath(new FilePath("./coverage.xml"));
-    var openCoverSettings = new OpenCoverSettings()
-        .WithFilter("+[Avalonia.*]* -[*Test*]* -[ControlCatalog*]*")
-        .WithFilter("-[Avalonia.*]OmniXaml.* -[Avalonia.*]Glass.*")
-        .WithFilter("-[Avalonia.HtmlRenderer]TheArtOfDev.HtmlRenderer.* +[Avalonia.HtmlRenderer]TheArtOfDev.HtmlRenderer.Avalonia.* -[Avalonia.ReactiveUI]*");
-    
-    openCoverSettings.ReturnTargetCodeOffset = 0;
-
     foreach(var test in unitTests.Where(testFile => FileExists(testFile)))
     {
         CopyDirectory(test.GetDirectory(), parameters.TestsRoot);
     }
-    
-    CopyFile(System.IO.Path.Combine(packages.NugetPackagesDir, "SkiaSharp", packages.SkiaSharpVersion,
-        "runtimes", "win7-x86", "native", "libSkiaSharp.dll"),
-        System.IO.Path.Combine(parameters.TestsRoot.ToString(), "libSkiaSharp.dll"));
-    
+
     var testsInDirectoryToRun = new List<FilePath>();
     if(parameters.IsRunningOnWindows)
     {
@@ -246,16 +240,7 @@ Task("Run-Unit-Tests")
         testsInDirectoryToRun.AddRange(GetFiles("./artifacts/tests/*.UnitTests.dll"));
     }
 
-    if(parameters.IsRunningOnWindows)
-    {
-        OpenCover(context => {
-            context.XUnit2(testsInDirectoryToRun, xUnitSettings);
-        }, openCoverOutput, openCoverSettings);
-    }
-    else
-    {
-        XUnit2(testsInDirectoryToRun, xUnitSettings);
-    }
+    XUnit2(testsInDirectoryToRun, xUnitSettings);
 });
 
 Task("Copy-Files")
