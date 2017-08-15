@@ -111,6 +111,9 @@ public class Parameters
 
         BuildDirs = context.GetDirectories("**/bin") + context.GetDirectories("**/obj");
 
+        DirSuffixSkia = DirSuffix = Configuration;
+        DirSuffixIOS = "iPhone" + "/" + Configuration;
+
         FileZipSuffix = Version + ".zip";
         ZipCoreArtifacts = ZipRoot.CombineWithFilePath("Avalonia-" + FileZipSuffix);
         ZipSourceControlCatalogDesktopDirs = (DirectoryPath)context.Directory("./samples/ControlCatalog.Desktop/bin/" + DirSuffix);
