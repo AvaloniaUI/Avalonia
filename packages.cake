@@ -427,9 +427,9 @@ public class Packages
                 },
                 Files = new []
                 {
-                    new NuSpecContent { Source = "Avalonia.Skia/bin/" + parameters.DirSuffix + "/netstandard1.3/Avalonia.Skia.dll", Target = "lib/netstandard1.3" }
+                    new NuSpecContent { Source = "Avalonia.Skia.dll", Target = "lib/netstandard1.3" }
                 },
-                BasePath = context.Directory("./src/Skia/"),
+                BasePath = context.Directory("./src/Skia/Avalonia.Skia/bin/" + parameters.DirSuffix + "/netstandard1.3"),
                 OutputDirectory = parameters.NugetRoot
             },
             ///////////////////////////////////////////////////////////////////////////////
