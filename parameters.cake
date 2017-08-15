@@ -32,7 +32,6 @@ public class Parameters
     public DirectoryPath BinRoot { get; private set; }
     public DirectoryPath TestsRoot { get; private set; }
     public string DirSuffix { get; private set; }
-    public string DirSuffixSkia { get; private set; }
     public string DirSuffixIOS { get; private set; }
     public DirectoryPathCollection BuildDirs { get; private set; }
     public string FileZipSuffix { get; private set; }
@@ -111,7 +110,7 @@ public class Parameters
 
         BuildDirs = context.GetDirectories("**/bin") + context.GetDirectories("**/obj");
 
-        DirSuffixSkia = DirSuffix = Configuration;
+        DirSuffix = Configuration;
         DirSuffixIOS = "iPhone" + "/" + Configuration;
 
         FileZipSuffix = Version + ".zip";
