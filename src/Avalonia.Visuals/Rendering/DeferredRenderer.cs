@@ -182,6 +182,8 @@ namespace Avalonia.Rendering
 
             if (scene.Size != Size.Empty)
             {
+                RenderOverlay(scene);
+
                 if (scene.Generation != _lastSceneId)
                 {
                     _layers.Update(scene);
@@ -193,10 +195,9 @@ namespace Avalonia.Rendering
                     }
 
                     _lastSceneId = scene.Generation;
-                }
 
-                RenderOverlay(scene);
-                RenderComposite(scene);
+                    RenderComposite(scene);
+                }
             }
         }
 
