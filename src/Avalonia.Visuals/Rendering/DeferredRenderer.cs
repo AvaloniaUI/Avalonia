@@ -178,12 +178,16 @@ namespace Avalonia.Rendering
 
         private void Render(Scene scene)
         {
-            _dirtyRectsDisplay.Tick();
+            bool renderOverlay = DrawDirtyRects || DrawFps;
+            bool composite = false;
+
+            if (renderOverlay)
+            {
+                _dirtyRectsDisplay.Tick();
+            }
 
             if (scene.Size != Size.Empty)
             {
-                RenderOverlay(scene);
-
                 if (scene.Generation != _lastSceneId)
                 {
                     _layers.Update(scene);
@@ -196,6 +200,16 @@ namespace Avalonia.Rendering
 
                     _lastSceneId = scene.Generation;
 
+                    composite = true;
+                }
+
+                if (renderOverlay)
+                {
+                    RenderOverlay(scene);
+                    RenderComposite(scene);
+                }
+                else if(composite)
+                {
                     RenderComposite(scene);
                 }
             }
