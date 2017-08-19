@@ -169,3 +169,4 @@ artifacts/
 nuget
 Avalonia.XBuild.sln
 project.lock.json
+.idea/*
