@@ -35,6 +35,12 @@ namespace Avalonia.Gtk3.Interop
             var handle = GCHandle.Alloc(callback);
             Native.GTimeoutAdd(interval, PinnedHandler, GCHandle.ToIntPtr(handle));
         }
+        
+        public static void Add(int priority, uint interval, Func<bool> callback)
+        {
+            var handle = GCHandle.Alloc(callback);
+            Native.GTimeoutAddFull(priority, interval, PinnedHandler, GCHandle.ToIntPtr(handle), IntPtr.Zero);
+        }
 
         class Timer : IDisposable
         {

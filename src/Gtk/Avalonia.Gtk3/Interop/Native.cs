@@ -241,6 +241,8 @@ namespace Avalonia.Gtk3.Interop
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Glib)]
             public delegate ulong g_timeout_add(uint interval, timeout_callback callback, IntPtr data);
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Glib)]
+            public delegate ulong g_timeout_add_full(int prio, uint interval, timeout_callback callback, IntPtr data, IntPtr destroy);
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Glib)]
             public delegate ulong g_free(IntPtr data);
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Glib)]
             public unsafe delegate void g_slist_free(GSList* data);
@@ -302,6 +304,7 @@ namespace Avalonia.Gtk3.Interop
         public static D.g_signal_connect_object GSignalConnectObject;
         public static D.g_signal_handler_disconnect GSignalHandlerDisconnect;
         public static D.g_timeout_add GTimeoutAdd;
+        public static D.g_timeout_add_full GTimeoutAddFull;
         public static D.g_free GFree;
         public static D.g_slist_free GSlistFree;
         public static D.g_memory_input_stream_new_from_data GMemoryInputStreamNewFromData;

@@ -77,7 +77,7 @@ namespace Avalonia.Gtk3
                 if (!_signaled)
                 {
                     _signaled = true;
-                    GlibTimeout.Add(0, () =>
+                    GlibTimeout.Add(100, 0, () =>
                     {
                         lock (_lock)
                         {
