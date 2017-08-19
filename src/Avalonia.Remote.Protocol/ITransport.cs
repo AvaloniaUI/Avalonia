@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Avalonia.Remote.Protocol
 {
-    public interface IAvaloniaRemoteTransport
+    public interface IAvaloniaRemoteTransportConnection : IDisposable
     {
         Task Send(object data);
         event Action<object> OnMessage;

@@ -56,6 +56,7 @@ namespace Avalonia
         /// </summary>
         public AvaloniaObject()
         {
+            CheckAccess();
             foreach (var property in AvaloniaPropertyRegistry.Instance.GetRegistered(this))
             {
                 object value = property.IsDirect ?

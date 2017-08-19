@@ -6,12 +6,13 @@ using System.Threading.Tasks;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
+using Avalonia.Rendering;
 
 namespace Avalonia.Controls.Embedding.Offscreen
 {
-    abstract class OffscreenTopLevelImplBase : ITopLevelImpl
+    public abstract class OffscreenTopLevelImplBase : ITopLevelImpl
     {
-        private double _scaling;
+        private double _scaling = 1;
         private Size _clientSize;
         public IInputRoot InputRoot { get; private set; }
 
@@ -19,6 +20,8 @@ namespace Avalonia.Controls.Embedding.Offscreen
         {
             //No-op
         }
+
+        public IRenderer CreateRenderer(IRenderRoot root) => new ImmediateRenderer(root);
 
         public abstract void Invalidate(Rect rect);
         public abstract IEnumerable<object> Surfaces { get; }
@@ -51,15 +54,13 @@ namespace Avalonia.Controls.Embedding.Offscreen
 
         public virtual Point PointToClient(Point point) => point;
 
-        public Point PointToScreen(Point point)
-        {
-            throw new NotImplementedException();
-        }
+        public virtual Point PointToScreen(Point point) => point;
 
         public virtual void SetCursor(IPlatformHandle cursor)
         {
         }
 
         public Action Closed { get; set; }
+        public abstract IMouseDevice MouseDevice { get; }
     }
 }

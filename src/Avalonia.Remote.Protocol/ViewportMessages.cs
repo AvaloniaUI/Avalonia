@@ -10,7 +10,8 @@ namespace Avalonia.Remote.Protocol.Viewport
     {
         Rgb565,
         Rgba8888,
-        Bgra8888
+        Bgra8888,
+        MaxValue = Bgra8888
     }
 
     [AvaloniaRemoteMessageGuid("6E3C5310-E2B1-4C3D-8688-01183AA48C5B")]
@@ -25,6 +26,8 @@ namespace Avalonia.Remote.Protocol.Viewport
     {
         public double Width { get; set; }
         public double Height { get; set; }
+        public double DpiX { get; set; }
+        public double DpiY { get; set; }
     }
 
     [AvaloniaRemoteMessageGuid("63481025-7016-43FE-BADC-F2FD0F88609E")]

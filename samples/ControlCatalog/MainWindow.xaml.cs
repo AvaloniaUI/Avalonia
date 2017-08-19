@@ -6,11 +6,12 @@ namespace ControlCatalog
 {
     public class MainWindow : Window
     {
+        public static bool DebugMode = false;
         public MainWindow()
         {
             this.InitializeComponent();
             this.AttachDevTools();
-            Renderer.DrawDirtyRects = Renderer.DrawFps = true;
+            Renderer.DrawDirtyRects = Renderer.DrawFps = DebugMode;
         }
 
         private void InitializeComponent()
