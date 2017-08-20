@@ -64,7 +64,7 @@
             <DrawingPresenter Drawing="{StyleResource Bulb}"
                               Width="100"
                               Height="50"
-                              Strech="Fill" />
+                              Stretch="Fill" />
         </Border>
         <TextBlock Text="Uniform"
                    Margin="3"
@@ -79,7 +79,7 @@
             <DrawingPresenter Drawing="{StyleResource Bulb}"
                               Width="100"
                               Height="50"
-                              Strech="Uniform" />
+                              Stretch="Uniform" />
         </Border>
         <TextBlock Text="UniformToFill"
                    Margin="3"
@@ -94,7 +94,7 @@
             <DrawingPresenter Drawing="{StyleResource Bulb}"
                               Width="100"
                               Height="50"
-                              Strech="UniformToFill" />
+                              Stretch="UniformToFill" />
         </Border>
 
         <!-- For comparison -->
