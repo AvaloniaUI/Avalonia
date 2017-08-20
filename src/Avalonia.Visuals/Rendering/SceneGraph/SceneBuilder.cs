@@ -36,7 +36,13 @@ namespace Avalonia.Rendering.SceneGraph
         {
             Contract.Requires<ArgumentNullException>(scene != null);
             Contract.Requires<ArgumentNullException>(visual != null);
+
             Dispatcher.UIThread.VerifyAccess();
+
+            if (!scene.Root.Visual.IsVisible)
+            {
+                throw new AvaloniaInternalException("Cannot update the scene for an invisible root visual.");
+            }
 
             var node = (VisualNode)scene.FindNode(visual);
 
