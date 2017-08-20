@@ -10,35 +10,89 @@ namespace Avalonia.Media
     /// </summary>
     public class LineGeometry : Geometry
     {
-        private Point _startPoint;
-        private Point _endPoint;
+        /// <summary>
+        /// Defines the <see cref="StartPoint"/> property.
+        /// </summary>
+        public static readonly StyledProperty<Point> StartPointProperty =
+            AvaloniaProperty.Register<LineGeometry, Point>(nameof(StartPoint));
+
+        public Point StartPoint
+        {
+            get => GetValue(StartPointProperty);
+            set => SetValue(StartPointProperty, value);
+        }
+
+        /// <summary>
+        /// Defines the <see cref="EndPoint"/> property.
+        /// </summary>
+        public static readonly StyledProperty<Point> EndPointProperty =
+            AvaloniaProperty.Register<LineGeometry, Point>(nameof(EndPoint));
+        private bool _isDirty;
+
+        public Point EndPoint
+        {
+            get => GetValue(EndPointProperty);
+            set => SetValue(EndPointProperty, value);
+        }
+
+        static LineGeometry()
+        {
+            StartPointProperty.Changed.AddClassHandler<LineGeometry>(x => x.PointsChanged);
+            EndPointProperty.Changed.AddClassHandler<LineGeometry>(x => x.PointsChanged);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LineGeometry"/> class.
+        /// </summary>
+        public LineGeometry()
+        {
+            IPlatformRenderInterface factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
+            PlatformImpl = factory.CreateStreamGeometry();
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LineGeometry"/> class.
         /// </summary>
         /// <param name="startPoint">The start point.</param>
         /// <param name="endPoint">The end point.</param>
-        public LineGeometry(Point startPoint, Point endPoint)
+        public LineGeometry(Point startPoint, Point endPoint) : this()
         {
-            _startPoint = startPoint;
-            _endPoint = endPoint;
-            IPlatformRenderInterface factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
-            IStreamGeometryImpl impl = factory.CreateStreamGeometry();
+            StartPoint = startPoint;
+            EndPoint = endPoint;
+        }
 
-            using (IStreamGeometryContextImpl context = impl.Open())
+        public override IGeometryImpl PlatformImpl
+        {
+            get
             {
-                context.BeginFigure(_startPoint, false);
-                context.LineTo(_endPoint);
-                context.EndFigure(false);
+                PrepareIfNeeded();
+                return base.PlatformImpl;
             }
+            protected set => base.PlatformImpl = value;
+        }
 
-            PlatformImpl = impl;
+        public void PrepareIfNeeded()
+        {
+            if (_isDirty)
+            {
+                _isDirty = false;
+
+                using (var context = ((IStreamGeometryImpl)PlatformImpl).Open())
+                {
+                    context.BeginFigure(StartPoint, false);
+                    context.LineTo(EndPoint);
+                    context.EndFigure(false);
+                }
+            }
         }
 
         /// <inheritdoc/>
         public override Geometry Clone()
         {
-            return new LineGeometry(_startPoint, _endPoint);
+            PrepareIfNeeded();
+            return new LineGeometry(StartPoint, EndPoint);
         }
+
+        private void PointsChanged(AvaloniaPropertyChangedEventArgs e) => _isDirty = true;
     }
 }
