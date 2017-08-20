@@ -23,9 +23,7 @@ namespace Avalonia.UnitTests
             assetLoader: new AssetLoader(),
             layoutManager: new LayoutManager(),
             platform: new AppBuilder().RuntimePlatform,
-            renderer: (_, __) => Mock.Of<IRenderer>(),
-            renderInterface: CreateRenderInterfaceMock(),
-            renderLoop: Mock.Of<IRenderLoop>(),
+            renderInterface: new MockPlatformRenderInterface(),
             standardCursorFactory: Mock.Of<IStandardCursorFactory>(),
             styler: new Styler(),
             theme: () => CreateDefaultTheme(),
@@ -33,7 +31,7 @@ namespace Avalonia.UnitTests
             windowingPlatform: new MockWindowingPlatform());
 
         public static readonly TestServices MockPlatformRenderInterface = new TestServices(
-            renderInterface: CreateRenderInterfaceMock());
+            renderInterface: new MockPlatformRenderInterface());
 
         public static readonly TestServices MockPlatformWrapper = new TestServices(
             platform: Mock.Of<IRuntimePlatform>());
@@ -50,6 +48,7 @@ namespace Avalonia.UnitTests
         public static readonly TestServices RealFocus = new TestServices(
             focusManager: new FocusManager(),
             keyboardDevice: () => new KeyboardDevice(),
+            keyboardNavigation: new KeyboardNavigationHandler(),
             inputManager: new InputManager());
 
         public static readonly TestServices RealLayoutManager = new TestServices(
@@ -63,9 +62,10 @@ namespace Avalonia.UnitTests
             IFocusManager focusManager = null,
             IInputManager inputManager = null,
             Func<IKeyboardDevice> keyboardDevice = null,
+            IKeyboardNavigationHandler keyboardNavigation = null,
             ILayoutManager layoutManager = null,
+            Func<IMouseDevice> mouseDevice = null,
             IRuntimePlatform platform = null,
-            Func<IRenderRoot, IRenderLoop, IRenderer> renderer = null,
             IPlatformRenderInterface renderInterface = null,
             IRenderLoop renderLoop = null,
             IScheduler scheduler = null,
@@ -73,22 +73,24 @@ namespace Avalonia.UnitTests
             IStyler styler = null,
             Func<Styles> theme = null,
             IPlatformThreadingInterface threadingInterface = null,
+            IWindowImpl windowImpl = null,
             IWindowingPlatform windowingPlatform = null)
         {
             AssetLoader = assetLoader;
             FocusManager = focusManager;
             InputManager = inputManager;
             KeyboardDevice = keyboardDevice;
+            KeyboardNavigation = keyboardNavigation;
             LayoutManager = layoutManager;
+            MouseDevice = mouseDevice;
             Platform = platform;
-            Renderer = renderer;
             RenderInterface = renderInterface;
-            RenderLoop = renderLoop;
             Scheduler = scheduler;
             StandardCursorFactory = standardCursorFactory;
             Styler = styler;
             Theme = theme;
             ThreadingInterface = threadingInterface;
+            WindowImpl = windowImpl;
             WindowingPlatform = windowingPlatform;
         }
 
@@ -96,16 +98,17 @@ namespace Avalonia.UnitTests
         public IInputManager InputManager { get; }
         public IFocusManager FocusManager { get; }
         public Func<IKeyboardDevice> KeyboardDevice { get; }
+        public IKeyboardNavigationHandler KeyboardNavigation { get; }
         public ILayoutManager LayoutManager { get; }
+        public Func<IMouseDevice> MouseDevice { get; }
         public IRuntimePlatform Platform { get; }
-        public Func<IRenderRoot, IRenderLoop, IRenderer> Renderer { get; }
         public IPlatformRenderInterface RenderInterface { get; }
-        public IRenderLoop RenderLoop { get; }
         public IScheduler Scheduler { get; }
         public IStandardCursorFactory StandardCursorFactory { get; }
         public IStyler Styler { get; }
         public Func<Styles> Theme { get; }
         public IPlatformThreadingInterface ThreadingInterface { get; }
+        public IWindowImpl WindowImpl { get; }
         public IWindowingPlatform WindowingPlatform { get; }
 
         public TestServices With(
@@ -113,9 +116,10 @@ namespace Avalonia.UnitTests
             IFocusManager focusManager = null,
             IInputManager inputManager = null,
             Func<IKeyboardDevice> keyboardDevice = null,
+            IKeyboardNavigationHandler keyboardNavigation = null,
             ILayoutManager layoutManager = null,
+            Func<IMouseDevice> mouseDevice = null,
             IRuntimePlatform platform = null,
-            Func<IRenderRoot, IRenderLoop, IRenderer> renderer = null,
             IPlatformRenderInterface renderInterface = null,
             IRenderLoop renderLoop = null,
             IScheduler scheduler = null,
@@ -131,17 +135,18 @@ namespace Avalonia.UnitTests
                 focusManager: focusManager ?? FocusManager,
                 inputManager: inputManager ?? InputManager,
                 keyboardDevice: keyboardDevice ?? KeyboardDevice,
+                keyboardNavigation: keyboardNavigation ?? KeyboardNavigation,
                 layoutManager: layoutManager ?? LayoutManager,
+                mouseDevice: mouseDevice ?? MouseDevice,
                 platform: platform ?? Platform,
-                renderer: renderer ?? Renderer,
                 renderInterface: renderInterface ?? RenderInterface,
-                renderLoop: renderLoop ?? RenderLoop,
                 scheduler: scheduler ?? Scheduler,
                 standardCursorFactory: standardCursorFactory ?? StandardCursorFactory,
                 styler: styler ?? Styler,
                 theme: theme ?? Theme,
                 threadingInterface: threadingInterface ?? ThreadingInterface,
-                windowingPlatform: windowingPlatform ?? WindowingPlatform);
+                windowingPlatform: windowingPlatform ?? WindowingPlatform,
+                windowImpl: windowImpl ?? WindowImpl);
         }
 
         private static Styles CreateDefaultTheme()

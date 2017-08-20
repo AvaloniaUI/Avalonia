@@ -135,12 +135,17 @@ namespace Avalonia.Direct2D1
 
         public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)
         {
-            var nativeWindow = surfaces?.OfType<IPlatformHandle>().FirstOrDefault();
-            if (nativeWindow != null)
+            foreach (var s in surfaces)
             {
-                if(nativeWindow.HandleDescriptor != "HWND")
-                    throw new NotSupportedException("Don't know how to create a Direct2D1 renderer from " + nativeWindow.HandleDescriptor);
-                return new HwndRenderTarget(nativeWindow);
+                if (s is IPlatformHandle nativeWindow)
+                {
+                    if (nativeWindow.HandleDescriptor != "HWND")
+                        throw new NotSupportedException("Don't know how to create a Direct2D1 renderer from " +
+                                                        nativeWindow.HandleDescriptor);
+                    return new HwndRenderTarget(nativeWindow);
+                }
+                if (s is IExternalDirect2DRenderTargetSurface external)
+                    return new ExternalRenderTarget(external, s_dwfactory);
             }
             throw new NotSupportedException("Don't know how to create a Direct2D1 renderer from any of provided surfaces");
         }

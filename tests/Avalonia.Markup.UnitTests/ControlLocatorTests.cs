@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reactive.Linq;
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.UnitTests;
 using Xunit;
@@ -13,7 +14,7 @@ namespace Avalonia.Markup.UnitTests
     public class ControlLocatorTests
     {
         [Fact]
-        public async void Track_By_Name_Should_Find_Control_Added_Earlier()
+        public async Task Track_By_Name_Should_Find_Control_Added_Earlier()
         {
             TextBlock target;
             TextBlock relativeTo;

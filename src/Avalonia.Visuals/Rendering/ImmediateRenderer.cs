@@ -20,11 +20,6 @@ namespace Avalonia.Rendering
     /// </remarks>
     public class ImmediateRenderer : RendererBase, IRenderer, IVisualBrushRenderer
     {
-        class ImmediateRendererFactory : IRendererFactory
-        {
-            public IRenderer CreateRenderer(IRenderRoot root, IRenderLoop renderLoop) => new ImmediateRenderer(root);
-        }
-
         private readonly IVisual _root;
         private readonly IRenderRoot _renderRoot;
         private IRenderTarget _renderTarget;
@@ -40,8 +35,6 @@ namespace Avalonia.Rendering
             _root = root;
             _renderRoot = root as IRenderRoot;
         }
-
-        public static IRendererFactory Factory { get; } = new ImmediateRendererFactory();
 
         /// <inheritdoc/>
         public bool DrawFps { get; set; }
@@ -149,6 +142,16 @@ namespace Avalonia.Rendering
         }
 
         /// <inheritdoc/>
+        public void Start()
+        {
+        }
+
+        /// <inheritdoc/>
+        public void Stop()
+        {
+        }
+
+        /// <inheritdoc/>
         Size IVisualBrushRenderer.GetRenderTargetSize(IVisualBrush brush)
         {
             (brush.Visual as IVisualBrushInitialize)?.EnsureInitialized();
@@ -164,7 +167,7 @@ namespace Avalonia.Rendering
 
         private static void ClearTransformedBounds(IVisual visual)
         {
-            foreach (var e in visual.GetSelfAndVisualDescendents())
+            foreach (var e in visual.GetSelfAndVisualDescendants())
             {
                 BoundsTracker.SetTransformedBounds((Visual)visual, null);
             }

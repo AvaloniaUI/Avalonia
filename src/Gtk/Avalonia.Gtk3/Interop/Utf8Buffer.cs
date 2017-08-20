@@ -11,6 +11,8 @@ namespace Avalonia.Gtk3.Interop
             
         public Utf8Buffer(string s) : base(IntPtr.Zero, true)
         {
+            if (s == null)
+                return;
             _data = Encoding.UTF8.GetBytes(s);
             _gchandle = GCHandle.Alloc(_data, GCHandleType.Pinned);
             handle = _gchandle.AddrOfPinnedObject();

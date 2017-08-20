@@ -50,7 +50,7 @@ namespace Avalonia.Controls
                     return result;
                 }
 
-                visual = (visual as ILogical).LogicalParent as Visual;
+                visual = (visual as ILogical)?.LogicalParent as Visual;
             }
 
             return null;

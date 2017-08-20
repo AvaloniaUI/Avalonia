@@ -37,6 +37,16 @@ namespace Avalonia.LogicalTree
         IAvaloniaReadOnlyList<ILogical> LogicalChildren { get; }
 
         /// <summary>
+        /// Notifies the control that it is being attached to a rooted logical tree.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        /// <remarks>
+        /// This method will be called automatically by the framework, you should not need to call
+        /// this method yourself.
+        /// </remarks>
+        void NotifyAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e);
+
+        /// <summary>
         /// Notifies the control that it is being detached from a rooted logical tree.
         /// </summary>
         /// <param name="e">The event args.</param>

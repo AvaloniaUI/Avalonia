@@ -52,8 +52,6 @@ namespace Avalonia
             return new Point(a._x, a._y);
         }
 
-        
-
         /// <summary>
         /// Calculates the dot product of two vectors
         /// </summary>
@@ -63,6 +61,28 @@ namespace Avalonia
         public static double operator *(Vector a, Vector b)
         {
             return a.X*b.X + a.Y*b.Y;
+        }
+
+        /// <summary>
+        /// Scales a vector.
+        /// </summary>
+        /// <param name="vector">The vector</param>
+        /// <param name="scale">The scaling factor.</param>
+        /// <returns>The scaled vector.</returns>
+        public static Vector operator *(Vector vector, double scale)
+        {
+            return new Vector(vector._x * scale, vector._y * scale);
+        }
+
+        /// <summary>
+        /// Scales a vector.
+        /// </summary>
+        /// <param name="vector">The vector</param>
+        /// <param name="scale">The divisor.</param>
+        /// <returns>The scaled vector.</returns>
+        public static Vector operator /(Vector vector, double scale)
+        {
+            return new Vector(vector._x / scale, vector._y / scale);
         }
 
         /// <summary>

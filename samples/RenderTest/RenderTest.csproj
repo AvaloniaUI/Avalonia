@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>RenderTest</RootNamespace>
     <AssemblyName>RenderTest</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <TargetFrameworkProfile />
@@ -145,9 +145,9 @@
       <Project>{6417e941-21bc-467b-a771-0de389353ce6}</Project>
       <Name>Avalonia.Markup</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\Skia\Avalonia.Skia.Desktop\Avalonia.Skia.Desktop.csproj">
-      <Project>{925dd807-b651-475f-9f7c-cbeb974ce43d}</Project>
-      <Name>Avalonia.Skia.Desktop</Name>
+    <ProjectReference Include="..\..\src\Skia\Avalonia.Skia\Avalonia.Skia.csproj">
+      <Project>{7d2d3083-71dd-4cc9-8907-39a0d86fb322}</Project>
+      <Name>Avalonia.Skia</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\Windows\Avalonia.Direct2D1\Avalonia.Direct2D1.csproj">
       <Project>{3e908f67-5543-4879-a1dc-08eace79b3cd}</Project>
@@ -183,5 +183,4 @@
   <Import Project="..\..\build\Serilog.Sinks.Trace.props" />
   <Import Project="..\..\build\Splat.props" />
   <Import Project="..\..\build\Rx.props" />
-  <Import Project="$(MSBuildThisFileDirectory)..\..\src\Shared\nuget.workaround.targets" />
 </Project>

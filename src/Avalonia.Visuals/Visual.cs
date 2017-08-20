@@ -314,7 +314,7 @@ namespace Avalonia
 
         /// <summary>
         /// Calls the <see cref="OnAttachedToVisualTree(VisualTreeAttachmentEventArgs)"/> method 
-        /// for this control and all of its visual descendents.
+        /// for this control and all of its visual descendants.
         /// </summary>
         /// <param name="e">The event args.</param>
         protected virtual void OnAttachedToVisualTreeCore(VisualTreeAttachmentEventArgs e)
@@ -342,7 +342,7 @@ namespace Avalonia
 
         /// <summary>
         /// Calls the <see cref="OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs)"/> method 
-        /// for this control and all of its visual descendents.
+        /// for this control and all of its visual descendants.
         /// </summary>
         /// <param name="e">The event args.</param>
         protected virtual void OnDetachedFromVisualTreeCore(VisualTreeAttachmentEventArgs e)
@@ -422,7 +422,7 @@ namespace Avalonia
 
                 if (visual == null)
                 {
-                    throw new ArgumentException("'visual' is not a descendent of 'ancestor'.");
+                    throw new ArgumentException("'visual' is not a descendant of 'ancestor'.");
                 }
             }
 

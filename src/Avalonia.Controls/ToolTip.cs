@@ -105,21 +105,29 @@ namespace Avalonia.Controls
         {
             if (control != null && control.IsVisible && control.GetVisualRoot() != null)
             {
-                if (s_popup != null)
+                var cp = (control.GetVisualRoot() as IInputRoot)?.MouseDevice?.GetPosition(control);
+
+                if (cp.HasValue && control.IsVisible && new Rect(control.Bounds.Size).Contains(cp.Value))
                 {
-                    throw new AvaloniaInternalException("Previous ToolTip not disposed.");
-                }
+                    var position = control.PointToScreen(cp.Value) + new Vector(0, 22);
 
-                var cp = MouseDevice.Instance?.GetPosition(control);
-                var position = control.PointToScreen(cp ?? new Point(0, 0)) + new Vector(0, 22);
+                    if (s_popup == null)
+                    {
+                        s_popup = new PopupRoot();
+                        s_popup.Content = new ToolTip();
+                    }
+                    else
+                    {
+                        ((ISetLogicalParent)s_popup).SetParent(null);
+                    }
 
-                s_popup = new PopupRoot();
                 ((ISetLogicalParent)s_popup).SetParent(control);
-                s_popup.Content = new ToolTip { Content = GetTip(control) };
-                s_popup.Position = position;
-                s_popup.Show();
+                    ((ToolTip)s_popup.Content).Content = GetTip(control);
+                    s_popup.Position = position;
+                    s_popup.Show();
 
-                s_current = control;
+                    s_current = control;
+                }
             }
         }
 
@@ -147,16 +155,23 @@ namespace Avalonia.Controls
             {
                 if (s_popup != null)
                 {
-                    // Clear the ToolTip's Content in case it has control content: this will
-                    // reset its visual parent allowing it to be used again.
-                    ((ToolTip)s_popup.Content).Content = null;
-
-                    // Dispose of the popup.
-                    s_popup.Dispose();
-                    s_popup = null;
+                    DisposeTooltip();
+                    s_show.OnNext(null);
                 }
+            }
+        }
 
-                s_show.OnNext(null);
+        private static void DisposeTooltip()
+        {
+            if (s_popup != null)
+            {
+                // Clear the ToolTip's Content in case it has control content: this will
+                // reset its visual parent allowing it to be used again.
+                ((ToolTip)s_popup.Content).Content = null;
+
+                // Dispose of the popup.
+                s_popup.Dispose();
+                s_popup = null;
             }
         }
     }

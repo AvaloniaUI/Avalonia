@@ -4,7 +4,7 @@ using Avalonia.Platform;
 using SkiaSharp;
 
 
-namespace Avalonia.Skia
+namespace Avalonia
 {
     public static class SkiaSharpExtensions
     {
@@ -87,6 +87,17 @@ namespace Avalonia.Skia
                 case TextAlignment.Left: return SKTextAlign.Left;
                 case TextAlignment.Center: return SKTextAlign.Center;
                 case TextAlignment.Right: return SKTextAlign.Right;
+            }
+        }
+
+        public static TextAlignment ToAvalonia(this SKTextAlign a)
+        {
+            switch (a)
+            {
+                default:
+                case SKTextAlign.Left: return TextAlignment.Left;
+                case SKTextAlign.Center: return TextAlignment.Center;
+                case SKTextAlign.Right: return TextAlignment.Right;
             }
         }
 

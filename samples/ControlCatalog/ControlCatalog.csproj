@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netstandard1.1</TargetFramework>
+    <TargetFramework>netstandard1.3</TargetFramework>
     <EnableDefaultCompileItems>False</EnableDefaultCompileItems>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
@@ -21,6 +21,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <ItemGroup>
+    <None Remove="Pages\ContextMenuPage.xaml" />
+  </ItemGroup>
   <ItemGroup>
     <!-- A reference to the entire .NET Framework is automatically included -->
     <EmbeddedResource Include="App.xaml">
@@ -44,6 +47,7 @@
     <EmbeddedResource Include="Pages\CheckBoxPage.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <EmbeddedResource Include="Pages\ContextMenuPage.xaml" />
     <EmbeddedResource Include="Pages\DropDownPage.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
@@ -94,6 +98,9 @@
     <Compile Include="Pages\CarouselPage.xaml.cs">
       <DependentUpon>CarouselPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Pages\ContextMenuPage.xaml.cs">
+      <DependentUpon>ContextMenuPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Pages\CheckBoxPage.xaml.cs">
       <DependentUpon>CheckBoxPage.xaml</DependentUpon>
     </Compile>
@@ -117,7 +124,7 @@
     </Compile>
     <Compile Include="Pages\SliderPage.xaml.cs">
       <DependentUpon>SliderPage.xaml</DependentUpon>
-    </Compile>
+    </Compile>    
     <Compile Include="Pages\TreeViewPage.xaml.cs">
       <DependentUpon>TreeViewPage.xaml</DependentUpon>
     </Compile>

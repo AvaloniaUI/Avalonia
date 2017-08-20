@@ -49,6 +49,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Layout\Measure.cs" />
     <Compile Include="Styling\ApplyStyling.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -100,7 +101,6 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
-    <PackageReference Include="BenchmarkDotNet" Version="0.9.2" />
+    <PackageReference Include="BenchmarkDotNet" Version="0.10.8" />
   </ItemGroup>
-  <Import Project="$(MSBuildThisFileDirectory)..\..\src\Shared\nuget.workaround.targets" />
 </Project>

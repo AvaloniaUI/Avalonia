@@ -82,7 +82,13 @@ namespace Avalonia
 
         private void LoadAssembliesInDirectory()
         {
-            foreach (var file in new FileInfo(Assembly.GetEntryAssembly().Location).Directory.EnumerateFiles("*.dll"))
+            var location = Assembly.GetEntryAssembly().Location;
+            if (string.IsNullOrWhiteSpace(location))
+                return;
+            var dir = new FileInfo(location).Directory;
+            if (dir == null)
+                return;
+            foreach (var file in dir.EnumerateFiles("*.dll"))
             {
                 try
                 {

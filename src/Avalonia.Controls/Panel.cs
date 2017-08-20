@@ -64,9 +64,12 @@ namespace Avalonia.Controls
             {
                 Contract.Requires<ArgumentNullException>(value != null);
 
-                VisualChildren.Clear();
-                _children.Clear();
-                _children.AddRange(value);
+                if (_children != value)
+                {
+                    VisualChildren.Clear();
+                    _children.Clear();
+                    _children.AddRange(value);
+                }
             }
         }
 

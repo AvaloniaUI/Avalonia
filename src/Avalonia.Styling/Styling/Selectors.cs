@@ -42,13 +42,13 @@ namespace Avalonia.Styling
         }
 
         /// <summary>
-        /// Returns a selector which matches a descendent of a previous selector.
+        /// Returns a selector which matches a descendant of a previous selector.
         /// </summary>
         /// <param name="previous">The previous selector.</param>
         /// <returns>The selector.</returns>
-        public static Selector Descendent(this Selector previous)
+        public static Selector Descendant(this Selector previous)
         {
-            return new DescendentSelector(previous);
+            return new DescendantSelector(previous);
         }
 
         /// <summary>

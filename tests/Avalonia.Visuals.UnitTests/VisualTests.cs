@@ -135,7 +135,7 @@ namespace Avalonia.Visuals.UnitTests
         }
 
         [Fact]
-        public void Descendents_Should_RetunVisualRoot()
+        public void Descendants_Should_RetunVisualRoot()
         {
             var root = new TestRoot();
             var child1 = new Decorator();
@@ -152,34 +152,32 @@ namespace Avalonia.Visuals.UnitTests
         public void Attaching_To_Visual_Tree_Should_Invalidate_Visual()
         {
             var renderer = new Mock<IRenderer>();
-
-            using (UnitTestApplication.Start(new TestServices(renderer: (root, loop) => renderer.Object)))
+            var child = new Decorator();
+            var root = new TestRoot
             {
-                var child = new Decorator();
-                var root = new TestRoot();
+                Renderer = renderer.Object,
+            };
 
-                root.Child = child;
+            root.Child = child;
 
-                renderer.Verify(x => x.AddDirty(child));
-            }
+            renderer.Verify(x => x.AddDirty(child));
         }
 
         [Fact]
         public void Detaching_From_Visual_Tree_Should_Invalidate_Visual()
         {
             var renderer = new Mock<IRenderer>();
-
-            using (UnitTestApplication.Start(new TestServices(renderer: (root, loop) => renderer.Object)))
+            var child = new Decorator();
+            var root = new TestRoot
             {
-                var child = new Decorator();
-                var root = new TestRoot();
+                Renderer = renderer.Object,
+            };
 
-                root.Child = child;
-                renderer.ResetCalls();
-                root.Child = null;
+            root.Child = child;
+            renderer.ResetCalls();
+            root.Child = null;
 
-                renderer.Verify(x => x.AddDirty(child));
-            }
+            renderer.Verify(x => x.AddDirty(child));
         }
 
         [Fact]

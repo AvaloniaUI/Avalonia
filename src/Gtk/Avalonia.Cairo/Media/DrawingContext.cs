@@ -9,6 +9,7 @@ using Avalonia.Cairo.Media.Imaging;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+// ReSharper disable PossibleNullReferenceException
 
 namespace Avalonia.Cairo.Media
 {

@@ -52,12 +52,11 @@ namespace Avalonia.Gtk3
         public int RowBytes { get; }
 
         
-        public Size Dpi
+        public Vector Dpi
         {
             get
             {
-                
-                return new Size(96, 96) * _factor;
+                return new Vector(96, 96) * _factor;
             }
         }
 

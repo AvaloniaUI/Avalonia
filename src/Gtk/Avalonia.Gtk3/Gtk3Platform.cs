@@ -15,7 +15,7 @@ using Avalonia.Gtk3;
 
 namespace Avalonia.Gtk3
 {
-    public class Gtk3Platform : IWindowingPlatform, IPlatformSettings, IPlatformThreadingInterface, IRendererFactory
+    public class Gtk3Platform : IWindowingPlatform, IPlatformSettings, IPlatformThreadingInterface
     {
         internal static readonly Gtk3Platform Instance = new Gtk3Platform();
         internal static readonly MouseDevice Mouse = new MouseDevice();
@@ -34,12 +34,10 @@ namespace Avalonia.Gtk3
                 .Bind<IClipboard>().ToSingleton<ClipboardImpl>()
                 .Bind<IStandardCursorFactory>().ToConstant(new CursorFactory())
                 .Bind<IKeyboardDevice>().ToConstant(Keyboard)
-                .Bind<IMouseDevice>().ToConstant(Mouse)
                 .Bind<IPlatformSettings>().ToConstant(Instance)
                 .Bind<IPlatformThreadingInterface>().ToConstant(Instance)
                 .Bind<ISystemDialogImpl>().ToSingleton<SystemDialog>()
                 .Bind<IRenderLoop>().ToConstant(new DefaultRenderLoop(60))
-                .Bind<IRendererFactory>().ToConstant(ImmediateRenderer.Factory)
                 .Bind<IPlatformIconLoader>().ToConstant(new PlatformIconLoader());
 
         }
@@ -52,11 +50,6 @@ namespace Avalonia.Gtk3
         }
 
         public IPopupImpl CreatePopup() => new PopupImpl();
-
-        public IRenderer CreateRenderer(IRenderRoot root, IRenderLoop renderLoop)
-        {
-            return new ImmediateRenderer(root);
-        }
 
         public Size DoubleClickSize => new Size(4, 4);
 

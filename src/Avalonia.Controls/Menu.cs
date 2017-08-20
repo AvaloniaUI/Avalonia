@@ -47,7 +47,7 @@ namespace Avalonia.Controls
         static Menu()
         {
             ItemsPanelProperty.OverrideDefaultValue(typeof(Menu), DefaultPanel);
-            MenuItem.ClickEvent.AddClassHandler<Menu>(x => x.OnMenuClick);
+            MenuItem.ClickEvent.AddClassHandler<Menu>(x => x.OnMenuClick, handledEventsToo: true);
             MenuItem.SubmenuOpenedEvent.AddClassHandler<Menu>(x => x.OnSubmenuOpened);
         }
 

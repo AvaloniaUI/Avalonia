@@ -285,7 +285,7 @@ namespace Avalonia
                     Property.Name, 
                     _valueType, 
                     value,
-                    value.GetType());
+                    value?.GetType());
             }
         }
     }

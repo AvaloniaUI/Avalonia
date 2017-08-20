@@ -76,8 +76,7 @@ namespace Avalonia.Skia
             canvas.RestoreToCount(0);
             canvas.Save();
             canvas.ResetMatrix();
-            var scale = Matrix.CreateScale(fb.Dpi.Width / 96, fb.Dpi.Height / 96);
-            return new DrawingContextImpl(canvas, visualBrushRenderer, scale, canvas, surface, shim, fb);
+            return new DrawingContextImpl(canvas, fb.Dpi, visualBrushRenderer, canvas, surface, shim, fb);
         }
     }
 }

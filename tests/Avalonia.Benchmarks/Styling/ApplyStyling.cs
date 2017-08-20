@@ -11,6 +11,7 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Benchmarks.Styling
 {
+    [MemoryDiagnoser]
     public class ApplyStyling : IDisposable
     {
         private IDisposable _app;

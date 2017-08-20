@@ -18,13 +18,17 @@ namespace Avalonia.Input.Navigation
         /// </summary>
         /// <param name="element">The element.</param>
         /// <param name="direction">The tab direction. Must be Next or Previous.</param>
+        /// <param name="outsideElement">
+        /// If true will not descend into <paramref name="element"/> to find next control.
+        /// </param>
         /// <returns>
         /// The next element in the specified direction, or null if <paramref name="element"/>
         /// was the last in the requested direction.
         /// </returns>
         public static IInputElement GetNextInTabOrder(
             IInputElement element,
-            NavigationDirection direction)
+            NavigationDirection direction,
+            bool outsideElement = false)
         {
             Contract.Requires<ArgumentNullException>(element != null);
             Contract.Requires<ArgumentException>(
@@ -40,42 +44,43 @@ namespace Avalonia.Input.Navigation
                 switch (mode)
                 {
                     case KeyboardNavigationMode.Continue:
-                        return GetNextInContainer(element, container, direction) ??
-                               GetFirstInNextContainer(element, direction);
+                        return GetNextInContainer(element, container, direction, outsideElement) ??
+                               GetFirstInNextContainer(element, element, direction);
                     case KeyboardNavigationMode.Cycle:
-                        return GetNextInContainer(element, container, direction) ??
-                               GetFocusableDescendent(container, direction);
+                        return GetNextInContainer(element, container, direction, outsideElement) ??
+                               GetFocusableDescendant(container, direction);
                     case KeyboardNavigationMode.Contained:
-                        return GetNextInContainer(element, container, direction);
+                        return GetNextInContainer(element, container, direction, outsideElement);
                     default:
-                        return GetFirstInNextContainer(container, direction);
+                        return GetFirstInNextContainer(element, container, direction);
                 }
             }
             else
             {
-                return GetFocusableDescendents(element).FirstOrDefault();
+                return GetFocusableDescendants(element, direction).FirstOrDefault();
             }
         }
 
         /// <summary>
-        /// Gets the first or last focusable descendent of the specified element.
+        /// Gets the first or last focusable descendant of the specified element.
         /// </summary>
         /// <param name="container">The element.</param>
         /// <param name="direction">The direction to search.</param>
         /// <returns>The element or null if not found.##</returns>
-        private static IInputElement GetFocusableDescendent(IInputElement container, NavigationDirection direction)
+        private static IInputElement GetFocusableDescendant(IInputElement container, NavigationDirection direction)
         {
             return direction == NavigationDirection.Next ?
-                GetFocusableDescendents(container).FirstOrDefault() :
-                GetFocusableDescendents(container).LastOrDefault();
+                GetFocusableDescendants(container, direction).FirstOrDefault() :
+                GetFocusableDescendants(container, direction).LastOrDefault();
         }
 
         /// <summary>
-        /// Gets the focusable descendents of the specified element.
+        /// Gets the focusable descendants of the specified element.
         /// </summary>
         /// <param name="element">The element.</param>
-        /// <returns>The element's focusable descendents.</returns>
-        private static IEnumerable<IInputElement> GetFocusableDescendents(IInputElement element)
+        /// <param name="direction">The tab direction. Must be Next or Previous.</param>
+        /// <returns>The element's focusable descendants.</returns>
+        private static IEnumerable<IInputElement> GetFocusableDescendants(IInputElement element, NavigationDirection direction)
         {
             var mode = KeyboardNavigation.GetTabNavigation((InputElement)element);
 
@@ -103,16 +108,25 @@ namespace Avalonia.Input.Navigation
 
             foreach (var child in children)
             {
-                if (child.CanFocus())
-                {
-                    yield return child;
-                }
+                var customNext = GetCustomNext(child, direction);
 
-                if (child.CanFocusDescendents())
+                if (customNext.handled)
                 {
-                    foreach (var descendent in GetFocusableDescendents(child))
+                    yield return customNext.next;
+                }
+                else
+                {
+                    if (child.CanFocus())
                     {
-                        yield return descendent;
+                        yield return child;
+                    }
+
+                    if (child.CanFocusDescendants())
+                    {
+                        foreach (var descendant in GetFocusableDescendants(child, direction))
+                        {
+                            yield return descendant;
+                        }
                     }
                 }
             }
@@ -124,19 +138,23 @@ namespace Avalonia.Input.Navigation
         /// <param name="element">The starting element/</param>
         /// <param name="container">The container.</param>
         /// <param name="direction">The direction.</param>
+        /// <param name="outsideElement">
+        /// If true will not descend into <paramref name="element"/> to find next control.
+        /// </param>
         /// <returns>The next element, or null if the element is the last.</returns>
         private static IInputElement GetNextInContainer(
             IInputElement element,
             IInputElement container,
-            NavigationDirection direction)
+            NavigationDirection direction,
+            bool outsideElement)
         {
-            if (direction == NavigationDirection.Next)
+            if (direction == NavigationDirection.Next && !outsideElement)
             {
-                var descendent = GetFocusableDescendents(element).FirstOrDefault();
+                var descendant = GetFocusableDescendants(element, direction).FirstOrDefault();
 
-                if (descendent != null)
+                if (descendant != null)
                 {
-                    return descendent;
+                    return descendant;
                 }
             }
 
@@ -167,11 +185,11 @@ namespace Avalonia.Input.Navigation
 
                 if (element != null && direction == NavigationDirection.Previous)
                 {
-                    var descendent = GetFocusableDescendents(element).LastOrDefault();
+                    var descendant = GetFocusableDescendants(element, direction).LastOrDefault();
 
-                    if (descendent != null)
+                    if (descendant != null)
                     {
-                        return descendent;
+                        return descendant;
                     }
                 }
 
@@ -184,10 +202,12 @@ namespace Avalonia.Input.Navigation
         /// <summary>
         /// Gets the first item that should be focused in the next container.
         /// </summary>
+        /// <param name="element">The element being navigated away from.</param>
         /// <param name="container">The container.</param>
         /// <param name="direction">The direction of the search.</param>
         /// <returns>The first element, or null if there are no more elements.</returns>
         private static IInputElement GetFirstInNextContainer(
+            IInputElement element,
             IInputElement container,
             NavigationDirection direction)
         {
@@ -203,13 +223,20 @@ namespace Avalonia.Input.Navigation
 
                 var siblings = parent.GetVisualChildren()
                     .OfType<IInputElement>()
-                    .Where(FocusExtensions.CanFocusDescendents);
+                    .Where(FocusExtensions.CanFocusDescendants);
                 var sibling = direction == NavigationDirection.Next ? 
                     siblings.SkipWhile(x => x != container).Skip(1).FirstOrDefault() : 
                     siblings.TakeWhile(x => x != container).LastOrDefault();
 
                 if (sibling != null)
                 {
+                    var customNext = GetCustomNext(sibling, direction);
+
+                    if (customNext.handled)
+                    {
+                        return customNext.next;
+                    }
+
                     if (sibling.CanFocus())
                     {
                         next = sibling;
@@ -217,24 +244,34 @@ namespace Avalonia.Input.Navigation
                     else
                     {
                         next = direction == NavigationDirection.Next ?
-                            GetFocusableDescendents(sibling).FirstOrDefault() :
-                            GetFocusableDescendents(sibling).LastOrDefault();
+                            GetFocusableDescendants(sibling, direction).FirstOrDefault() :
+                            GetFocusableDescendants(sibling, direction).LastOrDefault();
                     }
                 }
 
                 if (next == null)
                 {
-                    next = GetFirstInNextContainer(parent, direction);
+                    next = GetFirstInNextContainer(element, parent, direction);
                 }
             }
             else
             {
                 next = direction == NavigationDirection.Next ?
-                    GetFocusableDescendents(container).FirstOrDefault() :
-                    GetFocusableDescendents(container).LastOrDefault();
+                    GetFocusableDescendants(container, direction).FirstOrDefault() :
+                    GetFocusableDescendants(container, direction).LastOrDefault();
             }
 
             return next;
+        }
+
+        private static (bool handled, IInputElement next) GetCustomNext(IInputElement element, NavigationDirection direction)
+        {
+            if (element is ICustomKeyboardNavigation custom)
+            {
+                return custom.GetNext(element, direction);
+            }
+
+            return (false, null);
         }
     }
 }

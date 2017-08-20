@@ -27,7 +27,7 @@ namespace Avalonia.Platform
         /// <summary>
         /// DPI of underling screen
         /// </summary>
-        Size Dpi { get; }
+        Vector Dpi { get; }
         
         /// <summary>
         /// Pixel format

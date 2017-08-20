@@ -1,9 +1,5 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Runtime.InteropServices;
-using System.Text;
-using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using SkiaSharp;
@@ -12,6 +8,8 @@ namespace Avalonia.Skia
 {
     class BitmapImpl : IRenderTargetBitmapImpl, IWritableBitmapImpl
     {
+        private Vector _dpi;
+
         public SKBitmap Bitmap { get; private set; }
 
         public BitmapImpl(SKBitmap bm)
@@ -19,12 +17,14 @@ namespace Avalonia.Skia
             Bitmap = bm;
             PixelHeight = bm.Height;
             PixelWidth = bm.Width;
+            _dpi = new Vector(96, 96);
         }
 
-        public BitmapImpl(int width, int height, PixelFormat? fmt = null)
+        public BitmapImpl(int width, int height, Vector dpi, PixelFormat? fmt = null)
         {
             PixelHeight = height;
             PixelWidth = width;
+            _dpi = dpi;
             var colorType = fmt?.ToSkColorType() ?? SKImageInfo.PlatformColorType;
             var runtime = AvaloniaLocator.Current?.GetService<IRuntimePlatform>()?.GetRuntimeInfo();
             if (runtime?.IsDesktop == true && runtime?.OperatingSystem == OperatingSystemType.Linux)
@@ -38,29 +38,6 @@ namespace Avalonia.Skia
             Bitmap.Dispose();
         }
 
-        public void Save(string fileName)
-        {
-            
-#if DESKTOP
-            if(Bitmap.ColorType != SKColorType.Bgra8888)
-            {
-                using (var tmp = new BitmapImpl(Bitmap.Copy(SKColorType.Bgra8888)))
-                    tmp.Save(fileName);
-                return;
-            }
-
-            IntPtr length;
-            using (var sdb = new System.Drawing.Bitmap(PixelWidth, PixelHeight, Bitmap.RowBytes,
-                
-                System.Drawing.Imaging.PixelFormat.Format32bppArgb,
-                
-                Bitmap.GetPixels(out length)))
-                sdb.Save(fileName);
-#else
-            //SkiaSharp doesn't expose image encoders yet
-#endif
-        }
-
         public int PixelWidth { get; private set; }
         public int PixelHeight { get; private set; }
 
@@ -68,8 +45,8 @@ namespace Avalonia.Skia
         {
             private readonly SKSurface _surface;
 
-            public BitmapDrawingContext(SKBitmap bitmap, IVisualBrushRenderer visualBrushRenderer)
-                : this(CreateSurface(bitmap), visualBrushRenderer)
+            public BitmapDrawingContext(SKBitmap bitmap, Vector dpi, IVisualBrushRenderer visualBrushRenderer)
+                : this(CreateSurface(bitmap), dpi, visualBrushRenderer)
             {
 
             }
@@ -83,8 +60,8 @@ namespace Avalonia.Skia
                 return rv;
             }
 
-            public BitmapDrawingContext(SKSurface surface, IVisualBrushRenderer visualBrushRenderer)
-                : base(surface.Canvas, visualBrushRenderer)
+            public BitmapDrawingContext(SKSurface surface, Vector dpi, IVisualBrushRenderer visualBrushRenderer)
+                : base(surface.Canvas, dpi, visualBrushRenderer)
             {
                 _surface = surface;
             }
@@ -98,7 +75,7 @@ namespace Avalonia.Skia
 
         public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
         {
-            return new BitmapDrawingContext(Bitmap, visualBrushRenderer);
+            return new BitmapDrawingContext(Bitmap, _dpi, visualBrushRenderer);
         }
 
         public void Save(Stream stream)
@@ -109,6 +86,12 @@ namespace Avalonia.Skia
             {
                 data.SaveTo(stream);
             }
+        }
+
+        public void Save(string fileName)
+        {
+            using (var stream = File.Create(fileName))
+                Save(stream);
         }
 
         class BitmapFramebuffer : ILockedFramebuffer
@@ -131,7 +114,7 @@ namespace Avalonia.Skia
             public int Width => _bmp.Width;
             public int Height => _bmp.Height;
             public int RowBytes => _bmp.RowBytes;
-            public Size Dpi { get; } = new Size(96, 96);
+            public Vector Dpi { get; } = new Vector(96, 96);
             public PixelFormat Format => _bmp.ColorType.ToPixelFormat();
         }
 

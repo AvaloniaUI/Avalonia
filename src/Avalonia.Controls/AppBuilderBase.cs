@@ -55,8 +55,7 @@ namespace Avalonia.Controls
         public Action<TAppBuilder> AfterSetupCallback { get; private set; } = builder => { };
 
         /// <summary>
-        /// Gets or sets a method to call before <see cref="Start{TMainWindow}"/> is called on the
-        /// <see cref="Application"/>.
+        /// Gets or sets a method to call before Startis called on the <see cref="Application"/>.
         /// </summary>
         public Action<TAppBuilder> BeforeStartCallback { get; private set; } = builder => { };
 
@@ -94,8 +93,7 @@ namespace Avalonia.Controls
         protected TAppBuilder Self => (TAppBuilder) this;
 
         /// <summary>
-        /// Registers a callback to call before <see cref="Start{TMainWindow}"/> is called on the
-        /// <see cref="Application"/>.
+        /// Registers a callback to call before Start is called on the <see cref="Application"/>.
         /// </summary>
         /// <param name="callback">The callback.</param>
         /// <returns>An <typeparamref name="TAppBuilder"/> instance.</returns>
@@ -127,6 +125,24 @@ namespace Avalonia.Controls
                 window.DataContext = dataContextProvider();
             window.Show();
             Instance.Run(window);
+        }
+
+        /// <summary>
+        /// Starts the application with the provided instance of <typeparamref name="TMainWindow"/>.
+        /// </summary>
+        /// <typeparam name="TMainWindow">The window type.</typeparam>
+        /// <param name="mainWindow">Instance of type TMainWindow to use when starting the app</param>
+        /// <param name="dataContextProvider">A delegate that will be called to create a data context for the window (optional).</param>
+        public void Start<TMainWindow>(TMainWindow mainWindow, Func<object> dataContextProvider = null)
+            where TMainWindow : Window
+        {
+            Setup();
+            BeforeStartCallback(Self);
+
+            if (dataContextProvider != null)
+                mainWindow.DataContext = dataContextProvider();
+            mainWindow.Show();
+            Instance.Run(mainWindow);
         }
 
         /// <summary>

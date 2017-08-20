@@ -5,6 +5,7 @@ using System.Text;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
+using Avalonia.Rendering;
 using Avalonia.Threading;
 
 namespace Avalonia.LinuxFramebuffer
@@ -22,6 +23,11 @@ namespace Avalonia.LinuxFramebuffer
             var mice = new Mice(ClientSize.Width, ClientSize.Height);
             mice.Start();
             mice.Event += e => Input?.Invoke(e);
+        }
+
+        public IRenderer CreateRenderer(IRenderRoot root)
+        {
+            return new ImmediateRenderer(root);
         }
 
         public void Dispose()
@@ -56,6 +62,7 @@ namespace Avalonia.LinuxFramebuffer
         }
 
         public Size ClientSize => _fb.PixelSize;
+        public IMouseDevice MouseDevice => LinuxFramebufferPlatform.MouseDevice;
         public double Scaling => 1;
         public IEnumerable<object> Surfaces => new object[] {_fb};
         public Action<RawInputEventArgs> Input { get; set; }

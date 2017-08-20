@@ -19,7 +19,7 @@ namespace Avalonia.Markup.Data.Plugins
     public class InpcPropertyAccessorPlugin : IPropertyAccessorPlugin
     {
         /// <inheritdoc/>
-        public bool Match(WeakReference reference) => true;
+        public bool Match(object obj, string propertyName) => true;
 
         /// <summary>
         /// Starts monitoring the value of a property on an object.
@@ -36,7 +36,7 @@ namespace Avalonia.Markup.Data.Plugins
             Contract.Requires<ArgumentNullException>(propertyName != null);
 
             var instance = reference.Target;
-            var p = instance.GetType().GetRuntimeProperties().FirstOrDefault(_ => _.Name == propertyName);
+            var p = instance.GetType().GetRuntimeProperties().FirstOrDefault(x => x.Name == propertyName);
 
             if (p != null)
             {
@@ -138,7 +138,7 @@ namespace Avalonia.Markup.Data.Plugins
 
                 if (inpc != null)
                 {
-                    WeakSubscriptionManager.Subscribe<PropertyChangedEventArgs>(
+                    WeakSubscriptionManager.Subscribe(
                         inpc,
                         nameof(inpc.PropertyChanged),
                         this);

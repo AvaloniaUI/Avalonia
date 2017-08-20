@@ -14,6 +14,30 @@ namespace Avalonia.VisualTree
     public static class VisualExtensions
     {
         /// <summary>
+        /// Calculates the distance from a visual's <see cref="IRenderRoot"/>.
+        /// </summary>
+        /// <param name="visual">The visual.</param>
+        /// <param name="ancestor">The ancestor visual.</param>
+        /// <returns>
+        /// The number of steps from the visual to the ancestor or -1 if
+        /// <paramref name="visual"/> is not a descendent of <paramref name="ancestor"/>.
+        /// </returns>
+        public static int CalculateDistanceFromAncestor(this IVisual visual, IVisual ancestor)
+        {
+            Contract.Requires<ArgumentNullException>(visual != null);
+
+            var result = 0;
+
+            while (visual != null && visual != ancestor)
+            {
+                ++result;
+                visual = visual.VisualParent;
+            }
+
+            return visual != null ? result : -1;
+        }
+
+        /// <summary>
         /// Tries to get the first common ancestor of two visuals.
         /// </summary>
         /// <param name="visual">The first visual.</param>
@@ -123,33 +147,33 @@ namespace Avalonia.VisualTree
         }
 
         /// <summary>
-        /// Enumerates the descendents of an <see cref="IVisual"/> in the visual tree.
+        /// Enumerates the descendants of an <see cref="IVisual"/> in the visual tree.
         /// </summary>
         /// <param name="visual">The visual.</param>
         /// <returns>The visual's ancestors.</returns>
-        public static IEnumerable<IVisual> GetVisualDescendents(this IVisual visual)
+        public static IEnumerable<IVisual> GetVisualDescendants(this IVisual visual)
         {
             foreach (IVisual child in visual.VisualChildren)
             {
                 yield return child;
 
-                foreach (IVisual descendent in child.GetVisualDescendents())
+                foreach (IVisual descendant in child.GetVisualDescendants())
                 {
-                    yield return descendent;
+                    yield return descendant;
                 }
             }
         }
 
         /// <summary>
-        /// Enumerates an <see cref="IVisual"/> and its descendents in the visual tree.
+        /// Enumerates an <see cref="IVisual"/> and its descendants in the visual tree.
         /// </summary>
         /// <param name="visual">The visual.</param>
         /// <returns>The visual and its ancestors.</returns>
-        public static IEnumerable<IVisual> GetSelfAndVisualDescendents(this IVisual visual)
+        public static IEnumerable<IVisual> GetSelfAndVisualDescendants(this IVisual visual)
         {
             yield return visual;
 
-            foreach (var ancestor in visual.GetVisualDescendents())
+            foreach (var ancestor in visual.GetVisualDescendants())
             {
                 yield return ancestor;
             }
@@ -196,7 +220,7 @@ namespace Avalonia.VisualTree
         /// Tests whether an <see cref="IVisual"/> is an ancestor of another visual.
         /// </summary>
         /// <param name="visual">The visual.</param>
-        /// <param name="target">The potential descendent.</param>
+        /// <param name="target">The potential descendant.</param>
         /// <returns>
         /// True if <paramref name="visual"/> is an ancestor of <paramref name="target"/>;
         /// otherwise false.

@@ -147,9 +147,9 @@
       <Project>{6417e941-21bc-467b-a771-0de389353ce6}</Project>
       <Name>Avalonia.Markup</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\Skia\Avalonia.Skia.Android\Avalonia.Skia.Android.csproj">
-      <Project>{bd43f7c0-396b-4aa1-bad9-dfde54d51298}</Project>
-      <Name>Avalonia.Skia.Android</Name>
+    <ProjectReference Include="..\..\src\Skia\Avalonia.Skia\Avalonia.Skia.csproj">
+      <Project>{7d2d3083-71dd-4cc9-8907-39a0d86fb322}</Project>
+      <Name>Avalonia.Skia</Name>
     </ProjectReference>
     <ProjectReference Include="..\ControlCatalog\ControlCatalog.csproj">
       <Project>{d0a739b9-3c68-4ba6-a328-41606954b6bd}</Project>
@@ -158,5 +158,4 @@
   </ItemGroup>
   <Import Project="..\..\build\Rx.props" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
-  <Import Project="$(MSBuildThisFileDirectory)..\..\src\Shared\nuget.workaround.targets" />
 </Project>

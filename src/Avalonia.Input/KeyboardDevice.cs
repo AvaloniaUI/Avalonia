@@ -16,14 +16,6 @@ namespace Avalonia.Input
     {
         private IInputElement _focusedElement;
 
-        public KeyboardDevice()
-        {
-            InputManager.Process
-                .OfType<RawInputEventArgs>()
-                .Where(e => e.Device == this && !e.Handled)
-                .Subscribe(ProcessRawEvent);
-        }
-
         public event PropertyChangedEventHandler PropertyChanged;
 
         public static IKeyboardDevice Instance => AvaloniaLocator.Current.GetService<IKeyboardDevice>();
@@ -77,8 +69,10 @@ namespace Avalonia.Input
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        private void ProcessRawEvent(RawInputEventArgs e)
+        public void ProcessRawEvent(RawInputEventArgs e)
         {
+            if(e.Handled)
+                return;
             IInputElement element = FocusedElement;
 
             if (element != null)

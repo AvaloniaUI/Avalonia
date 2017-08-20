@@ -2,6 +2,7 @@
   <PropertyGroup>
     <TargetFrameworks>net461;netcoreapp1.1</TargetFrameworks>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <OutputType>Library</OutputType>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -54,5 +55,4 @@
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp1.1'">
       <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0" />
   </ItemGroup>
-  <Import Condition="'$(TargetFramework)' == 'net461'" Project="$(MSBuildThisFileDirectory)..\..\src\Shared\nuget.workaround.targets" />
 </Project>

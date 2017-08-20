@@ -11,7 +11,7 @@ namespace Avalonia.LinuxFramebuffer
         private fb_var_screeninfo _varInfo;
         private readonly IntPtr _address;
 
-        public LockedFramebuffer(int fb, fb_fix_screeninfo fixedInfo, fb_var_screeninfo varInfo, IntPtr address, Size dpi)
+        public LockedFramebuffer(int fb, fb_fix_screeninfo fixedInfo, fb_var_screeninfo varInfo, IntPtr address, Vector dpi)
         {
             _fb = fb;
             _fixedInfo = fixedInfo;
@@ -41,7 +41,7 @@ namespace Avalonia.LinuxFramebuffer
         public int Width => (int)_varInfo.xres;
         public int Height => (int) _varInfo.yres;
         public int RowBytes => (int) _fixedInfo.line_length;
-        public Size Dpi { get; }
+        public Vector Dpi { get; }
         public PixelFormat Format => _varInfo.blue.offset == 16 ? PixelFormat.Rgba8888 : PixelFormat.Bgra8888;
     }
 }

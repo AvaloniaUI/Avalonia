@@ -37,15 +37,15 @@ namespace Avalonia.LogicalTree
             return logical.LogicalChildren;
         }
 
-        public static IEnumerable<ILogical> GetLogicalDescendents(this ILogical logical)
+        public static IEnumerable<ILogical> GetLogicalDescendants(this ILogical logical)
         {
             foreach (ILogical child in logical.LogicalChildren)
             {
                 yield return child;
 
-                foreach (ILogical descendent in child.GetLogicalDescendents())
+                foreach (ILogical descendant in child.GetLogicalDescendants())
                 {
-                    yield return descendent;
+                    yield return descendant;
                 }
             }
         }

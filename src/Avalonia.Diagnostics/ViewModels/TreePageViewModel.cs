@@ -1,25 +1,19 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using System.Reactive.Linq;
 using Avalonia.Controls;
 using Avalonia.VisualTree;
-using ReactiveUI;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
-    internal class TreePageViewModel : ReactiveObject
+    internal class TreePageViewModel : ViewModelBase
     {
         private TreeNode _selected;
-
-        private readonly ObservableAsPropertyHelper<ControlDetailsViewModel> _details;
+        private ControlDetailsViewModel _details;
 
         public TreePageViewModel(TreeNode[] nodes)
         {
             Nodes = nodes;
-            _details = this.WhenAnyValue(x => x.SelectedNode)
-                .Select(x => x != null ? new ControlDetailsViewModel(x.Visual) : null)
-                .ToProperty(this, x => x.Details);
         }
 
         public TreeNode[] Nodes { get; protected set; }
@@ -27,10 +21,20 @@ namespace Avalonia.Diagnostics.ViewModels
         public TreeNode SelectedNode
         {
             get { return _selected; }
-            set { this.RaiseAndSetIfChanged(ref _selected, value); }
+            set
+            {
+                if (RaiseAndSetIfChanged(ref _selected, value))
+                {
+                    Details = value != null ? new ControlDetailsViewModel(value.Visual) : null;
+                }
+            }
         }
 
-        public ControlDetailsViewModel Details => _details.Value;
+        public ControlDetailsViewModel Details
+        {
+            get { return _details; }
+            private set { RaiseAndSetIfChanged(ref _details, value); }
+        }
 
         public TreeNode FindNode(IControl control)
         {
