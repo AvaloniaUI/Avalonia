@@ -49,6 +49,7 @@ namespace Avalonia.Controls
             if (Drawing != null)
             {
                 using (context.PushPreTransform(_transform))
+                using (context.PushClip(Bounds))
                 {
                     Drawing.Draw(context);
                 }
