@@ -45,6 +45,7 @@
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
@@ -162,5 +163,4 @@
   <Import Project="..\..\build\Serilog.Sinks.Trace.props" />
   <Import Project="..\..\build\Splat.props" />
   <Import Project="..\..\build\Rx.props" />
-  <Import Project="..\..\build\ReactiveUI.props" />
 </Project>
