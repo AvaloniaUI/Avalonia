@@ -203,7 +203,7 @@ namespace Avalonia
             }
             else
             {
-                throw new FormatException("Invalid Rect.");
+                throw new FormatException("Invalid RelativeRect.");
             }
         }
     }

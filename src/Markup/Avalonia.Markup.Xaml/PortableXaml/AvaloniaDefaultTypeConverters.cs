@@ -39,6 +39,7 @@ namespace Avalonia.Markup.Xaml.PortableXaml
             { typeof(RelativeRect), typeof(RelativeRectTypeConverter) },
             { typeof(RowDefinitions), typeof(RowDefinitionsTypeConverter) },
             { typeof(Size), typeof(SizeTypeConverter) },
+            { typeof(Rect), typeof(RectTypeConverter) },
             { typeof(Selector), typeof(SelectorTypeConverter)},
             { typeof(SolidColorBrush), typeof(BrushTypeConverter) },
             { typeof(Thickness), typeof(ThicknessTypeConverter) },
