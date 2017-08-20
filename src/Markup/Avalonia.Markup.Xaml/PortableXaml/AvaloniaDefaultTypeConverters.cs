@@ -32,6 +32,7 @@ namespace Avalonia.Markup.Xaml.PortableXaml
             { typeof(AvaloniaList<double>), typeof(AvaloniaListTypeConverter<double>) },
             { typeof(IMemberSelector), typeof(MemberSelectorTypeConverter) },
             { typeof(Point), typeof(PointTypeConverter) },
+            { typeof(Matrix), typeof(MatrixTypeConverter) },
             { typeof(IList<Point>), typeof(PointsListTypeConverter) },
             { typeof(AvaloniaProperty), typeof(AvaloniaPropertyTypeConverter) },
             { typeof(RelativePoint), typeof(RelativePointTypeConverter) },
