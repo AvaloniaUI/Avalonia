@@ -56,6 +56,7 @@ namespace Avalonia.Visuals.UnitTests.Media
         }
 
         [Theory]
+        [InlineData("F1 M24,14 A2,2,0,1,1,20,14 A2,2,0,1,1,24,14 z")] // issue #1107
         [InlineData("M0 0L10 10z")]
         [InlineData("M50 50 L100 100 L150 50")]
         [InlineData("M50 50L100 100L150 50")]
