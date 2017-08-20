@@ -5,11 +5,11 @@ namespace Avalonia.Media
 {
     public class DrawingGroup : Drawing
     {
-        [Content]
-        public AvaloniaList<Drawing> Children { get; } = new AvaloniaList<Drawing>();
-
         public static readonly StyledProperty<double> OpacityProperty =
             AvaloniaProperty.Register<DrawingGroup, double>(nameof(Opacity), 1);
+
+        public static readonly StyledProperty<Transform> TransformProperty =
+            AvaloniaProperty.Register<DrawingGroup, Transform>(nameof(Transform));
 
         public double Opacity
         {
@@ -17,14 +17,14 @@ namespace Avalonia.Media
             set => SetValue(OpacityProperty, value);
         }
 
-        public static readonly StyledProperty<Transform> TransformProperty =
-            AvaloniaProperty.Register<DrawingGroup, Transform>(nameof(Transform));
-
         public Transform Transform
         {
             get => GetValue(TransformProperty);
             set => SetValue(TransformProperty, value);
         }
+
+        [Content]
+        public AvaloniaList<Drawing> Children { get; } = new AvaloniaList<Drawing>();
 
         public override void Draw(DrawingContext context)
         {

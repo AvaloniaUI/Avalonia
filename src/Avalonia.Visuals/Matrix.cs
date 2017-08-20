@@ -302,7 +302,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="s">The string.</param>
         /// <param name="culture">The current culture.</param>
-        /// <returns>The <see cref="Thickness"/>.</returns>
+        /// <returns>The <see cref="Matrix"/>.</returns>
         public static Matrix Parse(string s, CultureInfo culture)
         {
             var parts = s.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries)

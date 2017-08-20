@@ -26,13 +26,15 @@ namespace Avalonia.Media
         public static readonly AvaloniaProperty<bool> IsFilledProperty =
             AvaloniaProperty.Register<PolylineGeometry, bool>(nameof(IsFilled));
 
+        private Points _points;
+        private bool _isDirty;
+        private IDisposable _pointsObserver;
+
         static PolylineGeometry()
         {
-            PointsProperty.Changed.Subscribe(onNext: v =>
-            {
-                (v.Sender as PolylineGeometry)?.OnPointsChanged(v.OldValue as Points, v.NewValue as Points);
-            });
-            IsFilledProperty.Changed.AddClassHandler<PolylineGeometry>(x => a => x.NotifyChanged());
+            PointsProperty.Changed.AddClassHandler<PolylineGeometry>((s, e) =>
+                s.OnPointsChanged(e.OldValue as Points, e.NewValue as Points));
+            IsFilledProperty.Changed.AddClassHandler<PolylineGeometry>((s, _) => s.NotifyChanged());
         }
 
         /// <summary>
@@ -53,8 +55,6 @@ namespace Avalonia.Media
         {
             Points.AddRange(points);
             IsFilled = isFilled;
-
-            PrepareIfNeeded();
         }
 
         public void PrepareIfNeeded()
@@ -108,10 +108,6 @@ namespace Avalonia.Media
             }
             protected set => base.PlatformImpl = value;
         }
-
-        private Points _points;
-        private bool _isDirty;
-        private IDisposable _pointsObserver;
 
         /// <inheritdoc/>
         public override Geometry Clone()

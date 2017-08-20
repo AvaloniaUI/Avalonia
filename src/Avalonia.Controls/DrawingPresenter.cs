@@ -6,8 +6,17 @@ namespace Avalonia.Controls
 {
     public class DrawingPresenter : Control
     {
+        static DrawingPresenter()
+        {
+            AffectsMeasure(DrawingProperty);
+            AffectsRender(DrawingProperty);
+        }
+
         public static readonly StyledProperty<Drawing> DrawingProperty =
             AvaloniaProperty.Register<DrawingPresenter, Drawing>(nameof(Drawing));
+
+        public static readonly StyledProperty<Stretch> StretchProperty =
+            AvaloniaProperty.Register<DrawingPresenter, Stretch>(nameof(Stretch), Stretch.Uniform);
 
         [Content]
         public Drawing Drawing
@@ -16,19 +25,10 @@ namespace Avalonia.Controls
             set => SetValue(DrawingProperty, value);
         }
 
-        public static readonly StyledProperty<Stretch> StretchProperty =
-            AvaloniaProperty.Register<DrawingPresenter, Stretch>(nameof(Stretch), Stretch.Uniform);
-
         public Stretch Stretch
         {
             get => GetValue(StretchProperty);
             set => SetValue(StretchProperty, value);
-        }
-
-        static DrawingPresenter()
-        {
-            AffectsMeasure(DrawingProperty);
-            AffectsRender(DrawingProperty);
         }
 
         private Matrix _transform = Matrix.Identity;
