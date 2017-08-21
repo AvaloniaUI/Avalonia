@@ -273,32 +273,5 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                     ((MockStreamGeometryImpl)borderLayer.GeometryClip).Transform);
             }
         }
-
-        [Fact]
-        public void Hiding_Root_Should_Not_Remove_Root_Layer()
-        {
-            using (TestApplication())
-            {
-                Border border;
-                var tree = new TestRoot
-                {
-                    Child = border = new Border()
-                };
-
-                var layout = AvaloniaLocator.Current.GetService<ILayoutManager>();
-                layout.ExecuteInitialLayoutPass(tree);
-
-                var scene = new Scene(tree);
-                var sceneBuilder = new SceneBuilder();
-                sceneBuilder.UpdateAll(scene);
-
-                tree.IsVisible = false;
-
-                scene = scene.Clone();
-                sceneBuilder.Update(scene, tree);
-
-                Assert.Equal(1, scene.Layers.Count);
-            }
-        }
     }
 }
