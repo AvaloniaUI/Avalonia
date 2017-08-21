@@ -24,7 +24,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="Command"/> property.
         /// </summary>
         public static readonly StyledProperty<ICommand> CommandProperty =
-            Button.CommandProperty.AddOwner<MenuItem>();
+            AvaloniaProperty.Register<MenuItem, ICommand>(nameof(Command));
 
         /// <summary>
         /// Defines the <see cref="HotKey"/> property.

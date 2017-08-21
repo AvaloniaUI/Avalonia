@@ -314,7 +314,7 @@ namespace Avalonia.Base.UnitTests
                 new InvalidOperationException("Foo"),
                 BindingErrorType.Error));
 
-            Assert.Equal(6.7, target.GetValue(Class1.QuxProperty));
+            Assert.Equal(5.6, target.GetValue(Class1.QuxProperty));
         }
 
         [Fact]
@@ -343,7 +343,7 @@ namespace Avalonia.Base.UnitTests
 
             LogCallback checkLogMessage = (level, area, src, mt, pv) =>
             {
-                if (level == LogEventLevel.Error &&
+                if (level == LogEventLevel.Warning &&
                     area == LogArea.Binding &&
                     mt == expectedMessageTemplate)
                 {
@@ -359,7 +359,7 @@ namespace Avalonia.Base.UnitTests
                     new InvalidOperationException("Foo"),
                     BindingErrorType.Error));
 
-                Assert.Equal(6.7, target.GetValue(Class1.QuxProperty));
+                Assert.Equal(5.6, target.GetValue(Class1.QuxProperty));
                 Assert.True(called);
             }
         }
