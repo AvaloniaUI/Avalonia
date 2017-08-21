@@ -7,7 +7,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// An indexed dictionary of resources.
     /// </summary>
-    public class ResourceDictionary : IDictionary<string, object>, IDictionary
+    public class ResourceDictionary : IResourceDictionary, IDictionary
     {
         private Dictionary<string, object> _inner = new Dictionary<string, object>();
 

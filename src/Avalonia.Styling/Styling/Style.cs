@@ -17,7 +17,7 @@ namespace Avalonia.Styling
         private static Dictionary<IStyleable, List<IDisposable>> _applied =
             new Dictionary<IStyleable, List<IDisposable>>();
 
-        private ResourceDictionary _resources;
+        private IResourceDictionary _resources;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Style"/> class.
@@ -38,7 +38,7 @@ namespace Avalonia.Styling
         /// <summary>
         /// Gets or sets a dictionary of style resources.
         /// </summary>
-        public ResourceDictionary Resources
+        public IResourceDictionary Resources
         {
             get
             {
@@ -52,15 +52,12 @@ namespace Avalonia.Styling
 
             set
             {
-                
                 var resources = Resources;
                 if (!Equals(resources, value))
                 {
                     foreach (var i in value)
                     {
                         resources[i.Key] = i.Value;
-                        //resources.Add(i.Key, i.Value);
-                        //(resources as IDictionary<string,object>).Add(i);
                     }
                 }
             }
