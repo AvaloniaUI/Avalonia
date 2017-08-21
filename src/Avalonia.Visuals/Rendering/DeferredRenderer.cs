@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.IO;
 using Avalonia.Media.Immutable;
 using System.Threading;
+using System.Linq;
 
 namespace Avalonia.Rendering
 {
@@ -58,7 +59,6 @@ namespace Avalonia.Rendering
             _dispatcher = dispatcher ?? Dispatcher.UIThread;
             _root = root;
             _sceneBuilder = sceneBuilder ?? new SceneBuilder();
-            _scene = new Scene(root);
             _layerFactory = layerFactory ?? new DefaultRenderLayerFactory();
             _layers = new RenderLayers(_layerFactory);
             _renderLoop = renderLoop;
@@ -86,7 +86,6 @@ namespace Avalonia.Rendering
             _root = root;
             _renderTarget = renderTarget;
             _sceneBuilder = sceneBuilder ?? new SceneBuilder();
-            _scene = new Scene(root);
             _layerFactory = layerFactory ?? new DefaultRenderLayerFactory();
             _layers = new RenderLayers(_layerFactory);
         }
@@ -122,7 +121,7 @@ namespace Avalonia.Rendering
                 UpdateScene();
             }
 
-            return _scene.HitTest(p, filter);
+            return _scene?.HitTest(p, filter) ?? Enumerable.Empty<IVisual>();
         }
 
         /// <inheritdoc/>
@@ -186,7 +185,7 @@ namespace Avalonia.Rendering
                 _dirtyRectsDisplay.Tick();
             }
 
-            if (scene.Size != Size.Empty)
+            if (scene != null && scene.Size != Size.Empty)
             {
                 if (scene.Generation != _lastSceneId)
                 {
@@ -366,25 +365,32 @@ namespace Avalonia.Rendering
 
             try
             {
-                var scene = _scene.Clone();
+                if (_root.IsVisible)
+                {
+                    var scene = _scene?.Clone() ?? new Scene(_root);
 
-                if (_dirty == null)
-                {
-                    _dirty = new DirtyVisuals();
-                    _sceneBuilder.UpdateAll(scene);
-                }
-                else if (_dirty.Count > 0)
-                {
-                    foreach (var visual in _dirty)
+                    if (_dirty == null)
                     {
-                        _sceneBuilder.Update(scene, visual);
+                        _dirty = new DirtyVisuals();
+                        _sceneBuilder.UpdateAll(scene);
                     }
+                    else if (_dirty.Count > 0)
+                    {
+                        foreach (var visual in _dirty)
+                        {
+                            _sceneBuilder.Update(scene, visual);
+                        }
+                    }
+
+                    Interlocked.Exchange(ref _scene, scene);
+
+                    _dirty.Clear();
+                    (_root as IRenderRoot)?.Invalidate(new Rect(scene.Size));
                 }
-
-                Interlocked.Exchange(ref _scene, scene);
-
-                _dirty.Clear();
-                (_root as IRenderRoot)?.Invalidate(new Rect(scene.Size));
+                else
+                {
+                    Interlocked.Exchange(ref _scene, null);
+                }
             }
             finally
             {

@@ -155,11 +155,21 @@ namespace Avalonia.Controls.Shapes
         {
             // This should probably use GetRenderBounds(strokeThickness) but then the calculations
             // will multiply the stroke thickness as well, which isn't correct.
-            Rect shapeBounds = DefiningGeometry.Bounds;
+            var (size, transform) = CalculateSizeAndTransform(availableSize, DefiningGeometry.Bounds, Stretch);
+            
+            if (_transform != transform)
+            {
+                _transform = transform;
+                _renderedGeometry = null;
+            }
+
+            return size;
+        }
+
+        internal static (Size, Matrix) CalculateSizeAndTransform(Size availableSize, Rect shapeBounds, Stretch Stretch)
+        {
             Size shapeSize = new Size(shapeBounds.Right, shapeBounds.Bottom);
             Matrix translate = Matrix.Identity;
-            double width = Width;
-            double height = Height;
             double desiredX = availableSize.Width;
             double desiredY = availableSize.Height;
             double sx = 0.0;
@@ -226,15 +236,9 @@ namespace Avalonia.Controls.Shapes
                     break;
             }
 
-            var t = translate * Matrix.CreateScale(sx, sy);
-
-            if (_transform != t)
-            {
-                _transform = t;
-                _renderedGeometry = null;
-            }
-
-            return new Size(shapeSize.Width * sx, shapeSize.Height * sy);
+            var transform = translate * Matrix.CreateScale(sx, sy);
+            var size = new Size(shapeSize.Width * sx, shapeSize.Height * sy);
+            return (size, transform);
         }
 
         private static void AffectsGeometryInvalidate(AvaloniaPropertyChangedEventArgs e)

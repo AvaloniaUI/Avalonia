@@ -183,7 +183,7 @@ namespace Avalonia
             }
             else
             {
-                throw new FormatException("Invalid Thickness.");
+                throw new FormatException("Invalid Point.");
             }
         }
 
