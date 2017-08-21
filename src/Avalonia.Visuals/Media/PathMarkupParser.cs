@@ -141,6 +141,7 @@ namespace Avalonia.Media
                                 bool isLargeArc = ReadBool(reader);
                                 ReadSeparator(reader);
                                 SweepDirection sweepDirection = ReadBool(reader) ? SweepDirection.Clockwise : SweepDirection.CounterClockwise;
+                                ReadSeparator(reader);
                                 point = ReadPoint(reader, point, relative);
 
                                 _context.ArcTo(point, size, rotationAngle, isLargeArc, sweepDirection);
