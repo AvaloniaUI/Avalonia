@@ -119,7 +119,10 @@ namespace Avalonia.Direct2D1.Media
             using (var d2dOpacityMask = CreateBrush(opacityMask, opacityMaskRect.Size))
             using (var geometry = new SharpDX.Direct2D1.RectangleGeometry(_renderTarget.Factory, destRect.ToDirect2D()))
             {
-                d2dOpacityMask.PlatformBrush.Transform = Matrix.CreateTranslation(opacityMaskRect.Position).ToDirect2D();
+                if (d2dOpacityMask.PlatformBrush != null)
+                {
+                    d2dOpacityMask.PlatformBrush.Transform = Matrix.CreateTranslation(opacityMaskRect.Position).ToDirect2D();
+                }
 
                 _renderTarget.FillGeometry(
                     geometry,
