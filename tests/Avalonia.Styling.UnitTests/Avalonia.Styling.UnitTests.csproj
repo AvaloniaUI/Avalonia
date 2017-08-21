@@ -2,6 +2,7 @@
   <PropertyGroup>
     <TargetFrameworks>net461;netcoreapp1.1</TargetFrameworks>
     <OutputType>Library</OutputType>
+    <NoWarn>CS0067</NoWarn>
   </PropertyGroup>
   <Import Project="..\..\build\UnitTests.NetCore.targets" />
   <Import Project="..\..\build\Moq.props" />
