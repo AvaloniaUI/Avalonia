@@ -49,18 +49,6 @@ namespace Avalonia.Styling
 
                 return _resources;
             }
-
-            set
-            {
-                var resources = Resources;
-                if (!Equals(resources, value))
-                {
-                    foreach (var i in value)
-                    {
-                        resources[i.Key] = i.Value;
-                    }
-                }
-            }
         }
 
         /// <summary>
