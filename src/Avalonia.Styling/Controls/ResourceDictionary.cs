@@ -2,12 +2,12 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Avalonia.Styling
+namespace Avalonia.Controls
 {
     /// <summary>
-    /// Holds resources for a <see cref="Style"/>.
+    /// An indexed dictionary of resources.
     /// </summary>
-    public class StyleResources : IDictionary<string, object>, IDictionary
+    public class ResourceDictionary : IDictionary<string, object>, IDictionary
     {
         private Dictionary<string, object> _inner = new Dictionary<string, object>();
 

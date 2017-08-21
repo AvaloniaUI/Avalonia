@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reactive.Linq;
+using Avalonia.Controls;
 using Avalonia.Metadata;
 
 namespace Avalonia.Styling
@@ -16,7 +17,7 @@ namespace Avalonia.Styling
         private static Dictionary<IStyleable, List<IDisposable>> _applied =
             new Dictionary<IStyleable, List<IDisposable>>();
 
-        private StyleResources _resources;
+        private ResourceDictionary _resources;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Style"/> class.
@@ -37,13 +38,13 @@ namespace Avalonia.Styling
         /// <summary>
         /// Gets or sets a dictionary of style resources.
         /// </summary>
-        public StyleResources Resources
+        public ResourceDictionary Resources
         {
             get
             {
                 if (_resources == null)
                 {
-                    _resources = new StyleResources();
+                    _resources = new ResourceDictionary();
                 }
 
                 return _resources;
