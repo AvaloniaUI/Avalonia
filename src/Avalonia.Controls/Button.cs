@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using System.Windows.Input;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Rendering;
@@ -41,8 +42,9 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Command"/> property.
         /// </summary>
-        public static readonly StyledProperty<ICommand> CommandProperty =
-            AvaloniaProperty.Register<Button, ICommand>(nameof(Command));
+        public static readonly DirectProperty<Button, ICommand> CommandProperty =
+            AvaloniaProperty.RegisterDirect<Button, ICommand>(nameof(Command),
+                button => button.Command, (button, command) => button.Command = command, enableDataValidation: true);
 
         /// <summary>
         /// Defines the <see cref="HotKey"/> property.
@@ -67,6 +69,8 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly RoutedEvent<RoutedEventArgs> ClickEvent =
             RoutedEvent.Register<Button, RoutedEventArgs>("Click", RoutingStrategies.Bubble);
+
+        private ICommand _command;
 
         public static readonly AvaloniaProperty<bool> IsPressedProperty =
             AvaloniaProperty.RegisterDirect<Button, bool>(nameof(IsPressed), b => b.IsPressed);
@@ -105,8 +109,8 @@ namespace Avalonia.Controls
         /// </summary>
         public ICommand Command
         {
-            get { return GetValue(CommandProperty); }
-            set { SetValue(CommandProperty, value); }
+            get { return _command; }
+            set { SetAndRaise(CommandProperty, ref _command, value); }
         }
 
         /// <summary>
@@ -257,6 +261,18 @@ namespace Avalonia.Controls
                 if (ClickMode == ClickMode.Release && new Rect(Bounds.Size).Contains(e.GetPosition(this)))
                 {
                     RaiseClickEvent();
+                }
+            }
+        }
+
+        protected override void UpdateDataValidation(AvaloniaProperty property, BindingNotification status)
+        {
+            base.UpdateDataValidation(property, status);
+            if(property == CommandProperty)
+            {
+                if(status?.ErrorType == BindingErrorType.Error)
+                {
+                    IsEnabled = false;
                 }
             }
         }

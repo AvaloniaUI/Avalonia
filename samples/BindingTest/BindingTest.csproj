@@ -66,6 +66,7 @@
     <Compile Include="ViewModels\IndeiErrorViewModel.cs" />
     <Compile Include="ViewModels\ExceptionErrorViewModel.cs" />
     <Compile Include="ViewModels\MainWindowViewModel.cs" />
+    <Compile Include="ViewModels\NestedCommandViewModel.cs" />
     <Compile Include="ViewModels\TestItem.cs" />
   </ItemGroup>
   <ItemGroup>
