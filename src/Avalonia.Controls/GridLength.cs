@@ -1,6 +1,7 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using Avalonia.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -210,7 +211,13 @@ namespace Avalonia.Controls
         /// <returns>The <see cref="GridLength"/>.</returns>
         public static IEnumerable<GridLength> ParseLengths(string s, CultureInfo culture)
         {
-            return s.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries).Select(x => Parse(x, culture));
+            using (var tokenizer = new StringTokenizer(s, culture))
+            {
+                while (tokenizer.NextString(out var item))
+                {
+                    yield return Parse(item, culture);
+                }
+            }
         }
     }
 }

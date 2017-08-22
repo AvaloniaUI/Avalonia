@@ -1,6 +1,7 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using Avalonia.Utilities;
 using System;
 using System.Globalization;
 using System.Linq;
@@ -153,17 +154,11 @@ namespace Avalonia
         /// <returns>The <see cref="Size"/>.</returns>
         public static Size Parse(string s, CultureInfo culture)
         {
-            var parts = s.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries)
-                .Select(x => x.Trim())
-                .ToList();
-
-            if (parts.Count == 2)
+            using (var tokenizer = new StringTokenizer(s, culture, exceptionMessage: "Invalid Size"))
             {
-                return new Size(double.Parse(parts[0], culture), double.Parse(parts[1], culture));
-            }
-            else
-            {
-                throw new FormatException("Invalid Size.");
+                return new Size(
+                    tokenizer.NextDoubleRequired(),
+                    tokenizer.NextDoubleRequired());
             }
         }
 

@@ -1,6 +1,7 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using Avalonia.Utilities;
 using System;
 using System.Globalization;
 using System.Linq;
@@ -157,36 +158,31 @@ namespace Avalonia
         /// <returns>The parsed <see cref="RelativePoint"/>.</returns>
         public static RelativePoint Parse(string s, CultureInfo culture)
         {
-            var parts = s.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries)
-                .Select(x => x.Trim())
-                .ToList();
-
-            if (parts.Count == 2)
+            using (var tokenizer = new StringTokenizer(s, culture, exceptionMessage: "Invalid RelativePoint"))
             {
+                var x = tokenizer.NextStringRequired();
+                var y = tokenizer.NextStringRequired();
+
                 var unit = RelativeUnit.Absolute;
                 var scale = 1.0;
 
-                if (parts[0].EndsWith("%"))
+                if (x.EndsWith("%"))
                 {
-                    if (!parts[1].EndsWith("%"))
+                    if (!y.EndsWith("%"))
                     {
                         throw new FormatException("If one coordinate is relative, both must be.");
                     }
 
-                    parts[0] = parts[0].TrimEnd('%');
-                    parts[1] = parts[1].TrimEnd('%');
+                    x = x.TrimEnd('%');
+                    y = y.TrimEnd('%');
                     unit = RelativeUnit.Relative;
                     scale = 0.01;
                 }
 
                 return new RelativePoint(
-                    double.Parse(parts[0], culture) * scale,
-                    double.Parse(parts[1], culture) * scale,
+                    double.Parse(x, culture) * scale,
+                    double.Parse(y, culture) * scale,
                     unit);
-            }
-            else
-            {
-                throw new FormatException("Invalid Point.");
             }
         }
     }

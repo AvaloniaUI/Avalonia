@@ -1,6 +1,7 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using Avalonia.Utilities;
 using System;
 using System.Globalization;
 using System.Linq;
@@ -305,23 +306,16 @@ namespace Avalonia
         /// <returns>The <see cref="Matrix"/>.</returns>
         public static Matrix Parse(string s, CultureInfo culture)
         {
-            var parts = s.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries)
-                .Select(x => x.Trim())
-                .ToArray();
-
-            if (parts.Length == 6)
+            using (var tokenizer = new StringTokenizer(s, culture, exceptionMessage: "Invalid Matrix"))
             {
                 return new Matrix(
-                    double.Parse(parts[0], culture), 
-                    double.Parse(parts[1], culture), 
-                    double.Parse(parts[2], culture), 
-                    double.Parse(parts[3], culture), 
-                    double.Parse(parts[4], culture), 
-                    double.Parse(parts[5], culture));
-            }
-            else
-            {
-                throw new FormatException("Invalid Matrix.");
+                    tokenizer.NextDoubleRequired(),
+                    tokenizer.NextDoubleRequired(),
+                    tokenizer.NextDoubleRequired(),
+                    tokenizer.NextDoubleRequired(),
+                    tokenizer.NextDoubleRequired(),
+                    tokenizer.NextDoubleRequired()
+                );
             }
         }
     }
