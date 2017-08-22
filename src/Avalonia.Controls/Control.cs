@@ -425,7 +425,7 @@ namespace Avalonia.Controls
         protected IPseudoClasses PseudoClasses => Classes;
 
         /// <inheritdoc/>
-        bool IResourceHost.TryGetResource(string key, out object value)
+        bool IResourceProvider.TryGetResource(string key, out object value)
         {
             value = null;
             return _resources?.TryGetResource(key, out value) ?? 

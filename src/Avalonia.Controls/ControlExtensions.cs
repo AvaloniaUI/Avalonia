@@ -96,7 +96,7 @@ namespace Avalonia.Controls
 
             while (current != null)
             {
-                if (current is IResourceHost host)
+                if (current is IResourceProvider host)
                 {
                     if (host.TryGetResource(key, out var value))
                     {

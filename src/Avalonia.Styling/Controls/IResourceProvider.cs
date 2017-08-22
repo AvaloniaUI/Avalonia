@@ -5,7 +5,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// Defines an element that can be queried for resources.
     /// </summary>
-    public interface IResourceHost
+    public interface IResourceProvider
     {
         /// <summary>
         /// Tries to find a resource within the element.

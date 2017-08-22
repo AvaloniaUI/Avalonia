@@ -8,7 +8,7 @@ namespace Avalonia.Styling
     /// <summary>
     /// Defines the interface for styles.
     /// </summary>
-    public interface IStyle : IResourceHost
+    public interface IStyle : IResourceProvider
     {
         /// <summary>
         /// Attaches the style to a control if the style's selector matches.

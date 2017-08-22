@@ -29,7 +29,7 @@ namespace Avalonia
     /// method.
     /// - Tracks the lifetime of the application.
     /// </remarks>
-    public class Application : IApplicationLifecycle, IGlobalDataTemplates, IGlobalStyles, IStyleRoot, IResourceHost
+    public class Application : IApplicationLifecycle, IGlobalDataTemplates, IGlobalStyles, IStyleRoot, IResourceProvider
     {
         /// <summary>
         /// The application-global data templates.
@@ -150,7 +150,7 @@ namespace Avalonia
         }
 
         /// <inheritdoc/>
-        bool IResourceHost.TryGetResource(string key, out object value)
+        bool IResourceProvider.TryGetResource(string key, out object value)
         {
             value = null;
             return _resources?.TryGetResource(key, out value) ??
