@@ -2,11 +2,11 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml.Data;
-using Avalonia.Styling;
 using Portable.Xaml;
 using Portable.Xaml.ComponentModel;
 using Portable.Xaml.Markup;
@@ -58,9 +58,10 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
                 provideTarget.TargetProperty is PropertyInfo property)
             {
                 DelayedBinding.Add(target, property, GetValue);
+                return AvaloniaProperty.UnsetValue;
             }
 
-            return AvaloniaProperty.UnsetValue;
+            throw new KeyNotFoundException($"Static resource '{ResourceKey}' not found.");
         }
 
         private object GetValue(IControl control)
