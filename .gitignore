@@ -108,7 +108,7 @@ AppPackages/
 # NCrunch
 _NCrunch_*/
 *.ncrunchsolution.user
-nCrunchTemp_*/
+nCrunchTemp_*
 
 # Others
 sql/
