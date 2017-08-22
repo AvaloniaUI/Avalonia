@@ -135,7 +135,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 var root = new TestRoot
                 {
-                    Styles = new Styles
+                    Styles =
                     {
                         new Style(x => x.OfType<TabItem>())
                         {

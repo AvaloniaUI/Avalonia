@@ -39,6 +39,7 @@ namespace Avalonia
         private readonly Lazy<IClipboard> _clipboard =
             new Lazy<IClipboard>(() => (IClipboard)AvaloniaLocator.Current.GetService(typeof(IClipboard)));
         private readonly Styler _styler = new Styler();
+        private Styles _styles;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Application"/> class.
@@ -109,12 +110,15 @@ namespace Avalonia
         /// <remarks>
         /// Global styles apply to all windows in the application.
         /// </remarks>
-        public Styles Styles { get; } = new Styles();
+        public Styles Styles => _styles ?? (_styles = new Styles());
 
         /// <summary>
         /// Gets the styling parent of the application, which is null.
         /// </summary>
         IStyleHost IStyleHost.StylingParent => null;
+
+        /// <inheritdoc/>
+        bool IStyleHost.IsStylesInitialized => _styles != null;
 
         /// <summary>
         /// Initializes the application by loading XAML etc.
