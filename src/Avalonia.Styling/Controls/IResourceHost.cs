@@ -1,18 +1,14 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
-using System.Collections.Generic;
+﻿using System;
 
 namespace Avalonia.Controls
 {
     /// <summary>
-    /// An indexed dictionary of resources.
+    /// Defines an element that can be queried for resources.
     /// </summary>
-    public interface IResourceDictionary : IDictionary<string, object>
+    public interface IResourceHost
     {
         /// <summary>
-        /// Tries to find a resource within the dictionary.
+        /// Tries to find a resource within the element.
         /// </summary>
         /// <param name="key">The resource key.</param>
         /// <param name="value">

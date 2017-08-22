@@ -97,6 +97,7 @@ namespace Avalonia.Controls
         private bool _isAttachedToLogicalTree;
         private IAvaloniaList<ILogical> _logicalChildren;
         private INameScope _nameScope;
+        private ResourceDictionary _resources;
         private Styles _styles;
         private bool _styled;
         private Subject<IStyleable> _styleDetach = new Subject<IStyleable>();
@@ -287,6 +288,11 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Gets or sets the control's resource dictionary.
+        /// </summary>
+        public IResourceDictionary Resources => _resources ?? (_resources = new ResourceDictionary());
+
+        /// <summary>
         /// Gets or sets a user-defined object attached to the control.
         /// </summary>
         public object Tag
@@ -417,6 +423,15 @@ namespace Avalonia.Controls
         /// pseudoclasses.
         /// </summary>
         protected IPseudoClasses PseudoClasses => Classes;
+
+        /// <inheritdoc/>
+        bool IResourceHost.TryGetResource(string key, out object value)
+        {
+            value = null;
+            return _resources?.TryGetResource(key, out value) ?? 
+                   _styles?.TryGetResource(key, out value) ??
+                   false;
+        }
 
         /// <summary>
         /// Sets the control's logical parent.

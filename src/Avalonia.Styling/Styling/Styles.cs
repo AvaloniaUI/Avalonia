@@ -3,6 +3,7 @@
 
 using System.Linq;
 using Avalonia.Collections;
+using Avalonia.Controls;
 
 namespace Avalonia.Styling
 {
@@ -11,6 +12,24 @@ namespace Avalonia.Styling
     /// </summary>
     public class Styles : AvaloniaList<IStyle>, IStyle
     {
+        private IResourceDictionary _resources;
+
+        /// <summary>
+        /// Gets or sets a dictionary of style resources.
+        /// </summary>
+        public IResourceDictionary Resources
+        {
+            get
+            {
+                if (_resources == null)
+                {
+                    _resources = new ResourceDictionary();
+                }
+
+                return _resources;
+            }
+        }
+
         /// <summary>
         /// Attaches the style to a control if the style's selector matches.
         /// </summary>
@@ -26,26 +45,19 @@ namespace Avalonia.Styling
             }
         }
 
-        /// <summary>
-        /// Tries to find a named resource within the style.
-        /// </summary>
-        /// <param name="name">The resource name.</param>
-        /// <returns>
-        /// The resource if found, otherwise <see cref="AvaloniaProperty.UnsetValue"/>.
-        /// </returns>
-        public object FindResource(string name)
+        /// <inheritdoc/>
+        public bool TryGetResource(string key, out object value)
         {
-            foreach (var style in this.Reverse())
+            for (var i = Count - 1; i >= 0; --i)
             {
-                var result = style.FindResource(name);
-
-                if (result != AvaloniaProperty.UnsetValue)
+                if (this[i].TryGetResource(key, out value))
                 {
-                    return result;
+                    return true;
                 }
             }
 
-            return AvaloniaProperty.UnsetValue;
+            value = null;
+            return false;
         }
     }
 }

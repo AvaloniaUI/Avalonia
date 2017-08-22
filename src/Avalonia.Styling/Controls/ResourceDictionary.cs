@@ -55,6 +55,8 @@ namespace Avalonia.Controls
 
         public bool TryGetValue(string key, out object value) => _inner.TryGetValue(key, out value);
 
+        public bool TryGetResource(string key, out object value) => _inner.TryGetValue(key, out value);
+
         bool ICollection<KeyValuePair<string, object>>.Contains(KeyValuePair<string, object> item)
         {
             return ((IDictionary<string, object>)_inner).Contains(item);

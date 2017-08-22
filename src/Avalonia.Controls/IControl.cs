@@ -14,7 +14,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// Interface for Avalonia controls.
     /// </summary>
-    public interface IControl : IVisual, ILogical, ILayoutable, IInputElement, INamed, IStyleable, IStyleHost
+    public interface IControl : IVisual, ILogical, ILayoutable, IInputElement, INamed, IResourceHost, IStyleable, IStyleHost
     {
         /// <summary>
         /// Occurs when the control has finished initialization.

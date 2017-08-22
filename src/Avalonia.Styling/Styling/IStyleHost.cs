@@ -17,6 +17,5 @@ namespace Avalonia.Styling
         /// Gets the parent style host element.
         /// </summary>
         IStyleHost StylingParent { get; }
-
     }
 }

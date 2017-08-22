@@ -98,25 +98,11 @@ namespace Avalonia.Styling
             }
         }
 
-        /// <summary>
-        /// Tries to find a named resource within the style.
-        /// </summary>
-        /// <param name="name">The resource name.</param>
-        /// <returns>
-        /// The resource if found, otherwise <see cref="AvaloniaProperty.UnsetValue"/>.
-        /// </returns>
-        public object FindResource(string name)
+        /// <inheritdoc/>
+        public bool TryGetResource(string key, out object result)
         {
-            object result = null;
-
-            if (_resources?.TryGetValue(name, out result) == true)
-            {
-                return result;
-            }
-            else
-            {
-                return AvaloniaProperty.UnsetValue;
-            }
+            result = null;
+            return _resources?.TryGetResource(key, out result) ?? false;
         }
 
         /// <summary>

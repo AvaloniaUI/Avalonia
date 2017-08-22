@@ -82,6 +82,35 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Finds the specified resource by searching up the logical tree and then global styles.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="key">The resource key.</param>
+        /// <returns>The resource, or null if not found.</returns>
+        public static object FindResource(this IControl control, string key)
+        {
+            Contract.Requires<ArgumentNullException>(control != null);
+            Contract.Requires<ArgumentNullException>(key != null);
+
+            var current = control as IStyleHost;
+
+            while (current != null)
+            {
+                if (current is IResourceHost host)
+                {
+                    if (host.TryGetResource(key, out var value))
+                    {
+                        return value;
+                    }
+                }
+
+                current = current.StylingParent;
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Adds or removes a pseudoclass depending on a boolean value.
         /// </summary>
         /// <param name="classes">The pseudoclasses collection.</param>

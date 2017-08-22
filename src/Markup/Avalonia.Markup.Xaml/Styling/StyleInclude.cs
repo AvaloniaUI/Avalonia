@@ -3,6 +3,7 @@
 
 using Avalonia.Styling;
 using System;
+using Avalonia.Controls;
 
 namespace Avalonia.Markup.Xaml.Styling
 {
@@ -55,16 +56,7 @@ namespace Avalonia.Markup.Xaml.Styling
             }
         }
 
-        /// <summary>
-        /// Tries to find a named resource within the style.
-        /// </summary>
-        /// <param name="name">The resource name.</param>
-        /// <returns>
-        /// The resource if found, otherwise <see cref="AvaloniaProperty.UnsetValue"/>.
-        /// </returns>
-        public object FindResource(string name)
-        {
-            return Loaded.FindResource(name);
-        }
+        /// <inheritdoc/>
+        public bool TryGetResource(string key, out object value) => Loaded.TryGetResource(key, out value);
     }
 }

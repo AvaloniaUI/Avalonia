@@ -29,7 +29,7 @@ namespace Avalonia
     /// method.
     /// - Tracks the lifetime of the application.
     /// </remarks>
-    public class Application : IGlobalDataTemplates, IGlobalStyles, IStyleRoot, IApplicationLifecycle
+    public class Application : IApplicationLifecycle, IGlobalDataTemplates, IGlobalStyles, IStyleRoot, IResourceHost
     {
         /// <summary>
         /// The application-global data templates.
@@ -39,6 +39,7 @@ namespace Avalonia
         private readonly Lazy<IClipboard> _clipboard =
             new Lazy<IClipboard>(() => (IClipboard)AvaloniaLocator.Current.GetService(typeof(IClipboard)));
         private readonly Styler _styler = new Styler();
+        private ResourceDictionary _resources;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Application"/> class.
@@ -101,6 +102,11 @@ namespace Avalonia
         public IClipboard Clipboard => _clipboard.Value;
 
         /// <summary>
+        /// Gets the application's global resource dictionary.
+        /// </summary>
+        public IResourceDictionary Resources => _resources ?? (_resources = new ResourceDictionary());
+
+        /// <summary>
         /// Gets the application's global styles.
         /// </summary>
         /// <value>
@@ -142,12 +148,19 @@ namespace Avalonia
         {
             OnExit?.Invoke(this, EventArgs.Empty);
         }
-        
+
+        /// <inheritdoc/>
+        bool IResourceHost.TryGetResource(string key, out object value)
+        {
+            value = null;
+            return _resources?.TryGetResource(key, out value) ??
+                   Styles.TryGetResource(key, out value);
+        }
+
         /// <summary>
         /// Sent when the application is exiting.
         /// </summary>
         public event EventHandler OnExit;
-
 
         /// <summary>
         /// Called when the application is exiting.
