@@ -126,7 +126,9 @@ namespace Avalonia.Media
                         case Command.CubicBezierCurve:
                             {
                                 Point point1 = ReadPoint(reader, point, relative);
+                                ReadSeparator(reader);
                                 Point point2 = ReadPoint(reader, point, relative);
+                                ReadSeparator(reader);
                                 point = ReadPoint(reader, point, relative);
                                 _context.CubicBezierTo(point1, point2, point);
                                 break;

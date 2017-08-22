@@ -12,7 +12,7 @@ namespace Avalonia.Shared.PlatformSupport
     internal partial class StandardRuntimePlatform : IRuntimePlatform
     {
 
-#if NETSTANDARD
+#if NETCOREAPP1_0
         public void PostThreadPoolItem(Action cb) =>  ThreadPool.QueueUserWorkItem(_ => cb(), null);
 #else
         public Assembly[] GetLoadedAssemblies() => AppDomain.CurrentDomain.GetAssemblies();
