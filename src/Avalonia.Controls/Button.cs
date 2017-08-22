@@ -72,8 +72,8 @@ namespace Avalonia.Controls
 
         private ICommand _command;
 
-        public static readonly AvaloniaProperty<bool> IsPressedProperty =
-            AvaloniaProperty.RegisterDirect<Button, bool>(nameof(IsPressed), b => b.IsPressed);
+        public static readonly StyledProperty<bool> IsPressedProperty =
+            AvaloniaProperty.Register<Button, bool>(nameof(IsPressed));
 
         /// <summary>
         /// Initializes static members of the <see cref="Button"/> class.
