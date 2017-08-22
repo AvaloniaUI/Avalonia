@@ -86,7 +86,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="control">The control.</param>
         /// <param name="key">The resource key.</param>
-        /// <returns>The resource, or null if not found.</returns>
+        /// <returns>The resource, or <see cref="AvaloniaProperty.UnsetValue"/> if not found.</returns>
         public static object FindResource(this IControl control, string key)
         {
             Contract.Requires<ArgumentNullException>(control != null);
@@ -107,7 +107,7 @@ namespace Avalonia.Controls
                 current = current.StylingParent;
             }
 
-            return null;
+            return AvaloniaProperty.UnsetValue;
         }
 
         /// <summary>

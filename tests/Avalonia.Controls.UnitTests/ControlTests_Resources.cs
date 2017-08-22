@@ -77,11 +77,46 @@ namespace Avalonia.Controls.UnitTests
                             { "foo", "foo-value" },
                         }
                     }
-                }
+                },
+                Resources =
+                {
+                    { "bar", "bar-value" },
+                },
             };
 
             Assert.Equal("foo-value", target.FindResource("foo"));
         }
 
+        [Fact]
+        public void FindResource_Should_Find_Application_Style_Resource()
+        {
+            Control target;
+
+            var app = new Application
+            {
+                Styles =
+                {
+                    new Style
+                    {
+                        Resources =
+                        {
+                            { "foo", "foo-value" },
+                        },
+                    }
+                },
+                Resources =
+                {
+                    { "bar", "bar-value" },
+                },
+            };
+
+            var root = new TestRoot
+            {
+                Child = target = new Control(),
+                StylingParent = app,
+            };
+
+            Assert.Equal("foo-value", target.FindResource("foo"));
+        }
     }
 }

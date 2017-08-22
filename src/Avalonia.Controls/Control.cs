@@ -428,9 +428,8 @@ namespace Avalonia.Controls
         bool IResourceProvider.TryGetResource(string key, out object value)
         {
             value = null;
-            return _resources?.TryGetResource(key, out value) ?? 
-                   _styles?.TryGetResource(key, out value) ??
-                   false;
+            return (_resources?.TryGetResource(key, out value) ?? false) ||
+                   (_styles?.TryGetResource(key, out value) ?? false);
         }
 
         /// <summary>
