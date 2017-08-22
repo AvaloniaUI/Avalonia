@@ -3,7 +3,9 @@
 
 using System;
 using System.ComponentModel;
+using System.Reflection;
 using Avalonia.Controls;
+using Avalonia.Markup.Xaml.Data;
 using Avalonia.Styling;
 using Portable.Xaml;
 using Portable.Xaml.ComponentModel;
@@ -32,6 +34,8 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             var resourceProviderType = schemaContext.GetXamlType(typeof(IResourceProvider));
             var resourceProviders = ambientProvider.GetAllAmbientValues(resourceProviderType);
 
+            // Look up the ambient context for IResourceProviders which might be able to give us
+            // the resource.
             foreach (IResourceProvider resourceProvider in resourceProviders)
             {
                 if (resourceProvider is IControl control && control.StylingParent != null)
@@ -47,7 +51,21 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
                 }
             }
 
+            // The resource still hasn't been found, so add a delayed one-time binding.
+            var provideTarget = context.GetService<IProvideValueTarget>();
+
+            if (provideTarget.TargetObject is IControl target &&
+                provideTarget.TargetProperty is PropertyInfo property)
+            {
+                DelayedBinding.Add(target, property, GetValue);
+            }
+
             return AvaloniaProperty.UnsetValue;
+        }
+
+        private object GetValue(IControl control)
+        {
+            return control.FindResource(ResourceKey);
         }
     }
 }

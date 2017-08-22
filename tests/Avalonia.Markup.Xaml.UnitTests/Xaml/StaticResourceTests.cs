@@ -82,6 +82,33 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         }
 
         [Fact]
+        public void StaticResource_From_Application_Can_Be_Assigned_To_Property_In_UserControl()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                Application.Current.Resources.Add("brush", new SolidColorBrush(0xff506070));
+
+                var xaml = @"
+<UserControl xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Border Name='border' Background='{StaticResource brush}'/>
+</UserControl>";
+
+                var loader = new AvaloniaXamlLoader();
+                var userControl = (UserControl)loader.Load(xaml);
+                var border = userControl.FindControl<Border>("border");
+
+                // We don't actually know where the global styles are until we attach the control
+                // to a window, as Window has StylingParent set to Application.
+                var window = new Window { Content = userControl };
+                window.Show();
+
+                var brush = (SolidColorBrush)border.Background;
+                Assert.Equal(0xff506070, brush.Color.ToUint32());
+            }
+        }
+
+        [Fact]
         public void StaticResource_Can_Be_Assigned_To_Setter()
         {
             using (StyledWindowNoTheme())
