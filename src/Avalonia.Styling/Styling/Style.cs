@@ -5,12 +5,14 @@ using System;
 using System.Collections.Generic;
 using System.Reactive.Linq;
 using Avalonia.Metadata;
+using System.Windows.Markup;
 
 namespace Avalonia.Styling
 {
     /// <summary>
     /// Defines a style.
     /// </summary>
+    [ContentProperty(nameof(Setters))]
     public class Style : IStyle
     {
         private static Dictionary<IStyleable, List<IDisposable>> _applied =

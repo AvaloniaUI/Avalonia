@@ -3,7 +3,7 @@
 
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using Avalonia.Metadata;
+using System.Windows.Markup;
 
 [assembly: AssemblyTitle("Avalonia.Styling")]
 [assembly: XmlnsDefinition("https://github.com/avaloniaui", "Avalonia.Styling")]

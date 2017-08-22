@@ -11,12 +11,14 @@ using Avalonia.Metadata;
 using Avalonia.Rendering;
 using Avalonia.VisualTree;
 using Avalonia.Layout;
+using System.Windows.Markup;
 
 namespace Avalonia.Controls.Primitives
 {
     /// <summary>
     /// Displays a popup window.
     /// </summary>
+    [ContentProperty(nameof(Child))]
     public class Popup : Control, IVisualTreeHost
     {
         /// <summary>

@@ -5,9 +5,11 @@ using Avalonia.Collections;
 using Avalonia.Metadata;
 using Avalonia.Platform;
 using System;
+using System.Windows.Markup;
 
 namespace Avalonia.Media
 {
+    [ContentProperty(nameof(Figures))]
     public class PathGeometry : StreamGeometry
     {
         /// <summary>

@@ -10,12 +10,14 @@ using System.Reactive.Subjects;
 using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Metadata;
+using System.Windows.Markup;
 
 namespace Avalonia.Markup.Xaml.Data
 {
     /// <summary>
     /// A XAML binding that calculates an aggregate value from multiple child <see cref="Bindings"/>.
     /// </summary>
+    [ContentProperty(nameof(Bindings))]
     public class MultiBinding : IBinding
     {
         /// <summary>

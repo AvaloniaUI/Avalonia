@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System.Reflection;
-using Avalonia.Metadata;
+using System.Windows.Markup;
 using System.Runtime.CompilerServices;
 
 [assembly: AssemblyTitle("Avalonia.Markup")]

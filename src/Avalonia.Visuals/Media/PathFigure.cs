@@ -2,9 +2,11 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using Avalonia.Metadata;
+using System.Windows.Markup;
 
 namespace Avalonia.Media
 {
+    [ContentProperty(nameof(Segments))]
     public sealed class PathFigure : AvaloniaObject
     {
         /// <summary>

@@ -3,9 +3,11 @@
 
 using Avalonia.Collections;
 using Avalonia.Metadata;
+using System.Windows.Markup;
 
 namespace Avalonia.Media
 {
+    [ContentProperty(nameof(Children))]
     public class TransformGroup : Transform
     {
         /// <summary>

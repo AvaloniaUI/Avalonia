@@ -41,7 +41,9 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
-    <Reference Include="WindowsBase" />
+    <Reference Include="WindowsBase">
+      <Aliases>wpf</Aliases>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\Avalonia.Win32\Interop\UnmanagedMethods.cs">
@@ -65,6 +67,7 @@
     <ProjectReference Include="..\..\Avalonia.Base\Avalonia.Base.csproj">
       <Project>{b09b78d8-9b26-48b0-9149-d64a2f120f3f}</Project>
       <Name>Avalonia.Base</Name>
+      <Aliases>av</Aliases>
     </ProjectReference>
     <ProjectReference Include="..\..\Avalonia.Controls\Avalonia.Controls.csproj">
       <Project>{d2221c82-4a25-4583-9b43-d791e3f6820c}</Project>

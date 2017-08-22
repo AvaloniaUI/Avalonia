@@ -7,6 +7,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using Avalonia.Media;
 using Avalonia.Metadata;
+using System.Windows.Markup;
 
 namespace Avalonia.Controls
 {
@@ -17,6 +18,7 @@ namespace Avalonia.Controls
     /// Controls can be added to a <see cref="Panel"/> by adding them to its <see cref="Children"/>
     /// collection. All children are layed out to fill the panel.
     /// </remarks>
+    [ContentProperty(nameof(Children))]
     public class Panel : Control, IPanel
     {
         /// <summary>

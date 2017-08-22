@@ -2,12 +2,14 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using Avalonia.Metadata;
+using System.Windows.Markup;
 
 namespace Avalonia.Controls
 {
     /// <summary>
     /// Base class for controls which decorate a single child control.
     /// </summary>
+    [ContentProperty(nameof(Child))]
     public class Decorator : Control
     {
         /// <summary>

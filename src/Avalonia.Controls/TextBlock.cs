@@ -8,12 +8,14 @@ using Avalonia.Data;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Metadata;
+using System.Windows.Markup;
 
 namespace Avalonia.Controls
 {
     /// <summary>
     /// A control that displays a block of text.
     /// </summary>
+    [ContentProperty(nameof(Text))]
     public class TextBlock : Control
     {
         /// <summary>

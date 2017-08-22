@@ -6,9 +6,11 @@ using System.Reflection;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Metadata;
+using System.Windows.Markup;
 
 namespace Avalonia.Markup.Xaml.Templates
 {
+    [ContentProperty(nameof(Content))]
     public class DataTemplate : IDataTemplate
     {
         public Type DataType { get; set; }

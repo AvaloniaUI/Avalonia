@@ -7,12 +7,14 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Layout;
 using Avalonia.Metadata;
+using System.Windows.Markup;
 
 namespace Avalonia.Controls
 {
     /// <summary>
     /// Displays <see cref="Content"/> according to a <see cref="FuncDataTemplate"/>.
     /// </summary>
+    [ContentProperty(nameof(Content))]
     public class ContentControl : TemplatedControl, IContentControl, IContentPresenterHost
     {
         /// <summary>

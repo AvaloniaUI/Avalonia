@@ -13,12 +13,15 @@ using Avalonia.Controls.Templates;
 using Avalonia.Controls.Utils;
 using Avalonia.LogicalTree;
 using Avalonia.Metadata;
+using System.ComponentModel;
+using System.Windows.Markup;
 
 namespace Avalonia.Controls
 {
     /// <summary>
     /// Displays a collection of items.
     /// </summary>
+    [ContentProperty(nameof(ItemList))]
     public class ItemsControl : TemplatedControl, IItemsPresenterHost
     {
         /// <summary>
@@ -95,6 +98,12 @@ namespace Avalonia.Controls
                 return _itemContainerGenerator;
             }
         }
+
+        /// <summary>
+        /// This is a helper property for the XAML designer.
+        /// </summary>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public IList<object> ItemList => _items as IList<object>;
 
         /// <summary>
         /// Gets or sets the items to display.

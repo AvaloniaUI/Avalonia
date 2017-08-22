@@ -1,8 +1,10 @@
 ﻿using Avalonia.Collections;
 using Avalonia.Metadata;
+using System.Windows.Markup;
 
 namespace Avalonia.Media
 {
+    [ContentProperty(nameof(Children))]
     public class DrawingGroup : Drawing
     {
         public static readonly StyledProperty<double> OpacityProperty =

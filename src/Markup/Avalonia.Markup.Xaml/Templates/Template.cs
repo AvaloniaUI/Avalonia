@@ -4,9 +4,11 @@
 using Avalonia.Controls;
 using Avalonia.Metadata;
 using Avalonia.Styling;
+using System.Windows.Markup;
 
 namespace Avalonia.Markup.Xaml.Templates
 {
+    [ContentProperty(nameof(Content))]
     public class Template : ITemplate<IControl>
     {
         [Content]
