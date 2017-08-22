@@ -68,6 +68,9 @@ namespace Avalonia.Controls
         public static readonly RoutedEvent<RoutedEventArgs> ClickEvent =
             RoutedEvent.Register<Button, RoutedEventArgs>("Click", RoutingStrategies.Bubble);
 
+        public static readonly AvaloniaProperty<bool> IsPressedProperty =
+            AvaloniaProperty.RegisterDirect<Button, bool>(nameof(IsPressed), b => b.IsPressed);
+
         /// <summary>
         /// Initializes static members of the <see cref="Button"/> class.
         /// </summary>
@@ -134,6 +137,12 @@ namespace Avalonia.Controls
             set { SetValue(IsDefaultProperty, value); }
         }
 
+        public bool IsPressed
+        {
+            get { return GetValue(IsPressedProperty); }
+            private set { SetValue(IsPressedProperty, value); }
+        }
+
         /// <inheritdoc/>
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
@@ -164,7 +173,7 @@ namespace Avalonia.Controls
                 {
                     RaiseClickEvent();
                 }
-
+                IsPressed = true;
                 e.Handled = true;
             }
 
@@ -180,7 +189,7 @@ namespace Avalonia.Controls
                 {
                     RaiseClickEvent();
                 }
-
+                IsPressed = false;
                 e.Handled = true;
             }
         }
@@ -223,6 +232,7 @@ namespace Avalonia.Controls
             {
                 PseudoClasses.Add(":pressed");
                 e.Device.Capture(this);
+                IsPressed = true;
                 e.Handled = true;
 
                 if (ClickMode == ClickMode.Press)
@@ -241,6 +251,7 @@ namespace Avalonia.Controls
             {
                 e.Device.Capture(null);
                 PseudoClasses.Remove(":pressed");
+                IsPressed = false;
                 e.Handled = true;
 
                 if (ClickMode == ClickMode.Release && new Rect(Bounds.Size).Contains(e.GetPosition(this)))
