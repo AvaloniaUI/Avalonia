@@ -25,6 +25,7 @@
     <None Remove="Shims.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Shared\SharedAssemblyInfo.cs" Link="Properties\SharedAssemblyInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
