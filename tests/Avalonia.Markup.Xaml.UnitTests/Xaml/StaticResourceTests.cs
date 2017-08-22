@@ -2,11 +2,15 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Linq;
 using Avalonia.Controls;
+using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Templates;
 using Avalonia.Markup.Xaml.Data;
 using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
+using Avalonia.VisualTree;
 using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Xaml
@@ -62,7 +66,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         [Fact]
         public void StaticResource_From_Application_Can_Be_Assigned_To_Property_In_Window()
         {
-            using (StyledWindowNoTheme())
+            using (StyledWindow())
             {
                 Application.Current.Resources.Add("brush", new SolidColorBrush(0xff506070));
 
@@ -111,7 +115,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         [Fact]
         public void StaticResource_Can_Be_Assigned_To_Setter()
         {
-            using (StyledWindowNoTheme())
+            using (StyledWindow())
             {
                 var xaml = @"
 <Window xmlns='https://github.com/avaloniaui'
@@ -139,7 +143,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         [Fact]
         public void StaticResource_From_Style_Can_Be_Assigned_To_Setter()
         {
-            using (StyledWindowNoTheme())
+            using (StyledWindow())
             {
                 var xaml = @"
 <Window xmlns='https://github.com/avaloniaui'
@@ -166,9 +170,114 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             }
         }
 
-        private IDisposable StyledWindowNoTheme()
+        [Fact]
+        public void StaticResource_Can_Be_Assigned_To_Setter_In_Styles_File()
         {
-            return UnitTestApplication.Start(TestServices.StyledWindow.With(theme: () => new Styles()));
+            var styleXaml = @"
+<Styles xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Styles.Resources>
+        <SolidColorBrush x:Key='brush'>#ff506070</SolidColorBrush>
+    </Styles.Resources>
+
+    <Style Selector='Border'>
+        <Setter Property='Background' Value='{StaticResource brush}'/>
+    </Style>
+</Styles>";
+
+            using (StyledWindow(assets: ("test:style.xaml", styleXaml)))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Window.Styles>
+        <StyleInclude Source='test:style.xaml'/>
+    </Window.Styles>
+    <Border Name='border'/>
+</Window>";
+
+                var loader = new AvaloniaXamlLoader();
+                var window = (Window)loader.Load(xaml);
+                var border = window.FindControl<Border>("border");
+                var brush = (SolidColorBrush)border.Background;
+
+                Assert.Equal(0xff506070, brush.Color.ToUint32());
+            }
+        }
+
+        [Fact(Skip = "Not yet supported by Portable.Xaml")]
+        public void StaticResource_Can_Be_Assigned_To_Property_In_ControlTemplate_In_Styles_File()
+        {
+            var styleXaml = @"
+<Styles xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Styles.Resources>
+        <SolidColorBrush x:Key='brush'>#ff506070</SolidColorBrush>
+    </Styles.Resources>
+
+    <Style Selector='Button'>
+        <Setter Property='Template'>
+            <ControlTemplate>
+                <Border Name='border' Background='{StaticResource brush}'/>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+</Styles>";
+
+            using (StyledWindow(assets: ("test:style.xaml", styleXaml)))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Window.Styles>
+        <StyleInclude Source='test:style.xaml'/>
+    </Window.Styles>
+    <Button Name='button'/>
+</Window>";
+
+                var loader = new AvaloniaXamlLoader();
+                var window = (Window)loader.Load(xaml);
+                var button = window.FindControl<Button>("button");
+
+                window.Show();
+
+                var border = (Border)button.GetVisualChildren().Single();
+                var brush = (SolidColorBrush)border.Background;
+
+                // To make this work we somehow need to be able to get hold of the parent ambient
+                // context from Portable.Xaml. See TODO in StaticResourceExtension.
+                Assert.Equal(0xff506070, brush.Color.ToUint32());
+            }
+        }
+
+        private IDisposable StyledWindow(params (string, string)[] assets)
+        {
+            var services = TestServices.StyledWindow.With(
+                assetLoader: new MockAssetLoader(assets),
+                theme: () => new Styles
+                {
+                    WindowStyle(),
+                });
+
+            return UnitTestApplication.Start(services);
+        }
+
+        private Style WindowStyle()
+        {
+            return new Style(x => x.OfType<Window>())
+            {
+                Setters =
+                {
+                    new Setter(
+                        Window.TemplateProperty,
+                        new FuncControlTemplate<Window>(x =>
+                            new ContentPresenter
+                            {
+                                Name = "PART_ContentPresenter",
+                                [!ContentPresenter.ContentProperty] = x[!Window.ContentProperty],
+                            }))
+                }
+            };
         }
     }
 }

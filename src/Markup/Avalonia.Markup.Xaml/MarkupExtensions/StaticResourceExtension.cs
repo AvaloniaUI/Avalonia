@@ -34,8 +34,15 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             var resourceProviderType = schemaContext.GetXamlType(typeof(IResourceProvider));
             var resourceProviders = ambientProvider.GetAllAmbientValues(resourceProviderType);
 
-            // Look up the ambient context for IResourceProviders which might be able to give us
-            // the resource.
+            // Look upwards though the ambient context for IResourceProviders which might be able
+            // to give us the resource.
+            //
+            // TODO: If we're in a template then only the ambient values since the root of the
+            // template wil be included here. We need some way to get hold of the parent ambient
+            // context and search that. See the test:
+            //
+            //   StaticResource_Can_Be_Assigned_To_Property_In_ControlTemplate_In_Styles_File
+            //
             foreach (IResourceProvider resourceProvider in resourceProviders)
             {
                 if (resourceProvider is IControl control && control.StylingParent != null)

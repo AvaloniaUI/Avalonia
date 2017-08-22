@@ -88,6 +88,30 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void FindResource_Should_Find_Styles_Resource()
+        {
+            var target = new Control
+            {
+                Styles =
+                {
+                    new Styles
+                    {
+                        Resources =
+                        {
+                            { "foo", "foo-value" },
+                        }
+                    }
+                },
+                Resources =
+                {
+                    { "bar", "bar-value" },
+                },
+            };
+
+            Assert.Equal("foo-value", target.FindResource("foo"));
+        }
+
+        [Fact]
         public void FindResource_Should_Find_Application_Style_Resource()
         {
             Control target;
