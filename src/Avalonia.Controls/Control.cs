@@ -243,11 +243,7 @@ namespace Avalonia.Controls
         /// Each control may define data templates which are applied to the control itself and its
         /// children.
         /// </remarks>
-        public DataTemplates DataTemplates
-        {
-            get { return _dataTemplates ?? (_dataTemplates = new DataTemplates()); }
-            set { _dataTemplates = value; }
-        }
+        public DataTemplates DataTemplates => _dataTemplates ?? (_dataTemplates = new DataTemplates());
 
         /// <summary>
         /// Gets a value that indicates whether the element has finished initialization.
@@ -299,6 +295,9 @@ namespace Avalonia.Controls
             get { return GetValue(TemplatedParentProperty); }
             internal set { SetValue(TemplatedParentProperty, value); }
         }
+
+        /// <inheritdoc/>
+        bool IDataTemplateHost.IsDataTemplatesInitialized => _dataTemplates != null;
 
         /// <summary>
         /// Gets a value indicating whether the element is attached to a rooted logical tree.

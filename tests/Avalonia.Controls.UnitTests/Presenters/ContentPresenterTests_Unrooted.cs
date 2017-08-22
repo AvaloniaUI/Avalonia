@@ -88,7 +88,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             root.Child = null;
             root = new TestRoot
             {
-                DataTemplates = new DataTemplates
+                DataTemplates =
                 {
                     new FuncDataTemplate<string>(x => new Decorator()),
                 },
