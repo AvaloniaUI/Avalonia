@@ -60,6 +60,28 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         }
 
         [Fact]
+        public void StaticResource_From_Application_Can_Be_Assigned_To_Property_In_Window()
+        {
+            using (StyledWindowNoTheme())
+            {
+                Application.Current.Resources.Add("brush", new SolidColorBrush(0xff506070));
+
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Border Name='border' Background='{StaticResource brush}'/>
+</Window>";
+
+                var loader = new AvaloniaXamlLoader();
+                var window = (Window)loader.Load(xaml);
+                var border = window.FindControl<Border>("border");
+
+                var brush = (SolidColorBrush)border.Background;
+                Assert.Equal(0xff506070, brush.Color.ToUint32());
+            }
+        }
+
+        [Fact]
         public void StaticResource_Can_Be_Assigned_To_Setter()
         {
             using (StyledWindowNoTheme())

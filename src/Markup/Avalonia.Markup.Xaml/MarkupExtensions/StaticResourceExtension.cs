@@ -4,6 +4,7 @@
 using System;
 using System.ComponentModel;
 using Avalonia.Controls;
+using Avalonia.Styling;
 using Portable.Xaml;
 using Portable.Xaml.ComponentModel;
 using Portable.Xaml.Markup;
@@ -33,7 +34,14 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
 
             foreach (IResourceProvider resourceProvider in resourceProviders)
             {
-                if (resourceProvider.TryGetResource(ResourceKey, out var value))
+                if (resourceProvider is IControl control && control.StylingParent != null)
+                {
+                    // If we've got to a control that has a StylingParent then it's probably
+                    // a top level control and its StylingParent is pointing to the global
+                    // styles. If this is case just do a FindResource on it.
+                    return control.FindResource(ResourceKey);
+                }
+                else if (resourceProvider.TryGetResource(ResourceKey, out var value))
                 {
                     return value;
                 }
