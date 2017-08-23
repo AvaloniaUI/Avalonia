@@ -66,6 +66,9 @@ namespace Avalonia.Styling
         [Content]
         public IList<ISetter> Setters { get; set; } = new List<ISetter>();
 
+        /// <inheritdoc/>
+        bool IResourceProvider.HasResources => _resources?.Count > 0;
+
         /// <summary>
         /// Attaches the style to a control if the style's selector matches.
         /// </summary>

@@ -20,13 +20,32 @@ namespace Avalonia.Styling
         {
             ResetBehavior = ResetBehavior.Remove;
             this.ForEachItem(
-                x => x.ResourcesChanged += SubResourceChanged,
-                x => x.ResourcesChanged -= SubResourceChanged,
+                x =>
+                {
+                    if (x.HasResources)
+                    {
+                        ResourcesChanged?.Invoke(this, new ResourcesChangedEventArgs());
+                    }
+
+                    x.ResourcesChanged += SubResourceChanged;
+                },
+                x =>
+                {
+                    if (x.HasResources)
+                    {
+                        ResourcesChanged?.Invoke(this, new ResourcesChangedEventArgs());
+                    }
+
+                    x.ResourcesChanged -= SubResourceChanged;
+                },
                 () => { });
         }
 
         /// <inheritdoc/>
         public event EventHandler<ResourcesChangedEventArgs> ResourcesChanged;
+
+        /// <inheritdoc/>
+        public bool HasResources => _resources?.Count > 0 || this.Any(x => x.HasResources);
 
         /// <summary>
         /// Gets or sets a dictionary of style resources.

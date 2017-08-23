@@ -2,6 +2,8 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Templates;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Xunit;
@@ -141,6 +143,113 @@ namespace Avalonia.Controls.UnitTests
             };
 
             Assert.Equal("foo-value", target.FindResource("foo"));
+        }
+
+        [Fact]
+        public void Adding_Resource_Should_Call_Raise_ResourceChanged_On_Logical_Children()
+        {
+            Border child;
+
+            var target = new ContentControl
+            {
+                Content = child = new Border(),
+                Template = ContentControlTemplate(),
+            };
+
+            var raisedOnTarget = false;
+            var raisedOnPresenter = false;
+            var raisedOnChild = false;
+
+            target.Measure(Size.Infinity);
+            target.ResourcesChanged += (_, __) => raisedOnTarget = true;
+            target.Presenter.ResourcesChanged += (_, __) => raisedOnPresenter = true;
+            child.ResourcesChanged += (_, __) => raisedOnChild = true;
+
+            target.Resources.Add("foo", "bar");
+
+            Assert.True(raisedOnTarget);
+            Assert.False(raisedOnPresenter);
+            Assert.True(raisedOnChild);
+        }
+
+        [Fact]
+        public void Adding_Resource_To_Styles_Should_Raise_ResourceChanged()
+        {
+            var target = new Decorator();
+            var raised = false;
+
+            target.ResourcesChanged += (_, __) => raised = true;
+            target.Styles.Resources.Add("foo", "bar");
+
+            Assert.True(raised);
+        }
+
+        [Fact]
+        public void Adding_Resource_To_Nested_Style_Should_Raise_ResourceChanged()
+        {
+            Style style;
+            var target = new Decorator
+            {
+                Styles =
+                {
+                    (style = new Style()),
+                }
+            };
+
+            var raised = false;
+
+            target.ResourcesChanged += (_, __) => raised = true;
+            style.Resources.Add("foo", "bar");
+
+            Assert.True(raised);
+        }
+
+        [Fact]
+        public void Adding_Style_With_Resource_Should_Raise_ResourceChanged()
+        {
+            Style style = new Style
+            {
+                Resources = { { "foo", "bar" } },
+            };
+
+            var target = new Decorator();
+            var raised = false;
+
+            target.ResourcesChanged += (_, __) => raised = true;
+            target.Styles.Add(style);
+
+            Assert.True(raised);
+        }
+
+        [Fact]
+        public void Removing_Style_With_Resource_Should_Raise_ResourceChanged()
+        {
+            var target = new Decorator
+            {
+                Styles =
+                {
+                    new Style
+                    {
+                        Resources = { { "foo", "bar" } },
+                    }
+                }
+            };
+            var raised = false;
+
+            target.ResourcesChanged += (_, __) => raised = true;
+            target.Styles.Clear();
+
+            Assert.True(raised);
+        }
+
+        private IControlTemplate ContentControlTemplate()
+        {
+            return new FuncControlTemplate<ContentControl>(x =>
+                new ContentPresenter
+                {
+                    Name = "PART_ContentPresenter",
+                    [!ContentPresenter.ContentProperty] = x[!ContentControl.ContentProperty],
+                });
         }
     }
 }

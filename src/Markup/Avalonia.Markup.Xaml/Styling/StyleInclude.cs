@@ -51,6 +51,9 @@ namespace Avalonia.Markup.Xaml.Styling
         }
 
         /// <inheritdoc/>
+        bool IResourceProvider.HasResources => Loaded.HasResources;
+
+        /// <inheritdoc/>
         public void Attach(IStyleable control, IStyleHost container)
         {
             if (Source != null)

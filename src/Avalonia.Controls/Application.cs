@@ -125,6 +125,9 @@ namespace Avalonia
         /// </summary>
         IStyleHost IStyleHost.StylingParent => null;
 
+        /// <inheritdoc/>
+        bool IResourceProvider.HasResources => _resources?.Count > 0;
+
         /// <summary>
         /// Initializes the application by loading XAML etc.
         /// </summary>

@@ -383,6 +383,9 @@ namespace Avalonia.Controls
         IAvaloniaReadOnlyList<ILogical> ILogical.LogicalChildren => LogicalChildren;
 
         /// <inheritdoc/>
+        bool IResourceProvider.HasResources => _resources?.Count > 0 || Styles.HasResources;
+
+        /// <inheritdoc/>
         IAvaloniaReadOnlyList<string> IStyleable.Classes => Classes;
 
         /// <summary>

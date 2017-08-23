@@ -13,6 +13,11 @@ namespace Avalonia.Controls
         event EventHandler<ResourcesChangedEventArgs> ResourcesChanged;
 
         /// <summary>
+        /// Gets a value indicating whether the provider has resources.
+        /// </summary>
+        bool HasResources { get; }
+
+        /// <summary>
         /// Tries to find a resource within the element.
         /// </summary>
         /// <param name="key">The resource key.</param>
