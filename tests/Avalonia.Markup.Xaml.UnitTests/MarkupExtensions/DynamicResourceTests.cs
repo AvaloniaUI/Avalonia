@@ -277,7 +277,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         }
 
         [Fact]
-        public void DynamicResource_Can_Be_Found_Across_Xaml_Files()
+        public void DynamicResource_Can_Be_Found_Across_Xaml_Style_Files()
         {
             var style1Xaml = @"
 <Style xmlns='https://github.com/avaloniaui'
