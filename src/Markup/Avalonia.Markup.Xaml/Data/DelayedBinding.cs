@@ -57,11 +57,11 @@ namespace Avalonia.Markup.Xaml.Data
         }
 
         /// <summary>
-        /// Adds a delayed binding to a control.
+        /// Adds a delayed value to a control.
         /// </summary>
         /// <param name="target">The control.</param>
         /// <param name="property">The property on the control to bind to.</param>
-        /// <param name="binding">The binding.</param>
+        /// <param name="value">A function which returns the value.</param>
         public static void Add(IControl target, PropertyInfo property, Func<IControl, object> value)
         {
             if (target.IsInitialized)
