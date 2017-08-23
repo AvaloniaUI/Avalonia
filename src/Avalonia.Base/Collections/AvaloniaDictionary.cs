@@ -16,6 +16,7 @@ namespace Avalonia.Collections
     /// <typeparam name="TKey">The type of the dictionary key.</typeparam>
     /// <typeparam name="TValue">The type of the dictionary value.</typeparam>
     public class AvaloniaDictionary<TKey, TValue> : IDictionary<TKey, TValue>,
+        IDictionary,
         INotifyCollectionChanged,
         INotifyPropertyChanged
     {
@@ -50,6 +51,18 @@ namespace Avalonia.Collections
 
         /// <inheritdoc/>
         public ICollection<TValue> Values => _inner.Values;
+
+        public bool IsFixedSize => ((IDictionary)_inner).IsFixedSize;
+
+        ICollection IDictionary.Keys => ((IDictionary)_inner).Keys;
+
+        ICollection IDictionary.Values => ((IDictionary)_inner).Values;
+
+        public bool IsSynchronized => ((IDictionary)_inner).IsSynchronized;
+
+        public object SyncRoot => ((IDictionary)_inner).SyncRoot;
+
+        public object this[object key] { get => ((IDictionary)_inner)[key]; set => ((IDictionary)_inner)[key] = value; }
 
         /// <summary>
         /// Gets or sets the named resource.
@@ -175,6 +188,12 @@ namespace Avalonia.Collections
         }
 
         /// <inheritdoc/>
+        void ICollection.CopyTo(Array array, int index)
+        {
+            ((ICollection)_inner).CopyTo(array, index);
+        }
+
+        /// <inheritdoc/>
         void ICollection<KeyValuePair<TKey, TValue>>.Add(KeyValuePair<TKey, TValue> item)
         {
             Add(item.Key, item.Value);
@@ -190,6 +209,30 @@ namespace Avalonia.Collections
         bool ICollection<KeyValuePair<TKey, TValue>>.Remove(KeyValuePair<TKey, TValue> item)
         {
             return Remove(item.Key);
+        }
+
+        /// <inheritdoc/>
+        void IDictionary.Add(object key, object value)
+        {
+            Add((TKey)key, (TValue)value);
+        }
+
+        /// <inheritdoc/>
+        bool IDictionary.Contains(object key)
+        {
+            return ((IDictionary)_inner).Contains(key);
+        }
+
+        /// <inheritdoc/>
+        IDictionaryEnumerator IDictionary.GetEnumerator()
+        {
+            return ((IDictionary)_inner).GetEnumerator();
+        }
+
+        /// <inheritdoc/>
+        void IDictionary.Remove(object key)
+        {
+            Remove((TKey)key);
         }
 
         private void NotifyAdd(TKey key, TValue value)
