@@ -252,6 +252,75 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             }
         }
 
+        [Fact]
+        public void DynamicResource_Can_Be_Assigned_To_Resource_Property()
+        {
+            var xaml = @"
+<UserControl xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <UserControl.Resources>
+        <Color x:Key='color'>#ff506070</Color>
+        <SolidColorBrush x:Key='brush' Color='{DynamicResource color}'/>
+    </UserControl.Resources>
+
+    <Border Name='border' Background='{DynamicResource brush}'/>
+</UserControl>";
+
+            var loader = new AvaloniaXamlLoader();
+            var userControl = (UserControl)loader.Load(xaml);
+            var border = userControl.FindControl<Border>("border");
+
+            DelayedBinding.ApplyBindings(border);
+
+            var brush = (SolidColorBrush)border.Background;
+            Assert.Equal(0xff506070, brush.Color.ToUint32());
+        }
+
+        [Fact]
+        public void DynamicResource_Can_Be_Found_Across_Xaml_Files()
+        {
+            var style1Xaml = @"
+<Style xmlns='https://github.com/avaloniaui'
+       xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+  <Style.Resources>
+    <Color x:Key='Red'>Red</Color>
+    <Color x:Key='Green'>Green</Color>
+    <Color x:Key='Blue'>Blue</Color>
+  </Style.Resources>
+</Style>";
+            var style2Xaml = @"
+<Style xmlns='https://github.com/avaloniaui'
+       xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+  <Style.Resources>
+    <SolidColorBrush x:Key='RedBrush' Color='{DynamicResource Red}'/>
+    <SolidColorBrush x:Key='GreenBrush' Color='{DynamicResource Green}'/>
+    <SolidColorBrush x:Key='BlueBrush' Color='{DynamicResource Blue}'/>
+  </Style.Resources>
+</Style>";
+            using (StyledWindow(
+                ("test:style1.xaml", style1Xaml), 
+                ("test:style2.xaml", style2Xaml)))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Window.Styles>
+        <StyleInclude Source='test:style1.xaml'/>
+        <StyleInclude Source='test:style2.xaml'/>
+    </Window.Styles>
+    <Border Name='border' Background='{DynamicResource RedBrush}'/>
+</Window>";
+
+                var loader = new AvaloniaXamlLoader();
+                var window = (Window)loader.Load(xaml);
+                var border = window.FindControl<Border>("border");
+                var borderBrush = (ISolidColorBrush)border.Background;
+
+                Assert.NotNull(borderBrush);
+                Assert.Equal(0xffff0000, borderBrush.Color.ToUint32());
+            }
+        }
+
         private IDisposable StyledWindow(params (string, string)[] assets)
         {
             var services = TestServices.StyledWindow.With(

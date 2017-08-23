@@ -204,6 +204,47 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             }
         }
 
+        [Fact]
+        public void StaticResource_Can_Be_Assigned_To_Resource_Property()
+        {
+            var xaml = @"
+<UserControl xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <UserControl.Resources>
+        <Color x:Key='color'>#ff506070</Color>
+        <SolidColorBrush x:Key='brush' Color='{StaticResource color}'/>
+    </UserControl.Resources>
+
+    <Border Name='border' Background='{StaticResource brush}'/>
+</UserControl>";
+
+            var loader = new AvaloniaXamlLoader();
+            var userControl = (UserControl)loader.Load(xaml);
+            var border = userControl.FindControl<Border>("border");
+
+            var brush = (SolidColorBrush)border.Background;
+            Assert.Equal(0xff506070, brush.Color.ToUint32());
+        }
+
+        [Fact]
+        public void StaticResource_Can_Be_Assigned_To_Resource_Property_In_Styles_File()
+        {
+            var xaml = @"
+<Styles xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Styles.Resources>
+        <Color x:Key='color'>#ff506070</Color>
+        <SolidColorBrush x:Key='brush' Color='{StaticResource color}'/>
+    </Styles.Resources>
+</Styles>";
+
+            var loader = new AvaloniaXamlLoader();
+            var styles = (Styles)loader.Load(xaml);
+            var brush = (SolidColorBrush)styles.Resources["brush"];
+
+            Assert.Equal(0xff506070, brush.Color.ToUint32());
+        }
+
         [Fact(Skip = "Not yet supported by Portable.Xaml")]
         public void StaticResource_Can_Be_Assigned_To_Property_In_ControlTemplate_In_Styles_File()
         {
