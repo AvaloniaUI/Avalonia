@@ -3,6 +3,8 @@
 
 using System;
 using System.ComponentModel;
+using System.Reactive;
+using System.Reactive.Linq;
 using Avalonia.Controls;
 using Avalonia.Data;
 using Portable.Xaml;
@@ -49,8 +51,13 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
 
             if (control != null)
             {
-                var resource = control.FindResource(ResourceKey);
-                return new InstancedBinding(resource);
+                var o = Observable.FromEventPattern<ResourcesChangedEventArgs>(
+                    x => control.ResourcesChanged += x,
+                    x => control.ResourcesChanged -= x)
+                    .StartWith((EventPattern<ResourcesChangedEventArgs>)null)
+                    .Select(x => control.FindResource(ResourceKey));
+
+                return new InstancedBinding(o);
             }
 
             return null;

@@ -155,6 +155,11 @@ namespace Avalonia.Controls
         public event EventHandler Initialized;
 
         /// <summary>
+        /// Occurs when a resource in this control or a parent control has changed.
+        /// </summary>
+        public event EventHandler<ResourcesChangedEventArgs> ResourcesChanged;
+
+        /// <summary>
         /// Gets or sets the name of the control.
         /// </summary>
         /// <remarks>
@@ -269,8 +274,22 @@ namespace Avalonia.Controls
         /// </remarks>
         public Styles Styles
         {
-            get { return _styles ?? (_styles = new Styles()); }
-            set { _styles = value; }
+            get { return _styles ?? (Styles = new Styles()); }
+            set
+            {
+                Contract.Requires<ArgumentNullException>(value != null);
+
+                if (_styles != value)
+                {
+                    if (_styles != null)
+                    {
+                        _styles.ResourcesChanged -= StyleResourcesChanged;
+                    }
+
+                    _styles = value;
+                    _styles.ResourcesChanged += StyleResourcesChanged;
+                }
+            }
         }
 
         /// <summary>
@@ -290,7 +309,19 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the control's resource dictionary.
         /// </summary>
-        public IResourceDictionary Resources => _resources ?? (_resources = new ResourceDictionary());
+        public IResourceDictionary Resources
+        {
+            get
+            {
+                if (_resources == null)
+                {
+                    _resources = new ResourceDictionary();
+                    _resources.CollectionChanged += ResourceDictionaryChanged;
+                }
+
+                return _resources;
+            }
+        }
 
         /// <summary>
         /// Gets or sets a user-defined object attached to the control.
@@ -309,6 +340,32 @@ namespace Avalonia.Controls
             get { return GetValue(TemplatedParentProperty); }
             internal set { SetValue(TemplatedParentProperty, value); }
         }
+
+        /// <summary>
+        /// Gets the control's logical children.
+        /// </summary>
+        protected IAvaloniaList<ILogical> LogicalChildren
+        {
+            get
+            {
+                if (_logicalChildren == null)
+                {
+                    var list = new AvaloniaList<ILogical>();
+                    list.ResetBehavior = ResetBehavior.Remove;
+                    list.Validate = ValidateLogicalChild;
+                    list.CollectionChanged += LogicalChildrenCollectionChanged;
+                    _logicalChildren = list;
+                }
+
+                return _logicalChildren;
+            }
+        }
+
+        /// <summary>
+        /// Gets the <see cref="Classes"/> collection in a form that allows adding and removing
+        /// pseudoclasses.
+        /// </summary>
+        protected IPseudoClasses PseudoClasses => Classes;
 
         /// <summary>
         /// Gets a value indicating whether the element is attached to a rooted logical tree.
@@ -398,31 +455,16 @@ namespace Avalonia.Controls
             this.OnDetachedFromLogicalTreeCore(e);
         }
 
-        /// <summary>
-        /// Gets the control's logical children.
-        /// </summary>
-        protected IAvaloniaList<ILogical> LogicalChildren
+        /// <inheritdoc/>
+        void ILogical.NotifyResourcesChanged(ResourcesChangedEventArgs e)
         {
-            get
-            {
-                if (_logicalChildren == null)
-                {
-                    var list = new AvaloniaList<ILogical>();
-                    list.ResetBehavior = ResetBehavior.Remove;
-                    list.Validate = ValidateLogicalChild;
-                    list.CollectionChanged += LogicalChildrenCollectionChanged;
-                    _logicalChildren = list;
-                }
+            ResourcesChanged?.Invoke(this, new ResourcesChangedEventArgs());
 
-                return _logicalChildren;
+            foreach (var child in LogicalChildren)
+            {
+                child.NotifyResourcesChanged(e);
             }
         }
-
-        /// <summary>
-        /// Gets the <see cref="Classes"/> collection in a form that allows adding and removing
-        /// pseudoclasses.
-        /// </summary>
-        protected IPseudoClasses PseudoClasses => Classes;
 
         /// <inheritdoc/>
         bool IResourceProvider.TryGetResource(string key, out object value)
@@ -856,6 +898,16 @@ namespace Avalonia.Controls
                     ((ISetLogicalParent)i).SetParent(null);
                 }
             }
+        }
+
+        private void ResourceDictionaryChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            ((ILogical)this).NotifyResourcesChanged(new ResourcesChangedEventArgs());
+        }
+
+        private void StyleResourcesChanged(object sender, ResourcesChangedEventArgs e)
+        {
+            ((ILogical)this).NotifyResourcesChanged(e);
         }
     }
 }

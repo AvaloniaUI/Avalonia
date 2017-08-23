@@ -1,6 +1,8 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
+using System.Collections.Specialized;
 using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls;
@@ -12,7 +14,19 @@ namespace Avalonia.Styling
     /// </summary>
     public class Styles : AvaloniaList<IStyle>, IStyle
     {
-        private IResourceDictionary _resources;
+        private ResourceDictionary _resources;
+
+        public Styles()
+        {
+            ResetBehavior = ResetBehavior.Remove;
+            this.ForEachItem(
+                x => x.ResourcesChanged += SubResourceChanged,
+                x => x.ResourcesChanged -= SubResourceChanged,
+                () => { });
+        }
+
+        /// <inheritdoc/>
+        public event EventHandler<ResourcesChangedEventArgs> ResourcesChanged;
 
         /// <summary>
         /// Gets or sets a dictionary of style resources.
@@ -24,6 +38,7 @@ namespace Avalonia.Styling
                 if (_resources == null)
                 {
                     _resources = new ResourceDictionary();
+                    _resources.CollectionChanged += ResourceDictionaryChanged;
                 }
 
                 return _resources;
@@ -63,6 +78,16 @@ namespace Avalonia.Styling
 
             value = null;
             return false;
+        }
+
+        private void ResourceDictionaryChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            ResourcesChanged?.Invoke(this, new ResourcesChangedEventArgs());
+        }
+
+        private void SubResourceChanged(object sender, ResourcesChangedEventArgs e)
+        {
+            ResourcesChanged?.Invoke(this, e);
         }
     }
 }

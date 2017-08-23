@@ -49,6 +49,9 @@ namespace Avalonia
             OnExit += OnExiting;
         }
 
+        /// <inheritdoc/>
+        public event EventHandler<ResourcesChangedEventArgs> ResourcesChanged;
+
         /// <summary>
         /// Gets the current instance of the <see cref="Application"/> class.
         /// </summary>

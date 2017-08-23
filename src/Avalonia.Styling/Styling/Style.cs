@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Reactive.Linq;
 using Avalonia.Controls;
 using Avalonia.Metadata;
@@ -16,8 +17,7 @@ namespace Avalonia.Styling
     {
         private static Dictionary<IStyleable, List<IDisposable>> _applied =
             new Dictionary<IStyleable, List<IDisposable>>();
-
-        private IResourceDictionary _resources;
+        private ResourceDictionary _resources;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Style"/> class.
@@ -35,6 +35,9 @@ namespace Avalonia.Styling
             Selector = selector(null);
         }
 
+        /// <inheritdoc/>
+        public event EventHandler<ResourcesChangedEventArgs> ResourcesChanged;
+
         /// <summary>
         /// Gets or sets a dictionary of style resources.
         /// </summary>
@@ -45,6 +48,7 @@ namespace Avalonia.Styling
                 if (_resources == null)
                 {
                     _resources = new ResourceDictionary();
+                    _resources.CollectionChanged += ResourceDictionaryChanged;
                 }
 
                 return _resources;
@@ -150,6 +154,11 @@ namespace Avalonia.Styling
             }
 
             _applied.Remove(control);
+        }
+
+        private void ResourceDictionaryChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            ResourcesChanged?.Invoke(this, new ResourcesChangedEventArgs());
         }
     }
 }

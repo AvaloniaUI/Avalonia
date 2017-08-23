@@ -25,6 +25,9 @@ namespace Avalonia.Markup.Xaml.Styling
             _baseUri = baseUri;
         }
 
+        /// <inheritdoc/>
+        public event EventHandler<ResourcesChangedEventArgs> ResourcesChanged;
+
         /// <summary>
         /// Gets or sets the source URL.
         /// </summary>

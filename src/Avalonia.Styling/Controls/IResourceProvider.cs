@@ -8,6 +8,11 @@ namespace Avalonia.Controls
     public interface IResourceProvider
     {
         /// <summary>
+        /// Raised when the resources in the element are changed.
+        /// </summary>
+        event EventHandler<ResourcesChangedEventArgs> ResourcesChanged;
+
+        /// <summary>
         /// Tries to find a resource within the element.
         /// </summary>
         /// <param name="key">The resource key.</param>
