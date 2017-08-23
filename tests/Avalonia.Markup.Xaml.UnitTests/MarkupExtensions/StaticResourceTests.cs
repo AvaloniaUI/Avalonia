@@ -12,7 +12,7 @@ using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Xunit;
 
-namespace Avalonia.Markup.Xaml.UnitTests.Xaml
+namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 {
     public class StaticResourceTests
     {
