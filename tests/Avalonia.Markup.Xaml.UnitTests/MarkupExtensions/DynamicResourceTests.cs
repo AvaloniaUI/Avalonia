@@ -6,6 +6,7 @@ using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
+using Avalonia.Markup.Xaml.Data;
 using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
@@ -14,10 +15,10 @@ using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 {
-    public class StaticResourceTests
+    public class DynamicResourceTests
     {
         [Fact]
-        public void StaticResource_Can_Be_Assigned_To_Property()
+        public void DynamicResource_Can_Be_Assigned_To_Property()
         {
             var xaml = @"
 <UserControl xmlns='https://github.com/avaloniaui'
@@ -26,19 +27,21 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         <SolidColorBrush x:Key='brush'>#ff506070</SolidColorBrush>
     </UserControl.Resources>
 
-    <Border Name='border' Background='{StaticResource brush}'/>
+    <Border Name='border' Background='{DynamicResource brush}'/>
 </UserControl>";
 
             var loader = new AvaloniaXamlLoader();
             var userControl = (UserControl)loader.Load(xaml);
             var border = userControl.FindControl<Border>("border");
 
+            DelayedBinding.ApplyBindings(border);
+
             var brush = (SolidColorBrush)border.Background;
             Assert.Equal(0xff506070, brush.Color.ToUint32());
         }
 
         [Fact]
-        public void StaticResource_From_Style_Can_Be_Assigned_To_Property()
+        public void DynamicResource_From_Style_Can_Be_Assigned_To_Property()
         {
             var xaml = @"
 <UserControl xmlns='https://github.com/avaloniaui'
@@ -51,19 +54,21 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         </Style>
     </UserControl.Styles>
 
-    <Border Name='border' Background='{StaticResource brush}'/>
+    <Border Name='border' Background='{DynamicResource brush}'/>
 </UserControl>";
 
             var loader = new AvaloniaXamlLoader();
             var userControl = (UserControl)loader.Load(xaml);
             var border = userControl.FindControl<Border>("border");
 
+            DelayedBinding.ApplyBindings(border);
+
             var brush = (SolidColorBrush)border.Background;
             Assert.Equal(0xff506070, brush.Color.ToUint32());
         }
 
         [Fact]
-        public void StaticResource_From_Application_Can_Be_Assigned_To_Property_In_Window()
+        public void DynamicResource_From_Application_Can_Be_Assigned_To_Property_In_Window()
         {
             using (StyledWindow())
             {
@@ -72,7 +77,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 var xaml = @"
 <Window xmlns='https://github.com/avaloniaui'
              xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
-    <Border Name='border' Background='{StaticResource brush}'/>
+    <Border Name='border' Background='{DynamicResource brush}'/>
 </Window>";
 
                 var loader = new AvaloniaXamlLoader();
@@ -85,7 +90,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         }
 
         [Fact]
-        public void StaticResource_From_Application_Can_Be_Assigned_To_Property_In_UserControl()
+        public void DynamicResource_From_Application_Can_Be_Assigned_To_Property_In_UserControl()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
@@ -94,7 +99,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 var xaml = @"
 <UserControl xmlns='https://github.com/avaloniaui'
              xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
-    <Border Name='border' Background='{StaticResource brush}'/>
+    <Border Name='border' Background='{DynamicResource brush}'/>
 </UserControl>";
 
                 var loader = new AvaloniaXamlLoader();
@@ -112,7 +117,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         }
 
         [Fact]
-        public void StaticResource_Can_Be_Assigned_To_Setter()
+        public void DynamicResource_Can_Be_Assigned_To_Setter()
         {
             using (StyledWindow())
             {
@@ -124,7 +129,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     </Window.Resources>
     <Window.Styles>
         <Style Selector='Button'>
-            <Setter Property='Background' Value='{StaticResource brush}'/>
+            <Setter Property='Background' Value='{DynamicResource brush}'/>
         </Style>
     </Window.Styles>
     <Button Name='button'/>
@@ -140,7 +145,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         }
 
         [Fact]
-        public void StaticResource_From_Style_Can_Be_Assigned_To_Setter()
+        public void DynamicResource_From_Style_Can_Be_Assigned_To_Setter()
         {
             using (StyledWindow())
             {
@@ -154,7 +159,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             </Style.Resources>
         </Style>
         <Style Selector='Button'>
-            <Setter Property='Background' Value='{StaticResource brush}'/>
+            <Setter Property='Background' Value='{DynamicResource brush}'/>
         </Style>
     </Window.Styles>
     <Button Name='button'/>
@@ -170,7 +175,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         }
 
         [Fact]
-        public void StaticResource_Can_Be_Assigned_To_Setter_In_Styles_File()
+        public void DynamicResource_Can_Be_Assigned_To_Setter_In_Styles_File()
         {
             var styleXaml = @"
 <Styles xmlns='https://github.com/avaloniaui'
@@ -180,7 +185,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     </Styles.Resources>
 
     <Style Selector='Border'>
-        <Setter Property='Background' Value='{StaticResource brush}'/>
+        <Setter Property='Background' Value='{DynamicResource brush}'/>
     </Style>
 </Styles>";
 
@@ -204,8 +209,8 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             }
         }
 
-        [Fact(Skip = "Not yet supported by Portable.Xaml")]
-        public void StaticResource_Can_Be_Assigned_To_Property_In_ControlTemplate_In_Styles_File()
+        [Fact]
+        public void DynamicResource_Can_Be_Assigned_To_Property_In_ControlTemplate_In_Styles_File()
         {
             var styleXaml = @"
 <Styles xmlns='https://github.com/avaloniaui'
@@ -217,7 +222,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <Style Selector='Button'>
         <Setter Property='Template'>
             <ControlTemplate>
-                <Border Name='border' Background='{StaticResource brush}'/>
+                <Border Name='border' Background='{DynamicResource brush}'/>
             </ControlTemplate>
         </Setter>
     </Style>
@@ -243,8 +248,6 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 var border = (Border)button.GetVisualChildren().Single();
                 var brush = (SolidColorBrush)border.Background;
 
-                // To make this work we somehow need to be able to get hold of the parent ambient
-                // context from Portable.Xaml. See TODO in StaticResourceExtension.
                 Assert.Equal(0xff506070, brush.Color.ToUint32());
             }
         }

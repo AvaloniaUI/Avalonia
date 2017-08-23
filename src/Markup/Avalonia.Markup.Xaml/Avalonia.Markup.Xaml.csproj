@@ -34,6 +34,7 @@
         <Compile Include="Converters\MatrixTypeConverter.cs" />
         <Compile Include="Converters\RectTypeConverter.cs" />
         <Compile Include="Converters\SetterValueTypeConverter.cs" />
+        <Compile Include="MarkupExtensions\DynamicResourceExtension.cs" />
         <Compile Include="MarkupExtensions\StaticResourceExtension.cs" />
         <Compile Include="MarkupExtensions\StyleIncludeExtension.cs" />
         <Compile Include="PortableXaml\AvaloniaXamlContext.cs" />
