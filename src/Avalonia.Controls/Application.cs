@@ -29,7 +29,7 @@ namespace Avalonia
     /// method.
     /// - Tracks the lifetime of the application.
     /// </remarks>
-    public class Application : IApplicationLifecycle, IGlobalDataTemplates, IGlobalStyles, IStyleRoot, IResourceProvider
+    public class Application : IApplicationLifecycle, IGlobalDataTemplates, IGlobalStyles, IStyleRoot, IResourceNode
     {
         /// <summary>
         /// The application-global data templates.
@@ -126,10 +126,10 @@ namespace Avalonia
         IStyleHost IStyleHost.StylingParent => null;
 
         /// <inheritdoc/>
-        bool IResourceProvider.HasResources => _resources?.Count > 0;
+        bool IResourceNode.HasResources => _resources?.Count > 0;
 
         /// <inheritdoc/>
-        IResourceProvider IResourceProvider.ResourceParent => null;
+        IResourceNode IResourceNode.ResourceParent => null;
 
         /// <summary>
         /// Initializes the application by loading XAML etc.
@@ -159,7 +159,7 @@ namespace Avalonia
         }
 
         /// <inheritdoc/>
-        bool IResourceProvider.TryGetResource(string key, out object value)
+        bool IResourceNode.TryGetResource(string key, out object value)
         {
             value = null;
             return (_resources?.TryGetResource(key, out value) ?? false) ||

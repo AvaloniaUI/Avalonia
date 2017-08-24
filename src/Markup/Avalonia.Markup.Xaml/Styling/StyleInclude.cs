@@ -14,7 +14,7 @@ namespace Avalonia.Markup.Xaml.Styling
     {
         private Uri _baseUri;
         private IStyle _loaded;
-        private IResourceProvider _parent;
+        private IResourceNode _parent;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="StyleInclude"/> class.
@@ -52,10 +52,10 @@ namespace Avalonia.Markup.Xaml.Styling
         }
 
         /// <inheritdoc/>
-        bool IResourceProvider.HasResources => Loaded.HasResources;
+        bool IResourceNode.HasResources => Loaded.HasResources;
 
         /// <inheritdoc/>
-        IResourceProvider IResourceProvider.ResourceParent => _parent;
+        IResourceNode IResourceNode.ResourceParent => _parent;
 
         /// <inheritdoc/>
         public void Attach(IStyleable control, IStyleHost container)
@@ -76,7 +76,7 @@ namespace Avalonia.Markup.Xaml.Styling
         }
 
         /// <inheritdoc/>
-        void ISetStyleParent.SetParent(IResourceProvider parent)
+        void ISetStyleParent.SetParent(IResourceNode parent)
         {
             if (_parent != null && parent != null)
             {

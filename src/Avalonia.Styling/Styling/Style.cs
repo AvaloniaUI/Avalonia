@@ -17,7 +17,7 @@ namespace Avalonia.Styling
     {
         private static Dictionary<IStyleable, List<IDisposable>> _applied =
             new Dictionary<IStyleable, List<IDisposable>>();
-        private IResourceProvider _parent;
+        private IResourceNode _parent;
         private ResourceDictionary _resources;
 
         /// <summary>
@@ -68,10 +68,10 @@ namespace Avalonia.Styling
         public IList<ISetter> Setters { get; set; } = new List<ISetter>();
 
         /// <inheritdoc/>
-        bool IResourceProvider.HasResources => _resources?.Count > 0;
+        bool IResourceNode.HasResources => _resources?.Count > 0;
 
         /// <inheritdoc/>
-        IResourceProvider IResourceProvider.ResourceParent => _parent;
+        IResourceNode IResourceNode.ResourceParent => _parent;
 
         /// <summary>
         /// Attaches the style to a control if the style's selector matches.
@@ -139,7 +139,7 @@ namespace Avalonia.Styling
         }
 
         /// <inheritdoc/>
-        void ISetStyleParent.SetParent(IResourceProvider parent)
+        void ISetStyleParent.SetParent(IResourceNode parent)
         {
             if (_parent != null && parent != null)
             {

@@ -17,7 +17,7 @@ namespace Avalonia.Styling
         /// Sets the style parent.
         /// </summary>
         /// <param name="parent">The parent.</param>
-        void SetParent(IResourceProvider parent);
+        void SetParent(IResourceNode parent);
 
         /// <summary>
         /// Notifies the style that a change has been made to resources that apply to it.

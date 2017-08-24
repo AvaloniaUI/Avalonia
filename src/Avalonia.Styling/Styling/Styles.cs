@@ -14,7 +14,7 @@ namespace Avalonia.Styling
     /// </summary>
     public class Styles : AvaloniaList<IStyle>, IStyle, ISetStyleParent
     {
-        private IResourceProvider _parent;
+        private IResourceNode _parent;
         private ResourceDictionary _resources;
 
         public Styles()
@@ -78,7 +78,7 @@ namespace Avalonia.Styling
         }
 
         /// <inheritdoc/>
-        IResourceProvider IResourceProvider.ResourceParent => _parent;
+        IResourceNode IResourceNode.ResourceParent => _parent;
 
         /// <summary>
         /// Attaches the style to a control if the style's selector matches.
@@ -116,7 +116,7 @@ namespace Avalonia.Styling
         }
 
         /// <inheritdoc/>
-        void ISetStyleParent.SetParent(IResourceProvider parent)
+        void ISetStyleParent.SetParent(IResourceNode parent)
         {
             if (_parent != null && parent != null)
             {

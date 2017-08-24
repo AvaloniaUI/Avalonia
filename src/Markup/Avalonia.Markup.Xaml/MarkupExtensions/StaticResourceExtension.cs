@@ -31,7 +31,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             var context = (ITypeDescriptorContext)serviceProvider;
             var schemaContext = context.GetService<IXamlSchemaContextProvider>()?.SchemaContext;
             var ambientProvider = context.GetService<IAmbientProvider>();
-            var resourceProviderType = schemaContext.GetXamlType(typeof(IResourceProvider));
+            var resourceProviderType = schemaContext.GetXamlType(typeof(IResourceNode));
             var ambientValues = ambientProvider.GetAllAmbientValues(resourceProviderType);
 
             // Look upwards though the ambient context for IResourceProviders which might be able
@@ -47,7 +47,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             {
                 // We override XamlType.CanAssignTo in BindingXamlType so the results we get back
                 // from GetAllAmbientValues aren't necessarily of the correct type.
-                if (ambientValue is IResourceProvider resourceProvider)
+                if (ambientValue is IResourceNode resourceProvider)
                 {
                     if (resourceProvider is IControl control && control.StylingParent != null)
                     {

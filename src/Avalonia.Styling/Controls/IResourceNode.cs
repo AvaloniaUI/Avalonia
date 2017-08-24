@@ -5,7 +5,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// Defines an element that can be queried for resources.
     /// </summary>
-    public interface IResourceProvider
+    public interface IResourceNode
     {
         /// <summary>
         /// Raised when resources in the element are changed.
@@ -20,7 +20,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the parent resource provider, if any.
         /// </summary>
-        IResourceProvider ResourceParent { get; }
+        IResourceNode ResourceParent { get; }
 
         /// <summary>
         /// Tries to find a resource within the element.

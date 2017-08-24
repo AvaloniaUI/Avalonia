@@ -15,7 +15,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
 {
     public class DynamicResourceExtension : MarkupExtension, IBinding
     {
-        private IResourceProvider _anchor;
+        private IResourceNode _anchor;
 
         public DynamicResourceExtension()
         {
@@ -33,9 +33,9 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             var context = (ITypeDescriptorContext)serviceProvider;
             var provideTarget = context.GetService<IProvideValueTarget>();
 
-            if (!(provideTarget.TargetObject is IResourceProvider))
+            if (!(provideTarget.TargetObject is IResourceNode))
             {
-                _anchor = GetAnchor<IResourceProvider>(context);
+                _anchor = GetAnchor<IResourceNode>(context);
             }
 
             return this;
@@ -47,7 +47,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             object anchor,
             bool enableDataValidation)
         {
-            var control = target as IResourceProvider ?? _anchor;
+            var control = target as IResourceNode ?? _anchor;
 
             if (control != null)
             {

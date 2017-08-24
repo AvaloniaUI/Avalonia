@@ -390,10 +390,10 @@ namespace Avalonia.Controls
         IAvaloniaReadOnlyList<ILogical> ILogical.LogicalChildren => LogicalChildren;
 
         /// <inheritdoc/>
-        bool IResourceProvider.HasResources => _resources?.Count > 0 || Styles.HasResources;
+        bool IResourceNode.HasResources => _resources?.Count > 0 || Styles.HasResources;
 
         /// <inheritdoc/>
-        IResourceProvider IResourceProvider.ResourceParent => ((IStyleHost)this).StylingParent as IResourceProvider;
+        IResourceNode IResourceNode.ResourceParent => ((IStyleHost)this).StylingParent as IResourceNode;
 
         /// <inheritdoc/>
         IAvaloniaReadOnlyList<string> IStyleable.Classes => Classes;
@@ -480,7 +480,7 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        bool IResourceProvider.TryGetResource(string key, out object value)
+        bool IResourceNode.TryGetResource(string key, out object value)
         {
             value = null;
             return (_resources?.TryGetResource(key, out value) ?? false) ||

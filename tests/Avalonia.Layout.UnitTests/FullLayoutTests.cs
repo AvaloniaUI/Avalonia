@@ -162,7 +162,7 @@ namespace Avalonia.Layout.UnitTests
         private void RegisterServices()
         {
             var globalStyles = new Mock<IGlobalStyles>();
-            var globalStylesResources = globalStyles.As<IResourceProvider>();
+            var globalStylesResources = globalStyles.As<IResourceNode>();
             var outObj = (object)10;
             globalStylesResources.Setup(x => x.TryGetResource("FontSizeNormal", out outObj)).Returns(true);
 
