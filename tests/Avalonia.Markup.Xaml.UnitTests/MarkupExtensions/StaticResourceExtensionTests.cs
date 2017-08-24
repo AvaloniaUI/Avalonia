@@ -37,7 +37,6 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             Assert.Equal(0xff506070, brush.Color.ToUint32());
         }
 
-
         [Fact]
         public void StaticResource_Can_Be_Assigned_To_Attached_Property()
         {
@@ -309,6 +308,28 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 // context from Portable.Xaml. See TODO in StaticResourceExtension.
                 Assert.Equal(0xff506070, brush.Color.ToUint32());
             }
+        }
+
+        [Fact]
+        public void StaticResource_Can_Be_Assigned_To_ItemTemplate_Property()
+        {
+            var xaml = @"
+<UserControl xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <UserControl.Resources>
+        <DataTemplate x:Key='PurpleData'>
+          <TextBlock Text='{Binding Name}' Background='Purple'/>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <ListBox Name='listBox' ItemTemplate='{StaticResource PurpleData}'/>
+</UserControl>";
+
+            var loader = new AvaloniaXamlLoader();
+            var userControl = (UserControl)loader.Load(xaml);
+            var listBox = userControl.FindControl<ListBox>("listBox");
+
+            Assert.NotNull(listBox.ItemTemplate);
         }
 
         [Fact]
