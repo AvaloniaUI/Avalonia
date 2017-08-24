@@ -32,7 +32,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             var schemaContext = context.GetService<IXamlSchemaContextProvider>()?.SchemaContext;
             var ambientProvider = context.GetService<IAmbientProvider>();
             var resourceProviderType = schemaContext.GetXamlType(typeof(IResourceProvider));
-            var resourceProviders = ambientProvider.GetAllAmbientValues(resourceProviderType);
+            var ambientValues = ambientProvider.GetAllAmbientValues(resourceProviderType);
 
             // Look upwards though the ambient context for IResourceProviders which might be able
             // to give us the resource.
@@ -43,18 +43,23 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             //
             //   StaticResource_Can_Be_Assigned_To_Property_In_ControlTemplate_In_Styles_File
             //
-            foreach (IResourceProvider resourceProvider in resourceProviders)
+            foreach (var ambientValue in ambientValues)
             {
-                if (resourceProvider is IControl control && control.StylingParent != null)
+                // We override XamlType.CanAssignTo in BindingXamlType so the results we get back
+                // from GetAllAmbientValues aren't necessarily of the correct type.
+                if (ambientValue is IResourceProvider resourceProvider)
                 {
-                    // If we've got to a control that has a StylingParent then it's probably
-                    // a top level control and its StylingParent is pointing to the global
-                    // styles. If this is case just do a FindResource on it.
-                    return control.FindResource(ResourceKey);
-                }
-                else if (resourceProvider.TryGetResource(ResourceKey, out var value))
-                {
-                    return value;
+                    if (resourceProvider is IControl control && control.StylingParent != null)
+                    {
+                        // If we've got to a control that has a StylingParent then it's probably
+                        // a top level control and its StylingParent is pointing to the global
+                        // styles. If this is case just do a FindResource on it.
+                        return control.FindResource(ResourceKey);
+                    }
+                    else if (resourceProvider.TryGetResource(ResourceKey, out var value))
+                    {
+                        return value;
+                    }
                 }
             }
 

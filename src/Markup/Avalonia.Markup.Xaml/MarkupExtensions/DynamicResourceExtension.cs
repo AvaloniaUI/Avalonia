@@ -3,7 +3,7 @@
 
 using System;
 using System.ComponentModel;
-using System.Reactive;
+using System.Linq;
 using System.Reactive.Linq;
 using Avalonia.Controls;
 using Avalonia.Data;
@@ -62,7 +62,10 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             var schemaContext = context.GetService<IXamlSchemaContextProvider>()?.SchemaContext;
             var ambientProvider = context.GetService<IAmbientProvider>();
             var xamlType = schemaContext.GetXamlType(typeof(T));
-            return ambientProvider.GetFirstAmbientValue(xamlType) as T;
+
+            // We override XamlType.CanAssignTo in BindingXamlType so the results we get back
+            // from GetAllAmbientValues aren't necessarily of the correct type.
+            return ambientProvider.GetAllAmbientValues(xamlType).OfType<T>().FirstOrDefault();
         }
     }
 }

@@ -333,6 +333,33 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         }
 
         [Fact]
+        public void StaticResource_Can_Be_Assigned_To_Converter()
+        {
+            using (StyledWindow())
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+             xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'>
+    <Window.Resources>
+        <local:TestValueConverter x:Key='converter' Append='bar'/>
+    </Window.Resources>
+
+    <TextBlock Name='textBlock' Text='{Binding Converter={StaticResource converter}}'/>
+</Window>";
+
+                var loader = new AvaloniaXamlLoader();
+                var window = (Window)loader.Load(xaml);
+                var textBlock = window.FindControl<TextBlock>("textBlock");
+
+                window.DataContext = "foo";
+                window.ApplyTemplate();
+
+                Assert.Equal("foobar", textBlock.Text);
+            }
+        }
+
+        [Fact]
         public void Control_Property_Is_Not_Updated_When_Parent_Is_Changed()
         {
             var xaml = @"
