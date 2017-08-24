@@ -10,16 +10,16 @@ namespace Avalonia.Markup.Xaml.Styling
     /// <summary>
     /// Includes a style from a URL.
     /// </summary>
-    public class StyleInclude : IStyle
+    public class StyleInclude : IStyle, ISetStyleParent
     {
         private Uri _baseUri;
         private IStyle _loaded;
+        private IResourceProvider _parent;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="StyleInclude"/> class.
         /// </summary>
         /// <param name="baseUri"></param>
-
         public StyleInclude(Uri baseUri)
         {
             _baseUri = baseUri;
@@ -44,6 +44,7 @@ namespace Avalonia.Markup.Xaml.Styling
                 {
                     var loader = new AvaloniaXamlLoader();
                     _loaded = (IStyle)loader.Load(Source, _baseUri);
+                    (_loaded as ISetStyleParent)?.SetParent(this);
                 }
 
                 return _loaded;
@@ -52,6 +53,9 @@ namespace Avalonia.Markup.Xaml.Styling
 
         /// <inheritdoc/>
         bool IResourceProvider.HasResources => Loaded.HasResources;
+
+        /// <inheritdoc/>
+        IResourceProvider IResourceProvider.ResourceParent => _parent;
 
         /// <inheritdoc/>
         public void Attach(IStyleable control, IStyleHost container)
@@ -64,5 +68,22 @@ namespace Avalonia.Markup.Xaml.Styling
 
         /// <inheritdoc/>
         public bool TryGetResource(string key, out object value) => Loaded.TryGetResource(key, out value);
+
+        /// <inheritdoc/>
+        void ISetStyleParent.NotifyResourcesChanged(ResourcesChangedEventArgs e)
+        {
+            (Loaded as ISetStyleParent)?.NotifyResourcesChanged(e);
+        }
+
+        /// <inheritdoc/>
+        void ISetStyleParent.SetParent(IResourceProvider parent)
+        {
+            if (_parent != null && parent != null)
+            {
+                throw new InvalidOperationException("The Style already has a parent.");
+            }
+
+            _parent = parent;
+        }
     }
 }

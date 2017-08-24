@@ -204,44 +204,6 @@ namespace Avalonia.Controls.UnitTests
             Assert.True(raised);
         }
 
-        [Fact]
-        public void Adding_Style_With_Resource_Should_Raise_ResourceChanged()
-        {
-            Style style = new Style
-            {
-                Resources = { { "foo", "bar" } },
-            };
-
-            var target = new Decorator();
-            var raised = false;
-
-            target.ResourcesChanged += (_, __) => raised = true;
-            target.Styles.Add(style);
-
-            Assert.True(raised);
-        }
-
-        [Fact]
-        public void Removing_Style_With_Resource_Should_Raise_ResourceChanged()
-        {
-            var target = new Decorator
-            {
-                Styles =
-                {
-                    new Style
-                    {
-                        Resources = { { "foo", "bar" } },
-                    }
-                }
-            };
-            var raised = false;
-
-            target.ResourcesChanged += (_, __) => raised = true;
-            target.Styles.Clear();
-
-            Assert.True(raised);
-        }
-
         private IControlTemplate ContentControlTemplate()
         {
             return new FuncControlTemplate<ContentControl>(x =>

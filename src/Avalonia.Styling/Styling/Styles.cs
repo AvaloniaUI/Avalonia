@@ -12,8 +12,9 @@ namespace Avalonia.Styling
     /// <summary>
     /// A style that consists of a number of child styles.
     /// </summary>
-    public class Styles : AvaloniaList<IStyle>, IStyle
+    public class Styles : AvaloniaList<IStyle>, IStyle, ISetStyleParent
     {
+        private IResourceProvider _parent;
         private ResourceDictionary _resources;
 
         public Styles()
@@ -22,6 +23,12 @@ namespace Avalonia.Styling
             this.ForEachItem(
                 x =>
                 {
+                    if (x.ResourceParent == null && x is ISetStyleParent setParent)
+                    {
+                        setParent.SetParent(this);
+                        setParent.NotifyResourcesChanged(new ResourcesChangedEventArgs());
+                    }
+
                     if (x.HasResources)
                     {
                         ResourcesChanged?.Invoke(this, new ResourcesChangedEventArgs());
@@ -31,6 +38,12 @@ namespace Avalonia.Styling
                 },
                 x =>
                 {
+                    if (x.ResourceParent == this && x is ISetStyleParent setParent)
+                    {
+                        setParent.SetParent(null);
+                        setParent.NotifyResourcesChanged(new ResourcesChangedEventArgs());
+                    }
+
                     if (x.HasResources)
                     {
                         ResourcesChanged?.Invoke(this, new ResourcesChangedEventArgs());
@@ -63,6 +76,9 @@ namespace Avalonia.Styling
                 return _resources;
             }
         }
+
+        /// <inheritdoc/>
+        IResourceProvider IResourceProvider.ResourceParent => _parent;
 
         /// <summary>
         /// Attaches the style to a control if the style's selector matches.
@@ -99,13 +115,49 @@ namespace Avalonia.Styling
             return false;
         }
 
+        /// <inheritdoc/>
+        void ISetStyleParent.SetParent(IResourceProvider parent)
+        {
+            if (_parent != null && parent != null)
+            {
+                throw new InvalidOperationException("The Style already has a parent.");
+            }
+
+            _parent = parent;
+        }
+
+        /// <inheritdoc/>
+        void ISetStyleParent.NotifyResourcesChanged(ResourcesChangedEventArgs e)
+        {
+            ResourcesChanged?.Invoke(this, e);
+        }
+
         private void ResourceDictionaryChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            ResourcesChanged?.Invoke(this, new ResourcesChangedEventArgs());
+            var ev = new ResourcesChangedEventArgs();
+
+            foreach (var child in this)
+            {
+                (child as ISetStyleParent)?.NotifyResourcesChanged(ev);
+            }
+
+            ResourcesChanged?.Invoke(this, ev);
         }
 
         private void SubResourceChanged(object sender, ResourcesChangedEventArgs e)
         {
+            var foundSource = false;
+
+            foreach (var child in this)
+            {
+                if (foundSource)
+                {
+                    (child as ISetStyleParent)?.NotifyResourcesChanged(e);
+                }
+
+                foundSource |= child == sender;
+            }
+
             ResourcesChanged?.Invoke(this, e);
         }
     }

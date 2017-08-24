@@ -15,7 +15,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
 {
     public class DynamicResourceExtension : MarkupExtension, IBinding
     {
-        private IControl _anchor;
+        private IResourceProvider _anchor;
 
         public DynamicResourceExtension()
         {
@@ -33,9 +33,9 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             var context = (ITypeDescriptorContext)serviceProvider;
             var provideTarget = context.GetService<IProvideValueTarget>();
 
-            if (!(provideTarget.TargetObject is IControl))
+            if (!(provideTarget.TargetObject is IResourceProvider))
             {
-                _anchor = GetAnchor<IControl>(context);
+                _anchor = GetAnchor<IResourceProvider>(context);
             }
 
             return this;
@@ -47,17 +47,11 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             object anchor,
             bool enableDataValidation)
         {
-            var control = target as IControl ?? _anchor as IControl;
+            var control = target as IResourceProvider ?? _anchor;
 
             if (control != null)
             {
-                var o = Observable.FromEventPattern<ResourcesChangedEventArgs>(
-                    x => control.ResourcesChanged += x,
-                    x => control.ResourcesChanged -= x)
-                    .StartWith((EventPattern<ResourcesChangedEventArgs>)null)
-                    .Select(x => control.FindResource(ResourceKey));
-
-                return new InstancedBinding(o);
+                return new InstancedBinding(control.GetResourceObservable(ResourceKey));
             }
 
             return null;

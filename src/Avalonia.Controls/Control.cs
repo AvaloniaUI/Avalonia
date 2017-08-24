@@ -283,10 +283,17 @@ namespace Avalonia.Controls
                 {
                     if (_styles != null)
                     {
+                        (_styles as ISetStyleParent)?.SetParent(null);
                         _styles.ResourcesChanged -= StyleResourcesChanged;
                     }
 
                     _styles = value;
+
+                    if (value is ISetStyleParent setParent && setParent.ResourceParent == null)
+                    {
+                        setParent.SetParent(this);
+                    }
+
                     _styles.ResourcesChanged += StyleResourcesChanged;
                 }
             }
@@ -384,6 +391,9 @@ namespace Avalonia.Controls
 
         /// <inheritdoc/>
         bool IResourceProvider.HasResources => _resources?.Count > 0 || Styles.HasResources;
+
+        /// <inheritdoc/>
+        IResourceProvider IResourceProvider.ResourceParent => ((IStyleHost)this).StylingParent as IResourceProvider;
 
         /// <inheritdoc/>
         IAvaloniaReadOnlyList<string> IStyleable.Classes => Classes;

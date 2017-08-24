@@ -18,6 +18,11 @@ namespace Avalonia.Controls
         bool HasResources { get; }
 
         /// <summary>
+        /// Gets the parent resource provider, if any.
+        /// </summary>
+        IResourceProvider ResourceParent { get; }
+
+        /// <summary>
         /// Tries to find a resource within the element.
         /// </summary>
         /// <param name="key">The resource key.</param>

@@ -360,8 +360,6 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
   <Style.Resources>
     <Color x:Key='Red'>Red</Color>
-    <Color x:Key='Green'>Green</Color>
-    <Color x:Key='Blue'>Blue</Color>
   </Style.Resources>
 </Style>";
             var style2Xaml = @"
@@ -369,8 +367,6 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
   <Style.Resources>
     <SolidColorBrush x:Key='RedBrush' Color='{DynamicResource Red}'/>
-    <SolidColorBrush x:Key='GreenBrush' Color='{DynamicResource Green}'/>
-    <SolidColorBrush x:Key='BlueBrush' Color='{DynamicResource Blue}'/>
   </Style.Resources>
 </Style>";
             using (StyledWindow(

@@ -128,6 +128,9 @@ namespace Avalonia
         /// <inheritdoc/>
         bool IResourceProvider.HasResources => _resources?.Count > 0;
 
+        /// <inheritdoc/>
+        IResourceProvider IResourceProvider.ResourceParent => null;
+
         /// <summary>
         /// Initializes the application by loading XAML etc.
         /// </summary>

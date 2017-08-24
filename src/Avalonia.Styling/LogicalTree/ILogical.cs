@@ -58,7 +58,7 @@ namespace Avalonia.LogicalTree
         void NotifyDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e);
 
         /// <summary>
-        /// Notifies the control that a change has been made to its resources.
+        /// Notifies the control that a change has been made to resources that apply to it.
         /// </summary>
         /// <param name="e">The event args.</param>
         /// <remarks>

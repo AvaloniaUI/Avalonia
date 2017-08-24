@@ -13,10 +13,11 @@ namespace Avalonia.Styling
     /// <summary>
     /// Defines a style.
     /// </summary>
-    public class Style : IStyle
+    public class Style : IStyle, ISetStyleParent
     {
         private static Dictionary<IStyleable, List<IDisposable>> _applied =
             new Dictionary<IStyleable, List<IDisposable>>();
+        private IResourceProvider _parent;
         private ResourceDictionary _resources;
 
         /// <summary>
@@ -68,6 +69,9 @@ namespace Avalonia.Styling
 
         /// <inheritdoc/>
         bool IResourceProvider.HasResources => _resources?.Count > 0;
+
+        /// <inheritdoc/>
+        IResourceProvider IResourceProvider.ResourceParent => _parent;
 
         /// <summary>
         /// Attaches the style to a control if the style's selector matches.
@@ -126,6 +130,23 @@ namespace Avalonia.Styling
             {
                 return "Style";
             }
+        }
+
+        /// <inheritdoc/>
+        void ISetStyleParent.NotifyResourcesChanged(ResourcesChangedEventArgs e)
+        {
+            ResourcesChanged?.Invoke(this, e);
+        }
+
+        /// <inheritdoc/>
+        void ISetStyleParent.SetParent(IResourceProvider parent)
+        {
+            if (_parent != null && parent != null)
+            {
+                throw new InvalidOperationException("The Style already has a parent.");
+            }
+
+            _parent = parent;
         }
 
         private static List<IDisposable> GetSubscriptions(IStyleable control)
