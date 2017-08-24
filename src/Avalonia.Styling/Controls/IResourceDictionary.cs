@@ -12,6 +12,16 @@ namespace Avalonia.Controls
     public interface IResourceDictionary : IDictionary<string, object>
     {
         /// <summary>
+        /// Raised when resources in the dictionary are changed.
+        /// </summary>
+        event EventHandler<ResourcesChangedEventArgs> ResourcesChanged;
+
+        /// <summary>
+        /// Gets a collection of child resource dictionaries.
+        /// </summary>
+        IList<IResourceDictionary> MergedDictionaries { get; }
+
+        /// <summary>
         /// Tries to find a resource within the dictionary.
         /// </summary>
         /// <param name="key">The resource key.</param>

@@ -284,7 +284,7 @@ namespace Avalonia.Controls
                     if (_styles != null)
                     {
                         (_styles as ISetStyleParent)?.SetParent(null);
-                        _styles.ResourcesChanged -= StyleResourcesChanged;
+                        _styles.ResourcesChanged -= ThisResourcesChanged;
                     }
 
                     _styles = value;
@@ -294,7 +294,7 @@ namespace Avalonia.Controls
                         setParent.SetParent(this);
                     } 
 
-                    _styles.ResourcesChanged += StyleResourcesChanged;
+                    _styles.ResourcesChanged += ThisResourcesChanged;
                 }
             }
         }
@@ -323,7 +323,7 @@ namespace Avalonia.Controls
                 if (_resources == null)
                 {
                     _resources = new ResourceDictionary();
-                    _resources.CollectionChanged += ResourceDictionaryChanged;
+                    _resources.ResourcesChanged += ThisResourcesChanged;
                 }
 
                 return _resources;
@@ -914,12 +914,7 @@ namespace Avalonia.Controls
             }
         }
 
-        private void ResourceDictionaryChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            ((ILogical)this).NotifyResourcesChanged(new ResourcesChangedEventArgs());
-        }
-
-        private void StyleResourcesChanged(object sender, ResourcesChangedEventArgs e)
+        private void ThisResourcesChanged(object sender, ResourcesChangedEventArgs e)
         {
             ((ILogical)this).NotifyResourcesChanged(e);
         }
