@@ -17,6 +17,8 @@ namespace Avalonia.Rendering
     {
         private SortedDictionary<int, List<IVisual>> _inner = new SortedDictionary<int, List<IVisual>>();
         private Dictionary<IVisual, int> _index = new Dictionary<IVisual, int>();
+        private List<(DeferredChange change, IVisual visual)> _deferredChanges = new List<(DeferredChange, IVisual)>();
+        private bool _deferring;
 
         /// <summary>
         /// Gets the number of dirty visuals.
@@ -29,10 +31,15 @@ namespace Avalonia.Rendering
         /// <param name="visual">The dirty visual.</param>
         public void Add(IVisual visual)
         {
-            var distance = visual.CalculateDistanceFromAncestor(visual.VisualRoot);
-            int existingDistance;
+            if (_deferring)
+            {
+                _deferredChanges.Add((DeferredChange.Add, visual));
+                return;
+            }
 
-            if (_index.TryGetValue(visual, out existingDistance))
+            var distance = visual.CalculateDistanceFromAncestor(visual.VisualRoot);
+
+            if (_index.TryGetValue(visual, out var existingDistance))
             {
                 if (distance == existingDistance)
                 {
@@ -43,9 +50,7 @@ namespace Avalonia.Rendering
                 _index.Remove(visual);
             }
 
-            List<IVisual> list;
-
-            if (!_inner.TryGetValue(distance, out list))
+            if (!_inner.TryGetValue(distance, out var list))
             {
                 list = new List<IVisual>();
                 _inner.Add(distance, list);
@@ -60,6 +65,12 @@ namespace Avalonia.Rendering
         /// </summary>
         public void Clear()
         {
+            if (_deferring)
+            {
+                _deferredChanges.Add((DeferredChange.Clear, null));
+                return;
+            }
+
             _inner.Clear();
             _index.Clear();
         }
@@ -68,19 +79,19 @@ namespace Avalonia.Rendering
         /// Removes a visual from the dirty list.
         /// </summary>
         /// <param name="visual">The visual.</param>
-        /// <returns>True if the visual was present in the list; otherwise false.</returns>
-        public bool Remove(IVisual visual)
+        public void Remove(IVisual visual)
         {
-            int distance;
+            if (_deferring)
+            {
+                _deferredChanges.Add((DeferredChange.Remove, visual));
+                return;
+            }
 
-            if (_index.TryGetValue(visual, out distance))
+            if (_index.TryGetValue(visual, out var distance))
             {
                 _inner[distance].Remove(visual);
                 _index.Remove(visual);
-                return true;
             }
-
-            return false;
         }
 
         /// <summary>
@@ -89,13 +100,47 @@ namespace Avalonia.Rendering
         /// <returns>A collection of visuals.</returns>
         public IEnumerator<IVisual> GetEnumerator()
         {
-            foreach (var i in _inner)
+            using (DeferChanges())
             {
-                foreach (var j in i.Value)
+                foreach (var i in _inner)
                 {
-                    yield return j;
+                    foreach (var j in i.Value)
+                    {
+                        yield return j;
+                    }
                 }
             }
+        }
+
+        private DeferDisposer DeferChanges()
+        {
+            _deferring = true;
+            return new DeferDisposer(this);
+        }
+
+        private void EndDefer()
+        {
+            if (!_deferring) return;
+
+            _deferring = false;
+
+            foreach (var change in _deferredChanges)
+            {
+                switch (change.change)
+                {
+                    case DeferredChange.Add:
+                        Add(change.visual);
+                        break;
+                    case DeferredChange.Remove:
+                        Remove(change.visual);
+                        break;
+                    case DeferredChange.Clear:
+                        Clear();
+                        break;
+                }
+            }
+
+            _deferredChanges.Clear();
         }
 
         /// <summary>
@@ -103,5 +148,21 @@ namespace Avalonia.Rendering
         /// </summary>
         /// <returns>A collection of visuals.</returns>
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        private struct DeferDisposer : IDisposable
+        {
+            private DirtyVisuals _parent;
+
+            internal DeferDisposer(DirtyVisuals parent) => _parent = parent;
+
+            public void Dispose() => _parent?.EndDefer();
+        }
+
+        private enum DeferredChange
+        {
+            Add,
+            Remove,
+            Clear
+        }
     }
 }
