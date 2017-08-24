@@ -292,7 +292,7 @@ namespace Avalonia.Controls
                     if (value is ISetStyleParent setParent && setParent.ResourceParent == null)
                     {
                         setParent.SetParent(this);
-                    }
+                    } 
 
                     _styles.ResourcesChanged += StyleResourcesChanged;
                 }
