@@ -41,6 +41,28 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         }
 
         [Fact]
+        public void DynamicResource_Can_Be_Assigned_To_Attached_Property()
+        {
+            var xaml = @"
+<UserControl xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <UserControl.Resources>
+        <x:Int32 x:Key='col'>5</x:Int32>
+    </UserControl.Resources>
+
+    <Border Name='border' Grid.Column='{DynamicResource col}'/>
+</UserControl>";
+
+            var loader = new AvaloniaXamlLoader();
+            var userControl = (UserControl)loader.Load(xaml);
+            var border = userControl.FindControl<Border>("border");
+
+            DelayedBinding.ApplyBindings(border);
+
+            Assert.Equal(5, Grid.GetColumn(border));
+        }
+
+        [Fact]
         public void DynamicResource_From_Style_Can_Be_Assigned_To_Property()
         {
             var xaml = @"

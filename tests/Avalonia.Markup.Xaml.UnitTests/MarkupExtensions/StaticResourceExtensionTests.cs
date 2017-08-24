@@ -37,6 +37,27 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             Assert.Equal(0xff506070, brush.Color.ToUint32());
         }
 
+
+        [Fact]
+        public void StaticResource_Can_Be_Assigned_To_Attached_Property()
+        {
+            var xaml = @"
+<UserControl xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <UserControl.Resources>
+        <x:Int32 x:Key='col'>5</x:Int32>
+    </UserControl.Resources>
+
+    <Border Name='border' Grid.Column='{StaticResource col}'/>
+</UserControl>";
+
+            var loader = new AvaloniaXamlLoader();
+            var userControl = (UserControl)loader.Load(xaml);
+            var border = userControl.FindControl<Border>("border");
+
+            Assert.Equal(5, Grid.GetColumn(border));
+        }
+
         [Fact]
         public void StaticResource_From_Style_Can_Be_Assigned_To_Property()
         {
@@ -288,6 +309,32 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 // context from Portable.Xaml. See TODO in StaticResourceExtension.
                 Assert.Equal(0xff506070, brush.Color.ToUint32());
             }
+        }
+
+        [Fact]
+        public void Control_Property_Is_Not_Updated_When_Parent_Is_Changed()
+        {
+            var xaml = @"
+<UserControl xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <UserControl.Resources>
+        <SolidColorBrush x:Key='brush'>#ff506070</SolidColorBrush>
+    </UserControl.Resources>
+
+    <Border Name='border' Background='{StaticResource brush}'/>
+</UserControl>";
+
+            var loader = new AvaloniaXamlLoader();
+            var userControl = (UserControl)loader.Load(xaml);
+            var border = userControl.FindControl<Border>("border");
+
+            var brush = (SolidColorBrush)border.Background;
+            Assert.Equal(0xff506070, brush.Color.ToUint32());
+
+            userControl.Content = null;
+
+            brush = (SolidColorBrush)border.Background;
+            Assert.Equal(0xff506070, brush.Color.ToUint32());
         }
 
         private IDisposable StyledWindow(params (string, string)[] assets)
