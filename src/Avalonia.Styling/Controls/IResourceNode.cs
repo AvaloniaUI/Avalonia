@@ -13,12 +13,12 @@ namespace Avalonia.Controls
         event EventHandler<ResourcesChangedEventArgs> ResourcesChanged;
 
         /// <summary>
-        /// Gets a value indicating whether the provider has resources.
+        /// Gets a value indicating whether the node has resources.
         /// </summary>
         bool HasResources { get; }
 
         /// <summary>
-        /// Gets the parent resource provider, if any.
+        /// Gets the parent resource node, if any.
         /// </summary>
         IResourceNode ResourceParent { get; }
 

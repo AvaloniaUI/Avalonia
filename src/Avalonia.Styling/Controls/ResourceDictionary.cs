@@ -15,13 +15,18 @@ namespace Avalonia.Controls
     {
         private AvaloniaList<IResourceDictionary> _mergedDictionaries;
 
-        public event EventHandler<ResourcesChangedEventArgs> ResourcesChanged;
-
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ResourceDictionary"/> class.
+        /// </summary>
         public ResourceDictionary()
         {
             CollectionChanged += OnCollectionChanged;
         }
 
+        /// <inheritdoc/>
+        public event EventHandler<ResourcesChangedEventArgs> ResourcesChanged;
+
+        /// <inheritdoc/>
         public IList<IResourceDictionary> MergedDictionaries
         {
             get
