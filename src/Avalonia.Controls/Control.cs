@@ -521,6 +521,7 @@ namespace Avalonia.Controls
                 }
 
                 _parent = (IControl)parent;
+                ((ILogical)this).NotifyResourcesChanged(new ResourcesChangedEventArgs());
 
                 if (_parent is IStyleRoot || _parent?.IsAttachedToLogicalTree == true || this is IStyleRoot)
                 {
