@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Collections.Specialized;
 using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls;
@@ -15,7 +14,7 @@ namespace Avalonia.Styling
     public class Styles : AvaloniaList<IStyle>, IStyle, ISetStyleParent
     {
         private IResourceNode _parent;
-        private ResourceDictionary _resources;
+        private IResourceDictionary _resources;
 
         public Styles()
         {
@@ -65,15 +64,26 @@ namespace Avalonia.Styling
         /// </summary>
         public IResourceDictionary Resources
         {
-            get
+            get => _resources ?? (Resources = new ResourceDictionary());
+            set
             {
-                if (_resources == null)
+                Contract.Requires<ArgumentNullException>(value != null);
+
+                var hadResources = false;
+
+                if (_resources != null)
                 {
-                    _resources = new ResourceDictionary();
-                    _resources.CollectionChanged += ResourceDictionaryChanged;
+                    hadResources = _resources.Count > 0;
+                    _resources.ResourcesChanged -= ResourceDictionaryChanged;
                 }
 
-                return _resources;
+                _resources = value;
+                _resources.ResourcesChanged += ResourceDictionaryChanged;
+
+                if (hadResources || _resources.Count > 0)
+                {
+                    ((ISetStyleParent)this).NotifyResourcesChanged(new ResourcesChangedEventArgs());
+                }
             }
         }
 
@@ -132,16 +142,14 @@ namespace Avalonia.Styling
             ResourcesChanged?.Invoke(this, e);
         }
 
-        private void ResourceDictionaryChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void ResourceDictionaryChanged(object sender, ResourcesChangedEventArgs e)
         {
-            var ev = new ResourcesChangedEventArgs();
-
             foreach (var child in this)
             {
-                (child as ISetStyleParent)?.NotifyResourcesChanged(ev);
+                (child as ISetStyleParent)?.NotifyResourcesChanged(e);
             }
 
-            ResourcesChanged?.Invoke(this, ev);
+            ResourcesChanged?.Invoke(this, e);
         }
 
         private void SubResourceChanged(object sender, ResourcesChangedEventArgs e)

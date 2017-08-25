@@ -39,7 +39,7 @@ namespace Avalonia
         private readonly Lazy<IClipboard> _clipboard =
             new Lazy<IClipboard>(() => (IClipboard)AvaloniaLocator.Current.GetService(typeof(IClipboard)));
         private readonly Styler _styler = new Styler();
-        private ResourceDictionary _resources;
+        private IResourceDictionary _resources;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Application"/> class.
@@ -107,7 +107,30 @@ namespace Avalonia
         /// <summary>
         /// Gets the application's global resource dictionary.
         /// </summary>
-        public IResourceDictionary Resources => _resources ?? (_resources = new ResourceDictionary());
+        public IResourceDictionary Resources
+        {
+            get => _resources ?? (Resources = new ResourceDictionary());
+            set
+            {
+                Contract.Requires<ArgumentNullException>(value != null);
+
+                var hadResources = false;
+
+                if (_resources != null)
+                {
+                    hadResources = _resources.Count > 0;
+                    _resources.ResourcesChanged -= ResourcesChanged;
+                }
+
+                _resources = value;
+                _resources.ResourcesChanged += ResourcesChanged;
+
+                if (hadResources || _resources.Count > 0)
+                {
+                    ResourcesChanged?.Invoke(this, new ResourcesChangedEventArgs());
+                }
+            }
+        }
 
         /// <summary>
         /// Gets the application's global styles.

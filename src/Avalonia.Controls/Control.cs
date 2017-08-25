@@ -97,7 +97,7 @@ namespace Avalonia.Controls
         private bool _isAttachedToLogicalTree;
         private IAvaloniaList<ILogical> _logicalChildren;
         private INameScope _nameScope;
-        private ResourceDictionary _resources;
+        private IResourceDictionary _resources;
         private Styles _styles;
         private bool _styled;
         private Subject<IStyleable> _styleDetach = new Subject<IStyleable>();
@@ -318,15 +318,26 @@ namespace Avalonia.Controls
         /// </summary>
         public IResourceDictionary Resources
         {
-            get
+            get => _resources ?? (Resources = new ResourceDictionary());
+            set
             {
-                if (_resources == null)
+                Contract.Requires<ArgumentNullException>(value != null);
+
+                var hadResources = false;
+
+                if (_resources != null)
                 {
-                    _resources = new ResourceDictionary();
-                    _resources.ResourcesChanged += ThisResourcesChanged;
+                    hadResources = _resources.Count > 0;
+                    _resources.ResourcesChanged -= ThisResourcesChanged;
                 }
 
-                return _resources;
+                _resources = value;
+                _resources.ResourcesChanged += ThisResourcesChanged;
+
+                if (hadResources || _resources.Count > 0)
+                {
+                    ((ILogical)this).NotifyResourcesChanged(new ResourcesChangedEventArgs());
+                }
             }
         }
 

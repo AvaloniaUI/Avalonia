@@ -18,7 +18,7 @@ namespace Avalonia.Styling
         private static Dictionary<IStyleable, List<IDisposable>> _applied =
             new Dictionary<IStyleable, List<IDisposable>>();
         private IResourceNode _parent;
-        private ResourceDictionary _resources;
+        private IResourceDictionary _resources;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Style"/> class.
@@ -44,15 +44,26 @@ namespace Avalonia.Styling
         /// </summary>
         public IResourceDictionary Resources
         {
-            get
+            get => _resources ?? (Resources = new ResourceDictionary());
+            set
             {
-                if (_resources == null)
+                Contract.Requires<ArgumentNullException>(value != null);
+
+                var hadResources = false;
+
+                if (_resources != null)
                 {
-                    _resources = new ResourceDictionary();
-                    _resources.CollectionChanged += ResourceDictionaryChanged;
+                    hadResources = _resources.Count > 0;
+                    _resources.ResourcesChanged -= ResourceDictionaryChanged;
                 }
 
-                return _resources;
+                _resources = value;
+                _resources.ResourcesChanged += ResourceDictionaryChanged;
+
+                if (hadResources || _resources.Count > 0)
+                {
+                    ((ISetStyleParent)this).NotifyResourcesChanged(new ResourcesChangedEventArgs());
+                }
             }
         }
 
@@ -180,9 +191,9 @@ namespace Avalonia.Styling
             _applied.Remove(control);
         }
 
-        private void ResourceDictionaryChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void ResourceDictionaryChanged(object sender, ResourcesChangedEventArgs e)
         {
-            ResourcesChanged?.Invoke(this, new ResourcesChangedEventArgs());
+            ResourcesChanged?.Invoke(this, e);
         }
     }
 }
