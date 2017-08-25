@@ -90,6 +90,68 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         }
 
         [Fact]
+        public void DynamicResource_From_MergedDictionary_Can_Be_Assigned_To_Property()
+        {
+            var xaml = @"
+<UserControl xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary>
+                    <SolidColorBrush x:Key='brush'>#ff506070</SolidColorBrush>
+                </ResourceDictionary>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Border Name='border' Background='{DynamicResource brush}'/>
+</UserControl>";
+
+            var loader = new AvaloniaXamlLoader();
+            var userControl = (UserControl)loader.Load(xaml);
+            var border = userControl.FindControl<Border>("border");
+
+            DelayedBinding.ApplyBindings(border);
+
+            var brush = (SolidColorBrush)border.Background;
+            Assert.Equal(0xff506070, brush.Color.ToUint32());
+        }
+
+        [Fact]
+        public void DynamicResource_From_MergedDictionary_In_Style_Can_Be_Assigned_To_Property()
+        {
+            var xaml = @"
+<UserControl xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <UserControl.Styles>
+        <Style>
+            <Style.Resources>
+                <ResourceDictionary>
+                    <ResourceDictionary.MergedDictionaries>
+                        <ResourceDictionary>
+                            <SolidColorBrush x:Key='brush'>#ff506070</SolidColorBrush>
+                        </ResourceDictionary>
+                    </ResourceDictionary.MergedDictionaries>
+                </ResourceDictionary>
+            </Style.Resources>
+        </Style>
+    </UserControl.Styles>
+
+    <Border Name='border' Background='{DynamicResource brush}'/>
+</UserControl>";
+
+            var loader = new AvaloniaXamlLoader();
+            var userControl = (UserControl)loader.Load(xaml);
+            var border = userControl.FindControl<Border>("border");
+
+            DelayedBinding.ApplyBindings(border);
+
+            var brush = (SolidColorBrush)border.Background;
+            Assert.Equal(0xff506070, brush.Color.ToUint32());
+        }
+
+        [Fact]
         public void DynamicResource_From_Application_Can_Be_Assigned_To_Property_In_Window()
         {
             using (StyledWindow())
@@ -393,6 +455,99 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             Assert.Null(border.Background);
 
             ((Style)userControl.Styles[0]).Resources.Add("brush", new SolidColorBrush(0xff506070));
+
+            var brush = (SolidColorBrush)border.Background;
+            Assert.NotNull(brush);
+            Assert.Equal(0xff506070, brush.Color.ToUint32());
+        }
+
+        [Fact]
+        public void DynamicResource_Tracks_Added_MergedResource()
+        {
+            var xaml = @"
+<UserControl xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Border Name='border' Background='{DynamicResource brush}'/>
+</UserControl>";
+
+            var loader = new AvaloniaXamlLoader();
+            var userControl = (UserControl)loader.Load(xaml);
+            var border = userControl.FindControl<Border>("border");
+
+            DelayedBinding.ApplyBindings(border);
+
+            Assert.Null(border.Background);
+
+            userControl.Resources.MergedDictionaries[0].Add("brush", new SolidColorBrush(0xff506070));
+
+            var brush = (SolidColorBrush)border.Background;
+            Assert.NotNull(brush);
+            Assert.Equal(0xff506070, brush.Color.ToUint32());
+        }
+
+        [Fact]
+        public void DynamicResource_Tracks_Added_MergedResource_Dictionary()
+        {
+            var xaml = @"
+<UserControl xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Border Name='border' Background='{DynamicResource brush}'/>
+</UserControl>";
+
+            var loader = new AvaloniaXamlLoader();
+            var userControl = (UserControl)loader.Load(xaml);
+            var border = userControl.FindControl<Border>("border");
+
+            DelayedBinding.ApplyBindings(border);
+
+            Assert.Null(border.Background);
+
+            var dictionary = new ResourceDictionary
+            {
+                { "brush", new SolidColorBrush(0xff506070) },
+            };
+
+            userControl.Resources.MergedDictionaries.Add(dictionary);
+
+            var brush = (SolidColorBrush)border.Background;
+            Assert.NotNull(brush);
+            Assert.Equal(0xff506070, brush.Color.ToUint32());
+        }
+
+        [Fact]
+        public void DynamicResource_Tracks_Added_Style_MergedResource_Dictionary()
+        {
+            var xaml = @"
+<UserControl xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <UserControl.Styles>
+        <Style>
+        </Style>
+    </UserControl.Styles>
+    <Border Name='border' Background='{DynamicResource brush}'/>
+</UserControl>";
+
+            var loader = new AvaloniaXamlLoader();
+            var userControl = (UserControl)loader.Load(xaml);
+            var border = userControl.FindControl<Border>("border");
+
+            DelayedBinding.ApplyBindings(border);
+
+            Assert.Null(border.Background);
+
+            var dictionary = new ResourceDictionary
+            {
+                { "brush", new SolidColorBrush(0xff506070) },
+            };
+
+            ((Style)userControl.Styles[0]).Resources.MergedDictionaries.Add(dictionary);
 
             var brush = (SolidColorBrush)border.Background;
             Assert.NotNull(brush);
