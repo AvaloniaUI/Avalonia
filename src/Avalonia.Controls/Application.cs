@@ -149,7 +149,7 @@ namespace Avalonia
         IStyleHost IStyleHost.StylingParent => null;
 
         /// <inheritdoc/>
-        bool IResourceNode.HasResources => _resources?.Count > 0;
+        bool IResourceProvider.HasResources => _resources?.Count > 0;
 
         /// <inheritdoc/>
         IResourceNode IResourceNode.ResourceParent => null;
@@ -182,7 +182,7 @@ namespace Avalonia
         }
 
         /// <inheritdoc/>
-        bool IResourceNode.TryGetResource(string key, out object value)
+        bool IResourceProvider.TryGetResource(string key, out object value)
         {
             value = null;
             return (_resources?.TryGetResource(key, out value) ?? false) ||

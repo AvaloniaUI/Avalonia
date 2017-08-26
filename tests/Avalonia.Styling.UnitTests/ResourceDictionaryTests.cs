@@ -167,7 +167,7 @@ namespace Avalonia.Styling.UnitTests
             var raised = false;
 
             target.ResourcesChanged += (_, __) => raised = true;
-            target.MergedDictionaries[0].Add("foo", "bar");
+            ((IResourceDictionary)target.MergedDictionaries[0]).Add("foo", "bar");
 
             Assert.True(raised);
         }

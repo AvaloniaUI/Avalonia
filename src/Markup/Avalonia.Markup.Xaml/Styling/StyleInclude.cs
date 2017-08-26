@@ -52,7 +52,7 @@ namespace Avalonia.Markup.Xaml.Styling
         }
 
         /// <inheritdoc/>
-        bool IResourceNode.HasResources => Loaded.HasResources;
+        bool IResourceProvider.HasResources => Loaded.HasResources;
 
         /// <inheritdoc/>
         IResourceNode IResourceNode.ResourceParent => _parent;

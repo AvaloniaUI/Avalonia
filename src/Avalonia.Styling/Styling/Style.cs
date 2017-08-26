@@ -79,10 +79,10 @@ namespace Avalonia.Styling
         public IList<ISetter> Setters { get; set; } = new List<ISetter>();
 
         /// <inheritdoc/>
-        bool IResourceNode.HasResources => _resources?.Count > 0;
+        IResourceNode IResourceNode.ResourceParent => _parent;
 
         /// <inheritdoc/>
-        IResourceNode IResourceNode.ResourceParent => _parent;
+        bool IResourceProvider.HasResources => _resources?.Count > 0;
 
         /// <summary>
         /// Attaches the style to a control if the style's selector matches.

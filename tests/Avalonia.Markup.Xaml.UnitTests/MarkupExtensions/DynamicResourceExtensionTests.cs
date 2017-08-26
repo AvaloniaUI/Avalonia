@@ -485,7 +485,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
             Assert.Null(border.Background);
 
-            userControl.Resources.MergedDictionaries[0].Add("brush", new SolidColorBrush(0xff506070));
+            ((IResourceDictionary)userControl.Resources.MergedDictionaries[0]).Add("brush", new SolidColorBrush(0xff506070));
 
             var brush = (SolidColorBrush)border.Background;
             Assert.NotNull(brush);

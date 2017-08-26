@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Linq;
 using Avalonia.Collections;
 
 namespace Avalonia.Controls
@@ -13,7 +14,7 @@ namespace Avalonia.Controls
     /// </summary>
     public class ResourceDictionary : AvaloniaDictionary<string, object>, IResourceDictionary
     {
-        private AvaloniaList<IResourceDictionary> _mergedDictionaries;
+        private AvaloniaList<IResourceProvider> _mergedDictionaries;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ResourceDictionary"/> class.
@@ -27,18 +28,18 @@ namespace Avalonia.Controls
         public event EventHandler<ResourcesChangedEventArgs> ResourcesChanged;
 
         /// <inheritdoc/>
-        public IList<IResourceDictionary> MergedDictionaries
+        public IList<IResourceProvider> MergedDictionaries
         {
             get
             {
                 if (_mergedDictionaries == null)
                 {
-                    _mergedDictionaries = new AvaloniaList<IResourceDictionary>();
+                    _mergedDictionaries = new AvaloniaList<IResourceProvider>();
                     _mergedDictionaries.ResetBehavior = ResetBehavior.Remove;
                     _mergedDictionaries.ForEachItem(
                         x =>
                         {
-                            if (x.Count > 0)
+                            if (x.HasResources)
                             {
                                 OnResourcesChanged();
                             }
@@ -47,7 +48,7 @@ namespace Avalonia.Controls
                         },
                         x =>
                         {
-                            if (x.Count > 0)
+                            if (x.HasResources)
                             {
                                 OnResourcesChanged();
                             }
@@ -59,6 +60,12 @@ namespace Avalonia.Controls
 
                 return _mergedDictionaries;
             }
+        }
+
+        /// <inheritdoc/>
+        bool IResourceProvider.HasResources
+        {
+            get => Count > 0 || (_mergedDictionaries?.Any(x => x.HasResources) ?? false);
         }
 
         /// <inheritdoc/>
