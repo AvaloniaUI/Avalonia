@@ -23,7 +23,8 @@ namespace Avalonia.Controls
         /// <param name="key">The resource key.</param>
         /// <param name="value">
         /// When this method returns, contains the value associated with the specified key,
-        /// if the key is found; otherwise, null
+        /// if the key is found; otherwise, null.
+        /// </param>
         /// <returns>
         /// True if the resource if found, otherwise false.
         /// </returns>
