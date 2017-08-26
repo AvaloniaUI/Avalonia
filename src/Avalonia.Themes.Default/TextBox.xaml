@@ -1,8 +1,8 @@
 <Styles xmlns="https://github.com/avaloniaui">
   <Style Selector="TextBox">
-    <Setter Property="Background" Value="{StyleResource ThemeBackgroundBrush}"/>
-    <Setter Property="BorderBrush" Value="{StyleResource ThemeBorderMidBrush}"/>
-    <Setter Property="BorderThickness" Value="{StyleResource ThemeBorderThickness}"/>
+    <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}"/>
+    <Setter Property="BorderThickness" Value="{DynamicResource ThemeBorderThickness}"/>
     <Setter Property="Padding" Value="4"/>
     <Setter Property="Template">
       <ControlTemplate>
@@ -13,8 +13,8 @@
           <DockPanel Margin="{TemplateBinding Padding}">
             
             <TextBlock Name="floatingWatermark"
-                       Foreground="{StyleResource ThemeAccentBrush}"
-                       FontSize="{StyleResource FontSizeSmall}"
+                       Foreground="{DynamicResource ThemeAccentBrush}"
+                       FontSize="{DynamicResource FontSizeSmall}"
                        Text="{TemplateBinding Watermark}"
                        DockPanel.Dock="Top">
               <TextBlock.IsVisible>
@@ -33,7 +33,7 @@
                 <ToolTip.Tip>
                   <ItemsControl Items="{TemplateBinding DataValidationErrors}" MemberSelector="Message"/>
                 </ToolTip.Tip>
-                <Path Data="M14,7 A7,7 0 0,0 0,7 M0,7 A7,7 0 1,0 14,7 M7,3l0,5 M7,9l0,2" Stroke="{StyleResource ErrorBrush}" StrokeThickness="2"/>
+                <Path Data="M14,7 A7,7 0 0,0 0,7 M0,7 A7,7 0 1,0 14,7 M7,3l0,5 M7,9l0,2" Stroke="{DynamicResource ErrorBrush}" StrokeThickness="2"/>
               </Canvas>
               
               <ScrollViewer CanScrollHorizontally="{TemplateBinding CanScrollHorizontally}"
@@ -62,13 +62,13 @@
     </Setter>
   </Style>
   <Style Selector="TextBox:pointerover /template/ Border#border">
-    <Setter Property="BorderBrush" Value="{StyleResource ThemeBorderDarkBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderDarkBrush}"/>
   </Style>
   <Style Selector="TextBox:focus /template/ Border#border">
-    <Setter Property="BorderBrush" Value="{StyleResource ThemeBorderDarkBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderDarkBrush}"/>
   </Style>
   <Style Selector="TextBox:error /template/ Border#border">
-    <Setter Property="BorderBrush" Value="{StyleResource ErrorBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource ErrorBrush}"/>
   </Style>
   <Style Selector="TextBox /template/ Canvas#error">
     <Setter Property="IsVisible" Value="False"/>
@@ -77,7 +77,7 @@
     <Setter Property="IsVisible" Value="True"/>
   </Style>
   <Style Selector="TextBox /template/ ToolTip">
-    <Setter Property="Background" Value="{StyleResource ErrorBrushLight}"/>
-    <Setter Property="BorderBrush" Value="{StyleResource ErrorBrush}"/>
+    <Setter Property="Background" Value="{DynamicResource ErrorBrushLight}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource ErrorBrush}"/>
   </Style>
 </Styles>

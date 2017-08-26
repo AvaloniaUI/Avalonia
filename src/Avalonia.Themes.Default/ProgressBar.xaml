@@ -1,6 +1,6 @@
 <Style xmlns="https://github.com/avaloniaui" Selector="ProgressBar">
-  <Setter Property="Background" Value="{StyleResource ThemeAccentBrush4}"/>
-  <Setter Property="Foreground" Value="{StyleResource ThemeAccentBrush}"/>
+  <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush4}"/>
+  <Setter Property="Foreground" Value="{DynamicResource ThemeAccentBrush}"/>
   <Setter Property="MinHeight" Value="14"/>
   <Setter Property="MinWidth" Value="200"/>
   <Setter Property="Template">

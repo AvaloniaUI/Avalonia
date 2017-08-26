@@ -7,7 +7,7 @@
               Margin="0,16,0,0"
               HorizontalAlignment="Center"
               Gap="16">
-      <Border Background="{StyleResource ThemeAccentBrush}"
+      <Border Background="{DynamicResource ThemeAccentBrush}"
               Padding="48,48,48,48">
         <ToolTip.Tip>
           <StackPanel>

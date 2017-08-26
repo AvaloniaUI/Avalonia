@@ -2,7 +2,7 @@
   <Style Selector="ScrollBar">
     <Setter Property="Template">
       <ControlTemplate>
-        <Border Background="{StyleResource ThemeControlMidBrush}">
+        <Border Background="{DynamicResource ThemeControlMidBrush}">
           <Track Minimum="{TemplateBinding Minimum}"
                  Maximum="{TemplateBinding Maximum}"
                  Value="{TemplateBinding Path=Value, Mode=TwoWay}"
@@ -11,7 +11,7 @@
             <Thumb Name="thumb">
               <Thumb.Template>
                 <ControlTemplate>
-                  <Border Background="{StyleResource ThemeControlDarkBrush}"/>
+                  <Border Background="{DynamicResource ThemeControlDarkBrush}"/>
                 </ControlTemplate>
               </Thumb.Template>
             </Thumb>
