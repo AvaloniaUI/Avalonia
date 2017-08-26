@@ -62,8 +62,6 @@ namespace Avalonia.Collections
 
         public object SyncRoot => ((IDictionary)_inner).SyncRoot;
 
-        public object this[object key] { get => ((IDictionary)_inner)[key]; set => ((IDictionary)_inner)[key] = value; }
-
         /// <summary>
         /// Gets or sets the named resource.
         /// </summary>
@@ -101,6 +99,8 @@ namespace Avalonia.Collections
                 }
             }
         }
+
+        object IDictionary.this[object key] { get => ((IDictionary)_inner)[key]; set => ((IDictionary)_inner)[key] = value; }
 
         /// <inheritdoc/>
         public void Add(TKey key, TValue value)
