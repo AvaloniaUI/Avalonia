@@ -12,7 +12,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// An indexed dictionary of resources.
     /// </summary>
-    public class ResourceDictionary : AvaloniaDictionary<string, object>, IResourceDictionary
+    public class ResourceDictionary : AvaloniaDictionary<object, object>, IResourceDictionary
     {
         private AvaloniaList<IResourceProvider> _mergedDictionaries;
 
