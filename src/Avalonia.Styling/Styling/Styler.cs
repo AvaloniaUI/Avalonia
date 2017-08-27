@@ -29,7 +29,10 @@ namespace Avalonia.Styling
                 ApplyStyles(control, parentContainer);
             }
 
-            styleHost.Styles.Attach(control, styleHost);
+            if (styleHost.IsStylesInitialized)
+            {
+                styleHost.Styles.Attach(control, styleHost);
+            }
         }
     }
 }

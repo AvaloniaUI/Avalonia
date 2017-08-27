@@ -17,8 +17,8 @@ namespace Avalonia.Controls.Templates
         /// <param name="control">The control searching for the data template.</param>
         /// <param name="data">The data.</param>
         /// <param name="primary">
-        /// An optional primary template that can will be tried before the
-        /// <see cref="IControl.DataTemplates"/> in the tree are searched.
+        /// An optional primary template that can will be tried before the DataTemplates in the
+        /// tree are searched.
         /// </param>
         /// <returns>The data template or null if no matching data template was found.</returns>
         public static IDataTemplate FindDataTemplate(
@@ -31,13 +31,16 @@ namespace Avalonia.Controls.Templates
                 return primary;
             }
 
-            foreach (var i in control.GetSelfAndLogicalAncestors().OfType<IControl>())
+            foreach (var i in control.GetSelfAndLogicalAncestors().OfType<IDataTemplateHost>())
             {
-                foreach (IDataTemplate dt in i.DataTemplates)
+                if (i.IsDataTemplatesInitialized)
                 {
-                    if (dt.Match(data))
+                    foreach (IDataTemplate dt in i.DataTemplates)
                     {
-                        return dt;
+                        if (dt.Match(data))
+                        {
+                            return dt;
+                        }
                     }
                 }
             }
@@ -46,11 +49,14 @@ namespace Avalonia.Controls.Templates
 
             if (global != null)
             {
-                foreach (IDataTemplate dt in global.DataTemplates)
+                if (global.IsDataTemplatesInitialized)
                 {
-                    if (dt.Match(data))
+                    foreach (IDataTemplate dt in global.DataTemplates)
                     {
-                        return dt;
+                        if (dt.Match(data))
+                        {
+                            return dt;
+                        }
                     }
                 }
             }
