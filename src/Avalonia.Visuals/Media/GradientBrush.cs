@@ -4,12 +4,14 @@
 using System;
 using System.Collections.Generic;
 using Avalonia.Metadata;
+using System.Windows.Markup;
 
 namespace Avalonia.Media
 {
     /// <summary>
     /// Base class for brushes that draw with a gradient.
     /// </summary>
+    [ContentProperty(nameof(GradientStops))]
     public abstract class GradientBrush : Brush, IGradientBrush
     {
         /// <summary>

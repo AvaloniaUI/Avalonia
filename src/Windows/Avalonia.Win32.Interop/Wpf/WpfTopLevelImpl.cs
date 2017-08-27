@@ -1,4 +1,5 @@
-﻿using System;
+﻿extern alias av;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,6 +10,7 @@ using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
 using Avalonia.Controls.Embedding;
+using av::Avalonia;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Layout;
@@ -221,7 +223,7 @@ namespace Avalonia.Win32.Interop.Wpf
         protected override void OnTextInput(TextCompositionEventArgs e) 
             => _ttl.Input?.Invoke(new RawTextInputEventArgs(_keyboard, (uint) e.Timestamp, e.Text));
 
-        void ITopLevelImpl.SetCursor(IPlatformHandle cursor)
+        void ITopLevelImpl.SetCursor(av::Avalonia.Platform.IPlatformHandle cursor)
         {
             if (cursor == null)
                 Cursor = Cursors.Arrow;

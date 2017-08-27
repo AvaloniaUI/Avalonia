@@ -4,9 +4,11 @@
 using System;
 using Avalonia.Input;
 using Avalonia.Metadata;
+using System.Windows.Markup;
 
 namespace Avalonia.Controls.Primitives
 {
+    [ContentProperty(nameof(Thumb))]
     public class Track : Control
     {
         public static readonly DirectProperty<Track, double> MinimumProperty =

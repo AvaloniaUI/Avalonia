@@ -8,7 +8,7 @@ using System.Reflection;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml.Templates;
 using Avalonia.Media;
-using Avalonia.Metadata;
+using System.Windows.Markup;
 using Avalonia.Platform;
 using Avalonia.Styling;
 

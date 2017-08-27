@@ -15,9 +15,11 @@ using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Metadata;
 using Avalonia.Data;
+using System.Windows.Markup;
 
 namespace Avalonia.Controls
 {
+    [ContentProperty(nameof(Text))]
     public class TextBox : TemplatedControl, UndoRedoHelper<TextBox.UndoRedoState>.IUndoRedoHost
     {
         public static readonly StyledProperty<bool> AcceptsReturnProperty =

@@ -1,9 +1,11 @@
 ﻿using Avalonia.Controls.Shapes;
 using Avalonia.Media;
 using Avalonia.Metadata;
+using System.Windows.Markup;
 
 namespace Avalonia.Controls
 {
+    [ContentProperty(nameof(Drawing))]
     public class DrawingPresenter : Control
     {
         static DrawingPresenter()

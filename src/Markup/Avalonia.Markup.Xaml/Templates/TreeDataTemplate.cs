@@ -9,9 +9,11 @@ using Avalonia.Data;
 using Avalonia.Markup.Data;
 using Avalonia.Markup.Xaml.Data;
 using Avalonia.Metadata;
+using System.Windows.Markup;
 
 namespace Avalonia.Markup.Xaml.Templates
 {
+    [ContentProperty(nameof(Content))]
     public class TreeDataTemplate : ITreeDataTemplate
     {
         public Type DataType { get; set; }

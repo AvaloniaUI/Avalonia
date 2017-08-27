@@ -9,6 +9,7 @@ using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Metadata;
 using Avalonia.Reactive;
+using System.Windows.Markup;
 
 namespace Avalonia.Styling
 {
@@ -19,6 +20,7 @@ namespace Avalonia.Styling
     /// A <see cref="Setter"/> is used to set a <see cref="AvaloniaProperty"/> value on a
     /// <see cref="AvaloniaObject"/> depending on a condition.
     /// </remarks>
+    [ContentProperty(nameof(Value))]
     public class Setter : ISetter
     {
         private object _value;

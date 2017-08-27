@@ -6,12 +6,14 @@ using System.Collections.Generic;
 using Avalonia.Platform;
 using Avalonia.Metadata;
 using Avalonia.Collections;
+using System.Windows.Markup;
 
 namespace Avalonia.Media
 {
     /// <summary>
     /// Represents the geometry of an polyline or polygon.
     /// </summary>
+    [ContentProperty(nameof(Points))]
     public class PolylineGeometry : Geometry
     {
         /// <summary>
