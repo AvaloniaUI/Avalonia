@@ -249,11 +249,7 @@ namespace Avalonia.Controls
         /// Each control may define data templates which are applied to the control itself and its
         /// children.
         /// </remarks>
-        public DataTemplates DataTemplates
-        {
-            get { return _dataTemplates ?? (_dataTemplates = new DataTemplates()); }
-            set { _dataTemplates = value; }
-        }
+        public DataTemplates DataTemplates => _dataTemplates ?? (_dataTemplates = new DataTemplates());
 
         /// <summary>
         /// Gets a value that indicates whether the element has finished initialization.
@@ -265,7 +261,7 @@ namespace Avalonia.Controls
         public bool IsInitialized { get; private set; }
 
         /// <summary>
-        /// Gets or sets the styles for the control.
+        /// Gets the styles for the control.
         /// </summary>
         /// <remarks>
         /// Styles for the entire application are added to the Application.Styles collection, but
@@ -379,6 +375,9 @@ namespace Avalonia.Controls
             }
         }
 
+        /// <inheritdoc/>
+        bool IDataTemplateHost.IsDataTemplatesInitialized => _dataTemplates != null;
+
         /// <summary>
         /// Gets the <see cref="Classes"/> collection in a form that allows adding and removing
         /// pseudoclasses.
@@ -422,6 +421,9 @@ namespace Avalonia.Controls
 
         /// <inheritdoc/>
         IObservable<IStyleable> IStyleable.StyleDetach => _styleDetach;
+
+        /// <inheritdoc/>
+        bool IStyleHost.IsStylesInitialized => _styles != null;
 
         /// <inheritdoc/>
         IStyleHost IStyleHost.StylingParent => (IStyleHost)InheritanceParent;

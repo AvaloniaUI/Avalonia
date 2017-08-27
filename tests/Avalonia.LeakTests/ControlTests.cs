@@ -276,7 +276,7 @@ namespace Avalonia.LeakTests
                     {
                         Content = target = new TreeView
                         {
-                            DataTemplates = new DataTemplates
+                            DataTemplates =
                             {
                                 new FuncTreeDataTemplate<Node>(
                                     x => new TextBlock { Text = x.Name },
