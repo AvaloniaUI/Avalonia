@@ -21,7 +21,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new UserControl();
                 var root = new TestRoot
                 {
-                    Styles = new Styles
+                    Styles =
                     {
                         new Style(x => x.OfType<ContentControl>())
                         {
