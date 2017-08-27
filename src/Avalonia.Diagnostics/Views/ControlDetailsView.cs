@@ -42,7 +42,7 @@ namespace Avalonia.Diagnostics.Views
             {
                 Content = _grid = new SimpleGrid
                 {
-                    Styles = new Styles
+                    Styles =
                     {
                         new Style(x => x.Is<Control>())
                         {
