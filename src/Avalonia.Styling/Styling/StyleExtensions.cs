@@ -23,11 +23,14 @@ namespace Avalonia.Styling
 
             while (control != null)
             {
-                var result = control.Styles.FindResource(name);
-
-                if (result != AvaloniaProperty.UnsetValue)
+                if (control.IsStylesInitialized)
                 {
-                    return result;
+                    var result = control.Styles.FindResource(name);
+
+                    if (result != AvaloniaProperty.UnsetValue)
+                    {
+                        return result;
+                    }
                 }
 
                 control = control.StylingParent;

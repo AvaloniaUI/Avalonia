@@ -265,6 +265,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             };
 
             var globalStyles = new Mock<IGlobalStyles>();
+            globalStyles.Setup(x => x.IsStylesInitialized).Returns(true);
             globalStyles.Setup(x => x.Styles).Returns(styles);
 
             var renderInterface = new Mock<IPlatformRenderInterface>();

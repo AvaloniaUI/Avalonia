@@ -71,7 +71,7 @@ namespace Avalonia.Diagnostics
                         Width = 1024,
                         Height = 512,
                         Content = devTools,
-                        DataTemplates = new DataTemplates
+                        DataTemplates =
                         {
                             new ViewLocator<ViewModelBase>(),
                         }
