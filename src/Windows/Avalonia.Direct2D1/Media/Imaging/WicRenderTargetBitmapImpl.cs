@@ -10,12 +10,12 @@ using DirectWriteFactory = SharpDX.DirectWrite.Factory;
 
 namespace Avalonia.Direct2D1.Media
 {
-    public class RenderTargetBitmapImpl : WicBitmapImpl, IRenderTargetBitmapImpl
+    public class WicRenderTargetBitmapImpl : WicBitmapImpl, IRenderTargetBitmapImpl
     {
         private readonly DirectWriteFactory _dwriteFactory;
         private readonly WicRenderTarget _target;
 
-        public RenderTargetBitmapImpl(
+        public WicRenderTargetBitmapImpl(
             ImagingFactory imagingFactory,
             Factory d2dFactory,
             DirectWriteFactory dwriteFactory,
@@ -47,7 +47,7 @@ namespace Avalonia.Direct2D1.Media
 
         public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
         {
-            return new DrawingContextImpl(visualBrushRenderer, _target, _dwriteFactory);
+            return new DrawingContextImpl(visualBrushRenderer, _target, _dwriteFactory, ImagingFactory);
         }
 
         public IRenderTargetBitmapImpl CreateLayer(int pixelWidth, int pixelHeight)
