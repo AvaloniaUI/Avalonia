@@ -67,49 +67,69 @@ namespace Avalonia.Markup.UnitTests.Data
         }
 
         [Fact]
-        public async Task Should_Return_UnsetValue_For_Root_Null()
+        public async Task Should_Return_BindingNotification_Error_For_Root_Null()
         {
             var data = new Class3 { Foo = "foo" };
             var target = new ExpressionObserver(default(object), "Foo");
             var result = await target.Take(1);
 
-            Assert.Equal(AvaloniaProperty.UnsetValue, result);
+            Assert.Equal(
+                new BindingNotification(
+                        new MarkupBindingChainException("Null value", "Foo", string.Empty),
+                        BindingErrorType.Error,
+                        AvaloniaProperty.UnsetValue),
+                result);
 
             GC.KeepAlive(data);
         }
 
         [Fact]
-        public async Task Should_Return_UnsetValue_For_Root_UnsetValue()
+        public async Task Should_Return_BindingNotification_Error_For_Root_UnsetValue()
         {
             var data = new Class3 { Foo = "foo" };
             var target = new ExpressionObserver(AvaloniaProperty.UnsetValue, "Foo");
             var result = await target.Take(1);
 
-            Assert.Equal(AvaloniaProperty.UnsetValue, result);
+            Assert.Equal(
+                new BindingNotification(
+                        new MarkupBindingChainException("Null value", "Foo", string.Empty),
+                        BindingErrorType.Error,
+                        AvaloniaProperty.UnsetValue),
+                result);
 
             GC.KeepAlive(data);
         }
 
         [Fact]
-        public async Task Should_Return_UnsetValue_For_Observable_Root_Null()
+        public async Task Should_Return_BindingNotification_Error_For_Observable_Root_Null()
         {
             var data = new Class3 { Foo = "foo" };
             var target = new ExpressionObserver(Observable.Return(default(object)), "Foo");
             var result = await target.Take(1);
 
-            Assert.Equal(AvaloniaProperty.UnsetValue, result);
+            Assert.Equal(
+                new BindingNotification(
+                        new MarkupBindingChainException("Null value", "Foo", string.Empty),
+                        BindingErrorType.Error,
+                        AvaloniaProperty.UnsetValue),
+                result);
 
             GC.KeepAlive(data);
         }
 
         [Fact]
-        public async Task Should_Return_UnsetValue_For_Observable_Root_UnsetValue()
+        public async void Should_Return_BindingNotification_Error_For_Observable_Root_UnsetValue()
         {
             var data = new Class3 { Foo = "foo" };
             var target = new ExpressionObserver(Observable.Return(AvaloniaProperty.UnsetValue), "Foo");
             var result = await target.Take(1);
 
-            Assert.Equal(AvaloniaProperty.UnsetValue, result);
+            Assert.Equal(
+                new BindingNotification(
+                        new MarkupBindingChainException("Null value", "Foo", string.Empty),
+                        BindingErrorType.Error,
+                        AvaloniaProperty.UnsetValue),
+                result);
 
             GC.KeepAlive(data);
         }
@@ -117,7 +137,7 @@ namespace Avalonia.Markup.UnitTests.Data
         [Fact]
         public async Task Should_Get_Simple_Property_Chain()
         {
-            var data = new { Foo = new { Bar = new { Baz = "baz" } }  };
+            var data = new { Foo = new { Bar = new { Baz = "baz" } } };
             var target = new ExpressionObserver(data, "Foo.Bar.Baz");
             var result = await target.Take(1);
 
@@ -215,7 +235,7 @@ namespace Avalonia.Markup.UnitTests.Data
             var target = new ExpressionObserver(data, "Bar");
             var result = new List<object>();
 
-            var sub = target.Subscribe(x => result.Add(x));            
+            var sub = target.Subscribe(x => result.Add(x));
 
             Assert.Equal(new[] { "foo" }, result);
 
@@ -305,7 +325,7 @@ namespace Avalonia.Markup.UnitTests.Data
             data.Next = old;
 
             Assert.Equal(
-                new object[] 
+                new object[]
                 {
                     "bar",
                     new BindingNotification(
@@ -313,7 +333,7 @@ namespace Avalonia.Markup.UnitTests.Data
                         BindingErrorType.Error,
                         AvaloniaProperty.UnsetValue),
                     "bar"
-                }, 
+                },
                 result);
 
             sub.Dispose();
@@ -473,7 +493,7 @@ namespace Avalonia.Markup.UnitTests.Data
         [Fact]
         public void SetValue_Should_Return_False_For_Missing_Property()
         {
-            var data = new Class1 { Next = new WithoutBar()};
+            var data = new Class1 { Next = new WithoutBar() };
             var target = new ExpressionObserver(data, "Next.Bar");
 
             using (target.Subscribe(_ => { }))
@@ -545,12 +565,15 @@ namespace Avalonia.Markup.UnitTests.Data
             update.OnNext(Unit.Default);
 
             Assert.Equal(
-                new object[] 
+                new object[]
                 {
                     "foo",
                     "bar",
-                    AvaloniaProperty.UnsetValue,
-                }, 
+                    new BindingNotification(
+                        new MarkupBindingChainException("Null value", "Foo", string.Empty),
+                        BindingErrorType.Error,
+                        AvaloniaProperty.UnsetValue)
+                },
                 result);
 
             Assert.Equal(0, first.PropertyChangedSubscriptionCount);

@@ -388,7 +388,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 Template = GetTemplate(),
                 DataContext = "Base",
-                DataTemplates = new DataTemplates
+                DataTemplates =
                 {
                     new FuncDataTemplate<Item>(x => new Button { Content = x })
                 },

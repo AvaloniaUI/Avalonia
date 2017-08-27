@@ -135,7 +135,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 var root = new TestRoot
                 {
-                    Styles = new Styles
+                    Styles =
                     {
                         new Style(x => x.OfType<TabItem>())
                         {
@@ -174,7 +174,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 Template = new FuncControlTemplate<TabControl>(CreateTabControlTemplate),
                 DataContext = "Base",
-                DataTemplates = new DataTemplates
+                DataTemplates =
                 {
                     new FuncDataTemplate<Item>(x => new Button { Content = x })
                 },

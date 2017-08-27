@@ -664,24 +664,11 @@ namespace Avalonia
 
             if (notification != null)
             {
-                if (notification.ErrorType == BindingErrorType.Error)
-                {
-                    Logger.Error(
-                        LogArea.Binding,
-                        this,
-                        "Error in binding to {Target}.{Property}: {Message}",
-                        this,
-                        property,
-                        ExceptionUtilities.GetMessage(notification.Error));
-                }
-
-                if (notification.HasValue)
-                {
-                    value = notification.Value;
-                }
+                notification.LogIfError(this, property);
+                value = notification.Value;
             }
 
-            if (notification == null || notification.HasValue)
+            if (notification == null || notification.ErrorType == BindingErrorType.Error || notification.HasValue)
             {
                 var metadata = (IDirectPropertyMetadata)property.GetMetadata(GetType());
                 var accessor = (IDirectPropertyAccessor)GetRegistered(property);
