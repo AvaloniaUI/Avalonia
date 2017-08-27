@@ -9,7 +9,7 @@ using Avalonia.VisualTree;
 namespace Avalonia.Media.Imaging
 {
     /// <summary>
-    /// A bitmap that holds the rendering of a <see cref="IVisual"/>.
+    /// A bitmap that holds the rendering of an <see cref="IVisual"/>.
     /// </summary>
     public class RenderTargetBitmap : Bitmap, IDisposable, IRenderTarget
     {
@@ -21,7 +21,16 @@ namespace Avalonia.Media.Imaging
         /// <param name="dpiX">The horizontal DPI of the bitmap.</param>
         /// <param name="dpiY">The vertical DPI of the bitmap.</param>
         public RenderTargetBitmap(int pixelWidth, int pixelHeight, double dpiX = 96, double dpiY = 96)
-            : base(CreateImpl(pixelWidth, pixelHeight, dpiX, dpiY))
+            : this(CreateImpl(pixelWidth, pixelHeight, dpiX, dpiY))
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RenderTargetBitmap"/> class.
+        /// </summary>
+        /// <param name="impl">A platform-specific render target bitmap implementation.</param>
+        protected RenderTargetBitmap(IRenderTargetBitmapImpl impl)
+            : base(impl)
         {
         }
 
@@ -44,21 +53,28 @@ namespace Avalonia.Media.Imaging
         /// <param name="visual">The visual to render.</param>
         public void Render(IVisual visual) => ImmediateRenderer.Render(visual, this);
 
-        /// <summary>
-        /// Creates a platform-specific imlementation for a <see cref="RenderTargetBitmap"/>.
-        /// </summary>
-        /// <param name="width">The width of the bitmap.</param>
-        /// <param name="height">The height of the bitmap.</param>
-        /// <param name="dpiX">The horizontal DPI of the bitmap.</param>
-        /// <param name="dpiY">The vertical DPI of the bitmap.</param>
-        /// <returns>The platform-specific implementation.</returns>
-        private static IBitmapImpl CreateImpl(int width, int height, double dpiX, double dpiY)
-        {
-            IPlatformRenderInterface factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
-            return factory.CreateRenderTargetBitmap(width, height, dpiX, dpiY);
-        }
-
         /// <inheritdoc/>
         public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer vbr) => PlatformImpl.CreateDrawingContext(vbr);
+
+        public RenderTargetBitmap CreateLayer(int pixelWidth, int pixelHeight)
+        {
+            return new RenderTargetBitmap(CreateLayerImpl(pixelWidth, pixelHeight));
+        }
+
+        IRenderTargetBitmapImpl IRenderTarget.CreateLayer(int pixelWidth, int pixelHeight)
+        {
+            return CreateLayerImpl(pixelWidth, pixelHeight);
+        }
+
+        private static IRenderTargetBitmapImpl CreateImpl(int pixelWidth, int pixelHeight, double dpiX, double dpiY)
+        {
+            IPlatformRenderInterface factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
+            return factory.CreateRenderTargetBitmap(pixelWidth, pixelHeight, dpiX, dpiY);
+        }
+
+        private IRenderTargetBitmapImpl CreateLayerImpl(int pixelWidth, int pixelHeight)
+        {
+            return PlatformImpl.CreateLayer(pixelWidth, pixelHeight);
+        }
     }
 }

@@ -53,6 +53,16 @@ namespace Avalonia.Direct2D1
             return new DrawingContextImpl(visualBrushRenderer, _renderTarget, DirectWriteFactory);
         }
 
+        public IRenderTargetBitmapImpl CreateLayer(int pixelWidth, int pixelHeight)
+        {
+            var platform = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
+            return platform.CreateRenderTargetBitmap(
+                pixelWidth,
+                pixelHeight,
+                _renderTarget.DotsPerInch.Width,
+                _renderTarget.DotsPerInch.Height);
+        }
+
         public void Dispose()
         {
             _renderTarget.Dispose();

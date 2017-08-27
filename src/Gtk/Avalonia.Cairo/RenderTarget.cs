@@ -12,6 +12,7 @@ using DrawingContext = Avalonia.Media.DrawingContext;
 
 namespace Avalonia.Cairo
 {
+    using Avalonia.Cairo.Media.Imaging;
     using global::Cairo;
 
     /// <summary>
@@ -51,6 +52,11 @@ namespace Avalonia.Cairo
             if (_surface != null)
                 return new Media.DrawingContext(_surface, visualBrushRenderer);
             throw new InvalidOperationException("Unspecified render target");
+        }
+
+        public IRenderTargetBitmapImpl CreateLayer(int pixelWidth, int pixelHeight)
+        {
+            return new RenderTargetBitmapImpl(new ImageSurface(Format.Argb32, pixelWidth, pixelHeight));
         }
 
         public void Dispose() => _surface?.Dispose();

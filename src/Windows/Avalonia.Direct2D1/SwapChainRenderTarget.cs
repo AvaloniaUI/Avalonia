@@ -72,6 +72,16 @@ namespace Avalonia.Direct2D1
                 _swapChain);
         }
 
+        public IRenderTargetBitmapImpl CreateLayer(int pixelWidth, int pixelHeight)
+        {
+            var platform = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
+            return platform.CreateRenderTargetBitmap(
+                pixelWidth,
+                pixelHeight,
+                _savedDpi.Width,
+                _savedDpi.Height);
+        }
+
         public void Dispose()
         {
             _deviceContext?.Dispose();

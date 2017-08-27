@@ -256,6 +256,14 @@ namespace Direct3DInteropSample
                 return new DrawingContextImpl(visualBrushRenderer, _window._d2dRenderTarget,
                     AvaloniaLocator.Current.GetService<SharpDX.DirectWrite.Factory>());
             }
+
+            public IRenderTargetBitmapImpl CreateLayer(int pixelWidth, int pixelHeight)
+            {
+                var platform = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
+
+                // TODO: Get proper DPI here.
+                return platform.CreateRenderTargetBitmap(pixelWidth, pixelHeight, 96, 96);
+            }
         }
 
 

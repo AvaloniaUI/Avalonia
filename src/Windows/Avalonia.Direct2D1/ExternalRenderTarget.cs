@@ -43,5 +43,13 @@ namespace Avalonia.Direct2D1
                 }
             });
         }
+
+        public IRenderTargetBitmapImpl CreateLayer(int pixelWidth, int pixelHeight)
+        {
+            var platform = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
+
+            // TODO: Get proper DPI here.
+            return platform.CreateRenderTargetBitmap(pixelWidth, pixelHeight, 96, 96);
+        }
     }
 }

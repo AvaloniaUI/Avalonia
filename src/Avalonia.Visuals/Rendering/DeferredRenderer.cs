@@ -12,6 +12,7 @@ using System.IO;
 using Avalonia.Media.Immutable;
 using System.Threading;
 using System.Linq;
+using Avalonia.Media.Imaging;
 
 namespace Avalonia.Rendering
 {
@@ -26,7 +27,6 @@ namespace Avalonia.Rendering
         private readonly IVisual _root;
         private readonly ISceneBuilder _sceneBuilder;
         private readonly RenderLayers _layers;
-        private readonly IRenderLayerFactory _layerFactory;
 
         private bool _running;
         private Scene _scene;
@@ -45,13 +45,11 @@ namespace Avalonia.Rendering
         /// <param name="root">The control to render.</param>
         /// <param name="renderLoop">The render loop.</param>
         /// <param name="sceneBuilder">The scene builder to use. Optional.</param>
-        /// <param name="layerFactory">The layer factory to use. Optional.</param>
         /// <param name="dispatcher">The dispatcher to use. Optional.</param>
         public DeferredRenderer(
             IRenderRoot root,
             IRenderLoop renderLoop,
             ISceneBuilder sceneBuilder = null,
-            IRenderLayerFactory layerFactory = null,
             IDispatcher dispatcher = null)
         {
             Contract.Requires<ArgumentNullException>(root != null);
@@ -59,8 +57,7 @@ namespace Avalonia.Rendering
             _dispatcher = dispatcher ?? Dispatcher.UIThread;
             _root = root;
             _sceneBuilder = sceneBuilder ?? new SceneBuilder();
-            _layerFactory = layerFactory ?? new DefaultRenderLayerFactory();
-            _layers = new RenderLayers(_layerFactory);
+            _layers = new RenderLayers();
             _renderLoop = renderLoop;
         }
 
@@ -70,15 +67,13 @@ namespace Avalonia.Rendering
         /// <param name="root">The control to render.</param>
         /// <param name="renderTarget">The render target.</param>
         /// <param name="sceneBuilder">The scene builder to use. Optional.</param>
-        /// <param name="layerFactory">The layer factory to use. Optional.</param>
         /// <remarks>
         /// This constructor is intended to be used for unit testing.
         /// </remarks>
         public DeferredRenderer(
             IVisual root,
             IRenderTarget renderTarget,
-            ISceneBuilder sceneBuilder = null,
-            IRenderLayerFactory layerFactory = null)
+            ISceneBuilder sceneBuilder = null)
         {
             Contract.Requires<ArgumentNullException>(root != null);
             Contract.Requires<ArgumentNullException>(renderTarget != null);
@@ -86,8 +81,7 @@ namespace Avalonia.Rendering
             _root = root;
             _renderTarget = renderTarget;
             _sceneBuilder = sceneBuilder ?? new SceneBuilder();
-            _layerFactory = layerFactory ?? new DefaultRenderLayerFactory();
-            _layers = new RenderLayers(_layerFactory);
+            _layers = new RenderLayers(renderTarget);
         }
 
         /// <inheritdoc/>
@@ -183,6 +177,12 @@ namespace Avalonia.Rendering
             if (renderOverlay)
             {
                 _dirtyRectsDisplay.Tick();
+            }
+
+            if (_renderTarget == null)
+            {
+                _renderTarget = ((IRenderRoot)_root).CreateRenderTarget();
+                _layers.SetTarget(_renderTarget);
             }
 
             if (scene != null && scene.Size != Size.Empty)
@@ -305,11 +305,6 @@ namespace Avalonia.Rendering
         {
             try
             {
-                if (_renderTarget == null)
-                {
-                    _renderTarget = ((IRenderRoot)_root).CreateRenderTarget();
-                }
-
                 using (var context = _renderTarget.CreateDrawingContext(this))
                 {
                     var clientRect = new Rect(scene.Size);
@@ -431,7 +426,11 @@ namespace Avalonia.Rendering
                 _overlay.PixelHeight != size.Height)
             {
                 _overlay?.Dispose();
-                _overlay = _layerFactory.CreateLayer(null, size, 96 * scaling, 96 * scaling);
+                _overlay = new RenderTargetBitmap(
+                    (int)size.Width,
+                    (int)size.Height,
+                    96 * scaling,
+                    96 * scaling).PlatformImpl;
             }
 
             return _overlay;

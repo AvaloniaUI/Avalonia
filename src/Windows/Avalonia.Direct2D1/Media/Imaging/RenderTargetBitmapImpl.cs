@@ -49,5 +49,15 @@ namespace Avalonia.Direct2D1.Media
         {
             return new DrawingContextImpl(visualBrushRenderer, _target, _dwriteFactory);
         }
+
+        public IRenderTargetBitmapImpl CreateLayer(int pixelWidth, int pixelHeight)
+        {
+            var platform = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
+            return platform.CreateRenderTargetBitmap(
+                pixelWidth,
+                pixelHeight,
+                _target.DotsPerInch.Width,
+                _target.DotsPerInch.Height);
+        }
     }
 }
