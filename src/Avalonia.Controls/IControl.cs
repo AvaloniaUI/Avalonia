@@ -14,7 +14,15 @@ namespace Avalonia.Controls
     /// <summary>
     /// Interface for Avalonia controls.
     /// </summary>
-    public interface IControl : IVisual, ILogical, ILayoutable, IInputElement, INamed, IResourceNode, IStyleable, IStyleHost
+    public interface IControl : IVisual,
+        IDataTemplateHost,
+        ILogical,
+        ILayoutable,
+        IInputElement,
+        INamed,
+        IResourceNode,
+        IStyleable,
+        IStyleHost
     {
         /// <summary>
         /// Occurs when the control has finished initialization.
@@ -30,11 +38,6 @@ namespace Avalonia.Controls
         /// Gets or sets the control's data context.
         /// </summary>
         object DataContext { get; set; }
-
-        /// <summary>
-        /// Gets the data templates for the control.
-        /// </summary>
-        DataTemplates DataTemplates { get; }
 
         /// <summary>
         /// Gets a value that indicates whether the element has finished initialization.

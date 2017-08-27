@@ -16,13 +16,17 @@ namespace Avalonia.Interactivity
     /// </summary>
     public class Interactive : Layoutable, IInteractive
     {
-        private readonly Dictionary<RoutedEvent, List<EventSubscription>> _eventHandlers =
-            new Dictionary<RoutedEvent, List<EventSubscription>>();
+        private Dictionary<RoutedEvent, List<EventSubscription>> _eventHandlers;
 
         /// <summary>
         /// Gets the interactive parent of the object for bubbling and tunnelling events.
         /// </summary>
         IInteractive IInteractive.InteractiveParent => ((IVisual)this).VisualParent as IInteractive;
+
+        private Dictionary<RoutedEvent, List<EventSubscription>> EventHandlers
+        {
+            get { return _eventHandlers ?? (_eventHandlers = new Dictionary<RoutedEvent, List<EventSubscription>>()); }
+        }
 
         /// <summary>
         /// Adds a handler for the specified routed event.
@@ -43,10 +47,10 @@ namespace Avalonia.Interactivity
 
             List<EventSubscription> subscriptions;
 
-            if (!_eventHandlers.TryGetValue(routedEvent, out subscriptions))
+            if (!EventHandlers.TryGetValue(routedEvent, out subscriptions))
             {
                 subscriptions = new List<EventSubscription>();
-                _eventHandlers.Add(routedEvent, subscriptions);
+                EventHandlers.Add(routedEvent, subscriptions);
             }
 
             var sub = new EventSubscription
@@ -89,9 +93,9 @@ namespace Avalonia.Interactivity
             Contract.Requires<ArgumentNullException>(routedEvent != null);
             Contract.Requires<ArgumentNullException>(handler != null);
 
-            List<EventSubscription> subscriptions;
+            List<EventSubscription> subscriptions = null;
 
-            if (_eventHandlers.TryGetValue(routedEvent, out subscriptions))
+            if (_eventHandlers?.TryGetValue(routedEvent, out subscriptions) == true)
             {
                 subscriptions.RemoveAll(x => x.Handler == handler);
             }
@@ -181,9 +185,9 @@ namespace Avalonia.Interactivity
 
             e.RoutedEvent.InvokeRaised(this, e);
 
-            List<EventSubscription> subscriptions;
+            List<EventSubscription> subscriptions = null;
 
-            if (_eventHandlers.TryGetValue(e.RoutedEvent, out subscriptions))
+            if (_eventHandlers?.TryGetValue(e.RoutedEvent, out subscriptions) == true)
             {
                 foreach (var sub in subscriptions.ToList())
                 {
