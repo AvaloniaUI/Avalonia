@@ -33,6 +33,8 @@ namespace Avalonia.Controls
 
         // Slider required parts
         private Track _track;
+        private Button _decreaseButton;
+        private Button _increaseButton;
 
         /// <summary>
         /// Initializes static members of the <see cref="Slider"/> class. 
@@ -83,7 +85,39 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
         {
-            _track = e.NameScope.Get<Track>("PART_Track");
+            if (_decreaseButton != null)
+            {
+                _decreaseButton.Click -= DecreaseClick;
+            }
+
+            if (_increaseButton != null)
+            {
+                _increaseButton.Click -= IncreaseClick;
+            }
+
+            _decreaseButton = e.NameScope.Find<Button>("PART_DecreaseButton");
+            _track = e.NameScope.Find<Track>("PART_Track");
+            _increaseButton = e.NameScope.Find<Button>("PART_IncreaseButton");
+
+            if (_decreaseButton != null)
+            {
+                _decreaseButton.Click += DecreaseClick;
+            }
+
+            if (_increaseButton != null)
+            {
+                _increaseButton.Click += IncreaseClick;
+            }
+        }
+
+        private void DecreaseClick(object sender, RoutedEventArgs e)
+        {
+            Value = Math.Max(Value - LargeChange, Minimum);
+        }
+
+        private void IncreaseClick(object sender, RoutedEventArgs e)
+        {
+            Value = Math.Min(Value + LargeChange, Maximum);
         }
 
         /// <summary>
@@ -101,7 +135,7 @@ namespace Avalonia.Controls
         protected virtual void OnThumbDragDelta(VectorEventArgs e)
         {
             Thumb thumb = e.Source as Thumb;
-            if (thumb != null && _track.Thumb == thumb)
+            if (thumb != null && _track?.Thumb == thumb)
             {
                 MoveToNextTick(_track.Value);
             }

@@ -69,7 +69,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             target.Measure(new Size(100, 100));
             target.Arrange(new Rect(0, 0, 100, 100));
 
-            Assert.Equal(new Rect(25, 0, 50, 12), thumb.Bounds);
+            Assert.Equal(new Rect(33, 0, 34, 12), thumb.Bounds);
         }
 
         [Fact]
@@ -85,7 +85,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Thumb = thumb,
                 Orientation = Orientation.Vertical,
                 Minimum = 100,
-                Maximum = 300,
+                Maximum = 200,
                 Value = 150,
                 ViewportSize = 50,
                 Width = 12,
@@ -94,7 +94,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             target.Measure(new Size(100, 100));
             target.Arrange(new Rect(0, 0, 100, 100));
 
-            Assert.Equal(new Rect(0, 18, 12, 25), thumb.Bounds);
+            Assert.Equal(new Rect(0, 33, 12, 34), thumb.Bounds);
         }
 
         [Fact]
