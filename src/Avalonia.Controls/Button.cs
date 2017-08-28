@@ -2,13 +2,10 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Linq;
 using System.Windows.Input;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using Avalonia.Rendering;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -68,7 +65,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="Click"/> event.
         /// </summary>
         public static readonly RoutedEvent<RoutedEventArgs> ClickEvent =
-            RoutedEvent.Register<Button, RoutedEventArgs>("Click", RoutingStrategies.Bubble);
+            RoutedEvent.Register<Button, RoutedEventArgs>(nameof(Click), RoutingStrategies.Bubble);
 
         private ICommand _command;
 
@@ -78,7 +75,6 @@ namespace Avalonia.Controls
         static Button()
         {
             FocusableProperty.OverrideDefaultValue(typeof(Button), true);
-            ClickEvent.AddClassHandler<Button>(x => x.OnClick);
             CommandProperty.Changed.Subscribe(CommandChanged);
             IsDefaultProperty.Changed.Subscribe(IsDefaultChanged);
         }
@@ -145,9 +141,7 @@ namespace Avalonia.Controls
 
             if (IsDefault)
             {
-                var inputElement = e.Root as IInputElement;
-
-                if (inputElement != null)
+                if (e.Root is IInputElement inputElement)
                 {
                     ListenForDefault(inputElement);
                 }
@@ -159,14 +153,14 @@ namespace Avalonia.Controls
         {
             if (e.Key == Key.Enter)
             {
-                RaiseClickEvent();
+                OnClick();
                 e.Handled = true;
             }
             else if (e.Key == Key.Space)
             {
                 if (ClickMode == ClickMode.Press)
                 {
-                    RaiseClickEvent();
+                    OnClick();
                 }
 
                 e.Handled = true;
@@ -182,7 +176,7 @@ namespace Avalonia.Controls
             {
                 if (ClickMode == ClickMode.Release)
                 {
-                    RaiseClickEvent();
+                    OnClick();
                 }
 
                 e.Handled = true;
@@ -196,9 +190,7 @@ namespace Avalonia.Controls
 
             if (IsDefault)
             {
-                var inputElement = e.Root as IInputElement;
-
-                if (inputElement != null)
+                if (e.Root is IInputElement inputElement)
                 {
                     StopListeningForDefault(inputElement);
                 }
@@ -208,9 +200,11 @@ namespace Avalonia.Controls
         /// <summary>
         /// Invokes the <see cref="Click"/> event.
         /// </summary>
-        /// <param name="e">The event args.</param>
-        protected virtual void OnClick(RoutedEventArgs e)
+        protected virtual void OnClick()
         {
+            var e = new RoutedEventArgs(ClickEvent);
+            RaiseEvent(e);
+
             if (Command != null)
             {
                 Command.Execute(CommandParameter);
@@ -231,7 +225,7 @@ namespace Avalonia.Controls
 
                 if (ClickMode == ClickMode.Press)
                 {
-                    RaiseClickEvent();
+                    OnClick();
                 }
             }
         }
@@ -249,7 +243,7 @@ namespace Avalonia.Controls
 
                 if (ClickMode == ClickMode.Release && new Rect(Bounds.Size).Contains(e.GetPosition(this)))
                 {
-                    RaiseClickEvent();
+                    OnClick();
                 }
             }
         }
@@ -272,9 +266,7 @@ namespace Avalonia.Controls
         /// <param name="e">The event args.</param>
         private static void CommandChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            var button = e.Sender as Button;
-
-            if (button != null)
+            if (e.Sender is Button button)
             {
                 var oldCommand = e.OldValue as ICommand;
                 var newCommand = e.NewValue as ICommand;
@@ -301,9 +293,8 @@ namespace Avalonia.Controls
         {
             var button = e.Sender as Button;
             var isDefault = (bool)e.NewValue;
-            var inputRoot = button?.VisualRoot as IInputElement;
 
-            if (inputRoot != null)
+            if (button?.VisualRoot is IInputElement inputRoot)
             {
                 if (isDefault)
                 {
@@ -347,19 +338,6 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Raises the <see cref="Click"/> event.
-        /// </summary>
-        private void RaiseClickEvent()
-        {
-            RoutedEventArgs click = new RoutedEventArgs
-            {
-                RoutedEvent = ClickEvent,
-            };
-
-            RaiseEvent(click);
-        }
-
-        /// <summary>
         /// Called when a key is pressed on the input root and the button <see cref="IsDefault"/>.
         /// </summary>
         /// <param name="sender">The event sender.</param>
@@ -368,7 +346,7 @@ namespace Avalonia.Controls
         {
             if (e.Key == Key.Enter && IsVisible && IsEnabled)
             {
-                RaiseClickEvent();
+                OnClick();
             }
         }
     }
