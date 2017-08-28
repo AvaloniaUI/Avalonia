@@ -86,6 +86,9 @@ namespace Avalonia.Platform
         /// <param name="clip">The clip rectangle.</param>
         void PushClip(Rect clip);
 
+        /// <summary>
+        /// Pops the latest pushed clip rectangle.
+        /// </summary>
         void PopClip();
 
         /// <summary>
@@ -94,10 +97,19 @@ namespace Avalonia.Platform
         /// <param name="opacity">The opacity.</param>
         void PushOpacity(double opacity);
 
+        /// <summary>
+        /// Pops the latest pushed opacity value.
+        /// </summary>
         void PopOpacity();
 
+        /// <summary>
+        /// Pushes an opacity mask
+        /// </summary>
         void PushOpacityMask(IBrush mask, Rect bounds);
 
+        /// <summary>
+        /// Pops the latest pushed opacity mask.
+        /// </summary>
         void PopOpacityMask();
 
         /// <summary>
@@ -106,6 +118,9 @@ namespace Avalonia.Platform
         /// <param name="clip">The clip geometry.</param>
         void PushGeometryClip(IGeometryImpl clip);
 
+        /// <summary>
+        /// Pops the latest pushed geometry clip.
+        /// </summary>
         void PopGeometryClip();
     }
 }
