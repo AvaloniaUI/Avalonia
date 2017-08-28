@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Avalonia.Direct2D1.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
@@ -15,11 +11,16 @@ namespace Avalonia.Direct2D1
     {
         private readonly IExternalDirect2DRenderTargetSurface _externalRenderTargetProvider;
         private readonly DirectWriteFactory _dwFactory;
-        public ExternalRenderTarget(IExternalDirect2DRenderTargetSurface externalRenderTargetProvider,
-            DirectWriteFactory dwFactory)
+        private readonly SharpDX.WIC.ImagingFactory _wicFactory;
+
+        public ExternalRenderTarget(
+            IExternalDirect2DRenderTargetSurface externalRenderTargetProvider,
+            DirectWriteFactory dwFactory,
+            SharpDX.WIC.ImagingFactory wicFactory)
         {
             _externalRenderTargetProvider = externalRenderTargetProvider;
             _dwFactory = dwFactory;
+            _wicFactory = wicFactory;
         }
 
         public void Dispose()
@@ -31,7 +32,7 @@ namespace Avalonia.Direct2D1
         {
             var target =  _externalRenderTargetProvider.GetOrCreateRenderTarget();
             _externalRenderTargetProvider.BeforeDrawing();
-            return new DrawingContextImpl(visualBrushRenderer, target, _dwFactory, null, () =>
+            return new DrawingContextImpl(visualBrushRenderer, target, _dwFactory, _wicFactory, null, () =>
             {
                 try
                 {

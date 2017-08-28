@@ -10,6 +10,8 @@ namespace Avalonia.Direct2D1.Media
 {
     public sealed class ImageBrushImpl : BrushImpl
     {
+        OptionalDispose<Bitmap> _bitmap;
+
         public ImageBrushImpl(
             ITileBrush brush,
             SharpDX.Direct2D1.RenderTarget target,
@@ -20,9 +22,10 @@ namespace Avalonia.Direct2D1.Media
 
             if (!calc.NeedsIntermediate)
             {
+                _bitmap = bitmap.GetDirect2DBitmap(target);
                 PlatformBrush = new BitmapBrush(
                     target,
-                    bitmap.GetDirect2DBitmap(target),
+                    _bitmap.Value,
                     GetBitmapBrushProperties(brush),
                     GetBrushProperties(brush, calc.DestinationRect));
             }
@@ -41,7 +44,7 @@ namespace Avalonia.Direct2D1.Media
 
         public override void Dispose()
         {
-            ((BitmapBrush)PlatformBrush)?.Bitmap.Dispose();
+            _bitmap.Dispose();
             base.Dispose();
         }
 
