@@ -18,6 +18,7 @@ namespace Avalonia.Direct2D1.Media
     public class DrawingContextImpl : IDrawingContextImpl, IDisposable
     {
         private readonly IVisualBrushRenderer _visualBrushRenderer;
+        private readonly ILayerFactory _layerFactory;
         private readonly SharpDX.Direct2D1.RenderTarget _renderTarget;
         private readonly SharpDX.DXGI.SwapChain1 _swapChain;
         private readonly Action _finishedCallback;
@@ -29,12 +30,17 @@ namespace Avalonia.Direct2D1.Media
         /// </summary>
         /// <param name="visualBrushRenderer">The visual brush renderer.</param>
         /// <param name="renderTarget">The render target to draw to.</param>
+        /// <param name="layerFactory">
+        /// An object to use to create layers. May be null, in which case a
+        /// <see cref="WicRenderTargetBitmapImpl"/> will created when a new layer is requested.
+        /// </param>
         /// <param name="directWriteFactory">The DirectWrite factory.</param>
         /// <param name="imagingFactory">The WIC imaging factory.</param>
         /// <param name="swapChain">An optional swap chain associated with this drawing context.</param>
         /// <param name="finishedCallback">An optional delegate to be called when context is disposed.</param>
         public DrawingContextImpl(
             IVisualBrushRenderer visualBrushRenderer,
+            ILayerFactory layerFactory,
             SharpDX.Direct2D1.RenderTarget renderTarget,
             SharpDX.DirectWrite.Factory directWriteFactory,
             SharpDX.WIC.ImagingFactory imagingFactory,
@@ -42,6 +48,7 @@ namespace Avalonia.Direct2D1.Media
             Action finishedCallback = null)
         {
             _visualBrushRenderer = visualBrushRenderer;
+            _layerFactory = layerFactory;
             _renderTarget = renderTarget;
             _swapChain = swapChain;
             _finishedCallback = finishedCallback;
@@ -282,6 +289,25 @@ namespace Avalonia.Direct2D1.Media
                             b.PlatformBrush);
                     }
                 }
+            }
+        }
+
+        public IRenderTargetBitmapImpl CreateLayer(Size size)
+        {
+            if (_layerFactory != null)
+            {
+                return _layerFactory.CreateLayer(size);
+            }
+            else
+            {
+                var platform = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
+                var dpi = new Vector(_renderTarget.DotsPerInch.Width, _renderTarget.DotsPerInch.Height);
+                var pixelSize = size * (dpi / 96);
+                return platform.CreateRenderTargetBitmap(
+                    (int)pixelSize.Width,
+                    (int)pixelSize.Height,
+                    dpi.X,
+                    dpi.Y);
             }
         }
 

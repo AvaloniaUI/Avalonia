@@ -349,6 +349,12 @@ namespace Avalonia.Skia
             }
         }
 
+        public IRenderTargetBitmapImpl CreateLayer(Size size)
+        {
+            var pixelSize = size * (_dpi / 96);
+            return new BitmapImpl((int)pixelSize.Width, (int)pixelSize.Height, _dpi);
+        }
+
         public void PushClip(Rect clip)
         {
             Canvas.Save();

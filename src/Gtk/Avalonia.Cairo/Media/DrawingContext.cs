@@ -227,6 +227,12 @@ namespace Avalonia.Cairo.Media
             }
         }
 
+        public IRenderTargetBitmapImpl CreateLayer(Size size)
+        {
+            var surface = new Cairo.ImageSurface(Cairo.Format.Argb32, (int)size.Width, (int)size.Height);
+            return new RenderTargetBitmapImpl(surface);
+        }
+
         /// <summary>
         /// Pushes a clip rectange.
         /// </summary>

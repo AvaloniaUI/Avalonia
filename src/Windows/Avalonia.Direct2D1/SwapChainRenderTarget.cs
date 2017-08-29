@@ -14,7 +14,7 @@ using Avalonia.Direct2D1.Media.Imaging;
 
 namespace Avalonia.Direct2D1
 {
-    public abstract class SwapChainRenderTarget : IRenderTarget, ICreateLayer
+    public abstract class SwapChainRenderTarget : IRenderTarget, ILayerFactory
     {
         private Size2 _savedSize;
         private Size2F _savedDpi;
@@ -56,13 +56,14 @@ namespace Avalonia.Direct2D1
 
             return new DrawingContextImpl(
                 visualBrushRenderer,
+                this,
                 _deviceContext,
                 DirectWriteFactory,
                 WicImagingFactory,
                 _swapChain);
         }
 
-        public IRenderTargetBitmapImpl CreateLayer(int pixelWidth, int pixelHeight)
+        public IRenderTargetBitmapImpl CreateLayer(Size size)
         {
             if (_deviceContext == null)
             {
@@ -73,8 +74,7 @@ namespace Avalonia.Direct2D1
                 WicImagingFactory,
                 DirectWriteFactory,
                 _deviceContext,
-                pixelWidth,
-                pixelHeight);
+                size);
         }
 
         public void Dispose()

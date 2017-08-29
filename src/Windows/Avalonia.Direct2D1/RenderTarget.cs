@@ -3,6 +3,7 @@
 
 using System;
 using Avalonia.Direct2D1.Media;
+using Avalonia.Direct2D1.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using SharpDX.Direct2D1;
@@ -11,7 +12,7 @@ using WicFactory = SharpDX.WIC.ImagingFactory;
 
 namespace Avalonia.Direct2D1
 {
-    public class RenderTarget : IRenderTarget
+    public class RenderTarget : IRenderTarget, ILayerFactory
     {
         /// <summary>
         /// The render target.
@@ -40,7 +41,16 @@ namespace Avalonia.Direct2D1
         /// <returns>An <see cref="Avalonia.Platform.IDrawingContextImpl"/>.</returns>
         public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
         {
-            return new DrawingContextImpl(visualBrushRenderer, _renderTarget, DirectWriteFactory, WicFactory);
+            return new DrawingContextImpl(visualBrushRenderer, this, _renderTarget, DirectWriteFactory, WicFactory);
+        }
+
+        public IRenderTargetBitmapImpl CreateLayer(Size size)
+        {
+            return D2DRenderTargetBitmapImpl.CreateCompatible(
+                WicFactory,
+                DirectWriteFactory,
+                _renderTarget,
+                size);
         }
 
         public void Dispose()

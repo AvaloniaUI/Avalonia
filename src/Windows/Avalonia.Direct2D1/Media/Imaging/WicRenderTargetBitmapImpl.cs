@@ -47,7 +47,12 @@ namespace Avalonia.Direct2D1.Media
 
         public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
         {
-            return new DrawingContextImpl(visualBrushRenderer, _target, _dwriteFactory, WicImagingFactory);
+            return new DrawingContextImpl(
+                visualBrushRenderer,
+                null,
+                _target,
+                _dwriteFactory,
+                WicImagingFactory);
         }
     }
 }

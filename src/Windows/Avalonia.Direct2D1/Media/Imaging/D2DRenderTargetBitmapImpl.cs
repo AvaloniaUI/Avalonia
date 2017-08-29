@@ -9,7 +9,7 @@ using DirectWriteFactory = SharpDX.DirectWrite.Factory;
 
 namespace Avalonia.Direct2D1.Media.Imaging
 {
-    public class D2DRenderTargetBitmapImpl : D2DBitmapImpl, IRenderTargetBitmapImpl, ICreateLayer
+    public class D2DRenderTargetBitmapImpl : D2DBitmapImpl, IRenderTargetBitmapImpl, ILayerFactory
     {
         private readonly DirectWriteFactory _dwriteFactory;
         private readonly BitmapRenderTarget _target;
@@ -31,13 +31,12 @@ namespace Avalonia.Direct2D1.Media.Imaging
             ImagingFactory imagingFactory,
             DirectWriteFactory dwriteFactory,
             SharpDX.Direct2D1.RenderTarget renderTarget,
-            int pixelWidth,
-            int pixelHeight)
+            Size size)
         {
             var bitmapRenderTarget = new BitmapRenderTarget(
                 renderTarget,
                 CompatibleRenderTargetOptions.None,
-                new Size2F(pixelWidth, pixelHeight));
+                new Size2F((float)size.Width, (float)size.Height));
             return new D2DRenderTargetBitmapImpl(imagingFactory, dwriteFactory, bitmapRenderTarget);
         }
 
@@ -45,14 +44,15 @@ namespace Avalonia.Direct2D1.Media.Imaging
         {
             return new DrawingContextImpl(
                 visualBrushRenderer,
+                this,
                 _target,
                 _dwriteFactory,
                 WicImagingFactory);
         }
 
-        public IRenderTargetBitmapImpl CreateLayer(int pixelWidth, int pixelHeight)
+        public IRenderTargetBitmapImpl CreateLayer(Size size)
         {
-            return CreateCompatible(WicImagingFactory, _dwriteFactory, _target, pixelWidth, pixelHeight);
+            return CreateCompatible(WicImagingFactory, _dwriteFactory, _target, size);
         }
 
         public override void Dispose()

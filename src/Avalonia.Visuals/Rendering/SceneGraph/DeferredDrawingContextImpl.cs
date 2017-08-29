@@ -194,6 +194,11 @@ namespace Avalonia.Rendering.SceneGraph
             }
         }
 
+        public IRenderTargetBitmapImpl CreateLayer(Size size)
+        {
+            throw new NotImplementedException();
+        }
+
         /// <inheritdoc/>
         public void PopClip()
         {

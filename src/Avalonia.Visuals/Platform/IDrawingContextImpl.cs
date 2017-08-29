@@ -81,6 +81,20 @@ namespace Avalonia.Platform
         void FillRectangle(IBrush brush, Rect rect, float cornerRadius = 0.0f);
 
         /// <summary>
+        /// Creates a new <see cref="IRenderTargetBitmapImpl"/> that can be used as a render layer
+        /// for the current render target.
+        /// </summary>
+        /// <param name="size">The size of the layer in DIPs.</param>
+        /// <returns>An <see cref="IRenderTargetBitmapImpl"/></returns>
+        /// <remarks>
+        /// Depending on the rendering backend used, a layer created via this method may be more
+        /// performant than a standard render target bitmap. In particular the Direct2D backend
+        /// has to do a format conversion each time a standard render target bitmap is rendered,
+        /// but a layer created via this method has no such overhead.
+        /// </remarks>
+        IRenderTargetBitmapImpl CreateLayer(Size size);
+
+        /// <summary>
         /// Pushes a clip rectange.
         /// </summary>
         /// <param name="clip">The clip rectangle.</param>
