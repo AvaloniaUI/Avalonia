@@ -84,6 +84,7 @@ namespace Avalonia.Controls
             ClickEvent.AddClassHandler<Button>(x => x.OnClick);
             CommandProperty.Changed.Subscribe(CommandChanged);
             IsDefaultProperty.Changed.Subscribe(IsDefaultChanged);
+            PseudoClass(IsPressedProperty, ":pressed");
         }
 
         /// <summary>
@@ -234,7 +235,6 @@ namespace Avalonia.Controls
 
             if (e.MouseButton == MouseButton.Left)
             {
-                PseudoClasses.Add(":pressed");
                 e.Device.Capture(this);
                 IsPressed = true;
                 e.Handled = true;
@@ -254,7 +254,6 @@ namespace Avalonia.Controls
             if (e.MouseButton == MouseButton.Left)
             {
                 e.Device.Capture(null);
-                PseudoClasses.Remove(":pressed");
                 IsPressed = false;
                 e.Handled = true;
 
