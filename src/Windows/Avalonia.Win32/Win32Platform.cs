@@ -167,7 +167,7 @@ namespace Avalonia.Win32
 
             UnmanagedMethods.WNDCLASSEX wndClassEx = new UnmanagedMethods.WNDCLASSEX
             {
-                cbSize = Marshal.SizeOf(typeof(UnmanagedMethods.WNDCLASSEX)),
+                cbSize = Marshal.SizeOf<UnmanagedMethods.WNDCLASSEX>(),
                 lpfnWndProc = _wndProcDelegate,
                 hInstance = UnmanagedMethods.GetModuleHandle(null),
                 lpszClassName = "AvaloniaMessageWindow " + Guid.NewGuid(),
