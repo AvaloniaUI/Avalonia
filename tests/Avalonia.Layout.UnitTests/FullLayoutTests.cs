@@ -193,6 +193,7 @@ namespace Avalonia.Layout.UnitTests
                 .Bind<IWindowingPlatform>().ToConstant(new Avalonia.Controls.UnitTests.WindowingPlatformMock(() => windowImpl.Object));
 
             var theme = new DefaultTheme();
+            globalStyles.Setup(x => x.IsStylesInitialized).Returns(true);
             globalStyles.Setup(x => x.Styles).Returns(theme);
         }
     }

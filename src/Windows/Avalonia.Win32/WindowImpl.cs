@@ -426,7 +426,7 @@ namespace Avalonia.Win32
 
                 case UnmanagedMethods.WindowsMessage.WM_DPICHANGED:
                     var dpi = ToInt32(wParam) & 0xffff;
-                    var newDisplayRect = (UnmanagedMethods.RECT)Marshal.PtrToStructure(lParam, typeof(UnmanagedMethods.RECT));
+                    var newDisplayRect = Marshal.PtrToStructure<UnmanagedMethods.RECT>(lParam);
                     Position = new Point(newDisplayRect.left, newDisplayRect.top);
                     _scaling = dpi / 96.0;
                     ScalingChanged?.Invoke(_scaling);
@@ -494,7 +494,7 @@ namespace Avalonia.Win32
                     {
                         var tm = new UnmanagedMethods.TRACKMOUSEEVENT
                         {
-                            cbSize = Marshal.SizeOf(typeof(UnmanagedMethods.TRACKMOUSEEVENT)),
+                            cbSize = Marshal.SizeOf<UnmanagedMethods.TRACKMOUSEEVENT>(),
                             dwFlags = 2,
                             hwndTrack = _hwnd,
                             dwHoverTime = 0,
@@ -619,7 +619,7 @@ namespace Avalonia.Win32
 
             UnmanagedMethods.WNDCLASSEX wndClassEx = new UnmanagedMethods.WNDCLASSEX
             {
-                cbSize = Marshal.SizeOf(typeof(UnmanagedMethods.WNDCLASSEX)),
+                cbSize = Marshal.SizeOf<UnmanagedMethods.WNDCLASSEX>(),
                 style = 0,
                 lpfnWndProc = _wndProcDelegate,
                 hInstance = UnmanagedMethods.GetModuleHandle(null),
