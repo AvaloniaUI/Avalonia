@@ -4,13 +4,26 @@
         <TextBlock Classes="h1">ToolTip</TextBlock>
         <TextBlock Classes="h2">A control which pops up a hint when a control is hovered</TextBlock>
 
-        <StackPanel Orientation="Horizontal"
-                    Margin="0,16,0,0"
-                    HorizontalAlignment="Center"
-                    Gap="16">
-            <CheckBox IsChecked="{Binding ElementName=Border, Path=(ToolTip.IsOpen)}"
-                      Content="Show ToolTip" />
+        <Grid RowDefinitions="Auto,Auto"
+              ColumnDefinitions="Auto,Auto"
+              Margin="0,16,0,0"
+              HorizontalAlignment="Center">
+            <Border Grid.Column="0"
+                    Grid.Row="1"
+                    Background="{StyleResource ThemeAccentBrush}"
+                    Margin="5"
+                    Padding="50"
+                    ToolTip.Tip="This is a ToolTip">
+                <TextBlock>Hover Here</TextBlock>
+            </Border>
+            <CheckBox Grid.Column="1"
+                      Margin="5"
+                      Grid.Row="0"
+                      IsChecked="{Binding ElementName=Border, Path=(ToolTip.IsOpen)}"
+                      Content="ToolTip Open" />
             <Border Name="Border"
+                    Grid.Column="1"
+                    Grid.Row="1"
                     Background="{StyleResource ThemeAccentBrush}"
                     Margin="5"
                     Padding="50"
@@ -21,14 +34,8 @@
                         <TextBlock Classes="h2">A control which pops up a hint when a control is hovered</TextBlock>
                     </StackPanel>
                 </ToolTip.Tip>
-                <TextBlock>Hover Here</TextBlock>
+                <TextBlock>ToolTip bottom placement</TextBlock>
             </Border>
-            <Border Background="{StyleResource ThemeAccentBrush}"
-                    Margin="5"
-                    Padding="50"
-                    ToolTip.Tip="Another tip">
-                <TextBlock>And Here</TextBlock>
-            </Border>
-        </StackPanel>
+        </Grid>
     </StackPanel>
 </UserControl>
