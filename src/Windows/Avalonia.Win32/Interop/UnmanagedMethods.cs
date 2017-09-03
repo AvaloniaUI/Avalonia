@@ -701,8 +701,38 @@ namespace Avalonia.Win32.Interop
         [DllImport("user32.dll", SetLastError = true)]
         public static extern uint GetWindowLongPtr(IntPtr hWnd, int nIndex);
 
+        [DllImport("user32.dll", SetLastError = true, EntryPoint = "GetWindowLong")]
+        public static extern uint GetWindowLong32b(IntPtr hWnd, int nIndex);
+
+        public static uint GetWindowLong(IntPtr hWnd, int nIndex)
+        {
+            if(IntPtr.Size == 4)
+            {
+                return GetWindowLong32b(hWnd, nIndex);
+            }
+            else
+            {
+                return GetWindowLongPtr(hWnd, nIndex);
+            }
+        }
+
+        [DllImport("user32.dll", SetLastError = true, EntryPoint = "SetWindowLong")]
+        public static extern uint SetWindowLong32b(IntPtr hWnd, int nIndex, uint value);
+
         [DllImport("user32.dll", SetLastError = true)]
         public static extern uint SetWindowLongPtr(IntPtr hWnd, int nIndex, uint value);
+
+        public static uint SetWindowLong(IntPtr hWnd, int nIndex, uint value)
+        {
+            if (IntPtr.Size == 4)
+            {
+                return SetWindowLong32b(hWnd, nIndex, value);
+            }
+            else
+            {
+                return SetWindowLongPtr(hWnd, nIndex, value);
+            }
+        }
 
         [DllImport("user32.dll", SetLastError = true)]
         public static extern bool GetWindowPlacement(IntPtr hWnd, ref WINDOWPLACEMENT lpwndpl);
