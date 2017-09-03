@@ -699,10 +699,10 @@ namespace Avalonia.Win32.Interop
         public static extern int GetSystemMetrics(SystemMetric smIndex);
 
         [DllImport("user32.dll", SetLastError = true)]
-        public static extern uint GetWindowLong(IntPtr hWnd, int nIndex);
+        public static extern uint GetWindowLongPtr(IntPtr hWnd, int nIndex);
 
         [DllImport("user32.dll", SetLastError = true)]
-        public static extern uint SetWindowLong(IntPtr hWnd, int nIndex, uint value);
+        public static extern uint SetWindowLongPtr(IntPtr hWnd, int nIndex, uint value);
 
         [DllImport("user32.dll", SetLastError = true)]
         public static extern bool GetWindowPlacement(IntPtr hWnd, ref WINDOWPLACEMENT lpwndpl);
