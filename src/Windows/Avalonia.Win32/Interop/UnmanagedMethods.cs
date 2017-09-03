@@ -717,10 +717,10 @@ namespace Avalonia.Win32.Interop
         }
 
         [DllImport("user32.dll", SetLastError = true, EntryPoint = "SetWindowLong")]
-        public static extern uint SetWindowLong32b(IntPtr hWnd, int nIndex, uint value);
+        private static extern uint SetWindowLong32b(IntPtr hWnd, int nIndex, uint value);
 
         [DllImport("user32.dll", SetLastError = true)]
-        public static extern uint SetWindowLongPtr(IntPtr hWnd, int nIndex, uint value);
+        private static extern uint SetWindowLongPtr(IntPtr hWnd, int nIndex, uint value);
 
         public static uint SetWindowLong(IntPtr hWnd, int nIndex, uint value)
         {

@@ -66,8 +66,8 @@ namespace Avalonia.Win32
         {
             get
             {
-                var style = UnmanagedMethods.GetWindowLongPtr(_hwnd, -16);
-                var exStyle = UnmanagedMethods.GetWindowLongPtr(_hwnd, -20);
+                var style = UnmanagedMethods.GetWindowLong(_hwnd, -16);
+                var exStyle = UnmanagedMethods.GetWindowLong(_hwnd, -20);
                 var padding = new UnmanagedMethods.RECT();
 
                 if (UnmanagedMethods.AdjustWindowRectEx(ref padding, style, false, exStyle))
@@ -219,7 +219,7 @@ namespace Avalonia.Win32
                 return;
             }
 
-            var style = (UnmanagedMethods.WindowStyles)UnmanagedMethods.GetWindowLongPtr(_hwnd, -16);
+            var style = (UnmanagedMethods.WindowStyles)UnmanagedMethods.GetWindowLong(_hwnd, -16);
 
             style |= UnmanagedMethods.WindowStyles.WS_OVERLAPPEDWINDOW;
 
@@ -235,7 +235,7 @@ namespace Avalonia.Win32
             Rect newRect;
             var oldThickness = BorderThickness;
 
-            UnmanagedMethods.SetWindowLongPtr(_hwnd, -16, (uint)style);
+            UnmanagedMethods.SetWindowLong(_hwnd, -16, (uint)style);
 
             if (value)
             {
