@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+using System;
 
 namespace ControlCatalog
 {
@@ -10,7 +11,8 @@ namespace ControlCatalog
         {
             this.InitializeComponent();
             this.AttachDevTools();
-            Renderer.DrawDirtyRects = Renderer.DrawFps = true;
+            //Renderer.DrawDirtyRects = Renderer.DrawFps = true;
+            PlatformImpl.ShowTaskbarIcon(false);
         }
 
         private void InitializeComponent()

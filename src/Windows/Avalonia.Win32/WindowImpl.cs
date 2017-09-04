@@ -750,5 +750,22 @@ namespace Avalonia.Win32
 
             return (int)(ptr.ToInt64() & 0xffffffff);
         }
+
+        public void ShowTaskbarIcon(bool value)
+        {
+            var style = (UnmanagedMethods.WindowStyles)UnmanagedMethods.GetWindowLong(_hwnd, -20);
+            
+            style &= ~(UnmanagedMethods.WindowStyles.WS_VISIBLE);   
+
+            style |= UnmanagedMethods.WindowStyles.WS_EX_TOOLWINDOW;   
+            if (value)
+                style |= UnmanagedMethods.WindowStyles.WS_EX_APPWINDOW;
+            else
+                style &= ~(UnmanagedMethods.WindowStyles.WS_EX_APPWINDOW);
+
+            UnmanagedMethods.ShowWindow(_hwnd, ShowWindowCommand.Hide);
+            UnmanagedMethods.SetWindowLong(_hwnd, -20, (uint)style);
+            UnmanagedMethods.ShowWindow(_hwnd, ShowWindowCommand.Show); 
+        }
     }
 }

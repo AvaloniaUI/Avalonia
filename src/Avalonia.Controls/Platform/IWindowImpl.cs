@@ -39,5 +39,9 @@ namespace Avalonia.Platform
         /// Sets the icon of this window.
         /// </summary>
         void SetIcon(IWindowIconImpl icon);
+
+
+
+        void ShowTaskbarIcon(bool value);
     }
 }

@@ -127,5 +127,10 @@ namespace Avalonia.Gtk
         {
             Window.Icon = ((IconImpl)icon).Pixbuf;
         }
+
+        public void ShowTaskbarIcon(bool value)
+        {
+            Window.SkipTaskbarHint = !value;
+        }
     }
 }

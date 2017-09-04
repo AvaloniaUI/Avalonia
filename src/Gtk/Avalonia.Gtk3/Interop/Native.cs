@@ -39,6 +39,9 @@ namespace Avalonia.Gtk3.Interop
             public delegate void gtk_widget_hide(GtkWidget gtkWidget);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
+            public delegate void gtk_widget_show(GtkWidget gtkWidget);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
             public delegate void gtk_window_set_icon(GtkWindow window, Pixbuf pixbuf);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
@@ -75,7 +78,6 @@ namespace Avalonia.Gtk3.Interop
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
             public delegate void gdk_window_resize(IntPtr gtkWindow, int width, int height);
 
-
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
             public delegate void gtk_widget_realize(GtkWidget gtkWidget);
 
@@ -85,6 +87,13 @@ namespace Avalonia.Gtk3.Interop
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
             public delegate void gtk_window_set_decorated(GtkWindow gtkWindow, bool decorated);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
+            public delegate void gtk_window_set_skip_taskbar_hint(GtkWindow gtkWindow, bool setting); 
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
+            public delegate void gtk_window_set_skip_pager_hint(GtkWindow gtkWindow, bool setting); 
+             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
+            public delegate bool gtk_window_get_skip_taskbar_hint(GtkWindow gtkWindow);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
             public delegate void gtk_window_get_size(GtkWindow gtkWindow, out int width, out int height);
@@ -271,6 +280,9 @@ namespace Avalonia.Gtk3.Interop
 
 
         public static D.gtk_window_set_decorated GtkWindowSetDecorated;
+        public static D.gtk_window_set_skip_taskbar_hint GtkWindowSetSkipTaskbarHint;
+        public static D.gtk_window_set_skip_pager_hint GtkWindowSetSkipPagerHint;
+        public static D.gtk_window_get_skip_taskbar_hint GtkWindowGetSkipTaskbarHint;
         public static D.gtk_window_set_title GtkWindowSetTitle;
         public static D.gtk_application_new GtkApplicationNew;
         public static D.gtk_main_iteration GtkMainIteration;
@@ -280,6 +292,7 @@ namespace Avalonia.Gtk3.Interop
         public static D.gtk_init GtkInit;
         public static D.gtk_window_present GtkWindowPresent;
         public static D.gtk_widget_hide GtkWidgetHide;
+        public static D.gtk_widget_show GtkWidgetShow;
         public static D.gdk_get_native_handle GetNativeGdkWindowHandle;
         public static D.gtk_widget_get_window GtkWidgetGetWindow;
         public static D.gtk_widget_get_scale_factor GtkWidgetGetScaleFactor;
