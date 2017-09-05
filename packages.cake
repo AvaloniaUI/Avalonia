@@ -43,7 +43,6 @@ public class Packages
         }
     }
         
-    //new NuSpecDependency() { Id = "System.Threading.ThreadPool", TargetFramework = "netcoreapp2.0", Version = "4.3.0" },
     public Packages(ICakeContext context, Parameters parameters)
     {
         // NUGET NUSPECS
