@@ -12,7 +12,7 @@ namespace ControlCatalog
             this.InitializeComponent();
             this.AttachDevTools();
             //Renderer.DrawDirtyRects = Renderer.DrawFps = true;
-            PlatformImpl.ShowTaskbarIcon(false);
+            PlatformImpl?.ShowTaskbarIcon(false);
         }
 
         private void InitializeComponent()
