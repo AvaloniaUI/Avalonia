@@ -31,7 +31,7 @@ namespace Avalonia.Platform
         IDisposable ShowDialog();
 
         /// <summary>
-        /// Enables of disables system window decorations (title bar, buttons, etc)
+        /// Enables or disables system window decorations (title bar, buttons, etc)
         /// </summary>
         void SetSystemDecorations(bool enabled);
 
@@ -40,8 +40,9 @@ namespace Avalonia.Platform
         /// </summary>
         void SetIcon(IWindowIconImpl icon);
 
-
-
+        /// <summary>
+        /// Enables or disables the taskbar icon
+        /// </summary>
         void ShowTaskbarIcon(bool value);
     }
 }

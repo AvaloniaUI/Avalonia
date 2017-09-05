@@ -60,10 +60,8 @@ namespace Avalonia.Gtk3
             //Why do we even have that?
         }
 
-        public void ShowTaskbarIcon(bool value)
-        {
-            Native.GtkWindowSetSkipTaskbarHint(GtkWidget, !value);
-        }
+        public void ShowTaskbarIcon(bool value) => Native.GtkWindowSetSkipTaskbarHint(GtkWidget, !value);
+        
 
         class EmptyDisposable : IDisposable
         {

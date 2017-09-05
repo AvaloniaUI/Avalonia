@@ -61,11 +61,17 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<Window, SizeToContent>(nameof(SizeToContent));
 
         /// <summary>
-        /// Enables of disables system window decorations (title bar, buttons, etc)
+        /// Enables or disables system window decorations (title bar, buttons, etc)
         /// </summary>
         public static readonly StyledProperty<bool> HasSystemDecorationsProperty =
             AvaloniaProperty.Register<Window, bool>(nameof(HasSystemDecorations), true);
-
+        
+        /// <summary>
+        /// Enables or disables the taskbar icon
+        /// </summary>
+        public static readonly StyledProperty<bool> HasTaskbarIconProperty =
+            AvaloniaProperty.Register<Window, bool>(nameof(HasTaskbarIcon), true);
+        
         /// <summary>
         /// Defines the <see cref="Title"/> property.
         /// </summary>
@@ -91,6 +97,8 @@ namespace Avalonia.Controls
             TitleProperty.Changed.AddClassHandler<Window>((s, e) => s.PlatformImpl?.SetTitle((string)e.NewValue));
             HasSystemDecorationsProperty.Changed.AddClassHandler<Window>(
                 (s, e) => s.PlatformImpl?.SetSystemDecorations((bool) e.NewValue));
+
+            HasTaskbarIconProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.ShowTaskbarIcon((bool)e.NewValue));
 
             IconProperty.Changed.AddClassHandler<Window>((s, e) => s.PlatformImpl?.SetIcon(((WindowIcon)e.NewValue).PlatformImpl));
         }
@@ -152,13 +160,23 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Enables of disables system window decorations (title bar, buttons, etc)
+        /// Enables or disables system window decorations (title bar, buttons, etc)
         /// </summary>
         /// 
         public bool HasSystemDecorations
         {
             get { return GetValue(HasSystemDecorationsProperty); }
             set { SetValue(HasSystemDecorationsProperty, value); }
+        }
+        
+        /// <summary>
+        /// Enables or disables the taskbar icon
+        /// </summary>
+        /// 
+        public bool HasTaskbarIcon
+        {
+            get { return GetValue(HasTaskbarIconProperty); }
+            set { SetValue(HasTaskbarIconProperty, value); }
         }
 
         /// <summary>
