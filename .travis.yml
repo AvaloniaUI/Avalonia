@@ -9,7 +9,7 @@ env:
     - DOTNET_CLI_TELEMETRY_OPTOUT=1
 mono:
   - latest
-dotnet: 1.0.1
+dotnet: 2.0.0
 script:
   - ./build.sh --target "Travis" --platform "Mono" --configuration "Release"
 notifications:
