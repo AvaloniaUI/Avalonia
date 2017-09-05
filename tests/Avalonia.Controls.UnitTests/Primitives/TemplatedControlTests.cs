@@ -399,7 +399,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 TestTemplatedControl target;
                 var root = new TestRoot
                 {
-                    Styles = new Styles
+                    Styles =
                     {
                         new Style(x => x.OfType<TestTemplatedControl>())
                         {
@@ -435,7 +435,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 TestTemplatedControl target;
                 var root = new TestRoot
                 {
-                    Styles = new Styles
+                    Styles =
                     {
                         new Style(x => x.OfType<TestTemplatedControl>())
                         {
@@ -474,7 +474,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
                 var root = new TestRoot
                 {
-                    Styles = new Styles
+                    Styles =
                     {
                         new Style(x => x.OfType<TestTemplatedControl>())
                         {
@@ -494,7 +494,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
                 var root2 = new TestRoot
                 {
-                    Styles = new Styles
+                    Styles =
                     {
                         new Style(x => x.OfType<TestTemplatedControl>())
                         {

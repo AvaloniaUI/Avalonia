@@ -699,10 +699,40 @@ namespace Avalonia.Win32.Interop
         public static extern int GetSystemMetrics(SystemMetric smIndex);
 
         [DllImport("user32.dll", SetLastError = true)]
-        public static extern uint GetWindowLong(IntPtr hWnd, int nIndex);
+        public static extern uint GetWindowLongPtr(IntPtr hWnd, int nIndex);
+
+        [DllImport("user32.dll", SetLastError = true, EntryPoint = "GetWindowLong")]
+        public static extern uint GetWindowLong32b(IntPtr hWnd, int nIndex);
+
+        public static uint GetWindowLong(IntPtr hWnd, int nIndex)
+        {
+            if(IntPtr.Size == 4)
+            {
+                return GetWindowLong32b(hWnd, nIndex);
+            }
+            else
+            {
+                return GetWindowLongPtr(hWnd, nIndex);
+            }
+        }
+
+        [DllImport("user32.dll", SetLastError = true, EntryPoint = "SetWindowLong")]
+        private static extern uint SetWindowLong32b(IntPtr hWnd, int nIndex, uint value);
 
         [DllImport("user32.dll", SetLastError = true)]
-        public static extern uint SetWindowLong(IntPtr hWnd, int nIndex, uint value);
+        private static extern uint SetWindowLongPtr(IntPtr hWnd, int nIndex, uint value);
+
+        public static uint SetWindowLong(IntPtr hWnd, int nIndex, uint value)
+        {
+            if (IntPtr.Size == 4)
+            {
+                return SetWindowLong32b(hWnd, nIndex, value);
+            }
+            else
+            {
+                return SetWindowLongPtr(hWnd, nIndex, value);
+            }
+        }
 
         [DllImport("user32.dll", SetLastError = true)]
         public static extern bool GetWindowPlacement(IntPtr hWnd, ref WINDOWPLACEMENT lpwndpl);
@@ -922,9 +952,7 @@ namespace Avalonia.Win32.Interop
         [StructLayout(LayoutKind.Sequential)]
         internal class MONITORINFO
         {
-#pragma warning disable CS0618 // Type or member is obsolete
-            public int cbSize = Marshal.SizeOf(typeof(MONITORINFO));
-#pragma warning restore CS0618 // Type or member is obsolete
+            public int cbSize = Marshal.SizeOf<MONITORINFO>();
             public RECT rcMonitor = new RECT();
             public RECT rcWork = new RECT();
             public int dwFlags = 0;
