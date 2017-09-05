@@ -210,7 +210,7 @@ public class Packages
         var net45RuntimePlatformExtensions = new [] {".xml", ".dll"};
         var net45RuntimePlatform = net45RuntimePlatformExtensions.Select(libSuffix => {
             return new NuSpecContent {
-                Source = ((FilePath)context.File("./src/Avalonia.DotNetFrameworkRuntime/bin/" + parameters.DirSuffix + "/Avalonia.DotNetFrameworkRuntime" + libSuffix)).FullPath, 
+                Source = ((FilePath)context.File("./src/Avalonia.DotNetFrameworkRuntime/bin/" + parameters.DirSuffix + "/net461/Avalonia.DotNetFrameworkRuntime" + libSuffix)).FullPath, 
                 Target = "lib/net45" 
             };
         });
