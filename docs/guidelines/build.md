@@ -80,10 +80,11 @@ mono ./samples/ControlCatalog.Desktop/bin/Debug/ControlCatalog.Desktop.exe
 
 ### Building Avalonia in MonoDevelop
 
-Unless you have a very current version of monodevelop (6.1.x or newer), it is necessary to manually
-restore the Nuget depdendencies as [mentioned above](#restore-nuget-packages). You must then
-disable MonoDevelop's inbuilt NuGet package manager add-in by going to `Tools -> Add-in Manager` or
-it will complain that a newer version of NuGet is needed.
+Flatpak version will *NOT* work. Version from https://github.com/cra0zy/monodevelop-run-installer/ might work if you are very lucky. Make sure that you have the latest version of Mono (from alpha update channel) and .NET Core SDK. Make sure to follow `FrameworkPathOverride` workaround from https://github.com/dotnet/sdk/issues/335
 
-Finally, select the `Debug | Mono` or `Release | Mono` build configuration and you should be good to
-go!
+### Building and running Avalonia in Rider
+
+For Linux/OSX you'll probably need to apply workaround from https://github.com/dotnet/sdk/issues/335
+
+Just add `export FrameworkPathOverride=/usr/lib/mono/4.6.1-api` (or `export FrameworkPathOverride=/Library/Frameworks/Mono.framework/Versions/Current/lib/mono/4.6.1-api` for OSX)
+
