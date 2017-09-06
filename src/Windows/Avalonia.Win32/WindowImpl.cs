@@ -763,10 +763,14 @@ namespace Avalonia.Win32
             else
                 style &= ~(UnmanagedMethods.WindowStyles.WS_EX_APPWINDOW);
 
-            //Toggle to make the styles stick
-            UnmanagedMethods.ShowWindow(_hwnd, ShowWindowCommand.Hide);
-            UnmanagedMethods.SetWindowLong(_hwnd, -20, (uint)style);
-            UnmanagedMethods.ShowWindow(_hwnd, ShowWindowCommand.Show); 
+            WINDOWPLACEMENT windowPlacement = new WINDOWPLACEMENT();
+            if (UnmanagedMethods.GetWindowPlacement(_hwnd, ref windowPlacement))
+            {
+                //Toggle to make the styles stick
+                UnmanagedMethods.ShowWindow(_hwnd, ShowWindowCommand.Hide);
+                UnmanagedMethods.SetWindowLong(_hwnd, -20, (uint)style);
+                UnmanagedMethods.ShowWindow(_hwnd, windowPlacement.ShowCmd);
+            }
         }
     }
 }
