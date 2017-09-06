@@ -97,8 +97,8 @@ namespace Avalonia.Controls
         private bool _isAttachedToLogicalTree;
         private IAvaloniaList<ILogical> _logicalChildren;
         private INameScope _nameScope;
-        private Styles _styles;
         private bool _styled;
+        private Styles _styles;
         private Subject<IStyleable> _styleDetach = new Subject<IStyleable>();
 
         /// <summary>
@@ -243,11 +243,7 @@ namespace Avalonia.Controls
         /// Each control may define data templates which are applied to the control itself and its
         /// children.
         /// </remarks>
-        public DataTemplates DataTemplates
-        {
-            get { return _dataTemplates ?? (_dataTemplates = new DataTemplates()); }
-            set { _dataTemplates = value; }
-        }
+        public DataTemplates DataTemplates => _dataTemplates ?? (_dataTemplates = new DataTemplates());
 
         /// <summary>
         /// Gets a value that indicates whether the element has finished initialization.
@@ -259,18 +255,14 @@ namespace Avalonia.Controls
         public bool IsInitialized { get; private set; }
 
         /// <summary>
-        /// Gets or sets the styles for the control.
+        /// Gets the styles for the control.
         /// </summary>
         /// <remarks>
         /// Styles for the entire application are added to the Application.Styles collection, but
         /// each control may in addition define its own styles which are applied to the control
         /// itself and its children.
         /// </remarks>
-        public Styles Styles
-        {
-            get { return _styles ?? (_styles = new Styles()); }
-            set { _styles = value; }
-        }
+        public Styles Styles => _styles ?? (_styles = new Styles());
 
         /// <summary>
         /// Gets the control's logical parent.
@@ -304,6 +296,9 @@ namespace Avalonia.Controls
             internal set { SetValue(TemplatedParentProperty, value); }
         }
 
+        /// <inheritdoc/>
+        bool IDataTemplateHost.IsDataTemplatesInitialized => _dataTemplates != null;
+
         /// <summary>
         /// Gets a value indicating whether the element is attached to a rooted logical tree.
         /// </summary>
@@ -335,6 +330,9 @@ namespace Avalonia.Controls
 
         /// <inheritdoc/>
         IObservable<IStyleable> IStyleable.StyleDetach => _styleDetach;
+
+        /// <inheritdoc/>
+        bool IStyleHost.IsStylesInitialized => _styles != null;
 
         /// <inheritdoc/>
         IStyleHost IStyleHost.StylingParent => (IStyleHost)InheritanceParent;

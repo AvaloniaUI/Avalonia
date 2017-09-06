@@ -51,6 +51,9 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Pages\DrawingPage.xaml.cs">
+      <DependentUpon>DrawingPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Pages\ClippingPage.xaml.cs">
       <DependentUpon>ClippingPage.xaml</DependentUpon>
     </Compile>
@@ -175,6 +178,11 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Pages\ClippingPage.xaml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Pages\DrawingPage.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>

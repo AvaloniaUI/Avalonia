@@ -16,7 +16,7 @@ namespace Avalonia.Styling.UnitTests
 
             var tree = new Decorator
             {
-                Styles = new Styles
+                Styles =
                 {
                     new Style
                     {
@@ -29,7 +29,7 @@ namespace Avalonia.Styling.UnitTests
                 },
                 Child = target = new Border
                 {
-                    Styles = new Styles
+                    Styles =
                     {
                         new Style
                         {
@@ -60,16 +60,16 @@ namespace Avalonia.Styling.UnitTests
 
             var tree = target = new Border
             {
-                Styles = new Styles
+                Styles =
+                {
+                    new Style
                     {
-                        new Style
+                        Resources = new StyleResources
                         {
-                            Resources = new StyleResources
-                            {
-                                { "Foo", "foo" },
-                            }
-                        },
-                    }
+                            { "Foo", "foo" },
+                        }
+                    },
+                }
             };
 
             Assert.Equal(AvaloniaProperty.UnsetValue, target.FindStyleResource("Baz"));
