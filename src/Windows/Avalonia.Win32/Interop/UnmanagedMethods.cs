@@ -842,8 +842,9 @@ namespace Avalonia.Win32.Interop
             return SetClassLong64(hWnd, nIndex, dwNewLong);
         }
 
-        [ComImport, ClassInterface(ClassInterfaceType.None), TypeLibType(TypeLibTypeFlags.FCanCreate), Guid("DC1C5A9C-E88A-4DDE-A5A1-60F82A20AEF7")]
-        internal class FileOpenDialogRCW { }
+        [DllImport("ole32.dll", PreserveSig = true)]
+        internal static extern int CoCreateInstance(ref Guid clsid,
+            IntPtr ignore1, int ignore2, ref Guid iid, [MarshalAs(UnmanagedType.IUnknown), Out] out object pUnkOuter);
 
         
         [DllImport("shell32.dll", CharSet = CharSet.Unicode, SetLastError = true)]

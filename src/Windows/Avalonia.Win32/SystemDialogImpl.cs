@@ -157,7 +157,11 @@ namespace Avalonia.Win32
                 string result = string.Empty;
 
                 var hWnd = parent?.Handle?.Handle ?? IntPtr.Zero;
-                var frm = (IFileDialog)(new UnmanagedMethods.FileOpenDialogRCW());
+                var clsid = Guid.Parse("DC1C5A9C-E88A-4DDE-A5A1-60F82A20AEF7");
+                var iid  = Guid.Parse("42F85136-DB7E-439C-85F1-E4075D135FC8");
+
+                UnmanagedMethods.CoCreateInstance(ref clsid, IntPtr.Zero, 1, ref iid, out var unk);
+                var frm = (IFileDialog)unk;
                 uint options;
                 frm.GetOptions(out options);
                 options |= (uint)(UnmanagedMethods.FOS.FOS_PICKFOLDERS | UnmanagedMethods.FOS.FOS_FORCEFILESYSTEM | UnmanagedMethods.FOS.FOS_NOVALIDATE | UnmanagedMethods.FOS.FOS_NOTESTFILECREATE | UnmanagedMethods.FOS.FOS_DONTADDTORECENT);
