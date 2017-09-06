@@ -841,7 +841,7 @@ namespace Avalonia.Win32.Interop
 
             return SetClassLong64(hWnd, nIndex, dwNewLong);
         }
-#if !NETSTANDARD && !NETSTANDARD1_3
+#if !NETSTANDARD && !NETSTANDARD2_0
         [ComImport, ClassInterface(ClassInterfaceType.None), TypeLibType(TypeLibTypeFlags.FCanCreate), Guid("DC1C5A9C-E88A-4DDE-A5A1-60F82A20AEF7")]
         internal class FileOpenDialogRCW { }
 
