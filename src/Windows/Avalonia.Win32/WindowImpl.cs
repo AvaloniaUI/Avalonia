@@ -763,7 +763,7 @@ namespace Avalonia.Win32
             else
                 style &= ~(UnmanagedMethods.WindowStyles.WS_EX_APPWINDOW);
 
-            WINDOWPLACEMENT windowPlacement = new WINDOWPLACEMENT();
+            WINDOWPLACEMENT windowPlacement = UnmanagedMethods.WINDOWPLACEMENT.Default;
             if (UnmanagedMethods.GetWindowPlacement(_hwnd, ref windowPlacement))
             {
                 //Toggle to make the styles stick
