@@ -100,17 +100,14 @@ namespace Avalonia.Win32
                     var pofn = &ofn;
 
                     // We should save the current directory to restore it later.
-#if !NETSTANDARD
                     var currentDirectory = Environment.CurrentDirectory;
-#endif
+
                     var res = dialog is OpenFileDialog
                         ? UnmanagedMethods.GetOpenFileName(new IntPtr(pofn))
                         : UnmanagedMethods.GetSaveFileName(new IntPtr(pofn));
 
                     // Restore the old current directory, since GetOpenFileName and GetSaveFileName change it after they're called
-#if !NETSTANDARD
                     Environment.CurrentDirectory = currentDirectory;
-#endif
 
                     if (!res)
                         return null;
@@ -155,9 +152,6 @@ namespace Avalonia.Win32
 
         public Task<string> ShowFolderDialogAsync(OpenFolderDialog dialog, IWindowImpl parent)
         {
-#if NETSTANDARD
-            throw new NotImplementedException();
-#else
             return Task.Factory.StartNew(() =>
             {
                 string result = string.Empty;
@@ -214,7 +208,6 @@ namespace Avalonia.Win32
 
                 return result;
             });
-#endif
         }
     }
 }
