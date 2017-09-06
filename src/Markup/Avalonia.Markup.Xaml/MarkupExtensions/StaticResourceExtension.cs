@@ -29,7 +29,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
         public override object ProvideValue(IServiceProvider serviceProvider)
         {
             var context = (ITypeDescriptorContext)serviceProvider;
-            var schemaContext = context.GetService<IXamlSchemaContextProvider>()?.SchemaContext;
+            var schemaContext = context.GetService<IXamlSchemaContextProvider>().SchemaContext;
             var ambientProvider = context.GetService<IAmbientProvider>();
             var resourceProviderType = schemaContext.GetXamlType(typeof(IResourceNode));
             var ambientValues = ambientProvider.GetAllAmbientValues(resourceProviderType);
