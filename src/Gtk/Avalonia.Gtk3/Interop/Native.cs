@@ -90,10 +90,13 @@ namespace Avalonia.Gtk3.Interop
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
             public delegate void gtk_window_set_skip_taskbar_hint(GtkWindow gtkWindow, bool setting); 
-            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
-            public delegate void gtk_window_set_skip_pager_hint(GtkWindow gtkWindow, bool setting); 
              [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
             public delegate bool gtk_window_get_skip_taskbar_hint(GtkWindow gtkWindow);
+            
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
+            public delegate void gtk_window_set_skip_pager_hint(GtkWindow gtkWindow, bool setting); 
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
+            public delegate bool gtk_window_get_skip_pager_hint(GtkWindow gtkWindow); 
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
             public delegate void gtk_window_get_size(GtkWindow gtkWindow, out int width, out int height);
@@ -118,9 +121,6 @@ namespace Avalonia.Gtk3.Interop
             public delegate void gtk_file_chooser_set_filename(GtkFileChooser chooser, Utf8Buffer file);
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
             public delegate void gtk_dialog_add_button(GtkDialog raw, Utf8Buffer button_text, GtkResponseType response_id);
-
-
-
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Cairo)]
             public delegate CairoSurface cairo_image_surface_create(int format, int width, int height);
@@ -281,8 +281,9 @@ namespace Avalonia.Gtk3.Interop
 
         public static D.gtk_window_set_decorated GtkWindowSetDecorated;
         public static D.gtk_window_set_skip_taskbar_hint GtkWindowSetSkipTaskbarHint;
-        public static D.gtk_window_set_skip_pager_hint GtkWindowSetSkipPagerHint;
         public static D.gtk_window_get_skip_taskbar_hint GtkWindowGetSkipTaskbarHint;
+        public static D.gtk_window_set_skip_pager_hint GtkWindowSetSkipPagerHint;
+        public static D.gtk_window_get_skip_pager_hint GtkWindowGetSkipPagerHint;
         public static D.gtk_window_set_title GtkWindowSetTitle;
         public static D.gtk_application_new GtkApplicationNew;
         public static D.gtk_main_iteration GtkMainIteration;
