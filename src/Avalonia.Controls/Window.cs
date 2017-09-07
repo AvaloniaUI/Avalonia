@@ -69,8 +69,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Enables or disables the taskbar icon
         /// </summary>
-        public static readonly StyledProperty<bool> HasTaskbarIconProperty =
-            AvaloniaProperty.Register<Window, bool>(nameof(HasTaskbarIcon), true);
+        public static readonly StyledProperty<bool> ShowInTaskbarProperty =
+            AvaloniaProperty.Register<Window, bool>(nameof(ShowInTaskbar), true);
         
         /// <summary>
         /// Defines the <see cref="Title"/> property.
@@ -98,7 +98,7 @@ namespace Avalonia.Controls
             HasSystemDecorationsProperty.Changed.AddClassHandler<Window>(
                 (s, e) => s.PlatformImpl?.SetSystemDecorations((bool) e.NewValue));
 
-            HasTaskbarIconProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.ShowTaskbarIcon((bool)e.NewValue));
+            ShowInTaskbarProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.ShowTaskbarIcon((bool)e.NewValue));
 
             IconProperty.Changed.AddClassHandler<Window>((s, e) => s.PlatformImpl?.SetIcon(((WindowIcon)e.NewValue).PlatformImpl));
         }
@@ -173,10 +173,10 @@ namespace Avalonia.Controls
         /// Enables or disables the taskbar icon
         /// </summary>
         /// 
-        public bool HasTaskbarIcon
+        public bool ShowInTaskbar
         {
-            get { return GetValue(HasTaskbarIconProperty); }
-            set { SetValue(HasTaskbarIconProperty, value); }
+            get { return GetValue(ShowInTaskbarProperty); }
+            set { SetValue(ShowInTaskbarProperty, value); }
         }
 
         /// <summary>
