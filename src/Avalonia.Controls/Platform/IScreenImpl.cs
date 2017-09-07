@@ -8,8 +8,6 @@
 
         IScreenImpl PrimaryScreen { get; }
 
-        string DeviceName { get; }
-
         Rect Bounds { get; }
 
         Rect WorkingArea { get; }

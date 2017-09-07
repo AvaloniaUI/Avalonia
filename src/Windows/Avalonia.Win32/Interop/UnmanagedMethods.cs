@@ -944,18 +944,6 @@ namespace Avalonia.Win32.Interop
             }
         }
 
-        [StructLayout(LayoutKind.Sequential)]
-        internal class MONITORINFOEX
-        {
-            public int cbSize = 104;
-            public RECT rcMonitor = new RECT();
-            public RECT rcWork = new RECT();
-            public int dwFlags = 0;
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
-            public string szDevice = "";
-        }
-
-
         public enum PROCESS_DPI_AWARENESS
         {
             PROCESS_DPI_UNAWARE = 0,
