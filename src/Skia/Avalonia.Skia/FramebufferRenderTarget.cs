@@ -78,5 +78,11 @@ namespace Avalonia.Skia
             canvas.ResetMatrix();
             return new DrawingContextImpl(canvas, fb.Dpi, visualBrushRenderer, canvas, surface, shim, fb);
         }
+
+        public IRenderTargetBitmapImpl CreateLayer(int pixelWidth, int pixelHeight)
+        {
+            // TODO: Get proper DPI here.
+            return new BitmapImpl(pixelWidth, pixelHeight, new Vector(96, 96));
+        }
     }
 }

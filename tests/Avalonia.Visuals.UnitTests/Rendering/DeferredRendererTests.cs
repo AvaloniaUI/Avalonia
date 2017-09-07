@@ -30,7 +30,6 @@ namespace Avalonia.Visuals.UnitTests.Rendering
                 root,
                 loop.Object,
                 sceneBuilder: MockSceneBuilder(root).Object,
-                layerFactory: MockLayerFactory(root).Object,
                 dispatcher: dispatcher.Object);
 
             target.Start();
@@ -55,7 +54,6 @@ namespace Avalonia.Visuals.UnitTests.Rendering
                 root,
                 loop.Object,
                 sceneBuilder: sceneBuilder.Object,
-                layerFactory: MockLayerFactory(root).Object,
                 dispatcher: dispatcher);
 
             target.Start();
@@ -75,7 +73,6 @@ namespace Avalonia.Visuals.UnitTests.Rendering
                 root,
                 loop.Object,
                 sceneBuilder: sceneBuilder.Object,
-                layerFactory: MockLayerFactory(root).Object,
                 dispatcher: dispatcher);
 
             target.Start();
@@ -111,7 +108,6 @@ namespace Avalonia.Visuals.UnitTests.Rendering
                 root,
                 loop.Object,
                 sceneBuilder: sceneBuilder.Object,
-                layerFactory: MockLayerFactory(root).Object,
                 dispatcher: dispatcher);
 
             target.Start();
@@ -134,8 +130,8 @@ namespace Avalonia.Visuals.UnitTests.Rendering
         public void Frame_Should_Create_Layer_For_Root()
         {
             var loop = new Mock<IRenderLoop>();
-            var root = new TestRoot();
-            var rootLayer = new Mock<IRenderTargetBitmapImpl>();
+            var renderTarget = new Mock<IRenderTargetBitmapImpl>();
+            var root = new TestRoot { RenderTarget = renderTarget.Object };
             var dispatcher = new ImmediateDispatcher();
 
             var sceneBuilder = new Mock<ISceneBuilder>();
@@ -146,27 +142,25 @@ namespace Avalonia.Visuals.UnitTests.Rendering
                     scene.Layers.Add(root).Dirty.Add(new Rect(root.ClientSize));
                 });
 
-            var layers = new Mock<IRenderLayerFactory>();
-            layers.Setup(x => x.CreateLayer(root, root.ClientSize, 96, 96)).Returns(CreateLayer());
-
             var renderInterface = new Mock<IPlatformRenderInterface>();
 
             var target = new DeferredRenderer(
                 root,
                 loop.Object,
                 sceneBuilder: sceneBuilder.Object,
-                layerFactory: layers.Object,
                 dispatcher: dispatcher);
 
             target.Start();
             RunFrame(loop);
 
-            layers.Verify(x => x.CreateLayer(root, root.ClientSize, 96, 96));
+            renderTarget.Verify(x => x.CreateLayer((int)root.ClientSize.Width, (int)root.ClientSize.Height));
         }
 
         [Fact]
         public void Should_Create_And_Delete_Layers_For_Transparent_Controls()
         {
+            var renderTarget = new Mock<IRenderTarget>();
+
             Border border;
             var root = new TestRoot
             {
@@ -179,31 +173,31 @@ namespace Avalonia.Visuals.UnitTests.Rendering
                     {
                         Background = Brushes.Green,
                     }
-                }
+                },
+                RenderTarget = renderTarget.Object,
             };
 
             root.Measure(Size.Infinity);
             root.Arrange(new Rect(root.DesiredSize));
 
             var loop = new Mock<IRenderLoop>();
-            var layerFactory = new MockRenderLayerFactory(new Dictionary<IVisual, IRenderTargetBitmapImpl>
-            {
-                { root, CreateLayer() },
-                { border, CreateLayer() },
-            });
+            var rootLayer = CreateLayer();
+            var borderLayer = CreateLayer();
+            renderTarget.SetupSequence(x => x.CreateLayer(100, 100))
+                .Returns(rootLayer.Object)
+                .Returns(borderLayer.Object);
 
             var target = new DeferredRenderer(
                 root, 
                 loop.Object,
-                layerFactory: layerFactory,
                 dispatcher: new ImmediateDispatcher());
             root.Renderer = target;
 
             target.Start();
             RunFrame(loop);
 
-            var rootContext = layerFactory.GetMockDrawingContext(root);
-            var borderContext = layerFactory.GetMockDrawingContext(border);
+            var rootContext = Mock.Get(rootLayer.Object.CreateDrawingContext(null));
+            var borderContext = Mock.Get(borderLayer.Object.CreateDrawingContext(null));
 
             rootContext.Verify(x => x.FillRectangle(Brushes.Red, new Rect(0, 0, 100, 100), 0), Times.Once);
             rootContext.Verify(x => x.FillRectangle(Brushes.Green, new Rect(0, 0, 100, 100), 0), Times.Once);
@@ -223,7 +217,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
             border.Opacity = 1;
             RunFrame(loop);
 
-            layerFactory.GetMockBitmap(border).Verify(x => x.Dispose());
+            borderLayer.Verify(x => x.Dispose());
             rootContext.Verify(x => x.FillRectangle(Brushes.Red, new Rect(0, 0, 100, 100), 0), Times.Once);
             rootContext.Verify(x => x.FillRectangle(Brushes.Green, new Rect(0, 0, 100, 100), 0), Times.Once);
             borderContext.Verify(x => x.FillRectangle(It.IsAny<IBrush>(), It.IsAny<Rect>(), It.IsAny<float>()), Times.Never);
@@ -240,16 +234,11 @@ namespace Avalonia.Visuals.UnitTests.Rendering
             loop.Raise(x => x.Tick += null, EventArgs.Empty);
         }
 
-        private IRenderTargetBitmapImpl CreateLayer()
+        private Mock<IRenderTargetBitmapImpl> CreateLayer()
         {
-            return Mock.Of<IRenderTargetBitmapImpl>(x =>
-                x.CreateDrawingContext(It.IsAny<IVisualBrushRenderer>()) == Mock.Of<IDrawingContextImpl>());
-        }
-
-        private Mock<IRenderLayerFactory> MockLayerFactory(IRenderRoot root)
-        {
-            var result = new Mock<IRenderLayerFactory>();
-            result.Setup(x => x.CreateLayer(root, root.ClientSize, 96, 96)).Returns(CreateLayer());
+            var drawingContext = Mock.Of<IDrawingContextImpl>();
+            var result = new Mock<IRenderTargetBitmapImpl>();
+            result.Setup(x => x.CreateDrawingContext(It.IsAny<IVisualBrushRenderer>())).Returns(drawingContext);
             return result;
         }
 
@@ -259,35 +248,6 @@ namespace Avalonia.Visuals.UnitTests.Rendering
             result.Setup(x => x.UpdateAll(It.IsAny<Scene>()))
                 .Callback<Scene>(x => x.Layers.Add(root).Dirty.Add(new Rect(root.ClientSize)));
             return result;
-        }
-
-        private class MockRenderLayerFactory : IRenderLayerFactory
-        {
-            private IDictionary<IVisual, IRenderTargetBitmapImpl> _layers;
-
-            public MockRenderLayerFactory(IDictionary<IVisual, IRenderTargetBitmapImpl> layers)
-            {
-                _layers = layers;
-            }
-
-            public IRenderTargetBitmapImpl CreateLayer(
-                IVisual layerRoot,
-                Size size,
-                double dpiX,
-                double dpiY)
-            {
-                return _layers[layerRoot];
-            }
-
-            public Mock<IRenderTargetBitmapImpl> GetMockBitmap(IVisual layerRoot)
-            {
-                return Mock.Get(_layers[layerRoot]);
-            }
-
-            public Mock<IDrawingContextImpl> GetMockDrawingContext(IVisual layerRoot)
-            {
-                return Mock.Get(_layers[layerRoot].CreateDrawingContext(null));
-            }
         }
     }
 }

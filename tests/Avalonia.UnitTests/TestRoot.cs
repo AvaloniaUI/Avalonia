@@ -16,11 +16,11 @@ namespace Avalonia.UnitTests
     public class TestRoot : Decorator, IFocusScope, ILayoutRoot, IInputRoot, INameScope, IRenderRoot, IStyleRoot
     {
         private readonly NameScope _nameScope = new NameScope();
-        private readonly IRenderTarget _renderTarget = Mock.Of<IRenderTarget>(
-            x => x.CreateDrawingContext(It.IsAny<IVisualBrushRenderer>()) == Mock.Of<IDrawingContextImpl>());
 
         public TestRoot()
         {
+            RenderTarget = Mock.Of<IRenderTarget>(
+                x => x.CreateDrawingContext(It.IsAny<IVisualBrushRenderer>()) == Mock.Of<IDrawingContextImpl>());
         }
 
         event EventHandler<NameScopeEventArgs> INameScope.Registered
@@ -49,7 +49,7 @@ namespace Avalonia.UnitTests
 
         public ILayoutManager LayoutManager => AvaloniaLocator.Current.GetService<ILayoutManager>();
 
-        public IRenderTarget RenderTarget => null;
+        public IRenderTarget RenderTarget { get; set; }
 
         public IRenderer Renderer { get; set; }
 
@@ -63,7 +63,7 @@ namespace Avalonia.UnitTests
 
         public bool ShowAccessKeys { get; set; }
 
-        public IRenderTarget CreateRenderTarget() => _renderTarget;
+        public IRenderTarget CreateRenderTarget() => RenderTarget;
 
         public void Invalidate(Rect rect)
         {

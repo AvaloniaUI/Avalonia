@@ -22,5 +22,7 @@ namespace Avalonia.Platform
         /// to be drawn.
         /// </param>
         IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer);
+
+        IRenderTargetBitmapImpl CreateLayer(int pixelWidth, int pixelHeight);
     }
 }

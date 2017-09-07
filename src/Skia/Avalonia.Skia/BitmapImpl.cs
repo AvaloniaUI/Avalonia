@@ -78,6 +78,11 @@ namespace Avalonia.Skia
             return new BitmapDrawingContext(Bitmap, _dpi, visualBrushRenderer);
         }
 
+        public IRenderTargetBitmapImpl CreateLayer(int pixelWidth, int pixelHeight)
+        {
+            return new BitmapImpl(pixelWidth, pixelHeight, _dpi);
+        }
+
         public void Save(Stream stream)
         {
             IntPtr length;

@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Avalonia.Platform;
 using SharpDX.Direct2D1;
+using WICFactory = SharpDX.WIC.ImagingFactory;
+using ImagingFactory2 = SharpDX.WIC.ImagingFactory2;
+using ImageParameters = SharpDX.WIC.ImageParameters;
+using PngBitmapEncoder = SharpDX.WIC.PngBitmapEncoder;
 
 namespace Avalonia.Direct2D1.Media
 {
@@ -26,32 +25,42 @@ namespace Avalonia.Direct2D1.Media
         /// or if the render target is a <see cref="SharpDX.Direct2D1.DeviceContext"/>,
         /// the device associated with this context, to be renderable.
         /// </remarks>
-        public D2DBitmapImpl(Bitmap d2DBitmap)
+        public D2DBitmapImpl(WICFactory imagingFactory, Bitmap d2DBitmap)
+            : base(imagingFactory)
         {
-            if (d2DBitmap == null) throw new ArgumentNullException(nameof(d2DBitmap));
-
-            _direct2D = d2DBitmap;
+            _direct2D = d2DBitmap ?? throw new ArgumentNullException(nameof(d2DBitmap));
         }
-
-        public override Bitmap GetDirect2DBitmap(SharpDX.Direct2D1.RenderTarget target) => _direct2D;
-               
+              
         public override int PixelWidth => _direct2D.PixelSize.Width;
         public override int PixelHeight => _direct2D.PixelSize.Height;
-
-        public override void Save(string fileName)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void Save(Stream stream)
-        {
-            throw new NotImplementedException();
-        }
 
         public override void Dispose()
         {
             base.Dispose();
             _direct2D.Dispose();
+        }
+
+        public override OptionalDispose<Bitmap> GetDirect2DBitmap(SharpDX.Direct2D1.RenderTarget target)
+        {
+            return new OptionalDispose<Bitmap>(_direct2D, false);
+        }
+
+        public override void Save(Stream stream)
+        {
+            using (var encoder = new PngBitmapEncoder(ImagingFactory, stream))
+            using (var frameEncode = new SharpDX.WIC.BitmapFrameEncode(encoder))
+            using (var imageEncoder = new SharpDX.WIC.ImageEncoder((ImagingFactory2)ImagingFactory, null))
+            {
+                var parameters = new ImageParameters(
+                    new PixelFormat(SharpDX.DXGI.Format.R8G8B8A8_UNorm, AlphaMode.Premultiplied),
+                    _direct2D.DotsPerInch.Width,
+                    _direct2D.DotsPerInch.Height,
+                    0, 0, PixelWidth, PixelHeight);
+
+                imageEncoder.WriteFrame(_direct2D, frameEncode, parameters);
+                frameEncode.Commit();
+                encoder.Commit();
+            }
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.VisualTree;
 
@@ -7,16 +8,18 @@ namespace Avalonia.Rendering
 {
     public class RenderLayer
     {
-        private readonly IRenderLayerFactory _factory;
+        private IRenderTarget _parent;
 
         public RenderLayer(
-            IRenderLayerFactory factory,
+            IRenderTarget parent,
             Size size,
             double scaling,
             IVisual layerRoot)
         {
-            _factory = factory;
-            Bitmap = factory.CreateLayer(layerRoot, size * scaling, 96 * scaling, 96 * scaling);
+            _parent = parent;
+            Bitmap = parent.CreateLayer(
+                (int)(size.Width * scaling),
+                (int)(size.Height * scaling));
             Size = size;
             Scaling = scaling;
             LayerRoot = layerRoot;
@@ -31,7 +34,9 @@ namespace Avalonia.Rendering
         {
             if (Size != size || Scaling != scaling)
             {
-                var resized = _factory.CreateLayer(LayerRoot, size * scaling, 96 * scaling, 96 * scaling);
+                var resized = _parent.CreateLayer(
+                    (int)(size.Width * scaling),
+                    (int)(size.Height * scaling));
 
                 using (var context = resized.CreateDrawingContext(null))
                 {

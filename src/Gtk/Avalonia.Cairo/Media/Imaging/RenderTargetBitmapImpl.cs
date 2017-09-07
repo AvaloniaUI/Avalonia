@@ -9,6 +9,7 @@ using Avalonia.Rendering;
 namespace Avalonia.Cairo.Media.Imaging
 {
     using System.IO;
+    using global::Cairo;
     using Cairo = global::Cairo;
 
     public class RenderTargetBitmapImpl : IRenderTargetBitmapImpl
@@ -45,9 +46,14 @@ namespace Avalonia.Cairo.Media.Imaging
             return _renderTarget.CreateDrawingContext(visualBrushRenderer);
         }
 
+        public IRenderTargetBitmapImpl CreateLayer(int pixelWidth, int pixelHeight)
+        {
+            return new RenderTargetBitmapImpl(new ImageSurface(Format.Argb32, pixelWidth, pixelHeight));
+        }
+
         public void Save(Stream stream)
         {
-            var tempFileName = Path.GetTempFileName();
+            var tempFileName = System.IO.Path.GetTempFileName();
             Surface.WriteToPng(tempFileName);
             using (var tempFile = new FileStream(tempFileName, FileMode.Create))
             {
