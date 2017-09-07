@@ -1,6 +1,8 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+using System;
+using Avalonia.Logging;
 
 namespace ControlCatalog
 {
@@ -11,6 +13,8 @@ namespace ControlCatalog
             this.InitializeComponent();
             this.AttachDevTools();
             Renderer.DrawDirtyRects = Renderer.DrawFps = true;
+            var screens = PlatformImpl?.Screen.AllScreens;
+            Console.WriteLine("null");
         }
 
         private void InitializeComponent()

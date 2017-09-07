@@ -22,6 +22,7 @@ using Win32Exception = Avalonia.Win32.NetStandard.AvaloniaWin32Exception;
 
 namespace Avalonia.Win32
 {
+
     class WindowImpl : IWindowImpl
     {
         private static readonly List<WindowImpl> s_instances = new List<WindowImpl>();
@@ -91,6 +92,7 @@ namespace Avalonia.Win32
             }
         }
 
+        public IScreenImpl Screen => new ScreenImpl();
 
         public IRenderer CreateRenderer(IRenderRoot root)
         {

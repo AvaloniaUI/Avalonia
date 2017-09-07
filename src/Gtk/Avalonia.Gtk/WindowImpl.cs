@@ -63,6 +63,8 @@ namespace Avalonia.Gtk
             }
         }
 
+        public IScreenImpl Screen => throw new NotImplementedException();
+
         public void Resize(Size value)
         {
             Window.Resize((int)value.Width, (int)value.Height);
@@ -126,6 +128,11 @@ namespace Avalonia.Gtk
         public void SetIcon(IWindowIconImpl icon)
         {
             Window.Icon = ((IconImpl)icon).Pixbuf;
+        }
+
+        public int MoniterCount()
+        {
+            throw new NotImplementedException();
         }
     }
 }

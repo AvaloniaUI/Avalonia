@@ -42,7 +42,9 @@ namespace Avalonia.Gtk3
                 }
             }
         }
-        
+
+        public IScreenImpl Screen => throw new NotImplementedException();
+
         public IDisposable ShowDialog()
         {
             Native.GtkWindowSetModal(GtkWidget, true);

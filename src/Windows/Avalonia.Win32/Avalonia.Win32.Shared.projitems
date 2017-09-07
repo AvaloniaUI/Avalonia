@@ -20,6 +20,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)PopupImpl.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Properties\AssemblyInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RenderLoop.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ScreenImpl.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SystemDialogImpl.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Win32Platform.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WindowFramebuffer.cs" />

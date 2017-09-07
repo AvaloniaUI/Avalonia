@@ -616,6 +616,11 @@ namespace Avalonia.Win32.Interop
 
         public const int SizeOf_BITMAPINFOHEADER = 40;
 
+        [DllImport("user32.dll")]
+        public static extern bool EnumDisplayMonitors(IntPtr hdc, IntPtr lprcClip,
+                                                      MonitorEnumDelegate lpfnEnum, IntPtr dwData);
+        public delegate bool MonitorEnumDelegate(IntPtr hMonitor, IntPtr hdcMonitor, ref Rect lprcMonitor, IntPtr dwData);
+        
         [DllImport("user32.dll", SetLastError = true)]
         public static extern IntPtr GetDC(IntPtr hWnd);
 
@@ -878,6 +883,10 @@ namespace Avalonia.Win32.Interop
         
         [DllImport("user32", EntryPoint = "GetMonitorInfoW", ExactSpelling = true, CharSet = CharSet.Unicode)]
         [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool GetMonitorInfo([In] IntPtr hMonitor, [Out] MONITORINFOEX lpmi);
+
+        [DllImport("user32", EntryPoint = "GetMonitorInfoW", ExactSpelling = true, CharSet = CharSet.Unicode)]
+        [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool GetMonitorInfo([In] IntPtr hMonitor, [Out] MONITORINFO lpmi);
 
         [return: MarshalAs(UnmanagedType.Bool)]
@@ -933,6 +942,17 @@ namespace Avalonia.Win32.Interop
                 MONITOR_DEFAULTTOPRIMARY = 0x00000001,
                 MONITOR_DEFAULTTONEAREST = 0x00000002
             }
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        internal class MONITORINFOEX
+        {
+            public int cbSize = 104;
+            public RECT rcMonitor = new RECT();
+            public RECT rcWork = new RECT();
+            public int dwFlags = 0;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
+            public string szDevice = "";
         }
 
 
