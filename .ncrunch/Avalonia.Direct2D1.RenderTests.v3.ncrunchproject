@@ -1,6 +1,7 @@
 ﻿<ProjectConfiguration>
   <Settings>
     <DefaultTestTimeout>1000</DefaultTestTimeout>
+    <IgnoreThisComponentCompletely>True</IgnoreThisComponentCompletely>
     <PreviouslyBuiltSuccessfully>True</PreviouslyBuiltSuccessfully>
   </Settings>
 </ProjectConfiguration>

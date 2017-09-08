@@ -141,7 +141,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
                 var loader = new AvaloniaXamlLoader();
                 var window = (Window)loader.Load(xaml);
-                var brush = (ISolidColorBrush)window.FindStyleResource("brush");
+                var brush = (ISolidColorBrush)window.FindResource("brush");
                 var button = window.FindControl<Button>("button");
 
                 DelayedBinding.ApplyBindings(button);
@@ -169,9 +169,10 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
             var loader = new AvaloniaXamlLoader();
             var styles = (Styles)loader.Load(xaml);
-            var brush = (ISolidColorBrush)styles.FindResource("brush");
 
-            Assert.Equal(0xff506070, brush.Color.ToUint32());
+            styles.TryGetResource("brush", out var brush);
+
+            Assert.Equal(0xff506070, ((SolidColorBrush)brush).Color.ToUint32());
         }
 
         [Fact]
@@ -194,9 +195,10 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
             var loader = new AvaloniaXamlLoader();
             var styles = (Styles)loader.Load(xaml);
-            var brush = (ISolidColorBrush)styles.FindResource("brush");
 
-            Assert.Equal(0xff506070, brush.Color.ToUint32());
+            styles.TryGetResource("brush", out var brush);
+
+            Assert.Equal(0xff506070, ((SolidColorBrush)brush).Color.ToUint32());
         }
 
         [Fact(Skip = "TODO: Issue #492")]

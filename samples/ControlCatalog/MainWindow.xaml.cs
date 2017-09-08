@@ -20,7 +20,7 @@ namespace ControlCatalog
             // so we must refer to this resource DLL statically. For
             // now I am doing that here. But we need a better solution!!
             var theme = new Avalonia.Themes.Default.DefaultTheme();
-            theme.FindResource("Button");
+            theme.TryGetResource("Button", out _);
             AvaloniaXamlLoader.Load(this);
         }
     }
