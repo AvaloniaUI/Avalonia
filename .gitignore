@@ -159,6 +159,12 @@ $RECYCLE.BIN/
 *.userprefs
 *.nugetreferenceswitcher
 
+
+#################
+## Rider
+#################
+.idea
+
 #################
 ## Cake
 #################
