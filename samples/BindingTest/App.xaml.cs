@@ -20,6 +20,7 @@ namespace BindingTest
 
             AppBuilder.Configure<App>()
                 .UsePlatformDetect()
+                .UseReactiveUI()
                 .Start<MainWindow>();
         }
 
