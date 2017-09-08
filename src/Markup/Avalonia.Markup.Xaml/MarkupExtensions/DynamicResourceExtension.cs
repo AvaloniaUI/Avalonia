@@ -59,7 +59,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
 
         private T GetAnchor<T>(ITypeDescriptorContext context) where T : class
         {
-            var schemaContext = context.GetService<IXamlSchemaContextProvider>()?.SchemaContext;
+            var schemaContext = context.GetService<IXamlSchemaContextProvider>().SchemaContext;
             var ambientProvider = context.GetService<IAmbientProvider>();
             var xamlType = schemaContext.GetXamlType(typeof(T));
 
