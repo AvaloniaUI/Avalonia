@@ -1,9 +1,9 @@
 # Avalonia
 
 
-| Gitter Chat | Windows Build Status | Linux/Mac Build Status | Code Coverage |
-|---|---|---|---|
-| [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/AvaloniaUI/Avalonia?utm_campaign=pr-badge&utm_content=badge&utm_medium=badge&utm_source=badge) | [![Build status](https://ci.appveyor.com/api/projects/status/hubk3k0w9idyibfg/branch/master?svg=true)](https://ci.appveyor.com/project/AvaloniaUI/Avalonia/branch/master) | [![Build Status](https://travis-ci.org/AvaloniaUI/Avalonia.svg?branch=master)](https://travis-ci.org/AvaloniaUI/Avalonia) | [![codecov](https://codecov.io/gh/AvaloniaUI/Avalonia/branch/master/graph/badge.svg)](https://codecov.io/gh/AvaloniaUI/Avalonia) |
+| Gitter Chat | Windows Build Status | Linux/Mac Build Status |
+|---|---|---|
+| [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/AvaloniaUI/Avalonia?utm_campaign=pr-badge&utm_content=badge&utm_medium=badge&utm_source=badge) | [![Build status](https://ci.appveyor.com/api/projects/status/hubk3k0w9idyibfg/branch/master?svg=true)](https://ci.appveyor.com/project/AvaloniaUI/Avalonia/branch/master) | [![Build Status](https://travis-ci.org/AvaloniaUI/Avalonia.svg?branch=master)](https://travis-ci.org/AvaloniaUI/Avalonia) |
 
 A multi-platform .NET UI framework. It can run on Windows, Linux, Mac OS X, iOS and Android.
 

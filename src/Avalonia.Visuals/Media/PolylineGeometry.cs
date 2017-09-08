@@ -3,10 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Avalonia.Platform;
+using Avalonia.Metadata;
+using Avalonia.Collections;
 
 namespace Avalonia.Media
 {
@@ -15,36 +14,118 @@ namespace Avalonia.Media
     /// </summary>
     public class PolylineGeometry : Geometry
     {
-        private IList<Point> _points;
-        private bool _isFilled;
+        /// <summary>
+        /// Defines the <see cref="Points"/> property.
+        /// </summary>
+        public static readonly DirectProperty<PolylineGeometry, Points> PointsProperty =
+            AvaloniaProperty.RegisterDirect<PolylineGeometry, Points>(nameof(Points), g => g.Points, (g, f) => g.Points = f);
 
-        public PolylineGeometry(IList<Point> points, bool isFilled)
+        /// <summary>
+        /// Defines the <see cref="IsFilled"/> property.
+        /// </summary>
+        public static readonly AvaloniaProperty<bool> IsFilledProperty =
+            AvaloniaProperty.Register<PolylineGeometry, bool>(nameof(IsFilled));
+
+        private Points _points;
+        private bool _isDirty;
+        private IDisposable _pointsObserver;
+
+        static PolylineGeometry()
         {
-            _points = points;
-            _isFilled = isFilled;
-            IPlatformRenderInterface factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
-            IStreamGeometryImpl impl = factory.CreateStreamGeometry();
+            PointsProperty.Changed.AddClassHandler<PolylineGeometry>((s, e) =>
+                s.OnPointsChanged(e.OldValue as Points, e.NewValue as Points));
+            IsFilledProperty.Changed.AddClassHandler<PolylineGeometry>((s, _) => s.NotifyChanged());
+        }
 
-            using (IStreamGeometryContextImpl context = impl.Open())
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PolylineGeometry"/> class.
+        /// </summary>
+        public PolylineGeometry()
+        {
+            IPlatformRenderInterface factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
+            PlatformImpl = factory.CreateStreamGeometry();
+
+            Points = new Points();
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PolylineGeometry"/> class.
+        /// </summary>
+        public PolylineGeometry(IEnumerable<Point> points, bool isFilled) : this()
+        {
+            Points.AddRange(points);
+            IsFilled = isFilled;
+        }
+
+        public void PrepareIfNeeded()
+        {
+            if (_isDirty)
             {
-                if (points.Count > 0)
+                _isDirty = false;
+
+                using (var context = ((IStreamGeometryImpl)PlatformImpl).Open())
                 {
-                    context.BeginFigure(points[0], isFilled);
-                    for (int i = 1; i < points.Count; i++)
+                    var points = Points;
+                    var isFilled = IsFilled;
+                    if (points.Count > 0)
                     {
-                        context.LineTo(points[i]);
+                        context.BeginFigure(points[0], isFilled);
+                        for (int i = 1; i < points.Count; i++)
+                        {
+                            context.LineTo(points[i]);
+                        }
+                        context.EndFigure(isFilled);
                     }
-                    context.EndFigure(isFilled);
                 }
             }
+        }
 
-            PlatformImpl = impl;
+        /// <summary>
+        /// Gets or sets the figures.
+        /// </summary>
+        /// <value>
+        /// The points.
+        /// </value>
+        [Content]
+        public Points Points
+        {
+            get => _points;
+            set => SetAndRaise(PointsProperty, ref _points, value);
+        }
+
+        public bool IsFilled
+        {
+            get => GetValue(IsFilledProperty);
+            set => SetValue(IsFilledProperty, value);
+        }
+
+        public override IGeometryImpl PlatformImpl
+        {
+            get
+            {
+                PrepareIfNeeded();
+                return base.PlatformImpl;
+            }
+            protected set => base.PlatformImpl = value;
         }
 
         /// <inheritdoc/>
         public override Geometry Clone()
         {
-            return new PolylineGeometry(new List<Point>(_points), _isFilled);
+            PrepareIfNeeded();
+            return new PolylineGeometry(Points, IsFilled);
+        }
+
+        private void OnPointsChanged(Points oldValue, Points newValue)
+        {
+            _pointsObserver?.Dispose();
+
+            _pointsObserver = newValue?.ForEachItem(f => NotifyChanged(), f => NotifyChanged(), () => NotifyChanged());
+        }
+
+        internal void NotifyChanged()
+        {
+            _isDirty = true;
         }
     }
 }

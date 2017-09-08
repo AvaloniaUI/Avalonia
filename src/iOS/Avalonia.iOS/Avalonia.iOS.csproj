@@ -89,9 +89,9 @@
       <Project>{f1baa01a-f176-4c6a-b39d-5b40bb1b148f}</Project>
       <Name>Avalonia.Styling</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Skia\Avalonia.Skia.iOS\Avalonia.Skia.iOS.csproj">
-      <Project>{47be08a7-5985-410b-9ffc-2264b8ea595f}</Project>
-      <Name>Avalonia.Skia.iOS</Name>
+    <ProjectReference Include="..\..\Skia\Avalonia.Skia\Avalonia.Skia.csproj">
+      <Project>{7d2d3083-71dd-4cc9-8907-39a0d86fb322}</Project>
+      <Name>Avalonia.Skia</Name>
       <IsAppExtension>false</IsAppExtension>
       <IsWatchApp>false</IsWatchApp>
     </ProjectReference>
@@ -105,5 +105,7 @@
   <Import Project="..\..\Shared\PlatformSupport\PlatformSupport.projitems" Label="Shared" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
   <Import Project="..\..\..\build\Rx.props" />
-  <Import Project="$(MSBuildThisFileDirectory)..\..\Shared\nuget.workaround.targets" />
+  <PropertyGroup Condition="'$(UseRoslynPathHack)' == 'true'">
+    <CscToolPath>$(MSBuildToolsPath)\..\Roslyn</CscToolPath>
+  </PropertyGroup>
 </Project>

@@ -10,9 +10,11 @@
 // - Sun Tsu,
 // "The Art of War"
 
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Html;
 using Avalonia.Input;
+using Avalonia.VisualTree;
 using TheArtOfDev.HtmlRenderer.Adapters;
 using TheArtOfDev.HtmlRenderer.Adapters.Entities;
 using TheArtOfDev.HtmlRenderer.Core.Utils;
@@ -54,7 +56,8 @@ namespace TheArtOfDev.HtmlRenderer.Avalonia.Adapters
         {
             get
             {
-                return Util.Convert(MouseDevice.Instance.GetPosition(_control));
+                var pos = (_control.GetVisualRoot() as IInputRoot)?.MouseDevice?.Position ?? default(Point);
+                return Util.Convert(pos);
             }
         }
 

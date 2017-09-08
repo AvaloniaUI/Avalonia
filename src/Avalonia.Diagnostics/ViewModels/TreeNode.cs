@@ -5,13 +5,13 @@ using System;
 using System.Collections.Specialized;
 using System.Reactive;
 using System.Reactive.Linq;
+using Avalonia.Collections;
 using Avalonia.Styling;
 using Avalonia.VisualTree;
-using ReactiveUI;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
-    internal class TreeNode : ReactiveObject
+    internal class TreeNode : ViewModelBase
     {
         private string _classes;
         private bool _isExpanded;
@@ -47,7 +47,7 @@ namespace Avalonia.Diagnostics.ViewModels
             }
         }
 
-        public IReadOnlyReactiveList<TreeNode> Children
+        public IAvaloniaReadOnlyList<TreeNode> Children
         {
             get;
             protected set;
@@ -56,7 +56,7 @@ namespace Avalonia.Diagnostics.ViewModels
         public string Classes
         {
             get { return _classes; }
-            private set { this.RaiseAndSetIfChanged(ref _classes, value); }
+            private set { RaiseAndSetIfChanged(ref _classes, value); }
         }
 
         public IVisual Visual
@@ -67,7 +67,7 @@ namespace Avalonia.Diagnostics.ViewModels
         public bool IsExpanded
         {
             get { return _isExpanded; }
-            set { this.RaiseAndSetIfChanged(ref _isExpanded, value); }
+            set { RaiseAndSetIfChanged(ref _isExpanded, value); }
         }
 
         public TreeNode Parent

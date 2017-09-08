@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
+using System.Threading.Tasks;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Data;
@@ -45,7 +46,7 @@ namespace Avalonia.Styling.UnitTests
         }
 
         [Fact]
-        public async void Child_Matches_Control_When_It_Is_Child_OfType_And_Class()
+        public async Task Child_Matches_Control_When_It_Is_Child_OfType_And_Class()
         {
             var parent = new TestLogical1();
             var child = new TestLogical2();
@@ -144,7 +145,17 @@ namespace Avalonia.Styling.UnitTests
                 throw new NotImplementedException();
             }
 
+            public void NotifyAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
+            {
+                throw new NotImplementedException();
+            }
+
             public void NotifyDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void NotifyResourcesChanged(ResourcesChangedEventArgs e)
             {
                 throw new NotImplementedException();
             }

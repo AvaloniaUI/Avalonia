@@ -97,6 +97,7 @@ namespace Avalonia.Controls
         private bool _isAttachedToLogicalTree;
         private IAvaloniaList<ILogical> _logicalChildren;
         private INameScope _nameScope;
+        private IResourceDictionary _resources;
         private Styles _styles;
         private bool _styled;
         private Subject<IStyleable> _styleDetach = new Subject<IStyleable>();
@@ -118,6 +119,7 @@ namespace Avalonia.Controls
         public Control()
         {
             _nameScope = this as INameScope;
+            _isAttachedToLogicalTree = this is IStyleRoot;
         }
 
         /// <summary>
@@ -151,6 +153,11 @@ namespace Avalonia.Controls
         /// to the visual tree.
         /// </remarks>
         public event EventHandler Initialized;
+
+        /// <summary>
+        /// Occurs when a resource in this control or a parent control has changed.
+        /// </summary>
+        public event EventHandler<ResourcesChangedEventArgs> ResourcesChanged;
 
         /// <summary>
         /// Gets or sets the name of the control.
@@ -242,11 +249,7 @@ namespace Avalonia.Controls
         /// Each control may define data templates which are applied to the control itself and its
         /// children.
         /// </remarks>
-        public DataTemplates DataTemplates
-        {
-            get { return _dataTemplates ?? (_dataTemplates = new DataTemplates()); }
-            set { _dataTemplates = value; }
-        }
+        public DataTemplates DataTemplates => _dataTemplates ?? (_dataTemplates = new DataTemplates());
 
         /// <summary>
         /// Gets a value that indicates whether the element has finished initialization.
@@ -258,7 +261,7 @@ namespace Avalonia.Controls
         public bool IsInitialized { get; private set; }
 
         /// <summary>
-        /// Gets or sets the styles for the control.
+        /// Gets the styles for the control.
         /// </summary>
         /// <remarks>
         /// Styles for the entire application are added to the Application.Styles collection, but
@@ -267,8 +270,29 @@ namespace Avalonia.Controls
         /// </remarks>
         public Styles Styles
         {
-            get { return _styles ?? (_styles = new Styles()); }
-            set { _styles = value; }
+            get { return _styles ?? (Styles = new Styles()); }
+            set
+            {
+                Contract.Requires<ArgumentNullException>(value != null);
+
+                if (_styles != value)
+                {
+                    if (_styles != null)
+                    {
+                        (_styles as ISetStyleParent)?.SetParent(null);
+                        _styles.ResourcesChanged -= ThisResourcesChanged;
+                    }
+
+                    _styles = value;
+
+                    if (value is ISetStyleParent setParent && setParent.ResourceParent == null)
+                    {
+                        setParent.SetParent(this);
+                    } 
+
+                    _styles.ResourcesChanged += ThisResourcesChanged;
+                }
+            }
         }
 
         /// <summary>
@@ -283,6 +307,34 @@ namespace Avalonia.Controls
         {
             get { return GetValue(ContextMenuProperty); }
             set { SetValue(ContextMenuProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the control's resource dictionary.
+        /// </summary>
+        public IResourceDictionary Resources
+        {
+            get => _resources ?? (Resources = new ResourceDictionary());
+            set
+            {
+                Contract.Requires<ArgumentNullException>(value != null);
+
+                var hadResources = false;
+
+                if (_resources != null)
+                {
+                    hadResources = _resources.Count > 0;
+                    _resources.ResourcesChanged -= ThisResourcesChanged;
+                }
+
+                _resources = value;
+                _resources.ResourcesChanged += ThisResourcesChanged;
+
+                if (hadResources || _resources.Count > 0)
+                {
+                    ((ILogical)this).NotifyResourcesChanged(new ResourcesChangedEventArgs());
+                }
+            }
         }
 
         /// <summary>
@@ -301,78 +353,6 @@ namespace Avalonia.Controls
         {
             get { return GetValue(TemplatedParentProperty); }
             internal set { SetValue(TemplatedParentProperty, value); }
-        }
-
-        /// <summary>
-        /// Gets a value indicating whether the element is attached to a rooted logical tree.
-        /// </summary>
-        bool ILogical.IsAttachedToLogicalTree => _isAttachedToLogicalTree;
-
-        /// <summary>
-        /// Gets the control's logical parent.
-        /// </summary>
-        ILogical ILogical.LogicalParent => Parent;
-
-        /// <summary>
-        /// Gets the control's logical children.
-        /// </summary>
-        IAvaloniaReadOnlyList<ILogical> ILogical.LogicalChildren => LogicalChildren;
-
-        /// <inheritdoc/>
-        IAvaloniaReadOnlyList<string> IStyleable.Classes => Classes;
-
-        /// <summary>
-        /// Gets the type by which the control is styled.
-        /// </summary>
-        /// <remarks>
-        /// Usually controls are styled by their own type, but there are instances where you want
-        /// a control to be styled by its base type, e.g. creating SpecialButton that
-        /// derives from Button and adds extra functionality but is still styled as a regular
-        /// Button.
-        /// </remarks>
-        Type IStyleable.StyleKey => GetType();
-
-        /// <inheritdoc/>
-        IObservable<IStyleable> IStyleable.StyleDetach => _styleDetach;
-
-        /// <inheritdoc/>
-        IStyleHost IStyleHost.StylingParent => (IStyleHost)InheritanceParent;
-
-        /// <inheritdoc/>
-        public virtual void BeginInit()
-        {
-            ++_initCount;
-        }
-
-        /// <inheritdoc/>
-        public virtual void EndInit()
-        {
-            if (_initCount == 0)
-            {
-                throw new InvalidOperationException("BeginInit was not called.");
-            }
-
-            if (--_initCount == 0 && _isAttachedToLogicalTree)
-            {
-                if (!_styled)
-                {
-                    RegisterWithNameScope();
-                    ApplyStyling();
-                    _styled = true;
-                }
-
-                if (!IsInitialized)
-                {
-                    IsInitialized = true;
-                    Initialized?.Invoke(this, EventArgs.Empty);
-                }
-            }
-        }
-
-        /// <inheritdoc/>
-        void ILogical.NotifyDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
-        {
-            this.OnDetachedFromLogicalTreeCore(e);
         }
 
         /// <summary>
@@ -395,11 +375,130 @@ namespace Avalonia.Controls
             }
         }
 
+        /// <inheritdoc/>
+        bool IDataTemplateHost.IsDataTemplatesInitialized => _dataTemplates != null;
+
         /// <summary>
         /// Gets the <see cref="Classes"/> collection in a form that allows adding and removing
         /// pseudoclasses.
         /// </summary>
         protected IPseudoClasses PseudoClasses => Classes;
+
+        /// <summary>
+        /// Gets a value indicating whether the element is attached to a rooted logical tree.
+        /// </summary>
+        bool ILogical.IsAttachedToLogicalTree => _isAttachedToLogicalTree;
+
+        /// <summary>
+        /// Gets the control's logical parent.
+        /// </summary>
+        ILogical ILogical.LogicalParent => Parent;
+
+        /// <summary>
+        /// Gets the control's logical children.
+        /// </summary>
+        IAvaloniaReadOnlyList<ILogical> ILogical.LogicalChildren => LogicalChildren;
+
+        /// <inheritdoc/>
+        bool IResourceProvider.HasResources => _resources?.Count > 0 || Styles.HasResources;
+
+        /// <inheritdoc/>
+        IResourceNode IResourceNode.ResourceParent => ((IStyleHost)this).StylingParent as IResourceNode;
+
+        /// <inheritdoc/>
+        IAvaloniaReadOnlyList<string> IStyleable.Classes => Classes;
+
+        /// <summary>
+        /// Gets the type by which the control is styled.
+        /// </summary>
+        /// <remarks>
+        /// Usually controls are styled by their own type, but there are instances where you want
+        /// a control to be styled by its base type, e.g. creating SpecialButton that
+        /// derives from Button and adds extra functionality but is still styled as a regular
+        /// Button.
+        /// </remarks>
+        Type IStyleable.StyleKey => GetType();
+
+        /// <inheritdoc/>
+        IObservable<IStyleable> IStyleable.StyleDetach => _styleDetach;
+
+        /// <inheritdoc/>
+        bool IStyleHost.IsStylesInitialized => _styles != null;
+
+        /// <inheritdoc/>
+        IStyleHost IStyleHost.StylingParent => (IStyleHost)InheritanceParent;
+
+        /// <inheritdoc/>
+        public virtual void BeginInit()
+        {
+            ++_initCount;
+        }
+
+        /// <inheritdoc/>
+        public virtual void EndInit()
+        {
+            if (_initCount == 0)
+            {
+                throw new InvalidOperationException("BeginInit was not called.");
+            }
+
+            if (--_initCount == 0 && _isAttachedToLogicalTree)
+            {
+                InitializeStylesIfNeeded();
+
+                InitializeIfNeeded();
+            }
+        }
+
+        private void InitializeStylesIfNeeded(bool force = false)
+        {
+            if (_initCount == 0 && (!_styled || force))
+            {
+                RegisterWithNameScope();
+                ApplyStyling();
+                _styled = true;
+            }
+        }
+
+        private void InitializeIfNeeded()
+        {
+            if (_initCount == 0 && !IsInitialized)
+            {
+                IsInitialized = true;
+                Initialized?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        /// <inheritdoc/>
+        void ILogical.NotifyAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
+        {
+            this.OnAttachedToLogicalTreeCore(e);
+        }
+
+        /// <inheritdoc/>
+        void ILogical.NotifyDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
+        {
+            this.OnDetachedFromLogicalTreeCore(e);
+        }
+
+        /// <inheritdoc/>
+        void ILogical.NotifyResourcesChanged(ResourcesChangedEventArgs e)
+        {
+            ResourcesChanged?.Invoke(this, new ResourcesChangedEventArgs());
+
+            foreach (var child in LogicalChildren)
+            {
+                child.NotifyResourcesChanged(e);
+            }
+        }
+
+        /// <inheritdoc/>
+        bool IResourceProvider.TryGetResource(string key, out object value)
+        {
+            value = null;
+            return (_resources?.TryGetResource(key, out value) ?? false) ||
+                   (_styles?.TryGetResource(key, out value) ?? false);
+        }
 
         /// <summary>
         /// Sets the control's logical parent.
@@ -418,7 +517,7 @@ namespace Avalonia.Controls
 
                 if (_isAttachedToLogicalTree)
                 {
-                    var oldRoot = FindStyleRoot(old);
+                    var oldRoot = FindStyleRoot(old) ?? this as IStyleRoot;
 
                     if (oldRoot == null)
                     {
@@ -435,8 +534,9 @@ namespace Avalonia.Controls
                 }
 
                 _parent = (IControl)parent;
+                ((ILogical)this).NotifyResourcesChanged(new ResourcesChangedEventArgs());
 
-                if (_parent is IStyleRoot || _parent?.IsAttachedToLogicalTree == true)
+                if (_parent is IStyleRoot || _parent?.IsAttachedToLogicalTree == true || this is IStyleRoot)
                 {
                     var newRoot = FindStyleRoot(this);
 
@@ -573,11 +673,7 @@ namespace Avalonia.Controls
         {
             base.OnAttachedToVisualTreeCore(e);
 
-            if (!IsInitialized)
-            {
-                IsInitialized = true;
-                Initialized?.Invoke(this, EventArgs.Empty);
-            }
+            InitializeIfNeeded();
         }
 
         /// <inheritdoc/>
@@ -745,12 +841,7 @@ namespace Avalonia.Controls
             {
                 _isAttachedToLogicalTree = true;
 
-                if (_initCount == 0)
-                {
-                    RegisterWithNameScope();
-                    ApplyStyling();
-                    _styled = true;
-                }
+                InitializeStylesIfNeeded(true);
 
                 OnAttachedToLogicalTree(e);
             }
@@ -834,6 +925,11 @@ namespace Avalonia.Controls
                     ((ISetLogicalParent)i).SetParent(null);
                 }
             }
+        }
+
+        private void ThisResourcesChanged(object sender, ResourcesChangedEventArgs e)
+        {
+            ((ILogical)this).NotifyResourcesChanged(e);
         }
     }
 }

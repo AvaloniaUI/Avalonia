@@ -3,6 +3,7 @@
 
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml.Data;
+using Avalonia.Markup.Xaml.Styling;
 using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
@@ -90,7 +91,9 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         [Fact]
         public void StyleResource_Can_Be_Assigned_To_Setter()
         {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            //skip default theme and styles, they are not needed
+            using (UnitTestApplication.Start(TestServices.StyledWindow
+                                        .With(theme: () => new Styles())))
             {
                 var xaml = @"
 <Window xmlns='https://github.com/avaloniaui'
@@ -138,7 +141,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
                 var loader = new AvaloniaXamlLoader();
                 var window = (Window)loader.Load(xaml);
-                var brush = (ISolidColorBrush)window.FindStyleResource("brush");
+                var brush = (ISolidColorBrush)window.FindResource("brush");
                 var button = window.FindControl<Button>("button");
 
                 DelayedBinding.ApplyBindings(button);
@@ -166,9 +169,10 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
             var loader = new AvaloniaXamlLoader();
             var styles = (Styles)loader.Load(xaml);
-            var brush = (ISolidColorBrush)styles.FindResource("brush");
 
-            Assert.Equal(0xff506070, brush.Color.ToUint32());
+            styles.TryGetResource("brush", out var brush);
+
+            Assert.Equal(0xff506070, ((SolidColorBrush)brush).Color.ToUint32());
         }
 
         [Fact]
@@ -191,9 +195,10 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
             var loader = new AvaloniaXamlLoader();
             var styles = (Styles)loader.Load(xaml);
-            var brush = (ISolidColorBrush)styles.FindResource("brush");
 
-            Assert.Equal(0xff506070, brush.Color.ToUint32());
+            styles.TryGetResource("brush", out var brush);
+
+            Assert.Equal(0xff506070, ((SolidColorBrush)brush).Color.ToUint32());
         }
 
         [Fact(Skip = "TODO: Issue #492")]
@@ -222,6 +227,31 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         }
 
         [Fact]
+        public void StyleInclude_Is_Built()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow
+                                              .With(theme: () => new Styles())))
+            {
+                var xaml = @"
+<ContentControl xmlns='https://github.com/avaloniaui'>
+    <ContentControl.Styles>
+        <StyleInclude Source='resm:Avalonia.Markup.Xaml.UnitTests.Xaml.Style1.xaml?assembly=Avalonia.Markup.Xaml.UnitTests'/>
+    </ContentControl.Styles>
+</ContentControl>";
+
+                var window = AvaloniaXamlLoader.Parse<ContentControl>(xaml);
+
+                Assert.Equal(1, window.Styles.Count);
+
+                var styleInclude = window.Styles[0] as StyleInclude;
+
+                Assert.NotNull(styleInclude);
+                Assert.NotNull(styleInclude.Source);
+                Assert.NotNull(styleInclude.Loaded);
+            }
+        }
+
+        [Fact]
         public void Setter_Can_Contain_Template()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
@@ -239,7 +269,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         </Style>
     </Window.Styles>
 
-    <ContentControl Name='target'/>    
+    <ContentControl Name='target'/>
 </Window>";
 
                 var loader = new AvaloniaXamlLoader();
@@ -271,7 +301,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 		</Style>
 	</Window.Styles>
 
-    <TextBlock Name='target'/>    
+    <TextBlock Name='target'/>
 </Window>";
 
                 var loader = new AvaloniaXamlLoader();

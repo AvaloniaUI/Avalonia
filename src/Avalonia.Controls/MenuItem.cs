@@ -24,7 +24,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="Command"/> property.
         /// </summary>
         public static readonly StyledProperty<ICommand> CommandProperty =
-            Button.CommandProperty.AddOwner<MenuItem>();
+            AvaloniaProperty.Register<MenuItem, ICommand>(nameof(Command));
 
         /// <summary>
         /// Defines the <see cref="HotKey"/> property.
@@ -100,6 +100,11 @@ namespace Avalonia.Controls
             SubmenuOpenedEvent.AddClassHandler<MenuItem>(x => x.OnSubmenuOpened);
             IsSubMenuOpenProperty.Changed.AddClassHandler<MenuItem>(x => x.SubMenuOpenChanged);
             AccessKeyHandler.AccessKeyPressedEvent.AddClassHandler<MenuItem>(x => x.AccessKeyPressed);
+        }
+
+        public MenuItem()
+        {
+
         }
 
         /// <summary>
@@ -192,7 +197,11 @@ namespace Avalonia.Controls
         /// <param name="e">The click event args.</param>
         protected virtual void OnClick(RoutedEventArgs e)
         {
-            Command?.Execute(CommandParameter);
+            if (Command != null)
+            {
+                Command.Execute(CommandParameter);
+                e.Handled = true;
+            }
         }
 
         /// <summary>

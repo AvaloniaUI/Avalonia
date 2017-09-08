@@ -20,23 +20,7 @@ namespace Avalonia.Input
         private int _clickCount;
         private Rect _lastClickRect;
         private uint _lastClickTime;
-
-        /// <summary>
-        /// Intializes a new instance of <see cref="MouseDevice"/>.
-        /// </summary>
-        public MouseDevice()
-        {
-            InputManager.Process
-                .OfType<RawMouseEventArgs>()
-                .Where(e => e.Device == this && !e.Handled)
-                .Subscribe(ProcessRawEvent);
-        }
-
-        /// <summary>
-        /// Gets the current mouse device instance.
-        /// </summary>
-        public static IMouseDevice Instance => AvaloniaLocator.Current.GetService<IMouseDevice>();
-
+       
         /// <summary>
         /// Gets the control that is currently capturing by the mouse, if any.
         /// </summary>
@@ -50,12 +34,7 @@ namespace Avalonia.Input
             get;
             protected set;
         }
-
-        /// <summary>
-        /// Gets the application's input manager.
-        /// </summary>
-        public IInputManager InputManager => AvaloniaLocator.Current.GetService<IInputManager>();
-
+        
         /// <summary>
         /// Gets the mouse position, in screen coordinates.
         /// </summary>
@@ -100,6 +79,12 @@ namespace Avalonia.Input
             }
 
             return root.PointToClient(Position) - p;
+        }
+
+        public void ProcessRawEvent(RawInputEventArgs e)
+        {
+            if (!e.Handled && e is RawMouseEventArgs margs)
+                ProcessRawEvent(margs);
         }
 
         private void ProcessRawEvent(RawMouseEventArgs e)

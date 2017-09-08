@@ -28,6 +28,8 @@ namespace Avalonia.Markup.UnitTests.Data
             observer.SetValue(-5);
 
             Assert.False(validationMessageFound);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -43,6 +45,8 @@ namespace Avalonia.Markup.UnitTests.Data
             observer.SetValue(-5);
 
             Assert.True(validationMessageFound);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -102,6 +106,8 @@ namespace Avalonia.Markup.UnitTests.Data
                 new BindingNotification(new Exception("Must be positive"), BindingErrorType.DataValidationError, 5),
                 new BindingNotification(5),
             }, result);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -147,6 +153,9 @@ namespace Avalonia.Markup.UnitTests.Data
                     BindingErrorType.Error,
                     AvaloniaProperty.UnsetValue),
             }, result);
+
+            GC.KeepAlive(container);
+            GC.KeepAlive(inner);
         }
 
         public class ExceptionTest : NotifyingBase

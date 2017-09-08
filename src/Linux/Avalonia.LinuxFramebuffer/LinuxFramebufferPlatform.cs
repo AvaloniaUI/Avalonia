@@ -11,6 +11,7 @@ using Avalonia.LinuxFramebuffer;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Threading;
+using Avalonia;
 
 namespace Avalonia.LinuxFramebuffer
 {
@@ -33,9 +34,7 @@ namespace Avalonia.LinuxFramebuffer
             AvaloniaLocator.CurrentMutable
                 .Bind<IStandardCursorFactory>().ToTransient<CursorFactoryStub>()
                 .Bind<IKeyboardDevice>().ToConstant(KeyboardDevice)
-                .Bind<IMouseDevice>().ToConstant(MouseDevice)
                 .Bind<IPlatformSettings>().ToSingleton<PlatformSettings>()
-                .Bind<IRendererFactory>().ToConstant(ImmediateRenderer.Factory)
                 .Bind<IPlatformThreadingInterface>().ToConstant(PlatformThreadingInterface.Instance)
                 .Bind<IRenderLoop>().ToConstant(PlatformThreadingInterface.Instance);
         }

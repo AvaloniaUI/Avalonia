@@ -122,7 +122,7 @@ namespace Avalonia.Markup.Data
                         value,
                         type,
                         ConverterParameter,
-                        CultureInfo.CurrentUICulture);
+                        CultureInfo.CurrentCulture);
 
                     if (converted == AvaloniaProperty.UnsetValue)
                     {
@@ -186,7 +186,7 @@ namespace Avalonia.Markup.Data
                     value,
                     _targetType,
                     ConverterParameter,
-                    CultureInfo.CurrentUICulture);
+                    CultureInfo.CurrentCulture);
 
                 notification = converted as BindingNotification;
 

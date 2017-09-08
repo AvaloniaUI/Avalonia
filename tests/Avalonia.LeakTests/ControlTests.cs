@@ -276,7 +276,7 @@ namespace Avalonia.LeakTests
                     {
                         Content = target = new TreeView
                         {
-                            DataTemplates = new DataTemplates
+                            DataTemplates =
                             {
                                 new FuncTreeDataTemplate<Node>(
                                     x => new TextBlock { Text = x.Name },
@@ -318,12 +318,11 @@ namespace Avalonia.LeakTests
                 var impl = new Mock<IWindowImpl>();
                 impl.SetupGet(x => x.Scaling).Returns(1);
                 impl.SetupProperty(x => x.Closed);
+                impl.Setup(x => x.CreateRenderer(It.IsAny<IRenderRoot>())).Returns(renderer.Object);
                 impl.Setup(x => x.Dispose()).Callback(() => impl.Object.Closed());
 
                 AvaloniaLocator.CurrentMutable.Bind<IWindowingPlatform>()
                     .ToConstant(new MockWindowingPlatform(() => impl.Object));
-                AvaloniaLocator.CurrentMutable.Bind<IRendererFactory>()
-                    .ToConstant(new MockRendererFactory(renderer.Object));
                 var window = new Window()
                 {
                     Content = new Button()
@@ -336,8 +335,7 @@ namespace Avalonia.LeakTests
 
         private IDisposable Start()
         {
-            var services = TestServices.StyledWindow.With(renderer: (root, loop) => new NullRenderer());
-            return UnitTestApplication.Start(services);
+            return UnitTestApplication.Start(TestServices.StyledWindow);
         }
 
         private class Node
@@ -366,6 +364,14 @@ namespace Avalonia.LeakTests
             }
 
             public void Resized(Size size)
+            {
+            }
+
+            public void Start()
+            {
+            }
+
+            public void Stop()
             {
             }
         }

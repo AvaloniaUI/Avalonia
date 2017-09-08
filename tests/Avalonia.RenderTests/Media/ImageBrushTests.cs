@@ -1,6 +1,7 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
 using Avalonia.Layout;
@@ -28,8 +29,84 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             get { return System.IO.Path.Combine(OutputPath, "github_icon.png"); }
         }
 
+        private string SmallBitmapPath
+        {
+            get { return System.IO.Path.Combine(OutputPath, "github_icon_small.png"); }
+        }
+
         [Fact]
-        public void ImageBrush_NoStretch_NoTile_Alignment_TopLeft()
+        public async Task ImageBrush_Tile_Fill()
+        {
+            Decorator target = new Decorator
+            {
+                Width = 200,
+                Height = 200,
+                Child = new Rectangle
+                {
+                    Margin = new Thickness(8),
+                    Fill = new ImageBrush
+                    {
+                        Stretch = Stretch.Fill,
+                        TileMode = TileMode.Tile,
+                        DestinationRect = new RelativeRect(0, 0, 25, 30, RelativeUnit.Absolute),
+                        Source = new Bitmap(BitmapPath),
+                    }
+                }
+            };
+
+            await RenderToFile(target);
+            CompareImages();
+        }
+
+        [Fact]
+        public async Task ImageBrush_Tile_UniformToFill()
+        {
+            Decorator target = new Decorator
+            {
+                Width = 200,
+                Height = 200,
+                Child = new Rectangle
+                {
+                    Margin = new Thickness(8),
+                    Fill = new ImageBrush
+                    {
+                        Stretch = Stretch.Uniform,
+                        TileMode = TileMode.Tile,
+                        DestinationRect = new RelativeRect(0, 0, 25, 30, RelativeUnit.Absolute),
+                        Source = new Bitmap(BitmapPath),
+                    }
+                }
+            };
+
+            await RenderToFile(target);
+            CompareImages();
+        }
+
+        [Fact]
+        public async Task ImageBrush_Tile_Small_Image()
+        {
+            Decorator target = new Decorator
+            {
+                Width = 200,
+                Height = 200,
+                Child = new Rectangle
+                {
+                    Margin = new Thickness(8),
+                    Fill = new ImageBrush
+                    {
+                        Stretch = Stretch.None,
+                        TileMode = TileMode.Tile,
+                        Source = new Bitmap(SmallBitmapPath),
+                    }
+                }
+            };
+
+            await RenderToFile(target);
+            CompareImages();
+        }
+
+        [Fact]
+        public async Task ImageBrush_NoStretch_NoTile_Alignment_TopLeft()
         {
             Decorator target = new Decorator
             {
@@ -49,12 +126,12 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
 
         [Fact]
-        public void ImageBrush_NoStretch_NoTile_Alignment_Center()
+        public async Task ImageBrush_NoStretch_NoTile_Alignment_Center()
         {
             Decorator target = new Decorator
             {
@@ -74,12 +151,12 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
 
         [Fact]
-        public void ImageBrush_NoStretch_NoTile_Alignment_BottomRight()
+        public async Task ImageBrush_NoStretch_NoTile_Alignment_BottomRight()
         {
             Decorator target = new Decorator
             {
@@ -99,7 +176,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
 #if AVALONIA_SKIA_SKIP_FAIL
@@ -107,7 +184,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
 #else
         [Fact]
 #endif
-        public void ImageBrush_Fill_NoTile()
+        public async Task ImageBrush_Fill_NoTile()
         {
             Decorator target = new Decorator
             {
@@ -125,7 +202,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
 
@@ -134,7 +211,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
 #else
         [Fact]
 #endif
-        public void ImageBrush_Uniform_NoTile()
+        public async Task ImageBrush_Uniform_NoTile()
         {
             Decorator target = new Decorator
             {
@@ -152,7 +229,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
 
@@ -161,7 +238,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
 #else
         [Fact]
 #endif
-        public void ImageBrush_UniformToFill_NoTile()
+        public async Task ImageBrush_UniformToFill_NoTile()
         {
             Decorator target = new Decorator
             {
@@ -179,12 +256,12 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
 
         [Fact]
-        public void ImageBrush_NoStretch_NoTile_BottomRightQuarterSource()
+        public async Task ImageBrush_NoStretch_NoTile_BottomRightQuarterSource()
         {
             Decorator target = new Decorator
             {
@@ -203,7 +280,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
 
@@ -212,7 +289,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
 #else
         [Fact]
 #endif
-        public void ImageBrush_NoStretch_NoTile_BottomRightQuarterDest()
+        public async Task ImageBrush_NoStretch_NoTile_BottomRightQuarterDest()
         {
             Decorator target = new Decorator
             {
@@ -231,7 +308,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
 
@@ -240,7 +317,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
 #else
         [Fact]
 #endif
-        public void ImageBrush_NoStretch_NoTile_BottomRightQuarterSource_BottomRightQuarterDest()
+        public async Task ImageBrush_NoStretch_NoTile_BottomRightQuarterSource_BottomRightQuarterDest()
         {
             Decorator target = new Decorator
             {
@@ -260,12 +337,12 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
 
         [Fact]
-        public void ImageBrush_NoStretch_Tile_BottomRightQuarterSource_CenterQuarterDest()
+        public async Task ImageBrush_NoStretch_Tile_BottomRightQuarterSource_CenterQuarterDest()
         {
             Decorator target = new Decorator
             {
@@ -285,7 +362,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
 
@@ -294,7 +371,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
 #else
         [Fact]
 #endif
-        public void ImageBrush_NoStretch_FlipX_TopLeftDest()
+        public async Task ImageBrush_NoStretch_FlipX_TopLeftDest()
         {
             Decorator target = new Decorator
             {
@@ -313,7 +390,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
 
@@ -322,7 +399,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
 #else
         [Fact]
 #endif
-        public void ImageBrush_NoStretch_FlipY_TopLeftDest()
+        public async Task ImageBrush_NoStretch_FlipY_TopLeftDest()
         {
             Decorator target = new Decorator
             {
@@ -341,12 +418,12 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
 
         [Fact]
-        public void ImageBrush_NoStretch_FlipXY_TopLeftDest()
+        public async Task ImageBrush_NoStretch_FlipXY_TopLeftDest()
         {
             Decorator target = new Decorator
             {
@@ -365,7 +442,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
     }

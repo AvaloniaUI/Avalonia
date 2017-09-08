@@ -39,7 +39,7 @@ namespace Avalonia.Win32
         public int RowBytes => Width * 4;
         public PixelFormat Format => PixelFormat.Bgra8888;
 
-        public Size Dpi
+        public Vector Dpi
         {
             get
             {
@@ -56,10 +56,10 @@ namespace Avalonia.Win32
                             out dpix,
                             out dpiy) == 0)
                     {
-                        return new Size(dpix, dpiy);
+                        return new Vector(dpix, dpiy);
                     }
                 }
-                return new Size(96, 96);
+                return new Vector(96, 96);
             }
         }
 

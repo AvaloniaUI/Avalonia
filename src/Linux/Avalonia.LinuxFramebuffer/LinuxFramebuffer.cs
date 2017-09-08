@@ -13,16 +13,16 @@ namespace Avalonia.LinuxFramebuffer
 {
     public sealed unsafe class LinuxFramebuffer : IFramebufferPlatformSurface, IDisposable
     {
-        private readonly Size _dpi;
+        private readonly Vector _dpi;
         private int _fd;
         private fb_fix_screeninfo _fixedInfo;
         private fb_var_screeninfo _varInfo;
         private IntPtr _mappedLength;
         private IntPtr _mappedAddress;
 
-        public LinuxFramebuffer(string fileName = null, Size? dpi = null)
+        public LinuxFramebuffer(string fileName = null, Vector? dpi = null)
         {
-            _dpi = dpi ?? new Size(96, 96);
+            _dpi = dpi ?? new Vector(96, 96);
             fileName = fileName ?? Environment.GetEnvironmentVariable("FRAMEBUFFER") ?? "/dev/fb0";
             _fd = NativeUnsafeMethods.open(fileName, 2, 0);
             if (_fd <= 0)

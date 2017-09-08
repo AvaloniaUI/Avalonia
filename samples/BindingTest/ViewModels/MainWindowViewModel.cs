@@ -15,6 +15,7 @@ namespace BindingTest.ViewModels
         private string _stringValue = "Simple Binding";
         private bool _booleanFlag = false;
         private string _currentTime;
+        private NestedCommandViewModel _nested;
 
         public MainWindowViewModel()
         {
@@ -39,6 +40,7 @@ namespace BindingTest.ViewModels
             {
                 BooleanFlag = !BooleanFlag;
                 StringValue = param.ToString();
+                NestedModel = _nested ?? new NestedCommandViewModel();
             });
 
             Task.Run(() =>
@@ -49,6 +51,9 @@ namespace BindingTest.ViewModels
                     Thread.Sleep(1000);
                 }
             });
+
+            CurrentTimeObservable = Observable.Timer(TimeSpan.Zero, TimeSpan.FromSeconds(1))
+                .Select(x => DateTimeOffset.Now.ToString());
         }
 
         public ObservableCollection<TestItem> Items { get; }
@@ -85,10 +90,17 @@ namespace BindingTest.ViewModels
             private set { this.RaiseAndSetIfChanged(ref _currentTime, value); }
         }
 
+        public IObservable<string> CurrentTimeObservable { get; }
         public ReactiveCommand<object> StringValueCommand { get; }
 
         public DataAnnotationsErrorViewModel DataAnnotationsValidation { get; } = new DataAnnotationsErrorViewModel();
         public ExceptionErrorViewModel ExceptionDataValidation { get; } = new ExceptionErrorViewModel();
         public IndeiErrorViewModel IndeiDataValidation { get; } = new IndeiErrorViewModel();
+
+        public NestedCommandViewModel NestedModel
+        {
+            get { return _nested; }
+            private set { this.RaiseAndSetIfChanged(ref _nested, value); }
+        }
     }
 }

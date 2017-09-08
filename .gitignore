@@ -108,7 +108,7 @@ AppPackages/
 # NCrunch
 _NCrunch_*/
 *.ncrunchsolution.user
-nCrunchTemp_*/
+nCrunchTemp_*
 
 # Others
 sql/
@@ -159,10 +159,17 @@ $RECYCLE.BIN/
 *.userprefs
 *.nugetreferenceswitcher
 
+
+#################
+## Rider
+#################
+.idea
+
 #################
 ## Cake
 #################
-tools/
+tools/*
+!tools/packages.config
 .nuget
 artifacts/
 nuget

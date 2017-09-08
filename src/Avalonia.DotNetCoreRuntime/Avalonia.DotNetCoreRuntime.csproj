@@ -1,26 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netcoreapp1.0</TargetFramework>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;NETSTANDARD</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Debug\Avalonia.DotNetCoreRuntime.XML</DocumentationFile>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE;NETSTANDARD</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Release\Avalonia.DotNetCoreRuntime.XML</DocumentationFile>
+  <PropertyGroup>
+    <DocumentationFile>bin\$(Configuration)\Avalonia.DotNetCoreRuntime.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\Shared\SharedAssemblyInfo.cs">
@@ -32,7 +16,7 @@
     <ProjectReference Include="..\Avalonia.Controls\Avalonia.Controls.csproj" />
     <ProjectReference Include="..\Avalonia.Visuals\Avalonia.Visuals.csproj" />
     <ProjectReference Include="..\Gtk\Avalonia.Gtk3\Avalonia.Gtk3.csproj" />
-    <ProjectReference Include="..\Skia\Avalonia.Skia.Desktop.NetStandard\Avalonia.Skia.Desktop.NetStandard.csproj" />
+    <ProjectReference Include="..\Skia\Avalonia.Skia\Avalonia.Skia.csproj" />
     <ProjectReference Include="..\Windows\Avalonia.Win32.NetStandard\Avalonia.Win32.NetStandard.csproj" />
   </ItemGroup>
   <Import Project="..\..\build\NetCore.props" />

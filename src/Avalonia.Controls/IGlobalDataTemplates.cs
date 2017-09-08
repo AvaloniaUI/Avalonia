@@ -8,11 +8,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// Defines the application-global data templates.
     /// </summary>
-    public interface IGlobalDataTemplates
+    public interface IGlobalDataTemplates : IDataTemplateHost
     {
-        /// <summary>
-        /// Gets the application-global data templates.
-        /// </summary>
-        DataTemplates DataTemplates { get; }
     }
 }

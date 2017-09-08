@@ -40,21 +40,20 @@ namespace Avalonia.Markup.Xaml.Data
             object anchor = null,
             bool enableDataValidation = false)
         {
-            if (Name == "Red")
-            {
-            }
-
             var host = (target as IControl) ?? (anchor as IControl);
             var style = anchor as IStyle;
             var resource = AvaloniaProperty.UnsetValue;
 
             if (host != null)
             {
-                resource = host.FindStyleResource(Name);
+                resource = host.FindResource(Name);
             }
             else if (style != null)
             {
-                resource = style.FindResource(Name);
+                if (!style.TryGetResource(Name, out resource))
+                {
+                    resource = AvaloniaProperty.UnsetValue;
+                }
             }
 
             if (resource != AvaloniaProperty.UnsetValue)

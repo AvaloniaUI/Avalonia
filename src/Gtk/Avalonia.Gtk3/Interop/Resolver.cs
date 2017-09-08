@@ -104,14 +104,16 @@ namespace Avalonia.Gtk3.Interop
             var path = Custom?.Lookup(dll);
             if (path == null && Custom?.BasePath != null)
                 path = Path.Combine(Custom.BasePath, name);
-
-            try
+            if (path != null)
             {
-                return loader.LoadLibrary(path);
-            }
-            catch (Exception e)
-            {
-                exceptions.Add(e);
+                try
+                {
+                    return loader.LoadLibrary(path);
+                }
+                catch (Exception e)
+                {
+                    exceptions.Add(e);
+                }
             }
             throw new AggregateException("Unable to load " + dll, exceptions);
         }

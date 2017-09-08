@@ -37,7 +37,7 @@ namespace Avalonia.Direct2D1.Media.Imaging
             public int Width => _lock.Size.Width;
             public int Height => _lock.Size.Height;
             public int RowBytes => _lock.Stride;
-            public Size Dpi { get; } = new Size(96, 96);
+            public Vector Dpi { get; } = new Vector(96, 96);
             public PixelFormat Format => _format;
 
         }

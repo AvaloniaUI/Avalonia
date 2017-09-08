@@ -7,7 +7,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>Avalonia.Gtk</RootNamespace>
     <AssemblyName>Avalonia.Gtk</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
   </PropertyGroup>
@@ -39,6 +39,9 @@
     <Reference Include="glib-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\..\Shared\SharedAssemblyInfo.cs">
+      <Link>Properties\SharedAssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="ClipboardImpl.cs" />
     <Compile Include="EmbeddableImpl.cs" />
     <Compile Include="Embedding\GtkAvaloniaControlHost.cs" />
@@ -98,5 +101,4 @@
     </ProjectReference>
   </ItemGroup>
   <Import Project="..\..\..\build\Rx.props" />
-  <Import Project="$(MSBuildThisFileDirectory)..\..\Shared\nuget.workaround.targets" />
 </Project>

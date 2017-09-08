@@ -367,6 +367,14 @@ namespace Avalonia.Layout
             }
         }
 
+
+        /// <summary>
+        /// Called by InvalidateMeasure
+        /// </summary>
+        protected virtual void OnMeasureInvalidated()
+        {
+        }
+
         /// <summary>
         /// Invalidates the measurement of the control and queues a new layout pass.
         /// </summary>
@@ -378,8 +386,13 @@ namespace Avalonia.Layout
 
                 IsMeasureValid = false;
                 IsArrangeValid = false;
-                LayoutManager.Instance?.InvalidateMeasure(this);
-                InvalidateVisual();
+
+                if (((ILayoutable)this).IsAttachedToVisualTree)
+                {
+                    LayoutManager.Instance?.InvalidateMeasure(this);
+                    InvalidateVisual();
+                }
+                OnMeasureInvalidated();
             }
         }
 
@@ -393,8 +406,12 @@ namespace Avalonia.Layout
                 Logger.Verbose(LogArea.Layout, this, "Invalidated arrange");
 
                 IsArrangeValid = false;
-                LayoutManager.Instance?.InvalidateArrange(this);
-                InvalidateVisual();
+
+                if (((ILayoutable)this).IsAttachedToVisualTree)
+                {
+                    LayoutManager.Instance?.InvalidateArrange(this);
+                    InvalidateVisual();
+                }
             }
         }
 

@@ -3,11 +3,7 @@
 
 using System;
 using System.Reactive.Linq;
-using System.Reactive.Subjects;
 using Avalonia.Controls.Primitives;
-using Avalonia.Input;
-using Avalonia.Threading;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -29,29 +25,50 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterAttached<ToolTip, Control, object>("Tip");
 
         /// <summary>
-        /// The popup window used to display the active tooltip.
+        /// Defines the ToolTip.IsOpen attached property.
         /// </summary>
-        private static PopupRoot s_popup;
+        public static readonly AttachedProperty<bool> IsOpenProperty =
+            AvaloniaProperty.RegisterAttached<ToolTip, Control, bool>("IsOpen");
 
         /// <summary>
-        /// The control that the currently visible tooltip is attached to.
+        /// Defines the ToolTip.Placement property.
         /// </summary>
-        private static Control s_current;
+        public static readonly AttachedProperty<PlacementMode> PlacementProperty =
+            AvaloniaProperty.RegisterAttached<Popup, Control, PlacementMode>("Placement", defaultValue: PlacementMode.Pointer);
 
         /// <summary>
-        /// Observable fired when a tooltip should be displayed for a control. The output from this
-        /// observable is throttled and calls <see cref="ShowToolTip(Control)"/> when the time
-        /// period expires.
+        /// Defines the ToolTip.HorizontalOffset property.
         /// </summary>
-        private static readonly Subject<Control> s_show = new Subject<Control>();
+        public static readonly AttachedProperty<double> HorizontalOffsetProperty =
+            AvaloniaProperty.RegisterAttached<Popup, Control, double>("HorizontalOffset");
+
+        /// <summary>
+        /// Defines the ToolTip.VerticalOffset property.
+        /// </summary>
+        public static readonly AttachedProperty<double> VerticalOffsetProperty =
+            AvaloniaProperty.RegisterAttached<Popup, Control, double>("VerticalOffset", 20);
+
+        /// <summary>
+        /// Defines the ToolTip.ShowDelay property.
+        /// </summary>
+        public static readonly AttachedProperty<int> ShowDelayProperty =
+            AvaloniaProperty.RegisterAttached<Popup, Control, int>("ShowDelay", 400);
+
+        /// <summary>
+        /// Stores the curernt <see cref="ToolTip"/> instance in the control.
+        /// </summary>
+        private static readonly AttachedProperty<ToolTip> ToolTipProperty =
+            AvaloniaProperty.RegisterAttached<ToolTip, Control, ToolTip>("ToolTip");
+
+        private PopupRoot _popup;
 
         /// <summary>
         /// Initializes static members of the <see cref="ToolTip"/> class.
         /// </summary>
         static ToolTip()
         {
-            TipProperty.Changed.Subscribe(TipChanged);
-            s_show.Throttle(TimeSpan.FromSeconds(0.5), AvaloniaScheduler.Instance).Subscribe(ShowToolTip);
+            TipProperty.Changed.Subscribe(ToolTipService.Instance.TipChanged);
+            IsOpenProperty.Changed.Subscribe(IsOpenChanged);
         }
 
         /// <summary>
@@ -77,86 +94,160 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// called when the <see cref="TipProperty"/> property changes on a control.
+        /// Gets the value of the ToolTip.IsOpen attached property.
         /// </summary>
-        /// <param name="e">The event args.</param>
-        private static void TipChanged(AvaloniaPropertyChangedEventArgs e)
+        /// <param name="element">The control to get the property from.</param>
+        /// <returns>
+        /// A value indicating whether the tool tip is visible.
+        /// </returns>
+        public static bool GetIsOpen(Control element)
+        {
+            return element.GetValue(IsOpenProperty);
+        }
+
+        /// <summary>
+        /// Sets the value of the ToolTip.IsOpen attached property.
+        /// </summary>
+        /// <param name="element">The control to get the property from.</param>
+        /// <param name="value">A value indicating whether the tool tip is visible.</param>
+        public static void SetIsOpen(Control element, bool value)
+        {
+            element.SetValue(IsOpenProperty, value);
+        }
+
+        /// <summary>
+        /// Gets the value of the ToolTip.Placement attached property.
+        /// </summary>
+        /// <param name="element">The control to get the property from.</param>
+        /// <returns>
+        /// A value indicating how the tool tip is positioned.
+        /// </returns>
+        public static PlacementMode GetPlacement(Control element)
+        {
+            return element.GetValue(PlacementProperty);
+        }
+
+        /// <summary>
+        /// Sets the value of the ToolTip.Placement attached property.
+        /// </summary>
+        /// <param name="element">The control to get the property from.</param>
+        /// <param name="value">A value indicating how the tool tip is positioned.</param>
+        public static void SetPlacement(Control element, PlacementMode value)
+        {
+            element.SetValue(PlacementProperty, value);
+        }
+
+        /// <summary>
+        /// Gets the value of the ToolTip.HorizontalOffset attached property.
+        /// </summary>
+        /// <param name="element">The control to get the property from.</param>
+        /// <returns>
+        /// A value indicating how the tool tip is positioned.
+        /// </returns>
+        public static double GetHorizontalOffset(Control element)
+        {
+            return element.GetValue(HorizontalOffsetProperty);
+        }
+
+        /// <summary>
+        /// Sets the value of the ToolTip.HorizontalOffset attached property.
+        /// </summary>
+        /// <param name="element">The control to get the property from.</param>
+        /// <param name="value">A value indicating how the tool tip is positioned.</param>
+        public static void SetHorizontalOffset(Control element, double value)
+        {
+            element.SetValue(HorizontalOffsetProperty, value);
+        }
+
+        /// <summary>
+        /// Gets the value of the ToolTip.VerticalOffset attached property.
+        /// </summary>
+        /// <param name="element">The control to get the property from.</param>
+        /// <returns>
+        /// A value indicating how the tool tip is positioned.
+        /// </returns>
+        public static double GetVerticalOffset(Control element)
+        {
+            return element.GetValue(VerticalOffsetProperty);
+        }
+
+        /// <summary>
+        /// Sets the value of the ToolTip.VerticalOffset attached property.
+        /// </summary>
+        /// <param name="element">The control to get the property from.</param>
+        /// <param name="value">A value indicating how the tool tip is positioned.</param>
+        public static void SetVerticalOffset(Control element, double value)
+        {
+            element.SetValue(VerticalOffsetProperty, value);
+        }
+
+        /// <summary>
+        /// Gets the value of the ToolTip.ShowDelay attached property.
+        /// </summary>
+        /// <param name="element">The control to get the property from.</param>
+        /// <returns>
+        /// A value indicating the time, in milliseconds, before a tool tip opens.
+        /// </returns>
+        public static int GetShowDelay(Control element)
+        {
+            return element.GetValue(ShowDelayProperty);
+        }
+
+        /// <summary>
+        /// Sets the value of the ToolTip.ShowDelay attached property.
+        /// </summary>
+        /// <param name="element">The control to get the property from.</param>
+        /// <param name="value">A value indicating the time, in milliseconds, before a tool tip opens.</param>
+        public static void SetShowDelay(Control element, int value)
+        {
+            element.SetValue(ShowDelayProperty, value);
+        }
+
+        private static void IsOpenChanged(AvaloniaPropertyChangedEventArgs e)
         {
             var control = (Control)e.Sender;
 
-            if (e.OldValue != null)
+            if ((bool)e.NewValue)
             {
-                control.PointerEnter -= ControlPointerEnter;
-                control.PointerLeave -= ControlPointerLeave;
-            }
+                var tip = GetTip(control);
+                if (tip == null) return;
 
-            if (e.NewValue != null)
-            {
-                control.PointerEnter += ControlPointerEnter;
-                control.PointerLeave += ControlPointerLeave;
-            }
-        }
-
-        /// <summary>
-        /// Shows a tooltip for the specified control.
-        /// </summary>
-        /// <param name="control">The control.</param>
-        private static void ShowToolTip(Control control)
-        {
-            if (control != null && control.IsVisible && control.GetVisualRoot() != null)
-            {
-                if (s_popup != null)
+                var toolTip = control.GetValue(ToolTipProperty);
+                if (toolTip == null || (tip != toolTip && tip != toolTip.Content))
                 {
-                    throw new AvaloniaInternalException("Previous ToolTip not disposed.");
+                    toolTip?.Close();
+
+                    toolTip = tip as ToolTip ?? new ToolTip { Content = tip };
+                    control.SetValue(ToolTipProperty, toolTip);
                 }
 
-                var cp = MouseDevice.Instance?.GetPosition(control);
-                var position = control.PointToScreen(cp ?? new Point(0, 0)) + new Vector(0, 22);
-
-                s_popup = new PopupRoot();
-                ((ISetLogicalParent)s_popup).SetParent(control);
-                s_popup.Content = new ToolTip { Content = GetTip(control) };
-                s_popup.Position = position;
-                s_popup.Show();
-
-                s_current = control;
+                toolTip.Open(control);
+            }
+            else
+            {
+                var toolTip = control.GetValue(ToolTipProperty);
+                toolTip?.Close();
             }
         }
 
-        /// <summary>
-        /// Called when the pointer enters a control with an attached tooltip.
-        /// </summary>
-        /// <param name="sender">The event sender.</param>
-        /// <param name="e">The event args.</param>
-        private static void ControlPointerEnter(object sender, PointerEventArgs e)
+        private void Open(Control control)
         {
-            s_current = (Control)sender;
-            s_show.OnNext(s_current);
+            Close();
+
+            _popup = new PopupRoot { Content = this };
+            ((ISetLogicalParent)_popup).SetParent(control);
+            _popup.Position = Popup.GetPosition(control, GetPlacement(control), _popup,
+                GetHorizontalOffset(control), GetVerticalOffset(control));
+            _popup.Show();
         }
 
-        /// <summary>
-        /// Called when the pointer leaves a control with an attached tooltip.
-        /// </summary>
-        /// <param name="sender">The event sender.</param>
-        /// <param name="e">The event args.</param>
-        private static void ControlPointerLeave(object sender, PointerEventArgs e)
+        private void Close()
         {
-            var control = (Control)sender;
-
-            if (control == s_current)
+            if (_popup != null)
             {
-                if (s_popup != null)
-                {
-                    // Clear the ToolTip's Content in case it has control content: this will
-                    // reset its visual parent allowing it to be used again.
-                    ((ToolTip)s_popup.Content).Content = null;
-
-                    // Dispose of the popup.
-                    s_popup.Dispose();
-                    s_popup = null;
-                }
-
-                s_show.OnNext(null);
+                _popup.Content = null;
+                _popup.Hide();
+                _popup = null;
             }
         }
     }

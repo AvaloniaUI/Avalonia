@@ -699,10 +699,40 @@ namespace Avalonia.Win32.Interop
         public static extern int GetSystemMetrics(SystemMetric smIndex);
 
         [DllImport("user32.dll", SetLastError = true)]
-        public static extern uint GetWindowLong(IntPtr hWnd, int nIndex);
+        public static extern uint GetWindowLongPtr(IntPtr hWnd, int nIndex);
+
+        [DllImport("user32.dll", SetLastError = true, EntryPoint = "GetWindowLong")]
+        public static extern uint GetWindowLong32b(IntPtr hWnd, int nIndex);
+
+        public static uint GetWindowLong(IntPtr hWnd, int nIndex)
+        {
+            if(IntPtr.Size == 4)
+            {
+                return GetWindowLong32b(hWnd, nIndex);
+            }
+            else
+            {
+                return GetWindowLongPtr(hWnd, nIndex);
+            }
+        }
+
+        [DllImport("user32.dll", SetLastError = true, EntryPoint = "SetWindowLong")]
+        private static extern uint SetWindowLong32b(IntPtr hWnd, int nIndex, uint value);
 
         [DllImport("user32.dll", SetLastError = true)]
-        public static extern uint SetWindowLong(IntPtr hWnd, int nIndex, uint value);
+        private static extern uint SetWindowLongPtr(IntPtr hWnd, int nIndex, uint value);
+
+        public static uint SetWindowLong(IntPtr hWnd, int nIndex, uint value)
+        {
+            if (IntPtr.Size == 4)
+            {
+                return SetWindowLong32b(hWnd, nIndex, value);
+            }
+            else
+            {
+                return SetWindowLongPtr(hWnd, nIndex, value);
+            }
+        }
 
         [DllImport("user32.dll", SetLastError = true)]
         public static extern bool GetWindowPlacement(IntPtr hWnd, ref WINDOWPLACEMENT lpwndpl);
@@ -811,14 +841,14 @@ namespace Avalonia.Win32.Interop
 
             return SetClassLong64(hWnd, nIndex, dwNewLong);
         }
-#if !NETSTANDARD
-        [ComImport, ClassInterface(ClassInterfaceType.None), TypeLibType(TypeLibTypeFlags.FCanCreate), Guid("DC1C5A9C-E88A-4DDE-A5A1-60F82A20AEF7")]
-        internal class FileOpenDialogRCW { }
+
+        [DllImport("ole32.dll", PreserveSig = true)]
+        internal static extern int CoCreateInstance(ref Guid clsid,
+            IntPtr ignore1, int ignore2, ref Guid iid, [MarshalAs(UnmanagedType.IUnknown), Out] out object pUnkOuter);
 
         
         [DllImport("shell32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
         internal static extern int SHCreateItemFromParsingName([MarshalAs(UnmanagedType.LPWStr)] string pszPath, IntPtr pbc, ref Guid riid, [MarshalAs(UnmanagedType.Interface)] out IShellItem ppv);
-#endif
 
         [DllImport("user32.dll", SetLastError = true)]
         public static extern bool OpenClipboard(IntPtr hWndOwner);
@@ -922,7 +952,7 @@ namespace Avalonia.Win32.Interop
         [StructLayout(LayoutKind.Sequential)]
         internal class MONITORINFO
         {
-            public int cbSize = Marshal.SizeOf(typeof(MONITORINFO));
+            public int cbSize = Marshal.SizeOf<MONITORINFO>();
             public RECT rcMonitor = new RECT();
             public RECT rcWork = new RECT();
             public int dwFlags = 0;
@@ -1153,7 +1183,7 @@ namespace Avalonia.Win32.Interop
             public int flagsEx;
         }        
     }
-#if !NETSTANDARD
+
     [ComImport(), Guid("42F85136-DB7E-439C-85F1-E4075D135FC8"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     internal interface IFileDialog
     {
@@ -1253,5 +1283,4 @@ namespace Avalonia.Win32.Interop
         uint Compare([In, MarshalAs(UnmanagedType.Interface)] IShellItem psi, [In] uint hint, out int piOrder);
         
     }
-#endif
 }

@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using System.Windows.Input;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Rendering;
@@ -41,8 +42,9 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Command"/> property.
         /// </summary>
-        public static readonly StyledProperty<ICommand> CommandProperty =
-            AvaloniaProperty.Register<Button, ICommand>(nameof(Command));
+        public static readonly DirectProperty<Button, ICommand> CommandProperty =
+            AvaloniaProperty.RegisterDirect<Button, ICommand>(nameof(Command),
+                button => button.Command, (button, command) => button.Command = command, enableDataValidation: true);
 
         /// <summary>
         /// Defines the <see cref="HotKey"/> property.
@@ -67,6 +69,8 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly RoutedEvent<RoutedEventArgs> ClickEvent =
             RoutedEvent.Register<Button, RoutedEventArgs>("Click", RoutingStrategies.Bubble);
+
+        private ICommand _command;
 
         /// <summary>
         /// Initializes static members of the <see cref="Button"/> class.
@@ -102,8 +106,8 @@ namespace Avalonia.Controls
         /// </summary>
         public ICommand Command
         {
-            get { return GetValue(CommandProperty); }
-            set { SetValue(CommandProperty, value); }
+            get { return _command; }
+            set { SetAndRaise(CommandProperty, ref _command, value); }
         }
 
         /// <summary>
@@ -207,7 +211,11 @@ namespace Avalonia.Controls
         /// <param name="e">The event args.</param>
         protected virtual void OnClick(RoutedEventArgs e)
         {
-            Command?.Execute(CommandParameter);
+            if (Command != null)
+            {
+                Command.Execute(CommandParameter);
+                e.Handled = true;
+            }
         }
 
         /// <inheritdoc/>
@@ -215,13 +223,16 @@ namespace Avalonia.Controls
         {
             base.OnPointerPressed(e);
 
-            PseudoClasses.Add(":pressed");
-            e.Device.Capture(this);
-            e.Handled = true;
-
-            if (ClickMode == ClickMode.Press)
+            if (e.MouseButton == MouseButton.Left)
             {
-                RaiseClickEvent();
+                PseudoClasses.Add(":pressed");
+                e.Device.Capture(this);
+                e.Handled = true;
+
+                if (ClickMode == ClickMode.Press)
+                {
+                    RaiseClickEvent();
+                }
             }
         }
 
@@ -230,13 +241,28 @@ namespace Avalonia.Controls
         {
             base.OnPointerReleased(e);
 
-            e.Device.Capture(null);
-            PseudoClasses.Remove(":pressed");
-            e.Handled = true;
-
-            if (ClickMode == ClickMode.Release && Classes.Contains(":pointerover"))
+            if (e.MouseButton == MouseButton.Left)
             {
-                RaiseClickEvent();
+                e.Device.Capture(null);
+                PseudoClasses.Remove(":pressed");
+                e.Handled = true;
+
+                if (ClickMode == ClickMode.Release && new Rect(Bounds.Size).Contains(e.GetPosition(this)))
+                {
+                    RaiseClickEvent();
+                }
+            }
+        }
+
+        protected override void UpdateDataValidation(AvaloniaProperty property, BindingNotification status)
+        {
+            base.UpdateDataValidation(property, status);
+            if(property == CommandProperty)
+            {
+                if(status?.ErrorType == BindingErrorType.Error)
+                {
+                    IsEnabled = false;
+                }
             }
         }
 

@@ -29,6 +29,7 @@ namespace Avalonia.Controls
         public static readonly DirectProperty<WindowBase, bool> IsActiveProperty =
             AvaloniaProperty.RegisterDirect<WindowBase, bool>(nameof(IsActive), o => o.IsActive);
 
+        private bool _hasExecutedInitialLayoutPass;
         private bool _isActive;
         private bool _ignoreVisibilityChange;
 
@@ -116,6 +117,7 @@ namespace Avalonia.Controls
 
             try
             {
+                Renderer?.Stop();
                 PlatformImpl?.Hide();
                 IsVisible = false;
             }
@@ -136,8 +138,15 @@ namespace Avalonia.Controls
             {
                 EnsureInitialized();
                 IsVisible = true;
-                LayoutManager.Instance.ExecuteInitialLayoutPass(this);
+
+                if (!_hasExecutedInitialLayoutPass)
+                {
+                    LayoutManager.Instance.ExecuteInitialLayoutPass(this);
+                    _hasExecutedInitialLayoutPass = true;
+                }
+
                 PlatformImpl?.Show();
+                Renderer?.Start();
             }
             finally
             {

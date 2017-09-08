@@ -42,7 +42,6 @@ namespace Avalonia.Skia
             _paint.Typeface = skiaTypeface;
             _paint.TextSize = (float)(typeface?.FontSize ?? 12);
             _paint.TextAlign = textAlignment.ToSKTextAlign();
-            _paint.BlendMode = SKBlendMode.Src;
 
             _wrapping = wrapping;
             _constraint = constraint;
@@ -200,66 +199,65 @@ namespace Avalonia.Skia
                 }
                 ctx->Canvas->restore();
             */
-            SKPaint paint = _paint;
-            IDisposable currd = null;
-            var currentWrapper = foreground;
-
-            try
+            using (var paint = _paint.Clone())
             {
-                SKPaint currFGPaint = ApplyWrapperTo(ref foreground, ref currd, paint);
-                bool hasCusomFGBrushes = _foregroundBrushes.Any();
-
-                for (int c = 0; c < _skiaLines.Count; c++)
+                IDisposable currd = null;
+                var currentWrapper = foreground;
+                SKPaint currentPaint = null;
+                try
                 {
-                    AvaloniaFormattedTextLine line = _skiaLines[c];
+                    ApplyWrapperTo(ref currentPaint, foreground, ref currd, paint);
+                    bool hasCusomFGBrushes = _foregroundBrushes.Any();
 
-                    float x = TransformX(origin.X, 0, paint.TextAlign);
-
-                    if (!hasCusomFGBrushes)
+                    for (int c = 0; c < _skiaLines.Count; c++)
                     {
-                        var subString = Text.Substring(line.Start, line.Length);
-                        canvas.DrawText(subString, x, origin.Y + line.Top + _lineOffset, paint);
-                    }
-                    else
-                    {
-                        float currX = x;
-                        string subStr;
-                        int len;
+                        AvaloniaFormattedTextLine line = _skiaLines[c];
 
-                        for (int i = line.Start; i < line.Start + line.Length;)
+                        float x = TransformX(origin.X, 0, paint.TextAlign);
+
+                        if (!hasCusomFGBrushes)
                         {
-                            var fb = GetNextForegroundBrush(ref line, i, out len);
+                            var subString = Text.Substring(line.Start, line.Length);
+                            canvas.DrawText(subString, x, origin.Y + line.Top + _lineOffset, paint);
+                        }
+                        else
+                        {
+                            float currX = x;
+                            string subStr;
+                            int len;
 
-                            if (fb != null)
+                            for (int i = line.Start; i < line.Start + line.Length;)
                             {
-                                //TODO: figure out how to get the brush size
-                                currentWrapper = context.CreatePaint(fb, new Size());
+                                var fb = GetNextForegroundBrush(ref line, i, out len);
+
+                                if (fb != null)
+                                {
+                                    //TODO: figure out how to get the brush size
+                                    currentWrapper = context.CreatePaint(fb, new Size());
+                                }
+                                else
+                                {
+                                    if (!currentWrapper.Equals(foreground)) currentWrapper.Dispose();
+                                    currentWrapper = foreground;
+                                }
+
+                                subStr = Text.Substring(i, len);
+
+                                ApplyWrapperTo(ref currentPaint, currentWrapper, ref currd, paint);
+                                
+                                canvas.DrawText(subStr, currX, origin.Y + line.Top + _lineOffset, paint);
+
+                                i += len;
+                                currX += paint.MeasureText(subStr);
                             }
-                            else
-                            {
-                                if (!currentWrapper.Equals(foreground)) currentWrapper.Dispose();
-                                currentWrapper = foreground;
-                            }
-
-                            subStr = Text.Substring(i, len);
-
-                            if (currFGPaint != currentWrapper.Paint)
-                            {
-                                currFGPaint = ApplyWrapperTo(ref currentWrapper, ref currd, paint);
-                            }
-
-                            canvas.DrawText(subStr, currX, origin.Y + line.Top + _lineOffset, paint);
-
-                            i += len;
-                            currX += paint.MeasureText(subStr);
                         }
                     }
                 }
-            }
-            finally
-            {
-                if (!currentWrapper.Equals(foreground)) currentWrapper.Dispose();
-                currd?.Dispose();
+                finally
+                {
+                    if (!currentWrapper.Equals(foreground)) currentWrapper.Dispose();
+                    currd?.Dispose();
+                }
             }
         }
 
@@ -278,12 +276,13 @@ namespace Avalonia.Skia
         private Size _size;
         private List<AvaloniaFormattedTextLine> _skiaLines;
 
-        private static SKPaint ApplyWrapperTo(ref DrawingContextImpl.PaintWrapper wrapper,
+        private static void ApplyWrapperTo(ref SKPaint current, DrawingContextImpl.PaintWrapper wrapper,
                                                 ref IDisposable curr, SKPaint paint)
         {
+            if (current == wrapper.Paint)
+                return;
             curr?.Dispose();
             curr = wrapper.ApplyTo(paint);
-            return wrapper.Paint;
         }
 
         private static bool IsBreakChar(char c)
@@ -616,6 +615,7 @@ namespace Avalonia.Skia
 
             if (brush != null)
             {
+                brush = brush.ToImmutable();
                 _foregroundBrushes.Insert(0, new KeyValuePair<FBrushRange, IBrush>(key, brush));
             }
         }

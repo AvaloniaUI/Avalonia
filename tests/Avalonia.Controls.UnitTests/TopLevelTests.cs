@@ -2,24 +2,33 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Reactive;
-using System.Reactive.Subjects;
-using Moq;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Layout;
+using Avalonia.LogicalTree;
 using Avalonia.Platform;
-using Avalonia.Rendering;
-using Avalonia.Styling;
 using Avalonia.UnitTests;
+using Moq;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
     public class TopLevelTests
     {
+        [Fact]
+        public void IsAttachedToLogicalTree_Is_True()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var impl = new Mock<ITopLevelImpl>();
+                var target = new TestTopLevel(impl.Object);
+
+                Assert.True(((ILogical)target).IsAttachedToLogicalTree);
+            }
+        }
+
         [Fact]
         public void ClientSize_Should_Be_Set_On_Construction()
         {
@@ -207,6 +216,23 @@ namespace Avalonia.Controls.UnitTests
                 var target = new TestTopLevel(impl.Object);
                 UnitTestApplication.Current.Exit();
                 Assert.True(target.IsClosed);
+            }
+        }
+
+        [Fact]
+        public void Adding_Resource_To_Application_Should_Raise_ResourcesChanged()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var impl = new Mock<ITopLevelImpl>();
+                impl.SetupAllProperties();
+                var target = new TestTopLevel(impl.Object);
+                var raised = false;
+
+                target.ResourcesChanged += (_, __) => raised = true;
+                Application.Current.Resources.Add("foo", "bar");
+
+                Assert.True(raised);
             }
         }
 
