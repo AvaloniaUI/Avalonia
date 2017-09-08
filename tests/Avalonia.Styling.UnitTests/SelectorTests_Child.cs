@@ -154,6 +154,11 @@ namespace Avalonia.Styling.UnitTests
             {
                 throw new NotImplementedException();
             }
+
+            public void NotifyResourcesChanged(ResourcesChangedEventArgs e)
+            {
+                throw new NotImplementedException();
+            }
         }
 
         public class TestLogical1 : TestLogical

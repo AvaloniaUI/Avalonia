@@ -29,7 +29,7 @@ namespace Avalonia
     /// method.
     /// - Tracks the lifetime of the application.
     /// </remarks>
-    public class Application : IGlobalDataTemplates, IGlobalStyles, IStyleRoot, IApplicationLifecycle
+    public class Application : IApplicationLifecycle, IGlobalDataTemplates, IGlobalStyles, IStyleRoot, IResourceNode
     {
         /// <summary>
         /// The application-global data templates.
@@ -40,6 +40,7 @@ namespace Avalonia
             new Lazy<IClipboard>(() => (IClipboard)AvaloniaLocator.Current.GetService(typeof(IClipboard)));
         private readonly Styler _styler = new Styler();
         private Styles _styles;
+        private IResourceDictionary _resources;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Application"/> class.
@@ -48,6 +49,9 @@ namespace Avalonia
         {
             OnExit += OnExiting;
         }
+
+        /// <inheritdoc/>
+        public event EventHandler<ResourcesChangedEventArgs> ResourcesChanged;
 
         /// <summary>
         /// Gets the current instance of the <see cref="Application"/> class.
@@ -98,6 +102,34 @@ namespace Avalonia
         public IClipboard Clipboard => _clipboard.Value;
 
         /// <summary>
+        /// Gets the application's global resource dictionary.
+        /// </summary>
+        public IResourceDictionary Resources
+        {
+            get => _resources ?? (Resources = new ResourceDictionary());
+            set
+            {
+                Contract.Requires<ArgumentNullException>(value != null);
+
+                var hadResources = false;
+
+                if (_resources != null)
+                {
+                    hadResources = _resources.Count > 0;
+                    _resources.ResourcesChanged -= ResourcesChanged;
+                }
+
+                _resources = value;
+                _resources.ResourcesChanged += ResourcesChanged;
+
+                if (hadResources || _resources.Count > 0)
+                {
+                    ResourcesChanged?.Invoke(this, new ResourcesChangedEventArgs());
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets the application's global styles.
         /// </summary>
         /// <value>
@@ -118,6 +150,12 @@ namespace Avalonia
 
         /// <inheritdoc/>
         bool IStyleHost.IsStylesInitialized => _styles != null;
+
+        /// <inheritdoc/>
+        bool IResourceProvider.HasResources => _resources?.Count > 0;
+
+        /// <inheritdoc/>
+        IResourceNode IResourceNode.ResourceParent => null;
 
         /// <summary>
         /// Initializes the application by loading XAML etc.
@@ -145,12 +183,19 @@ namespace Avalonia
         {
             OnExit?.Invoke(this, EventArgs.Empty);
         }
-        
+
+        /// <inheritdoc/>
+        bool IResourceProvider.TryGetResource(string key, out object value)
+        {
+            value = null;
+            return (_resources?.TryGetResource(key, out value) ?? false) ||
+                   Styles.TryGetResource(key, out value);
+        }
+
         /// <summary>
         /// Sent when the application is exiting.
         /// </summary>
         public event EventHandler OnExit;
-
 
         /// <summary>
         /// Called when the application is exiting.
