@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Avalonia;
 
 namespace ControlCatalog.NetCore
 {
-    class Program
+    static class Program
     {
         static void Main(string[] args)
         {
@@ -15,8 +16,16 @@ namespace ControlCatalog.NetCore
             });
             else
                 AppBuilder.Configure<App>()
-                    .UsePlatformDetect()
+                    .CustomPlatformDetect()
                     .Start<MainWindow>();
+        }
+
+        static AppBuilder CustomPlatformDetect(this AppBuilder builder)
+        {
+            //This is needed because we still aren't ready to have MonoMac backend as default one
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                return builder.UseSkia().UseMonoMac();
+            return builder.UsePlatformDetect();
         }
 
         static void ConsoleSilencer()

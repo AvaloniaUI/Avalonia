@@ -4,6 +4,7 @@ using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
 using Avalonia.Controls.Platform.Surfaces;
+using Avalonia.Rendering;
 using MonoMac.AppKit;
 
 using MonoMac.CoreGraphics;
@@ -15,7 +16,7 @@ namespace Avalonia.MonoMac
     abstract class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
     {
         public TopLevelView View { get; }
-
+        private readonly IMouseDevice _mouse = AvaloniaLocator.Current.GetService<IMouseDevice>();
         protected TopLevelImpl()
         {
             View = new TopLevelView(this);
@@ -326,23 +327,23 @@ namespace Avalonia.MonoMac
         }
 
         public IEnumerable<object> Surfaces => new[] {this};
-
-        #region Events
-
+        public IMouseDevice MouseDevice => _mouse;
+        
         public Action<RawInputEventArgs> Input { get; set; }
         public Action<Rect> Paint { get; set; }
         public Action<Size> Resized { get; set; }
         public Action<double> ScalingChanged { get; set; }
         public Action Closed { get; set; }
 
-        #endregion
-
+        
         public virtual void Dispose()
         {
             Closed?.Invoke();
             Closed = null;
             View.Dispose();
         }
+
+        public IRenderer CreateRenderer(IRenderRoot root) => new ImmediateRenderer(root);
 
         public void Invalidate(Rect rect) => View.SetNeedsDisplayInRect(View.Frame);
 

@@ -49,6 +49,11 @@ namespace Avalonia.MonoMac
             //No-OP, see http://stackoverflow.com/a/7038671/2231814
         }
 
+        public void ShowTaskbarIcon(bool value)
+        {
+            //No-OP, there is no such this as taskbar in OSX
+        }
+
         protected override NSWindowStyle GetStyle()
         {
             if (_decorated)

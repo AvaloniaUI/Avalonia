@@ -16,7 +16,7 @@ namespace Avalonia.MonoMac
             Width = (int)pixelSize.Width;
             Height = (int)pixelSize.Height;
             RowBytes = Width * 4;
-            Dpi = new Size(96 * pixelSize.Width / _logicalSize.Width, 96 * pixelSize.Height / _logicalSize.Height);
+            Dpi = new Vector(96 * pixelSize.Width / _logicalSize.Width, 96 * pixelSize.Height / _logicalSize.Height);
             Format = PixelFormat.Rgba8888;
             Address = Marshal.AllocHGlobal(Height * RowBytes);
         }
@@ -46,7 +46,7 @@ namespace Avalonia.MonoMac
         public int Width { get; }
         public int Height { get; }
         public int RowBytes { get; }
-        public Size Dpi { get; }
+        public Vector Dpi { get; }
         public PixelFormat Format { get; }
     }
 }

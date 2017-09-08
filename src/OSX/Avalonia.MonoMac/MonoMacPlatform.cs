@@ -10,7 +10,7 @@ namespace Avalonia.MonoMac
     public class MonoMacPlatform : IWindowingPlatform, IPlatformSettings
     {
         internal static MonoMacPlatform Instance { get; private set; }
-        readonly MouseDevice _mouseDevice = new MouseDevice();
+        internal readonly MouseDevice MouseDevice = new MouseDevice();
         readonly KeyboardDevice _keyboardDevice = new KeyboardDevice();
         NSApplication _app;
         void DoInitialize()
@@ -19,9 +19,8 @@ namespace Avalonia.MonoMac
                 .Bind<IStandardCursorFactory>().ToTransient<CursorFactoryStub>()
                 .Bind<IPlatformIconLoader>().ToSingleton<IconLoader>()
                 .Bind<IKeyboardDevice>().ToConstant(_keyboardDevice)
-                .Bind<IMouseDevice>().ToConstant(_mouseDevice)
+                .Bind<IMouseDevice>().ToConstant(MouseDevice)
                 .Bind<IPlatformSettings>().ToConstant(this)
-                .Bind<IRendererFactory>().ToConstant(ImmediateRenderer.Factory)
                 .Bind<IWindowingPlatform>().ToConstant(this)
                 .Bind<IPlatformThreadingInterface>().ToConstant(PlatformThreadingInterface.Instance);
 
@@ -66,7 +65,7 @@ namespace Avalonia
 {
     public static class MonoMacPlatformExtensions
     {
-        public static AppBuilderBase<T> UseMonoMac<T>(this AppBuilderBase<T> builder) where T : AppBuilderBase<T>, new()
+        public static T UseMonoMac<T>(this T builder) where T : AppBuilderBase<T>, new()
         {
             return builder.UseWindowingSubsystem(MonoMac.MonoMacPlatform.Initialize);
         }
