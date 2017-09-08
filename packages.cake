@@ -286,9 +286,9 @@ public class Packages
                 }.Deps(new string[] {null}, "reactiveui"),
                 Files = new []
                 {
-                    new NuSpecContent { Source = "Avalonia.ReactiveUI.dll", Target = "lib/netstandard1.3" }
+                    new NuSpecContent { Source = "Avalonia.ReactiveUI.dll", Target = "lib/netstandard2.0" }
                 },
-                BasePath = context.Directory("./src/Avalonia.ReactiveUI/bin/" + parameters.DirSuffix + "/netstandard1.3"),
+                BasePath = context.Directory("./src/Avalonia.ReactiveUI/bin/" + parameters.DirSuffix + "/netstandard2.0"),
                 OutputDirectory = parameters.NugetRoot
             },
         };
