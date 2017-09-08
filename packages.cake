@@ -431,6 +431,20 @@ public class Packages
                 BasePath = context.Directory("./src/Skia/Avalonia.Skia/bin/" + parameters.DirSuffix + "/netstandard2.0"),
                 OutputDirectory = parameters.NugetRoot
             },
+            new NuGetPackSettings()
+            {
+                Id = "Avalonia.MonoMac",
+                Dependencies = new DependencyBuilder(this)
+                {
+                    new NuSpecDependency() { Id = "Avalonia", Version = parameters.Version }
+                }.Dep("MonoMac.NetStandard").ToArray(),
+                Files = new []
+                {
+                    new NuSpecContent { Source = "netstandard2.0/Avalonia.MonoMac.dll", Target = "lib/netstandard2.0" },
+                },
+                BasePath = context.Directory("./src/OSX/Avalonia.MonoMac/bin/" + parameters.DirSuffix),
+                OutputDirectory = parameters.NugetRoot
+            },
             ///////////////////////////////////////////////////////////////////////////////
             // Avalonia.Desktop
             ///////////////////////////////////////////////////////////////////////////////
