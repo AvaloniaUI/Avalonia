@@ -20,6 +20,11 @@ namespace Avalonia.Gtk3.Interop
     {
         public static class D
         {
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
+            public delegate int gdk_display_get_n_monitors (IntPtr display);
+            
+            
+            
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
             public delegate IntPtr gtk_application_new(Utf8Buffer appId, int flags);
 
@@ -269,6 +274,8 @@ namespace Avalonia.Gtk3.Interop
             public delegate void GtkClipboardTextReceivedFunc(IntPtr clipboard, IntPtr utf8string, IntPtr userdata);
         }
 
+        public static D.gdk_display_get_n_monitors GdkDisplayGetNMonitors;
+        
 
         public static D.gtk_window_set_decorated GtkWindowSetDecorated;
         public static D.gtk_window_set_title GtkWindowSetTitle;

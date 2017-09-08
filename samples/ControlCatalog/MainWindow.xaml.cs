@@ -14,6 +14,7 @@ namespace ControlCatalog
             this.AttachDevTools();
             Renderer.DrawDirtyRects = Renderer.DrawFps = true;
             var screens = PlatformImpl?.Screen.AllScreens;
+            
             Console.WriteLine("null");
         }
 

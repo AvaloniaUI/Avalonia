@@ -53,6 +53,7 @@
     <Compile Include="WindowBaseImpl.cs" />
     <Compile Include="Interop\Utf8Buffer.cs" />
     <Compile Include="WindowImpl.cs" />
+    <Compile Include="ScreenImpl.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Avalonia.Base\Avalonia.Base.csproj" />
