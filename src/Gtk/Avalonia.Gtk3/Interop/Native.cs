@@ -21,10 +21,25 @@ namespace Avalonia.Gtk3.Interop
         public static class D
         {
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
-            public delegate int gdk_display_get_n_monitors (IntPtr display);
-            
-            
-            
+            public delegate gint16 gdk_display_get_n_screens(IntPtr display);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
+            public delegate IntPtr gdk_display_get_screen(IntPtr display, gint16 num);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
+            public delegate gint16 gdk_screen_get_n_monitors(IntPtr screen);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
+            public delegate gint16 gdk_screen_get_primary_monitor(IntPtr screen);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
+            public delegate void gdk_screen_get_monitor_geometry(IntPtr screen, gint16 num, ref GdkRectangle rect);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
+            public delegate void gdk_screen_get_monitor_workarea(IntPtr screen, gint16 num, ref GdkRectangle rect);
+
+
+
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
             public delegate IntPtr gtk_application_new(Utf8Buffer appId, int flags);
 
@@ -274,8 +289,13 @@ namespace Avalonia.Gtk3.Interop
             public delegate void GtkClipboardTextReceivedFunc(IntPtr clipboard, IntPtr utf8string, IntPtr userdata);
         }
 
-        public static D.gdk_display_get_n_monitors GdkDisplayGetNMonitors;
-        
+        public static D.gdk_display_get_n_screens GdkDisplayGetNMonitors;
+        public static D.gdk_display_get_screen GdkDisplayGetScreen;
+        public static D.gdk_screen_get_n_monitors GdkScreenGetNMonitors;
+        public static D.gdk_screen_get_primary_monitor GdkScreenGetPrimaryMonitor;
+        public static D.gdk_screen_get_monitor_geometry GdkScreenGetMonitorGeometry;
+        public static D.gdk_screen_get_monitor_workarea GdkScreenGetMonitorWorkarea;
+
 
         public static D.gtk_window_set_decorated GtkWindowSetDecorated;
         public static D.gtk_window_set_title GtkWindowSetTitle;
