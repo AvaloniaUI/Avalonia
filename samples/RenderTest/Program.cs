@@ -21,6 +21,7 @@ namespace RenderTest
                 //.UseWin32().UseDirect2D1()
                 //.UseWin32().UseSkia()
                 //.UseGtk().UseCairo()
+                .UseReactiveUI()
                 .Start<MainWindow>();
         }
 
