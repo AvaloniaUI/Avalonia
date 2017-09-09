@@ -9,6 +9,7 @@ using Avalonia.Cairo.Media.Imaging;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Media.Imaging;
 // ReSharper disable PossibleNullReferenceException
 
 namespace Avalonia.Cairo.Media
@@ -23,6 +24,8 @@ namespace Avalonia.Cairo.Media
         private readonly Cairo.Context _context;
         private readonly IVisualBrushRenderer _visualBrushRenderer;
         private readonly Stack<BrushImpl> _maskStack = new Stack<BrushImpl>();
+
+        private double _opacityOverride = 1.0f;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DrawingContext"/> class.
@@ -112,7 +115,7 @@ namespace Avalonia.Cairo.Media
             _context.Rectangle(destRect.ToCairo());
             _context.Fill();
             _context.PopGroupToSource();
-            _context.PaintWithAlpha(opacityOverride);
+            _context.PaintWithAlpha(_opacityOverride);
             _context.Restore();
         }
 
@@ -253,16 +256,16 @@ namespace Avalonia.Cairo.Media
         /// <returns>A disposable used to undo the opacity.</returns>
         public void PushOpacity(double opacity)
         {
-            _opacityStack.Push(opacityOverride);
+            _opacityStack.Push(_opacityOverride);
 
             if (opacity < 1.0f)
-                opacityOverride *= opacity;
+                _opacityOverride *= opacity;
 
         }
 
         public void PopOpacity()
         {
-            opacityOverride = _opacityStack.Pop();
+            _opacityOverride = _opacityStack.Pop();
         }
 
         /// <summary>
@@ -280,9 +283,7 @@ namespace Avalonia.Cairo.Media
                 _context.Restore();
             });
         }
-
-        private double opacityOverride = 1.0f;
-
+        
         private IDisposable SetBrush(IBrush brush, Size destinationSize)
         {
             _context.Save();
@@ -299,30 +300,32 @@ namespace Avalonia.Cairo.Media
 
         private BrushImpl CreateBrushImpl(IBrush brush, Size destinationSize)
         {
-            var solid = brush as ISolidColorBrush;
-            var linearGradientBrush = brush as ILinearGradientBrush;
-            var radialGradientBrush = brush as IRadialGradientBrush;
-            var imageBrush = brush as IImageBrush;
-            var visualBrush = brush as IVisualBrush;
             BrushImpl impl = null;
 
-            if (solid != null)
+            if (brush is ISolidColorBrush solid)
             {
-                impl = new SolidColorBrushImpl(solid, opacityOverride);
+                impl = new SolidColorBrushImpl(solid, _opacityOverride);
             }
-            else if (linearGradientBrush != null)
+            else if (brush is ILinearGradientBrush linearGradientBrush)
             {
                 impl = new LinearGradientBrushImpl(linearGradientBrush, destinationSize);
             }
-            else if (radialGradientBrush != null)
+            else if (brush is IRadialGradientBrush radialGradientBrush)
             {
                 impl = new RadialGradientBrushImpl(radialGradientBrush, destinationSize);
             }
-            else if (imageBrush != null)
+            else if (brush is IImageBrush imageBrush)
             {
-                impl = new ImageBrushImpl(imageBrush, (BitmapImpl)imageBrush.Source.PlatformImpl, destinationSize);
+                if (imageBrush.Source is IBitmap bitmap)
+                {
+                    impl = new ImageBrushImpl(imageBrush, bitmap.PlatformImpl, destinationSize);
+                }
+                else if (imageBrush.Source is IDrawing drawing)
+                {
+                    impl = new DrawingBrushImpl(imageBrush, drawing, destinationSize);
+                }
             }
-            else if (visualBrush != null)
+            else if (brush is IVisualBrush visualBrush)
             {
                 if (_visualBrushRenderer != null)
                 {
@@ -350,9 +353,10 @@ namespace Avalonia.Cairo.Media
                     throw new NotSupportedException("No IVisualBrushRenderer was supplied to DrawingContextImpl.");
                 }
             }
-            else
+            
+            if (impl == null)
             {
-                impl = new SolidColorBrushImpl(null, opacityOverride);
+                impl = new SolidColorBrushImpl(null, _opacityOverride);
             }
 
             return impl;

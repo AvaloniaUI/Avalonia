@@ -18,6 +18,9 @@ namespace RenderTest
             // again.
             AppBuilder.Configure<App>()
                 .UsePlatformDetect()
+                //.UseWin32().UseDirect2D1()
+                //.UseWin32().UseSkia()
+                //.UseGtk().UseCairo()
                 .Start<MainWindow>();
         }
 

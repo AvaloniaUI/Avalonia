@@ -51,6 +51,7 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="CairoPlatform.cs" />
+    <Compile Include="Media\DrawingBrushImpl.cs" />
     <Compile Include="Media\DrawingContext.cs" />
     <Compile Include="Media\FormattedTextImpl.cs" />
     <Compile Include="Media\Imaging\BitmapImpl.cs" />

@@ -4,7 +4,7 @@ using Avalonia.Media.Imaging;
 namespace Avalonia.Media.Immutable
 {
     /// <summary>
-    /// Paints an area with an <see cref="IBitmap"/>.
+    /// Paints an area with an <see cref="IImage"/>.
     /// </summary>
     internal class ImmutableImageBrush : ImmutableTileBrush, IImageBrush
     {
@@ -22,7 +22,7 @@ namespace Avalonia.Media.Immutable
         /// </param>
         /// <param name="tileMode">The tile mode.</param>
         public ImmutableImageBrush(
-            IBitmap source,
+            IImage source,
             AlignmentX alignmentX = AlignmentX.Center,
             AlignmentY alignmentY = AlignmentY.Center,
             RelativeRect? destinationRect = null,
@@ -49,10 +49,11 @@ namespace Avalonia.Media.Immutable
         public ImmutableImageBrush(IImageBrush source)
             : base(source)
         {
-            Source = source.Source;
+            var sourceSource = source.Source;
+            Source = sourceSource is IMutableDrawing drawing ? drawing.ToImmutable() : sourceSource;
         }
 
         /// <inheritdoc/>
-        public IBitmap Source { get; }
+        public IImage Source { get; }
     }
 }

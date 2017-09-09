@@ -20,6 +20,7 @@ namespace Avalonia.Markup.Xaml.PortableXaml
         private static Dictionary<Type, Type> _defaultConverters = new Dictionary<Type, Type>()
         {
             //avalonia default converters
+            { typeof(IImage), typeof(BitmapTypeConverter)},
             { typeof(IBitmap), typeof(BitmapTypeConverter)},
             { typeof(IBrush), typeof(BrushTypeConverter) },
             { typeof(Color), typeof(ColorTypeConverter) },

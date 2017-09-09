@@ -12,6 +12,7 @@ using System.IO;
 using Avalonia.Media.Immutable;
 using System.Threading;
 using System.Linq;
+using System.Diagnostics;
 
 namespace Avalonia.Rendering
 {
@@ -414,7 +415,11 @@ namespace Avalonia.Rendering
                     Interlocked.Exchange(ref scene, _scene);
                     Render(scene);
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    Debug.Fail("Fail during render: " + ex.Message, ex.ToString());
+                    throw;
+                }
                 finally
                 {
                     Monitor.Exit(_rendering);
