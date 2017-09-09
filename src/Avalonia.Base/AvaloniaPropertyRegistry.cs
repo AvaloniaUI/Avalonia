@@ -47,6 +47,9 @@ namespace Avalonia
         {
             Dictionary<int, AvaloniaProperty> inner;
 
+            // Ensure the type's static ctor has been run.
+            RuntimeHelpers.RunClassConstructor(ownerType.TypeHandle);
+
             if (_attached.TryGetValue(ownerType, out inner))
             {
                 return inner.Values;

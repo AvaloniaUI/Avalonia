@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
   <PropertyGroup>
-    <TargetFrameworks>net461;netcoreapp1.1</TargetFrameworks>
+    <TargetFrameworks>net461;netcoreapp2.0</TargetFrameworks>
     <OutputType>Library</OutputType>
   </PropertyGroup>
   <Import Project="..\..\build\UnitTests.NetCore.targets" />
@@ -19,7 +19,6 @@
     <ProjectReference Include="..\..\src\Avalonia.Input\Avalonia.Input.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Interactivity\Avalonia.Interactivity.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Layout\Avalonia.Layout.csproj" />
-    <ProjectReference Include="..\..\src\Avalonia.ReactiveUI\Avalonia.ReactiveUI.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Visuals\Avalonia.Visuals.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Styling\Avalonia.Styling.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Themes.Default\Avalonia.Themes.Default.csproj" />
