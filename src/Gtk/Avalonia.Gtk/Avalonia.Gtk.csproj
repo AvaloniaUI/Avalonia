@@ -48,6 +48,7 @@
     <Compile Include="FramebufferManager.cs" />
     <Compile Include="IconImpl.cs" />
     <Compile Include="KeyTransform.cs" />
+    <Compile Include="ScreenImpl.cs" />
     <Compile Include="SurfaceFramebuffer.cs" />
     <Compile Include="SystemDialogImpl.cs" />
     <Compile Include="CursorFactory.cs" />

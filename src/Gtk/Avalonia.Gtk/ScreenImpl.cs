@@ -1,6 +1,7 @@
 ﻿using System;
 using Avalonia.Platform;
-using Gtk;
+using Gdk;
+using Window = Gtk.Window;
 
 namespace Avalonia.Gtk
 {
@@ -10,19 +11,17 @@ namespace Avalonia.Gtk
 
         public int screenCount
         {
-            get
-            {
-                return window.Display.DefaultScreen.NMonitors;
-            }
+            get => window.Display.DefaultScreen.NMonitors;
         }
         public IScreenImpl[] AllScreens {
             get
             {
                 IScreenImpl[] screens = new IScreenImpl[screenCount];
                 var screen = window.Display.DefaultScreen;
+                
                 for (short i = 0; i < screens.Length; i++)
                 {
-                    var geometry = screen.GetMonitorGeometry(i);
+                    Rectangle geometry = screen.GetMonitorGeometry(i);
                     Rect geometryRect = new Rect(geometry.X, geometry.Y, geometry.Width, geometry.Height);
                     ScreenImpl s = new ScreenImpl(geometryRect, geometryRect, false);
                     screens[i] = s;
@@ -34,10 +33,7 @@ namespace Avalonia.Gtk
 
         public IScreenImpl PrimaryScreen
         {
-            get
-            {
-                return null;
-            }
+            get => null;
         }
 
         public Rect Bounds { get; }

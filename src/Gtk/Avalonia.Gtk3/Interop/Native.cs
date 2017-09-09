@@ -24,21 +24,19 @@ namespace Avalonia.Gtk3.Interop
             public delegate gint16 gdk_display_get_n_screens(IntPtr display);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
-            public delegate IntPtr gdk_display_get_screen(IntPtr display, gint16 num);
+            public delegate GtkScreen gdk_display_get_screen(IntPtr display, gint16 num);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
-            public delegate gint16 gdk_screen_get_n_monitors(IntPtr screen);
+            public delegate gint16 gdk_screen_get_n_monitors(GtkScreen screen);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
-            public delegate gint16 gdk_screen_get_primary_monitor(IntPtr screen);
+            public delegate gint16 gdk_screen_get_primary_monitor(GtkScreen screen);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
-            public delegate void gdk_screen_get_monitor_geometry(IntPtr screen, gint16 num, ref GdkRectangle rect);
+            public delegate void gdk_screen_get_monitor_geometry(GtkScreen screen, gint16 num, ref GdkRectangle rect);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
-            public delegate void gdk_screen_get_monitor_workarea(IntPtr screen, gint16 num, ref GdkRectangle rect);
-
-
+            public delegate void gdk_screen_get_monitor_workarea(GtkScreen screen, gint16 num, ref GdkRectangle rect);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
             public delegate IntPtr gtk_application_new(Utf8Buffer appId, int flags);
@@ -279,6 +277,9 @@ namespace Avalonia.Gtk3.Interop
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate bool signal_onevent(IntPtr gtkWidget, IntPtr ev, IntPtr userData);
 
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            public delegate void monitors_changed(IntPtr screen, IntPtr userData);
+            
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate bool signal_commit(IntPtr gtkWidget, IntPtr utf8string, IntPtr userData);
 

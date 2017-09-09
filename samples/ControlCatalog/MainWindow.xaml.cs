@@ -20,6 +20,7 @@ namespace ControlCatalog
                 Console.WriteLine("WorkingArea:" + screens[i].WorkingArea);
                 Console.WriteLine("Primary:" + screens[i].Primary);
             }
+            Console.Write((string)null);
         }
 
         private void InitializeComponent()

@@ -619,6 +619,7 @@ namespace Avalonia.Win32.Interop
         [DllImport("user32.dll")]
         public static extern bool EnumDisplayMonitors(IntPtr hdc, IntPtr lprcClip,
                                                       MonitorEnumDelegate lpfnEnum, IntPtr dwData);
+        
         public delegate bool MonitorEnumDelegate(IntPtr hMonitor, IntPtr hdcMonitor, ref Rect lprcMonitor, IntPtr dwData);
         
         [DllImport("user32.dll", SetLastError = true)]

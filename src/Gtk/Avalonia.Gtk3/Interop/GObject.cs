@@ -31,32 +31,31 @@ namespace Avalonia.Gtk3.Interop
 
     class GInputStream : GObject
     {
-        
     }
 
     class GtkWidget : GObject
     {
-        
     }
 
     class GtkWindow : GtkWidget
     {
         public static GtkWindow Null { get; } = new GtkWindow();
     }
+    
+    class GtkScreen : GObject
+    {
+    }
+
 
     class GtkImContext : GObject
     {
-        
     }
 
     class GtkDialog : GtkWindow
     {
-        
     }
 
     class GtkFileChooser : GtkDialog
     {
-        
     }
 }
-
