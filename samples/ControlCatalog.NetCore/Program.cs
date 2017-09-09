@@ -15,7 +15,7 @@ namespace ControlCatalog.NetCore
             });
             else
                 AppBuilder.Configure<App>()
-                    .UsePlatformDetect().UseGtk3()
+                    .UsePlatformDetect()
                     .Start<MainWindow>();
         }
 

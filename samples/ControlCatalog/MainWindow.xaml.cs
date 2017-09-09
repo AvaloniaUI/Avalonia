@@ -13,14 +13,6 @@ namespace ControlCatalog
             this.InitializeComponent();
             this.AttachDevTools();
             Renderer.DrawDirtyRects = Renderer.DrawFps = true;
-            var screens = PlatformImpl?.Screen.AllScreens;
-            for (int i = 0; i < screens.Length; i++)
-            {
-                Console.WriteLine("Bounds:" + screens[i].Bounds);
-                Console.WriteLine("WorkingArea:" + screens[i].WorkingArea);
-                Console.WriteLine("Primary:" + screens[i].Primary);
-            }
-            Console.Write((string)null);
         }
 
         private void InitializeComponent()
