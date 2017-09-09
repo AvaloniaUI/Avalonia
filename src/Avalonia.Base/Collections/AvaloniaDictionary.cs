@@ -16,6 +16,7 @@ namespace Avalonia.Collections
     /// <typeparam name="TKey">The type of the dictionary key.</typeparam>
     /// <typeparam name="TValue">The type of the dictionary value.</typeparam>
     public class AvaloniaDictionary<TKey, TValue> : IDictionary<TKey, TValue>,
+        IDictionary,
         INotifyCollectionChanged,
         INotifyPropertyChanged
     {
@@ -50,6 +51,16 @@ namespace Avalonia.Collections
 
         /// <inheritdoc/>
         public ICollection<TValue> Values => _inner.Values;
+
+        bool IDictionary.IsFixedSize => ((IDictionary)_inner).IsFixedSize;
+
+        ICollection IDictionary.Keys => ((IDictionary)_inner).Keys;
+
+        ICollection IDictionary.Values => ((IDictionary)_inner).Values;
+
+        bool ICollection.IsSynchronized => ((IDictionary)_inner).IsSynchronized;
+
+        object ICollection.SyncRoot => ((IDictionary)_inner).SyncRoot;
 
         /// <summary>
         /// Gets or sets the named resource.
@@ -89,6 +100,8 @@ namespace Avalonia.Collections
             }
         }
 
+        object IDictionary.this[object key] { get => ((IDictionary)_inner)[key]; set => ((IDictionary)_inner)[key] = value; }
+
         /// <inheritdoc/>
         public void Add(TKey key, TValue value)
         {
@@ -118,10 +131,7 @@ namespace Avalonia.Collections
         }
 
         /// <inheritdoc/>
-        public bool ContainsKey(TKey key)
-        {
-            return _inner.ContainsKey(key);
-        }
+        public bool ContainsKey(TKey key) => _inner.ContainsKey(key);
 
         /// <inheritdoc/>
         public void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
@@ -130,21 +140,16 @@ namespace Avalonia.Collections
         }
 
         /// <inheritdoc/>
-        public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
-        {
-            return _inner.GetEnumerator();
-        }
+        public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator() => _inner.GetEnumerator();
 
         /// <inheritdoc/>
         public bool Remove(TKey key)
         {
-            TValue value;
-
-            if (_inner.TryGetValue(key, out value))
+            if (_inner.TryGetValue(key, out TValue value))
             {
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Count"));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs($"Item[{key}]"));
-                
+
                 if (CollectionChanged != null)
                 {
                     var e = new NotifyCollectionChangedEventArgs(
@@ -163,16 +168,13 @@ namespace Avalonia.Collections
         }
 
         /// <inheritdoc/>
-        public bool TryGetValue(TKey key, out TValue value)
-        {
-            return _inner.TryGetValue(key, out value);
-        }
+        public bool TryGetValue(TKey key, out TValue value) => _inner.TryGetValue(key, out value);
 
         /// <inheritdoc/>
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return _inner.GetEnumerator();
-        }
+        IEnumerator IEnumerable.GetEnumerator() => _inner.GetEnumerator();
+
+        /// <inheritdoc/>
+        void ICollection.CopyTo(Array array, int index) => ((ICollection)_inner).CopyTo(array, index);
 
         /// <inheritdoc/>
         void ICollection<KeyValuePair<TKey, TValue>>.Add(KeyValuePair<TKey, TValue> item)
@@ -191,6 +193,18 @@ namespace Avalonia.Collections
         {
             return Remove(item.Key);
         }
+
+        /// <inheritdoc/>
+        void IDictionary.Add(object key, object value) => Add((TKey)key, (TValue)value);
+
+        /// <inheritdoc/>
+        bool IDictionary.Contains(object key) => ((IDictionary) _inner).Contains(key);
+
+        /// <inheritdoc/>
+        IDictionaryEnumerator IDictionary.GetEnumerator() => ((IDictionary)_inner).GetEnumerator();
+
+        /// <inheritdoc/>
+        void IDictionary.Remove(object key) => Remove((TKey)key);
 
         private void NotifyAdd(TKey key, TValue value)
         {

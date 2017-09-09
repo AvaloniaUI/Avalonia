@@ -1,83 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netstandard1.3</TargetFramework>
-    <EnableDefaultCompileItems>False</EnableDefaultCompileItems>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;MONO PORTABLE;NETSTANDARD1_1</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE;MONO PORTABLE;RELEASE;NETSTANDARD1_1</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <ItemGroup>
-    <None Remove="Shims.cs" />
-  </ItemGroup>
   <ItemGroup>
     <Compile Include="..\Shared\SharedAssemblyInfo.cs" Link="Properties\SharedAssemblyInfo.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Registrations.cs" />
-    <Compile Include="Shims.cs" />
-    <Compile Include="src\ReactiveUI\ExpressionMixins.cs" />
-    <Compile Include="src\ReactiveUI\ExpressionRewriter.cs" />
-    <Compile Include="src\ReactiveUI\Activation.cs" />
-    <Compile Include="src\ReactiveUI\ReactiveBinding.cs" />
-    <Compile Include="src\ReactiveUI\AutoPersistHelper.cs" />
-    <Compile Include="src\ReactiveUI\BindingTypeConverters.cs" />
-    <Compile Include="src\ReactiveUI\CollectionDebugView.cs" />
-    <Compile Include="src\ReactiveUI\CommandBinding.cs" />
-    <Compile Include="src\ReactiveUI\CompatMixins.cs" />
-    <Compile Include="src\ReactiveUI\ContractStubs.cs" />
-    <Compile Include="src\ReactiveUI\CreatesCommandBinding.cs" />
-    <Compile Include="src\ReactiveUI\DefaultPropertyBinding.cs" />
-    <Compile Include="src\ReactiveUI\Errors.cs" />
-    <Compile Include="src\ReactiveUI\IDependencyResolver.cs" />
-    <Compile Include="src\ReactiveUI\INPCObservableForProperty.cs" />
-    <Compile Include="src\ReactiveUI\Interfaces.cs" />
-    <Compile Include="src\ReactiveUI\IROObservableForProperty.cs" />
-    <Compile Include="src\ReactiveUI\MessageBus.cs" />
-    <Compile Include="src\ReactiveUI\MobileLifecycle.cs" />
-    <Compile Include="src\ReactiveUI\NullDefaultPropertyBindingProvider.cs" />
-    <Compile Include="src\ReactiveUI\ObservableAsPropertyHelper.cs" />
-    <Compile Include="src\ReactiveUI\ObservedChangedMixin.cs" />
-    <Compile Include="src\ReactiveUI\OrderedComparer.cs" />
-    <Compile Include="src\ReactiveUI\POCOObservableForProperty.cs" />
-    <Compile Include="src\ReactiveUI\PropertyBinding.cs" />
-    <Compile Include="src\ReactiveUI\ReactiveList.cs" />
-    <Compile Include="src\ReactiveUI\ReactiveCollectionMixins.cs" />
-    <Compile Include="src\ReactiveUI\ReactiveCommand.cs" />
-    <Compile Include="src\ReactiveUI\ReactiveNotifyPropertyChangedMixin.cs" />
-    <Compile Include="src\ReactiveUI\ReactiveObject.cs" />
-    <Compile Include="src\ReactiveUI\RefcountDisposeWrapper.cs" />
-    <Compile Include="src\ReactiveUI\Reflection.cs" />
-    <Compile Include="src\ReactiveUI\RegisterableInterfaces.cs" />
-    <Compile Include="src\ReactiveUI\Registrations.cs" />
-    <Compile Include="src\ReactiveUI\RoutableViewModelMixin.cs" />
-    <Compile Include="src\ReactiveUI\RoutingState.cs" />
-    <Compile Include="src\ReactiveUI\RxApp.cs" />
-    <Compile Include="src\ReactiveUI\ViewLocator.cs" />
-    <Compile Include="src\ReactiveUI\ScheduledSubject.cs" />
-    <Compile Include="src\ReactiveUI\VariadicTemplates.cs" />
-    <Compile Include="src\ReactiveUI\WaitForDispatcherScheduler.cs" />
-    <Compile Include="src\ReactiveUI\LoggingMixins.cs" />
-    <Compile Include="src\ReactiveUI\IReactiveObject.cs" />
-    <Compile Include="src\ReactiveUI\WeakEventManager.cs" />
-    <Compile Include="src\ReactiveUI\Legacy\ReactiveCommand.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\Avalonia.Animation\Avalonia.Animation.csproj" />
     <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj" />
     <ProjectReference Include="..\Avalonia.Controls\Avalonia.Controls.csproj" />
@@ -88,5 +15,6 @@
     <ProjectReference Include="..\Avalonia.Visuals\Avalonia.Visuals.csproj" />
   </ItemGroup>
   <Import Project="..\..\build\Rx.props" />
+  <Import Project="..\..\build\ReactiveUI.props" />
   <Import Project="..\..\build\Splat.props" />
 </Project>
