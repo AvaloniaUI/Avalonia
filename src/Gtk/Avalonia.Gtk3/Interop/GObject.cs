@@ -42,13 +42,25 @@ namespace Avalonia.Gtk3.Interop
         public static GtkWindow Null { get; } = new GtkWindow();
     }
     
-    class GdkScreen : GObject
-    {
-    }
-
     class GtkImContext : GObject
     {
     }
+    
+    class GdkScreen : GObject
+    {
+    }
+    
+     class UnownedGdkScreen : GdkScreen
+        {
+            public UnownedGdkScreen() : base(IntPtr.Zero, false)
+            {
+            }
+    
+            public UnownedGdkScreen(IntPtr handle, bool owned = true) : base(IntPtr.Zero, false)
+            {
+                this.handle = handle;
+            }
+        }
 
     class GtkDialog : GtkWindow
     {

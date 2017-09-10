@@ -24,10 +24,10 @@ namespace Avalonia.Gtk3.Interop
             public delegate gint16 gdk_display_get_n_screens(IntPtr display);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
-            public delegate GdkScreen gdk_display_get_screen(IntPtr display, gint16 num);
+            public delegate UnownedGdkScreen gdk_display_get_screen(IntPtr display, gint16 num);
             
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
-            public delegate GdkScreen gdk_display_get_default_screen (IntPtr display);
+            public delegate UnownedGdkScreen gdk_display_get_default_screen (IntPtr display);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
             public delegate gint16 gdk_screen_get_n_monitors(GdkScreen screen);
