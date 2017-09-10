@@ -23,7 +23,7 @@ namespace Avalonia.Gtk3
                 if (allScreens == null)
                 {
                     IntPtr display = Native.GdkGetDefaultDisplay();
-                    GtkScreen screen = Native.GdkDisplayGetScreen(display, 0);
+                    GtkScreen screen = Native.GdkDisplayGetDefaultScreen(display);
                     short primary = Native.GdkScreenGetPrimaryMonitor(screen);
                     IScreenImpl[] screens = new IScreenImpl[screenCount];
                     for (short i = 0; i < screens.Length; i++)

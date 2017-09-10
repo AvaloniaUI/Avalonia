@@ -25,6 +25,9 @@ namespace Avalonia.Gtk3.Interop
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
             public delegate GtkScreen gdk_display_get_screen(IntPtr display, gint16 num);
+            
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
+            public delegate GtkScreen gdk_display_get_default_screen (IntPtr display);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
             public delegate gint16 gdk_screen_get_n_monitors(GtkScreen screen);
@@ -65,7 +68,6 @@ namespace Avalonia.Gtk3.Interop
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)] //No manual import
             public delegate IntPtr gdk_get_native_handle(IntPtr gdkWindow);
 
-
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
             public delegate IntPtr gtk_widget_get_window(GtkWidget gtkWidget);
 
@@ -74,14 +76,16 @@ namespace Avalonia.Gtk3.Interop
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
             public delegate IntPtr gtk_widget_get_screen(GtkWidget gtkWidget);
+            
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
             public delegate IntPtr gtk_widget_set_double_buffered(GtkWidget gtkWidget, bool value);
+
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
             public delegate IntPtr gtk_widget_set_events(GtkWidget gtkWidget, uint flags);
 
-
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
             public delegate int gdk_screen_get_height(IntPtr screen);
+            
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
             public delegate int gdk_screen_get_width(IntPtr screen);
 
@@ -90,9 +94,9 @@ namespace Avalonia.Gtk3.Interop
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
             public delegate int gdk_window_get_origin(IntPtr gdkWindow, out int x, out int y);
+
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
             public delegate void gdk_window_resize(IntPtr gtkWindow, int width, int height);
-
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
             public delegate void gtk_widget_realize(GtkWidget gtkWidget);
@@ -100,36 +104,41 @@ namespace Avalonia.Gtk3.Interop
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
             public delegate void gtk_window_set_title(GtkWindow gtkWindow, Utf8Buffer title);
 
-
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
             public delegate void gtk_window_set_decorated(GtkWindow gtkWindow, bool decorated);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
             public delegate void gtk_window_get_size(GtkWindow gtkWindow, out int width, out int height);
+            
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
             public delegate void gtk_window_resize(GtkWindow gtkWindow, int width, int height);
+            
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
             public delegate void gtk_widget_set_size_request(GtkWidget widget, int width, int height);
+            
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
             public delegate void gtk_window_set_default_size(GtkWindow gtkWindow, int width, int height);
+            
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
             public delegate void gtk_window_get_position(GtkWindow gtkWindow, out int x, out int y);
+ 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
             public delegate void gtk_window_move(GtkWindow gtkWindow, int x, int y);
-
+ 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
             public delegate GtkFileChooser gtk_file_chooser_dialog_new(Utf8Buffer title, GtkWindow parent, GtkFileChooserAction action, IntPtr ignore);
+            
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
             public unsafe delegate GSList* gtk_file_chooser_get_filenames(GtkFileChooser chooser);
+            
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
             public delegate void gtk_file_chooser_set_select_multiple(GtkFileChooser chooser, bool allow);
+            
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
             public delegate void gtk_file_chooser_set_filename(GtkFileChooser chooser, Utf8Buffer file);
+
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
             public delegate void gtk_dialog_add_button(GtkDialog raw, Utf8Buffer button_text, GtkResponseType response_id);
-
-
-
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Cairo)]
             public delegate CairoSurface cairo_image_surface_create(int format, int width, int height);
@@ -224,7 +233,6 @@ namespace Avalonia.Gtk3.Interop
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
             public delegate void gtk_clipboard_clear(IntPtr clipboard);
 
-
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.GdkPixBuf)]
             public delegate IntPtr gdk_pixbuf_new_from_file(Utf8Buffer filename, out IntPtr error);
 
@@ -247,21 +255,27 @@ namespace Avalonia.Gtk3.Interop
             public delegate bool gdk_pixbuf_save_to_bufferv(Pixbuf pixbuf, out IntPtr buffer, out IntPtr buffer_size,
                             Utf8Buffer type, IntPtr option_keys, IntPtr option_values, out IntPtr error);
 
-
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gobject)]
             public delegate void g_object_unref(IntPtr instance);
+            
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gobject)]
             public delegate void g_object_ref(GObject instance);
+            
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gobject)]
             public delegate ulong g_signal_connect_object(GObject instance, Utf8Buffer signal, IntPtr handler, IntPtr userData, int flags);
+            
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gobject)]
             public delegate ulong g_signal_handler_disconnect(GObject instance, ulong connectionId);
+            
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Glib)]
             public delegate ulong g_timeout_add(uint interval, timeout_callback callback, IntPtr data);
+            
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Glib)]
             public delegate ulong g_free(IntPtr data);
+            
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Glib)]
             public unsafe delegate void g_slist_free(GSList* data);
+            
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gio)]
             public delegate GInputStream g_memory_input_stream_new_from_data(IntPtr ptr, IntPtr len, IntPtr destroyCallback);
 
@@ -290,14 +304,13 @@ namespace Avalonia.Gtk3.Interop
             public delegate void GtkClipboardTextReceivedFunc(IntPtr clipboard, IntPtr utf8string, IntPtr userdata);
         }
 
-        public static D.gdk_display_get_n_screens GdkDisplayGetNMonitors;
+        public static D.gdk_display_get_n_screens GdkDisplayGetNScreens;
         public static D.gdk_display_get_screen GdkDisplayGetScreen;
+        public static D.gdk_display_get_default_screen GdkDisplayGetDefaultScreen;
         public static D.gdk_screen_get_n_monitors GdkScreenGetNMonitors;
         public static D.gdk_screen_get_primary_monitor GdkScreenGetPrimaryMonitor;
         public static D.gdk_screen_get_monitor_geometry GdkScreenGetMonitorGeometry;
         public static D.gdk_screen_get_monitor_workarea GdkScreenGetMonitorWorkarea;
-
-
         public static D.gtk_window_set_decorated GtkWindowSetDecorated;
         public static D.gtk_window_set_title GtkWindowSetTitle;
         public static D.gtk_application_new GtkApplicationNew;
