@@ -63,6 +63,10 @@ namespace Avalonia.UnitTests
 
         public bool ShowAccessKeys { get; set; }
 
+        public IStyleHost StylingParent { get; set; }
+
+        IStyleHost IStyleHost.StylingParent => StylingParent;
+
         public IRenderTarget CreateRenderTarget() => _renderTarget;
 
         public void Invalidate(Rect rect)
