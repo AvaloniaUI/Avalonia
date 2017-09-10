@@ -46,6 +46,8 @@ namespace Avalonia.Controls
             Thumb.DragStartedEvent.AddClassHandler<Slider>(x => x.OnThumbDragStarted, RoutingStrategies.Bubble);
             Thumb.DragDeltaEvent.AddClassHandler<Slider>(x => x.OnThumbDragDelta, RoutingStrategies.Bubble);
             Thumb.DragCompletedEvent.AddClassHandler<Slider>(x => x.OnThumbDragCompleted, RoutingStrategies.Bubble);
+            SmallChangeProperty.OverrideDefaultValue<Slider>(1);
+            LargeChangeProperty.OverrideDefaultValue<Slider>(10);
         }
 
         /// <summary>
@@ -112,12 +114,27 @@ namespace Avalonia.Controls
 
         private void DecreaseClick(object sender, RoutedEventArgs e)
         {
-            Value = Math.Max(Value - LargeChange, Minimum);
+            ChangeValueBy(-LargeChange);
         }
 
         private void IncreaseClick(object sender, RoutedEventArgs e)
         {
-            Value = Math.Min(Value + LargeChange, Maximum);
+            ChangeValueBy(LargeChange);
+        }
+
+        private void ChangeValueBy(double by)
+        {
+            if (IsSnapToTickEnabled)
+            {
+                by = by < 0 ? Math.Min(-TickFrequency, by) : Math.Max(TickFrequency, by);
+            }
+
+            var value = Value;
+            var next = SnapToTick(Math.Max(Math.Min(value + by, Maximum), Minimum));
+            if (next != value)
+            {
+                Value = next;
+            }
         }
 
         /// <summary>
