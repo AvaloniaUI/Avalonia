@@ -6,14 +6,9 @@ namespace Avalonia.Gtk3
 {
     internal class ScreenImpl : IScreenImpl
     {
-        public int screenCount
+        public int ScreenCount
         {
-            get
-            {
-                IntPtr display = Native.GdkGetDefaultDisplay();
-                GtkScreen screen = Native.GdkDisplayGetScreen(display, 0);
-                return Native.GdkScreenGetNMonitors(screen);
-            }
+            get => allScreens.Length;
         }
 
         public IScreenImpl[] AllScreens
@@ -25,7 +20,7 @@ namespace Avalonia.Gtk3
                     IntPtr display = Native.GdkGetDefaultDisplay();
                     GtkScreen screen = Native.GdkDisplayGetDefaultScreen(display);
                     short primary = Native.GdkScreenGetPrimaryMonitor(screen);
-                    IScreenImpl[] screens = new IScreenImpl[screenCount];
+                    IScreenImpl[] screens = new IScreenImpl[ScreenCount];
                     for (short i = 0; i < screens.Length; i++)
                     {
                         GdkRectangle workArea = new GdkRectangle(), geometry = new GdkRectangle();
