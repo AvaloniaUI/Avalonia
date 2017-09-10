@@ -1,0 +1,9 @@
+﻿<ProjectConfiguration>
+  <Settings>
+    <IgnoredTests>
+      <NamedTestSelector>
+        <TestName>Avalonia.Markup.UnitTests.Data.Plugins.DataAnnotationsValidationPluginTests.Produces_Aggregate_BindingNotificationsx</TestName>
+      </NamedTestSelector>
+    </IgnoredTests>
+  </Settings>
+</ProjectConfiguration>

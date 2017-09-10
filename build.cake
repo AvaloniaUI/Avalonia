@@ -162,7 +162,7 @@ void RunCoreTest(string project, Parameters parameters, bool coreOnly = false)
         project = System.IO.Path.Combine(project, System.IO.Path.GetFileName(project)+".csproj");
     Information("Running tests from " + project);
     DotNetCoreRestore(project);
-    var frameworks = new List<string>(){"netcoreapp1.1"};
+    var frameworks = new List<string>(){"netcoreapp2.0"};
     if(parameters.IsRunningOnWindows)
         frameworks.Add("net461");
     foreach(var fw in frameworks)

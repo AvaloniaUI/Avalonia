@@ -3,26 +3,30 @@
 
 using Avalonia.Styling;
 using System;
+using Avalonia.Controls;
 
 namespace Avalonia.Markup.Xaml.Styling
 {
     /// <summary>
     /// Includes a style from a URL.
     /// </summary>
-    public class StyleInclude : IStyle
+    public class StyleInclude : IStyle, ISetStyleParent
     {
         private Uri _baseUri;
         private IStyle _loaded;
+        private IResourceNode _parent;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="StyleInclude"/> class.
         /// </summary>
         /// <param name="baseUri"></param>
-
         public StyleInclude(Uri baseUri)
         {
             _baseUri = baseUri;
         }
+
+        /// <inheritdoc/>
+        public event EventHandler<ResourcesChangedEventArgs> ResourcesChanged;
 
         /// <summary>
         /// Gets or sets the source URL.
@@ -40,11 +44,18 @@ namespace Avalonia.Markup.Xaml.Styling
                 {
                     var loader = new AvaloniaXamlLoader();
                     _loaded = (IStyle)loader.Load(Source, _baseUri);
+                    (_loaded as ISetStyleParent)?.SetParent(this);
                 }
 
                 return _loaded;
             }
         }
+
+        /// <inheritdoc/>
+        bool IResourceProvider.HasResources => Loaded.HasResources;
+
+        /// <inheritdoc/>
+        IResourceNode IResourceNode.ResourceParent => _parent;
 
         /// <inheritdoc/>
         public void Attach(IStyleable control, IStyleHost container)
@@ -55,16 +66,24 @@ namespace Avalonia.Markup.Xaml.Styling
             }
         }
 
-        /// <summary>
-        /// Tries to find a named resource within the style.
-        /// </summary>
-        /// <param name="name">The resource name.</param>
-        /// <returns>
-        /// The resource if found, otherwise <see cref="AvaloniaProperty.UnsetValue"/>.
-        /// </returns>
-        public object FindResource(string name)
+        /// <inheritdoc/>
+        public bool TryGetResource(string key, out object value) => Loaded.TryGetResource(key, out value);
+
+        /// <inheritdoc/>
+        void ISetStyleParent.NotifyResourcesChanged(ResourcesChangedEventArgs e)
         {
-            return Loaded.FindResource(name);
+            (Loaded as ISetStyleParent)?.NotifyResourcesChanged(e);
+        }
+
+        /// <inheritdoc/>
+        void ISetStyleParent.SetParent(IResourceNode parent)
+        {
+            if (_parent != null && parent != null)
+            {
+                throw new InvalidOperationException("The Style already has a parent.");
+            }
+
+            _parent = parent;
         }
     }
 }
