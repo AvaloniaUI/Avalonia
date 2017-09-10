@@ -2,7 +2,7 @@
 {
     public interface IScreenImpl
     {
-        int screenCount { get; }
+        int ScreenCount { get; }
 
         IScreenImpl[] AllScreens { get; }
 

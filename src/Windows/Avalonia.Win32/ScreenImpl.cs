@@ -14,14 +14,14 @@ namespace Avalonia.Win32
 {
     public class ScreenImpl : IScreenImpl
     {
-        public int screenCount => UnmanagedMethods.GetSystemMetrics(SystemMetric.SM_CMONITORS);
+        public int ScreenCount => UnmanagedMethods.GetSystemMetrics(SystemMetric.SM_CMONITORS);
 
         public IScreenImpl[] AllScreens
         {
             get
             {
                     int index = 0;
-                    ScreenImpl[] screens = new ScreenImpl[screenCount];
+                    ScreenImpl[] screens = new ScreenImpl[ScreenCount];
                     UnmanagedMethods.EnumDisplayMonitors(IntPtr.Zero, IntPtr.Zero, (IntPtr monitor, IntPtr hdcMonitor, ref Rect lprcMonitor, IntPtr data) =>
                                                                                    {
                                                                                        MONITORINFO monitorInfo = new MONITORINFO();

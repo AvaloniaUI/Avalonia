@@ -9,14 +9,14 @@ namespace Avalonia.Gtk
     {
         private Window window;
 
-        public int screenCount
+        public int ScreenCount
         {
             get => window.Display.DefaultScreen.NMonitors;
         }
         public IScreenImpl[] AllScreens {
             get
             {
-                IScreenImpl[] screens = new IScreenImpl[screenCount];
+                IScreenImpl[] screens = new IScreenImpl[ScreenCount];
                 var screen = window.Display.DefaultScreen;
                 
                 for (short i = 0; i < screens.Length; i++)
