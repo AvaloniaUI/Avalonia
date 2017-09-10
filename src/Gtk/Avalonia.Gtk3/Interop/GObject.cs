@@ -48,6 +48,14 @@ namespace Avalonia.Gtk3.Interop
     
     class GdkScreen : GObject
     {
+        public GdkScreen() : base(IntPtr.Zero, false)
+        {
+        }
+    
+        public GdkScreen(IntPtr handle, bool owned = true) : base(handle, owned)
+        {
+            this.handle = handle;
+        }
     }
     
      class UnownedGdkScreen : GdkScreen
