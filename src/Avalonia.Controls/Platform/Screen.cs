@@ -14,10 +14,5 @@
             this.WorkingArea = workingArea;
             this.Primary = primary;
         }
-        
-        public override bool Equals(object obj)
-        {
-            return obj is Screen screen && screen.Bounds == Bounds && screen.WorkingArea == WorkingArea && screen.Primary == Primary;
-        }
     }
 }
