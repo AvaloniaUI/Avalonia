@@ -4,14 +4,8 @@
     {
         int ScreenCount { get; }
 
-        IScreenImpl[] AllScreens { get; }
+        Screen[] AllScreens { get; }
 
-        IScreenImpl PrimaryScreen { get; }
-
-        Rect Bounds { get; }
-
-        Rect WorkingArea { get; }
-
-        bool Primary { get; }
+        Screen PrimaryScreen { get; }
     }
 }

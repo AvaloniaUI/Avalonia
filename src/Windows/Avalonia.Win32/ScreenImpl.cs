@@ -3,7 +3,6 @@
 
 using System;
 using Avalonia.Platform;
-using Avalonia.Win32.Interop;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 
 #if NETSTANDARD
@@ -14,23 +13,27 @@ namespace Avalonia.Win32
 {
     public class ScreenImpl : IScreenImpl
     {
-        public int ScreenCount => UnmanagedMethods.GetSystemMetrics(SystemMetric.SM_CMONITORS);
+        public int ScreenCount
+        {
+            get => GetSystemMetrics(SystemMetric.SM_CMONITORS);
+        }
 
-        public IScreenImpl[] AllScreens
+        public Screen[] AllScreens
         {
             get
             {
                     int index = 0;
-                    ScreenImpl[] screens = new ScreenImpl[ScreenCount];
-                    UnmanagedMethods.EnumDisplayMonitors(IntPtr.Zero, IntPtr.Zero, (IntPtr monitor, IntPtr hdcMonitor, ref Rect lprcMonitor, IntPtr data) =>
+                    Screen[] screens = new Screen[ScreenCount];
+                    EnumDisplayMonitors(IntPtr.Zero, IntPtr.Zero, (IntPtr monitor, IntPtr hdcMonitor, ref Rect lprcMonitor, IntPtr data) =>
                                                                                    {
                                                                                        MONITORINFO monitorInfo = new MONITORINFO();
-                                                                                       if (UnmanagedMethods.GetMonitorInfo(monitor, monitorInfo))
+                                                                                       if (GetMonitorInfo(monitor, monitorInfo))
                                                                                        {
-                                                                                           screens[index] = new ScreenImpl(monitorInfo)
-                                                                                                            {
-                                                                                                                hMonitor = monitor
-                                                                                                            };
+                                                                                           RECT bounds = monitorInfo.rcMonitor;
+                                                                                           RECT workingArea = monitorInfo.rcWork;
+                                                                                           Rect avaloniaBounds = new Rect(bounds.left, bounds.top, bounds.right, bounds.bottom);
+                                                                                           Rect avaloniaWorkArea = new Rect(workingArea.left, workingArea.top, workingArea.right, workingArea.bottom);
+                                                                                           screens[index] = new Screen(avaloniaBounds, avaloniaWorkArea, monitorInfo.dwFlags == 1 );
                                                                                            index++;
                                                                                        }
                                                                                        return true;
@@ -39,62 +42,19 @@ namespace Avalonia.Win32
             }
 
         }
-
-        public Rect Bounds { get; }
-
-        public Rect WorkingArea { get; }
-
-        public bool Primary { get; }
         
-        private IntPtr _hMonitor = IntPtr.Zero;
-        private IntPtr hMonitor
-        {
-            get => _hMonitor;
-            set
-            {
-                if (hMonitor == IntPtr.Zero)
-                    _hMonitor = value;
-            }   
-        }
-
-        public IScreenImpl PrimaryScreen
+        public Screen PrimaryScreen
         {
             get
             {
-                for (var i = 0; i < AllScreens.Length; i++)
+                foreach (Screen screen in AllScreens)
                 {
-                    if (AllScreens[i].Primary)
-                        return AllScreens[i];
+                    if (screen.Primary)
+                        return screen;
                 }
 
                 return null;
             }
-        }
-
-        private ScreenImpl(MONITORINFO monitorInfo)
-        {
-            RECT bounds = monitorInfo.rcMonitor;
-            RECT workingArea = monitorInfo.rcWork;
-            this.Bounds = new Rect(bounds.left, bounds.top, bounds.right, bounds.bottom);
-            this.WorkingArea = new Rect(workingArea.left, workingArea.top, workingArea.right, workingArea.bottom);
-            this.Primary = monitorInfo.dwFlags == 1;
-        }
-
-        public ScreenImpl()
-        {
-            this.Bounds = PrimaryScreen.Bounds;
-            this.WorkingArea = PrimaryScreen.WorkingArea;
-            this.Primary = PrimaryScreen.Primary;
-        }
-
-        public override bool Equals(object obj)
-        {
-            return obj is ScreenImpl && this.hMonitor == ((ScreenImpl)obj).hMonitor;
-        }
-
-        public override int GetHashCode()
-        {
-            return (int)hMonitor;
         }
     }
 }

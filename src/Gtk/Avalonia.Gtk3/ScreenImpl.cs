@@ -11,7 +11,7 @@ namespace Avalonia.Gtk3
             get => allScreens.Length;
         }
 
-        public IScreenImpl[] AllScreens
+        public Screen[] AllScreens
         {
             get
             {
@@ -20,7 +20,7 @@ namespace Avalonia.Gtk3
                     IntPtr display = Native.GdkGetDefaultDisplay();
                     GdkScreen screen = Native.GdkDisplayGetDefaultScreen(display);
                     short primary = Native.GdkScreenGetPrimaryMonitor(screen);
-                    IScreenImpl[] screens = new IScreenImpl[ScreenCount];
+                    Screen[] screens = new Screen[ScreenCount];
                     for (short i = 0; i < screens.Length; i++)
                     {
                         GdkRectangle workArea = new GdkRectangle(), geometry = new GdkRectangle();
@@ -28,7 +28,7 @@ namespace Avalonia.Gtk3
                         Native.GdkScreenGetMonitorWorkarea(screen, i, ref workArea);
                         Rect workAreaRect = new Rect(workArea.X, workArea.Y, workArea.Width, workArea.Height);
                         Rect geometryRect = new Rect(geometry.X, geometry.Y, geometry.Width, geometry.Height);
-                        ScreenImpl s = new ScreenImpl(geometryRect, workAreaRect, i == primary) { screenId = i };
+                        Screen s = new Screen(geometryRect, workAreaRect, i == primary);
                         screens[i] = s;
                     }
 
@@ -40,7 +40,7 @@ namespace Avalonia.Gtk3
             }
         }
 
-        public IScreenImpl PrimaryScreen
+        public Screen PrimaryScreen
         {
             get
             {
@@ -53,48 +53,12 @@ namespace Avalonia.Gtk3
                 return null;
             }
         }
-
-        public Rect Bounds { get; }
-        public Rect WorkingArea { get; }
-        public bool Primary { get; }
-
-        private static IScreenImpl[] allScreens;
-        private int _screenId = -1;
+        
+        private static Screen[] allScreens;
         private static IDisposable monitorsChangedSignal;
-
-        private int screenId
-        {
-            get => _screenId;
-            set
-            {
-                if (_screenId == -1)
-                    _screenId = value;
-            }
-        }
 
         public ScreenImpl()
         {
-            this.Bounds = PrimaryScreen.Bounds;
-            this.WorkingArea = PrimaryScreen.WorkingArea;
-            this.Primary = PrimaryScreen.Primary;
-            this.screenId = ((ScreenImpl)PrimaryScreen).screenId;
-        }
-
-        public ScreenImpl(Rect bounds, Rect workingArea, bool primary)
-        {
-            this.Bounds = bounds;
-            this.WorkingArea = workingArea;
-            this.Primary = primary;
-        }
-
-        public override bool Equals(object obj)
-        {
-            return obj is ScreenImpl && this.screenId == ((ScreenImpl)obj).screenId;
-        }
-
-        public override int GetHashCode()
-        {
-            return this.screenId;
         }
 
         private unsafe void MonitorsChanged(IntPtr screen, IntPtr userData)
