@@ -13,6 +13,6 @@
             this.Bounds = bounds;
             this.WorkingArea = workingArea;
             this.Primary = primary;
-        }
+        } 
     }
 }
