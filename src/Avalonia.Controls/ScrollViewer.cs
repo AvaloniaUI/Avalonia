@@ -275,7 +275,7 @@ namespace Avalonia.Controls
         /// </summary>
         protected double HorizontalScrollBarViewportSize
         {
-            get { return Max((_viewport.Width / _extent.Width) * (_extent.Width - _viewport.Width), 0); }
+            get { return _viewport.Width; }
         }
 
         /// <summary>
@@ -308,7 +308,7 @@ namespace Avalonia.Controls
         /// </summary>
         protected double VerticalScrollBarViewportSize
         {
-            get { return Max((_viewport.Height / _extent.Height) * (_extent.Height - _viewport.Height), 0); }
+            get { return _viewport.Height; }
         }
 
         /// <summary>
