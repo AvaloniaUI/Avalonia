@@ -7,5 +7,6 @@
           <CheckBox Name="IsModal" IsChecked="True"/>
           <TextBlock>Modal to window</TextBlock>
       </StackPanel>
+      <Button Name="DecoratedWindow">Decorated window</Button>
   </StackPanel>
 </UserControl>

@@ -30,6 +30,10 @@ namespace ControlCatalog.Pages
                     Title = "Select folder"
                 }.ShowAsync(GetWindow());
             };
+            this.FindControl<Button>("DecoratedWindow").Click += delegate
+            {
+                new DecoratedWindow().Show();
+            };
         }
 
         Window GetWindow() => this.FindControl<CheckBox>("IsModal").IsChecked ? (Window)this.VisualRoot : null;

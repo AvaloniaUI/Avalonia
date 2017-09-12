@@ -15,7 +15,7 @@ namespace ControlCatalog
             if (AvaloniaLocator.Current.GetService<IRuntimePlatform>().GetRuntimeInfo().IsDesktop)
                 ((IList) this.FindControl<TabControl>("Sidebar").Items).Add(new TabItem()
                 {
-                    Header = "System dialogs",
+                    Header = "Dialogs",
                     Content = new DialogsPage()
                 });
         }

@@ -2,6 +2,7 @@
 using Avalonia.Controls;
 using Avalonia.Platform;
 using MonoMac.AppKit;
+using MonoMac.CoreGraphics;
 using MonoMac.ObjCRuntime;
 
 namespace Avalonia.MonoMac
@@ -42,6 +43,12 @@ namespace Avalonia.MonoMac
                 _impl.Deactivated?.Invoke();
                 base.ResignKeyWindow();
             }
+
+            private bool _canBecomeKeyAndMain;
+            public override bool CanBecomeKeyWindow => _canBecomeKeyAndMain;
+            public override bool CanBecomeMainWindow => _canBecomeKeyAndMain;
+
+            public void SetCanBecomeKeyAndMain() => _canBecomeKeyAndMain = true;
         }
 
         protected virtual NSWindowDelegate CreateWindowDelegate() => new WindowBaseDelegate(this);
@@ -49,6 +56,7 @@ namespace Avalonia.MonoMac
         public class WindowBaseDelegate : NSWindowDelegate
         {
             readonly WindowBaseImpl _impl;
+            private CGRect? _lastUnmaximizedFrame;
 
             public WindowBaseDelegate(WindowBaseImpl impl)
             {
@@ -65,6 +73,18 @@ namespace Avalonia.MonoMac
                 _impl.Window.Dispose();
                 _impl.Window = null;
                 _impl.Dispose();
+            }
+
+            public override CGRect WillUseStandardFrame(NSWindow window, CGRect newFrame)
+            {
+                if (_impl is WindowImpl w && w.UndecoratedIsMaximized && w.UndecoratedLastUnmaximizedFrame.HasValue)
+                    return w.UndecoratedLastUnmaximizedFrame.Value;
+                return window.Screen.VisibleFrame;
+            }
+
+            public override bool ShouldZoom(NSWindow window, CGRect newFrame)
+            {
+                return true;
             }
         }
 

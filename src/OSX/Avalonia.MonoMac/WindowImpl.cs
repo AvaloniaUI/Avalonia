@@ -2,16 +2,19 @@
 using Avalonia.Controls;
 using Avalonia.Platform;
 using MonoMac.AppKit;
+using MonoMac.CoreGraphics;
 
 namespace Avalonia.MonoMac
 {
     class WindowImpl : WindowBaseImpl, IWindowImpl
     {
-        bool _decorated = true;
+        public bool IsDecorated = true;
+        public CGRect? UndecoratedLastUnmaximizedFrame;
 
         public WindowImpl()
         {
             UpdateStyle();
+            Window.SetCanBecomeKeyAndMain();
         }
 
         public WindowState WindowState
@@ -20,8 +23,9 @@ namespace Avalonia.MonoMac
             {
                 if (Window.IsMiniaturized)
                     return WindowState.Minimized;
+                if (IsZoomed)
+                    return WindowState.Maximized;
                 return WindowState.Normal;
-
             }
             set
             {
@@ -29,8 +33,8 @@ namespace Avalonia.MonoMac
                 {
                     if (Window.IsMiniaturized)
                         Window.Deminiaturize(Window);
-                    if (!Window.IsZoomed)
-                        Window.PerformZoom(Window);
+                    if (!IsZoomed)
+                        DoZoom();
                 }
                 else if (value.HasFlag(WindowState.Minimized))
                     Window.Miniaturize(Window);
@@ -38,9 +42,25 @@ namespace Avalonia.MonoMac
                 {
                     if (Window.IsMiniaturized)
                         Window.Deminiaturize(Window);
-                    if (Window.IsZoomed)
-                        Window.IsZoomed = false;
+                    if (IsZoomed)
+                        DoZoom();
                 }
+            }
+        }
+
+        bool IsZoomed => IsDecorated ? Window.IsZoomed : UndecoratedIsMaximized;
+
+        public bool UndecoratedIsMaximized => Window.Frame == Window.Screen.VisibleFrame;
+
+        void DoZoom()
+        {
+            if (IsDecorated)
+                Window.PerformZoom(Window);
+            else
+            {
+                if (!UndecoratedIsMaximized)
+                    UndecoratedLastUnmaximizedFrame = Window.Frame;
+                Window.Zoom(Window);
             }
         }
 
@@ -56,7 +76,7 @@ namespace Avalonia.MonoMac
 
         protected override NSWindowStyle GetStyle()
         {
-            if (_decorated)
+            if (IsDecorated)
                 return NSWindowStyle.Closable | NSWindowStyle.Resizable | NSWindowStyle.Miniaturizable |
                        NSWindowStyle.Titled;
             return NSWindowStyle.Borderless;
@@ -64,7 +84,7 @@ namespace Avalonia.MonoMac
 
         public void SetSystemDecorations(bool enabled)
         {
-            _decorated = true;
+            IsDecorated = enabled;
             UpdateStyle();
         }
 
