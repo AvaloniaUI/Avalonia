@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using Avalonia;
 
 namespace ControlCatalog.NetCore
@@ -9,11 +11,22 @@ namespace ControlCatalog.NetCore
     {
         static void Main(string[] args)
         {
-            if (args.Contains("--fbdev")) AppBuilder.Configure<App>().InitializeWithLinuxFramebuffer(tl =>
+            if (args.Contains("--wait-for-attach"))
             {
-                tl.Content = new MainView();
-                System.Threading.ThreadPool.QueueUserWorkItem(_ => ConsoleSilencer());
-            });
+                Console.WriteLine("Attach debugger and use 'Set next statement'");
+                while (true)
+                {
+                    Thread.Sleep(100);
+                    if (Debugger.IsAttached)
+                        break;
+                }
+            }
+            if (args.Contains("--fbdev"))
+                AppBuilder.Configure<App>().InitializeWithLinuxFramebuffer(tl =>
+                {
+                    tl.Content = new MainView();
+                    System.Threading.ThreadPool.QueueUserWorkItem(_ => ConsoleSilencer());
+                });
             else
                 AppBuilder.Configure<App>()
                     .CustomPlatformDetect()

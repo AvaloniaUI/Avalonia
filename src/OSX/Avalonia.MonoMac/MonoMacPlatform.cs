@@ -1,5 +1,6 @@
 ﻿using System;
 using Avalonia.Controls;
+using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Platform;
 using Avalonia.Rendering;
@@ -12,7 +13,7 @@ namespace Avalonia.MonoMac
         internal static MonoMacPlatform Instance { get; private set; }
         internal readonly MouseDevice MouseDevice = new MouseDevice();
         readonly KeyboardDevice _keyboardDevice = new KeyboardDevice();
-        NSApplication _app;
+        internal static NSApplication App;
         void DoInitialize()
         {
             AvaloniaLocator.CurrentMutable
@@ -22,6 +23,7 @@ namespace Avalonia.MonoMac
                 .Bind<IMouseDevice>().ToConstant(MouseDevice)
                 .Bind<IPlatformSettings>().ToConstant(this)
                 .Bind<IWindowingPlatform>().ToConstant(this)
+                .Bind<ISystemDialogImpl>().ToSingleton<SystemDialogsImpl>()
                 .Bind<IPlatformThreadingInterface>().ToConstant(PlatformThreadingInterface.Instance);
 
             InitializeCocoaApp();
@@ -37,8 +39,8 @@ namespace Avalonia.MonoMac
         void InitializeCocoaApp()
         {
             NSApplication.Init();
-            _app = NSApplication.SharedApplication;
-            _app.ActivationPolicy = NSApplicationActivationPolicy.Regular;
+            App = NSApplication.SharedApplication;
+            App.ActivationPolicy = NSApplicationActivationPolicy.Regular;
 
         }
 
