@@ -5,6 +5,7 @@ using System;
 using System.Reactive;
 using System.Reactive.Linq;
 using Avalonia.Data;
+using Avalonia.Interactivity;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -31,13 +32,18 @@ namespace Avalonia.Controls.Primitives
         public static readonly StyledProperty<Orientation> OrientationProperty =
             AvaloniaProperty.Register<ScrollBar, Orientation>(nameof(Orientation));
 
+        private Button _lineUpButton;
+        private Button _lineDownButton;
+        private Button _pageUpButton;
+        private Button _pageDownButton;
+
         /// <summary>
         /// Initializes static members of the <see cref="ScrollBar"/> class. 
         /// </summary>
         static ScrollBar()
         {
-            PseudoClass(OrientationProperty, o => o == Avalonia.Controls.Orientation.Vertical, ":vertical");
-            PseudoClass(OrientationProperty, o => o == Avalonia.Controls.Orientation.Horizontal, ":horizontal");
+            PseudoClass(OrientationProperty, o => o == Orientation.Vertical, ":vertical");
+            PseudoClass(OrientationProperty, o => o == Orientation.Horizontal, ":horizontal");
         }
 
         /// <summary>
@@ -97,12 +103,101 @@ namespace Avalonia.Controls.Primitives
                     return false;
 
                 case ScrollBarVisibility.Auto:
-                    var viewportSize = ViewportSize;
-                    return double.IsNaN(viewportSize) || viewportSize < Maximum - Minimum;
+                    return double.IsNaN(ViewportSize) || Maximum > 0;
 
                 default:
                     throw new InvalidOperationException("Invalid value for ScrollBar.Visibility.");
             }
+        }
+
+        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        {
+            base.OnTemplateApplied(e);
+
+            if (_lineUpButton != null)
+            {
+                _lineUpButton.Click -= LineUpClick;
+            }
+
+            if (_lineDownButton != null)
+            {
+                _lineDownButton.Click -= LineDownClick;
+            }
+
+            if (_pageUpButton != null)
+            {
+                _pageUpButton.Click -= PageUpClick;
+            }
+
+            if (_pageDownButton != null)
+            {
+                _pageDownButton.Click -= PageDownClick;
+            }
+
+            _lineUpButton = e.NameScope.Find<Button>("PART_LineUpButton");
+            _lineDownButton = e.NameScope.Find<Button>("PART_LineDownButton");
+            _pageUpButton = e.NameScope.Find<Button>("PART_PageUpButton");
+            _pageDownButton = e.NameScope.Find<Button>("PART_PageDownButton");
+
+            if (_lineUpButton != null)
+            {
+                _lineUpButton.Click += LineUpClick;
+            }
+
+            if (_lineDownButton != null)
+            {
+                _lineDownButton.Click += LineDownClick;
+            }
+
+            if (_pageUpButton != null)
+            {
+                _pageUpButton.Click += PageUpClick;
+            }
+
+            if (_pageDownButton != null)
+            {
+                _pageDownButton.Click += PageDownClick;
+            }
+        }
+
+        private void LineUpClick(object sender, RoutedEventArgs e)
+        {
+            SmallDecrement();
+        }
+
+        private void LineDownClick(object sender, RoutedEventArgs e)
+        {
+            SmallIncrement();
+        }
+
+        private void PageUpClick(object sender, RoutedEventArgs e)
+        {
+            LargeDecrement();
+        }
+
+        private void PageDownClick(object sender, RoutedEventArgs e)
+        {
+            LargeIncrement();
+        }
+
+        private void SmallDecrement()
+        {
+            Value = Math.Max(Value - SmallChange * ViewportSize, Minimum);
+        }
+
+        private void SmallIncrement()
+        {
+            Value = Math.Min(Value + SmallChange * ViewportSize, Maximum);
+        }
+
+        private void LargeDecrement()
+        {
+            Value = Math.Max(Value - LargeChange * ViewportSize, Minimum);
+        }
+
+        private void LargeIncrement()
+        {
+            Value = Math.Min(Value + LargeChange * ViewportSize, Maximum);
         }
     }
 }
