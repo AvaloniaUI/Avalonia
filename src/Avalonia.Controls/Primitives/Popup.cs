@@ -277,7 +277,7 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnDetachedFromLogicalTree(e);
             _topLevel = null;
-            
+
             if (_popupRoot != null)
             {
                 ((ISetLogicalParent)_popupRoot).SetParent(null);
@@ -328,33 +328,39 @@ namespace Avalonia.Controls.Primitives
         /// <returns>The popup's position in screen coordinates.</returns>
         protected virtual Point GetPosition()
         {
+            return GetPosition(PlacementTarget ?? this.GetVisualParent<Control>(), PlacementMode, PopupRoot, 
+                HorizontalOffset, VerticalOffset);
+        }
+
+        internal static Point GetPosition(Control target, PlacementMode placement, PopupRoot popupRoot, double horizontalOffset, double verticalOffset)
+        {
             var zero = default(Point);
-            var mode = PlacementMode;
-            var target = PlacementTarget ?? this.GetVisualParent<Control>();
+            var mode = placement;
 
             if (target?.GetVisualRoot() == null)
             {
                 mode = PlacementMode.Pointer;
-            }            
+            }
 
             switch (mode)
             {
                 case PlacementMode.Pointer:
-                    if(PopupRoot != null)
+                    if (popupRoot != null)
                     {
                         // Scales the Horizontal and Vertical offset to screen co-ordinates.
-                        var screenOffset = new Point(HorizontalOffset * (PopupRoot as ILayoutRoot).LayoutScaling, VerticalOffset * (PopupRoot as ILayoutRoot).LayoutScaling);
-                        return (((IInputRoot)PopupRoot)?.MouseDevice?.Position ?? default(Point)) + screenOffset;
+                        var screenOffset = new Point(horizontalOffset * (popupRoot as ILayoutRoot).LayoutScaling,
+                            verticalOffset * (popupRoot as ILayoutRoot).LayoutScaling);
+                        return (((IInputRoot)popupRoot)?.MouseDevice?.Position ?? default(Point)) + screenOffset;
                     }
 
                     return default(Point);
 
                 case PlacementMode.Bottom:
-
-                    return target?.PointToScreen(new Point(0 + HorizontalOffset, target.Bounds.Height + VerticalOffset)) ?? zero;
+                    return target?.PointToScreen(new Point(0 + horizontalOffset, target.Bounds.Height + verticalOffset)) ??
+                           zero;
 
                 case PlacementMode.Right:
-                    return target?.PointToScreen(new Point(target.Bounds.Width + HorizontalOffset, 0 + VerticalOffset)) ?? zero;
+                    return target?.PointToScreen(new Point(target.Bounds.Width + horizontalOffset, 0 + verticalOffset)) ?? zero;
 
                 default:
                     throw new InvalidOperationException("Invalid value for Popup.PlacementMode");

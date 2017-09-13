@@ -120,7 +120,7 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
-            if (!IsDropDownOpen && ((IVisual)e.Source).GetVisualRoot() != typeof(PopupRoot))
+            if (!IsDropDownOpen && ((IVisual)e.Source).GetVisualRoot() is PopupRoot)
             {
                 IsDropDownOpen = true;
                 e.Handled = true;

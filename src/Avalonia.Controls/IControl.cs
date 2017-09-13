@@ -20,6 +20,7 @@ namespace Avalonia.Controls
         ILayoutable,
         IInputElement,
         INamed,
+        IResourceNode,
         IStyleable,
         IStyleHost
     {

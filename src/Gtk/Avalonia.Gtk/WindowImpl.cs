@@ -6,11 +6,12 @@ using Gdk;
 namespace Avalonia.Gtk
 {
     using Gtk = global::Gtk;
+
     public class WindowImpl : TopLevelImpl, IWindowImpl
     {
         private Gtk.Window _window;
-        private Gtk.Window Window => _window ?? (_window = (Gtk.Window) Widget);
-        
+        private Gtk.Window Window => _window ?? (_window = (Gtk.Window)Widget);
+
         public WindowImpl(Gtk.WindowType type) : base(new PlatformHandleAwareWindow(type))
         {
             Init();
@@ -29,8 +30,10 @@ namespace Avalonia.Gtk
             _lastClientSize = ClientSize;
             _lastPosition = Position;
         }
+
         private Size _lastClientSize;
         private Point _lastPosition;
+
         void OnConfigureEvent(object o, Gtk.ConfigureEventArgs args)
         {
             var evnt = args.Event;
@@ -44,7 +47,7 @@ namespace Avalonia.Gtk
             }
 
             var newPosition = new Point(evnt.X, evnt.Y);
-            
+
             if (newPosition != _lastPosition)
             {
                 PositionChanged(newPosition);
@@ -107,10 +110,7 @@ namespace Avalonia.Gtk
                 Window.GetPosition(out x, out y);
                 return new Point(x, y);
             }
-            set
-            {
-                Window.Move((int)value.X, (int)value.Y);
-            }
+            set { Window.Move((int)value.X, (int)value.Y); }
         }
 
         public IDisposable ShowDialog()
@@ -127,5 +127,7 @@ namespace Avalonia.Gtk
         {
             Window.Icon = ((IconImpl)icon).Pixbuf;
         }
+
+        public void ShowTaskbarIcon(bool value) => Window.SkipTaskbarHint = !value;
     }
 }
