@@ -51,7 +51,7 @@ namespace Avalonia.MonoMac
             });
             while (!cancellationToken.IsCancellationRequested)
             {
-                var ev = app.NextEvent(NSEventMask.AnyEvent, NSDate.DistantPast, NSRunLoop.NSDefaultRunLoopMode, true);
+                var ev = app.NextEvent(NSEventMask.AnyEvent, NSDate.DistantFuture, NSRunLoop.NSDefaultRunLoopMode, true);
                 if (ev != null)
                 {
                     app.SendEvent(ev);
