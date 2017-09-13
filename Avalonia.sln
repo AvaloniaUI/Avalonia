@@ -159,6 +159,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Props", "Props", "{F3AC8BC1
 		build\Microsoft.Reactive.Testing.props = build\Microsoft.Reactive.Testing.props
 		build\Moq.props = build\Moq.props
 		build\NetCore.props = build\NetCore.props
+		build\ReactiveUI.props = build\ReactiveUI.props
 		build\Rx.props = build\Rx.props
 		build\Serilog.props = build\Serilog.props
 		build\Serilog.Sinks.Trace.props = build\Serilog.Sinks.Trace.props

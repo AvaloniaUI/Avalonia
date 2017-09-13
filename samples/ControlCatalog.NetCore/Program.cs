@@ -30,6 +30,7 @@ namespace ControlCatalog.NetCore
             else
                 AppBuilder.Configure<App>()
                     .CustomPlatformDetect()
+                    .UseReactiveUI()
                     .Start<MainWindow>();
         }
 
