@@ -4,6 +4,9 @@
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="..\..\Shared\WindowResizeDragHelper.cs" Link="WindowResizeDragHelper.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="MonoMac.NetStandard" Version="0.0.3" />
   </ItemGroup>
   <ItemGroup>

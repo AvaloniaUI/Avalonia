@@ -1,5 +1,6 @@
 ﻿using System;
 using Avalonia.Controls;
+using Avalonia.Input.Raw;
 using Avalonia.Platform;
 using MonoMac.AppKit;
 using MonoMac.CoreGraphics;
@@ -9,10 +10,12 @@ namespace Avalonia.MonoMac
 {
     class WindowBaseImpl : TopLevelImpl, IWindowBaseImpl
     {
+        private readonly ManagedWindowResizeDragHelper _managedDrag;
         public CustomWindow Window { get; private set; }
 
         public WindowBaseImpl()
         {
+            _managedDrag = new ManagedWindowResizeDragHelper(this, _ => { }, ResizeForManagedDrag);
             Window = new CustomWindow(this)
             {
                 StyleMask = NSWindowStyle.Titled,
@@ -92,7 +95,7 @@ namespace Avalonia.MonoMac
         public Point Position
         {
             get => Window.Frame.ToAvaloniaRect().BottomLeft.ConvertPointY();
-            set => Window.CascadeTopLeftFromPoint(value.ToMonoMacPoint().ConvertPointY());
+            set => Window.SetFrameTopLeftPoint(value.ToMonoMacPoint().ConvertPointY());
         }
 
 
@@ -126,10 +129,24 @@ namespace Avalonia.MonoMac
 
         public void BeginResizeDrag(WindowEdge edge)
         {
-            //TODO: Intercept mouse events and implement resize drag manually
+            var screenPoint = NSEvent.CurrentMouseLocation.ConvertPointY().ToAvaloniaPoint();
+            _managedDrag.BeginResizeDrag(edge, PointToClient(screenPoint));
+        }
+
+        protected override void OnInput(RawInputEventArgs args)
+        {
+            if (_managedDrag.PreprocessInputEvent(ref args))
+                return;
+            base.OnInput(args);
         }
 
         public void Activate() => Window.MakeKeyWindow();
+
+        public void ResizeForManagedDrag(Rect rc)
+        {
+            var frame = new CGRect(rc.X, rc.Position.ConvertPointY().Y - rc.Height, rc.Width, rc.Height);
+            Window.SetFrame(frame, true);
+        }
 
         public void Resize(Size clientSize)
         {

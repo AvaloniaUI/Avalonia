@@ -22,6 +22,11 @@ namespace Avalonia.MonoMac
             View = new TopLevelView(this);
         }
 
+        protected virtual void OnInput(RawInputEventArgs args)
+        {
+            Input?.Invoke(args);
+        }
+
         [Adopts("NSTextInputClient")]
         public class TopLevelView : NSView
         {
@@ -135,11 +140,11 @@ namespace Avalonia.MonoMac
                     if (delta.X == 0 && delta.Y == 0)
                         return;
                     // ReSharper restore CompareOfFloatsByEqualityOperator
-                    _tl.Input?.Invoke(new RawMouseWheelEventArgs(_mouse, ts, _tl.InputRoot, loc,
+                    _tl.OnInput(new RawMouseWheelEventArgs(_mouse, ts, _tl.InputRoot, loc,
                         delta, mod));
                 }
                 else
-                    _tl.Input?.Invoke(new RawMouseEventArgs(_mouse, ts, _tl.InputRoot, type, loc, mod));
+                    _tl.OnInput(new RawMouseEventArgs(_mouse, ts, _tl.InputRoot, type, loc, mod));
             }
 
             public override void MouseMoved(NSEvent theEvent)
@@ -229,7 +234,7 @@ namespace Avalonia.MonoMac
                 var code = KeyTransform.TransformKeyCode(ev.KeyCode);
                 if (!code.HasValue)
                     return;
-                _tl.Input?.Invoke(new RawKeyEventArgs(_keyboard, GetTimeStamp(ev),
+                _tl.OnInput(new RawKeyEventArgs(_keyboard, GetTimeStamp(ev),
                     type, code.Value, GetModifiers(ev.ModifierFlags)));
             }
 
@@ -294,7 +299,7 @@ namespace Avalonia.MonoMac
             public void InsertText(NSString str, NSRange range)
             {
                 //TODO: timestamp
-                _tl.Input?.Invoke(new RawTextInputEventArgs(_keyboard, 0, str.ToString()));
+                _tl.OnInput(new RawTextInputEventArgs(_keyboard, 0, str.ToString()));
             }
 
             [Export("characterIndexForPoint:")]

@@ -33,8 +33,8 @@ namespace ControlCatalog
             };
             SetupSide("Left", StandardCursorType.LeftSide, WindowEdge.West);
             SetupSide("Right", StandardCursorType.RightSide, WindowEdge.East);
-            SetupSide("Top", StandardCursorType.TopSide, WindowEdge.South);
-            SetupSide("Bottom", StandardCursorType.BottomSize, WindowEdge.North);
+            SetupSide("Top", StandardCursorType.TopSide, WindowEdge.North);
+            SetupSide("Bottom", StandardCursorType.BottomSize, WindowEdge.South);
             SetupSide("TopLeft", StandardCursorType.TopLeftCorner, WindowEdge.NorthWest);
             SetupSide("TopRight", StandardCursorType.TopRightCorner, WindowEdge.NorthEast);
             SetupSide("BottomLeft", StandardCursorType.BottomLeftCorner, WindowEdge.SouthWest);
