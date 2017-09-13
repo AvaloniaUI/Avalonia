@@ -478,10 +478,12 @@ public class Packages
                     new NuSpecDependency() { Id = "Avalonia.Win32", TargetFramework="net45", Version = parameters.Version },
                     new NuSpecDependency() { Id = "Avalonia.Skia", TargetFramework="net45", Version = parameters.Version },
                     new NuSpecDependency() { Id = "Avalonia.Gtk3", TargetFramework="net45", Version = parameters.Version },
+                    new NuSpecDependency() { Id = "Avalonia.MonoMac", TargetFramework="net45", Version = parameters.Version },
                     //.NET Core
                     new NuSpecDependency() { Id = "Avalonia.Win32", TargetFramework="netcoreapp2.0", Version = parameters.Version },
                     new NuSpecDependency() { Id = "Avalonia.Skia", TargetFramework="netcoreapp2.0", Version = parameters.Version },
-                    new NuSpecDependency() { Id = "Avalonia.Gtk3", TargetFramework="netcoreapp2.0", Version = parameters.Version }
+                    new NuSpecDependency() { Id = "Avalonia.Gtk3", TargetFramework="netcoreapp2.0", Version = parameters.Version },
+                    new NuSpecDependency() { Id = "Avalonia.MonoMac", TargetFramework="netcoreapp2.0", Version = parameters.Version }
                 },
                 Files = new NuSpecContent[]
                 {
