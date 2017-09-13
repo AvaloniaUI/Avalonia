@@ -1,7 +1,6 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using System;
 using Avalonia.Media;
 using Avalonia.Rendering.Utilities;
 using SharpDX.Direct2D1;
@@ -45,7 +44,7 @@ namespace Avalonia.Direct2D1.Media
             base.Dispose();
         }
 
-        private static BitmapBrushProperties GetBitmapBrushProperties(ITileBrush brush)
+        internal static BitmapBrushProperties GetBitmapBrushProperties(ITileBrush brush)
         {
             var tileMode = brush.TileMode;
 
@@ -56,7 +55,7 @@ namespace Avalonia.Direct2D1.Media
             };
         }
 
-        private static BrushProperties GetBrushProperties(ITileBrush brush, Rect destinationRect)
+        internal static BrushProperties GetBrushProperties(ITileBrush brush, Rect destinationRect)
         {
             var tileTransform =
                 brush.TileMode != TileMode.None ?
@@ -89,7 +88,7 @@ namespace Avalonia.Direct2D1.Media
                 target,
                 CompatibleRenderTargetOptions.None,
                 calc.IntermediateSize.ToSharpDX());
-
+            
             using (var context = new RenderTarget(result).CreateDrawingContext(null))
             {
                 var rect = new Rect(0, 0, bitmap.PixelWidth, bitmap.PixelHeight);

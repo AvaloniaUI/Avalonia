@@ -72,6 +72,10 @@ namespace Avalonia.Media.Imaging
         {
             get;
         }
+        
+        double IImage.Width => PixelWidth;
+
+        double IImage.Height => PixelHeight;
 
         /// <summary>
         /// Saves the bitmap to a file.

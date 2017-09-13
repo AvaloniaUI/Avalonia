@@ -38,7 +38,7 @@
             </Style.Resources>
         </Style>
     </UserControl.Styles>
-    <Grid RowDefinitions="Auto,Auto,Auto"
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto"
           ColumnDefinitions="Auto,Auto,Auto,Auto">
         <TextBlock Text="None"
                    Margin="3" />
@@ -49,7 +49,7 @@
                 BorderThickness="1"
                 BorderBrush="Gray"
                 Margin="5">
-            <DrawingPresenter Drawing="{StyleResource Bulb}" />
+            <Image Source="{StyleResource Bulb}" />
         </Border>
         <TextBlock Text="Fill"
                    Margin="3"
@@ -61,10 +61,10 @@
                 BorderThickness="1"
                 BorderBrush="Gray"
                 Margin="5">
-            <DrawingPresenter Drawing="{StyleResource Bulb}"
-                              Width="100"
-                              Height="50"
-                              Stretch="Fill" />
+            <Image Source="{StyleResource Bulb}"
+                   Width="100"
+                   Height="50"
+                   Stretch="Fill" />
         </Border>
         <TextBlock Text="Uniform"
                    Margin="3"
@@ -76,10 +76,10 @@
                 BorderThickness="1"
                 BorderBrush="Gray"
                 Margin="5">
-            <DrawingPresenter Drawing="{StyleResource Bulb}"
-                              Width="100"
-                              Height="50"
-                              Stretch="Uniform" />
+            <Image Source="{StyleResource Bulb}"
+                   Width="100"
+                   Height="50"
+                   Stretch="Uniform" />
         </Border>
         <TextBlock Text="UniformToFill"
                    Margin="3"
@@ -91,21 +91,21 @@
                 BorderThickness="1"
                 BorderBrush="Gray"
                 Margin="5">
-            <DrawingPresenter Drawing="{StyleResource Bulb}"
-                              Width="100"
-                              Height="50"
-                              Stretch="UniformToFill" />
+            <Image Source="{StyleResource Bulb}"
+                   Width="100"
+                   Height="50"
+                   Stretch="UniformToFill" />
         </Border>
 
         <!-- For comparison -->
-        
+
         <Ellipse Grid.Row="2"
                  Grid.Column="0"
                  Width="100"
                  Height="50"
                  Stretch="None"
                  Fill="Blue"
-                 Margin="5"/>
+                 Margin="5" />
         <Ellipse Grid.Row="2"
                  Grid.Column="1"
                  Width="100"
@@ -127,6 +127,49 @@
                  Stretch="UniformToFill"
                  Fill="Blue"
                  Margin="5" />
-        
+
+        <!-- As a brush -->
+
+        <Rectangle Grid.Row="3"
+                   Grid.Column="0"
+                   Width="100"
+                   Height="50"
+                   Margin="5">
+            <Rectangle.Fill>
+                <ImageBrush Source="{StyleResource Bulb}"
+                            Stretch="None" />
+            </Rectangle.Fill>
+        </Rectangle>
+        <Rectangle Grid.Row="3"
+                   Grid.Column="1"
+                   Width="100"
+                   Height="50"
+                   Margin="5">
+            <Rectangle.Fill>
+                <ImageBrush Source="{StyleResource Bulb}" />
+            </Rectangle.Fill>
+        </Rectangle>
+        <Rectangle Grid.Row="3"
+                   Grid.Column="2"
+                   Width="100"
+                   Height="50"
+                   Margin="5">
+            <Rectangle.Fill>
+                <ImageBrush Source="{StyleResource Bulb}"
+                            TileMode="FlipXY"
+                            DestinationRect="0,0,10,10" />
+            </Rectangle.Fill>
+        </Rectangle>
+        <Rectangle Grid.Row="3"
+                   Grid.Column="3"
+                   Width="100"
+                   Height="50"
+                   Margin="5">
+            <Rectangle.Fill>
+                <ImageBrush Source="{StyleResource Bulb}"
+                            Stretch="UniformToFill" />
+            </Rectangle.Fill>
+        </Rectangle>
+
     </Grid>
 </UserControl>

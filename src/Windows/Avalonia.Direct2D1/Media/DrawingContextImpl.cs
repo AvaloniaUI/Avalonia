@@ -349,33 +349,38 @@ namespace Avalonia.Direct2D1.Media
         /// <returns>The Direct2D brush wrapper.</returns>
         public BrushImpl CreateBrush(IBrush brush, Size destinationSize)
         {
-            var solidColorBrush = brush as ISolidColorBrush;
-            var linearGradientBrush = brush as ILinearGradientBrush;
-            var radialGradientBrush = brush as IRadialGradientBrush;
-            var imageBrush = brush as IImageBrush;
-            var visualBrush = brush as IVisualBrush;
-
-            if (solidColorBrush != null)
+            if (brush is ISolidColorBrush solidColorBrush)
             {
                 return new SolidColorBrushImpl(solidColorBrush, _renderTarget);
             }
-            else if (linearGradientBrush != null)
+            else if (brush is ILinearGradientBrush linearGradientBrush)
             {
                 return new LinearGradientBrushImpl(linearGradientBrush, _renderTarget, destinationSize);
             }
-            else if (radialGradientBrush != null)
+            else if (brush is IRadialGradientBrush radialGradientBrush)
             {
                 return new RadialGradientBrushImpl(radialGradientBrush, _renderTarget, destinationSize);
             }
-            else if (imageBrush != null)
+            else if (brush is IImageBrush imageBrush)
             {
-                return new ImageBrushImpl(
-                    imageBrush,
-                    _renderTarget,
-                    (BitmapImpl)imageBrush.Source.PlatformImpl,
-                    destinationSize);
+                if (imageBrush.Source is IBitmap bitmap)
+                {
+                    return new ImageBrushImpl(
+                        imageBrush,
+                        _renderTarget,
+                        (BitmapImpl)bitmap.PlatformImpl,
+                        destinationSize);
+                }
+                else if (imageBrush.Source is IDrawing drawing)
+                {
+                    return new DrawingBrushImpl(
+                        imageBrush,
+                        _renderTarget,
+                        drawing,
+                        destinationSize);
+                }
             }
-            else if (visualBrush != null)
+            else if (brush is IVisualBrush visualBrush)
             {
                 if (_visualBrushRenderer != null)
                 {

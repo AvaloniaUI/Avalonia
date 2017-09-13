@@ -6,6 +6,7 @@ using System.Linq;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Utilities;
+using Avalonia.Media.Imaging;
 
 namespace Avalonia.Skia
 {
@@ -154,23 +155,21 @@ namespace Avalonia.Skia
             double opacity = brush.Opacity * _currentOpacity;
             paint.IsAntialias = true;
 
-            var solid = brush as ISolidColorBrush;
-            if (solid != null)
+            if (brush is ISolidColorBrush solid)
             {
-                paint.Color = new SKColor(solid.Color.R, solid.Color.G, solid.Color.B, (byte) (solid.Color.A * opacity));
+                paint.Color = new SKColor(solid.Color.R, solid.Color.G, solid.Color.B, (byte)(solid.Color.A * opacity));
                 return rv;
             }
+
             paint.Color = (new SKColor(255, 255, 255, (byte)(255 * opacity)));
 
-            var gradient = brush as IGradientBrush;
-            if (gradient != null)
+            if (brush is IGradientBrush gradient)
             {
                 var tileMode = gradient.SpreadMethod.ToSKShaderTileMode();
                 var stopColors = gradient.GradientStops.Select(s => s.Color.ToSKColor()).ToArray();
                 var stopOffsets = gradient.GradientStops.Select(s => (float)s.Offset).ToArray();
 
-                var linearGradient = brush as ILinearGradientBrush;
-                if (linearGradient != null)
+                if (brush is ILinearGradientBrush linearGradient)
                 {
                     var start = linearGradient.StartPoint.ToPixels(targetSize).ToSKPoint();
                     var end = linearGradient.EndPoint.ToPixels(targetSize).ToSKPoint();
@@ -178,34 +177,27 @@ namespace Avalonia.Skia
                     // would be nice to cache these shaders possibly?
                     using (var shader = SKShader.CreateLinearGradient(start, end, stopColors, stopOffsets, tileMode))
                         paint.Shader = shader;
-
                 }
-                else
+                else if (brush is IRadialGradientBrush radialGradient)
                 {
-                    var radialGradient = brush as IRadialGradientBrush;
-                    if (radialGradient != null)
-                    {
-                        var center = radialGradient.Center.ToPixels(targetSize).ToSKPoint();
-                        var radius = (float)radialGradient.Radius;
+                    var center = radialGradient.Center.ToPixels(targetSize).ToSKPoint();
+                    var radius = (float) radialGradient.Radius;
 
-                        // TODO: There is no SetAlpha in SkiaSharp
-                        //paint.setAlpha(128);
+                    // TODO: There is no SetAlpha in SkiaSharp
+                    //paint.setAlpha(128);
 
-                        // would be nice to cache these shaders possibly?
-                        using (var shader = SKShader.CreateRadialGradient(center, radius, stopColors, stopOffsets, tileMode))
-                            paint.Shader = shader;
-
-                    }
+                    // would be nice to cache these shaders possibly?
+                    using (var shader = SKShader.CreateRadialGradient(center, radius, stopColors, stopOffsets, tileMode))
+                        paint.Shader = shader;
                 }
 
                 return rv;
             }
 
             var tileBrush = brush as ITileBrush;
-            var visualBrush = brush as IVisualBrush;
             var tileBrushImage = default(BitmapImpl);
 
-            if (visualBrush != null)
+            if (brush is IVisualBrush visualBrush)
             {
                 if (_visualBrushRenderer != null)
                 {
@@ -230,9 +222,31 @@ namespace Avalonia.Skia
                     throw new NotSupportedException("No IVisualBrushRenderer was supplied to DrawingContextImpl.");
                 }
             }
-            else
+            else if (brush is IImageBrush imageBrush)
             {
-                tileBrushImage = (BitmapImpl)((tileBrush as IImageBrush)?.Source?.PlatformImpl);
+                if (imageBrush.Source is IBitmap bitmap)
+                {
+                    tileBrushImage = (BitmapImpl)bitmap.PlatformImpl;
+                }
+                else if (imageBrush.Source is IDrawing drawing)
+                {
+                    var bounds = drawing.GetBounds();
+
+                    var calc = new TileBrushCalculator(tileBrush, bounds.Size, targetSize);
+                    var drawingBitmap = new BitmapImpl((int)calc.IntermediateSize.Width, (int)calc.IntermediateSize.Height, _dpi);
+                    rv.AddDisposable(drawingBitmap);
+
+                    var context = drawingBitmap.CreateDrawingContext(null);
+                    context.Clear(Colors.Transparent);
+                    using (var drawingContext = new DrawingContext(context))
+                    {
+                        drawingContext.PushClip(calc.IntermediateClip);
+                        drawingContext.PushPreTransform(calc.IntermediateTransform);
+                        drawing.Draw(drawingContext);
+                    }
+
+                    CreateTileShader(calc, tileBrush, drawingBitmap, paint);
+                }
             }
 
             if (tileBrush != null && tileBrushImage != null)
@@ -251,25 +265,30 @@ namespace Avalonia.Skia
                     context.PopClip();
                 }
 
-                SKMatrix translation = SKMatrix.MakeTranslation(-(float)calc.DestinationRect.X, -(float)calc.DestinationRect.Y);
-                SKShaderTileMode tileX =
-                    tileBrush.TileMode == TileMode.None
-                        ? SKShaderTileMode.Clamp
-                        : tileBrush.TileMode == TileMode.FlipX || tileBrush.TileMode == TileMode.FlipXY
-                            ? SKShaderTileMode.Mirror
-                            : SKShaderTileMode.Repeat;
-
-                SKShaderTileMode tileY =
-                    tileBrush.TileMode == TileMode.None
-                        ? SKShaderTileMode.Clamp
-                        : tileBrush.TileMode == TileMode.FlipY || tileBrush.TileMode == TileMode.FlipXY
-                            ? SKShaderTileMode.Mirror
-                            : SKShaderTileMode.Repeat;
-                using (var shader = SKShader.CreateBitmap(bitmap.Bitmap, tileX, tileY, translation))
-                    paint.Shader = shader;
+                CreateTileShader(calc, tileBrush, bitmap, paint);
             }
 
             return rv;
+        }
+
+        private static void CreateTileShader(TileBrushCalculator calc, ITileBrush tileBrush, BitmapImpl bitmap, SKPaint paint)
+        {
+            SKMatrix translation = SKMatrix.MakeTranslation(-(float) calc.DestinationRect.X, -(float) calc.DestinationRect.Y);
+            SKShaderTileMode tileX =
+                tileBrush.TileMode == TileMode.None
+                    ? SKShaderTileMode.Clamp
+                    : tileBrush.TileMode == TileMode.FlipX || tileBrush.TileMode == TileMode.FlipXY
+                        ? SKShaderTileMode.Mirror
+                        : SKShaderTileMode.Repeat;
+
+            SKShaderTileMode tileY =
+                tileBrush.TileMode == TileMode.None
+                    ? SKShaderTileMode.Clamp
+                    : tileBrush.TileMode == TileMode.FlipY || tileBrush.TileMode == TileMode.FlipXY
+                        ? SKShaderTileMode.Mirror
+                        : SKShaderTileMode.Repeat;
+            using (var shader = SKShader.CreateBitmap(bitmap.Bitmap, tileX, tileY, translation))
+                paint.Shader = shader;
         }
 
         private PaintWrapper CreatePaint(Pen pen, Size targetSize)

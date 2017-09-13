@@ -9,7 +9,7 @@ namespace Avalonia.Media.Imaging
     /// <summary>
     /// Represents a bitmap image.
     /// </summary>
-    public interface IBitmap
+    public interface IBitmap : IImage
     {
         /// <summary>
         /// Gets the width of the bitmap, in pixels.

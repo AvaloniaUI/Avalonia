@@ -6,16 +6,16 @@ using Avalonia.Media.Imaging;
 namespace Avalonia.Media
 {
     /// <summary>
-    /// Paints an area with an <see cref="IBitmap"/>.
+    /// Paints an area with an <see cref="IImage"/>.
     /// </summary>
     public class ImageBrush : TileBrush, IImageBrush, IMutableBrush
     {
         /// <summary>
-        /// Defines the <see cref="Visual"/> property.
+        /// Defines the <see cref="Source"/> property.
         /// </summary>
-        public static readonly StyledProperty<IBitmap> SourceProperty =
-            AvaloniaProperty.Register<ImageBrush, IBitmap>("Source");
-
+        public static readonly StyledProperty<IImage> SourceProperty =
+            AvaloniaProperty.Register<ImageBrush, IImage>(nameof(Source));
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="ImageBrush"/> class.
         /// </summary>
@@ -27,7 +27,7 @@ namespace Avalonia.Media
         /// Initializes a new instance of the <see cref="ImageBrush"/> class.
         /// </summary>
         /// <param name="source">The image to draw.</param>
-        public ImageBrush(IBitmap source)
+        public ImageBrush(IImage source)
         {
             Source = source;
         }
@@ -35,7 +35,7 @@ namespace Avalonia.Media
         /// <summary>
         /// Gets or sets the image to draw.
         /// </summary>
-        public IBitmap Source
+        public IImage Source
         {
             get { return GetValue(SourceProperty); }
             set { SetValue(SourceProperty, value); }

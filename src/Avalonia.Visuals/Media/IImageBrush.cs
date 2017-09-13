@@ -10,6 +10,6 @@ namespace Avalonia.Media
         /// <summary>
         /// Gets the image to draw.
         /// </summary>
-        IBitmap Source { get; }
+        IImage Source { get; }
     }
 }
