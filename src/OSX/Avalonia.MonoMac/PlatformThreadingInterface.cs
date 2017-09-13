@@ -43,8 +43,6 @@ namespace Avalonia.MonoMac
         public void RunLoop(CancellationToken cancellationToken)
         {
             NSApplication.SharedApplication.ActivateIgnoringOtherApps(true);
-            //NSApplication.SharedApplication.Run();
-
             var app = NSApplication.SharedApplication;
             cancellationToken.Register(() =>
             {

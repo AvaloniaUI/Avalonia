@@ -59,8 +59,6 @@ namespace Avalonia.MonoMac
         public class WindowBaseDelegate : NSWindowDelegate
         {
             readonly WindowBaseImpl _impl;
-            private CGRect? _lastUnmaximizedFrame;
-
             public WindowBaseDelegate(WindowBaseImpl impl)
             {
                 _impl = impl;
