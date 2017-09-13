@@ -33,7 +33,7 @@ namespace Avalonia.Win32
                                                                                            RECT workingArea = monitorInfo.rcWork;
                                                                                            Rect avaloniaBounds = new Rect(bounds.left, bounds.top, bounds.right, bounds.bottom);
                                                                                            Rect avaloniaWorkArea = new Rect(workingArea.left, workingArea.top, workingArea.right, workingArea.bottom);
-                                                                                           screens[index] = new Screen(avaloniaBounds, avaloniaWorkArea, monitorInfo.dwFlags == 1 );
+                                                                                           screens[index] = new WinScreen(avaloniaBounds, avaloniaWorkArea, monitorInfo.dwFlags == 1, monitor);
                                                                                            index++;
                                                                                        }
                                                                                        return true;
