@@ -24,7 +24,7 @@
               <Thumb.Template>
                 <ControlTemplate>
                   <Grid>
-                    <Ellipse Width="12" Height="12" Fill="{StyleResource ThemeAccentBrush}"/>
+                    <Ellipse Width="12" Height="12" Fill="{DynamicResource ThemeAccentBrush}"/>
                   </Grid>
                 </ControlTemplate>
               </Thumb.Template>
@@ -59,7 +59,7 @@
               <Thumb.Template>
                 <ControlTemplate>
                   <Grid>
-                    <Ellipse Width="12" Height="12" Fill="{StyleResource ThemeAccentBrush}"/>
+                    <Ellipse Width="12" Height="12" Fill="{DynamicResource ThemeAccentBrush}"/>
                   </Grid>
                 </ControlTemplate>
               </Thumb.Template>
@@ -77,7 +77,7 @@
   </Style>
   <Style Selector="Slider /template/ Border#TrackBackground">
     <Setter Property="BorderThickness" Value="2"/>
-    <Setter Property="BorderBrush" Value="{StyleResource ThemeBorderLightBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderLightBrush}"/>
   </Style>
   <Style Selector="Slider /template/ RepeatButton.repeattrack">
     <Setter Property="Background" Value="Transparent"/>

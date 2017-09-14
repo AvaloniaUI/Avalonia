@@ -73,17 +73,6 @@ and includes `DirectProperty` for turning standard CLR properties into Avalonia
 properties. The common base class of `StyledProperty` and `DirectProperty`
 is `AvaloniaProperty`.
 
-# Resources
-
-There is no `Resources` collection on controls in Avalonia, however `Style`s
-do have a `Resources` collection for style-related resources. These can be
-referred to using the `{StyleResource}` markup extension both inside and outside
-styles.
-
-For non-style-related resources, we suggest defining them in code and referring
-to them in markup using the `{Static}` markup extension. To read more about the reasoning for this,
-see [this issue comment](https://github.com/AvaloniaUI/Avalonia/issues/462#issuecomment-191849723).
-
 ## Grid
 
 Column and row definitions can be specified in Avalonia using strings, avoiding
