@@ -60,10 +60,10 @@ namespace Avalonia.Win32
         {
             get
             {
-                for (int i = 0; i < _allScreens.Length; i++)
+                for (int i = 0; i < AllScreens.Length; i++)
                 {
-                    if (_allScreens[i].Primary)
-                        return _allScreens[i];
+                    if (AllScreens[i].Primary)
+                        return AllScreens[i];
                 }
 
                 return null;
