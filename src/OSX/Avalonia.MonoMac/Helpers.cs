@@ -1,4 +1,5 @@
 ﻿﻿using System;
+ using System.ComponentModel;
  using MonoMac.AppKit;
  using MonoMac.CoreGraphics;
  using MonoMac.OpenGL;
@@ -30,12 +31,12 @@ namespace Avalonia.MonoMac
 
         public static Rect ConvertRectY(this Rect rect)
         {
-            return new Rect(new Point(rect.X, rect.Position.ConvertPointY().Y), rect.Size);
+            return new Rect(rect.Position.WithY(rect.Y + rect.Height).ConvertPointY(), rect.Size);
         }
         
         public static CGRect ConvertRectY(this CGRect rect)
         {
-            return new CGRect(new CGPoint(rect.X, rect.Location.ConvertPointY().Y), rect.Size);
+            return new CGRect(new CGPoint(rect.X, rect.Y + rect.Height).ConvertPointY(), rect.Size);
         }
     }
 }
