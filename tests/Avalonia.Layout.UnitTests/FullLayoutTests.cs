@@ -162,6 +162,10 @@ namespace Avalonia.Layout.UnitTests
         private void RegisterServices()
         {
             var globalStyles = new Mock<IGlobalStyles>();
+            var globalStylesResources = globalStyles.As<IResourceNode>();
+            var outObj = (object)10;
+            globalStylesResources.Setup(x => x.TryGetResource("FontSizeNormal", out outObj)).Returns(true);
+
             var renderInterface = new Mock<IPlatformRenderInterface>();
             renderInterface.Setup(x =>
                 x.CreateFormattedText(
@@ -172,6 +176,15 @@ namespace Avalonia.Layout.UnitTests
                     It.IsAny<Size>(),
                     It.IsAny<IReadOnlyList<FormattedTextStyleSpan>>()))
                 .Returns(new FormattedTextMock("TEST"));
+
+            var streamGeometry = new Mock<IStreamGeometryImpl>();
+            streamGeometry.Setup(x =>
+                    x.Open())
+                .Returns(new Mock<IStreamGeometryContextImpl>().Object);
+
+            renderInterface.Setup(x =>
+                    x.CreateStreamGeometry())
+                .Returns(streamGeometry.Object);
 
             var windowImpl = new Mock<IWindowImpl>();
 
@@ -193,6 +206,7 @@ namespace Avalonia.Layout.UnitTests
                 .Bind<IWindowingPlatform>().ToConstant(new Avalonia.Controls.UnitTests.WindowingPlatformMock(() => windowImpl.Object));
 
             var theme = new DefaultTheme();
+            globalStyles.Setup(x => x.IsStylesInitialized).Returns(true);
             globalStyles.Setup(x => x.Styles).Returns(theme);
         }
     }

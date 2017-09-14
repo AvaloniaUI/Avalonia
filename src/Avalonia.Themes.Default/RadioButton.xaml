@@ -1,8 +1,8 @@
 <Styles xmlns="https://github.com/avaloniaui">
   <Style Selector="RadioButton">
     <Setter Property="Background" Value="Transparent"/>
-    <Setter Property="BorderBrush" Value="{StyleResource ThemeBorderMidBrush}"/>
-    <Setter Property="BorderThickness" Value="{StyleResource ThemeBorderThickness}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}"/>
+    <Setter Property="BorderThickness" Value="{DynamicResource ThemeBorderThickness}"/>
     <Setter Property="Template">
       <ControlTemplate>
         <Grid ColumnDefinitions="Auto,*" Background="{TemplateBinding Background}">
@@ -13,7 +13,7 @@
                    Height="18"
                    VerticalAlignment="Center"/>
           <Ellipse Name="checkMark"
-                   Fill="{StyleResource HighlightBrush}"
+                   Fill="{DynamicResource HighlightBrush}"
                    Width="10"
                    Height="10"
                    Stretch="Uniform"
@@ -31,7 +31,7 @@
     </Setter>
   </Style>
   <Style Selector="RadioButton:pointerover /template/ Ellipse#border">
-    <Setter Property="Stroke" Value="{StyleResource ThemeBorderDarkBrush}"/>
+    <Setter Property="Stroke" Value="{DynamicResource ThemeBorderDarkBrush}"/>
   </Style>
   <Style Selector="RadioButton /template/ Ellipse#checkMark">
     <Setter Property="IsVisible" Value="False"/>
@@ -40,6 +40,6 @@
     <Setter Property="IsVisible" Value="True"/>
   </Style>
   <Style Selector="RadioButton:disabled /template/ Ellipse#border">
-    <Setter Property="Opacity" Value="{StyleResource ThemeDisabledOpacity}"/>
+    <Setter Property="Opacity" Value="{DynamicResource ThemeDisabledOpacity}"/>
   </Style>
 </Styles>

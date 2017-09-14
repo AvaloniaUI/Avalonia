@@ -36,7 +36,7 @@
                 Height="12"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center">
-          <Path Fill="{StyleResource ThemeForegroundBrush}"
+          <Path Fill="{DynamicResource ThemeForegroundBrush}"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 Data="M 0 2 L 4 6 L 0 10 Z"/>
