@@ -32,6 +32,12 @@
     <EmbeddedResource Include="MainView.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <EmbeddedResource Include="DecoratedWindow.xaml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pages\DialogsPage.xaml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Include="Pages\BorderPage.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
@@ -83,8 +89,14 @@
     <Compile Include="MainView.xaml.cs">
       <DependentUpon>MainView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="DecoratedWindow.xaml.cs">
+      <DependentUpon>DecoratedWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\DialogsPage.xaml.cs">
+      <DependentUpon>DialogsPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Pages\BorderPage.xaml.cs">
       <DependentUpon>BorderPage.xaml</DependentUpon>

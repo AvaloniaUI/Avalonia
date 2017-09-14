@@ -26,6 +26,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)WindowFramebuffer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WindowImpl.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WinScreen.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\..\Shared\WindowResizeDragHelper.cs" />
     <Compile Include="..\..\Shared\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
