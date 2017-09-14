@@ -7,12 +7,13 @@ namespace Avalonia.MonoMac
     public class ScreenImpl : IScreenImpl
     {
         private const string NSApplicationDidChangeScreenParametersNotification = "NSApplicationDidChangeScreenParametersNotification";
-     
+
         public int ScreenCount
         {
             get => NSScreen.Screens.Length;
         }
 
+        private Screen[] _allScreens;
         public Screen[] AllScreens
         {
             get
@@ -30,13 +31,6 @@ namespace Avalonia.MonoMac
                     }
 
                     _allScreens = s;
-                    _observer = NSNotificationCenter.DefaultCenter.AddObserver(NSApplicationDidChangeScreenParametersNotification, notification =>
-                                                                                                                                  {
-                                                                                                                                      _allScreens = null;
-                                                                                                                                      NSNotificationCenter
-                                                                                                                                          .DefaultCenter
-                                                                                                                                          .RemoveObserver(_observer);
-                                                                                                                                  });
                 }
                 return _allScreens;
             }
@@ -55,8 +49,15 @@ namespace Avalonia.MonoMac
                 return null;
             }
         }
+        
+        public ScreenImpl()
+        {
+            NSNotificationCenter.DefaultCenter.AddObserver(NSApplicationDidChangeScreenParametersNotification, MonitorsChanged);
+        }
 
-        private Screen[] _allScreens;
-        private NSObject _observer;
+        private void MonitorsChanged(NSNotification notification)
+        {
+            _allScreens = null;
+        }
     }
 }
