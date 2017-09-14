@@ -75,6 +75,9 @@
     <EmbeddedResource Include="Pages\SliderPage.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <EmbeddedResource Include="Pages\ScreenPage.xaml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Include="Pages\TextBoxPage.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
@@ -136,7 +139,10 @@
     </Compile>
     <Compile Include="Pages\SliderPage.xaml.cs">
       <DependentUpon>SliderPage.xaml</DependentUpon>
-    </Compile>    
+    </Compile>
+    <Compile Include="Pages\ScreenPage.xaml.cs">
+      <DependentUpon>ScreenPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Pages\TreeViewPage.xaml.cs">
       <DependentUpon>TreeViewPage.xaml</DependentUpon>
     </Compile>

@@ -49,6 +49,7 @@ namespace Avalonia.Controls
             impl.Deactivated = HandleDeactivated;
             impl.PositionChanged = HandlePositionChanged;
             this.GetObservable(ClientSizeProperty).Skip(1).Subscribe(x => PlatformImpl?.Resize(x));
+            Screens = new Screens((IWindowImpl)impl);
         }
 
         /// <summary>
@@ -89,6 +90,11 @@ namespace Avalonia.Controls
                 if (PlatformImpl is IWindowBaseImpl impl)
                     impl.Position = value;
             }
+        }
+
+        public Screens Screens
+        {
+            get;
         }
 
         /// <summary>
