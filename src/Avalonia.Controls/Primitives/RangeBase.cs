@@ -38,6 +38,18 @@ namespace Avalonia.Controls.Primitives
                 o => o.Value,
                 (o, v) => o.Value = v);
 
+        /// <summary>
+        /// Defines the <see cref="SmallChange"/> property.
+        /// </summary>
+        public static readonly StyledProperty<double> SmallChangeProperty =
+            AvaloniaProperty.Register<RangeBase, double>(nameof(SmallChange), 0.1);
+
+        /// <summary>
+        /// Defines the <see cref="LargeChange"/> property.
+        /// </summary>
+        public static readonly StyledProperty<double> LargeChangeProperty =
+            AvaloniaProperty.Register<RangeBase, double>(nameof(LargeChange), 1);
+
         private double _minimum;
         private double _maximum = 100.0;
         private double _value;
@@ -101,6 +113,18 @@ namespace Avalonia.Controls.Primitives
                 value = ValidateValue(value);
                 SetAndRaise(ValueProperty, ref _value, value);
             }
+        }
+
+        public double SmallChange
+        {
+            get => GetValue(SmallChangeProperty);
+            set => SetValue(SmallChangeProperty, value);
+        }
+
+        public double LargeChange
+        {
+            get => GetValue(LargeChangeProperty);
+            set => SetValue(LargeChangeProperty, value);
         }
 
         /// <summary>

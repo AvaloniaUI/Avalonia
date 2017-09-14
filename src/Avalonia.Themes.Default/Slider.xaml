@@ -12,6 +12,14 @@
           </Grid.RowDefinitions>
           <Border Name="TrackBackground" Grid.Row="1" Height="4" Margin="6,0" VerticalAlignment="Center"/>
           <Track Name="PART_Track" Grid.Row="1">
+            <Track.DecreaseButton>
+               <RepeatButton Name="PART_DecreaseButton"
+                             Classes="repeattrack" />
+            </Track.DecreaseButton>
+            <Track.IncreaseButton>
+               <RepeatButton Name="PART_IncreaseButton"
+                             Classes="repeattrack" />
+            </Track.IncreaseButton>
             <Thumb MinWidth="20" MinHeight="20">
               <Thumb.Template>
                 <ControlTemplate>
@@ -39,6 +47,14 @@
           </Grid.ColumnDefinitions>
           <Border Name="TrackBackground" Grid.Column="1" Width="4" Margin="0,6" HorizontalAlignment="Center"/>
           <Track Name="PART_Track" Grid.Column="1">
+            <Track.DecreaseButton>
+               <RepeatButton Name="PART_DecreaseButton"
+                             Classes="repeattrack" />
+            </Track.DecreaseButton>
+            <Track.IncreaseButton>
+               <RepeatButton Name="PART_IncreaseButton"
+                             Classes="repeattrack" />
+            </Track.IncreaseButton>
             <Thumb MinWidth="20" MinHeight="20">
               <Thumb.Template>
                 <ControlTemplate>
@@ -62,5 +78,13 @@
   <Style Selector="Slider /template/ Border#TrackBackground">
     <Setter Property="BorderThickness" Value="2"/>
     <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderLightBrush}"/>
-  </Style>  
+  </Style>
+  <Style Selector="Slider /template/ RepeatButton.repeattrack">
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="Template">
+        <ControlTemplate>
+            <Border Background="{TemplateBinding Background}" />
+        </ControlTemplate>
+    </Setter>
+  </Style>
 </Styles>

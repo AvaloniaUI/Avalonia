@@ -29,10 +29,10 @@ namespace Avalonia.Controls.Primitives
             set { SetAndRaise(IsCheckedProperty, ref _isChecked, value); }
         }
 
-        protected override void OnClick(RoutedEventArgs e)
+        protected override void OnClick()
         {
             Toggle();
-            base.OnClick(e);
+            base.OnClick();
         }
 
         protected virtual void Toggle()
