@@ -26,7 +26,7 @@ namespace Avalonia.MonoMac
                     {
                         Rect bounds = screens[i].Frame.ToAvaloniaRect().ConvertRectY();
                         Rect workArea = screens[i].VisibleFrame.ToAvaloniaRect().ConvertRectY();
-                        s[i] = new MacScreen(bounds, workArea, screens[i] == primary, screens[i].Handle);
+                        s[i] = new MacScreen(bounds, workArea, i == 0, screens[i].Handle);
                     }
 
                     _allScreens = s;
