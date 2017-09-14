@@ -65,8 +65,9 @@ namespace Avalonia.Controls.UnitTests.Primitives
             var target = new ScrollBar();
 
             target.Visibility = ScrollBarVisibility.Auto;
-            target.ViewportSize = 1;
-            target.Maximum = 0;
+            target.Minimum = 0;
+            target.Maximum = 100;
+            target.ViewportSize = 100;
 
             Assert.False(target.IsVisible);
         }

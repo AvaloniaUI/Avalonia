@@ -33,8 +33,6 @@ namespace Avalonia.Controls
 
         // Slider required parts
         private Track _track;
-        private Button _decreaseButton;
-        private Button _increaseButton;
 
         /// <summary>
         /// Initializes static members of the <see cref="Slider"/> class. 
@@ -46,8 +44,6 @@ namespace Avalonia.Controls
             Thumb.DragStartedEvent.AddClassHandler<Slider>(x => x.OnThumbDragStarted, RoutingStrategies.Bubble);
             Thumb.DragDeltaEvent.AddClassHandler<Slider>(x => x.OnThumbDragDelta, RoutingStrategies.Bubble);
             Thumb.DragCompletedEvent.AddClassHandler<Slider>(x => x.OnThumbDragCompleted, RoutingStrategies.Bubble);
-            SmallChangeProperty.OverrideDefaultValue<Slider>(1);
-            LargeChangeProperty.OverrideDefaultValue<Slider>(10);
         }
 
         /// <summary>
@@ -87,54 +83,7 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
         {
-            if (_decreaseButton != null)
-            {
-                _decreaseButton.Click -= DecreaseClick;
-            }
-
-            if (_increaseButton != null)
-            {
-                _increaseButton.Click -= IncreaseClick;
-            }
-
-            _decreaseButton = e.NameScope.Find<Button>("PART_DecreaseButton");
-            _track = e.NameScope.Find<Track>("PART_Track");
-            _increaseButton = e.NameScope.Find<Button>("PART_IncreaseButton");
-
-            if (_decreaseButton != null)
-            {
-                _decreaseButton.Click += DecreaseClick;
-            }
-
-            if (_increaseButton != null)
-            {
-                _increaseButton.Click += IncreaseClick;
-            }
-        }
-
-        private void DecreaseClick(object sender, RoutedEventArgs e)
-        {
-            ChangeValueBy(-LargeChange);
-        }
-
-        private void IncreaseClick(object sender, RoutedEventArgs e)
-        {
-            ChangeValueBy(LargeChange);
-        }
-
-        private void ChangeValueBy(double by)
-        {
-            if (IsSnapToTickEnabled)
-            {
-                by = by < 0 ? Math.Min(-TickFrequency, by) : Math.Max(TickFrequency, by);
-            }
-
-            var value = Value;
-            var next = SnapToTick(Math.Max(Math.Min(value + by, Maximum), Minimum));
-            if (next != value)
-            {
-                Value = next;
-            }
+            _track = e.NameScope.Get<Track>("PART_Track");
         }
 
         /// <summary>
@@ -152,7 +101,7 @@ namespace Avalonia.Controls
         protected virtual void OnThumbDragDelta(VectorEventArgs e)
         {
             Thumb thumb = e.Source as Thumb;
-            if (thumb != null && _track?.Thumb == thumb)
+            if (thumb != null && _track.Thumb == thumb)
             {
                 MoveToNextTick(_track.Value);
             }

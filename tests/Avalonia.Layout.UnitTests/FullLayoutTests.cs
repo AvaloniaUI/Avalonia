@@ -177,15 +177,6 @@ namespace Avalonia.Layout.UnitTests
                     It.IsAny<IReadOnlyList<FormattedTextStyleSpan>>()))
                 .Returns(new FormattedTextMock("TEST"));
 
-            var streamGeometry = new Mock<IStreamGeometryImpl>();
-            streamGeometry.Setup(x =>
-                    x.Open())
-                .Returns(new Mock<IStreamGeometryContextImpl>().Object);
-
-            renderInterface.Setup(x =>
-                    x.CreateStreamGeometry())
-                .Returns(streamGeometry.Object);
-
             var windowImpl = new Mock<IWindowImpl>();
 
             Size clientSize = default(Size);
