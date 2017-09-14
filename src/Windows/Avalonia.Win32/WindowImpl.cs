@@ -38,9 +38,21 @@ namespace Avalonia.Win32
         private double _scaling = 1;
         private WindowState _showWindowState;
         private FramebufferManager _framebuffer;
+#if USE_MANAGED_DRAG
+        private readonly ManagedWindowResizeDragHelper _managedDrag;
+#endif
 
         public WindowImpl()
         {
+#if USE_MANAGED_DRAG
+            _managedDrag = new ManagedWindowResizeDragHelper(this, capture =>
+            {
+                if (capture)
+                    UnmanagedMethods.SetCapture(Handle.Handle);
+                else
+                    UnmanagedMethods.ReleaseCapture();
+            });
+#endif
             CreateWindow();
             _framebuffer = new FramebufferManager(_hwnd);
             s_instances.Add(this);
@@ -327,8 +339,12 @@ namespace Avalonia.Win32
 
         public void BeginResizeDrag(WindowEdge edge)
         {
+#if USE_MANAGED_DRAG
+            _managedDrag.BeginResizeDrag(edge, ScreenToClient(MouseDevice.Position));
+#else
             UnmanagedMethods.DefWindowProc(_hwnd, (int)UnmanagedMethods.WindowsMessage.WM_NCLBUTTONDOWN,
                 new IntPtr((int)EdgeDic[edge]), IntPtr.Zero);
+#endif
         }
 
         public Point Position
@@ -583,6 +599,11 @@ namespace Avalonia.Win32
                     PositionChanged?.Invoke(new Point((short)(ToInt32(lParam) & 0xffff), (short)(ToInt32(lParam) >> 16)));
                     return IntPtr.Zero;
             }
+#if USE_MANAGED_DRAG
+
+            if (_managedDrag.PreprocessInputEvent(ref e))
+                return UnmanagedMethods.DefWindowProc(hWnd, msg, wParam, lParam);
+#endif
 
             if (e != null && Input != null)
             {
