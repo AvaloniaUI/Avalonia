@@ -6,8 +6,8 @@ namespace Avalonia.MonoMac
 {
     public class ScreenImpl : IScreenImpl
     {
-
         private const string NSApplicationDidChangeScreenParametersNotification = "NSApplicationDidChangeScreenParametersNotification";
+     
         public int ScreenCount
         {
             get => NSScreen.Screens.Length;
@@ -17,30 +17,28 @@ namespace Avalonia.MonoMac
         {
             get
             {
-                if (allScreens == null)
+                if (_allScreens == null)
                 {
                     NSScreen[] screens = NSScreen.Screens;
                     Screen[] s = new Screen[screens.Length];
                     NSScreen primary = NSScreen.MainScreen;
                     for (int i = 0; i < screens.Length; i++)
                     {
-                        Rect bounds = new Rect(screens[i].Frame.X, screens[i].Frame.Height - screens[i].Frame.Y, screens[i].Frame.Width,
-                                               screens[i].Frame.Height);
-                        Rect workArea = new Rect(screens[i].VisibleFrame.X, screens[i].VisibleFrame.Height - screens[i].VisibleFrame.Y,
-                                                 screens[i].VisibleFrame.Width, screens[i].VisibleFrame.Height);
+                        Rect bounds = screens[i].Frame.ToAvaloniaRect().ConvertRectY();
+                        Rect workArea = screens[i].VisibleFrame.ToAvaloniaRect().ConvertRectY();
                         s[i] = new MacScreen(bounds, workArea, screens[i] == primary, screens[i].Handle);
                     }
 
-                    allScreens = s;
-                    observer = NSNotificationCenter.DefaultCenter.AddObserver(NSApplicationDidChangeScreenParametersNotification, notification =>
+                    _allScreens = s;
+                    _observer = NSNotificationCenter.DefaultCenter.AddObserver(NSApplicationDidChangeScreenParametersNotification, notification =>
                                                                                                                                   {
-                                                                                                                                      allScreens = null;
+                                                                                                                                      _allScreens = null;
                                                                                                                                       NSNotificationCenter
                                                                                                                                           .DefaultCenter
-                                                                                                                                          .RemoveObserver(observer);
+                                                                                                                                          .RemoveObserver(_observer);
                                                                                                                                   });
                 }
-                return allScreens;
+                return _allScreens;
             }
         }
         
@@ -48,17 +46,17 @@ namespace Avalonia.MonoMac
         {
             get
             {
-                for (var i = 0; i < allScreens.Length; i++)
+                for (int i = 0; i < _allScreens.Length; i++)
                 {
-                    if (allScreens[i].Primary)
-                        return allScreens[i];
+                    if (_allScreens[i].Primary)
+                        return _allScreens[i];
                 }
 
                 return null;
             }
         }
 
-        private Screen[] allScreens;
-        private NSObject observer;
+        private Screen[] _allScreens;
+        private NSObject _observer;
     }
 }

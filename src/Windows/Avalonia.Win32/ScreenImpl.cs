@@ -18,12 +18,12 @@ namespace Avalonia.Win32
             get => GetSystemMetrics(SystemMetric.SM_CMONITORS);
         }
 
-        private Screen[] allScreens;
+        private Screen[] _allScreens;
         public Screen[] AllScreens
         {
             get
             {
-                if (allScreens == null)
+                if (_allScreens == null)
                 {
                     int index = 0;
                     Screen[] screens = new Screen[ScreenCount];
@@ -45,25 +45,25 @@ namespace Avalonia.Win32
                                                                       }
                                                                       return true;
                                                                   }, IntPtr.Zero);
-                    allScreens = screens;
+                    _allScreens = screens;
                 }
-                return allScreens;
+                return _allScreens;
             }
         }
 
         public void InvalidateScreensCache()
         {
-            allScreens = null;
+            _allScreens = null;
         }
         
         public Screen PrimaryScreen
         {
             get
             {
-                for (var i = 0; i < allScreens.Length; i++)
+                for (int i = 0; i < _allScreens.Length; i++)
                 {
-                    if (allScreens[i].Primary)
-                        return allScreens[i];
+                    if (_allScreens[i].Primary)
+                        return _allScreens[i];
                 }
 
                 return null;

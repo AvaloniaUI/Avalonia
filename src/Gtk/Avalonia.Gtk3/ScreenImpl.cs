@@ -8,14 +8,14 @@ namespace Avalonia.Gtk3
     {
         public int ScreenCount
         {
-            get => allScreens.Length;
+            get => _allScreens.Length;
         }
 
         public Screen[] AllScreens
         {
             get
             {
-                if (allScreens == null)
+                if (_allScreens == null)
                 {
                     IntPtr display = Native.GdkGetDefaultDisplay();
                     GdkScreen screen = Native.GdkDisplayGetDefaultScreen(display);
@@ -32,11 +32,11 @@ namespace Avalonia.Gtk3
                         screens[i] = s;
                     }
 
-                    allScreens = screens;
-                    monitorsChangedSignal = Signal.Connect<Native.D.monitors_changed>(screen, "monitors-changed", MonitorsChanged);
+                    _allScreens = screens;
+                    _monitorsChangedSignal = Signal.Connect<Native.D.monitors_changed>(screen, "monitors-changed", MonitorsChanged);
                 }
 
-                return allScreens;
+                return _allScreens;
             }
         }
 
@@ -54,8 +54,8 @@ namespace Avalonia.Gtk3
             }
         }
         
-        private static Screen[] allScreens;
-        private static IDisposable monitorsChangedSignal;
+        private Screen[] _allScreens;
+        private IDisposable _monitorsChangedSignal;
 
         public ScreenImpl()
         {
@@ -63,8 +63,8 @@ namespace Avalonia.Gtk3
 
         private unsafe void MonitorsChanged(IntPtr screen, IntPtr userData)
         {
-            allScreens = null;
-            monitorsChangedSignal.Dispose();
+            _allScreens = null;
+            _monitorsChangedSignal.Dispose();
         }
     }
 }
