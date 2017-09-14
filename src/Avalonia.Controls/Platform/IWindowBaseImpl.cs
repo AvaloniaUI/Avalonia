@@ -65,5 +65,19 @@ namespace Avalonia.Platform
         /// Sets the client size of the toplevel.
         /// </summary>
         void Resize(Size clientSize);
+        
+        
+        /// <summary>
+        /// Gets platform specific display information
+        /// </summary>
+        Screens Screens
+        {
+            get;
+        }
+        
+        /// <summary>
+        /// Gets platform specific display information
+        /// </summary>
+        IScreenImpl Screen { get; }
     }
 }

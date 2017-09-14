@@ -57,6 +57,7 @@ namespace Avalonia.Win32
             CreateWindow();
             _framebuffer = new FramebufferManager(_hwnd);
             s_instances.Add(this);
+            Screens = new Screens(Screen);
         }
 
         public Action Activated { get; set; }
@@ -131,6 +132,8 @@ namespace Avalonia.Win32
                     UnmanagedMethods.SetWindowPosFlags.SWP_RESIZE);
             }
         }
+
+        public Screens Screens { get; }
 
         public double Scaling => _scaling;
 

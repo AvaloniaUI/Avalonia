@@ -11,8 +11,6 @@ namespace Avalonia.Platform
     /// </summary>
     public interface IWindowImpl : IWindowBaseImpl
     {
-        IScreenImpl Screen { get; }
-
         /// <summary>
         /// Gets or sets the minimized/maximized state of the window.
         /// </summary>

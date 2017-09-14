@@ -15,6 +15,7 @@ namespace Avalonia.MonoMac
 
         public WindowBaseImpl()
         {
+            Screens = new Screens(Screen);
             _managedDrag = new ManagedWindowResizeDragHelper(this, _ => { }, ResizeForManagedDrag);
             Window = new CustomWindow(this)
             {
@@ -153,6 +154,9 @@ namespace Avalonia.MonoMac
             Position = pos;
         }
 
+        public Screens Screens { get; }
+        public IScreenImpl Screen { get; } = new ScreenImpl();
+
         public override Point PointToClient(Point point)
         {
             var cocoaScreenPoint = point.ToMonoMacPoint().ConvertPointY();
@@ -166,9 +170,7 @@ namespace Avalonia.MonoMac
             var cocoaScreenPoint = Window.ConvertBaseToScreen(cocoaViewPoint);
             return cocoaScreenPoint.ConvertPointY().ToAvaloniaPoint();
         }
-
-
-
+        
         public override void Dispose()
         {
             Window?.Close();

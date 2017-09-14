@@ -4,14 +4,14 @@ namespace Avalonia.Controls
 {
     public class Screens
     {
-        private IWindowImpl _windowImpl;
+        private readonly IScreenImpl _iScreenImpl;
+        
+        public Screen[] All => _iScreenImpl.AllScreens;
+        public Screen Primary => _iScreenImpl.PrimaryScreen;
 
-        public Screen[] All => _windowImpl.Screen.AllScreens;
-        public Screen Primary => _windowImpl.Screen.PrimaryScreen;
-
-        public Screens(IWindowImpl windowImpl)
+        public Screens(IScreenImpl iScreenImpl)
         {
-            _windowImpl = windowImpl;
+            _iScreenImpl = iScreenImpl;
         }
     }
 }

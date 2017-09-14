@@ -32,7 +32,7 @@ namespace ControlCatalog.Pages
         {
             base.Render(context);
             Window w = (Window)VisualRoot;
-            Screen[] screens = w?.Screens.All;
+            Screen[] screens = w.Screens.All;
 
             Pen p = new Pen(Brushes.Black);
             if (screens != null)
