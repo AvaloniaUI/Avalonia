@@ -15,7 +15,6 @@ namespace Avalonia.MonoMac
 
         public WindowBaseImpl()
         {
-            Screens = new Screens(Screen);
             _managedDrag = new ManagedWindowResizeDragHelper(this, _ => { }, ResizeForManagedDrag);
             Window = new CustomWindow(this)
             {
