@@ -17,8 +17,6 @@ namespace Avalonia.MonoMac
             Window.SetCanBecomeKeyAndMain();
         }
 
-        public IScreenImpl Screen { get; } = new ScreenImpl();
-
         public WindowState WindowState
         {
             get

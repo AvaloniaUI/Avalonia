@@ -66,15 +66,6 @@ namespace Avalonia.Platform
         /// </summary>
         void Resize(Size clientSize);
         
-        
-        /// <summary>
-        /// Gets platform specific display information
-        /// </summary>
-        Screens Screens
-        {
-            get;
-        }
-        
         /// <summary>
         /// Gets platform specific display information
         /// </summary>

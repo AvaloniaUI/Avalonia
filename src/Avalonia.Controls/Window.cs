@@ -135,7 +135,7 @@ namespace Avalonia.Controls
             remove { _nameScope.Unregistered -= value; }
         }
 
-        public Screens Screens => PlatformImpl?.Screens;
+        public Screens Screens => new Screens(PlatformImpl?.Screen);
 
         /// <summary>
         /// Gets the platform-specific window implementation.

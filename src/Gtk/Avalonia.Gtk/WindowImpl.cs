@@ -15,14 +15,12 @@ namespace Avalonia.Gtk
 
         public WindowImpl(Gtk.WindowType type) : base(new PlatformHandleAwareWindow(type))
         {
-            Screens = new Screens(Screen);
             Init();
         }
 
         public WindowImpl()
             : base(new PlatformHandleAwareWindow(Gtk.WindowType.Toplevel) {DefaultSize = new Gdk.Size(900, 480)})
         {
-            Screens = new Screens(Screen);
             Init();
         }
 
@@ -75,8 +73,6 @@ namespace Avalonia.Gtk
         {
             Window.Resize((int)value.Width, (int)value.Height);
         }
-
-        public Screens Screens { get; }
 
         public void SetTitle(string title)
         {

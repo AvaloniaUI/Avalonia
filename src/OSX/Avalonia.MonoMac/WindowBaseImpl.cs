@@ -154,7 +154,6 @@ namespace Avalonia.MonoMac
             Position = pos;
         }
 
-        public Screens Screens { get; }
         public IScreenImpl Screen { get; } = new ScreenImpl();
 
         public override Point PointToClient(Point point)

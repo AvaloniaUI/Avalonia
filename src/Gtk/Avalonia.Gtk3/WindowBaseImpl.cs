@@ -33,7 +33,6 @@ namespace Avalonia.Gtk3
             Disposables.Add(gtkWidget);
             _framebuffer = new FramebufferManager(this);
             _imContext = Native.GtkImMulticontextNew();
-            Screens = new Screens(Screen);
             
             Disposables.Add(_imContext);
             Native.GtkWidgetSetEvents(gtkWidget, 0xFFFFFE);
@@ -343,8 +342,7 @@ namespace Avalonia.Gtk3
                 return;
             Native.GtkWindowResize(GtkWidget, (int)value.Width, (int)value.Height);
         }
-
-        public Screens Screens { get; }
+        
         public IScreenImpl Screen { get; } = new ScreenImpl();
 
         public Point Position
