@@ -2,7 +2,10 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Linq;
+using Avalonia.Controls;
 using Avalonia.Platform;
+using Avalonia.Utilities;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 
 #if NETSTANDARD
@@ -11,15 +14,15 @@ using Win32Exception = Avalonia.Win32.NetStandard.AvaloniaWin32Exception;
 
 namespace Avalonia.Win32
 {
-    public class ScreenImpl : IScreenImpl
+    public class ScreenImpl : BaseScreenImpl
     {
-        public int ScreenCount
+        public override int ScreenCount
         {
             get => GetSystemMetrics(SystemMetric.SM_CMONITORS);
         }
 
         private Screen[] _allScreens;
-        public Screen[] AllScreens
+        public override Screen[] AllScreens
         {
             get
             {
@@ -56,7 +59,7 @@ namespace Avalonia.Win32
             _allScreens = null;
         }
         
-        public Screen PrimaryScreen
+        public override  Screen PrimaryScreen
         {
             get
             {

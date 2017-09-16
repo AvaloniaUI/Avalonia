@@ -1,12 +1,14 @@
 ﻿using System;
+using Avalonia.Controls;
 using Avalonia.Platform;
+using Avalonia.Utilities;
 using Gdk;
 using Screen = Avalonia.Platform.Screen;
 using Window = Gtk.Window;
 
 namespace Avalonia.Gtk
 {
-    internal class ScreenImpl : IScreenImpl
+    internal class ScreenImpl : BaseScreenImpl
     {
         private Window window;
 
@@ -36,7 +38,7 @@ namespace Avalonia.Gtk
         {
             get => null;
         }
-
+        
         public Rect Bounds { get; }
         public Rect WorkingArea { get; }
         public bool Primary { get; }

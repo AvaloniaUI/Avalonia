@@ -61,10 +61,12 @@ namespace ControlCatalog.Pages
                     
                     text.Text = $"Primary: {screen.Primary}";
                     context.DrawText(Brushes.Black, boundsRect.Position.WithY(boundsRect.Size.Height + 40), text);
+                    
+                    text.Text = $"Current: {screen.Equals(w.Screens.ScreenFromBounds(new Rect(w.Position, w.Bounds.Size)))}";
+                    context.DrawText(Brushes.Black, boundsRect.Position.WithY(boundsRect.Size.Height + 60), text);
                 }
 
-            if (w != null)
-                context.DrawRectangle(p, new Rect(w.Position.X / 10f + Math.Abs(leftMost), w.Position.Y / 10, w.Bounds.Width / 10, w.Bounds.Height / 10));
+            context.DrawRectangle(p, new Rect(w.Position.X / 10f + Math.Abs(leftMost), w.Position.Y / 10, w.Bounds.Width / 10, w.Bounds.Height / 10));
         }
     }
 }

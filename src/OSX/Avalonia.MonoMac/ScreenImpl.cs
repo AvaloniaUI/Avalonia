@@ -1,20 +1,22 @@
-﻿using Avalonia.Platform;
+﻿using Avalonia.Controls;
+using Avalonia.Platform;
+using Avalonia.Utilities;
 using MonoMac.AppKit;
 using MonoMac.Foundation;
 
 namespace Avalonia.MonoMac
 {
-    public class ScreenImpl : IScreenImpl
+    public class ScreenImpl : BaseScreenImpl
     {
         private const string NSApplicationDidChangeScreenParametersNotification = "NSApplicationDidChangeScreenParametersNotification";
 
-        public int ScreenCount
+        public override  int ScreenCount
         {
             get => NSScreen.Screens.Length;
         }
 
         private Screen[] _allScreens;
-        public Screen[] AllScreens
+        public override  Screen[] AllScreens
         {
             get
             {
@@ -36,7 +38,7 @@ namespace Avalonia.MonoMac
             }
         }
         
-        public Screen PrimaryScreen
+        public override Screen PrimaryScreen
         {
             get
             {
@@ -49,7 +51,7 @@ namespace Avalonia.MonoMac
                 return null;
             }
         }
-        
+
         public ScreenImpl()
         {
             NSNotificationCenter.DefaultCenter.AddObserver(NSApplicationDidChangeScreenParametersNotification, MonitorsChanged);

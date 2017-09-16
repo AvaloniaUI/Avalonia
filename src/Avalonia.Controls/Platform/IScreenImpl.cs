@@ -7,5 +7,7 @@
         Screen[] AllScreens { get; }
 
         Screen PrimaryScreen { get; }
+
+        Screen ScreenFromBounds(Rect bounds);
     }
 }
