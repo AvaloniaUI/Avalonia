@@ -8,7 +8,7 @@ using Window = Gtk.Window;
 
 namespace Avalonia.Gtk
 {
-    internal class ScreenImpl : BaseScreenImpl
+    internal class ScreenImpl : IScreenImpl
     {
         private Window window;
 
@@ -33,15 +33,6 @@ namespace Avalonia.Gtk
                 return screens;
             }
         }
-
-        public Screen PrimaryScreen
-        {
-            get => null;
-        }
-        
-        public Rect Bounds { get; }
-        public Rect WorkingArea { get; }
-        public bool Primary { get; }
 
         public ScreenImpl(Window window)
         {

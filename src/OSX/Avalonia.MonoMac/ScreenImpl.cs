@@ -6,17 +6,17 @@ using MonoMac.Foundation;
 
 namespace Avalonia.MonoMac
 {
-    public class ScreenImpl : BaseScreenImpl
+    public class ScreenImpl : IScreenImpl
     {
         private const string NSApplicationDidChangeScreenParametersNotification = "NSApplicationDidChangeScreenParametersNotification";
 
-        public override  int ScreenCount
+        public int ScreenCount
         {
             get => NSScreen.Screens.Length;
         }
 
         private Screen[] _allScreens;
-        public override  Screen[] AllScreens
+        public Screen[] AllScreens
         {
             get
             {
@@ -35,20 +35,6 @@ namespace Avalonia.MonoMac
                     _allScreens = s;
                 }
                 return _allScreens;
-            }
-        }
-        
-        public override Screen PrimaryScreen
-        {
-            get
-            {
-                for (int i = 0; i < AllScreens.Length; i++)
-                {
-                    if (AllScreens[i].Primary)
-                        return AllScreens[i];
-                }
-
-                return null;
             }
         }
 

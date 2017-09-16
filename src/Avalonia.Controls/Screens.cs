@@ -1,4 +1,6 @@
-﻿using Avalonia.Platform;
+﻿using System.Linq;
+using Avalonia.Platform;
+using Avalonia.Utilities;
 
 namespace Avalonia.Controls
 {
@@ -8,16 +10,35 @@ namespace Avalonia.Controls
 
         public int ScreenCount => _iScreenImpl.ScreenCount;
         public Screen[] All => _iScreenImpl?.AllScreens;
-        public Screen Primary => _iScreenImpl?.PrimaryScreen;
+        public Screen Primary
+        {
+            get { return All.FirstOrDefault(x => x.Primary); }
+        }
 
         public Screens(IScreenImpl iScreenImpl)
         {
             _iScreenImpl = iScreenImpl;
         }
 
-        public Screen ScreenFromBounds(Rect bounds)
-        {
-            return _iScreenImpl.ScreenFromBounds(bounds);
+        public Screen ScreenFromBounds(Rect bounds){
+        
+            Screen currMaxScreen = null;
+            double maxAreaSize = 0;
+            foreach (Screen screen in All)
+            {
+                double left = MathUtilities.Clamp(bounds.X, screen.Bounds.X, screen.Bounds.X + screen.Bounds.Width);
+                double top = MathUtilities.Clamp(bounds.Y, screen.Bounds.Y, screen.Bounds.Y + screen.Bounds.Height);
+                double right = MathUtilities.Clamp(bounds.X + bounds.Width, screen.Bounds.X, screen.Bounds.X + screen.Bounds.Width);
+                double bottom = MathUtilities.Clamp(bounds.Y + bounds.Height, screen.Bounds.Y, screen.Bounds.Y + screen.Bounds.Height);
+                double area = (right - left) * (bottom - top);
+                if (area > maxAreaSize)
+                {
+                    maxAreaSize = area;
+                    currMaxScreen = screen;
+                }
+            }
+
+            return currMaxScreen;
         }
     }
 }

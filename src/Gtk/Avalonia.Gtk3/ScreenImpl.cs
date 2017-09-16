@@ -6,15 +6,15 @@ using Avalonia.Utilities;
 
 namespace Avalonia.Gtk3
 {
-    internal class ScreenImpl : BaseScreenImpl
+    internal class ScreenImpl : IScreenImpl
     {
-        public override  int ScreenCount
+        public int ScreenCount
         {
             get => _allScreens.Length;
         }
         
         private Screen[] _allScreens;
-        public override Screen[] AllScreens
+        public Screen[] AllScreens
         {
             get
             {
@@ -39,20 +39,6 @@ namespace Avalonia.Gtk3
                 }
 
                 return _allScreens;
-            }
-        }
-
-        public override Screen PrimaryScreen
-        {
-            get
-            {
-                for (int i = 0; i < AllScreens.Length; i++)
-                {
-                    if (AllScreens[i].Primary)
-                        return AllScreens[i];
-                }
-
-                return null;
             }
         }
 

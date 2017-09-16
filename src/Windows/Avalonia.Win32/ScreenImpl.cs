@@ -14,15 +14,15 @@ using Win32Exception = Avalonia.Win32.NetStandard.AvaloniaWin32Exception;
 
 namespace Avalonia.Win32
 {
-    public class ScreenImpl : BaseScreenImpl
+    public class ScreenImpl : IScreenImpl
     {
-        public override int ScreenCount
+        public  int ScreenCount
         {
             get => GetSystemMetrics(SystemMetric.SM_CMONITORS);
         }
 
         private Screen[] _allScreens;
-        public override Screen[] AllScreens
+        public  Screen[] AllScreens
         {
             get
             {
@@ -57,20 +57,6 @@ namespace Avalonia.Win32
         public void InvalidateScreensCache()
         {
             _allScreens = null;
-        }
-        
-        public override  Screen PrimaryScreen
-        {
-            get
-            {
-                for (int i = 0; i < AllScreens.Length; i++)
-                {
-                    if (AllScreens[i].Primary)
-                        return AllScreens[i];
-                }
-
-                return null;
-            }
         }
     }
 }
