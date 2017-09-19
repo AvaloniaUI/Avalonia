@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using Avalonia.Platform;
 using Avalonia.Utilities;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -39,6 +40,18 @@ namespace Avalonia.Controls
             }
 
             return currMaxScreen;
+        }
+        
+        public Screen SceenFromPoint(Point point)
+        {
+            return All.FirstOrDefault(x=>x.Bounds.Contains(point));        
+        }
+
+        public Screen ScreenFromVisual(IVisual visual)
+        {
+            Point tl = visual.PointToScreen(visual.Bounds.TopLeft);
+            Point br = visual.PointToScreen(visual.Bounds.BottomRight);
+            return ScreenFromBounds(new Rect(tl,br));
         }
     }
 }
