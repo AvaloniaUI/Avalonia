@@ -38,9 +38,21 @@ namespace Avalonia.Win32
         private double _scaling = 1;
         private WindowState _showWindowState;
         private FramebufferManager _framebuffer;
+#if USE_MANAGED_DRAG
+        private readonly ManagedWindowResizeDragHelper _managedDrag;
+#endif
 
         public WindowImpl()
         {
+#if USE_MANAGED_DRAG
+            _managedDrag = new ManagedWindowResizeDragHelper(this, capture =>
+            {
+                if (capture)
+                    UnmanagedMethods.SetCapture(Handle.Handle);
+                else
+                    UnmanagedMethods.ReleaseCapture();
+            });
+#endif
             CreateWindow();
             _framebuffer = new FramebufferManager(_hwnd);
             s_instances.Add(this);
@@ -327,8 +339,12 @@ namespace Avalonia.Win32
 
         public void BeginResizeDrag(WindowEdge edge)
         {
+#if USE_MANAGED_DRAG
+            _managedDrag.BeginResizeDrag(edge, ScreenToClient(MouseDevice.Position));
+#else
             UnmanagedMethods.DefWindowProc(_hwnd, (int)UnmanagedMethods.WindowsMessage.WM_NCLBUTTONDOWN,
                 new IntPtr((int)EdgeDic[edge]), IntPtr.Zero);
+#endif
         }
 
         public Point Position
@@ -517,7 +533,7 @@ namespace Avalonia.Win32
                         WindowsMouseDevice.Instance,
                         timestamp,
                         _owner,
-                        ScreenToClient(DipFromLParam(lParam)),
+                        PointToClient(PointFromLParam(lParam)),
                         new Vector(0, (ToInt32(wParam) >> 16) / wheelDelta), GetMouseModifiers(wParam));
                     break;
 
@@ -526,7 +542,7 @@ namespace Avalonia.Win32
                         WindowsMouseDevice.Instance,
                         timestamp,
                         _owner,
-                        ScreenToClient(DipFromLParam(lParam)),
+                        PointToClient(PointFromLParam(lParam)),
                         new Vector(-(ToInt32(wParam) >> 16) / wheelDelta, 0), GetMouseModifiers(wParam));
                     break;
 
@@ -583,6 +599,11 @@ namespace Avalonia.Win32
                     PositionChanged?.Invoke(new Point((short)(ToInt32(lParam) & 0xffff), (short)(ToInt32(lParam) >> 16)));
                     return IntPtr.Zero;
             }
+#if USE_MANAGED_DRAG
+
+            if (_managedDrag.PreprocessInputEvent(ref e))
+                return UnmanagedMethods.DefWindowProc(hWnd, msg, wParam, lParam);
+#endif
 
             if (e != null && Input != null)
             {
@@ -749,6 +770,28 @@ namespace Avalonia.Win32
             if (IntPtr.Size == 4) return ptr.ToInt32();
 
             return (int)(ptr.ToInt64() & 0xffffffff);
+        }
+
+        public void ShowTaskbarIcon(bool value)
+        {
+            var style = (UnmanagedMethods.WindowStyles)UnmanagedMethods.GetWindowLong(_hwnd, -20);
+            
+            style &= ~(UnmanagedMethods.WindowStyles.WS_VISIBLE);   
+
+            style |= UnmanagedMethods.WindowStyles.WS_EX_TOOLWINDOW;   
+            if (value)
+                style |= UnmanagedMethods.WindowStyles.WS_EX_APPWINDOW;
+            else
+                style &= ~(UnmanagedMethods.WindowStyles.WS_EX_APPWINDOW);
+
+            WINDOWPLACEMENT windowPlacement = UnmanagedMethods.WINDOWPLACEMENT.Default;
+            if (UnmanagedMethods.GetWindowPlacement(_hwnd, ref windowPlacement))
+            {
+                //Toggle to make the styles stick
+                UnmanagedMethods.ShowWindow(_hwnd, ShowWindowCommand.Hide);
+                UnmanagedMethods.SetWindowLong(_hwnd, -20, (uint)style);
+                UnmanagedMethods.ShowWindow(_hwnd, windowPlacement.ShowCmd);
+            }
         }
     }
 }

@@ -110,6 +110,7 @@ public class Packages
         var SplatVersion = packageVersions["Splat"].FirstOrDefault().Item1;
         var SpracheVersion = packageVersions["Sprache"].FirstOrDefault().Item1;
         var SystemReactiveVersion = packageVersions["System.Reactive"].FirstOrDefault().Item1;
+        var ReactiveUIVersion = packageVersions["reactiveui"].FirstOrDefault().Item1;
         var SystemValueTupleVersion = packageVersions["System.ValueTuple"].FirstOrDefault().Item1;
         SkiaSharpVersion = packageVersions["SkiaSharp"].FirstOrDefault().Item1;
 		SkiaSharpLinuxVersion = packageVersions["Avalonia.Skia.Linux.Natives"].FirstOrDefault().Item1;
@@ -123,6 +124,7 @@ public class Packages
         context.Information("Package: Splat, version: {0}", SplatVersion);
         context.Information("Package: Sprache, version: {0}", SpracheVersion);
         context.Information("Package: System.Reactive, version: {0}", SystemReactiveVersion);
+        context.Information("Package: reactiveui, version: {0}", ReactiveUIVersion);
         context.Information("Package: System.ValueTuple, version: {0}", SystemValueTupleVersion);
         context.Information("Package: SkiaSharp, version: {0}", SkiaSharpVersion);
         context.Information("Package: Avalonia.Skia.Linux.Natives, version: {0}", SkiaSharpLinuxVersion);
@@ -175,7 +177,6 @@ public class Packages
             new [] { "./src/", "Avalonia.Visuals", ".xml" },
             new [] { "./src/", "Avalonia.Styling", ".dll" },
             new [] { "./src/", "Avalonia.Styling", ".xml" },
-            new [] { "./src/", "Avalonia.ReactiveUI", ".dll" },
             new [] { "./src/", "Avalonia.Themes.Default", ".dll" },
             new [] { "./src/", "Avalonia.Themes.Default", ".xml" },
             new [] { "./src/Markup/", "Avalonia.Markup", ".dll" },
@@ -272,7 +273,24 @@ public class Packages
                 },
                 BasePath = context.Directory("./src/Avalonia.HtmlRenderer/bin/" + parameters.DirSuffix + "/netstandard2.0"),
                 OutputDirectory = parameters.NugetRoot
-            }
+            },
+            ///////////////////////////////////////////////////////////////////////////////
+            // Avalonia.ReactiveUI
+            ///////////////////////////////////////////////////////////////////////////////
+            new NuGetPackSettings()
+            {
+                Id = "Avalonia.ReactiveUI",
+                Dependencies = new DependencyBuilder(this)
+                {
+                    new NuSpecDependency() { Id = "Avalonia", Version = parameters.Version },
+                }.Deps(new string[] {null}, "reactiveui"),
+                Files = new []
+                {
+                    new NuSpecContent { Source = "Avalonia.ReactiveUI.dll", Target = "lib/netstandard2.0" }
+                },
+                BasePath = context.Directory("./src/Avalonia.ReactiveUI/bin/" + parameters.DirSuffix + "/netstandard2.0"),
+                OutputDirectory = parameters.NugetRoot
+            },
         };
 
         var nuspecNuGetSettingsMobile = new []
@@ -431,6 +449,20 @@ public class Packages
                 BasePath = context.Directory("./src/Skia/Avalonia.Skia/bin/" + parameters.DirSuffix + "/netstandard2.0"),
                 OutputDirectory = parameters.NugetRoot
             },
+            new NuGetPackSettings()
+            {
+                Id = "Avalonia.MonoMac",
+                Dependencies = new DependencyBuilder(this)
+                {
+                    new NuSpecDependency() { Id = "Avalonia", Version = parameters.Version }
+                }.Dep("MonoMac.NetStandard").ToArray(),
+                Files = new []
+                {
+                    new NuSpecContent { Source = "netstandard2.0/Avalonia.MonoMac.dll", Target = "lib/netstandard2.0" },
+                },
+                BasePath = context.Directory("./src/OSX/Avalonia.MonoMac/bin/" + parameters.DirSuffix),
+                OutputDirectory = parameters.NugetRoot
+            },
             ///////////////////////////////////////////////////////////////////////////////
             // Avalonia.Desktop
             ///////////////////////////////////////////////////////////////////////////////
@@ -446,10 +478,12 @@ public class Packages
                     new NuSpecDependency() { Id = "Avalonia.Win32", TargetFramework="net45", Version = parameters.Version },
                     new NuSpecDependency() { Id = "Avalonia.Skia", TargetFramework="net45", Version = parameters.Version },
                     new NuSpecDependency() { Id = "Avalonia.Gtk3", TargetFramework="net45", Version = parameters.Version },
+                    new NuSpecDependency() { Id = "Avalonia.MonoMac", TargetFramework="net45", Version = parameters.Version },
                     //.NET Core
                     new NuSpecDependency() { Id = "Avalonia.Win32", TargetFramework="netcoreapp2.0", Version = parameters.Version },
                     new NuSpecDependency() { Id = "Avalonia.Skia", TargetFramework="netcoreapp2.0", Version = parameters.Version },
-                    new NuSpecDependency() { Id = "Avalonia.Gtk3", TargetFramework="netcoreapp2.0", Version = parameters.Version }
+                    new NuSpecDependency() { Id = "Avalonia.Gtk3", TargetFramework="netcoreapp2.0", Version = parameters.Version },
+                    new NuSpecDependency() { Id = "Avalonia.MonoMac", TargetFramework="netcoreapp2.0", Version = parameters.Version }
                 },
                 Files = new NuSpecContent[]
                 {

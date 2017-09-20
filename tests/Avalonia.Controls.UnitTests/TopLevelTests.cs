@@ -219,6 +219,23 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Adding_Resource_To_Application_Should_Raise_ResourcesChanged()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var impl = new Mock<ITopLevelImpl>();
+                impl.SetupAllProperties();
+                var target = new TestTopLevel(impl.Object);
+                var raised = false;
+
+                target.ResourcesChanged += (_, __) => raised = true;
+                Application.Current.Resources.Add("foo", "bar");
+
+                Assert.True(raised);
+            }
+        }
+
         private FuncControlTemplate<TestTopLevel> CreateTemplate()
         {
             return new FuncControlTemplate<TestTopLevel>(x =>

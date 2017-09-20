@@ -49,7 +49,7 @@
                 BorderThickness="1"
                 BorderBrush="Gray"
                 Margin="5">
-            <DrawingPresenter Drawing="{StyleResource Bulb}" />
+            <DrawingPresenter Drawing="{DynamicResource Bulb}" />
         </Border>
         <TextBlock Text="Fill"
                    Margin="3"
@@ -61,7 +61,7 @@
                 BorderThickness="1"
                 BorderBrush="Gray"
                 Margin="5">
-            <DrawingPresenter Drawing="{StyleResource Bulb}"
+            <DrawingPresenter Drawing="{DynamicResource Bulb}"
                               Width="100"
                               Height="50"
                               Stretch="Fill" />
@@ -76,7 +76,7 @@
                 BorderThickness="1"
                 BorderBrush="Gray"
                 Margin="5">
-            <DrawingPresenter Drawing="{StyleResource Bulb}"
+            <DrawingPresenter Drawing="{DynamicResource Bulb}"
                               Width="100"
                               Height="50"
                               Stretch="Uniform" />
@@ -91,7 +91,7 @@
                 BorderThickness="1"
                 BorderBrush="Gray"
                 Margin="5">
-            <DrawingPresenter Drawing="{StyleResource Bulb}"
+            <DrawingPresenter Drawing="{DynamicResource Bulb}"
                               Width="100"
                               Height="50"
                               Stretch="UniformToFill" />

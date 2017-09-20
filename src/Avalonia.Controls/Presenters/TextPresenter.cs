@@ -115,7 +115,7 @@ namespace Avalonia.Controls.Presenters
 
                 if (_highlightBrush == null)
                 {
-                    _highlightBrush = (IBrush)this.FindStyleResource("HighlightBrush");
+                    _highlightBrush = (IBrush)this.FindResource("HighlightBrush");
                 }
 
                 foreach (var rect in rects)

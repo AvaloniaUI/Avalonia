@@ -1,7 +1,7 @@
 <Style xmlns="https://github.com/avaloniaui" Selector="Window">
-  <Setter Property="Background" Value="{StyleResource ThemeBackgroundBrush}"/>
+  <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}"/>
   <Setter Property="FontFamily" Value="Segoe UI"/>
-  <Setter Property="FontSize" Value="{StyleResource FontSizeNormal}"/>
+  <Setter Property="FontSize" Value="{DynamicResource FontSizeNormal}"/>
   <Setter Property="Template">
     <ControlTemplate>
       <Border Background="{TemplateBinding Background}">

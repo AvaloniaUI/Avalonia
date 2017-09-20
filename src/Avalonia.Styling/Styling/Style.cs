@@ -3,7 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Reactive.Linq;
+using Avalonia.Controls;
 using Avalonia.Metadata;
 
 namespace Avalonia.Styling
@@ -11,12 +13,12 @@ namespace Avalonia.Styling
     /// <summary>
     /// Defines a style.
     /// </summary>
-    public class Style : IStyle
+    public class Style : IStyle, ISetStyleParent
     {
         private static Dictionary<IStyleable, List<IDisposable>> _applied =
             new Dictionary<IStyleable, List<IDisposable>>();
-
-        private StyleResources _resources;
+        private IResourceNode _parent;
+        private IResourceDictionary _resources;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Style"/> class.
@@ -34,33 +36,33 @@ namespace Avalonia.Styling
             Selector = selector(null);
         }
 
+        /// <inheritdoc/>
+        public event EventHandler<ResourcesChangedEventArgs> ResourcesChanged;
+
         /// <summary>
         /// Gets or sets a dictionary of style resources.
         /// </summary>
-        public StyleResources Resources
+        public IResourceDictionary Resources
         {
-            get
-            {
-                if (_resources == null)
-                {
-                    _resources = new StyleResources();
-                }
-
-                return _resources;
-            }
-
+            get => _resources ?? (Resources = new ResourceDictionary());
             set
             {
-                
-                var resources = Resources;
-                if (!Equals(resources, value))
+                Contract.Requires<ArgumentNullException>(value != null);
+
+                var hadResources = false;
+
+                if (_resources != null)
                 {
-                    foreach (var i in value)
-                    {
-                        resources[i.Key] = i.Value;
-                        //resources.Add(i.Key, i.Value);
-                        //(resources as IDictionary<string,object>).Add(i);
-                    }
+                    hadResources = _resources.Count > 0;
+                    _resources.ResourcesChanged -= ResourceDictionaryChanged;
+                }
+
+                _resources = value;
+                _resources.ResourcesChanged += ResourceDictionaryChanged;
+
+                if (hadResources || _resources.Count > 0)
+                {
+                    ((ISetStyleParent)this).NotifyResourcesChanged(new ResourcesChangedEventArgs());
                 }
             }
         }
@@ -75,6 +77,12 @@ namespace Avalonia.Styling
         /// </summary>
         [Content]
         public IList<ISetter> Setters { get; set; } = new List<ISetter>();
+
+        /// <inheritdoc/>
+        IResourceNode IResourceNode.ResourceParent => _parent;
+
+        /// <inheritdoc/>
+        bool IResourceProvider.HasResources => _resources?.Count > 0;
 
         /// <summary>
         /// Attaches the style to a control if the style's selector matches.
@@ -112,25 +120,11 @@ namespace Avalonia.Styling
             }
         }
 
-        /// <summary>
-        /// Tries to find a named resource within the style.
-        /// </summary>
-        /// <param name="name">The resource name.</param>
-        /// <returns>
-        /// The resource if found, otherwise <see cref="AvaloniaProperty.UnsetValue"/>.
-        /// </returns>
-        public object FindResource(string name)
+        /// <inheritdoc/>
+        public bool TryGetResource(string key, out object result)
         {
-            object result = null;
-
-            if (_resources?.TryGetValue(name, out result) == true)
-            {
-                return result;
-            }
-            else
-            {
-                return AvaloniaProperty.UnsetValue;
-            }
+            result = null;
+            return _resources?.TryGetResource(key, out result) ?? false;
         }
 
         /// <summary>
@@ -147,6 +141,23 @@ namespace Avalonia.Styling
             {
                 return "Style";
             }
+        }
+
+        /// <inheritdoc/>
+        void ISetStyleParent.NotifyResourcesChanged(ResourcesChangedEventArgs e)
+        {
+            ResourcesChanged?.Invoke(this, e);
+        }
+
+        /// <inheritdoc/>
+        void ISetStyleParent.SetParent(IResourceNode parent)
+        {
+            if (_parent != null && parent != null)
+            {
+                throw new InvalidOperationException("The Style already has a parent.");
+            }
+
+            _parent = parent;
         }
 
         private static List<IDisposable> GetSubscriptions(IStyleable control)
@@ -178,6 +189,11 @@ namespace Avalonia.Styling
             }
 
             _applied.Remove(control);
+        }
+
+        private void ResourceDictionaryChanged(object sender, ResourcesChangedEventArgs e)
+        {
+            ResourcesChanged?.Invoke(this, e);
         }
     }
 }

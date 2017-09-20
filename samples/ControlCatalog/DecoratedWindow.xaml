@@ -1,0 +1,33 @@
+﻿<Window xmlns="https://github.com/avaloniaui" MinWidth="500" MinHeight="300"
+        Title="Avalonia Control Gallery"
+        Icon="resm:ControlCatalog.Assets.test_icon.ico?assembly=ControlCatalog"
+        xmlns:local="clr-namespace:ControlCatalog;assembly=ControlCatalog" HasSystemDecorations="False">
+    <Grid RowDefinitions="5,*,5" ColumnDefinitions="5,*,5">
+        <DockPanel  Grid.Column="1"  Grid.Row="1" >
+            <Grid Name="TitleBar" Background="LightBlue" DockPanel.Dock="Top" ColumnDefinitions="Auto,*,Auto">
+                <TextBlock VerticalAlignment="Center" Margin="5,0,0,0">Title</TextBlock>
+                <StackPanel Grid.Column="2" Orientation="Horizontal">
+                    <StackPanel.Styles>
+                        <Style Selector="Button">
+                            <Setter Property="Margin" Value="2"/>
+                        </Style>
+                    </StackPanel.Styles>
+                    <Button Name="MinimizeButton">_</Button>
+                    <Button Name="MaximizeButton">[ ]</Button>
+                    <Button Name="CloseButton">X</Button>
+                </StackPanel>
+            </Grid>
+            <Border Background="White" Margin="5">
+                <TextBlock>Hello world!</TextBlock>
+            </Border>
+        </DockPanel>
+        <Border Name="TopLeft" Background="Red"/>
+        <Border Name="TopRight" Background="Red" Grid.Column="2" />
+        <Border Name="BottomLeft" Background="Red" Grid.Row="2" />
+        <Border Name="BottomRight" Background="Red"  Grid.Row="2" Grid.Column="2"/>
+        <Border Name="Top" Background="Blue" Grid.Column="1" />
+        <Border Name="Right" Background="Blue" Grid.Row="1"  Grid.Column="2" />
+        <Border Name="Bottom" Background="Blue" Grid.Row="2" Grid.Column="1"  />
+        <Border Name="Left" Background="Blue"  Grid.Row="1" />
+    </Grid>
+</Window>
