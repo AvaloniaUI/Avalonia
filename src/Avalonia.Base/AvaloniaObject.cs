@@ -165,7 +165,7 @@ namespace Avalonia
 
             set
             {
-                var sourceBinding = value as IBinding;
+                var sourceBinding = value;
                 this.Bind(binding.Property, sourceBinding);
             }
         }
