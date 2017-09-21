@@ -217,9 +217,8 @@ namespace Avalonia.Controls
                                            || attribute.ForRenderingSubsystem == RenderingSubsystemName
                                           group attribute by attribute.Name into exports
                                           select (from export in exports
-                                                  orderby export.ForWindowingSubsystem.Length descending
-                                                  orderby export.ForRenderingSubsystem.Length descending
-                                                  select export).First().ModuleType into moduleType
+                                                  orderby export.ForWindowingSubsystem.Length descending, export.ForRenderingSubsystem.Length descending
+                                              select export).First().ModuleType into moduleType
                                           select (from constructor in moduleType.GetTypeInfo().DeclaredConstructors
                                                   where constructor.GetParameters().Length == 0 && !constructor.IsStatic
                                                   select constructor).Single() into constructor
