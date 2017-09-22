@@ -180,7 +180,7 @@ namespace Avalonia.Input
 
             if (sender == e.Source && ev.MouseButton == MouseButton.Left)
             {
-                var element = (ev.Device?.Captured as IInputElement) ?? (e.Source as IInputElement);
+                var element = ev.Device?.Captured ?? (e.Source as IInputElement);
 
                 if (element == null || !CanFocus(element))
                 {

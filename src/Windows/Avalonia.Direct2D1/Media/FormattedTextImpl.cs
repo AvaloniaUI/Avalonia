@@ -10,7 +10,7 @@ using DWrite = SharpDX.DirectWrite;
 
 namespace Avalonia.Direct2D1.Media
 {
-    public class FormattedTextImpl : IFormattedTextImpl
+    public class FormattedTextImpl : IFormattedTextImpl, IDisposable
     {
         public FormattedTextImpl(
             string text,
@@ -64,9 +64,27 @@ namespace Avalonia.Direct2D1.Media
 
         public DWrite.TextLayout TextLayout { get; }
 
+        private bool _disposed;
+
         public void Dispose()
         {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+                return;
+
             TextLayout.Dispose();
+
+            _disposed = true;
+        }
+
+        ~FormattedTextImpl()
+        {
+            Dispose(false);
         }
 
         public IEnumerable<FormattedTextLine> GetLines()
