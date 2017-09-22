@@ -27,7 +27,7 @@ namespace Avalonia.Media
         /// </summary>
         public static readonly StyledProperty<Point> EndPointProperty =
             AvaloniaProperty.Register<LineGeometry, Point>(nameof(EndPoint));
-        private bool _isDirty;
+        private bool _isDirty = true;
 
         public Point EndPoint
         {
