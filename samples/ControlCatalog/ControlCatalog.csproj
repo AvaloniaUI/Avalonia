@@ -136,7 +136,7 @@
     </Compile>
     <Compile Include="Pages\SliderPage.xaml.cs">
       <DependentUpon>SliderPage.xaml</DependentUpon>
-    </Compile>    
+    </Compile>
     <Compile Include="Pages\TreeViewPage.xaml.cs">
       <DependentUpon>TreeViewPage.xaml</DependentUpon>
     </Compile>
@@ -146,6 +146,7 @@
     <Compile Include="Pages\ToolTipPage.xaml.cs">
       <DependentUpon>ToolTipPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Pages\ScreenPage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
