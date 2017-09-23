@@ -22,6 +22,7 @@ using Win32Exception = Avalonia.Win32.NetStandard.AvaloniaWin32Exception;
 
 namespace Avalonia.Win32
 {
+
     class WindowImpl : IWindowImpl
     {
         private static readonly List<WindowImpl> s_instances = new List<WindowImpl>();
@@ -103,6 +104,7 @@ namespace Avalonia.Win32
             }
         }
 
+        public IScreenImpl Screen => new ScreenImpl();
 
         public IRenderer CreateRenderer(IRenderRoot root)
         {
@@ -129,7 +131,7 @@ namespace Avalonia.Win32
                     UnmanagedMethods.SetWindowPosFlags.SWP_RESIZE);
             }
         }
-
+        
         public double Scaling => _scaling;
 
         public IPlatformHandle Handle
@@ -597,6 +599,10 @@ namespace Avalonia.Win32
 
                 case UnmanagedMethods.WindowsMessage.WM_MOVE:
                     PositionChanged?.Invoke(new Point((short)(ToInt32(lParam) & 0xffff), (short)(ToInt32(lParam) >> 16)));
+                    return IntPtr.Zero;
+                    
+                case UnmanagedMethods.WindowsMessage.WM_DISPLAYCHANGE:
+                    (Screen as ScreenImpl)?.InvalidateScreensCache();
                     return IntPtr.Zero;
             }
 #if USE_MANAGED_DRAG

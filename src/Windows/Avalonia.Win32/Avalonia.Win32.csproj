@@ -59,6 +59,7 @@
     </Compile>
     <Compile Include="IconImpl.cs" />
     <Compile Include="WinFormsWin32Platform.cs" />
+    <Compile Include="WinScreen.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Avalonia.Animation\Avalonia.Animation.csproj">

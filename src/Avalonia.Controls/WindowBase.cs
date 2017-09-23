@@ -90,7 +90,7 @@ namespace Avalonia.Controls
                     impl.Position = value;
             }
         }
-
+        
         /// <summary>
         /// Whether an auto-size operation is in progress.
         /// </summary>

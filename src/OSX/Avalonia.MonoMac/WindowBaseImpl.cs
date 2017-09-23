@@ -153,6 +153,8 @@ namespace Avalonia.MonoMac
             Position = pos;
         }
 
+        public IScreenImpl Screen { get; } = new ScreenImpl();
+
         public override Point PointToClient(Point point)
         {
             var cocoaScreenPoint = point.ToMonoMacPoint().ConvertPointY();
@@ -166,9 +168,7 @@ namespace Avalonia.MonoMac
             var cocoaScreenPoint = Window.ConvertBaseToScreen(cocoaViewPoint);
             return cocoaScreenPoint.ConvertPointY().ToAvaloniaPoint();
         }
-
-
-
+        
         public override void Dispose()
         {
             Window?.Close();

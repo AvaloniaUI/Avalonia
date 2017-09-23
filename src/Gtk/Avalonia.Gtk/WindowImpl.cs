@@ -1,5 +1,6 @@
 using System;
 using System.Reactive.Disposables;
+using Avalonia.Controls;
 using Avalonia.Platform;
 using Gdk;
 
@@ -65,6 +66,8 @@ namespace Avalonia.Gtk
                 return new Size(width, height);
             }
         }
+
+        public IScreenImpl Screen => new ScreenImpl(Window);
 
         public void Resize(Size value)
         {
