@@ -11,10 +11,7 @@ namespace Avalonia.Controls
 
         public int ScreenCount => _iScreenImpl.ScreenCount;
         public Screen[] All => _iScreenImpl?.AllScreens;
-        public Screen Primary
-        {
-            get { return All.FirstOrDefault(x => x.Primary); }
-        }
+        public Screen Primary => All.FirstOrDefault(x => x.Primary);
 
         public Screens(IScreenImpl iScreenImpl)
         {
