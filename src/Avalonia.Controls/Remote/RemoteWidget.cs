@@ -18,7 +18,7 @@ namespace Avalonia.Controls.Remote
         public RemoteWidget(IAvaloniaRemoteTransportConnection connection)
         {
             _connection = connection;
-            _connection.OnMessage += msg => Dispatcher.UIThread.InvokeAsync(() => OnMessage(msg));
+            _connection.OnMessage += (t, msg) => Dispatcher.UIThread.InvokeAsync(() => OnMessage(msg));
             _connection.Send(new ClientSupportedPixelFormatsMessage
             {
                 Formats = new[]

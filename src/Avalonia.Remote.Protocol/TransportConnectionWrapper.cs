@@ -8,7 +8,7 @@ namespace Avalonia.Remote.Protocol
     {
         private readonly IAvaloniaRemoteTransportConnection _conn;
         private EventStash<object> _onMessage;
-        private EventStash<Exception> _onException = new EventStash<Exception>();
+        private EventStash<Exception> _onException;
         
         private Queue<SendOperation> _sendQueue = new Queue<SendOperation>();
         private object _lock =new object();
@@ -17,7 +17,8 @@ namespace Avalonia.Remote.Protocol
         public TransportConnectionWrapper(IAvaloniaRemoteTransportConnection conn)
         {
             _conn = conn;
-            _onMessage = new EventStash<object>(_onException.Fire);
+            _onException = new EventStash<Exception>(this);
+            _onMessage = new EventStash<object>(this, e => _onException.Fire(this, e));
             _conn.OnException +=_onException.Fire;
             conn.OnMessage +=  _onMessage.Fire;
 
@@ -58,8 +59,7 @@ namespace Avalonia.Remote.Protocol
                 {
                     wi.Tcs.TrySetException(e);
                 }
-            }
-            
+            }    
         }
         
         public Task Send(object data)
@@ -86,13 +86,13 @@ namespace Avalonia.Remote.Protocol
             return tcs.Task;
         }
         
-        public event Action<object> OnMessage
+        public event Action<IAvaloniaRemoteTransportConnection, object> OnMessage
         {
             add => _onMessage.Add(value);
             remove => _onMessage.Remove(value);
         }
 
-        public event Action<Exception> OnException
+        public event Action<IAvaloniaRemoteTransportConnection, Exception> OnException
         {
             add => _onException.Add(value);
             remove => _onException.Remove(value);

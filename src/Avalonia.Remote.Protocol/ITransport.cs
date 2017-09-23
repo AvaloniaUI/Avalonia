@@ -9,7 +9,7 @@ namespace Avalonia.Remote.Protocol
     public interface IAvaloniaRemoteTransportConnection : IDisposable
     {
         Task Send(object data);
-        event Action<object> OnMessage;
-        event Action<Exception> OnException;
+        event Action<IAvaloniaRemoteTransportConnection, object> OnMessage;
+        event Action<IAvaloniaRemoteTransportConnection, Exception> OnException;
     }
 }

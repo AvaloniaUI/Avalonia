@@ -3,18 +3,20 @@ using System.Collections.Generic;
 
 namespace Avalonia.Remote.Protocol
 {
-    public class EventStash<T>
+    class EventStash<T>
     {
+        private readonly IAvaloniaRemoteTransportConnection _transport;
         private readonly Action<Exception> _exceptionHandler;
         private List<T> _stash;
-        private Action<T> _delegate;
+        private Action<IAvaloniaRemoteTransportConnection, T> _delegate;
 
-        public EventStash(Action<Exception> exceptionHandler = null)
+        public EventStash(IAvaloniaRemoteTransportConnection transport, Action<Exception> exceptionHandler = null)
         {
+            _transport = transport;
             _exceptionHandler = exceptionHandler;
         }
         
-        public void Add(Action<T> handler)
+        public void Add(Action<IAvaloniaRemoteTransportConnection, T> handler)
         {
             List<T> stash;
             lock (this)
@@ -37,25 +39,25 @@ namespace Avalonia.Remote.Protocol
                 if (_exceptionHandler != null)
                     try
                     {
-                        _delegate?.Invoke(m);
+                        _delegate?.Invoke(_transport, m);
                     }
                     catch (Exception e)
                     {
                         _exceptionHandler(e);
                     }
                 else
-                    _delegate?.Invoke(m);
+                    _delegate?.Invoke(_transport, m);
             }
         }
         
         
-        public void Remove(Action<T> handler)
+        public void Remove(Action<IAvaloniaRemoteTransportConnection, T> handler)
         {
             lock (this)
                 _delegate -= handler;
         }
 
-        public void Fire(T ev)
+        public void Fire(IAvaloniaRemoteTransportConnection transport, T ev)
         {
             if (_delegate == null)
             {
@@ -66,7 +68,7 @@ namespace Avalonia.Remote.Protocol
                 }
             }
             else
-                _delegate?.Invoke(ev);
+                _delegate?.Invoke(_transport, ev);
         }
     }
 }

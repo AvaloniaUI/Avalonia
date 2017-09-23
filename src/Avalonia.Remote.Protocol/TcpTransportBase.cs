@@ -50,17 +50,11 @@ namespace Avalonia.Remote.Protocol
                     AcceptNew();
                     Task.Run(async () =>
                     {
-                        try
-                        {
-                            var tcs = new TaskCompletionSource<int>();
-                            var t = CreateTransport(_resolver, cl.GetStream(), () => tcs.TrySetResult(0));
-                            cb(t);
-                            await tcs.Task;
-                        }
-                        finally
-                        {
-                            cl.Dispose();
-                        }
+                        var tcs = new TaskCompletionSource<int>();
+                        var t = CreateTransport(_resolver, cl.GetStream(), () => tcs.TrySetResult(0));
+                        cb(t);
+                        await tcs.Task;
+
 
                     });
                 }

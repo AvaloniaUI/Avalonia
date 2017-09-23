@@ -36,7 +36,7 @@ namespace Avalonia.Controls.Remote.Server
             _transport.OnMessage += OnMessage;
         }
 
-        private void OnMessage(object obj)
+        protected virtual void OnMessage(IAvaloniaRemoteTransportConnection transport, object obj)
         {
             lock (_lock)
             {
@@ -88,6 +88,12 @@ namespace Avalonia.Controls.Remote.Server
             }
         }
 
+        protected void SetDpi(Vector dpi)
+        {
+            _dpi = dpi;
+            RenderIfNeeded();
+        }
+
         protected virtual Size Measure(Size constaint)
         {
             var l = (ILayoutable) InputRoot;
@@ -131,7 +137,7 @@ namespace Avalonia.Controls.Remote.Server
             return _framebuffer;
         }
 
-        void RenderIfNeeded()
+        protected void RenderIfNeeded()
         {
             lock (_lock)
             {

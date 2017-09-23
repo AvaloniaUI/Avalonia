@@ -8,7 +8,7 @@ using Newtonsoft.Json.Bson;
 
 namespace Avalonia.Remote.Protocol
 {
-    public class BsonStreamTransportConnection : IAvaloniaRemoteTransportConnection
+    class BsonStreamTransportConnection : IAvaloniaRemoteTransportConnection
     {
         private readonly IMessageTypeResolver _resolver;
         private readonly Stream _inputStream;
@@ -79,17 +79,8 @@ namespace Avalonia.Remote.Protocol
                     var guid = new Guid(guidBytes);
                     var buffer = new byte[length];
                     await ReadExact(buffer).ConfigureAwait(false);
-                    if (Environment.GetEnvironmentVariable("WTF") == "WTF")
-                    {
-
-                        using (var f = System.IO.File.Create("/tmp/wtf2.bin"))
-                        {
-                            f.Write(infoBlock, 0, infoBlock.Length);
-                            f.Write(buffer, 0, buffer.Length);
-                        }
-                    }
                     var message = Serializer.Deserialize(new BsonReader(new MemoryStream(buffer)), _resolver.GetByGuid(guid));
-                    OnMessage?.Invoke(message);
+                    OnMessage?.Invoke(this, message);
                 }
             }
             catch (Exception e)
@@ -150,11 +141,11 @@ namespace Avalonia.Remote.Protocol
             var cancel = e as OperationCanceledException;
             if (cancel?.CancellationToken == _cancel)
                 return;
-            OnException?.Invoke(e);
+            OnException?.Invoke(this, e);
         }
 
 
-        public event Action<object> OnMessage;
-        public event Action<Exception> OnException;
+        public event Action<IAvaloniaRemoteTransportConnection, object> OnMessage;
+        public event Action<IAvaloniaRemoteTransportConnection, Exception> OnException;
     }
 }
