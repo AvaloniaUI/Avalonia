@@ -421,11 +421,11 @@ namespace Avalonia.Rendering
             Size size,
             double scaling)
         {
-            size = new Size(size.Width * scaling, size.Height * scaling);
+            var pixelSize = size * scaling;
 
             if (_overlay == null ||
-                _overlay.PixelWidth != size.Width ||
-                _overlay.PixelHeight != size.Height)
+                _overlay.PixelWidth != pixelSize.Width ||
+                _overlay.PixelHeight != pixelSize.Height)
             {
                 _overlay?.Dispose();
                 _overlay = parentContext.CreateLayer(size);
