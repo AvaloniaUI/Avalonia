@@ -353,11 +353,11 @@ Task("Run-Leak-Tests")
         if(System.IO.File.Exists(report))
             System.IO.File.Delete(report);
 
-        var tool = Context.Tools.Resolve("xunit.console.x86.exe").FullPath;
+        var toolXunitConsoleX86 = Context.Tools.Resolve("xunit.console.x86.exe").FullPath;
         var proc = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
         {
             FileName="tests\\Avalonia.LeakTests\\toolproject\\bin\\dotMemoryUnit.exe",
-            Arguments="-targetExecutable=\"" + tool + "\" -returnTargetExitCode  -- tests\\Avalonia.LeakTests\\bin\\Release\\Avalonia.LeakTests.dll -xml tests\\Avalonia.LeakTests\\bin\\Release\\report.xml ",
+            Arguments="-targetExecutable=\"" + toolXunitConsoleX86 + "\" -returnTargetExitCode  -- tests\\Avalonia.LeakTests\\bin\\Release\\Avalonia.LeakTests.dll -xml tests\\Avalonia.LeakTests\\bin\\Release\\report.xml ",
             UseShellExecute = false,
         });
         var st = System.Diagnostics.Stopwatch.StartNew();
