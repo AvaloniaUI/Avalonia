@@ -393,8 +393,7 @@ Task("Inspect")
             "src\\markup\\avalonia.markup.xaml\\portablexaml\\portable.xaml.github"};
         Information("Running code inspections");
         
-        
-        StartProcess("tools\\JetBrains.ReSharper.CommandLineTools\\tools\\inspectcode.exe",
+        StartProcess(Context.Tools.Resolve("inspectcode.exe"),
             new ProcessSettings{ Arguments = "--output=artifacts\\inspectcode.xml --profile=Avalonia.sln.DotSettings Avalonia.sln" });
         Information("Analyzing report");
         var doc = XDocument.Parse(System.IO.File.ReadAllText("artifacts\\inspectcode.xml"));
