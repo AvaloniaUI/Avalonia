@@ -38,6 +38,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         }
         
         public IScreenImpl Screen { get; }
+        public IPlatformSpecificApiImpl PlatformSpecificApiImpl { get; }
 
         public Point Position
         {
