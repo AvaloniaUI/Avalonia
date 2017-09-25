@@ -212,8 +212,8 @@ Task("Run-Unit-Tests")
         .ToList();
 
     var toolPath = (parameters.IsPlatformAnyCPU || parameters.IsPlatformX86) ? 
-        "./tools/xunit.runner.console/tools/xunit.console.x86.exe" :
-        "./tools/xunit.runner.console/tools/xunit.console.exe";
+        Context.Tools.Resolve("xunit.console.x86.exe") :
+        Context.Tools.Resolve("xunit.console.exe");
 
     var xUnitSettings = new XUnit2Settings 
     { 
