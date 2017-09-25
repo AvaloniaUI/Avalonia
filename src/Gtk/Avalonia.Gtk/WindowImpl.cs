@@ -68,6 +68,7 @@ namespace Avalonia.Gtk
         }
 
         public IScreenImpl Screen => new ScreenImpl(Window);
+        public IPlatformSpecificApiImpl PlatformSpecificApiImpl { get; }
 
         public void Resize(Size value)
         {

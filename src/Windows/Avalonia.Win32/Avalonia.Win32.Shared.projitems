@@ -23,6 +23,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)ScreenImpl.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SystemDialogImpl.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Win32Platform.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Win32PlatformSpecificApi.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WindowFramebuffer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WindowImpl.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WinScreen.cs" />
