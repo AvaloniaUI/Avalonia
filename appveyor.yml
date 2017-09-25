@@ -37,4 +37,4 @@ artifacts:
   - path: artifacts\inspectcode.xml
 cache:
   - gtk-sharp-2.12.26.msi
-  - dotnet-1.0.1.exe
+  - dotnet-2.0.0.exe
