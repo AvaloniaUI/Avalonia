@@ -2,7 +2,7 @@
 
 namespace Avalonia.Controls.Platform
 {
-    public abstract class BaseWin32PlatformSpecificApiImpl : IPlatformSpecificApiImpl
+    public abstract class BaseWindowsPlatformSpecificApiImpl : IPlatformSpecificApiImpl
     {
         
     }

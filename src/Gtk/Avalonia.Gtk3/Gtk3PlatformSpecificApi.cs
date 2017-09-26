@@ -2,7 +2,7 @@
 
 namespace Avalonia.Gtk3
 {
-    public class LinuxPlatformSpecificApi : BaseLinuxPlatformSpecificApiImpl
+    public class Gtk3PlatformSpecificApi : BaseLinuxPlatformSpecificApiImpl
     {
         
     }
