@@ -37,7 +37,7 @@ namespace Avalonia.Skia
             _paint.TextEncoding = SKTextEncoding.Utf16;
             _paint.IsStroke = false;
             _paint.IsAntialias = true;            
-            _paint.LcdRenderText = true;            
+            _paint.LcdRenderText = false;            
             _paint.SubpixelText = true;
             _paint.Typeface = skiaTypeface;
             _paint.TextSize = (float)(typeface?.FontSize ?? 12);
@@ -207,6 +207,7 @@ namespace Avalonia.Skia
                 try
                 {
                     ApplyWrapperTo(ref currentPaint, foreground, ref currd, paint);
+
                     bool hasCusomFGBrushes = _foregroundBrushes.Any();
 
                     for (int c = 0; c < _skiaLines.Count; c++)
