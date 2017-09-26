@@ -285,7 +285,7 @@ namespace Avalonia.Skia
                 return;
             curr?.Dispose();
             curr = wrapper.ApplyTo(paint);
-            paint.LcdRenderText = canUseLcdRendering && paint.Color.Alpha == 255;
+            paint.LcdRenderText = canUseLcdRendering;
         }
 
         private static bool IsBreakChar(char c)
