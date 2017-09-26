@@ -207,6 +207,10 @@ namespace Avalonia.Skia
                 try
                 {
                     ApplyWrapperTo(ref currentPaint, foreground, ref currd, paint);
+
+                    paint.SubpixelText = true;
+                    paint.LcdRenderText = false;
+
                     bool hasCusomFGBrushes = _foregroundBrushes.Any();
 
                     for (int c = 0; c < _skiaLines.Count; c++)
