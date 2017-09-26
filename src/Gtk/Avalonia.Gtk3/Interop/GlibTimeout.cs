@@ -55,7 +55,7 @@ namespace Avalonia.Gtk3.Interop
         public static IDisposable StarTimer(uint interval, Action tick)
         {
             var timer = new Timer ();
-            GlibTimeout.Add(interval,
+            GlibTimeout.Add(101, interval,
                 () =>
                 {
                     if (timer.Stopped)
