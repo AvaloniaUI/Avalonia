@@ -1,11 +1,11 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Windows.Forms;
-using Avalonia.Controls;
 using Avalonia.Controls.Embedding;
 using Avalonia.Input;
 using Avalonia.VisualTree;
 using Avalonia.Win32.Interop;
+using Control = Avalonia.Controls.Control;
 using WinFormsControl = System.Windows.Forms.Control;
 
 namespace Avalonia.Win32.Embedding
@@ -31,9 +31,9 @@ namespace Avalonia.Win32.Embedding
             FixPosition();
         }
 
-        public Avalonia.Controls.Control Content
+        public Control Content
         {
-            get { return (Avalonia.Controls.Control)_root.Content; }
+            get { return (Control)_root.Content; }
             set { _root.Content = value; }
         }
 
