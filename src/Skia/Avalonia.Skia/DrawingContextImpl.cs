@@ -16,7 +16,7 @@ namespace Avalonia.Skia
         private readonly IDisposable[] _disposables;
         private readonly IVisualBrushRenderer _visualBrushRenderer;
         private Stack<PaintWrapper> maskStack = new Stack<PaintWrapper>();
-        
+        protected bool CanUseLcdRendering = true;
         public SKCanvas Canvas { get; private set; }
 
         public DrawingContextImpl(
@@ -345,7 +345,7 @@ namespace Avalonia.Skia
             using (var paint = CreatePaint(foreground, text.Size))
             {
                 var textImpl = (FormattedTextImpl)text;
-                textImpl.Draw(this, Canvas, origin.ToSKPoint(), paint);
+                textImpl.Draw(this, Canvas, origin.ToSKPoint(), paint, CanUseLcdRendering);
             }
         }
 
