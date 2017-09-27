@@ -7,9 +7,9 @@ using Avalonia.Remote.Protocol;
 using Avalonia.Remote.Protocol.Viewport;
 using Avalonia.Threading;
 
-namespace Avalonia.Designer.HostApp
+namespace Avalonia.DesignerSupport.Remote
 {
-    public class PreviewerWindowImpl : RemoteServerTopLevelImpl, IWindowImpl, IEmbeddableWindowImpl
+    class PreviewerWindowImpl : RemoteServerTopLevelImpl, IWindowImpl, IEmbeddableWindowImpl
     {
         private readonly IAvaloniaRemoteTransportConnection _transport;
 

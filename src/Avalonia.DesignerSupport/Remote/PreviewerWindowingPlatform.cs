@@ -7,7 +7,7 @@ using Avalonia.Platform;
 using Avalonia.Remote.Protocol;
 using Avalonia.Rendering;
 
-namespace Avalonia.Designer.HostApp
+namespace Avalonia.DesignerSupport.Remote
 {
     class PreviewerWindowingPlatform : IWindowingPlatform, IPlatformSettings
     {

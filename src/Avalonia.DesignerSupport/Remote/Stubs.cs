@@ -11,12 +11,8 @@ using Avalonia.Input.Raw;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 
-namespace Avalonia.Designer.HostApp
+namespace Avalonia.DesignerSupport.Remote
 {
-    /// <summary>
-    /// Popups are no-op
-    /// </summary>
-    
     class WindowStub : IPopupImpl, IWindowImpl
     {
         public Action Deactivated { get; set; }

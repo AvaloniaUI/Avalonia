@@ -4,7 +4,6 @@
     <TargetFrameworks>netcoreapp2.0</TargetFrameworks>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="..\..\Avalonia.DesignerSupport\DesignWindowLoader.cs"/>
     <ProjectReference Include="..\..\Avalonia.DesignerSupport\Avalonia.DesignerSupport.csproj" />
     <ProjectReference Include="..\..\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj" />
     <ProjectReference Include="..\..\Markup\Avalonia.Markup\Avalonia.Markup.csproj" />

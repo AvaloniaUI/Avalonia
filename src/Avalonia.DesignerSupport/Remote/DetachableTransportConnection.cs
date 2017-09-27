@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Avalonia.Remote.Protocol;
 
-namespace Avalonia.Designer.HostApp
+namespace Avalonia.DesignerSupport.Remote
 {
     class DetachableTransportConnection : IAvaloniaRemoteTransportConnection
     {
