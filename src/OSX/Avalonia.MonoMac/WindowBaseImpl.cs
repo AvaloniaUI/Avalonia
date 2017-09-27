@@ -154,6 +154,7 @@ namespace Avalonia.MonoMac
         }
 
         public IScreenImpl Screen { get; } = new ScreenImpl();
+        public IPlatformSpecificApiImpl PlatformSpecificApiImpl { get; } = new MonoMacPlatformSpecificApi();
 
         public override Point PointToClient(Point point)
         {

@@ -343,6 +343,7 @@ namespace Avalonia.Gtk3
         }
         
         public IScreenImpl Screen { get; } = new ScreenImpl();
+        public IPlatformSpecificApiImpl PlatformSpecificApiImpl { get; } = new Gtk3PlatformSpecificApi();
 
         public Point Position
         {

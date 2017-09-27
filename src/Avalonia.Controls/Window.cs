@@ -120,6 +120,7 @@ namespace Avalonia.Controls
         {
             _maxPlatformClientSize = PlatformImpl?.MaxClientSize ?? default(Size);
             Screens = new Screens(PlatformImpl?.Screen);
+            PlatformSpecificApi = new PlatformSpecificApi(PlatformImpl?.PlatformSpecificApiImpl);
         }
 
         /// <inheritdoc/>
@@ -137,6 +138,8 @@ namespace Avalonia.Controls
         }
 
         public Screens Screens { get; private set; }
+        
+        public PlatformSpecificApi PlatformSpecificApi { get; private set; }
 
         /// <summary>
         /// Gets the platform-specific window implementation.

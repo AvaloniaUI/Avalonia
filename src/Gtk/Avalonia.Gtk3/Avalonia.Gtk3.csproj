@@ -55,6 +55,7 @@
     <Compile Include="WindowImpl.cs" />
     <Compile Include="ScreenImpl.cs" />
     <Compile Include="GtkScreen.cs" />
+    <Compile Include="Gtk3PlatformSpecificApi.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Avalonia.Base\Avalonia.Base.csproj" />

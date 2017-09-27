@@ -16,6 +16,8 @@ using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 using Avalonia.Rendering;
+using Avalonia.Win32.Avalonia.Win32.Shared;
+
 #if NETSTANDARD
 using Win32Exception = Avalonia.Win32.NetStandard.AvaloniaWin32Exception;
 #endif
@@ -103,7 +105,12 @@ namespace Avalonia.Win32
             }
         }
 
-        public IScreenImpl Screen => new ScreenImpl();
+        public IScreenImpl Screen
+        {
+            get;
+        } = new ScreenImpl();
+
+        public IPlatformSpecificApiImpl PlatformSpecificApiImpl { get; } = new Win32PlatformSpecificApi();
 
         public IRenderer CreateRenderer(IRenderRoot root)
         {
