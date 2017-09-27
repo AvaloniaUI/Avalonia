@@ -222,8 +222,6 @@ namespace Avalonia.Media
         private Point MirrorControlPoint(Point controlPoint, Point center)
         {
             Point dir = (controlPoint - center);
-            double xOffset = center.X - controlPoint.X, yOffset = center.Y - controlPoint.Y;
-//            return new Point(center.X - xOffset, center.Y - yOffset);
             return center + -dir;
         }
 
