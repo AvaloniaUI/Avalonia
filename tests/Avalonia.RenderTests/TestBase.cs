@@ -13,7 +13,7 @@ using Avalonia.Platform;
 using System.Threading.Tasks;
 using System;
 using System.Threading;
-
+using Avalonia.Threading;
 #if AVALONIA_CAIRO
 using Avalonia.Cairo;
 #elif AVALONIA_SKIA
@@ -155,14 +155,14 @@ namespace Avalonia.Direct2D1.RenderTests
 
             public Thread MainThread { get; set; }
 
-            public event Action Signaled;
+            public event Action<DispatcherPriority?> Signaled;
 
             public void RunLoop(CancellationToken cancellationToken)
             {
                 throw new NotImplementedException();
             }
 
-            public void Signal()
+            public void Signal(DispatcherPriority prio)
             {
                 throw new NotImplementedException();
             }

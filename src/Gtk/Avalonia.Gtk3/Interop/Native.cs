@@ -237,6 +237,9 @@ namespace Avalonia.Gtk3.Interop
             public delegate void gdk_window_begin_resize_drag(IntPtr window, WindowEdge edge, gint button, gint root_x, gint root_y, guint32 timestamp);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
+            public delegate void gdk_window_process_updates(IntPtr window, bool updateChildren);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
             public delegate void gdk_event_request_motions(IntPtr ev);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
@@ -287,7 +290,10 @@ namespace Avalonia.Gtk3.Interop
             
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Glib)]
             public delegate ulong g_timeout_add(uint interval, timeout_callback callback, IntPtr data);
-            
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Glib)]
+            public delegate ulong g_timeout_add_full(int prio, uint interval, timeout_callback callback, IntPtr data, IntPtr destroy);
+
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Glib)]
             public delegate ulong g_free(IntPtr data);
             
@@ -366,6 +372,7 @@ namespace Avalonia.Gtk3.Interop
         public static D.g_signal_connect_object GSignalConnectObject;
         public static D.g_signal_handler_disconnect GSignalHandlerDisconnect;
         public static D.g_timeout_add GTimeoutAdd;
+        public static D.g_timeout_add_full GTimeoutAddFull;
         public static D.g_free GFree;
         public static D.g_slist_free GSlistFree;
         public static D.g_memory_input_stream_new_from_data GMemoryInputStreamNewFromData;
@@ -398,6 +405,7 @@ namespace Avalonia.Gtk3.Interop
         public static D.gdk_window_begin_move_drag GdkWindowBeginMoveDrag;
         public static D.gdk_window_begin_resize_drag GdkWindowBeginResizeDrag;
         public static D.gdk_event_request_motions GdkEventRequestMotions;
+        public static D.gdk_window_process_updates GdkWindowProcessUpdates;
 
         public static D.gdk_pixbuf_new_from_file GdkPixbufNewFromFile;
         public static D.gtk_icon_theme_get_default GtkIconThemeGetDefault;

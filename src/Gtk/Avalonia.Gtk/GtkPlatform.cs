@@ -9,6 +9,7 @@ using Avalonia.Input.Platform;
 using Avalonia.Input;
 using Avalonia.Platform;
 using Avalonia.Controls;
+using Avalonia.Threading;
 
 namespace Avalonia
 {
@@ -91,14 +92,14 @@ namespace Avalonia.Gtk
 
 
 
-        public void Signal()
+        public void Signal(DispatcherPriority prio)
         {
-            Gtk.Application.Invoke(delegate { Signaled?.Invoke(); });
+            Gtk.Application.Invoke(delegate { Signaled?.Invoke(null); });
         }
 
         public bool CurrentThreadIsLoopThread => Thread.CurrentThread == _uiThread;
 
-        public event Action Signaled;
+        public event Action<DispatcherPriority?> Signaled;
         public IWindowImpl CreateWindow()
         {
             return new WindowImpl();

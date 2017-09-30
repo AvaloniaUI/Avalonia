@@ -30,7 +30,7 @@ namespace Avalonia.Gtk3.Interop
         }
 
 
-        public static void Add(uint interval, Func<bool> callback)
+        public static void Add(int priority, uint interval, Func<bool> callback)
         {
             var handle = GCHandle.Alloc(callback);
             Native.GTimeoutAdd(interval, PinnedHandler, GCHandle.ToIntPtr(handle));
@@ -49,7 +49,7 @@ namespace Avalonia.Gtk3.Interop
         public static IDisposable StarTimer(uint interval, Action tick)
         {
             var timer = new Timer ();
-            GlibTimeout.Add(interval,
+            GlibTimeout.Add(101, interval,
                 () =>
                 {
                     if (timer.Stopped)

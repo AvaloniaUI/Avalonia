@@ -16,6 +16,7 @@ using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 using Avalonia.Rendering;
+using Avalonia.Threading;
 #if NETSTANDARD
 using Win32Exception = Avalonia.Win32.NetStandard.AvaloniaWin32Exception;
 #endif

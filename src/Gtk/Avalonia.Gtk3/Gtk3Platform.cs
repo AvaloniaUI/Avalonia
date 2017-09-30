@@ -12,6 +12,7 @@ using Avalonia.Input.Platform;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Gtk3;
+using Avalonia.Threading;
 
 namespace Avalonia.Gtk3
 {
@@ -68,27 +69,28 @@ namespace Avalonia.Gtk3
             return GlibTimeout.StarTimer((uint) interval.TotalMilliseconds, tick);
         }
 
-        private bool _signaled = false;
+        private bool[] _signaled = new bool[(int) DispatcherPriority.MaxValue + 1];
         object _lock = new object();
 
-        public void Signal()
+        public void Signal(DispatcherPriority prio)
         {
+            var idx = (int) prio;
             lock(_lock)
-                if (!_signaled)
+                if (!_signaled[idx])
                 {
-                    _signaled = true;
-                    GlibTimeout.Add(0, () =>
+                    _signaled[idx] = true;
+                    GlibTimeout.Add(GlibPriority.FromDispatcherPriority(prio), 0, () =>
                     {
                         lock (_lock)
                         {
-                            _signaled = false;
+                            _signaled[idx] = false;
                         }
-                        Signaled?.Invoke();
+                        Signaled?.Invoke(prio);
                         return false;
                     });
                 }
         }
-        public event Action Signaled;
+        public event Action<DispatcherPriority?> Signaled;
 
 
         [ThreadStatic]

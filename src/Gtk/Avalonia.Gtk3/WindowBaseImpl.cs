@@ -10,6 +10,7 @@ using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Threading;
 
 namespace Avalonia.Gtk3
 {
@@ -25,6 +26,7 @@ namespace Avalonia.Gtk3
         private double _lastScaling;
         private uint _lastKbdEvent;
         private uint _lastSmoothScrollEvent;
+        private bool _hasDirtyRects;
 
         public WindowBaseImpl(GtkWindow gtkWidget)
         {
@@ -222,6 +224,7 @@ namespace Avalonia.Gtk3
 
         private bool OnDraw(IntPtr gtkwidget, IntPtr cairocontext, IntPtr userdata)
         {
+            _hasDirtyRects = false;
             CurrentCairoContext = cairocontext;
             Paint?.Invoke(new Rect(ClientSize));
             CurrentCairoContext = IntPtr.Zero;
@@ -271,6 +274,19 @@ namespace Avalonia.Gtk3
             if(GtkWidget.IsClosed)
                 return;
             Native.GtkWidgetQueueDrawArea(GtkWidget, (int)rect.X, (int)rect.Y, (int)rect.Width, (int)rect.Height);
+            if (!_hasDirtyRects)
+            {
+                _hasDirtyRects = true;
+                Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    if (GtkWidget.IsClosed)
+                        return;
+                    var window = Native.GtkWidgetGetWindow(GtkWidget);
+                    if (window == IntPtr.Zero)
+                        return;
+                    Native.GdkWindowProcessUpdates(window, false);
+                }, DispatcherPriority.Render);
+            }
         }
 
         public void SetInputRoot(IInputRoot inputRoot) => _inputRoot = inputRoot;

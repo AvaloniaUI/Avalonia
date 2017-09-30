@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <EnableDefaultCompileItems>False</EnableDefaultCompileItems>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -28,33 +27,6 @@
     <Compile Include="..\Avalonia.Gtk\KeyTransform.cs">
       <Link>KeyTransform.cs</Link>
     </Compile>
-    <Compile Include="Interop\CairoSurface.cs" />
-    <Compile Include="ClipboardImpl.cs" />
-    <Compile Include="CursorFactory.cs" />
-    <Compile Include="FramebufferManager.cs" />
-    <Compile Include="GdkCursor.cs" />
-    <Compile Include="GdkKey.cs" />
-    <Compile Include="Gtk3Platform.cs" />
-    <Compile Include="Interop\GException.cs" />
-    <Compile Include="Interop\GObject.cs" />
-    <Compile Include="Interop\ICustomGtk3NativeLibraryResolver.cs" />
-    <Compile Include="Interop\DynLoader.cs" />
-    <Compile Include="Interop\GlibTimeout.cs" />
-    <Compile Include="Interop\Native.cs" />
-    <Compile Include="Interop\NativeException.cs" />
-    <Compile Include="Interop\Pixbuf.cs" />
-    <Compile Include="Interop\Resolver.cs" />
-    <Compile Include="Interop\Signal.cs" />
-    <Compile Include="ImageSurfaceFramebuffer.cs" />
-    <Compile Include="PlatformIconLoader.cs" />
-    <Compile Include="PopupImpl.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SystemDialogs.cs" />
-    <Compile Include="WindowBaseImpl.cs" />
-    <Compile Include="Interop\Utf8Buffer.cs" />
-    <Compile Include="WindowImpl.cs" />
-    <Compile Include="ScreenImpl.cs" />
-    <Compile Include="GtkScreen.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Avalonia.Base\Avalonia.Base.csproj" />

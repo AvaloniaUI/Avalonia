@@ -9,11 +9,7 @@ namespace Avalonia.Threading
     // TODO: These are copied from WPF - many won't apply to Avalonia.
     public enum DispatcherPriority
     {
-        /// <summary>
-        /// The job will not be processed.
-        /// </summary>
-        Inactive = 0,
-
+        MinValue = 1,
         /// <summary>
         /// The job will be processed when the system is idle.
         /// </summary>
@@ -63,5 +59,6 @@ namespace Avalonia.Threading
         /// The job will be processed before other asynchronous operations.
         /// </summary>
         Send = 10,
+        MaxValue = 10
     }
 }
