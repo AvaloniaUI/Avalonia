@@ -44,21 +44,26 @@ namespace Avalonia.Threading
         /// The job will be processed with the same priority as render.
         /// </summary>
         Render = 7,
-
+        
+        /// <summary>
+        /// The job will be processed with the same priority as render.
+        /// </summary>
+        Layout = 8,
+        
         /// <summary>
         /// The job will be processed with the same priority as data binding.
         /// </summary>
-        DataBind = 8,
+        DataBind = 9,
 
         /// <summary>
         /// The job will be processed with normal priority.
         /// </summary>
-        Normal = 9,
+        Normal = 10,
 
         /// <summary>
         /// The job will be processed before other asynchronous operations.
         /// </summary>
-        Send = 10,
-        MaxValue = 10
+        Send = 11,
+        MaxValue = 11
     }
 }

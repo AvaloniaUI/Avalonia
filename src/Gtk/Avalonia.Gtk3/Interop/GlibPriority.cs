@@ -22,23 +22,25 @@ namespace Avalonia.Gtk3.Interop
             if (prio == DispatcherPriority.Send)
                 return High;
             if (prio == DispatcherPriority.Normal)
-                return Default - 4;
-            if (prio == DispatcherPriority.DataBind)
-                return Default - 3;
-            if (prio == DispatcherPriority.Render)
-                return Default -2;
-            if (prio == DispatcherPriority.Loaded)
-                return Default - 1;
-            if (prio == DispatcherPriority.Input)
                 return Default;
+            if (prio == DispatcherPriority.DataBind)
+                return Default + 1;
+            if (prio == DispatcherPriority.Layout)
+                return Default + 2;
+            if (prio == DispatcherPriority.Render)
+                return Default + 3;
+            if (prio == DispatcherPriority.Loaded)
+                return GtkPaint + 20;
+            if (prio == DispatcherPriority.Input)
+                return GtkPaint + 21;
             if (prio == DispatcherPriority.Background)
-                return DefaultIdle;
+                return DefaultIdle + 1;
             if (prio == DispatcherPriority.ContextIdle)
-                return DefaultIdle + 100;
+                return DefaultIdle + 2;
             if (prio == DispatcherPriority.ApplicationIdle)
-                return DefaultIdle + 200;
+                return DefaultIdle + 3;
             if (prio == DispatcherPriority.SystemIdle)
-                return DefaultIdle + 200;
+                return DefaultIdle + 4;
             throw new ArgumentException("Unknown priority");
 
         }

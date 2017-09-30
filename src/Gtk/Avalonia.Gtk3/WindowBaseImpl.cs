@@ -26,7 +26,9 @@ namespace Avalonia.Gtk3
         private double _lastScaling;
         private uint _lastKbdEvent;
         private uint _lastSmoothScrollEvent;
-        private bool _hasDirtyRects;
+        private GCHandle _gcHandle;
+        private object _lock = new object();
+        private IDeferredRenderOperation _nextRenderOperation;
 
         public WindowBaseImpl(GtkWindow gtkWidget)
         {
@@ -52,11 +54,25 @@ namespace Avalonia.Gtk3
             Connect<Native.D.signal_generic>("destroy", OnDestroy);
             Native.GtkWidgetRealize(gtkWidget);
             _lastSize = ClientSize;
+            GlibTimeout.Add(0, 16, () =>
+            {
+                Invalidate(default(Rect));
+                return true;
+            });
+            if (Gtk3Platform.UseDeferredRendering)
+            {
+                Native.GtkWidgetSetDoubleBuffered(gtkWidget, false);
+                _gcHandle = GCHandle.Alloc(this);
+                Native.GtkWidgetAddTickCallback(GtkWidget, PinnedStaticCallback, GCHandle.ToIntPtr(_gcHandle), IntPtr.Zero);
+                
+            }
         }
 
         private bool OnConfigured(IntPtr gtkwidget, IntPtr ev, IntPtr userdata)
         {
-            var size = ClientSize;
+            int w, h;
+            Native.GtkWindowGetSize(GtkWidget, out w, out h);
+            var size = ClientSize = new Size(w, h);
             if (_lastSize != size)
             {
                 Resized?.Invoke(size);
@@ -224,12 +240,51 @@ namespace Avalonia.Gtk3
 
         private bool OnDraw(IntPtr gtkwidget, IntPtr cairocontext, IntPtr userdata)
         {
-            _hasDirtyRects = false;
-            CurrentCairoContext = cairocontext;
-            Paint?.Invoke(new Rect(ClientSize));
-            CurrentCairoContext = IntPtr.Zero;
+            if (!Gtk3Platform.UseDeferredRendering)
+            {
+                CurrentCairoContext = cairocontext;
+                Paint?.Invoke(new Rect(ClientSize));
+                CurrentCairoContext = IntPtr.Zero;
+            }
             return true;
         }
+
+        private static Native.D.TickCallback PinnedStaticCallback = StaticTickCallback;
+
+        static bool StaticTickCallback(IntPtr widget, IntPtr clock, IntPtr userData)
+        {
+            var impl = (WindowBaseImpl) GCHandle.FromIntPtr(userData).Target;
+            impl.OnRenderTick();
+            return true;
+        }
+
+        public void SetNextRenderOperation(IDeferredRenderOperation op)
+        {
+            lock (_lock)
+            {
+                _nextRenderOperation?.Dispose();
+                _nextRenderOperation = op;
+            }
+        }
+
+        private void OnRenderTick()
+        {
+            IDeferredRenderOperation op = null;
+            lock (_lock)
+            {
+                if (_nextRenderOperation != null)
+                {
+                    op = _nextRenderOperation;
+                    _nextRenderOperation = null;
+                }
+            }
+            if (op != null)
+            {
+                op?.RenderNow();
+                op?.Dispose();
+            }
+        }
+
 
         public void Dispose()
         {
@@ -239,6 +294,10 @@ namespace Avalonia.Gtk3
             foreach(var d in Disposables.AsEnumerable().Reverse())
                 d.Dispose();
             Disposables.Clear();
+            if (_gcHandle.IsAllocated)
+            {
+                _gcHandle.Free();
+            }
         }
 
         public Size MaxClientSize
@@ -273,20 +332,8 @@ namespace Avalonia.Gtk3
         {
             if(GtkWidget.IsClosed)
                 return;
-            Native.GtkWidgetQueueDrawArea(GtkWidget, (int)rect.X, (int)rect.Y, (int)rect.Width, (int)rect.Height);
-            if (!_hasDirtyRects)
-            {
-                _hasDirtyRects = true;
-                Dispatcher.UIThread.InvokeAsync(() =>
-                {
-                    if (GtkWidget.IsClosed)
-                        return;
-                    var window = Native.GtkWidgetGetWindow(GtkWidget);
-                    if (window == IntPtr.Zero)
-                        return;
-                    Native.GdkWindowProcessUpdates(window, false);
-                }, DispatcherPriority.Render);
-            }
+            var s = ClientSize;
+            Native.GtkWidgetQueueDrawArea(GtkWidget, 0, 0, (int) s.Width, (int) s.Height);
         }
 
         public void SetInputRoot(IInputRoot inputRoot) => _inputRoot = inputRoot;
@@ -339,17 +386,7 @@ namespace Avalonia.Gtk3
         }
 
 
-        public Size ClientSize
-        {
-            get
-            {
-                if (GtkWidget.IsClosed)
-                    return new Size();
-                int w, h;
-                Native.GtkWindowGetSize(GtkWidget, out w, out h);
-                return new Size(w, h);
-            }
-        }
+        public Size ClientSize { get; private set; }
 
         public void Resize(Size value)
         {
@@ -376,7 +413,10 @@ namespace Avalonia.Gtk3
 
         public IRenderer CreateRenderer(IRenderRoot root)
         {
-            return new ImmediateRenderer(root);
+            var loop = AvaloniaLocator.Current.GetService<IRenderLoop>();
+            return Gtk3Platform.UseDeferredRendering
+                ? (IRenderer) new DeferredRenderer(root, loop)
+                : new ImmediateRenderer(root);
         }
     }
 }
