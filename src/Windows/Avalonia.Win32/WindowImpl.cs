@@ -103,7 +103,11 @@ namespace Avalonia.Win32
             }
         }
 
-        public IScreenImpl Screen => new ScreenImpl();
+        public IScreenImpl Screen
+        {
+            get;
+        } = new ScreenImpl();
+
 
         public IRenderer CreateRenderer(IRenderRoot root)
         {
