@@ -4,11 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Input;
-#if GTK3_PINVOKE
 using Avalonia.Gtk3;
-#else
-using GdkKey = Gdk.Key;
-#endif
+
 namespace Avalonia.Gtk.Common
 {
     static class KeyTransform

@@ -99,7 +99,7 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
-        [Fact]
+        [Fact (Skip = "We don't have rendering modules with dependencies right now")]
         public void LoadsRenderingModuleWithoutDependenciesWhenNoModuleMatches()
         {
             using (AvaloniaLocator.EnterScope())
@@ -107,7 +107,7 @@ namespace Avalonia.Controls.UnitTests
                 ResetModuleLoadStates();
                 var builder = AppBuilder.Configure<App>()
                     .UseWindowingSubsystem(() => { })
-                    .UseRenderingSubsystem(() => { }, "Cairo");
+                    .UseRenderingSubsystem(() => { }, "TBD");
                 builder.UseAvaloniaModules().SetupWithoutStarting();
                 Assert.True(DefaultRenderingModule.IsLoaded);
                 Assert.False(Direct2DModule.IsLoaded);
