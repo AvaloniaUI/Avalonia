@@ -21,7 +21,10 @@ namespace Avalonia.Media
             { 'L', Command.Line },
             { 'H', Command.HorizontalLine },
             { 'V', Command.VerticalLine },
+            { 'Q', Command.QuadraticBezierCurve },
+            { 'T', Command.SmoothQuadraticBezierCurve },
             { 'C', Command.CubicBezierCurve },
+            { 'S', Command.SmoothCubicBezierCurve },
             { 'A', Command.Arc },
             { 'Z', Command.Close },
         };
@@ -55,6 +58,9 @@ namespace Avalonia.Media
             HorizontalLine,
             VerticalLine,
             CubicBezierCurve,
+            QuadraticBezierCurve,
+            SmoothCubicBezierCurve,
+            SmoothQuadraticBezierCurve,
             Arc,
             Close,
         }
@@ -71,7 +77,8 @@ namespace Avalonia.Media
             {
                 Command command = Command.None;
                 Point point = new Point();
-                bool relative = false;
+                bool relative = false;        
+                Point? previousControlPoint = null;
 
                 while (ReadCommand(reader, ref command, ref relative))
                 {
@@ -79,6 +86,7 @@ namespace Avalonia.Media
                     {
                         case Command.FillRule:
                             _context.SetFillRule(ReadFillRule(reader));
+                            previousControlPoint = null;
                             break;
 
                         case Command.Move:
@@ -90,11 +98,13 @@ namespace Avalonia.Media
                             point = ReadPoint(reader, point, relative);
                             _context.BeginFigure(point, true);
                             openFigure = true;
+                            previousControlPoint = null;
                             break;
 
                         case Command.Line:
                             point = ReadPoint(reader, point, relative);
                             _context.LineTo(point);
+                            previousControlPoint = null;
                             break;
 
                         case Command.HorizontalLine:
@@ -108,6 +118,7 @@ namespace Avalonia.Media
                             }
 
                             _context.LineTo(point);
+                            previousControlPoint = null;
                             break;
 
                         case Command.VerticalLine:
@@ -121,16 +132,55 @@ namespace Avalonia.Media
                             }
 
                             _context.LineTo(point);
+                            previousControlPoint = null;
                             break;
+
+                        case Command.QuadraticBezierCurve:
+                            {
+                                Point handle = ReadPoint(reader, point, relative);
+                                previousControlPoint = handle;
+                                ReadSeparator(reader);
+                                point = ReadPoint(reader, point, relative);
+                                _context.QuadraticBezierTo(handle, point);
+                                break;
+                            }
+
+                        case Command.SmoothQuadraticBezierCurve:
+                            {
+                                Point end = ReadPoint(reader, point, relative);
+                                
+                                if(previousControlPoint != null)
+                                    previousControlPoint = MirrorControlPoint((Point)previousControlPoint, point);
+                                
+                                _context.QuadraticBezierTo(previousControlPoint ?? point, end);
+                                point = end;
+                                break;
+                            }
 
                         case Command.CubicBezierCurve:
                             {
                                 Point point1 = ReadPoint(reader, point, relative);
                                 ReadSeparator(reader);
                                 Point point2 = ReadPoint(reader, point, relative);
+                                previousControlPoint = point2;
                                 ReadSeparator(reader);
                                 point = ReadPoint(reader, point, relative);
                                 _context.CubicBezierTo(point1, point2, point);
+                                break;
+                            }
+                            
+                        case Command.SmoothCubicBezierCurve:
+                            {
+                                Point point2 = ReadPoint(reader, point, relative);
+                                ReadSeparator(reader);
+                                Point end = ReadPoint(reader, point, relative);
+                                
+                                if(previousControlPoint != null)
+                                    previousControlPoint = MirrorControlPoint((Point)previousControlPoint, point);
+                                
+                                _context.CubicBezierTo(previousControlPoint ?? point, point2, end);
+                                previousControlPoint = point2;
+                                point = end;
                                 break;
                             }
 
@@ -147,12 +197,14 @@ namespace Avalonia.Media
                                 point = ReadPoint(reader, point, relative);
 
                                 _context.ArcTo(point, size, rotationAngle, isLargeArc, sweepDirection);
+                                previousControlPoint = null;
                                 break;
                             }
 
                         case Command.Close:
                             _context.EndFigure(true);
                             openFigure = false;
+                            previousControlPoint = null;
                             break;
 
                         default:
@@ -165,6 +217,12 @@ namespace Avalonia.Media
                     _context.EndFigure(false);
                 }
             }
+        }
+
+        private Point MirrorControlPoint(Point controlPoint, Point center)
+        {
+            Point dir = (controlPoint - center);
+            return center + -dir;
         }
 
         private static bool ReadCommand(
@@ -243,6 +301,9 @@ namespace Avalonia.Media
                     (c == 'E' && !readExponent) ||
                     char.IsDigit(c))
                 {
+                    if (b.Length != 0 && !readExponent && c == '-')
+                        break;
+                    
                     b.Append(c);
                     reader.Read();
 
