@@ -5,6 +5,7 @@ using System;
 using System.Globalization;
 using Avalonia.Data;
 using Avalonia.Utilities;
+using System.Windows.Input;
 
 namespace Avalonia.Markup
 {
@@ -32,6 +33,11 @@ namespace Avalonia.Markup
             if (value == null)
             {
                 return AvaloniaProperty.UnsetValue;
+            }
+
+            if (typeof(ICommand).IsAssignableFrom(targetType) && value is Delegate d)
+            {
+                return new AlwaysEnabledDelegateCommand(d);
             }
 
             if (TypeUtilities.TryConvert(targetType, value, culture, out object result))
