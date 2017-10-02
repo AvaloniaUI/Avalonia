@@ -7,9 +7,7 @@ using System.Text;
 using Xunit;
 using System.Threading.Tasks;
 
-#if AVALONIA_CAIRO
-namespace Avalonia.Cairo.RenderTests
-#elif AVALONIA_SKIA
+#if AVALONIA_SKIA
 namespace Avalonia.Skia.RenderTests
 #else
 namespace Avalonia.Direct2D1.RenderTests

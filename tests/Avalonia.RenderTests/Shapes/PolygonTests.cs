@@ -7,9 +7,7 @@ using Avalonia.Controls.Shapes;
 using Avalonia.Media;
 using Xunit;
 
-#if AVALONIA_CAIRO
-namespace Avalonia.Cairo.RenderTests.Shapes
-#elif AVALONIA_SKIA
+#if AVALONIA_SKIA
 namespace Avalonia.Skia.RenderTests
 #else
 namespace Avalonia.Direct2D1.RenderTests.Shapes
@@ -21,12 +19,8 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
             : base(@"Shapes\Polygon")
         {
         }
-
-#if AVALONIA_CAIRO
-        [Fact(Skip = "Caused by cairo bug")]
-#else
+        
         [Fact]
-#endif
         public async Task Polygon_1px_Stroke()
         {
             Decorator target = new Decorator
@@ -48,11 +42,7 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
             CompareImages();
         }
 
-#if AVALONIA_CAIRO
-        [Fact(Skip = "Caused by cairo bug")]
-#else
         [Fact]
-#endif
         public async Task Polygon_NonUniformFill()
         {
             Decorator target = new Decorator
