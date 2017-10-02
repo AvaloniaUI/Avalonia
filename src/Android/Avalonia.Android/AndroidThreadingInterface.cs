@@ -12,6 +12,7 @@ using Android.Runtime;
 using Android.Views;
 using Android.Widget;
 using Avalonia.Platform;
+using Avalonia.Threading;
 
 namespace Avalonia.Android
 {
@@ -78,13 +79,13 @@ namespace Avalonia.Android
 
         private void EnsureInvokeOnMainThread(Action action) => _handler.Post(action);
 
-        public void Signal()
+        public void Signal(DispatcherPriority prio)
         {
-            EnsureInvokeOnMainThread(() => Signaled?.Invoke());
+            EnsureInvokeOnMainThread(() => Signaled?.Invoke(null));
         }
 
         public bool CurrentThreadIsLoopThread => Looper.MainLooper.Thread.Equals(Java.Lang.Thread.CurrentThread());
-        public event Action Signaled;
+        public event Action<DispatcherPriority?> Signaled;
     }
 }
  
