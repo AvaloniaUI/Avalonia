@@ -81,6 +81,9 @@
     <EmbeddedResource Include="Pages\ToolTipPage.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <EmbeddedResource Include="Pages\SlicedImagePage.xaml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App.xaml.cs">
@@ -146,6 +149,9 @@
     <Compile Include="Pages\ToolTipPage.xaml.cs">
       <DependentUpon>ToolTipPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Pages\SlicedImagePage.xaml.cs">
+      <DependentUpon>SlicedImagePage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Pages\ScreenPage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -154,6 +160,7 @@
     <EmbeddedResource Include="Assets\github_icon.png" />
     <EmbeddedResource Include="Assets\hirsch-899118_640.jpg" />
     <EmbeddedResource Include="Assets\maple-leaf-888807_640.jpg" />
+    <EmbeddedResource Include="Assets\panel_brown.png" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="SideBar.xaml">

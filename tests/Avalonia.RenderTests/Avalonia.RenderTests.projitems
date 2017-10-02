@@ -17,6 +17,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)SVGPathTests.cs" />
     <Compile Include="Media\FormattedTextImplTests.cs" />
     <Compile Include="Controls\ImageTests.cs" />
+    <Compile Include="Controls\SlicedImageTests.cs" />
     <Compile Include="Controls\BorderTests.cs" />
     <Compile Include="Media\ImageBrushTests.cs" />
     <Compile Include="Media\LinearGradientBrushTests.cs" />
