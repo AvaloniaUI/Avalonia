@@ -49,6 +49,12 @@ namespace Avalonia.MonoMac
         public TimeSpan DoubleClickTime => TimeSpan.FromSeconds(NSEvent.DoubleClickInterval);
 
         public IWindowImpl CreateWindow() => new WindowImpl();
+        
+        public bool ShowInDock
+        {
+            get => NSApplication.SharedApplication.ActivationPolicy == NSApplicationActivationPolicy.Regular;
+            set => NSApplication.SharedApplication.ActivationPolicy = value ? NSApplicationActivationPolicy.Regular : NSApplicationActivationPolicy.Accessory;
+        }
 
         public IEmbeddableWindowImpl CreateEmbeddableWindow()
         {
