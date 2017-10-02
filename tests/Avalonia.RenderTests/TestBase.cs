@@ -14,17 +14,13 @@ using System.Threading.Tasks;
 using System;
 using System.Threading;
 using Avalonia.Threading;
-#if AVALONIA_CAIRO
-using Avalonia.Cairo;
-#elif AVALONIA_SKIA
+#if AVALONIA_SKIA
 using Avalonia.Skia;
 #else
 using Avalonia.Direct2D1;
 #endif
 
-#if AVALONIA_CAIRO
-namespace Avalonia.Cairo.RenderTests
-#elif AVALONIA_SKIA
+#if AVALONIA_SKIA
 namespace Avalonia.Skia.RenderTests
 #else
 namespace Avalonia.Direct2D1.RenderTests
@@ -37,9 +33,7 @@ namespace Avalonia.Direct2D1.RenderTests
 
         static TestBase()
         {
-#if AVALONIA_CAIRO
-            CairoPlatform.Initialize();
-#elif AVALONIA_SKIA
+#if AVALONIA_SKIA
             SkiaPlatform.Initialize();
 #else
             Direct2D1Platform.Initialize();

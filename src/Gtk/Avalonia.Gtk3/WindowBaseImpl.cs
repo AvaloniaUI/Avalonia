@@ -395,7 +395,10 @@ namespace Avalonia.Gtk3
             Native.GtkWindowResize(GtkWidget, (int)value.Width, (int)value.Height);
         }
         
-        public IScreenImpl Screen { get; } = new ScreenImpl();
+        public IScreenImpl Screen
+        {
+            get;
+        } = new ScreenImpl();
 
         public Point Position
         {
