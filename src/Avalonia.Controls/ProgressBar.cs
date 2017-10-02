@@ -112,7 +112,8 @@ namespace Avalonia.Controls
         private void UpdateIsIndeterminate(bool isIndeterminate)
         {
             if (isIndeterminate)
-                _indeterminateAnimation = IndeterminateAnimation.StartAnimation(this);
+                if (_indeterminateAnimation == null || _indeterminateAnimation.Disposed)
+                    _indeterminateAnimation = IndeterminateAnimation.StartAnimation(this);
             else
                 _indeterminateAnimation?.Dispose();
         }
@@ -127,6 +128,9 @@ namespace Avalonia.Controls
             private WeakReference<ProgressBar> _progressBar;
             private IDisposable _indeterminateBindSubscription;
             private TimeSpan _startTime;
+            private bool _disposed;
+
+            public bool Disposed => _disposed;
 
             private IndeterminateAnimation(ProgressBar progressBar)
             {
@@ -171,6 +175,7 @@ namespace Avalonia.Controls
             public void Dispose()
             {
                 _indeterminateBindSubscription?.Dispose();
+                _disposed = true;
             }
         }
     }
