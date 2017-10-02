@@ -25,6 +25,7 @@ namespace Avalonia.Markup.Data
             new List<IPropertyAccessorPlugin>
             {
                 new AvaloniaPropertyAccessorPlugin(),
+                new MethodAccessorPlugin(),
                 new InpcPropertyAccessorPlugin(),
             };
 
