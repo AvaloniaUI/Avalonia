@@ -3,6 +3,7 @@
 
 using System;
 using System.Threading;
+using Avalonia.Threading;
 
 namespace Avalonia.Platform
 {
@@ -21,10 +22,10 @@ namespace Avalonia.Platform
         /// <returns>An <see cref="IDisposable"/> used to stop the timer.</returns>
         IDisposable StartTimer(TimeSpan interval, Action tick);
 
-        void Signal();
+        void Signal(DispatcherPriority priority);
 
         bool CurrentThreadIsLoopThread { get; }
 
-        event Action Signaled;
+        event Action<DispatcherPriority?> Signaled;
     }
 }
