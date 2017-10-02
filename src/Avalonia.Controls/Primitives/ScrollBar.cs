@@ -30,7 +30,7 @@ namespace Avalonia.Controls.Primitives
         /// Defines the <see cref="Orientation"/> property.
         /// </summary>
         public static readonly StyledProperty<Orientation> OrientationProperty =
-            AvaloniaProperty.Register<ScrollBar, Orientation>(nameof(Orientation));
+            AvaloniaProperty.Register<ScrollBar, Orientation>(nameof(Orientation), Orientation.Vertical);
 
         private Button _lineUpButton;
         private Button _lineDownButton;
