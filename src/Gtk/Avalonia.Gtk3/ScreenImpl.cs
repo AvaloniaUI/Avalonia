@@ -10,7 +10,7 @@ namespace Avalonia.Gtk3
     {
         public int ScreenCount
         {
-            get => _allScreens.Length;
+            get => AllScreens.Length;
         }
         
         private Screen[] _allScreens;
@@ -23,7 +23,7 @@ namespace Avalonia.Gtk3
                     IntPtr display = Native.GdkGetDefaultDisplay();
                     GdkScreen screen = Native.GdkDisplayGetDefaultScreen(display);
                     short primary = Native.GdkScreenGetPrimaryMonitor(screen);
-                    Screen[] screens = new Screen[ScreenCount];
+                    Screen[] screens = new Screen[Native.GdkScreenGetNMonitors(screen)];
                     for (short i = 0; i < screens.Length; i++)
                     {
                         GdkRectangle workArea = new GdkRectangle(), geometry = new GdkRectangle();

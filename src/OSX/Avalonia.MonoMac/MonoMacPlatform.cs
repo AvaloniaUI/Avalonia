@@ -14,6 +14,9 @@ namespace Avalonia.MonoMac
         internal readonly MouseDevice MouseDevice = new MouseDevice();
         readonly KeyboardDevice _keyboardDevice = new KeyboardDevice();
         internal static NSApplication App;
+        private static bool s_monoMacInitialized;
+        private static bool s_showInDock = true;
+
         void DoInitialize()
         {
             AvaloniaLocator.CurrentMutable
@@ -26,7 +29,7 @@ namespace Avalonia.MonoMac
                 .Bind<ISystemDialogImpl>().ToSingleton<SystemDialogsImpl>()
                 .Bind<IPlatformThreadingInterface>().ToConstant(PlatformThreadingInterface.Instance);
 
-            InitializeCocoaApp();
+            InitializeMonoMac();
         }
 
         public static void Initialize()
@@ -36,12 +39,29 @@ namespace Avalonia.MonoMac
 
         }
 
-        void InitializeCocoaApp()
+        void InitializeMonoMac()
         {
+            if(s_monoMacInitialized)
+                return;
             NSApplication.Init();
             App = NSApplication.SharedApplication;
-            App.ActivationPolicy = NSApplicationActivationPolicy.Regular;
+            UpdateActivationPolicy();
+            s_monoMacInitialized = true;
+        }
 
+        static void UpdateActivationPolicy() => App.ActivationPolicy = ShowInDock
+            ? NSApplicationActivationPolicy.Regular
+            : NSApplicationActivationPolicy.Accessory;
+
+        public static bool ShowInDock
+        {
+            get => s_showInDock;
+            set
+            {
+                s_showInDock = value;
+                if (s_monoMacInitialized)
+                    UpdateActivationPolicy();
+            }
         }
 
 

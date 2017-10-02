@@ -23,11 +23,11 @@ namespace Avalonia.Gtk3
 
         public ILockedFramebuffer Lock()
         {
-            if(_window.CurrentCairoContext == IntPtr.Zero)
-                throw new InvalidOperationException("Window is not in drawing state");
-            var width = (int) _window.ClientSize.Width;
-            var height = (int) _window.ClientSize.Height;
-            return new ImageSurfaceFramebuffer(_window.CurrentCairoContext, _window.GtkWidget, width, height);
+            // This method may be called from non-UI thread, don't touch anything that calls back to GTK/GDK
+            var s = _window.ClientSize;
+            var width = (int) s.Width;
+            var height = (int) s.Height;
+            return new ImageSurfaceFramebuffer(_window, width, height);
         }
     }
 }

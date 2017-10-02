@@ -60,7 +60,7 @@ namespace Avalonia.Threading
         public void MainLoop(CancellationToken cancellationToken)
         {
             var platform = AvaloniaLocator.Current.GetService<IPlatformThreadingInterface>();
-            cancellationToken.Register(platform.Signal);
+            cancellationToken.Register(() => platform.Signal(DispatcherPriority.Send));
             platform.RunLoop(cancellationToken);
         }
 
@@ -69,7 +69,7 @@ namespace Avalonia.Threading
         /// </summary>
         public void RunJobs()
         {
-            _jobRunner?.RunJobs();
+            _jobRunner?.RunJobs(null);
         }
 
         /// <inheritdoc/>

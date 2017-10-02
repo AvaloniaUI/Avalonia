@@ -7,9 +7,7 @@ using Avalonia.Controls.Shapes;
 using Avalonia.Media;
 using Xunit;
 
-#if AVALONIA_CAIRO
-namespace Avalonia.Cairo.RenderTests.Shapes
-#elif AVALONIA_SKIA
+#if AVALONIA_SKIA
 namespace Avalonia.Skia.RenderTests
 #else
 namespace Avalonia.Direct2D1.RenderTests.Shapes
@@ -21,12 +19,8 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
             : base(@"Shapes\Line")
         {
         }
-
-#if !AVALONIA_CAIRO
+        
         [Fact]
-#else
-        [Fact(Skip = "Fails on Cairo")]
-#endif
         public async Task Line_1px_Stroke()
         {
             Decorator target = new Decorator
@@ -45,12 +39,8 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
             await RenderToFile(target);
             CompareImages();
         }
-
-#if !AVALONIA_CAIRO
+        
         [Fact]
-#else
-        [Fact(Skip = "Fails on Cairo")]
-#endif
         public async Task Line_1px_Stroke_Reversed()
         {
             Decorator target = new Decorator
