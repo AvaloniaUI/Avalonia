@@ -22,7 +22,7 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<ProgressBar, Orientation>(nameof(Orientation), Orientation.Horizontal);
 
         private Border _indicator;
-        private IDisposable _indeterminateBindSubscription;
+        private IndeterminateAnimation _indeterminateAnimation;
 
         static ProgressBar()
         {
@@ -30,26 +30,23 @@ namespace Avalonia.Controls
 
             HorizontalAlignmentProperty.OverrideDefaultValue<ProgressBar>(HorizontalAlignment.Left);
             VerticalAlignmentProperty.OverrideDefaultValue<ProgressBar>(VerticalAlignment.Top);
+
+            IsIndeterminateProperty.Changed.AddClassHandler<ProgressBar>(
+                (p, e) => { if (p._indicator != null) p.UpdateIsIndeterminate((bool)e.NewValue); });
+            OrientationProperty.Changed.AddClassHandler<ProgressBar>(
+                (p, e) => { if (p._indicator != null) p.UpdateOrientation((Orientation)e.NewValue); });
         }
 
         public bool IsIndeterminate
         {
             get => GetValue(IsIndeterminateProperty);
-            set
-            {
-                SetValue(IsIndeterminateProperty, value);
-                UpdateIsIndeterminate(value);
-            }
+            set => SetValue(IsIndeterminateProperty, value);
         }
 
         public Orientation Orientation
         {
             get => GetValue(OrientationProperty);
-            set
-            {
-                SetValue(OrientationProperty, value);
-                UpdateOrientation(value);
-            }
+            set => SetValue(OrientationProperty, value);
         }
 
         /// <inheritdoc/>
@@ -115,33 +112,66 @@ namespace Avalonia.Controls
         private void UpdateIsIndeterminate(bool isIndeterminate)
         {
             if (isIndeterminate)
-            {
-                var start = Animate.Stopwatch.Elapsed;
-
-                if (Orientation == Orientation.Horizontal)
-                {
-                    _indeterminateBindSubscription = Animate.Timer.TakeWhile(x => (x - start).TotalSeconds <= 4.0)
-                                                                  .Select(x => new Rect(-_indicator.Width - 5 + (x - start).TotalSeconds / 4.0 * (Bounds.Width + _indicator.Width + 10), 0, _indicator.Bounds.Width, _indicator.Bounds.Height))
-                                                                  .Finally(() => start = Animate.Stopwatch.Elapsed)
-                                                                  .Repeat()
-                                                                  .Subscribe(x => _indicator.Arrange(x));
-                }
-                else
-                {
-                    _indeterminateBindSubscription = Animate.Timer.TakeWhile(x => (x - start).TotalSeconds <= 4.0)
-                                                                  .Select(x => new Rect(0, Bounds.Height + 5 - (x - start).TotalSeconds / 4.0 * (Bounds.Height + _indicator.Height + 10), _indicator.Bounds.Width, _indicator.Bounds.Height))
-                                                                  .Finally(() => start = Animate.Stopwatch.Elapsed)
-                                                                  .Repeat()
-                                                                  .Subscribe(x => _indicator.Arrange(x));
-                }
-            }
+                _indeterminateAnimation = IndeterminateAnimation.StartAnimation(this);
             else
-                _indeterminateBindSubscription?.Dispose();
+                _indeterminateAnimation?.Dispose();
         }
 
         private void ValueChanged(AvaloniaPropertyChangedEventArgs e)
         {
             UpdateIndicator(Bounds.Size);
+        }
+
+        private class IndeterminateAnimation : IDisposable
+        {
+            private WeakReference<ProgressBar> _progressBar;
+            private IDisposable _indeterminateBindSubscription;
+            private TimeSpan _startTime;
+
+            private IndeterminateAnimation(ProgressBar progressBar)
+            {
+                _progressBar = new WeakReference<ProgressBar>(progressBar);
+                _startTime = Animate.Stopwatch.Elapsed;
+                _indeterminateBindSubscription = Animate.Timer.TakeWhile(x => (x - _startTime).TotalSeconds <= 4.0)
+                                                              .Select(GetAnimationRect)
+                                                              .Finally(() => _startTime = Animate.Stopwatch.Elapsed)
+                                                              .Repeat()
+                                                              .Subscribe(AnimationTick);
+            }
+
+            public static IndeterminateAnimation StartAnimation(ProgressBar progressBar)
+            {
+                return new IndeterminateAnimation(progressBar);
+            }
+
+            private Rect GetAnimationRect(TimeSpan time)
+            {
+                if (_progressBar.TryGetTarget(out var progressBar))
+                {
+                    if (progressBar.Orientation == Orientation.Horizontal)
+                        return new Rect(-progressBar._indicator.Width - 5 + (time - _startTime).TotalSeconds / 4.0 * (progressBar.Bounds.Width + progressBar._indicator.Width + 10), 0, progressBar._indicator.Bounds.Width, progressBar._indicator.Bounds.Height);
+                    else
+                        return new Rect(0, progressBar.Bounds.Height + 5 - (time - _startTime).TotalSeconds / 4.0 * (progressBar.Bounds.Height + progressBar._indicator.Height + 10), progressBar._indicator.Bounds.Width, progressBar._indicator.Bounds.Height);
+                }
+                else
+                {
+                    _indeterminateBindSubscription.Dispose();
+                    return Rect.Empty;
+                }
+            }
+
+            private void AnimationTick(Rect rect)
+            {
+                if (_progressBar.TryGetTarget(out var progressBar))
+                    progressBar._indicator.Arrange(rect);
+                else
+                    _indeterminateBindSubscription.Dispose();
+            }
+
+            public void Dispose()
+            {
+                _indeterminateBindSubscription?.Dispose();
+            }
         }
     }
 }
