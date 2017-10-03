@@ -180,9 +180,6 @@ namespace Avalonia.Gtk3.Interop
             public delegate void cairo_surface_destroy(IntPtr surface);
             
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Cairo)]
-            public delegate void cairo_surface_set_device_scale(CairoSurface surface, double sx, double sy);
-            
-            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Cairo)]
             public delegate void cairo_set_source_surface(IntPtr cr, CairoSurface surface, double x, double y);
             
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Cairo)]
@@ -468,7 +465,6 @@ namespace Avalonia.Gtk3.Interop
         public static D.cairo_surface_write_to_png CairoSurfaceWriteToPng;
         public static D.cairo_surface_flush CairoSurfaceFlush;
         public static D.cairo_surface_destroy CairoSurfaceDestroy;
-        public static D.cairo_surface_set_device_scale CairoSurfaceSetDeviceScale;
         public static D.cairo_set_source_surface CairoSetSourceSurface;
         public static D.cairo_set_source_rgba CairoSetSourceRgba;
         public static D.cairo_scale CairoScale;
