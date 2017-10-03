@@ -54,11 +54,6 @@ namespace Avalonia.Gtk3
             Connect<Native.D.signal_generic>("destroy", OnDestroy);
             Native.GtkWidgetRealize(gtkWidget);
             _lastSize = ClientSize;
-            GlibTimeout.Add(0, 16, () =>
-            {
-                Invalidate(default(Rect));
-                return true;
-            });
             if (Gtk3Platform.UseDeferredRendering)
             {
                 Native.GtkWidgetSetDoubleBuffered(gtkWidget, false);
@@ -138,7 +133,7 @@ namespace Avalonia.Gtk3
                         ? RawMouseEventType.LeftButtonDown
                         : evnt->button == 3 ? RawMouseEventType.RightButtonDown : RawMouseEventType.MiddleButtonDown,
                 new Point(evnt->x, evnt->y), GetModifierKeys(evnt->state));
-            Input?.Invoke(e);
+            OnInput(e);
             return true;
         }
 
@@ -166,7 +161,7 @@ namespace Avalonia.Gtk3
                 _inputRoot,
                 RawMouseEventType.Move,
                 position, GetModifierKeys(evnt->state));
-            Input(e);
+            OnInput(e);
             
             return true;
         }
@@ -195,7 +190,7 @@ namespace Avalonia.Gtk3
             }
             var e = new RawMouseWheelEventArgs(Gtk3Platform.Mouse, evnt->time, _inputRoot,
                 new Point(evnt->x, evnt->y), delta, GetModifierKeys(evnt->state));
-            Input(e);
+            OnInput(e);
             return true;
         }
 
@@ -210,7 +205,7 @@ namespace Avalonia.Gtk3
                 evnt->time,
                 evnt->type == GdkEventType.KeyPress ? RawKeyEventType.KeyDown : RawKeyEventType.KeyUp,
                 Avalonia.Gtk.Common.KeyTransform.ConvertKey((GdkKey)evnt->keyval), GetModifierKeys((GdkModifierType)evnt->state));
-            Input(e);
+            OnInput(e);
             return true;
         }
 
@@ -218,7 +213,7 @@ namespace Avalonia.Gtk3
         {
             var evnt = (GdkEventCrossing*) pev;
             var position = new Point(evnt->x, evnt->y);
-            Input(new RawMouseEventArgs(Gtk3Platform.Mouse,
+            OnInput(new RawMouseEventArgs(Gtk3Platform.Mouse,
                 evnt->time,
                 _inputRoot,
                 RawMouseEventType.Move,
@@ -228,7 +223,7 @@ namespace Avalonia.Gtk3
 
         private unsafe bool OnCommit(IntPtr gtkwidget, IntPtr utf8string, IntPtr userdata)
         {
-            Input(new RawTextInputEventArgs(Gtk3Platform.Keyboard, _lastKbdEvent, Utf8Buffer.StringFromPtr(utf8string)));
+            OnInput(new RawTextInputEventArgs(Gtk3Platform.Keyboard, _lastKbdEvent, Utf8Buffer.StringFromPtr(utf8string)));
             return true;
         }
 
@@ -337,6 +332,11 @@ namespace Avalonia.Gtk3
         }
 
         public void SetInputRoot(IInputRoot inputRoot) => _inputRoot = inputRoot;
+
+        void OnInput(RawInputEventArgs args)
+        {
+            Dispatcher.UIThread.InvokeAsync(() => Input?.Invoke(args), DispatcherPriority.Input);
+        }
 
         public Point PointToClient(Point point)
         {

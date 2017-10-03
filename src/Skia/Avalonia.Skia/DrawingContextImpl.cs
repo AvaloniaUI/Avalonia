@@ -45,7 +45,7 @@ namespace Avalonia.Skia
             var s = sourceRect.ToSKRect();
             var d = destRect.ToSKRect();
             using (var paint = new SKPaint()
-                    { Color = new SKColor(255, 255, 255, (byte)(255 * opacity)) })
+                    { Color = new SKColor(255, 255, 255, (byte)(255 * opacity * _currentOpacity)) })
             {
                 Canvas.DrawBitmap(impl.Bitmap, s, d, paint);
             }
