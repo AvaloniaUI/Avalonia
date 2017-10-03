@@ -10,9 +10,11 @@ using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Layout;
 using Avalonia.Logging;
+using Avalonia.LogicalTree;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Styling;
+using Avalonia.Utilities;
 using Avalonia.VisualTree;
 using JetBrains.Annotations;
 
@@ -26,7 +28,13 @@ namespace Avalonia.Controls
     /// It handles scheduling layout, styling and rendering as well as
     /// tracking the widget's <see cref="ClientSize"/>.
     /// </remarks>
-    public abstract class TopLevel : ContentControl, IInputRoot, ILayoutRoot, IRenderRoot, ICloseable, IStyleRoot
+    public abstract class TopLevel : ContentControl,
+        IInputRoot,
+        ILayoutRoot,
+        IRenderRoot,
+        ICloseable,
+        IStyleRoot,
+        IWeakSubscriber<ResourcesChangedEventArgs>
     {
         /// <summary>
         /// Defines the <see cref="ClientSize"/> property.
@@ -100,7 +108,6 @@ namespace Avalonia.Controls
             impl.Resized = HandleResized;
             impl.ScalingChanged = HandleScalingChanged;
 
-
             _keyboardNavigationHandler?.SetOwner(this);
             _accessKeyHandler?.SetOwner(this);
             styler?.ApplyStyles(this);
@@ -115,6 +122,14 @@ namespace Avalonia.Controls
             if (_applicationLifecycle != null)
             {
                 _applicationLifecycle.OnExit += OnApplicationExiting;
+            }
+
+            if (((IStyleHost)this).StylingParent is IResourceProvider applicationResources)
+            {
+                WeakSubscriptionManager.Subscribe(
+                    applicationResources,
+                    nameof(IResourceProvider.ResourcesChanged),
+                    this);
             }
         }
 
@@ -164,6 +179,11 @@ namespace Avalonia.Controls
 
         /// <inheritdoc/>
         IMouseDevice IInputRoot.MouseDevice => PlatformImpl?.MouseDevice;
+
+        void IWeakSubscriber<ResourcesChangedEventArgs>.OnEvent(object sender, ResourcesChangedEventArgs e)
+        {
+            ((ILogical)this).NotifyResourcesChanged(e);
+        }
 
         /// <summary>
         /// Gets or sets a value indicating whether access keys are shown in the window.

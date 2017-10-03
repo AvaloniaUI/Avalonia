@@ -1,5 +1,5 @@
 <Style xmlns="https://github.com/avaloniaui" Selector="PopupRoot">
-  <Setter Property="Background" Value="{StyleResource ThemeBackgroundBrush}"/>
+  <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}"/>
   <Setter Property="Template">
     <ControlTemplate>
       <ContentPresenter Name="PART_ContentPresenter"

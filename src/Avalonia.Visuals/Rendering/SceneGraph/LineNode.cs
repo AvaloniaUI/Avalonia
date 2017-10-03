@@ -29,7 +29,7 @@ namespace Avalonia.Rendering.SceneGraph
             Point p2,
             IDictionary<IVisual, Scene> childScenes = null)
         {
-            Bounds = new Rect(P1, P2);
+            Bounds = new Rect(p1, p2).TransformToAABB(transform).Inflate(pen?.Thickness ?? 0);
             Transform = transform;
             Pen = pen?.ToImmutable();
             P1 = p1;

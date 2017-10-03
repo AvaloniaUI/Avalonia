@@ -6,6 +6,7 @@ using System.Reactive.Subjects;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Platform;
+using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -147,14 +148,14 @@ namespace Avalonia.Base.UnitTests
 
             public bool CurrentThreadIsLoopThread { get; set; }
 
-            public event Action Signaled;
+            public event Action<DispatcherPriority?> Signaled;
 
             public void RunLoop(CancellationToken cancellationToken)
             {
                 throw new NotImplementedException();
             }
 
-            public void Signal()
+            public void Signal(DispatcherPriority prio)
             {
                 throw new NotImplementedException();
             }

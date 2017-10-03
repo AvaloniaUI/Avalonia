@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <TargetFramework>netstandard1.3</TargetFramework>
+        <TargetFramework>netstandard2.0</TargetFramework>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
     <ItemGroup>
@@ -9,6 +9,6 @@
       <ProjectReference Include="..\..\Avalonia.Input\Avalonia.Input.csproj" />
       <ProjectReference Include="..\..\Avalonia.Interactivity\Avalonia.Interactivity.csproj" />
       <ProjectReference Include="..\..\Avalonia.Visuals\Avalonia.Visuals.csproj" />
-      <ProjectReference Include="..\..\Skia\Avalonia.Skia.Desktop.NetStandard\Avalonia.Skia.Desktop.NetStandard.csproj" />
+      <ProjectReference Include="..\..\Skia\Avalonia.Skia\Avalonia.Skia.csproj" />
     </ItemGroup>
 </Project>

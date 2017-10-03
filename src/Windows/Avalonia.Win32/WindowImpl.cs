@@ -16,6 +16,7 @@ using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 using Avalonia.Rendering;
+using Avalonia.Threading;
 #if NETSTANDARD
 using Win32Exception = Avalonia.Win32.NetStandard.AvaloniaWin32Exception;
 #endif
@@ -38,9 +39,21 @@ namespace Avalonia.Win32
         private double _scaling = 1;
         private WindowState _showWindowState;
         private FramebufferManager _framebuffer;
+#if USE_MANAGED_DRAG
+        private readonly ManagedWindowResizeDragHelper _managedDrag;
+#endif
 
         public WindowImpl()
         {
+#if USE_MANAGED_DRAG
+            _managedDrag = new ManagedWindowResizeDragHelper(this, capture =>
+            {
+                if (capture)
+                    UnmanagedMethods.SetCapture(Handle.Handle);
+                else
+                    UnmanagedMethods.ReleaseCapture();
+            });
+#endif
             CreateWindow();
             _framebuffer = new FramebufferManager(_hwnd);
             s_instances.Add(this);
@@ -90,6 +103,11 @@ namespace Avalonia.Win32
                 return new Size(rect.right, rect.bottom) / Scaling;
             }
         }
+
+        public IScreenImpl Screen
+        {
+            get;
+        } = new ScreenImpl();
 
 
         public IRenderer CreateRenderer(IRenderRoot root)
@@ -327,8 +345,12 @@ namespace Avalonia.Win32
 
         public void BeginResizeDrag(WindowEdge edge)
         {
+#if USE_MANAGED_DRAG
+            _managedDrag.BeginResizeDrag(edge, ScreenToClient(MouseDevice.Position));
+#else
             UnmanagedMethods.DefWindowProc(_hwnd, (int)UnmanagedMethods.WindowsMessage.WM_NCLBUTTONDOWN,
                 new IntPtr((int)EdgeDic[edge]), IntPtr.Zero);
+#endif
         }
 
         public Point Position
@@ -426,7 +448,7 @@ namespace Avalonia.Win32
 
                 case UnmanagedMethods.WindowsMessage.WM_DPICHANGED:
                     var dpi = ToInt32(wParam) & 0xffff;
-                    var newDisplayRect = (UnmanagedMethods.RECT)Marshal.PtrToStructure(lParam, typeof(UnmanagedMethods.RECT));
+                    var newDisplayRect = Marshal.PtrToStructure<UnmanagedMethods.RECT>(lParam);
                     Position = new Point(newDisplayRect.left, newDisplayRect.top);
                     _scaling = dpi / 96.0;
                     ScalingChanged?.Invoke(_scaling);
@@ -494,7 +516,7 @@ namespace Avalonia.Win32
                     {
                         var tm = new UnmanagedMethods.TRACKMOUSEEVENT
                         {
-                            cbSize = Marshal.SizeOf(typeof(UnmanagedMethods.TRACKMOUSEEVENT)),
+                            cbSize = Marshal.SizeOf<UnmanagedMethods.TRACKMOUSEEVENT>(),
                             dwFlags = 2,
                             hwndTrack = _hwnd,
                             dwHoverTime = 0,
@@ -517,7 +539,7 @@ namespace Avalonia.Win32
                         WindowsMouseDevice.Instance,
                         timestamp,
                         _owner,
-                        ScreenToClient(DipFromLParam(lParam)),
+                        PointToClient(PointFromLParam(lParam)),
                         new Vector(0, (ToInt32(wParam) >> 16) / wheelDelta), GetMouseModifiers(wParam));
                     break;
 
@@ -526,7 +548,7 @@ namespace Avalonia.Win32
                         WindowsMouseDevice.Instance,
                         timestamp,
                         _owner,
-                        ScreenToClient(DipFromLParam(lParam)),
+                        PointToClient(PointFromLParam(lParam)),
                         new Vector(-(ToInt32(wParam) >> 16) / wheelDelta, 0), GetMouseModifiers(wParam));
                     break;
 
@@ -582,7 +604,16 @@ namespace Avalonia.Win32
                 case UnmanagedMethods.WindowsMessage.WM_MOVE:
                     PositionChanged?.Invoke(new Point((short)(ToInt32(lParam) & 0xffff), (short)(ToInt32(lParam) >> 16)));
                     return IntPtr.Zero;
+                    
+                case UnmanagedMethods.WindowsMessage.WM_DISPLAYCHANGE:
+                    (Screen as ScreenImpl)?.InvalidateScreensCache();
+                    return IntPtr.Zero;
             }
+#if USE_MANAGED_DRAG
+
+            if (_managedDrag.PreprocessInputEvent(ref e))
+                return UnmanagedMethods.DefWindowProc(hWnd, msg, wParam, lParam);
+#endif
 
             if (e != null && Input != null)
             {
@@ -619,7 +650,7 @@ namespace Avalonia.Win32
 
             UnmanagedMethods.WNDCLASSEX wndClassEx = new UnmanagedMethods.WNDCLASSEX
             {
-                cbSize = Marshal.SizeOf(typeof(UnmanagedMethods.WNDCLASSEX)),
+                cbSize = Marshal.SizeOf<UnmanagedMethods.WNDCLASSEX>(),
                 style = 0,
                 lpfnWndProc = _wndProcDelegate,
                 hInstance = UnmanagedMethods.GetModuleHandle(null),
@@ -749,6 +780,28 @@ namespace Avalonia.Win32
             if (IntPtr.Size == 4) return ptr.ToInt32();
 
             return (int)(ptr.ToInt64() & 0xffffffff);
+        }
+
+        public void ShowTaskbarIcon(bool value)
+        {
+            var style = (UnmanagedMethods.WindowStyles)UnmanagedMethods.GetWindowLong(_hwnd, -20);
+            
+            style &= ~(UnmanagedMethods.WindowStyles.WS_VISIBLE);   
+
+            style |= UnmanagedMethods.WindowStyles.WS_EX_TOOLWINDOW;   
+            if (value)
+                style |= UnmanagedMethods.WindowStyles.WS_EX_APPWINDOW;
+            else
+                style &= ~(UnmanagedMethods.WindowStyles.WS_EX_APPWINDOW);
+
+            WINDOWPLACEMENT windowPlacement = UnmanagedMethods.WINDOWPLACEMENT.Default;
+            if (UnmanagedMethods.GetWindowPlacement(_hwnd, ref windowPlacement))
+            {
+                //Toggle to make the styles stick
+                UnmanagedMethods.ShowWindow(_hwnd, ShowWindowCommand.Hide);
+                UnmanagedMethods.SetWindowLong(_hwnd, -20, (uint)style);
+                UnmanagedMethods.ShowWindow(_hwnd, windowPlacement.ShowCmd);
+            }
         }
     }
 }

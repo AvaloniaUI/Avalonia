@@ -1,13 +1,13 @@
 # Avalonia
 
 
-| Gitter Chat | Windows Build Status | Linux/Mac Build Status | Code Coverage |
-|---|---|---|---|
-| [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/AvaloniaUI/Avalonia?utm_campaign=pr-badge&utm_content=badge&utm_medium=badge&utm_source=badge) | [![Build status](https://ci.appveyor.com/api/projects/status/hubk3k0w9idyibfg/branch/master?svg=true)](https://ci.appveyor.com/project/AvaloniaUI/Avalonia/branch/master) | [![Build Status](https://travis-ci.org/AvaloniaUI/Avalonia.svg?branch=master)](https://travis-ci.org/AvaloniaUI/Avalonia) | [![codecov](https://codecov.io/gh/AvaloniaUI/Avalonia/branch/master/graph/badge.svg)](https://codecov.io/gh/AvaloniaUI/Avalonia) |
+| Gitter Chat | Windows Build Status | Linux/Mac Build Status |
+|---|---|---|
+| [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/AvaloniaUI/Avalonia?utm_campaign=pr-badge&utm_content=badge&utm_medium=badge&utm_source=badge) | [![Build status](https://ci.appveyor.com/api/projects/status/hubk3k0w9idyibfg/branch/master?svg=true)](https://ci.appveyor.com/project/AvaloniaUI/Avalonia/branch/master) | [![Build Status](https://travis-ci.org/AvaloniaUI/Avalonia.svg?branch=master)](https://travis-ci.org/AvaloniaUI/Avalonia) |
 
 A multi-platform .NET UI framework. It can run on Windows, Linux, Mac OS X, iOS and Android.
 
-![](docs/images/screen.png)
+[![](docs/images/screen.png)](https://youtu.be/wHcB3sGLVYg)
 
 Desktop platforms:
 
@@ -36,7 +36,7 @@ Try out the ControlCatalog to give it a quick demo.
 
 Avalonia is a multi-platform windowing toolkit - somewhat like WPF - that is intended to be multi-
 platform. It supports XAML, lookless controls and a flexible styling system, and runs on Windows
-using Direct2D and other operating systems using Gtk & Cairo.
+using Direct2D and other operating systems using Skia and OS-specific windowing backend (GTK, Cocoa, etc).
 
 ## Current Status
 

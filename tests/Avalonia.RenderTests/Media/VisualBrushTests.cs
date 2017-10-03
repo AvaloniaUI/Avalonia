@@ -9,9 +9,7 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Xunit;
 
-#if AVALONIA_CAIRO
-namespace Avalonia.Cairo.RenderTests.Media
-#elif AVALONIA_SKIA
+#if AVALONIA_SKIA
 namespace Avalonia.Skia.RenderTests
 #else
 namespace Avalonia.Direct2D1.RenderTests.Media
@@ -85,10 +83,8 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             await RenderToFile(target);
             CompareImages();
         }
-
-#if AVALONIA_CAIRO
-        [Fact(Skip = "Font scaling currently broken on cairo")]
-#elif AVALONIA_SKIA_SKIP_FAIL
+        
+#if AVALONIA_SKIA_SKIP_FAIL
         [Fact(Skip = "FIXME")]
 #else
         [Fact]
@@ -142,9 +138,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
-#if AVALONIA_CAIRO
-        [Fact(Skip = "Font scaling currently broken on cairo")]
-#elif AVALONIA_SKIA_SKIP_FAIL
+#if AVALONIA_SKIA_SKIP_FAIL
         [Fact(Skip = "FIXME")]
 #else
         [Fact]
@@ -171,9 +165,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
-#if AVALONIA_CAIRO
-        [Fact(Skip = "Font scaling currently broken on cairo")]
-#elif AVALONIA_SKIA_SKIP_FAIL
+#if AVALONIA_SKIA_SKIP_FAIL
         [Fact(Skip = "FIXME")]
 #else
         [Fact]
@@ -200,9 +192,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
-#if AVALONIA_CAIRO
-        [Fact(Skip = "Font scaling currently broken on cairo")]
-#elif AVALONIA_SKIA_SKIP_FAIL
+#if AVALONIA_SKIA_SKIP_FAIL
         [Fact(Skip = "FIXME")]
 #else
         [Fact]
@@ -253,9 +243,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
-#if AVALONIA_CAIRO
-        [Fact(Skip = "Font scaling currently broken on cairo")]
-#elif AVALONIA_SKIA_SKIP_FAIL
+#if AVALONIA_SKIA_SKIP_FAIL
         [Fact(Skip = "FIXME")]
 #else
         [Fact]
@@ -337,9 +325,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
-#if AVALONIA_CAIRO
-        [Fact(Skip = "TileMode.FlipX not yet supported on cairo")]
-#elif AVALONIA_SKIA_SKIP_FAIL
+#if AVALONIA_SKIA_SKIP_FAIL
         [Fact(Skip = "FIXME")]
 #else
         [Fact]
@@ -367,9 +353,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
-#if AVALONIA_CAIRO
-        [Fact(Skip = "TileMode.FlipY not yet supported on cairo")]
-#elif AVALONIA_SKIA_SKIP_FAIL
+#if AVALONIA_SKIA_SKIP_FAIL
         [Fact(Skip = "FIXME")]
 #else
         [Fact]
@@ -397,9 +381,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
-#if AVALONIA_CAIRO
-        [Fact(Skip = "Font scaling currently broken on cairo")]
-#elif AVALONIA_SKIA_SKIP_FAIL
+#if AVALONIA_SKIA_SKIP_FAIL
         [Fact(Skip = "FIXME")]
 #else
         [Fact]
@@ -427,9 +409,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
-#if AVALONIA_CAIRO
-        [Fact(Skip = "Font scaling currently broken on cairo")]
-#elif AVALONIA_SKIA_SKIP_FAIL
+#if AVALONIA_SKIA_SKIP_FAIL
         [Fact(Skip = "FIXME")]
 #else
         [Fact]

@@ -3,6 +3,7 @@
 
 using System;
 using System.Globalization;
+using System.Linq;
 
 namespace Avalonia
 {
@@ -294,6 +295,34 @@ namespace Avalonia
                 _m11 / d,
                 ((_m21 * _m32) - (_m22 * _m31)) / d,
                 ((_m12 * _m31) - (_m11 * _m32)) / d);
+        }
+
+        /// <summary>
+        /// Parses a <see cref="Matrix"/> string.
+        /// </summary>
+        /// <param name="s">The string.</param>
+        /// <param name="culture">The current culture.</param>
+        /// <returns>The <see cref="Matrix"/>.</returns>
+        public static Matrix Parse(string s, CultureInfo culture)
+        {
+            var parts = s.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(x => x.Trim())
+                .ToArray();
+
+            if (parts.Length == 6)
+            {
+                return new Matrix(
+                    double.Parse(parts[0], culture), 
+                    double.Parse(parts[1], culture), 
+                    double.Parse(parts[2], culture), 
+                    double.Parse(parts[3], culture), 
+                    double.Parse(parts[4], culture), 
+                    double.Parse(parts[5], culture));
+            }
+            else
+            {
+                throw new FormatException("Invalid Matrix.");
+            }
         }
     }
 }

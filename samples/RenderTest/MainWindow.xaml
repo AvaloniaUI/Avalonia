@@ -27,6 +27,7 @@
       </TabControl.Transition>
       <TabItem Header="Animations"><pages:AnimationsPage/></TabItem>
       <TabItem Header="Clipping"><pages:ClippingPage/></TabItem>
+      <TabItem Header="Drawing"><pages:DrawingPage/></TabItem>
     </TabControl>
   </DockPanel>
 </Window>

@@ -7,9 +7,7 @@ using Avalonia.Controls.Shapes;
 using Avalonia.Media;
 using Xunit;
 
-#if AVALONIA_CAIRO
-namespace Avalonia.Cairo.RenderTests.Shapes
-#elif AVALONIA_SKIA
+#if AVALONIA_SKIA
 namespace Avalonia.Skia.RenderTests
 #else
 namespace Avalonia.Direct2D1.RenderTests.Shapes
@@ -21,7 +19,7 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
             : base(@"Shapes\Line")
         {
         }
-
+        
         [Fact]
         public async Task Line_1px_Stroke()
         {
@@ -41,7 +39,7 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
             await RenderToFile(target);
             CompareImages();
         }
-
+        
         [Fact]
         public async Task Line_1px_Stroke_Reversed()
         {
