@@ -239,32 +239,38 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Window_Should_Be_Centered_When_Window_Startup_Location_Is_Center_Screen()
+        public void Window_Should_Be_Centered_When_WindowStartupLocation_Is_CenterScreen()
         {
+            var screen1 = new Mock<Screen>(new Rect(new Size(1920, 1080)), new Rect(new Size(1920, 1040)), true);
+            var screen2 = new Mock<Screen>(new Rect(new Size(1366, 768)), new Rect(new Size(1366, 728)), false);
+
+            var screens = new Mock<IScreenImpl>();
+            screens.Setup(x => x.AllScreens).Returns(new Screen[] { screen1.Object, screen2.Object });
+
             var windowImpl = new Mock<IWindowImpl>();
             windowImpl.SetupProperty(x => x.Position);
             windowImpl.Setup(x => x.ClientSize).Returns(new Size(800, 480));
-            windowImpl.Setup(x => x.MaxClientSize).Returns(new Size(1920, 1080));
             windowImpl.Setup(x => x.Scaling).Returns(1);
+            windowImpl.Setup(x => x.Screen).Returns(screens.Object);
 
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var window = new Window();
+                var window = new Window(windowImpl.Object);
                 window.WindowStartupLocation = WindowStartupLocation.CenterScreen;
                 window.Position = new Point(60, 40);
 
                 window.Show();
 
                 var expectedPosition = new Point(
-                    window.PlatformImpl.MaxClientSize.Width / 2 - window.ClientSize.Width / 2,
-                    window.PlatformImpl.MaxClientSize.Height / 2 - window.ClientSize.Height / 2);
+                    screen1.Object.WorkingArea.Size.Width / 2 - window.ClientSize.Width / 2,
+                    screen1.Object.WorkingArea.Size.Height / 2 - window.ClientSize.Height / 2);
 
                 Assert.Equal(window.Position, expectedPosition);
             }
         }
 
         [Fact]
-        public void Window_Should_Be_Centered_Relative_To_Owner_When_Window_Startup_Location_Is_Center_Owner()
+        public void Window_Should_Be_Centered_Relative_To_Owner_When_WindowStartupLocation_Is_CenterOwner()
         {
             var parentWindowImpl = new Mock<IWindowImpl>();
             parentWindowImpl.SetupProperty(x => x.Position);

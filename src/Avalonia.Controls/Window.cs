@@ -376,13 +376,10 @@ namespace Avalonia.Controls
         {
             if (WindowStartupLocation == WindowStartupLocation.CenterScreen)
             {
-                // This should be using a Screen API, but we don't have one yet and
-                // PlatformImpl.MaxClientSize is the best we have.
-                if (PlatformImpl != null)
-                {
-                    var positionAsSize = PlatformImpl.MaxClientSize / 2 - ClientSize / 2;
-                    Position = new Point(positionAsSize.Width, positionAsSize.Height);
-                }
+                var screen = Screens.ScreenFromPoint(Bounds.Position);
+
+                if (screen != null)
+                    Position = screen.WorkingArea.CenterRect(new Rect(ClientSize)).Position;
             }
             else if (WindowStartupLocation == WindowStartupLocation.CenterOwner)
             {
