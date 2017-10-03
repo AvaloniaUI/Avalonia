@@ -19,11 +19,11 @@ namespace Avalonia.Gtk3
         private CairoSurface _surface;
         private int _factor;
         private object _lock = new object();
-        public ImageSurfaceFramebuffer(WindowBaseImpl impl, int width, int height)
+        public ImageSurfaceFramebuffer(WindowBaseImpl impl, int width, int height, int factor)
         {
             _impl = impl;
             _widget = impl.GtkWidget;
-            _factor = (int)(Native.GtkWidgetGetScaleFactor?.Invoke(_widget) ?? 1u);
+            _factor = factor;
             width *= _factor;
             height *= _factor;
             _surface = Native.CairoImageSurfaceCreate(1, width, height);
@@ -32,23 +32,21 @@ namespace Avalonia.Gtk3
             Height = height;
             Address = Native.CairoImageSurfaceGetData(_surface);
             RowBytes = Native.CairoImageSurfaceGetStride(_surface);
+            Native.CairoSurfaceSetDeviceScale(_surface, factor, factor);
             Native.CairoSurfaceFlush(_surface);
         }
 
-        static void Draw(IntPtr context, CairoSurface surface, double factor)
+        static void Draw(IntPtr context, CairoSurface surface)
         {
-            
             Native.CairoSurfaceMarkDirty(surface);
-            Native.CairoScale(context, 1d / factor, 1d / factor);
             Native.CairoSetSourceSurface(context, surface, 0, 0);
             Native.CairoPaint(context);
-
         }
         /*
         static Stopwatch St =Stopwatch.StartNew();
         private static int _frames;
         private static int _fps;*/
-        static void DrawToWidget(GtkWidget widget, CairoSurface surface, int width, int height, double factor)
+        static void DrawToWidget(GtkWidget widget, CairoSurface surface, int width, int height)
         {
             if(surface == null || widget.IsClosed)
                 return;
@@ -58,7 +56,7 @@ namespace Avalonia.Gtk3
             var rc = new GdkRectangle {Width = width, Height = height};
             Native.GdkWindowBeginPaintRect(window, ref rc);
             var context = Native.GdkCairoCreate(window);
-            Draw(context, surface, factor);
+            Draw(context, surface);
             /*
             _frames++;
             var el = St.Elapsed;
@@ -84,15 +82,13 @@ namespace Avalonia.Gtk3
         {
             private readonly GtkWidget _widget;
             private CairoSurface _surface;
-            private readonly double _factor;
             private readonly int _width;
             private readonly int _height;
 
-            public RenderOp(GtkWidget widget, CairoSurface _surface, double factor, int width, int height)
+            public RenderOp(GtkWidget widget, CairoSurface _surface, int width, int height)
             {
                 _widget = widget;
                 this._surface = _surface;
-                _factor = factor;
                 _width = width;
                 _height = height;
             }
@@ -105,7 +101,7 @@ namespace Avalonia.Gtk3
 
             public void RenderNow()
             {
-                DrawToWidget(_widget, _surface, _width, _height, _factor);
+                DrawToWidget(_widget, _surface, _width, _height);
             }
         }
         
@@ -116,13 +112,13 @@ namespace Avalonia.Gtk3
                 if (Dispatcher.UIThread.CheckAccess())
                 {
                     if (_impl.CurrentCairoContext != IntPtr.Zero)
-                        Draw(_impl.CurrentCairoContext, _surface, _factor);
+                        Draw(_impl.CurrentCairoContext, _surface);
                     else
-                        DrawToWidget(_widget, _surface, Width, Height, _factor);
+                        DrawToWidget(_widget, _surface, Width, Height);
                     _surface.Dispose();
                 }
                 else
-                    _impl.SetNextRenderOperation(new RenderOp(_widget, _surface, _factor, Width, Height));
+                    _impl.SetNextRenderOperation(new RenderOp(_widget, _surface, Width, Height));
                 _surface = null;
             }
         }

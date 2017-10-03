@@ -27,7 +27,7 @@ namespace Avalonia.Gtk3
             var s = _window.ClientSize;
             var width = (int) s.Width;
             var height = (int) s.Height;
-            return new ImageSurfaceFramebuffer(_window, width, height);
+            return new ImageSurfaceFramebuffer(_window, width, height, _window.LastKnownScaleFactor);
         }
     }
 }
