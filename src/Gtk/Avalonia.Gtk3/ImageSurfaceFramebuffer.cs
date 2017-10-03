@@ -19,11 +19,11 @@ namespace Avalonia.Gtk3
         private CairoSurface _surface;
         private int _factor;
         private object _lock = new object();
-        public ImageSurfaceFramebuffer(WindowBaseImpl impl, int width, int height)
+        public ImageSurfaceFramebuffer(WindowBaseImpl impl, int width, int height, int factor)
         {
             _impl = impl;
             _widget = impl.GtkWidget;
-            _factor = (int)(Native.GtkWidgetGetScaleFactor?.Invoke(_widget) ?? 1u);
+            _factor = factor;
             width *= _factor;
             height *= _factor;
             _surface = Native.CairoImageSurfaceCreate(1, width, height);

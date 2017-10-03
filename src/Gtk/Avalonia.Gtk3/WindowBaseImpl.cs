@@ -306,7 +306,7 @@ namespace Avalonia.Gtk3
 
         public IMouseDevice MouseDevice => Gtk3Platform.Mouse;
 
-        public double Scaling => (double) 1 / (Native.GtkWidgetGetScaleFactor?.Invoke(GtkWidget) ?? 1);
+        public double Scaling => LastKnownScaleFactor = (int) (Native.GtkWidgetGetScaleFactor?.Invoke(GtkWidget) ?? 1);
 
         public IPlatformHandle Handle => this;
 
@@ -387,6 +387,7 @@ namespace Avalonia.Gtk3
 
 
         public Size ClientSize { get; private set; }
+        public int LastKnownScaleFactor { get; private set; }
 
         public void Resize(Size value)
         {
