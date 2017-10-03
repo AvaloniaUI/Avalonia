@@ -7,7 +7,7 @@
 
 A multi-platform .NET UI framework. It can run on Windows, Linux, Mac OS X, iOS and Android.
 
-![](docs/images/screen.png)
+[![](docs/images/screen.png)](https://youtu.be/wHcB3sGLVYg)
 
 Desktop platforms:
 
