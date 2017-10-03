@@ -32,15 +32,14 @@ namespace Avalonia.Gtk3
             }
             set
             {
-                var w = Native.GtkWidgetGetWindow(GtkWidget);
                 if (value == WindowState.Minimized)
-                    Native.GdkWindowIconify(w);
+                    Native.GtkWindowIconify(GtkWidget);
                 else if (value == WindowState.Maximized)
-                    Native.GdkWindowMaximize(w);
+                    Native.GtkWindowMaximize(GtkWidget);
                 else
                 {
-                    Native.GdkWindowUnmaximize(w);
-                    Native.GdkWindowDeiconify(w);
+                    Native.GtkWindowUnmaximize(GtkWidget);
+                    Native.GtkWindowDeiconify(GtkWidget);
                 }
             }
         }
