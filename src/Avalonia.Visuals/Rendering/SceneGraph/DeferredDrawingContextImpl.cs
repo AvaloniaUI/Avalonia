@@ -196,7 +196,7 @@ namespace Avalonia.Rendering.SceneGraph
 
         public IRenderTargetBitmapImpl CreateLayer(Size size)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException("Creating layers on a deferred drawing context not supported");
         }
 
         /// <inheritdoc/>
