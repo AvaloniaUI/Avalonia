@@ -616,6 +616,12 @@ namespace Avalonia.Win32.Interop
 
         public const int SizeOf_BITMAPINFOHEADER = 40;
 
+        [DllImport("user32.dll")]
+        public static extern bool EnumDisplayMonitors(IntPtr hdc, IntPtr lprcClip,
+                                                      MonitorEnumDelegate lpfnEnum, IntPtr dwData);
+        
+        public delegate bool MonitorEnumDelegate(IntPtr hMonitor, IntPtr hdcMonitor, ref Rect lprcMonitor, IntPtr dwData);
+        
         [DllImport("user32.dll", SetLastError = true)]
         public static extern IntPtr GetDC(IntPtr hWnd);
 
@@ -904,6 +910,9 @@ namespace Avalonia.Win32.Interop
         public static extern IntPtr MonitorFromPoint(POINT pt, MONITOR dwFlags);
 
         [DllImport("user32.dll")]
+        public static extern IntPtr MonitorFromRect(RECT rect, MONITOR dwFlags);
+
+        [DllImport("user32.dll")]
         public static extern IntPtr MonitorFromWindow(IntPtr hwnd, MONITOR dwFlags);
         
         [DllImport("user32", EntryPoint = "GetMonitorInfoW", ExactSpelling = true, CharSet = CharSet.Unicode)]
@@ -1021,6 +1030,14 @@ namespace Avalonia.Win32.Interop
             public int top;
             public int right;
             public int bottom;
+
+            public RECT(Rect rect)
+            {
+                left = (int)rect.X;
+                top = (int)rect.Y;
+                right = (int)(rect.X + rect.Width);
+                bottom = (int)(rect.Y + rect.Height);
+            }
         }
 
         public struct TRACKMOUSEEVENT

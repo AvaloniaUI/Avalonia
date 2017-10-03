@@ -375,23 +375,6 @@ public class Packages
                 OutputDirectory = parameters.NugetRoot
             },
             ///////////////////////////////////////////////////////////////////////////////
-            // Avalonia.Gtk
-            ///////////////////////////////////////////////////////////////////////////////
-            new NuGetPackSettings()
-            {
-                Id = "Avalonia.Gtk",
-                Dependencies = new []
-                {
-                    new NuSpecDependency() { Id = "Avalonia", Version = parameters.Version }
-                },
-                Files = new []
-                {
-                    new NuSpecContent { Source = "Avalonia.Gtk.dll", Target = "lib/net45" }
-                },
-                BasePath = context.Directory("./src/Gtk/Avalonia.Gtk/bin/" + parameters.DirSuffix),
-                OutputDirectory = parameters.NugetRoot
-            },
-            ///////////////////////////////////////////////////////////////////////////////
             // Avalonia.Gtk3
             ///////////////////////////////////////////////////////////////////////////////
             new NuGetPackSettings()
@@ -406,23 +389,6 @@ public class Packages
                     new NuSpecContent { Source = "Avalonia.Gtk3.dll", Target = "lib/netstandard2.0" }
                 },
                 BasePath = context.Directory("./src/Gtk/Avalonia.Gtk3/bin/" + parameters.DirSuffix + "/netstandard2.0"),
-                OutputDirectory = parameters.NugetRoot
-            },
-            ///////////////////////////////////////////////////////////////////////////////
-            // Avalonia.Cairo
-            ///////////////////////////////////////////////////////////////////////////////
-            new NuGetPackSettings()
-            {
-                Id = "Avalonia.Cairo",
-                Dependencies = new []
-                {
-                    new NuSpecDependency() { Id = "Avalonia", Version = parameters.Version }
-                },
-                Files = new []
-                {
-                    new NuSpecContent { Source = "Avalonia.Cairo.dll", Target = "lib/net45" }
-                },
-                BasePath = context.Directory("./src/Gtk/Avalonia.Cairo/bin/" + parameters.DirSuffix),
                 OutputDirectory = parameters.NugetRoot
             },
             ///////////////////////////////////////////////////////////////////////////////
@@ -449,6 +415,20 @@ public class Packages
                 BasePath = context.Directory("./src/Skia/Avalonia.Skia/bin/" + parameters.DirSuffix + "/netstandard2.0"),
                 OutputDirectory = parameters.NugetRoot
             },
+            new NuGetPackSettings()
+            {
+                Id = "Avalonia.MonoMac",
+                Dependencies = new DependencyBuilder(this)
+                {
+                    new NuSpecDependency() { Id = "Avalonia", Version = parameters.Version }
+                }.Dep("MonoMac.NetStandard").ToArray(),
+                Files = new []
+                {
+                    new NuSpecContent { Source = "netstandard2.0/Avalonia.MonoMac.dll", Target = "lib/netstandard2.0" },
+                },
+                BasePath = context.Directory("./src/OSX/Avalonia.MonoMac/bin/" + parameters.DirSuffix),
+                OutputDirectory = parameters.NugetRoot
+            },
             ///////////////////////////////////////////////////////////////////////////////
             // Avalonia.Desktop
             ///////////////////////////////////////////////////////////////////////////////
@@ -457,17 +437,11 @@ public class Packages
                 Id = "Avalonia.Desktop",
                 Dependencies = new []
                 {
-                    //Full .NET
-                    new NuSpecDependency() { Id = "Avalonia.Direct2D1", TargetFramework="net45", Version = parameters.Version },
-                    new NuSpecDependency() { Id = "Avalonia.Gtk", TargetFramework="net45", Version = parameters.Version },
-                    new NuSpecDependency() { Id = "Avalonia.Cairo", TargetFramework="net45", Version = parameters.Version },
-                    new NuSpecDependency() { Id = "Avalonia.Win32", TargetFramework="net45", Version = parameters.Version },
-                    new NuSpecDependency() { Id = "Avalonia.Skia", TargetFramework="net45", Version = parameters.Version },
-                    new NuSpecDependency() { Id = "Avalonia.Gtk3", TargetFramework="net45", Version = parameters.Version },
-                    //.NET Core
-                    new NuSpecDependency() { Id = "Avalonia.Win32", TargetFramework="netcoreapp2.0", Version = parameters.Version },
-                    new NuSpecDependency() { Id = "Avalonia.Skia", TargetFramework="netcoreapp2.0", Version = parameters.Version },
-                    new NuSpecDependency() { Id = "Avalonia.Gtk3", TargetFramework="netcoreapp2.0", Version = parameters.Version }
+                    new NuSpecDependency() { Id = "Avalonia.Direct2D1", Version = parameters.Version },
+                    new NuSpecDependency() { Id = "Avalonia.Win32", Version = parameters.Version },
+                    new NuSpecDependency() { Id = "Avalonia.Skia", Version = parameters.Version },
+                    new NuSpecDependency() { Id = "Avalonia.Gtk3", Version = parameters.Version },
+                    new NuSpecDependency() { Id = "Avalonia.MonoMac", Version = parameters.Version }
                 },
                 Files = new NuSpecContent[]
                 {

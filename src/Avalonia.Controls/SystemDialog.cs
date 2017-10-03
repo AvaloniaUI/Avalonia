@@ -20,7 +20,7 @@ namespace Avalonia.Controls
     {
         public string DefaultExtension { get; set; }        
 
-        public async Task<string> ShowAsync(Window window = null)
+        public async Task<string> ShowAsync(Window window)
             =>
                 ((await AvaloniaLocator.Current.GetService<ISystemDialogImpl>().ShowFileDialogAsync(this, window?.PlatformImpl)) ??
                  new string[0]).FirstOrDefault();

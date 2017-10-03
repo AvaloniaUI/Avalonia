@@ -7,9 +7,7 @@ using Avalonia.Controls.Shapes;
 using Avalonia.Media;
 using Xunit;
 
-#if AVALONIA_CAIRO
-namespace Avalonia.Cairo.RenderTests.Shapes
-#elif AVALONIA_SKIA
+#if AVALONIA_SKIA
 namespace Avalonia.Skia.RenderTests
 #else
 namespace Avalonia.Direct2D1.RenderTests.Shapes
@@ -22,11 +20,7 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
         {
         }
 
-#if AVALONIA_CAIRO
-        [Fact(Skip = "Caused by cairo bug")]
-#else
         [Fact]
-#endif
         public async Task Polyline_1px_Stroke()
         {
             var polylinePoints = new Point[] { new Point(0, 0), new Point(5, 0), new Point(6, -2), new Point(7, 3), new Point(8, -3),
@@ -49,12 +43,8 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
             await RenderToFile(target);
             CompareImages();
         }
-
-#if AVALONIA_CAIRO
-        [Fact(Skip = "Caused by cairo bug")]
-#else
+        
         [Fact]
-#endif
         public async Task Polyline_10px_Stroke_PenLineJoin()
         {
             var polylinePoints = new Point[] { new Point(0, 0), new Point(5, 0), new Point(6, -2), new Point(7, 3), new Point(8, -3),

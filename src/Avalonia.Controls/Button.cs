@@ -69,6 +69,9 @@ namespace Avalonia.Controls
 
         private ICommand _command;
 
+        public static readonly StyledProperty<bool> IsPressedProperty =
+            AvaloniaProperty.Register<Button, bool>(nameof(IsPressed));
+
         /// <summary>
         /// Initializes static members of the <see cref="Button"/> class.
         /// </summary>
@@ -77,6 +80,7 @@ namespace Avalonia.Controls
             FocusableProperty.OverrideDefaultValue(typeof(Button), true);
             CommandProperty.Changed.Subscribe(CommandChanged);
             IsDefaultProperty.Changed.Subscribe(IsDefaultChanged);
+            PseudoClass(IsPressedProperty, ":pressed");
         }
 
         /// <summary>
@@ -134,6 +138,12 @@ namespace Avalonia.Controls
             set { SetValue(IsDefaultProperty, value); }
         }
 
+        public bool IsPressed
+        {
+            get { return GetValue(IsPressedProperty); }
+            private set { SetValue(IsPressedProperty, value); }
+        }
+
         /// <inheritdoc/>
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
@@ -162,7 +172,7 @@ namespace Avalonia.Controls
                 {
                     OnClick();
                 }
-
+                IsPressed = true;
                 e.Handled = true;
             }
 
@@ -178,7 +188,7 @@ namespace Avalonia.Controls
                 {
                     OnClick();
                 }
-
+                IsPressed = false;
                 e.Handled = true;
             }
         }
@@ -219,8 +229,8 @@ namespace Avalonia.Controls
 
             if (e.MouseButton == MouseButton.Left)
             {
-                PseudoClasses.Add(":pressed");
                 e.Device.Capture(this);
+                IsPressed = true;
                 e.Handled = true;
 
                 if (ClickMode == ClickMode.Press)
@@ -238,7 +248,7 @@ namespace Avalonia.Controls
             if (e.MouseButton == MouseButton.Left)
             {
                 e.Device.Capture(null);
-                PseudoClasses.Remove(":pressed");
+                IsPressed = false;
                 e.Handled = true;
 
                 if (ClickMode == ClickMode.Release && new Rect(Bounds.Size).Contains(e.GetPosition(this)))

@@ -2,7 +2,7 @@
     <Style Selector="ScrollBar">
         <Setter Property="Template">
             <ControlTemplate>
-                <Border Background="{StyleResource ThemeControlMidBrush}">
+                <Border Background="{DynamicResource ThemeControlMidBrush}">
                     <Grid RowDefinitions="10,*,10">
                         <RepeatButton Name="PART_LineUpButton"
                                       Classes="repeat"
@@ -30,7 +30,7 @@
                             <Thumb Name="thumb">
                                 <Thumb.Template>
                                     <ControlTemplate>
-                                        <Border Background="{StyleResource ThemeControlDarkBrush}" />
+                                        <Border Background="{DynamicResource ThemeControlDarkBrush}" />
                                     </ControlTemplate>
                                 </Thumb.Template>
                             </Thumb>
@@ -53,7 +53,7 @@
                 Value="10" />
         <Setter Property="Template">
             <ControlTemplate>
-                <Border Background="{StyleResource ThemeControlMidBrush}">
+                <Border Background="{DynamicResource ThemeControlMidBrush}">
                     <Grid ColumnDefinitions="10,*,10">
                         <RepeatButton Name="PART_LineUpButton"
                                       Classes="repeat"
@@ -81,7 +81,7 @@
                             <Thumb Name="thumb">
                                 <Thumb.Template>
                                     <ControlTemplate>
-                                        <Border Background="{StyleResource ThemeControlDarkBrush}" />
+                                        <Border Background="{DynamicResource ThemeControlDarkBrush}" />
                                     </ControlTemplate>
                                 </Thumb.Template>
                             </Thumb>

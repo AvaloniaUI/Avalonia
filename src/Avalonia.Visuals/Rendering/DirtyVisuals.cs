@@ -17,6 +17,8 @@ namespace Avalonia.Rendering
     {
         private SortedDictionary<int, List<IVisual>> _inner = new SortedDictionary<int, List<IVisual>>();
         private Dictionary<IVisual, int> _index = new Dictionary<IVisual, int>();
+        private List<IVisual> _deferredChanges = new List<IVisual>();
+        private int _deferring;
 
         /// <summary>
         /// Gets the number of dirty visuals.
@@ -29,10 +31,15 @@ namespace Avalonia.Rendering
         /// <param name="visual">The dirty visual.</param>
         public void Add(IVisual visual)
         {
-            var distance = visual.CalculateDistanceFromAncestor(visual.VisualRoot);
-            int existingDistance;
+            if (_deferring > 0)
+            {
+                _deferredChanges.Add(visual);
+                return;
+            }
 
-            if (_index.TryGetValue(visual, out existingDistance))
+            var distance = visual.CalculateDistanceFromAncestor(visual.VisualRoot);
+
+            if (_index.TryGetValue(visual, out var existingDistance))
             {
                 if (distance == existingDistance)
                 {
@@ -43,9 +50,7 @@ namespace Avalonia.Rendering
                 _index.Remove(visual);
             }
 
-            List<IVisual> list;
-
-            if (!_inner.TryGetValue(distance, out list))
+            if (!_inner.TryGetValue(distance, out var list))
             {
                 list = new List<IVisual>();
                 _inner.Add(distance, list);
@@ -60,27 +65,13 @@ namespace Avalonia.Rendering
         /// </summary>
         public void Clear()
         {
-            _inner.Clear();
-            _index.Clear();
-        }
-
-        /// <summary>
-        /// Removes a visual from the dirty list.
-        /// </summary>
-        /// <param name="visual">The visual.</param>
-        /// <returns>True if the visual was present in the list; otherwise false.</returns>
-        public bool Remove(IVisual visual)
-        {
-            int distance;
-
-            if (_index.TryGetValue(visual, out distance))
+            if (_deferring > 0)
             {
-                _inner[distance].Remove(visual);
-                _index.Remove(visual);
-                return true;
+                throw new InvalidOperationException("Cannot clear while enumerating");
             }
 
-            return false;
+            _inner.Clear();
+            _index.Clear();
         }
 
         /// <summary>
@@ -89,13 +80,38 @@ namespace Avalonia.Rendering
         /// <returns>A collection of visuals.</returns>
         public IEnumerator<IVisual> GetEnumerator()
         {
-            foreach (var i in _inner)
+            BeginDefer();
+            try
             {
-                foreach (var j in i.Value)
+                foreach (var i in _inner)
                 {
-                    yield return j;
+                    foreach (var j in i.Value)
+                    {
+                        yield return j;
+                    }
                 }
             }
+            finally
+            {
+                EndDefer();
+            }
+        }
+
+        private void BeginDefer()
+        {
+            ++_deferring;
+        }
+
+        private void EndDefer()
+        {
+            if (--_deferring > 0) return;
+
+            foreach (var visual in _deferredChanges)
+            {
+                Add(visual);
+            }
+
+            _deferredChanges.Clear();
         }
 
         /// <summary>

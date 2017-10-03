@@ -14,6 +14,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Media\RadialGradientBrushTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Media\BitmapTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)OpacityMaskTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SVGPathTests.cs" />
     <Compile Include="Media\FormattedTextImplTests.cs" />
     <Compile Include="Controls\ImageTests.cs" />
     <Compile Include="Controls\BorderTests.cs" />

@@ -119,6 +119,7 @@ namespace Avalonia.Controls
             : base(impl)
         {
             _maxPlatformClientSize = PlatformImpl?.MaxClientSize ?? default(Size);
+            Screens = new Screens(PlatformImpl?.Screen);
         }
 
         /// <inheritdoc/>
@@ -134,6 +135,8 @@ namespace Avalonia.Controls
             add { _nameScope.Unregistered += value; }
             remove { _nameScope.Unregistered -= value; }
         }
+
+        public Screens Screens { get; private set; }
 
         /// <summary>
         /// Gets the platform-specific window implementation.
