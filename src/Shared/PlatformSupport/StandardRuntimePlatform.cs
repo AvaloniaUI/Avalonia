@@ -69,7 +69,9 @@ namespace Avalonia.Shared.PlatformSupport
             {
                 if (!IsDisposed)
                 {
+#if DEBUG
                     Backtraces.Remove(_backtrace);
+#endif
                     _plat.Free(Address, Size);
                     GC.RemoveMemoryPressure(Size);
                     IsDisposed = true;
