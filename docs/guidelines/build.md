@@ -4,12 +4,6 @@
 
 Avalonia requires at least Visual Studio 2017 and .NET Core SDK 2.0 to build on Windows.
 
-### Install GTK Sharp
-
-For the moment under windows, you must have [gtk-sharp](http://www.mono-project.com/download/#download-win)
-installed. Note that after installing the package your machine may require a restart before GTK# is
-added to your path. We hope to remove or make this dependency optional at some point in the future.
-
 ### Clone the Avalonia repository
 
 ```

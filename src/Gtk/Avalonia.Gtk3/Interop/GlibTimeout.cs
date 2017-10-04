@@ -53,7 +53,7 @@ namespace Avalonia.Gtk3.Interop
             if (interval == 0)
                 throw new ArgumentException("Don't know how to create a timer with zero or negative interval");
             var timer = new Timer ();
-            GlibTimeout.Add(GlibPriority.FromDispatcherPriority(DispatcherPriority.Background), interval,
+            GlibTimeout.Add(GlibPriority.FromDispatcherPriority(DispatcherPriority.Normal), interval,
                 () =>
                 {
                     if (timer.Stopped)
