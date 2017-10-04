@@ -140,13 +140,11 @@ namespace Avalonia.Gtk3.Interop
             var nativeHandleNames = new[] { "gdk_win32_window_get_handle", "gdk_x11_window_get_xid", "gdk_quartz_window_get_nswindow" };
             foreach (var name in nativeHandleNames)
             {
-                try
-                {
-                    Native.GetNativeGdkWindowHandle = (Native.D.gdk_get_native_handle)Marshal
-                        .GetDelegateForFunctionPointer(loader.GetProcAddress(dlls[GtkDll.Gdk], name, false), typeof(Native.D.gdk_get_native_handle));
-                    break;
-                }
-                catch { }
+                var ptr = loader.GetProcAddress(dlls[GtkDll.Gdk], name, true);
+                if (ptr == IntPtr.Zero)
+                    continue;
+                Native.GetNativeGdkWindowHandle = (Native.D.gdk_get_native_handle) Marshal
+                    .GetDelegateForFunctionPointer(ptr, typeof(Native.D.gdk_get_native_handle));
             }
             if (Native.GetNativeGdkWindowHandle == null)
                 throw new Exception($"Unable to locate any of [{string.Join(", ", nativeHandleNames)}] in libgdk");

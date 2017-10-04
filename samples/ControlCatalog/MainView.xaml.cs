@@ -13,11 +13,20 @@ namespace ControlCatalog
         {
             this.InitializeComponent();
             if (AvaloniaLocator.Current.GetService<IRuntimePlatform>().GetRuntimeInfo().IsDesktop)
-                ((IList) this.FindControl<TabControl>("Sidebar").Items).Add(new TabItem()
+            {
+                IList tabItems = ((IList)this.FindControl<TabControl>("Sidebar").Items);
+                tabItems.Add(new TabItem()
                 {
                     Header = "Dialogs",
                     Content = new DialogsPage()
                 });
+                tabItems.Add(new TabItem()
+                {
+                    Header = "Screens",
+                    Content = new ScreenPage()
+                });
+
+            }
         }
 
         private void InitializeComponent()

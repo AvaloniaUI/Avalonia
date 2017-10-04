@@ -23,7 +23,6 @@ namespace Avalonia.Utilities
             _timer = new DispatcherTimer();
             
             _timer.Tick += delegate { OnTick(); };
-            _timer.Start();
         }
 
         private void OnTick()

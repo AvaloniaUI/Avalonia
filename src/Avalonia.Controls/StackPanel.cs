@@ -7,22 +7,6 @@ using Avalonia.Input;
 namespace Avalonia.Controls
 {
     /// <summary>
-    /// Defines vertical or horizontal orientation.
-    /// </summary>
-    public enum Orientation
-    {
-        /// <summary>
-        /// Vertical orientation.
-        /// </summary>
-        Vertical,
-
-        /// <summary>
-        /// Horizontal orientation.
-        /// </summary>
-        Horizontal,
-    }
-
-    /// <summary>
     /// A panel which lays out its children horizontally or vertically.
     /// </summary>
     public class StackPanel : Panel, INavigableContainer
@@ -37,7 +21,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="Orientation"/> property.
         /// </summary>
         public static readonly StyledProperty<Orientation> OrientationProperty =
-            AvaloniaProperty.Register<StackPanel, Orientation>(nameof(Orientation));
+            AvaloniaProperty.Register<StackPanel, Orientation>(nameof(Orientation), Orientation.Vertical);
 
         /// <summary>
         /// Initializes static members of the <see cref="StackPanel"/> class.

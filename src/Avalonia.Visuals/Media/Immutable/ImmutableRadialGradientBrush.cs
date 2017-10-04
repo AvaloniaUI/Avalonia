@@ -22,7 +22,7 @@ namespace Avalonia.Media.Immutable
         /// The horizontal and vertical radius of the outermost circle of the radial gradient.
         /// </param>
         public ImmutableRadialGradientBrush(
-            IReadOnlyList<GradientStop> gradientStops,
+            IList<GradientStop> gradientStops,
             double opacity = 1,
             GradientSpreadMethod spreadMethod = GradientSpreadMethod.Pad,
             RelativePoint? center = null,

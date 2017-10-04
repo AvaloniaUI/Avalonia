@@ -7,9 +7,7 @@ using Avalonia.Layout;
 using Avalonia.Media;
 using Xunit;
 
-#if AVALONIA_CAIRO
-namespace Avalonia.Cairo.RenderTests.Shapes
-#elif AVALONIA_SKIA
+#if AVALONIA_SKIA
 namespace Avalonia.Skia.RenderTests
 #else
 namespace Avalonia.Direct2D1.RenderTests.Shapes
@@ -25,11 +23,8 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
         {
         }
 
-#if AVALONIA_CAIRO
-        [Fact(Skip = "Broken in Cairo: waiting for Skia")]
-#else
+
         [Fact]
-#endif
         public async Task Line_Absolute()
         {
             Decorator target = new Decorator
@@ -49,12 +44,8 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
             await RenderToFile(target);
             CompareImages();
         }
-
-#if AVALONIA_CAIRO
-        [Fact(Skip = "Broken in Cairo: waiting for Skia")]
-#else
+        
         [Fact]
-#endif
         public async Task Line_Relative()
         {
             Decorator target = new Decorator
@@ -74,12 +65,8 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
             await RenderToFile(target);
             CompareImages();
         }
-
-#if AVALONIA_CAIRO
-        [Fact(Skip = "Broken in Cairo: waiting for Skia")]
-#else
+        
         [Fact]
-#endif
         public async Task HorizontalLine_Absolute()
         {
             Decorator target = new Decorator
@@ -99,12 +86,8 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
             await RenderToFile(target);
             CompareImages();
         }
-
-#if AVALONIA_CAIRO
-        [Fact(Skip = "Broken in Cairo: waiting for Skia")]
-#else
+        
         [Fact]
-#endif
         public async Task HorizontalLine_Relative()
         {
             Decorator target = new Decorator
@@ -124,12 +107,8 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
             await RenderToFile(target);
             CompareImages();
         }
-
-#if AVALONIA_CAIRO
-        [Fact(Skip = "Broken in Cairo: waiting for Skia")]
-#else
+        
         [Fact]
-#endif
         public async Task VerticalLine_Absolute()
         {
             Decorator target = new Decorator
@@ -149,12 +128,8 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
             await RenderToFile(target);
             CompareImages();
         }
-
-#if AVALONIA_CAIRO
-        [Fact(Skip = "Broken in Cairo: waiting for Skia")]
-#else
+        
         [Fact]
-#endif
         public async Task VerticalLine_Relative()
         {
             Decorator target = new Decorator
@@ -174,12 +149,8 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
             await RenderToFile(target);
             CompareImages();
         }
-
-#if AVALONIA_CAIRO
-        [Fact(Skip = "Broken in Cairo: waiting for Skia")]
-#else
+        
         [Fact]
-#endif
         public async Task CubicBezier_Absolute()
         {
             Decorator target = new Decorator
@@ -200,12 +171,8 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
             await RenderToFile(target);
             CompareImages();
         }
-
-#if AVALONIA_CAIRO
-        [Fact(Skip = "Broken in Cairo: waiting for Skia")]
-#else
+        
         [Fact]
-#endif
         public async Task CubicBezier_Relative()
         {
             Decorator target = new Decorator
@@ -226,12 +193,8 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
             await RenderToFile(target);
             CompareImages();
         }
-
-#if AVALONIA_CAIRO
-        [Fact(Skip = "Broken in Cairo: waiting for Skia")]
-#else
+        
         [Fact]
-#endif
         public async Task Arc_Absolute()
         {
             Decorator target = new Decorator
@@ -252,12 +215,8 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
             await RenderToFile(target);
             CompareImages();
         }
-
-#if AVALONIA_CAIRO
-        [Fact(Skip = "Broken in Cairo: waiting for Skia")]
-#else
+        
         [Fact]
-#endif
         public async Task Arc_Relative()
         {
             Decorator target = new Decorator
@@ -375,9 +334,7 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
             CompareImages();
         }
 
-#if AVALONIA_CAIRO
-        [Fact(Skip = "Path with StrokeDashCap, StrokeStartLineCap, StrokeEndLineCap rendering is not implemented in Cairo yet")]
-#elif AVALONIA_SKIA_SKIP_FAIL
+#if AVALONIA_SKIA_SKIP_FAIL
         [Fact(Skip = "FIXME")]
 #else
         [Fact]

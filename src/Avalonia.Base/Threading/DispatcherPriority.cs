@@ -10,10 +10,10 @@ namespace Avalonia.Threading
     public enum DispatcherPriority
     {
         /// <summary>
-        /// The job will not be processed.
+        /// Minimum possible priority
         /// </summary>
-        Inactive = 0,
-
+        MinValue = 1,
+        
         /// <summary>
         /// The job will be processed when the system is idle.
         /// </summary>
@@ -48,20 +48,30 @@ namespace Avalonia.Threading
         /// The job will be processed with the same priority as render.
         /// </summary>
         Render = 7,
-
+        
+        /// <summary>
+        /// The job will be processed with the same priority as render.
+        /// </summary>
+        Layout = 8,
+        
         /// <summary>
         /// The job will be processed with the same priority as data binding.
         /// </summary>
-        DataBind = 8,
+        DataBind = 9,
 
         /// <summary>
         /// The job will be processed with normal priority.
         /// </summary>
-        Normal = 9,
+        Normal = 10,
 
         /// <summary>
         /// The job will be processed before other asynchronous operations.
         /// </summary>
-        Send = 10,
+        Send = 11,
+        
+        /// <summary>
+        /// Maximum possible priority
+        /// </summary>
+        MaxValue = 11
     }
 }

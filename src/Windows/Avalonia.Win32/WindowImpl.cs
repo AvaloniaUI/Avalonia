@@ -16,6 +16,7 @@ using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 using Avalonia.Rendering;
+using Avalonia.Threading;
 #if NETSTANDARD
 using Win32Exception = Avalonia.Win32.NetStandard.AvaloniaWin32Exception;
 #endif
@@ -102,6 +103,11 @@ namespace Avalonia.Win32
                 return new Size(rect.right, rect.bottom) / Scaling;
             }
         }
+
+        public IScreenImpl Screen
+        {
+            get;
+        } = new ScreenImpl();
 
 
         public IRenderer CreateRenderer(IRenderRoot root)
@@ -597,6 +603,10 @@ namespace Avalonia.Win32
 
                 case UnmanagedMethods.WindowsMessage.WM_MOVE:
                     PositionChanged?.Invoke(new Point((short)(ToInt32(lParam) & 0xffff), (short)(ToInt32(lParam) >> 16)));
+                    return IntPtr.Zero;
+                    
+                case UnmanagedMethods.WindowsMessage.WM_DISPLAYCHANGE:
+                    (Screen as ScreenImpl)?.InvalidateScreensCache();
                     return IntPtr.Zero;
             }
 #if USE_MANAGED_DRAG

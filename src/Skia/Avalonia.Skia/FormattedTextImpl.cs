@@ -171,8 +171,10 @@ namespace Avalonia.Skia
         }
 
         internal void Draw(DrawingContextImpl context,
-                           SKCanvas canvas, SKPoint origin,
-                           DrawingContextImpl.PaintWrapper foreground)
+            SKCanvas canvas,
+            SKPoint origin,
+            DrawingContextImpl.PaintWrapper foreground,
+            bool canUseLcdRendering)
         {
             /* TODO: This originated from Native code, it might be useful for debugging character positions as
              * we improve the FormattedText support. Will need to port this to C# obviously. Rmove when
@@ -206,7 +208,7 @@ namespace Avalonia.Skia
                 SKPaint currentPaint = null;
                 try
                 {
-                    ApplyWrapperTo(ref currentPaint, foreground, ref currd, paint);
+                    ApplyWrapperTo(ref currentPaint, foreground, ref currd, paint, canUseLcdRendering);
                     bool hasCusomFGBrushes = _foregroundBrushes.Any();
 
                     for (int c = 0; c < _skiaLines.Count; c++)
@@ -243,7 +245,7 @@ namespace Avalonia.Skia
 
                                 subStr = Text.Substring(i, len);
 
-                                ApplyWrapperTo(ref currentPaint, currentWrapper, ref currd, paint);
+                                ApplyWrapperTo(ref currentPaint, currentWrapper, ref currd, paint, canUseLcdRendering);
                                 
                                 canvas.DrawText(subStr, currX, origin.Y + line.Top + _lineOffset, paint);
 
@@ -277,12 +279,13 @@ namespace Avalonia.Skia
         private List<AvaloniaFormattedTextLine> _skiaLines;
 
         private static void ApplyWrapperTo(ref SKPaint current, DrawingContextImpl.PaintWrapper wrapper,
-                                                ref IDisposable curr, SKPaint paint)
+                                                ref IDisposable curr, SKPaint paint, bool canUseLcdRendering)
         {
             if (current == wrapper.Paint)
                 return;
             curr?.Dispose();
             curr = wrapper.ApplyTo(paint);
+            paint.LcdRenderText = canUseLcdRendering;
         }
 
         private static bool IsBreakChar(char c)

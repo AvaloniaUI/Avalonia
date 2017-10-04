@@ -9,9 +9,7 @@ using System.Linq;
 using System.Text;
 using Xunit;
 
-#if AVALONIA_CAIRO
-namespace Avalonia.Cairo.RenderTests.Media
-#elif AVALONIA_SKIA
+#if AVALONIA_SKIA
 namespace Avalonia.Skia.RenderTests
 #else
 
@@ -86,11 +84,8 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 widthConstraint);
         }
 
-#if AVALONIA_CAIRO
-        [Theory(Skip = "TODO: Font scaling currently broken on cairo")]
-#else
+
         [Theory]
-#endif
         [InlineData("", FontSize, 0, FontSizeHeight)]
         [InlineData("x", FontSize, 7.20, FontSizeHeight)]
         [InlineData(stringword, FontSize, 28.80, FontSizeHeight)]
@@ -114,12 +109,8 @@ namespace Avalonia.Direct2D1.RenderTests.Media
 
             Assert.Equal(expHeight, linesHeight, 2);
         }
-
-#if AVALONIA_CAIRO
-        [Theory(Skip = "TODO: Font scaling currently broken on cairo")]
-#else
+        
         [Theory]
-#endif
         [InlineData("", 1, -1, TextWrapping.NoWrap)]
         [InlineData("x", 1, -1, TextWrapping.NoWrap)]
         [InlineData(stringword, 1, -1, TextWrapping.NoWrap)]
@@ -142,12 +133,8 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             var lines = constrained.GetLines().ToArray();
             Assert.Equal(linesCount, lines.Count());
         }
-
-#if AVALONIA_CAIRO
-        [Theory(Skip = "TODO: Font scaling currently broken on cairo")]
-#else
+        
         [Theory]
-#endif
         [InlineData("x", 0, 0, true, false, 0)]
         [InlineData(stringword, -1, -1, false, false, 0)]
         [InlineData(stringword, 25, 13, true, false, 3)]
@@ -181,12 +168,8 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             Assert.Equal(isInside, htRes.IsInside);
             Assert.Equal(isTrailing, htRes.IsTrailing);
         }
-
-#if AVALONIA_CAIRO
-        [Theory(Skip = "TODO: Font scaling currently broken on cairo")]
-#else
+        
         [Theory]
-#endif
         [InlineData("", 0, 0, 0, 0, FontSizeHeight)]
         [InlineData("x", 0, 0, 0, 7.20, FontSizeHeight)]
         [InlineData("x", -1, 7.20, 0, 0, FontSizeHeight)]
@@ -207,12 +190,8 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             Assert.Equal(width, r.Width, 2);
             Assert.Equal(height, r.Height, 2);
         }
-
-#if AVALONIA_CAIRO
-        [Theory(Skip = "TODO: Font scaling currently broken on cairo")]
-#else
+        
         [Theory]
-#endif
         [InlineData("x", 0, 200, 200 - 7.20, 0, 7.20, FontSizeHeight)]
         [InlineData(stringword, 0, 200, 171.20, 0, 7.20, FontSizeHeight)]
         [InlineData(stringword, 3, 200, 200 - 7.20, 0, 7.20, FontSizeHeight)]
@@ -230,12 +209,8 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             Assert.Equal(width, r.Width, 2);
             Assert.Equal(height, r.Height, 2);
         }
-
-#if AVALONIA_CAIRO
-        [Theory(Skip = "TODO: Font scaling currently broken on cairo")]
-#else
+        
         [Theory]
-#endif
         [InlineData("x", 0, 200, 100 - 7.20 / 2, 0, 7.20, FontSizeHeight)]
         [InlineData(stringword, 0, 200, 85.6, 0, 7.20, FontSizeHeight)]
         [InlineData(stringword, 3, 200, 100 + 7.20, 0, 7.20, FontSizeHeight)]
@@ -253,12 +228,8 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             Assert.Equal(width, r.Width, 2);
             Assert.Equal(height, r.Height, 2);
         }
-
-#if AVALONIA_CAIRO
-        [Theory(Skip = "TODO: Font scaling currently broken on cairo")]
-#else
+        
         [Theory]
-#endif
         [InlineData("x", 0, 1, "0,0,7.20,13.59")]
         [InlineData(stringword, 0, 4, "0,0,28.80,13.59")]
         [InlineData(stringmiddlenewlines, 10, 10, "0,13.59,57.61,13.59")]

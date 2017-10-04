@@ -12,6 +12,7 @@ using Avalonia.Input.Platform;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Gtk3;
+using Avalonia.Threading;
 
 namespace Avalonia.Gtk3
 {
@@ -21,6 +22,7 @@ namespace Avalonia.Gtk3
         internal static readonly MouseDevice Mouse = new MouseDevice();
         internal static readonly KeyboardDevice Keyboard = new KeyboardDevice();
         internal static IntPtr App { get; set; }
+        public static bool UseDeferredRendering = true;
         public static void Initialize()
         {
             Resolver.Resolve();
@@ -65,37 +67,42 @@ namespace Avalonia.Gtk3
 
         public IDisposable StartTimer(TimeSpan interval, Action tick)
         {
-            return GlibTimeout.StarTimer((uint) interval.TotalMilliseconds, tick);
+            var msec = interval.TotalMilliseconds;
+            if (msec <= 0)
+                throw new ArgumentException("Don't know how to create a timer with zero or negative interval");
+            var imsec = (uint) msec;
+            if (imsec == 0)
+                imsec = 1;
+            return GlibTimeout.StarTimer(imsec, tick);
         }
 
-        private bool _signaled = false;
+        private bool[] _signaled = new bool[(int) DispatcherPriority.MaxValue + 1];
         object _lock = new object();
-
-        public void Signal()
+        public void Signal(DispatcherPriority prio)
         {
+            var idx = (int) prio;
             lock(_lock)
-                if (!_signaled)
+                if (!_signaled[idx])
                 {
-                    _signaled = true;
-                    GlibTimeout.Add(0, () =>
+                    _signaled[idx] = true;
+                    GlibTimeout.Add(GlibPriority.FromDispatcherPriority(prio), 0, () =>
                     {
                         lock (_lock)
                         {
-                            _signaled = false;
+                            _signaled[idx] = false;
                         }
-                        Signaled?.Invoke();
+                        Signaled?.Invoke(prio);
                         return false;
                     });
                 }
         }
-        public event Action Signaled;
+        public event Action<DispatcherPriority?> Signaled;
 
 
         [ThreadStatic]
         private static bool s_tlsMarker;
 
         public bool CurrentThreadIsLoopThread => s_tlsMarker;
-
     }
 }
 
@@ -103,10 +110,11 @@ namespace Avalonia
 {
     public static class Gtk3AppBuilderExtensions
     {
-        public static T UseGtk3<T>(this AppBuilderBase<T> builder, ICustomGtk3NativeLibraryResolver resolver = null) 
+        public static T UseGtk3<T>(this AppBuilderBase<T> builder, bool deferredRendering = true, ICustomGtk3NativeLibraryResolver resolver = null) 
             where T : AppBuilderBase<T>, new()
         {
             Resolver.Custom = resolver;
+            Gtk3Platform.UseDeferredRendering = deferredRendering;
             return builder.UseWindowingSubsystem(Gtk3Platform.Initialize, "GTK3");
         }
     }
