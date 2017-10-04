@@ -20,6 +20,13 @@ namespace Avalonia.Skia
             _dpi = new Vector(96, 96);
         }
 
+        static void ReleaseProc(IntPtr address, object ctx)
+        {
+            ((IUnmanagedBlob) ctx).Dispose();
+        }
+
+        private static readonly SKBitmapReleaseDelegate ReleaseDelegate = ReleaseProc;
+        
         public BitmapImpl(int width, int height, Vector dpi, PixelFormat? fmt = null)
         {
             PixelHeight = height;
@@ -29,6 +36,12 @@ namespace Avalonia.Skia
             var runtime = AvaloniaLocator.Current?.GetService<IRuntimePlatform>()?.GetRuntimeInfo();
             if (runtime?.IsDesktop == true && runtime?.OperatingSystem == OperatingSystemType.Linux)
                 colorType = SKColorType.Bgra8888;
+            
+            Bitmap = new SKBitmap();
+            var nfo = new SKImageInfo(width, height, colorType, SKAlphaType.Premul);
+            var plat = AvaloniaLocator.Current.GetService<IRuntimePlatform>();
+            var blob = plat.AllocBlob(nfo.BytesSize);
+            Bitmap.InstallPixels(nfo, blob.Address, nfo.RowBytes, null, ReleaseDelegate, blob);
             Bitmap = new SKBitmap(width, height, colorType, SKAlphaType.Premul);
             Bitmap.Erase(SKColor.Empty);
         }
