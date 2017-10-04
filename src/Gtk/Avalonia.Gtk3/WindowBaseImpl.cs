@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using Avalonia.Controls;
 using Avalonia.Gtk3.Interop;
 using Avalonia.Input;
@@ -29,6 +30,7 @@ namespace Avalonia.Gtk3
         private GCHandle _gcHandle;
         private object _lock = new object();
         private IDeferredRenderOperation _nextRenderOperation;
+        private readonly AutoResetEvent _canSetNextOperation = new AutoResetEvent(true);
 
         public WindowBaseImpl(GtkWindow gtkWidget)
         {
@@ -255,11 +257,19 @@ namespace Avalonia.Gtk3
 
         public void SetNextRenderOperation(IDeferredRenderOperation op)
         {
-            lock (_lock)
+            while (true)
             {
-                _nextRenderOperation?.Dispose();
-                _nextRenderOperation = op;
+                lock (_lock)
+                {
+                    if (_nextRenderOperation == null)
+                    {
+                        _nextRenderOperation = op;
+                        return;
+                    }
+                }
+                _canSetNextOperation.WaitOne();
             }
+            
         }
 
         private void OnRenderTick()
@@ -272,10 +282,11 @@ namespace Avalonia.Gtk3
                     op = _nextRenderOperation;
                     _nextRenderOperation = null;
                 }
+                _canSetNextOperation.Set();
             }
             if (op != null)
             {
-                op?.RenderNow();
+                op?.RenderNow(null);
                 op?.Dispose();
             }
         }

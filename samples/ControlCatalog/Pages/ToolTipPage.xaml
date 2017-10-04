@@ -10,7 +10,7 @@
               HorizontalAlignment="Center">
             <Border Grid.Column="0"
                     Grid.Row="1"
-                    Background="{StyleResource ThemeAccentBrush}"
+                    Background="{DynamicResource ThemeAccentBrush}"
                     Margin="5"
                     Padding="50"
                     ToolTip.Tip="This is a ToolTip">
@@ -24,7 +24,7 @@
             <Border Name="Border"
                     Grid.Column="1"
                     Grid.Row="1"
-                    Background="{StyleResource ThemeAccentBrush}"
+                    Background="{DynamicResource ThemeAccentBrush}"
                     Margin="5"
                     Padding="50"
                     ToolTip.Placement="Bottom">

@@ -160,6 +160,9 @@ namespace Avalonia.Gtk3.Interop
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Cairo)]
             public delegate CairoSurface cairo_image_surface_create(int format, int width, int height);
+            
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Cairo)]
+            public delegate CairoSurface cairo_image_surface_create_for_data(IntPtr data, int format, int width, int height, int stride);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Cairo)]
             public delegate IntPtr cairo_image_surface_get_data(CairoSurface surface);
@@ -459,6 +462,7 @@ namespace Avalonia.Gtk3.Interop
         public static D.gdk_cairo_create GdkCairoCreate;
         
         public static D.cairo_image_surface_create CairoImageSurfaceCreate;
+        public static D.cairo_image_surface_create_for_data CairoImageSurfaceCreateForData;
         public static D.cairo_image_surface_get_data CairoImageSurfaceGetData;
         public static D.cairo_image_surface_get_stride CairoImageSurfaceGetStride;
         public static D.cairo_surface_mark_dirty CairoSurfaceMarkDirty;
