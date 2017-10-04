@@ -34,6 +34,7 @@ namespace Avalonia.Win32
         private bool _resizable = true;
         private double _scaling = 1;
         private WindowState _showWindowState;
+        private WindowState _lastWindowState;
         private FramebufferManager _framebuffer;
         private OleDropTarget _dropTarget;
         private Size _minSize;
@@ -76,6 +77,8 @@ namespace Avalonia.Win32
         public Action<double> ScalingChanged { get; set; }
 
         public Action<Point> PositionChanged { get; set; }
+
+        public Action<WindowState> WindowStateChanged { get; set; }
 
         public Thickness BorderThickness
         {
@@ -617,12 +620,23 @@ namespace Avalonia.Win32
                     return IntPtr.Zero;
 
                 case UnmanagedMethods.WindowsMessage.WM_SIZE:
+                    var size = (UnmanagedMethods.SizeCommand)wParam;
+
                     if (Resized != null &&
-                        (wParam == (IntPtr)UnmanagedMethods.SizeCommand.Restored ||
-                         wParam == (IntPtr)UnmanagedMethods.SizeCommand.Maximized))
+                        (size == UnmanagedMethods.SizeCommand.Restored ||
+                         size == UnmanagedMethods.SizeCommand.Maximized))
                     {
                         var clientSize = new Size(ToInt32(lParam) & 0xffff, ToInt32(lParam) >> 16);
                         Resized(clientSize / Scaling);
+                    }
+
+                    var windowState = size == SizeCommand.Maximized ? WindowState.Maximized
+                        : (size == SizeCommand.Minimized ? WindowState.Minimized : WindowState.Normal);
+
+                    if (windowState != _lastWindowState)
+                    {
+                        _lastWindowState = windowState;
+                        WindowStateChanged?.Invoke(windowState);
                     }
 
                     return IntPtr.Zero;
@@ -654,6 +668,7 @@ namespace Avalonia.Win32
                     (Screen as ScreenImpl)?.InvalidateScreensCache();
                     return IntPtr.Zero;
             }
+
 #if USE_MANAGED_DRAG
 
             if (_managedDrag.PreprocessInputEvent(ref e))

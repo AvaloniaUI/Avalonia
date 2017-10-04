@@ -12,10 +12,24 @@ namespace Avalonia.MonoMac
         public bool IsResizable = true;
         public CGRect? UndecoratedLastUnmaximizedFrame;
 
+        private WindowState _lastWindowState;
+
         public WindowImpl()
         {
             UpdateStyle();
             Window.SetCanBecomeKeyAndMain();
+            
+            Window.DidResize += delegate
+            {
+                var windowState = Window.IsMiniaturized ? WindowState.Minimized
+                    : (IsZoomed ? WindowState.Maximized : WindowState.Normal);
+
+                if (windowState != _lastWindowState)
+                {
+                    _lastWindowState = windowState;
+                    WindowStateChanged?.Invoke(windowState);
+                }
+            };
         }
 
         public WindowState WindowState
@@ -48,6 +62,8 @@ namespace Avalonia.MonoMac
                 }
             }
         }
+
+        public Action<WindowState> WindowStateChanged { get; set; }
 
         bool IsZoomed => IsDecorated ? Window.IsZoomed : UndecoratedIsMaximized;
 
