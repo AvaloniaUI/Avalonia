@@ -33,7 +33,7 @@ namespace Avalonia.Skia
             PixelWidth = width;
             _dpi = dpi;
             var colorType = fmt?.ToSkColorType() ?? SKImageInfo.PlatformColorType;
-            var runtimePlatform = AvaloniaLocator.Current?.GetService<IRuntimePlatform>()
+            var runtimePlatform = AvaloniaLocator.Current?.GetService<IRuntimePlatform>();
             var runtime = runtimePlatform?.GetRuntimeInfo();
             if (runtime?.IsDesktop == true && runtime?.OperatingSystem == OperatingSystemType.Linux)
                 colorType = SKColorType.Bgra8888;
