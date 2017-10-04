@@ -33,16 +33,22 @@ namespace Avalonia.Skia
             PixelWidth = width;
             _dpi = dpi;
             var colorType = fmt?.ToSkColorType() ?? SKImageInfo.PlatformColorType;
-            var runtime = AvaloniaLocator.Current?.GetService<IRuntimePlatform>()?.GetRuntimeInfo();
+            var runtimePlatform = AvaloniaLocator.Current?.GetService<IRuntimePlatform>();
+            var runtime = runtimePlatform?.GetRuntimeInfo();
             if (runtime?.IsDesktop == true && runtime?.OperatingSystem == OperatingSystemType.Linux)
                 colorType = SKColorType.Bgra8888;
-            
-            Bitmap = new SKBitmap();
-            var nfo = new SKImageInfo(width, height, colorType, SKAlphaType.Premul);
-            var plat = AvaloniaLocator.Current.GetService<IRuntimePlatform>();
-            var blob = plat.AllocBlob(nfo.BytesSize);
-            Bitmap.InstallPixels(nfo, blob.Address, nfo.RowBytes, null, ReleaseDelegate, blob);
-            Bitmap = new SKBitmap(width, height, colorType, SKAlphaType.Premul);
+
+            if (runtimePlatform != null)
+            {
+                Bitmap = new SKBitmap();
+                var nfo = new SKImageInfo(width, height, colorType, SKAlphaType.Premul);
+                var plat = AvaloniaLocator.Current.GetService<IRuntimePlatform>();
+                var blob = plat.AllocBlob(nfo.BytesSize);
+                Bitmap.InstallPixels(nfo, blob.Address, nfo.RowBytes, null, ReleaseDelegate, blob);
+                
+            }
+            else 
+                Bitmap =  new SKBitmap(width, height, colorType, SKAlphaType.Premul);
             Bitmap.Erase(SKColor.Empty);
         }
 
