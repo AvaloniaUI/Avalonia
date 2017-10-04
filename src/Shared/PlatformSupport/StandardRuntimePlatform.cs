@@ -76,6 +76,7 @@ namespace Avalonia.Shared.PlatformSupport
                     GC.RemoveMemoryPressure(Size);
                     IsDisposed = true;
                     Address = IntPtr.Zero;
+                    Size = 0;
                 }
             }
 
