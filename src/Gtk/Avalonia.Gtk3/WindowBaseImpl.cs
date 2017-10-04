@@ -286,7 +286,7 @@ namespace Avalonia.Gtk3
             }
             if (op != null)
             {
-                op?.RenderNow();
+                op?.RenderNow(null);
                 op?.Dispose();
             }
         }
