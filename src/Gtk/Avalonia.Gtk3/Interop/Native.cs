@@ -319,6 +319,9 @@ namespace Avalonia.Gtk3.Interop
             public delegate void g_object_ref(GObject instance);
             
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gobject)]
+            public delegate IntPtr g_type_name(IntPtr instance);
+            
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gobject)]
             public delegate ulong g_signal_connect_object(GObject instance, Utf8Buffer signal, IntPtr handler, IntPtr userData, int flags);
             
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gobject)]
@@ -410,6 +413,7 @@ namespace Avalonia.Gtk3.Interop
         public static D.gtk_dialog_add_button GtkDialogAddButton;
         public static D.g_object_unref GObjectUnref;
         public static D.g_object_ref GObjectRef;
+        public static D.g_type_name GTypeName;
         public static D.g_signal_connect_object GSignalConnectObject;
         public static D.g_signal_handler_disconnect GSignalHandlerDisconnect;
         public static D.g_timeout_add GTimeoutAdd;
