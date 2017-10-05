@@ -170,6 +170,15 @@ namespace Avalonia.Controls
                 }
             }
 
+            if (Orientation == Orientation.Vertical)
+            {
+                measuredHeight -= gap;
+            }
+            else
+            {
+                measuredWidth -= gap;
+            }
+
             return new Size(measuredWidth, measuredHeight);
         }
 
