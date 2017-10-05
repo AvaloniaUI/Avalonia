@@ -12,7 +12,7 @@ namespace Avalonia.Rendering.SceneGraph
     public interface IDrawOperation
     {
         /// <summary>
-        /// Gets the bounds of the visible content in the node.
+        /// Gets the bounds of the visible content in the node in global coordinates.
         /// </summary>
         Rect Bounds { get; }
 
