@@ -74,6 +74,7 @@ namespace Avalonia.Direct2D1.Media
         public WicBitmapImpl(ImagingFactory factory, Platform.PixelFormat format, IntPtr data, int width, int height, int stride)
         {
             WicImpl = new Bitmap(factory, width, height, format.ToWic(), BitmapCreateCacheOption.CacheOnDemand);
+            _factory = factory;
             PixelFormat = format;
             using (var l = WicImpl.Lock(BitmapLockFlags.Write))
             {
