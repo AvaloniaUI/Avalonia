@@ -31,7 +31,7 @@ namespace Avalonia.Gtk3
         private object _lock = new object();
         private IDeferredRenderOperation _nextRenderOperation;
         private readonly AutoResetEvent _canSetNextOperation = new AutoResetEvent(true);
-
+        internal IntPtr? GdkWindowHandle;
         public WindowBaseImpl(GtkWindow gtkWidget)
         {
             
@@ -55,6 +55,7 @@ namespace Avalonia.Gtk3
             ConnectEvent("leave-notify-event", OnLeaveNotifyEvent);
             Connect<Native.D.signal_generic>("destroy", OnDestroy);
             Native.GtkWidgetRealize(gtkWidget);
+            GdkWindowHandle = this.Handle.Handle;
             _lastSize = ClientSize;
             if (Gtk3Platform.UseDeferredRendering)
             {
