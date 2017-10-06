@@ -7,7 +7,7 @@
 
 A multi-platform .NET UI framework. It can run on Windows, Linux, Mac OS X, iOS and Android.
 
-![](docs/images/screen.png)
+[![](docs/images/screen.png)](https://youtu.be/wHcB3sGLVYg)
 
 Desktop platforms:
 
@@ -36,7 +36,7 @@ Try out the ControlCatalog to give it a quick demo.
 
 Avalonia is a multi-platform windowing toolkit - somewhat like WPF - that is intended to be multi-
 platform. It supports XAML, lookless controls and a flexible styling system, and runs on Windows
-using Direct2D and other operating systems using Gtk & Cairo.
+using Direct2D and other operating systems using Skia and OS-specific windowing backend (GTK, Cocoa, etc).
 
 ## Current Status
 

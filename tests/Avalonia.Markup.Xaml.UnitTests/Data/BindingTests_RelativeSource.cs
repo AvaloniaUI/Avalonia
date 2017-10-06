@@ -117,7 +117,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
             };
 
             target.Bind(TextBox.TextProperty, binding);
-            Assert.Equal(null, target.Text);
+            Assert.Null(target.Text);
         }
 
         [Fact]
