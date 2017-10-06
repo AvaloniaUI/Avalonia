@@ -19,8 +19,9 @@ namespace Avalonia.Controls.Remote
             public TopLevelImpl(IAvaloniaRemoteTransportConnection transport) : base(transport)
             {
             }
-
+#pragma warning disable 67
             public event Action LostFocus;
+
         }
         
         public RemoteServer(IAvaloniaRemoteTransportConnection transport)

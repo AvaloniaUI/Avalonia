@@ -334,8 +334,6 @@ namespace Avalonia.Gtk3.Interop
             public delegate ulong g_timeout_add_full(int prio, uint interval, timeout_callback callback, IntPtr data, IntPtr destroy);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Glib)]
-            public delegate ulong g_timeout_add_full(int prio, uint interval, timeout_callback callback, IntPtr data, IntPtr destroy);
-            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Glib)]
             public delegate ulong g_free(IntPtr data);
             
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Glib)]

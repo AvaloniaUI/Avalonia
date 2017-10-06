@@ -12,7 +12,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>bin\Debug\Avalonia.Controls.XML</DocumentationFile>
-    <NoWarn>CS1591</NoWarn>
+    <NoWarn>CS1591;CS0067</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <DebugType>pdbonly</DebugType>

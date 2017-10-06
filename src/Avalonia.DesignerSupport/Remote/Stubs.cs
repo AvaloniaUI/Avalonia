@@ -75,6 +75,8 @@ namespace Avalonia.DesignerSupport.Remote
         {
         }
 
+        public IScreenImpl Screen { get; } = new ScreenStub();
+
         public void SetTitle(string title)
         {
         }
@@ -86,6 +88,10 @@ namespace Avalonia.DesignerSupport.Remote
         }
 
         public void SetIcon(IWindowIconImpl icon)
+        {
+        }
+
+        public void ShowTaskbarIcon(bool value)
         {
         }
     }
@@ -128,5 +134,13 @@ namespace Avalonia.DesignerSupport.Remote
 
         public Task<string> ShowFolderDialogAsync(OpenFolderDialog dialog, IWindowImpl parent) =>
             Task.FromResult((string) null);
+    }
+
+    class ScreenStub : IScreenImpl
+    {
+        public int ScreenCount => 1;
+
+        public Screen[] AllScreens { get; } =
+            {new Screen(new Rect(0, 0, 4000, 4000), new Rect(0, 0, 4000, 4000), true)};
     }
 }

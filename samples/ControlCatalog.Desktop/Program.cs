@@ -16,10 +16,14 @@ namespace ControlCatalog
 
             // TODO: Make this work with GTK/Skia/Cairo depending on command-line args
             // again.
-            AppBuilder.Configure<App>()
-                .UsePlatformDetect()
-                .Start<MainWindow>();
+            BuildAvaloniaApp().Start<MainWindow>();
         }
+
+        /// <summary>
+        /// This method is needed for IDE previewer infrastructure
+        /// </summary>
+        public static AppBuilder BuildAvaloniaApp()
+            => AppBuilder.Configure<App>().UsePlatformDetect();
 
         // This will be made into a runtime configuration extension soon!
         private static void InitializeLogging()

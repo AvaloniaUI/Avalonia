@@ -65,7 +65,9 @@ namespace Avalonia.DesignerSupport.Remote
             ClientSize = clientSize;
             RenderIfNeeded();
         }
-        
+
+        public IScreenImpl Screen { get; } = new ScreenStub();
+
         public void Activate()
         {
         }
@@ -87,5 +89,8 @@ namespace Avalonia.DesignerSupport.Remote
         {
         }
 
+        public void ShowTaskbarIcon(bool value)
+        {
+        }
     }
 }

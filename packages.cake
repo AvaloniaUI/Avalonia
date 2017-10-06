@@ -223,6 +223,17 @@ public class Packages
             };
         });
 
+        var toolsContent = new[] {
+            new NuSpecContent{
+                Source = ((FilePath)context.File("./src/tools/Avalonia.Designer.HostApp/bin/" + parameters.DirSuffix + "/netcoreapp2.0/Avalonia.Designer.HostApp.dll")).FullPath, 
+                Target = "tools/netcoreapp2.0/previewer"
+            },
+            new NuSpecContent{
+                Source = ((FilePath)context.File("./src/tools/Avalonia.Designer.HostApp.NetFx/bin/" + parameters.DirSuffix + "/net461/Avalonia.Designer.HostApp.NetFx.exe")).FullPath, 
+                Target = "tools/net461/previewer"
+            }
+        };
+
         var nuspecNuGetSettingsCore = new []
         {
             ///////////////////////////////////////////////////////////////////////////////
@@ -253,6 +264,7 @@ public class Packages
                 Files = coreLibrariesNuSpecContent
                     .Concat(win32CoreLibrariesNuSpecContent).Concat(net45RuntimePlatform)
                     .Concat(netcoreappCoreLibrariesNuSpecContent).Concat(netCoreRuntimePlatform)
+                    .Concat(toolsContent)
                     .ToList(),
                 BasePath = context.Directory("./"),
                 OutputDirectory = parameters.NugetRoot
