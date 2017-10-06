@@ -18,4 +18,5 @@
     </ItemGroup>
     <Import Project="..\Shared\PlatformSupport\PlatformSupport.projitems" Label="Shared" />
     <Import Project="..\..\build\Rx.props" />
+    <Import Project="..\..\build\NetFX.props" />
 </Project>

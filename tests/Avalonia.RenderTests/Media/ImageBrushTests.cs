@@ -9,9 +9,7 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Xunit;
 
-#if AVALONIA_CAIRO
-namespace Avalonia.Cairo.RenderTests.Media
-#elif AVALONIA_SKIA
+#if AVALONIA_SKIA
 namespace Avalonia.Skia.RenderTests
 #else
 namespace Avalonia.Direct2D1.RenderTests.Media
@@ -366,11 +364,8 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
-#if AVALONIA_CAIRO
-        [Fact(Skip = "TileMode.FlipX not yet supported on cairo")]
-#else
+
         [Fact]
-#endif
         public async Task ImageBrush_NoStretch_FlipX_TopLeftDest()
         {
             Decorator target = new Decorator
@@ -393,12 +388,8 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             await RenderToFile(target);
             CompareImages();
         }
-
-#if AVALONIA_CAIRO
-        [Fact(Skip = "TileMode.FlipY not yet supported on cairo")]
-#else
+        
         [Fact]
-#endif
         public async Task ImageBrush_NoStretch_FlipY_TopLeftDest()
         {
             Decorator target = new Decorator

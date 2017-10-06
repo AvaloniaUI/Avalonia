@@ -10,7 +10,7 @@ namespace Avalonia.Media
         /// <summary>
         /// Gets the brush's gradient stops.
         /// </summary>
-        IReadOnlyList<GradientStop> GradientStops { get; }
+        IList<GradientStop> GradientStops { get; }
 
         /// <summary>
         /// Gets the brush's spread method that defines how to draw a gradient that doesn't fill

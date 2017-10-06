@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Threading;
 
 namespace Avalonia.Controls.Platform
 {
@@ -27,7 +28,7 @@ namespace Avalonia.Controls.Platform
             while (true)
             {
                 if (0 == WaitHandle.WaitAny(handles))
-                    Signaled?.Invoke();
+                    Signaled?.Invoke(null);
                 else
                 {
                     while (true)
@@ -95,7 +96,7 @@ namespace Avalonia.Controls.Platform
 
         }
 
-        public void Signal()
+        public void Signal(DispatcherPriority prio)
         {
             _signaled.Set();
         }
@@ -103,7 +104,7 @@ namespace Avalonia.Controls.Platform
         [ThreadStatic] private static bool TlsCurrentThreadIsLoopThread;
 
         public bool CurrentThreadIsLoopThread => TlsCurrentThreadIsLoopThread;
-        public event Action Signaled;
+        public event Action<DispatcherPriority?> Signaled;
         public event EventHandler<EventArgs> Tick;
 
     }

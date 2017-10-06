@@ -1,17 +1,18 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+using System;
 
 namespace ControlCatalog
 {
     public class MainWindow : Window
     {
-        public static bool DebugMode = false;
         public MainWindow()
         {
             this.InitializeComponent();
             this.AttachDevTools();
-            Renderer.DrawDirtyRects = Renderer.DrawFps = DebugMode;
+            //Renderer.DrawFps = true;
+            //Renderer.DrawDirtyRects = Renderer.DrawFps = true;
         }
 
         private void InitializeComponent()
@@ -20,7 +21,7 @@ namespace ControlCatalog
             // so we must refer to this resource DLL statically. For
             // now I am doing that here. But we need a better solution!!
             var theme = new Avalonia.Themes.Default.DefaultTheme();
-            theme.FindResource("Button");
+            theme.TryGetResource("Button", out _);
             AvaloniaXamlLoader.Load(this);
         }
     }

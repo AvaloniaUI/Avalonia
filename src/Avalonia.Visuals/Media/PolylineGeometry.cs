@@ -27,7 +27,7 @@ namespace Avalonia.Media
             AvaloniaProperty.Register<PolylineGeometry, bool>(nameof(IsFilled));
 
         private Points _points;
-        private bool _isDirty;
+        private bool _isDirty = true;
         private IDisposable _pointsObserver;
 
         static PolylineGeometry()

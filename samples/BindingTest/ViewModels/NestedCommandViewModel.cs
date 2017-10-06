@@ -12,7 +12,7 @@ namespace BindingTest.ViewModels
     {
         public NestedCommandViewModel()
         {
-            Command = ReactiveCommand.Create();
+            Command = ReactiveCommand.Create(() => { });
         }
 
         public ICommand Command { get; }

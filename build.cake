@@ -2,16 +2,15 @@
 // ADDINS
 ///////////////////////////////////////////////////////////////////////////////
 
-#addin "nuget:?package=Polly&version=4.2.0"
-#addin "nuget:?package=NuGet.Core&version=2.12.0"
-#tool "nuget:?package=xunit.runner.console&version=2.2.0"
-#tool "nuget:https://dotnet.myget.org/F/nuget-build/?package=NuGet.CommandLine&version=4.3.0-preview1-3980&prerelease"
+#addin "nuget:?package=Polly&version=5.3.1"
+#addin "nuget:?package=NuGet.Core&version=2.14.0"
+#tool "nuget:?package=NuGet.CommandLine&version=4.3.0"
 #tool "nuget:?package=JetBrains.ReSharper.CommandLineTools&version=2017.1.20170613.162720"
 ///////////////////////////////////////////////////////////////////////////////
 // TOOLS
 ///////////////////////////////////////////////////////////////////////////////
 
-#tool "nuget:?package=xunit.runner.console&version=2.2.0"
+#tool "nuget:?package=xunit.runner.console&version=2.3.0-beta5-build3769"
 
 ///////////////////////////////////////////////////////////////////////////////
 // USINGS
@@ -213,8 +212,8 @@ Task("Run-Unit-Tests")
         .ToList();
 
     var toolPath = (parameters.IsPlatformAnyCPU || parameters.IsPlatformX86) ? 
-        "./tools/xunit.runner.console/tools/xunit.console.x86.exe" :
-        "./tools/xunit.runner.console/tools/xunit.console.exe";
+        Context.Tools.Resolve("xunit.console.x86.exe") :
+        Context.Tools.Resolve("xunit.console.exe");
 
     var xUnitSettings = new XUnit2Settings 
     { 
@@ -353,10 +352,12 @@ Task("Run-Leak-Tests")
         var report = "tests\\Avalonia.LeakTests\\bin\\Release\\report.xml";
         if(System.IO.File.Exists(report))
             System.IO.File.Delete(report);
+
+        var toolXunitConsoleX86 = Context.Tools.Resolve("xunit.console.x86.exe").FullPath;
         var proc = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
         {
             FileName="tests\\Avalonia.LeakTests\\toolproject\\bin\\dotMemoryUnit.exe",
-            Arguments="-targetExecutable=\"tools\\xunit.runner.console\\tools\\xunit.console.x86.exe\" -returnTargetExitCode  -- tests\\Avalonia.LeakTests\\bin\\Release\\Avalonia.LeakTests.dll -xml tests\\Avalonia.LeakTests\\bin\\Release\\report.xml ",
+            Arguments="-targetExecutable=\"" + toolXunitConsoleX86 + "\" -returnTargetExitCode  -- tests\\Avalonia.LeakTests\\bin\\Release\\Avalonia.LeakTests.dll -xml tests\\Avalonia.LeakTests\\bin\\Release\\report.xml ",
             UseShellExecute = false,
         });
         var st = System.Diagnostics.Stopwatch.StartNew();
@@ -392,8 +393,7 @@ Task("Inspect")
             "src\\markup\\avalonia.markup.xaml\\portablexaml\\portable.xaml.github"};
         Information("Running code inspections");
         
-        
-        StartProcess("tools\\JetBrains.ReSharper.CommandLineTools\\tools\\inspectcode.exe",
+        StartProcess(Context.Tools.Resolve("inspectcode.exe"),
             new ProcessSettings{ Arguments = "--output=artifacts\\inspectcode.xml --profile=Avalonia.sln.DotSettings Avalonia.sln" });
         Information("Analyzing report");
         var doc = XDocument.Parse(System.IO.File.ReadAllText("artifacts\\inspectcode.xml"));

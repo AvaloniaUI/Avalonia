@@ -20,16 +20,35 @@ namespace Avalonia.Skia
             _dpi = new Vector(96, 96);
         }
 
+        static void ReleaseProc(IntPtr address, object ctx)
+        {
+            ((IUnmanagedBlob) ctx).Dispose();
+        }
+
+        private static readonly SKBitmapReleaseDelegate ReleaseDelegate = ReleaseProc;
+        
         public BitmapImpl(int width, int height, Vector dpi, PixelFormat? fmt = null)
         {
             PixelHeight = height;
             PixelWidth = width;
             _dpi = dpi;
             var colorType = fmt?.ToSkColorType() ?? SKImageInfo.PlatformColorType;
-            var runtime = AvaloniaLocator.Current?.GetService<IRuntimePlatform>()?.GetRuntimeInfo();
+            var runtimePlatform = AvaloniaLocator.Current?.GetService<IRuntimePlatform>();
+            var runtime = runtimePlatform?.GetRuntimeInfo();
             if (runtime?.IsDesktop == true && runtime?.OperatingSystem == OperatingSystemType.Linux)
                 colorType = SKColorType.Bgra8888;
-            Bitmap = new SKBitmap(width, height, colorType, SKAlphaType.Premul);
+
+            if (runtimePlatform != null)
+            {
+                Bitmap = new SKBitmap();
+                var nfo = new SKImageInfo(width, height, colorType, SKAlphaType.Premul);
+                var plat = AvaloniaLocator.Current.GetService<IRuntimePlatform>();
+                var blob = plat.AllocBlob(nfo.BytesSize);
+                Bitmap.InstallPixels(nfo, blob.Address, nfo.RowBytes, null, ReleaseDelegate, blob);
+                
+            }
+            else 
+                Bitmap =  new SKBitmap(width, height, colorType, SKAlphaType.Premul);
             Bitmap.Erase(SKColor.Empty);
         }
 
@@ -48,7 +67,7 @@ namespace Avalonia.Skia
             public BitmapDrawingContext(SKBitmap bitmap, Vector dpi, IVisualBrushRenderer visualBrushRenderer)
                 : this(CreateSurface(bitmap), dpi, visualBrushRenderer)
             {
-
+                CanUseLcdRendering = false;
             }
 
             private static SKSurface CreateSurface(SKBitmap bitmap)

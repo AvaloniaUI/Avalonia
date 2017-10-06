@@ -28,17 +28,14 @@ namespace Avalonia.Rendering.SceneGraph
             Point origin,
             IFormattedTextImpl text,
             IDictionary<IVisual, Scene> childScenes = null)
+            : base(new Rect(origin, text.Size), transform, null)
         {
-            Bounds = new Rect(origin, text.Size).TransformToAABB(transform);
             Transform = transform;
             Foreground = foreground?.ToImmutable();
             Origin = origin;
             Text = text;
             ChildScenes = childScenes;
         }
-
-        /// <inheritdoc/>
-        public override Rect Bounds { get; }
 
         /// <summary>
         /// Gets the transform with which the node will be drawn.

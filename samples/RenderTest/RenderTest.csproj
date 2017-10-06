@@ -132,14 +132,6 @@
       <Project>{3e10a5fa-e8da-48b1-ad44-6a5b6cb7750f}</Project>
       <Name>Avalonia.Themes.Default</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\Gtk\Avalonia.Cairo\Avalonia.Cairo.csproj">
-      <Project>{fb05ac90-89ba-4f2f-a924-f37875fb547c}</Project>
-      <Name>Avalonia.Cairo</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Gtk\Avalonia.Gtk\Avalonia.Gtk.csproj">
-      <Project>{54f237d5-a70a-4752-9656-0c70b1a7b047}</Project>
-      <Name>Avalonia.Gtk</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\src\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj">
       <Project>{3e53a01a-b331-47f3-b828-4a5717e77a24}</Project>
       <Name>Avalonia.Markup.Xaml</Name>
@@ -191,4 +183,5 @@
   <Import Project="..\..\build\Serilog.Sinks.Trace.props" />
   <Import Project="..\..\build\Splat.props" />
   <Import Project="..\..\build\Rx.props" />
+  <Import Project="..\..\build\ReactiveUI.props" />
 </Project>

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using Avalonia.Threading;
 
 namespace Avalonia.Gtk3.Interop
 {
@@ -30,15 +31,10 @@ namespace Avalonia.Gtk3.Interop
         }
 
 
-        public static void Add(uint interval, Func<bool> callback)
-        {
-            var handle = GCHandle.Alloc(callback);
-            Native.GTimeoutAdd(interval, PinnedHandler, GCHandle.ToIntPtr(handle));
-        }
-        
         public static void Add(int priority, uint interval, Func<bool> callback)
         {
             var handle = GCHandle.Alloc(callback);
+            //Native.GTimeoutAdd(interval, PinnedHandler, GCHandle.ToIntPtr(handle));
             Native.GTimeoutAddFull(priority, interval, PinnedHandler, GCHandle.ToIntPtr(handle), IntPtr.Zero);
         }
 
@@ -54,8 +50,10 @@ namespace Avalonia.Gtk3.Interop
 
         public static IDisposable StarTimer(uint interval, Action tick)
         {
+            if (interval == 0)
+                throw new ArgumentException("Don't know how to create a timer with zero or negative interval");
             var timer = new Timer ();
-            GlibTimeout.Add(101, interval,
+            GlibTimeout.Add(GlibPriority.FromDispatcherPriority(DispatcherPriority.Normal), interval,
                 () =>
                 {
                     if (timer.Stopped)

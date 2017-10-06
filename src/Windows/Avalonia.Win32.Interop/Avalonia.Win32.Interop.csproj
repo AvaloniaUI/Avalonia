@@ -94,10 +94,6 @@
       <Project>{eb582467-6abb-43a1-b052-e981ba910e3a}</Project>
       <Name>Avalonia.Visuals</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Gtk\Avalonia.Cairo\Avalonia.Cairo.csproj">
-      <Project>{fb05ac90-89ba-4f2f-a924-f37875fb547c}</Project>
-      <Name>Avalonia.Cairo</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj">
       <Project>{3e53a01a-b331-47f3-b828-4a5717e77a24}</Project>
       <Name>Avalonia.Markup.Xaml</Name>
