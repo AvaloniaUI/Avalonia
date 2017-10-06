@@ -191,7 +191,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             target.Content = "bar";
             target.UpdateChild();
 
-            Assert.Equal(null, foo.Parent);
+            Assert.Null(foo.Parent);
 
             logicalChildren = target.GetLogicalChildren();
 

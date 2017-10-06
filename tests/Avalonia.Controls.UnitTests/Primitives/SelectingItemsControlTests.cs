@@ -171,7 +171,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             target.SelectedItem = new Item();
 
-            Assert.Equal(null, target.SelectedItem);
+            Assert.Null(target.SelectedItem);
             Assert.Equal(-1, target.SelectedIndex);
         }
 
@@ -278,7 +278,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             target.Items = null;
 
-            Assert.Equal(null, target.SelectedItem);
+            Assert.Null(target.SelectedItem);
             Assert.Equal(-1, target.SelectedIndex);
         }
 
@@ -305,7 +305,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             items.RemoveAt(1);
 
-            Assert.Equal(null, target.SelectedItem);
+            Assert.Null(target.SelectedItem);
             Assert.Equal(-1, target.SelectedIndex);
         }
 
@@ -334,7 +334,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             items.Clear();
 
-            Assert.Equal(null, target.SelectedItem);
+            Assert.Null(target.SelectedItem);
             Assert.Equal(-1, target.SelectedIndex);
         }
 
