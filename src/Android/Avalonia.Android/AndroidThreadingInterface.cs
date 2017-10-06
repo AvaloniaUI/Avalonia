@@ -30,7 +30,7 @@ namespace Avalonia.Android
             return;
         }
 
-        public IDisposable StartTimer(TimeSpan interval, Action tick)
+        public IDisposable StartTimer(DispatcherPriority priority, TimeSpan interval, Action tick)
         {
             if (interval.TotalMilliseconds < 10)
                 interval = TimeSpan.FromMilliseconds(10);

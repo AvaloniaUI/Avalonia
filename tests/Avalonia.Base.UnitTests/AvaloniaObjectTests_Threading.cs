@@ -160,7 +160,7 @@ namespace Avalonia.Base.UnitTests
                 throw new NotImplementedException();
             }
 
-            public IDisposable StartTimer(TimeSpan interval, Action tick)
+            public IDisposable StartTimer(DispatcherPriority priority, TimeSpan interval, Action tick)
             {
                 throw new NotImplementedException();
             }

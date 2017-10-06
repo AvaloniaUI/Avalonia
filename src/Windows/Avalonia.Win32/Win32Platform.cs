@@ -114,7 +114,7 @@ namespace Avalonia.Win32
             }
         }
 
-        public IDisposable StartTimer(TimeSpan interval, Action callback)
+        public IDisposable StartTimer(DispatcherPriority priority, TimeSpan interval, Action callback)
         {
             UnmanagedMethods.TimerProc timerDelegate =
                 (hWnd, uMsg, nIDEvent, dwTime) => callback();
