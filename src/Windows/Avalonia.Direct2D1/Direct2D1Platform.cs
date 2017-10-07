@@ -146,6 +146,8 @@ namespace Avalonia.Direct2D1
                 }
                 if (s is IExternalDirect2DRenderTargetSurface external)
                     return new ExternalRenderTarget(external, s_dwfactory, s_imagingFactory);
+                if (s is IFramebufferPlatformSurface fb)
+                    return new FramebufferShimRenderTarget(fb, s_imagingFactory, s_d2D1Factory, s_dwfactory);
             }
             throw new NotSupportedException("Don't know how to create a Direct2D1 renderer from any of provided surfaces");
         }

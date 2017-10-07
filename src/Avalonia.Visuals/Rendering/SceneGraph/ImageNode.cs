@@ -9,7 +9,7 @@ namespace Avalonia.Rendering.SceneGraph
     /// <summary>
     /// A node in the scene graph which represents an image draw.
     /// </summary>
-    internal class ImageNode : IDrawOperation
+    internal class ImageNode : DrawOperation
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ImageNode"/> class.
@@ -20,17 +20,14 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="sourceRect">The source rect.</param>
         /// <param name="destRect">The destination rect.</param>
         public ImageNode(Matrix transform, IBitmapImpl source, double opacity, Rect sourceRect, Rect destRect)
+            : base(destRect, transform, null)
         {
-            Bounds = destRect.TransformToAABB(transform);
             Transform = transform;
             Source = source;
             Opacity = opacity;
             SourceRect = sourceRect;
             DestRect = destRect;
         }
-
-        /// <inheritdoc/>
-        public Rect Bounds { get; }
 
         /// <summary>
         /// Gets the transform with which the node will be drawn.
@@ -80,7 +77,7 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <inheritdoc/>
-        public void Render(IDrawingContextImpl context)
+        public override void Render(IDrawingContextImpl context)
         {
             // TODO: Probably need to introduce some kind of locking mechanism in the case of
             // WriteableBitmap.
@@ -89,6 +86,6 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <inheritdoc/>
-        public bool HitTest(Point p) => Bounds.Contains(p);
+        public override bool HitTest(Point p) => Bounds.Contains(p);
     }
 }

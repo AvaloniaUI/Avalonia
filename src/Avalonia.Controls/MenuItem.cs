@@ -307,6 +307,21 @@ namespace Avalonia.Controls
                     () => IsSubMenuOpen = true,
                     TimeSpan.FromMilliseconds(400));
             }
+            else
+            {
+                var parentItem = Parent as MenuItem;
+                if (parentItem != null)
+                {
+                    foreach (var sibling in parentItem.Items
+                        .OfType<MenuItem>()
+                        .Where(x => x != this && x.IsSubMenuOpen))
+                    {
+                        sibling.CloseSubmenus();
+                        sibling.IsSubMenuOpen = false;
+                        sibling.IsSelected = false;
+                    }
+                }
+            }
         }
 
         /// <summary>

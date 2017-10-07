@@ -70,7 +70,7 @@ namespace Avalonia.Controls.UnitTests
             target.Measure(Size.Infinity);
             target.Arrange(new Rect(target.DesiredSize));
 
-            Assert.Equal(new Size(120, 130), target.Bounds.Size);
+            Assert.Equal(new Size(120, 120), target.Bounds.Size);
             Assert.Equal(new Rect(0, 0, 120, 20), target.Children[0].Bounds);
             Assert.Equal(new Rect(0, 30, 120, 30), target.Children[1].Bounds);
             Assert.Equal(new Rect(0, 70, 120, 50), target.Children[2].Bounds);
@@ -94,7 +94,7 @@ namespace Avalonia.Controls.UnitTests
             target.Measure(Size.Infinity);
             target.Arrange(new Rect(target.DesiredSize));
 
-            Assert.Equal(new Size(130, 120), target.Bounds.Size);
+            Assert.Equal(new Size(120, 120), target.Bounds.Size);
             Assert.Equal(new Rect(0, 0, 20, 120), target.Children[0].Bounds);
             Assert.Equal(new Rect(30, 0, 30, 120), target.Children[1].Bounds);
             Assert.Equal(new Rect(70, 0, 50, 120), target.Children[2].Bounds);

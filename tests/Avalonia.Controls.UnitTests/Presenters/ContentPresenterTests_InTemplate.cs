@@ -107,7 +107,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             target.Content = child;
             target.Content = null;
 
-            Assert.Equal(null, child.GetLogicalParent());
+            Assert.Null(child.GetLogicalParent());
             Assert.Empty(target.GetLogicalChildren());
         }
 
@@ -120,7 +120,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             target.Content = child;
             target.Content = null;
 
-            Assert.Equal(null, child.GetVisualParent());
+            Assert.Null(child.GetVisualParent());
             Assert.Empty(target.GetVisualChildren());
         }
 

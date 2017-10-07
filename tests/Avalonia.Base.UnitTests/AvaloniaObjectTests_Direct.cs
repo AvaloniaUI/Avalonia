@@ -187,7 +187,7 @@ namespace Avalonia.Base.UnitTests
 
             source.OnNext(45);
 
-            Assert.Equal(null, target.Foo);
+            Assert.Null(target.Foo);
         }
 
         [Fact]

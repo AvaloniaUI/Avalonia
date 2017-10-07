@@ -88,10 +88,10 @@ namespace Avalonia.Gtk3
             private readonly int _width;
             private readonly int _height;
 
-            public RenderOp(GtkWidget widget, ManagedCairoSurface _surface, double factor, int width, int height)
+            public RenderOp(GtkWidget widget, ManagedCairoSurface surface, double factor, int width, int height)
             {
                 _widget = widget;
-                this._surface = _surface;
+                _surface = surface ?? throw new ArgumentNullException();
                 _factor = factor;
                 _width = width;
                 _height = height;
@@ -103,9 +103,12 @@ namespace Avalonia.Gtk3
                 _surface = null;
             }
 
-            public void RenderNow()
+            public void RenderNow(IntPtr? ctx)
             {
-                DrawToWidget(_widget, _surface.Surface, _width, _height, _factor);
+                if(ctx.HasValue)
+                    Draw(ctx.Value, _surface.Surface, _factor);
+                else
+                    DrawToWidget(_widget, _surface.Surface, _width, _height, _factor);
             }
         }
         
