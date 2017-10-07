@@ -17,13 +17,11 @@ namespace Avalonia.Threading
         private readonly DispatcherPriority _priority;
 
         private TimeSpan _interval;
-
-        private readonly Action _raiseTickAction;
-
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="DispatcherTimer"/> class.
         /// </summary>
-        public DispatcherTimer() : this(DispatcherPriority.Normal)
+        public DispatcherTimer() : this(DispatcherPriority.Background)
         {
         }
 
@@ -34,7 +32,6 @@ namespace Avalonia.Threading
         public DispatcherTimer(DispatcherPriority priority)
         {
             _priority = priority;
-            _raiseTickAction = RaiseTick;
         }
 
         /// <summary>
@@ -187,7 +184,7 @@ namespace Avalonia.Threading
                     throw new Exception("Could not start timer: IPlatformThreadingInterface is not registered.");
                 }
 
-                _timer = threading.StartTimer(Interval, InternalTick);
+                _timer = threading.StartTimer(_priority, Interval, InternalTick);
             }
         }
 
@@ -210,14 +207,7 @@ namespace Avalonia.Threading
         /// </summary>
         private void InternalTick()
         {
-            Dispatcher.UIThread.InvokeAsync(_raiseTickAction, _priority);
-        }
-
-        /// <summary>
-        /// Raises the <see cref="Tick"/> event.
-        /// </summary>
-        private void RaiseTick()
-        {
+            Dispatcher.UIThread.EnsurePriority(_priority);
             Tick?.Invoke(this, EventArgs.Empty);
         }
     }

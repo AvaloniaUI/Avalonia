@@ -70,15 +70,13 @@ namespace Avalonia.Gtk3
                 Native.GtkMainIteration();
         }
 
-        public IDisposable StartTimer(TimeSpan interval, Action tick)
+        public IDisposable StartTimer(DispatcherPriority priority, TimeSpan interval, Action tick)
         {
             var msec = interval.TotalMilliseconds;
-            if (msec <= 0)
-                throw new ArgumentException("Don't know how to create a timer with zero or negative interval");
             var imsec = (uint) msec;
             if (imsec == 0)
                 imsec = 1;
-            return GlibTimeout.StarTimer(imsec, tick);
+            return GlibTimeout.StartTimer(GlibPriority.FromDispatcherPriority(priority), imsec, tick);
         }
 
         private bool[] _signaled = new bool[(int) DispatcherPriority.MaxValue + 1];
