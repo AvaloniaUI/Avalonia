@@ -26,7 +26,6 @@ namespace Avalonia.Rendering
         private readonly IVisual _root;
         private readonly ISceneBuilder _sceneBuilder;
         private readonly RenderLayers _layers;
-        private readonly IRenderLayerFactory _layerFactory;
 
         private bool _running;
         private Scene _scene;
@@ -45,13 +44,11 @@ namespace Avalonia.Rendering
         /// <param name="root">The control to render.</param>
         /// <param name="renderLoop">The render loop.</param>
         /// <param name="sceneBuilder">The scene builder to use. Optional.</param>
-        /// <param name="layerFactory">The layer factory to use. Optional.</param>
         /// <param name="dispatcher">The dispatcher to use. Optional.</param>
         public DeferredRenderer(
             IRenderRoot root,
             IRenderLoop renderLoop,
             ISceneBuilder sceneBuilder = null,
-            IRenderLayerFactory layerFactory = null,
             IDispatcher dispatcher = null)
         {
             Contract.Requires<ArgumentNullException>(root != null);
@@ -59,8 +56,7 @@ namespace Avalonia.Rendering
             _dispatcher = dispatcher ?? Dispatcher.UIThread;
             _root = root;
             _sceneBuilder = sceneBuilder ?? new SceneBuilder();
-            _layerFactory = layerFactory ?? new DefaultRenderLayerFactory();
-            _layers = new RenderLayers(_layerFactory);
+            _layers = new RenderLayers();
             _renderLoop = renderLoop;
         }
 
@@ -70,15 +66,13 @@ namespace Avalonia.Rendering
         /// <param name="root">The control to render.</param>
         /// <param name="renderTarget">The render target.</param>
         /// <param name="sceneBuilder">The scene builder to use. Optional.</param>
-        /// <param name="layerFactory">The layer factory to use. Optional.</param>
         /// <remarks>
         /// This constructor is intended to be used for unit testing.
         /// </remarks>
         public DeferredRenderer(
             IVisual root,
             IRenderTarget renderTarget,
-            ISceneBuilder sceneBuilder = null,
-            IRenderLayerFactory layerFactory = null)
+            ISceneBuilder sceneBuilder = null)
         {
             Contract.Requires<ArgumentNullException>(root != null);
             Contract.Requires<ArgumentNullException>(renderTarget != null);
@@ -86,8 +80,7 @@ namespace Avalonia.Rendering
             _root = root;
             _renderTarget = renderTarget;
             _sceneBuilder = sceneBuilder ?? new SceneBuilder();
-            _layerFactory = layerFactory ?? new DefaultRenderLayerFactory();
-            _layers = new RenderLayers(_layerFactory);
+            _layers = new RenderLayers();
         }
 
         /// <inheritdoc/>
@@ -180,37 +173,55 @@ namespace Avalonia.Rendering
             bool renderOverlay = DrawDirtyRects || DrawFps;
             bool composite = false;
 
+            if (_renderTarget == null)
+            {
+                _renderTarget = ((IRenderRoot)_root).CreateRenderTarget();
+            }
+
             if (renderOverlay)
             {
                 _dirtyRectsDisplay.Tick();
             }
 
-            if (scene != null && scene.Size != Size.Empty)
+            try
             {
-                if (scene.Generation != _lastSceneId)
+                using (var context = _renderTarget.CreateDrawingContext(this))
                 {
-                    _layers.Update(scene);
-                    RenderToLayers(scene);
-
-                    if (DebugFramesPath != null)
+                    if (scene != null && scene.Size != Size.Empty)
                     {
-                        SaveDebugFrames(scene.Generation);
+                        if (scene.Generation != _lastSceneId)
+                        {
+                            _layers.Update(scene, context);
+
+                            RenderToLayers(scene);
+
+                            if (DebugFramesPath != null)
+                            {
+                                SaveDebugFrames(scene.Generation);
+                            }
+
+                            _lastSceneId = scene.Generation;
+
+                            composite = true;
+                        }
+
+                        if (renderOverlay)
+                        {
+                            RenderOverlay(scene, context);
+                            RenderComposite(scene, context);
+                        }
+                        else if (composite)
+                        {
+                            RenderComposite(scene, context);
+                        }
                     }
-
-                    _lastSceneId = scene.Generation;
-
-                    composite = true;
                 }
-
-                if (renderOverlay)
-                {
-                    RenderOverlay(scene);
-                    RenderComposite(scene);
-                }
-                else if(composite)
-                {
-                    RenderComposite(scene);
-                }
+            }
+            catch (RenderTargetCorruptedException ex)
+            {
+                Logging.Logger.Information("Renderer", this, "Render target was corrupted. Exception: {0}", ex);
+                _renderTarget?.Dispose();
+                _renderTarget = null;
             }
         }
 
@@ -273,11 +284,11 @@ namespace Avalonia.Rendering
             }
         }
 
-        private void RenderOverlay(Scene scene)
+        private void RenderOverlay(Scene scene, IDrawingContextImpl parentContent)
         {
             if (DrawDirtyRects)
             {
-                var overlay = GetOverlay(scene.Size, scene.Scaling);
+                var overlay = GetOverlay(parentContent, scene.Size, scene.Scaling);
 
                 using (var context = overlay.CreateDrawingContext(this))
                 {
@@ -301,61 +312,44 @@ namespace Avalonia.Rendering
             }
         }
 
-        private void RenderComposite(Scene scene)
+        private void RenderComposite(Scene scene, IDrawingContextImpl context)
         {
-            try
+            var clientRect = new Rect(scene.Size);
+
+            foreach (var layer in scene.Layers)
             {
-                if (_renderTarget == null)
+                var bitmap = _layers[layer.LayerRoot].Bitmap;
+                var sourceRect = new Rect(0, 0, bitmap.PixelWidth, bitmap.PixelHeight);
+
+                if (layer.GeometryClip != null)
                 {
-                    _renderTarget = ((IRenderRoot)_root).CreateRenderTarget();
+                    context.PushGeometryClip(layer.GeometryClip);
                 }
 
-                using (var context = _renderTarget.CreateDrawingContext(this))
+                if (layer.OpacityMask == null)
                 {
-                    var clientRect = new Rect(scene.Size);
+                    context.DrawImage(bitmap, layer.Opacity, sourceRect, clientRect);
+                }
+                else
+                {
+                    context.DrawImage(bitmap, layer.OpacityMask, layer.OpacityMaskRect, sourceRect);
+                }
 
-                    foreach (var layer in scene.Layers)
-                    {
-                        var bitmap = _layers[layer.LayerRoot].Bitmap;
-                        var sourceRect = new Rect(0, 0, bitmap.PixelWidth, bitmap.PixelHeight);
-
-                        if (layer.GeometryClip != null)
-                        {
-                            context.PushGeometryClip(layer.GeometryClip);
-                        }
-
-                        if (layer.OpacityMask == null)
-                        {
-                            context.DrawImage(bitmap, layer.Opacity, sourceRect, clientRect);
-                        }
-                        else
-                        {
-                            context.DrawImage(bitmap, layer.OpacityMask, layer.OpacityMaskRect, sourceRect);
-                        }
-
-                        if (layer.GeometryClip != null)
-                        {
-                            context.PopGeometryClip();
-                        }
-                    }
-
-                    if (_overlay != null)
-                    {
-                        var sourceRect = new Rect(0, 0, _overlay.PixelWidth, _overlay.PixelHeight);
-                        context.DrawImage(_overlay, 0.5, sourceRect, clientRect);
-                    }
-
-                    if (DrawFps)
-                    {
-                        RenderFps(context, clientRect, true);
-                    }
+                if (layer.GeometryClip != null)
+                {
+                    context.PopGeometryClip();
                 }
             }
-            catch (RenderTargetCorruptedException ex)
+
+            if (_overlay != null)
             {
-                Logging.Logger.Information("Renderer", this, "Render target was corrupted. Exception: {0}", ex);
-                _renderTarget?.Dispose();
-                _renderTarget = null;
+                var sourceRect = new Rect(0, 0, _overlay.PixelWidth, _overlay.PixelHeight);
+                context.DrawImage(_overlay, 0.5, sourceRect, clientRect);
+            }
+
+            if (DrawFps)
+            {
+                RenderFps(context, clientRect, true);
             }
         }
 
@@ -422,16 +416,19 @@ namespace Avalonia.Rendering
             }
         }
 
-        private IRenderTargetBitmapImpl GetOverlay(Size size, double scaling)
+        private IRenderTargetBitmapImpl GetOverlay(
+            IDrawingContextImpl parentContext,
+            Size size,
+            double scaling)
         {
-            size = new Size(size.Width * scaling, size.Height * scaling);
+            var pixelSize = size * scaling;
 
             if (_overlay == null ||
-                _overlay.PixelWidth != size.Width ||
-                _overlay.PixelHeight != size.Height)
+                _overlay.PixelWidth != pixelSize.Width ||
+                _overlay.PixelHeight != pixelSize.Height)
             {
                 _overlay?.Dispose();
-                _overlay = _layerFactory.CreateLayer(null, size, 96 * scaling, 96 * scaling);
+                _overlay = parentContext.CreateLayer(size);
             }
 
             return _overlay;

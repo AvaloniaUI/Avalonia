@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.VisualTree;
 
@@ -8,19 +9,17 @@ namespace Avalonia.Rendering
 {
     public class RenderLayers : IEnumerable<RenderLayer>
     {
-        private readonly IRenderLayerFactory _factory;
         private List<RenderLayer> _inner = new List<RenderLayer>();
         private Dictionary<IVisual, RenderLayer> _index = new Dictionary<IVisual, RenderLayer>();
 
-        public RenderLayers(IRenderLayerFactory factory)
+        public RenderLayers()
         {
-            _factory = factory;
         }
 
         public int Count => _inner.Count;
         public RenderLayer this[IVisual layerRoot] => _index[layerRoot];
 
-        public void Update(Scene scene)
+        public void Update(Scene scene, IDrawingContextImpl context)
         {
             for (var i = scene.Layers.Count - 1; i >= 0; --i)
             {
@@ -29,7 +28,7 @@ namespace Avalonia.Rendering
 
                 if (!_index.TryGetValue(src.LayerRoot, out layer))
                 {
-                    layer = new RenderLayer(_factory, scene.Size, scene.Scaling, src.LayerRoot);
+                    layer = new RenderLayer(context, scene.Size, scene.Scaling, src.LayerRoot);
                     _inner.Add(layer);
                     _index.Add(src.LayerRoot, layer);
                 }

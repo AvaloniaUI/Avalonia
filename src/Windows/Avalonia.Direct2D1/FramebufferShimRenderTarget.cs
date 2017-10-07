@@ -47,7 +47,7 @@ namespace Avalonia.Direct2D1
                 .CreateDrawingContext(visualBrushRenderer);
         }
 
-        class FramebufferShim : RenderTargetBitmapImpl
+        class FramebufferShim : WicRenderTargetBitmapImpl
         {
             private readonly ILockedFramebuffer _target;
 

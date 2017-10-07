@@ -2,16 +2,13 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using Avalonia.Media;
 using Avalonia.Platform;
-using Avalonia.RenderHelpers;
 using Avalonia.Rendering;
 using SharpDX;
 using SharpDX.Direct2D1;
 using SharpDX.Mathematics.Interop;
-using IBitmap = Avalonia.Media.Imaging.IBitmap;
 
 namespace Avalonia.Direct2D1.Media
 {
@@ -21,9 +18,11 @@ namespace Avalonia.Direct2D1.Media
     public class DrawingContextImpl : IDrawingContextImpl, IDisposable
     {
         private readonly IVisualBrushRenderer _visualBrushRenderer;
+        private readonly ILayerFactory _layerFactory;
         private readonly SharpDX.Direct2D1.RenderTarget _renderTarget;
         private readonly SharpDX.DXGI.SwapChain1 _swapChain;
         private readonly Action _finishedCallback;
+        private readonly SharpDX.WIC.ImagingFactory _imagingFactory;
         private SharpDX.DirectWrite.Factory _directWriteFactory;
 
         /// <summary>
@@ -31,21 +30,30 @@ namespace Avalonia.Direct2D1.Media
         /// </summary>
         /// <param name="visualBrushRenderer">The visual brush renderer.</param>
         /// <param name="renderTarget">The render target to draw to.</param>
+        /// <param name="layerFactory">
+        /// An object to use to create layers. May be null, in which case a
+        /// <see cref="WicRenderTargetBitmapImpl"/> will created when a new layer is requested.
+        /// </param>
         /// <param name="directWriteFactory">The DirectWrite factory.</param>
+        /// <param name="imagingFactory">The WIC imaging factory.</param>
         /// <param name="swapChain">An optional swap chain associated with this drawing context.</param>
         /// <param name="finishedCallback">An optional delegate to be called when context is disposed.</param>
         public DrawingContextImpl(
             IVisualBrushRenderer visualBrushRenderer,
+            ILayerFactory layerFactory,
             SharpDX.Direct2D1.RenderTarget renderTarget,
             SharpDX.DirectWrite.Factory directWriteFactory,
+            SharpDX.WIC.ImagingFactory imagingFactory,
             SharpDX.DXGI.SwapChain1 swapChain = null,
             Action finishedCallback = null)
         {
             _visualBrushRenderer = visualBrushRenderer;
+            _layerFactory = layerFactory;
             _renderTarget = renderTarget;
             _swapChain = swapChain;
             _finishedCallback = finishedCallback;
             _directWriteFactory = directWriteFactory;
+            _imagingFactory = imagingFactory;
             _swapChain = swapChain;
             _renderTarget.BeginDraw();
         }
@@ -97,7 +105,7 @@ namespace Avalonia.Direct2D1.Media
             using (var d2d = ((BitmapImpl)source).GetDirect2DBitmap(_renderTarget))
             {
                 _renderTarget.DrawBitmap(
-                    d2d,
+                    d2d.Value,
                     destRect.ToSharpDX(),
                     (float)opacity,
                     BitmapInterpolationMode.Linear,
@@ -115,7 +123,7 @@ namespace Avalonia.Direct2D1.Media
         public void DrawImage(IBitmapImpl source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect)
         {
             using (var d2dSource = ((BitmapImpl)source).GetDirect2DBitmap(_renderTarget))
-            using (var sourceBrush = new BitmapBrush(_renderTarget, d2dSource))
+            using (var sourceBrush = new BitmapBrush(_renderTarget, d2dSource.Value))
             using (var d2dOpacityMask = CreateBrush(opacityMask, opacityMaskRect.Size))
             using (var geometry = new SharpDX.Direct2D1.RectangleGeometry(_renderTarget.Factory, destRect.ToDirect2D()))
             {
@@ -284,6 +292,25 @@ namespace Avalonia.Direct2D1.Media
             }
         }
 
+        public IRenderTargetBitmapImpl CreateLayer(Size size)
+        {
+            if (_layerFactory != null)
+            {
+                return _layerFactory.CreateLayer(size);
+            }
+            else
+            {
+                var platform = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
+                var dpi = new Vector(_renderTarget.DotsPerInch.Width, _renderTarget.DotsPerInch.Height);
+                var pixelSize = size * (dpi / 96);
+                return platform.CreateRenderTargetBitmap(
+                    (int)pixelSize.Width,
+                    (int)pixelSize.Height,
+                    dpi.X,
+                    dpi.Y);
+            }
+        }
+
         /// <summary>
         /// Pushes a clip rectange.
         /// </summary>
@@ -397,7 +424,7 @@ namespace Avalonia.Direct2D1.Media
                             return new ImageBrushImpl(
                                 visualBrush,
                                 _renderTarget,
-                                new D2DBitmapImpl(intermediate.Bitmap),
+                                new D2DBitmapImpl(_imagingFactory, intermediate.Bitmap),
                                 destinationSize);
                         }
                     }
