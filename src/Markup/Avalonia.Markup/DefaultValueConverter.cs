@@ -35,7 +35,7 @@ namespace Avalonia.Markup
                 return AvaloniaProperty.UnsetValue;
             }
 
-            if (typeof(ICommand).IsAssignableFrom(targetType) && value is Delegate d)
+            if (typeof(ICommand).IsAssignableFrom(targetType) && value is Delegate d && d.Method.GetParameters().Length <= 1)
             {
                 return new AlwaysEnabledDelegateCommand(d);
             }

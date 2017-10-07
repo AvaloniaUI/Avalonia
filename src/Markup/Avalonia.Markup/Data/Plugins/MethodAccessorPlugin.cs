@@ -82,11 +82,6 @@ namespace Avalonia.Markup.Data.Plugins
                 }
                 catch { }
             }
-
-            private void SendCurrentValue()
-            {
-
-            }
         }
     }
 }
