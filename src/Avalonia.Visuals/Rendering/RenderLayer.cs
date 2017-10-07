@@ -7,16 +7,16 @@ namespace Avalonia.Rendering
 {
     public class RenderLayer
     {
-        private readonly IRenderLayerFactory _factory;
+        private readonly IDrawingContextImpl _drawingContext;
 
         public RenderLayer(
-            IRenderLayerFactory factory,
+            IDrawingContextImpl drawingContext,
             Size size,
             double scaling,
             IVisual layerRoot)
         {
-            _factory = factory;
-            Bitmap = factory.CreateLayer(layerRoot, size * scaling, 96 * scaling, 96 * scaling);
+            _drawingContext = drawingContext;
+            Bitmap = drawingContext.CreateLayer(size);
             Size = size;
             Scaling = scaling;
             LayerRoot = layerRoot;
@@ -31,7 +31,7 @@ namespace Avalonia.Rendering
         {
             if (Size != size || Scaling != scaling)
             {
-                var resized = _factory.CreateLayer(LayerRoot, size * scaling, 96 * scaling, 96 * scaling);
+                var resized = _drawingContext.CreateLayer(size);
 
                 using (var context = resized.CreateDrawingContext(null))
                 {

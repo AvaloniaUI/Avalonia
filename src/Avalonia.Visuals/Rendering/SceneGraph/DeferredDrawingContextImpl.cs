@@ -194,6 +194,11 @@ namespace Avalonia.Rendering.SceneGraph
             }
         }
 
+        public IRenderTargetBitmapImpl CreateLayer(Size size)
+        {
+            throw new NotSupportedException("Creating layers on a deferred drawing context not supported");
+        }
+
         /// <inheritdoc/>
         public void PopClip()
         {
