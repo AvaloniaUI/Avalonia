@@ -1,5 +1,8 @@
-﻿using System;
+﻿using Avalonia.Utilities;
+using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Reflection;
 using System.Text;
 using System.Windows.Input;
 
@@ -9,9 +12,13 @@ namespace Avalonia.Markup
     {
         private readonly Delegate action;
 
+        private ParameterInfo parameterInfo;
+
         public AlwaysEnabledDelegateCommand(Delegate action)
         {
             this.action = action;
+            var parameters = action.Method.GetParameters();
+            parameterInfo = parameters.Length == 0 ? null : parameters[0];
         }
 
 #pragma warning disable 0067
@@ -22,13 +29,14 @@ namespace Avalonia.Markup
 
         public void Execute(object parameter)
         {
-            if (action.Method.GetParameters().Length == 0)
+            if (parameterInfo == null)
             {
                 action.DynamicInvoke();
             }
             else
             {
-                action.DynamicInvoke(parameter); 
+                TypeUtilities.TryConvert(parameterInfo.ParameterType, parameter, CultureInfo.CurrentCulture, out object convertedParameter);
+                action.DynamicInvoke(convertedParameter); 
             }
         }
     }

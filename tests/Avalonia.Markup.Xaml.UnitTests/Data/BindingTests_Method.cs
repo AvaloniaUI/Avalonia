@@ -61,8 +61,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
                 Assert.Equal("Called 5", vm.Value);
             }
         }
-
-        // Should this work or should it be a binding error?
+        
         [Fact]
         public void Binding_Method_To_TextBlock_Text_Works()
         {
