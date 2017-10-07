@@ -185,36 +185,40 @@ namespace Avalonia.Rendering
 
             try
             {
-                using (var context = _renderTarget.CreateDrawingContext(this))
+                if (scene != null && scene.Size != Size.Empty)
                 {
-                    if (scene != null && scene.Size != Size.Empty)
+                    IDrawingContextImpl context = null;
+
+                    if (scene.Generation != _lastSceneId)
                     {
-                        if (scene.Generation != _lastSceneId)
+                        context = _renderTarget.CreateDrawingContext(this);
+                        _layers.Update(scene, context);
+
+                        RenderToLayers(scene);
+
+                        if (DebugFramesPath != null)
                         {
-                            _layers.Update(scene, context);
-
-                            RenderToLayers(scene);
-
-                            if (DebugFramesPath != null)
-                            {
-                                SaveDebugFrames(scene.Generation);
-                            }
-
-                            _lastSceneId = scene.Generation;
-
-                            composite = true;
+                            SaveDebugFrames(scene.Generation);
                         }
 
-                        if (renderOverlay)
-                        {
-                            RenderOverlay(scene, context);
-                            RenderComposite(scene, context);
-                        }
-                        else if (composite)
-                        {
-                            RenderComposite(scene, context);
-                        }
+                        _lastSceneId = scene.Generation;
+
+                        composite = true;
                     }
+
+                    if (renderOverlay)
+                    {
+                        context = context ?? _renderTarget.CreateDrawingContext(this);
+                        RenderOverlay(scene, context);
+                        RenderComposite(scene, context);
+                    }
+                    else if (composite)
+                    {
+                        context = context ?? _renderTarget.CreateDrawingContext(this);
+                        RenderComposite(scene, context);
+                    }
+
+                    context?.Dispose();
                 }
             }
             catch (RenderTargetCorruptedException ex)
