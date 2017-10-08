@@ -81,11 +81,28 @@ namespace Avalonia.Platform
         void FillRectangle(IBrush brush, Rect rect, float cornerRadius = 0.0f);
 
         /// <summary>
+        /// Creates a new <see cref="IRenderTargetBitmapImpl"/> that can be used as a render layer
+        /// for the current render target.
+        /// </summary>
+        /// <param name="size">The size of the layer in DIPs.</param>
+        /// <returns>An <see cref="IRenderTargetBitmapImpl"/></returns>
+        /// <remarks>
+        /// Depending on the rendering backend used, a layer created via this method may be more
+        /// performant than a standard render target bitmap. In particular the Direct2D backend
+        /// has to do a format conversion each time a standard render target bitmap is rendered,
+        /// but a layer created via this method has no such overhead.
+        /// </remarks>
+        IRenderTargetBitmapImpl CreateLayer(Size size);
+
+        /// <summary>
         /// Pushes a clip rectange.
         /// </summary>
         /// <param name="clip">The clip rectangle.</param>
         void PushClip(Rect clip);
 
+        /// <summary>
+        /// Pops the latest pushed clip rectangle.
+        /// </summary>
         void PopClip();
 
         /// <summary>
@@ -94,10 +111,19 @@ namespace Avalonia.Platform
         /// <param name="opacity">The opacity.</param>
         void PushOpacity(double opacity);
 
+        /// <summary>
+        /// Pops the latest pushed opacity value.
+        /// </summary>
         void PopOpacity();
 
+        /// <summary>
+        /// Pushes an opacity mask
+        /// </summary>
         void PushOpacityMask(IBrush mask, Rect bounds);
 
+        /// <summary>
+        /// Pops the latest pushed opacity mask.
+        /// </summary>
         void PopOpacityMask();
 
         /// <summary>
@@ -106,6 +132,9 @@ namespace Avalonia.Platform
         /// <param name="clip">The clip geometry.</param>
         void PushGeometryClip(IGeometryImpl clip);
 
+        /// <summary>
+        /// Pops the latest pushed geometry clip.
+        /// </summary>
         void PopGeometryClip();
     }
 }

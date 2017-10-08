@@ -51,7 +51,7 @@ namespace Avalonia.iOS
             }
         }*/
 
-        public IDisposable StartTimer(TimeSpan interval, Action tick)
+        public IDisposable StartTimer(DispatcherPriority priority, TimeSpan interval, Action tick)
             => NSTimer.CreateRepeatingScheduledTimer(interval, _ => tick());
 
         public void Signal(DispatcherPriority prio)

@@ -45,7 +45,7 @@ namespace Avalonia.Skia
             var s = sourceRect.ToSKRect();
             var d = destRect.ToSKRect();
             using (var paint = new SKPaint()
-                    { Color = new SKColor(255, 255, 255, (byte)(255 * opacity)) })
+                    { Color = new SKColor(255, 255, 255, (byte)(255 * opacity * _currentOpacity)) })
             {
                 Canvas.DrawBitmap(impl.Bitmap, s, d, paint);
             }
@@ -112,6 +112,7 @@ namespace Avalonia.Skia
             public readonly SKPaint Paint;
 
             private IDisposable _disposable1;
+            private IDisposable _disposable2;
 
             public IDisposable ApplyTo(SKPaint paint)
             {
@@ -127,6 +128,8 @@ namespace Avalonia.Skia
             {
                 if (_disposable1 == null)
                     _disposable1 = disposable;
+                else if (_disposable2 == null)
+                    _disposable2 = disposable;
                 else
                     throw new InvalidOperationException();
             }
@@ -135,12 +138,14 @@ namespace Avalonia.Skia
             {
                 Paint = paint;
                 _disposable1 = null;
+                _disposable2 = null;
             }
 
             public void Dispose()
             {
                 Paint?.Dispose();
                 _disposable1?.Dispose();
+                _disposable2?.Dispose();
             }
         }
 
@@ -221,8 +226,8 @@ namespace Avalonia.Skia
                             _visualBrushRenderer.RenderVisualBrush(ctx, visualBrush);
                         }
 
-                        rv.AddDisposable(tileBrushImage);
                         tileBrushImage = intermediate;
+                        rv.AddDisposable(tileBrushImage);
                     }
                 }
                 else
@@ -347,6 +352,12 @@ namespace Avalonia.Skia
                 var textImpl = (FormattedTextImpl)text;
                 textImpl.Draw(this, Canvas, origin.ToSKPoint(), paint, CanUseLcdRendering);
             }
+        }
+
+        public IRenderTargetBitmapImpl CreateLayer(Size size)
+        {
+            var pixelSize = size * (_dpi / 96);
+            return new BitmapImpl((int)pixelSize.Width, (int)pixelSize.Height, _dpi);
         }
 
         public void PushClip(Rect clip)

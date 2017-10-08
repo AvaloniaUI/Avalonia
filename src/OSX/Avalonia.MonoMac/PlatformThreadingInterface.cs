@@ -16,7 +16,7 @@ namespace Avalonia.MonoMac
 
         public event Action<DispatcherPriority?> Signaled;
 
-        public IDisposable StartTimer(TimeSpan interval, Action tick)
+        public IDisposable StartTimer(DispatcherPriority priority, TimeSpan interval, Action tick)
             => NSTimer.CreateRepeatingScheduledTimer(interval, () => tick());
 
         public void Signal(DispatcherPriority prio)
