@@ -96,20 +96,23 @@ namespace Avalonia.Markup.Xaml.Data
             ValidateState(pathInfo);
             enableDataValidation = enableDataValidation && Priority == BindingPriority.LocalValue;
 
+            var elementName = pathInfo.ElementName;
+            var relativeSource = RelativeSource ?? pathInfo.RelativeSource;
+
             ExpressionObserver observer;
 
-            if (pathInfo.ElementName != null || ElementName != null)
+            if (elementName != null)
             {
                 observer = CreateElementObserver(
                     (target as IControl) ?? (anchor as IControl),
-                    pathInfo.ElementName ?? ElementName,
+                    elementName,
                     pathInfo.Path);
             }
             else if (Source != null)
             {
                 observer = CreateSourceObserver(Source, pathInfo.Path, enableDataValidation);
             }
-            else if (RelativeSource == null || RelativeSource.Mode == RelativeSourceMode.DataContext)
+            else if (relativeSource == null || relativeSource.Mode == RelativeSourceMode.DataContext)
             {
                 observer = CreateDataContexObserver(
                     target,
@@ -118,23 +121,24 @@ namespace Avalonia.Markup.Xaml.Data
                     anchor,
                     enableDataValidation);
             }
-            else if (RelativeSource.Mode == RelativeSourceMode.Self)
+            else if (relativeSource.Mode == RelativeSourceMode.Self)
             {
                 observer = CreateSourceObserver(target, pathInfo.Path, enableDataValidation);
             }
-            else if (RelativeSource.Mode == RelativeSourceMode.TemplatedParent)
+            else if (relativeSource.Mode == RelativeSourceMode.TemplatedParent)
             {
                 observer = CreateTemplatedParentObserver(target, pathInfo.Path);
             }
-            else if (RelativeSource.Mode == RelativeSourceMode.FindAncestor)
+            else if (relativeSource.Mode == RelativeSourceMode.FindAncestor)
             {
-                if (RelativeSource.AncestorType == null)
+                if (relativeSource.AncestorType == null)
                 {
                     throw new InvalidOperationException("AncestorType must be set for RelativeSourceModel.FindAncestor.");
                 }
 
                 observer = CreateFindAncestorObserver(
                     (target as IControl) ?? (anchor as IControl),
+                    relativeSource,
                     pathInfo.Path);
             }
             else
@@ -187,12 +191,78 @@ namespace Avalonia.Markup.Xaml.Data
                     result.ElementName = path.Substring(1);
                 }
             }
+            else if (path.StartsWith("$"))
+            {
+                var relativeSource = new RelativeSource();
+                result.RelativeSource = relativeSource;
+                var dot = path.IndexOf('.');
+                string relativeSourceMode;
+                if (dot != -1)
+                {
+                    result.Path = path.Substring(dot + 1);
+                    relativeSourceMode = path.Substring(1, dot - 1);
+                }
+                else
+                {
+                    result.Path = string.Empty;
+                    relativeSourceMode = path.Substring(1);
+                }
+
+                if (relativeSourceMode == "self")
+                {
+                    relativeSource.Mode = RelativeSourceMode.Self;
+                }
+                else if(relativeSourceMode == "parent")
+                {
+                    relativeSource.Mode = RelativeSourceMode.FindAncestor;
+                    var parentConfigStart = relativeSourceMode.IndexOf('[');
+                    if (parentConfigStart != -1)
+                    {
+                        if (!relativeSourceMode.EndsWith("]"))
+                        {
+                            throw new InvalidOperationException("Invalid RelativeSource binding syntax. Expected matching ']' for '['.");
+                        }
+                        var parentConfigParams = relativeSourceMode.Substring(0, relativeSourceMode.Length - 1).Split(',');
+                        if (parentConfigParams.Length > 2 || parentConfigParams.Length == 0)
+                        {
+                            throw new InvalidOperationException("Expected either 1 or 2 parameters for RelativeSource binding syntax");
+                        }
+                        else if (parentConfigParams.Length == 1)
+                        {
+                            if (int.TryParse(parentConfigParams[0], out int level))
+                            {
+                                relativeSource.AncestorType = typeof(IControl);
+                                relativeSource.AncestorLevel = level;
+                            }
+                            else
+                            {
+                                relativeSource.AncestorType = LookupAncestorType(parentConfigParams[0]);
+                            }
+                        }
+                        else
+                        {
+                            relativeSource.AncestorType = LookupAncestorType(parentConfigParams[0]);
+                            relativeSource.AncestorLevel = int.Parse(parentConfigParams[1]);
+                        }
+                    }
+                }
+                else
+                {
+                    throw new InvalidOperationException($"Invalid RelativeSource binding syntax: {relativeSourceMode}");
+                }
+            }
             else
             {
                 result.Path = path;
             }
 
             return result;
+        }
+
+        private static Type LookupAncestorType(string ancestorTypeName)
+        {
+            //TODO: What is our syntax for type lookup here?
+            throw new NotImplementedException();
         }
 
         private void ValidateState(PathInfo pathInfo)
@@ -203,8 +273,14 @@ namespace Avalonia.Markup.Xaml.Data
                     "ElementName property cannot be set when an #elementName path is provided.");
             }
 
+            if (pathInfo.RelativeSource != null && RelativeSource != null)
+            {
+                throw new InvalidOperationException(
+                    "ElementName property cannot be set when a $self or $parent path is provided.");
+            }
+
             if ((pathInfo.ElementName != null || ElementName != null) &&
-                RelativeSource != null)
+                (pathInfo.RelativeSource != null || RelativeSource != null))
             {
                 throw new InvalidOperationException(
                     "ElementName property cannot be set with a RelativeSource.");
@@ -267,12 +343,13 @@ namespace Avalonia.Markup.Xaml.Data
 
         private ExpressionObserver CreateFindAncestorObserver(
             IControl target,
+            RelativeSource relativeSource,
             string path)
         {
             Contract.Requires<ArgumentNullException>(target != null);
 
             return new ExpressionObserver(
-                ControlLocator.Track(target, RelativeSource.AncestorType, RelativeSource.AncestorLevel -1),
+                ControlLocator.Track(target, relativeSource.AncestorType, relativeSource.AncestorLevel -1),
                 path);
         }
 
@@ -324,6 +401,7 @@ namespace Avalonia.Markup.Xaml.Data
         {
             public string Path { get; set; }
             public string ElementName { get; set; }
+            public RelativeSource RelativeSource { get; set; }
         }
     }
 }
