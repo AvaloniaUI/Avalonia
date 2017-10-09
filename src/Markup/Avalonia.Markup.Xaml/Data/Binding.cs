@@ -96,7 +96,7 @@ namespace Avalonia.Markup.Xaml.Data
             ValidateState(pathInfo);
             enableDataValidation = enableDataValidation && Priority == BindingPriority.LocalValue;
 
-            var elementName = pathInfo.ElementName;
+            var elementName = ElementName ?? pathInfo.ElementName;
             var relativeSource = RelativeSource ?? pathInfo.RelativeSource;
 
             ExpressionObserver observer;
@@ -215,35 +215,38 @@ namespace Avalonia.Markup.Xaml.Data
                 else if(relativeSourceMode == "parent")
                 {
                     relativeSource.Mode = RelativeSourceMode.FindAncestor;
+                    relativeSource.AncestorType = typeof(IControl);
+                    relativeSource.AncestorLevel = 1;
+                }
+                else if(relativeSourceMode.StartsWith("parent["))
+                {
+                    relativeSource.Mode = RelativeSourceMode.FindAncestor;
                     var parentConfigStart = relativeSourceMode.IndexOf('[');
-                    if (parentConfigStart != -1)
+                    if (!relativeSourceMode.EndsWith("]"))
                     {
-                        if (!relativeSourceMode.EndsWith("]"))
+                        throw new InvalidOperationException("Invalid RelativeSource binding syntax. Expected matching ']' for '['.");
+                    }
+                    var parentConfigParams = relativeSourceMode.Substring(parentConfigStart + 1).TrimEnd(']').Split(',');
+                    if (parentConfigParams.Length > 2 || parentConfigParams.Length == 0)
+                    {
+                        throw new InvalidOperationException("Expected either 1 or 2 parameters for RelativeSource binding syntax");
+                    }
+                    else if (parentConfigParams.Length == 1)
+                    {
+                        if (int.TryParse(parentConfigParams[0], out int level))
                         {
-                            throw new InvalidOperationException("Invalid RelativeSource binding syntax. Expected matching ']' for '['.");
-                        }
-                        var parentConfigParams = relativeSourceMode.Substring(0, relativeSourceMode.Length - 1).Split(',');
-                        if (parentConfigParams.Length > 2 || parentConfigParams.Length == 0)
-                        {
-                            throw new InvalidOperationException("Expected either 1 or 2 parameters for RelativeSource binding syntax");
-                        }
-                        else if (parentConfigParams.Length == 1)
-                        {
-                            if (int.TryParse(parentConfigParams[0], out int level))
-                            {
-                                relativeSource.AncestorType = typeof(IControl);
-                                relativeSource.AncestorLevel = level;
-                            }
-                            else
-                            {
-                                relativeSource.AncestorType = LookupAncestorType(parentConfigParams[0]);
-                            }
+                            relativeSource.AncestorType = typeof(IControl);
+                            relativeSource.AncestorLevel = level + 1;
                         }
                         else
                         {
                             relativeSource.AncestorType = LookupAncestorType(parentConfigParams[0]);
-                            relativeSource.AncestorLevel = int.Parse(parentConfigParams[1]);
                         }
+                    }
+                    else
+                    {
+                        relativeSource.AncestorType = LookupAncestorType(parentConfigParams[0]);
+                        relativeSource.AncestorLevel = int.Parse(parentConfigParams[1]) + 1;
                     }
                 }
                 else
