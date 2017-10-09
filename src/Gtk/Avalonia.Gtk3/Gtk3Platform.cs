@@ -30,6 +30,10 @@ namespace Avalonia.Gtk3
         {
             if (!s_gtkInitialized)
             {
+                try
+                {
+                    X11.XInitThreads();
+                }catch{}
                 Resolver.Resolve();
                 Native.GtkInit(0, IntPtr.Zero);
                 var disp = Native.GdkGetDefaultDisplay();

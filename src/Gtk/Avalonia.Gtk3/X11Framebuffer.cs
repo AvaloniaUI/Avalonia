@@ -38,10 +38,13 @@ namespace Avalonia.Gtk3
             image.depth = 24;
             image.bytes_per_line = RowBytes - Width * 4;
             image.bits_per_pixel = bitsPerPixel;
+            X11.XLockDisplay(_display);
             X11.XInitImage(ref image);
             var gc = X11.XCreateGC(_display, _xid, 0, IntPtr.Zero);
             X11.XPutImage(_display, _xid, gc, ref image, 0, 0, 0, 0, (uint) Width, (uint) Height);
             X11.XFreeGC(_display, gc);
+            X11.XSync(_display, true);
+            X11.XUnlockDisplay(_display);
             _blob.Dispose();
         }
 

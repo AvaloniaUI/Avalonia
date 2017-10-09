@@ -6,7 +6,16 @@ namespace Avalonia.Gtk3
     class X11
     {
         [DllImport("libX11.so.6")]
+        public static extern IntPtr XInitThreads();
+        
+        [DllImport("libX11.so.6")]
         public static extern IntPtr XOpenDisplay(IntPtr name);
+        
+        [DllImport("libX11.so.6")]
+        public static extern IntPtr XLockDisplay(IntPtr display);
+        
+        [DllImport("libX11.so.6")]
+        public static extern IntPtr XUnlockDisplay(IntPtr display);
         
         [DllImport("libX11.so.6")]
         public static extern IntPtr XFreeGC(IntPtr display, IntPtr gc);
@@ -23,13 +32,28 @@ namespace Avalonia.Gtk3
         [DllImport("libX11.so.6")]
         public static extern IntPtr XSetErrorHandler(XErrorHandler handler);
 
-        public delegate int XErrorHandler(IntPtr display, IntPtr error);
+        [DllImport("libX11.so.6")]
+        public static extern int XSync(IntPtr display, bool discard);
+
+        public delegate int XErrorHandler(IntPtr display, ref XErrorEvent error);
 
         [DllImport("libX11.so.6")]
         public static extern int XPutImage(IntPtr display, IntPtr drawable, IntPtr gc, ref XImage image,
             int srcx, int srcy, int destx, int desty, uint width, uint height);
 
-        
+        [StructLayout(LayoutKind.Sequential)]
+        public unsafe struct XErrorEvent
+        {
+            public int type;
+            public IntPtr* display; /* Display the event was read from */
+            public ulong serial; /* serial number of failed request */
+            public byte error_code; /* error code of failed request */
+            public byte request_code; /* Major op-code of failed request */
+            public byte minor_code; /* Minor op-code of failed request */
+            public IntPtr resourceid; /* resource id */
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
         public unsafe struct XImage
         {
             public int width, height; /* size of image */
