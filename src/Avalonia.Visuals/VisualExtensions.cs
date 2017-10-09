@@ -29,6 +29,8 @@ namespace Avalonia
         /// <returns>The point in client coordinates.</returns>
         public static Point PointToClient(this IVisual visual, Point point)
         {
+            if (!visual.IsAttachedToVisualTree)
+                return default(Point);
             var p = GetRootAndPosition(visual);
             return p.Item1.PointToClient(point - p.Item2);
         }
@@ -41,6 +43,8 @@ namespace Avalonia
         /// <returns>The point in screen coordinates.</returns>
         public static Point PointToScreen(this IVisual visual, Point point)
         {
+            if (!visual.IsAttachedToVisualTree)
+                return default(Point);
             var p = GetRootAndPosition(visual);
             return p.Item1.PointToScreen(point + p.Item2);
         }
@@ -55,6 +59,8 @@ namespace Avalonia
         /// <returns>A point value, now relative to the target visual rather than this source element.</returns>
         public static Point TranslatePoint(this IVisual visual, Point point, IVisual relativeTo)
         {
+            if (!visual.IsAttachedToVisualTree)
+                return default(Point);
             var pos = GetRootAndPosition(visual);
             var relToPos = GetRootAndPosition(relativeTo);
 
