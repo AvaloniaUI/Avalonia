@@ -25,18 +25,23 @@ namespace Avalonia.Gtk3
         internal static IntPtr App { get; set; }
         internal static string DisplayClassName;
         public static bool UseDeferredRendering = true;
+        private static bool s_gtkInitialized;
         public static void Initialize()
         {
-            Resolver.Resolve();
-            Native.GtkInit(0, IntPtr.Zero);
-            var disp = Native.GdkGetDefaultDisplay();
-            DisplayClassName = Utf8Buffer.StringFromPtr(Native.GTypeName(Marshal.ReadIntPtr(Marshal.ReadIntPtr(disp))));
-            
-            using (var utf = new Utf8Buffer("avalonia.app." + Guid.NewGuid()))
-                App = Native.GtkApplicationNew(utf, 0);
-            //Mark current thread as UI thread
-            s_tlsMarker = true;
+            if (!s_gtkInitialized)
+            {
+                Resolver.Resolve();
+                Native.GtkInit(0, IntPtr.Zero);
+                var disp = Native.GdkGetDefaultDisplay();
+                DisplayClassName =
+                    Utf8Buffer.StringFromPtr(Native.GTypeName(Marshal.ReadIntPtr(Marshal.ReadIntPtr(disp))));
 
+                using (var utf = new Utf8Buffer("avalonia.app." + Guid.NewGuid()))
+                    App = Native.GtkApplicationNew(utf, 0);
+                //Mark current thread as UI thread
+                s_tlsMarker = true;
+                s_gtkInitialized = true;
+            }
             AvaloniaLocator.CurrentMutable.Bind<IWindowingPlatform>().ToConstant(Instance)
                 .Bind<IClipboard>().ToSingleton<ClipboardImpl>()
                 .Bind<IStandardCursorFactory>().ToConstant(new CursorFactory())
