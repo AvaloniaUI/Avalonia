@@ -22,8 +22,9 @@ namespace Avalonia.Direct2D1.Media
             int width,
             int height,
             double dpiX,
-            double dpiY)
-            : base(imagingFactory, width, height)
+            double dpiY,
+            Platform.PixelFormat? pixelFormat = null)
+            : base(imagingFactory, width, height, pixelFormat)
         {
             var props = new RenderTargetProperties
             {
@@ -45,9 +46,13 @@ namespace Avalonia.Direct2D1.Media
             base.Dispose();
         }
 
-        public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
+        public virtual IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
+            => CreateDrawingContext(visualBrushRenderer, null);
+
+        public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer, Action finishedCallback)
         {
-            return new DrawingContextImpl(visualBrushRenderer, _target, _dwriteFactory);
+            return new DrawingContextImpl(visualBrushRenderer, _target, _dwriteFactory,
+                finishedCallback: finishedCallback);
         }
     }
 }
