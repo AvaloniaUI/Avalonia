@@ -248,6 +248,7 @@ public class Packages
                     new NuSpecDependency() { Id = "Splat", Version = SplatVersion },
                     new NuSpecDependency() { Id = "Sprache", Version = SpracheVersion },
                     new NuSpecDependency() { Id = "System.Reactive", Version = SystemReactiveVersion },
+                    new NuSpecDependency() { Id = "Avalonia.Remote.Protocol", Version = parameters.Version },
                     //.NET Core
                     new NuSpecDependency() { Id = "System.Threading.ThreadPool", TargetFramework = "netcoreapp2.0", Version = "4.3.0" },
                     new NuSpecDependency() { Id = "Microsoft.Extensions.DependencyModel", TargetFramework = "netcoreapp2.0", Version = "1.1.0" },
@@ -256,6 +257,7 @@ public class Packages
                     new NuSpecDependency() { Id = "Serilog", TargetFramework = "netcoreapp2.0", Version = SerilogVersion },
                     new NuSpecDependency() { Id = "Sprache", TargetFramework = "netcoreapp2.0", Version = SpracheVersion },
                     new NuSpecDependency() { Id = "System.Reactive", TargetFramework = "netcoreapp2.0", Version = SystemReactiveVersion },
+                    new NuSpecDependency() { Id = "Avalonia.Remote.Protocol", TargetFramework = "netcoreapp2.0", Version = parameters.Version },
                 }
                 .Deps(new string[]{null, "netcoreapp2.0"},
                     "System.ValueTuple", "System.ComponentModel.TypeConverter", "System.ComponentModel.Primitives",
@@ -301,6 +303,19 @@ public class Packages
                     new NuSpecContent { Source = "Avalonia.ReactiveUI.dll", Target = "lib/netstandard2.0" }
                 },
                 BasePath = context.Directory("./src/Avalonia.ReactiveUI/bin/" + parameters.DirSuffix + "/netstandard2.0"),
+                OutputDirectory = parameters.NugetRoot
+            },
+            ///////////////////////////////////////////////////////////////////////////////
+            // Avalonia.Remote.Protocol
+            ///////////////////////////////////////////////////////////////////////////////
+            new NuGetPackSettings()
+            {
+                Id = "Avalonia.Remote.Protocol",
+                Files = new []
+                {
+                    new NuSpecContent { Source = "Avalonia.Remote.Protocol.dll", Target = "lib/netstandard2.0" }
+                },
+                BasePath = context.Directory("./src/Avalonia.Remote.Protocol/bin/" + parameters.DirSuffix + "/netstandard2.0"),
                 OutputDirectory = parameters.NugetRoot
             },
         };
