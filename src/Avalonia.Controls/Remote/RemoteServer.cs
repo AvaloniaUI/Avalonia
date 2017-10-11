@@ -14,9 +14,9 @@ namespace Avalonia.Controls.Remote
     {
         private EmbeddableControlRoot _topLevel;
 
-        class TopLevelImpl : RemoteServerTopLevelImpl, IEmbeddableWindowImpl
+        class EmbeddableRemoteServerTopLevelImpl : RemoteServerTopLevelImpl, IEmbeddableWindowImpl
         {
-            public TopLevelImpl(IAvaloniaRemoteTransportConnection transport) : base(transport)
+            public EmbeddableRemoteServerTopLevelImpl(IAvaloniaRemoteTransportConnection transport) : base(transport)
             {
             }
 #pragma warning disable 67
@@ -26,7 +26,7 @@ namespace Avalonia.Controls.Remote
         
         public RemoteServer(IAvaloniaRemoteTransportConnection transport)
         {
-            _topLevel = new EmbeddableControlRoot(new TopLevelImpl(transport));
+            _topLevel = new EmbeddableControlRoot(new EmbeddableRemoteServerTopLevelImpl(transport));
             _topLevel.Prepare();
             //TODO: Somehow react on closed connection?
         }
