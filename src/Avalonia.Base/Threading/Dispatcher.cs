@@ -85,6 +85,19 @@ namespace Avalonia.Threading
         }
 
         /// <summary>
+        /// This is needed for platform backends that don't have internal priority system (e. g. win32)
+        /// To ensure that there are no jobs with higher priority
+        /// </summary>
+        /// <param name="currentPriority"></param>
+        internal void EnsurePriority(DispatcherPriority currentPriority)
+        {
+            if (currentPriority == DispatcherPriority.MaxValue)
+                return;
+            currentPriority += 1;
+            _jobRunner.RunJobs(currentPriority);
+        }
+
+        /// <summary>
         /// Allows unit tests to change the platform threading interface.
         /// </summary>
         internal void UpdateServices()

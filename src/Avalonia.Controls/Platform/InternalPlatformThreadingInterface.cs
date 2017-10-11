@@ -14,7 +14,7 @@ namespace Avalonia.Controls.Platform
         public InternalPlatformThreadingInterface()
         {
             TlsCurrentThreadIsLoopThread = true;
-            StartTimer(new TimeSpan(0, 0, 0, 0, 66), () => Tick?.Invoke(this, new EventArgs()));
+            StartTimer(DispatcherPriority.Render, new TimeSpan(0, 0, 0, 0, 66), () => Tick?.Invoke(this, new EventArgs()));
         }
 
         private readonly AutoResetEvent _signaled = new AutoResetEvent(false);
@@ -72,7 +72,7 @@ namespace Avalonia.Controls.Platform
             }
         }
 
-        public IDisposable StartTimer(TimeSpan interval, Action tick)
+        public IDisposable StartTimer(DispatcherPriority priority, TimeSpan interval, Action tick)
         {
             return new WatTimer(new System.Threading.Timer(delegate
             {

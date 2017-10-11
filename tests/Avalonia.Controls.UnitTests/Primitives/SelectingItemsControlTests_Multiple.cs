@@ -76,7 +76,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             target.SelectedItems = new AvaloniaList<object>();
 
             Assert.Equal(-1, target.SelectedIndex);
-            Assert.Equal(null, target.SelectedItem);
+            Assert.Null(target.SelectedItem);
         }
 
         [Fact]

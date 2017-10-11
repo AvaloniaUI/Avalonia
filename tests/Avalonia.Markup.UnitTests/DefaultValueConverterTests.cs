@@ -5,6 +5,8 @@ using System.Globalization;
 using Avalonia.Controls;
 using Avalonia.Data;
 using Xunit;
+using System.Windows.Input;
+using System;
 
 namespace Avalonia.Markup.UnitTests
 {
@@ -116,6 +118,42 @@ namespace Avalonia.Markup.UnitTests
                 CultureInfo.InvariantCulture);
 
             Assert.IsType<BindingNotification>(result);
+        }
+
+        [Fact]
+        public void Can_Convert_From_Delegate_To_Command()
+        {
+            int commandResult = 0;
+
+            var result = DefaultValueConverter.Instance.Convert(
+                (Action<int>)((int i) => { commandResult = i; }),
+                typeof(ICommand),
+                null,
+                CultureInfo.InvariantCulture);
+
+            Assert.IsAssignableFrom<ICommand>(result);
+
+            (result as ICommand).Execute(5);
+
+            Assert.Equal(5, commandResult);
+        }
+
+        [Fact]
+        public void Can_Convert_From_Delegate_To_Command_No_Parameters()
+        {
+            int commandResult = 0;
+
+            var result = DefaultValueConverter.Instance.Convert(
+                (Action)(() => { commandResult = 1; }),
+                typeof(ICommand),
+                null,
+                CultureInfo.InvariantCulture);
+
+            Assert.IsAssignableFrom<ICommand>(result);
+
+            (result as ICommand).Execute(null);
+
+            Assert.Equal(1, commandResult);
         }
 
         private enum TestEnum
