@@ -147,17 +147,14 @@ namespace Avalonia.Controls.Primitives
                     decreaseButton.Arrange(new Rect(0, 0, firstWidth, finalSize.Height));
                 }
 
-                if (!double.IsNaN(thumbWidth))
+                if (thumb != null)
                 {
-                    if (thumb != null)
-                    {
-                        thumb.Arrange(new Rect(firstWidth, 0, thumbWidth, finalSize.Height));
-                    }
+                    thumb.Arrange(new Rect(firstWidth, 0, thumbWidth, finalSize.Height));
+                }
 
-                    if (increaseButton != null)
-                    {
-                        increaseButton.Arrange(new Rect(firstWidth + thumbWidth, 0, remaining - firstWidth, finalSize.Height));
-                    }
+                if (increaseButton != null)
+                {
+                    increaseButton.Arrange(new Rect(firstWidth + thumbWidth, 0, remaining - firstWidth, finalSize.Height));
                 }
             }
             else
@@ -181,17 +178,14 @@ namespace Avalonia.Controls.Primitives
                     decreaseButton.Arrange(new Rect(0, 0, finalSize.Width, firstHeight));
                 }
 
-                if (!double.IsNaN(thumbHeight))
+                if (thumb != null)
                 {
-                    if (thumb != null)
-                    {
-                        thumb.Arrange(new Rect(0, firstHeight, finalSize.Width, thumbHeight));
-                    }
+                    thumb.Arrange(new Rect(0, firstHeight, finalSize.Width, thumbHeight));
+                }
 
-                    if (increaseButton != null)
-                    {
-                        increaseButton.Arrange(new Rect(0, firstHeight + thumbHeight, finalSize.Width, Math.Max(remaining - firstHeight, 0)));
-                    }
+                if (increaseButton != null)
+                {
+                    increaseButton.Arrange(new Rect(0, firstHeight + thumbHeight, finalSize.Width, Math.Max(remaining - firstHeight, 0)));
                 }
             }
 
