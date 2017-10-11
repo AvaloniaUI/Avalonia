@@ -229,7 +229,7 @@ public class Packages
                 Target = "tools/netcoreapp2.0/previewer"
             },
             new NuSpecContent{
-                Source = ((FilePath)context.File("./src/tools/Avalonia.Designer.HostApp.NetFx/bin/" + parameters.DirSuffix + "/net461/Avalonia.Designer.HostApp.NetFx.exe")).FullPath, 
+                Source = ((FilePath)context.File("./src/tools/Avalonia.Designer.HostApp.NetFx/bin/" + parameters.DirSuffix + "/Avalonia.Designer.HostApp.exe")).FullPath, 
                 Target = "tools/net461/previewer"
             }
         };
