@@ -1,0 +1,9 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <DefineConstants>AVALONIA_REMOTE_PROTOCOL;$(DefineConstants)</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\Avalonia.Input\Key.cs" />
+  </ItemGroup>
+</Project>

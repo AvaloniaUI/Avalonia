@@ -1,0 +1,111 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{4ADA61C8-D191-428D-9066-EF4F0D86520F}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Avalonia.Designer.HostApp</RootNamespace>
+    <AssemblyName>Avalonia.Designer.HostApp</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <TargetFrameworkProfile />
+    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>x86</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Program.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Avalonia.DesignerSupport\Avalonia.DesignerSupport.csproj">
+      <Project>{799a7bb5-3c2c-48b6-85a7-406a12c420da}</Project>
+      <Name>Avalonia.DesignerSupport</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Avalonia.DotNetFrameworkRuntime\Avalonia.DotNetFrameworkRuntime.csproj">
+      <Project>{4A1ABB09-9047-4BD5-A4AD-A055E52C5EE0}</Project>
+      <Name>Avalonia.DotNetFrameworkRuntime</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj">
+      <Project>{3E53A01A-B331-47F3-B828-4A5717E77A24}</Project>
+      <Name>Avalonia.Markup.Xaml</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Markup\Avalonia.Markup\Avalonia.Markup.csproj">
+      <Project>{6417E941-21BC-467B-A771-0DE389353CE6}</Project>
+      <Name>Avalonia.Markup</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Avalonia.Animation\Avalonia.Animation.csproj">
+      <Project>{d211e587-d8bc-45b9-95a4-f297c8fa5200}</Project>
+      <Name>Avalonia.Animation</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Avalonia.Base\Avalonia.Base.csproj">
+      <Project>{B09B78D8-9B26-48B0-9149-D64A2F120F3F}</Project>
+      <Name>Avalonia.Base</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Avalonia.Controls\Avalonia.Controls.csproj">
+      <Project>{D2221C82-4A25-4583-9B43-D791E3F6820C}</Project>
+      <Name>Avalonia.Controls</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Avalonia.Input\Avalonia.Input.csproj">
+      <Project>{62024b2d-53eb-4638-b26b-85eeaa54866e}</Project>
+      <Name>Avalonia.Input</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Avalonia.Interactivity\Avalonia.Interactivity.csproj">
+      <Project>{6b0ed19d-a08b-461c-a9d9-a9ee40b0c06b}</Project>
+      <Name>Avalonia.Interactivity</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Avalonia.Layout\Avalonia.Layout.csproj">
+      <Project>{42472427-4774-4c81-8aff-9f27b8e31721}</Project>
+      <Name>Avalonia.Layout</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Avalonia.Logging.Serilog\Avalonia.Logging.Serilog.csproj">
+      <Project>{B61B66A3-B82D-4875-8001-89D3394FE0C9}</Project>
+      <Name>Avalonia.Logging.Serilog</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Avalonia.Visuals\Avalonia.Visuals.csproj">
+      <Project>{eb582467-6abb-43a1-b052-e981ba910e3a}</Project>
+      <Name>Avalonia.Visuals</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Avalonia.Styling\Avalonia.Styling.csproj">
+      <Project>{F1BAA01A-F176-4C6A-B39D-5B40BB1B148F}</Project>
+      <Name>Avalonia.Styling</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Avalonia.Themes.Default\Avalonia.Themes.Default.csproj">
+      <Project>{3E10A5FA-E8DA-48B1-AD44-6A5B6CB7750F}</Project>
+      <Name>Avalonia.Themes.Default</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
