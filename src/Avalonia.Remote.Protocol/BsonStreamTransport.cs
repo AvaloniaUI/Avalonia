@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
-using Newtonsoft.Json;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Bson;
+using Metsys.Bson;
 
 namespace Avalonia.Remote.Protocol
 {
@@ -20,8 +19,7 @@ namespace Avalonia.Remote.Protocol
         private readonly object _lock = new object();
         private bool _writeOperationPending;
         private bool _readingAlreadyStarted;
-        private bool _writerIsBroken;
-        static readonly JsonSerializer Serializer = new JsonSerializer();        
+        private bool _writerIsBroken;   
         private static readonly byte[] ZeroLength = new byte[4];
 
         public BsonStreamTransportConnection(IMessageTypeResolver resolver, Stream inputStream, Stream outputStream, Action disposeCallback)
@@ -79,7 +77,8 @@ namespace Avalonia.Remote.Protocol
                     var guid = new Guid(guidBytes);
                     var buffer = new byte[length];
                     await ReadExact(buffer).ConfigureAwait(false);
-                    var message = Serializer.Deserialize(new BsonReader(new MemoryStream(buffer)), _resolver.GetByGuid(guid));
+                    var message = Deserializer.Deserialize(new BinaryReader(new MemoryStream(buffer)),
+                        _resolver.GetByGuid(guid));
                     OnMessage?.Invoke(this, message);
                 }
             }
@@ -107,8 +106,8 @@ namespace Avalonia.Remote.Protocol
                 _outputBlock.SetLength(0);
                 _outputBlock.Write(ZeroLength, 0, 4);
                 _outputBlock.Write(guid, 0, guid.Length);
-                var writer = new BsonWriter(_outputBlock);
-                Serializer.Serialize(writer, data);
+                var serialized = Serializer.Serialize(data);
+                _outputBlock.Write(serialized, 0, serialized.Length);
                 _outputBlock.Seek(0, SeekOrigin.Begin);
                 var length = BitConverter.GetBytes((int)_outputBlock.Length - 20);
                 _outputBlock.Write(length, 0, length.Length);
