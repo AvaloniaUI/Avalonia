@@ -1,20 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Threading;
 
-namespace Avalonia.LinuxFramebuffer
+namespace Avalonia.Controls.Platform
 {
-    class PlatformThreadingInterface : IPlatformThreadingInterface, IRenderLoop
+    public class InternalPlatformThreadingInterface : IPlatformThreadingInterface, IRenderLoop
     {
-        public static PlatformThreadingInterface Instance { get; } = new PlatformThreadingInterface();
-
-        public PlatformThreadingInterface()
+        public InternalPlatformThreadingInterface()
         {
             TlsCurrentThreadIsLoopThread = true;
             StartTimer(DispatcherPriority.Render, new TimeSpan(0, 0, 0, 0, 66), () => Tick?.Invoke(this, new EventArgs()));
@@ -37,7 +34,7 @@ namespace Avalonia.LinuxFramebuffer
                     while (true)
                     {
                         Action item;
-                        lock(_actions)
+                        lock (_actions)
                             if (_actions.Count == 0)
                                 break;
                             else
@@ -67,6 +64,7 @@ namespace Avalonia.LinuxFramebuffer
                 _timer = timer;
                 _handle = GCHandle.Alloc(_timer);
             }
+
             public void Dispose()
             {
                 _handle.Free();
