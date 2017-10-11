@@ -128,7 +128,17 @@ namespace Avalonia.Controls.Primitives
 
             if (Orientation == Orientation.Horizontal)
             {
-                var thumbWidth = double.IsNaN(viewportSize) ? thumb?.DesiredSize.Width ?? 0 : finalSize.Width * viewportSize / extent;
+                double thumbWidth = 0;
+
+                if (double.IsNaN(viewportSize))
+                {
+                    thumbWidth = thumb?.DesiredSize.Width ?? 0;
+                }
+                else if (extent > 0)
+                {
+                    thumbWidth = finalSize.Width * viewportSize / extent;
+                }
+
                 var remaining = finalSize.Width - thumbWidth;
                 var firstWidth = range <= 0 ? 0 : remaining * offset / range;
 
@@ -152,7 +162,17 @@ namespace Avalonia.Controls.Primitives
             }
             else
             {
-                var thumbHeight = double.IsNaN(viewportSize) ? thumb?.DesiredSize.Height ?? 0 : finalSize.Height * viewportSize / extent;
+                double thumbHeight = 0;
+
+                if (double.IsNaN(viewportSize))
+                {
+                    thumbHeight = thumb?.DesiredSize.Height ?? 0;
+                }
+                else if (extent > 0)
+                {
+                    thumbHeight = finalSize.Height * viewportSize / extent;
+                }
+
                 var remaining = finalSize.Height - thumbHeight;
                 var firstHeight = range <= 0 ? 0 : remaining * offset / range;
 
