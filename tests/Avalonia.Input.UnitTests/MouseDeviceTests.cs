@@ -1,6 +1,5 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Input.Raw;
-using Avalonia.Layout;
 using Avalonia.Rendering;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
@@ -12,6 +11,24 @@ namespace Avalonia.Input.UnitTests
 {
     public class MouseDeviceTests
     {
+        [Fact]
+        public void Capture_Is_Cleared_When_Control_Removed()
+        {
+            Canvas control;
+            var root = new TestRoot
+            {
+                Child = control = new Canvas(),
+            };
+            var target = new MouseDevice();
+
+            target.Capture(control);
+            Assert.Same(control, target.Captured);
+
+            root.Child = null;
+
+            Assert.Null(target.Captured);
+        }
+
         [Fact]
         public void MouseMove_Should_Update_PointerOver()
         {
