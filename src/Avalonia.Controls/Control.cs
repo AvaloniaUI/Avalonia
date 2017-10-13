@@ -656,7 +656,6 @@ namespace Avalonia.Controls
         /// <param name="e">The event args.</param>
         protected virtual void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
-            AttachedToLogicalTree?.Invoke(this, e);
         }
 
         /// <summary>
@@ -665,7 +664,6 @@ namespace Avalonia.Controls
         /// <param name="e">The event args.</param>
         protected virtual void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
-            DetachedFromLogicalTree?.Invoke(this, e);
         }
 
         /// <inheritdoc/>
@@ -844,6 +842,7 @@ namespace Avalonia.Controls
                 InitializeStylesIfNeeded(true);
 
                 OnAttachedToLogicalTree(e);
+                AttachedToLogicalTree?.Invoke(this, e);
             }
 
             foreach (var child in LogicalChildren.OfType<Control>())
@@ -864,6 +863,7 @@ namespace Avalonia.Controls
                 _isAttachedToLogicalTree = false;
                 _styleDetach.OnNext(this);
                 OnDetachedFromLogicalTree(e);
+                DetachedFromLogicalTree?.Invoke(this, e);
 
                 foreach (var child in LogicalChildren.OfType<Control>())
                 {
