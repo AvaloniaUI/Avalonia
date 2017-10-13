@@ -771,11 +771,9 @@ namespace Avalonia.Controls
         {
             while (e != null)
             {
-                var root = e as IStyleRoot;
-
-                if (root != null && root.StylingParent == null)
+                if (e is IRenderRoot root)
                 {
-                    return root;
+                    return root as IStyleRoot;
                 }
 
                 e = e.StylingParent;
