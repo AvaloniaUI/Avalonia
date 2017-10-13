@@ -1,30 +1,31 @@
+<img src='https://avatars2.githubusercontent.com/u/14075148?s=200&v=4' width='100' />
+
 # Avalonia
 
 | Gitter Chat | Windows Build Status | Linux/Mac Build Status |
 |---|---|---|
 | [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/AvaloniaUI/Avalonia?utm_campaign=pr-badge&utm_content=badge&utm_medium=badge&utm_source=badge) | [![Build status](https://ci.appveyor.com/api/projects/status/hubk3k0w9idyibfg/branch/master?svg=true)](https://ci.appveyor.com/project/AvaloniaUI/Avalonia/branch/master) | [![Build Status](https://travis-ci.org/AvaloniaUI/Avalonia.svg?branch=master)](https://travis-ci.org/AvaloniaUI/Avalonia) |
 
-A multi-platform .NET UI framework. It runs on Windows, Linux, Mac OS X, iOS and Android.
+## About
+
+Avalonia is a WPF-inspired cross-platform XAML-based UI framework providing a flexible styling system and supporting a wide range of OSs: Windows (.NET Framework, .NET Core), Linux (GTK), MacOS, Android and iOS.
+
+<b>Avalonia is now in alpha.</b> This means that framework is now at a stage where you can have a play and hopefully create simple applications. There's still a lot missing, and you *will* find bugs, and the API *will* change, but this represents the first time where we've made it somewhat easy to have a play and experiment with the framework.
 
 | Control catalog | Desktop platforms | Mobile platforms |
 |---|---|---|
 | <a href='https://youtu.be/wHcB3sGLVYg'><img width='300' src='docs/images/screen.png'></a> | <a href='https://www.youtube.com/watch?t=28&v=c_AB_XSILp0' target='_blank'><img width='300' src='docs/images/avalonia-video.png'></a> | <a href='https://www.youtube.com/watch?v=NJ9-hnmUbBM' target='_blank'><img width='300' src='https://i.ytimg.com/vi/NJ9-hnmUbBM/hqdefault.jpg'></a> |
 
-## About
-
-Avalonia is a WPF-inspired cross-platform XAML-based UI framework providing a flexible styling system and supporting a wide range of OSs: Windows (.NET Framework, .NET Core), Android, Linux (GTK), MacOS and iOS.
-
-<b>Avalonia is now in alpha.</b> What does "alpha" mean? Well, it means that it's now at a stage where you can have a play and hopefully create simple applications. There's still a lot missing, and you *will* find bugs, and the API *will* change, but this represents the first time where we've made it somewhat easy to have a play and experiment with the framework.
-
 ## Getting Started
 
-Avalonia [Visual Studio Extension](https://marketplace.visualstudio.com/items?itemName=AvaloniaTeam.AvaloniaforVisualStudio) contains project and control templates that will help you get started. After installing it, open "New Project" dialog in Visual Studio, choose "Avalonia" in "Visual C#" section and press OK (<a href="https://github.com/AvaloniaUI/Avalonia/raw/master/docs/tutorial/images/add-dialogs.png">screenshot</a>). Now you can write code and markup that will work on multiple platforms!
+Avalonia [Visual Studio Extension](https://marketplace.visualstudio.com/items?itemName=AvaloniaTeam.AvaloniaforVisualStudio) contains project and control templates that will help you get started. After installing it, open "New Project" dialog in Visual Studio, choose "Avalonia" in "Visual C#" section, select "Avalonia .NET Core Application" and press OK (<a href="https://github.com/AvaloniaUI/Avalonia/raw/master/docs/tutorial/images/add-dialogs.png">screenshot</a>). Now you can write code and markup that will work on multiple platforms!
 
-Avalonia is also delivered as a <b>NuGet</b> package. You can find the packages here: ([stable(ish)](https://www.nuget.org/packages/Avalonia/), [nightly](https://github.com/AvaloniaUI/Avalonia/wiki/Using-nightly-build-feed))
+Avalonia is delivered via <b>NuGet</b> package manager. You can find the packages here: ([stable(ish)](https://www.nuget.org/packages/Avalonia/), [nightly](https://github.com/AvaloniaUI/Avalonia/wiki/Using-nightly-build-feed))
 
-Use this command in Package Manager console to install the package:
+Use these commands in Package Manager console to install Avalonia manually:
 ```
-Install-Package Avalonia -Pre
+Install-Package Avalonia
+Install-Package Avalonia.Desktop
 ```
 
 ## Bleeding Edge Builds
