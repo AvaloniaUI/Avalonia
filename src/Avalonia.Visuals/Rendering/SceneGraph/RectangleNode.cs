@@ -30,8 +30,8 @@ namespace Avalonia.Rendering.SceneGraph
             Rect rect,
             float cornerRadius,
             IDictionary<IVisual, Scene> childScenes = null)
+            : base(rect, transform, pen)
         {
-            Bounds = rect.TransformToAABB(transform).Inflate(pen?.Thickness ?? 0);
             Transform = transform;
             Brush = brush?.ToImmutable();
             Pen = pen?.ToImmutable();
@@ -39,9 +39,6 @@ namespace Avalonia.Rendering.SceneGraph
             CornerRadius = cornerRadius;
             ChildScenes = childScenes;
         }
-
-        /// <inheritdoc/>
-        public override Rect Bounds { get; }
 
         /// <summary>
         /// Gets the transform with which the node will be drawn.

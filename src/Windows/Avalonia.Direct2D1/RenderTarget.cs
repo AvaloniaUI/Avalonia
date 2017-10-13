@@ -3,14 +3,16 @@
 
 using System;
 using Avalonia.Direct2D1.Media;
+using Avalonia.Direct2D1.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using SharpDX.Direct2D1;
 using DwFactory = SharpDX.DirectWrite.Factory;
+using WicFactory = SharpDX.WIC.ImagingFactory;
 
 namespace Avalonia.Direct2D1
 {
-    public class RenderTarget : IRenderTarget
+    public class RenderTarget : IRenderTarget, ILayerFactory
     {
         /// <summary>
         /// The render target.
@@ -25,24 +27,13 @@ namespace Avalonia.Direct2D1
         {
             Direct2DFactory = AvaloniaLocator.Current.GetService<Factory>();
             DirectWriteFactory = AvaloniaLocator.Current.GetService<DwFactory>();
+            WicFactory = AvaloniaLocator.Current.GetService<WicFactory>();
             _renderTarget = renderTarget;
         }
 
-        /// <summary>
-        /// Gets the Direct2D factory.
-        /// </summary>
-        public Factory Direct2DFactory
-        {
-            get;
-        }
-
-        /// <summary>
-        /// Gets the DirectWrite factory.
-        /// </summary>
-        public DwFactory DirectWriteFactory
-        {
-            get;
-        }
+        public Factory Direct2DFactory { get; }
+        public DwFactory DirectWriteFactory { get; }
+        public WicFactory WicFactory { get; }
 
         /// <summary>
         /// Creates a drawing context for a rendering session.
@@ -50,7 +41,16 @@ namespace Avalonia.Direct2D1
         /// <returns>An <see cref="Avalonia.Platform.IDrawingContextImpl"/>.</returns>
         public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
         {
-            return new DrawingContextImpl(visualBrushRenderer, _renderTarget, DirectWriteFactory);
+            return new DrawingContextImpl(visualBrushRenderer, this, _renderTarget, DirectWriteFactory, WicFactory);
+        }
+
+        public IRenderTargetBitmapImpl CreateLayer(Size size)
+        {
+            return D2DRenderTargetBitmapImpl.CreateCompatible(
+                WicFactory,
+                DirectWriteFactory,
+                _renderTarget,
+                size);
         }
 
         public void Dispose()

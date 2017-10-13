@@ -3,7 +3,7 @@
     <Setter Property="Template">
       <ControlTemplate>
         <DockPanel>
-          <ScrollViewer MinWidth="190" Background="{StyleResource ThemeAccentBrush}" DockPanel.Dock="Left">
+          <ScrollViewer MinWidth="190" Background="{DynamicResource ThemeAccentBrush}" DockPanel.Dock="Left">
             <TabStrip Name="PART_TabStrip"
                       MemberSelector="{Static TabControl.HeaderSelector}"
                       Items="{TemplateBinding Items}"
@@ -35,6 +35,6 @@
   </Style>
 
   <Style Selector="TabControl.sidebar TabStripItem:selected">
-    <Setter Property="Background" Value="{StyleResource ThemeAccentBrush2}"/>
+    <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush2}"/>
   </Style>
 </Styles>

@@ -64,7 +64,7 @@ namespace Avalonia.Controls
             return rv;
         }
 
-        internal static void ApplyDesignerProperties(Control target, Control source)
+        public static void ApplyDesignModeProperties(Control target, Control source)
         {
             if (source.IsSet(WidthProperty))
                 target.Width = source.GetValue(WidthProperty);

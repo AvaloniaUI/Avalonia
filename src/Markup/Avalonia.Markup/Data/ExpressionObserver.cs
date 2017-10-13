@@ -25,6 +25,7 @@ namespace Avalonia.Markup.Data
             new List<IPropertyAccessorPlugin>
             {
                 new AvaloniaPropertyAccessorPlugin(),
+                new MethodAccessorPlugin(),
                 new InpcPropertyAccessorPlugin(),
             };
 
@@ -239,17 +240,7 @@ namespace Avalonia.Markup.Data
 
                 if (broken != null)
                 {
-                    // We've received notification of a broken expression due to a null value
-                    // somewhere in the chain. If this null value occurs at the first node then we
-                    // ignore it, as its likely that e.g. the DataContext has not yet been set up.
-                    if (broken.HasNodes)
-                    {
-                        broken.Commit(Description);
-                    }
-                    else
-                    {
-                        o = AvaloniaProperty.UnsetValue;
-                    }
+                    broken.Commit(Description);
                 }
                 return o;
             }

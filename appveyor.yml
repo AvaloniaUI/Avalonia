@@ -16,10 +16,8 @@ environment:
 init:
 - ps: if (Test-Path env:nuget_address) {[System.IO.File]::AppendAllText("C:\Windows\System32\drivers\etc\hosts", "`n$($env:nuget_address)`tapi.nuget.org")}
 install:
-  - if not exist gtk-sharp-2.12.26.msi appveyor DownloadFile http://download.xamarin.com/GTKforWindows/Windows/gtk-sharp-2.12.26.msi
-  - if not exist dotnet-1.0.1.exe appveyor DownloadFile https://go.microsoft.com/fwlink/?linkid=843448 -FileName "dotnet-1.0.1.exe"
-  - ps: Start-Process -FilePath "msiexec" -ArgumentList "/i gtk-sharp-2.12.26.msi /quiet /qn /norestart" -Wait
-  - ps: Start-Process -FilePath "dotnet-1.0.1.exe" -ArgumentList "/quiet" -Wait
+  - if not exist dotnet-2.0.0.exe appveyor DownloadFile https://download.microsoft.com/download/0/F/D/0FD852A4-7EA1-4E2A-983A-0484AC19B92C/dotnet-sdk-2.0.0-win-x64.exe -FileName "dotnet-2.0.0.exe"
+  - ps: Start-Process -FilePath "dotnet-2.0.0.exe" -ArgumentList "/quiet" -Wait
   - cmd: set PATH=%programfiles(x86)%\GtkSharp\2.12\bin\;%PATH%
 before_build:
 - git submodule update --init
@@ -36,5 +34,4 @@ artifacts:
   - path: artifacts\zip\*.zip
   - path: artifacts\inspectcode.xml
 cache:
-  - gtk-sharp-2.12.26.msi
-  - dotnet-1.0.1.exe
+  - dotnet-2.0.0.exe

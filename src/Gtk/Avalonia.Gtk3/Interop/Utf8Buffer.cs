@@ -36,6 +36,8 @@ namespace Avalonia.Gtk3.Interop
         public static unsafe string StringFromPtr(IntPtr s)
         {
             var pstr = (byte*)s;
+            if (pstr == null)
+                return null;
             int len;
             for (len = 0; pstr[len] != 0; len++) ;
             var bytes = new byte[len];

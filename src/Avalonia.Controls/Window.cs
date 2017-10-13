@@ -61,11 +61,17 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<Window, SizeToContent>(nameof(SizeToContent));
 
         /// <summary>
-        /// Enables of disables system window decorations (title bar, buttons, etc)
+        /// Enables or disables system window decorations (title bar, buttons, etc)
         /// </summary>
         public static readonly StyledProperty<bool> HasSystemDecorationsProperty =
             AvaloniaProperty.Register<Window, bool>(nameof(HasSystemDecorations), true);
-
+        
+        /// <summary>
+        /// Enables or disables the taskbar icon
+        /// </summary>
+        public static readonly StyledProperty<bool> ShowInTaskbarProperty =
+            AvaloniaProperty.Register<Window, bool>(nameof(ShowInTaskbar), true);
+        
         /// <summary>
         /// Defines the <see cref="Title"/> property.
         /// </summary>
@@ -92,6 +98,8 @@ namespace Avalonia.Controls
             HasSystemDecorationsProperty.Changed.AddClassHandler<Window>(
                 (s, e) => s.PlatformImpl?.SetSystemDecorations((bool) e.NewValue));
 
+            ShowInTaskbarProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.ShowTaskbarIcon((bool)e.NewValue));
+
             IconProperty.Changed.AddClassHandler<Window>((s, e) => s.PlatformImpl?.SetIcon(((WindowIcon)e.NewValue).PlatformImpl));
         }
 
@@ -111,6 +119,7 @@ namespace Avalonia.Controls
             : base(impl)
         {
             _maxPlatformClientSize = PlatformImpl?.MaxClientSize ?? default(Size);
+            Screens = new Screens(PlatformImpl?.Screen);
         }
 
         /// <inheritdoc/>
@@ -126,6 +135,8 @@ namespace Avalonia.Controls
             add { _nameScope.Unregistered += value; }
             remove { _nameScope.Unregistered -= value; }
         }
+
+        public Screens Screens { get; private set; }
 
         /// <summary>
         /// Gets the platform-specific window implementation.
@@ -152,13 +163,23 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Enables of disables system window decorations (title bar, buttons, etc)
+        /// Enables or disables system window decorations (title bar, buttons, etc)
         /// </summary>
         /// 
         public bool HasSystemDecorations
         {
             get { return GetValue(HasSystemDecorationsProperty); }
             set { SetValue(HasSystemDecorationsProperty, value); }
+        }
+        
+        /// <summary>
+        /// Enables or disables the taskbar icon
+        /// </summary>
+        /// 
+        public bool ShowInTaskbar
+        {
+            get { return GetValue(ShowInTaskbarProperty); }
+            set { SetValue(ShowInTaskbarProperty, value); }
         }
 
         /// <summary>

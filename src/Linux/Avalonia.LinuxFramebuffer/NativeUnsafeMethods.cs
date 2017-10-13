@@ -72,6 +72,7 @@ namespace Avalonia.LinuxFramebuffer
         FB_VBLANK_HAVE_VSYNC = 0x100 /* verical syncs can be detected */
     }
 
+    [StructLayout(LayoutKind.Sequential)]
     unsafe struct fb_vblank {
         public VBlankFlags flags;			/* FB_VBLANK flags */
         __u32 count;			/* counter of retraces since boot */

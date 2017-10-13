@@ -10,8 +10,9 @@ using Avalonia.Data;
 using Avalonia.Markup.Data;
 using Avalonia.Markup.Xaml.Data;
 using Moq;
-using ReactiveUI;
 using Xunit;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Data
 {
@@ -302,12 +303,12 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
 
             // Bind Foo and Bar to the VM.
             target.Bind(OldDataContextTest.FooProperty, fooBinding);
-            //target.Bind(OldDataContextTest.BarProperty, barBinding);
+            target.Bind(OldDataContextTest.BarProperty, barBinding);
             target.DataContext = vm;
 
             // Make sure the control's Foo and Bar properties are read from the VM
             Assert.Equal(1, target.GetValue(OldDataContextTest.FooProperty));
-            //Assert.Equal(2, target.GetValue(OldDataContextTest.BarProperty));
+            Assert.Equal(2, target.GetValue(OldDataContextTest.BarProperty));
 
             // Set DataContext to null.
             target.DataContext = null;
@@ -350,14 +351,25 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
             }
         }
 
-        public class Source : ReactiveObject
+        public class Source : INotifyPropertyChanged
         {
             private string _foo;
 
             public string Foo
             {
                 get { return _foo; }
-                set { this.RaiseAndSetIfChanged(ref _foo, value); }
+                set
+                {
+                    _foo = value;
+                    RaisePropertyChanged();
+                }
+            }
+
+            public event PropertyChangedEventHandler PropertyChanged;
+
+            private void RaisePropertyChanged([CallerMemberName] string prop = "")
+            {
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
             }
         }
 

@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Linq.Expressions;
 using Avalonia.Controls;
 using Avalonia.Gtk3.Interop;
 using Avalonia.Platform;
+using System.Runtime.InteropServices;
 
 namespace Avalonia.Gtk3
 {
@@ -30,15 +32,14 @@ namespace Avalonia.Gtk3
             }
             set
             {
-                var w = Native.GtkWidgetGetWindow(GtkWidget);
                 if (value == WindowState.Minimized)
-                    Native.GdkWindowIconify(w);
+                    Native.GtkWindowIconify(GtkWidget);
                 else if (value == WindowState.Maximized)
-                    Native.GdkWindowMaximize(w);
+                    Native.GtkWindowMaximize(GtkWidget);
                 else
                 {
-                    Native.GdkWindowUnmaximize(w);
-                    Native.GdkWindowDeiconify(w);
+                    Native.GtkWindowUnmaximize(GtkWidget);
+                    Native.GtkWindowDeiconify(GtkWidget);
                 }
             }
         }
@@ -58,6 +59,9 @@ namespace Avalonia.Gtk3
         {
             //Why do we even have that?
         }
+
+        public void ShowTaskbarIcon(bool value) => Native.GtkWindowSetSkipTaskbarHint(GtkWidget, !value);
+        
 
         class EmptyDisposable : IDisposable
         {

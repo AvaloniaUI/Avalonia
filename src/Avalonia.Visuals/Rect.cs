@@ -481,5 +481,31 @@ namespace Avalonia
                 _width,
                 _height);
         }
+
+        /// <summary>
+        /// Parses a <see cref="Rect"/> string.
+        /// </summary>
+        /// <param name="s">The string.</param>
+        /// <param name="culture">The current culture.</param>
+        /// <returns>The parsed <see cref="Rect"/>.</returns>
+        public static Rect Parse(string s, CultureInfo culture)
+        {
+            var parts = s.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(x => x.Trim())
+                .ToList();
+
+            if (parts.Count == 4)
+            {
+                return new Rect(
+                    double.Parse(parts[0], culture),
+                    double.Parse(parts[1], culture),
+                    double.Parse(parts[2], culture),
+                    double.Parse(parts[3], culture));
+            }
+            else
+            {
+                throw new FormatException("Invalid Rect.");
+            }
+        }
     }
 }

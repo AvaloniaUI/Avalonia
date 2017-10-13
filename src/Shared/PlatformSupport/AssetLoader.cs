@@ -137,7 +137,7 @@ namespace Avalonia.Shared.PlatformSupport
                 {
                     // iOS does not support loading assemblies dynamically!
                     //
-#if NETSTANDARD
+#if NETCOREAPP1_0
                     AssemblyNameCache[name] = rv = new AssemblyDescriptor(Assembly.Load(new AssemblyName(name)));
 #elif __IOS__
                     throw new InvalidOperationException(

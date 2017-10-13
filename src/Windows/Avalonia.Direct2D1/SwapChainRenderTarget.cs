@@ -10,10 +10,11 @@ using Factory = SharpDX.Direct2D1.Factory;
 using Factory2 = SharpDX.DXGI.Factory2;
 using Avalonia.Rendering;
 using Avalonia.Direct2D1.Media;
+using Avalonia.Direct2D1.Media.Imaging;
 
 namespace Avalonia.Direct2D1
 {
-    public abstract class SwapChainRenderTarget : IRenderTarget
+    public abstract class SwapChainRenderTarget : IRenderTarget, ILayerFactory
     {
         private Size2 _savedSize;
         private Size2F _savedDpi;
@@ -26,24 +27,12 @@ namespace Avalonia.Direct2D1
             D2DDevice = AvaloniaLocator.Current.GetService<Device>();
             Direct2DFactory = AvaloniaLocator.Current.GetService<Factory>();
             DirectWriteFactory = AvaloniaLocator.Current.GetService<SharpDX.DirectWrite.Factory>();
+            WicImagingFactory = AvaloniaLocator.Current.GetService<SharpDX.WIC.ImagingFactory>();
         }
 
-
-        /// <summary>
-        /// Gets the Direct2D factory.
-        /// </summary>
-        public Factory Direct2DFactory
-        {
-            get;
-        }
-
-        /// <summary>
-        /// Gets the DirectWrite factory.
-        /// </summary>
-        public SharpDX.DirectWrite.Factory DirectWriteFactory
-        {
-            get;
-        }
+        public Factory Direct2DFactory { get; }
+        public SharpDX.DirectWrite.Factory DirectWriteFactory { get; }
+        public SharpDX.WIC.ImagingFactory WicImagingFactory { get; }
 
         protected SharpDX.DXGI.Device DxgiDevice { get; }
         
@@ -67,9 +56,25 @@ namespace Avalonia.Direct2D1
 
             return new DrawingContextImpl(
                 visualBrushRenderer,
+                this,
                 _deviceContext,
                 DirectWriteFactory,
+                WicImagingFactory,
                 _swapChain);
+        }
+
+        public IRenderTargetBitmapImpl CreateLayer(Size size)
+        {
+            if (_deviceContext == null)
+            {
+                CreateSwapChain();
+            }
+
+            return D2DRenderTargetBitmapImpl.CreateCompatible(
+                WicImagingFactory,
+                DirectWriteFactory,
+                _deviceContext,
+                size);
         }
 
         public void Dispose()
@@ -85,7 +90,6 @@ namespace Avalonia.Direct2D1
             {
                 _deviceContext?.Dispose();
                 _deviceContext = new DeviceContext(D2DDevice, DeviceContextOptions.None) {DotsPerInch = _savedDpi};
-
 
                 var swapChainDesc = new SwapChainDescription1
                 {

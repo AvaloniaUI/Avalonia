@@ -11,6 +11,8 @@ using Avalonia.LinuxFramebuffer;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Threading;
+using Avalonia;
+using Avalonia.Controls.Platform;
 
 namespace Avalonia.LinuxFramebuffer
 {
@@ -21,6 +23,7 @@ namespace Avalonia.LinuxFramebuffer
         public static MouseDevice MouseDevice = new MouseDevice();
         private static readonly Stopwatch St = Stopwatch.StartNew();
         internal static uint Timestamp => (uint)St.ElapsedTicks;
+        public static InternalPlatformThreadingInterface Threading;
         public static FramebufferToplevelImpl TopLevel;
         LinuxFramebufferPlatform(string fbdev = null)
         {
@@ -30,12 +33,13 @@ namespace Avalonia.LinuxFramebuffer
 
         void Initialize()
         {
+            Threading = new InternalPlatformThreadingInterface();
             AvaloniaLocator.CurrentMutable
                 .Bind<IStandardCursorFactory>().ToTransient<CursorFactoryStub>()
                 .Bind<IKeyboardDevice>().ToConstant(KeyboardDevice)
                 .Bind<IPlatformSettings>().ToSingleton<PlatformSettings>()
-                .Bind<IPlatformThreadingInterface>().ToConstant(PlatformThreadingInterface.Instance)
-                .Bind<IRenderLoop>().ToConstant(PlatformThreadingInterface.Instance);
+                .Bind<IPlatformThreadingInterface>().ToConstant(Threading)
+                .Bind<IRenderLoop>().ToConstant(Threading);
         }
 
         internal static TopLevel Initialize<T>(T builder, string fbdev = null) where T : AppBuilderBase<T>, new()

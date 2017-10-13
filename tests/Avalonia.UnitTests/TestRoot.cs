@@ -49,8 +49,6 @@ namespace Avalonia.UnitTests
 
         public ILayoutManager LayoutManager => AvaloniaLocator.Current.GetService<ILayoutManager>();
 
-        public IRenderTarget RenderTarget => null;
-
         public IRenderer Renderer { get; set; }
 
         public IAccessKeyHandler AccessKeyHandler => null;
@@ -62,6 +60,10 @@ namespace Avalonia.UnitTests
         public IMouseDevice MouseDevice { get; set; }
 
         public bool ShowAccessKeys { get; set; }
+
+        public IStyleHost StylingParent { get; set; }
+
+        IStyleHost IStyleHost.StylingParent => StylingParent;
 
         public IRenderTarget CreateRenderTarget() => _renderTarget;
 

@@ -24,7 +24,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="Command"/> property.
         /// </summary>
         public static readonly StyledProperty<ICommand> CommandProperty =
-            Button.CommandProperty.AddOwner<MenuItem>();
+            AvaloniaProperty.Register<MenuItem, ICommand>(nameof(Command));
 
         /// <summary>
         /// Defines the <see cref="HotKey"/> property.
@@ -306,6 +306,21 @@ namespace Avalonia.Controls
                 _submenuTimer = DispatcherTimer.Run(
                     () => IsSubMenuOpen = true,
                     TimeSpan.FromMilliseconds(400));
+            }
+            else
+            {
+                var parentItem = Parent as MenuItem;
+                if (parentItem != null)
+                {
+                    foreach (var sibling in parentItem.Items
+                        .OfType<MenuItem>()
+                        .Where(x => x != this && x.IsSubMenuOpen))
+                    {
+                        sibling.CloseSubmenus();
+                        sibling.IsSubMenuOpen = false;
+                        sibling.IsSelected = false;
+                    }
+                }
             }
         }
 

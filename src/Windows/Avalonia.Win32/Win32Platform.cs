@@ -15,6 +15,7 @@ using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop;
 using Avalonia.Controls;
 using Avalonia.Rendering;
+using Avalonia.Threading;
 #if NETSTANDARD
 using Win32Exception = Avalonia.Win32.NetStandard.AvaloniaWin32Exception;
 #else
@@ -113,7 +114,7 @@ namespace Avalonia.Win32
             }
         }
 
-        public IDisposable StartTimer(TimeSpan interval, Action callback)
+        public IDisposable StartTimer(DispatcherPriority priority, TimeSpan interval, Action callback)
         {
             UnmanagedMethods.TimerProc timerDelegate =
                 (hWnd, uMsg, nIDEvent, dwTime) => callback();
@@ -137,7 +138,7 @@ namespace Avalonia.Win32
         private static readonly int SignalW = unchecked((int) 0xdeadbeaf);
         private static readonly int SignalL = unchecked((int)0x12345678);
 
-        public void Signal()
+        public void Signal(DispatcherPriority prio)
         {
             UnmanagedMethods.PostMessage(
                 _hwnd,
@@ -148,14 +149,14 @@ namespace Avalonia.Win32
 
         public bool CurrentThreadIsLoopThread => _uiThread == UnmanagedMethods.GetCurrentThreadId();
 
-        public event Action Signaled;
+        public event Action<DispatcherPriority?> Signaled;
 
         [SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation", Justification = "Using Win32 naming for consistency.")]
         private IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
         {
             if (msg == (int) UnmanagedMethods.WindowsMessage.WM_DISPATCH_WORK_ITEM && wParam.ToInt64() == SignalW && lParam.ToInt64() == SignalL)
             {
-                Signaled?.Invoke();
+                Signaled?.Invoke(null);
             }
             return UnmanagedMethods.DefWindowProc(hWnd, msg, wParam, lParam);
         }
@@ -167,7 +168,7 @@ namespace Avalonia.Win32
 
             UnmanagedMethods.WNDCLASSEX wndClassEx = new UnmanagedMethods.WNDCLASSEX
             {
-                cbSize = Marshal.SizeOf(typeof(UnmanagedMethods.WNDCLASSEX)),
+                cbSize = Marshal.SizeOf<UnmanagedMethods.WNDCLASSEX>(),
                 lpfnWndProc = _wndProcDelegate,
                 hInstance = UnmanagedMethods.GetModuleHandle(null),
                 lpszClassName = "AvaloniaMessageWindow " + Guid.NewGuid(),

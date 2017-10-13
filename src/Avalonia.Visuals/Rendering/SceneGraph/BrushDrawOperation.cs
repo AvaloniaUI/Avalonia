@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using Avalonia.Media;
-using Avalonia.Platform;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering.SceneGraph
@@ -12,20 +11,16 @@ namespace Avalonia.Rendering.SceneGraph
     /// <summary>
     /// Base class for draw operations that can use a brush.
     /// </summary>
-    internal abstract class BrushDrawOperation : IDrawOperation
+    internal abstract class BrushDrawOperation : DrawOperation
     {
-        /// <inheritdoc/>
-        public abstract Rect Bounds { get; }
-
-        /// <inheritdoc/>
-        public abstract bool HitTest(Point p);
+        public BrushDrawOperation(Rect bounds, Matrix transform, Pen pen)
+            : base(bounds, transform, pen)
+        {
+        }
 
         /// <summary>
         /// Gets a collection of child scenes that are needed to draw visual brushes.
         /// </summary>
         public abstract IDictionary<IVisual, Scene> ChildScenes { get; }
-
-        /// <inheritdoc/>
-        public abstract void Render(IDrawingContextImpl context);
     }
 }

@@ -46,11 +46,14 @@ namespace Avalonia.Markup.Xaml.Data
 
             if (host != null)
             {
-                resource = host.FindStyleResource(Name);
+                resource = host.FindResource(Name);
             }
             else if (style != null)
             {
-                resource = style.FindResource(Name);
+                if (!style.TryGetResource(Name, out resource))
+                {
+                    resource = AvaloniaProperty.UnsetValue;
+                }
             }
 
             if (resource != AvaloniaProperty.UnsetValue)

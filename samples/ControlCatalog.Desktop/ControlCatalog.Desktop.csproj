@@ -63,17 +63,9 @@
       <Project>{4A1ABB09-9047-4BD5-A4AD-A055E52C5EE0}</Project>
       <Name>Avalonia.DotNetFrameworkRuntime</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\Gtk\Avalonia.Cairo\Avalonia.Cairo.csproj">
-      <Project>{FB05AC90-89BA-4F2F-A924-F37875FB547C}</Project>
-      <Name>Avalonia.Cairo</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\src\Gtk\Avalonia.Gtk3\Avalonia.Gtk3.csproj">
       <Project>{bb1f7bb5-6ad4-4776-94d9-c09d0a972658}</Project>
       <Name>Avalonia.Gtk3</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Gtk\Avalonia.Gtk\Avalonia.Gtk.csproj">
-      <Project>{54F237D5-A70A-4752-9656-0C70B1A7B047}</Project>
-      <Name>Avalonia.Gtk</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj">
       <Project>{3E53A01A-B331-47F3-B828-4A5717E77A24}</Project>
@@ -123,9 +115,9 @@
       <Project>{3E10A5FA-E8DA-48B1-AD44-6A5B6CB7750F}</Project>
       <Name>Avalonia.Themes.Default</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\Skia\Avalonia.Skia.Desktop\Avalonia.Skia.Desktop.csproj" Condition="'$(Platform)'!='Mono'">
-      <Project>{925DD807-B651-475F-9F7C-CBEB974CE43D}</Project>
-      <Name>Avalonia.Skia.Desktop</Name>
+    <ProjectReference Include="..\..\src\Skia\Avalonia.Skia\Avalonia.Skia.csproj">
+      <Project>{7d2d3083-71dd-4cc9-8907-39a0d86fb322}</Project>
+      <Name>Avalonia.Skia</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\Windows\Avalonia.Direct2D1\Avalonia.Direct2D1.csproj" Condition="'$(Platform)'!='Mono'">
       <Project>{3E908F67-5543-4879-A1DC-08EACE79B3CD}</Project>

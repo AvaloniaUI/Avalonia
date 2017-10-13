@@ -108,7 +108,7 @@ AppPackages/
 # NCrunch
 _NCrunch_*/
 *.ncrunchsolution.user
-nCrunchTemp_*/
+nCrunchTemp_*
 
 # Others
 sql/
@@ -159,6 +159,12 @@ $RECYCLE.BIN/
 *.userprefs
 *.nugetreferenceswitcher
 
+
+#################
+## Rider
+#################
+.idea
+
 #################
 ## Cake
 #################
@@ -169,3 +175,4 @@ artifacts/
 nuget
 Avalonia.XBuild.sln
 project.lock.json
+.idea/*
