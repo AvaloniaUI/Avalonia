@@ -143,13 +143,61 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
 
                 var borderNode = scene.FindNode(border);
                 Assert.Equal(new Rect(50, 50, 50, 50), borderNode.ClipBounds);
+            }
+        }
 
-                // Initial ClipBounds are correct, make sure they're still correct after updating border.
+        [Fact]
+        public void Should_Update_Descendent_ClipBounds_When_Margin_Changed()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                Border border;
+                Canvas canvas;
+                var tree = new TestRoot
+                {
+                    Width = 200,
+                    Height = 300,
+                    Child = canvas = new Canvas
+                    {
+                        ClipToBounds = true,
+                        Width = 100,
+                        Height = 100,
+                        HorizontalAlignment = HorizontalAlignment.Left,
+                        VerticalAlignment = VerticalAlignment.Top,
+                        Children =
+                        {
+                            (border = new Border
+                            {
+                                Background = Brushes.AliceBlue,
+                                Width = 100,
+                                Height = 100,
+                                [Canvas.LeftProperty] = 50,
+                                [Canvas.TopProperty] = 50,
+                            })
+                        }
+                    }
+                };
+
+                tree.Measure(Size.Infinity);
+                tree.Arrange(new Rect(tree.DesiredSize));
+
+                var scene = new Scene(tree);
+                var sceneBuilder = new SceneBuilder();
+                sceneBuilder.UpdateAll(scene);
+
+                var borderNode = scene.FindNode(border);
+                Assert.Equal(new Rect(50, 50, 50, 50), borderNode.ClipBounds);
+
+                canvas.Width = canvas.Height = 125;
+                canvas.Measure(Size.Infinity);
+                canvas.Arrange(new Rect(tree.DesiredSize));
+
+                // Initial ClipBounds are correct, make sure they're still correct after updating canvas.
                 scene = scene.Clone();
-                Assert.True(sceneBuilder.Update(scene, border));
+                Assert.True(sceneBuilder.Update(scene, canvas));
 
                 borderNode = scene.FindNode(border);
-                Assert.Equal(new Rect(50, 50, 50, 50), borderNode.ClipBounds);
+                Assert.Equal(new Rect(50, 50, 75, 75), borderNode.ClipBounds);
             }
         }
 
