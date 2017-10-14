@@ -59,7 +59,7 @@ namespace Avalonia.Input.UnitTests
                     }
                 };
 
-                renderer.Setup(x => x.HitTest(It.IsAny<Point>(), It.IsAny<Func<IVisual, bool>>()))
+                renderer.Setup(x => x.HitTest(It.IsAny<Point>(), It.IsAny<IVisual>(), It.IsAny<Func<IVisual, bool>>()))
                     .Returns(new[] { decorator });
 
                 inputManager.ProcessInput(new RawMouseEventArgs(
@@ -75,7 +75,7 @@ namespace Avalonia.Input.UnitTests
                 Assert.False(canvas.IsPointerOver);
                 Assert.True(root.IsPointerOver);
 
-                renderer.Setup(x => x.HitTest(It.IsAny<Point>(), It.IsAny<Func<IVisual, bool>>()))
+                renderer.Setup(x => x.HitTest(It.IsAny<Point>(), It.IsAny<IVisual>(), It.IsAny<Func<IVisual, bool>>()))
                     .Returns(new[] { canvas });
 
                 inputManager.ProcessInput(new RawMouseEventArgs(
