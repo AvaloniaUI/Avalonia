@@ -15,6 +15,17 @@ namespace Avalonia.Controls
     public static class ControlExtensions
     {
         /// <summary>
+        /// Determine if a point is inside the bounds of a control.
+        /// </summary>
+        /// <param name="control">The control with bounds to check the point against.</param>
+        /// <param name="point">The point relative to the control.</param>
+        /// <returns></returns>
+        public static bool Contains(this IControl control, Point point)
+        {
+            return new Rect(control.Bounds.Size).Contains(point);
+        }
+
+        /// <summary>
         /// Tries to being the control into view.
         /// </summary>
         /// <param name="control">The control.</param>
