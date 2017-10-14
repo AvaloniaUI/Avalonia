@@ -1,30 +1,34 @@
-<UserControl xmlns="https://github.com/avaloniaui">
-  <StackPanel Orientation="Vertical" Gap="4">
-    <TextBlock Classes="h1">TextBox</TextBlock>
-    <TextBlock Classes="h2">A control into which the user can input text</TextBlock>
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:local="clr-namespace:ControlCatalog">
+    <StackPanel Orientation="Vertical" Gap="4">
+        <TextBlock Classes="h1">TextBox</TextBlock>
+        <TextBlock Classes="h2">A control into which the user can input text</TextBlock>
+        
+        <local:EditableTextBlock Text="{Binding TestText}" />
+        <TextBlock Classes="h2" Text="{Binding TestText}" />
 
-    <StackPanel Orientation="Horizontal"
+        <StackPanel Orientation="Horizontal"
               Margin="0,16,0,0"
               HorizontalAlignment="Center"
               Gap="16">
-      <StackPanel Orientation="Vertical" Gap="8">
-        <TextBox Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit." Width="200" />
-        <TextBox Width="200" Watermark="Watermark" />
-        <TextBox Width="200" 
+            <StackPanel Orientation="Vertical" Gap="8">
+                <TextBox Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit." Width="200" />
+                <TextBox Width="200" Watermark="Watermark" />
+                <TextBox Width="200" 
                  Watermark="Floating Watermark" 
                  UseFloatingWatermark="True"
                  Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit."/>
-        <TextBox Width="200" Text="Left aligned text" TextAlignment="Left" />
-        <TextBox Width="200" Text="Center aligned text" TextAlignment="Center" />
-        <TextBox Width="200" Text="Right aligned text" TextAlignment="Right" />
-      </StackPanel>
+                <TextBox Width="200" Text="Left aligned text" TextAlignment="Left" />
+                <TextBox Width="200" Text="Center aligned text" TextAlignment="Center" />
+                <TextBox Width="200" Text="Right aligned text" TextAlignment="Right" />
+            </StackPanel>
 
-      <StackPanel Orientation="Vertical" Gap="8">
-        <TextBox AcceptsReturn="True" TextWrapping="Wrap" Width="200" Height="125"
+            <StackPanel Orientation="Vertical" Gap="8">
+                <TextBox AcceptsReturn="True" TextWrapping="Wrap" Width="200" Height="125"
                  Text="Multiline TextBox with TextWrapping.&#xD;&#xD;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est." />
-        <TextBox AcceptsReturn="True" Width="200" Height="125"
+                <TextBox AcceptsReturn="True" Width="200" Height="125"
                  Text="Multiline TextBox with no TextWrapping.&#xD;&#xD;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est." />
-      </StackPanel>
+            </StackPanel>
+        </StackPanel>
     </StackPanel>
-  </StackPanel>
 </UserControl>

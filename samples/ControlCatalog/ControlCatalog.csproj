@@ -22,6 +22,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="EditableTextBlock.cs" />
+    <None Remove="EditableTextBlock.xaml" />
     <None Remove="Pages\ContextMenuPage.xaml" />
   </ItemGroup>
   <ItemGroup>
@@ -29,6 +31,7 @@
     <EmbeddedResource Include="App.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <EmbeddedResource Include="EditableTextBlock.xaml" />
     <EmbeddedResource Include="MainView.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
@@ -89,6 +92,7 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="EditableTextBlock.cs" />
     <Compile Include="MainView.xaml.cs">
       <DependentUpon>MainView.xaml</DependentUpon>
     </Compile>
