@@ -124,6 +124,6 @@ namespace Avalonia.Controls
             Contract.Requires<ArgumentNullException>(classes != null);
 
             return trigger.Subscribe(x => classes.Set(name, x));
-        }        
+        }
     }
 }
