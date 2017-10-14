@@ -14,11 +14,11 @@ Avalonia is a WPF-inspired cross-platform XAML-based UI framework providing a fl
 
 | Control catalog | Desktop platforms | Mobile platforms |
 |---|---|---|
-| <a href='https://youtu.be/wHcB3sGLVYg'><img width='300' src='docs/images/screen.png'></a> | <a href='https://www.youtube.com/watch?t=28&v=c_AB_XSILp0' target='_blank'><img width='300' src='docs/images/avalonia-video.png'></a> | <a href='https://www.youtube.com/watch?v=NJ9-hnmUbBM' target='_blank'><img width='300' src='https://i.ytimg.com/vi/NJ9-hnmUbBM/hqdefault.jpg'></a> |
+| <a href='https://youtu.be/wHcB3sGLVYg'><img width='300' src='http://avaloniaui.net/images/screen.png'></a> | <a href='https://www.youtube.com/watch?t=28&v=c_AB_XSILp0' target='_blank'><img width='300' src='http://avaloniaui.net/images/avalonia-video.png'></a> | <a href='https://www.youtube.com/watch?v=NJ9-hnmUbBM' target='_blank'><img width='300' src='https://i.ytimg.com/vi/NJ9-hnmUbBM/hqdefault.jpg'></a> |
 
 ## Getting Started
 
-Avalonia [Visual Studio Extension](https://marketplace.visualstudio.com/items?itemName=AvaloniaTeam.AvaloniaforVisualStudio) contains project and control templates that will help you get started. After installing it, open "New Project" dialog in Visual Studio, choose "Avalonia" in "Visual C#" section, select "Avalonia .NET Core Application" and press OK (<a href="https://github.com/AvaloniaUI/Avalonia/raw/master/docs/tutorial/images/add-dialogs.png">screenshot</a>). Now you can write code and markup that will work on multiple platforms!
+Avalonia [Visual Studio Extension](https://marketplace.visualstudio.com/items?itemName=AvaloniaTeam.AvaloniaforVisualStudio) contains project and control templates that will help you get started. After installing it, open "New Project" dialog in Visual Studio, choose "Avalonia" in "Visual C#" section, select "Avalonia .NET Core Application" and press OK (<a href="http://avaloniaui.net/tutorial/images/add-dialogs.png">screenshot</a>). Now you can write code and markup that will work on multiple platforms!
 
 Avalonia is delivered via <b>NuGet</b> package manager. You can find the packages here: ([stable(ish)](https://www.nuget.org/packages/Avalonia/), [nightly](https://github.com/AvaloniaUI/Avalonia/wiki/Using-nightly-build-feed))
 
@@ -35,16 +35,16 @@ https://ci.appveyor.com/project/AvaloniaUI/Avalonia/branch/master/artifacts
 
 ## Documentation
 
-As mentioned above, Avalonia is still in alpha and as such there's not much documentation yet. You can take a look at the [getting started page](docs/tutorial/gettingstarted.md) for an overview of how to get started but probably the best thing to do for now is to already know a little bit about WPF/Silverlight/UWP/XAML and ask questions in our [Gitter room](https://gitter.im/AvaloniaUI/Avalonia).
+As mentioned above, Avalonia is still in alpha and as such there's not much documentation yet. You can take a look at the [getting started page](http://avaloniaui.net/tutorial/gettingstarted) for an overview of how to get started but probably the best thing to do for now is to already know a little bit about WPF/Silverlight/UWP/XAML and ask questions in our [Gitter room](https://gitter.im/AvaloniaUI/Avalonia).
 
-There's also a high-level [architecture document](docs/spec/architecture.md) that is currently a little bit out of date, and I've also started writing blog posts on Avalonia at http://grokys.github.io/.
+There's also a high-level [architecture document](http://avaloniaui.net/spec/architecture) that is currently a little bit out of date, and I've also started writing blog posts on Avalonia at http://grokys.github.io/.
 
 Contributions are always welcome!
 
 ## Building and Using
 
-See the [build instructions here](docs/guidelines/build.md).
+See the [build instructions here](http://avaloniaui.net/guidelines/build).
 
 ## Contributing
 
-Please read the [contribution guidelines](docs/guidelines/contributing.md) before submitting a pull request.
+Please read the [contribution guidelines](http://avaloniaui.net/guidelines/contributing) before submitting a pull request.
