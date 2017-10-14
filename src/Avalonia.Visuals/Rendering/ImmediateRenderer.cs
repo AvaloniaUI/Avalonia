@@ -136,9 +136,9 @@ namespace Avalonia.Rendering
         }
 
         /// <inheritdoc/>
-        public IEnumerable<IVisual> HitTest(Point p, Func<IVisual, bool> filter)
+        public IEnumerable<IVisual> HitTest(Point p, IVisual root, Func<IVisual, bool> filter)
         {
-            return HitTest(_root, p, filter);
+            return HitTest(root, p, filter);
         }
 
         /// <inheritdoc/>
