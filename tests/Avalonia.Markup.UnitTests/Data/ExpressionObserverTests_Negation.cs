@@ -105,14 +105,32 @@ namespace Avalonia.Markup.UnitTests.Data
         }
 
         [Fact]
-        public void SetValue_Should_Return_False()
+        public void SetValue_Should_Return_False_For_Invalid_Value()
         {
             var data = new { Foo = "foo" };
             var target = new ExpressionObserver(data, "!Foo");
+            target.Subscribe(_ => { });
 
             Assert.False(target.SetValue("bar"));
 
             GC.KeepAlive(data);
+        }
+
+        [Fact]
+        public void Can_SetValue_For_Valid_Value()
+        {
+            var data = new Test { Foo = true };
+            var target = new ExpressionObserver(data, "!Foo");
+            target.Subscribe(_ => { });
+
+            Assert.True(target.SetValue(true));
+
+            Assert.False(data.Foo);
+        }
+
+        private class Test
+        {
+            public bool Foo { get; set; }
         }
     }
 }
