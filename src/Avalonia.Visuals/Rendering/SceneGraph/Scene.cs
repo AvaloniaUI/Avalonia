@@ -173,7 +173,7 @@ namespace Avalonia.Rendering.SceneGraph
                         }
                     }
 
-                    if (node.HitTest(p))
+                    if (node.HitTest(p) && node.Visual.IsAttachedToVisualTree)
                     {
                         yield return node.Visual;
                     }
