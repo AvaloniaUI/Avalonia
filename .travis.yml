@@ -1,7 +1,6 @@
 language: csharp
 os:
   - linux
-  - osx
 dist: trusty
 osx_image: xcode8.3
 env:
