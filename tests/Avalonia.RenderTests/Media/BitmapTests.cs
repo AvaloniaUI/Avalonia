@@ -13,9 +13,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Xunit;
 
-#if AVALONIA_CAIRO
-namespace Avalonia.Cairo.RenderTests.Media
-#elif AVALONIA_SKIA
+#if AVALONIA_SKIA
 namespace Avalonia.Skia.RenderTests
 #else
 namespace Avalonia.Direct2D1.RenderTests.Media
@@ -66,13 +64,13 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             public void Deallocate() => Marshal.FreeHGlobal(Address);
         }
 
-
-#if AVALONIA_SKIA
+        
         [Theory]
-#else
-        [Theory(Skip = "Framebuffer not supported")]
+        [InlineData(PixelFormat.Rgba8888), InlineData(PixelFormat.Bgra8888),
+#if SKIA
+             InlineData(PixelFormat.Rgb565)
 #endif
-        [InlineData(PixelFormat.Rgba8888), InlineData(PixelFormat.Bgra8888), InlineData(PixelFormat.Rgb565)]
+            ]
         public void FramebufferRenderResultsShouldBeUsableAsBitmap(PixelFormat fmt)
         {
             var testName = nameof(FramebufferRenderResultsShouldBeUsableAsBitmap) + "_" + fmt;
@@ -86,6 +84,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 ctx.FillRectangle(Brushes.Chartreuse, new Rect(0, 0, 20, 100));
                 ctx.FillRectangle(Brushes.Crimson, new Rect(20, 0, 20, 100));
                 ctx.FillRectangle(Brushes.Gold, new Rect(40, 0, 20, 100));
+                ctx.PopOpacity();
             }
 
             var bmp = new Bitmap(fmt, fb.Address, fb.Width, fb.Height, fb.RowBytes);
@@ -105,11 +104,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             CompareImagesNoRenderer(testName);
         }
 
-#if AVALONIA_CAIRO
-        //wontfix
-#else
         [Theory]
-#endif
         [InlineData(PixelFormat.Bgra8888), InlineData(PixelFormat.Rgba8888)]
         public void WritableBitmapShouldBeUsable(PixelFormat fmt)
         {

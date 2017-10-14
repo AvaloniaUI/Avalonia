@@ -329,6 +329,7 @@ namespace Avalonia
             }
 
             OnAttachedToVisualTree(e);
+            AttachedToVisualTree?.Invoke(this, e);
             InvalidateVisual();
 
             if (VisualChildren != null)
@@ -357,6 +358,7 @@ namespace Avalonia
             }
 
             OnDetachedFromVisualTree(e);
+            DetachedFromVisualTree?.Invoke(this, e);
             e.Root?.Renderer?.AddDirty(this);
 
             if (VisualChildren != null)
@@ -374,7 +376,6 @@ namespace Avalonia
         /// <param name="e">The event args.</param>
         protected virtual void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
-            AttachedToVisualTree?.Invoke(this, e);
         }
 
         /// <summary>
@@ -383,7 +384,6 @@ namespace Avalonia
         /// <param name="e">The event args.</param>
         protected virtual void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
-            DetachedFromVisualTree?.Invoke(this, e);
         }
 
         /// <summary>

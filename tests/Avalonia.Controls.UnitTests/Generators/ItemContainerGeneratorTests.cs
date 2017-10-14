@@ -66,7 +66,7 @@ namespace Avalonia.Controls.UnitTests.Generators
             target.Dematerialize(1, 1);
 
             Assert.Equal(containers[0].ContainerControl, target.ContainerFromIndex(0));
-            Assert.Equal(null, target.ContainerFromIndex(1));
+            Assert.Null(target.ContainerFromIndex(1));
             Assert.Equal(containers[2].ContainerControl, target.ContainerFromIndex(2));
         }
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using Avalonia.Platform;
+using Avalonia.Threading;
 using MonoMac.AppKit;
 using MonoMac.CoreGraphics;
 using MonoMac.Foundation;
@@ -13,12 +14,12 @@ namespace Avalonia.MonoMac
         public static PlatformThreadingInterface Instance { get; } = new PlatformThreadingInterface();
         public bool CurrentThreadIsLoopThread => NSThread.Current.IsMainThread;
 
-        public event Action Signaled;
+        public event Action<DispatcherPriority?> Signaled;
 
-        public IDisposable StartTimer(TimeSpan interval, Action tick)
+        public IDisposable StartTimer(DispatcherPriority priority, TimeSpan interval, Action tick)
             => NSTimer.CreateRepeatingScheduledTimer(interval, () => tick());
 
-        public void Signal()
+        public void Signal(DispatcherPriority prio)
         {
             lock (this)
             {
@@ -34,7 +35,7 @@ namespace Avalonia.MonoMac
                         return;
                     _signaled = false;
                 }
-                Signaled?.Invoke();
+                Signaled?.Invoke(null);
             });
         }
 

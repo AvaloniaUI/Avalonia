@@ -7,9 +7,7 @@ using Avalonia.Layout;
 using Avalonia.Media;
 using Xunit;
 
-#if AVALONIA_CAIRO
-namespace Avalonia.Cairo.RenderTests.Controls
-#elif AVALONIA_SKIA
+#if AVALONIA_SKIA
 namespace Avalonia.Skia.RenderTests
 #else
 namespace Avalonia.Direct2D1.RenderTests.Controls
@@ -149,11 +147,8 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             CompareImages();
         }
 
-#if AVALONIA_CAIRO
-        [Fact(Skip = "Font scaling currently broken on cairo")]
-#else
+
         [Fact]
-#endif
         public async Task Border_Centers_Content_Horizontally()
         {
             Decorator target = new Decorator
@@ -180,11 +175,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             CompareImages();
         }
 
-#if AVALONIA_CAIRO
-        [Fact(Skip = "Font scaling currently broken on cairo")]
-#else
         [Fact]
-#endif
         public async Task Border_Centers_Content_Vertically()
         {
             Decorator target = new Decorator
@@ -211,11 +202,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             CompareImages();
         }
 
-#if AVALONIA_CAIRO
-        [Fact(Skip = "Font scaling currently broken on cairo")]
-#else
         [Fact]
-#endif
         public async Task Border_Stretches_Content_Horizontally()
         {
             Decorator target = new Decorator
@@ -242,11 +229,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             CompareImages();
         }
 
-#if AVALONIA_CAIRO
-        [Fact(Skip = "Font scaling currently broken on cairo")]
-#else
         [Fact]
-#endif
         public async Task Border_Stretches_Content_Vertically()
         {
             Decorator target = new Decorator
@@ -273,11 +256,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             CompareImages();
         }
 
-#if AVALONIA_CAIRO
-        [Fact(Skip = "Font scaling currently broken on cairo")]
-#else
         [Fact]
-#endif
         public async Task Border_Left_Aligns_Content()
         {
             Decorator target = new Decorator
@@ -304,11 +283,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             CompareImages();
         }
 
-#if AVALONIA_CAIRO
-        [Fact(Skip = "Font scaling currently broken on cairo")]
-#else
         [Fact]
-#endif
         public async Task Border_Right_Aligns_Content()
         {
             Decorator target = new Decorator
@@ -335,11 +310,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             CompareImages();
         }
 
-#if AVALONIA_CAIRO
-        [Fact(Skip = "Font scaling currently broken on cairo")]
-#else
         [Fact]
-#endif
         public async Task Border_Top_Aligns_Content()
         {
             Decorator target = new Decorator
@@ -366,11 +337,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             CompareImages();
         }
 
-#if AVALONIA_CAIRO
-        [Fact(Skip = "Font scaling currently broken on cairo")]
-#else
         [Fact]
-#endif
         public async Task Border_Bottom_Aligns_Content()
         {
             Decorator target = new Decorator

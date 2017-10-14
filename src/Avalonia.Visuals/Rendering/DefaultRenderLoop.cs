@@ -15,7 +15,7 @@ namespace Avalonia.Rendering
     /// </remarks>
     public class DefaultRenderLoop : IRenderLoop
     {
-        private IPlatformThreadingInterface _threading;
+        private IRuntimePlatform _runtime;
         private int _subscriberCount;
         private EventHandler<EventArgs> _tick;
         private IDisposable _subscription;
@@ -78,12 +78,12 @@ namespace Avalonia.Rendering
         /// </remarks>
         protected virtual IDisposable StartCore(Action tick)
         {
-            if (_threading == null)
+            if (_runtime == null)
             {
-                _threading = AvaloniaLocator.Current.GetService<IPlatformThreadingInterface>();
+                _runtime = AvaloniaLocator.Current.GetService<IRuntimePlatform>();
             }
 
-            return _threading.StartTimer(TimeSpan.FromSeconds(1.0 / FramesPerSecond), tick);
+            return _runtime.StartSystemTimer(TimeSpan.FromSeconds(1.0 / FramesPerSecond), tick);
         }
 
         /// <summary>

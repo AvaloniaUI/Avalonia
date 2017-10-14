@@ -160,6 +160,9 @@ namespace Avalonia.Gtk3.Interop
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Cairo)]
             public delegate CairoSurface cairo_image_surface_create(int format, int width, int height);
+            
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Cairo)]
+            public delegate CairoSurface cairo_image_surface_create_for_data(IntPtr data, int format, int width, int height, int stride);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Cairo)]
             public delegate IntPtr cairo_image_surface_get_data(CairoSurface surface);
@@ -169,24 +172,48 @@ namespace Avalonia.Gtk3.Interop
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Cairo)]
             public delegate void cairo_surface_mark_dirty(CairoSurface surface);
+            
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Cairo)]
+            public delegate void cairo_surface_write_to_png(CairoSurface surface, Utf8Buffer path);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Cairo)]
             public delegate void cairo_surface_flush(CairoSurface surface);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Cairo)]
             public delegate void cairo_surface_destroy(IntPtr surface);
-
+            
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Cairo)]
             public delegate void cairo_set_source_surface(IntPtr cr, CairoSurface surface, double x, double y);
+            
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Cairo)]
+            public delegate void cairo_set_source_rgba(IntPtr cr, double r, double g, double b, double a);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Cairo)]
             public delegate void cairo_scale(IntPtr context, double sx, double sy);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Cairo)]
             public delegate void cairo_paint(IntPtr context);
+            
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Cairo)]
+            public delegate void cairo_show_text(IntPtr context, Utf8Buffer text);   
+            
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Cairo)]
+            public delegate void cairo_set_font_size(IntPtr context, double size);  
+            
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Cairo)]
+            public delegate void cairo_select_font_face(IntPtr context, Utf8Buffer face, int slant, int weight);
+            
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Cairo)]
+            public delegate void cairo_move_to(IntPtr context, double x, double y);   
+            
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Cairo)]
+            public delegate void cairo_destroy(IntPtr context);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
             public delegate void gtk_widget_queue_draw_area(GtkWidget widget, int x, int y, int width, int height);
+            
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
+            public delegate void gtk_widget_add_tick_callback(GtkWidget widget, TickCallback callback, IntPtr userData, IntPtr destroy);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
             public delegate GtkImContext gtk_im_multicontext_new();
@@ -212,17 +239,17 @@ namespace Avalonia.Gtk3.Interop
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
             public delegate GdkWindowState gdk_window_get_state(IntPtr window);
 
-            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
-            public delegate void gdk_window_iconify(IntPtr window);
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
+            public delegate void gtk_window_iconify(GtkWindow window);
 
-            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
-            public delegate void gdk_window_deiconify(IntPtr window);
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
+            public delegate void gtk_window_deiconify(GtkWindow window);
 
-            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
-            public delegate void gdk_window_maximize(IntPtr window);
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
+            public delegate void gtk_window_maximize(GtkWindow window);
 
-            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
-            public delegate void gdk_window_unmaximize(IntPtr window);
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
+            public delegate void gtk_window_unmaximize(GtkWindow window);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
             public delegate void gtk_window_set_geometry_hints(GtkWindow window, IntPtr geometry_widget, ref GdkGeometry geometry, GdkWindowHints geom_mask);
@@ -235,6 +262,15 @@ namespace Avalonia.Gtk3.Interop
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
             public delegate void gdk_window_begin_resize_drag(IntPtr window, WindowEdge edge, gint button, gint root_x, gint root_y, guint32 timestamp);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
+            public delegate void gdk_window_process_updates(IntPtr window, bool updateChildren);
+            
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
+            public delegate void gdk_window_begin_paint_rect(IntPtr window, ref GdkRectangle rect);
+            
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
+            public delegate void gdk_window_end_paint(IntPtr window);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
             public delegate void gdk_event_request_motions(IntPtr ev);
@@ -273,11 +309,17 @@ namespace Avalonia.Gtk3.Interop
             public delegate bool gdk_pixbuf_save_to_bufferv(Pixbuf pixbuf, out IntPtr buffer, out IntPtr buffer_size,
                             Utf8Buffer type, IntPtr option_keys, IntPtr option_values, out IntPtr error);
 
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
+            public delegate IntPtr gdk_cairo_create(IntPtr window);
+
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gobject)]
             public delegate void g_object_unref(IntPtr instance);
             
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gobject)]
             public delegate void g_object_ref(GObject instance);
+            
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gobject)]
+            public delegate IntPtr g_type_name(IntPtr instance);
             
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gobject)]
             public delegate ulong g_signal_connect_object(GObject instance, Utf8Buffer signal, IntPtr handler, IntPtr userData, int flags);
@@ -287,7 +329,10 @@ namespace Avalonia.Gtk3.Interop
             
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Glib)]
             public delegate ulong g_timeout_add(uint interval, timeout_callback callback, IntPtr data);
-            
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Glib)]
+            public delegate ulong g_timeout_add_full(int prio, uint interval, timeout_callback callback, IntPtr data, IntPtr destroy);
+
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Glib)]
             public delegate ulong g_free(IntPtr data);
             
@@ -320,6 +365,11 @@ namespace Avalonia.Gtk3.Interop
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate void GtkClipboardTextReceivedFunc(IntPtr clipboard, IntPtr utf8string, IntPtr userdata);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            public delegate bool TickCallback(IntPtr widget, IntPtr clock, IntPtr userdata);
+
+
         }
 
         public static D.gdk_display_get_n_screens GdkDisplayGetNScreens;
@@ -363,9 +413,11 @@ namespace Avalonia.Gtk3.Interop
         public static D.gtk_dialog_add_button GtkDialogAddButton;
         public static D.g_object_unref GObjectUnref;
         public static D.g_object_ref GObjectRef;
+        public static D.g_type_name GTypeName;
         public static D.g_signal_connect_object GSignalConnectObject;
         public static D.g_signal_handler_disconnect GSignalHandlerDisconnect;
         public static D.g_timeout_add GTimeoutAdd;
+        public static D.g_timeout_add_full GTimeoutAddFull;
         public static D.g_free GFree;
         public static D.g_slist_free GSlistFree;
         public static D.g_memory_input_stream_new_from_data GMemoryInputStreamNewFromData;
@@ -373,6 +425,7 @@ namespace Avalonia.Gtk3.Interop
         public static D.gtk_widget_set_events GtkWidgetSetEvents;
         public static D.gdk_window_invalidate_rect GdkWindowInvalidateRect;
         public static D.gtk_widget_queue_draw_area GtkWidgetQueueDrawArea;
+        public static D.gtk_widget_add_tick_callback GtkWidgetAddTickCallback;
         public static D.gtk_widget_activate GtkWidgetActivate;
         public static D.gtk_clipboard_get_for_display GtkClipboardGetForDisplay;
         public static D.gtk_clipboard_request_text GtkClipboardRequestText;
@@ -391,13 +444,17 @@ namespace Avalonia.Gtk3.Interop
         public static D.gdk_window_get_origin GdkWindowGetOrigin;
         public static D.gdk_window_get_pointer GdkWindowGetPointer;
         public static D.gdk_window_get_state GdkWindowGetState;
-        public static D.gdk_window_iconify GdkWindowIconify;
-        public static D.gdk_window_deiconify GdkWindowDeiconify;
-        public static D.gdk_window_maximize GdkWindowMaximize;
-        public static D.gdk_window_unmaximize GdkWindowUnmaximize;
+        public static D.gtk_window_iconify GtkWindowIconify;
+        public static D.gtk_window_deiconify GtkWindowDeiconify;
+        public static D.gtk_window_maximize GtkWindowMaximize;
+        public static D.gtk_window_unmaximize GtkWindowUnmaximize;
         public static D.gdk_window_begin_move_drag GdkWindowBeginMoveDrag;
         public static D.gdk_window_begin_resize_drag GdkWindowBeginResizeDrag;
         public static D.gdk_event_request_motions GdkEventRequestMotions;
+        public static D.gdk_window_process_updates GdkWindowProcessUpdates;
+        public static D.gdk_window_begin_paint_rect GdkWindowBeginPaintRect;
+        public static D.gdk_window_end_paint GdkWindowEndPaint;
+        
 
         public static D.gdk_pixbuf_new_from_file GdkPixbufNewFromFile;
         public static D.gtk_icon_theme_get_default GtkIconThemeGetDefault;
@@ -406,16 +463,25 @@ namespace Avalonia.Gtk3.Interop
         public static D.gdk_window_set_cursor GdkWindowSetCursor;
         public static D.gdk_pixbuf_new_from_stream GdkPixbufNewFromStream;
         public static D.gdk_pixbuf_save_to_bufferv GdkPixbufSaveToBufferv;
-
+        public static D.gdk_cairo_create GdkCairoCreate;
+        
         public static D.cairo_image_surface_create CairoImageSurfaceCreate;
+        public static D.cairo_image_surface_create_for_data CairoImageSurfaceCreateForData;
         public static D.cairo_image_surface_get_data CairoImageSurfaceGetData;
         public static D.cairo_image_surface_get_stride CairoImageSurfaceGetStride;
         public static D.cairo_surface_mark_dirty CairoSurfaceMarkDirty;
+        public static D.cairo_surface_write_to_png CairoSurfaceWriteToPng;
         public static D.cairo_surface_flush CairoSurfaceFlush;
         public static D.cairo_surface_destroy CairoSurfaceDestroy;
         public static D.cairo_set_source_surface CairoSetSourceSurface;
+        public static D.cairo_set_source_rgba CairoSetSourceRgba;
         public static D.cairo_scale CairoScale;
         public static D.cairo_paint CairoPaint;
+        public static D.cairo_show_text CairoShowText;
+        public static D.cairo_select_font_face CairoSelectFontFace;
+        public static D.cairo_set_font_size CairoSetFontSize;
+        public static D.cairo_move_to CairoMoveTo;
+        public static D.cairo_destroy CairoDestroy;
     }
 
     public enum GtkWindowType

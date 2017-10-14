@@ -28,17 +28,14 @@ namespace Avalonia.Rendering.SceneGraph
             Point p1,
             Point p2,
             IDictionary<IVisual, Scene> childScenes = null)
+            : base(new Rect(p1, p2), transform, pen)
         {
-            Bounds = new Rect(p1, p2).TransformToAABB(transform).Inflate(pen?.Thickness ?? 0);
             Transform = transform;
             Pen = pen?.ToImmutable();
             P1 = p1;
             P2 = p2;
             ChildScenes = childScenes;
         }
-
-        /// <inheritdoc/>
-        public override Rect Bounds { get; }
 
         /// <summary>
         /// Gets the transform with which the node will be drawn.

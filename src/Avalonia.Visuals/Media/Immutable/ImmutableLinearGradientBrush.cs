@@ -20,7 +20,7 @@ namespace Avalonia.Media.Immutable
         /// <param name="startPoint">The start point for the gradient.</param>
         /// <param name="endPoint">The end point for the gradient.</param>
         public ImmutableLinearGradientBrush(
-            IReadOnlyList<GradientStop> gradientStops,
+            IList<GradientStop> gradientStops,
             double opacity = 1,
             GradientSpreadMethod spreadMethod = GradientSpreadMethod.Pad,
             RelativePoint? startPoint = null,

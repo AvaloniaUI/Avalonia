@@ -16,7 +16,7 @@ namespace Avalonia.Media.Immutable
         /// <param name="opacity">The opacity of the brush.</param>
         /// <param name="spreadMethod">The spread method.</param>
         protected ImmutableGradientBrush(
-            IReadOnlyList<GradientStop> gradientStops,
+            IList<GradientStop> gradientStops,
             double opacity,
             GradientSpreadMethod spreadMethod)
         {
@@ -36,7 +36,7 @@ namespace Avalonia.Media.Immutable
         }
 
         /// <inheritdoc/>
-        public IReadOnlyList<GradientStop> GradientStops { get; }
+        public IList<GradientStop> GradientStops { get; }
 
         /// <inheritdoc/>
         public double Opacity { get; }
