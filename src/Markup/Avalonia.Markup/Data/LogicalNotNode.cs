@@ -7,7 +7,7 @@ using Avalonia.Data;
 
 namespace Avalonia.Markup.Data
 {
-    internal class LogicalNotNode : ExpressionNode
+    internal class LogicalNotNode : ExpressionNode, ITransformNode
     {
         public override string Description => "!";
 
@@ -60,6 +60,17 @@ namespace Avalonia.Markup.Data
             }
 
             return AvaloniaProperty.UnsetValue;
+        }
+
+        public object Transform(object value)
+        {
+            var originalType = value.GetType();
+            var negated = Negate(value);
+            if (negated is BindingNotification)
+            {
+                return negated;
+            }
+            return Convert.ChangeType(negated, originalType);
         }
     }
 }
