@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26730.3
+VisualStudioVersion = 15.0.26730.10
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Base", "src\Avalonia.Base\Avalonia.Base.csproj", "{B09B78D8-9B26-48B0-9149-D64A2F120F3F}"
 EndProject
@@ -204,6 +204,7 @@ Global
 		tests\Avalonia.RenderTests\Avalonia.RenderTests.projitems*{48840edd-24bf-495d-911e-2eb12ae75d3b}*SharedItemsImports = 13
 		src\Shared\PlatformSupport\PlatformSupport.projitems*{4a1abb09-9047-4bd5-a4ad-a055e52c5ee0}*SharedItemsImports = 4
 		src\Shared\PlatformSupport\PlatformSupport.projitems*{7863ea94-f0fb-4386-bf8c-e5bfa761560a}*SharedItemsImports = 4
+		src\Shared\PlatformSupport\PlatformSupport.projitems*{7b92af71-6287-4693-9dcb-bd5b6e927e23}*SharedItemsImports = 4
 		src\Shared\RenderHelpers\RenderHelpers.projitems*{7d2d3083-71dd-4cc9-8907-39a0d86fb322}*SharedItemsImports = 4
 		src\Windows\Avalonia.Win32\Avalonia.Win32.Shared.projitems*{811a76cf-1cf6-440f-963b-bbe31bd72a82}*SharedItemsImports = 4
 		src\Windows\Avalonia.Win32\Avalonia.Win32.Shared.projitems*{9defc6b7-845b-4d8f-afc0-d32bf0032b8c}*SharedItemsImports = 13
