@@ -118,7 +118,7 @@ namespace Avalonia.Markup
                 x => relativeTo.AttachedToLogicalTree += x,
                 x => relativeTo.AttachedToLogicalTree -= x)
                 .Select(x => true)
-                .StartWith(relativeTo.IsAttachedToVisualTree);
+                .StartWith(relativeTo.IsAttachedToLogicalTree);
 
             var detached = Observable.FromEventPattern<LogicalTreeAttachmentEventArgs>(
                 x => relativeTo.DetachedFromLogicalTree += x,

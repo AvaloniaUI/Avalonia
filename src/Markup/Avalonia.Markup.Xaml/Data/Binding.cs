@@ -66,7 +66,7 @@ namespace Avalonia.Markup.Xaml.Data
         /// <summary>
         /// Gets or sets the binding path.
         /// </summary>
-        public string Path { get; set; }
+        public string Path { get; set; } = "";
 
         /// <summary>
         /// Gets or sets the binding priority.
