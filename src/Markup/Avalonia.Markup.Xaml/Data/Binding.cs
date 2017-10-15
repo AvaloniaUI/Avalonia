@@ -94,7 +94,7 @@ namespace Avalonia.Markup.Xaml.Data
         {
             Contract.Requires<ArgumentNullException>(target != null);
 
-            anchor = anchor ?? DefaultAnchor.Target;
+            anchor = anchor ?? DefaultAnchor?.Target;
 
             var pathInfo = ParsePath(Path);
             ValidateState(pathInfo);
