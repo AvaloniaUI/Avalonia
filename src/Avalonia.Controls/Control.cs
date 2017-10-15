@@ -175,9 +175,9 @@ namespace Avalonia.Controls
 
             set
             {
-                if (value.Trim() == string.Empty)
+                if (String.IsNullOrWhiteSpace(value))
                 {
-                    throw new InvalidOperationException("Cannot set Name to empty string.");
+                    throw new InvalidOperationException("Cannot set Name to null or empty string.");
                 }
 
                 if (_styled)
