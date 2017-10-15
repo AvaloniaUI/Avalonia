@@ -126,11 +126,6 @@ namespace Avalonia.Markup.Xaml.Data
             }
             else if (RelativeSource.Mode == RelativeSourceMode.FindAncestor)
             {
-                if (RelativeSource.AncestorType == null)
-                {
-                    throw new InvalidOperationException("AncestorType must be set for RelativeSourceModel.FindAncestor.");
-                }
-
                 observer = CreateFindAncestorObserver(
                     (target as IControl) ?? (anchor as IControl),
                     RelativeSource,
@@ -224,9 +219,18 @@ namespace Avalonia.Markup.Xaml.Data
         {
             Contract.Requires<ArgumentNullException>(target != null);
 
-            return new ExpressionObserver(
-                ControlLocator.Track(target, relativeSource.AncestorType, relativeSource.AncestorLevel -1),
-                path);
+            if (relativeSource.AncestorType == null)
+            {
+                return new ExpressionObserver(
+                    ControlLocator.Track(target, relativeSource.AncestorLevel - 1),
+                    path);
+            }
+            else
+            {
+                return new ExpressionObserver(
+                    ControlLocator.Track(target, relativeSource.AncestorType, relativeSource.AncestorLevel - 1),
+                    path); 
+            }
         }
 
         private ExpressionObserver CreateSourceObserver(

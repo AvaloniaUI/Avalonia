@@ -145,7 +145,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
                     {
                         if (int.TryParse(parentConfigParams[0], out int level))
                         {
-                            relativeSource.AncestorType = typeof(IControl);
+                            relativeSource.AncestorType = null;
                             relativeSource.AncestorLevel = level + 1;
                         }
                         else
