@@ -91,55 +91,50 @@ namespace Avalonia.Markup.Xaml.Data
             bool enableDataValidation = false)
         {
             Contract.Requires<ArgumentNullException>(target != null);
-
-            var pathInfo = ParsePath(Path);
-            ValidateState(pathInfo);
+            
             enableDataValidation = enableDataValidation && Priority == BindingPriority.LocalValue;
-
-            var elementName = ElementName ?? pathInfo.ElementName;
-            var relativeSource = RelativeSource ?? pathInfo.RelativeSource;
-
+            
             ExpressionObserver observer;
 
-            if (elementName != null)
+            if (ElementName != null)
             {
                 observer = CreateElementObserver(
                     (target as IControl) ?? (anchor as IControl),
-                    elementName,
-                    pathInfo.Path);
+                    ElementName,
+                    Path);
             }
             else if (Source != null)
             {
-                observer = CreateSourceObserver(Source, pathInfo.Path, enableDataValidation);
+                observer = CreateSourceObserver(Source, Path, enableDataValidation);
             }
-            else if (relativeSource == null || relativeSource.Mode == RelativeSourceMode.DataContext)
+            else if (RelativeSource == null || RelativeSource.Mode == RelativeSourceMode.DataContext)
             {
                 observer = CreateDataContexObserver(
                     target,
-                    pathInfo.Path,
+                    Path,
                     targetProperty == Control.DataContextProperty,
                     anchor,
                     enableDataValidation);
             }
-            else if (relativeSource.Mode == RelativeSourceMode.Self)
+            else if (RelativeSource.Mode == RelativeSourceMode.Self)
             {
-                observer = CreateSourceObserver(target, pathInfo.Path, enableDataValidation);
+                observer = CreateSourceObserver(target, Path, enableDataValidation);
             }
-            else if (relativeSource.Mode == RelativeSourceMode.TemplatedParent)
+            else if (RelativeSource.Mode == RelativeSourceMode.TemplatedParent)
             {
-                observer = CreateTemplatedParentObserver(target, pathInfo.Path);
+                observer = CreateTemplatedParentObserver(target, Path);
             }
-            else if (relativeSource.Mode == RelativeSourceMode.FindAncestor)
+            else if (RelativeSource.Mode == RelativeSourceMode.FindAncestor)
             {
-                if (relativeSource.AncestorType == null)
+                if (RelativeSource.AncestorType == null)
                 {
                     throw new InvalidOperationException("AncestorType must be set for RelativeSourceModel.FindAncestor.");
                 }
 
                 observer = CreateFindAncestorObserver(
                     (target as IControl) ?? (anchor as IControl),
-                    relativeSource,
-                    pathInfo.Path);
+                    RelativeSource,
+                    Path);
             }
             else
             {
@@ -166,128 +161,6 @@ namespace Avalonia.Markup.Xaml.Data
                 Priority);
 
             return new InstancedBinding(subject, Mode, Priority);
-        }
-
-        private static PathInfo ParsePath(string path)
-        {
-            var result = new PathInfo();
-
-            if (string.IsNullOrWhiteSpace(path) || path == ".")
-            {
-                result.Path = string.Empty;
-            }
-            else if (path.StartsWith("#"))
-            {
-                var dot = path.IndexOf('.');
-
-                if (dot != -1)
-                {
-                    result.Path = path.Substring(dot + 1);
-                    result.ElementName = path.Substring(1, dot - 1);
-                }
-                else
-                {
-                    result.Path = string.Empty;
-                    result.ElementName = path.Substring(1);
-                }
-            }
-            else if (path.StartsWith("$"))
-            {
-                var relativeSource = new RelativeSource();
-                result.RelativeSource = relativeSource;
-                var dot = path.IndexOf('.');
-                string relativeSourceMode;
-                if (dot != -1)
-                {
-                    result.Path = path.Substring(dot + 1);
-                    relativeSourceMode = path.Substring(1, dot - 1);
-                }
-                else
-                {
-                    result.Path = string.Empty;
-                    relativeSourceMode = path.Substring(1);
-                }
-
-                if (relativeSourceMode == "self")
-                {
-                    relativeSource.Mode = RelativeSourceMode.Self;
-                }
-                else if(relativeSourceMode == "parent")
-                {
-                    relativeSource.Mode = RelativeSourceMode.FindAncestor;
-                    relativeSource.AncestorType = typeof(IControl);
-                    relativeSource.AncestorLevel = 1;
-                }
-                else if(relativeSourceMode.StartsWith("parent["))
-                {
-                    relativeSource.Mode = RelativeSourceMode.FindAncestor;
-                    var parentConfigStart = relativeSourceMode.IndexOf('[');
-                    if (!relativeSourceMode.EndsWith("]"))
-                    {
-                        throw new InvalidOperationException("Invalid RelativeSource binding syntax. Expected matching ']' for '['.");
-                    }
-                    var parentConfigParams = relativeSourceMode.Substring(parentConfigStart + 1).TrimEnd(']').Split(',');
-                    if (parentConfigParams.Length > 2 || parentConfigParams.Length == 0)
-                    {
-                        throw new InvalidOperationException("Expected either 1 or 2 parameters for RelativeSource binding syntax");
-                    }
-                    else if (parentConfigParams.Length == 1)
-                    {
-                        if (int.TryParse(parentConfigParams[0], out int level))
-                        {
-                            relativeSource.AncestorType = typeof(IControl);
-                            relativeSource.AncestorLevel = level + 1;
-                        }
-                        else
-                        {
-                            relativeSource.AncestorType = LookupAncestorType(parentConfigParams[0]);
-                        }
-                    }
-                    else
-                    {
-                        relativeSource.AncestorType = LookupAncestorType(parentConfigParams[0]);
-                        relativeSource.AncestorLevel = int.Parse(parentConfigParams[1]) + 1;
-                    }
-                }
-                else
-                {
-                    throw new InvalidOperationException($"Invalid RelativeSource binding syntax: {relativeSourceMode}");
-                }
-            }
-            else
-            {
-                result.Path = path;
-            }
-
-            return result;
-        }
-
-        private static Type LookupAncestorType(string ancestorTypeName)
-        {
-            //TODO: What is our syntax for type lookup here?
-            throw new NotImplementedException();
-        }
-
-        private void ValidateState(PathInfo pathInfo)
-        {
-            if (pathInfo.ElementName != null && ElementName != null)
-            {
-                throw new InvalidOperationException(
-                    "ElementName property cannot be set when an #elementName path is provided.");
-            }
-
-            if (pathInfo.RelativeSource != null && RelativeSource != null)
-            {
-                throw new InvalidOperationException(
-                    "ElementName property cannot be set when a $self or $parent path is provided.");
-            }
-
-            if ((pathInfo.ElementName != null || ElementName != null) &&
-                (pathInfo.RelativeSource != null || RelativeSource != null))
-            {
-                throw new InvalidOperationException(
-                    "ElementName property cannot be set with a RelativeSource.");
-            }
         }
 
         private ExpressionObserver CreateDataContexObserver(
