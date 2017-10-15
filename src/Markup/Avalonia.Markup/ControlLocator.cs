@@ -107,7 +107,6 @@ namespace Avalonia.Markup
         /// <param name="relativeTo">
         /// The control relative from which the other control should be found.
         /// </param>
-        /// <param name="ancestorType">The type of the ancestor to find.</param>
         /// <param name="ancestorLevel">
         /// The level of ancestor control to look for. Use 0 for the first ancestor of the
         /// requested type.
