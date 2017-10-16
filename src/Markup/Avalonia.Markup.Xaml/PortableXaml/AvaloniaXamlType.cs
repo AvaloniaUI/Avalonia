@@ -294,6 +294,8 @@ namespace Avalonia.Markup.Xaml.PortableXaml
             return Property.IsReadOnly;
         }
 
+        protected override bool LookupIsUnknown() => false;
+
         protected override Type GetPropertyType()
         {
             return Property.PropertyType;
