@@ -23,8 +23,6 @@ namespace Avalonia.Input
         public IInputManager InputManager => AvaloniaLocator.Current.GetService<IInputManager>();
 
         public IFocusManager FocusManager => AvaloniaLocator.Current.GetService<IFocusManager>();
-        
-        public string[] invalidCharacters = new String[1]{""};
 
         public IInputElement FocusedElement
         {
@@ -124,32 +122,18 @@ namespace Avalonia.Input
 
                 if (text != null)
                 {
-                    string cleanedText = RemoveInvalidCharacters(text.Text);
-                    if (!string.IsNullOrEmpty(cleanedText))
+                    var ev = new TextInputEventArgs()
                     {
-                        var ev = new TextInputEventArgs()
-                                 {
-                                     Device = this,
-                                     Text = cleanedText,
-                                     Source = element,
-                                     RoutedEvent = InputElement.TextInputEvent
-                                 };
+                        Device = this,
+                        Text = text.Text,
+                        Source = element,
+                        RoutedEvent = InputElement.TextInputEvent
+                    };
 
-                        element.RaiseEvent(ev);
-                        e.Handled = ev.Handled;
-                    }
+                    element.RaiseEvent(ev);
+                    e.Handled = ev.Handled;
                 }
             }
-        }
-
-        public string RemoveInvalidCharacters(string text)
-        {
-            for (var i = 0; i < invalidCharacters.Length; i++)
-            {
-                text = text.Replace(invalidCharacters[i], string.Empty);
-            }
-
-            return text;
         }
     }
 }
