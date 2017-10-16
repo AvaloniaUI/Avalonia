@@ -104,7 +104,7 @@ namespace Avalonia.Controls
             if (!e.Handled)
             {
                 if (e.Key == Key.F4 ||
-                    (e.Key == Key.Down && ((e.Modifiers & InputModifiers.Alt) != 0)))
+                    ((e.Key == Key.Down || e.Key == Key.Up) && ((e.Modifiers & InputModifiers.Alt) != 0)))
                 {
                     IsDropDownOpen = !IsDropDownOpen;
                     e.Handled = true;
@@ -117,24 +117,21 @@ namespace Avalonia.Controls
 
                 if (!IsDropDownOpen)
                 {
-                    if (e.Key == Key.Right)
+                    if (e.Key == Key.Down)
                     {
+                        if (SelectedIndex == -1)
+                            SelectedIndex = 0;
+                        
                         if (++SelectedIndex >= ItemCount)
                             SelectedIndex = 0;
                         
                         e.Handled = true;
                     }
-                    else if (e.Key == Key.Left)
+                    else if (e.Key == Key.Up)
                     {
                         if (--SelectedIndex < 0)
                             SelectedIndex = ItemCount - 1;
-                        e.Handled = true;
-                    }
-                    else if (e.Key == Key.Down)
-                    {
-                        IsDropDownOpen = true;
-                        if (SelectedIndex == -1)
-                            SelectedIndex = 0;
+                        
                         e.Handled = true;
                     }
                 }
