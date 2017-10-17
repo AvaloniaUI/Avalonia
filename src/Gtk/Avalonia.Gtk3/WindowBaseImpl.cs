@@ -70,12 +70,15 @@ namespace Avalonia.Gtk3
         private bool OnConfigured(IntPtr gtkwidget, IntPtr ev, IntPtr userdata)
         {
             int w, h;
-            Native.GtkWindowGetSize(GtkWidget, out w, out h);
-            var size = ClientSize = new Size(w, h);
-            if (_lastSize != size)
+            if (!OverrideRedirect)
             {
-                Resized?.Invoke(size);
-                _lastSize = size;
+                Native.GtkWindowGetSize(GtkWidget, out w, out h);
+                var size = ClientSize = new Size(w, h);
+                if (_lastSize != size)
+                {
+                    Resized?.Invoke(size);
+                    _lastSize = size;
+                }
             }
             var pos = Position;
             if (_lastPosition != pos)
