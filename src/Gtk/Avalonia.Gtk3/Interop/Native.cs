@@ -102,6 +102,9 @@ namespace Avalonia.Gtk3.Interop
             
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
             public delegate void gdk_window_resize(IntPtr gtkWindow, int width, int height);
+            
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
+            public delegate void gdk_window_set_override_redirect(IntPtr gdkWindow, bool value);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
             public delegate void gtk_widget_realize(GtkWidget gtkWidget);
@@ -402,6 +405,7 @@ namespace Avalonia.Gtk3.Interop
         public static D.gtk_window_get_size GtkWindowGetSize;
         public static D.gtk_window_resize GtkWindowResize;
         public static D.gdk_window_resize GdkWindowResize;
+        public static D.gdk_window_set_override_redirect GdkWindowSetOverrideRedirect;
         public static D.gtk_widget_set_size_request GtkWindowSetSizeRequest;
         public static D.gtk_window_set_default_size GtkWindowSetDefaultSize;
         public static D.gtk_window_get_position GtkWindowGetPosition;
