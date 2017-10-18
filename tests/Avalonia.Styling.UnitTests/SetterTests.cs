@@ -8,6 +8,9 @@ using Avalonia.Data;
 using Xunit;
 using System;
 using Avalonia.Controls.Templates;
+using Avalonia.Markup.Xaml.Data;
+using Avalonia.Markup;
+using System.Globalization;
 
 namespace Avalonia.Styling.UnitTests
 {
@@ -60,6 +63,40 @@ namespace Avalonia.Styling.UnitTests
             setter.Apply(style, control, null);
 
             Assert.NotNull(NameScope.GetNameScope((Control)control.Child));
+        }
+
+        [Fact]
+        public void Does_Not_Call_Converter_ConvertBack_On_OneWay_Binding()
+        {
+            var control = new Decorator { Name = "foo" };
+            var style = Mock.Of<IStyle>();
+            var binding = new Binding("Name", BindingMode.OneWay)
+            {
+                Converter = new TestConverter(),
+                RelativeSource = new RelativeSource(RelativeSourceMode.Self),
+            };
+            var setter = new Setter(Decorator.TagProperty, binding);
+            var activator = new BehaviorSubject<bool>(true);
+
+            setter.Apply(style, control, activator);
+            Assert.Equal("foobar", control.Tag);
+
+            // Issue #1218 caused TestConverter.ConvertBack to throw here.
+            activator.OnNext(false);
+            Assert.Null(control.Tag);
+        }
+
+        private class TestConverter : IValueConverter
+        {
+            public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+            {
+                return value.ToString() + "bar";
+            }
+
+            public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }

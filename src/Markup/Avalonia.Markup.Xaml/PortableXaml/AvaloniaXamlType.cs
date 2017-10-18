@@ -135,6 +135,8 @@ namespace Avalonia.Markup.Xaml.PortableXaml
             };
         }
 
+        protected override bool LookupIsUnknown() => false;
+
         protected override XamlType LookupType()
         {
             var propType = GetPropertyType();

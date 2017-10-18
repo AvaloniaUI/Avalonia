@@ -133,7 +133,7 @@ namespace Avalonia.VisualTree
 
             var root = visual.GetVisualRoot();
             p = visual.TranslatePoint(p, root);
-            return root.Renderer.HitTest(p, filter);
+            return root.Renderer.HitTest(p, visual, filter);
         }
 
         /// <summary>

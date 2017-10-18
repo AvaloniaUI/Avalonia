@@ -357,7 +357,7 @@ namespace Avalonia.LeakTests
             {
             }
 
-            public IEnumerable<IVisual> HitTest(Point p, Func<IVisual, bool> filter) => null;
+            public IEnumerable<IVisual> HitTest(Point p, IVisual root, Func<IVisual, bool> filter) => null;
 
             public void Paint(Rect rect)
             {
