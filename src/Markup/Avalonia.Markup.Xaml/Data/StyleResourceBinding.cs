@@ -58,7 +58,7 @@ namespace Avalonia.Markup.Xaml.Data
 
             if (resource != AvaloniaProperty.UnsetValue)
             {
-                return new InstancedBinding(resource, Priority);
+                return InstancedBinding.OneTime(resource, Priority);
             }
             else
             {
