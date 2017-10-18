@@ -96,6 +96,16 @@ namespace Avalonia.Controls
             this.UpdateSelectionBoxItem(this.SelectedItem);
         }
 
+        protected override void OnGotFocus(GotFocusEventArgs e)
+        {
+            base.OnGotFocus(e);
+
+            if (!e.Handled && e.NavigationMethod == NavigationMethod.Directional)
+            {
+                e.Handled = UpdateSelectionFromEventSource(e.Source);
+            }
+        }
+
         /// <inheritdoc/>
         protected override void OnKeyDown(KeyEventArgs e)
         {
