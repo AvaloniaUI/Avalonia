@@ -32,6 +32,7 @@ namespace Avalonia.Gtk3
         private IDeferredRenderOperation _nextRenderOperation;
         private readonly AutoResetEvent _canSetNextOperation = new AutoResetEvent(true);
         internal IntPtr? GdkWindowHandle;
+        private bool _overrideRedirect;
         public WindowBaseImpl(GtkWindow gtkWidget)
         {
             
@@ -69,12 +70,15 @@ namespace Avalonia.Gtk3
         private bool OnConfigured(IntPtr gtkwidget, IntPtr ev, IntPtr userdata)
         {
             int w, h;
-            Native.GtkWindowGetSize(GtkWidget, out w, out h);
-            var size = ClientSize = new Size(w, h);
-            if (_lastSize != size)
+            if (!OverrideRedirect)
             {
-                Resized?.Invoke(size);
-                _lastSize = size;
+                Native.GtkWindowGetSize(GtkWidget, out w, out h);
+                var size = ClientSize = new Size(w, h);
+                if (_lastSize != size)
+                {
+                    Resized?.Invoke(size);
+                    _lastSize = size;
+                }
             }
             var pos = Position;
             if (_lastPosition != pos)
@@ -406,6 +410,28 @@ namespace Avalonia.Gtk3
             if (GtkWidget.IsClosed)
                 return;
             Native.GtkWindowResize(GtkWidget, (int)value.Width, (int)value.Height);
+            if (OverrideRedirect)
+            {
+                var size = ClientSize = value;
+                if (_lastSize != size)
+                {
+                    Resized?.Invoke(size);
+                    _lastSize = size;
+                }
+            }
+        }
+
+        public bool OverrideRedirect
+        {
+            get => _overrideRedirect;
+            set
+            {
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    Native.GdkWindowSetOverrideRedirect(Native.GtkWidgetGetWindow(GtkWidget), value);
+                    _overrideRedirect = value;
+                }
+            }
         }
         
         public IScreenImpl Screen

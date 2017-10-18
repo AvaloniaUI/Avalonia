@@ -141,20 +141,20 @@ namespace Avalonia.Styling
             {
                 var description = style?.ToString();
 
-                if (sourceInstance.Subject != null)
+                if (sourceInstance.Mode == BindingMode.TwoWay || sourceInstance.Mode == BindingMode.OneWayToSource)
                 {
                     var activated = new ActivatedSubject(activator, sourceInstance.Subject, description);
                     cloned = new InstancedBinding(activated, sourceInstance.Mode, BindingPriority.StyleTrigger);
                 }
-                else if (sourceInstance.Observable != null)
-                {
-                    var activated = new ActivatedObservable(activator, sourceInstance.Observable, description);
-                    cloned = new InstancedBinding(activated, sourceInstance.Mode, BindingPriority.StyleTrigger);
-                }
-                else
+                else if (sourceInstance.Mode == BindingMode.OneTime)
                 {
                     var activated = new ActivatedValue(activator, sourceInstance.Value, description);
                     cloned = new InstancedBinding(activated, BindingMode.OneWay, BindingPriority.StyleTrigger);
+                }
+                else
+                {
+                    var activated = new ActivatedObservable(activator, sourceInstance.Observable ?? sourceInstance.Subject, description);
+                    cloned = new InstancedBinding(activated, sourceInstance.Mode, BindingPriority.StyleTrigger);
                 }
             }
             else
