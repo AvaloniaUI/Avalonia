@@ -5,6 +5,7 @@ using Avalonia.Input.Raw;
 using Avalonia.Platform;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Rendering;
+using Avalonia.Threading;
 using MonoMac.AppKit;
 
 using MonoMac.CoreGraphics;
@@ -37,11 +38,25 @@ namespace Avalonia.MonoMac
             private NSTrackingArea _area;
             private NSCursor _cursor;
 
+            public CGSize PixelSize { get; set; }
+
+            public CGSize LogicalSize { get; set; }
+
+            private SavedImage _backBuffer;
+            public object SyncRoot { get; } = new object();
+
             public TopLevelView(TopLevelImpl tl)
             {
                 _tl = tl;
                 _mouse = AvaloniaLocator.Current.GetService<IMouseDevice>();
                 _keyboard = AvaloniaLocator.Current.GetService<IKeyboardDevice>();
+            }
+
+            protected override void Dispose(bool disposing)
+            {
+                if (disposing)
+                    SetBackBufferImage(null);
+                base.Dispose(disposing);
             }
 
             public override bool ConformsToProtocol(IntPtr protocol)
@@ -50,11 +65,37 @@ namespace Avalonia.MonoMac
                 return rv;
             }
 
+            public override bool IsOpaque => false;
+
             public override void DrawRect(CGRect dirtyRect)
             {
+                lock (SyncRoot)
+                {
+                    if (_backBuffer != null)
+                    {
+                        using (var context = NSGraphicsContext.CurrentContext.GraphicsPort)
+                        {
+                            context.SetFillColor(255, 255, 255, 255);
+                            context.FillRect(new CGRect(default(CGPoint), LogicalSize));
+                            context.TranslateCTM(0, LogicalSize.Height - _backBuffer.LogicalSize.Height);
+                            context.DrawImage(new CGRect(default(CGPoint), _backBuffer.LogicalSize), _backBuffer.Image);
+                            context.Flush();
+                            NSGraphicsContext.CurrentContext.FlushGraphics();
+                        }
+                    }
+                }
                 _tl.Paint?.Invoke(dirtyRect.ToAvaloniaRect());
             }
 
+            public void SetBackBufferImage(SavedImage image)
+            {
+                lock (SyncRoot)
+                {
+                    _backBuffer?.Dispose();
+                    _backBuffer = image;
+                }
+            }
+            
             [Export("viewDidChangeBackingProperties:")]
             public void ViewDidChangeBackingProperties()
             {
@@ -78,7 +119,12 @@ namespace Avalonia.MonoMac
 
             public override void SetFrameSize(CGSize newSize)
             {
-                base.SetFrameSize(newSize);
+                lock (SyncRoot)
+                {
+                    base.SetFrameSize(newSize);
+                    LogicalSize = Frame.Size;
+                    PixelSize = ConvertSizeToBacking(LogicalSize);
+                }
 
                 if (_area != null)
                 {
@@ -348,9 +394,16 @@ namespace Avalonia.MonoMac
             View.Dispose();
         }
 
-        public IRenderer CreateRenderer(IRenderRoot root) => new ImmediateRenderer(root);
+        public IRenderer CreateRenderer(IRenderRoot root) =>
+            MonoMacPlatform.UseDeferredRendering
+                ? new DeferredRenderer(root, AvaloniaLocator.Current.GetService<IRenderLoop>())
+                : (IRenderer) new ImmediateRenderer(root);
 
-        public void Invalidate(Rect rect) => View.SetNeedsDisplayInRect(View.Frame);
+        public void Invalidate(Rect rect)
+        {
+            if (!MonoMacPlatform.UseDeferredRendering)
+                View.SetNeedsDisplayInRect(View.Frame);
+        }
 
         public abstract Point PointToClient(Point point);
 
@@ -360,6 +413,6 @@ namespace Avalonia.MonoMac
 
         public void SetInputRoot(IInputRoot inputRoot) => InputRoot = inputRoot;
 
-        public ILockedFramebuffer Lock() => new EmulatedFramebuffer(View);
+        public ILockedFramebuffer Lock() => new EmulatedFramebuffer(View, View.LogicalSize, View.PixelSize);
     }
 }
