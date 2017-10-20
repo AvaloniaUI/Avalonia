@@ -770,7 +770,14 @@ do we need it?")]
 <Window xmlns='https://github.com/avaloniaui'
                 xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
                 xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'>
-    <local:InitializationOrderTracker Width='100' Height='100'
+    <Window.Styles>
+        <Style Selector='local|InitializationOrderTracker'> 
+            <Style.Resources> 
+                 <x:Double x:Key='Double'>100</x:Double> 
+            </Style.Resources> 
+        </Style> 
+   </Window.Styles>     
+<local:InitializationOrderTracker Width='100' Height='{DynamicResource Double}'
                      Tag='{Binding Height, RelativeSource={RelativeSource Self}}' />
 </Window>";
 
