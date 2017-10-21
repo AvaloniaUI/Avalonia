@@ -53,6 +53,9 @@
     <EmbeddedResource Include="Pages\CheckBoxPage.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <EmbeddedResource Include="Pages\ComboBoxPage.xaml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Include="Pages\ContextMenuPage.xaml" />
     <EmbeddedResource Include="Pages\DropDownPage.xaml">
       <SubType>Designer</SubType>
@@ -118,6 +121,9 @@
     </Compile>
     <Compile Include="Pages\CheckBoxPage.xaml.cs">
       <DependentUpon>CheckBoxPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\ComboBoxPage.xaml.cs">
+      <DependentUpon>ComboBoxPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Pages\DropDownPage.xaml.cs">
       <DependentUpon>DropDownPage.xaml</DependentUpon>

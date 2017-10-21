@@ -1,0 +1,56 @@
+<Styles xmlns="https://github.com/avaloniaui">
+  <Style Selector="ComboBox">
+    <Setter Property="BorderBrush" Value="{StyleResource ThemeBorderMidBrush}"/>
+    <Setter Property="BorderThickness" Value="{StyleResource ThemeBorderThickness}"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Name="border"
+                Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}">
+          <Grid ColumnDefinitions="*,Auto">
+            <TextBox Name="PART_TextBox"
+                     BorderThickness="0"
+                     Text="{TemplateBinding Text, Mode=TwoWay}"
+                     HorizontalAlignment="Stretch"
+                     VerticalAlignment="Center"/>
+            <ToggleButton Name="toggle"
+                          BorderThickness="0"
+                          Background="Transparent"
+                          ClickMode="Press"
+                          Focusable="False"
+                          IsChecked="{TemplateBinding IsDropDownOpen, Mode=TwoWay}"
+                          Grid.Column="1">
+              <Path Fill="{StyleResource ThemeForegroundBrush}"
+                    Width="8"
+                    Height="4"
+                    Stretch="Uniform"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Data="F1 M 301.14,-189.041L 311.57,-189.041L 306.355,-182.942L 301.14,-189.041 Z"/>
+            </ToggleButton>
+            <Popup Name="PART_Popup"
+                   IsOpen="{TemplateBinding IsDropDownOpen, Mode=TwoWay}"
+                   MinWidth="{TemplateBinding Bounds.Width}"
+                   MaxHeight="{TemplateBinding MaxDropDownHeight}"
+                   PlacementTarget="{TemplateBinding}"
+                   StaysOpen="False">
+              <Border BorderBrush="{StyleResource ThemeBorderMidBrush}"
+                      BorderThickness="1">
+                <ScrollViewer>
+                  <ItemsPresenter Name="PART_ItemsPresenter"
+                                  Items="{TemplateBinding Items}"
+                                  ItemTemplate="{TemplateBinding ItemTemplate}"
+                                  MemberSelector="{TemplateBinding MemberSelector}"/>
+                </ScrollViewer>
+              </Border>
+            </Popup>
+          </Grid>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+  <Style Selector="ComboBox:pointerover /template/ Border#border">
+    <Setter Property="BorderBrush" Value="{StyleResource ThemeBorderDarkBrush}"/>
+  </Style>
+</Styles>
