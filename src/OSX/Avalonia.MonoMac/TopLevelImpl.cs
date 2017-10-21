@@ -25,6 +25,7 @@ namespace Avalonia.MonoMac
 
         protected virtual void OnInput(RawInputEventArgs args)
         {
+            Dispatcher.UIThread.RunJobs(DispatcherPriority.Input + 1);
             Input?.Invoke(args);
         }
 
@@ -75,6 +76,7 @@ namespace Avalonia.MonoMac
             {
                 lock (SyncRoot)
                     _nonUiRedrawQueued = false;
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Render);
                 lock (SyncRoot)
                 {
                     if (_backBuffer != null)
