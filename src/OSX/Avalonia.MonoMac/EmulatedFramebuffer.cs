@@ -11,7 +11,7 @@ namespace Avalonia.MonoMac
     {
         private readonly TopLevelImpl.TopLevelView _view;
         private readonly CGSize _logicalSize;
-        private bool _isDeferred;
+        private readonly bool _isDeferred;
 
         [DllImport("libc")]
         static extern void memset(IntPtr p, int c, IntPtr size);
@@ -32,34 +32,12 @@ namespace Avalonia.MonoMac
             Address = Marshal.AllocHGlobal(size);
             memset(Address, 0, new IntPtr(size));
         }
-
-        class CocoaDrawLock : IDisposable
-        {
-            private readonly NSView _view;
-            public void Dispose()
-            {
-                _view.NonUIUnlockFocus();
-            }
-
-            public CocoaDrawLock(NSView view)
-            {
-                _view = view;
-            }
-        }
-
-        CocoaDrawLock LockCocoaDrawing()
-        {
-            if (!_view.NonUILockFocusIfCanDraw())
-                return null;
-            return new CocoaDrawLock(_view);
-        }
-
+        
         public void Dispose()
         {
             if (Address == IntPtr.Zero)
                 return;
             var nfo = (int) CGBitmapFlags.ByteOrder32Big | (int) CGImageAlphaInfo.PremultipliedLast;
-            IDisposable drawLock = LockCocoaDrawing();
             CGImage image = null;
             try
             {
@@ -69,7 +47,7 @@ namespace Avalonia.MonoMac
                     image = bContext.ToImage();
                 lock (_view.SyncRoot)
                 {
-                    if (!_isDeferred || drawLock != null)
+                    if(!_isDeferred)
                     {
                         using (var nscontext = NSGraphicsContext.CurrentContext)
                         using (var context = nscontext.GraphicsPort)
@@ -95,7 +73,6 @@ namespace Avalonia.MonoMac
                 }
                 Marshal.FreeHGlobal(Address);
                 Address = IntPtr.Zero;
-                drawLock?.Dispose();
             }
 
 

@@ -7,7 +7,7 @@ using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Rendering;
 using Avalonia.Threading;
 using MonoMac.AppKit;
-
+using MonoMac.CoreFoundation;
 using MonoMac.CoreGraphics;
 using MonoMac.Foundation;
 using MonoMac.ObjCRuntime;
@@ -37,6 +37,7 @@ namespace Avalonia.MonoMac
             private readonly IKeyboardDevice _keyboard;
             private NSTrackingArea _area;
             private NSCursor _cursor;
+            private bool _nonUiRedrawQueued;
 
             public CGSize PixelSize { get; set; }
 
@@ -55,7 +56,10 @@ namespace Avalonia.MonoMac
             protected override void Dispose(bool disposing)
             {
                 if (disposing)
-                    SetBackBufferImage(null);
+                {
+                    _backBuffer?.Dispose();
+                    _backBuffer = null;
+                }
                 base.Dispose(disposing);
             }
 
@@ -69,6 +73,8 @@ namespace Avalonia.MonoMac
 
             public override void DrawRect(CGRect dirtyRect)
             {
+                lock (SyncRoot)
+                    _nonUiRedrawQueued = false;
                 lock (SyncRoot)
                 {
                     if (_backBuffer != null)
@@ -93,6 +99,25 @@ namespace Avalonia.MonoMac
                 {
                     _backBuffer?.Dispose();
                     _backBuffer = image;
+                    if (image == null)
+                        return;
+
+                    if (_nonUiRedrawQueued)
+                        return;
+                    _nonUiRedrawQueued = true;
+                    Dispatcher.UIThread.InvokeAsync(
+                        () =>
+                        {
+                            lock (SyncRoot)
+                            {
+                                if (!_nonUiRedrawQueued)
+                                    return;
+                                _nonUiRedrawQueued = false;
+                            }
+                            SetNeedsDisplayInRect(Frame);
+                            Display();
+                        }, DispatcherPriority.Render);
+
                 }
             }
             
@@ -138,6 +163,7 @@ namespace Avalonia.MonoMac
                 AddTrackingArea(_area);
                 UpdateCursor();
                 _tl?.Resized?.Invoke(_tl.ClientSize);
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Layout);
             }
 
             InputModifiers GetModifiers(NSEventModifierMask mod)
