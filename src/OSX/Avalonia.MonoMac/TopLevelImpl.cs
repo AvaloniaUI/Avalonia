@@ -413,6 +413,6 @@ namespace Avalonia.MonoMac
 
         public void SetInputRoot(IInputRoot inputRoot) => InputRoot = inputRoot;
 
-        public ILockedFramebuffer Lock() => new EmulatedFramebuffer(View, View.LogicalSize, View.PixelSize);
+        public ILockedFramebuffer Lock() => new EmulatedFramebuffer(View);
     }
 }
