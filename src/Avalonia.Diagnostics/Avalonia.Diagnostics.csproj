@@ -50,5 +50,4 @@
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="..\..\build\Rx.props" />
-  <Import Project="..\..\build\Splat.props" />
 </Project>
