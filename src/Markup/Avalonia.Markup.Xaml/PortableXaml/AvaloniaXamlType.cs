@@ -135,6 +135,8 @@ namespace Avalonia.Markup.Xaml.PortableXaml
             };
         }
 
+        protected override bool LookupIsUnknown() => false;
+
         protected override XamlType LookupType()
         {
             var propType = GetPropertyType();
@@ -293,8 +295,6 @@ namespace Avalonia.Markup.Xaml.PortableXaml
         {
             return Property.IsReadOnly;
         }
-
-        protected override bool LookupIsUnknown() => false;
 
         protected override Type GetPropertyType()
         {
