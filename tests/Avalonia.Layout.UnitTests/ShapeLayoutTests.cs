@@ -2,20 +2,21 @@
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
 using Avalonia.Media;
+using Avalonia.Platform;
+using Avalonia.UnitTests;
 using Xunit;
 
+namespace Avalonia.Layout.UnitTests
 
-#if AVALONIA_SKIA
-namespace Avalonia.Skia.RenderTests
-#else
-namespace Avalonia.Direct2D1.RenderTests.Shapes
-#endif
 {
-    public class ShapeTests : TestBase
+    public class ShapeLayoutTests : TestWithServicesBase
     {
-        public ShapeTests()
-            : base(@"Shapes\Shape")
-        { }
+
+        public ShapeLayoutTests()
+        {
+            AvaloniaLocator.CurrentMutable
+                .Bind<IPlatformRenderInterface>().ToSingleton<MockPlatformRenderInterface>();
+        }
 
         [Fact]
         public void Shape_Transformation_Calculation_Should_Be_Deferred_To_Arrange_When_Strech_Is_Fill_And_Aviable_Size_Is_Infinite()
