@@ -510,6 +510,7 @@ namespace Avalonia
         {
             Contract.Requires<ArgumentNullException>(property != null);
             VerifyAccess();
+            delayedSetter.SetNotifying(property, true);
 
             AvaloniaPropertyChangedEventArgs e = new AvaloniaPropertyChangedEventArgs(
                 this,
@@ -536,8 +537,11 @@ namespace Avalonia
             finally
             {
                 property.Notifying?.Invoke(this, false);
+                delayedSetter.SetNotifying(property, false);
             }
         }
+
+        private DelayedSetter<AvaloniaProperty> delayedSetter = new DelayedSetter<AvaloniaProperty>();
 
         /// <summary>
         /// Sets the backing field for a direct avalonia property, raising the 
@@ -553,15 +557,28 @@ namespace Avalonia
         protected bool SetAndRaise<T>(AvaloniaProperty<T> property, ref T field, T value)
         {
             VerifyAccess();
-            if (!object.Equals(field, value))
+            if (!delayedSetter.IsNotifying(property))
             {
-                var old = field;
-                field = value;
-                RaisePropertyChanged(property, old, value, BindingPriority.LocalValue);
-                return true;
+                if (!object.Equals(field, value))
+                {
+                    var old = field;
+                    field = value;
+                    RaisePropertyChanged(property, old, value, BindingPriority.LocalValue);
+
+                    if (delayedSetter.HasPendingSet(property))
+                    {
+                        SetAndRaise(property, ref field, (T)delayedSetter.GetFirstPendingSet(property));
+                    }
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
             }
             else
             {
+                delayedSetter.RecordPendingSet(property, value);
                 return false;
             }
         }
