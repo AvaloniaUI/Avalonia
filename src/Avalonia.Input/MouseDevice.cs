@@ -20,6 +20,8 @@ namespace Avalonia.Input
         private int _clickCount;
         private Rect _lastClickRect;
         private uint _lastClickTime;
+        private IInputElement _captured;
+        private IDisposable _capturedSubscription;
        
         /// <summary>
         /// Gets the control that is currently capturing by the mouse, if any.
@@ -31,8 +33,23 @@ namespace Avalonia.Input
         /// </remarks>
         public IInputElement Captured
         {
-            get;
-            protected set;
+            get => _captured;
+            protected set
+            {
+                _capturedSubscription?.Dispose();
+                _capturedSubscription = null;
+
+                if (value != null)
+                {
+                    _capturedSubscription = Observable.FromEventPattern<VisualTreeAttachmentEventArgs>(
+                        x => value.DetachedFromVisualTree += x,
+                        x => value.DetachedFromVisualTree -= x)
+                        .Take(1)
+                        .Subscribe(_ => Captured = null);
+                }
+
+                _captured = value;
+            }
         }
         
         /// <summary>
@@ -55,6 +72,7 @@ namespace Avalonia.Input
         /// </remarks>
         public virtual void Capture(IInputElement control)
         {
+            // TODO: Check visibility and enabled state before setting capture.
             Captured = control;
         }
 

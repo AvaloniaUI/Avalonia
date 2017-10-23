@@ -33,9 +33,13 @@ namespace Avalonia.Rendering
         /// Hit tests a location to find the visuals at the specified point.
         /// </summary>
         /// <param name="p">The point, in client coordinates.</param>
-        /// <param name="filter">An optional filter.</param>
+        /// <param name="root">The root of the subtree to search.</param>
+        /// <param name="filter">
+        /// A filter predicate. If the predicate returns false then the visual and all its
+        /// children will be excluded from the results.
+        /// </param>
         /// <returns>The visuals at the specified point, topmost first.</returns>
-        IEnumerable<IVisual> HitTest(Point p, Func<IVisual, bool> filter);
+        IEnumerable<IVisual> HitTest(Point p, IVisual root, Func<IVisual, bool> filter);
 
         /// <summary>
         /// Called when a resize notification is received by the control being rendered.

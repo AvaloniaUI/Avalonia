@@ -19,6 +19,7 @@ namespace Avalonia.Gtk3
 
         public PopupImpl() : base(CreateWindow())
         {
+            OverrideRedirect = true;
         }
     }
 }

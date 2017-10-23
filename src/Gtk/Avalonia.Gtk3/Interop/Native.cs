@@ -48,10 +48,13 @@ namespace Avalonia.Gtk3.Interop
             public delegate void gtk_main_iteration();
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
-            public delegate GtkWindow gtk_window_new(GtkWindowType windowType);
-
+            public delegate GtkWindow gtk_window_new(GtkWindowType windowType);           
+            
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
             public delegate IntPtr gtk_init(int argc, IntPtr argv);
+            
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk, optional: true)]
+            public delegate IntPtr gdk_set_allowed_backends (Utf8Buffer backends);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
             public delegate void gtk_window_present(GtkWindow gtkWindow);
@@ -102,6 +105,9 @@ namespace Avalonia.Gtk3.Interop
             
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
             public delegate void gdk_window_resize(IntPtr gtkWindow, int width, int height);
+            
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
+            public delegate void gdk_window_set_override_redirect(IntPtr gdkWindow, bool value);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
             public delegate void gtk_widget_realize(GtkWidget gtkWidget);
@@ -390,6 +396,7 @@ namespace Avalonia.Gtk3.Interop
         public static D.gtk_window_new GtkWindowNew;
         public static D.gtk_window_set_icon GtkWindowSetIcon;
         public static D.gtk_window_set_modal GtkWindowSetModal;
+        public static D.gdk_set_allowed_backends GdkSetAllowedBackends;
         public static D.gtk_init GtkInit;
         public static D.gtk_window_present GtkWindowPresent;
         public static D.gtk_widget_hide GtkWidgetHide;
@@ -402,6 +409,7 @@ namespace Avalonia.Gtk3.Interop
         public static D.gtk_window_get_size GtkWindowGetSize;
         public static D.gtk_window_resize GtkWindowResize;
         public static D.gdk_window_resize GdkWindowResize;
+        public static D.gdk_window_set_override_redirect GdkWindowSetOverrideRedirect;
         public static D.gtk_widget_set_size_request GtkWindowSetSizeRequest;
         public static D.gtk_window_set_default_size GtkWindowSetDefaultSize;
         public static D.gtk_window_get_position GtkWindowGetPosition;

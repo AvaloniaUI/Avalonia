@@ -1,4 +1,4 @@
-<Styles xmlns="https://github.com/avaloniaui">
+<Styles xmlns="https://github.com/avaloniaui"  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <Style Selector="TabControl">
     <Setter Property="Template">
       <ControlTemplate>
@@ -7,11 +7,11 @@
                 BorderThickness="{TemplateBinding BorderThickness}">
           <DockPanel>
             <TabStrip Name="PART_TabStrip"
-                      MemberSelector="{Static TabControl.HeaderSelector}"
+                      MemberSelector="{x:Static TabControl.HeaderSelector}"
                       Items="{TemplateBinding Items}"
                       SelectedIndex="{TemplateBinding Path=SelectedIndex, Mode=TwoWay}"/>
             <Carousel Name="PART_Content"
-                      MemberSelector="{Static TabControl.ContentSelector}"
+                      MemberSelector="{x:Static TabControl.ContentSelector}"
                       Items="{TemplateBinding Items}"
                       SelectedIndex="{TemplateBinding Path=SelectedIndex}"
                       Transition="{TemplateBinding Transition}"

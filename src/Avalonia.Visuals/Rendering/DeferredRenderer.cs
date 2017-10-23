@@ -106,7 +106,7 @@ namespace Avalonia.Rendering
         public void Dispose() => Stop();
 
         /// <inheritdoc/>
-        public IEnumerable<IVisual> HitTest(Point p, Func<IVisual, bool> filter)
+        public IEnumerable<IVisual> HitTest(Point p, IVisual root, Func<IVisual, bool> filter)
         {
             if (_renderLoop == null && (_dirty == null || _dirty.Count > 0))
             {
@@ -114,7 +114,7 @@ namespace Avalonia.Rendering
                 UpdateScene();
             }
 
-            return _scene?.HitTest(p, filter) ?? Enumerable.Empty<IVisual>();
+            return _scene?.HitTest(p, root, filter) ?? Enumerable.Empty<IVisual>();
         }
 
         /// <inheritdoc/>

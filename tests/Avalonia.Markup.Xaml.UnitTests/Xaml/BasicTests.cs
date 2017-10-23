@@ -609,8 +609,8 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         public void Multi_Xaml_Binding_Is_Parsed()
         {
             var xaml =
-@"<MultiBinding xmlns='https://github.com/avaloniaui'
-        Converter='{Static BoolConverters.And}'>
+@"<MultiBinding xmlns='https://github.com/avaloniaui' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+    Converter ='{x:Static BoolConverters.And}'>
      <Binding Path='Foo' />
      <Binding Path='Bar' />
 </MultiBinding>";
@@ -818,10 +818,11 @@ do we need it?")]
         {
             var xaml =
 @"<ContentControl xmlns='https://github.com/avaloniaui'
+            xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
             xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'>
     <ContentControl.ContentTemplate>
         <DataTemplate>
-            <TextBlock  Tag='{Static local:NonControl.StringProperty}'/>
+            <TextBlock  Tag='{x:Static local:NonControl.StringProperty}'/>
         </DataTemplate>
     </ContentControl.ContentTemplate>
 </ContentControl>";

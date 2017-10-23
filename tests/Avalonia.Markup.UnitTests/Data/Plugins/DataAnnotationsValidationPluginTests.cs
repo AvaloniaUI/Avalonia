@@ -49,6 +49,8 @@ namespace Avalonia.Markup.UnitTests.Data.Plugins
             var accessor = inpcAccessorPlugin.Start(new WeakReference(data), nameof(data.Between5And10));
             var validator = validatorPlugin.Start(new WeakReference(data), nameof(data.Between5And10), accessor);
             var result = new List<object>();
+            
+            var errmsg = new RangeAttribute(5, 10).FormatErrorMessage(nameof(Data.Between5And10));
 
             validator.Subscribe(x => result.Add(x));
             validator.SetValue(3, BindingPriority.LocalValue);
@@ -59,12 +61,12 @@ namespace Avalonia.Markup.UnitTests.Data.Plugins
             {
                 new BindingNotification(5),
                 new BindingNotification(
-                    new ValidationException("The field Between5And10 must be between 5 and 10."),
+                    new ValidationException(errmsg),
                     BindingErrorType.DataValidationError,
                     3),
                 new BindingNotification(7),
                 new BindingNotification(
-                    new ValidationException("The field Between5And10 must be between 5 and 10."),
+                    new ValidationException(errmsg),
                     BindingErrorType.DataValidationError,
                     11),
             }, result);

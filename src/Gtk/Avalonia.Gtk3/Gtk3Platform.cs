@@ -35,6 +35,9 @@ namespace Avalonia.Gtk3
                     X11.XInitThreads();
                 }catch{}
                 Resolver.Resolve();
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                    using (var backends = new Utf8Buffer("x11"))
+                        Native.GdkSetAllowedBackends?.Invoke(backends);
                 Native.GtkInit(0, IntPtr.Zero);
                 var disp = Native.GdkGetDefaultDisplay();
                 DisplayClassName =
