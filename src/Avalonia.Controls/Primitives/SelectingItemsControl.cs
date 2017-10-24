@@ -183,30 +183,46 @@ namespace Avalonia.Controls.Primitives
             {
                 if (_updateCount == 0)
                 {
-                    var old = SelectedItem;
-                    var index = IndexOf(Items, value);
-                    var effective = index != -1 ? value : null;
-
-                    if (!object.Equals(effective, old))
+                    if (!directDelayedSetter.IsNotifying(SelectedItemProperty))
                     {
-                        _selectedItem = effective;
-                        RaisePropertyChanged(SelectedItemProperty, old, effective, BindingPriority.LocalValue);
-                        SelectedIndex = index;
+                        var old = SelectedItem;
+                        var index = IndexOf(Items, value);
+                        var effective = index != -1 ? value : null;
 
-                        if (effective != null)
+                        if (!object.Equals(effective, old))
                         {
-                            if (SelectedItems.Count != 1 || SelectedItems[0] != effective)
+                            _selectedItem = effective;
+                            using (directDelayedSetter.MarkNotifying(SelectedItemProperty))
                             {
-                                _syncingSelectedItems = true;
-                                SelectedItems.Clear();
-                                SelectedItems.Add(effective);
-                                _syncingSelectedItems = false;
+                                RaisePropertyChanged(SelectedItemProperty, old, effective, BindingPriority.LocalValue);
                             }
-                        }
-                        else if (SelectedItems.Count > 0)
-                        {
-                            SelectedItems.Clear();
-                        }
+
+                            SelectedIndex = index;
+
+                            if (effective != null)
+                            {
+                                if (SelectedItems.Count != 1 || SelectedItems[0] != effective)
+                                {
+                                    _syncingSelectedItems = true;
+                                    SelectedItems.Clear();
+                                    SelectedItems.Add(effective);
+                                    _syncingSelectedItems = false;
+                                }
+                            }
+                            else if (SelectedItems.Count > 0)
+                            {
+                                SelectedItems.Clear();
+                            }
+
+                            if (directDelayedSetter.HasPendingSet(SelectedItemProperty))
+                            {
+                                SelectedItem = directDelayedSetter.GetFirstPendingSet(SelectedItemProperty);
+                            }
+                        } 
+                    }
+                    else
+                    {
+                        directDelayedSetter.AddPendingSet(SelectedItemProperty, value);
                     }
                 }
                 else

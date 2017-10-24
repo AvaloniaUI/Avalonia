@@ -52,6 +52,12 @@ namespace Avalonia
         private EventHandler<AvaloniaPropertyChangedEventArgs> _propertyChanged;
 
         /// <summary>
+        /// Delayed setter helper for direct properties. Used to fix #855.
+        /// </summary>
+        protected readonly DelayedSetter<AvaloniaProperty, object> directDelayedSetter = new DelayedSetter<AvaloniaProperty, object>();
+
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="AvaloniaObject"/> class.
         /// </summary>
         public AvaloniaObject()
@@ -510,7 +516,6 @@ namespace Avalonia
         {
             Contract.Requires<ArgumentNullException>(property != null);
             VerifyAccess();
-            delayedSetter.SetNotifying(property, true);
 
             AvaloniaPropertyChangedEventArgs e = new AvaloniaPropertyChangedEventArgs(
                 this,
@@ -537,11 +542,8 @@ namespace Avalonia
             finally
             {
                 property.Notifying?.Invoke(this, false);
-                delayedSetter.SetNotifying(property, false);
             }
         }
-
-        private DelayedSetter<AvaloniaProperty> delayedSetter = new DelayedSetter<AvaloniaProperty>();
 
         /// <summary>
         /// Sets the backing field for a direct avalonia property, raising the 
@@ -557,17 +559,21 @@ namespace Avalonia
         protected bool SetAndRaise<T>(AvaloniaProperty<T> property, ref T field, T value)
         {
             VerifyAccess();
-            if (!delayedSetter.IsNotifying(property))
+            if (!directDelayedSetter.IsNotifying(property))
             {
                 if (!object.Equals(field, value))
                 {
                     var old = field;
                     field = value;
-                    RaisePropertyChanged(property, old, value, BindingPriority.LocalValue);
-
-                    if (delayedSetter.HasPendingSet(property))
+                    
+                    using (directDelayedSetter.MarkNotifying(property))
                     {
-                        SetAndRaise(property, ref field, (T)delayedSetter.GetFirstPendingSet(property));
+                        RaisePropertyChanged(property, old, value, BindingPriority.LocalValue); 
+                    }
+
+                    if (directDelayedSetter.HasPendingSet(property))
+                    {
+                        SetAndRaise(property, ref field, (T)directDelayedSetter.GetFirstPendingSet(property));
                     }
                     return true;
                 }
@@ -578,7 +584,7 @@ namespace Avalonia
             }
             else
             {
-                delayedSetter.RecordPendingSet(property, value);
+                directDelayedSetter.AddPendingSet(property, value);
                 return false;
             }
         }
