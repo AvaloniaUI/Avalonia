@@ -595,7 +595,7 @@ namespace Avalonia
         }
 
         protected void SetAndRaise<T>(AvaloniaProperty<T> property, Action<T, Action<Action>> setterCallback, T value, Predicate<T> pendingSetCondition = null)
-            => directDelayedSetter.SetAndNotify(property, (val, notify) => setterCallback((T)val, notify), value, o => pendingSetCondition((T)o));
+            => directDelayedSetter.SetAndNotify(property, (val, notify) => setterCallback((T)val, notify), value, o => pendingSetCondition?.Invoke((T)o) ?? true);
 
         /// <summary>
         /// Tries to cast a value to a type, taking into account that the value may be a
