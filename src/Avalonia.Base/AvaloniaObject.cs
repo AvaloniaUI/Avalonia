@@ -54,7 +54,7 @@ namespace Avalonia
         /// <summary>
         /// Delayed setter helper for direct properties. Used to fix #855.
         /// </summary>
-        protected readonly DelayedSetter<AvaloniaProperty, object> directDelayedSetter = new DelayedSetter<AvaloniaProperty, object>();
+        private readonly DelayedSetter<AvaloniaProperty, object> directDelayedSetter = new DelayedSetter<AvaloniaProperty, object>();
 
 
         /// <summary>
@@ -586,6 +586,30 @@ namespace Avalonia
             {
                 directDelayedSetter.AddPendingSet(property, value);
                 return false;
+            }
+        }
+
+        protected void SetAndRaise<T>(AvaloniaProperty<T> property, Action<T, Action<Action>> setterCallback, T value, Action<T> delayedSet)
+        {
+            Contract.Requires<ArgumentNullException>(setterCallback != null);
+            Contract.Requires<ArgumentNullException>(delayedSet != null);
+            if (!directDelayedSetter.IsNotifying(property))
+            {
+                setterCallback(value, notification => 
+                {
+                    using (directDelayedSetter.MarkNotifying(property))
+                    {
+                        notification();
+                    }
+                });
+                if (directDelayedSetter.HasPendingSet(property))
+                {
+                    delayedSet((T)directDelayedSetter.GetFirstPendingSet(property));
+                }
+            }
+            else
+            {
+                directDelayedSetter.AddPendingSet(property, value);
             }
         }
 

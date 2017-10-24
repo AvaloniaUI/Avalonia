@@ -151,7 +151,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             //here in real life stack overflow exception is thrown issue #855 and #824
             target.Value = 51.001;
 
-            Assert.Equal(2, viewModel.SetterInvokedCount);
+            Assert.Equal(3, viewModel.SetterInvokedCount);
 
             double expected = 51;
 

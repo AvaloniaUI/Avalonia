@@ -151,15 +151,18 @@ namespace Avalonia.Controls.Primitives
             {
                 if (_updateCount == 0)
                 {
-                    var old = SelectedIndex;
-                    var effective = (value >= 0 && value < Items?.Cast<object>().Count()) ? value : -1;
-
-                    if (old != effective)
+                    SetAndRaise(SelectedIndexProperty, (val, notifierWrapper) =>
                     {
-                        _selectedIndex = effective;
-                        RaisePropertyChanged(SelectedIndexProperty, old, effective, BindingPriority.LocalValue);
-                        SelectedItem = ElementAt(Items, effective);
-                    }
+                        var old = SelectedIndex;
+                        var effective = (val >= 0 && val < Items?.Cast<object>().Count()) ? val : -1;
+
+                        if (old != effective)
+                        {
+                            _selectedIndex = effective;
+                            notifierWrapper(() => RaisePropertyChanged(SelectedIndexProperty, old, effective, BindingPriority.LocalValue));
+                            SelectedItem = ElementAt(Items, effective);
+                        }
+                    }, value, val => SelectedIndex = val);
                 }
                 else
                 {
@@ -183,19 +186,17 @@ namespace Avalonia.Controls.Primitives
             {
                 if (_updateCount == 0)
                 {
-                    if (!directDelayedSetter.IsNotifying(SelectedItemProperty))
+                    SetAndRaise(SelectedItemProperty, (val, notifyWrapper) =>
                     {
                         var old = SelectedItem;
-                        var index = IndexOf(Items, value);
-                        var effective = index != -1 ? value : null;
+                        var index = IndexOf(Items, val);
+                        var effective = index != -1 ? val : null;
 
                         if (!object.Equals(effective, old))
                         {
                             _selectedItem = effective;
-                            using (directDelayedSetter.MarkNotifying(SelectedItemProperty))
-                            {
-                                RaisePropertyChanged(SelectedItemProperty, old, effective, BindingPriority.LocalValue);
-                            }
+
+                            notifyWrapper(() => RaisePropertyChanged(SelectedItemProperty, old, effective, BindingPriority.LocalValue));
 
                             SelectedIndex = index;
 
@@ -213,17 +214,8 @@ namespace Avalonia.Controls.Primitives
                             {
                                 SelectedItems.Clear();
                             }
-
-                            if (directDelayedSetter.HasPendingSet(SelectedItemProperty))
-                            {
-                                SelectedItem = directDelayedSetter.GetFirstPendingSet(SelectedItemProperty);
-                            }
-                        } 
-                    }
-                    else
-                    {
-                        directDelayedSetter.AddPendingSet(SelectedItemProperty, value);
-                    }
+                        }
+                    }, value, val => SelectedItem = val);
                 }
                 else
                 {
