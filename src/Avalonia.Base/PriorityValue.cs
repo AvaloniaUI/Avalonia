@@ -235,75 +235,56 @@ namespace Avalonia
         /// <param name="priority">The priority level that the value came from.</param>
         private void UpdateValue(object value, int priority)
         {
-            if (!delayedSetter.IsNotifying(this))
+            delayedSetter.SetAndNotify(this, (update, notify) =>
             {
-                value = UpdateValueCore(value, priority);
-
-                while (delayedSetter.HasPendingSet(this))
-                {
-                    var pendingSet = delayedSetter.GetFirstPendingSet(this);
-                    UpdateValueCore(pendingSet.value, pendingSet.priority);
-                }
-            }
-            else if(!object.Equals(value, _value))
-            {
-                delayedSetter.AddPendingSet(this, (value, priority));
-            }
-        }
-
-        private object UpdateValueCore(object value, int priority)
-        {
-            var notification = value as BindingNotification;
-            object castValue;
-
-            if (notification != null)
-            {
-                value = (notification.HasValue) ? notification.Value : null;
-            }
-
-            if (TypeUtilities.TryConvertImplicit(_valueType, value, out castValue))
-            {
-                var old = _value;
-
-                if (_validate != null && castValue != AvaloniaProperty.UnsetValue)
-                {
-                    castValue = _validate(castValue);
-                }
-
-                ValuePriority = priority;
-                _value = castValue;
-
-                if (notification?.HasValue == true)
-                {
-                    notification.SetValue(castValue);
-                }
-
-                if (notification == null || notification.HasValue)
-                {
-                    using (delayedSetter.MarkNotifying(this))
-                    {
-                        Owner?.Changed(this, old, _value);
-                    }
-                }
+                var val = update.value;
+                var notification = val as BindingNotification;
+                object castValue;
 
                 if (notification != null)
                 {
-                    Owner?.BindingNotificationReceived(this, notification);
+                    val = (notification.HasValue) ? notification.Value : null;
                 }
-            }
-            else
-            {
-                Logger.Error(
-                    LogArea.Binding,
-                    Owner,
-                    "Binding produced invalid value for {$Property} ({$PropertyType}): {$Value} ({$ValueType})",
-                    Property.Name,
-                    _valueType,
-                    value,
-                    value?.GetType());
-            }
 
-            return value;
+                if (TypeUtilities.TryConvertImplicit(_valueType, val, out castValue))
+                {
+                    var old = _value;
+
+                    if (_validate != null && castValue != AvaloniaProperty.UnsetValue)
+                    {
+                        castValue = _validate(castValue);
+                    }
+
+                    ValuePriority = priority;
+                    _value = castValue;
+
+                    if (notification?.HasValue == true)
+                    {
+                        notification.SetValue(castValue);
+                    }
+
+                    if (notification == null || notification.HasValue)
+                    {
+                        notify(() => Owner?.Changed(this, old, _value));
+                    }
+
+                    if (notification != null)
+                    {
+                        Owner?.BindingNotificationReceived(this, notification);
+                    }
+                }
+                else
+                {
+                    Logger.Error(
+                        LogArea.Binding,
+                        Owner,
+                        "Binding produced invalid value for {$Property} ({$PropertyType}): {$Value} ({$ValueType})",
+                        Property.Name,
+                        _valueType,
+                        val,
+                        val?.GetType());
+                }
+            }, (value, priority), val => !object.Equals(val.value, _value));
         }
     }
 }

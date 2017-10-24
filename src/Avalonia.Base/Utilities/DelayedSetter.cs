@@ -58,7 +58,7 @@ namespace Avalonia.Utilities
             return setRecords[property].PendingValues.Dequeue();
         }
 
-        public void SetAndNotify(T property, Action<TValue, Action<Action>> setterCallback, TValue value)
+        public void SetAndNotify(T property, Action<TValue, Action<Action>> setterCallback, TValue value, Predicate<TValue> pendingSetCondition)
         {
             Contract.Requires<ArgumentNullException>(setterCallback != null);
             if (!IsNotifying(property))
@@ -81,10 +81,13 @@ namespace Avalonia.Utilities
                     });
                 }
             }
-            else
+            else if(pendingSetCondition?.Invoke(value) ?? true)
             {
                 AddPendingSet(property, value);
             }
         }
+
+        public void SetAndNotify(T property, Action<TValue, Action<Action>> setterCallback, TValue value)
+            => SetAndNotify(property, setterCallback, value, null);
     }
 }
