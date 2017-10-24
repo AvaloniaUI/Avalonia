@@ -86,8 +86,5 @@ namespace Avalonia.Utilities
                 AddPendingSet(property, value);
             }
         }
-
-        public void SetAndNotify(T property, Action<TValue, Action<Action>> setterCallback, TValue value)
-            => SetAndNotify(property, setterCallback, value, null);
     }
 }
