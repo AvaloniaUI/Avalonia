@@ -561,16 +561,20 @@ namespace Avalonia
             VerifyAccess();
             if (!directDelayedSetter.IsNotifying(property))
             {
+                var valueChanged = false;
                 if (!object.Equals(field, value))
                 {
                     SetAndRaiseCore(property, ref field, value);
 
-                    while (directDelayedSetter.HasPendingSet(property))
-                    {
-                        SetAndRaiseCore(property, ref field, (T)directDelayedSetter.GetFirstPendingSet(property));
-                    }
-                    return true;
+                    valueChanged = true;
                 }
+
+                while (directDelayedSetter.HasPendingSet(property))
+                {
+                    SetAndRaiseCore(property, ref field, (T)directDelayedSetter.GetFirstPendingSet(property));
+                    valueChanged = true;
+                }
+                return valueChanged;
             }
             else if(!object.Equals(field, value))
             {
