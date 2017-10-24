@@ -14,6 +14,7 @@ using Avalonia.Markup.Xaml.Data;
 using Avalonia.Platform;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
+using Avalonia.Diagnostics;
 using Microsoft.Reactive.Testing;
 using Moq;
 using Xunit;

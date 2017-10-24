@@ -590,28 +590,7 @@ namespace Avalonia
         }
 
         protected void SetAndRaise<T>(AvaloniaProperty<T> property, Action<T, Action<Action>> setterCallback, T value, Action<T> delayedSet)
-        {
-            Contract.Requires<ArgumentNullException>(setterCallback != null);
-            Contract.Requires<ArgumentNullException>(delayedSet != null);
-            if (!directDelayedSetter.IsNotifying(property))
-            {
-                setterCallback(value, notification => 
-                {
-                    using (directDelayedSetter.MarkNotifying(property))
-                    {
-                        notification();
-                    }
-                });
-                if (directDelayedSetter.HasPendingSet(property))
-                {
-                    delayedSet((T)directDelayedSetter.GetFirstPendingSet(property));
-                }
-            }
-            else
-            {
-                directDelayedSetter.AddPendingSet(property, value);
-            }
-        }
+            => directDelayedSetter.SetAndNotify(property, (val, notify) => setterCallback((T)val, notify), value, val => delayedSet((T)val));
 
         /// <summary>
         /// Tries to cast a value to a type, taking into account that the value may be a

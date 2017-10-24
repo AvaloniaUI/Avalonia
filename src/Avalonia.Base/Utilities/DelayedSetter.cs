@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Avalonia.Utilities
 {
-    public class DelayedSetter<T, TValue>
+    class DelayedSetter<T, TValue>
     {
         private class SettingStatus
         {
@@ -56,6 +56,30 @@ namespace Avalonia.Utilities
         public TValue GetFirstPendingSet(T property)
         {
             return setRecords[property].PendingValues.Dequeue();
+        }
+
+        public void SetAndNotify(T property, Action<TValue, Action<Action>> setterCallback, TValue value, Action<TValue> delayedSet)
+        {
+            Contract.Requires<ArgumentNullException>(setterCallback != null);
+            Contract.Requires<ArgumentNullException>(delayedSet != null);
+            if (!IsNotifying(property))
+            {
+                setterCallback(value, notification =>
+                {
+                    using (MarkNotifying(property))
+                    {
+                        notification();
+                    }
+                });
+                if (HasPendingSet(property))
+                {
+                    delayedSet(GetFirstPendingSet(property));
+                }
+            }
+            else
+            {
+                AddPendingSet(property, value);
+            }
         }
     }
 }
