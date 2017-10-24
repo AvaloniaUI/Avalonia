@@ -30,6 +30,7 @@ namespace Avalonia
         private readonly SingleOrDictionary<int, PriorityLevel> _levels = new SingleOrDictionary<int, PriorityLevel>();
         private object _value;
         private readonly Func<object, object> _validate;
+        private static readonly DelayedSetter<PriorityValue, (object value, int priority)> delayedSetter = new DelayedSetter<PriorityValue, (object, int)>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PriorityValue"/> class.
@@ -234,51 +235,67 @@ namespace Avalonia
         /// <param name="priority">The priority level that the value came from.</param>
         private void UpdateValue(object value, int priority)
         {
-            var notification = value as BindingNotification;
-            object castValue;
-
-            if (notification != null)
+            if (!delayedSetter.IsNotifying(this))
             {
-                value = (notification.HasValue) ? notification.Value : null;
-            }
-
-            if (TypeUtilities.TryConvertImplicit(_valueType, value, out castValue))
-            {
-                var old = _value;
-
-                if (_validate != null && castValue != AvaloniaProperty.UnsetValue)
-                {
-                    castValue = _validate(castValue);
-                }
-
-                ValuePriority = priority;
-                _value = castValue;
-
-                if (notification?.HasValue == true)
-                {
-                    notification.SetValue(castValue);
-                }
-
-                if (notification == null || notification.HasValue)
-                {
-                    Owner?.Changed(this, old, _value);
-                }
+                var notification = value as BindingNotification;
+                object castValue;
 
                 if (notification != null)
                 {
-                    Owner?.BindingNotificationReceived(this, notification);
+                    value = (notification.HasValue) ? notification.Value : null;
                 }
+
+                if (!object.Equals(value, _value) && TypeUtilities.TryConvertImplicit(_valueType, value, out castValue))
+                {
+                    var old = _value;
+
+                    if (_validate != null && castValue != AvaloniaProperty.UnsetValue)
+                    {
+                        castValue = _validate(castValue);
+                    }
+
+                    ValuePriority = priority;
+                    _value = castValue;
+
+                    if (notification?.HasValue == true)
+                    {
+                        notification.SetValue(castValue);
+                    }
+
+                    if (notification == null || notification.HasValue)
+                    {
+                        using (delayedSetter.MarkNotifying(this))
+                        {
+                            Owner?.Changed(this, old, _value); 
+                        }
+
+                        if (delayedSetter.HasPendingSet(this))
+                        {
+                            var pendingSet = delayedSetter.GetFirstPendingSet(this);
+                            UpdateValue(pendingSet.value, pendingSet.priority);
+                        }
+                    }
+
+                    if (notification != null)
+                    {
+                        Owner?.BindingNotificationReceived(this, notification);
+                    }
+                }
+                else
+                {
+                    Logger.Error(
+                        LogArea.Binding,
+                        Owner,
+                        "Binding produced invalid value for {$Property} ({$PropertyType}): {$Value} ({$ValueType})",
+                        Property.Name,
+                        _valueType,
+                        value,
+                        value?.GetType());
+                } 
             }
             else
             {
-                Logger.Error(
-                    LogArea.Binding, 
-                    Owner,
-                    "Binding produced invalid value for {$Property} ({$PropertyType}): {$Value} ({$ValueType})",
-                    Property.Name, 
-                    _valueType, 
-                    value,
-                    value?.GetType());
+                delayedSetter.AddPendingSet(this, (value, priority));
             }
         }
     }
