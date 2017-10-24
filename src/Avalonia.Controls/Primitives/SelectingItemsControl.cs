@@ -162,7 +162,7 @@ namespace Avalonia.Controls.Primitives
                             notifierWrapper(() => RaisePropertyChanged(SelectedIndexProperty, old, effective, BindingPriority.LocalValue));
                             SelectedItem = ElementAt(Items, effective);
                         }
-                    }, value, val => SelectedIndex = val);
+                    }, value);
                 }
                 else
                 {
@@ -215,7 +215,7 @@ namespace Avalonia.Controls.Primitives
                                 SelectedItems.Clear();
                             }
                         }
-                    }, value, val => SelectedItem = val);
+                    }, value);
                 }
                 else
                 {

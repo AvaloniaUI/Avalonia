@@ -399,12 +399,6 @@ namespace Avalonia.Base.UnitTests
 
             var target = new Class1();
 
-            //note: if the initialization of the child binding is here target/child binding work fine!!!
-            //var child = new Class1()
-            //{
-            //    [~~Class1.DoubleValueProperty] = target[~~Class1.DoubleValueProperty]
-            //};
-
             target.Bind(Class1.DoubleValueProperty,
                 new Binding("Value") { Mode = BindingMode.TwoWay, Source = viewModel });
 
@@ -429,7 +423,7 @@ namespace Avalonia.Base.UnitTests
             //here in real life stack overflow exception is thrown issue #855 and #824
             target.DoubleValue = 51.001;
 
-            Assert.Equal(3, viewModel.SetterInvokedCount);
+            Assert.Equal(2, viewModel.SetterInvokedCount);
 
             double expected = 51;
 

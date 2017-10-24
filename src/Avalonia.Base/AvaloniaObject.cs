@@ -563,34 +563,35 @@ namespace Avalonia
             {
                 if (!object.Equals(field, value))
                 {
-                    var old = field;
-                    field = value;
-                    
-                    using (directDelayedSetter.MarkNotifying(property))
-                    {
-                        RaisePropertyChanged(property, old, value, BindingPriority.LocalValue); 
-                    }
+                    SetAndRaiseCore(property, ref field, value);
 
-                    if (directDelayedSetter.HasPendingSet(property))
+                    while (directDelayedSetter.HasPendingSet(property))
                     {
-                        SetAndRaise(property, ref field, (T)directDelayedSetter.GetFirstPendingSet(property));
+                        SetAndRaiseCore(property, ref field, (T)directDelayedSetter.GetFirstPendingSet(property));
                     }
                     return true;
                 }
-                else
-                {
-                    return false;
-                }
             }
-            else
+            else if(!object.Equals(field, value))
             {
                 directDelayedSetter.AddPendingSet(property, value);
-                return false;
+            }
+            return false;
+        }
+
+        private void SetAndRaiseCore<T>(AvaloniaProperty<T> property, ref T field, T value)
+        {
+            var old = field;
+            field = value;
+
+            using (directDelayedSetter.MarkNotifying(property))
+            {
+                RaisePropertyChanged(property, old, value, BindingPriority.LocalValue);
             }
         }
 
-        protected void SetAndRaise<T>(AvaloniaProperty<T> property, Action<T, Action<Action>> setterCallback, T value, Action<T> delayedSet)
-            => directDelayedSetter.SetAndNotify(property, (val, notify) => setterCallback((T)val, notify), value, val => delayedSet((T)val));
+        protected void SetAndRaise<T>(AvaloniaProperty<T> property, Action<T, Action<Action>> setterCallback, T value)
+            => directDelayedSetter.SetAndNotify(property, (val, notify) => setterCallback((T)val, notify), value);
 
         /// <summary>
         /// Tries to cast a value to a type, taking into account that the value may be a

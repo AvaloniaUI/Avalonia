@@ -237,66 +237,73 @@ namespace Avalonia
         {
             if (!delayedSetter.IsNotifying(this))
             {
-                var notification = value as BindingNotification;
-                object castValue;
+                value = UpdateValueCore(value, priority);
 
-                if (notification != null)
+                while (delayedSetter.HasPendingSet(this))
                 {
-                    value = (notification.HasValue) ? notification.Value : null;
+                    var pendingSet = delayedSetter.GetFirstPendingSet(this);
+                    UpdateValueCore(pendingSet.value, pendingSet.priority);
                 }
-
-                if (!object.Equals(value, _value) && TypeUtilities.TryConvertImplicit(_valueType, value, out castValue))
-                {
-                    var old = _value;
-
-                    if (_validate != null && castValue != AvaloniaProperty.UnsetValue)
-                    {
-                        castValue = _validate(castValue);
-                    }
-
-                    ValuePriority = priority;
-                    _value = castValue;
-
-                    if (notification?.HasValue == true)
-                    {
-                        notification.SetValue(castValue);
-                    }
-
-                    if (notification == null || notification.HasValue)
-                    {
-                        using (delayedSetter.MarkNotifying(this))
-                        {
-                            Owner?.Changed(this, old, _value); 
-                        }
-
-                        if (delayedSetter.HasPendingSet(this))
-                        {
-                            var pendingSet = delayedSetter.GetFirstPendingSet(this);
-                            UpdateValue(pendingSet.value, pendingSet.priority);
-                        }
-                    }
-
-                    if (notification != null)
-                    {
-                        Owner?.BindingNotificationReceived(this, notification);
-                    }
-                }
-                else
-                {
-                    Logger.Error(
-                        LogArea.Binding,
-                        Owner,
-                        "Binding produced invalid value for {$Property} ({$PropertyType}): {$Value} ({$ValueType})",
-                        Property.Name,
-                        _valueType,
-                        value,
-                        value?.GetType());
-                } 
             }
-            else
+            else if(!object.Equals(value, _value))
             {
                 delayedSetter.AddPendingSet(this, (value, priority));
             }
+        }
+
+        private object UpdateValueCore(object value, int priority)
+        {
+            var notification = value as BindingNotification;
+            object castValue;
+
+            if (notification != null)
+            {
+                value = (notification.HasValue) ? notification.Value : null;
+            }
+
+            if (TypeUtilities.TryConvertImplicit(_valueType, value, out castValue))
+            {
+                var old = _value;
+
+                if (_validate != null && castValue != AvaloniaProperty.UnsetValue)
+                {
+                    castValue = _validate(castValue);
+                }
+
+                ValuePriority = priority;
+                _value = castValue;
+
+                if (notification?.HasValue == true)
+                {
+                    notification.SetValue(castValue);
+                }
+
+                if (notification == null || notification.HasValue)
+                {
+                    using (delayedSetter.MarkNotifying(this))
+                    {
+                        Owner?.Changed(this, old, _value);
+                    }
+                }
+
+                if (notification != null)
+                {
+                    Owner?.BindingNotificationReceived(this, notification);
+                }
+            }
+            else
+            {
+                Logger.Error(
+                    LogArea.Binding,
+                    Owner,
+                    "Binding produced invalid value for {$Property} ({$PropertyType}): {$Value} ({$ValueType})",
+                    Property.Name,
+                    _valueType,
+                    value,
+                    value?.GetType());
+            }
+
+            return value;
         }
     }
 }
