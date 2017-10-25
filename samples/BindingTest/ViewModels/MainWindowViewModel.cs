@@ -56,6 +56,33 @@ namespace BindingTest.ViewModels
 
         public ObservableCollection<TestItem> Items { get; }
         public ObservableCollection<TestItem> SelectedItems { get; }
+        
+        private TestItem _selectedItem;
+
+        public TestItem SelectedItem
+        {
+            get { return _selectedItem; }
+            set
+            {
+                this.RaiseAndSetIfChanged(ref _selectedItem, value);
+
+                if(_selectedItem != null)
+                {
+                    IsOpen = true;
+                }
+            }
+        }
+
+        private bool _isOpen;
+
+        public bool IsOpen
+        {
+            get { return _isOpen; }
+            set { this.RaiseAndSetIfChanged(ref _isOpen, value); }
+        }
+
+
+
         public ReactiveCommand ShuffleItems { get; }
 
         public string BooleanString
