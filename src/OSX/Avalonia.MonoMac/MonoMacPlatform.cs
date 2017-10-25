@@ -51,7 +51,8 @@ namespace Avalonia.MonoMac
         class ThreadHelper : NSObject
         {
             private readonly AutoResetEvent _event = new AutoResetEvent(false);
-            [Export("doNothing")]
+            private const string InitThreadingName = "initThreading";
+            [Export(InitThreadingName)]
             public void DoNothing()
             {
                 _event.Set();
@@ -60,7 +61,7 @@ namespace Avalonia.MonoMac
             public static void InitializeCocoaThreadingLocks()
             {
                 var helper = new ThreadHelper();
-                var thread = new NSThread(helper, Selector.FromHandle(Selector.GetHandle("doNothing")), new NSObject());
+                var thread = new NSThread(helper, Selector.FromHandle(Selector.GetHandle(InitThreadingName)), new NSObject());
                 thread.Start();
                 helper._event.WaitOne();
                 helper._event.Dispose();
@@ -126,7 +127,7 @@ namespace Avalonia
         {
             if (useDeferredRendering.HasValue)
                 MonoMac.MonoMacPlatform.UseDeferredRendering = useDeferredRendering.Value;
-            return builder.UseWindowingSubsystem(MonoMac.MonoMacPlatform.Initialize);
+            return builder.UseWindowingSubsystem(MonoMac.MonoMacPlatform.Initialize, "MonoMac");
         }
     }
 }
