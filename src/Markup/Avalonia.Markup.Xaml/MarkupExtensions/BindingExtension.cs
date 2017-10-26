@@ -103,7 +103,10 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             }
             else if (path.StartsWith("$"))
             {
-                var relativeSource = new RelativeSource();
+                var relativeSource = new RelativeSource
+                {
+                    Tree = TreeType.Logical
+                };
                 result.RelativeSource = relativeSource;
                 var dot = path.IndexOf('.');
                 string relativeSourceMode;

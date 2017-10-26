@@ -219,18 +219,9 @@ namespace Avalonia.Markup.Xaml.Data
         {
             Contract.Requires<ArgumentNullException>(target != null);
 
-            if (relativeSource.AncestorType == null)
-            {
-                return new ExpressionObserver(
-                    ControlLocator.Track(target, relativeSource.AncestorLevel - 1),
-                    path);
-            }
-            else
-            {
-                return new ExpressionObserver(
-                    ControlLocator.Track(target, relativeSource.AncestorType, relativeSource.AncestorLevel - 1),
-                    path); 
-            }
+            return new ExpressionObserver(
+                ControlLocator.Track(target, relativeSource.AncestorType != null ? relativeSource.Tree : TreeType.Logical, relativeSource.AncestorLevel - 1, relativeSource.AncestorType),
+                path);
         }
 
         private ExpressionObserver CreateSourceObserver(

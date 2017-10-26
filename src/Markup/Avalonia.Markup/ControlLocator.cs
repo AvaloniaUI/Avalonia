@@ -12,6 +12,21 @@ using Avalonia.VisualTree;
 namespace Avalonia.Markup
 {
     /// <summary>
+    /// The type of tree via which to track a control.
+    /// </summary>
+    public enum TreeType
+    {
+        /// <summary>
+        /// The visual tree.
+        /// </summary>
+        Visual,
+        /// <summary>
+        /// The logical tree.
+        /// </summary>
+        Logical,
+    }
+
+    /// <summary>
     /// Locates controls relative to other controls.
     /// </summary>
     public static class ControlLocator
@@ -68,12 +83,44 @@ namespace Avalonia.Markup
         /// <param name="relativeTo">
         /// The control relative from which the other control should be found.
         /// </param>
-        /// <param name="ancestorType">The type of the ancestor to find.</param>
+        /// <param name="tree">The tree via which to track the control.</param>
         /// <param name="ancestorLevel">
         /// The level of ancestor control to look for. Use 0 for the first ancestor of the
         /// requested type.
         /// </param>
-        public static IObservable<IControl> Track(IControl relativeTo, Type ancestorType, int ancestorLevel)
+        /// <param name="ancestorType">The type of the ancestor to find.</param>
+        public static IObservable<IControl> Track(IControl relativeTo, TreeType tree, int ancestorLevel, Type ancestorType = null)
+        {
+            return TrackAttachmentToTree(relativeTo, tree).Select(isAttachedToTree =>
+            {
+                if (isAttachedToTree)
+                {
+                    if (tree == TreeType.Visual)
+                    {
+                        return relativeTo.GetVisualAncestors()
+                            .Where(x => ancestorType?.GetTypeInfo().IsAssignableFrom(x.GetType().GetTypeInfo()) ?? true)
+                            .ElementAtOrDefault(ancestorLevel) as IControl; 
+                    }
+                    else
+                    {
+                        return relativeTo.GetLogicalAncestors()
+                            .Where(x => ancestorType?.GetTypeInfo().IsAssignableFrom(x.GetType().GetTypeInfo()) ?? true)
+                            .ElementAtOrDefault(ancestorLevel) as IControl;
+                    }
+                }
+                else
+                {
+                    return null;
+                }
+            });
+        }
+
+        private static IObservable<bool> TrackAttachmentToTree(IControl relativeTo, TreeType tree)
+        {
+            return tree == TreeType.Visual ? TrackAttachmentToVisualTree(relativeTo) : TrackAttachmentToLogicalTree(relativeTo);
+        }
+
+        private static IObservable<bool> TrackAttachmentToVisualTree(IControl relativeTo)
         {
             var attached = Observable.FromEventPattern<VisualTreeAttachmentEventArgs>(
                 x => relativeTo.AttachedToVisualTree += x,
@@ -86,32 +133,11 @@ namespace Avalonia.Markup
                 x => relativeTo.DetachedFromVisualTree -= x)
                 .Select(x => false);
 
-            return attached.Merge(detached).Select(isAttachedToVisualTree =>
-            {
-                if (isAttachedToVisualTree)
-                {
-                    return relativeTo.GetVisualAncestors()
-                        .Where(x => ancestorType.GetTypeInfo().IsAssignableFrom(x.GetType().GetTypeInfo()))
-                        .ElementAtOrDefault(ancestorLevel) as IControl;
-                }
-                else
-                {
-                    return null;
-                }
-            });
+            var attachmentStatus = attached.Merge(detached);
+            return attachmentStatus;
         }
 
-        /// <summary>
-        /// Tracks a typed logical ancestor control.
-        /// </summary>
-        /// <param name="relativeTo">
-        /// The control relative from which the other control should be found.
-        /// </param>
-        /// <param name="ancestorLevel">
-        /// The level of ancestor control to look for. Use 0 for the first ancestor of the
-        /// requested type.
-        /// </param>
-        public static IObservable<IControl> Track(IControl relativeTo, int ancestorLevel)
+        private static IObservable<bool> TrackAttachmentToLogicalTree(IControl relativeTo)
         {
             var attached = Observable.FromEventPattern<LogicalTreeAttachmentEventArgs>(
                 x => relativeTo.AttachedToLogicalTree += x,
@@ -124,18 +150,8 @@ namespace Avalonia.Markup
                 x => relativeTo.DetachedFromLogicalTree += x)
                 .Select(x => false);
 
-            return attached.Merge(detached).Select(isAttachedToLogicalTree =>
-            {
-                if (isAttachedToLogicalTree)
-                {
-                    return relativeTo.GetLogicalAncestors()
-                        .ElementAtOrDefault(ancestorLevel) as IControl;
-                }
-                else
-                {
-                    return null;
-                }
-            });
+            var attachmentStatus = attached.Merge(detached);
+            return attachmentStatus;
         }
     }
 }
