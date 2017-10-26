@@ -128,7 +128,6 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
                 else if (relativeSourceMode == "parent")
                 {
                     relativeSource.Mode = RelativeSourceMode.FindAncestor;
-                    relativeSource.AncestorType = typeof(IControl);
                     relativeSource.AncestorLevel = 1;
                 }
                 else if (relativeSourceMode.StartsWith("parent["))

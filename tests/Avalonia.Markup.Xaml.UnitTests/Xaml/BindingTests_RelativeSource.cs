@@ -152,7 +152,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
                 // This isn't needed in `Binding_To_First_Ancestor_Without_AncestorType_Uses_LogicalTree` -
                 // why is it needed to get non-null value here?
-                contentControl.ApplyTemplate();
+                //contentControl.ApplyTemplate();
 
                 Assert.Equal("contentControl", button.Content);
             }
