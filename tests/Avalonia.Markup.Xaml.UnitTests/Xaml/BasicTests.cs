@@ -411,8 +411,8 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 var xaml = @"
 <Styles xmlns='https://github.com/avaloniaui'>
   <Style Selector='CheckBox'>
-    <Setter Property='BorderBrush' Value='{StyleResource ThemeBorderMidBrush}'/>
-    <Setter Property='BorderThickness' Value='{StyleResource ThemeBorderThickness}'/>
+    <Setter Property='BorderBrush' Value='{DynamicResource ThemeBorderMidBrush}'/>
+    <Setter Property='BorderThickness' Value='{DynamicResource ThemeBorderThickness}'/>
     <Setter Property='Template'>
       <ControlTemplate>
         <Grid ColumnDefinitions='Auto,*'>
@@ -423,7 +423,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                   Height='18'
                   VerticalAlignment='Center'>
             <Path Name='checkMark'
-                  Fill='{StyleResource HighlightBrush}'
+                  Fill='{StaticResource HighlightBrush}'
                   Width='11'
                   Height='10'
                   Stretch='Uniform'
@@ -457,8 +457,6 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 Assert.Equal(CheckBox.BorderThicknessProperty, setters[1].Property);
                 Assert.Equal(CheckBox.TemplateProperty, setters[2].Property);
 
-                Assert.IsType<StyleResourceBinding>(setters[0].Value);
-                Assert.IsType<StyleResourceBinding>(setters[1].Value);
                 Assert.IsType<ControlTemplate>(setters[2].Value);
             }
         }
@@ -772,15 +770,8 @@ do we need it?")]
 <Window xmlns='https://github.com/avaloniaui'
                 xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
                 xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'>
-    <Window.Styles>
-        <Style>
-            <Style.Resources>
-                <x:Double x:Key='Double'>100</x:Double>
-            </Style.Resources>
-        </Style>
-    </Window.Styles>
-    <local:InitializationOrderTracker Width='100' Height='{StyleResource Double}'
-                     Tag='{Binding Height, RelativeSource={RelativeSource Self}}' />
+    <local:InitializationOrderTracker Width='100' Height='100'
+        Tag='{Binding Height, RelativeSource={RelativeSource Self}}' />
 </Window>";
 
 

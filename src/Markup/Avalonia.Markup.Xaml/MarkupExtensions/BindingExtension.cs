@@ -7,8 +7,13 @@ using System;
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions
 {
+    using Avalonia.Controls;
+    using Avalonia.Styling;
+    using Portable.Xaml;
+    using Portable.Xaml.ComponentModel;
     using Portable.Xaml.Markup;
     using PortableXaml;
+    using System.ComponentModel;
 
     [MarkupExtensionReturnType(typeof(IBinding))]
     public class BindingExtension : MarkupExtension
@@ -24,7 +29,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
 
         public override object ProvideValue(IServiceProvider serviceProvider)
         {
-            var b = new Binding
+            return new Binding
             {
                 Converter = Converter,
                 ConverterParameter = ConverterParameter,
@@ -33,10 +38,26 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
                 Mode = Mode,
                 Path = Path,
                 Priority = Priority,
-                RelativeSource = RelativeSource
+                RelativeSource = RelativeSource,
+                DefaultAnchor = new WeakReference(GetDefaultAnchor((ITypeDescriptorContext)serviceProvider))
             };
+        }
 
-            return XamlBinding.FromMarkupExtensionContext(b, serviceProvider);
+
+        private static object GetDefaultAnchor(ITypeDescriptorContext context)
+        {
+            object anchor = null;
+
+            // The target is not a control, so we need to find an anchor that will let us look
+            // up named controls and style resources. First look for the closest IControl in
+            // the context.
+            anchor = context.GetFirstAmbientValue<IControl>();
+
+            // If a control was not found, then try to find the highest-level style as the XAML
+            // file could be a XAML file containing only styles.
+            return anchor ??
+                    context.GetService<IRootObjectProvider>()?.RootObject as IStyle ??
+                    context.GetLastOrDefaultAmbientValue<IStyle>();
         }
 
         public IValueConverter Converter { get; set; }
