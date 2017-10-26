@@ -107,7 +107,6 @@ public class Packages
         context.Information("Setting NuGet package dependencies versions:");
 
         var SerilogVersion = packageVersions["Serilog"].FirstOrDefault().Item1;
-        var SplatVersion = packageVersions["Splat"].FirstOrDefault().Item1;
         var SpracheVersion = packageVersions["Sprache"].FirstOrDefault().Item1;
         var SystemReactiveVersion = packageVersions["System.Reactive"].FirstOrDefault().Item1;
         var ReactiveUIVersion = packageVersions["reactiveui"].FirstOrDefault().Item1;
@@ -121,7 +120,6 @@ public class Packages
         var SharpDXDXGIVersion = packageVersions["SharpDX.DXGI"].FirstOrDefault().Item1;
 
         context.Information("Package: Serilog, version: {0}", SerilogVersion);
-        context.Information("Package: Splat, version: {0}", SplatVersion);
         context.Information("Package: Sprache, version: {0}", SpracheVersion);
         context.Information("Package: System.Reactive, version: {0}", SystemReactiveVersion);
         context.Information("Package: reactiveui, version: {0}", ReactiveUIVersion);
@@ -245,7 +243,6 @@ public class Packages
                 Dependencies = new DependencyBuilder(this)
                 {
                     new NuSpecDependency() { Id = "Serilog", Version = SerilogVersion },
-                    new NuSpecDependency() { Id = "Splat", Version = SplatVersion },
                     new NuSpecDependency() { Id = "Sprache", Version = SpracheVersion },
                     new NuSpecDependency() { Id = "System.Reactive", Version = SystemReactiveVersion },
                     new NuSpecDependency() { Id = "Avalonia.Remote.Protocol", Version = parameters.Version },
@@ -253,7 +250,6 @@ public class Packages
                     new NuSpecDependency() { Id = "System.Threading.ThreadPool", TargetFramework = "netcoreapp2.0", Version = "4.3.0" },
                     new NuSpecDependency() { Id = "Microsoft.Extensions.DependencyModel", TargetFramework = "netcoreapp2.0", Version = "1.1.0" },
                     new NuSpecDependency() { Id = "NETStandard.Library", TargetFramework = "netcoreapp2.0", Version = "1.6.0" },
-                    new NuSpecDependency() { Id = "Splat", TargetFramework = "netcoreapp2.0", Version = SplatVersion },
                     new NuSpecDependency() { Id = "Serilog", TargetFramework = "netcoreapp2.0", Version = SerilogVersion },
                     new NuSpecDependency() { Id = "Sprache", TargetFramework = "netcoreapp2.0", Version = SpracheVersion },
                     new NuSpecDependency() { Id = "System.Reactive", TargetFramework = "netcoreapp2.0", Version = SystemReactiveVersion },
