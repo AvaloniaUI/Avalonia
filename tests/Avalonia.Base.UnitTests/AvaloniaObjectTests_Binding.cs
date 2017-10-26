@@ -387,10 +387,8 @@ namespace Avalonia.Base.UnitTests
             }
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void SetValue_Should_Not_Cause_StackOverflow_And_Have_Correct_Values(bool useXamlBinding)
+        [Fact]
+        public void SetValue_Should_Not_Cause_StackOverflow_And_Have_Correct_Values()
         {
             var viewModel = new TestStackOverflowViewModel()
             {
@@ -404,19 +402,7 @@ namespace Avalonia.Base.UnitTests
 
             var child = new Class1();
 
-            if (useXamlBinding)
-            {
-                child.Bind(Class1.DoubleValueProperty,
-                    new Binding("DoubleValue")
-                    {
-                        Mode = BindingMode.TwoWay,
-                        Source = target
-                    });
-            }
-            else
-            {
-                child[!!Class1.DoubleValueProperty] = target[!!Class1.DoubleValueProperty];
-            }
+            child[!!Class1.DoubleValueProperty] = target[!!Class1.DoubleValueProperty];
 
             Assert.Equal(1, viewModel.SetterInvokedCount);
 
