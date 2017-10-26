@@ -147,7 +147,7 @@ namespace Avalonia.Markup
 
             var detached = Observable.FromEventPattern<LogicalTreeAttachmentEventArgs>(
                 x => relativeTo.DetachedFromLogicalTree += x,
-                x => relativeTo.DetachedFromLogicalTree += x)
+                x => relativeTo.DetachedFromLogicalTree -= x)
                 .Select(x => false);
 
             var attachmentStatus = attached.Merge(detached);

@@ -1,4 +1,4 @@
-<Styles xmlns="https://github.com/avaloniaui">
+<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <Style Selector="TextBox">
     <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}"/>
     <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}"/>
@@ -18,12 +18,12 @@
                        Text="{TemplateBinding Watermark}"
                        DockPanel.Dock="Top">
               <TextBlock.IsVisible>
-                <MultiBinding Converter="{Static BoolConverters.And}">
+                <MultiBinding Converter="{x:Static BoolConverters.And}">
                   <Binding RelativeSource="{RelativeSource TemplatedParent}"
                            Path="UseFloatingWatermark"/>
                   <Binding RelativeSource="{RelativeSource TemplatedParent}"
                            Path="Text"
-                           Converter="{Static StringConverters.NotNullOrEmpty}"/>
+                           Converter="{x:Static StringConverters.NotNullOrEmpty}"/>
                 </MultiBinding>
               </TextBlock.IsVisible>
             </TextBlock>
@@ -44,12 +44,12 @@
                 <TextBlock Name="watermark"
                            Opacity="0.5"
                            Text="{TemplateBinding Watermark}"
-                           IsVisible="{TemplateBinding Path=Text, Converter={Static StringConverters.NullOrEmpty}}"/>
+                           IsVisible="{TemplateBinding Path=Text, Converter={x:Static StringConverters.NullOrEmpty}}"/>
                 <TextPresenter Name="PART_TextPresenter"
+                               Text="{TemplateBinding Text, Mode=TwoWay}"
                                CaretIndex="{TemplateBinding CaretIndex}"
                                SelectionStart="{TemplateBinding SelectionStart}"
                                SelectionEnd="{TemplateBinding SelectionEnd}"
-                               Text="{TemplateBinding Text, Mode=TwoWay}"
                                TextAlignment="{TemplateBinding TextAlignment}"
                                TextWrapping="{TemplateBinding TextWrapping}"/>
               </Panel>

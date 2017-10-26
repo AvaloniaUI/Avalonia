@@ -154,7 +154,24 @@ namespace Avalonia.Markup.Data
         /// </returns>
         public bool SetValue(object value, BindingPriority priority = BindingPriority.LocalValue)
         {
-            return (Leaf as ISettableNode)?.SetTargetValue(value, priority) ?? false;
+            if (Leaf is ISettableNode settable)
+            {
+                var node = _node;
+                while (node != null)
+                {
+                    if (node is ITransformNode transform)
+                    {
+                        value = transform.Transform(value);
+                        if (value is BindingNotification)
+                        {
+                            return false;
+                        }
+                    }
+                    node = node.Next;
+                }
+                return settable.SetTargetValue(value, priority);
+            }
+            return false;
         }
 
         /// <summary>
