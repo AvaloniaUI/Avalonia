@@ -55,7 +55,7 @@ namespace Avalonia.LinuxFramebuffer
                             if (!ev.HasValue)
                                 break;
 
-                            PlatformThreadingInterface.Instance.Send(() => ProcessEvent(dev, ev.Value));
+                            LinuxFramebufferPlatform.Threading.Send(() => ProcessEvent(dev, ev.Value));
                         } 
                     }
                 }
