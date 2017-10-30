@@ -16,7 +16,7 @@
     <Setter Property="Focusable" Value="False"/>
     <Setter Property="Template">
       <ControlTemplate>
-        <Panel>
+        <Panel Background="Transparent">
 
           <Rectangle Name="TodayBackground"
                      Fill="{DynamicResource HighlightBrush}"/>

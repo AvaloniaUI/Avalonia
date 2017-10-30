@@ -35,7 +35,8 @@
                   <Style Selector="Button.Header">
                     <Setter Property="Template">
                       <ControlTemplate>
-                        <Panel Cursor="Hand">
+                        <Panel Cursor="Hand"
+                               Background="Transparent">
                           <ContentControl Name="Content"
                                           Content="{TemplateBinding Content}"
                                           ContentTemplate="{TemplateBinding ContentTemplate}"
@@ -56,7 +57,8 @@
                   <Style Selector="Button.Previous">
                     <Setter Property="Template">
                       <ControlTemplate>
-                        <Panel Cursor="Hand">
+                        <Panel Cursor="Hand"
+                               Background="Transparent">
                           <Path Name="IconPath"
                                 Margin="14,-6,0,0"
                                 Height="10"
@@ -79,7 +81,8 @@
                   <Style Selector="Button.Next">
                     <Setter Property="Template">
                       <ControlTemplate>
-                        <Panel Cursor="Hand">
+                        <Panel Cursor="Hand"
+                               Background="Transparent">
                           <Path Name="IconPath"
                                 Margin="0,-6,14,0"
                                 Height="10"
@@ -105,7 +108,7 @@
                            Stretch="Fill"
                            VerticalAlignment="Top"
                            Height="22"/>
-
+                
                 <Button Name="PreviousButton"
                         Classes="Previous"
                         Height="20"
@@ -205,5 +208,5 @@
   <Style Selector="CalendarItem:calendardisabled /template/ Rectangle#DisabledVisual">
     <Setter Property="IsVisible" Value="True"/>
   </Style>
-
+  
 </Styles>
