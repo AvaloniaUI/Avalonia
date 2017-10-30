@@ -198,6 +198,7 @@ namespace Avalonia.Controls.Primitives
                     if (_dayTitleTemplate != null)
                     {
                         var cell = _dayTitleTemplate.Build();
+                        cell.DataContext = string.Empty;
                         cell.SetValue(Grid.RowProperty, 0);
                         cell.SetValue(Grid.ColumnProperty, i);
                         MonthView.Children.Add(cell);
