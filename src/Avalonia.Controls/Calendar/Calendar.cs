@@ -239,6 +239,7 @@ namespace Avalonia.Controls
         private DateTime? _displayDateEnd = null;
 
         private bool _isShiftPressed;
+        private bool _displayDateIsChanging = false;
 
         internal CalendarDayButton FocusButton { get; set; }
         internal CalendarButton FocusCalendarButton { get; set; }
@@ -350,7 +351,9 @@ namespace Avalonia.Controls
         }
 
         public static readonly StyledProperty<CalendarMode> DisplayModeProperty =
-            AvaloniaProperty.Register<Calendar, CalendarMode>(nameof(DisplayMode));
+            AvaloniaProperty.Register<Calendar, CalendarMode>(
+                nameof(DisplayMode),
+                validate: ValidateDisplayMode);
         /// <summary>
         /// Gets or sets a value indicating whether the calendar is displayed in
         /// months, years, or decades.
@@ -374,63 +377,58 @@ namespace Avalonia.Controls
             CalendarMode oldMode = (CalendarMode)e.OldValue;
             CalendarItem monthControl = MonthControl;
 
-            if (!this.IsHandlerSuspended(Calendar.DisplayModeProperty))
+            if (monthControl != null)
             {
-                if (IsValidDisplayMode(mode))
+                switch (oldMode)
                 {
-                    if (monthControl != null)
-                    {
-                        switch (oldMode)
+                    case CalendarMode.Month:
                         {
-                            case CalendarMode.Month:
-                                {
-                                    SelectedYear = DisplayDateInternal;
-                                    SelectedMonth = DisplayDateInternal;
-                                    break;
-                                }
-                            case CalendarMode.Year:
-                                {
-                                    DisplayDate = SelectedMonth;
-                                    SelectedYear = SelectedMonth;
-                                    break;
-                                }
-                            case CalendarMode.Decade:
-                                {
-                                    DisplayDate = SelectedYear;
-                                    SelectedMonth = SelectedYear;
-                                    break;
-                                }
+                            SelectedYear = DisplayDateInternal;
+                            SelectedMonth = DisplayDateInternal;
+                            break;
                         }
-
-                        switch (mode)
+                    case CalendarMode.Year:
                         {
-                            case CalendarMode.Month:
-                                {
-                                    OnMonthClick();
-                                    break;
-                                }
-                            case CalendarMode.Year:
-                            case CalendarMode.Decade:
-                                {
-                                    OnHeaderClick();
-                                    break;
-                                }
+                            DisplayDate = SelectedMonth;
+                            SelectedYear = SelectedMonth;
+                            break;
                         }
-                    }
-                    OnDisplayModeChanged(new CalendarModeChangedEventArgs((CalendarMode)e.OldValue, mode));
+                    case CalendarMode.Decade:
+                        {
+                            DisplayDate = SelectedYear;
+                            SelectedMonth = SelectedYear;
+                            break;
+                        }
                 }
-                else
+
+                switch (mode)
                 {
-                    this.SetValueNoCallback(Calendar.DisplayModeProperty, (CalendarMode)e.OldValue);
-                    throw new ArgumentOutOfRangeException("d", "Invalid DisplayMode");
+                    case CalendarMode.Month:
+                        {
+                            OnMonthClick();
+                            break;
+                        }
+                    case CalendarMode.Year:
+                    case CalendarMode.Decade:
+                        {
+                            OnHeaderClick();
+                            break;
+                        }
                 }
             }
+            OnDisplayModeChanged(new CalendarModeChangedEventArgs((CalendarMode)e.OldValue, mode));
         }
-        /// <summary>
-        /// Inherited code: Requires comment.
-        /// </summary>
-        /// <param name="mode">Inherited code: Requires comment 1.</param>
-        /// <returns>Inherited code: Requires comment 2.</returns>
+        private static CalendarMode ValidateDisplayMode(Calendar o, CalendarMode mode)
+        {
+            if(IsValidDisplayMode(mode))
+            {
+                return mode;
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException(nameof(mode), "Invalid DisplayMode");
+            }
+        }
         private static bool IsValidDisplayMode(CalendarMode mode)
         {
             return mode == CalendarMode.Month
@@ -474,7 +472,9 @@ namespace Avalonia.Controls
         {
             if (IsValidSelectionMode(e.NewValue))
             {
-                this.SetValueNoCallback(Calendar.SelectedDateProperty, null);
+                _displayDateIsChanging = true;
+                SelectedDate = null;
+                _displayDateIsChanging = false;
                 SelectedDates.Clear();
             }
             else
@@ -533,7 +533,7 @@ namespace Avalonia.Controls
         }
         private void OnSelectedDateChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            if (!this.IsHandlerSuspended(Calendar.SelectedDateProperty))
+            if (!_displayDateIsChanging)
             {
                 if (SelectionMode != CalendarSelectionMode.None)
                 {
@@ -817,7 +817,7 @@ namespace Avalonia.Controls
         }
         private void OnDisplayDateStartChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            if (!this.IsHandlerSuspended(Calendar.DisplayDateStartProperty))
+            if (!_displayDateIsChanging)
             {
                 DateTime? newValue = e.NewValue as DateTime?;
 
@@ -928,7 +928,7 @@ namespace Avalonia.Controls
 
         private void OnDisplayDateEndChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            if (!this.IsHandlerSuspended(Calendar.DisplayDateEndProperty))
+            if (!_displayDateIsChanging)
             {
                 DateTime? newValue = e.NewValue as DateTime?;
 
@@ -1147,14 +1147,17 @@ namespace Avalonia.Controls
                 }
                 else
                 {
+                    cal._displayDateIsChanging = true;
                     if (DateTime.Compare(value.Value, cal.DisplayDateRangeStart) < 0)
                     {
-                        cal.SetValueNoCallback(Calendar.DisplayDateStartProperty, value);
+                        cal.DisplayDateStart = value;
                     }
                     else if (DateTime.Compare(value.Value, cal.DisplayDateRangeEnd) > 0)
                     {
-                        cal.SetValueNoCallback(Calendar.DisplayDateEndProperty, value);
+                        cal.DisplayDateEnd = value;
                     }
+                    cal._displayDateIsChanging = false;
+
                     return true;
                 }
             }
