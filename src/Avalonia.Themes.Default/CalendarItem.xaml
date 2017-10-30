@@ -32,74 +32,28 @@
                 </Grid.ColumnDefinitions>
 
                 <Grid.Styles>
-                  <Style Selector="Button.Header">
-                    <Setter Property="Template">
-                      <ControlTemplate>
-                        <Panel Cursor="Hand"
-                               Background="Transparent">
-                          <ContentControl Name="Content"
-                                          Content="{TemplateBinding Content}"
-                                          ContentTemplate="{TemplateBinding ContentTemplate}"
-                                          Margin="1,5,1,9"
-                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
-                        </Panel>
-                      </ControlTemplate>
-                    </Setter>
+                  <Style Selector="Button.CalendarHeader">
+                    <Setter Property="Cursor" Value="Hand"/>
+                    <Setter Property="Background" Value="Transparent"/>
+                    <Setter Property="BorderThickness" Value="0"/>
                   </Style>
-                  <Style Selector="Button.Header /template/ ContentControl#Content">
-                    <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}"/>
+                    <Style Selector="Button.CalendarHeader:pressed  /template/ ContentPresenter">
+                    <Setter Property="Background" Value="Transparent"/>
                   </Style>
-                  <Style Selector="Button.Header:pointerover /template/ ContentControl#Content">
+
+                  <Style Selector="Button.CalendarNavigation">
+                    <Setter Property="Height" Value="20"/>
+                    <Setter Property="Width" Value="28"/>
+                  </Style>
+                  <Style Selector="Button.CalendarNavigation > Path">
+                    <Setter Property="Fill" Value="{DynamicResource ThemeForegroundBrush}"/>
+                  </Style>
+                  <Style Selector="Button.CalendarNavigation:pointerover > Path">
+                    <Setter Property="Fill" Value="{DynamicResource HighlightBrush}"/>
+                  </Style>
+
+                  <Style Selector="Button#HeaderButton:pointerover">
                     <Setter Property="Foreground" Value="{DynamicResource HighlightBrush}"/>
-                  </Style>
-
-                  <Style Selector="Button.Previous">
-                    <Setter Property="Template">
-                      <ControlTemplate>
-                        <Panel Cursor="Hand"
-                               Background="Transparent">
-                          <Path Name="IconPath"
-                                Margin="14,-6,0,0"
-                                Height="10"
-                                Width="6"
-                                VerticalAlignment="Center"
-                                HorizontalAlignment="Left"
-                                Stretch="Fill"
-                                Data="M288.75,232.25 L288.75,240.625 L283,236.625 z" />
-                        </Panel>
-                      </ControlTemplate>
-                    </Setter>
-                  </Style>
-                  <Style Selector="Button.Previous /template/ Path#IconPath">
-                    <Setter Property="Fill" Value="{DynamicResource ThemeForegroundBrush}"/>
-                  </Style>
-                  <Style Selector="Button.Previous:pointerover /template/ Path#IconPath">
-                    <Setter Property="Fill" Value="{DynamicResource HighlightBrush}"/>
-                  </Style>
-
-                  <Style Selector="Button.Next">
-                    <Setter Property="Template">
-                      <ControlTemplate>
-                        <Panel Cursor="Hand"
-                               Background="Transparent">
-                          <Path Name="IconPath"
-                                Margin="0,-6,14,0"
-                                Height="10"
-                                Width="6"
-                                Stretch="Fill"
-                                VerticalAlignment="Center"
-                                HorizontalAlignment="Right"
-                                Data="M282.875,231.875 L282.875,240.375 L288.625,236 z" />
-                        </Panel>
-                      </ControlTemplate>
-                    </Setter>
-                  </Style>
-                  <Style Selector="Button.Next /template/ Path#IconPath">
-                    <Setter Property="Fill" Value="{DynamicResource ThemeForegroundBrush}"/>
-                  </Style>
-                  <Style Selector="Button.Next:pointerover /template/ Path#IconPath">
-                    <Setter Property="Fill" Value="{DynamicResource HighlightBrush}"/>
                   </Style>
                 </Grid.Styles>
 
@@ -108,29 +62,46 @@
                            Stretch="Fill"
                            VerticalAlignment="Top"
                            Height="22"/>
-                
-                <Button Name="PreviousButton"
-                        Classes="Previous"
-                        Height="20"
-                        Width="28"
-                        IsVisible="False"
-                        HorizontalAlignment="Left"/>
 
+                <Button Name="PreviousButton"
+                        Classes="CalendarHeader CalendarNavigation"
+                        IsVisible="False"
+                        HorizontalAlignment="Left">
+
+                  <Path Margin="14,-6,0,0"
+                        Height="10"
+                        Width="6"
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Left"
+                        Stretch="Fill"
+                        Data="M288.75,232.25 L288.75,240.625 L283,236.625 z" />
+                  
+                </Button>
+                
                 <Button Name="HeaderButton"
-                        Classes="Header"
+                        Classes="CalendarHeader"
                         Grid.Column="1"
                         FontWeight="Bold"
                         FontSize="10.5"
                         HorizontalAlignment="Center"
-                        VerticalAlignment="Center" />
+                        VerticalAlignment="Center" 
+                        Padding="1,5,1,9"/>
 
                 <Button Name="NextButton"
-                        Classes="Next"
+                        Classes="CalendarHeader CalendarNavigation"
                         Grid.Column="2"
-                        Height="20"
-                        Width="28"
                         IsVisible="False"
-                        HorizontalAlignment="Right" />
+                        HorizontalAlignment="Right" >
+
+                  <Path Margin="0,-6,14,0"
+                        Height="10"
+                        Width="6"
+                        Stretch="Fill"
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Right"
+                        Data="M282.875,231.875 L282.875,240.375 L288.625,236 z" />
+                  
+                </Button>
 
                 <Grid Name="MonthView"
                       Grid.Row="1"
