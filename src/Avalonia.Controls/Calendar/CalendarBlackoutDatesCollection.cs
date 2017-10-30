@@ -3,6 +3,7 @@
 // Please see http://go.microsoft.com/fwlink/?LinkID=131993 for details.
 // All other rights reserved.
 
+using Avalonia.Threading;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -16,12 +17,7 @@ namespace Avalonia.Controls.Primitives
         /// The Calendar whose dates this object represents.
         /// </summary>
         private Calendar _owner;
-
-        /// <summary>
-        /// The dispatcher thread.
-        /// </summary>
-        private Thread _dispatcherThread;
-
+        
         /// <summary>
         /// Initializes a new instance of the
         /// <see cref="T:Avalonia.Controls.Primitives.CalendarBlackoutDatesCollection" />
@@ -34,7 +30,6 @@ namespace Avalonia.Controls.Primitives
         public CalendarBlackoutDatesCollection(Calendar owner)
         {
             _owner = owner ?? throw new ArgumentNullException(nameof(owner));
-            _dispatcherThread = Thread.CurrentThread;
         }
 
         /// <summary>
@@ -214,10 +209,7 @@ namespace Avalonia.Controls.Primitives
         
         private void EnsureValidThread()
         {
-            if (Thread.CurrentThread != _dispatcherThread)
-            {
-                throw new NotSupportedException("This type of Collection does not support changes to its SourceCollection from a thread different from the Dispatcher thread.");
-            }
+            Dispatcher.UIThread.VerifyAccess();
         }
     }
 }

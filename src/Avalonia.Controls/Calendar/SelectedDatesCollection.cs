@@ -3,6 +3,7 @@
 // Please see http://go.microsoft.com/fwlink/?LinkID=131993 for details.
 // All other rights reserved.
 
+using Avalonia.Threading;
 using System;
 using System.Collections.ObjectModel;
 using System.Threading;
@@ -15,12 +16,7 @@ namespace Avalonia.Controls.Primitives
         /// Inherited code: Requires comment.
         /// </summary>
         private Collection<DateTime> _addedItems;
-
-        /// <summary>
-        /// Inherited code: Requires comment.
-        /// </summary>
-        private Thread _dispatcherThread;
-
+        
         /// <summary>
         /// Inherited code: Requires comment.
         /// </summary>
@@ -49,7 +45,6 @@ namespace Avalonia.Controls.Primitives
         {
             _owner = owner;
             _addedItems = new Collection<DateTime>();
-            _dispatcherThread = Thread.CurrentThread;
         }
 
         private void InvokeCollectionChanged(System.Collections.IList removedItems, System.Collections.IList addedItems)
@@ -138,10 +133,8 @@ namespace Avalonia.Controls.Primitives
         /// </remarks>
         protected override void ClearItems()
         {
-            if (!IsValidThread())
-            {
-                throw new NotSupportedException("This type of Collection does not support changes to its SourceCollection from a thread different from the Dispatcher thread.");
-            }
+            EnsureValidThread();
+
             Collection<DateTime> addedItems = new Collection<DateTime>();
             Collection<DateTime> removedItems = new Collection<DateTime>();
 
@@ -177,10 +170,7 @@ namespace Avalonia.Controls.Primitives
         /// </remarks>
         protected override void InsertItem(int index, DateTime item)
         {
-            if (!IsValidThread())
-            {
-                throw new NotSupportedException("This type of Collection does not support changes to its SourceCollection from a thread different from the Dispatcher thread.");
-            }
+            EnsureValidThread();
 
             if (!Contains(item))
             {
@@ -243,10 +233,7 @@ namespace Avalonia.Controls.Primitives
         /// </remarks>
         protected override void RemoveItem(int index)
         {
-            if (!IsValidThread())
-            {
-                throw new NotSupportedException("This type of Collection does not support changes to its SourceCollection from a thread different from the Dispatcher thread.");
-            }
+            EnsureValidThread();
 
             if (index >= Count)
             {
@@ -297,10 +284,7 @@ namespace Avalonia.Controls.Primitives
         /// </remarks>
         protected override void SetItem(int index, DateTime item)
         {
-            if (!IsValidThread())
-            {
-                throw new NotSupportedException("This type of Collection does not support changes to its SourceCollection from a thread different from the Dispatcher thread.");
-            }
+            EnsureValidThread();
 
             if (!Contains(item))
             {
@@ -369,9 +353,9 @@ namespace Avalonia.Controls.Primitives
             return true;
         }
         
-        private bool IsValidThread()
+        private void EnsureValidThread()
         {
-            return Thread.CurrentThread == _dispatcherThread;
+            Dispatcher.UIThread.VerifyAccess();
         }
     }
 }
