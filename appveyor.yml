@@ -23,10 +23,6 @@ before_build:
 - git submodule update --init
 build_script:
 - ps: .\build.ps1 -Target "AppVeyor" -Platform "$env:platform" -Configuration "$env:configuration"
-after_build:
-- "SET PATH=C:\\Python34;C:\\Python34\\Scripts;%PATH%"
-- pip install codecov
-- codecov -f "./artifacts/coverage.xml"
 
 test: off
 artifacts:

@@ -31,13 +31,18 @@ namespace Avalonia.Data
                 targetProperty.GetMetadata(target.GetType()).DefaultBindingMode :
                 Mode;
 
-            if (mode == BindingMode.TwoWay)
+            switch (mode)
             {
-                return new InstancedBinding(Source.GetSubject(Property), mode);
-            }
-            else
-            {
-                return new InstancedBinding(Source.GetObservable(Property), mode);
+                case BindingMode.OneTime:
+                    return InstancedBinding.OneTime(Source.GetObservable(Property));
+                case BindingMode.OneWay:
+                    return InstancedBinding.OneWay(Source.GetObservable(Property));
+                case BindingMode.OneWayToSource:
+                    return InstancedBinding.OneWayToSource(Source.GetSubject(Property));
+                case BindingMode.TwoWay:
+                    return InstancedBinding.TwoWay(Source.GetSubject(Property));
+                default:
+                    throw new NotSupportedException("Unsupported BindingMode.");
             }
         }
     }
