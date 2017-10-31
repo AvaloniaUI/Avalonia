@@ -9,9 +9,11 @@ namespace Avalonia.Controls.Primitives
 {
     public class ToggleButton : Button
     {
+        public const string IsCheckedPropertyName = "IsChecked";
+
         public static readonly DirectProperty<ToggleButton, bool> IsCheckedProperty =
             AvaloniaProperty.RegisterDirect<ToggleButton, bool>(
-                "IsChecked",
+                IsCheckedPropertyName,
                 o => o.IsChecked,
                 (o,v) => o.IsChecked = v,
                 defaultBindingMode: BindingMode.TwoWay);
