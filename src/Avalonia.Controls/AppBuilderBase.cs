@@ -255,7 +255,11 @@ namespace Avalonia.Controls
             }
 
             if (s_setupWasAlreadyCalled)
+            {
                 throw new InvalidOperationException("Setup was already called on one of AppBuilder instances");
+            }
+
+            s_setupWasAlreadyCalled = true;
 
             Instance.RegisterServices();
             RuntimePlatformServicesInitializer();
