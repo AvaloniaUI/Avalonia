@@ -36,7 +36,7 @@ namespace ControlCatalog.Pages
             };
         }
 
-        Window GetWindow() => this.FindControl<CheckBox>("IsModal").IsChecked ? (Window)this.VisualRoot : null;
+        Window GetWindow() => this.FindControl<CheckBox>("IsModal").IsChecked.Value ? (Window)this.VisualRoot : null;
 
         private void InitializeComponent()
         {

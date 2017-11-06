@@ -17,17 +17,17 @@ namespace Avalonia.Controls
 
         protected override void Toggle()
         {
-            if (!IsChecked)
+            if (!IsChecked.GetValueOrDefault())
             {
                 IsChecked = true;
             }
         }
 
-        private void IsCheckedChanged(bool value)
+        private void IsCheckedChanged(bool? value)
         {
             var parent = this.GetVisualParent();
 
-            if (value && parent != null)
+            if (value.GetValueOrDefault() && parent != null)
             {
                 var siblings = parent
                     .GetVisualChildren()
@@ -36,7 +36,8 @@ namespace Avalonia.Controls
 
                 foreach (var sibling in siblings)
                 {
-                    sibling.IsChecked = false;
+                    if (sibling.IsChecked.GetValueOrDefault())
+                        sibling.IsChecked = false;
                 }
             }
         }
