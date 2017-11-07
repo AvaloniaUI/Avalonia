@@ -174,7 +174,7 @@ namespace Avalonia.Styling
             }
             else
             {
-                return sourceInstance.WithPriority(BindingPriority.StyleTrigger);
+                return sourceInstance.WithPriority(BindingPriority.Style);
             }
         }
     }
