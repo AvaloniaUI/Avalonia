@@ -20,6 +20,14 @@
                    UseLayoutRounding="False"
                    HorizontalAlignment="Center"
                    VerticalAlignment="Center"/>
+          <Ellipse Name="indeterminateMark"
+                   Fill="{DynamicResource ThemeAccentBrush}"
+                   Width="10"
+                   Height="10"
+                   Stretch="Uniform"
+                   UseLayoutRounding="False"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"/>
           <ContentPresenter Name="PART_ContentPresenter"
                             Content="{TemplateBinding Content}"
                             ContentTemplate="{TemplateBinding ContentTemplate}"
@@ -36,7 +44,13 @@
   <Style Selector="RadioButton /template/ Ellipse#checkMark">
     <Setter Property="IsVisible" Value="False"/>
   </Style>
+  <Style Selector="RadioButton /template/ Ellipse#indeterminateMark">
+    <Setter Property="IsVisible" Value="False"/>
+  </Style>
   <Style Selector="RadioButton:checked /template/ Ellipse#checkMark">
+    <Setter Property="IsVisible" Value="True"/>
+  </Style>
+  <Style Selector="RadioButton:indeterminate /template/ Ellipse#indeterminateMark">
     <Setter Property="IsVisible" Value="True"/>
   </Style>
   <Style Selector="RadioButton:disabled /template/ Ellipse#border">
