@@ -48,7 +48,16 @@ namespace Avalonia.Controls.Primitives
 
         protected virtual void Toggle()
         {
-            IsChecked = IsChecked.HasValue ? (IsChecked.Value ? (IsThreeState ? (bool?)null : false) : true) : false;
+            if (IsChecked.HasValue)
+                if (IsChecked.Value)
+                    if (IsThreeState)
+                        IsChecked = null;
+                    else
+                        IsChecked = false;
+                else
+                    IsChecked = true;
+            else
+                IsChecked = false;
         }
     }
 }

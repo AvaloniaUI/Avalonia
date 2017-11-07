@@ -12,6 +12,7 @@
                   Gap="16">
         <RadioButton IsChecked="True">Option 1</RadioButton>
         <RadioButton>Option 2</RadioButton>
+        <RadioButton IsChecked="{x:Null}">Option 3</RadioButton>
         <RadioButton IsEnabled="False">Disabled</RadioButton>
       </StackPanel>
       <StackPanel Orientation="Vertical"
