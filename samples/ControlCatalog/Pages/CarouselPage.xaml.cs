@@ -11,6 +11,7 @@ namespace ControlCatalog.Pages
         private Button _left;
         private Button _right;
         private DropDown _transition;
+        private DropDown _orientation;
 
         public CarouselPage()
         {
@@ -18,6 +19,7 @@ namespace ControlCatalog.Pages
             _left.Click += (s, e) => _carousel.Previous();
             _right.Click += (s, e) => _carousel.Next();
             _transition.SelectionChanged += TransitionChanged;
+            _orientation.SelectionChanged += TransitionChanged;
         }
 
         private void InitializeComponent()
@@ -27,6 +29,7 @@ namespace ControlCatalog.Pages
             _left = this.FindControl<Button>("left");
             _right = this.FindControl<Button>("right");
             _transition = this.FindControl<DropDown>("transition");
+            _orientation = this.FindControl<DropDown>("orientation");
         }
 
         private void TransitionChanged(object sender, SelectionChangedEventArgs e)
@@ -37,7 +40,7 @@ namespace ControlCatalog.Pages
                     _carousel.Transition = null;
                     break;
                 case 1:
-                    _carousel.Transition = new PageSlide(TimeSpan.FromSeconds(0.25));
+                    _carousel.Transition = new PageSlide(TimeSpan.FromSeconds(0.25), _orientation.SelectedIndex == 0 ? PageSlide.SlideAxis.Horizontal : PageSlide.SlideAxis.Vertical);
                     break;
                 case 2:
                     _carousel.Transition = new CrossFade(TimeSpan.FromSeconds(0.25));
