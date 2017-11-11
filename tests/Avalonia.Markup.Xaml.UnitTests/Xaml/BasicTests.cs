@@ -80,6 +80,20 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         }
 
         [Fact]
+        public void Attached_Property_With_Namespace_Is_Set()
+        {
+            var xaml =
+                @"<ContentControl xmlns='https://github.com/avaloniaui' 
+                    xmlns:test='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'
+                    test:BasicTestsAttachedPropertyHolder.Foo='Bar'/>";
+
+            var target = AvaloniaXamlLoader.Parse<ContentControl>(xaml);
+
+            Assert.NotNull(target);
+            Assert.Equal("Bar", BasicTestsAttachedPropertyHolder.GetFoo(target));
+        }
+
+        [Fact]
         public void Attached_Property_Supports_Binding()
         {
             using (UnitTestApplication.Start(TestServices.MockWindowingPlatform))
@@ -872,5 +886,14 @@ do we need it?")]
                 }
             }
         }
+    }
+    public class BasicTestsAttachedPropertyHolder
+    {
+        public static AvaloniaProperty<string> FooProperty =
+            AvaloniaProperty.RegisterAttached<BasicTestsAttachedPropertyHolder, AvaloniaObject, string>("Foo");
+
+        public static void SetFoo(AvaloniaObject target, string value) => target.SetValue(FooProperty, value);
+        public static string GetFoo(AvaloniaObject target) => (string)target.GetValue(FooProperty);
+
     }
 }
