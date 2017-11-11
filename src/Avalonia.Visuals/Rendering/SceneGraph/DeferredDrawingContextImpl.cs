@@ -18,6 +18,7 @@ namespace Avalonia.Rendering.SceneGraph
         private VisualNode _node;
         private int _childIndex;
         private int _drawOperationindex;
+        private double _opacityBake;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DeferredDrawingContextImpl"/> class.
@@ -68,6 +69,12 @@ namespace Avalonia.Rendering.SceneGraph
             var state = new UpdateState(this, _node, _childIndex, _drawOperationindex);
             _node = node;
             _childIndex = _drawOperationindex = 0;
+
+            // If the visual has no children, we can bake the opacity into the draw operations.
+            // If on the other hand, it does have children, we'll need to create a new render
+            // layer so start with an opacity of 1.
+            _opacityBake = node.Visual.VisualChildren.Count == 0 ? node.Visual.Opacity : 1;
+
             return state;
         }
 
@@ -102,9 +109,9 @@ namespace Avalonia.Rendering.SceneGraph
         {
             var next = NextDrawAs<GeometryNode>();
 
-            if (next == null || !next.Equals(Transform, brush, pen, geometry))
+            if (next == null || !next.Equals(Transform, brush, pen, _opacityBake, geometry))
             {
-                Add(new GeometryNode(Transform, brush, pen, geometry, CreateChildScene(brush)));
+                Add(new GeometryNode(Transform, brush, pen, _opacityBake, geometry, CreateChildScene(brush)));
             }
             else
             {
@@ -119,7 +126,7 @@ namespace Avalonia.Rendering.SceneGraph
 
             if (next == null || !next.Equals(Transform, source, opacity, sourceRect, destRect))
             {
-                Add(new ImageNode(Transform, source, opacity, sourceRect, destRect));
+                Add(new ImageNode(Transform, source, opacity * _opacityBake, sourceRect, destRect));
             }
             else
             {
@@ -139,9 +146,9 @@ namespace Avalonia.Rendering.SceneGraph
         {
             var next = NextDrawAs<LineNode>();
 
-            if (next == null || !next.Equals(Transform, pen, p1, p2))
+            if (next == null || !next.Equals(Transform, pen, _opacityBake, p1, p2))
             {
-                Add(new LineNode(Transform, pen, p1, p2, CreateChildScene(pen.Brush)));
+                Add(new LineNode(Transform, pen, _opacityBake, p1, p2, CreateChildScene(pen.Brush)));
             }
             else
             {
@@ -154,9 +161,9 @@ namespace Avalonia.Rendering.SceneGraph
         {
             var next = NextDrawAs<RectangleNode>();
 
-            if (next == null || !next.Equals(Transform, null, pen, rect, cornerRadius))
+            if (next == null || !next.Equals(Transform, null, pen, _opacityBake, rect, cornerRadius))
             {
-                Add(new RectangleNode(Transform, null, pen, rect, cornerRadius, CreateChildScene(pen.Brush)));
+                Add(new RectangleNode(Transform, null, pen, _opacityBake, rect, cornerRadius, CreateChildScene(pen.Brush)));
             }
             else
             {
@@ -169,9 +176,9 @@ namespace Avalonia.Rendering.SceneGraph
         {
             var next = NextDrawAs<TextNode>();
 
-            if (next == null || !next.Equals(Transform, foreground, origin, text))
+            if (next == null || !next.Equals(Transform, foreground, _opacityBake, origin, text))
             {
-                Add(new TextNode(Transform, foreground, origin, text, CreateChildScene(foreground)));
+                Add(new TextNode(Transform, foreground, _opacityBake, origin, text, CreateChildScene(foreground)));
             }
             else
             {
@@ -184,9 +191,9 @@ namespace Avalonia.Rendering.SceneGraph
         {
             var next = NextDrawAs<RectangleNode>();
 
-            if (next == null || !next.Equals(Transform, brush, null, rect, cornerRadius))
+            if (next == null || !next.Equals(Transform, brush, null, _opacityBake, rect, cornerRadius))
             {
-                Add(new RectangleNode(Transform, brush, null, rect, cornerRadius, CreateChildScene(brush)));
+                Add(new RectangleNode(Transform, brush, null, _opacityBake, rect, cornerRadius, CreateChildScene(brush)));
             }
             else
             {

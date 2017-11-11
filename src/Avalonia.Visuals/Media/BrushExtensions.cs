@@ -1,4 +1,5 @@
 ﻿using System;
+using Avalonia.Media.Immutable;
 
 namespace Avalonia.Media
 {
@@ -15,11 +16,11 @@ namespace Avalonia.Media
         /// The result of calling <see cref="IMutableBrush.ToImmutable"/> if the brush is mutable,
         /// otherwise <paramref name="brush"/>.
         /// </returns>
-        public static IBrush ToImmutable(this IBrush brush)
+        public static IImmutableBrush ToImmutable(this IBrush brush)
         {
             Contract.Requires<ArgumentNullException>(brush != null);
 
-            return (brush as IMutableBrush)?.ToImmutable() ?? brush;
+            return (brush as IImmutableBrush) ?? (brush as IMutableBrush).ToImmutable();
         }
 
         /// <summary>
@@ -34,8 +35,8 @@ namespace Avalonia.Media
         {
             Contract.Requires<ArgumentNullException>(pen != null);
 
-            var brush = pen?.Brush?.ToImmutable();
-            return pen == null || ReferenceEquals(pen?.Brush, brush) ?
+            var brush = pen.Brush?.ToImmutable();
+            return ReferenceEquals(pen?.Brush, brush) ?
                 pen :
                 new Pen(
                     brush,

@@ -18,7 +18,6 @@ namespace Avalonia.Rendering.SceneGraph
         private static readonly IReadOnlyList<IDrawOperation> EmptyDrawOperations = new IDrawOperation[0];
 
         private Rect? _bounds;
-        private double _opacity;
         private List<IVisualNode> _children;
         private List<IDrawOperation> _drawOperations;
         private bool _drawOperationsCloned;
@@ -65,18 +64,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <summary>
         /// Gets or sets the opacity of the scene graph node.
         /// </summary>
-        public double Opacity
-        {
-            get { return _opacity; }
-            set
-            {
-                if (_opacity != value)
-                {
-                    _opacity = value;
-                    OpacityChanged = true;
-                }
-            }
-        }
+        public double Opacity { get; set; }
 
         /// <summary>
         /// Gets or sets the opacity mask for the scnee graph node.
@@ -88,11 +76,6 @@ namespace Avalonia.Rendering.SceneGraph
         /// been updated in the current update pass.
         /// </summary>
         public bool SubTreeUpdated { get; set; }
-
-        /// <summary>
-        /// Gets a value indicating whether the <see cref="Opacity"/> property has changed.
-        /// </summary>
-        public bool OpacityChanged { get; private set; }
 
         public IVisual LayerRoot { get; set; }
 
@@ -183,7 +166,7 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <summary>
-        /// Makes a copy of the node
+        /// Makes a copy of the node.
         /// </summary>
         /// <param name="parent">The new parent node.</param>
         /// <returns>A cloned node.</returns>
@@ -195,7 +178,7 @@ namespace Avalonia.Rendering.SceneGraph
                 ClipBounds = ClipBounds,
                 ClipToBounds = ClipToBounds,
                 GeometryClip = GeometryClip,
-                _opacity = Opacity,
+                Opacity = Opacity,
                 OpacityMask = OpacityMask,
                 _drawOperations = _drawOperations,
                 _drawOperationsCloned = true,

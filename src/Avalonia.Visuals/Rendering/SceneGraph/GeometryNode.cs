@@ -20,19 +20,21 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="transform">The transform.</param>
         /// <param name="brush">The fill brush.</param>
         /// <param name="pen">The stroke pen.</param>
+        /// <param name="opacityBake">The opacity to bake in.</param>
         /// <param name="geometry">The geometry.</param>
         /// <param name="childScenes">Child scenes for drawing visual brushes.</param>
         public GeometryNode(
             Matrix transform,
             IBrush brush,
             Pen pen,
+            double opacityBake,
             IGeometryImpl geometry,
             IDictionary<IVisual, Scene> childScenes = null)
             : base(geometry.GetRenderBounds(pen?.Thickness ?? 0), transform, null)
         {
             Transform = transform;
-            Brush = brush?.ToImmutable();
-            Pen = pen?.ToImmutable();
+            Brush = ToImmutable(brush, opacityBake);
+            Pen = ToImmutable(pen, opacityBake);
             Geometry = geometry;
             ChildScenes = childScenes;
         }
@@ -66,17 +68,18 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="transform">The transform of the other draw operation.</param>
         /// <param name="brush">The fill of the other draw operation.</param>
         /// <param name="pen">The stroke of the other draw operation.</param>
+        /// <param name="opacityBake">The opacity to bake in to the other draw operation.</param>
         /// <param name="geometry">The geometry of the other draw operation.</param>
         /// <returns>True if the draw operations are the same, otherwise false.</returns>
         /// <remarks>
         /// The properties of the other draw operation are passed in as arguments to prevent
         /// allocation of a not-yet-constructed draw operation object.
         /// </remarks>
-        public bool Equals(Matrix transform, IBrush brush, Pen pen, IGeometryImpl geometry)
+        public bool Equals(Matrix transform, IBrush brush, Pen pen, double opacityBake, IGeometryImpl geometry)
         {
             return transform == Transform &&
-                Equals(brush, Brush) && 
-                pen == Pen &&
+                Equals(ToImmutable(brush, opacityBake), Brush) &&
+                ToImmutable(pen, opacityBake) == Pen &&
                 Equals(geometry, Geometry);
         }
 

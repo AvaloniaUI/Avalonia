@@ -54,5 +54,19 @@ namespace Avalonia.Media.Immutable
 
         /// <inheritdoc/>
         public IVisual Visual { get; }
+
+        /// <inheritdoc/>
+        public override IImmutableBrush WithOpacity(double opacity)
+        {
+            return new ImmutableVisualBrush(
+                Visual,
+                AlignmentX,
+                AlignmentY,
+                DestinationRect,
+                opacity,
+                SourceRect,
+                Stretch,
+                TileMode);
+        }
     }
 }

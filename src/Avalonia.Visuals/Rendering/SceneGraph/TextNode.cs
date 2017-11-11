@@ -19,19 +19,21 @@ namespace Avalonia.Rendering.SceneGraph
         /// </summary>
         /// <param name="transform">The transform.</param>
         /// <param name="foreground">The foreground brush.</param>
+        /// <param name="opacityBake">The opacity to bake in.</param>
         /// <param name="origin">The draw origin.</param>
         /// <param name="text">The text to draw.</param>
         /// <param name="childScenes">Child scenes for drawing visual brushes.</param>
         public TextNode(
             Matrix transform,
             IBrush foreground,
+            double opacityBake,
             Point origin,
             IFormattedTextImpl text,
             IDictionary<IVisual, Scene> childScenes = null)
             : base(new Rect(origin, text.Size), transform, null)
         {
             Transform = transform;
-            Foreground = foreground?.ToImmutable();
+            Foreground = ToImmutable(foreground, opacityBake);
             Origin = origin;
             Text = text;
             ChildScenes = childScenes;
@@ -72,6 +74,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// </summary>
         /// <param name="transform">The transform of the other draw operation.</param>
         /// <param name="foreground">The foregroundof the other draw operation.</param>
+        /// <param name="opacityBake">The opacity to bake in to the other draw operation.</param>
         /// <param name="origin">The draw origin of the other draw operation.</param>
         /// <param name="text">The text of the other draw operation.</param>
         /// <returns>True if the draw operations are the same, otherwise false.</returns>
@@ -79,10 +82,10 @@ namespace Avalonia.Rendering.SceneGraph
         /// The properties of the other draw operation are passed in as arguments to prevent
         /// allocation of a not-yet-constructed draw operation object.
         /// </remarks>
-        internal bool Equals(Matrix transform, IBrush foreground, Point origin, IFormattedTextImpl text)
+        internal bool Equals(Matrix transform, IBrush foreground, double opacityBake, Point origin, IFormattedTextImpl text)
         {
             return transform == Transform &&
-                Equals(foreground, Foreground) &&
+                Equals(ToImmutable(foreground, opacityBake), Foreground) &&
                 origin == Origin &&
                 Equals(text, Text);
         }

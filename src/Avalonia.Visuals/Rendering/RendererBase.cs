@@ -22,15 +22,12 @@ namespace Avalonia.Rendering
             };
         }
 
-        protected void RenderFps(IDrawingContextImpl context, Rect clientRect, bool incrementFrameCount)
+        protected void RenderFps(IDrawingContextImpl context, Rect clientRect, int layerCount)
         {
             var now = _stopwatch.Elapsed;
             var elapsed = now - _lastFpsUpdate;
 
-            if (incrementFrameCount)
-            {
-                ++_framesThisSecond;
-            }
+            ++_framesThisSecond;
 
             if (elapsed.TotalSeconds > 1)
             {
@@ -39,7 +36,7 @@ namespace Avalonia.Rendering
                 _lastFpsUpdate = now;
             }
 
-            _fpsText.Text = string.Format("FPS: {0:000}", _fps);
+            _fpsText.Text = string.Format("Layers: {1} FPS: {0:000}", _fps, layerCount);
             var size = _fpsText.Measure();
             var rect = new Rect(clientRect.Right - size.Width, 0, size.Width, size.Height);
 

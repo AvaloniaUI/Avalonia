@@ -8,6 +8,7 @@ using Avalonia.VisualTree;
 using Xunit;
 using Avalonia.Layout;
 using Avalonia.Rendering;
+using Avalonia.Controls.Shapes;
 
 namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
 {
@@ -70,11 +71,11 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 Assert.Same(tree, rootNode.LayerRoot);
                 Assert.Same(tree, borderNode.LayerRoot);
                 Assert.Same(tree, canvasNode.LayerRoot);
-                Assert.Equal(1, scene.Layers.Count());
+                Assert.Single(scene.Layers);
 
                 var rootDirty = scene.Layers[tree].Dirty;
 
-                Assert.Equal(1, rootDirty.Count());
+                Assert.Single(rootDirty);
                 Assert.Equal(new Rect(21, 21, 58, 78), rootDirty.Single());
             }
         }
@@ -136,11 +137,11 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 Assert.Same(tree, rootNode.LayerRoot);
                 Assert.Same(tree, borderNode.LayerRoot);
                 Assert.Same(tree, canvasNode.LayerRoot);
-                Assert.Equal(1, scene.Layers.Count());
+                Assert.Single(scene.Layers);
 
                 var rootDirty = scene.Layers[tree].Dirty;
 
-                Assert.Equal(1, rootDirty.Count());
+                Assert.Single(rootDirty);
                 Assert.Equal(new Rect(21, 21, 58, 78), rootDirty.Single());
             }
         }
@@ -169,6 +170,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                             Child = canvas = new Canvas
                             {
                                 Opacity = 0.75,
+                                Children = { new Rectangle() }
                             },
                         }
                     }
@@ -216,6 +218,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                             Child = canvas = new Canvas
                             {
                                 Opacity = 0.75,
+                                Children = { new Rectangle() },
                             },
                         }
                     }
@@ -256,6 +259,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                         Child = border = new Border
                         {
                             Opacity = 0.5,
+                            Child = new Rectangle(),
                         }
                     }
                 };
