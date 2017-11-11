@@ -225,6 +225,29 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
         }
 
         [Fact]
+        public void Should_Bake_In_Opacity_Changes()
+        {
+            var node = new VisualNode(new TestRoot(), null);
+            var layers = new SceneLayers(node.Visual);
+            var target = new DeferredDrawingContextImpl(null, layers);
+
+            node.LayerRoot = node.Visual;
+
+            using (target.BeginUpdate(node))
+            {
+                target.DrawGeometry(Brushes.Red, new Pen(Brushes.Green), Mock.Of<IGeometryImpl>());
+                target.PushOpacity(0.5);
+                target.FillRectangle(Brushes.Green, new Rect(0, 0, 100, 100));
+                target.PopOpacity();
+                target.FillRectangle(Brushes.Blue, new Rect(0, 0, 100, 100));
+            }
+
+            Assert.Equal(1, ((GeometryNode)node.DrawOperations[0]).Brush.Opacity);
+            Assert.Equal(0.5, ((RectangleNode)node.DrawOperations[1]).Brush.Opacity);
+            Assert.Equal(1, ((RectangleNode)node.DrawOperations[2]).Brush.Opacity);
+        }
+
+        [Fact]
         public void Should_Trim_DrawOperations()
         {
             var node = new VisualNode(new TestRoot(), null);

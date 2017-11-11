@@ -19,6 +19,7 @@ namespace Avalonia.Rendering.SceneGraph
         private int _childIndex;
         private int _drawOperationindex;
         private double _opacityBake;
+        private Stack<double> _opacityStack;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DeferredDrawingContextImpl"/> class.
@@ -239,16 +240,8 @@ namespace Avalonia.Rendering.SceneGraph
         /// <inheritdoc/>
         public void PopOpacity()
         {
-            var next = NextDrawAs<OpacityNode>();
-
-            if (next == null || !next.Equals(null))
-            {
-                Add(new OpacityNode());
-            }
-            else
-            {
-                ++_drawOperationindex;
-            }
+            var opacity = _opacityStack.Pop();
+            _opacityBake /= opacity;
         }
 
         /// <inheritdoc/>
@@ -299,16 +292,9 @@ namespace Avalonia.Rendering.SceneGraph
         /// <inheritdoc/>
         public void PushOpacity(double opacity)
         {
-            var next = NextDrawAs<OpacityNode>();
-
-            if (next == null || !next.Equals(opacity))
-            {
-                Add(new OpacityNode(opacity));
-            }
-            else
-            {
-                ++_drawOperationindex;
-            }
+            _opacityStack = _opacityStack ?? new Stack<double>();
+            _opacityStack.Push(opacity);
+            _opacityBake *= opacity;
         }
 
         /// <inheritdoc/>
