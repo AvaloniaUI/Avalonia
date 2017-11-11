@@ -123,7 +123,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
 
             using (target.BeginUpdate(node))
             {
-                target.FillRectangle(Brushes.Red, new Rect(0, 0, 100, 100));
+                target.FillRectangle(new SolidColorBrush(Colors.Red), new Rect(0, 0, 100, 100));
             }
 
             Assert.Equal(1, node.DrawOperations.Count);

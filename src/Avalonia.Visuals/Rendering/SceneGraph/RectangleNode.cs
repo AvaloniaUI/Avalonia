@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Avalonia.Media;
+using Avalonia.Media.Immutable;
 using Avalonia.Platform;
 using Avalonia.VisualTree;
 
@@ -50,7 +51,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <summary>
         /// Gets the fill brush.
         /// </summary>
-        public IBrush Brush { get; }
+        public IImmutableBrush Brush { get; }
 
         /// <summary>
         /// Gets the stroke pen.
@@ -87,8 +88,8 @@ namespace Avalonia.Rendering.SceneGraph
         public bool Equals(Matrix transform, IBrush brush, Pen pen, double opacityBake, Rect rect, float cornerRadius)
         {
             return transform == Transform &&
-                Equals(ToImmutable(brush, opacityBake), Brush) &&
-                ToImmutable(pen, opacityBake) == Pen &&
+                BrushEquals(Brush, brush, opacityBake) &&
+                PenEquals(Pen, pen, opacityBake) &&
                 rect == Rect &&
                 cornerRadius == CornerRadius;
         }

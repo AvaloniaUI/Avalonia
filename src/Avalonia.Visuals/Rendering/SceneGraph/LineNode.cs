@@ -78,7 +78,7 @@ namespace Avalonia.Rendering.SceneGraph
         public bool Equals(Matrix transform, Pen pen, double opacityBake, Point p1, Point p2)
         {
             return transform == Transform &&
-                   ToImmutable(pen, opacityBake) == Pen &&
+                   PenEquals(Pen, pen, opacityBake) &&
                    p1 == P1 &&
                    p2 == P2;
         }

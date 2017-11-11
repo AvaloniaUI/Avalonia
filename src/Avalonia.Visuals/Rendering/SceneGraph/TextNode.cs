@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Avalonia.Media;
+using Avalonia.Media.Immutable;
 using Avalonia.Platform;
 using Avalonia.VisualTree;
 
@@ -47,7 +48,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <summary>
         /// Gets the foreground brush.
         /// </summary>
-        public IBrush Foreground { get; }
+        public IImmutableBrush Foreground { get; }
 
         /// <summary>
         /// Gets the draw origin.
@@ -85,7 +86,7 @@ namespace Avalonia.Rendering.SceneGraph
         internal bool Equals(Matrix transform, IBrush foreground, double opacityBake, Point origin, IFormattedTextImpl text)
         {
             return transform == Transform &&
-                Equals(ToImmutable(foreground, opacityBake), Foreground) &&
+                BrushEquals(Foreground, foreground, opacityBake) &&
                 origin == Origin &&
                 Equals(text, Text);
         }
