@@ -19,9 +19,9 @@ namespace Avalonia
 	{
         [Conditional("DEBUG")]
         public static void AttachDevTools(this TopLevel control)
-		{
-			Avalonia.Diagnostics.DevTools.Attach(control);
-		}
+        {
+            Avalonia.Diagnostics.DevTools.Attach(control);
+        }
     }
 }
 
