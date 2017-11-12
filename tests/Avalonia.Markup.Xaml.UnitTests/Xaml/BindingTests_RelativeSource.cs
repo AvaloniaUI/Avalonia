@@ -3,6 +3,7 @@
 
 using Avalonia.Controls;
 using Avalonia.UnitTests;
+using System;
 using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Xaml
@@ -78,7 +79,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         }
 
         [Fact]
-        public void Binding_To_First_Ancestor_Without_AncestorType_Uses_LogicalTree()
+        public void Binding_To_First_Ancestor_Without_AncestorType_Throws_Exception()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
@@ -93,13 +94,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     </Border>
 </Window>";
                 var loader = new AvaloniaXamlLoader();
-                var window = (Window)loader.Load(xaml);
-                var contentControl = window.FindControl<ContentControl>("contentControl");
-                var button = window.FindControl<Button>("button");
-
-                window.ApplyTemplate();
-
-                Assert.Equal("contentControl", button.Content);
+                Assert.Throws<InvalidOperationException>( () => loader.Load(xaml));
             }
         }
 
@@ -149,11 +144,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 var button = window.FindControl<Button>("button");
 
                 window.ApplyTemplate();
-
-                // This isn't needed in `Binding_To_First_Ancestor_Without_AncestorType_Uses_LogicalTree` -
-                // why is it needed to get non-null value here?
-                //contentControl.ApplyTemplate();
-
+                
                 Assert.Equal("contentControl", button.Content);
             }
         }

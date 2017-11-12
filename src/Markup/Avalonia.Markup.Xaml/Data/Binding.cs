@@ -126,6 +126,11 @@ namespace Avalonia.Markup.Xaml.Data
             }
             else if (RelativeSource.Mode == RelativeSourceMode.FindAncestor)
             {
+                if (RelativeSource.Tree == TreeType.Visual && RelativeSource.AncestorType == null)
+                {
+                    throw new InvalidOperationException("AncestorType must be set for RelativeSourceModel.FindAncestor when searching the visual tree.");
+                }
+
                 observer = CreateFindAncestorObserver(
                     (target as IControl) ?? (anchor as IControl),
                     RelativeSource,
