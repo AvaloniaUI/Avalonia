@@ -83,6 +83,8 @@ namespace Avalonia.Markup.Xaml.Data
         /// </summary>
         public object Source { get; set; }
 
+        internal WeakReference DefaultAnchor { get; set; }
+
         /// <inheritdoc/>
         public InstancedBinding Initiate(
             IAvaloniaObject target,
@@ -91,6 +93,7 @@ namespace Avalonia.Markup.Xaml.Data
             bool enableDataValidation = false)
         {
             Contract.Requires<ArgumentNullException>(target != null);
+            anchor = anchor ?? DefaultAnchor?.Target;
             
             enableDataValidation = enableDataValidation && Priority == BindingPriority.LocalValue;
             

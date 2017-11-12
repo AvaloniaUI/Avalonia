@@ -212,11 +212,6 @@ namespace Avalonia.Markup.Xaml.PortableXaml
                                             value);
                 }
 
-                if (value is XamlBinding)
-                {
-                    value = (value as XamlBinding).Value;
-                }
-
                 if (UpdateListInsteadSet &&
                     value != null &&
                     UpdateListInsteadSetValue(instance, value))
@@ -317,9 +312,7 @@ namespace Avalonia.Markup.Xaml.PortableXaml
                         if (!Member.AssignBinding)
                             ApplyBinding(obj, (IBinding)value);
                         else
-                            obj.SetValue(Property, value is XamlBinding ?
-                                                        (value as XamlBinding).Value :
-                                                        value);
+                            obj.SetValue(Property, value);
                     }
                     else
                     {
@@ -348,12 +341,9 @@ namespace Avalonia.Markup.Xaml.PortableXaml
             {
                 var control = obj as IControl;
                 var property = Property;
-                var xamlBinding = binding as XamlBinding;
 
                 if (control != null && property != Control.DataContextProperty)
                     DelayedBinding.Add(control, property, binding);
-                else if (xamlBinding != null)
-                    obj.Bind(property, xamlBinding.Value, xamlBinding.Anchor?.Target);
                 else
                     obj.Bind(property, binding);
             }

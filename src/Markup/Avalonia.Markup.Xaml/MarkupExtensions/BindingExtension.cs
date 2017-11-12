@@ -34,19 +34,18 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             var pathInfo = ParsePath(Path, descriptorContext);
             ValidateState(pathInfo);
 
-            return XamlBinding.FromMarkupExtensionContext(
-                new Binding
-                {
-                    Converter = Converter,
-                    ConverterParameter = ConverterParameter,
-                    ElementName = pathInfo.ElementName ?? ElementName,
-                    FallbackValue = FallbackValue,
-                    Mode = Mode,
-                    Path = pathInfo.Path,
-                    Priority = Priority,
-                    RelativeSource = pathInfo.RelativeSource ?? RelativeSource,
-                },
-                serviceProvider);
+            return new Binding
+            {
+                Converter = Converter,
+                ConverterParameter = ConverterParameter,
+                ElementName = pathInfo.ElementName ?? ElementName,
+                FallbackValue = FallbackValue,
+                Mode = Mode,
+                Path = pathInfo.Path,
+                Priority = Priority,
+                RelativeSource = pathInfo.RelativeSource ?? RelativeSource,
+                DefaultAnchor = new WeakReference(GetDefaultAnchor((ITypeDescriptorContext)serviceProvider))
+            };
         }
 
         private class PathInfo

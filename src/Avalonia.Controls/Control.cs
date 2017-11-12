@@ -774,7 +774,9 @@ namespace Avalonia.Controls
 
                     foreach (var child in control.LogicalChildren)
                     {
-                        if (child is Control c && !c.IsSet(DataContextProperty))
+                        if (child is Control c && 
+                            c.InheritanceParent == control &&
+                            !c.IsSet(DataContextProperty))
                         {
                             DataContextNotifying(c, notifying);
                         }

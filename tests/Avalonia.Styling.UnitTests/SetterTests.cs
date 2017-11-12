@@ -29,7 +29,7 @@ namespace Avalonia.Styling.UnitTests
         {
             var control = new TextBlock();
             var subject = new BehaviorSubject<object>("foo");
-            var descriptor = new InstancedBinding(subject);
+            var descriptor = InstancedBinding.OneWay(subject);
             var binding = Mock.Of<IBinding>(x => x.Initiate(control, TextBlock.TextProperty, null, false) == descriptor);
             var style = Mock.Of<IStyle>();
             var setter = new Setter(TextBlock.TextProperty, binding);
