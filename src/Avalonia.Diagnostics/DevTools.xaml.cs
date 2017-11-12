@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reactive.Linq;
 using Avalonia.Controls;
@@ -16,11 +17,12 @@ namespace Avalonia
 {
 	public static class DevToolsExtensions
 	{
-		public static void AttachDevTools(this TopLevel control)
+        [Conditional("DEBUG")]
+        public static void AttachDevTools(this TopLevel control)
 		{
 			Avalonia.Diagnostics.DevTools.Attach(control);
 		}
-	}
+    }
 }
 
 namespace Avalonia.Diagnostics
