@@ -194,7 +194,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
                 target.Open();
 
-                Assert.Equal(1, target.PopupRoot.GetVisualChildren().Count());
+                Assert.Single(target.PopupRoot.GetVisualChildren());
 
                 var templatedChild = target.PopupRoot.GetVisualChildren().Single();
                 Assert.IsType<ContentPresenter>(templatedChild);

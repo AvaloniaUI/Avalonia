@@ -119,7 +119,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
             var target = AvaloniaXamlLoader.Parse<Panel>(xaml);
 
-            Assert.Equal(0, target.Children.Count);
+            Assert.Empty(target.Children);
 
             Assert.Equal("Foo", ToolTip.GetTip(target));
         }
@@ -377,7 +377,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
             var styles = AvaloniaXamlLoader.Parse<Styles>(xaml);
 
-            Assert.Equal(1, styles.Count);
+            Assert.Single(styles);
 
             var style = (Style)styles[0];
 
@@ -405,13 +405,13 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
             var styles = AvaloniaXamlLoader.Parse<Styles>(xaml);
 
-            Assert.Equal(1, styles.Count);
+            Assert.Single(styles);
 
             var style = (Style)styles[0];
 
             var setters = style.Setters.Cast<Setter>().ToArray();
 
-            Assert.Equal(1, setters.Length);
+            Assert.Single(setters);
 
             Assert.Equal(TextBlock.FontSizeProperty, setters[0].Property);
             Assert.Equal(21.0, setters[0].Value);
@@ -459,7 +459,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 ";
                 var styles = AvaloniaXamlLoader.Parse<Styles>(xaml);
 
-                Assert.Equal(1, styles.Count);
+                Assert.Single(styles);
 
                 var style = (Style)styles[0];
 
@@ -688,7 +688,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
             var style = AvaloniaXamlLoader.Parse<Style>(xaml);
 
-            Assert.Equal(1, style.Setters.Count());
+            Assert.Single(style.Setters);
 
             var setter = (Setter)style.Setters.First();
 
