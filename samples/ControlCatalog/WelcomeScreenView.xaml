@@ -1,0 +1,10 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui" xmlns:vm="clr-namespace:AvalonStudio.Controls;assembly=AvalonStudio" xmlns:Controls="clr-namespace:AvalonStudio.Controls;assembly=AvalonStudio.Extensibility">
+
+  <ListBox Items="{Binding RecentProjects}" SelectedItem="{Binding SelectedTemplate}" BorderThickness="0">
+    <ListBox.ItemTemplate>
+      <DataTemplate >
+        <Button Content="{Binding Name}" />
+      </DataTemplate>
+    </ListBox.ItemTemplate>
+  </ListBox>
+</UserControl>

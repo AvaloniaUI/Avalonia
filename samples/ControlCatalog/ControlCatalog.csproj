@@ -22,13 +22,23 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="DocumentTabControl.xaml" />
+    <None Remove="DocumentTabControl.xaml.cs" />
+    <None Remove="DocumentTabControlViewModel.cs" />
     <None Remove="Pages\ContextMenuPage.xaml" />
+    <None Remove="RecentProjectViewModel.cs" />
+    <None Remove="ViewModelViewHost.cs" />
+    <None Remove="ViewModelViewHost.xaml" />
+    <None Remove="WelcomeScreen.xaml.cs" />
+    <None Remove="WelcomeScreenView.xaml" />
+    <None Remove="WelcomeScreenViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <!-- A reference to the entire .NET Framework is automatically included -->
     <EmbeddedResource Include="App.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <EmbeddedResource Include="DocumentTabControl.xaml" />
     <EmbeddedResource Include="MainView.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
@@ -92,6 +102,8 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="DocumentTabControl.xaml.cs" />
+    <Compile Include="DocumentTabControlViewModel.cs" />
     <Compile Include="MainView.xaml.cs">
       <DependentUpon>MainView.xaml</DependentUpon>
     </Compile>
@@ -160,6 +172,10 @@
     </Compile>
     <Compile Include="Pages\ScreenPage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RecentProjectViewModel.cs" />
+    <Compile Include="ViewModelViewHost.cs" />
+    <Compile Include="WelcomeScreen.xaml.cs" />
+    <Compile Include="WelcomeScreenViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Assets\delicate-arch-896885_640.jpg" />
@@ -171,6 +187,8 @@
     <EmbeddedResource Include="SideBar.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <EmbeddedResource Include="ViewModelViewHost.xaml" />
+    <EmbeddedResource Include="WelcomeScreenView.xaml" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj" />
