@@ -133,7 +133,7 @@ namespace Avalonia.Styling.UnitTests
 
             using (activator.Subscribe(_ => { }))
             {
-                Assert.Equal(1, inccDebug.GetCollectionChangedSubscribers().Length);
+                Assert.Single(inccDebug.GetCollectionChangedSubscribers());
             }
 
             Assert.Null(inccDebug.GetCollectionChangedSubscribers());

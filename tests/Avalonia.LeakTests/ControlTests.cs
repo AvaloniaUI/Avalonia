@@ -155,7 +155,7 @@ namespace Avalonia.LeakTests
                     // template applied.
                     LayoutManager.Instance.ExecuteInitialLayoutPass(window);
                     Assert.IsType<TextBox>(window.Presenter.Child);
-                    Assert.NotEqual(0, window.Presenter.Child.GetVisualChildren().Count());
+                    Assert.NotEmpty(window.Presenter.Child.GetVisualChildren());
 
                     // Clear the content and ensure the TextBox is removed.
                     window.Content = null;
@@ -290,7 +290,7 @@ namespace Avalonia.LeakTests
 
                     // Do a layout and make sure that TreeViewItems get realized.
                     LayoutManager.Instance.ExecuteInitialLayoutPass(window);
-                    Assert.Equal(1, target.ItemContainerGenerator.Containers.Count());
+                    Assert.Single(target.ItemContainerGenerator.Containers);
 
                     // Clear the content and ensure the TreeView is removed.
                     window.Content = null;

@@ -113,8 +113,8 @@ namespace Avalonia.Base.UnitTests
         {
             var p1 = new TestProperty<string>("p1", typeof(Class1));
 
-            Assert.NotEqual(p1, null);
-            Assert.NotEqual(null, p1);
+            Assert.NotNull(p1);
+            Assert.NotNull(p1);
             Assert.False(p1 == null);
             Assert.False(null == p1);
             Assert.False(p1.Equals(null));
