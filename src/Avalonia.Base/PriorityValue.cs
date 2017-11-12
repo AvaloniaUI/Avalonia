@@ -30,7 +30,7 @@ namespace Avalonia
         private readonly SingleOrDictionary<int, PriorityLevel> _levels = new SingleOrDictionary<int, PriorityLevel>();
         private object _value;
         private readonly Func<object, object> _validate;
-        private static readonly DelayedSetter<PriorityValue, (object value, int priority)> delayedSetter = new DelayedSetter<PriorityValue, (object, int)>();
+        private static readonly DeferredSetter<PriorityValue, (object value, int priority)> delayedSetter = new DeferredSetter<PriorityValue, (object, int)>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PriorityValue"/> class.

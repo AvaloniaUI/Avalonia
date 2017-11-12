@@ -10,7 +10,7 @@ namespace Avalonia.Utilities
     /// </summary>
     /// <typeparam name="TProperty">The type of the object that represents the property.</typeparam>
     /// <typeparam name="TValue">The type of value with which to track the delayed assignment.</typeparam>
-    class DelayedSetter<TProperty, TValue>
+    class DeferredSetter<TProperty, TValue>
     {
         /// <summary>
         /// Information on current setting/notification status of a property.

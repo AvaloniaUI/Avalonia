@@ -54,7 +54,7 @@ namespace Avalonia
         /// <summary>
         /// Delayed setter helper for direct properties. Used to fix #855.
         /// </summary>
-        private readonly DelayedSetter<AvaloniaProperty, object> directDelayedSetter = new DelayedSetter<AvaloniaProperty, object>();
+        private readonly DeferredSetter<AvaloniaProperty, object> directDelayedSetter = new DeferredSetter<AvaloniaProperty, object>();
 
 
         /// <summary>
