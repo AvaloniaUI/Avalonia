@@ -34,9 +34,9 @@ namespace Avalonia.Direct2D1.Media
         public override int PixelWidth => _direct2D.PixelSize.Width;
         public override int PixelHeight => _direct2D.PixelSize.Height;
 
-        public override void Dispose()
+        protected override void DisposeCore()
         {
-            base.Dispose();
+            base.DisposeCore();
             _direct2D.Dispose();
         }
 

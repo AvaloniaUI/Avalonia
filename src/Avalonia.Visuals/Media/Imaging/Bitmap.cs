@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using Avalonia.Platform;
+using System.Threading;
 
 namespace Avalonia.Media.Imaging
 {
@@ -73,6 +74,8 @@ namespace Avalonia.Media.Imaging
             get;
         }
 
+        private volatile int refCount;
+
         /// <summary>
         /// Saves the bitmap to a file.
         /// </summary>
@@ -85,6 +88,11 @@ namespace Avalonia.Media.Imaging
         public void Save(Stream stream)
         {
             PlatformImpl.Save(stream);
+        }
+
+        public void Dispose()
+        {
+            PlatformImpl.Dispose();
         }
     }
 }

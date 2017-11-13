@@ -6,13 +6,14 @@ using System.Collections.Generic;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.VisualTree;
+using System.Linq;
 
 namespace Avalonia.Rendering.SceneGraph
 {
     /// <summary>
     /// A node in the low-level scene graph representing an <see cref="IVisual"/>.
     /// </summary>
-    internal class VisualNode : IVisualNode
+    internal class VisualNode : IVisualNode, IDisposable
     {
         private static readonly IReadOnlyList<IVisualNode> EmptyChildren = new IVisualNode[0];
         private static readonly IReadOnlyList<IDrawOperation> EmptyDrawOperations = new IDrawOperation[0];
@@ -151,7 +152,13 @@ namespace Avalonia.Rendering.SceneGraph
         public void ReplaceDrawOperation(int index, IDrawOperation operation)
         {
             EnsureDrawOperationsCreated();
+            var old = _drawOperations[index];
             _drawOperations[index] = operation;
+
+            if (old is IDisposable disposable)
+            {
+                disposable.Dispose();
+            }
         }
 
         /// <summary>
@@ -279,6 +286,22 @@ namespace Avalonia.Rendering.SceneGraph
             {
                 _drawOperations = new List<IDrawOperation>(_drawOperations);
                 _drawOperationsCloned = false;
+            }
+        }
+
+        public void Dispose()
+        {
+            if (!_drawOperationsCloned)
+            {
+                foreach (var disposable in _drawOperations.OfType<IDisposable>())
+                {
+                    disposable.Dispose();
+                } 
+            }
+
+            foreach (var disposable in Children.OfType<IDisposable>())
+            {
+                disposable.Dispose();
             }
         }
     }
