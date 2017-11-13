@@ -74,8 +74,6 @@ namespace Avalonia.Media.Imaging
             get;
         }
 
-        private volatile int refCount;
-
         /// <summary>
         /// Saves the bitmap to a file.
         /// </summary>
