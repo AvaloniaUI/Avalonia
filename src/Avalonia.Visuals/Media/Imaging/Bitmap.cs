@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using Avalonia.Platform;
+using Avalonia.Utilities;
 
 namespace Avalonia.Media.Imaging
 {
@@ -19,7 +20,7 @@ namespace Avalonia.Media.Imaging
         public Bitmap(string fileName)
         {
             IPlatformRenderInterface factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
-            PlatformImpl = factory.LoadBitmap(fileName);
+            PlatformImpl = RefCountable.Create(factory.LoadBitmap(fileName));
         }
 
         /// <summary>
@@ -29,18 +30,33 @@ namespace Avalonia.Media.Imaging
         public Bitmap(Stream stream)
         {
             IPlatformRenderInterface factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
-            PlatformImpl = factory.LoadBitmap(stream);
+            PlatformImpl = RefCountable.Create(factory.LoadBitmap(stream));
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Bitmap"/> class.
         /// </summary>
         /// <param name="impl">A platform-specific bitmap implementation.</param>
+        protected Bitmap(IRef<IBitmapImpl> impl)
+        {
+            PlatformImpl = impl.Clone();
+        }
+        
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Bitmap"/> class.
+        /// </summary>
+        /// <param name="impl">A platform-specific bitmap implementation. Bitmap class takes the ownership.</param>
         protected Bitmap(IBitmapImpl impl)
         {
-            PlatformImpl = impl;
+            PlatformImpl = RefCountable.Create(impl);
         }
-
+        
+        /// <inheritdoc/>
+        public virtual void Dispose()
+        {
+            PlatformImpl.Dispose();
+        }
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="Bitmap"/> class.
         /// </summary>
@@ -51,27 +67,24 @@ namespace Avalonia.Media.Imaging
         /// <param name="stride">Bytes per row</param>
         public Bitmap(PixelFormat format, IntPtr data, int width, int height, int stride)
         {
-            PlatformImpl = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>()
-                .LoadBitmap(format, data, width, height, stride);
+            PlatformImpl = RefCountable.Create(AvaloniaLocator.Current.GetService<IPlatformRenderInterface>()
+                .LoadBitmap(format, data, width, height, stride));
         }
 
         /// <summary>
         /// Gets the width of the bitmap, in pixels.
         /// </summary>
-        public int PixelWidth => PlatformImpl.PixelWidth;
+        public int PixelWidth => PlatformImpl.Item.PixelWidth;
 
         /// <summary>
         /// Gets the height of the bitmap, in pixels.
         /// </summary>
-        public int PixelHeight => PlatformImpl.PixelHeight;
+        public int PixelHeight => PlatformImpl.Item.PixelHeight;
 
         /// <summary>
         /// Gets the platform-specific bitmap implementation.
         /// </summary>
-        public IBitmapImpl PlatformImpl
-        {
-            get;
-        }
+        public IRef<IBitmapImpl> PlatformImpl { get; }
 
         /// <summary>
         /// Saves the bitmap to a file.
@@ -79,12 +92,12 @@ namespace Avalonia.Media.Imaging
         /// <param name="fileName">The filename.</param>
         public void Save(string fileName)
         {
-            PlatformImpl.Save(fileName);
+            PlatformImpl.Item.Save(fileName);
         }
 
         public void Save(Stream stream)
         {
-            PlatformImpl.Save(stream);
+            PlatformImpl.Item.Save(stream);
         }
     }
 }

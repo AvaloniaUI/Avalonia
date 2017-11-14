@@ -12,6 +12,7 @@ using System.IO;
 using Avalonia.Media.Immutable;
 using System.Threading;
 using System.Linq;
+using Avalonia.Utilities;
 
 namespace Avalonia.Rendering
 {
@@ -31,7 +32,7 @@ namespace Avalonia.Rendering
         private Scene _scene;
         private IRenderTarget _renderTarget;
         private DirtyVisuals _dirty;
-        private IRenderTargetBitmapImpl _overlay;
+        private IRef<IRenderTargetBitmapImpl> _overlay;
         private bool _updateQueued;
         private object _rendering = new object();
         private int _lastSceneId = -1;
@@ -267,7 +268,7 @@ namespace Avalonia.Rendering
 
                     if (node != null)
                     {
-                        using (var context = renderTarget.CreateDrawingContext(this))
+                        using (var context = renderTarget.Item.CreateDrawingContext(this))
                         {
                             foreach (var rect in layer.Dirty)
                             {
@@ -294,7 +295,7 @@ namespace Avalonia.Rendering
             {
                 var overlay = GetOverlay(parentContent, scene.Size, scene.Scaling);
 
-                using (var context = overlay.CreateDrawingContext(this))
+                using (var context = overlay.Item.CreateDrawingContext(this))
                 {
                     context.Clear(Colors.Transparent);
                     RenderDirtyRects(context);
@@ -323,7 +324,7 @@ namespace Avalonia.Rendering
             foreach (var layer in scene.Layers)
             {
                 var bitmap = _layers[layer.LayerRoot].Bitmap;
-                var sourceRect = new Rect(0, 0, bitmap.PixelWidth, bitmap.PixelHeight);
+                var sourceRect = new Rect(0, 0, bitmap.Item.PixelWidth, bitmap.Item.PixelHeight);
 
                 if (layer.GeometryClip != null)
                 {
@@ -347,7 +348,7 @@ namespace Avalonia.Rendering
 
             if (_overlay != null)
             {
-                var sourceRect = new Rect(0, 0, _overlay.PixelWidth, _overlay.PixelHeight);
+                var sourceRect = new Rect(0, 0, _overlay.Item.PixelWidth, _overlay.Item.PixelHeight);
                 context.DrawImage(_overlay, 0.5, sourceRect, clientRect);
             }
 
@@ -420,7 +421,7 @@ namespace Avalonia.Rendering
             }
         }
 
-        private IRenderTargetBitmapImpl GetOverlay(
+        private IRef<IRenderTargetBitmapImpl> GetOverlay(
             IDrawingContextImpl parentContext,
             Size size,
             double scaling)
@@ -428,11 +429,11 @@ namespace Avalonia.Rendering
             var pixelSize = size * scaling;
 
             if (_overlay == null ||
-                _overlay.PixelWidth != pixelSize.Width ||
-                _overlay.PixelHeight != pixelSize.Height)
+                _overlay.Item.PixelWidth != pixelSize.Width ||
+                _overlay.Item.PixelHeight != pixelSize.Height)
             {
                 _overlay?.Dispose();
-                _overlay = parentContext.CreateLayer(size);
+                _overlay = RefCountable.Create(parentContext.CreateLayer(size));
             }
 
             return _overlay;
@@ -445,7 +446,7 @@ namespace Avalonia.Rendering
             foreach (var layer in _layers)
             {
                 var fileName = Path.Combine(DebugFramesPath, $"frame-{id}-layer-{index++}.png");
-                layer.Bitmap.Save(fileName);
+                layer.Bitmap.Item.Save(fileName);
             }
         }
     }

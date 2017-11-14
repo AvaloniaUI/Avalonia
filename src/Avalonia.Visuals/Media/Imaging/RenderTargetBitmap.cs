@@ -2,8 +2,10 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Runtime.CompilerServices;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Utilities;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Media.Imaging
@@ -21,14 +23,19 @@ namespace Avalonia.Media.Imaging
         /// <param name="dpiX">The horizontal DPI of the bitmap.</param>
         /// <param name="dpiY">The vertical DPI of the bitmap.</param>
         public RenderTargetBitmap(int pixelWidth, int pixelHeight, double dpiX = 96, double dpiY = 96)
-            : base(CreateImpl(pixelWidth, pixelHeight, dpiX, dpiY))
+           : this(RefCountable.Create(CreateImpl(pixelWidth, pixelHeight, dpiX, dpiY)))
         {
+        }
+
+        private RenderTargetBitmap(IRef<IRenderTargetBitmapImpl> impl) : base(impl)
+        {
+            PlatformImpl = impl;
         }
 
         /// <summary>
         /// Gets the platform-specific bitmap implementation.
         /// </summary>
-        public new IRenderTargetBitmapImpl PlatformImpl => (IRenderTargetBitmapImpl)base.PlatformImpl;
+        public new IRef<IRenderTargetBitmapImpl> PlatformImpl { get; }
 
         /// <summary>
         /// Disposes of the bitmap.
@@ -36,6 +43,7 @@ namespace Avalonia.Media.Imaging
         public void Dispose()
         {
             PlatformImpl.Dispose();
+            base.Dispose();
         }
 
         /// <summary>
@@ -52,13 +60,13 @@ namespace Avalonia.Media.Imaging
         /// <param name="dpiX">The horizontal DPI of the bitmap.</param>
         /// <param name="dpiY">The vertical DPI of the bitmap.</param>
         /// <returns>The platform-specific implementation.</returns>
-        private static IBitmapImpl CreateImpl(int width, int height, double dpiX, double dpiY)
+        private static IRenderTargetBitmapImpl CreateImpl(int width, int height, double dpiX, double dpiY)
         {
             IPlatformRenderInterface factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
             return factory.CreateRenderTargetBitmap(width, height, dpiX, dpiY);
         }
 
         /// <inheritdoc/>
-        public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer vbr) => PlatformImpl.CreateDrawingContext(vbr);
+        public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer vbr) => PlatformImpl.Item.CreateDrawingContext(vbr);
     }
 }
