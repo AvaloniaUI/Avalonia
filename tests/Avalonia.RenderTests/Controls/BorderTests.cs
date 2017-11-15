@@ -31,7 +31,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                 Child = new Border
                 {
                     BorderBrush = Brushes.Black,
-                    BorderThickness = 1,
+                    BorderThickness = new Thickness(1),
                 }
             };
 
@@ -50,7 +50,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                 Child = new Border
                 {
                     BorderBrush = Brushes.Black,
-                    BorderThickness = 2,
+                    BorderThickness = new Thickness(2,2),
                 }
             };
 
@@ -87,7 +87,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                 Child = new Border
                 {
                     BorderBrush = Brushes.Black,
-                    BorderThickness = 2,
+                    BorderThickness = new Thickness(2, 2),
                     Child = new Border
                     {
                         Background = Brushes.Red,
@@ -110,7 +110,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                 Child = new Border
                 {
                     BorderBrush = Brushes.Black,
-                    BorderThickness = 2,
+                    BorderThickness = new Thickness(2, 2),
                     Padding = new Thickness(2),
                     Child = new Border
                     {
@@ -134,7 +134,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                 Child = new Border
                 {
                     BorderBrush = Brushes.Black,
-                    BorderThickness = 2,
+                    BorderThickness = new Thickness(2, 2),
                     Child = new Border
                     {
                         Background = Brushes.Red,
@@ -159,7 +159,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                 Child = new Border
                 {
                     BorderBrush = Brushes.Black,
-                    BorderThickness = 2,
+                    BorderThickness = new Thickness(2, 2),
                     Child = new TextBlock
                     {
                         Text = "Foo",
@@ -186,7 +186,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                 Child = new Border
                 {
                     BorderBrush = Brushes.Black,
-                    BorderThickness = 2,
+                    BorderThickness = new Thickness(2, 2),
                     Child = new TextBlock
                     {
                         Text = "Foo",
@@ -213,7 +213,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                 Child = new Border
                 {
                     BorderBrush = Brushes.Black,
-                    BorderThickness = 2,
+                    BorderThickness = new Thickness(2, 2),
                     Child = new TextBlock
                     {
                         Text = "Foo",
@@ -240,7 +240,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                 Child = new Border
                 {
                     BorderBrush = Brushes.Black,
-                    BorderThickness = 2,
+                    BorderThickness = new Thickness(2, 2),
                     Child = new TextBlock
                     {
                         Text = "Foo",
@@ -267,7 +267,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                 Child = new Border
                 {
                     BorderBrush = Brushes.Black,
-                    BorderThickness = 2,
+                    BorderThickness = new Thickness(2, 2),
                     Child = new TextBlock
                     {
                         Text = "Foo",
@@ -294,7 +294,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                 Child = new Border
                 {
                     BorderBrush = Brushes.Black,
-                    BorderThickness = 2,
+                    BorderThickness = new Thickness(2, 2),
                     Child = new TextBlock
                     {
                         Text = "Foo",
@@ -321,7 +321,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                 Child = new Border
                 {
                     BorderBrush = Brushes.Black,
-                    BorderThickness = 2,
+                    BorderThickness = new Thickness(2, 2),
                     Child = new TextBlock
                     {
                         Text = "Foo",
@@ -348,7 +348,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                 Child = new Border
                 {
                     BorderBrush = Brushes.Black,
-                    BorderThickness = 2,
+                    BorderThickness = new Thickness(2, 2),
                     Child = new TextBlock
                     {
                         Text = "Foo",
