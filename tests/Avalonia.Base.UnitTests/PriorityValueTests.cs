@@ -206,7 +206,7 @@ namespace Avalonia.Base.UnitTests
 
             Assert.Equal(2, target.GetBindings().Count());
             disposable.Dispose();
-            Assert.Equal(1, target.GetBindings().Count());
+            Assert.Single(target.GetBindings());
         }
 
         [Fact]
@@ -248,7 +248,7 @@ namespace Avalonia.Base.UnitTests
 
             Assert.Equal(2, target.GetBindings().Count());
             subject.OnCompleted();
-            Assert.Equal(1, target.GetBindings().Count());
+            Assert.Single(target.GetBindings());
         }
 
         [Fact]

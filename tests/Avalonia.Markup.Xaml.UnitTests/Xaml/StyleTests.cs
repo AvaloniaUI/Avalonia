@@ -76,7 +76,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
                 var window = AvaloniaXamlLoader.Parse<ContentControl>(xaml);
 
-                Assert.Equal(1, window.Styles.Count);
+                Assert.Single(window.Styles);
 
                 var styleInclude = window.Styles[0] as StyleInclude;
 
