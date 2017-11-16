@@ -42,7 +42,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
             var logicalChildren = target.GetLogicalChildren();
 
-            Assert.Equal(1, logicalChildren.Count());
+            Assert.Single(logicalChildren);
             Assert.Equal(content, logicalChildren.First());
         }
 
@@ -190,7 +190,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
             var logicalChildren = target.GetLogicalChildren();
 
-            Assert.Equal(1, logicalChildren.Count());
+            Assert.Single(logicalChildren);
 
             target.Content = "bar";
             target.UpdateChild();
@@ -199,7 +199,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
             logicalChildren = target.GetLogicalChildren();
 
-            Assert.Equal(1, logicalChildren.Count());
+            Assert.Single(logicalChildren);
             Assert.NotEqual(foo, logicalChildren.First());
         }
 

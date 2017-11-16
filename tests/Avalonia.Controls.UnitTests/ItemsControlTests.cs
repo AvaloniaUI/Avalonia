@@ -323,7 +323,7 @@ namespace Avalonia.Controls.UnitTests
                 Template = GetTemplate(),
             };
 
-            Assert.True(target.Classes.Contains(":empty"));
+            Assert.Contains(":empty", target.Classes);
         }
 
         [Fact]
@@ -335,7 +335,7 @@ namespace Avalonia.Controls.UnitTests
                 Items = new[] { 1, 2, 3 },
             };
 
-            Assert.False(target.Classes.Contains(":empty"));
+            Assert.DoesNotContain(":empty", target.Classes);
         }
 
         [Fact]
@@ -349,7 +349,7 @@ namespace Avalonia.Controls.UnitTests
 
             target.Items = new int[0];
 
-            Assert.True(target.Classes.Contains(":empty"));
+            Assert.Contains(":empty", target.Classes);
         }
 
         [Fact]

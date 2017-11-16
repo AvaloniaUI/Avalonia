@@ -87,7 +87,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             target.ApplyTemplate();
             items.RemoveAt(0);
 
-            Assert.Equal(1, target.Panel.Children.Count);
+            Assert.Single(target.Panel.Children);
             Assert.Equal("bar", ((ContentPresenter)target.Panel.Children[0]).Content);
             Assert.Equal("bar", ((ContentPresenter)target.ItemContainerGenerator.ContainerFromIndex(0)).Content);
         }

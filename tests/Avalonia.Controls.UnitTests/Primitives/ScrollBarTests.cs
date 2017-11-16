@@ -24,7 +24,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             var track = (Track)target.GetTemplateChildren().First(x => x.Name == "track");
             target.Value = 50;
 
-            Assert.Equal(track.Value, 50);
+            Assert.Equal(50, track.Value);
         }
 
         [Fact]
@@ -39,7 +39,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             var track = (Track)target.GetTemplateChildren().First(x => x.Name == "track");
             track.Value = 50;
 
-            Assert.Equal(target.Value, 50);
+            Assert.Equal(50, target.Value);
         }
 
         [Fact]
@@ -56,7 +56,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             target.Value = 25;
             track.Value = 50;
 
-            Assert.Equal(target.Value, 50);
+            Assert.Equal(50, target.Value);
         }
 
         [Fact]
