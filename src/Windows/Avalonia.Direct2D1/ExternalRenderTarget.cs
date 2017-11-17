@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Avalonia.Direct2D1.Media;
+using Avalonia.Direct2D1.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using SharpDX;
@@ -11,15 +8,20 @@ using DirectWriteFactory = SharpDX.DirectWrite.Factory;
 
 namespace Avalonia.Direct2D1
 {
-    class ExternalRenderTarget : IRenderTarget
+    class ExternalRenderTarget : IRenderTarget, ILayerFactory
     {
         private readonly IExternalDirect2DRenderTargetSurface _externalRenderTargetProvider;
         private readonly DirectWriteFactory _dwFactory;
-        public ExternalRenderTarget(IExternalDirect2DRenderTargetSurface externalRenderTargetProvider,
-            DirectWriteFactory dwFactory)
+        private readonly SharpDX.WIC.ImagingFactory _wicFactory;
+
+        public ExternalRenderTarget(
+            IExternalDirect2DRenderTargetSurface externalRenderTargetProvider,
+            DirectWriteFactory dwFactory,
+            SharpDX.WIC.ImagingFactory wicFactory)
         {
             _externalRenderTargetProvider = externalRenderTargetProvider;
             _dwFactory = dwFactory;
+            _wicFactory = wicFactory;
         }
 
         public void Dispose()
@@ -31,7 +33,7 @@ namespace Avalonia.Direct2D1
         {
             var target =  _externalRenderTargetProvider.GetOrCreateRenderTarget();
             _externalRenderTargetProvider.BeforeDrawing();
-            return new DrawingContextImpl(visualBrushRenderer, target, _dwFactory, null, () =>
+            return new DrawingContextImpl(visualBrushRenderer, null, target, _dwFactory, _wicFactory, null, () =>
             {
                 try
                 {
@@ -42,6 +44,16 @@ namespace Avalonia.Direct2D1
                     _externalRenderTargetProvider.DestroyRenderTarget();
                 }
             });
+        }
+
+        public IRenderTargetBitmapImpl CreateLayer(Size size)
+        {
+            var target = _externalRenderTargetProvider.GetOrCreateRenderTarget();
+            return D2DRenderTargetBitmapImpl.CreateCompatible(
+                _wicFactory,
+                _dwFactory,
+                target,
+                size);
         }
     }
 }

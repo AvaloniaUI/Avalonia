@@ -72,6 +72,12 @@ namespace Avalonia.Threading
             _jobRunner?.RunJobs(null);
         }
 
+        /// <summary>
+        /// Use this method to ensure that more prioritized tasks are executed
+        /// </summary>
+        /// <param name="minimumPriority"></param>
+        public void RunJobs(DispatcherPriority minimumPriority) => _jobRunner.RunJobs(minimumPriority);
+
         /// <inheritdoc/>
         public Task InvokeTaskAsync(Action action, DispatcherPriority priority = DispatcherPriority.Normal)
         {
@@ -82,6 +88,19 @@ namespace Avalonia.Threading
         public void InvokeAsync(Action action, DispatcherPriority priority = DispatcherPriority.Normal)
         {
             _jobRunner?.Post(action, priority);
+        }
+
+        /// <summary>
+        /// This is needed for platform backends that don't have internal priority system (e. g. win32)
+        /// To ensure that there are no jobs with higher priority
+        /// </summary>
+        /// <param name="currentPriority"></param>
+        internal void EnsurePriority(DispatcherPriority currentPriority)
+        {
+            if (currentPriority == DispatcherPriority.MaxValue)
+                return;
+            currentPriority += 1;
+            _jobRunner.RunJobs(currentPriority);
         }
 
         /// <summary>

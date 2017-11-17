@@ -168,11 +168,14 @@ namespace Avalonia.Rendering.SceneGraph
                 using (context.PushTransformContainer())
                 {
                     var startLayer = opacity < 1 || visual.OpacityMask != null;
+                    var clipBounds = bounds.TransformToAABB(contextImpl.Transform).Intersect(clip);
 
-                    forceRecurse = forceRecurse || node.Transform != contextImpl.Transform;
+                    forceRecurse = forceRecurse ||
+                        node.Transform != contextImpl.Transform ||
+                        node.ClipBounds != clipBounds;
 
                     node.Transform = contextImpl.Transform;
-                    node.ClipBounds = bounds.TransformToAABB(node.Transform).Intersect(clip);
+                    node.ClipBounds = clipBounds;
                     node.ClipToBounds = clipToBounds;
                     node.GeometryClip = visual.Clip?.PlatformImpl;
                     node.Opacity = opacity;

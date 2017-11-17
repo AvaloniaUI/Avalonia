@@ -17,7 +17,7 @@ namespace VirtualizationTest.ViewModels
         private int _newItemIndex;
         private IReactiveList<ItemViewModel> _items;
         private string _prefix = "Item";
-        private Orientation _orientation;
+        private Orientation _orientation = Orientation.Vertical;
         private ItemVirtualizationMode _virtualizationMode = ItemVirtualizationMode.Simple;
 
         public MainWindowViewModel()

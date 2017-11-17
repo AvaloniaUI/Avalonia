@@ -253,9 +253,7 @@ namespace Avalonia.Controls
 
                         if (AutoScrollToSelectedItem)
                         {
-                            DispatcherTimer.RunOnce(
-                                container.ContainerControl.BringIntoView,
-                                TimeSpan.Zero);
+                            Dispatcher.UIThread.InvokeAsync(container.ContainerControl.BringIntoView);
                         }
 
                         break;

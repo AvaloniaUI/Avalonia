@@ -101,6 +101,7 @@ namespace Avalonia.Controls
         private Styles _styles;
         private bool _styled;
         private Subject<IStyleable> _styleDetach = new Subject<IStyleable>();
+        private bool _dataContextUpdating;
 
         /// <summary>
         /// Initializes static members of the <see cref="Control"/> class.
@@ -111,6 +112,7 @@ namespace Avalonia.Controls
             PseudoClass(IsEnabledCoreProperty, x => !x, ":disabled");
             PseudoClass(IsFocusedProperty, ":focus");
             PseudoClass(IsPointerOverProperty, ":pointerover");
+            DataContextProperty.Changed.AddClassHandler<Control>(x => x.OnDataContextChangedCore);
         }
 
         /// <summary>
@@ -175,9 +177,9 @@ namespace Avalonia.Controls
 
             set
             {
-                if (value.Trim() == string.Empty)
+                if (String.IsNullOrWhiteSpace(value))
                 {
-                    throw new InvalidOperationException("Cannot set Name to empty string.");
+                    throw new InvalidOperationException("Cannot set Name to null or empty string.");
                 }
 
                 if (_styled)
@@ -656,7 +658,6 @@ namespace Avalonia.Controls
         /// <param name="e">The event args.</param>
         protected virtual void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
-            AttachedToLogicalTree?.Invoke(this, e);
         }
 
         /// <summary>
@@ -665,7 +666,6 @@ namespace Avalonia.Controls
         /// <param name="e">The event args.</param>
         protected virtual void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
-            DetachedFromLogicalTree?.Invoke(this, e);
         }
 
         /// <inheritdoc/>
@@ -683,18 +683,26 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Called before the <see cref="DataContext"/> property changes.
+        /// Called when the <see cref="DataContext"/> property changes.
         /// </summary>
-        protected virtual void OnDataContextChanging()
+        /// <param name="e">The event args.</param>
+        protected virtual void OnDataContextChanged(EventArgs e)
+        {
+            DataContextChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        /// <summary>
+        /// Called when the <see cref="DataContext"/> begins updating.
+        /// </summary>
+        protected virtual void OnDataContextBeginUpdate()
         {
         }
 
         /// <summary>
-        /// Called after the <see cref="DataContext"/> property changes.
+        /// Called when the <see cref="DataContext"/> finishes updating.
         /// </summary>
-        protected virtual void OnDataContextChanged()
+        protected virtual void OnDataContextEndUpdate()
         {
-            DataContextChanged?.Invoke(this, EventArgs.Empty);
         }
 
         /// <inheritdoc/>
@@ -747,24 +755,40 @@ namespace Avalonia.Controls
             }
         }
 
-        /// <summary>
-        /// Called when the <see cref="DataContext"/> property begins and ends being notified.
-        /// </summary>
-        /// <param name="o">The object on which the DataContext is changing.</param>
-        /// <param name="notifying">Whether the notifcation is beginning or ending.</param>
         private static void DataContextNotifying(IAvaloniaObject o, bool notifying)
         {
-            var control = o as Control;
-
-            if (control != null)
+            if (o is Control control)
             {
-                if (notifying)
+                DataContextNotifying(control, notifying);
+            }
+        }
+
+        private static void DataContextNotifying(Control control, bool notifying)
+        {
+            if (notifying)
+            {
+                if (!control._dataContextUpdating)
                 {
-                    control.OnDataContextChanging();
+                    control._dataContextUpdating = true;
+                    control.OnDataContextBeginUpdate();
+
+                    foreach (var child in control.LogicalChildren)
+                    {
+                        if (child is Control c && 
+                            c.InheritanceParent == control &&
+                            !c.IsSet(DataContextProperty))
+                        {
+                            DataContextNotifying(c, notifying);
+                        }
+                    }
                 }
-                else
+            }
+            else
+            {
+                if (control._dataContextUpdating)
                 {
-                    control.OnDataContextChanged();
+                    control.OnDataContextEndUpdate();
+                    control._dataContextUpdating = false;
                 }
             }
         }
@@ -773,11 +797,9 @@ namespace Avalonia.Controls
         {
             while (e != null)
             {
-                var root = e as IStyleRoot;
-
-                if (root != null && root.StylingParent == null)
+                if (e is IRenderRoot root)
                 {
-                    return root;
+                    return root as IStyleRoot;
                 }
 
                 e = e.StylingParent;
@@ -844,6 +866,7 @@ namespace Avalonia.Controls
                 InitializeStylesIfNeeded(true);
 
                 OnAttachedToLogicalTree(e);
+                AttachedToLogicalTree?.Invoke(this, e);
             }
 
             foreach (var child in LogicalChildren.OfType<Control>())
@@ -864,6 +887,7 @@ namespace Avalonia.Controls
                 _isAttachedToLogicalTree = false;
                 _styleDetach.OnNext(this);
                 OnDetachedFromLogicalTree(e);
+                DetachedFromLogicalTree?.Invoke(this, e);
 
                 foreach (var child in LogicalChildren.OfType<Control>())
                 {
@@ -881,6 +905,11 @@ namespace Avalonia.Controls
                 }
 #endif
             }
+        }
+
+        private void OnDataContextChangedCore(AvaloniaPropertyChangedEventArgs e)
+        {
+            OnDataContextChanged(EventArgs.Empty);
         }
 
         private void LogicalChildrenCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)

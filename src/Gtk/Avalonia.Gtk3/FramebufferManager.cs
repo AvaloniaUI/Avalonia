@@ -40,7 +40,7 @@ namespace Avalonia.Gtk3
             return new ImageSurfaceFramebuffer(_window, width, height, _window.LastKnownScaleFactor);
         }
 
-        private static int X11ErrorHandler(IntPtr d, IntPtr e)
+        private static int X11ErrorHandler(IntPtr d, ref X11.XErrorEvent e)
         {
             return 0;
         }

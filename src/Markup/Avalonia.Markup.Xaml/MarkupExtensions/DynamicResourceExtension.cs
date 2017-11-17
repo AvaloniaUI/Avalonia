@@ -51,7 +51,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
 
             if (control != null)
             {
-                return new InstancedBinding(control.GetResourceObservable(ResourceKey));
+                return InstancedBinding.OneWay(control.GetResourceObservable(ResourceKey));
             }
 
             return null;

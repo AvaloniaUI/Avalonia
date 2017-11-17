@@ -515,7 +515,7 @@ namespace Avalonia.Controls.UnitTests
             public InstancedBinding ItemsSelector(object item)
             {
                 var obs = new ExpressionObserver(item, nameof(Node.Children));
-                return new InstancedBinding(obs);
+                return InstancedBinding.OneWay(obs);
             }
 
             public bool Match(object data)
