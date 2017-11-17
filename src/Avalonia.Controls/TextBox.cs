@@ -97,7 +97,7 @@ namespace Avalonia.Controls
         private UndoRedoHelper<UndoRedoState> _undoRedoHelper;
         private bool _ignoreTextChanges;
         private IEnumerable<Exception> _dataValidationErrors;
-        private string[] invalidCharacters = new String[1]{""};
+        private static readonly string[] invalidCharacters = new String[1]{"\u007f"};
 
         static TextBox()
         {
