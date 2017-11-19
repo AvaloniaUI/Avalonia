@@ -131,7 +131,7 @@ namespace Avalonia.Markup.Xaml.Data
             {
                 if (RelativeSource.Tree == TreeType.Visual && RelativeSource.AncestorType == null)
                 {
-                    throw new InvalidOperationException("AncestorType must be set for RelativeSourceModel.FindAncestor when searching the visual tree.");
+                    throw new InvalidOperationException("AncestorType must be set for RelativeSourceMode.FindAncestor when searching the visual tree.");
                 }
 
                 observer = CreateFindAncestorObserver(
@@ -228,7 +228,7 @@ namespace Avalonia.Markup.Xaml.Data
             Contract.Requires<ArgumentNullException>(target != null);
 
             return new ExpressionObserver(
-                ControlLocator.Track(target, relativeSource.AncestorType != null ? relativeSource.Tree : TreeType.Logical, relativeSource.AncestorLevel - 1, relativeSource.AncestorType),
+                ControlLocator.Track(target, relativeSource.Tree, relativeSource.AncestorLevel - 1, relativeSource.AncestorType),
                 path);
         }
 
