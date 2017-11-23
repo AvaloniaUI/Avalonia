@@ -107,6 +107,8 @@ public class Packages
         context.Information("Setting NuGet package dependencies versions:");
 
         var SerilogVersion = packageVersions["Serilog"].FirstOrDefault().Item1;
+        var SerilogSinksDebugVersion = packageVersions["Serilog.Sinks.Debug"].FirstOrDefault().Item1;
+        var SerilogSinksTraceVersion = packageVersions["Serilog.Sinks.Trace"].FirstOrDefault().Item1;
         var SpracheVersion = packageVersions["Sprache"].FirstOrDefault().Item1;
         var SystemReactiveVersion = packageVersions["System.Reactive"].FirstOrDefault().Item1;
         var ReactiveUIVersion = packageVersions["reactiveui"].FirstOrDefault().Item1;
@@ -243,6 +245,8 @@ public class Packages
                 Dependencies = new DependencyBuilder(this)
                 {
                     new NuSpecDependency() { Id = "Serilog", Version = SerilogVersion },
+                    new NuSpecDependency() { Id = "Serilog.Sinks.Debug", Version = SerilogSinksDebugVersion },
+                    new NuSpecDependency() { Id = "Serilog.Sinks.Trace", Version = SerilogSinksTraceVersion },
                     new NuSpecDependency() { Id = "Sprache", Version = SpracheVersion },
                     new NuSpecDependency() { Id = "System.Reactive", Version = SystemReactiveVersion },
                     new NuSpecDependency() { Id = "Avalonia.Remote.Protocol", Version = parameters.Version },
@@ -251,6 +255,8 @@ public class Packages
                     new NuSpecDependency() { Id = "Microsoft.Extensions.DependencyModel", TargetFramework = "netcoreapp2.0", Version = "1.1.0" },
                     new NuSpecDependency() { Id = "NETStandard.Library", TargetFramework = "netcoreapp2.0", Version = "1.6.0" },
                     new NuSpecDependency() { Id = "Serilog", TargetFramework = "netcoreapp2.0", Version = SerilogVersion },
+                    new NuSpecDependency() { Id = "Serilog.Sinks.Debug", TargetFramework = "netcoreapp2.0", Version = SerilogSinksDebugVersion },
+                    new NuSpecDependency() { Id = "Serilog.Sinks.Trace", TargetFramework = "netcoreapp2.0", Version = SerilogSinksTraceVersion },
                     new NuSpecDependency() { Id = "Sprache", TargetFramework = "netcoreapp2.0", Version = SpracheVersion },
                     new NuSpecDependency() { Id = "System.Reactive", TargetFramework = "netcoreapp2.0", Version = SystemReactiveVersion },
                     new NuSpecDependency() { Id = "Avalonia.Remote.Protocol", TargetFramework = "netcoreapp2.0", Version = parameters.Version },

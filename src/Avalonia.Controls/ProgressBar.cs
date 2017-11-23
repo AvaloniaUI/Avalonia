@@ -112,8 +112,10 @@ namespace Avalonia.Controls
         private void UpdateIsIndeterminate(bool isIndeterminate)
         {
             if (isIndeterminate)
+            {
                 if (_indeterminateAnimation == null || _indeterminateAnimation.Disposed)
                     _indeterminateAnimation = IndeterminateAnimation.StartAnimation(this);
+            }
             else
                 _indeterminateAnimation?.Dispose();
         }
