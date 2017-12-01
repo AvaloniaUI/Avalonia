@@ -2,11 +2,13 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Linq;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.LogicalTree;
 using Avalonia.UnitTests;
+using Avalonia.VisualTree;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Primitives
@@ -90,20 +92,67 @@ namespace Avalonia.Controls.UnitTests.Primitives
             }
         }
 
+        [Fact]
+        public void Clearing_Content_Of_Popup_In_ControlTemplate_Doesnt_Crash()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var target = new TemplatedControlWithPopup
+                {
+                    PopupContent = new Canvas(),
+                };
+
+                var root = new TestRoot { Child = target };
+
+                target.ApplyTemplate();
+                target.Popup.Open();
+                target.PopupContent = null;
+            }
+        }
+
         private PopupRoot CreateTarget()
         {
             var result = new PopupRoot
             {
-                Template = new FuncControlTemplate<PopupRoot>(_ =>
+                Template = new FuncControlTemplate<PopupRoot>(parent =>
                     new ContentPresenter
                     {
                         Name = "PART_ContentPresenter",
+                        [!ContentPresenter.ContentProperty] = parent[!PopupRoot.ContentProperty],
                     }),
             };
 
             result.ApplyTemplate();
 
             return result;
+        }
+
+        private class TemplatedControlWithPopup : TemplatedControl
+        {
+            public static readonly AvaloniaProperty<Control> PopupContentProperty =
+                AvaloniaProperty.Register<TemplatedControlWithPopup, Control>(nameof(PopupContent));
+
+            public TemplatedControlWithPopup()
+            {
+                Template = new FuncControlTemplate<TemplatedControlWithPopup>(parent =>
+                    new Popup
+                    {
+                        [!Popup.ChildProperty] = parent[!TemplatedControlWithPopup.PopupContentProperty],
+                    });
+            }
+
+            public Popup Popup { get; private set; }
+
+            public Control PopupContent
+            {
+                get => GetValue(PopupContentProperty);
+                set => SetValue(PopupContentProperty, value);
+            }
+
+            protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+            {
+                Popup = (Popup)this.GetVisualChildren().Single();
+            }
         }
     }
 }
