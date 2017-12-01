@@ -90,20 +90,23 @@ namespace Avalonia.Controls.Primitives
 
         private void SetTemplatedParentAndApplyChildTemplates(IControl control)
         {
-            var templatedParent = Parent.TemplatedParent;
-
-            if (control.TemplatedParent == null)
+            if (control != null)
             {
-                control.SetValue(TemplatedParentProperty, templatedParent);
-            }
+                var templatedParent = Parent.TemplatedParent;
 
-            control.ApplyTemplate();
-
-            if (!(control is IPresenter) && control.TemplatedParent == templatedParent)
-            {
-                foreach (IControl child in control.GetVisualChildren())
+                if (control.TemplatedParent == null)
                 {
-                    SetTemplatedParentAndApplyChildTemplates(child);
+                    control.SetValue(TemplatedParentProperty, templatedParent);
+                }
+
+                control.ApplyTemplate();
+
+                if (!(control is IPresenter) && control.TemplatedParent == templatedParent)
+                {
+                    foreach (IControl child in control.GetVisualChildren())
+                    {
+                        SetTemplatedParentAndApplyChildTemplates(child);
+                    }
                 }
             }
         }
