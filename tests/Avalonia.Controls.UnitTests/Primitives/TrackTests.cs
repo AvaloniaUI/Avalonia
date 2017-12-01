@@ -140,5 +140,31 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.Same(thumb.Parent, target);
             Assert.Equal(new[] { thumb }, ((ILogical)target).LogicalChildren);
         }
+
+        [Fact]
+        public void Should_Not_Pass_Invalid_Arrange_Rect()
+        {
+            var thumb = new Thumb { Width = 100.873106060606 };
+            var increaseButton = new Button { Width = 10 };
+            var decreaseButton = new Button { Width = 10 };
+
+            var target = new Track
+            {
+                Height = 12,
+                Thumb = thumb,
+                IncreaseButton = increaseButton,
+                DecreaseButton = decreaseButton,
+                Orientation = Orientation.Horizontal,
+                Minimum = 0,
+                Maximum = 287,
+                Value = 287,
+                ViewportSize = 241,
+            };
+
+            target.Measure(Size.Infinity);
+
+            // #1297 was occuring here.
+            target.Arrange(new Rect(0, 0, 221, 12));
+        }
     }
 }
