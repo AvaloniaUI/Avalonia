@@ -154,7 +154,11 @@ namespace Avalonia.Controls.Primitives
 
                 if (increaseButton != null)
                 {
-                    increaseButton.Arrange(new Rect(firstWidth + thumbWidth, 0, remaining - firstWidth, finalSize.Height));
+                    increaseButton.Arrange(new Rect(
+                        firstWidth + thumbWidth,
+                        0,
+                        Math.Max(0, remaining - firstWidth),
+                        Math.Max(0, finalSize.Height)));
                 }
             }
             else
