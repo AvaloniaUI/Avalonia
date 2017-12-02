@@ -8,6 +8,7 @@ using Moq;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Xunit;
+using Avalonia.LogicalTree;
 
 namespace Avalonia.Controls.UnitTests
 {
@@ -18,7 +19,7 @@ namespace Avalonia.Controls.UnitTests
         {
             var target = new Control();
 
-            Assert.Equal(0, target.Classes.Count);
+            Assert.Empty(target.Classes);
         }
 
         [Fact]
@@ -328,9 +329,139 @@ namespace Avalonia.Controls.UnitTests
             Assert.True(target.IsInitialized);
         }
 
-        private class TestControl : Control
+        [Fact]
+        public void DataContextChanged_Should_Be_Called()
         {
+            var root = new TestStackPanel
+            {
+                Name = "root",
+                Children =
+                {
+                    new TestControl
+                    {
+                        Name = "a1",
+                        Child = new TestControl
+                        {
+                            Name = "b1",
+                        }
+                    },
+                    new TestControl
+                    {
+                        Name = "a2",
+                        DataContext = "foo",
+                    },
+                }
+            };
+
+            var called = new List<string>();
+            void Record(object sender, EventArgs e) => called.Add(((Control)sender).Name);
+
+            root.DataContextChanged += Record;
+
+            foreach (TestControl c in root.GetLogicalDescendants())
+            {
+                c.DataContextChanged += Record;
+            }
+
+            root.DataContext = "foo";
+
+            Assert.Equal(new[] { "root", "a1", "b1", }, called);
+        }
+
+        [Fact]
+        public void DataContext_Notifications_Should_Be_Called_In_Correct_Order()
+        {
+            var root = new TestStackPanel
+            {
+                Name = "root",
+                Children =
+                {
+                    new TestControl
+                    {
+                        Name = "a1",
+                        Child = new TestControl
+                        {
+                            Name = "b1",
+                        }
+                    },
+                    new TestControl
+                    {
+                        Name = "a2",
+                        DataContext = "foo",
+                    },
+                }
+            };
+
+            var called = new List<string>();
+
+            foreach (IDataContextEvents c in root.GetSelfAndLogicalDescendants())
+            {
+                c.DataContextBeginUpdate += (s, e) => called.Add("begin " + ((Control)s).Name);
+                c.DataContextChanged += (s, e) => called.Add("changed " + ((Control)s).Name);
+                c.DataContextEndUpdate += (s, e) => called.Add("end " + ((Control)s).Name);
+            }
+
+            root.DataContext = "foo";
+
+            Assert.Equal(
+                new[] 
+                {
+                    "begin root",
+                    "begin a1",
+                    "begin b1",
+                    "changed root",
+                    "changed a1",
+                    "changed b1",
+                    "end b1",
+                    "end a1",
+                    "end root",
+                },
+                called);
+        }
+
+        private interface IDataContextEvents
+        {
+            event EventHandler DataContextBeginUpdate;
+            event EventHandler DataContextChanged;
+            event EventHandler DataContextEndUpdate;
+        }
+
+        private class TestControl : Decorator, IDataContextEvents
+        {
+            public event EventHandler DataContextBeginUpdate;
+            public event EventHandler DataContextEndUpdate;
+
             public new IAvaloniaObject InheritanceParent => base.InheritanceParent;
+
+            protected override void OnDataContextBeginUpdate()
+            {
+                DataContextBeginUpdate?.Invoke(this, EventArgs.Empty);
+                base.OnDataContextBeginUpdate();
+            }
+
+            protected override void OnDataContextEndUpdate()
+            {
+                DataContextEndUpdate?.Invoke(this, EventArgs.Empty);
+                base.OnDataContextEndUpdate();
+            }
+        }
+
+        private class TestStackPanel : StackPanel, IDataContextEvents
+        {
+            public event EventHandler DataContextBeginUpdate;
+            public event EventHandler DataContextEndUpdate;
+
+            protected override void OnDataContextBeginUpdate()
+            {
+                DataContextBeginUpdate?.Invoke(this, EventArgs.Empty);
+                base.OnDataContextBeginUpdate();
+            }
+
+            protected override void OnDataContextEndUpdate()
+            {
+                DataContextEndUpdate?.Invoke(this, EventArgs.Empty);
+                base.OnDataContextEndUpdate();
+            }
         }
     }
 }

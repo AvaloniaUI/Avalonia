@@ -33,11 +33,11 @@ namespace Avalonia.Controls.UnitTests
 
                 target.ApplyTemplate();
 
-                Assert.False(target.Classes.Contains(":error"));
+                Assert.DoesNotContain(":error", target.Classes);
                 target.Text = "20";
-                Assert.True(target.Classes.Contains(":error"));
+                Assert.Contains(":error", target.Classes);
                 target.Text = "1";
-                Assert.False(target.Classes.Contains(":error"));
+                Assert.DoesNotContain(":error", target.Classes);
             }
         }
 
@@ -57,7 +57,7 @@ namespace Avalonia.Controls.UnitTests
 
                 Assert.Null(target.DataValidationErrors);
                 target.Text = "20";
-                Assert.Equal(1, target.DataValidationErrors.Count());
+                Assert.Single(target.DataValidationErrors);
                 Assert.IsType<InvalidOperationException>(target.DataValidationErrors.Single());
                 target.Text = "1";
                 Assert.Null(target.DataValidationErrors);

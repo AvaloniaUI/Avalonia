@@ -50,6 +50,16 @@ namespace Avalonia.LogicalTree
             }
         }
 
+        public static IEnumerable<ILogical> GetSelfAndLogicalDescendants(this ILogical logical)
+        {
+            yield return logical;
+
+            foreach (var descendent in logical.GetLogicalDescendants())
+            {
+                yield return descendent;
+            }
+        }
+
         public static ILogical GetLogicalParent(this ILogical logical)
         {
             return logical.LogicalParent;

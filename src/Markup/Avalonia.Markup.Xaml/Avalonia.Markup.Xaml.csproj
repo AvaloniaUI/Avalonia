@@ -39,7 +39,6 @@
         <Compile Include="MarkupExtensions\StaticResourceExtension.cs" />
         <Compile Include="MarkupExtensions\StyleIncludeExtension.cs" />
         <Compile Include="PortableXaml\AvaloniaXamlContext.cs" />
-        <Compile Include="PortableXaml\XamlBinding.cs" />
         <Compile Include="PortableXaml\AttributeExtensions.cs" />
         <Compile Include="PortableXaml\AvaloniaMemberAttributeProvider.cs" />
         <Compile Include="PortableXaml\AvaloniaNameScope.cs" />
@@ -73,13 +72,9 @@
         <Compile Include="Data\DelayedBinding.cs" />
         <Compile Include="Data\MultiBinding.cs" />
         <Compile Include="Data\RelativeSource.cs" />
-        <Compile Include="Data\StyleResourceBinding.cs" />
-        <Compile Include="MarkupExtensions\StyleResourceExtension.cs" />
         <Compile Include="MarkupExtensions\BindingExtension.cs" />
         <Compile Include="MarkupExtensions\RelativeSourceExtension.cs" />
-        <Compile Include="MarkupExtensions\StaticExtension.cs" />
         <Compile Include="MarkupExtensions\TemplateBindingExtension.cs" />
-        <Compile Include="MarkupExtensions\TypeExtension.cs" />
         <Compile Include="Parsers\SelectorGrammar.cs" />
         <Compile Include="Parsers\SelectorParser.cs" />
         <Compile Include="PortableXaml\AvaloniaTypeAttributeProvider.cs" />

@@ -9,7 +9,7 @@
       </Button>
       <Carousel Name="carousel">
         <Carousel.Transition>
-          <PageSlide Duration="0.25"/>
+          <PageSlide Duration="0.25" Orientation="Vertical" />
         </Carousel.Transition>
         <Image Source="resm:ControlCatalog.Assets.delicate-arch-896885_640.jpg"/>
         <Image Source="resm:ControlCatalog.Assets.hirsch-899118_640.jpg"/>
@@ -26,6 +26,14 @@
         <DropDownItem>None</DropDownItem>
         <DropDownItem>Slide</DropDownItem>
         <DropDownItem>Crossfade</DropDownItem>
+      </DropDown>
+    </StackPanel>
+
+    <StackPanel Orientation="Horizontal" Gap="4">
+      <TextBlock VerticalAlignment="Center">Orientation</TextBlock>
+      <DropDown Name="orientation" SelectedIndex="1" VerticalAlignment="Center">
+        <DropDownItem>Horizontal</DropDownItem>
+        <DropDownItem>Vertical</DropDownItem>
       </DropDown>
     </StackPanel>
     

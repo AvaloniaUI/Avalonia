@@ -16,6 +16,15 @@ namespace Avalonia.Animation
     public class PageSlide : IPageTransition
     {
         /// <summary>
+        /// The axis on which the PageSlide should occur
+        /// </summary>
+        public enum SlideAxis
+        {
+            Horizontal,
+            Vertical
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="PageSlide"/> class.
         /// </summary>
         public PageSlide()
@@ -26,15 +35,22 @@ namespace Avalonia.Animation
         /// Initializes a new instance of the <see cref="PageSlide"/> class.
         /// </summary>
         /// <param name="duration">The duration of the animation.</param>
-        public PageSlide(TimeSpan duration)
+        /// <param name="orientation">The axis on which the animation should occur</param>
+        public PageSlide(TimeSpan duration, SlideAxis orientation = SlideAxis.Horizontal)
         {
             Duration = duration;
+            Orientation = orientation;
         }
 
         /// <summary>
         /// Gets the duration of the animation.
         /// </summary>
         public TimeSpan Duration { get; set; }
+
+        /// <summary>
+        /// Gets the duration of the animation.
+        /// </summary>
+        public SlideAxis Orientation { get; set; }
 
         /// <summary>
         /// Starts the animation.
@@ -55,7 +71,8 @@ namespace Avalonia.Animation
         {
             var tasks = new List<Task>();
             var parent = GetVisualParent(from, to);
-            var distance = parent.Bounds.Width;
+            var distance = Orientation == SlideAxis.Horizontal ? parent.Bounds.Width : parent.Bounds.Height;
+            var translateProperty = Orientation == SlideAxis.Horizontal ? TranslateTransform.XProperty : TranslateTransform.YProperty;
 
             if (from != null)
             {
@@ -63,7 +80,7 @@ namespace Avalonia.Animation
                 from.RenderTransform = transform;
                 tasks.Add(Animate.Property(
                     transform,
-                    TranslateTransform.XProperty,
+                    translateProperty,
                     0.0,
                     forward ? -distance : distance,
                     LinearEasing.For<double>(),
@@ -77,7 +94,7 @@ namespace Avalonia.Animation
                 to.IsVisible = true;
                 tasks.Add(Animate.Property(
                     transform,
-                    TranslateTransform.XProperty,
+                    translateProperty,
                     forward ? distance : -distance,
                     0.0,
                     LinearEasing.For<double>(),

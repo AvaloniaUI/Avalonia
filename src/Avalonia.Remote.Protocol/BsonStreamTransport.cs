@@ -64,7 +64,6 @@ namespace Avalonia.Remote.Protocol
 
         async Task Reader()
         {
-            Task.Yield();
             try
             {
                 while (true)

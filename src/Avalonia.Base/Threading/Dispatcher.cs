@@ -72,6 +72,12 @@ namespace Avalonia.Threading
             _jobRunner?.RunJobs(null);
         }
 
+        /// <summary>
+        /// Use this method to ensure that more prioritized tasks are executed
+        /// </summary>
+        /// <param name="minimumPriority"></param>
+        public void RunJobs(DispatcherPriority minimumPriority) => _jobRunner.RunJobs(minimumPriority);
+
         /// <inheritdoc/>
         public Task InvokeTaskAsync(Action action, DispatcherPriority priority = DispatcherPriority.Normal)
         {

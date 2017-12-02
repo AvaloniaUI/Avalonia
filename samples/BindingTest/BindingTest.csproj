@@ -151,8 +151,6 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\..\build\Serilog.props" />
-  <Import Project="..\..\build\Serilog.Sinks.Trace.props" />
-  <Import Project="..\..\build\Splat.props" />
   <Import Project="..\..\build\Rx.props" />
   <Import Project="..\..\build\ReactiveUI.props" />
 </Project>
