@@ -104,7 +104,8 @@ namespace Avalonia.Markup.Xaml.Data
                 observer = CreateElementObserver(
                     (target as IControl) ?? (anchor as IControl),
                     ElementName,
-                    Path);
+                    Path,
+                    enableDataValidation);
             }
             else if (Source != null)
             {
@@ -125,7 +126,7 @@ namespace Avalonia.Markup.Xaml.Data
             }
             else if (RelativeSource.Mode == RelativeSourceMode.TemplatedParent)
             {
-                observer = CreateTemplatedParentObserver(target, Path);
+                observer = CreateTemplatedParentObserver(target, Path, enableDataValidation);
             }
             else if (RelativeSource.Mode == RelativeSourceMode.FindAncestor)
             {
@@ -137,7 +138,8 @@ namespace Avalonia.Markup.Xaml.Data
                 observer = CreateFindAncestorObserver(
                     (target as IControl) ?? (anchor as IControl),
                     RelativeSource,
-                    Path);
+                    Path,
+                    enableDataValidation);
             }
             else
             {
@@ -207,7 +209,11 @@ namespace Avalonia.Markup.Xaml.Data
             }
         }
 
-        private ExpressionObserver CreateElementObserver(IControl target, string elementName, string path)
+        private ExpressionObserver CreateElementObserver(
+            IControl target,
+            string elementName,
+            string path,
+            bool enableDataValidation)
         {
             Contract.Requires<ArgumentNullException>(target != null);
 
@@ -215,7 +221,7 @@ namespace Avalonia.Markup.Xaml.Data
             var result = new ExpressionObserver(
                 ControlLocator.Track(target, elementName),
                 path,
-                false,
+                enableDataValidation,
                 description);
             return result;
         }
@@ -223,28 +229,31 @@ namespace Avalonia.Markup.Xaml.Data
         private ExpressionObserver CreateFindAncestorObserver(
             IControl target,
             RelativeSource relativeSource,
-            string path)
+            string path,
+            bool enableDataValidation)
         {
             Contract.Requires<ArgumentNullException>(target != null);
 
             return new ExpressionObserver(
                 ControlLocator.Track(target, relativeSource.Tree, relativeSource.AncestorLevel - 1, relativeSource.AncestorType),
-                path);
+                path,
+                enableDataValidation);
         }
 
         private ExpressionObserver CreateSourceObserver(
             object source,
             string path,
-            bool enabledDataValidation)
+            bool enableDataValidation)
         {
             Contract.Requires<ArgumentNullException>(source != null);
 
-            return new ExpressionObserver(source, path, enabledDataValidation);
+            return new ExpressionObserver(source, path, enableDataValidation);
         }
 
         private ExpressionObserver CreateTemplatedParentObserver(
             IAvaloniaObject target,
-            string path)
+            string path,
+            bool enableDataValidation)
         {
             Contract.Requires<ArgumentNullException>(target != null);
 
@@ -255,7 +264,8 @@ namespace Avalonia.Markup.Xaml.Data
             var result = new ExpressionObserver(
                 () => target.GetValue(Control.TemplatedParentProperty),
                 path,
-                update);
+                update,
+                enableDataValidation);
 
             return result;
         }
