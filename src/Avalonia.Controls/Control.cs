@@ -621,7 +621,6 @@ namespace Avalonia.Controls
             Contract.Requires<ArgumentNullException>(property != null);
             Contract.Requires<ArgumentNullException>(selector != null);
             Contract.Requires<ArgumentNullException>(className != null);
-            Contract.Requires<ArgumentNullException>(property != null);
 
             if (string.IsNullOrWhiteSpace(className))
             {

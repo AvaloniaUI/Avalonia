@@ -192,7 +192,7 @@ namespace Avalonia.Rendering.SceneGraph
                             UpdateLayer(node, scene.Layers[node.LayerRoot]);
                         }
                     }
-                    else if (!startLayer && node.LayerRoot == node.Visual && node.Parent != null)
+                    else if (node.LayerRoot == node.Visual && node.Parent != null)
                     {
                         ClearLayer(scene, node);
                     }
