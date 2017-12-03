@@ -8,6 +8,7 @@ using Avalonia.VisualTree;
 using Xunit;
 using Avalonia.Layout;
 using Avalonia.Rendering;
+using Avalonia.Controls.Shapes;
 
 namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
 {
@@ -169,6 +170,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                             Child = canvas = new Canvas
                             {
                                 Opacity = 0.75,
+                                Children = { new Rectangle() }
                             },
                         }
                     }
@@ -216,6 +218,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                             Child = canvas = new Canvas
                             {
                                 Opacity = 0.75,
+                                Children = { new Rectangle() },
                             },
                         }
                     }
@@ -256,6 +259,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                         Child = border = new Border
                         {
                             Opacity = 0.5,
+                            Child = new Rectangle(),
                         }
                     }
                 };

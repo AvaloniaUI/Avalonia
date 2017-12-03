@@ -47,5 +47,16 @@ namespace Avalonia.Media.Immutable
 
         /// <inheritdoc/>
         public RelativePoint EndPoint { get; }
+
+        /// <inheritdoc/>
+        public override IImmutableBrush WithOpacity(double opacity)
+        {
+            return new ImmutableLinearGradientBrush(
+                GradientStops.ToList(),
+                opacity,
+                SpreadMethod,
+                StartPoint,
+                EndPoint);
+        }
     }
 }

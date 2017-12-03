@@ -1,4 +1,5 @@
 ﻿using System;
+using Avalonia.Media.Immutable;
 
 namespace Avalonia.Media
 {
@@ -11,6 +12,6 @@ namespace Avalonia.Media
         /// Creates an immutable clone of the brush.
         /// </summary>
         /// <returns>The immutable clone.</returns>
-        IBrush ToImmutable();
+        IImmutableBrush ToImmutable();
     }
 }

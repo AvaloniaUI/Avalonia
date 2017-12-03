@@ -54,5 +54,19 @@ namespace Avalonia.Media.Immutable
 
         /// <inheritdoc/>
         public IBitmap Source { get; }
+
+        /// <inheritdoc/>
+        public override IImmutableBrush WithOpacity(double opacity)
+        {
+            return new ImmutableImageBrush(
+                Source,
+                AlignmentX,
+                AlignmentY,
+                DestinationRect,
+                opacity,
+                SourceRect,
+                Stretch,
+                TileMode);
+        }
     }
 }

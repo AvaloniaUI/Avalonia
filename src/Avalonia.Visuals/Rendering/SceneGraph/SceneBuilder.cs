@@ -141,10 +141,14 @@ namespace Avalonia.Rendering.SceneGraph
         private static void Update(DrawingContext context, Scene scene, VisualNode node, Rect clip, bool forceRecurse)
         {
             var visual = node.Visual;
-            var opacity = visual.Opacity;
             var clipToBounds = visual.ClipToBounds;
             var bounds = new Rect(visual.Bounds.Size);
             var contextImpl = (DeferredDrawingContextImpl)context.PlatformImpl;
+
+            // If the visual has no children, DeferredDrawingContextImpl will bake the opacity
+            // into the draw operations so the opacity for the node will be 1. If it has
+            // children we need to start a new layer so use the actual control opacity.
+            var opacity = visual.VisualChildren.Count == 0 ? 1 : visual.Opacity;
 
             contextImpl.Layers.Find(node.LayerRoot)?.Dirty.Add(node.Bounds);
 
@@ -178,7 +182,6 @@ namespace Avalonia.Rendering.SceneGraph
                     node.ClipBounds = clipBounds;
                     node.ClipToBounds = clipToBounds;
                     node.GeometryClip = visual.Clip?.PlatformImpl;
-                    node.Opacity = opacity;
                     node.OpacityMask = visual.OpacityMask;
 
                     if (startLayer)

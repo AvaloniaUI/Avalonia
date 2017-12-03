@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using Avalonia.Media.Imaging;
+using Avalonia.Media.Immutable;
 
 namespace Avalonia.Media
 {
@@ -42,9 +43,9 @@ namespace Avalonia.Media
         }
 
         /// <inheritdoc/>
-        IBrush IMutableBrush.ToImmutable()
+        IImmutableBrush IMutableBrush.ToImmutable()
         {
-            return new Immutable.ImmutableImageBrush(this);
+            return new ImmutableImageBrush(this);
         }
     }
 }

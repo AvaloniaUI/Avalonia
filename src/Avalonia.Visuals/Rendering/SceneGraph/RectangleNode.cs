@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Avalonia.Media;
+using Avalonia.Media.Immutable;
 using Avalonia.Platform;
 using Avalonia.VisualTree;
 
@@ -20,6 +21,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="transform">The transform.</param>
         /// <param name="brush">The fill brush.</param>
         /// <param name="pen">The stroke pen.</param>
+        /// <param name="opacityBake">The opacity to bake in.</param>
         /// <param name="rect">The rectanle to draw.</param>
         /// <param name="cornerRadius">The rectangle corner radius.</param>
         /// <param name="childScenes">Child scenes for drawing visual brushes.</param>
@@ -27,14 +29,15 @@ namespace Avalonia.Rendering.SceneGraph
             Matrix transform,
             IBrush brush,
             Pen pen,
+            double opacityBake,
             Rect rect,
             float cornerRadius,
             IDictionary<IVisual, Scene> childScenes = null)
             : base(rect, transform, pen)
         {
             Transform = transform;
-            Brush = brush?.ToImmutable();
-            Pen = pen?.ToImmutable();
+            Brush = ToImmutable(brush, opacityBake);
+            Pen = ToImmutable(pen, opacityBake);
             Rect = rect;
             CornerRadius = cornerRadius;
             ChildScenes = childScenes;
@@ -48,7 +51,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <summary>
         /// Gets the fill brush.
         /// </summary>
-        public IBrush Brush { get; }
+        public IImmutableBrush Brush { get; }
 
         /// <summary>
         /// Gets the stroke pen.
@@ -74,6 +77,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="transform">The transform of the other draw operation.</param>
         /// <param name="brush">The fill of the other draw operation.</param>
         /// <param name="pen">The stroke of the other draw operation.</param>
+        /// <param name="opacityBake">The opacity to bake in to the other draw operation.</param>
         /// <param name="rect">The rectangle of the other draw operation.</param>
         /// <param name="cornerRadius">The rectangle corner radius of the other draw operation.</param>
         /// <returns>True if the draw operations are the same, otherwise false.</returns>
@@ -81,11 +85,11 @@ namespace Avalonia.Rendering.SceneGraph
         /// The properties of the other draw operation are passed in as arguments to prevent
         /// allocation of a not-yet-constructed draw operation object.
         /// </remarks>
-        public bool Equals(Matrix transform, IBrush brush, Pen pen, Rect rect, float cornerRadius)
+        public bool Equals(Matrix transform, IBrush brush, Pen pen, double opacityBake, Rect rect, float cornerRadius)
         {
             return transform == Transform &&
-                Equals(brush, Brush) &&
-                pen == Pen &&
+                BrushEquals(Brush, brush, opacityBake) &&
+                PenEquals(Pen, pen, opacityBake) &&
                 rect == Rect &&
                 cornerRadius == CornerRadius;
         }

@@ -52,7 +52,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 Assert.Equal(1, borderNode.DrawOperations.Count);
 
                 var backgroundNode = (RectangleNode)borderNode.DrawOperations[0];
-                Assert.Equal(Brushes.Red, backgroundNode.Brush);
+                Assert.Equal<IBrush>(Brushes.Red, backgroundNode.Brush);
 
                 var textBlockNode = (VisualNode)borderNode.Children[0];
                 Assert.Same(textBlockNode, result.FindNode(textBlock));
@@ -358,7 +358,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
 
                 var backgroundNode = (RectangleNode)borderNode.DrawOperations[0];
                 Assert.NotSame(initialBackgroundNode, backgroundNode);
-                Assert.Equal(Brushes.Green, backgroundNode.Brush);
+                Assert.Equal<IBrush>(Brushes.Green, backgroundNode.Brush);
 
                 var textBlockNode = (VisualNode)borderNode.Children[0];
                 Assert.Same(textBlock, textBlockNode.Visual);

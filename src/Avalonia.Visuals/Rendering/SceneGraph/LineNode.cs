@@ -19,19 +19,21 @@ namespace Avalonia.Rendering.SceneGraph
         /// </summary>
         /// <param name="transform">The transform.</param>
         /// <param name="pen">The stroke pen.</param>
+        /// <param name="opacityBake">The opacity to bake in.</param>
         /// <param name="p1">The start point of the line.</param>
         /// <param name="p2">The end point of the line.</param>
         /// <param name="childScenes">Child scenes for drawing visual brushes.</param>
         public LineNode(
             Matrix transform,
             Pen pen,
+            double opacityBake,
             Point p1,
             Point p2,
             IDictionary<IVisual, Scene> childScenes = null)
             : base(new Rect(p1, p2), transform, pen)
         {
             Transform = transform;
-            Pen = pen?.ToImmutable();
+            Pen = ToImmutable(pen, opacityBake);
             P1 = p1;
             P2 = p2;
             ChildScenes = childScenes;
@@ -65,6 +67,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// </summary>
         /// <param name="transform">The transform of the other draw operation.</param>
         /// <param name="pen">The stroke of the other draw operation.</param>
+        /// <param name="opacityBake">The opacity to bake in to the other draw operation.</param>
         /// <param name="p1">The start point of the other draw operation.</param>
         /// <param name="p2">The end point of the other draw operation.</param>
         /// <returns>True if the draw operations are the same, otherwise false.</returns>
@@ -72,9 +75,12 @@ namespace Avalonia.Rendering.SceneGraph
         /// The properties of the other draw operation are passed in as arguments to prevent
         /// allocation of a not-yet-constructed draw operation object.
         /// </remarks>
-        public bool Equals(Matrix transform, Pen pen, Point p1, Point p2)
+        public bool Equals(Matrix transform, Pen pen, double opacityBake, Point p1, Point p2)
         {
-            return transform == Transform && pen == Pen && p1 == P1 && p2 == P2;
+            return transform == Transform &&
+                   PenEquals(Pen, pen, opacityBake) &&
+                   p1 == P1 &&
+                   p2 == P2;
         }
 
         public override void Render(IDrawingContextImpl context)

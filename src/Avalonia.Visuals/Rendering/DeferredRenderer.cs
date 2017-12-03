@@ -353,7 +353,7 @@ namespace Avalonia.Rendering
 
             if (DrawFps)
             {
-                RenderFps(context, clientRect, true);
+                RenderFps(context, clientRect, scene.Layers.Count);
             }
         }
 

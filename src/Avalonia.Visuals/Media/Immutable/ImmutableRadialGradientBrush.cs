@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Avalonia.Media.Immutable
 {
@@ -55,5 +56,17 @@ namespace Avalonia.Media.Immutable
 
         /// <inheritdoc/>
         public double Radius { get; }
+
+        /// <inheritdoc/>
+        public override IImmutableBrush WithOpacity(double opacity)
+        {
+            return new ImmutableRadialGradientBrush(
+                GradientStops.ToList(),
+                opacity,
+                SpreadMethod,
+                Center,
+                GradientOrigin,
+                Radius);
+        }
     }
 }
