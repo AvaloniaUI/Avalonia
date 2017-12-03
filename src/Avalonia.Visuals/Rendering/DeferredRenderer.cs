@@ -235,7 +235,7 @@ namespace Avalonia.Rendering
             {
                 clipBounds = node.ClipBounds.Intersect(clipBounds);
 
-                if (!clipBounds.IsEmpty)
+                if (!clipBounds.IsEmpty && node.Opacity > 0)
                 {
                     node.BeginRender(context);
 
@@ -353,7 +353,6 @@ namespace Avalonia.Rendering
 
             if (DrawFps)
             {
-                RenderFps(context, clientRect, true);
                 RenderFps(context, clientRect, scene.Layers.Count);
             }
         }

@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Subjects;
 using Avalonia.Controls;
+using Avalonia.Data;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
@@ -127,6 +129,94 @@ namespace Avalonia.Visuals.UnitTests.Rendering
         }
 
         [Fact]
+        public void Should_Push_Opacity_For_Controls_With_Less_Than_1_Opacity()
+        {
+            var root = new TestRoot
+            {
+                Width = 100,
+                Height = 100,
+                Child = new Border
+                {
+                    Background = Brushes.Red,
+                    Opacity = 0.5,
+                }
+            };
+
+            root.Measure(Size.Infinity);
+            root.Arrange(new Rect(root.DesiredSize));
+
+            var rootLayer = CreateLayer();
+            var borderLayer = CreateLayer();
+            var renderTargetContext = Mock.Get(root.CreateRenderTarget().CreateDrawingContext(null));
+            renderTargetContext.SetupSequence(x => x.CreateLayer(It.IsAny<Size>()))
+                .Returns(rootLayer)
+                .Returns(borderLayer);
+
+            var loop = new Mock<IRenderLoop>();
+            var target = new DeferredRenderer(
+                root,
+                loop.Object,
+                dispatcher: new ImmediateDispatcher());
+            root.Renderer = target;
+
+            target.Start();
+            RunFrame(loop);
+
+            var context = Mock.Get(rootLayer.CreateDrawingContext(null));
+            var animation = new BehaviorSubject<double>(0.5);
+
+            context.Verify(x => x.PushOpacity(0.5), Times.Once);
+            context.Verify(x => x.FillRectangle(Brushes.Red, new Rect(0, 0, 100, 100), 0), Times.Once);
+            context.Verify(x => x.PopOpacity(), Times.Once);
+        }
+
+        [Fact]
+        public void Should_Not_Draw_Controls_With_0_Opacity()
+        {
+            var root = new TestRoot
+            {
+                Width = 100,
+                Height = 100,
+                Child = new Border
+                {
+                    Background = Brushes.Red,
+                    Opacity = 0,
+                    Child = new Border
+                    {
+                        Background = Brushes.Green,
+                    }
+                }
+            };
+
+            root.Measure(Size.Infinity);
+            root.Arrange(new Rect(root.DesiredSize));
+
+            var rootLayer = CreateLayer();
+            var borderLayer = CreateLayer();
+            var renderTargetContext = Mock.Get(root.CreateRenderTarget().CreateDrawingContext(null));
+            renderTargetContext.SetupSequence(x => x.CreateLayer(It.IsAny<Size>()))
+                .Returns(rootLayer)
+                .Returns(borderLayer);
+
+            var loop = new Mock<IRenderLoop>();
+            var target = new DeferredRenderer(
+                root,
+                loop.Object,
+                dispatcher: new ImmediateDispatcher());
+            root.Renderer = target;
+
+            target.Start();
+            RunFrame(loop);
+
+            var context = Mock.Get(rootLayer.CreateDrawingContext(null));
+            var animation = new BehaviorSubject<double>(0.5);
+
+            context.Verify(x => x.PushOpacity(0.5), Times.Never);
+            context.Verify(x => x.FillRectangle(Brushes.Red, new Rect(0, 0, 100, 100), 0), Times.Never);
+            context.Verify(x => x.PopOpacity(), Times.Never);
+        }
+
+        [Fact]
         public void Frame_Should_Create_Layer_For_Root()
         {
             var loop = new Mock<IRenderLoop>();
@@ -148,7 +238,6 @@ namespace Avalonia.Visuals.UnitTests.Rendering
                 root,
                 loop.Object,
                 sceneBuilder: sceneBuilder.Object,
-                //layerFactory: layers.Object,
                 dispatcher: dispatcher);
 
             target.Start();
@@ -159,7 +248,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
         }
 
         [Fact]
-        public void Should_Create_And_Delete_Layers_For_Transparent_Controls()
+        public void Should_Create_And_Delete_Layers_For_Controls_With_Animated_Opacity()
         {
             Border border;
             var root = new TestRoot
@@ -198,6 +287,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
 
             var rootContext = Mock.Get(rootLayer.CreateDrawingContext(null));
             var borderContext = Mock.Get(borderLayer.CreateDrawingContext(null));
+            var animation = new BehaviorSubject<double>(0.5);
 
             rootContext.Verify(x => x.FillRectangle(Brushes.Red, new Rect(0, 0, 100, 100), 0), Times.Once);
             rootContext.Verify(x => x.FillRectangle(Brushes.Green, new Rect(0, 0, 100, 100), 0), Times.Once);
@@ -205,7 +295,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
 
             rootContext.ResetCalls();
             borderContext.ResetCalls();
-            border.Opacity = 0.5;
+            border.Bind(Border.OpacityProperty, animation, BindingPriority.Animation);
             RunFrame(loop);
 
             rootContext.Verify(x => x.FillRectangle(Brushes.Red, new Rect(0, 0, 100, 100), 0), Times.Once);
@@ -214,7 +304,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
 
             rootContext.ResetCalls();
             borderContext.ResetCalls();
-            border.Opacity = 1;
+            animation.OnCompleted();
             RunFrame(loop);
 
             Mock.Get(borderLayer).Verify(x => x.Dispose());

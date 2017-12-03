@@ -167,7 +167,7 @@ namespace Avalonia.Rendering.SceneGraph
                 using (context.PushPostTransform(m))
                 using (context.PushTransformContainer())
                 {
-                    var startLayer = opacity < 1 || visual.OpacityMask != null;
+                    var startLayer = (visual as IAvaloniaObject)?.IsAnimating(Visual.OpacityProperty) ?? false;
                     var clipBounds = bounds.TransformToAABB(contextImpl.Transform).Intersect(clip);
 
                     forceRecurse = forceRecurse ||
