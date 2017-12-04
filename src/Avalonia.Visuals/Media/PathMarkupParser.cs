@@ -320,7 +320,7 @@ namespace Avalonia.Media
                     if (c == 'E')
                     {
                         readSign = false;
-                        readExponent = c == 'E';
+                        readExponent = true;
                     }
                 }
                 else

@@ -538,6 +538,19 @@ namespace Avalonia
                     }
 
                     break;
+
+                case NotifyCollectionChangedAction.Replace:
+                    foreach (Visual v in e.OldItems)
+                    {
+                        v.SetVisualParent(null);
+                    }
+
+                    foreach (Visual v in e.NewItems)
+                    {
+                        v.SetVisualParent(this);
+                    }
+
+                    break;
             }
         }
     }

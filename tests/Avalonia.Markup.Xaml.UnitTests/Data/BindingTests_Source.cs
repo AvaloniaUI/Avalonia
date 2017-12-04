@@ -23,7 +23,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
 
             target.Bind(TextBlock.TextProperty, binding);
 
-            Assert.Equal(target.Text, "foo");
+            Assert.Equal("foo", target.Text);
         }
         
         public class Source : INotifyPropertyChanged

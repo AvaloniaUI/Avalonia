@@ -11,6 +11,7 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Controls.Utils;
+using Avalonia.Input;
 using Avalonia.LogicalTree;
 using Avalonia.Metadata;
 
@@ -104,6 +105,12 @@ namespace Avalonia.Controls
         {
             get { return _items; }
             set { SetAndRaise(ItemsProperty, ref _items, value); }
+        }
+
+        public int ItemCount
+        {
+            get;
+            private set;
         }
 
         /// <summary>
@@ -352,6 +359,10 @@ namespace Avalonia.Controls
                     RemoveControlItemsFromLogicalChildren(e.OldItems);
                     break;
             }
+            
+            int? count = (Items as IList)?.Count;
+            if (count != null)
+                ItemCount = (int)count;
 
             var collection = sender as ICollection;
             PseudoClasses.Set(":empty", collection == null || collection.Count == 0);

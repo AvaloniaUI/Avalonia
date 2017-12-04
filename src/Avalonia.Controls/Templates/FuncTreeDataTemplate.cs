@@ -62,7 +62,7 @@ namespace Avalonia.Controls.Templates
         /// <returns>The child items, or null if no child items.</returns>
         public InstancedBinding ItemsSelector(object item)
         {
-            return new InstancedBinding(this?._itemsSelector(item));
+            return InstancedBinding.OneTime(this?._itemsSelector(item));
         }
 
         /// <summary>

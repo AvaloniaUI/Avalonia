@@ -305,7 +305,7 @@ namespace Avalonia.Controls.Primitives
                 .OfType<IControl>()
                 .FirstOrDefault(x => x.LogicalParent == this && ItemContainerGenerator?.IndexFromContainer(x) != -1);
 
-            return item as IControl;
+            return item;
         }
 
         /// <inheritdoc/>

@@ -14,71 +14,35 @@ namespace Avalonia.Data
     /// property on a control's DataContext"; this class represents a binding that has been 
     /// *instanced* by calling <see cref="IBinding.Initiate(IAvaloniaObject, AvaloniaProperty, object, bool)"/>
     /// on a target object.
-    /// 
-    /// When a binding is initiated, it can return one of 3 possible sources for the binding:
-    /// - An <see cref="ISubject{Object}"/> which can be used for any type of binding.
-    /// - An <see cref="IObservable{Object}"/> which can be used for all types of bindings except
-    ///  <see cref="BindingMode.OneWayToSource"/> and <see cref="BindingMode.TwoWay"/>.
-    /// - A plain object, which can only represent a <see cref="BindingMode.OneTime"/> binding.
     /// </remarks>
     public class InstancedBinding
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="InstancedBinding"/> class.
         /// </summary>
-        /// <param name="value">
-        /// The value used for the <see cref="BindingMode.OneTime"/> binding.
-        /// </param>
-        /// <param name="priority">The binding priority.</param>
-        public InstancedBinding(object value,
-            BindingPriority priority = BindingPriority.LocalValue)
-        {
-            Mode = BindingMode.OneTime;
-            Priority = priority;
-            Value = value;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="InstancedBinding"/> class.
-        /// </summary>
-        /// <param name="observable">The observable for a one-way binding.</param>
+        /// <param name="subject">The binding source.</param>
         /// <param name="mode">The binding mode.</param>
-        /// <param name="priority">The binding priority.</param>
-        public InstancedBinding(
-            IObservable<object> observable, 
-            BindingMode mode = BindingMode.OneWay,
-            BindingPriority priority = BindingPriority.LocalValue)
-        {
-            Contract.Requires<ArgumentNullException>(observable != null);
-
-            if (mode == BindingMode.OneWayToSource || mode == BindingMode.TwoWay)
-            {
-                throw new ArgumentException(
-                    "Invalid BindingResult mode: OneWayToSource and TwoWay bindings" +
-                    "require a Subject.");
-            }
-
-            Mode = mode;
-            Priority = priority;
-            Observable = observable;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="InstancedBinding"/> class.
-        /// </summary>
-        /// <param name="subject">The subject for a two-way binding.</param>
-        /// <param name="mode">The binding mode.</param>
-        /// <param name="priority">The binding priority.</param>
-        public InstancedBinding(
-            ISubject<object> subject,
-            BindingMode mode = BindingMode.OneWay,
-            BindingPriority priority = BindingPriority.LocalValue)
+        /// <param name="priority">The priority of the binding.</param>
+        /// <remarks>
+        /// This constructor can be used to create any type of binding and as such requires an
+        /// <see cref="ISubject{Object}"/> as the binding source because this is the only binding
+        /// source which can be used for all binding modes. If you wish to create an instance with
+        /// something other than a subject, use one of the static creation methods on this class.
+        /// </remarks>
+        public InstancedBinding(ISubject<object> subject, BindingMode mode, BindingPriority priority)
         {
             Contract.Requires<ArgumentNullException>(subject != null);
 
             Mode = mode;
             Priority = priority;
-            Subject = subject;
+            Value = subject;
+        }
+
+        private InstancedBinding(object value, BindingMode mode, BindingPriority priority)
+        {
+            Mode = mode;
+            Priority = priority;
+            Value = value;
         }
 
         /// <summary>
@@ -92,18 +56,101 @@ namespace Avalonia.Data
         public BindingPriority Priority { get; }
 
         /// <summary>
-        /// Gets the value used for a <see cref="BindingMode.OneTime"/> binding.
+        /// Gets the value or source of the binding.
         /// </summary>
         public object Value { get; }
 
         /// <summary>
-        /// Gets the observable for a one-way binding.
+        /// Gets the <see cref="Value"/> as an observable.
         /// </summary>
-        public IObservable<object> Observable { get; }
+        public IObservable<object> Observable => Value as IObservable<object>;
 
         /// <summary>
-        /// Gets the subject for a two-way binding.
+        /// Gets the <see cref="Value"/> as a subject.
         /// </summary>
-        public ISubject<object> Subject { get; }
+        public ISubject<object> Subject => Value as ISubject<object>;
+
+        /// <summary>
+        /// Creates a new one-time binding with a fixed value.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="priority">The priority of the binding.</param>
+        /// <returns>An <see cref="InstancedBinding"/> instance.</returns>
+        public static InstancedBinding OneTime(
+            object value,
+            BindingPriority priority = BindingPriority.LocalValue)
+        {
+            return new InstancedBinding(value, BindingMode.OneTime, priority);
+        }
+
+        /// <summary>
+        /// Creates a new one-time binding.
+        /// </summary>
+        /// <param name="observable">The source observable.</param>
+        /// <param name="priority">The priority of the binding.</param>
+        /// <returns>An <see cref="InstancedBinding"/> instance.</returns>
+        public static InstancedBinding OneTime(
+            IObservable<object> observable,
+            BindingPriority priority = BindingPriority.LocalValue)
+        {
+            Contract.Requires<ArgumentNullException>(observable != null);
+
+            return new InstancedBinding(observable, BindingMode.OneTime, priority);
+        }
+
+        /// <summary>
+        /// Creates a new one-way binding.
+        /// </summary>
+        /// <param name="observable">The source observable.</param>
+        /// <param name="priority">The priority of the binding.</param>
+        /// <returns>An <see cref="InstancedBinding"/> instance.</returns>
+        public static InstancedBinding OneWay(
+            IObservable<object> observable,
+            BindingPriority priority = BindingPriority.LocalValue)
+        {
+            Contract.Requires<ArgumentNullException>(observable != null);
+
+            return new InstancedBinding(observable, BindingMode.OneWay, priority);
+        }
+
+        /// <summary>
+        /// Creates a new one-way to source binding.
+        /// </summary>
+        /// <param name="subject">The binding source.</param>
+        /// <param name="priority">The priority of the binding.</param>
+        /// <returns>An <see cref="InstancedBinding"/> instance.</returns>
+        public static InstancedBinding OneWayToSource(
+            ISubject<object> subject,
+            BindingPriority priority = BindingPriority.LocalValue)
+        {
+            Contract.Requires<ArgumentNullException>(subject != null);
+
+            return new InstancedBinding(subject, BindingMode.OneWayToSource, priority);
+        }
+
+        /// <summary>
+        /// Creates a new two-way binding.
+        /// </summary>
+        /// <param name="subject">The binding source.</param>
+        /// <param name="priority">The priority of the binding.</param>
+        /// <returns>An <see cref="InstancedBinding"/> instance.</returns>
+        public static InstancedBinding TwoWay(
+            ISubject<object> subject,
+            BindingPriority priority = BindingPriority.LocalValue)
+        {
+            Contract.Requires<ArgumentNullException>(subject != null);
+
+            return new InstancedBinding(subject, BindingMode.TwoWay, priority);
+        }
+
+        /// <summary>
+        /// Creates a copy of the <see cref="InstancedBinding"/> with a different priority.
+        /// </summary>
+        /// <param name="priority">The priority of the binding.</param>
+        /// <returns>An <see cref="InstancedBinding"/> instance.</returns>
+        public InstancedBinding WithPriority(BindingPriority priority)
+        {
+            return new InstancedBinding(Value, Mode, priority);
+        }
     }
 }

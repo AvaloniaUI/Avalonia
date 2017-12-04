@@ -34,8 +34,8 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
             var target = new Mock<IAvaloniaObject>().As<IControl>();
             target.Setup(x => x.GetValue(Control.DataContextProperty)).Returns(source);
 
-            var subject = binding.Initiate(target.Object, null).Subject;
-            var result = await subject.Take(1);
+            var observable = binding.Initiate(target.Object, null).Observable;
+            var result = await observable.Take(1);
 
             Assert.Equal("1,2,3", result);
         }

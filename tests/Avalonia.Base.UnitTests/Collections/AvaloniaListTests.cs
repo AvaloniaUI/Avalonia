@@ -84,6 +84,28 @@ namespace Avalonia.Base.UnitTests.Collections
         }
 
         [Fact]
+        public void MoveRange_Raises_Correct_CollectionChanged_Event()
+        {
+            var target = new AvaloniaList<int>(new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 });
+            var raised = false;
+
+            target.CollectionChanged += (s, e) =>
+            {
+                Assert.Equal(NotifyCollectionChangedAction.Move, e.Action);
+                Assert.Equal(0, e.OldStartingIndex);
+                Assert.Equal(10, e.NewStartingIndex);
+                Assert.Equal(new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9 }, e.OldItems);
+                Assert.Equal(new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9 }, e.NewItems);
+                raised = true;
+            };
+
+            target.MoveRange(0, 9, 10);
+
+            Assert.True(raised);
+            Assert.Equal(new[] { 10, 1, 2, 3, 4, 5, 6, 7, 8, 9 }, target);
+        }
+
+        [Fact]
         public void Adding_Item_Should_Raise_CollectionChanged()
         {
             var target = new AvaloniaList<int>(new[] { 1, 2 });

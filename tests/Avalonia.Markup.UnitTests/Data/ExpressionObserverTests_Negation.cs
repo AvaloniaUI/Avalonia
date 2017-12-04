@@ -19,7 +19,7 @@ namespace Avalonia.Markup.UnitTests.Data
             var target = new ExpressionObserver(data, "!Foo");
             var result = await target.Take(1);
 
-            Assert.Equal(false, result);
+            Assert.False((bool)result);
 
             GC.KeepAlive(data);
         }
@@ -31,7 +31,7 @@ namespace Avalonia.Markup.UnitTests.Data
             var target = new ExpressionObserver(data, "!Foo");
             var result = await target.Take(1);
 
-            Assert.Equal(true, result);
+            Assert.True((bool)result);
 
             GC.KeepAlive(data);
         }
@@ -43,7 +43,7 @@ namespace Avalonia.Markup.UnitTests.Data
             var target = new ExpressionObserver(data, "!Foo");
             var result = await target.Take(1);
 
-            Assert.Equal(false, result);
+            Assert.False((bool)result);
 
             GC.KeepAlive(data);
         }
@@ -55,7 +55,7 @@ namespace Avalonia.Markup.UnitTests.Data
             var target = new ExpressionObserver(data, "!Foo");
             var result = await target.Take(1);
 
-            Assert.Equal(true, result);
+            Assert.True((bool)result);
 
             GC.KeepAlive(data);
         }
@@ -67,7 +67,7 @@ namespace Avalonia.Markup.UnitTests.Data
             var target = new ExpressionObserver(data, "!Foo");
             var result = await target.Take(1);
 
-            Assert.Equal(false, result);
+            Assert.False((bool)result);
 
             GC.KeepAlive(data);
         }

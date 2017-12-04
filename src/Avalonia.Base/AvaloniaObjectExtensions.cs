@@ -310,7 +310,7 @@ namespace Avalonia
                 object anchor = null,
                 bool enableDataValidation = false)
             {
-                return new InstancedBinding(_source);
+                return InstancedBinding.OneWay(_source);
             }
         }
     }
