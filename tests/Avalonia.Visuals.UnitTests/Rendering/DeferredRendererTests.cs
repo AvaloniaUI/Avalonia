@@ -261,6 +261,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
                     Child = border = new Border
                     {
                         Background = Brushes.Green,
+                        Child = new Canvas(),
                     }
                 }
             };

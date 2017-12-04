@@ -15,7 +15,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
     public partial class SceneBuilderTests
     {
         [Fact]
-        public void Control_With_Animated_Opacity_Should_Start_New_Layer()
+        public void Control_With_Animated_Opacity_And_Children_Should_Start_New_Layer()
         {
             using (TestApplication())
             {
@@ -34,7 +34,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                         {
                             Background = Brushes.Red,
                             Padding = new Thickness(12),
-                            Child = canvas = new Canvas(),
+                            Child = canvas = new Canvas()
                         }
                     }
                 };
@@ -83,6 +83,42 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
         }
 
         [Fact]
+        public void Control_With_Animated_Opacity_And_No_Children_Should_Not_Start_New_Layer()
+        {
+            using (TestApplication())
+            {
+                Decorator decorator;
+                Border border;
+                var tree = new TestRoot
+                {
+                    Padding = new Thickness(10),
+                    Width = 100,
+                    Height = 120,
+                    Child = decorator = new Decorator
+                    {
+                        Padding = new Thickness(11),
+                        Child = border = new Border
+                        {
+                            Background = Brushes.Red,
+                        }
+                    }
+                };
+
+                var layout = AvaloniaLocator.Current.GetService<ILayoutManager>();
+                layout.ExecuteInitialLayoutPass(tree);
+
+                var animation = new BehaviorSubject<double>(0.5);
+                border.Bind(Border.OpacityProperty, animation, BindingPriority.Animation);
+
+                var scene = new Scene(tree);
+                var sceneBuilder = new SceneBuilder();
+                sceneBuilder.UpdateAll(scene);
+
+                Assert.Single(scene.Layers);
+            }
+        }
+
+        [Fact]
         public void Removing_Control_With_Animated_Opacity_Should_Remove_Layers()
         {
             using (TestApplication())
@@ -102,7 +138,10 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                         {
                             Background = Brushes.Red,
                             Padding = new Thickness(12),
-                            Child = canvas = new Canvas()
+                            Child = canvas = new Canvas
+                            {
+                                Children = { new TextBlock() },
+                            }
                         }
                     }
                 };
@@ -149,7 +188,10 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                         {
                             Background = Brushes.Red,
                             Padding = new Thickness(12),
-                            Child = canvas = new Canvas(),
+                            Child = canvas = new Canvas
+                            {
+                                Children = { new TextBlock() },
+                            }
                         }
                     }
                 };
@@ -193,6 +235,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                         Child = border = new Border
                         {
                             Opacity = 0.5,
+                            Child = new Canvas(),
                         }
                     }
                 };
