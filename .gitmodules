@@ -1,13 +1,7 @@
-[submodule "src/Avalonia.ReactiveUI/src"]
-	path = src/Avalonia.ReactiveUI/src
-	url = https://github.com/reactiveui/ReactiveUI.git
 [submodule "src/Avalonia.HtmlRenderer/external"]
 	path = src/Avalonia.HtmlRenderer/external
 	url = https://github.com/AvaloniaUI/HTML-Renderer.git
 	branch = perspex-pcl
-[submodule "src/Markup/Avalonia.Markup.Xaml/OmniXAML"]
-	path = src/Markup/Avalonia.Markup.Xaml/OmniXAML
-	url = https://github.com/AvaloniaUI/OmniXAML.git
-[submodule "src/Markup/Avalonia.Markup.Xaml/glass"]
-	path = src/Markup/Avalonia.Markup.Xaml/glass
-	url = https://github.com/SuperJMN/glass
+[submodule "src/Markup/Avalonia.Markup.Xaml/PortableXaml/portable.xaml.github"]
+	path = src/Markup/Avalonia.Markup.Xaml/PortableXaml/portable.xaml.github
+	url = https://github.com/AvaloniaUI/Portable.Xaml.git

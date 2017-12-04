@@ -297,7 +297,7 @@ namespace Avalonia.Controls.Primitives
                 .OfType<IControl>()
                 .FirstOrDefault(x => x.LogicalParent == this && ItemContainerGenerator?.IndexFromContainer(x) != -1);
 
-            return item as IControl;
+            return item;
         }
 
         /// <inheritdoc/>
@@ -414,16 +414,16 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <inheritdoc/>
-        protected override void OnDataContextChanging()
+        protected override void OnDataContextBeginUpdate()
         {
-            base.OnDataContextChanging();
+            base.OnDataContextBeginUpdate();
             ++_updateCount;
         }
 
         /// <inheritdoc/>
-        protected override void OnDataContextChanged()
+        protected override void OnDataContextEndUpdate()
         {
-            base.OnDataContextChanged();
+            base.OnDataContextEndUpdate();
 
             if (--_updateCount == 0)
             {

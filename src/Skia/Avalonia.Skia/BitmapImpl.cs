@@ -1,16 +1,15 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Runtime.InteropServices;
-using System.Text;
-using Avalonia.Media;
 using Avalonia.Platform;
+using Avalonia.Rendering;
 using SkiaSharp;
 
 namespace Avalonia.Skia
 {
-    class BitmapImpl : IRenderTargetBitmapImpl
+    class BitmapImpl : IRenderTargetBitmapImpl, IWritableBitmapImpl
     {
+        private Vector _dpi;
+
         public SKBitmap Bitmap { get; private set; }
 
         public BitmapImpl(SKBitmap bm)
@@ -18,34 +17,44 @@ namespace Avalonia.Skia
             Bitmap = bm;
             PixelHeight = bm.Height;
             PixelWidth = bm.Width;
+            _dpi = new Vector(96, 96);
         }
 
-        public BitmapImpl(int width, int height)
+        static void ReleaseProc(IntPtr address, object ctx)
+        {
+            ((IUnmanagedBlob) ctx).Dispose();
+        }
+
+        private static readonly SKBitmapReleaseDelegate ReleaseDelegate = ReleaseProc;
+        
+        public BitmapImpl(int width, int height, Vector dpi, PixelFormat? fmt = null)
         {
             PixelHeight = height;
             PixelWidth = width;
-            var colorType = SKImageInfo.PlatformColorType;
-            var runtime = AvaloniaLocator.Current?.GetService<IRuntimePlatform>()?.GetRuntimeInfo();
+            _dpi = dpi;
+            var colorType = fmt?.ToSkColorType() ?? SKImageInfo.PlatformColorType;
+            var runtimePlatform = AvaloniaLocator.Current?.GetService<IRuntimePlatform>();
+            var runtime = runtimePlatform?.GetRuntimeInfo();
             if (runtime?.IsDesktop == true && runtime?.OperatingSystem == OperatingSystemType.Linux)
                 colorType = SKColorType.Bgra8888;
-            Bitmap = new SKBitmap(width, height, colorType, SKAlphaType.Premul);
+
+            if (runtimePlatform != null)
+            {
+                Bitmap = new SKBitmap();
+                var nfo = new SKImageInfo(width, height, colorType, SKAlphaType.Premul);
+                var plat = AvaloniaLocator.Current.GetService<IRuntimePlatform>();
+                var blob = plat.AllocBlob(nfo.BytesSize);
+                Bitmap.InstallPixels(nfo, blob.Address, nfo.RowBytes, null, ReleaseDelegate, blob);
+                
+            }
+            else 
+                Bitmap =  new SKBitmap(width, height, colorType, SKAlphaType.Premul);
+            Bitmap.Erase(SKColor.Empty);
         }
 
         public void Dispose()
         {
             Bitmap.Dispose();
-        }
-
-        public void Save(string fileName)
-        {
-#if DESKTOP
-            IntPtr length;
-            using (var sdb = new System.Drawing.Bitmap(PixelWidth, PixelHeight, Bitmap.RowBytes,
-                System.Drawing.Imaging.PixelFormat.Format32bppArgb, Bitmap.GetPixels(out length)))
-                sdb.Save(fileName);
-#else
-            //SkiaSharp doesn't expose image encoders yet
-#endif
         }
 
         public int PixelWidth { get; private set; }
@@ -55,9 +64,10 @@ namespace Avalonia.Skia
         {
             private readonly SKSurface _surface;
 
-            public BitmapDrawingContext(SKBitmap bitmap) : this(CreateSurface(bitmap))
+            public BitmapDrawingContext(SKBitmap bitmap, Vector dpi, IVisualBrushRenderer visualBrushRenderer)
+                : this(CreateSurface(bitmap), dpi, visualBrushRenderer)
             {
-                
+                CanUseLcdRendering = false;
             }
 
             private static SKSurface CreateSurface(SKBitmap bitmap)
@@ -69,7 +79,8 @@ namespace Avalonia.Skia
                 return rv;
             }
 
-            public BitmapDrawingContext(SKSurface surface) : base(surface.Canvas)
+            public BitmapDrawingContext(SKSurface surface, Vector dpi, IVisualBrushRenderer visualBrushRenderer)
+                : base(surface.Canvas, dpi, visualBrushRenderer)
             {
                 _surface = surface;
             }
@@ -81,10 +92,9 @@ namespace Avalonia.Skia
             }
         }
 
-        public DrawingContext CreateDrawingContext()
+        public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
         {
-
-            return new DrawingContext(new BitmapDrawingContext(Bitmap));
+            return new BitmapDrawingContext(Bitmap, _dpi, visualBrushRenderer);
         }
 
         public void Save(Stream stream)
@@ -96,5 +106,37 @@ namespace Avalonia.Skia
                 data.SaveTo(stream);
             }
         }
+
+        public void Save(string fileName)
+        {
+            using (var stream = File.Create(fileName))
+                Save(stream);
+        }
+
+        class BitmapFramebuffer : ILockedFramebuffer
+        {
+            private SKBitmap _bmp;
+
+            public BitmapFramebuffer(SKBitmap bmp)
+            {
+                _bmp = bmp;
+                _bmp.LockPixels();
+            }
+
+            public void Dispose()
+            {
+                _bmp.UnlockPixels();
+                _bmp = null;
+            }
+
+            public IntPtr Address => _bmp.GetPixels();
+            public int Width => _bmp.Width;
+            public int Height => _bmp.Height;
+            public int RowBytes => _bmp.RowBytes;
+            public Vector Dpi { get; } = new Vector(96, 96);
+            public PixelFormat Format => _bmp.ColorType.ToPixelFormat();
+        }
+
+        public ILockedFramebuffer Lock() => new BitmapFramebuffer(Bitmap);
     }
 }

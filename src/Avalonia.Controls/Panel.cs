@@ -64,9 +64,12 @@ namespace Avalonia.Controls
             {
                 Contract.Requires<ArgumentNullException>(value != null);
 
-                VisualChildren.Clear();
-                _children.Clear();
-                _children.AddRange(value);
+                if (_children != value)
+                {
+                    VisualChildren.Clear();
+                    _children.Clear();
+                    _children.AddRange(value);
+                }
             }
         }
 
@@ -112,6 +115,11 @@ namespace Avalonia.Controls
                     VisualChildren.AddRange(e.NewItems.OfType<Visual>());
                     break;
 
+                case NotifyCollectionChangedAction.Move:
+                    LogicalChildren.MoveRange(e.OldStartingIndex, e.OldItems.Count, e.NewStartingIndex);
+                    VisualChildren.MoveRange(e.OldStartingIndex, e.OldItems.Count, e.NewStartingIndex);
+                    break;
+
                 case NotifyCollectionChangedAction.Remove:
                     controls = e.OldItems.OfType<Control>().ToList();
                     LogicalChildren.RemoveAll(controls);
@@ -129,11 +137,7 @@ namespace Avalonia.Controls
                     break;
 
                 case NotifyCollectionChangedAction.Reset:
-                    controls = e.OldItems.OfType<Control>().ToList();
-                    LogicalChildren.Clear();
-                    VisualChildren.Clear();
-                    VisualChildren.AddRange(_children);
-                    break;
+                    throw new NotSupportedException();
             }
 
             InvalidateMeasure();

@@ -20,24 +20,9 @@ namespace Avalonia.Input
         private int _clickCount;
         private Rect _lastClickRect;
         private uint _lastClickTime;
-        private readonly List<IInputElement> _pointerOvers = new List<IInputElement>();
-
-        /// <summary>
-        /// Intializes a new instance of <see cref="MouseDevice"/>.
-        /// </summary>
-        public MouseDevice()
-        {
-            InputManager.Process
-                .OfType<RawMouseEventArgs>()
-                .Where(e => e.Device == this && !e.Handled)
-                .Subscribe(ProcessRawEvent);
-        }
-
-        /// <summary>
-        /// Gets the current mouse device instance.
-        /// </summary>
-        public static IMouseDevice Instance => AvaloniaLocator.Current.GetService<IMouseDevice>();
-
+        private IInputElement _captured;
+        private IDisposable _capturedSubscription;
+       
         /// <summary>
         /// Gets the control that is currently capturing by the mouse, if any.
         /// </summary>
@@ -48,15 +33,25 @@ namespace Avalonia.Input
         /// </remarks>
         public IInputElement Captured
         {
-            get;
-            protected set;
+            get => _captured;
+            protected set
+            {
+                _capturedSubscription?.Dispose();
+                _capturedSubscription = null;
+
+                if (value != null)
+                {
+                    _capturedSubscription = Observable.FromEventPattern<VisualTreeAttachmentEventArgs>(
+                        x => value.DetachedFromVisualTree += x,
+                        x => value.DetachedFromVisualTree -= x)
+                        .Take(1)
+                        .Subscribe(_ => Captured = null);
+                }
+
+                _captured = value;
+            }
         }
-
-        /// <summary>
-        /// Gets the application's input manager.
-        /// </summary>
-        public IInputManager InputManager => AvaloniaLocator.Current.GetService<IInputManager>();
-
+        
         /// <summary>
         /// Gets the mouse position, in screen coordinates.
         /// </summary>
@@ -77,6 +72,7 @@ namespace Avalonia.Input
         /// </remarks>
         public virtual void Capture(IInputElement control)
         {
+            // TODO: Check visibility and enabled state before setting capture.
             Captured = control;
         }
 
@@ -87,6 +83,8 @@ namespace Avalonia.Input
         /// <returns>The mouse position in the control's coordinates.</returns>
         public Point GetPosition(IVisual relativeTo)
         {
+            Contract.Requires<ArgumentNullException>(relativeTo != null);
+
             Point p = default(Point);
             IVisual v = relativeTo;
             IVisual root = null;
@@ -101,8 +99,16 @@ namespace Avalonia.Input
             return root.PointToClient(Position) - p;
         }
 
+        public void ProcessRawEvent(RawInputEventArgs e)
+        {
+            if (!e.Handled && e is RawMouseEventArgs margs)
+                ProcessRawEvent(margs);
+        }
+
         private void ProcessRawEvent(RawMouseEventArgs e)
         {
+            Contract.Requires<ArgumentNullException>(e != null);
+
             var mouse = (IMouseDevice)e.Device;
 
             Position = e.Root.PointToScreen(e.Position);
@@ -141,11 +147,17 @@ namespace Avalonia.Input
 
         private void LeaveWindow(IMouseDevice device, IInputRoot root)
         {
+            Contract.Requires<ArgumentNullException>(device != null);
+            Contract.Requires<ArgumentNullException>(root != null);
+
             ClearPointerOver(this, root);
         }
 
         private bool MouseDown(IMouseDevice device, uint timestamp, IInputElement root, Point p, MouseButton button, InputModifiers inputModifiers)
         {
+            Contract.Requires<ArgumentNullException>(device != null);
+            Contract.Requires<ArgumentNullException>(root != null);
+
             var hit = HitTest(root, p);
 
             if (hit != null)
@@ -187,6 +199,9 @@ namespace Avalonia.Input
 
         private bool MouseMove(IMouseDevice device, IInputRoot root, Point p, InputModifiers inputModifiers)
         {
+            Contract.Requires<ArgumentNullException>(device != null);
+            Contract.Requires<ArgumentNullException>(root != null);
+
             IInputElement source;
 
             if (Captured == null)
@@ -195,8 +210,7 @@ namespace Avalonia.Input
             }
             else
             {
-                var elements = Captured.GetSelfAndVisualAncestors().OfType<IInputElement>().ToList();
-                SetPointerOver(this, root, elements);
+                SetPointerOver(this, root, Captured);
                 source = Captured;
             }
 
@@ -208,12 +222,15 @@ namespace Avalonia.Input
                 InputModifiers = inputModifiers
             };
 
-            source.RaiseEvent(e);
+            source?.RaiseEvent(e);
             return e.Handled;
         }
 
         private bool MouseUp(IMouseDevice device, IInputRoot root, Point p, MouseButton button, InputModifiers inputModifiers)
         {
+            Contract.Requires<ArgumentNullException>(device != null);
+            Contract.Requires<ArgumentNullException>(root != null);
+
             var hit = HitTest(root, p);
 
             if (hit != null)
@@ -237,6 +254,9 @@ namespace Avalonia.Input
 
         private bool MouseWheel(IMouseDevice device, IInputRoot root, Point p, Vector delta, InputModifiers inputModifiers)
         {
+            Contract.Requires<ArgumentNullException>(device != null);
+            Contract.Requires<ArgumentNullException>(root != null);
+
             var hit = HitTest(root, p);
 
             if (hit != null)
@@ -260,6 +280,8 @@ namespace Avalonia.Input
 
         private IInteractive GetSource(IVisual hit)
         {
+            Contract.Requires<ArgumentNullException>(hit != null);
+
             return Captured ??
                 (hit as IInteractive) ??
                 hit.GetSelfAndVisualAncestors().OfType<IInteractive>().FirstOrDefault();
@@ -267,22 +289,28 @@ namespace Avalonia.Input
 
         private IInputElement HitTest(IInputElement root, Point p)
         {
+            Contract.Requires<ArgumentNullException>(root != null);
+
             return Captured ?? root.InputHitTest(p);
         }
 
         private void ClearPointerOver(IPointerDevice device, IInputRoot root)
         {
-            foreach (var control in _pointerOvers.ToList())
-            {
-                PointerEventArgs e = new PointerEventArgs
-                {
-                    RoutedEvent = InputElement.PointerLeaveEvent,
-                    Device = device,
-                    Source = control,
-                };
+            Contract.Requires<ArgumentNullException>(device != null);
+            Contract.Requires<ArgumentNullException>(root != null);
 
-                _pointerOvers.Remove(control);
-                control.RaiseEvent(e);
+            var element = root.PointerOverElement;
+            var e = new PointerEventArgs
+            {
+                RoutedEvent = InputElement.PointerLeaveEvent,
+                Device = device,
+            };
+
+            while (element != null)
+            {
+                e.Source = element;
+                element.RaiseEvent(e);
+                element = (IInputElement)element.VisualParent;
             }
 
             root.PointerOverElement = null;
@@ -290,40 +318,66 @@ namespace Avalonia.Input
 
         private IInputElement SetPointerOver(IPointerDevice device, IInputRoot root, Point p)
         {
-            var elements = root.GetInputElementsAt(p).ToList();
-            return SetPointerOver(device, root, elements);
+            Contract.Requires<ArgumentNullException>(device != null);
+            Contract.Requires<ArgumentNullException>(root != null);
+
+            var element = root.InputHitTest(p);
+
+            if (element != root.PointerOverElement)
+            {
+                if (element != null)
+                {
+                    SetPointerOver(device, root, element);
+                }
+                else
+                {
+                    ClearPointerOver(device, root);
+                }
+            }
+
+            return element;
         }
 
-        private IInputElement SetPointerOver(IPointerDevice device, IInputRoot root, IList<IInputElement> elements)
+        private void SetPointerOver(IPointerDevice device, IInputRoot root, IInputElement element)
         {
-            foreach (var control in _pointerOvers.Except(elements).ToList())
-            {
-                PointerEventArgs e = new PointerEventArgs
-                {
-                    RoutedEvent = InputElement.PointerLeaveEvent,
-                    Device = device,
-                    Source = control,
-                };
+            Contract.Requires<ArgumentNullException>(device != null);
+            Contract.Requires<ArgumentNullException>(root != null);
+            Contract.Requires<ArgumentNullException>(element != null);
 
-                _pointerOvers.Remove(control);
-                control.RaiseEvent(e);
+            IInputElement branch = null;
+
+            var e = new PointerEventArgs
+            {
+                RoutedEvent = InputElement.PointerEnterEvent,
+                Device = device,
+            };
+
+            var el = element;
+
+            while (el != null)
+            {
+                if (el.IsPointerOver)
+                {
+                    branch = el;
+                    break;
+                }
+
+                e.Source = el;
+                el.RaiseEvent(e);
+                el = (IInputElement)el.VisualParent;
             }
 
-            foreach (var control in elements.Except(_pointerOvers))
-            {
-                PointerEventArgs e = new PointerEventArgs
-                {
-                    RoutedEvent = InputElement.PointerEnterEvent,
-                    Device = device,
-                    Source = control,
-                };
+            el = root.PointerOverElement;
+            e.RoutedEvent = InputElement.PointerLeaveEvent;
 
-                _pointerOvers.Add(control);
-                control.RaiseEvent(e);
+            while (el != null && el != branch)
+            {
+                e.Source = el;
+                el.RaiseEvent(e);
+                el = (IInputElement)el.VisualParent;
             }
 
-            root.PointerOverElement = elements.FirstOrDefault() ?? root;
-            return root.PointerOverElement;
+            root.PointerOverElement = element;
         }
     }
 }

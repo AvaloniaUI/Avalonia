@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Threading;
+using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Platform;
 
@@ -14,29 +14,45 @@ namespace Avalonia.Threading
     /// </summary>
     internal class JobRunner
     {
-        private readonly IPlatformThreadingInterface _platform;
-        private readonly Queue<Job> _queue = new Queue<Job>();
+
+
+        private IPlatformThreadingInterface _platform;
+
+        private Queue<Job>[] _queues = Enumerable.Range(0, (int) DispatcherPriority.MaxValue + 1)
+            .Select(_ => new Queue<Job>()).ToArray();
 
         public JobRunner(IPlatformThreadingInterface platform)
         {
             _platform = platform;
         }
 
+        Job GetNextJob(DispatcherPriority minimumPriority)
+        {
+            for (int c = (int) DispatcherPriority.MaxValue; c >= (int) minimumPriority; c--)
+            {
+                var q = _queues[c];
+                lock (q)
+                {
+                    if (q.Count > 0)
+                        return q.Dequeue();
+                }
+            }
+            return null;
+        }
+
         /// <summary>
         /// Runs continuations pushed on the loop.
         /// </summary>
-        public void RunJobs()
+        /// <param name="priority">Priority to execute jobs for. Pass null if platform doesn't have internal priority system</param>
+        public void RunJobs(DispatcherPriority? priority)
         {
+            var minimumPriority = priority ?? DispatcherPriority.MinValue;
             while (true)
             {
-                Job job;
-
-                lock (_queue)
-                {
-                    if (_queue.Count == 0)
-                        return;
-                    job = _queue.Dequeue();
-                }
+                var job = GetNextJob(minimumPriority);
+                if (job == null)
+                    return;
+                
 
                 if (job.TaskCompletionSource == null)
                 {
@@ -78,20 +94,28 @@ namespace Avalonia.Threading
         /// <param name="priority">The priority with which to invoke the method.</param>
         internal void Post(Action action, DispatcherPriority priority)
         {
-            // TODO: Respect priority.
             AddJob(new Job(action, priority, true));
+        }
+
+        /// <summary>
+        /// Allows unit tests to change the platform threading interface.
+        /// </summary>
+        internal void UpdateServices()
+        {
+            _platform = AvaloniaLocator.Current.GetService<IPlatformThreadingInterface>();
         }
 
         private void AddJob(Job job)
         {
             var needWake = false;
-            lock (_queue)
+            var queue = _queues[(int) job.Priority];
+            lock (queue)
             {
-                needWake = _queue.Count == 0;
-                _queue.Enqueue(job);
+                needWake = queue.Count == 0;
+                queue.Enqueue(job);
             }
             if (needWake)
-                _platform.Signal();
+                _platform?.Signal(job.Priority);
         }
 
         /// <summary>

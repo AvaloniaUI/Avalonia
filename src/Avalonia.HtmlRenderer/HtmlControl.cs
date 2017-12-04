@@ -17,6 +17,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using TheArtOfDev.HtmlRenderer.Core;
 using TheArtOfDev.HtmlRenderer.Core.Entities;
 using TheArtOfDev.HtmlRenderer.Avalonia;
@@ -413,7 +414,7 @@ namespace Avalonia.Controls.Html
         /// <summary>
         /// Handle mouse up to handle selection and link click. 
         /// </summary>
-        protected override void OnPointerReleased(PointerEventArgs e)
+        protected override void OnPointerReleased(PointerReleasedEventArgs e)
         {
             base.OnPointerReleased(e);
             LeftMouseButton = false;
@@ -512,7 +513,7 @@ namespace Avalonia.Controls.Html
         protected virtual void InvokeMouseMove()
         {
 
-            _htmlContainer.HandleMouseMove(this, MouseDevice.Instance?.GetPosition(this) ?? default(Point));
+            _htmlContainer.HandleMouseMove(this, (this.GetVisualRoot() as IInputRoot)?.MouseDevice?.GetPosition(this) ?? default(Point));
         }
 
         /// <summary>

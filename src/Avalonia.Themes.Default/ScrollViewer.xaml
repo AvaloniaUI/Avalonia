@@ -1,8 +1,11 @@
 <Style xmlns="https://github.com/avaloniaui" Selector="ScrollViewer">
+  <Setter Property="Background"
+          Value="Transparent" />
   <Setter Property="Template">
     <ControlTemplate>
-      <Grid ColumnDefinitions="*,Auto" RowDefinitions="*,Auto" Background="{TemplateBinding Background}">
+      <Grid ColumnDefinitions="*,Auto" RowDefinitions="*,Auto">
         <ScrollContentPresenter Name="PART_ContentPresenter"
+                                Background="{TemplateBinding Background}"
                                 Content="{TemplateBinding Content}"
                                 Extent="{TemplateBinding Path=Extent, Mode=TwoWay}"
                                 Margin="{TemplateBinding Padding}"

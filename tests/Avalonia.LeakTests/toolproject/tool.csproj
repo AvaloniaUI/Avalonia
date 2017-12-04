@@ -1,0 +1,11 @@
+﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+  <PropertyGroup>
+    <OutputPath>$(MSBuildThisFileDirectory)\bin</OutputPath>
+    <OutDir>$(OutputPath)</OutDir>
+    <TargetFrameworks>net461</TargetFrameworks>
+    <OutputType>Library</OutputType>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="JetBrains.dotMemory.Unit" Version="109.0.20170720.104130-eap09" />
+  </ItemGroup>
+</Project>

@@ -5,32 +5,50 @@ using System;
 using System.Reactive.Linq;
 using Avalonia.Controls;
 using Avalonia.Input;
-using ReactiveUI;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
-    internal class DevToolsViewModel : ReactiveObject
+    internal class DevToolsViewModel : ViewModelBase
     {
-        private ReactiveObject _content;
-
+        private ViewModelBase _content;
         private int _selectedTab;
-
         private TreePageViewModel _logicalTree;
-
         private TreePageViewModel _visualTree;
-
-        private readonly ObservableAsPropertyHelper<string> _focusedControl;
-
-        private readonly ObservableAsPropertyHelper<string> _pointerOverElement;
+        private string _focusedControl;
+        private string _pointerOverElement;
 
         public DevToolsViewModel(IControl root)
         {
             _logicalTree = new TreePageViewModel(LogicalTreeNode.Create(root));
             _visualTree = new TreePageViewModel(VisualTreeNode.Create(root));
 
-            this.WhenAnyValue(x => x.SelectedTab).Subscribe(index =>
+            UpdateFocusedControl();
+            KeyboardDevice.Instance.PropertyChanged += (s, e) =>
             {
-                switch (index)
+                if (e.PropertyName == nameof(KeyboardDevice.Instance.FocusedElement))
+                {
+                    UpdateFocusedControl();
+                }
+            };
+
+            root.GetObservable(TopLevel.PointerOverElementProperty)
+                .Subscribe(x => PointerOverElement = x?.GetType().Name);
+        }
+
+        public ViewModelBase Content
+        {
+            get { return _content; }
+            private set { RaiseAndSetIfChanged(ref _content, value); }
+        }
+
+        public int SelectedTab
+        {
+            get { return _selectedTab; }
+            set
+            {
+                _selectedTab = value;
+
+                switch (value)
                 {
                     case 0:
                         Content = _logicalTree;
@@ -39,33 +57,22 @@ namespace Avalonia.Diagnostics.ViewModels
                         Content = _visualTree;
                         break;
                 }
-            });
 
-            _focusedControl = KeyboardDevice.Instance
-                .WhenAnyValue(x => x.FocusedElement)
-                .Select(x => x?.GetType().Name)
-                .ToProperty(this, x => x.FocusedControl);
-
-            _pointerOverElement = root.GetObservable(TopLevel.PointerOverElementProperty)
-                .Select(x => x?.GetType().Name)
-                .ToProperty(this, x => x.PointerOverElement);
+                RaisePropertyChanged();
+            }
         }
 
-        public ReactiveObject Content
+        public string FocusedControl
         {
-            get { return _content; }
-            private set { this.RaiseAndSetIfChanged(ref _content, value); }
+            get { return _focusedControl; }
+            private set { RaiseAndSetIfChanged(ref _focusedControl, value); }
         }
 
-        public int SelectedTab
+        public string PointerOverElement
         {
-            get { return _selectedTab; }
-            set { this.RaiseAndSetIfChanged(ref _selectedTab, value); }
+            get { return _pointerOverElement; }
+            private set { RaiseAndSetIfChanged(ref _pointerOverElement, value); }
         }
-
-        public string FocusedControl => _focusedControl.Value;
-
-        public string PointerOverElement => _pointerOverElement.Value;
 
         public void SelectControl(IControl control)
         {
@@ -75,6 +82,11 @@ namespace Avalonia.Diagnostics.ViewModels
             {
                 tree.SelectControl(control);
             }
+        }
+
+        private void UpdateFocusedControl()
+        {
+            _focusedControl = KeyboardDevice.Instance.FocusedElement?.GetType().Name;
         }
     }
 }

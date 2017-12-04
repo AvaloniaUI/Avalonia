@@ -28,6 +28,8 @@ namespace Avalonia.Markup.UnitTests.Data
             observer.SetValue(-5);
 
             Assert.False(validationMessageFound);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -43,6 +45,8 @@ namespace Avalonia.Markup.UnitTests.Data
             observer.SetValue(-5);
 
             Assert.True(validationMessageFound);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -74,6 +78,10 @@ namespace Avalonia.Markup.UnitTests.Data
             var data = new IndeiTest();
             var observer = new ExpressionObserver(data, nameof(data.MustBePositive), true);
             var result = new List<object>();
+            
+            var errmsg = string.Empty;
+            try { typeof(IndeiTest).GetProperty(nameof(IndeiTest.MustBePositive)).SetValue(data, "foo"); }
+            catch(Exception e) { errmsg = e.Message; }
 
             observer.Subscribe(x => result.Add(x));
             observer.SetValue(5);
@@ -95,13 +103,15 @@ namespace Avalonia.Markup.UnitTests.Data
 
                 // Exception is thrown by trying to set value to "foo".
                 new BindingNotification(
-                    new ArgumentException("Object of type 'System.String' cannot be converted to type 'System.Int32'."),
+                    new ArgumentException(errmsg),
                     BindingErrorType.DataValidationError),
 
                 // Value is set then validation is updated.
                 new BindingNotification(new Exception("Must be positive"), BindingErrorType.DataValidationError, 5),
                 new BindingNotification(5),
             }, result);
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -147,6 +157,9 @@ namespace Avalonia.Markup.UnitTests.Data
                     BindingErrorType.Error,
                     AvaloniaProperty.UnsetValue),
             }, result);
+
+            GC.KeepAlive(container);
+            GC.KeepAlive(inner);
         }
 
         public class ExceptionTest : NotifyingBase

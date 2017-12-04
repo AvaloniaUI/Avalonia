@@ -9,13 +9,14 @@ using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.VisualTree;
+using JetBrains.Annotations;
 
 namespace Avalonia.Controls.Primitives
 {
     /// <summary>
     /// The root window of a <see cref="Popup"/>.
     /// </summary>
-    public class PopupRoot : TopLevel, IInteractive, IHostedVisualTreeRoot, IDisposable
+    public class PopupRoot : WindowBase, IInteractive, IHostedVisualTreeRoot, IDisposable
     {
         private IDisposable _presenterSubscription;
 
@@ -49,6 +50,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Gets the platform-specific window implementation.
         /// </summary>
+        [CanBeNull]
         public new IPopupImpl PlatformImpl => (IPopupImpl)base.PlatformImpl;
 
         /// <summary>
@@ -65,37 +67,14 @@ namespace Avalonia.Controls.Primitives
         IVisual IHostedVisualTreeRoot.Host => Parent;
 
         /// <inheritdoc/>
-        public void Dispose()
-        {
-            this.PlatformImpl.Dispose();
-        }
-
-        /// <summary>
-        /// Hides the popup.
-        /// </summary>
-        public void Hide()
-        {
-            PlatformImpl.Hide();
-            IsVisible = false;
-        }
-
-        /// <summary>
-        /// Shows the popup.
-        /// </summary>
-        public void Show()
-        {
-            EnsureInitialized();
-            PlatformImpl.Show();
-            LayoutManager.Instance.ExecuteInitialLayoutPass(this);
-            IsVisible = true;
-        }
+        public void Dispose() => PlatformImpl?.Dispose();
 
         /// <inheritdoc/>
         protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
         {
             base.OnTemplateApplied(e);
 
-            if (Parent.TemplatedParent != null)
+            if (Parent?.TemplatedParent != null)
             {
                 if (_presenterSubscription != null)
                 {
@@ -106,16 +85,6 @@ namespace Avalonia.Controls.Primitives
                 Presenter?.ApplyTemplate();
                 Presenter?.GetObservable(ContentPresenter.ChildProperty)
                     .Subscribe(SetTemplatedParentAndApplyChildTemplates);
-            }
-        }
-
-        private void EnsureInitialized()
-        {
-            if (!this.IsInitialized)
-            {
-                var init = (ISupportInitialize)this;
-                init.BeginInit();
-                init.EndInit();
             }
         }
 

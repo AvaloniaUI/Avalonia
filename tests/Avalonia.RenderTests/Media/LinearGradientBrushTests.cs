@@ -10,9 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
-#if AVALONIA_CAIRO
-namespace Avalonia.Cairo.RenderTests.Media
-#elif AVALONIA_SKIA
+#if AVALONIA_SKIA
 namespace Avalonia.Skia.RenderTests
 #else
 namespace Avalonia.Direct2D1.RenderTests.Media
@@ -29,7 +27,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
 #else
         [Fact]
 #endif
-        public void LinearGradientBrush_RedBlue_Horizontal_Fill()
+        public async Task LinearGradientBrush_RedBlue_Horizontal_Fill()
         {
             Decorator target = new Decorator
             {
@@ -42,7 +40,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                     {
                         StartPoint = new RelativePoint(0, 0.5, RelativeUnit.Relative),
                         EndPoint = new RelativePoint(1, 0.5, RelativeUnit.Relative),
-                        GradientStops =
+                        GradientStops = new[]
                         {
                             new GradientStop { Color = Colors.Red, Offset = 0 },
                             new GradientStop { Color = Colors.Blue, Offset = 1 }
@@ -51,7 +49,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
 
@@ -60,7 +58,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
 #else
         [Fact]
 #endif
-        public void LinearGradientBrush_RedBlue_Vertical_Fill()
+        public async Task LinearGradientBrush_RedBlue_Vertical_Fill()
         {
             Decorator target = new Decorator
             {
@@ -73,7 +71,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                     {
                         StartPoint = new RelativePoint(0.5, 0, RelativeUnit.Relative),
                         EndPoint = new RelativePoint(0.5, 1, RelativeUnit.Relative),
-                        GradientStops =
+                        GradientStops = new[]
                         {
                             new GradientStop { Color = Colors.Red, Offset = 0 },
                             new GradientStop { Color = Colors.Blue, Offset = 1 }
@@ -82,7 +80,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
     }

@@ -187,7 +187,7 @@ namespace Avalonia.Base.UnitTests
 
             source.OnNext(45);
 
-            Assert.Equal(null, target.Foo);
+            Assert.Null(target.Foo);
         }
 
         [Fact]
@@ -352,14 +352,14 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
-        public void BindingError_Does_Not_Cause_Target_Update()
+        public void DataValidationError_Does_Not_Cause_Target_Update()
         {
             var target = new Class1();
             var source = new Subject<object>();
 
             target.Bind(Class1.FooProperty, source);
             source.OnNext("initial");
-            source.OnNext(new BindingNotification(new InvalidOperationException("Foo"), BindingErrorType.Error));
+            source.OnNext(new BindingNotification(new InvalidOperationException("Foo"), BindingErrorType.DataValidationError));
 
             Assert.Equal("initial", target.GetValue(Class1.FooProperty));
         }
@@ -389,7 +389,7 @@ namespace Avalonia.Base.UnitTests
 
             LogCallback checkLogMessage = (level, area, src, mt, pv) =>
             {
-                if (level == LogEventLevel.Error &&
+                if (level == LogEventLevel.Warning &&
                     area == LogArea.Binding &&
                     mt == "Error in binding to {Target}.{Property}: {Message}" &&
                     pv.Length == 3 &&

@@ -44,6 +44,11 @@ namespace Avalonia
         }
 
         /// <summary>
+        /// Gets the aspect ratio of the size.
+        /// </summary>
+        public double AspectRatio => _width / _height;
+
+        /// <summary>
         /// Gets the width.
         /// </summary>
         public double Width => _width;
@@ -95,6 +100,17 @@ namespace Avalonia
         public static Size operator /(Size size, Vector scale)
         {
             return new Size(size._width / scale.X, size._height / scale.Y);
+        }
+
+        /// <summary>
+        /// Divides a size by another size to produce a scaling factor.
+        /// </summary>
+        /// <param name="left">The first size</param>
+        /// <param name="right">The second size.</param>
+        /// <returns>The scaled size.</returns>
+        public static Vector operator /(Size left, Size right)
+        {
+            return new Vector(left._width / right._width, left._height / right._height);
         }
 
         /// <summary>

@@ -1,18 +1,14 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 
 namespace Avalonia.Media
 {
     public sealed class DrawingContext : IDisposable
     {
-        private readonly IDrawingContextImpl _impl;
         private int _currentLevel;
-        
+
 
         static readonly Stack<Stack<PushedState>> StateStackPool = new Stack<Stack<PushedState>>();
         static readonly Stack<Stack<TransformContainer>> TransformStackPool = new Stack<Stack<TransformContainer>>();
@@ -37,14 +33,15 @@ namespace Avalonia.Media
 
         public DrawingContext(IDrawingContextImpl impl)
         {
-            _impl = impl;
+            PlatformImpl = impl;
         }
 
+        public IDrawingContextImpl PlatformImpl { get; }
 
         private Matrix _currentTransform = Matrix.Identity;
 
         private Matrix _currentContainerTransform = Matrix.Identity;
-        
+
         /// <summary>
         /// Gets the current transform of the drawing context.
         /// </summary>
@@ -54,15 +51,15 @@ namespace Avalonia.Media
             private set
             {
                 _currentTransform = value;
-                var transform = _currentTransform*_currentContainerTransform;
-                _impl.Transform = transform;
+                var transform = _currentTransform * _currentContainerTransform;
+                PlatformImpl.Transform = transform;
             }
         }
 
         //HACK: This is a temporary hack that is used in the render loop 
         //to update TransformedBounds property
         [Obsolete("HACK for render loop, don't use")]
-        internal Matrix CurrentContainerTransform => _currentContainerTransform;        
+        internal Matrix CurrentContainerTransform => _currentContainerTransform;
 
         /// <summary>
         /// Draws a bitmap image.
@@ -72,7 +69,11 @@ namespace Avalonia.Media
         /// <param name="sourceRect">The rect in the image to draw.</param>
         /// <param name="destRect">The rect in the output to draw to.</param>
         public void DrawImage(IBitmap source, double opacity, Rect sourceRect, Rect destRect)
-            => _impl.DrawImage(source, opacity, sourceRect, destRect);
+        {
+            Contract.Requires<ArgumentNullException>(source != null);
+
+            PlatformImpl.DrawImage(source.PlatformImpl, opacity, sourceRect, destRect);
+        }
 
         /// <summary>
         /// Draws a line.
@@ -80,7 +81,13 @@ namespace Avalonia.Media
         /// <param name="pen">The stroke pen.</param>
         /// <param name="p1">The first point of the line.</param>
         /// <param name="p2">The second point of the line.</param>
-        public void DrawLine(Pen pen, Point p1, Point p2) => _impl.DrawLine(pen, p1, p2);
+        public void DrawLine(Pen pen, Point p1, Point p2)
+        {
+            if (PenIsVisible(pen))
+            {
+                PlatformImpl.DrawLine(pen, p1, p2);
+            }
+        }
 
         /// <summary>
         /// Draws a geometry.
@@ -88,7 +95,13 @@ namespace Avalonia.Media
         /// <param name="brush">The fill brush.</param>
         /// <param name="pen">The stroke pen.</param>
         /// <param name="geometry">The geometry.</param>
-        public void DrawGeometry(IBrush brush, Pen pen, Geometry geometry) => _impl.DrawGeometry(brush, pen, geometry);
+        public void DrawGeometry(IBrush brush, Pen pen, Geometry geometry)
+        {
+            if (brush != null || PenIsVisible(pen))
+            {
+                PlatformImpl.DrawGeometry(brush, pen, geometry.PlatformImpl);
+            }
+        }
 
         /// <summary>
         /// Draws the outline of a rectangle.
@@ -97,7 +110,12 @@ namespace Avalonia.Media
         /// <param name="rect">The rectangle bounds.</param>
         /// <param name="cornerRadius">The corner radius.</param>
         public void DrawRectangle(Pen pen, Rect rect, float cornerRadius = 0.0f)
-            => _impl.DrawRectangle(pen, rect, cornerRadius);
+        {
+            if (PenIsVisible(pen))
+            {
+                PlatformImpl.DrawRectangle(pen, rect, cornerRadius);
+            }
+        }
 
         /// <summary>
         /// Draws text.
@@ -106,7 +124,14 @@ namespace Avalonia.Media
         /// <param name="origin">The upper-left corner of the text.</param>
         /// <param name="text">The text.</param>
         public void DrawText(IBrush foreground, Point origin, FormattedText text)
-            => _impl.DrawText(foreground, origin, text);
+        {
+            Contract.Requires<ArgumentNullException>(text != null);
+
+            if (foreground != null)
+            {
+                PlatformImpl.DrawText(foreground, origin, text.PlatformImpl);
+            }
+        }
 
         /// <summary>
         /// Draws a filled rectangle.
@@ -115,7 +140,12 @@ namespace Avalonia.Media
         /// <param name="rect">The rectangle bounds.</param>
         /// <param name="cornerRadius">The corner radius.</param>
         public void FillRectangle(IBrush brush, Rect rect, float cornerRadius = 0.0f)
-            => _impl.FillRectangle(brush, rect, cornerRadius);
+        {
+            if (brush != null && rect != Rect.Empty)
+            {
+                PlatformImpl.FillRectangle(brush, rect, cornerRadius);
+            }
+        }
 
         public struct PushedState : IDisposable
         {
@@ -146,7 +176,7 @@ namespace Avalonia.Media
 
             public void Dispose()
             {
-                if(_type == PushedStateType.None)
+                if (_type == PushedStateType.None)
                     return;
                 if (_context._currentLevel != _level)
                     throw new InvalidOperationException("Wrong Push/Pop state order");
@@ -155,13 +185,13 @@ namespace Avalonia.Media
                 if (_type == PushedStateType.Matrix)
                     _context.CurrentTransform = _matrix;
                 else if (_type == PushedStateType.Clip)
-                    _context._impl.PopClip();
+                    _context.PlatformImpl.PopClip();
                 else if (_type == PushedStateType.Opacity)
-                    _context._impl.PopOpacity();
+                    _context.PlatformImpl.PopOpacity();
                 else if (_type == PushedStateType.GeometryClip)
-                    _context._impl.PopGeometryClip();
+                    _context.PlatformImpl.PopGeometryClip();
                 else if (_type == PushedStateType.OpacityMask)
-                    _context._impl.PopOpacityMask();
+                    _context.PlatformImpl.PopOpacityMask();
                 else if (_type == PushedStateType.MatrixContainer)
                 {
                     var cont = _context._transformContainers.Pop();
@@ -179,7 +209,7 @@ namespace Avalonia.Media
         /// <returns>A disposable used to undo the clip rectangle.</returns>
         public PushedState PushClip(Rect clip)
         {
-            _impl.PushClip(clip);
+            PlatformImpl.PushClip(clip);
             return new PushedState(this, PushedState.PushedStateType.Clip);
         }
 
@@ -191,7 +221,7 @@ namespace Avalonia.Media
         public PushedState PushGeometryClip(Geometry clip)
         {
             Contract.Requires<ArgumentNullException>(clip != null);
-            _impl.PushGeometryClip(clip);
+            PlatformImpl.PushGeometryClip(clip.PlatformImpl);
             return new PushedState(this, PushedState.PushedStateType.GeometryClip);
         }
 
@@ -201,9 +231,9 @@ namespace Avalonia.Media
         /// <param name="opacity">The opacity.</param>
         /// <returns>A disposable used to undo the opacity.</returns>
         public PushedState PushOpacity(double opacity)
-            //TODO: Eliminate platform-specific push opacity call
+        //TODO: Eliminate platform-specific push opacity call
         {
-            _impl.PushOpacity(opacity);
+            PlatformImpl.PushOpacity(opacity);
             return new PushedState(this, PushedState.PushedStateType.Opacity);
         }
 
@@ -217,7 +247,7 @@ namespace Avalonia.Media
         /// <returns>A disposable to undo the opacity mask.</returns>
         public PushedState PushOpacityMask(IBrush mask, Rect bounds)
         {
-            _impl.PushOpacityMask(mask, bounds);
+            PlatformImpl.PushOpacityMask(mask, bounds);
             return new PushedState(this, PushedState.PushedStateType.OpacityMask);
         }
 
@@ -226,14 +256,14 @@ namespace Avalonia.Media
         /// </summary>
         /// <param name="matrix">The matrix</param>
         /// <returns>A disposable used to undo the transformation.</returns>
-        public PushedState PushPostTransform(Matrix matrix) => PushSetTransform(CurrentTransform*matrix);
+        public PushedState PushPostTransform(Matrix matrix) => PushSetTransform(CurrentTransform * matrix);
 
         /// <summary>
         /// Pushes a matrix pre-transformation.
         /// </summary>
         /// <param name="matrix">The matrix</param>
         /// <returns>A disposable used to undo the transformation.</returns>
-        public PushedState PushPreTransform(Matrix matrix) => PushSetTransform(matrix*CurrentTransform);
+        public PushedState PushPreTransform(Matrix matrix) => PushSetTransform(matrix * CurrentTransform);
 
         /// <summary>
         /// Sets the current matrix transformation.
@@ -244,7 +274,7 @@ namespace Avalonia.Media
         {
             var oldMatrix = CurrentTransform;
             CurrentTransform = matrix;
-            
+
             return new PushedState(this, PushedState.PushedStateType.Matrix, oldMatrix);
         }
 
@@ -255,7 +285,7 @@ namespace Avalonia.Media
         public PushedState PushTransformContainer()
         {
             _transformContainers.Push(new TransformContainer(CurrentTransform, _currentContainerTransform));
-            _currentContainerTransform = CurrentTransform*_currentContainerTransform;
+            _currentContainerTransform = CurrentTransform * _currentContainerTransform;
             _currentTransform = Matrix.Identity;
             return new PushedState(this, PushedState.PushedStateType.MatrixContainer);
         }
@@ -271,7 +301,12 @@ namespace Avalonia.Media
             _states = null;
             TransformStackPool.Push(_transformContainers);
             _transformContainers = null;
-            _impl.Dispose();
+            PlatformImpl.Dispose();
+        }
+
+        private static bool PenIsVisible(Pen pen)
+        {
+            return pen?.Brush != null && pen.Thickness > 0;
         }
     }
 }

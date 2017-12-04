@@ -3,9 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
+using Avalonia.Rendering;
+using JetBrains.Annotations;
 
 namespace Avalonia.Platform
 {
@@ -19,24 +20,14 @@ namespace Avalonia.Platform
     public interface ITopLevelImpl : IDisposable
     {
         /// <summary>
-        /// Gets or sets the client size of the window.
+        /// Gets the client size of the toplevel.
         /// </summary>
-        Size ClientSize { get; set; }
+        Size ClientSize { get; }
 
         /// <summary>
-        /// Gets the maximum size of a window on the system.
-        /// </summary>
-        Size MaxClientSize { get; }
-
-        /// <summary>
-        /// Gets the scaling factor for the window.
+        /// Gets the scaling factor for the toplevel.
         /// </summary>
         double Scaling { get; }
-
-        /// <summary>
-        /// Gets the platform window handle.
-        /// </summary>
-        IPlatformHandle Handle { get; }
 
         /// <summary>
         /// The list of native platform's surfaces that can be consumed by rendering subsystems.
@@ -51,57 +42,38 @@ namespace Avalonia.Platform
         IEnumerable<object> Surfaces { get; }
 
         /// <summary>
-        /// Gets or sets a method called when the window is activated (receives focus).
-        /// </summary>
-        Action Activated { get; set; }
-
-        /// <summary>
-        /// Gets or sets a method called when the window is closed.
-        /// </summary>
-        Action Closed { get; set; }
-
-        /// <summary>
-        /// Gets or sets a method called when the window is deactivated (loses focus).
-        /// </summary>
-        Action Deactivated { get; set; }
-
-        /// <summary>
-        /// Gets or sets a method called when the window receives input.
+        /// Gets or sets a method called when the toplevel receives input.
         /// </summary>
         Action<RawInputEventArgs> Input { get; set; }
 
         /// <summary>
-        /// Gets or sets a method called when the window requires painting.
+        /// Gets or sets a method called when the toplevel requires painting.
         /// </summary>
         Action<Rect> Paint { get; set; }
 
         /// <summary>
-        /// Gets or sets a method called when the window is resized.
+        /// Gets or sets a method called when the toplevel is resized.
         /// </summary>
         Action<Size> Resized { get; set; }
 
         /// <summary>
-        /// Gets or sets a method called when the window's scaling changes.
+        /// Gets or sets a method called when the toplevel's scaling changes.
         /// </summary>
         Action<double> ScalingChanged { get; set; }
 
         /// <summary>
-        /// Gets or sets a method called when the window's position changes.
+        /// Creates a new renderer for the toplevel.
         /// </summary>
-        Action<Point> PositionChanged { get; set; }
+        /// <param name="root">The toplevel.</param>
+        IRenderer CreateRenderer(IRenderRoot root);
 
         /// <summary>
-        /// Activates the window.
-        /// </summary>
-        void Activate();
-
-        /// <summary>
-        /// Invalidates a rect on the window.
+        /// Invalidates a rect on the toplevel.
         /// </summary>
         void Invalidate(Rect rect);
 
         /// <summary>
-        /// Sets the <see cref="IInputRoot"/> for the window.
+        /// Sets the <see cref="IInputRoot"/> for the toplevel.
         /// </summary>
         void SetInputRoot(IInputRoot inputRoot);
 
@@ -120,32 +92,20 @@ namespace Avalonia.Platform
         Point PointToScreen(Point point);
 
         /// <summary>
-        /// Sets the cursor associated with the window.
+        /// Sets the cursor associated with the toplevel.
         /// </summary>
         /// <param name="cursor">The cursor. Use null for default cursor</param>
         void SetCursor(IPlatformHandle cursor);
 
         /// <summary>
-        /// Shows the toplevel.
+        /// Gets or sets a method called when the underlying implementation is destroyed.
         /// </summary>
-        void Show();
-        
-        /// <summary>
-        /// Hides the window.
-        /// </summary>
-        void Hide();
+        Action Closed { get; set; }
 
         /// <summary>
-        /// Starts moving a window with left button being held. Should be called from left mouse button press event handler.
+        /// Gets a mouse device associated with toplevel
         /// </summary>
-        void BeginMoveDrag();
-
-        /// <summary>
-        /// Starts resizing a window. This function is used if an application has window resizing controls. 
-        /// Should be called from left mouse button press event handler
-        /// </summary>
-        void BeginResizeDrag(WindowEdge edge);
-
-        Point Position { get; set; }
+        [CanBeNull]
+        IMouseDevice MouseDevice { get; }
     }
 }

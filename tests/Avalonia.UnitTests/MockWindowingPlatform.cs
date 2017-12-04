@@ -25,6 +25,6 @@ namespace Avalonia.UnitTests
             throw new NotImplementedException();
         }
 
-        public IPopupImpl CreatePopup() => _popupImpl?.Invoke() ?? Mock.Of<IPopupImpl>();
+        public IPopupImpl CreatePopup() => _popupImpl?.Invoke() ?? Mock.Of<IPopupImpl>(x => x.Scaling == 1);
     }
 }

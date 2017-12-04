@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <RootNamespace>Avalonia.Skia</RootNamespace>
+    <AssemblyName>Avalonia.Skia</AssemblyName>
+    <IncludeLinuxSkia>true</IncludeLinuxSkia>
+	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\..\Shared\SharedAssemblyInfo.cs">
+      <Link>Properties\SharedAssemblyInfo.cs</Link>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Avalonia.Base\Avalonia.Base.csproj" />
+    <ProjectReference Include="..\..\Avalonia.Controls\Avalonia.Controls.csproj" />
+    <ProjectReference Include="..\..\Avalonia.Input\Avalonia.Input.csproj" />
+    <ProjectReference Include="..\..\Avalonia.Interactivity\Avalonia.Interactivity.csproj" />
+    <ProjectReference Include="..\..\Avalonia.Layout\Avalonia.Layout.csproj" />
+    <ProjectReference Include="..\..\Avalonia.Styling\Avalonia.Styling.csproj" />
+    <ProjectReference Include="..\..\Avalonia.Visuals\Avalonia.Visuals.csproj" />
+  </ItemGroup>
+  <Import Project="..\..\..\build\SkiaSharp.props" />
+  <Import Project="..\..\Shared\RenderHelpers\RenderHelpers.projitems" Label="Shared" />
+</Project>

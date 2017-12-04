@@ -183,7 +183,7 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Multiplies a rectangle by a vector.
+        /// Multiplies a rectangle by a scaling vector.
         /// </summary>
         /// <param name="rect">The rectangle.</param>
         /// <param name="scale">The vector scale.</param>
@@ -195,17 +195,6 @@ namespace Avalonia
                 rect.Y * scale.Y,
                 rect.Width * scale.X,
                 rect.Height * scale.Y);
-        }
-
-        /// <summary>
-        /// Transforms a rectangle by a matrix and returns the axis-aligned bounding box.
-        /// </summary>
-        /// <param name="rect">The rectangle.</param>
-        /// <param name="matrix">The matrix.</param>
-        /// <returns>The axis-aligned bounding box.</returns>
-        public static Rect operator *(Rect rect, Matrix matrix)
-        {
-            return new Rect(rect.TopLeft * matrix, rect.BottomRight * matrix);
         }
 
         /// <summary>
@@ -249,7 +238,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="rect">The rectangle to center.</param>
         /// <returns>The centered rectangle.</returns>
-        public Rect CenterIn(Rect rect)
+        public Rect CenterRect(Rect rect)
         {
             return new Rect(
                 _x + ((_width - rect._width) / 2),
@@ -413,6 +402,32 @@ namespace Avalonia
         }
 
         /// <summary>
+        /// Gets the union of two rectangles.
+        /// </summary>
+        /// <param name="rect">The other rectangle.</param>
+        /// <returns>The union.</returns>
+        public Rect Union(Rect rect)
+        {
+            if (IsEmpty)
+            {
+                return rect;
+            }
+            else if (rect.IsEmpty)
+            {
+                return this;
+            }
+            else
+            {
+                var x1 = Math.Min(this.X, rect.X);
+                var x2 = Math.Max(this.Right, rect.Right);
+                var y1 = Math.Min(this.Y, rect.Y);
+                var y2 = Math.Max(this.Bottom, rect.Bottom);
+
+                return new Rect(new Point(x1, y1), new Point(x2, y2));
+            }
+        }
+
+        /// <summary>
         /// Returns a new <see cref="Rect"/> with the specified X position.
         /// </summary>
         /// <param name="x">The x position.</param>
@@ -465,6 +480,32 @@ namespace Avalonia
                 _y,
                 _width,
                 _height);
+        }
+
+        /// <summary>
+        /// Parses a <see cref="Rect"/> string.
+        /// </summary>
+        /// <param name="s">The string.</param>
+        /// <param name="culture">The current culture.</param>
+        /// <returns>The parsed <see cref="Rect"/>.</returns>
+        public static Rect Parse(string s, CultureInfo culture)
+        {
+            var parts = s.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(x => x.Trim())
+                .ToList();
+
+            if (parts.Count == 4)
+            {
+                return new Rect(
+                    double.Parse(parts[0], culture),
+                    double.Parse(parts[1], culture),
+                    double.Parse(parts[2], culture),
+                    double.Parse(parts[3], culture));
+            }
+            else
+            {
+                throw new FormatException("Invalid Rect.");
+            }
         }
     }
 }

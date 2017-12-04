@@ -1,22 +1,8 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <MinimumVisualStudioVersion>11.0</MinimumVisualStudioVersion>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{B09B78D8-9B26-48B0-9149-D64A2F120F3F}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <RootNamespace>Avalonia</RootNamespace>
-    <AssemblyName>Avalonia.Base</AssemblyName>
-    <DefaultLanguage>en-US</DefaultLanguage>
-    <FileAlignment>512</FileAlignment>
-    <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <TargetFrameworkProfile>Profile7</TargetFrameworkProfile>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -44,118 +30,8 @@
     <Compile Include="..\Shared\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="Data\BindingChainException.cs" />
-    <Compile Include="Data\BindingNotification.cs" />
-    <Compile Include="Data\IndexerBinding.cs" />
-    <Compile Include="Diagnostics\INotifyCollectionChangedDebug.cs" />
-    <Compile Include="Data\AssignBindingAttribute.cs" />
-    <Compile Include="Data\BindingOperations.cs" />
-    <Compile Include="Data\InstancedBinding.cs" />
-    <Compile Include="Data\IBinding.cs" />
-    <Compile Include="Data\IndexerDescriptor.cs" />
-    <Compile Include="Collections\AvaloniaDictionary.cs" />
-    <Compile Include="Data\BindingMode.cs" />
-    <Compile Include="Diagnostics\IAvaloniaObjectDebug.cs" />
-    <Compile Include="Diagnostics\AvaloniaObjectExtensions.cs" />
-    <Compile Include="AttachedProperty.cs" />
-    <Compile Include="IPriorityValueOwner.cs" />
-    <Compile Include="IStyledPropertyAccessor.cs" />
-    <Compile Include="IDirectPropertyAccessor.cs" />
-    <Compile Include="DirectProperty.cs" />
-    <Compile Include="IAvaloniaObject.cs" />
-    <Compile Include="IDirectPropertyMetadata.cs" />
-    <Compile Include="IStyledPropertyMetadata.cs" />
-    <Compile Include="ISupportInitialize.cs" />
-    <Compile Include="Logging\ILogSink.cs" />
-    <Compile Include="Logging\LogArea.cs" />
-    <Compile Include="Logging\LogEventLevel.cs" />
-    <Compile Include="Logging\Logger.cs" />
-    <Compile Include="Metadata\DependsOnAttribute.cs" />
-    <Compile Include="Metadata\ContentAttribute.cs" />
-    <Compile Include="AvaloniaDisposable.cs" />
-    <Compile Include="AvaloniaInternalException.cs" />
-    <Compile Include="AvaloniaLocator.cs" />
-    <Compile Include="Metadata\XmlnsDefinitionAttribute.cs" />
-    <Compile Include="AvaloniaObjectExtensions.cs" />
-    <Compile Include="PropertyMetadata.cs" />
-    <Compile Include="Reactive\ObservableEx.cs" />
-    <Compile Include="Reactive\WeakPropertyChangedObservable.cs" />
-    <Compile Include="StyledProperty.cs" />
-    <Compile Include="StyledPropertyBase.cs" />
-    <Compile Include="AvaloniaPropertyRegistry.cs" />
-    <Compile Include="AvaloniaProperty`1.cs" />
-    <Compile Include="Platform\IAssetLoader.cs" />
-    <Compile Include="Platform\IRuntimePlatform.cs" />
-    <Compile Include="Data\BindingPriority.cs" />
-    <Compile Include="PriorityBindingEntry.cs" />
-    <Compile Include="Collections\IAvaloniaList.cs" />
-    <Compile Include="Collections\AvaloniaList.cs" />
-    <Compile Include="Contract.cs" />
-    <Compile Include="Diagnostics\AvaloniaPropertyValue.cs" />
-    <Compile Include="IDescription.cs" />
-    <Compile Include="Collections\AvaloniaListExtensions.cs" />
-    <Compile Include="Collections\IAvaloniaReadOnlyList.cs" />
-    <Compile Include="AvaloniaObject.cs" />
-    <Compile Include="AvaloniaProperty.cs" />
-    <Compile Include="AvaloniaPropertyChangedEventArgs.cs" />
-    <Compile Include="Platform\IPlatformHandle.cs" />
-    <Compile Include="Platform\IPlatformThreadingInterface.cs" />
-    <Compile Include="Platform\PlatformHandle.cs" />
-    <Compile Include="PriorityLevel.cs" />
-    <Compile Include="PriorityValue.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Reactive\AnonymousSubject`1.cs" />
-    <Compile Include="Reactive\AnonymousSubject`2.cs" />
-    <Compile Include="Reactive\AvaloniaObservable.cs" />
-    <Compile Include="DirectPropertyMetadata`1.cs" />
-    <Compile Include="StyledPropertyMetadata`1.cs" />
-    <Compile Include="Threading\Dispatcher.cs" />
-    <Compile Include="Threading\DispatcherPriority.cs" />
-    <Compile Include="Threading\DispatcherTimer.cs" />
-    <Compile Include="Threading\JobRunner.cs" />
-    <Compile Include="Threading\AvaloniaScheduler.cs" />
-    <Compile Include="Threading\AvaloniaSynchronizationContext.cs" />
-    <Compile Include="Threading\SingleThreadDispatcher.cs" />
-    <Compile Include="Utilities\ExceptionUtilities.cs" />
-    <Compile Include="Utilities\IWeakSubscriber.cs" />
-    <Compile Include="Utilities\MathUtilities.cs" />
-    <Compile Include="Utilities\SingleOrDictionary.cs" />
-    <Compile Include="Utilities\TypeUtilities.cs" />
-    <Compile Include="Utilities\WeakObservable.cs" />
-    <Compile Include="Utilities\WeakSubscriptionManager.cs" />
-    <Compile Include="Utilities\WeakTimer.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Reference Include="JetBrains.Annotations.PCL328, Version=10.0.0.0, Culture=neutral, PublicKeyToken=1010a0d8d6380325, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\JetBrains.Annotations.10.0.0\lib\portable-net4+sl5+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1\JetBrains.Annotations.PCL328.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Reactive.Core, Version=3.0.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Reactive.Core.3.0.0\lib\netstandard1.1\System.Reactive.Core.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Reactive.Interfaces, Version=3.0.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Reactive.Interfaces.3.0.0\lib\netstandard1.0\System.Reactive.Interfaces.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Reactive.Linq, Version=3.0.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Reactive.Linq.3.0.0\lib\netstandard1.1\System.Reactive.Linq.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Reactive.PlatformServices, Version=3.0.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Reactive.PlatformServices.3.0.0\lib\netstandard1.0\System.Reactive.PlatformServices.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+  <Import Project="..\..\build\Base.props" />
+  <Import Project="..\..\build\Rx.props" />
+  <Import Project="..\..\build\JetBrains.Annotations.props" />
 </Project>

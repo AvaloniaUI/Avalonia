@@ -10,8 +10,10 @@ using Avalonia.Platform;
 using System;
 using System.Collections.Generic;
 using System.Reactive.Disposables;
+using Avalonia.Android.Platform.Input;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform.Surfaces;
+using Avalonia.Rendering;
 
 namespace Avalonia.Android.Platform.SkiaPlatform
 {
@@ -65,9 +67,9 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             }
         }
 
-        public Action Closed { get; set; }
+        public IMouseDevice MouseDevice => AndroidMouseDevice.Instance;
 
-        public Action Deactivated { get; set; }
+        public Action Closed { get; set; }
 
         public Action<RawInputEventArgs> Input { get; set; }
 
@@ -79,29 +81,22 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public Action<double> ScalingChanged { get; set; }
 
-        public Action<Point> PositionChanged { get; set; }
-
         public View View => _view;
 
-        Action ITopLevelImpl.Activated { get; set; }
-
-        IPlatformHandle ITopLevelImpl.Handle => _view;
+        public IPlatformHandle Handle => _view;
 
         public IEnumerable<object> Surfaces => new object[] {this};
 
-        public void Activate()
+        public IRenderer CreateRenderer(IRenderRoot root)
         {
+            return new ImmediateRenderer(root);
         }
 
         public virtual void Hide()
         {
             _view.Visibility = ViewStates.Invisible;
         }
-
-        public void SetSystemDecorations(bool enabled)
-        {
-        }
-
+        
         public void Invalidate(Rect rect)
         {
             if (_view.Holder?.Surface?.IsValid == true) _view.Invalidate();
@@ -126,27 +121,11 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         {
             InputRoot = inputRoot;
         }
-
-        public void SetTitle(string title)
-        {
-        }
-
+        
         public virtual void Show()
         {
             _view.Visibility = ViewStates.Visible;
         }
-
-        public void BeginMoveDrag()
-        {
-            //Not supported
-        }
-
-        public void BeginResizeDrag(WindowEdge edge)
-        {
-            //Not supported
-        }
-
-        public virtual Point Position { get; set; }
 
         public double Scaling => 1;
 
@@ -154,12 +133,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         {
             Paint?.Invoke(new Rect(new Point(0, 0), ClientSize));
         }
-
-        public void SetIcon(IWindowIconImpl icon)
-        {
-            // No window icons for mobile platforms
-        }
-
+        
         public virtual void Dispose()
         {
             _view.Dispose();

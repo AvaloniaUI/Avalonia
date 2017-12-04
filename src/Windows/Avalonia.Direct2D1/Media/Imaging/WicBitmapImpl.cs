@@ -3,8 +3,10 @@
 
 using System;
 using System.IO;
-using Avalonia.Platform;
+using Avalonia.Win32.Interop;
 using SharpDX.WIC;
+using APixelFormat = Avalonia.Platform.PixelFormat;
+using D2DBitmap = SharpDX.Direct2D1.Bitmap;
 
 namespace Avalonia.Direct2D1.Media
 {
@@ -13,19 +15,14 @@ namespace Avalonia.Direct2D1.Media
     /// </summary>
     public class WicBitmapImpl : BitmapImpl
     {
-        private readonly ImagingFactory _factory;
-
-        private SharpDX.Direct2D1.Bitmap _direct2D;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="WicBitmapImpl"/> class.
         /// </summary>
         /// <param name="factory">The WIC imaging factory to use.</param>
         /// <param name="fileName">The filename of the bitmap to load.</param>
         public WicBitmapImpl(ImagingFactory factory, string fileName)
+            : base(factory)
         {
-            _factory = factory;
-
             using (BitmapDecoder decoder = new BitmapDecoder(factory, fileName, DecodeOptions.CacheOnDemand))
             {
                 WicImpl = new Bitmap(factory, decoder.GetFrame(0), BitmapCreateCacheOption.CacheOnDemand);
@@ -38,9 +35,8 @@ namespace Avalonia.Direct2D1.Media
         /// <param name="factory">The WIC imaging factory to use.</param>
         /// <param name="stream">The stream to read the bitmap from.</param>
         public WicBitmapImpl(ImagingFactory factory, Stream stream)
+            : base(factory)
         {
-            _factory = factory;
-
             using (BitmapDecoder decoder = new BitmapDecoder(factory, stream, DecodeOptions.CacheOnLoad))
             {
                 WicImpl = new Bitmap(factory, decoder.GetFrame(0), BitmapCreateCacheOption.CacheOnLoad);
@@ -53,16 +49,38 @@ namespace Avalonia.Direct2D1.Media
         /// <param name="factory">The WIC imaging factory to use.</param>
         /// <param name="width">The width of the bitmap.</param>
         /// <param name="height">The height of the bitmap.</param>
-        public WicBitmapImpl(ImagingFactory factory, int width, int height)
+        /// <param name="pixelFormat">Pixel format</param>
+        public WicBitmapImpl(ImagingFactory factory, int width, int height, APixelFormat? pixelFormat = null)
+            : base(factory)
         {
-            _factory = factory;
+            if (!pixelFormat.HasValue)
+                pixelFormat = APixelFormat.Bgra8888;
+
+            PixelFormat = pixelFormat;
             WicImpl = new Bitmap(
                 factory,
                 width,
                 height,
-                PixelFormat.Format32bppPBGRA,
+                pixelFormat.Value.ToWic(),
                 BitmapCreateCacheOption.CacheOnLoad);
         }
+
+        public WicBitmapImpl(ImagingFactory factory, APixelFormat format, IntPtr data, int width, int height, int stride)
+            : base(factory)
+        {
+            WicImpl = new Bitmap(factory, width, height, format.ToWic(), BitmapCreateCacheOption.CacheOnDemand);
+            PixelFormat = format;
+            using (var l = WicImpl.Lock(BitmapLockFlags.Write))
+            {
+                for (var row = 0; row < height; row++)
+                {
+                    UnmanagedMethods.CopyMemory(new IntPtr(l.Data.DataPointer.ToInt64() + row * l.Stride),
+                        new IntPtr(data.ToInt64() + row * stride), (uint) l.Data.Pitch);
+                }
+            }
+        }
+
+        protected APixelFormat? PixelFormat { get; }
 
         /// <summary>
         /// Gets the width of the bitmap, in pixels.
@@ -77,7 +95,6 @@ namespace Avalonia.Direct2D1.Media
         public override void Dispose()
         {
             WicImpl.Dispose();
-            _direct2D?.Dispose();
         }
 
         /// <summary>
@@ -90,46 +107,23 @@ namespace Avalonia.Direct2D1.Media
         /// </summary>
         /// <param name="renderTarget">The render target.</param>
         /// <returns>The Direct2D bitmap.</returns>
-        public override SharpDX.Direct2D1.Bitmap GetDirect2DBitmap(SharpDX.Direct2D1.RenderTarget renderTarget)
+        public override OptionalDispose<D2DBitmap> GetDirect2DBitmap(SharpDX.Direct2D1.RenderTarget renderTarget)
         {
-            if (_direct2D == null)
-            {
-                FormatConverter converter = new FormatConverter(_factory);
-                converter.Initialize(WicImpl, PixelFormat.Format32bppPBGRA);
-                _direct2D = SharpDX.Direct2D1.Bitmap.FromWicBitmap(renderTarget, converter);
-            }
-
-            return _direct2D;
-        }
-
-        /// <summary>
-        /// Saves the bitmap to a file.
-        /// </summary>
-        /// <param name="fileName">The filename.</param>
-        public override void Save(string fileName)
-        {
-            if (Path.GetExtension(fileName) != ".png")
-            {
-                // Yeah, we need to support other formats.
-                throw new NotSupportedException("Use PNG, stoopid.");
-            }
-
-            using (FileStream s = new FileStream(fileName, FileMode.Create))
-            {
-                Save(s);
-            }
+            FormatConverter converter = new FormatConverter(WicImagingFactory);
+            converter.Initialize(WicImpl, SharpDX.WIC.PixelFormat.Format32bppPBGRA);
+            return new OptionalDispose<D2DBitmap>(D2DBitmap.FromWicBitmap(renderTarget, converter), true);
         }
 
         public override void Save(Stream stream)
         {
-            PngBitmapEncoder encoder = new PngBitmapEncoder(_factory);
-            encoder.Initialize(stream);
-
-            BitmapFrameEncode frame = new BitmapFrameEncode(encoder);
-            frame.Initialize();
-            frame.WriteSource(WicImpl);
-            frame.Commit();
-            encoder.Commit();
+            using (var encoder = new PngBitmapEncoder(WicImagingFactory, stream))
+            using (var frame = new BitmapFrameEncode(encoder))
+            {
+                frame.Initialize();
+                frame.WriteSource(WicImpl);
+                frame.Commit();
+                encoder.Commit();
+            }
         }
     }
 }

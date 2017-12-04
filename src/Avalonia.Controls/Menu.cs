@@ -47,7 +47,7 @@ namespace Avalonia.Controls
         static Menu()
         {
             ItemsPanelProperty.OverrideDefaultValue(typeof(Menu), DefaultPanel);
-            MenuItem.ClickEvent.AddClassHandler<Menu>(x => x.OnMenuClick);
+            MenuItem.ClickEvent.AddClassHandler<Menu>(x => x.OnMenuClick, handledEventsToo: true);
             MenuItem.SubmenuOpenedEvent.AddClassHandler<Menu>(x => x.OnSubmenuOpened);
         }
 
@@ -103,9 +103,11 @@ namespace Avalonia.Controls
         {
             base.OnAttachedToVisualTree(e);
 
-            var topLevel = e.Root as TopLevel;
+            var topLevel = (TopLevel)e.Root;
+            var window = e.Root as Window;
 
-            topLevel.Deactivated += Deactivated;
+            if (window != null)
+                window.Deactivated += Deactivated;
 
             var pointerPress = topLevel.AddHandler(
                 PointerPressedEvent,
@@ -114,7 +116,11 @@ namespace Avalonia.Controls
 
             _subscription = new CompositeDisposable(
                 pointerPress,
-                Disposable.Create(() => topLevel.Deactivated -= Deactivated),
+                Disposable.Create(() =>
+                {
+                    if (window != null)
+                        window.Deactivated -= Deactivated;
+                }),
                 InputManager.Instance.Process.Subscribe(ListenForNonClientClick));
 
             var inputRoot = e.Root as IInputRoot;

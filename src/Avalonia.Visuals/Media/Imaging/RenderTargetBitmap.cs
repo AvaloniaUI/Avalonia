@@ -16,10 +16,12 @@ namespace Avalonia.Media.Imaging
         /// <summary>
         /// Initializes a new instance of the <see cref="RenderTargetBitmap"/> class.
         /// </summary>
-        /// <param name="width">The width of the bitmap.</param>
-        /// <param name="height">The height of the bitmap.</param>
-        public RenderTargetBitmap(int width, int height)
-            : base(CreateImpl(width, height))
+        /// <param name="pixelWidth">The width of the bitmap in pixels.</param>
+        /// <param name="pixelHeight">The height of the bitmap in pixels.</param>
+        /// <param name="dpiX">The horizontal DPI of the bitmap.</param>
+        /// <param name="dpiY">The vertical DPI of the bitmap.</param>
+        public RenderTargetBitmap(int pixelWidth, int pixelHeight, double dpiX = 96, double dpiY = 96)
+            : base(CreateImpl(pixelWidth, pixelHeight, dpiX, dpiY))
         {
         }
 
@@ -37,17 +39,26 @@ namespace Avalonia.Media.Imaging
         }
 
         /// <summary>
+        /// Renders a visual to the <see cref="RenderTargetBitmap"/>.
+        /// </summary>
+        /// <param name="visual">The visual to render.</param>
+        public void Render(IVisual visual) => ImmediateRenderer.Render(visual, this);
+
+        /// <summary>
         /// Creates a platform-specific imlementation for a <see cref="RenderTargetBitmap"/>.
         /// </summary>
         /// <param name="width">The width of the bitmap.</param>
         /// <param name="height">The height of the bitmap.</param>
+        /// <param name="dpiX">The horizontal DPI of the bitmap.</param>
+        /// <param name="dpiY">The vertical DPI of the bitmap.</param>
         /// <returns>The platform-specific implementation.</returns>
-        private static IBitmapImpl CreateImpl(int width, int height)
+        private static IBitmapImpl CreateImpl(int width, int height, double dpiX, double dpiY)
         {
             IPlatformRenderInterface factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
-            return factory.CreateRenderTargetBitmap(width, height);
+            return factory.CreateRenderTargetBitmap(width, height, dpiX, dpiY);
         }
 
-        public DrawingContext CreateDrawingContext() => PlatformImpl.CreateDrawingContext();
+        /// <inheritdoc/>
+        public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer vbr) => PlatformImpl.CreateDrawingContext(vbr);
     }
 }

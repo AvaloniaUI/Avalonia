@@ -10,6 +10,7 @@ using Android.OS;
 using Android.Runtime;
 using Android.Views;
 using Android.Widget;
+using Avalonia.Controls;
 using Avalonia.Platform;
 
 namespace Avalonia.Android.Platform.SkiaPlatform
@@ -18,24 +19,27 @@ namespace Avalonia.Android.Platform.SkiaPlatform
     {
         private Point _position;
         private bool _isAdded;
+        Action IWindowBaseImpl.Activated { get; set; }
+        public Action<Point> PositionChanged { get; set; }
+        public Action Deactivated { get; set; }
+
         public PopupImpl() : base(ActivityTracker.Current, true)
         {
         }
 
         private Size _clientSize = new Size(1, 1);
-        public override Size ClientSize
-        {
-            get { return base.ClientSize; }
-            set
-            {
-                if(View == null)
-                    return;
-                _clientSize = value;
-                UpdateParams();
-            }
-        }
 
-        public override Point Position
+        public void Resize(Size value)
+        {
+            if (View == null)
+                return;
+            _clientSize = value;
+            UpdateParams();
+        }
+        
+        public IScreenImpl Screen { get; }
+
+        public Point Position
         {
             get { return _position; }
             set
@@ -87,5 +91,22 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             Hide();
             base.Dispose();
         }
+
+
+        public void Activate()
+        {
+        }
+
+        public void BeginMoveDrag()
+        {
+            //Not supported
+        }
+
+        public void BeginResizeDrag(WindowEdge edge)
+        {
+            //Not supported
+        }
+        
+
     }
 }

@@ -33,7 +33,6 @@ namespace Avalonia
     /// </remarks>
     internal class PriorityLevel
     {
-        private PriorityValue _owner;
         private object _directValue;
         private int _nextIndex;
 
@@ -48,12 +47,17 @@ namespace Avalonia
         {
             Contract.Requires<ArgumentNullException>(owner != null);
 
-            _owner = owner;
+            Owner = owner;
             Priority = priority;
             Value = _directValue = AvaloniaProperty.UnsetValue;
             ActiveBindingIndex = -1;
             Bindings = new LinkedList<PriorityBindingEntry>();
         }
+
+        /// <summary>
+        /// Gets the owner of the level.
+        /// </summary>
+        public PriorityValue Owner { get; }
 
         /// <summary>
         /// Gets the priority of this level.
@@ -73,7 +77,7 @@ namespace Avalonia
             set
             {
                 Value = _directValue = value;
-                _owner.LevelValueChanged(this);
+                Owner.LevelValueChanged(this);
             }
         }
 
@@ -131,7 +135,7 @@ namespace Avalonia
                 {
                     Value = entry.Value;
                     ActiveBindingIndex = entry.Index;
-                    _owner.LevelValueChanged(this);
+                    Owner.LevelValueChanged(this);
                 }
                 else
                 {
@@ -161,7 +165,7 @@ namespace Avalonia
         /// <param name="error">The error.</param>
         public void Error(PriorityBindingEntry entry, BindingNotification error)
         {
-            _owner.LevelError(this, error);
+            Owner.LevelError(this, error);
         }
 
         /// <summary>
@@ -175,14 +179,14 @@ namespace Avalonia
                 {
                     Value = binding.Value;
                     ActiveBindingIndex = binding.Index;
-                    _owner.LevelValueChanged(this);
+                    Owner.LevelValueChanged(this);
                     return;
                 }
             }
 
             Value = DirectValue;
             ActiveBindingIndex = -1;
-            _owner.LevelValueChanged(this);
+            Owner.LevelValueChanged(this);
         }
     }
 }

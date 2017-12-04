@@ -5,10 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Xunit;
+using System.Threading.Tasks;
 
-#if AVALONIA_CAIRO
-namespace Avalonia.Cairo.RenderTests
-#elif AVALONIA_SKIA
+#if AVALONIA_SKIA
 namespace Avalonia.Skia.RenderTests
 #else
 namespace Avalonia.Direct2D1.RenderTests
@@ -22,10 +21,11 @@ namespace Avalonia.Direct2D1.RenderTests
         }
 
         [Fact]
-        public void Geometry_Clip_Clips_Path()
+        public async Task Geometry_Clip_Clips_Path()
         {
             var target = new Canvas
             {
+                Background = Brushes.Yellow,
                 Clip = StreamGeometry.Parse("F1 M 0,0  H 76 V 76 Z"),
                 Width = 76,
                 Height = 76,
@@ -44,7 +44,7 @@ namespace Avalonia.Direct2D1.RenderTests
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
     }

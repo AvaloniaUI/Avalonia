@@ -15,14 +15,18 @@ namespace Avalonia.Win32.Embedding
     {
         private readonly EmbeddableControlRoot _root = new EmbeddableControlRoot();
 
+        private IntPtr WindowHandle => ((WindowImpl) _root?.PlatformImpl)?.Handle?.Handle ?? IntPtr.Zero;
+
         public WinFormsAvaloniaControlHost()
         {
             SetStyle(ControlStyles.AllPaintingInWmPaint, true);
-            UnmanagedMethods.SetParent(_root.PlatformImpl.Handle.Handle, Handle);
+            UnmanagedMethods.SetParent(WindowHandle, Handle);
             _root.Prepare();
             if (_root.IsFocused)
                 FocusManager.Instance.Focus(null);
             _root.GotFocus += RootGotFocus;
+            // ReSharper disable once PossibleNullReferenceException
+            // Always non-null at this point
             _root.PlatformImpl.LostFocus += PlatformImpl_LostFocus;
             FixPosition();
         }
@@ -59,20 +63,20 @@ namespace Avalonia.Win32.Embedding
 
         private void RootGotFocus(object sender, Interactivity.RoutedEventArgs e)
         {
-            UnmanagedMethods.SetFocus(_root.PlatformImpl.Handle.Handle);
+            UnmanagedMethods.SetFocus(WindowHandle);
         }
 
         protected override void OnGotFocus(EventArgs e)
         {
             if (_root != null)
-                UnmanagedMethods.SetFocus(_root.PlatformImpl.Handle.Handle);
+                UnmanagedMethods.SetFocus(WindowHandle);
         }
 
 
         void FixPosition()
         {
             if (_root != null && Width > 0 && Height > 0)
-                UnmanagedMethods.MoveWindow(_root.PlatformImpl.Handle.Handle, 0, 0, Width, Height, true);
+                UnmanagedMethods.MoveWindow(WindowHandle, 0, 0, Width, Height, true);
         }
 
 

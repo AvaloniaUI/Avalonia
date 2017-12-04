@@ -9,7 +9,7 @@ namespace Avalonia.Platform
     /// <summary>
     /// Defines a platform-specific window implementation.
     /// </summary>
-    public interface IWindowImpl : ITopLevelImpl
+    public interface IWindowImpl : IWindowBaseImpl
     {
         /// <summary>
         /// Gets or sets the minimized/maximized state of the window.
@@ -31,7 +31,7 @@ namespace Avalonia.Platform
         IDisposable ShowDialog();
 
         /// <summary>
-        /// Enables of disables system window decorations (title bar, buttons, etc)
+        /// Enables or disables system window decorations (title bar, buttons, etc)
         /// </summary>
         void SetSystemDecorations(bool enabled);
 
@@ -39,5 +39,10 @@ namespace Avalonia.Platform
         /// Sets the icon of this window.
         /// </summary>
         void SetIcon(IWindowIconImpl icon);
+
+        /// <summary>
+        /// Enables or disables the taskbar icon
+        /// </summary>
+        void ShowTaskbarIcon(bool value);
     }
 }

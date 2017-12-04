@@ -27,8 +27,7 @@ namespace Avalonia.Skia
         {
             var renderInterface = new PlatformRenderInterface();
             AvaloniaLocator.CurrentMutable
-                .Bind<IPlatformRenderInterface>().ToConstant(renderInterface)
-                .Bind<IRendererFactory>().ToConstant(renderInterface);
+                .Bind<IPlatformRenderInterface>().ToConstant(renderInterface);
         }
 
         public static bool ForceSoftwareRendering

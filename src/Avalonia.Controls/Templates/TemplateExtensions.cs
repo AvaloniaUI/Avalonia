@@ -31,9 +31,9 @@ namespace Avalonia.Controls.Templates
 
                 if (child.TemplatedParent != null)
                 {
-                    foreach (var descendent in GetTemplateChildren(child, templatedParent))
+                    foreach (var descendant in GetTemplateChildren(child, templatedParent))
                     {
-                        yield return descendent;
+                        yield return descendant;
                     }
                 }
             }

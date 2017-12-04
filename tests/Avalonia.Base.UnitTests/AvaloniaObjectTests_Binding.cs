@@ -314,7 +314,7 @@ namespace Avalonia.Base.UnitTests
                 new InvalidOperationException("Foo"),
                 BindingErrorType.Error));
 
-            Assert.Equal(6.7, target.GetValue(Class1.QuxProperty));
+            Assert.Equal(5.6, target.GetValue(Class1.QuxProperty));
         }
 
         [Fact]
@@ -343,7 +343,7 @@ namespace Avalonia.Base.UnitTests
 
             LogCallback checkLogMessage = (level, area, src, mt, pv) =>
             {
-                if (level == LogEventLevel.Error &&
+                if (level == LogEventLevel.Warning &&
                     area == LogArea.Binding &&
                     mt == expectedMessageTemplate)
                 {
@@ -359,13 +359,13 @@ namespace Avalonia.Base.UnitTests
                     new InvalidOperationException("Foo"),
                     BindingErrorType.Error));
 
-                Assert.Equal(6.7, target.GetValue(Class1.QuxProperty));
+                Assert.Equal(5.6, target.GetValue(Class1.QuxProperty));
                 Assert.True(called);
             }
         }
         
         [Fact]
-        public async void Bind_With_Scheduler_Executes_On_Scheduler()
+        public async Task Bind_With_Scheduler_Executes_On_Scheduler()
         {
             var target = new Class1();
             var source = new Subject<object>();
@@ -375,16 +375,16 @@ namespace Avalonia.Base.UnitTests
             threadingInterfaceMock.SetupGet(mock => mock.CurrentThreadIsLoopThread)
                 .Returns(() => Thread.CurrentThread.ManagedThreadId == currentThreadId);
 
-            using (AvaloniaLocator.EnterScope())
-            {
-                AvaloniaLocator.CurrentMutable.Bind<IPlatformThreadingInterface>().ToConstant(threadingInterfaceMock.Object);
-                AvaloniaLocator.CurrentMutable.Bind<IScheduler>().ToConstant(AvaloniaScheduler.Instance);
+            var services = new TestServices(
+                scheduler: AvaloniaScheduler.Instance,
+                threadingInterface: threadingInterfaceMock.Object);
 
+            using (UnitTestApplication.Start(services))
+            {
                 target.Bind(Class1.QuxProperty, source);
 
                 await Task.Run(() => source.OnNext(6.7));
             }
-
         }
 
         /// <summary>
@@ -428,7 +428,7 @@ namespace Avalonia.Base.UnitTests
                 object anchor = null,
                 bool enableDataValidation = false)
             {
-                return new InstancedBinding(_source, BindingMode.OneTime);
+                return InstancedBinding.OneTime(_source);
             }
         }
     }

@@ -31,7 +31,7 @@ namespace Avalonia.Controls.Platform
                 throw new Exception("Could not CreateWindow(): IWindowingPlatform is not registered.");
             }
 
-            return s_designerMode ? platform.CreateEmbeddableWindow() : platform.CreateWindow();
+            return s_designerMode ? (IWindowImpl)platform.CreateEmbeddableWindow() : platform.CreateWindow();
         }
 
         public static IEmbeddableWindowImpl CreateEmbeddableWindow()

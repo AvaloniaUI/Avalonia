@@ -16,21 +16,11 @@ namespace BindingTest
 
         private static void Main()
         {
-            InitializeLogging();
-
             AppBuilder.Configure<App>()
                 .UsePlatformDetect()
+                .UseReactiveUI()
+                .LogToDebug()
                 .Start<MainWindow>();
-        }
-
-        private static void InitializeLogging()
-        {
-#if DEBUG
-            SerilogLogger.Initialize(new LoggerConfiguration()
-                .MinimumLevel.Warning()
-                .WriteTo.Trace(outputTemplate: "{Area}: {Message}")
-                .CreateLogger());
-#endif
         }
     }
 }

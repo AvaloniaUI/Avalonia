@@ -3,6 +3,7 @@
 
 using System;
 using Avalonia.Collections;
+using Avalonia.Controls;
 
 namespace Avalonia.LogicalTree
 {
@@ -37,6 +38,16 @@ namespace Avalonia.LogicalTree
         IAvaloniaReadOnlyList<ILogical> LogicalChildren { get; }
 
         /// <summary>
+        /// Notifies the control that it is being attached to a rooted logical tree.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        /// <remarks>
+        /// This method will be called automatically by the framework, you should not need to call
+        /// this method yourself.
+        /// </remarks>
+        void NotifyAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e);
+
+        /// <summary>
         /// Notifies the control that it is being detached from a rooted logical tree.
         /// </summary>
         /// <param name="e">The event args.</param>
@@ -45,5 +56,15 @@ namespace Avalonia.LogicalTree
         /// this method yourself.
         /// </remarks>
         void NotifyDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e);
+
+        /// <summary>
+        /// Notifies the control that a change has been made to resources that apply to it.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        /// <remarks>
+        /// This method will be called automatically by the framework, you should not need to call
+        /// this method yourself.
+        /// </remarks>
+        void NotifyResourcesChanged(ResourcesChangedEventArgs e);
     }
 }

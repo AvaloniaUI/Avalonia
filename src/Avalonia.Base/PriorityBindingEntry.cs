@@ -92,11 +92,13 @@ namespace Avalonia
 
         private void ValueChanged(object value)
         {
+            _owner.Owner.Owner?.VerifyAccess();
+
             var notification = value as BindingNotification;
 
             if (notification != null)
             {
-                if (notification.HasValue)
+                if (notification.HasValue || notification.ErrorType == BindingErrorType.Error)
                 {
                     Value = notification.Value;
                     _owner.Changed(this);

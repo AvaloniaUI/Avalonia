@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using Avalonia.Logging;
 
 namespace Avalonia.Data
 {
@@ -44,11 +45,7 @@ namespace Avalonia.Data
         public static readonly BindingNotification UnsetValue =
             new BindingNotification(AvaloniaProperty.UnsetValue);
 
-        // Null cannot be held in WeakReference as it's indistinguishable from an expired value so
-        // use this value in its place.
-        private static readonly object NullValue = new object();
-
-        private WeakReference<object> _value;
+        private object _value;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BindingNotification"/> class.
@@ -56,7 +53,7 @@ namespace Avalonia.Data
         /// <param name="value">The binding value.</param>
         public BindingNotification(object value)
         {
-            _value = new WeakReference<object>(value ?? NullValue);
+            _value = value;
         }
 
         /// <summary>
@@ -73,6 +70,7 @@ namespace Avalonia.Data
 
             Error = error;
             ErrorType = errorType;
+            _value = AvaloniaProperty.UnsetValue;
         }
 
         /// <summary>
@@ -84,7 +82,7 @@ namespace Avalonia.Data
         public BindingNotification(Exception error, BindingErrorType errorType, object fallbackValue)
             : this(error, errorType)
         {
-            _value = new WeakReference<object>(fallbackValue ?? NullValue);
+            _value = fallbackValue;
         }
 
         /// <summary>
@@ -95,31 +93,12 @@ namespace Avalonia.Data
         /// If this property is read when <see cref="HasValue"/> is false then it will return
         /// <see cref="AvaloniaProperty.UnsetValue"/>.
         /// </remarks>
-        public object Value
-        {
-            get
-            {
-                if (_value != null)
-                {
-                    object result;
-
-                    if (_value.TryGetTarget(out result))
-                    {
-                        return result == NullValue ? null : result;
-                    }
-                }
-
-                // There's the possibility of a race condition in that HasValue can return true,
-                // and then the value is GC'd before Value is read. We should be ok though as
-                // we return UnsetValue which should be a safe alternative.
-                return AvaloniaProperty.UnsetValue;
-            }
-        }
+        public object Value => _value;
 
         /// <summary>
         /// Gets a value indicating whether <see cref="Value"/> should be pushed to the target.
         /// </summary>
-        public bool HasValue => _value != null;
+        public bool HasValue => _value != AvaloniaProperty.UnsetValue;
 
         /// <summary>
         /// Gets the error that occurred on the source, if any.
@@ -248,7 +227,7 @@ namespace Avalonia.Data
         /// </summary>
         public void ClearValue()
         {
-            _value = null;
+            _value = AvaloniaProperty.UnsetValue;
         }
 
         /// <summary>
@@ -256,7 +235,7 @@ namespace Avalonia.Data
         /// </summary>
         public void SetValue(object value)
         {
-            _value = new WeakReference<object>(value ?? NullValue);
+            _value = value;
         }
 
         /// <inheritdoc/>

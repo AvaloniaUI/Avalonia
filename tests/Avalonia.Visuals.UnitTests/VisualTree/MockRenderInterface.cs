@@ -10,12 +10,11 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
     {
         public IFormattedTextImpl CreateFormattedText(
             string text,
-            string fontFamilyName,
-            double fontSize,
-            FontStyle fontStyle,
+            Typeface typeface,
             TextAlignment textAlignment,
-            FontWeight fontWeight,
-            TextWrapping wrapping)
+            TextWrapping wrapping,
+            Size constraint,
+            IReadOnlyList<FormattedTextStyleSpan> spans)
         {
             throw new NotImplementedException();
         }
@@ -25,7 +24,7 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
             throw new NotImplementedException();
         }
 
-        public IRenderTargetBitmapImpl CreateRenderTargetBitmap(int width, int height)
+        public IRenderTargetBitmapImpl CreateRenderTargetBitmap(int width, int height, double dpiX, double dpiY)
         {
             throw new NotImplementedException();
         }
@@ -41,6 +40,16 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
         }
 
         public IBitmapImpl LoadBitmap(string fileName)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IBitmapImpl LoadBitmap(PixelFormat format, IntPtr data, int width, int height, int stride)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IWritableBitmapImpl CreateWritableBitmap(int width, int height, PixelFormat? fmt)
         {
             throw new NotImplementedException();
         }
@@ -84,9 +93,24 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
                 throw new NotImplementedException();
             }
 
+            public IGeometryImpl Intersect(IGeometryImpl geometry)
+            {
+                throw new NotImplementedException();
+            }
+
             public IStreamGeometryContextImpl Open()
             {
                 return _impl;
+            }
+
+            public bool StrokeContains(Pen pen, Point point)
+            {
+                throw new NotImplementedException();
+            }
+
+            public IGeometryImpl WithTransform(Matrix transform)
+            {
+                throw new NotImplementedException();
             }
 
             class MockStreamGeometryContext : IStreamGeometryContextImpl

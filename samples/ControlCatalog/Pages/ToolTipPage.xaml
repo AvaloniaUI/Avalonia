@@ -1,22 +1,41 @@
 <UserControl xmlns="https://github.com/avaloniaui">
-  <StackPanel Orientation="Vertical" Gap="4">
-    <TextBlock Classes="h1">ToolTip</TextBlock>
-    <TextBlock Classes="h2">A control which pops up a hint when a control is hovered</TextBlock>
+    <StackPanel Orientation="Vertical"
+                Gap="4">
+        <TextBlock Classes="h1">ToolTip</TextBlock>
+        <TextBlock Classes="h2">A control which pops up a hint when a control is hovered</TextBlock>
 
-    <StackPanel Orientation="Horizontal"
+        <Grid RowDefinitions="Auto,Auto"
+              ColumnDefinitions="Auto,Auto"
               Margin="0,16,0,0"
-              HorizontalAlignment="Center"
-              Gap="16">
-      <Border Background="{StyleResource ThemeAccentBrush}"
-              Padding="48,48,48,48">
-        <ToolTip.Tip>
-          <StackPanel>
-            <TextBlock Classes="h1">ToolTip</TextBlock>
-            <TextBlock Classes="h2">A control which pops up a hint when a control is hovered</TextBlock>
-          </StackPanel>
-        </ToolTip.Tip>
-        <TextBlock>Hover Here</TextBlock>
-      </Border>
+              HorizontalAlignment="Center">
+            <Border Grid.Column="0"
+                    Grid.Row="1"
+                    Background="{DynamicResource ThemeAccentBrush}"
+                    Margin="5"
+                    Padding="50"
+                    ToolTip.Tip="This is a ToolTip">
+                <TextBlock>Hover Here</TextBlock>
+            </Border>
+            <CheckBox Grid.Column="1"
+                      Margin="5"
+                      Grid.Row="0"
+                      IsChecked="{Binding ElementName=Border, Path=(ToolTip.IsOpen)}"
+                      Content="ToolTip Open" />
+            <Border Name="Border"
+                    Grid.Column="1"
+                    Grid.Row="1"
+                    Background="{DynamicResource ThemeAccentBrush}"
+                    Margin="5"
+                    Padding="50"
+                    ToolTip.Placement="Bottom">
+                <ToolTip.Tip>
+                    <StackPanel>
+                        <TextBlock Classes="h1">ToolTip</TextBlock>
+                        <TextBlock Classes="h2">A control which pops up a hint when a control is hovered</TextBlock>
+                    </StackPanel>
+                </ToolTip.Tip>
+                <TextBlock>ToolTip bottom placement</TextBlock>
+            </Border>
+        </Grid>
     </StackPanel>
-  </StackPanel>
 </UserControl>

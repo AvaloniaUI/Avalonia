@@ -62,47 +62,26 @@ namespace Avalonia.Markup.Xaml.Data
             }
 
             var targetType = targetProperty?.PropertyType ?? typeof(object);
-            var result = new BehaviorSubject<object>(AvaloniaProperty.UnsetValue);
             var children = Bindings.Select(x => x.Initiate(target, null));
             var input = children.Select(x => x.Subject).CombineLatest().Select(x => ConvertValue(x, targetType));
-            input.Subscribe(result);
-            return new InstancedBinding(result, Mode, Priority);
-        }
-
-        /// <summary>
-        /// Applies a binding subject to a property on an instance.
-        /// </summary>
-        /// <param name="target">The target instance.</param>
-        /// <param name="property">The target property.</param>
-        /// <param name="subject">The binding subject.</param>
-        internal void Bind(IAvaloniaObject target, AvaloniaProperty property, ISubject<object> subject)
-        {
             var mode = Mode == BindingMode.Default ?
-                property.GetMetadata(target.GetType()).DefaultBindingMode : Mode;
+                targetProperty.GetMetadata(target.GetType()).DefaultBindingMode : Mode;
 
             switch (mode)
             {
-                case BindingMode.Default:
-                case BindingMode.OneWay:
-                    target.Bind(property, subject, Priority);
-                    break;
-                case BindingMode.TwoWay:
-                    throw new NotSupportedException("TwoWay MultiBinding not currently supported.");
                 case BindingMode.OneTime:
-                    target.GetObservable(Control.DataContextProperty).Subscribe(dataContext =>
-                    {
-                        subject.Take(1).Subscribe(x => target.SetValue(property, x, Priority));
-                    });                    
-                    break;
-                case BindingMode.OneWayToSource:
-                    target.GetObservable(property).Subscribe(subject);
-                    break;
+                    return InstancedBinding.OneTime(input, Priority);
+                case BindingMode.OneWay:
+                    return InstancedBinding.OneWay(input, Priority);
+                default:
+                    throw new NotSupportedException(
+                        "MultiBinding currently only supports OneTime and OneWay BindingMode.");
             }
         }
 
         private object ConvertValue(IList<object> values, Type targetType)
         {
-            var converted = Converter.Convert(values, targetType, null, CultureInfo.CurrentUICulture);
+            var converted = Converter.Convert(values, targetType, null, CultureInfo.CurrentCulture);
 
             if (converted == AvaloniaProperty.UnsetValue && FallbackValue != null)
             {

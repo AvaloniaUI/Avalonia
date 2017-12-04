@@ -1,6 +1,7 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
 using Avalonia.Layout;
@@ -8,9 +9,7 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Xunit;
 
-#if AVALONIA_CAIRO
-namespace Avalonia.Cairo.RenderTests.Media
-#elif AVALONIA_SKIA
+#if AVALONIA_SKIA
 namespace Avalonia.Skia.RenderTests
 #else
 namespace Avalonia.Direct2D1.RenderTests.Media
@@ -61,7 +60,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
         }
 
         [Fact]
-        public void VisualBrush_NoStretch_NoTile_Alignment_TopLeft()
+        public async Task VisualBrush_NoStretch_NoTile_Alignment_TopLeft()
         {
             Decorator target = new Decorator
             {
@@ -81,18 +80,16 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
-
-#if AVALONIA_CAIRO
-        [Fact(Skip = "Font scaling currently broken on cairo")]
-#elif AVALONIA_SKIA_SKIP_FAIL
+        
+#if AVALONIA_SKIA_SKIP_FAIL
         [Fact(Skip = "FIXME")]
 #else
         [Fact]
 #endif
-        public void VisualBrush_NoStretch_NoTile_Alignment_Center()
+        public async Task VisualBrush_NoStretch_NoTile_Alignment_Center()
         {
             Decorator target = new Decorator
             {
@@ -112,12 +109,12 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
 
         [Fact]
-        public void VisualBrush_NoStretch_NoTile_Alignment_BottomRight()
+        public async Task VisualBrush_NoStretch_NoTile_Alignment_BottomRight()
         {
             Decorator target = new Decorator
             {
@@ -137,18 +134,16 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
 
-#if AVALONIA_CAIRO
-        [Fact(Skip = "Font scaling currently broken on cairo")]
-#elif AVALONIA_SKIA_SKIP_FAIL
+#if AVALONIA_SKIA_SKIP_FAIL
         [Fact(Skip = "FIXME")]
 #else
         [Fact]
 #endif
-        public void VisualBrush_Fill_NoTile()
+        public async Task VisualBrush_Fill_NoTile()
         {
             Decorator target = new Decorator
             {
@@ -166,18 +161,16 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
 
-#if AVALONIA_CAIRO
-        [Fact(Skip = "Font scaling currently broken on cairo")]
-#elif AVALONIA_SKIA_SKIP_FAIL
+#if AVALONIA_SKIA_SKIP_FAIL
         [Fact(Skip = "FIXME")]
 #else
         [Fact]
 #endif
-        public void VisualBrush_Uniform_NoTile()
+        public async Task VisualBrush_Uniform_NoTile()
         {
             Decorator target = new Decorator
             {
@@ -195,18 +188,16 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
 
-#if AVALONIA_CAIRO
-        [Fact(Skip = "Font scaling currently broken on cairo")]
-#elif AVALONIA_SKIA_SKIP_FAIL
+#if AVALONIA_SKIA_SKIP_FAIL
         [Fact(Skip = "FIXME")]
 #else
         [Fact]
 #endif
-        public void VisualBrush_UniformToFill_NoTile()
+        public async Task VisualBrush_UniformToFill_NoTile()
         {
             Decorator target = new Decorator
             {
@@ -224,12 +215,12 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
 
         [Fact]
-        public void VisualBrush_NoStretch_NoTile_BottomRightQuarterSource()
+        public async Task VisualBrush_NoStretch_NoTile_BottomRightQuarterSource()
         {
             Decorator target = new Decorator
             {
@@ -248,18 +239,16 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
 
-#if AVALONIA_CAIRO
-        [Fact(Skip = "Font scaling currently broken on cairo")]
-#elif AVALONIA_SKIA_SKIP_FAIL
+#if AVALONIA_SKIA_SKIP_FAIL
         [Fact(Skip = "FIXME")]
 #else
         [Fact]
 #endif
-        public void VisualBrush_NoStretch_NoTile_BottomRightQuarterDest()
+        public async Task VisualBrush_NoStretch_NoTile_BottomRightQuarterDest()
         {
             Decorator target = new Decorator
             {
@@ -278,7 +267,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
 
@@ -287,7 +276,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
 #else
         [Fact]
 #endif
-        public void VisualBrush_NoStretch_NoTile_BottomRightQuarterSource_BottomRightQuarterDest()
+        public async Task VisualBrush_NoStretch_NoTile_BottomRightQuarterSource_BottomRightQuarterDest()
         {
             Decorator target = new Decorator
             {
@@ -307,12 +296,12 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
 
         [Fact]
-        public void VisualBrush_NoStretch_Tile_BottomRightQuarterSource_CenterQuarterDest()
+        public async Task VisualBrush_NoStretch_Tile_BottomRightQuarterSource_CenterQuarterDest()
         {
             Decorator target = new Decorator
             {
@@ -332,18 +321,16 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
 
-#if AVALONIA_CAIRO
-        [Fact(Skip = "TileMode.FlipX not yet supported on cairo")]
-#elif AVALONIA_SKIA_SKIP_FAIL
+#if AVALONIA_SKIA_SKIP_FAIL
         [Fact(Skip = "FIXME")]
 #else
         [Fact]
 #endif
-        public void VisualBrush_NoStretch_FlipX_TopLeftDest()
+        public async Task VisualBrush_NoStretch_FlipX_TopLeftDest()
         {
             Decorator target = new Decorator
             {
@@ -362,18 +349,16 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
 
-#if AVALONIA_CAIRO
-        [Fact(Skip = "TileMode.FlipY not yet supported on cairo")]
-#elif AVALONIA_SKIA_SKIP_FAIL
+#if AVALONIA_SKIA_SKIP_FAIL
         [Fact(Skip = "FIXME")]
 #else
         [Fact]
 #endif
-        public void VisualBrush_NoStretch_FlipY_TopLeftDest()
+        public async Task VisualBrush_NoStretch_FlipY_TopLeftDest()
         {
             Decorator target = new Decorator
             {
@@ -392,18 +377,16 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
 
-#if AVALONIA_CAIRO
-        [Fact(Skip = "Font scaling currently broken on cairo")]
-#elif AVALONIA_SKIA_SKIP_FAIL
+#if AVALONIA_SKIA_SKIP_FAIL
         [Fact(Skip = "FIXME")]
 #else
         [Fact]
 #endif
-        public void VisualBrush_NoStretch_FlipXY_TopLeftDest()
+        public async Task VisualBrush_NoStretch_FlipXY_TopLeftDest()
         {
             Decorator target = new Decorator
             {
@@ -422,7 +405,51 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
+            CompareImages();
+        }
+
+#if AVALONIA_SKIA_SKIP_FAIL
+        [Fact(Skip = "FIXME")]
+#else
+        [Fact]
+#endif
+        public async Task VisualBrush_InTree_Visual()
+        {
+            Border source;
+            Decorator target = new Decorator
+            {
+                Padding = new Thickness(8),
+                Width = 200,
+                Height = 200,
+                Child = new Grid
+                {
+                    RowDefinitions = new RowDefinitions("Auto,*"),
+                    Children =
+                    {
+                        (source = new Border
+                        {
+                            Background = Brushes.Yellow,
+                            HorizontalAlignment = HorizontalAlignment.Left,
+                            Child = new TextBlock
+                            {
+                                Text = "Visual"
+                            }
+                        }),
+                        new Border
+                        {
+                            Background = new VisualBrush
+                            {
+                                Stretch = Stretch.Uniform,
+                                Visual = source,
+                            },
+                            [Grid.RowProperty] = 1,
+                        }
+                    }
+                }
+            };
+
+            await RenderToFile(target);
             CompareImages();
         }
     }

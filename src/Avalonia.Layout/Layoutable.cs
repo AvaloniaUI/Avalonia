@@ -155,6 +155,11 @@ namespace Avalonia.Layout
         }
 
         /// <summary>
+        /// Occurs when a layout pass completes for the control.
+        /// </summary>
+        public event EventHandler LayoutUpdated;
+
+        /// <summary>
         /// Gets or sets the width of the element.
         /// </summary>
         public double Width
@@ -357,7 +362,17 @@ namespace Avalonia.Layout
                 IsArrangeValid = true;
                 ArrangeCore(rect);
                 _previousArrange = rect;
+
+                LayoutUpdated?.Invoke(this, EventArgs.Empty);
             }
+        }
+
+
+        /// <summary>
+        /// Called by InvalidateMeasure
+        /// </summary>
+        protected virtual void OnMeasureInvalidated()
+        {
         }
 
         /// <summary>
@@ -371,8 +386,13 @@ namespace Avalonia.Layout
 
                 IsMeasureValid = false;
                 IsArrangeValid = false;
-                LayoutManager.Instance?.InvalidateMeasure(this);
-                InvalidateVisual();
+
+                if (((ILayoutable)this).IsAttachedToVisualTree)
+                {
+                    LayoutManager.Instance?.InvalidateMeasure(this);
+                    InvalidateVisual();
+                }
+                OnMeasureInvalidated();
             }
         }
 
@@ -386,8 +406,12 @@ namespace Avalonia.Layout
                 Logger.Verbose(LogArea.Layout, this, "Invalidated arrange");
 
                 IsArrangeValid = false;
-                LayoutManager.Instance?.InvalidateArrange(this);
-                InvalidateVisual();
+
+                if (((ILayoutable)this).IsAttachedToVisualTree)
+                {
+                    LayoutManager.Instance?.InvalidateArrange(this);
+                    InvalidateVisual();
+                }
             }
         }
 
@@ -449,10 +473,9 @@ namespace Avalonia.Layout
 
                 ApplyTemplate();
 
-                var constrained = LayoutHelper
-                    .ApplyLayoutConstraints(this, availableSize)
-                    .Deflate(margin);
-
+                var constrained = LayoutHelper.ApplyLayoutConstraints(
+                    this,
+                    availableSize.Deflate(margin));
                 var measured = MeasureOverride(constrained);
 
                 var width = measured.Width;
@@ -606,7 +629,7 @@ namespace Avalonia.Layout
         /// <inheritdoc/>
         protected override sealed void OnVisualParentChanged(IVisual oldParent, IVisual newParent)
         {
-            foreach (ILayoutable i in this.GetSelfAndVisualDescendents())
+            foreach (ILayoutable i in this.GetSelfAndVisualDescendants())
             {
                 i.InvalidateMeasure();
             }

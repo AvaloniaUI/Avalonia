@@ -207,6 +207,30 @@ namespace Avalonia.Controls.UnitTests.Presenters
         }
 
         [Fact]
+        public void Inserting_Items_Before_Visibile_Containers_Should_Update_Containers()
+        {
+            var target = CreateTarget();
+
+            target.ApplyTemplate();
+            target.Measure(new Size(100, 100));
+            target.Arrange(new Rect(0, 0, 100, 100));
+
+            ((ILogicalScrollable)target).Offset = new Vector(0, 5);
+
+            var expected = Enumerable.Range(5, 10).Select(x => $"Item {x}").ToList();
+            var items = (ObservableCollection<string>)target.Items;
+            var actual = target.Panel.Children.Select(x => x.DataContext).ToList();
+
+            Assert.Equal(expected, actual);
+
+            items.Insert(0, "Inserted");
+
+            expected = Enumerable.Range(4, 10).Select(x => $"Item {x}").ToList();
+            actual = target.Panel.Children.Select(x => x.DataContext).ToList();
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
         public void Removing_First_Materialized_Item_Should_Update_Containers()
         {
             var target = CreateTarget();
@@ -477,7 +501,6 @@ namespace Avalonia.Controls.UnitTests.Presenters
             target.Arrange(new Rect(0, 0, 100, 100));
 
             var expected = Enumerable.Range(0, 6).Select(x => $"Item {x}").ToList();
-            var items = (ObservableCollection<string>)target.Items;
             var actual = target.Panel.Children.Select(x => x.DataContext).ToList();
 
             Assert.Equal(expected, actual);
@@ -681,7 +704,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             target.Measure(new Size(100, 100));
             target.Arrange(new Rect(target.DesiredSize));
 
-            Assert.Equal(0, target.Panel.Children.Count);
+            Assert.Empty(target.Panel.Children);
 
             items.AddRange(defaultItems.Select(s => s + " new"));
 
@@ -1011,6 +1034,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
         {
             public IRenderer Renderer { get; }
             public Size ClientSize { get; }
+            public double RenderScaling => 1;
 
             public IRenderTarget CreateRenderTarget()
             {

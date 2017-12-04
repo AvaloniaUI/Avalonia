@@ -59,7 +59,11 @@ namespace Avalonia
                                                from attribute in assembly.GetCustomAttributes<ExportWindowingSubsystemAttribute>()
                                                where attribute.RequiredOS == os && CheckEnvironment(attribute.EnvironmentChecker)
                                                orderby attribute.Priority ascending
-                                               select attribute).First();
+                                               select attribute).FirstOrDefault();
+            if (windowingSubsystemAttribute == null)
+            {
+                throw new InvalidOperationException("No windowing subsystem found. Are you missing assembly references?");
+            }
 
             var renderingSubsystemAttribute = (from assembly in RuntimePlatform.GetLoadedAssemblies()
                                                from attribute in assembly.GetCustomAttributes<ExportRenderingSubsystemAttribute>()
@@ -67,7 +71,12 @@ namespace Avalonia
                                                where attribute.RequiresWindowingSubsystem == null
                                                 || attribute.RequiresWindowingSubsystem == windowingSubsystemAttribute.Name
                                                orderby attribute.Priority ascending
-                                               select attribute).First();
+                                               select attribute).FirstOrDefault();
+
+            if (renderingSubsystemAttribute == null)
+            {
+                throw new InvalidOperationException("No rendering subsystem found. Are you missing assembly references?");
+            }
 
             UseWindowingSubsystem(() => windowingSubsystemAttribute.InitializationType
                 .GetRuntimeMethod(windowingSubsystemAttribute.InitializationMethod, Type.EmptyTypes).Invoke(null, null),
@@ -82,7 +91,13 @@ namespace Avalonia
 
         private void LoadAssembliesInDirectory()
         {
-            foreach (var file in new FileInfo(Assembly.GetEntryAssembly().Location).Directory.EnumerateFiles("*.dll"))
+            var location = Assembly.GetEntryAssembly().Location;
+            if (string.IsNullOrWhiteSpace(location))
+                return;
+            var dir = new FileInfo(location).Directory;
+            if (dir == null)
+                return;
+            foreach (var file in dir.EnumerateFiles("*.dll"))
             {
                 try
                 {

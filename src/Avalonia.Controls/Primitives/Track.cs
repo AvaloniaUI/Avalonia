@@ -10,7 +10,7 @@ namespace Avalonia.Controls.Primitives
     public class Track : Control
     {
         public static readonly DirectProperty<Track, double> MinimumProperty =
-            RangeBase.MinimumProperty.AddOwner<Track>(o => o.Minimum, (o,v) => o.Minimum = v);
+            RangeBase.MinimumProperty.AddOwner<Track>(o => o.Minimum, (o, v) => o.Minimum = v);
 
         public static readonly DirectProperty<Track, double> MaximumProperty =
             RangeBase.MaximumProperty.AddOwner<Track>(o => o.Maximum, (o, v) => o.Maximum = v);
@@ -25,7 +25,13 @@ namespace Avalonia.Controls.Primitives
             ScrollBar.OrientationProperty.AddOwner<Track>();
 
         public static readonly StyledProperty<Thumb> ThumbProperty =
-            AvaloniaProperty.Register<Track, Thumb>("Thumb");
+            AvaloniaProperty.Register<Track, Thumb>(nameof(Thumb));
+
+        public static readonly StyledProperty<Button> IncreaseButtonProperty =
+            AvaloniaProperty.Register<Track, Button>(nameof(IncreaseButton));
+
+        public static readonly StyledProperty<Button> DecreaseButtonProperty =
+            AvaloniaProperty.Register<Track, Button>(nameof(DecreaseButton));
 
         private double _minimum;
         private double _maximum = 100.0;
@@ -34,6 +40,8 @@ namespace Avalonia.Controls.Primitives
         static Track()
         {
             ThumbProperty.Changed.AddClassHandler<Track>(x => x.ThumbChanged);
+            IncreaseButtonProperty.Changed.AddClassHandler<Track>(x => x.ButtonChanged);
+            DecreaseButtonProperty.Changed.AddClassHandler<Track>(x => x.ButtonChanged);
             AffectsArrange(MinimumProperty, MaximumProperty, ValueProperty, OrientationProperty);
         }
 
@@ -74,6 +82,18 @@ namespace Avalonia.Controls.Primitives
             set { SetValue(ThumbProperty, value); }
         }
 
+        public Button IncreaseButton
+        {
+            get { return GetValue(IncreaseButtonProperty); }
+            set { SetValue(IncreaseButtonProperty, value); }
+        }
+
+        public Button DecreaseButton
+        {
+            get { return GetValue(DecreaseButtonProperty); }
+            set { SetValue(DecreaseButtonProperty, value); }
+        }
+
         protected override Size MeasureOverride(Size availableSize)
         {
             var thumb = Thumb;
@@ -98,34 +118,74 @@ namespace Avalonia.Controls.Primitives
         protected override Size ArrangeOverride(Size finalSize)
         {
             var thumb = Thumb;
+            var increaseButton = IncreaseButton;
+            var decreaseButton = DecreaseButton;
 
-            if (thumb != null)
+            var range = Maximum - Minimum;
+            var offset = Math.Min(Value - Minimum, range);
+            var viewportSize = ViewportSize;
+            var extent = range + viewportSize;
+
+            if (Orientation == Orientation.Horizontal)
             {
-                var range = Maximum - Minimum;
-                var thumbFraction = ViewportSize / range;
-                var valueFraction = (Value - Minimum) / range;
+                double thumbWidth = 0;
 
-                if (double.IsNaN(valueFraction) || double.IsInfinity(valueFraction))
+                if (double.IsNaN(viewportSize))
                 {
-                    valueFraction = 0;
-                    thumbFraction = 1;
+                    thumbWidth = thumb?.DesiredSize.Width ?? 0;
                 }
-                else if (double.IsNaN(thumbFraction) || double.IsInfinity(thumbFraction))
+                else if (extent > 0)
                 {
-                    thumbFraction = 0;
+                    thumbWidth = finalSize.Width * viewportSize / extent;
                 }
 
-                if (Orientation == Orientation.Horizontal)
+                var remaining = finalSize.Width - thumbWidth;
+                var firstWidth = range <= 0 ? 0 : remaining * offset / range;
+
+                if (decreaseButton != null)
                 {
-                    var width = Math.Max(finalSize.Width * thumbFraction, thumb.MinWidth);
-                    var x = (finalSize.Width - width) * valueFraction;
-                    thumb.Arrange(new Rect(x, 0, width, finalSize.Height));
+                    decreaseButton.Arrange(new Rect(0, 0, firstWidth, finalSize.Height));
                 }
-                else
+
+                if (thumb != null)
                 {
-                    var height = Math.Max(finalSize.Height * thumbFraction, thumb.MinHeight);
-                    var y = (finalSize.Height - height) * valueFraction;
-                    thumb.Arrange(new Rect(0, y, finalSize.Width, height));
+                    thumb.Arrange(new Rect(firstWidth, 0, thumbWidth, finalSize.Height));
+                }
+
+                if (increaseButton != null)
+                {
+                    increaseButton.Arrange(new Rect(firstWidth + thumbWidth, 0, remaining - firstWidth, finalSize.Height));
+                }
+            }
+            else
+            {
+                double thumbHeight = 0;
+
+                if (double.IsNaN(viewportSize))
+                {
+                    thumbHeight = thumb?.DesiredSize.Height ?? 0;
+                }
+                else if (extent > 0)
+                {
+                    thumbHeight = finalSize.Height * viewportSize / extent;
+                }
+
+                var remaining = finalSize.Height - thumbHeight;
+                var firstHeight = range <= 0 ? 0 : remaining * offset / range;
+
+                if (decreaseButton != null)
+                {
+                    decreaseButton.Arrange(new Rect(0, 0, finalSize.Width, firstHeight));
+                }
+
+                if (thumb != null)
+                {
+                    thumb.Arrange(new Rect(0, firstHeight, finalSize.Width, thumbHeight));
+                }
+
+                if (increaseButton != null)
+                {
+                    increaseButton.Arrange(new Rect(0, firstHeight + thumbHeight, finalSize.Width, Math.Max(remaining - firstHeight, 0)));
                 }
             }
 
@@ -140,16 +200,34 @@ namespace Avalonia.Controls.Primitives
             if (oldThumb != null)
             {
                 oldThumb.DragDelta -= ThumbDragged;
-            }
 
-            LogicalChildren.Clear();
-            VisualChildren.Clear();
+                LogicalChildren.Remove(oldThumb);
+                VisualChildren.Remove(oldThumb);
+            }
 
             if (newThumb != null)
             {
                 newThumb.DragDelta += ThumbDragged;
                 LogicalChildren.Add(newThumb);
                 VisualChildren.Add(newThumb);
+            }
+        }
+
+        private void ButtonChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            var oldButton = (Button)e.OldValue;
+            var newButton = (Button)e.NewValue;
+
+            if (oldButton != null)
+            {
+                LogicalChildren.Remove(oldButton);
+                VisualChildren.Remove(oldButton);
+            }
+
+            if (newButton != null)
+            {
+                LogicalChildren.Add(newButton);
+                VisualChildren.Add(newButton);
             }
         }
 

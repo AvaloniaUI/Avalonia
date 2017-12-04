@@ -44,6 +44,8 @@
           <StackPanel Margin="18" Gap="4" Width="200" HorizontalAlignment="Left">
             <TextBlock FontSize="16" Text="Scheduler"/>
             <TextBox Watermark="Background Thread" Text="{Binding CurrentTime, Mode=OneWay}"/>
+            <TextBlock FontSize="16" Text="Stream Operator"/>
+            <TextBox Watermark="StreamOperator" Text="{Binding CurrentTimeObservable^, Mode=OneWay}"/>
           </StackPanel>
         </StackPanel>
       </StackPanel>
@@ -95,8 +97,9 @@
         <Button Content="Button" Command="{Binding StringValueCommand}" CommandParameter="Button"/>
         <ToggleButton Content="ToggleButton" IsChecked="{Binding BooleanFlag, Mode=OneWay}" Command="{Binding StringValueCommand}" CommandParameter="ToggleButton"/>
         <CheckBox Content="CheckBox" IsChecked="{Binding !BooleanFlag, Mode=OneWay}" Command="{Binding StringValueCommand}" CommandParameter="CheckBox"/>
-        <RadioButton Content="RadionButton" IsChecked="{Binding !!BooleanFlag, Mode=OneWay}" Command="{Binding StringValueCommand}" CommandParameter="RadioButton"/>
+        <RadioButton Content="Radio Button" IsChecked="{Binding !!BooleanFlag, Mode=OneWay}" Command="{Binding StringValueCommand}" CommandParameter="RadioButton"/>
         <TextBox Text="{Binding Path=StringValue}"/>
+        <Button Content="Nested View Model Button" Name="NestedTest" Command="{Binding NestedModel.Command}" />
       </StackPanel>
     </TabItem>
   </TabControl>

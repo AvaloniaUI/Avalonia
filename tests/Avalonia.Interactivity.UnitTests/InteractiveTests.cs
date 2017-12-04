@@ -340,6 +340,24 @@ namespace Avalonia.Interactivity.UnitTests
             Assert.True(target.GetVisualParent<TestInteractive>().ClassHandlerInvoked);
         }
 
+        [Fact]
+        public void GetObservable_Should_Listen_To_Event()
+        {
+            var ev = new RoutedEvent<RoutedEventArgs>("test", RoutingStrategies.Direct, typeof(TestInteractive));
+            var target = new TestInteractive();
+            var called = 0;
+            var subscription = target.GetObservable(ev).Subscribe(_ => ++called);
+
+            var args = new RoutedEventArgs(ev, target);
+            target.RaiseEvent(args);
+
+            subscription.Dispose();
+
+            target.RaiseEvent(args);
+
+            Assert.Equal(1, called);
+        }
+
         private TestInteractive CreateTree(
             RoutedEvent ev,
             EventHandler<RoutedEventArgs> handler,
@@ -373,7 +391,7 @@ namespace Avalonia.Interactivity.UnitTests
 
             if (handler != null)
             {
-                foreach (var i in tree.GetSelfAndVisualDescendents().Cast<Interactive>())
+                foreach (var i in tree.GetSelfAndVisualDescendants().Cast<Interactive>())
                 {
                     i.AddHandler(ev, handler, handlerRoutes, handledEventsToo);
                 }

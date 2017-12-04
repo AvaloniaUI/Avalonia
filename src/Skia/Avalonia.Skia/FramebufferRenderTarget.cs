@@ -4,6 +4,7 @@ using System.Text;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Media;
 using Avalonia.Platform;
+using Avalonia.Rendering;
 using SkiaSharp;
 
 namespace Avalonia.Skia
@@ -21,19 +22,6 @@ namespace Avalonia.Skia
         {
             //Nothing to do here, since we don't own framebuffer
         }
-
-
-        SKColorType TranslatePixelFormat(PixelFormat fmt)
-        {
-            if(fmt == PixelFormat.Rgb565)
-                return SKColorType.Rgb565;
-            if(fmt == PixelFormat.Bgra8888)
-                return SKColorType.Bgra8888;
-            if (fmt == PixelFormat.Rgba8888)
-                return SKColorType.Rgba8888;
-            throw new ArgumentException("Unknown pixel format: " + fmt);
-        }
-
 
         class PixelFormatShim : IDisposable
         {
@@ -69,12 +57,12 @@ namespace Avalonia.Skia
             
         }
 
-        public DrawingContext CreateDrawingContext()
+        public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
         {
             var fb = _surface.Lock();
             PixelFormatShim shim = null;
-            SKImageInfo framebuffer = new SKImageInfo(fb.Width, fb.Height, TranslatePixelFormat(fb.Format),
-                SKAlphaType.Opaque);
+            SKImageInfo framebuffer = new SKImageInfo(fb.Width, fb.Height, fb.Format.ToSkColorType(),
+                SKAlphaType.Premul);
             var surface = SKSurface.Create(framebuffer, fb.Address, fb.RowBytes) ??
                           (shim = new PixelFormatShim(framebuffer, fb.Address, fb.RowBytes))
                           .CreateSurface();
@@ -82,15 +70,13 @@ namespace Avalonia.Skia
                 throw new Exception("Unable to create a surface for pixel format " + fb.Format +
                                     " or pixel format translator");
             var canvas = surface.Canvas;
-            
-            
-            
+
+
+
             canvas.RestoreToCount(0);
             canvas.Save();
-            canvas.Clear(SKColors.Red);
             canvas.ResetMatrix();
-            var scale = Matrix.CreateScale(fb.Dpi.Width / 96, fb.Dpi.Height / 96);
-            return new DrawingContext(new DrawingContextImpl(canvas, scale, canvas, surface, shim, fb));
+            return new DrawingContextImpl(canvas, fb.Dpi, visualBrushRenderer, canvas, surface, shim, fb);
         }
     }
 }

@@ -1,0 +1,36 @@
+<UserControl xmlns="https://github.com/avaloniaui">
+    <StackPanel Orientation="Vertical" Gap="4">
+        <TextBlock Classes="h1">Context Menu</TextBlock>
+        <TextBlock Classes="h2">A right click menu that can be applied to any control.</TextBlock>
+
+        <StackPanel Orientation="Horizontal"
+              Margin="0,16,0,0"
+              HorizontalAlignment="Center"
+              Gap="16">
+            <Border Background="{DynamicResource ThemeAccentBrush}"
+              Padding="48,48,48,48">
+                <Border.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Standard _Menu Item"/>
+                        <Separator/>
+                        <MenuItem Header="Menu with _Submenu">
+                            <MenuItem Header="Submenu _1"/>
+                            <MenuItem Header="Submenu _2"/>
+                        </MenuItem>
+                        <MenuItem Header="Menu Item with _Icon">
+                            <MenuItem.Icon>
+                                <Image Source="resm:ControlCatalog.Assets.github_icon.png"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="Menu Item with _Checkbox">
+                            <MenuItem.Icon>
+                                <CheckBox BorderThickness="0" IsHitTestVisible="False" IsChecked="True"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                    </ContextMenu>
+                </Border.ContextMenu>
+                <TextBlock Text="Right Click Here"/>
+            </Border>
+        </StackPanel>
+    </StackPanel>
+</UserControl>

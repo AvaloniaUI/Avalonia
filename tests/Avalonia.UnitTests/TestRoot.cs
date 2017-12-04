@@ -5,15 +5,23 @@ using System;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Layout;
+using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Styling;
+using Moq;
 
 namespace Avalonia.UnitTests
 {
-    public class TestRoot : Decorator, IFocusScope, ILayoutRoot, INameScope, IRenderRoot, IStyleRoot
+    public class TestRoot : Decorator, IFocusScope, ILayoutRoot, IInputRoot, INameScope, IRenderRoot, IStyleRoot
     {
         private readonly NameScope _nameScope = new NameScope();
+        private readonly IRenderTarget _renderTarget = Mock.Of<IRenderTarget>(
+            x => x.CreateDrawingContext(It.IsAny<IVisualBrushRenderer>()) == Mock.Of<IDrawingContextImpl>());
+
+        public TestRoot()
+        {
+        }
 
         event EventHandler<NameScopeEventArgs> INameScope.Registered
         {
@@ -31,26 +39,36 @@ namespace Avalonia.UnitTests
 
         public int NameScopeUnregisteredSubscribers { get; private set; }
 
-        public Size ClientSize => new Size(100, 100);
+        public Size ClientSize { get; set; } = new Size(100, 100);
 
-        public Size MaxClientSize => Size.Infinity;
+        public Size MaxClientSize { get; set; } = Size.Infinity;
 
         public double LayoutScaling => 1;
 
+        public double RenderScaling => 1;
+
         public ILayoutManager LayoutManager => AvaloniaLocator.Current.GetService<ILayoutManager>();
 
-        public IRenderTarget RenderTarget => null;
+        public IRenderer Renderer { get; set; }
 
-        public IRenderer Renderer => null;
+        public IAccessKeyHandler AccessKeyHandler => null;
 
-        public IRenderTarget CreateRenderTarget()
-        {
-            throw new NotImplementedException();
-        }
+        public IKeyboardNavigationHandler KeyboardNavigationHandler => null;
+
+        public IInputElement PointerOverElement { get; set; }
+
+        public IMouseDevice MouseDevice { get; set; }
+
+        public bool ShowAccessKeys { get; set; }
+
+        public IStyleHost StylingParent { get; set; }
+
+        IStyleHost IStyleHost.StylingParent => StylingParent;
+
+        public IRenderTarget CreateRenderTarget() => _renderTarget;
 
         public void Invalidate(Rect rect)
         {
-            throw new NotImplementedException();
         }
 
         public Point PointToClient(Point p) => p;

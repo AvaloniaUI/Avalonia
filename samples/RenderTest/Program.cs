@@ -12,24 +12,13 @@ namespace RenderTest
     {
         static void Main(string[] args)
         {
-            InitializeLogging();
-
             // TODO: Make this work with GTK/Skia/Cairo depending on command-line args
             // again.
             AppBuilder.Configure<App>()
                 .UsePlatformDetect()
+                .UseReactiveUI()
+                .LogToDebug()
                 .Start<MainWindow>();
-        }
-
-        // This will be made into a runtime configuration extension soon!
-        private static void InitializeLogging()
-        {
-#if DEBUG
-            SerilogLogger.Initialize(new LoggerConfiguration()
-                .MinimumLevel.Warning()
-                .WriteTo.Trace(outputTemplate: "{Area}: {Message}")
-                .CreateLogger());
-#endif
         }
     }
 }

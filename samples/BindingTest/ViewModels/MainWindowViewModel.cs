@@ -15,6 +15,7 @@ namespace BindingTest.ViewModels
         private string _stringValue = "Simple Binding";
         private bool _booleanFlag = false;
         private string _currentTime;
+        private NestedCommandViewModel _nested;
 
         public MainWindowViewModel()
         {
@@ -27,18 +28,17 @@ namespace BindingTest.ViewModels
 
             SelectedItems = new ObservableCollection<TestItem>();
 
-            ShuffleItems = ReactiveCommand.Create();
-            ShuffleItems.Subscribe(_ =>
+            ShuffleItems = ReactiveCommand.Create(() =>
             {
                 var r = new Random();
                 Items.Move(r.Next(Items.Count), 1);
             });
 
-            StringValueCommand = ReactiveCommand.Create();
-            StringValueCommand.Subscribe(param =>
+            StringValueCommand = ReactiveCommand.Create<object>(param =>
             {
                 BooleanFlag = !BooleanFlag;
                 StringValue = param.ToString();
+                NestedModel = _nested ?? new NestedCommandViewModel();
             });
 
             Task.Run(() =>
@@ -49,11 +49,14 @@ namespace BindingTest.ViewModels
                     Thread.Sleep(1000);
                 }
             });
+
+            CurrentTimeObservable = Observable.Timer(TimeSpan.Zero, TimeSpan.FromSeconds(1))
+                .Select(x => DateTimeOffset.Now.ToString());
         }
 
         public ObservableCollection<TestItem> Items { get; }
         public ObservableCollection<TestItem> SelectedItems { get; }
-        public ReactiveCommand<object> ShuffleItems { get; }
+        public ReactiveCommand ShuffleItems { get; }
 
         public string BooleanString
         {
@@ -85,10 +88,17 @@ namespace BindingTest.ViewModels
             private set { this.RaiseAndSetIfChanged(ref _currentTime, value); }
         }
 
-        public ReactiveCommand<object> StringValueCommand { get; }
+        public IObservable<string> CurrentTimeObservable { get; }
+        public ReactiveCommand StringValueCommand { get; }
 
         public DataAnnotationsErrorViewModel DataAnnotationsValidation { get; } = new DataAnnotationsErrorViewModel();
         public ExceptionErrorViewModel ExceptionDataValidation { get; } = new ExceptionErrorViewModel();
         public IndeiErrorViewModel IndeiDataValidation { get; } = new IndeiErrorViewModel();
+
+        public NestedCommandViewModel NestedModel
+        {
+            get { return _nested; }
+            private set { this.RaiseAndSetIfChanged(ref _nested, value); }
+        }
     }
 }

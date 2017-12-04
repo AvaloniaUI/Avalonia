@@ -17,22 +17,23 @@ namespace Avalonia.Utilities
         /// <summary>
         /// Subscribes to an event on an object using a weak subscription.
         /// </summary>
-        /// <typeparam name="T">The type of the event arguments.</typeparam>
+        /// <typeparam name="TTarget">The type of the target.</typeparam>
+        /// <typeparam name="TEventArgs">The type of the event arguments.</typeparam>
         /// <param name="target">The event source.</param>
         /// <param name="eventName">The name of the event.</param>
         /// <param name="subscriber">The subscriber.</param>
-        public static void Subscribe<T>(object target, string eventName, IWeakSubscriber<T> subscriber)
-            where T : EventArgs
+        public static void Subscribe<TTarget, TEventArgs>(TTarget target, string eventName, IWeakSubscriber<TEventArgs> subscriber)
+            where TEventArgs : EventArgs
         {
-            var dic = SubscriptionTypeStorage<T>.Subscribers.GetOrCreateValue(target);
-            Subscription<T> sub;
+            var dic = SubscriptionTypeStorage<TEventArgs>.Subscribers.GetOrCreateValue(target);
+            Subscription<TEventArgs> sub;
 
             if (!dic.TryGetValue(eventName, out sub))
             {
-                dic[eventName] = sub = new Subscription<T>(dic, target, eventName);
+                dic[eventName] = sub = new Subscription<TEventArgs>(dic, typeof(TTarget), target, eventName);
             }
 
-            sub.Add(new WeakReference<IWeakSubscriber<T>>(subscriber));
+            sub.Add(new WeakReference<IWeakSubscriber<TEventArgs>>(subscriber));
         }
 
         /// <summary>
@@ -84,19 +85,18 @@ namespace Avalonia.Utilities
             private WeakReference<IWeakSubscriber<T>>[] _data = new WeakReference<IWeakSubscriber<T>>[16];
             private int _count = 0;
 
-            public Subscription(SubscriptionDic<T> sdic, object target, string eventName)
+            public Subscription(SubscriptionDic<T> sdic, Type targetType, object target, string eventName)
             {
                 _sdic = sdic;
                 _target = target;
                 _eventName = eventName;
-                var t = target.GetType();
                 Dictionary<string, EventInfo> evDic;
-                if (!Accessors.TryGetValue(t, out evDic))
-                    Accessors[t] = evDic = new Dictionary<string, EventInfo>();
+                if (!Accessors.TryGetValue(targetType, out evDic))
+                    Accessors[targetType] = evDic = new Dictionary<string, EventInfo>();
 
                 if (!evDic.TryGetValue(eventName, out _info))
                 {
-                    var ev = t.GetRuntimeEvents().FirstOrDefault(x => x.Name == eventName);
+                    var ev = targetType.GetRuntimeEvents().FirstOrDefault(x => x.Name == eventName);
 
                     if (ev == null)
                     {

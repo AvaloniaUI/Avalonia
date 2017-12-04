@@ -26,7 +26,6 @@ namespace Avalonia
     /// </remarks>
     internal class PriorityValue
     {
-        private readonly IPriorityValueOwner _owner;
         private readonly Type _valueType;
         private readonly SingleOrDictionary<int, PriorityLevel> _levels = new SingleOrDictionary<int, PriorityLevel>();
         private object _value;
@@ -45,13 +44,18 @@ namespace Avalonia
             Type valueType,
             Func<object, object> validate = null)
         {
-            _owner = owner;
+            Owner = owner;
             Property = property;
             _valueType = valueType;
             _value = AvaloniaProperty.UnsetValue;
             ValuePriority = int.MaxValue;
             _validate = validate;
         }
+
+        /// <summary>
+        /// Gets the owner of the value.
+        /// </summary>
+        public IPriorityValueOwner Owner { get; }
 
         /// <summary>
         /// Gets the property that the value represents.
@@ -185,14 +189,7 @@ namespace Avalonia
         /// <param name="error">The binding error.</param>
         public void LevelError(PriorityLevel level, BindingNotification error)
         {
-            Logger.Log(
-                LogEventLevel.Error,
-                LogArea.Binding,
-                _owner,
-                "Error in binding to {Target}.{Property}: {Message}",
-                _owner,
-                Property,
-                error.Error.Message);
+            error.LogIfError(Owner, Property);
         }
 
         /// <summary>
@@ -245,7 +242,7 @@ namespace Avalonia
                 value = (notification.HasValue) ? notification.Value : null;
             }
 
-            if (TypeUtilities.TryCast(_valueType, value, out castValue))
+            if (TypeUtilities.TryConvertImplicit(_valueType, value, out castValue))
             {
                 var old = _value;
 
@@ -264,24 +261,24 @@ namespace Avalonia
 
                 if (notification == null || notification.HasValue)
                 {
-                    _owner?.Changed(this, old, _value);
+                    Owner?.Changed(this, old, _value);
                 }
 
                 if (notification != null)
                 {
-                    _owner?.BindingNotificationReceived(this, notification);
+                    Owner?.BindingNotificationReceived(this, notification);
                 }
             }
             else
             {
                 Logger.Error(
                     LogArea.Binding, 
-                    _owner,
+                    Owner,
                     "Binding produced invalid value for {$Property} ({$PropertyType}): {$Value} ({$ValueType})",
                     Property.Name, 
                     _valueType, 
                     value,
-                    value.GetType());
+                    value?.GetType());
             }
         }
     }

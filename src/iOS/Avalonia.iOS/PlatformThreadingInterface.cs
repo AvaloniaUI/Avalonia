@@ -9,6 +9,7 @@ using CoreAnimation;
 using Foundation;
 using Avalonia.Platform;
 using Avalonia.Shared.PlatformSupport;
+using Avalonia.Threading;
 
 namespace Avalonia.iOS
 {
@@ -18,7 +19,7 @@ namespace Avalonia.iOS
         public static PlatformThreadingInterface Instance { get; } = new PlatformThreadingInterface();
         public bool CurrentThreadIsLoopThread => NSThread.Current.IsMainThread;
         
-        public event Action Signaled;
+        public event Action<DispatcherPriority?> Signaled;
         public void RunLoop(CancellationToken cancellationToken)
         {
             //Mobile platforms are using external main loop
@@ -50,10 +51,10 @@ namespace Avalonia.iOS
             }
         }*/
 
-        public IDisposable StartTimer(TimeSpan interval, Action tick)
+        public IDisposable StartTimer(DispatcherPriority priority, TimeSpan interval, Action tick)
             => NSTimer.CreateRepeatingScheduledTimer(interval, _ => tick());
 
-        public void Signal()
+        public void Signal(DispatcherPriority prio)
         {
             lock (this)
             {
@@ -65,7 +66,7 @@ namespace Avalonia.iOS
             {
                 lock (this)
                     _signaled = false;
-                Signaled?.Invoke();
+                Signaled?.Invoke(null);
             });
         }
     }

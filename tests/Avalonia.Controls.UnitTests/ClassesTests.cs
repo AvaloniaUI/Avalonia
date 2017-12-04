@@ -149,5 +149,27 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Throws<ArgumentException>(() => target.Replace(new[] { ":qux" }));
         }
+
+        [Fact]
+        public void Clear_Should_Not_Remove_Pseudoclasses()
+        {
+            var target = new Classes("foo", "bar");
+
+            ((IPseudoClasses)target).Add(":baz");
+
+            target.Clear();
+
+            Assert.Equal(new[] { ":baz" }, target);
+        }
+
+        [Fact]
+        public void RemoveAll_Should_Remove_Classes()
+        {
+            var target = new Classes("foo", "bar", "baz");
+
+            target.RemoveAll(new[] { "bar", "baz" });
+
+            Assert.Equal(new[] { "foo" }, target);
+        }
     }
 }

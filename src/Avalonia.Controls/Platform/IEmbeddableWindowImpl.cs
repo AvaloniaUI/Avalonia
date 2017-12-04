@@ -8,7 +8,7 @@ namespace Avalonia.Platform
     /// <summary>
     /// Defines a platform-specific embeddable window implementation.
     /// </summary>
-    public interface IEmbeddableWindowImpl : IWindowImpl
+    public interface IEmbeddableWindowImpl : ITopLevelImpl
     {
         event Action LostFocus;
     }

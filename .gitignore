@@ -105,6 +105,11 @@ csx
 # Windows Store app package directory
 AppPackages/
 
+# NCrunch
+_NCrunch_*/
+*.ncrunchsolution.user
+nCrunchTemp_*
+
 # Others
 sql/
 *.Cache
@@ -154,12 +159,20 @@ $RECYCLE.BIN/
 *.userprefs
 *.nugetreferenceswitcher
 
+
+#################
+## Rider
+#################
+.idea
+
 #################
 ## Cake
 #################
-tools/
+tools/*
+!tools/packages.config
 .nuget
 artifacts/
 nuget
 Avalonia.XBuild.sln
 project.lock.json
+.idea/*

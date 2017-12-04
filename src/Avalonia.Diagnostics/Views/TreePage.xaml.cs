@@ -23,14 +23,20 @@ namespace Avalonia.Diagnostics.Views
         protected void AddAdorner(object sender, PointerEventArgs e)
         {
             var node = (TreeNode)((Control)sender).DataContext;
-            var layer = AdornerLayer.GetAdornerLayer(node.Control);
+            var layer = AdornerLayer.GetAdornerLayer(node.Visual);
 
             if (layer != null)
             {
+                if (_adorner != null)
+                {
+                    ((Panel)_adorner.Parent).Children.Remove(_adorner);
+                    _adorner = null;
+                }
+
                 _adorner = new Rectangle
                 {
                     Fill = new SolidColorBrush(0x80a0c5e8),
-                    [AdornerLayer.AdornedElementProperty] = node.Control,
+                    [AdornerLayer.AdornedElementProperty] = node.Visual,
                 };
 
                 layer.Children.Add(_adorner);

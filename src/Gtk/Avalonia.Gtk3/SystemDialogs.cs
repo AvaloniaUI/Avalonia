@@ -18,7 +18,8 @@ namespace Avalonia.Gtk3
             bool multiselect, string initialFileName)
         {
             GtkFileChooser dlg;
-            using (var name = title != null ? new Utf8Buffer(title) : null)
+            parent = parent ?? GtkWindow.Null;
+            using (var name = new Utf8Buffer(title))
                 dlg = Native.GtkFileChooserDialogNew(name, parent, action, IntPtr.Zero);
             if (multiselect)
                 Native.GtkFileChooserSetSelectMultiple(dlg, true);
@@ -28,6 +29,7 @@ namespace Avalonia.Gtk3
             List<IDisposable> disposables = null;
             Action dispose = () =>
             {
+                // ReSharper disable once PossibleNullReferenceException
                 foreach (var d in disposables)
                     d.Dispose();
                 disposables.Clear();
@@ -77,14 +79,14 @@ namespace Avalonia.Gtk3
 
         public Task<string[]> ShowFileDialogAsync(FileDialog dialog, IWindowImpl parent)
         {
-            return ShowDialog(dialog.Title, ((TopLevelImpl) parent)?.GtkWidget,
+            return ShowDialog(dialog.Title, ((WindowBaseImpl) parent)?.GtkWidget,
                 dialog is OpenFileDialog ? GtkFileChooserAction.Open : GtkFileChooserAction.Save,
                 (dialog as OpenFileDialog)?.AllowMultiple ?? false, dialog.InitialFileName);
         }
 
         public async Task<string> ShowFolderDialogAsync(OpenFolderDialog dialog, IWindowImpl parent)
         {
-            var res = await ShowDialog(dialog.Title, ((TopLevelImpl) parent)?.GtkWidget,
+            var res = await ShowDialog(dialog.Title, ((WindowBaseImpl) parent)?.GtkWidget,
                 GtkFileChooserAction.SelectFolder, false, dialog.InitialDirectory);
             return res?.FirstOrDefault();
         }

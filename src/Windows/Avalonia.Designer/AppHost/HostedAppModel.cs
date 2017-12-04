@@ -86,7 +86,6 @@ namespace Avalonia.Designer.AppHost
         }
 
         double _currentScalingFactor = 1;
-        private string _color;
         private string _background;
 
         public event PropertyChangedEventHandler PropertyChanged;
