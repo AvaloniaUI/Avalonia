@@ -13,9 +13,9 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void Setting_Aliased_Property_Sets_Property()
         {
-            var target = new Class1();
+            var target = new Direct();
 
-            target.SetValue(Class1.AliasProperty, "Test");
+            target.SetValue(Direct.AliasProperty, "Test");
 
             Assert.Equal("Test", target.Foo);
         }
@@ -23,21 +23,21 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void Setting_Property_Sets_Aliased_Property()
         {
-            var target = new Class1
+            var target = new Direct
             {
                 Foo = "Test"
             };
 
-            Assert.Equal("Test", target.GetValue(Class1.AliasProperty));
+            Assert.Equal("Test", target.GetValue(Direct.AliasProperty));
         }
 
         [Fact]
         public void Binding_Aliased_Property_Binds_Property()
         {
             var subject = new Subject<string>();
-            var target = new Class1();
+            var target = new Direct();
 
-            target.Bind(Class1.AliasProperty, subject);
+            target.Bind(Direct.AliasProperty, subject);
 
             subject.OnNext("Test");
 
@@ -47,27 +47,42 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void Checking_If_Property_Is_Set_Propagates_Through_Aliases()
         {
-            var target = new Class1
+            var target = new Styled
             {
                 Foo = "Test"
             };
 
-            Assert.True(target.IsSet(Class1.AliasProperty));
+            Assert.True(target.IsSet(Direct.AliasProperty));
         }
 
-        private class Class1 : AvaloniaObject
+        private class Direct : AvaloniaObject
         {
-            public static readonly DirectProperty<Class1, string> FooProperty =
-                AvaloniaProperty.RegisterDirect<Class1, string>(nameof(Foo), o => o.Foo, (o, v) => o.Foo = v);
+            public static readonly DirectProperty<Direct, string> FooProperty =
+                AvaloniaProperty.RegisterDirect<Direct, string>(nameof(Foo), o => o.Foo, (o, v) => o.Foo = v);
 
             public static readonly AliasedProperty<string> AliasProperty =
-                AvaloniaProperty.RegisterAlias<Class1, string>(FooProperty, "Alias");
+                AvaloniaProperty.RegisterAlias<Direct, string>(FooProperty, "Alias");
 
             private string _foo;
             public string Foo
             {
                 get { return _foo; }
                 set { SetAndRaise(FooProperty, ref _foo, value); }
+            }
+        }
+
+        private class Styled : AvaloniaObject
+        {
+            public static readonly StyledProperty<string> FooProperty =
+                AvaloniaProperty.Register<Direct, string>(nameof(Foo));
+
+            public static readonly AliasedProperty<string> AliasProperty =
+                AvaloniaProperty.RegisterAlias<Direct, string>(FooProperty, "Alias");
+
+            public string Foo
+            {
+                get { return GetValue(FooProperty); }
+                set { SetValue(FooProperty, value); }
             }
         }
     }
