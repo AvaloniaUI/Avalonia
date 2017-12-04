@@ -57,7 +57,8 @@ namespace Avalonia
         public AvaloniaObject()
         {
             VerifyAccess();
-            foreach (var property in AvaloniaPropertyRegistry.Instance.GetRegistered(this))
+            foreach (var property in AvaloniaPropertyRegistry.Instance.GetRegistered(this)
+                .Where(prop => !(prop is IAliasedPropertyAccessor)))
             {
                 object value = property.IsDirect ?
                     ((IDirectPropertyAccessor)property).GetValue(this) :
@@ -197,6 +198,8 @@ namespace Avalonia
             Contract.Requires<ArgumentNullException>(property != null);
             VerifyAccess();
 
+            property = AvaloniaProperty.ResolveAliases(property);
+
             if (property.IsDirect)
             {
                 return ((IDirectPropertyAccessor)GetRegistered(property)).GetValue(this);
@@ -239,9 +242,10 @@ namespace Avalonia
             Contract.Requires<ArgumentNullException>(property != null);
             VerifyAccess();
 
-            PriorityValue value;
+            property = AvaloniaProperty.ResolveAliases(property);
 
-            if (_values.TryGetValue(property, out value))
+
+            if (_values.TryGetValue(property, out PriorityValue value))
             {
                 return value.Value != AvaloniaProperty.UnsetValue;
             }
@@ -262,6 +266,8 @@ namespace Avalonia
         {
             Contract.Requires<ArgumentNullException>(property != null);
             VerifyAccess();
+
+            property = AvaloniaProperty.ResolveAliases(property);
 
             if (property.IsDirect)
             {
@@ -312,7 +318,12 @@ namespace Avalonia
             var description = GetDescription(source);
 
             var scheduler = AvaloniaLocator.Current.GetService<IScheduler>() ?? ImmediateScheduler.Instance;
-            source = source.ObserveOn(scheduler); 
+            source = source.ObserveOn(scheduler);
+
+            if (property is IAliasedPropertyAccessor accessor)
+            {
+                property = accessor.ResolveAlias();
+            }
 
             if (property.IsDirect)
             {
@@ -350,14 +361,13 @@ namespace Avalonia
             }
             else
             {
-                PriorityValue v;
 
                 if (!AvaloniaPropertyRegistry.Instance.IsRegistered(this, property))
                 {
                     ThrowNotRegistered(property);
                 }
 
-                if (!_values.TryGetValue(property, out v))
+                if (!_values.TryGetValue(property, out PriorityValue v))
                 {
                     v = CreatePriorityValue(property);
                     _values.Add(property, v);
@@ -402,9 +412,10 @@ namespace Avalonia
         public void Revalidate(AvaloniaProperty property)
         {
             VerifyAccess();
-            PriorityValue value;
 
-            if (_values.TryGetValue(property, out value))
+            property = AvaloniaProperty.ResolveAliases(property);
+
+            if (_values.TryGetValue(property, out PriorityValue value))
             {
                 value.Revalidate();
             }
@@ -553,6 +564,9 @@ namespace Avalonia
         protected bool SetAndRaise<T>(AvaloniaProperty<T> property, ref T field, T value)
         {
             VerifyAccess();
+
+            property = AvaloniaProperty.ResolveAliases(property);
+
             if (!object.Equals(field, value))
             {
                 var old = field;
