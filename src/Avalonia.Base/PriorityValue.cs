@@ -52,7 +52,17 @@ namespace Avalonia
             _validate = validate;
         }
 
-        public bool IsAnimating => ValuePriority < 0 && GetLevel(ValuePriority).ActiveBindingIndex != -1;
+        /// <summary>
+        /// Gets a value indicating whether the property is animating.
+        /// </summary>
+        public bool IsAnimating
+        {
+            get
+            {
+                return ValuePriority <= (int)BindingPriority.Animation && 
+                    GetLevel(ValuePriority).ActiveBindingIndex != -1;
+            }
+        }
 
         /// <summary>
         /// Gets the owner of the value.
