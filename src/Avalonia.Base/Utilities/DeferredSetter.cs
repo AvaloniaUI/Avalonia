@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reactive.Disposables;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace Avalonia.Utilities
@@ -11,7 +12,24 @@ namespace Avalonia.Utilities
     /// <typeparam name="TProperty">The type of the object that represents the property.</typeparam>
     /// <typeparam name="TValue">The type of value with which to track the delayed assignment.</typeparam>
     class DeferredSetter<TProperty, TValue>
+        where TProperty: class
     {
+        private struct NotifyDisposable : IDisposable
+        {
+            private readonly SettingStatus status;
+
+            public NotifyDisposable(SettingStatus status)
+            {
+                this.status = status;
+                status.Notifying = true;
+            }
+
+            public void Dispose()
+            {
+                status.Notifying = false;
+            }
+        }
+
         /// <summary>
         /// Information on current setting/notification status of a property.
         /// </summary>
@@ -30,7 +48,7 @@ namespace Avalonia.Utilities
             }
         }
 
-        private readonly Dictionary<TProperty, SettingStatus> setRecords = new Dictionary<TProperty, SettingStatus>();
+        private readonly ConditionalWeakTable<TProperty, SettingStatus> setRecords = new ConditionalWeakTable<TProperty, SettingStatus>();
 
         /// <summary>
         /// Mark the property as currently notifying.
@@ -40,14 +58,8 @@ namespace Avalonia.Utilities
         internal IDisposable MarkNotifying(TProperty property)
         {
             Contract.Requires<InvalidOperationException>(!IsNotifying(property));
-
-            if (!setRecords.ContainsKey(property))
-            {
-                setRecords[property] = new SettingStatus();
-            }
-            setRecords[property].Notifying = true;
-
-            return Disposable.Create(() => setRecords[property].Notifying = false);
+            
+            return new NotifyDisposable(setRecords.GetOrCreateValue(property));
         }
 
         /// <summary>
@@ -66,11 +78,8 @@ namespace Avalonia.Utilities
         internal void AddPendingSet(TProperty property, TValue value)
         {
             Contract.Requires<InvalidOperationException>(IsNotifying(property));
-            if (!setRecords.ContainsKey(property))
-            {
-                setRecords[property] = new SettingStatus();
-            }
-            setRecords[property].PendingValues.Enqueue(value);
+
+            setRecords.GetOrCreateValue(property).PendingValues.Enqueue(value);
         }
 
         /// <summary>
@@ -80,7 +89,7 @@ namespace Avalonia.Utilities
         /// <returns>If the property has any pending assignments.</returns>
         internal bool HasPendingSet(TProperty property)
         {
-            return setRecords.ContainsKey(property) && setRecords[property].PendingValues.Count != 0;
+            return setRecords.TryGetValue(property, out var status) && status.PendingValues.Count != 0;
         }
 
         /// <summary>
@@ -90,7 +99,7 @@ namespace Avalonia.Utilities
         /// <returns>The first pending assignment for the property.</returns>
         internal TValue GetFirstPendingSet(TProperty property)
         {
-            return setRecords[property].PendingValues.Dequeue();
+            return setRecords.GetOrCreateValue(property).PendingValues.Dequeue();
         }
 
         /// <summary>
@@ -103,7 +112,11 @@ namespace Avalonia.Utilities
         /// </param>
         /// <param name="value">The value to try to set.</param>
         /// <param name="pendingSetCondition">A predicate to filter what possible values should be added as pending sets (i.e. only values not equal to the current value).</param>
-        public void SetAndNotify(TProperty property, Action<TValue, Action<Action>> setterCallback, TValue value, Predicate<TValue> pendingSetCondition)
+        public void SetAndNotify(
+            TProperty property,
+            Action<TValue, Action<Action>> setterCallback,
+            TValue value,
+            Predicate<TValue> pendingSetCondition)
         {
             Contract.Requires<ArgumentNullException>(setterCallback != null);
             if (!IsNotifying(property))

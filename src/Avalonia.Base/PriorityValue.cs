@@ -235,56 +235,61 @@ namespace Avalonia
         /// <param name="priority">The priority level that the value came from.</param>
         private void UpdateValue(object value, int priority)
         {
-            delayedSetter.SetAndNotify(this, (update, notify) =>
+            delayedSetter.SetAndNotify(this,
+                UpdateCore,
+                (value, priority),
+                val => !object.Equals(val.value, _value));
+        }
+
+        private void UpdateCore((object value, int priority) update, Action<Action> notify)
+        {
+            var val = update.value;
+            var notification = val as BindingNotification;
+            object castValue;
+
+            if (notification != null)
             {
-                var val = update.value;
-                var notification = val as BindingNotification;
-                object castValue;
+                val = (notification.HasValue) ? notification.Value : null;
+            }
+
+            if (TypeUtilities.TryConvertImplicit(_valueType, val, out castValue))
+            {
+                var old = _value;
+
+                if (_validate != null && castValue != AvaloniaProperty.UnsetValue)
+                {
+                    castValue = _validate(castValue);
+                }
+
+                ValuePriority = update.priority;
+                _value = castValue;
+
+                if (notification?.HasValue == true)
+                {
+                    notification.SetValue(castValue);
+                }
+
+                if (notification == null || notification.HasValue)
+                {
+                    notify(() => Owner?.Changed(this, old, _value));
+                }
 
                 if (notification != null)
                 {
-                    val = (notification.HasValue) ? notification.Value : null;
+                    Owner?.BindingNotificationReceived(this, notification);
                 }
-
-                if (TypeUtilities.TryConvertImplicit(_valueType, val, out castValue))
-                {
-                    var old = _value;
-
-                    if (_validate != null && castValue != AvaloniaProperty.UnsetValue)
-                    {
-                        castValue = _validate(castValue);
-                    }
-
-                    ValuePriority = priority;
-                    _value = castValue;
-
-                    if (notification?.HasValue == true)
-                    {
-                        notification.SetValue(castValue);
-                    }
-
-                    if (notification == null || notification.HasValue)
-                    {
-                        notify(() => Owner?.Changed(this, old, _value));
-                    }
-
-                    if (notification != null)
-                    {
-                        Owner?.BindingNotificationReceived(this, notification);
-                    }
-                }
-                else
-                {
-                    Logger.Error(
-                        LogArea.Binding,
-                        Owner,
-                        "Binding produced invalid value for {$Property} ({$PropertyType}): {$Value} ({$ValueType})",
-                        Property.Name,
-                        _valueType,
-                        val,
-                        val?.GetType());
-                }
-            }, (value, priority), val => !object.Equals(val.value, _value));
+            }
+            else
+            {
+                Logger.Error(
+                    LogArea.Binding,
+                    Owner,
+                    "Binding produced invalid value for {$Property} ({$PropertyType}): {$Value} ({$ValueType})",
+                    Property.Name,
+                    _valueType,
+                    val,
+                    val?.GetType());
+            }
         }
     }
 }
