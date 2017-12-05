@@ -14,11 +14,11 @@ namespace Avalonia.Utilities
     class DeferredSetter<TProperty, TValue>
         where TProperty: class
     {
-        private struct NotifyDisposable : IDisposable
+        internal struct NotifyDisposable : IDisposable
         {
             private readonly SettingStatus status;
 
-            public NotifyDisposable(SettingStatus status)
+            internal NotifyDisposable(SettingStatus status)
             {
                 this.status = status;
                 status.Notifying = true;
@@ -33,7 +33,7 @@ namespace Avalonia.Utilities
         /// <summary>
         /// Information on current setting/notification status of a property.
         /// </summary>
-        private class SettingStatus
+        internal class SettingStatus
         {
             public bool Notifying { get; set; }
 
@@ -55,7 +55,7 @@ namespace Avalonia.Utilities
         /// </summary>
         /// <param name="property">The property to mark as notifying.</param>
         /// <returns>Returns a disposable that when disposed, marks the property as done notifying.</returns>
-        internal IDisposable MarkNotifying(TProperty property)
+        internal NotifyDisposable MarkNotifying(TProperty property)
         {
             Contract.Requires<InvalidOperationException>(!IsNotifying(property));
             
@@ -119,6 +119,7 @@ namespace Avalonia.Utilities
             Predicate<TValue> pendingSetCondition)
         {
             Contract.Requires<ArgumentNullException>(setterCallback != null);
+            Contract.Requires<ArgumentNullException>(pendingSetCondition != null);
             if (!IsNotifying(property))
             {
                 setterCallback(value, notification =>
@@ -139,7 +140,7 @@ namespace Avalonia.Utilities
                     });
                 }
             }
-            else if(pendingSetCondition?.Invoke(value) ?? true)
+            else if(pendingSetCondition(value))
             {
                 AddPendingSet(property, value);
             }

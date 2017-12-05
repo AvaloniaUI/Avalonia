@@ -28,9 +28,10 @@ namespace Avalonia
     {
         private readonly Type _valueType;
         private readonly SingleOrDictionary<int, PriorityLevel> _levels = new SingleOrDictionary<int, PriorityLevel>();
-        private object _value;
+
         private readonly Func<object, object> _validate;
         private static readonly DeferredSetter<PriorityValue, (object value, int priority)> delayedSetter = new DeferredSetter<PriorityValue, (object, int)>();
+        private (object value, int priority) _value;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PriorityValue"/> class.
@@ -47,9 +48,7 @@ namespace Avalonia
         {
             Owner = owner;
             Property = property;
-            _valueType = valueType;
-            _value = AvaloniaProperty.UnsetValue;
-            ValuePriority = int.MaxValue;
+            _value = (AvaloniaProperty.UnsetValue, int.MaxValue);
             _validate = validate;
         }
 
@@ -66,16 +65,12 @@ namespace Avalonia
         /// <summary>
         /// Gets the current value.
         /// </summary>
-        public object Value => _value;
+        public object Value => _value.value;
 
         /// <summary>
         /// Gets the priority of the binding that is currently active.
         /// </summary>
-        public int ValuePriority
-        {
-            get;
-            private set;
-        }
+        public int ValuePriority => _value.priority;
 
         /// <summary>
         /// Adds a new binding.
@@ -238,7 +233,7 @@ namespace Avalonia
             delayedSetter.SetAndNotify(this,
                 UpdateCore,
                 (value, priority),
-                val => !object.Equals(val.value, _value));
+                val => !object.Equals(val.value, val.value));
         }
 
         private void UpdateCore((object value, int priority) update, Action<Action> notify)
@@ -254,15 +249,14 @@ namespace Avalonia
 
             if (TypeUtilities.TryConvertImplicit(_valueType, val, out castValue))
             {
-                var old = _value;
+                var old = this._value.value;
 
                 if (_validate != null && castValue != AvaloniaProperty.UnsetValue)
                 {
                     castValue = _validate(castValue);
                 }
 
-                ValuePriority = update.priority;
-                _value = castValue;
+                this._value = (castValue, update.priority);
 
                 if (notification?.HasValue == true)
                 {
@@ -271,7 +265,7 @@ namespace Avalonia
 
                 if (notification == null || notification.HasValue)
                 {
-                    notify(() => Owner?.Changed(this, old, _value));
+                    notify(() => Owner?.Changed(this, old, Value));
                 }
 
                 if (notification != null)

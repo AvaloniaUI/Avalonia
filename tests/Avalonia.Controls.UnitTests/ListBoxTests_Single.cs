@@ -223,7 +223,7 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Equal(0, viewModel.SetterInvokedCount);
 
-            //here in real life stack overflow exception is thrown issue #855
+            // In Issue #855, a Stackoverflow occured here.
             target.SelectedItem = viewModel.Items[2];
 
             Assert.Equal(viewModel.Items[1], target.SelectedItem);

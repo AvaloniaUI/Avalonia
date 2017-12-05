@@ -151,7 +151,7 @@ namespace Avalonia.Controls.Primitives
             {
                 if (_updateCount == 0)
                 {
-                    SetAndRaise(SelectedIndexProperty, (val, notifierWrapper) =>
+                    SetAndRaise(SelectedIndexProperty, (val, notifyWrapper) =>
                     {
                         var old = SelectedIndex;
                         var effective = (val >= 0 && val < Items?.Cast<object>().Count()) ? val : -1;
@@ -159,10 +159,15 @@ namespace Avalonia.Controls.Primitives
                         if (old != effective)
                         {
                             _selectedIndex = effective;
-                            notifierWrapper(() => RaisePropertyChanged(SelectedIndexProperty, old, effective, BindingPriority.LocalValue));
+                            notifyWrapper(() =>
+                                RaisePropertyChanged(
+                                    SelectedIndexProperty,
+                                    old,
+                                    effective,
+                                    BindingPriority.LocalValue));
                             SelectedItem = ElementAt(Items, effective);
                         }
-                    }, value);
+                    }, value, val => val != SelectedIndex);
                 }
                 else
                 {
@@ -196,7 +201,12 @@ namespace Avalonia.Controls.Primitives
                         {
                             _selectedItem = effective;
 
-                            notifyWrapper(() => RaisePropertyChanged(SelectedItemProperty, old, effective, BindingPriority.LocalValue));
+                            notifyWrapper(() =>
+                                RaisePropertyChanged(
+                                    SelectedItemProperty,
+                                    old,
+                                    effective,
+                                    BindingPriority.LocalValue));
 
                             SelectedIndex = index;
 
@@ -215,7 +225,7 @@ namespace Avalonia.Controls.Primitives
                                 SelectedItems.Clear();
                             }
                         }
-                    }, value);
+                    }, value, val => val != SelectedItem);
                 }
                 else
                 {
