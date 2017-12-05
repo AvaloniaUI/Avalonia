@@ -10,7 +10,7 @@ namespace Avalonia
     /// <summary>
     /// Defines a point.
     /// </summary>
-    public struct Point
+    public readonly struct Point
     {
         /// <summary>
         /// The X position.
