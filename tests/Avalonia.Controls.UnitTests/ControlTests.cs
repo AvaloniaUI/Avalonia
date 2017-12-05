@@ -19,7 +19,7 @@ namespace Avalonia.Controls.UnitTests
         {
             var target = new Control();
 
-            Assert.Equal(0, target.Classes.Count);
+            Assert.Empty(target.Classes);
         }
 
         [Fact]

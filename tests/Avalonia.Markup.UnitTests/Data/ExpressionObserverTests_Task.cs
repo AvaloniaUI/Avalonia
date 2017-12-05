@@ -28,7 +28,7 @@ namespace Avalonia.Markup.UnitTests.Data
                 tcs.SetResult("foo");
                 sync.ExecutePostedCallbacks();
 
-                Assert.Equal(1, result.Count);
+                Assert.Single(result);
                 Assert.IsType<Task<string>>(result[0]);
 
                 GC.KeepAlive(data);

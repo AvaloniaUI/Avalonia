@@ -96,6 +96,16 @@ namespace Avalonia.Controls
             this.UpdateSelectionBoxItem(this.SelectedItem);
         }
 
+        protected override void OnGotFocus(GotFocusEventArgs e)
+        {
+            base.OnGotFocus(e);
+
+            if (!e.Handled && e.NavigationMethod == NavigationMethod.Directional)
+            {
+                e.Handled = UpdateSelectionFromEventSource(e.Source);
+            }
+        }
+
         /// <inheritdoc/>
         protected override void OnKeyDown(KeyEventArgs e)
         {
@@ -104,7 +114,7 @@ namespace Avalonia.Controls
             if (!e.Handled)
             {
                 if (e.Key == Key.F4 ||
-                    (e.Key == Key.Down && ((e.Modifiers & InputModifiers.Alt) != 0)))
+                    ((e.Key == Key.Down || e.Key == Key.Up) && ((e.Modifiers & InputModifiers.Alt) != 0)))
                 {
                     IsDropDownOpen = !IsDropDownOpen;
                     e.Handled = true;
@@ -113,6 +123,27 @@ namespace Avalonia.Controls
                 {
                     IsDropDownOpen = false;
                     e.Handled = true;
+                }
+
+                if (!IsDropDownOpen)
+                {
+                    if (e.Key == Key.Down)
+                    {
+                        if (SelectedIndex == -1)
+                            SelectedIndex = 0;
+                        
+                        if (++SelectedIndex >= ItemCount)
+                            SelectedIndex = 0;
+                        
+                        e.Handled = true;
+                    }
+                    else if (e.Key == Key.Up)
+                    {
+                        if (--SelectedIndex < 0)
+                            SelectedIndex = ItemCount - 1;
+                        
+                        e.Handled = true;
+                    }
                 }
             }
         }

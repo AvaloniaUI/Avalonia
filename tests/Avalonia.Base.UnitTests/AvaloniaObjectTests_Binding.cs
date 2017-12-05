@@ -468,7 +468,7 @@ namespace Avalonia.Base.UnitTests
                 object anchor = null,
                 bool enableDataValidation = false)
             {
-                return new InstancedBinding(_source, BindingMode.OneTime);
+                return InstancedBinding.OneTime(_source);
             }
         }
 

@@ -621,7 +621,6 @@ namespace Avalonia.Controls
             Contract.Requires<ArgumentNullException>(property != null);
             Contract.Requires<ArgumentNullException>(selector != null);
             Contract.Requires<ArgumentNullException>(className != null);
-            Contract.Requires<ArgumentNullException>(property != null);
 
             if (string.IsNullOrWhiteSpace(className))
             {
@@ -774,7 +773,9 @@ namespace Avalonia.Controls
 
                     foreach (var child in control.LogicalChildren)
                     {
-                        if (child is Control c && !c.IsSet(DataContextProperty))
+                        if (child is Control c && 
+                            c.InheritanceParent == control &&
+                            !c.IsSet(DataContextProperty))
                         {
                             DataContextNotifying(c, notifying);
                         }

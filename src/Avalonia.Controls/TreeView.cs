@@ -176,10 +176,7 @@ namespace Avalonia.Controls
 
                 SelectedItem = item;
 
-                if (SelectedItem != null)
-                {
-                    MarkContainerSelected(container, true);
-                }
+                MarkContainerSelected(container, true);
             }
         }
 

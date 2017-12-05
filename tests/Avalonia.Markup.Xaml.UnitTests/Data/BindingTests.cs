@@ -13,6 +13,7 @@ using Moq;
 using Xunit;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using Avalonia.UnitTests;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Data
 {
@@ -337,7 +338,6 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
             Assert.Equal("foo", target.Content);
         }
 
-
         [Fact]
         public void StyledProperty_SetValue_Should_Not_Cause_StackOverflow_And_Have_Correct_Values()
         {
@@ -476,6 +476,29 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
             }
         }
         
+
+        [Fact]
+        public void Binding_With_Null_Path_Works()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'>
+    <TextBlock Name='textBlock' Text='{Binding}'/>
+</Window>";
+                var loader = new AvaloniaXamlLoader();
+                var window = (Window)loader.Load(xaml);
+                var textBlock = window.FindControl<TextBlock>("textBlock");
+
+                window.DataContext = "foo";
+                window.ApplyTemplate();
+
+                Assert.Equal("foo", textBlock.Text);
+            }
+        }
+
         private class TwoWayBindingTest : Control
         {
             public static readonly StyledProperty<string> TwoWayProperty =

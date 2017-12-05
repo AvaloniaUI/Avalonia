@@ -161,5 +161,15 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Equal(new[] { ":baz" }, target);
         }
+
+        [Fact]
+        public void RemoveAll_Should_Remove_Classes()
+        {
+            var target = new Classes("foo", "bar", "baz");
+
+            target.RemoveAll(new[] { "bar", "baz" });
+
+            Assert.Equal(new[] { "foo" }, target);
+        }
     }
 }
