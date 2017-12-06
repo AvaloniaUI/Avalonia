@@ -10,11 +10,11 @@ namespace Avalonia.Utilities
     /// A utility class to enable deferring assignment until after property-changed notifications are sent.
     /// </summary>
     /// <typeparam name="TProperty">The type of the object that represents the property.</typeparam>
-    /// <typeparam name="TValue">The type of value with which to track the delayed assignment.</typeparam>
-    class DeferredSetter<TProperty, TValue>
+    /// <typeparam name="TSetRecord">The type of value with which to track the delayed assignment.</typeparam>
+    class DeferredSetter<TProperty, TSetRecord>
         where TProperty: class
     {
-        internal struct NotifyDisposable : IDisposable
+        private struct NotifyDisposable : IDisposable
         {
             private readonly SettingStatus status;
 
@@ -33,17 +33,17 @@ namespace Avalonia.Utilities
         /// <summary>
         /// Information on current setting/notification status of a property.
         /// </summary>
-        internal class SettingStatus
+        private class SettingStatus
         {
             public bool Notifying { get; set; }
 
-            private Queue<TValue> pendingValues;
+            private Queue<TSetRecord> pendingValues;
             
-            public Queue<TValue> PendingValues
+            public Queue<TSetRecord> PendingValues
             {
                 get
                 {
-                    return pendingValues ?? (pendingValues = new Queue<TValue>());
+                    return pendingValues ?? (pendingValues = new Queue<TSetRecord>());
                 }
             }
         }
@@ -55,7 +55,7 @@ namespace Avalonia.Utilities
         /// </summary>
         /// <param name="property">The property to mark as notifying.</param>
         /// <returns>Returns a disposable that when disposed, marks the property as done notifying.</returns>
-        internal NotifyDisposable MarkNotifying(TProperty property)
+        private NotifyDisposable MarkNotifying(TProperty property)
         {
             Contract.Requires<InvalidOperationException>(!IsNotifying(property));
             
@@ -67,7 +67,7 @@ namespace Avalonia.Utilities
         /// </summary>
         /// <param name="property">The property.</param>
         /// <returns>If the property is currently notifying listeners.</returns>
-        internal bool IsNotifying(TProperty property)
+        private bool IsNotifying(TProperty property)
             => setRecords.TryGetValue(property, out var value) && value.Notifying;
 
         /// <summary>
@@ -75,7 +75,7 @@ namespace Avalonia.Utilities
         /// </summary>
         /// <param name="property">The property.</param>
         /// <param name="value">The value to assign.</param>
-        internal void AddPendingSet(TProperty property, TValue value)
+        private void AddPendingSet(TProperty property, TSetRecord value)
         {
             Contract.Requires<InvalidOperationException>(IsNotifying(property));
 
@@ -87,7 +87,7 @@ namespace Avalonia.Utilities
         /// </summary>
         /// <param name="property">The property to check.</param>
         /// <returns>If the property has any pending assignments.</returns>
-        internal bool HasPendingSet(TProperty property)
+        private bool HasPendingSet(TProperty property)
         {
             return setRecords.TryGetValue(property, out var status) && status.PendingValues.Count != 0;
         }
@@ -97,41 +97,40 @@ namespace Avalonia.Utilities
         /// </summary>
         /// <param name="property">The property to check.</param>
         /// <returns>The first pending assignment for the property.</returns>
-        internal TValue GetFirstPendingSet(TProperty property)
+        private TSetRecord GetFirstPendingSet(TProperty property)
         {
             return setRecords.GetOrCreateValue(property).PendingValues.Dequeue();
         }
+
+        public delegate bool SetterDelegate<TValue>(TSetRecord record, ref TValue backing, Action<Action> notifyCallback);
+        public delegate bool PendingSetPredicate<TValue>(TSetRecord record, ref TValue backing);
 
         /// <summary>
         /// Set the property and notify listeners while ensuring we don't get into a stack overflow as happens with #855 and #824
         /// </summary>
         /// <param name="property">The property to set.</param>
+        /// <param name="backing">The backing field for the property</param>
         /// <param name="setterCallback">
         /// A callback that actually sets the property.
         /// The first parameter is the value to set, and the second is a wrapper that takes a callback that sends the property-changed notification.
         /// </param>
         /// <param name="value">The value to try to set.</param>
         /// <param name="pendingSetCondition">A predicate to filter what possible values should be added as pending sets (i.e. only values not equal to the current value).</param>
-        public void SetAndNotify(
+        public bool SetAndNotify<TValue>(
             TProperty property,
-            Action<TValue, Action<Action>> setterCallback,
-            TValue value,
-            Predicate<TValue> pendingSetCondition)
+            ref TValue backing,
+            SetterDelegate<TValue> setterCallback,
+            TSetRecord value,
+            PendingSetPredicate<TValue> pendingSetCondition)
         {
             Contract.Requires<ArgumentNullException>(setterCallback != null);
             Contract.Requires<ArgumentNullException>(pendingSetCondition != null);
             if (!IsNotifying(property))
             {
-                setterCallback(value, notification =>
+                bool updated = false;
+                if (pendingSetCondition(value, ref backing))
                 {
-                    using (MarkNotifying(property))
-                    {
-                        notification();
-                    }
-                });
-                while (HasPendingSet(property))
-                {
-                    setterCallback(GetFirstPendingSet(property), notification =>
+                    updated = setterCallback(value, ref backing, notification =>
                     {
                         using (MarkNotifying(property))
                         {
@@ -139,11 +138,23 @@ namespace Avalonia.Utilities
                         }
                     });
                 }
+                while (HasPendingSet(property))
+                {
+                    updated |= setterCallback(GetFirstPendingSet(property), ref backing, notification =>
+                    {
+                        using (MarkNotifying(property))
+                        {
+                            notification();
+                        }
+                    });
+                }
+                return updated;
             }
-            else if(pendingSetCondition(value))
+            else if(pendingSetCondition(value, ref backing))
             {
                 AddPendingSet(property, value);
             }
+            return false;
         }
     }
 }

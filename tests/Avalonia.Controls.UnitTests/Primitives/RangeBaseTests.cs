@@ -148,7 +148,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             Assert.Equal(1, viewModel.SetterInvokedCount);
 
-            //here in real life stack overflow exception is thrown issue #855 and #824
+            // Issues #855 and #824 were causing a StackOverflowException at this point.
             target.Value = 51.001;
 
             Assert.Equal(2, viewModel.SetterInvokedCount);

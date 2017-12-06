@@ -48,6 +48,7 @@ namespace Avalonia
         {
             Owner = owner;
             Property = property;
+            _valueType = valueType;
             _value = (AvaloniaProperty.UnsetValue, int.MaxValue);
             _validate = validate;
         }
@@ -231,12 +232,17 @@ namespace Avalonia
         private void UpdateValue(object value, int priority)
         {
             delayedSetter.SetAndNotify(this,
+                ref _value,
                 UpdateCore,
                 (value, priority),
-                val => !object.Equals(val.value, val.value));
+                ((object value, int) val, ref (object value, int) backing)
+                    => !object.Equals(val.value, backing.value));
         }
 
-        private void UpdateCore((object value, int priority) update, Action<Action> notify)
+        private bool UpdateCore(
+            (object value, int priority) update,
+            ref (object value, int priority) backing,
+            Action<Action> notify)
         {
             var val = update.value;
             var notification = val as BindingNotification;
@@ -249,14 +255,14 @@ namespace Avalonia
 
             if (TypeUtilities.TryConvertImplicit(_valueType, val, out castValue))
             {
-                var old = this._value.value;
+                var old = backing.value;
 
                 if (_validate != null && castValue != AvaloniaProperty.UnsetValue)
                 {
                     castValue = _validate(castValue);
                 }
 
-                this._value = (castValue, update.priority);
+                backing = (castValue, update.priority);
 
                 if (notification?.HasValue == true)
                 {
@@ -284,6 +290,7 @@ namespace Avalonia
                     val,
                     val?.GetType());
             }
+            return true;
         }
     }
 }

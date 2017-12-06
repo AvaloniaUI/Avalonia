@@ -56,7 +56,7 @@ namespace Avalonia
         /// <summary>
         /// Delayed setter helper for direct properties. Used to fix #855.
         /// </summary>
-        private DeferredSetter<AvaloniaProperty, object> DirectDelayedSetter
+        private DeferredSetter<AvaloniaProperty, object> DirectPropertyDeferredSetter
         {
             get
             {
@@ -555,6 +555,46 @@ namespace Avalonia
         }
 
         /// <summary>
+        /// A callback type for encapsulating complex logic for setting direct properties.
+        /// </summary>
+        /// <typeparam name="T">The type of the property.</typeparam>
+        /// <param name="value">The value to which to set the property.</param>
+        /// <param name="field">The backing field for the property.</param>
+        /// <param name="notifyWrapper">A wrapper for the property-changed notification.</param>
+        protected delegate void SetAndRaiseCallback<T>(T value, ref T field, Action<Action> notifyWrapper);
+
+        /// <summary>
+        /// Sets the backing field for a direct avalonia property, raising the 
+        /// <see cref="PropertyChanged"/> event if the value has changed.
+        /// </summary>
+        /// <typeparam name="T">The type of the property.</typeparam>
+        /// <param name="property">The property.</param>
+        /// <param name="field">The backing field.</param>
+        /// <param name="setterCallback">A callback called to actually set the value to the backing field.</param>
+        /// <param name="value">The value.</param>
+        /// <returns>
+        /// True if the value changed, otherwise false.
+        /// </returns>
+        protected bool SetAndRaise<T>(
+            AvaloniaProperty<T> property,
+            ref T field,
+            SetAndRaiseCallback<T> setterCallback,
+            T value)
+        {
+            Contract.Requires<ArgumentNullException>(setterCallback != null);
+            return DirectPropertyDeferredSetter.SetAndNotify(
+                property,
+                ref field,
+                (object val, ref T backing, Action<Action> notify) =>
+                {
+                    setterCallback((T)val, ref backing, notify);
+                    return true;
+                },
+                value,
+                (object o, ref T backing) => !object.Equals(o, backing));
+        }
+
+        /// <summary>
         /// Sets the backing field for a direct avalonia property, raising the 
         /// <see cref="PropertyChanged"/> event if the value has changed.
         /// </summary>
@@ -568,54 +608,32 @@ namespace Avalonia
         protected bool SetAndRaise<T>(AvaloniaProperty<T> property, ref T field, T value)
         {
             VerifyAccess();
-            if (!DirectDelayedSetter.IsNotifying(property))
-            {
-                var valueChanged = false;
-                if (!object.Equals(field, value))
-                {
-                    SetAndRaiseCore(property, ref field, value);
-
-                    valueChanged = true;
-                }
-
-                while (DirectDelayedSetter.HasPendingSet(property))
-                {
-                    SetAndRaiseCore(property, ref field, (T)DirectDelayedSetter.GetFirstPendingSet(property));
-                    valueChanged = true;
-                }
-                return valueChanged;
-            }
-            else if(!object.Equals(field, value))
-            {
-                DirectDelayedSetter.AddPendingSet(property, value);
-            }
-            return false;
+            return SetAndRaise(
+                property,
+                ref field,
+                (T val, ref T backing, Action<Action> notifyWrapper)
+                    => SetAndRaiseCore(property, ref backing, val, notifyWrapper),
+                value);
         }
 
-        private void SetAndRaiseCore<T>(AvaloniaProperty<T> property, ref T field, T value)
+        /// <summary>
+        /// Default assignment logic for SetAndRaise.
+        /// </summary>
+        /// <typeparam name="T">The type of the property.</typeparam>
+        /// <param name="property">The property.</param>
+        /// <param name="field">The backing field.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="notifyWrapper">A wrapper for the property-changed notification.</param>
+        /// <returns>
+        /// True if the value changed, otherwise false.
+        /// </returns>
+        private bool SetAndRaiseCore<T>(AvaloniaProperty property, ref T field, T value, Action<Action> notifyWrapper)
         {
             var old = field;
             field = value;
 
-            using (DirectDelayedSetter.MarkNotifying(property))
-            {
-                RaisePropertyChanged(property, old, value, BindingPriority.LocalValue);
-            }
-        }
-
-        protected void SetAndRaise<T>(
-            AvaloniaProperty<T> property,
-            Action<T, Action<Action>> setterCallback,
-            T value,
-            Predicate<T> pendingSetCondition)
-        {
-            Contract.Requires<ArgumentNullException>(setterCallback != null);
-            Contract.Requires<ArgumentNullException>(pendingSetCondition != null);
-            DirectDelayedSetter.SetAndNotify(
-                property,
-                (val, notify) => setterCallback((T)val, notify),
-                value,
-                o => pendingSetCondition((T)o));
+            notifyWrapper(() => RaisePropertyChanged(property, old, value, BindingPriority.LocalValue));
+            return true;
         }
 
         /// <summary>

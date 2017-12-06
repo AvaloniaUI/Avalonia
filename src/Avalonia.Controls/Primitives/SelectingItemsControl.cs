@@ -151,14 +151,14 @@ namespace Avalonia.Controls.Primitives
             {
                 if (_updateCount == 0)
                 {
-                    SetAndRaise(SelectedIndexProperty, (val, notifyWrapper) =>
+                    SetAndRaise(SelectedIndexProperty, ref _selectedIndex, (int val, ref int backing, Action<Action> notifyWrapper) =>
                     {
-                        var old = SelectedIndex;
+                        var old = backing;
                         var effective = (val >= 0 && val < Items?.Cast<object>().Count()) ? val : -1;
 
                         if (old != effective)
                         {
-                            _selectedIndex = effective;
+                            backing = effective;
                             notifyWrapper(() =>
                                 RaisePropertyChanged(
                                     SelectedIndexProperty,
@@ -167,7 +167,7 @@ namespace Avalonia.Controls.Primitives
                                     BindingPriority.LocalValue));
                             SelectedItem = ElementAt(Items, effective);
                         }
-                    }, value, val => val != SelectedIndex);
+                    }, value);
                 }
                 else
                 {
@@ -191,15 +191,15 @@ namespace Avalonia.Controls.Primitives
             {
                 if (_updateCount == 0)
                 {
-                    SetAndRaise(SelectedItemProperty, (val, notifyWrapper) =>
+                    SetAndRaise(SelectedItemProperty, ref _selectedItem, (object val, ref object backing, Action<Action> notifyWrapper) =>
                     {
-                        var old = SelectedItem;
+                        var old = backing;
                         var index = IndexOf(Items, val);
                         var effective = index != -1 ? val : null;
 
                         if (!object.Equals(effective, old))
                         {
-                            _selectedItem = effective;
+                            backing = effective;
 
                             notifyWrapper(() =>
                                 RaisePropertyChanged(
@@ -225,7 +225,7 @@ namespace Avalonia.Controls.Primitives
                                 SelectedItems.Clear();
                             }
                         }
-                    }, value, val => val != SelectedItem);
+                    }, value);
                 }
                 else
                 {
