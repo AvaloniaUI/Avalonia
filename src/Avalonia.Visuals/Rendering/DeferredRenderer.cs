@@ -25,7 +25,6 @@ namespace Avalonia.Rendering
         private readonly IRenderLoop _renderLoop;
         private readonly IVisual _root;
         private readonly ISceneBuilder _sceneBuilder;
-        private readonly RenderLayers _layers;
 
         private bool _running;
         private Scene _scene;
@@ -56,7 +55,7 @@ namespace Avalonia.Rendering
             _dispatcher = dispatcher ?? Dispatcher.UIThread;
             _root = root;
             _sceneBuilder = sceneBuilder ?? new SceneBuilder();
-            _layers = new RenderLayers();
+            Layers = new RenderLayers();
             _renderLoop = renderLoop;
         }
 
@@ -80,7 +79,7 @@ namespace Avalonia.Rendering
             _root = root;
             _renderTarget = renderTarget;
             _sceneBuilder = sceneBuilder ?? new SceneBuilder();
-            _layers = new RenderLayers();
+            Layers = new RenderLayers();
         }
 
         /// <inheritdoc/>
@@ -93,6 +92,11 @@ namespace Avalonia.Rendering
         /// Gets or sets a path to which rendered frame should be rendered for debugging.
         /// </summary>
         public string DebugFramesPath { get; set; }
+
+        /// <summary>
+        /// Gets the render layers.
+        /// </summary>
+        internal RenderLayers Layers { get; }
 
         /// <inheritdoc/>
         public void AddDirty(IVisual visual)
@@ -192,7 +196,7 @@ namespace Avalonia.Rendering
                     if (scene.Generation != _lastSceneId)
                     {
                         context = _renderTarget.CreateDrawingContext(this);
-                        _layers.Update(scene, context);
+                        Layers.Update(scene, context);
 
                         RenderToLayers(scene);
 
@@ -262,7 +266,7 @@ namespace Avalonia.Rendering
             {
                 foreach (var layer in scene.Layers)
                 {
-                    var renderTarget = _layers[layer.LayerRoot].Bitmap;
+                    var renderTarget = Layers[layer.LayerRoot].Bitmap;
                     var node = (VisualNode)scene.FindNode(layer.LayerRoot);
 
                     if (node != null)
@@ -322,7 +326,7 @@ namespace Avalonia.Rendering
 
             foreach (var layer in scene.Layers)
             {
-                var bitmap = _layers[layer.LayerRoot].Bitmap;
+                var bitmap = Layers[layer.LayerRoot].Bitmap;
                 var sourceRect = new Rect(0, 0, bitmap.PixelWidth, bitmap.PixelHeight);
 
                 if (layer.GeometryClip != null)
@@ -442,7 +446,7 @@ namespace Avalonia.Rendering
         {
             var index = 0;
 
-            foreach (var layer in _layers)
+            foreach (var layer in Layers)
             {
                 var fileName = Path.Combine(DebugFramesPath, $"frame-{id}-layer-{index++}.png");
                 layer.Bitmap.Save(fileName);

@@ -21,28 +21,18 @@ namespace Avalonia.Visuals.UnitTests.Rendering
         [Fact]
         public void First_Frame_Calls_UpdateScene_On_Dispatcher()
         {
-            var loop = new Mock<IRenderLoop>();
             var root = new TestRoot();
 
             var dispatcher = new Mock<IDispatcher>();
             dispatcher.Setup(x => x.InvokeAsync(It.IsAny<Action>(), DispatcherPriority.Render))
                 .Callback<Action, DispatcherPriority>((a, p) => a());
 
-            var target = new DeferredRenderer(
-                root,
-                loop.Object,
-                sceneBuilder: MockSceneBuilder(root).Object,
-                dispatcher: dispatcher.Object);
+            CreateTargetAndRunFrame(root, dispatcher: dispatcher.Object);
 
-            target.Start();
-            RunFrame(loop);
-
-#if !NETCOREAPP1_1 // Delegate.Method is not available in netcoreapp1.1
             dispatcher.Verify(x => 
                 x.InvokeAsync(
                     It.Is<Action>(a => a.Method.Name == "UpdateScene"),
                     DispatcherPriority.Render));
-#endif
         }
 
         [Fact]
@@ -51,15 +41,8 @@ namespace Avalonia.Visuals.UnitTests.Rendering
             var loop = new Mock<IRenderLoop>();
             var root = new TestRoot();
             var sceneBuilder = MockSceneBuilder(root);
-            var dispatcher = new ImmediateDispatcher();
-            var target = new DeferredRenderer(
-                root,
-                loop.Object,
-                sceneBuilder: sceneBuilder.Object,
-                dispatcher: dispatcher);
 
-            target.Start();
-            RunFrame(loop);
+            CreateTargetAndRunFrame(root, sceneBuilder: sceneBuilder.Object);
 
             sceneBuilder.Verify(x => x.UpdateAll(It.IsAny<Scene>()));
         }
@@ -70,12 +53,10 @@ namespace Avalonia.Visuals.UnitTests.Rendering
             var loop = new Mock<IRenderLoop>();
             var root = new TestRoot();
             var sceneBuilder = MockSceneBuilder(root);
-            var dispatcher = new ImmediateDispatcher();
             var target = new DeferredRenderer(
                 root,
                 loop.Object,
-                sceneBuilder: sceneBuilder.Object,
-                dispatcher: dispatcher);
+                sceneBuilder: sceneBuilder.Object);
 
             target.Start();
             IgnoreFirstFrame(loop, sceneBuilder);
@@ -145,24 +126,8 @@ namespace Avalonia.Visuals.UnitTests.Rendering
             root.Measure(Size.Infinity);
             root.Arrange(new Rect(root.DesiredSize));
 
-            var rootLayer = CreateLayer();
-            var borderLayer = CreateLayer();
-            var renderTargetContext = Mock.Get(root.CreateRenderTarget().CreateDrawingContext(null));
-            renderTargetContext.SetupSequence(x => x.CreateLayer(It.IsAny<Size>()))
-                .Returns(rootLayer)
-                .Returns(borderLayer);
-
-            var loop = new Mock<IRenderLoop>();
-            var target = new DeferredRenderer(
-                root,
-                loop.Object,
-                dispatcher: new ImmediateDispatcher());
-            root.Renderer = target;
-
-            target.Start();
-            RunFrame(loop);
-
-            var context = Mock.Get(rootLayer.CreateDrawingContext(null));
+            var target = CreateTargetAndRunFrame(root);
+            var context = GetLayerContext(target, root);
             var animation = new BehaviorSubject<double>(0.5);
 
             context.Verify(x => x.PushOpacity(0.5), Times.Once);
@@ -191,24 +156,8 @@ namespace Avalonia.Visuals.UnitTests.Rendering
             root.Measure(Size.Infinity);
             root.Arrange(new Rect(root.DesiredSize));
 
-            var rootLayer = CreateLayer();
-            var borderLayer = CreateLayer();
-            var renderTargetContext = Mock.Get(root.CreateRenderTarget().CreateDrawingContext(null));
-            renderTargetContext.SetupSequence(x => x.CreateLayer(It.IsAny<Size>()))
-                .Returns(rootLayer)
-                .Returns(borderLayer);
-
-            var loop = new Mock<IRenderLoop>();
-            var target = new DeferredRenderer(
-                root,
-                loop.Object,
-                dispatcher: new ImmediateDispatcher());
-            root.Renderer = target;
-
-            target.Start();
-            RunFrame(loop);
-
-            var context = Mock.Get(rootLayer.CreateDrawingContext(null));
+            var target = CreateTargetAndRunFrame(root);
+            var context = GetLayerContext(target, root);
             var animation = new BehaviorSubject<double>(0.5);
 
             context.Verify(x => x.PushOpacity(0.5), Times.Never);
@@ -217,12 +166,11 @@ namespace Avalonia.Visuals.UnitTests.Rendering
         }
 
         [Fact]
-        public void Frame_Should_Create_Layer_For_Root()
+        public void Should_Create_Layer_For_Root()
         {
             var loop = new Mock<IRenderLoop>();
             var root = new TestRoot();
             var rootLayer = new Mock<IRenderTargetBitmapImpl>();
-            var dispatcher = new ImmediateDispatcher();
 
             var sceneBuilder = new Mock<ISceneBuilder>();
             sceneBuilder.Setup(x => x.UpdateAll(It.IsAny<Scene>()))
@@ -233,18 +181,9 @@ namespace Avalonia.Visuals.UnitTests.Rendering
                 });
 
             var renderInterface = new Mock<IPlatformRenderInterface>();
+            var target = CreateTargetAndRunFrame(root, sceneBuilder: sceneBuilder.Object);
 
-            var target = new DeferredRenderer(
-                root,
-                loop.Object,
-                sceneBuilder: sceneBuilder.Object,
-                dispatcher: dispatcher);
-
-            target.Start();
-            RunFrame(loop);
-
-            var context = Mock.Get(root.CreateRenderTarget().CreateDrawingContext(null));
-            context.Verify(x => x.CreateLayer(root.ClientSize));
+            Assert.Single(target.Layers);
         }
 
         [Fact]
@@ -269,49 +208,44 @@ namespace Avalonia.Visuals.UnitTests.Rendering
             root.Measure(Size.Infinity);
             root.Arrange(new Rect(root.DesiredSize));
 
-            var rootLayer = CreateLayer();
-            var borderLayer = CreateLayer();
-            var renderTargetContext = Mock.Get(root.CreateRenderTarget().CreateDrawingContext(null));
-            renderTargetContext.SetupSequence(x => x.CreateLayer(It.IsAny<Size>()))
-                .Returns(rootLayer)
-                .Returns(borderLayer);
-
             var loop = new Mock<IRenderLoop>();
-            var target = new DeferredRenderer(
-                root,
-                loop.Object,
-                dispatcher: new ImmediateDispatcher());
-            root.Renderer = target;
+            var target = CreateTargetAndRunFrame(root, loop: loop);
 
-            target.Start();
-            RunFrame(loop);
+            Assert.Equal(new[] { root }, target.Layers.Select(x => x.LayerRoot));
 
-            var rootContext = Mock.Get(rootLayer.CreateDrawingContext(null));
-            var borderContext = Mock.Get(borderLayer.CreateDrawingContext(null));
             var animation = new BehaviorSubject<double>(0.5);
-
-            rootContext.Verify(x => x.FillRectangle(Brushes.Red, new Rect(0, 0, 100, 100), 0), Times.Once);
-            rootContext.Verify(x => x.FillRectangle(Brushes.Green, new Rect(0, 0, 100, 100), 0), Times.Once);
-            borderContext.Verify(x => x.FillRectangle(It.IsAny<IBrush>(), It.IsAny<Rect>(), It.IsAny<float>()), Times.Never);
-
-            rootContext.ResetCalls();
-            borderContext.ResetCalls();
             border.Bind(Border.OpacityProperty, animation, BindingPriority.Animation);
             RunFrame(loop);
 
-            rootContext.Verify(x => x.FillRectangle(Brushes.Red, new Rect(0, 0, 100, 100), 0), Times.Once);
-            rootContext.Verify(x => x.FillRectangle(Brushes.Green, new Rect(0, 0, 100, 100), 0), Times.Never);
-            borderContext.Verify(x => x.FillRectangle(Brushes.Green, new Rect(0, 0, 100, 100), 0), Times.Once);
+            Assert.Equal(new IVisual[] { root, border }, target.Layers.Select(x => x.LayerRoot));
 
-            rootContext.ResetCalls();
-            borderContext.ResetCalls();
             animation.OnCompleted();
             RunFrame(loop);
 
-            Mock.Get(borderLayer).Verify(x => x.Dispose());
-            rootContext.Verify(x => x.FillRectangle(Brushes.Red, new Rect(0, 0, 100, 100), 0), Times.Once);
-            rootContext.Verify(x => x.FillRectangle(Brushes.Green, new Rect(0, 0, 100, 100), 0), Times.Once);
-            borderContext.Verify(x => x.FillRectangle(It.IsAny<IBrush>(), It.IsAny<Rect>(), It.IsAny<float>()), Times.Never);
+            Assert.Equal(new[] { root }, target.Layers.Select(x => x.LayerRoot));
+        }
+
+        private DeferredRenderer CreateTargetAndRunFrame(
+            TestRoot root,
+            Mock<IRenderLoop> loop = null,
+            ISceneBuilder sceneBuilder = null,
+            IDispatcher dispatcher = null)
+        {
+            loop = loop ?? new Mock<IRenderLoop>();
+            var target = new DeferredRenderer(
+                root,
+                loop.Object,
+                sceneBuilder: sceneBuilder,
+                dispatcher: dispatcher ?? new ImmediateDispatcher());
+            root.Renderer = target;
+            target.Start();
+            RunFrame(loop);
+            return target;
+        }
+
+        private Mock<IDrawingContextImpl> GetLayerContext(DeferredRenderer renderer, IControl layerRoot)
+        {
+            return Mock.Get(renderer.Layers[layerRoot].Bitmap.CreateDrawingContext(null));
         }
 
         private void IgnoreFirstFrame(Mock<IRenderLoop> loop, Mock<ISceneBuilder> sceneBuilder)
