@@ -37,7 +37,7 @@ namespace Avalonia.Direct2D1.RenderTests
                 },
                 Width = 76,
                 Height = 76,
-                Children = new Avalonia.Controls.Controls
+                Children =
                 {
                     new Path
                     {

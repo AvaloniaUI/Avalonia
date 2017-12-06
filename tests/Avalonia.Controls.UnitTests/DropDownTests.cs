@@ -89,7 +89,7 @@ namespace Avalonia.Controls.UnitTests
                 return new Panel
                 {
                     Name = "container",
-                    Children = new Controls
+                    Children =
                     {
                         new ContentControl
                         {
