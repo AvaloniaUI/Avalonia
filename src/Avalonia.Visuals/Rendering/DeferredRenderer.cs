@@ -28,7 +28,6 @@ namespace Avalonia.Rendering
 
         private bool _running;
         private Scene _scene;
-        private IRenderTarget _renderTarget;
         private DirtyVisuals _dirty;
         private IRenderTargetBitmapImpl _overlay;
         private bool _updateQueued;
@@ -77,7 +76,7 @@ namespace Avalonia.Rendering
             Contract.Requires<ArgumentNullException>(renderTarget != null);
 
             _root = root;
-            _renderTarget = renderTarget;
+            RenderTarget = renderTarget;
             _sceneBuilder = sceneBuilder ?? new SceneBuilder();
             Layers = new RenderLayers();
         }
@@ -97,6 +96,11 @@ namespace Avalonia.Rendering
         /// Gets the render layers.
         /// </summary>
         internal RenderLayers Layers { get; }
+
+        /// <summary>
+        /// Gets the current render target.
+        /// </summary>
+        internal IRenderTarget RenderTarget { get; private set; }
 
         /// <inheritdoc/>
         public void AddDirty(IVisual visual)
@@ -177,9 +181,9 @@ namespace Avalonia.Rendering
             bool renderOverlay = DrawDirtyRects || DrawFps;
             bool composite = false;
 
-            if (_renderTarget == null)
+            if (RenderTarget == null)
             {
-                _renderTarget = ((IRenderRoot)_root).CreateRenderTarget();
+                RenderTarget = ((IRenderRoot)_root).CreateRenderTarget();
             }
 
             if (renderOverlay)
@@ -195,7 +199,7 @@ namespace Avalonia.Rendering
 
                     if (scene.Generation != _lastSceneId)
                     {
-                        context = _renderTarget.CreateDrawingContext(this);
+                        context = RenderTarget.CreateDrawingContext(this);
                         Layers.Update(scene, context);
 
                         RenderToLayers(scene);
@@ -212,13 +216,13 @@ namespace Avalonia.Rendering
 
                     if (renderOverlay)
                     {
-                        context = context ?? _renderTarget.CreateDrawingContext(this);
+                        context = context ?? RenderTarget.CreateDrawingContext(this);
                         RenderOverlay(scene, context);
                         RenderComposite(scene, context);
                     }
                     else if (composite)
                     {
-                        context = context ?? _renderTarget.CreateDrawingContext(this);
+                        context = context ?? RenderTarget.CreateDrawingContext(this);
                         RenderComposite(scene, context);
                     }
 
@@ -228,8 +232,8 @@ namespace Avalonia.Rendering
             catch (RenderTargetCorruptedException ex)
             {
                 Logging.Logger.Information("Renderer", this, "Render target was corrupted. Exception: {0}", ex);
-                _renderTarget?.Dispose();
-                _renderTarget = null;
+                RenderTarget?.Dispose();
+                RenderTarget = null;
             }
         }
 
@@ -241,7 +245,9 @@ namespace Avalonia.Rendering
 
                 if (!clipBounds.IsEmpty && node.Opacity > 0)
                 {
-                    node.BeginRender(context);
+                    var isLayerRoot = node.Visual == layer;
+
+                    node.BeginRender(context, isLayerRoot);
 
                     foreach (var operation in node.DrawOperations)
                     {
@@ -255,7 +261,7 @@ namespace Avalonia.Rendering
                         Render(context, (VisualNode)child, layer, clipBounds);
                     }
 
-                    node.EndRender(context);
+                    node.EndRender(context, isLayerRoot);
                 }
             }
         }

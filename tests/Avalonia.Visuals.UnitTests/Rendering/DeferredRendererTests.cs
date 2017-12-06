@@ -201,6 +201,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
                     {
                         Background = Brushes.Green,
                         Child = new Canvas(),
+                        Opacity = 0.9,
                     }
                 }
             };
@@ -223,6 +224,93 @@ namespace Avalonia.Visuals.UnitTests.Rendering
             RunFrame(loop);
 
             Assert.Equal(new[] { root }, target.Layers.Select(x => x.LayerRoot));
+        }
+
+        [Fact]
+        public void Should_Not_Create_Layer_For_Childless_Control_With_Animated_Opacity()
+        {
+            Border border;
+            var root = new TestRoot
+            {
+                Width = 100,
+                Height = 100,
+                Child = new Border
+                {
+                    Background = Brushes.Red,
+                    Child = border = new Border
+                    {
+                        Background = Brushes.Green,
+                    }
+                }
+            };
+
+            var animation = new BehaviorSubject<double>(0.5);
+            border.Bind(Border.OpacityProperty, animation, BindingPriority.Animation);
+
+            root.Measure(Size.Infinity);
+            root.Arrange(new Rect(root.DesiredSize));
+
+            var loop = new Mock<IRenderLoop>();
+            var target = CreateTargetAndRunFrame(root, loop: loop);
+
+            Assert.Single(target.Layers);
+        }
+
+        [Fact]
+        public void Should_Not_Push_Opacity_For_Transparent_Layer_Root_Control()
+        {
+            Border border;
+            var root = new TestRoot
+            {
+                Width = 100,
+                Height = 100,
+                Child = border = new Border
+                {
+                    Background = Brushes.Red,
+                    Child = new Canvas(),
+                }
+            };
+
+            var animation = new BehaviorSubject<double>(0.5);
+            border.Bind(Border.OpacityProperty, animation, BindingPriority.Animation);
+
+            root.Measure(Size.Infinity);
+            root.Arrange(new Rect(root.DesiredSize));
+
+            var target = CreateTargetAndRunFrame(root);
+            var context = GetLayerContext(target, border);
+
+            context.Verify(x => x.PushOpacity(0.5), Times.Never);
+            context.Verify(x => x.FillRectangle(Brushes.Red, new Rect(0, 0, 100, 100), 0), Times.Once);
+            context.Verify(x => x.PopOpacity(), Times.Never);
+        }
+
+        [Fact]
+        public void Should_Draw_Transparent_Layer_With_Correct_Opacity()
+        {
+            Border border;
+            var root = new TestRoot
+            {
+                Width = 100,
+                Height = 100,
+                Child = border = new Border
+                {
+                    Background = Brushes.Red,
+                    Child = new Canvas(),
+                }
+            };
+
+            var animation = new BehaviorSubject<double>(0.5);
+            border.Bind(Border.OpacityProperty, animation, BindingPriority.Animation);
+
+            root.Measure(Size.Infinity);
+            root.Arrange(new Rect(root.DesiredSize));
+
+            var target = CreateTargetAndRunFrame(root);
+            var context = Mock.Get(target.RenderTarget.CreateDrawingContext(null));
+            var borderLayer = target.Layers[border].Bitmap;
+
+            context.Verify(x => x.DrawImage(borderLayer, 0.5, It.IsAny<Rect>(), It.IsAny<Rect>()));
         }
 
         private DeferredRenderer CreateTargetAndRunFrame(

@@ -218,15 +218,15 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <inheritdoc/>
-        public void BeginRender(IDrawingContextImpl context)
+        public void BeginRender(IDrawingContextImpl context, bool skipOpacity)
         {
             if (ClipToBounds)
             {
                 context.Transform = Matrix.Identity;
                 context.PushClip(ClipBounds);
             }
-
-            if (Opacity != 1)
+            
+            if (Opacity != 1 && !skipOpacity)
             {
                 context.PushOpacity(Opacity);
             }
@@ -240,14 +240,14 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <inheritdoc/>
-        public void EndRender(IDrawingContextImpl context)
+        public void EndRender(IDrawingContextImpl context, bool skipOpacity)
         {
             if (GeometryClip != null)
             {
                 context.PopGeometryClip();
             }
 
-            if (Opacity != 1)
+            if (Opacity != 1 && !skipOpacity)
             {
                 context.PopOpacity();
             }
