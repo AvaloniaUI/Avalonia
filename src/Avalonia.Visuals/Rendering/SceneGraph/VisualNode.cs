@@ -231,6 +231,11 @@ namespace Avalonia.Rendering.SceneGraph
                 context.PushOpacity(Opacity);
             }
 
+            if (OpacityMask != null)
+            {
+                context.PushOpacityMask(OpacityMask, ClipBounds);
+            }
+
             context.Transform = Transform;
 
             if (GeometryClip != null)
@@ -245,6 +250,11 @@ namespace Avalonia.Rendering.SceneGraph
             if (GeometryClip != null)
             {
                 context.PopGeometryClip();
+            }
+
+            if (OpacityMask != null)
+            {
+                context.PopOpacityMask();
             }
 
             if (Opacity != 1 && !skipOpacity)

@@ -178,7 +178,9 @@ namespace Avalonia.Rendering.SceneGraph
                     node.ClipToBounds = clipToBounds;
                     node.GeometryClip = visual.Clip?.PlatformImpl;
                     node.Opacity = opacity;
-                    node.OpacityMask = visual.OpacityMask;
+
+                    // TODO: Check equality between node.OpacityMask and visual.OpacityMask before assigning.
+                    node.OpacityMask = visual.OpacityMask?.ToImmutable();
 
                     if (ShouldStartLayer(visual))
                     {

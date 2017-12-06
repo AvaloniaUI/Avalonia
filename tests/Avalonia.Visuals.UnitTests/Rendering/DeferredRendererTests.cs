@@ -166,6 +166,32 @@ namespace Avalonia.Visuals.UnitTests.Rendering
         }
 
         [Fact]
+        public void Should_Push_Opacity_Mask()
+        {
+            var root = new TestRoot
+            {
+                Width = 100,
+                Height = 100,
+                Child = new Border
+                {
+                    Background = Brushes.Red,
+                    OpacityMask = Brushes.Green,
+                }
+            };
+
+            root.Measure(Size.Infinity);
+            root.Arrange(new Rect(root.DesiredSize));
+
+            var target = CreateTargetAndRunFrame(root);
+            var context = GetLayerContext(target, root);
+            var animation = new BehaviorSubject<double>(0.5);
+
+            context.Verify(x => x.PushOpacityMask(Brushes.Green, new Rect(0, 0, 100, 100)), Times.Once);
+            context.Verify(x => x.FillRectangle(Brushes.Red, new Rect(0, 0, 100, 100), 0), Times.Once);
+            context.Verify(x => x.PopOpacityMask(), Times.Once);
+        }
+
+        [Fact]
         public void Should_Create_Layer_For_Root()
         {
             var loop = new Mock<IRenderLoop>();
