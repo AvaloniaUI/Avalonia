@@ -114,7 +114,6 @@ namespace Avalonia.Utilities
         /// The first parameter is the value to set, and the second is a wrapper that takes a callback that sends the property-changed notification.
         /// </param>
         /// <param name="value">The value to try to set.</param>
-        /// <param name="pendingSetCondition">A predicate to filter what possible values should be added as pending sets (i.e. only values not equal to the current value).</param>
         public bool SetAndNotify<TValue>(
             TProperty property,
             ref TValue backing,
