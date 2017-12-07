@@ -9,6 +9,8 @@ using Xunit;
 using Avalonia.Layout;
 using Moq;
 using Avalonia.Platform;
+using System.Reactive.Subjects;
+using Avalonia.Data;
 
 namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
 {
@@ -620,12 +622,14 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                         Margin = new Thickness(0, 10, 0, 0),
                         Child = border = new Border
                         {
-                            Opacity = 0.5,
                             Background = Brushes.Red,
                             Child = canvas = new Canvas(),
                         }
                     }
                 };
+
+                var animation = new BehaviorSubject<double>(0.5);
+                border.Bind(Border.OpacityProperty, animation, BindingPriority.Animation);
 
                 var scene = new Scene(tree);
                 var sceneBuilder = new SceneBuilder();
