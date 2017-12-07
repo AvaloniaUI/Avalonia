@@ -325,7 +325,6 @@ namespace Avalonia
             var description = GetDescription(source);
 
             var scheduler = AvaloniaLocator.Current.GetService<IScheduler>() ?? ImmediateScheduler.Instance;
-            source = source.ObserveOn(scheduler); 
 
             if (property.IsDirect)
             {
@@ -674,29 +673,41 @@ namespace Avalonia
         /// <param name="value">The value.</param>
         private void SetDirectValue(AvaloniaProperty property, object value)
         {
-            var notification = value as BindingNotification;
-
-            if (notification != null)
+            void Set()
             {
-                notification.LogIfError(this, property);
-                value = notification.Value;
+                var notification = value as BindingNotification;
+
+                if (notification != null)
+                {
+                    notification.LogIfError(this, property);
+                    value = notification.Value;
+                }
+
+                if (notification == null || notification.ErrorType == BindingErrorType.Error || notification.HasValue)
+                {
+                    var metadata = (IDirectPropertyMetadata)property.GetMetadata(GetType());
+                    var accessor = (IDirectPropertyAccessor)GetRegistered(property);
+                    var finalValue = value == AvaloniaProperty.UnsetValue ?
+                        metadata.UnsetValue : value;
+
+                    LogPropertySet(property, value, BindingPriority.LocalValue);
+
+                    accessor.SetValue(this, finalValue);
+                }
+
+                if (notification != null)
+                {
+                    UpdateDataValidation(property, notification);
+                }
             }
 
-            if (notification == null || notification.ErrorType == BindingErrorType.Error || notification.HasValue)
+            if (Dispatcher.UIThread.CheckAccess())
             {
-                var metadata = (IDirectPropertyMetadata)property.GetMetadata(GetType());
-                var accessor = (IDirectPropertyAccessor)GetRegistered(property);
-                var finalValue = value == AvaloniaProperty.UnsetValue ? 
-                    metadata.UnsetValue : value;
-
-                LogPropertySet(property, value, BindingPriority.LocalValue);
-
-                accessor.SetValue(this, finalValue);
+                Set();
             }
-
-            if (notification != null)
+            else
             {
-                UpdateDataValidation(property, notification);
+                Dispatcher.UIThread.InvokeAsync(Set);
             }
         }
 

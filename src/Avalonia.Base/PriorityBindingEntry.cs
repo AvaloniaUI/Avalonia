@@ -3,6 +3,7 @@
 
 using System;
 using Avalonia.Data;
+using Avalonia.Threading;
 
 namespace Avalonia
 {
@@ -92,33 +93,52 @@ namespace Avalonia
 
         private void ValueChanged(object value)
         {
-            _owner.Owner.Owner?.VerifyAccess();
-
-            var notification = value as BindingNotification;
-
-            if (notification != null)
+            void Signal()
             {
-                if (notification.HasValue || notification.ErrorType == BindingErrorType.Error)
+                _owner.Owner.Owner?.VerifyAccess();
+
+                var notification = value as BindingNotification;
+
+                if (notification != null)
                 {
-                    Value = notification.Value;
+                    if (notification.HasValue || notification.ErrorType == BindingErrorType.Error)
+                    {
+                        Value = notification.Value;
+                        _owner.Changed(this);
+                    }
+
+                    if (notification.ErrorType != BindingErrorType.None)
+                    {
+                        _owner.Error(this, notification);
+                    }
+                }
+                else
+                {
+                    Value = value;
                     _owner.Changed(this);
                 }
+            }
 
-                if (notification.ErrorType != BindingErrorType.None)
-                {
-                    _owner.Error(this, notification);
-                }
+            if (Dispatcher.UIThread.CheckAccess())
+            {
+                Signal();
             }
             else
             {
-                Value = value;
-                _owner.Changed(this);
+                Dispatcher.UIThread.InvokeAsync(Signal);
             }
         }
 
         private void Completed()
         {
-            _owner.Completed(this);
+            if (Dispatcher.UIThread.CheckAccess())
+            {
+                _owner.Completed(this);
+            }
+            else
+            {
+                Dispatcher.UIThread.InvokeAsync(() => _owner.Completed(this));
+            }
         }
     }
 }
