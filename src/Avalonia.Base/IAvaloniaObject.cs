@@ -32,6 +32,13 @@ namespace Avalonia
         T GetValue<T>(AvaloniaProperty<T> property);
 
         /// <summary>
+        /// Checks whether a <see cref="AvaloniaProperty"/> is animating.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <returns>True if the property is animating, otherwise false.</returns>
+        bool IsAnimating(AvaloniaProperty property);
+
+        /// <summary>
         /// Checks whether a <see cref="AvaloniaProperty"/> is set on this object.
         /// </summary>
         /// <param name="property">The property.</param>

@@ -54,6 +54,18 @@ namespace Avalonia
         }
 
         /// <summary>
+        /// Gets a value indicating whether the property is animating.
+        /// </summary>
+        public bool IsAnimating
+        {
+            get
+            {
+                return ValuePriority <= (int)BindingPriority.Animation && 
+                    GetLevel(ValuePriority).ActiveBindingIndex != -1;
+            }
+        }
+
+        /// <summary>
         /// Gets the owner of the value.
         /// </summary>
         public IPriorityValueOwner Owner { get; }
