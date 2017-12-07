@@ -603,8 +603,7 @@ namespace Avalonia
                     setterCallback((T)val, ref backing, notify);
                     return true;
                 },
-                value,
-                (object o, ref T backing) => !object.Equals(o, backing));
+                value);
         }
 
         /// <summary>

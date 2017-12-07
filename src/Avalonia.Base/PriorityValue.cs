@@ -246,9 +246,7 @@ namespace Avalonia
             delayedSetter.SetAndNotify(this,
                 ref _value,
                 UpdateCore,
-                (value, priority),
-                ((object value, int) val, ref (object value, int) backing)
-                    => !object.Equals(val.value, backing.value));
+                (value, priority));
         }
 
         private bool UpdateCore(

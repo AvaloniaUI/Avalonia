@@ -103,7 +103,6 @@ namespace Avalonia.Utilities
         }
 
         public delegate bool SetterDelegate<TValue>(TSetRecord record, ref TValue backing, Action<Action> notifyCallback);
-        public delegate bool PendingSetPredicate<TValue>(TSetRecord record, ref TValue backing);
 
         /// <summary>
         /// Set the property and notify listeners while ensuring we don't get into a stack overflow as happens with #855 and #824
@@ -120,15 +119,13 @@ namespace Avalonia.Utilities
             TProperty property,
             ref TValue backing,
             SetterDelegate<TValue> setterCallback,
-            TSetRecord value,
-            PendingSetPredicate<TValue> pendingSetCondition)
+            TSetRecord value)
         {
             Contract.Requires<ArgumentNullException>(setterCallback != null);
-            Contract.Requires<ArgumentNullException>(pendingSetCondition != null);
             if (!IsNotifying(property))
             {
                 bool updated = false;
-                if (pendingSetCondition(value, ref backing))
+                if (!object.Equals(value, backing))
                 {
                     updated = setterCallback(value, ref backing, notification =>
                     {
@@ -150,7 +147,7 @@ namespace Avalonia.Utilities
                 }
                 return updated;
             }
-            else if(pendingSetCondition(value, ref backing))
+            else if(!object.Equals(value, backing))
             {
                 AddPendingSet(property, value);
             }
