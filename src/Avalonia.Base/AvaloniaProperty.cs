@@ -98,6 +98,25 @@ namespace Avalonia
             }
         }
 
+        protected AvaloniaProperty(
+            AvaloniaProperty source,
+            string alias)
+        {
+            Contract.Requires<ArgumentNullException>(source != null);
+            Contract.Requires<ArgumentNullException>(alias != null);
+
+            _initialized = source._initialized;
+            _changed = source._changed;
+            _metadata = new Dictionary<Type, PropertyMetadata>();
+
+            Name = alias;
+            PropertyType = source.PropertyType;
+            OwnerType = source.OwnerType;
+            Notifying = source.Notifying;
+            Id = source.Id;
+            _defaultMetadata = source._defaultMetadata;
+        }
+
         /// <summary>
         /// Gets the name of the property.
         /// </summary>
@@ -385,6 +404,15 @@ namespace Avalonia
             return result;
         }
 
+        public static AliasedProperty<TValue> RegisterAlias<TOwner, TValue>(
+            AvaloniaProperty<TValue> property,
+            string name)
+        {
+            var result = new AliasedProperty<TValue>(property, name);
+            AvaloniaPropertyRegistry.Instance.Register(typeof(TOwner), result);
+            return result;
+        }
+
         /// <summary>
         /// Returns a binding accessor that can be passed to <see cref="AvaloniaObject"/>'s []
         /// operator to initiate a binding.
@@ -540,6 +568,21 @@ namespace Avalonia
             {
                 return null;
             }
+        }
+
+        internal static AvaloniaProperty ResolveAliases(AvaloniaProperty property)
+        {
+            if (property is IAliasedPropertyAccessor accessor)
+            {
+                property = accessor.ResolveAlias();
+            }
+
+            return property;
+        }
+
+        internal static AvaloniaProperty<T> ResolveAliases<T>(AvaloniaProperty<T> property)
+        {
+            return (AvaloniaProperty<T>)ResolveAliases((AvaloniaProperty)property);
         }
 
         /// <summary>

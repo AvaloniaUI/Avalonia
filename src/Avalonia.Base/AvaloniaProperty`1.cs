@@ -40,5 +40,13 @@ namespace Avalonia
             : base(source, ownerType, metadata)
         {
         }
+
+        protected AvaloniaProperty(
+            AvaloniaProperty<TValue> source,
+            string alias)
+            : base(source, alias)
+        {
+
+        }
     }
 }
