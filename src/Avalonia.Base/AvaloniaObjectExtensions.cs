@@ -138,17 +138,9 @@ namespace Avalonia
             AvaloniaProperty property,
             BindingPriority priority = BindingPriority.LocalValue)
         {
-            // TODO: Subject.Create<T> is not yet in stable Rx : once it is, remove the 
-            // AnonymousSubject classes and use Subject.Create<T>.
-            var output = new Subject<object>();
-            var result = new AnonymousSubject<object>(
-                Observer.Create<object>(
-                    x => output.OnNext(x),
-                    e => output.OnError(e),
-                    () => output.OnCompleted()),
+            return Subject.Create<object>(
+                Observer.Create<object>(x => o.SetValue(property, x, priority)),
                 o.GetObservable(property));
-            o.Bind(property, output, priority);
-            return result;
         }
 
         /// <summary>
@@ -169,17 +161,9 @@ namespace Avalonia
             AvaloniaProperty<T> property,
             BindingPriority priority = BindingPriority.LocalValue)
         {
-            // TODO: Subject.Create<T> is not yet in stable Rx : once it is, remove the 
-            // AnonymousSubject classes from this file and use Subject.Create<T>.
-            var output = new Subject<T>();
-            var result = new AnonymousSubject<T>(
-                Observer.Create<T>(
-                    x => output.OnNext(x),
-                    e => output.OnError(e),
-                    () => output.OnCompleted()),
+            return Subject.Create<T>(
+                Observer.Create<T>(x => o.SetValue(property, x, priority)),
                 o.GetObservable(property));
-            o.Bind(property, output, priority);
-            return result;
         }
 
         /// <summary>
