@@ -387,6 +387,46 @@ namespace Avalonia.Base.UnitTests
             }
         }
 
+        [Fact]
+        public void IsAnimating_On_Property_With_No_Value_Returns_False()
+        {
+            var target = new Class1();
+
+            Assert.False(target.IsAnimating(Class1.FooProperty));
+        }
+
+        [Fact]
+        public void IsAnimating_On_Property_With_Animation_Value_Returns_False()
+        {
+            var target = new Class1();
+
+            target.SetValue(Class1.FooProperty, "foo", BindingPriority.Animation);
+
+            Assert.False(target.IsAnimating(Class1.FooProperty));
+        }
+
+        [Fact]
+        public void IsAnimating_On_Property_With_Non_Animation_Binding_Returns_False()
+        {
+            var target = new Class1();
+            var source = new Subject<string>();
+
+            target.Bind(Class1.FooProperty, source, BindingPriority.LocalValue);
+
+            Assert.False(target.IsAnimating(Class1.FooProperty));
+        }
+
+        [Fact]
+        public void IsAnimating_On_Property_With_Animation_Binding_Returns_True()
+        {
+            var target = new Class1();
+            var source = new BehaviorSubject<string>("foo");
+
+            target.Bind(Class1.FooProperty, source, BindingPriority.Animation);
+
+            Assert.True(target.IsAnimating(Class1.FooProperty));
+        }
+
         /// <summary>
         /// Returns an observable that returns a single value but does not complete.
         /// </summary>
