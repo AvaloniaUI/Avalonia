@@ -33,7 +33,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             {
                 return new Panel
                 {
-                    Children = new Avalonia.Controls.Controls
+                    Children =
                     {
                         new Image
                         {
