@@ -2,5 +2,5 @@
         Title="Avalonia Control Gallery"
         Icon="resm:ControlCatalog.Assets.test_icon.ico?assembly=ControlCatalog"
         xmlns:local="clr-namespace:ControlCatalog;assembly=ControlCatalog">
-    <local:MainView/>
+    <local:DocumentTabControl />
 </Window>

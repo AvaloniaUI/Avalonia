@@ -12,7 +12,11 @@ namespace ControlCatalog
             this.InitializeComponent();
             this.AttachDevTools();
             //Renderer.DrawFps = true;
-            //Renderer.DrawDirtyRects = Renderer.DrawFps = true;
+            //Renderer.DrawDirtyRects = Renderer.DrawFps = true;            
+
+            DataContext = DocumentTabControlViewModel.Instance;
+
+            DocumentTabControlViewModel.Instance.OpenDocument(new WelcomeScreenViewModel(), false);
         }
 
         private void InitializeComponent()

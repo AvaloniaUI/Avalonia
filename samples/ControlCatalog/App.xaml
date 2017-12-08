@@ -15,5 +15,6 @@
     </Style>
 
     <StyleInclude Source="resm:ControlCatalog.SideBar.xaml"/>
-  </Application.Styles>
+        <StyleInclude Source="resm:ControlCatalog.ViewModelViewHost.xaml"/>
+    </Application.Styles>
 </Application>
