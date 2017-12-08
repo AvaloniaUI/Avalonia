@@ -22,11 +22,13 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="DocumentTabControl.cs" />
     <None Remove="DocumentTabControl.xaml" />
-    <None Remove="DocumentTabControl.xaml.cs" />
     <None Remove="DocumentTabControlViewModel.cs" />
     <None Remove="Pages\ContextMenuPage.xaml" />
     <None Remove="RecentProjectViewModel.cs" />
+    <None Remove="UserDocumentTabControl.cs" />
+    <None Remove="UserDocumentTabControl.xaml" />
     <None Remove="ViewModelViewHost.cs" />
     <None Remove="ViewModelViewHost.xaml" />
     <None Remove="WelcomeScreen.xaml.cs" />
@@ -102,7 +104,7 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
-    <Compile Include="DocumentTabControl.xaml.cs" />
+    <Compile Include="DocumentTabControl.cs" />
     <Compile Include="DocumentTabControlViewModel.cs" />
     <Compile Include="MainView.xaml.cs">
       <DependentUpon>MainView.xaml</DependentUpon>
@@ -172,6 +174,7 @@
     </Compile>
     <Compile Include="Pages\ScreenPage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UserDocumentTabControl.cs" />
     <Compile Include="RecentProjectViewModel.cs" />
     <Compile Include="ViewModelViewHost.cs" />
     <Compile Include="WelcomeScreen.xaml.cs" />
@@ -182,6 +185,9 @@
     <EmbeddedResource Include="Assets\github_icon.png" />
     <EmbeddedResource Include="Assets\hirsch-899118_640.jpg" />
     <EmbeddedResource Include="Assets\maple-leaf-888807_640.jpg" />
+    <EmbeddedResource Include="UserDocumentTabControl.xaml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="SideBar.xaml">

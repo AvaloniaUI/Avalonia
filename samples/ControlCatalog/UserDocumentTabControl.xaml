@@ -1,0 +1,71 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:cont="clr-namespace:ControlCatalog;assembly=ControlCatalog">
+    <UserControl.Styles>
+        <Style Selector="cont|DocumentTabControl /template/ TabStripItem">
+            <Setter Property="Height" Value="20" />
+            <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Margin" Value="0 0 0 -1" />
+            <Setter Property="Padding" Value="4 0 4 0" />
+            <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
+        </Style>
+
+        <Style Selector="cont|DocumentTabControl /template/ TabStripItem /template/ Button">
+            <Setter Property="Background" Value="Blue" />
+        </Style>
+
+        <Style Selector="cont|DocumentTabControl /template/ TabStripItem /template/ Button:pointerover">
+            <Setter Property="Background" Value="Red" />
+        </Style>
+
+        <Style Selector="cont|DocumentTabControl /template/ TabStripItem:dockright:selected">
+            <Setter Property="Background" Value="#68217A" />
+            <Setter Property="Foreground" Value="{DynamicResource ApplicationAccentForegroundBrush}" />
+        </Style>
+        <Style Selector="cont|DocumentTabControl /template/ TabStripItem:dockright:pointerover">
+            <Setter Property="Background" Value="#B064AB" />
+            <Setter Property="Foreground" Value="{DynamicResource ApplicationAccentForegroundBrush}" />
+        </Style>
+        <Style Selector="cont|DocumentTabControl /template/ TabStripItem:dockleft:selected">
+            <Setter Property="Background" Value="{DynamicResource ApplicationAccentBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource ApplicationAccentForegroundBrush}" />
+        </Style>
+        <Style Selector="cont|DocumentTabControl /template/ TabStripItem:dockleft:pointerover">
+            <Setter Property="Background" Value="{DynamicResource ApplicationAccentBrushLight}" />
+            <Setter Property="Foreground" Value="{DynamicResource ApplicationAccentForegroundBrush}" />
+        </Style>
+        <Style Selector="cont|DocumentTabControl /template/ TabStripItem:dockleft:selected:pointerover">
+            <Setter Property="Background" Value="{DynamicResource ApplicationAccentBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource ApplicationAccentForegroundBrush}" />
+        </Style>
+    </UserControl.Styles>
+    <cont:DocumentTabControl Items="{Binding Documents}" SelectedItem="{Binding SelectedDocument, Mode=TwoWay}">
+        <cont:DocumentTabControl.HeaderTemplate>
+            <DataTemplate>
+                <StackPanel Orientation="Horizontal" Gap="2">
+                    <StackPanel Orientation="Horizontal" Margin="2" TextBlock.FontSize="12">
+                        <TextBlock Text="{Binding Title}" />
+                        <TextBlock Text="*" IsVisible="{Binding IsDirty, FallbackValue=False}" />
+                    </StackPanel>
+                    <Button Height="14" Width="14" Command="{Binding Close}">
+                        <Button.Styles>
+                            <Style Selector="Button">
+                                <Setter Property="BorderThickness" Value="0"/>
+                                <Setter Property="Padding" Value="0"/>
+                                <Setter Property="Margin" Value="0"/>
+                            </Style>
+                        </Button.Styles>
+                        <Path Margin="2" Stretch="Uniform" UseLayoutRounding="False" Data="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" Fill="Red" />
+                    </Button>
+                </StackPanel>
+            </DataTemplate>
+        </cont:DocumentTabControl.HeaderTemplate>
+        <cont:DocumentTabControl.HeaderSeperatorContent>
+            <Grid Background="Blue" Height="2" />
+        </cont:DocumentTabControl.HeaderSeperatorContent>
+        <cont:DocumentTabControl.ItemTemplate>
+            <DataTemplate>
+                <TextBlock Text="Test" />
+            </DataTemplate>
+        </cont:DocumentTabControl.ItemTemplate>
+    </cont:DocumentTabControl>
+</UserControl>

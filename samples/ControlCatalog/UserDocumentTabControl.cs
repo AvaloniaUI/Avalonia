@@ -1,11 +1,14 @@
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+using ReactiveUI;
+using System;
+using System.IO;
 
 namespace ControlCatalog
 {
-    public class DocumentTabControl : UserControl
+    public class UserDocumentTabControl : UserControl
     {
-        public DocumentTabControl()
+        public UserDocumentTabControl()
         {
             InitializeComponent();
         }
