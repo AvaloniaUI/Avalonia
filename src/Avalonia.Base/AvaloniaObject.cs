@@ -226,6 +226,19 @@ namespace Avalonia
         }
 
         /// <summary>
+        /// Checks whether a <see cref="AvaloniaProperty"/> is animating.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <returns>True if the property is animating, otherwise false.</returns>
+        public bool IsAnimating(AvaloniaProperty property)
+        {
+            Contract.Requires<ArgumentNullException>(property != null);
+            VerifyAccess();
+
+            return _values.TryGetValue(property, out PriorityValue value) ? value.IsAnimating : false;
+        }
+
+        /// <summary>
         /// Checks whether a <see cref="AvaloniaProperty"/> is set on this object.
         /// </summary>
         /// <param name="property">The property.</param>

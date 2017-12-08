@@ -67,6 +67,11 @@ namespace Avalonia.Styling.UnitTests
             throw new NotImplementedException();
         }
 
+        public bool IsAnimating(AvaloniaProperty property)
+        {
+            throw new NotImplementedException();
+        }
+
         public bool IsSet(AvaloniaProperty property)
         {
             throw new NotImplementedException();
