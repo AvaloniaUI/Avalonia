@@ -22,6 +22,7 @@ namespace Avalonia.Rendering.SceneGraph
         private List<IVisualNode> _children;
         private List<IDrawOperation> _drawOperations;
         private bool _drawOperationsCloned;
+        private Matrix transformRestore;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="VisualNode"/> class.
@@ -218,8 +219,10 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <inheritdoc/>
-        public void BeginRender(IDrawingContextImpl context)
+        public void BeginRender(IDrawingContextImpl context, bool skipOpacity)
         {
+            transformRestore = context.Transform;
+
             if (ClipToBounds)
             {
                 context.Transform = Matrix.Identity;
@@ -228,24 +231,47 @@ namespace Avalonia.Rendering.SceneGraph
 
             context.Transform = Transform;
 
+            if (Opacity != 1 && !skipOpacity)
+            {
+                context.PushOpacity(Opacity);
+            }
+
             if (GeometryClip != null)
             {
                 context.PushGeometryClip(GeometryClip);
             }
+
+            if (OpacityMask != null)
+            {
+                context.PushOpacityMask(OpacityMask, ClipBounds);
+            }
         }
 
         /// <inheritdoc/>
-        public void EndRender(IDrawingContextImpl context)
+        public void EndRender(IDrawingContextImpl context, bool skipOpacity)
         {
+            if (OpacityMask != null)
+            {
+                context.PopOpacityMask();
+            }
+
             if (GeometryClip != null)
             {
                 context.PopGeometryClip();
             }
 
+            if (Opacity != 1 && !skipOpacity)
+            {
+                context.PopOpacity();
+            }
+
             if (ClipToBounds)
             {
+                context.Transform = Matrix.Identity;
                 context.PopClip();
             }
+
+            context.Transform = transformRestore;
         }
 
         private Rect CalculateBounds()

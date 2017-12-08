@@ -66,7 +66,7 @@ namespace Avalonia.Markup.Xaml.Data
         /// <summary>
         /// Gets or sets the binding path.
         /// </summary>
-        public string Path { get; set; }
+        public string Path { get; set; } = "";
 
         /// <summary>
         /// Gets or sets the binding priority.
@@ -93,53 +93,53 @@ namespace Avalonia.Markup.Xaml.Data
             bool enableDataValidation = false)
         {
             Contract.Requires<ArgumentNullException>(target != null);
-
             anchor = anchor ?? DefaultAnchor?.Target;
-
-            var pathInfo = ParsePath(Path);
-            ValidateState(pathInfo);
+            
             enableDataValidation = enableDataValidation && Priority == BindingPriority.LocalValue;
-
+            
             ExpressionObserver observer;
 
-            if (pathInfo.ElementName != null || ElementName != null)
+            if (ElementName != null)
             {
                 observer = CreateElementObserver(
                     (target as IControl) ?? (anchor as IControl),
-                    pathInfo.ElementName ?? ElementName,
-                    pathInfo.Path);
+                    ElementName,
+                    Path,
+                    enableDataValidation);
             }
             else if (Source != null)
             {
-                observer = CreateSourceObserver(Source, pathInfo.Path, enableDataValidation);
+                observer = CreateSourceObserver(Source, Path, enableDataValidation);
             }
             else if (RelativeSource == null || RelativeSource.Mode == RelativeSourceMode.DataContext)
             {
                 observer = CreateDataContexObserver(
                     target,
-                    pathInfo.Path,
+                    Path,
                     targetProperty == Control.DataContextProperty,
                     anchor,
                     enableDataValidation);
             }
             else if (RelativeSource.Mode == RelativeSourceMode.Self)
             {
-                observer = CreateSourceObserver(target, pathInfo.Path, enableDataValidation);
+                observer = CreateSourceObserver(target, Path, enableDataValidation);
             }
             else if (RelativeSource.Mode == RelativeSourceMode.TemplatedParent)
             {
-                observer = CreateTemplatedParentObserver(target, pathInfo.Path);
+                observer = CreateTemplatedParentObserver(target, Path, enableDataValidation);
             }
             else if (RelativeSource.Mode == RelativeSourceMode.FindAncestor)
             {
-                if (RelativeSource.AncestorType == null)
+                if (RelativeSource.Tree == TreeType.Visual && RelativeSource.AncestorType == null)
                 {
-                    throw new InvalidOperationException("AncestorType must be set for RelativeSourceModel.FindAncestor.");
+                    throw new InvalidOperationException("AncestorType must be set for RelativeSourceMode.FindAncestor when searching the visual tree.");
                 }
 
                 observer = CreateFindAncestorObserver(
                     (target as IControl) ?? (anchor as IControl),
-                    pathInfo.Path);
+                    RelativeSource,
+                    Path,
+                    enableDataValidation);
             }
             else
             {
@@ -166,53 +166,6 @@ namespace Avalonia.Markup.Xaml.Data
                 Priority);
 
             return new InstancedBinding(subject, Mode, Priority);
-        }
-
-        private static PathInfo ParsePath(string path)
-        {
-            var result = new PathInfo();
-
-            if (string.IsNullOrWhiteSpace(path) || path == ".")
-            {
-                result.Path = string.Empty;
-            }
-            else if (path.StartsWith("#"))
-            {
-                var dot = path.IndexOf('.');
-
-                if (dot != -1)
-                {
-                    result.Path = path.Substring(dot + 1);
-                    result.ElementName = path.Substring(1, dot - 1);
-                }
-                else
-                {
-                    result.Path = string.Empty;
-                    result.ElementName = path.Substring(1);
-                }
-            }
-            else
-            {
-                result.Path = path;
-            }
-
-            return result;
-        }
-
-        private void ValidateState(PathInfo pathInfo)
-        {
-            if (pathInfo.ElementName != null && ElementName != null)
-            {
-                throw new InvalidOperationException(
-                    "ElementName property cannot be set when an #elementName path is provided.");
-            }
-
-            if ((pathInfo.ElementName != null || ElementName != null) &&
-                RelativeSource != null)
-            {
-                throw new InvalidOperationException(
-                    "ElementName property cannot be set with a RelativeSource.");
-            }
         }
 
         private ExpressionObserver CreateDataContexObserver(
@@ -256,7 +209,11 @@ namespace Avalonia.Markup.Xaml.Data
             }
         }
 
-        private ExpressionObserver CreateElementObserver(IControl target, string elementName, string path)
+        private ExpressionObserver CreateElementObserver(
+            IControl target,
+            string elementName,
+            string path,
+            bool enableDataValidation)
         {
             Contract.Requires<ArgumentNullException>(target != null);
 
@@ -264,35 +221,39 @@ namespace Avalonia.Markup.Xaml.Data
             var result = new ExpressionObserver(
                 ControlLocator.Track(target, elementName),
                 path,
-                false,
+                enableDataValidation,
                 description);
             return result;
         }
 
         private ExpressionObserver CreateFindAncestorObserver(
             IControl target,
-            string path)
+            RelativeSource relativeSource,
+            string path,
+            bool enableDataValidation)
         {
             Contract.Requires<ArgumentNullException>(target != null);
 
             return new ExpressionObserver(
-                ControlLocator.Track(target, RelativeSource.AncestorType, RelativeSource.AncestorLevel -1),
-                path);
+                ControlLocator.Track(target, relativeSource.Tree, relativeSource.AncestorLevel - 1, relativeSource.AncestorType),
+                path,
+                enableDataValidation);
         }
 
         private ExpressionObserver CreateSourceObserver(
             object source,
             string path,
-            bool enabledDataValidation)
+            bool enableDataValidation)
         {
             Contract.Requires<ArgumentNullException>(source != null);
 
-            return new ExpressionObserver(source, path, enabledDataValidation);
+            return new ExpressionObserver(source, path, enableDataValidation);
         }
 
         private ExpressionObserver CreateTemplatedParentObserver(
             IAvaloniaObject target,
-            string path)
+            string path,
+            bool enableDataValidation)
         {
             Contract.Requires<ArgumentNullException>(target != null);
 
@@ -303,7 +264,8 @@ namespace Avalonia.Markup.Xaml.Data
             var result = new ExpressionObserver(
                 () => target.GetValue(Control.TemplatedParentProperty),
                 path,
-                update);
+                update,
+                enableDataValidation);
 
             return result;
         }
@@ -328,6 +290,7 @@ namespace Avalonia.Markup.Xaml.Data
         {
             public string Path { get; set; }
             public string ElementName { get; set; }
+            public RelativeSource RelativeSource { get; set; }
         }
     }
 }

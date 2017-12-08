@@ -28,9 +28,6 @@ namespace Avalonia.Controls
         {
             ValueProperty.Changed.AddClassHandler<ProgressBar>(x => x.ValueChanged);
 
-            HorizontalAlignmentProperty.OverrideDefaultValue<ProgressBar>(HorizontalAlignment.Left);
-            VerticalAlignmentProperty.OverrideDefaultValue<ProgressBar>(VerticalAlignment.Top);
-
             IsIndeterminateProperty.Changed.AddClassHandler<ProgressBar>(
                 (p, e) => { if (p._indicator != null) p.UpdateIsIndeterminate((bool)e.NewValue); });
             OrientationProperty.Changed.AddClassHandler<ProgressBar>(
