@@ -82,9 +82,9 @@ namespace Avalonia.Controls.UnitTests
 
             panel.Children.Add(child);
 
-            Assert.Same(new[] { child }, panel.Children);
-            Assert.Same(new[] { child }, panel.GetLogicalChildren());
-            Assert.Same(new[] { child }, panel.GetVisualChildren());
+            Assert.Equal(new[] { child }, panel.Children);
+            Assert.Equal(new[] { child }, panel.GetLogicalChildren());
+            Assert.Equal(new[] { child }, panel.GetVisualChildren());
         }
 
         [Fact]
@@ -96,7 +96,7 @@ namespace Avalonia.Controls.UnitTests
             panel.Children.Add(child);
             panel.Children.Remove(child);
 
-            Assert.Same(new Control[0], panel.Children);
+            Assert.Equal(new Control[0], panel.Children);
             Assert.Empty(panel.GetLogicalChildren());
             Assert.Empty(panel.GetVisualChildren());
         }
@@ -112,8 +112,8 @@ namespace Avalonia.Controls.UnitTests
             panel.Children.Add(child2);
             panel.Children.Move(1, 0);
 
-            Assert.Same(new[] { child2, child1 }, panel.GetLogicalChildren());
-            Assert.Same(new[] { child2, child1 }, panel.GetVisualChildren());
+            Assert.Equal(new[] { child2, child1 }, panel.GetLogicalChildren());
+            Assert.Equal(new[] { child2, child1 }, panel.GetVisualChildren());
         }
     }
 }
