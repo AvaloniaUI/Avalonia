@@ -27,6 +27,12 @@ namespace Avalonia.Diagnostics.Views
 
             if (layer != null)
             {
+                if (_adorner != null)
+                {
+                    ((Panel)_adorner.Parent).Children.Remove(_adorner);
+                    _adorner = null;
+                }
+
                 _adorner = new Rectangle
                 {
                     Fill = new SolidColorBrush(0x80a0c5e8),

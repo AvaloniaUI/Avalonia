@@ -432,7 +432,7 @@ namespace Avalonia.Controls.UnitTests
         {
             return new FuncControlTemplate<TreeViewItem>(parent => new Panel
             {
-                Children = new Controls
+                Children =
                 {
                     new ContentPresenter
                     {
