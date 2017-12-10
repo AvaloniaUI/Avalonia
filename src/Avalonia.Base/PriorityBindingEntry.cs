@@ -95,8 +95,6 @@ namespace Avalonia
         {
             void Signal()
             {
-                _owner.Owner.Owner?.VerifyAccess();
-
                 var notification = value as BindingNotification;
 
                 if (notification != null)

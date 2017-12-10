@@ -339,8 +339,6 @@ namespace Avalonia
 
             var description = GetDescription(source);
 
-            var scheduler = AvaloniaLocator.Current.GetService<IScheduler>() ?? ImmediateScheduler.Instance;
-
             if (property.IsDirect)
             {
                 if (property.IsReadOnly)
