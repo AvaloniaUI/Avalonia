@@ -37,6 +37,11 @@ namespace Avalonia.VisualTree
         Rect Bounds { get; }
 
         /// <summary>
+        /// Gets the bounds of the control relative to the window, accounting for rendering transforms.
+        /// </summary>
+        TransformedBounds? TransformedBounds { get; set; }
+
+        /// <summary>
         /// Gets a value indicating whether the control should be clipped to its bounds.
         /// </summary>
         bool ClipToBounds { get; set; }
