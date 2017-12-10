@@ -24,7 +24,6 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var target = new BoundsTracker();
                 var control = default(Rectangle);
                 var tree = new Decorator
                 {
