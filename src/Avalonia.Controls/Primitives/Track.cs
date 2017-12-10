@@ -158,7 +158,7 @@ namespace Avalonia.Controls.Primitives
                         firstWidth + thumbWidth,
                         0,
                         Math.Max(0, remaining - firstWidth),
-                        Math.Max(0, finalSize.Height)));
+                        finalSize.Height));
                 }
             }
             else
