@@ -21,7 +21,7 @@ namespace Avalonia.Visuals.UnitTests
                 Width = 100,
                 Height = 100,
                 ClipToBounds = true,
-                Children = new Controls.Controls
+                Children =
                 {
                     (target = new TestControl
                     {
@@ -47,7 +47,7 @@ namespace Avalonia.Visuals.UnitTests
                 Width = 100,
                 Height = 100,
                 ClipToBounds = true,
-                Children = new Controls.Controls
+                Children =
                 {
                     (target = new TestControl
                     {
@@ -74,7 +74,7 @@ namespace Avalonia.Visuals.UnitTests
                 Width = 100,
                 Height = 100,
                 ClipToBounds = true,
-                Children = new Controls.Controls
+                Children =
                 {
                     new Canvas
                     {
@@ -82,7 +82,7 @@ namespace Avalonia.Visuals.UnitTests
                         Height = 100,
                         [Canvas.LeftProperty] = 50,
                         [Canvas.TopProperty] = 50,
-                        Children = new Controls.Controls
+                        Children =
                         {
                             (target = new TestControl
                             {
@@ -111,7 +111,7 @@ namespace Avalonia.Visuals.UnitTests
                 Width = 100,
                 Height = 100,
                 ClipToBounds = true,
-                Children = new Controls.Controls
+                Children =
                 {
                     (target = new TestControl
                     {
@@ -138,7 +138,7 @@ namespace Avalonia.Visuals.UnitTests
                 Width = 100,
                 Height = 100,
                 ClipToBounds = true,
-                Children = new Controls.Controls
+                Children =
                 {
                     new Border
                     {

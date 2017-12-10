@@ -1,11 +1,15 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.LogicalTree;
+using Avalonia.Markup.Xaml.Data;
 using Avalonia.Styling;
 using Avalonia.VisualTree;
 using Xunit;
@@ -197,6 +201,71 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Equal("Bar", target.SelectedItem);
             Assert.Equal(1, target.SelectedIndex);
+        }
+
+        [Fact]
+        public void SelectedItem_Should_Not_Cause_StackOverflow()
+        {
+            var viewModel = new TestStackOverflowViewModel()
+            {
+                Items = new List<string> { "foo", "bar", "baz" }
+            };
+
+            var target = new ListBox
+            {
+                Template = new FuncControlTemplate(CreateListBoxTemplate),
+                DataContext = viewModel,
+                Items = viewModel.Items
+            };
+
+            target.Bind(ListBox.SelectedItemProperty,
+                new Binding("SelectedItem") { Mode = BindingMode.TwoWay });
+
+            Assert.Equal(0, viewModel.SetterInvokedCount);
+
+            // In Issue #855, a Stackoverflow occured here.
+            target.SelectedItem = viewModel.Items[2];
+
+            Assert.Equal(viewModel.Items[1], target.SelectedItem);
+            Assert.Equal(1, viewModel.SetterInvokedCount);
+        }
+
+        private class TestStackOverflowViewModel : INotifyPropertyChanged
+        {
+            public List<string> Items { get; set; }
+
+            public int SetterInvokedCount { get; private set; }
+
+            public const int MaxInvokedCount = 1000;
+
+            private string _selectedItem;
+
+            public event PropertyChangedEventHandler PropertyChanged;
+
+            public string SelectedItem
+            {
+                get { return _selectedItem; }
+                set
+                {
+                    if (_selectedItem != value)
+                    {
+                        SetterInvokedCount++;
+
+                        int index = Items.IndexOf(value);
+
+                        if (MaxInvokedCount > SetterInvokedCount && index > 0)
+                        {
+                            _selectedItem = Items[index - 1];
+                        }
+                        else
+                        {
+                            _selectedItem = value;
+                        }
+
+                        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedItem)));
+                    }
+                }
+            }
         }
 
         private Control CreateListBoxTemplate(ITemplatedControl parent)
