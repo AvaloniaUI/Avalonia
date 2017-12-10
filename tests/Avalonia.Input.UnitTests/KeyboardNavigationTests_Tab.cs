@@ -6,8 +6,6 @@ using Xunit;
 
 namespace Avalonia.Input.UnitTests
 {
-    using Controls = Controls.Controls;
-
     public class KeyboardNavigationTests_Tab
     {
         [Fact]
@@ -18,11 +16,11 @@ namespace Avalonia.Input.UnitTests
 
             var top = new StackPanel
             {
-                Children = new Controls
+                Children =
                 {
                     new StackPanel
                     {
-                        Children = new Controls
+                        Children =
                         {
                             new Button { Name = "Button1" },
                             (current = new Button { Name = "Button2" }),
@@ -31,7 +29,7 @@ namespace Avalonia.Input.UnitTests
                     },
                     new StackPanel
                     {
-                        Children = new Controls
+                        Children =
                         {
                             new Button { Name = "Button4" },
                             new Button { Name = "Button5" },
@@ -54,11 +52,11 @@ namespace Avalonia.Input.UnitTests
 
             var top = new StackPanel
             {
-                Children = new Controls
+                Children =
                 {
                     new StackPanel
                     {
-                        Children = new Controls
+                        Children =
                         {
                             new Button { Name = "Button1" },
                             new Button { Name = "Button2" },
@@ -67,7 +65,7 @@ namespace Avalonia.Input.UnitTests
                     },
                     new StackPanel
                     {
-                        Children = new Controls
+                        Children =
                         {
                             (next = new Button { Name = "Button4" }),
                             new Button { Name = "Button5" },
@@ -90,11 +88,11 @@ namespace Avalonia.Input.UnitTests
 
             var top = new StackPanel
             {
-                Children = new Controls
+                Children =
                 {
                     new StackPanel
                     {
-                        Children = new Controls
+                        Children =
                         {
                             (next = new Button { Name = "Button1" }),
                             new Button { Name = "Button2" },
@@ -104,11 +102,11 @@ namespace Avalonia.Input.UnitTests
                     new StackPanel
                     {
                         [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.None,
-                        Children = new Controls
+                        Children =
                         {
                             new StackPanel
                             {
-                                Children = new Controls
+                                Children =
                                 {
                                     new Button { Name = "Button4" },
                                     new Button { Name = "Button5" },
@@ -133,11 +131,11 @@ namespace Avalonia.Input.UnitTests
 
             var top = new StackPanel
             {
-                Children = new Controls
+                Children =
                 {
                     new StackPanel
                     {
-                        Children = new Controls
+                        Children =
                         {
                             new Button { Name = "Button1" },
                             new Button { Name = "Button2" },
@@ -161,15 +159,15 @@ namespace Avalonia.Input.UnitTests
 
             var top = new StackPanel
             {
-                Children = new Controls
+                Children =
                 {
                     new StackPanel
                     {
-                        Children = new Controls
+                        Children =
                         {
                             new StackPanel
                             {
-                                Children = new Controls
+                                Children =
                                 {
                                     new Button { Name = "Button1" },
                                     new Button { Name = "Button2" },
@@ -180,7 +178,7 @@ namespace Avalonia.Input.UnitTests
                     },
                     new StackPanel
                     {
-                        Children = new Controls
+                        Children =
                         {
                             (next = new Button { Name = "Button4" }),
                             new Button { Name = "Button5" },
@@ -202,7 +200,7 @@ namespace Avalonia.Input.UnitTests
 
             var top = new StackPanel
             {
-                Children = new Controls
+                Children =
                 {
                     (next = new Button { Name = "Button1" }),
                 }
@@ -221,15 +219,15 @@ namespace Avalonia.Input.UnitTests
 
             var top = new StackPanel
             {
-                Children = new Controls
+                Children =
                 {
                     new StackPanel
                     {
-                        Children = new Controls
+                        Children =
                         {
                             new StackPanel
                             {
-                                Children = new Controls
+                                Children =
                                 {
                                     (next = new Button { Name = "Button1" }),
                                     new Button { Name = "Button2" },
@@ -240,7 +238,7 @@ namespace Avalonia.Input.UnitTests
                     },
                     new StackPanel
                     {
-                        Children = new Controls
+                        Children =
                         {
                             new Button { Name = "Button4" },
                             new Button { Name = "Button5" },
@@ -263,12 +261,12 @@ namespace Avalonia.Input.UnitTests
 
             var top = new StackPanel
             {
-                Children = new Controls
+                Children =
                 {
                     new StackPanel
                     {
                         [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
-                        Children = new Controls
+                        Children =
                         {
                             new Button { Name = "Button1" },
                             (current = new Button { Name = "Button2" }),
@@ -277,7 +275,7 @@ namespace Avalonia.Input.UnitTests
                     },
                     new StackPanel
                     {
-                        Children = new Controls
+                        Children =
                         {
                             new Button { Name = "Button4" },
                             new Button { Name = "Button5" },
@@ -300,12 +298,12 @@ namespace Avalonia.Input.UnitTests
 
             var top = new StackPanel
             {
-                Children = new Controls
+                Children =
                 {
                     new StackPanel
                     {
                         [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
-                        Children = new Controls
+                        Children =
                         {
                             (next = new Button { Name = "Button1" }),
                             new Button { Name = "Button2" },
@@ -314,7 +312,7 @@ namespace Avalonia.Input.UnitTests
                     },
                     new StackPanel
                     {
-                        Children = new Controls
+                        Children =
                         {
                             new Button { Name = "Button4" },
                             new Button { Name = "Button5" },
@@ -337,12 +335,12 @@ namespace Avalonia.Input.UnitTests
 
             var top = new StackPanel
             {
-                Children = new Controls
+                Children =
                 {
                     new StackPanel
                     {
                         [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Contained,
-                        Children = new Controls
+                        Children =
                         {
                             new Button { Name = "Button1" },
                             (current = new Button { Name = "Button2" }),
@@ -351,7 +349,7 @@ namespace Avalonia.Input.UnitTests
                     },
                     new StackPanel
                     {
-                        Children = new Controls
+                        Children =
                         {
                             new Button { Name = "Button4" },
                             new Button { Name = "Button5" },
@@ -373,12 +371,12 @@ namespace Avalonia.Input.UnitTests
 
             var top = new StackPanel
             {
-                Children = new Controls
+                Children =
                 {
                     new StackPanel
                     {
                         [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Contained,
-                        Children = new Controls
+                        Children =
                         {
                             new Button { Name = "Button1" },
                             new Button { Name = "Button2" },
@@ -387,7 +385,7 @@ namespace Avalonia.Input.UnitTests
                     },
                     new StackPanel
                     {
-                        Children = new Controls
+                        Children =
                         {
                             new Button { Name = "Button4" },
                             new Button { Name = "Button5" },
@@ -410,12 +408,12 @@ namespace Avalonia.Input.UnitTests
 
             var top = new StackPanel
             {
-                Children = new Controls
+                Children =
                 {
                     new StackPanel
                     {
                         [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Once,
-                        Children = new Controls
+                        Children =
                         {
                             new Button { Name = "Button1" },
                             (current = new Button { Name = "Button2" }),
@@ -424,7 +422,7 @@ namespace Avalonia.Input.UnitTests
                     },
                     new StackPanel
                     {
-                        Children = new Controls
+                        Children =
                         {
                             (next = new Button { Name = "Button4" }),
                             new Button { Name = "Button5" },
@@ -448,12 +446,12 @@ namespace Avalonia.Input.UnitTests
 
             var top = new StackPanel
             {
-                Children = new Controls
+                Children =
                 {
                     (container = new StackPanel
                     {
                         [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Once,
-                        Children = new Controls
+                        Children =
                         {
                             new Button { Name = "Button1" },
                             (next = new Button { Name = "Button2" }),
@@ -462,7 +460,7 @@ namespace Avalonia.Input.UnitTests
                     }),
                     new StackPanel
                     {
-                        Children = new Controls
+                        Children =
                         {
                             new Button { Name = "Button4" },
                             new Button { Name = "Button5" },
@@ -487,12 +485,12 @@ namespace Avalonia.Input.UnitTests
 
             var top = new StackPanel
             {
-                Children = new Controls
+                Children =
                 {
                     new StackPanel
                     {
                         [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.None,
-                        Children = new Controls
+                        Children =
                         {
                             new Button { Name = "Button1" },
                             (current = new Button { Name = "Button2" }),
@@ -501,7 +499,7 @@ namespace Avalonia.Input.UnitTests
                     },
                     new StackPanel
                     {
-                        Children = new Controls
+                        Children =
                         {
                             (next = new Button { Name = "Button4" }),
                             new Button { Name = "Button5" },
@@ -525,12 +523,12 @@ namespace Avalonia.Input.UnitTests
 
             var top = new StackPanel
             {
-                Children = new Controls
+                Children =
                 {
                     (container = new StackPanel
                     {
                         [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.None,
-                        Children = new Controls
+                        Children =
                         {
                             new Button { Name = "Button1" },
                             new Button { Name = "Button2" },
@@ -539,7 +537,7 @@ namespace Avalonia.Input.UnitTests
                     }),
                     new StackPanel
                     {
-                        Children = new Controls
+                        Children =
                         {
                             (next = new Button { Name = "Button4" }),
                             new Button { Name = "Button5" },
@@ -564,11 +562,11 @@ namespace Avalonia.Input.UnitTests
 
             var top = new StackPanel
             {
-                Children = new Controls
+                Children =
                 {
                     new StackPanel
                     {
-                        Children = new Controls
+                        Children =
                         {
                             new Button { Name = "Button1" },
                             (next = new Button { Name = "Button2" }),
@@ -577,7 +575,7 @@ namespace Avalonia.Input.UnitTests
                     },
                     new StackPanel
                     {
-                        Children = new Controls
+                        Children =
                         {
                             new Button { Name = "Button4" },
                             new Button { Name = "Button5" },
@@ -600,11 +598,11 @@ namespace Avalonia.Input.UnitTests
 
             var top = new StackPanel
             {
-                Children = new Controls
+                Children =
                 {
                     new StackPanel
                     {
-                        Children = new Controls
+                        Children =
                         {
                             new Button { Name = "Button1" },
                             new Button { Name = "Button2" },
@@ -613,7 +611,7 @@ namespace Avalonia.Input.UnitTests
                     },
                     new StackPanel
                     {
-                        Children = new Controls
+                        Children =
                         {
                             (current = new Button { Name = "Button4" }),
                             new Button { Name = "Button5" },
@@ -636,11 +634,11 @@ namespace Avalonia.Input.UnitTests
 
             var top = new StackPanel
             {
-                Children = new Controls
+                Children =
                 {
                     new StackPanel
                     {
-                        Children = new Controls
+                        Children =
                         {
                             new Button { Name = "Button1" },
                             new Button { Name = "Button2" },
@@ -664,15 +662,15 @@ namespace Avalonia.Input.UnitTests
 
             var top = new StackPanel
             {
-                Children = new Controls
+                Children =
                 {
                     new StackPanel
                     {
-                        Children = new Controls
+                        Children =
                         {
                             new StackPanel
                             {
-                                Children = new Controls
+                                Children =
                                 {
                                     new Button { Name = "Button1" },
                                     new Button { Name = "Button2" },
@@ -683,7 +681,7 @@ namespace Avalonia.Input.UnitTests
                     },
                     new StackPanel
                     {
-                        Children = new Controls
+                        Children =
                         {
                             (current = new Button { Name = "Button4" }),
                             new Button { Name = "Button5" },
@@ -706,15 +704,15 @@ namespace Avalonia.Input.UnitTests
 
             var top = new StackPanel
             {
-                Children = new Controls
+                Children =
                 {
                     new StackPanel
                     {
-                        Children = new Controls
+                        Children =
                         {
                             new StackPanel
                             {
-                                Children = new Controls
+                                Children =
                                 {
                                     (current = new Button { Name = "Button1" }),
                                     new Button { Name = "Button2" },
@@ -725,7 +723,7 @@ namespace Avalonia.Input.UnitTests
                     },
                     new StackPanel
                     {
-                        Children = new Controls
+                        Children =
                         {
                             new Button { Name = "Button4" },
                             new Button { Name = "Button5" },
@@ -767,12 +765,12 @@ namespace Avalonia.Input.UnitTests
 
             var top = new StackPanel
             {
-                Children = new Controls
+                Children =
                 {
                     new StackPanel
                     {
                         [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
-                        Children = new Controls
+                        Children =
                         {
                             (next = new Button { Name = "Button1" }),
                             (current = new Button { Name = "Button2" }),
@@ -781,7 +779,7 @@ namespace Avalonia.Input.UnitTests
                     },
                     new StackPanel
                     {
-                        Children = new Controls
+                        Children =
                         {
                             new Button { Name = "Button4" },
                             new Button { Name = "Button5" },
@@ -804,12 +802,12 @@ namespace Avalonia.Input.UnitTests
 
             var top = new StackPanel
             {
-                Children = new Controls
+                Children =
                 {
                     new StackPanel
                     {
                         [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
-                        Children = new Controls
+                        Children =
                         {
                             (current = new Button { Name = "Button1" }),
                             new Button { Name = "Button2" },
@@ -818,7 +816,7 @@ namespace Avalonia.Input.UnitTests
                     },
                     new StackPanel
                     {
-                        Children = new Controls
+                        Children =
                         {
                             new Button { Name = "Button4" },
                             new Button { Name = "Button5" },
@@ -841,12 +839,12 @@ namespace Avalonia.Input.UnitTests
 
             var top = new StackPanel
             {
-                Children = new Controls
+                Children =
                 {
                     new StackPanel
                     {
                         [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Contained,
-                        Children = new Controls
+                        Children =
                         {
                             (next = new Button { Name = "Button1" }),
                             (current = new Button { Name = "Button2" }),
@@ -855,7 +853,7 @@ namespace Avalonia.Input.UnitTests
                     },
                     new StackPanel
                     {
-                        Children = new Controls
+                        Children =
                         {
                             new Button { Name = "Button4" },
                             new Button { Name = "Button5" },
@@ -877,12 +875,12 @@ namespace Avalonia.Input.UnitTests
 
             var top = new StackPanel
             {
-                Children = new Controls
+                Children =
                 {
                     new StackPanel
                     {
                         [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Contained,
-                        Children = new Controls
+                        Children =
                         {
                             (current = new Button { Name = "Button1" }),
                             new Button { Name = "Button2" },
@@ -891,7 +889,7 @@ namespace Avalonia.Input.UnitTests
                     },
                     new StackPanel
                     {
-                        Children = new Controls
+                        Children =
                         {
                             new Button { Name = "Button4" },
                             new Button { Name = "Button5" },
@@ -914,11 +912,11 @@ namespace Avalonia.Input.UnitTests
 
             var top = new StackPanel
             {
-                Children = new Controls
+                Children =
                 {
                     new StackPanel
                     {
-                        Children = new Controls
+                        Children =
                         {
                             new Button { Name = "Button1" },
                             new Button { Name = "Button2" },
@@ -928,7 +926,7 @@ namespace Avalonia.Input.UnitTests
                     new StackPanel
                     {
                         [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Once,
-                        Children = new Controls
+                        Children =
                         {
                             new Button { Name = "Button4" },
                             (current = new Button { Name = "Button5" }),
@@ -952,12 +950,12 @@ namespace Avalonia.Input.UnitTests
 
             var top = new StackPanel
             {
-                Children = new Controls
+                Children =
                 {
                     (container = new StackPanel
                     {
                         [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Once,
-                        Children = new Controls
+                        Children =
                         {
                             new Button { Name = "Button1" },
                             (next = new Button { Name = "Button2" }),
@@ -966,7 +964,7 @@ namespace Avalonia.Input.UnitTests
                     }),
                     new StackPanel
                     {
-                        Children = new Controls
+                        Children =
                         {
                             (current = new Button { Name = "Button4" }),
                             new Button { Name = "Button5" },
@@ -991,12 +989,12 @@ namespace Avalonia.Input.UnitTests
 
             var top = new StackPanel
             {
-                Children = new Controls
+                Children =
                 {
                     new StackPanel
                     {
                         [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Once,
-                        Children = new Controls
+                        Children =
                         {
                             (next = new Button { Name = "Button1" }),
                             new Button { Name = "Button2" },
@@ -1005,7 +1003,7 @@ namespace Avalonia.Input.UnitTests
                     },
                     new StackPanel
                     {
-                        Children = new Controls
+                        Children =
                         {
                             (current = new Button { Name = "Button4" }),
                             new Button { Name = "Button5" },
@@ -1028,7 +1026,7 @@ namespace Avalonia.Input.UnitTests
             var top = new StackPanel
             {
                 [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Contained,
-                Children = new Controls
+                Children =
                 {
                     (current = new Decorator
                     {

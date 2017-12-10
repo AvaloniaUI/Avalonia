@@ -67,7 +67,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 {
                     Child = new Panel
                     {
-                        Children = new Controls
+                        Children =
                         {
                             new TextBlock(),
                             new Border(),
@@ -101,7 +101,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 {
                     Child = new Panel
                     {
-                        Children = new Controls
+                        Children =
                         {
                             new TextBlock(),
                             new Border(),
@@ -124,7 +124,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 {
                     Child = new Panel
                     {
-                        Children = new Controls
+                        Children =
                         {
                             new TextBlock(),
                             new Border(),
@@ -189,7 +189,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                         {
                             return new StackPanel
                             {
-                                Children = new Controls
+                                Children =
                                 {
                                     new TextBlock
                                     {

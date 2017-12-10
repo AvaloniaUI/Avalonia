@@ -12,12 +12,12 @@ namespace Avalonia.Controls.UnitTests
         {
             var target = new WrapPanel()
                          {
-                             Width = 100,
-                             Children = new Controls
-                                        {
-                                            new Border { Height = 50, Width = 100 },
-                                            new Border { Height = 50, Width = 100 },
-                                        }
+                            Width = 100,
+                            Children =
+                            {
+                                new Border { Height = 50, Width = 100 },
+                                new Border { Height = 50, Width = 100 },
+                            }
                          };
 
             target.Measure(Size.Infinity);
@@ -33,12 +33,12 @@ namespace Avalonia.Controls.UnitTests
         {
             var target = new WrapPanel()
                          {
-                             Width = 200,
-                             Children = new Controls
-                                        {
-                                            new Border { Height = 50, Width = 100 },
-                                            new Border { Height = 50, Width = 100 },
-                                        }
+                            Width = 200,
+                            Children =
+                            {
+                                new Border { Height = 50, Width = 100 },
+                                new Border { Height = 50, Width = 100 },
+                            }
                          };
 
             target.Measure(Size.Infinity);
@@ -54,13 +54,13 @@ namespace Avalonia.Controls.UnitTests
         {
             var target = new WrapPanel()
                          {
-                             Orientation = Orientation.Vertical,
-                             Height = 120,
-                             Children = new Controls
-                                        {
-                                            new Border { Height = 50, Width = 100 },
-                                            new Border { Height = 50, Width = 100 },
-                                        }
+                            Orientation = Orientation.Vertical,
+                            Height = 120,
+                            Children =
+                            {
+                                new Border { Height = 50, Width = 100 },
+                                new Border { Height = 50, Width = 100 },
+                            }
                          };
 
             target.Measure(Size.Infinity);
@@ -76,13 +76,13 @@ namespace Avalonia.Controls.UnitTests
         {
             var target = new WrapPanel()
                          {
-                             Orientation = Orientation.Vertical,
-                             Height = 60,
-                             Children = new Controls
-                                        {
-                                            new Border { Height = 50, Width = 100 },
-                                            new Border { Height = 50, Width = 100 },
-                                        }
+                            Orientation = Orientation.Vertical,
+                            Height = 60,
+                            Children =
+                            {
+                                new Border { Height = 50, Width = 100 },
+                                new Border { Height = 50, Width = 100 },
+                            }
                          };
 
             target.Measure(Size.Infinity);
