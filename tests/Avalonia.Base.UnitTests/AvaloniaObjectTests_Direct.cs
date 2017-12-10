@@ -5,10 +5,16 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reactive.Subjects;
+using System.Threading;
+using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Data;
 using Avalonia.Logging;
+using Avalonia.Platform;
+using Avalonia.Threading;
 using Avalonia.Markup.Xaml.Data;
 using Avalonia.UnitTests;
+using Moq;
 using Xunit;
 
 namespace Avalonia.Base.UnitTests
@@ -410,6 +416,28 @@ namespace Avalonia.Base.UnitTests
             }
 
             Assert.True(called);
+        }
+
+        [Fact]
+        public async Task Bind_Executes_On_UIThread()
+        {
+            var target = new Class1();
+            var source = new Subject<object>();
+            var currentThreadId = Thread.CurrentThread.ManagedThreadId;
+
+            var threadingInterfaceMock = new Mock<IPlatformThreadingInterface>();
+            threadingInterfaceMock.SetupGet(mock => mock.CurrentThreadIsLoopThread)
+                .Returns(() => Thread.CurrentThread.ManagedThreadId == currentThreadId);
+
+            var services = new TestServices(
+                threadingInterface: threadingInterfaceMock.Object);
+
+            using (UnitTestApplication.Start(services))
+            {
+                target.Bind(Class1.FooProperty, source);
+
+                await Task.Run(() => source.OnNext("foobar"));
+            }
         }
 
         [Fact]
