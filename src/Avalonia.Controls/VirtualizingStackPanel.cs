@@ -134,12 +134,14 @@ namespace Avalonia.Controls
 
         protected override IInputElement GetControlInDirection(NavigationDirection direction, IControl from)
         {
-            var logicalScrollable = Parent as ILogicalScrollable;
-            var fromControl = from as IControl;
+            if (from == null)
+                return null;
 
-            if (logicalScrollable?.IsLogicalScrollEnabled == true && fromControl != null)
+            var logicalScrollable = Parent as ILogicalScrollable;
+
+            if (logicalScrollable?.IsLogicalScrollEnabled == true)
             {
-                return logicalScrollable.GetControlInDirection(direction, fromControl);
+                return logicalScrollable.GetControlInDirection(direction, from);
             }
             else
             {

@@ -49,6 +49,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Base\Properties.cs" />
     <Compile Include="Layout\Measure.cs" />
     <Compile Include="Styling\ApplyStyling.cs" />
     <Compile Include="Program.cs" />

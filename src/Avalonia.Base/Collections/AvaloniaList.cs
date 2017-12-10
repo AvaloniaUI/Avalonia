@@ -350,14 +350,15 @@ namespace Avalonia.Collections
         public void MoveRange(int oldIndex, int count, int newIndex)
         {
             var items = _inner.GetRange(oldIndex, count);
+            var modifiedNewIndex = newIndex;
             _inner.RemoveRange(oldIndex, count);
 
             if (newIndex > oldIndex)
             {
-                newIndex -= count;
+                modifiedNewIndex -= count;
             }
 
-            _inner.InsertRange(newIndex, items);
+            _inner.InsertRange(modifiedNewIndex, items);
 
             if (_collectionChanged != null)
             {

@@ -72,13 +72,15 @@ namespace Avalonia.Rendering.SceneGraph
         /// Sets up the drawing context for rendering the node's geometry.
         /// </summary>
         /// <param name="context">The drawing context.</param>
-        void BeginRender(IDrawingContextImpl context);
+        /// <param name="skipOpacity">Whether to skip pushing the control's opacity.</param>
+        void BeginRender(IDrawingContextImpl context, bool skipOpacity);
 
         /// <summary>
         /// Resets the drawing context after rendering the node's geometry.
         /// </summary>
         /// <param name="context">The drawing context.</param>
-        void EndRender(IDrawingContextImpl context);
+        /// <param name="skipOpacity">Whether to skip popping the control's opacity.</param>
+        void EndRender(IDrawingContextImpl context, bool skipOpacity);
 
         /// <summary>
         /// Hit test the geometry in this node.
