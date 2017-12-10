@@ -339,6 +339,145 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
         }
 
         [Fact]
+        public void StyledProperty_SetValue_Should_Not_Cause_StackOverflow_And_Have_Correct_Values()
+        {
+            var viewModel = new TestStackOverflowViewModel()
+            {
+                Value = 50
+            };
+
+            var target = new StyledPropertyClass();
+
+            target.Bind(StyledPropertyClass.DoubleValueProperty,
+                new Binding("Value") { Mode = BindingMode.TwoWay, Source = viewModel });
+
+            var child = new StyledPropertyClass();
+
+            child.Bind(StyledPropertyClass.DoubleValueProperty,
+                new Binding("DoubleValue")
+                {
+                    Mode = BindingMode.TwoWay,
+                    Source = target
+                });
+
+            Assert.Equal(1, viewModel.SetterInvokedCount);
+
+            //here in real life stack overflow exception is thrown issue #855 and #824
+            target.DoubleValue = 51.001;
+
+            Assert.Equal(2, viewModel.SetterInvokedCount);
+
+            double expected = 51;
+
+            Assert.Equal(expected, viewModel.Value);
+            Assert.Equal(expected, target.DoubleValue);
+            Assert.Equal(expected, child.DoubleValue);
+        }
+
+        [Fact]
+        public void SetValue_Should_Not_Cause_StackOverflow_And_Have_Correct_Values()
+        {
+            var viewModel = new TestStackOverflowViewModel()
+            {
+                Value = 50
+            };
+
+            var target = new DirectPropertyClass();
+
+            target.Bind(DirectPropertyClass.DoubleValueProperty, new Binding("Value")
+            {
+                Mode = BindingMode.TwoWay,
+                Source = viewModel
+            });
+
+            var child = new DirectPropertyClass();
+
+            child.Bind(DirectPropertyClass.DoubleValueProperty,
+                new Binding("DoubleValue")
+                {
+                    Mode = BindingMode.TwoWay,
+                    Source = target
+                });
+
+            Assert.Equal(1, viewModel.SetterInvokedCount);
+
+            //here in real life stack overflow exception is thrown issue #855 and #824
+            target.DoubleValue = 51.001;
+
+            Assert.Equal(2, viewModel.SetterInvokedCount);
+
+            double expected = 51;
+
+            Assert.Equal(expected, viewModel.Value);
+            Assert.Equal(expected, target.DoubleValue);
+            Assert.Equal(expected, child.DoubleValue);
+        }
+
+        private class StyledPropertyClass : AvaloniaObject
+        {
+            public static readonly StyledProperty<double> DoubleValueProperty =
+                        AvaloniaProperty.Register<StyledPropertyClass, double>(nameof(DoubleValue));
+
+            public double DoubleValue
+            {
+                get { return GetValue(DoubleValueProperty); }
+                set { SetValue(DoubleValueProperty, value); }
+            }
+        }
+
+        private class DirectPropertyClass : AvaloniaObject
+        {
+            public static readonly DirectProperty<DirectPropertyClass, double> DoubleValueProperty =
+                AvaloniaProperty.RegisterDirect<DirectPropertyClass, double>(
+                    nameof(DoubleValue),
+                    o => o.DoubleValue,
+                    (o, v) => o.DoubleValue = v);
+
+            private double _doubleValue;
+            public double DoubleValue
+            {
+                get { return _doubleValue; }
+                set { SetAndRaise(DoubleValueProperty, ref _doubleValue, value); }
+            }
+        }
+
+        private class TestStackOverflowViewModel : INotifyPropertyChanged
+        {
+            public int SetterInvokedCount { get; private set; }
+
+            public const int MaxInvokedCount = 1000;
+
+            private double _value;
+
+            public event PropertyChangedEventHandler PropertyChanged;
+
+            public double Value
+            {
+                get { return _value; }
+                set
+                {
+                    if (_value != value)
+                    {
+                        SetterInvokedCount++;
+                        if (SetterInvokedCount < MaxInvokedCount)
+                        {
+                            _value = (int)value;
+                            if (_value > 75) _value = 75;
+                            if (_value < 25) _value = 25;
+                        }
+                        else
+                        {
+                            _value = value;
+                        }
+
+                        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Value)));
+                    }
+                }
+            }
+        }
+        
+
+        [Fact]
         public void Binding_With_Null_Path_Works()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))

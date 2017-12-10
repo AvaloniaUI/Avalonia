@@ -50,7 +50,7 @@ namespace Avalonia.Controls.UnitTests
                     new RowDefinition(1, GridUnitType.Star),
                     new RowDefinition(GridLength.Auto),
                 },
-                Children = new Controls
+                Children =
                 {
                     new ScrollContentPresenter
                     {

@@ -272,7 +272,7 @@ namespace Avalonia.Controls.UnitTests
         {
             return new StackPanel
             {
-                Children = new Controls
+                Children =
                 {
                     new TabStrip
                     {
