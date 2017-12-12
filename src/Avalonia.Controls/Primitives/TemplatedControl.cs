@@ -32,7 +32,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Defines the <see cref="BorderThickness"/> property.
         /// </summary>
-        public static readonly StyledProperty<double> BorderThicknessProperty =
+        public static readonly StyledProperty<Thickness> BorderThicknessProperty =
             Border.BorderThicknessProperty.AddOwner<TemplatedControl>();
 
         /// <summary>
@@ -132,7 +132,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Gets or sets the thickness of the control's border.
         /// </summary>
-        public double BorderThickness
+        public Thickness BorderThickness
         {
             get { return GetValue(BorderThicknessProperty); }
             set { SetValue(BorderThicknessProperty, value); }

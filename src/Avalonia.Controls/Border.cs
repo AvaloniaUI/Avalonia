@@ -2,6 +2,9 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using Avalonia.Media;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Avalonia.Controls
 {
@@ -25,8 +28,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="BorderThickness"/> property.
         /// </summary>
-        public static readonly StyledProperty<double> BorderThicknessProperty =
-            AvaloniaProperty.Register<Border, double>(nameof(BorderThickness));
+        public static readonly StyledProperty<Thickness> BorderThicknessProperty =
+            AvaloniaProperty.Register<Border, Thickness>(nameof(BorderThickness));
 
         /// <summary>
         /// Defines the <see cref="CornerRadius"/> property.
@@ -63,7 +66,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the thickness of the border.
         /// </summary>
-        public double BorderThickness
+        public Thickness BorderThickness
         {
             get { return GetValue(BorderThicknessProperty); }
             set { SetValue(BorderThicknessProperty, value); }
@@ -92,12 +95,63 @@ namespace Avalonia.Controls
 
             if (background != null)
             {
-                context.FillRectangle(background, rect, cornerRadius);
+                context.FillRectangle(Brushes.Transparent, rect);
             }
 
-            if (borderBrush != null && borderThickness > 0)
+            if (borderBrush != null)
             {
-                context.DrawRectangle(new Pen(borderBrush, borderThickness), rect, cornerRadius);
+                var pen = new Pen(borderBrush, 4);
+                var resolution = 5.0;
+                
+
+                Point pt(double x, double y)
+                {
+                    return new Point(x, y);
+                }
+
+                void DrawSector(Point pos, double radius, double degStart, double degEnd, double fromSize, double toSize)
+                {
+                    var points = new List<Point>();
+                    var degSteps = ((degEnd - degStart) / resolution);
+                    var sizeStep = (toSize - fromSize) / degSteps/2.0;
+                    var curStep = fromSize / 2.0;
+
+                    for (double i = degStart; i <= degEnd; i += resolution)//outer radius
+                    {
+                        points.Add(new Point(pos.X + Math.Cos(i / 180.0 * Math.PI) * (radius+curStep), pos.Y + (-Math.Sin(i / 180.0 * Math.PI)) * (radius+curStep)));
+                        curStep += sizeStep;
+                    }
+
+                    var geom = new PolylineGeometry(points, true);//fill
+                    geom.Points.Add(pos);
+                    context.DrawGeometry(Background, new Pen(Brushes.Transparent), geom);
+
+                    for (double i = degEnd; i >= degStart; i -= resolution)//inner radius
+                    {
+                        curStep -= sizeStep;
+                        points.Add(new Point(pos.X + Math.Cos(i / 180.0 * Math.PI) * (radius - curStep), pos.Y + (-Math.Sin(i / 180.0 * Math.PI)) * (radius - curStep)));
+                    }
+                    geom = new PolylineGeometry(points, true);//draw border
+                    context.DrawGeometry(borderBrush, new Pen(Brushes.Transparent), geom);
+
+                }
+
+                var centralRectangle = new Rect(pt(rect.X + cornerRadius, rect.Y), new Size(rect.Width - (2 * cornerRadius), rect.Height));
+                var leftRect = new Rect(pt(rect.X, rect.Y+cornerRadius), new Size(cornerRadius, rect.Height-(2*cornerRadius)));
+                var rightRect = new Rect(pt(rect.X+rect.Width-cornerRadius, rect.Y + cornerRadius), new Size(cornerRadius, rect.Height - (2 * cornerRadius)));
+
+                context.FillRectangle(background, leftRect);
+                context.FillRectangle(background, rightRect);
+                context.FillRectangle(background, centralRectangle);
+
+                DrawSector(pt(rect.X+cornerRadius, rect.Y+cornerRadius), cornerRadius, 90,180, BorderThickness.Top, borderThickness.Left);
+                context.DrawLine(new Pen(borderBrush, BorderThickness.Left), pt(rect.X, rect.Y + cornerRadius), pt(rect.X, rect.Y + rect.Height - cornerRadius));
+                DrawSector(pt(rect.X + cornerRadius, rect.Y + rect.Height - cornerRadius), cornerRadius, 180, 270, borderThickness.Left, borderThickness.Bottom);
+                context.DrawLine(new Pen(borderBrush, BorderThickness.Bottom), pt(rect.X+cornerRadius, rect.Y + rect.Height), pt(rect.X+rect.Width-cornerRadius, rect.Y + rect.Height));
+                DrawSector(pt(rect.X +rect.Width - cornerRadius, rect.Y + rect.Height - cornerRadius), cornerRadius, 270, 360, borderThickness.Bottom, borderThickness.Right);
+                context.DrawLine(new Pen(borderBrush, BorderThickness.Right), pt(rect.X +rect.Width, rect.Y + rect.Height-cornerRadius), pt(rect.X + rect.Width, rect.Y+cornerRadius));
+                DrawSector(pt(rect.X + rect.Width - cornerRadius, rect.Y +  cornerRadius), cornerRadius, 0, 90, borderThickness.Right, borderThickness.Top);
+                context.DrawLine(new Pen(borderBrush, BorderThickness.Top), pt(rect.X + cornerRadius, rect.Y), pt(rect.X + rect.Width - cornerRadius, rect.Y));
             }
         }
 
@@ -109,7 +163,7 @@ namespace Avalonia.Controls
         protected override Size MeasureOverride(Size availableSize)
         {
             var child = Child;
-            var padding = Padding + new Thickness(BorderThickness);
+            var padding = Padding + BorderThickness;
 
             if (child != null)
             {
@@ -133,7 +187,7 @@ namespace Avalonia.Controls
 
             if (child != null)
             {
-                var padding = Padding + new Thickness(BorderThickness);
+                var padding = Padding + BorderThickness;
                 child.Arrange(new Rect(finalSize).Deflate(padding));
             }
 

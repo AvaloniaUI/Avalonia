@@ -33,7 +33,7 @@ namespace Avalonia.Controls.Presenters
         /// <summary>
         /// Defines the <see cref="BorderThickness"/> property.
         /// </summary>
-        public static readonly StyledProperty<double> BorderThicknessProperty =
+        public static readonly StyledProperty<Thickness> BorderThicknessProperty =
             Border.BorderThicknessProperty.AddOwner<ContentPresenter>();
 
         /// <summary>
@@ -122,7 +122,7 @@ namespace Avalonia.Controls.Presenters
         /// <summary>
         /// Gets or sets the thickness of the border.
         /// </summary>
-        public double BorderThickness
+        public Thickness BorderThickness
         {
             get { return GetValue(BorderThicknessProperty); }
             set { SetValue(BorderThicknessProperty, value); }
@@ -290,10 +290,7 @@ namespace Avalonia.Controls.Presenters
                 context.FillRectangle(background, rect, cornerRadius);
             }
 
-            if (borderBrush != null && borderThickness > 0)
-            {
-                context.DrawRectangle(new Pen(borderBrush, borderThickness), rect, cornerRadius);
-            }
+            
         }
 
         /// <summary>
@@ -341,7 +338,7 @@ namespace Avalonia.Controls.Presenters
         protected override Size MeasureOverride(Size availableSize)
         {
             var child = Child;
-            var padding = Padding + new Thickness(BorderThickness);
+            var padding = Padding + BorderThickness;
 
             if (child != null)
             {
@@ -361,7 +358,7 @@ namespace Avalonia.Controls.Presenters
 
             if (child != null)
             {
-                var padding = Padding + new Thickness(BorderThickness);
+                var padding = Padding + BorderThickness;
                 var sizeMinusPadding = finalSize.Deflate(padding);
                 var size = sizeMinusPadding;
                 var horizontalAlignment = HorizontalContentAlignment;
