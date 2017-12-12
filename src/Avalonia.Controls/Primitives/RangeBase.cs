@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using Avalonia.Data;
 using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Primitives
@@ -36,7 +37,8 @@ namespace Avalonia.Controls.Primitives
             AvaloniaProperty.RegisterDirect<RangeBase, double>(
                 nameof(Value),
                 o => o.Value,
-                (o, v) => o.Value = v);
+                (o, v) => o.Value = v,
+                defaultBindingMode: BindingMode.TwoWay);
 
         /// <summary>
         /// Defines the <see cref="SmallChange"/> property.
