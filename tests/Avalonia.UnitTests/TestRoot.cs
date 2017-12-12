@@ -16,8 +16,6 @@ namespace Avalonia.UnitTests
     public class TestRoot : Decorator, IFocusScope, ILayoutRoot, IInputRoot, INameScope, IRenderRoot, IStyleRoot
     {
         private readonly NameScope _nameScope = new NameScope();
-        private readonly IRenderTarget _renderTarget = Mock.Of<IRenderTarget>(
-            x => x.CreateDrawingContext(It.IsAny<IVisualBrushRenderer>()) == Mock.Of<IDrawingContextImpl>());
 
         public TestRoot()
         {
@@ -65,7 +63,21 @@ namespace Avalonia.UnitTests
 
         IStyleHost IStyleHost.StylingParent => StylingParent;
 
-        public IRenderTarget CreateRenderTarget() => _renderTarget;
+        public IRenderTarget CreateRenderTarget()
+        {
+            var dc = new Mock<IDrawingContextImpl>();
+            dc.Setup(x => x.CreateLayer(It.IsAny<Size>())).Returns(() =>
+            {
+                var layerDc = new Mock<IDrawingContextImpl>();
+                var layer = new Mock<IRenderTargetBitmapImpl>();
+                layer.Setup(x => x.CreateDrawingContext(It.IsAny<IVisualBrushRenderer>())).Returns(layerDc.Object);
+                return layer.Object;
+            });
+
+            var result = new Mock<IRenderTarget>();
+            result.Setup(x => x.CreateDrawingContext(It.IsAny<IVisualBrushRenderer>())).Returns(dc.Object);
+            return result.Object;
+        }
 
         public void Invalidate(Rect rect)
         {

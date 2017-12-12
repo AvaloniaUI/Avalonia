@@ -12,7 +12,7 @@ namespace Avalonia.Controls.UnitTests
         {
             var target = new DockPanel
             {
-                Children = new Controls
+                Children =
                 {
                     new Border { Width = 500, Height = 50, [DockPanel.DockProperty] = Dock.Top },
                     new Border { Width = 500, Height = 50, [DockPanel.DockProperty] = Dock.Bottom },
@@ -38,7 +38,7 @@ namespace Avalonia.Controls.UnitTests
         {
             var target = new DockPanel
             {
-                Children = new Controls
+                Children =
                 {
                     new Border { Width = 50, Height = 400, [DockPanel.DockProperty] = Dock.Left },
                     new Border { Width = 50, Height = 400, [DockPanel.DockProperty] = Dock.Right },
