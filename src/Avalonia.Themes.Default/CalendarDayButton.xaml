@@ -30,8 +30,8 @@
                      Fill="{TemplateBinding Background}"/>
 
           <ContentControl Name="Content"
-                          Content="{TemplateBinding Content}"
                           ContentTemplate="{TemplateBinding ContentTemplate}"
+                          Content="{TemplateBinding Content}"
                           HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                           VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                           FontSize="{TemplateBinding FontSize}"
