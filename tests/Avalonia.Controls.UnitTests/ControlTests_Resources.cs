@@ -204,6 +204,22 @@ namespace Avalonia.Controls.UnitTests
             Assert.True(raised);
         }
 
+        [Fact]
+        public void Setting_Logical_Parent_Subscribes_To_Parents_ResourceChanged_Event()
+        {
+            var parent = new ContentControl();
+            var child = new Border();
+
+            ((ISetLogicalParent)child).SetParent(parent);
+            var raisedOnChild = false;
+
+            child.ResourcesChanged += (_, __) => raisedOnChild = true;
+
+            parent.Resources.Add("foo", "bar");
+
+            Assert.True(raisedOnChild);
+        }
+
         private IControlTemplate ContentControlTemplate()
         {
             return new FuncControlTemplate<ContentControl>(x =>

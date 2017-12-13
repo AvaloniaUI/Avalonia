@@ -8,6 +8,7 @@ using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform;
+using Avalonia.Styling;
 using Avalonia.VisualTree;
 using JetBrains.Annotations;
 
@@ -16,7 +17,7 @@ namespace Avalonia.Controls.Primitives
     /// <summary>
     /// The root window of a <see cref="Popup"/>.
     /// </summary>
-    public class PopupRoot : WindowBase, IInteractive, IHostedVisualTreeRoot, IDisposable
+    public class PopupRoot : WindowBase, IInteractive, IHostedVisualTreeRoot, IDisposable, IResourceNode
     {
         private IDisposable _presenterSubscription;
 
@@ -65,6 +66,11 @@ namespace Avalonia.Controls.Primitives
         /// Gets the control that is hosting the popup root.
         /// </summary>
         IVisual IHostedVisualTreeRoot.Host => Parent;
+
+        /// <summary>
+        /// Gets the styling parent of the popup root.
+        /// </summary>
+        IResourceNode IResourceNode.ResourceParent => Parent;
 
         /// <inheritdoc/>
         public void Dispose() => PlatformImpl?.Dispose();
