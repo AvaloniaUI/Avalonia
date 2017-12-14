@@ -2,8 +2,6 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
-using System.Reactive.Disposables;
 
 namespace Avalonia.Styling
 {
@@ -17,14 +15,9 @@ namespace Avalonia.Styling
     /// value. When the activator produces false it will produce
     /// <see cref="AvaloniaProperty.UnsetValue"/>.
     /// </remarks>
-    internal class ActivatedObservable : IObservable<object>, IDescription
+    internal class ActivatedObservable : ActivatedValue, IDescription
     {
-        private static readonly object NotSent = new object();
-        private readonly Listener _listener;
-        private List<IObserver<object>> _observers;
-        private IDisposable _activatorSubscription;
         private IDisposable _sourceSubscription;
-        private object _last = NotSent;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ActivatedObservable"/> class.
@@ -36,133 +29,49 @@ namespace Avalonia.Styling
             IObservable<bool> activator,
             IObservable<object> source,
             string description)
+            : base(activator, AvaloniaProperty.UnsetValue, description)
         {
-            Contract.Requires<ArgumentNullException>(activator != null);
             Contract.Requires<ArgumentNullException>(source != null);
 
-            Activator = activator;
-            Description = description;
             Source = source;
-            _listener = new Listener(this);
         }
-
-        /// <summary>
-        /// Gets the activator observable.
-        /// </summary>
-        public IObservable<bool> Activator { get; }
-
-        /// <summary>
-        /// Gets a description of the binding.
-        /// </summary>
-        public string Description { get; }
-
-        /// <summary>
-        /// Gets a value indicating whether the observable is active.
-        /// </summary>
-        public bool? IsActive { get; private set; }
 
         /// <summary>
         /// Gets an observable which produces the <see cref="ActivatedValue"/>.
         /// </summary>
         public IObservable<object> Source { get; }
 
-        /// <summary>
-        /// Gets the value that will be produced when <see cref="IsActive"/> is true.
-        /// </summary>
-        public object Value { get; private set; }
+        protected override ActivatorListener CreateListener() => new ValueListener(this);
 
-        public IDisposable Subscribe(IObserver<object> observer)
+        protected override void Deinitialize()
         {
-            var subscribe = _observers == null;
-
-            _observers = _observers ?? new List<IObserver<object>>();
-            _observers.Add(observer);
-
-            if (subscribe)
-            {
-                _sourceSubscription = Source.Subscribe(_listener);
-                _activatorSubscription = Activator.Subscribe(_listener);
-            }
-
-            return Disposable.Create(() =>
-            {
-                _observers.Remove(observer);
-
-                if (_observers.Count == 0)
-                {
-                    _activatorSubscription.Dispose();
-                    _sourceSubscription.Dispose();
-                    _activatorSubscription = null;
-                    _sourceSubscription = null;
-                }
-            });
+            base.Deinitialize();
+            _sourceSubscription.Dispose();
+            _sourceSubscription = null;
         }
 
-        protected virtual void NotifyCompleted()
+        protected override void Initialize()
         {
-            foreach (var observer in _observers)
-            {
-                observer.OnCompleted();
-            }
-
-            _observers = null;
-        }
-
-        protected virtual void NotifyError(Exception error)
-        {
-            foreach (var observer in _observers)
-            {
-                observer.OnError(error);
-            }
-
-            _observers = null;
+            base.Initialize();
+            _sourceSubscription = Source.Subscribe((ValueListener)Listener);
         }
 
         protected virtual void NotifyValue(object value)
         {
             Value = value;
-            Update();
         }
 
-        protected virtual void NotifyActive(bool active)
+        private class ValueListener : ActivatorListener, IObserver<object>
         {
-            IsActive = active;
-            Update();
-        }
-
-        private void Update()
-        {
-            if (IsActive.HasValue)
+            public ValueListener(ActivatedObservable parent)
+                : base(parent)
             {
-                var v = IsActive.Value ? Value : AvaloniaProperty.UnsetValue;
-
-                if (!Equals(v, _last))
-                {
-                    foreach (var observer in _observers)
-                    {
-                        observer.OnNext(v);
-                    }
-
-                    _last = v;
-                }
             }
-        }
+            protected new ActivatedObservable Parent => (ActivatedObservable)base.Parent;
 
-        private class Listener : IObserver<bool>, IObserver<object>
-        {
-            private readonly ActivatedObservable _parent;
-
-            public Listener(ActivatedObservable parent)
-            {
-                _parent = parent;
-            }
-
-            void IObserver<bool>.OnCompleted() => _parent.NotifyCompleted();
-            void IObserver<object>.OnCompleted() => _parent.NotifyCompleted();
-            void IObserver<bool>.OnError(Exception error) => _parent.NotifyError(error);
-            void IObserver<object>.OnError(Exception error) => _parent.NotifyError(error);
-            void IObserver<bool>.OnNext(bool value) => _parent.NotifyActive(value);
-            void IObserver<object>.OnNext(object value) => _parent.NotifyValue(value);
+            void IObserver<object>.OnCompleted() => Parent.NotifyCompleted();
+            void IObserver<object>.OnError(Exception error) => Parent.NotifyError(error);
+            void IObserver<object>.OnNext(object value) => Parent.NotifyValue(value);
         }
     }
 }
