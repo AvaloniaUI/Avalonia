@@ -2,8 +2,8 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Reactive;
-using System.Reactive.Linq;
+using System.Collections.Generic;
+using System.Reactive.Disposables;
 
 namespace Avalonia.Styling
 {
@@ -16,12 +16,13 @@ namespace Avalonia.Styling
     /// <see cref="ActivatedValue"/> will produce the current value. When the activator 
     /// produces false it will produce <see cref="AvaloniaProperty.UnsetValue"/>.
     /// </remarks>
-    internal class ActivatedValue : ObservableBase<object>, IDescription
+    internal class ActivatedValue : IObservable<object>, IDescription
     {
-        /// <summary>
-        /// The activator.
-        /// </summary>
-        private readonly IObservable<bool> _activator;
+        private static readonly object NotSent = new object();
+        private List<IObserver<object>> _observers = new List<IObserver<object>>();
+        private IDisposable _activatorSubscription;
+        private object _value;
+        private object _last = NotSent;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ActivatedObservable"/> class.
@@ -34,39 +35,135 @@ namespace Avalonia.Styling
             object value,
             string description)
         {
-            _activator = activator;
+            Contract.Requires<ArgumentNullException>(activator != null);
+
+            Activator = activator;
             Value = value;
             Description = description;
+            Listener = CreateListener();
         }
 
         /// <summary>
-        /// Gets the activated value.
+        /// Gets the activator observable.
         /// </summary>
-        public object Value
-        {
-            get;
-        }
+        public IObservable<bool> Activator { get; }
 
         /// <summary>
         /// Gets a description of the binding.
         /// </summary>
-        public string Description
-        {
-            get;
-        }
+        public string Description { get; }
 
         /// <summary>
-        /// Notifies the provider that an observer is to receive notifications.
+        /// Gets a value indicating whether the activator is active.
         /// </summary>
-        /// <param name="observer">The observer.</param>
-        /// <returns>IDisposable object used to unsubscribe from the observable sequence.</returns>
-        protected override IDisposable SubscribeCore(IObserver<object> observer)
-        {
-            Contract.Requires<ArgumentNullException>(observer != null);
+        public bool? IsActive { get; private set; }
 
-            return _activator
-                .Select(active => active ? Value : AvaloniaProperty.UnsetValue)
-                .Subscribe(observer);
+        /// <summary>
+        /// Gets the value that will be produced when <see cref="IsActive"/> is true.
+        /// </summary>
+        public object Value
+        {
+            get => _value;
+            protected set
+            {
+                _value = value;
+                PublishValue();
+            }
+        }
+
+        protected ActivatorListener Listener { get; }
+
+        public virtual IDisposable Subscribe(IObserver<object> observer)
+        {
+            _observers.Add(observer);
+
+            if (_observers.Count == 1)
+            {
+                Initialize();
+            }
+
+            return Disposable.Create(() =>
+            {
+                _observers.Remove(observer);
+
+                if (_observers.Count == 0)
+                {
+                    Deinitialize();
+                }
+            });
+        }
+
+        protected virtual ActivatorListener CreateListener() => new ActivatorListener(this);
+
+        protected virtual void Deinitialize()
+        {
+            _activatorSubscription.Dispose();
+            _activatorSubscription = null;
+        }
+
+        protected virtual void Initialize()
+        {
+            _activatorSubscription = Activator.Subscribe(Listener);
+        }
+
+        protected virtual void NotifyCompleted()
+        {
+            foreach (var observer in _observers)
+            {
+                observer.OnCompleted();
+            }
+
+            Deinitialize();
+            _observers = null;
+        }
+
+        protected virtual void NotifyError(Exception error)
+        {
+            foreach (var observer in _observers)
+            {
+                observer.OnError(error);
+            }
+
+            Deinitialize();
+            _observers = null;
+        }
+
+        protected virtual void NotifyActive(bool active)
+        {
+            IsActive = active;
+            PublishValue();
+        }
+
+        private void PublishValue()
+        {
+            if (IsActive.HasValue)
+            {
+                var v = IsActive.Value ? Value : AvaloniaProperty.UnsetValue;
+
+                if (!Equals(v, _last))
+                {
+                    foreach (var observer in _observers)
+                    {
+                        observer.OnNext(v);
+                    }
+
+                    _last = v;
+                }
+            }
+        }
+
+        protected class ActivatorListener : IObserver<bool>
+        {
+            public ActivatorListener(ActivatedValue parent)
+            {
+                Parent = parent;
+            }
+
+            protected ActivatedValue Parent { get; }
+
+            void IObserver<bool>.OnCompleted() => Parent.NotifyCompleted();
+            void IObserver<bool>.OnError(Exception error) => Parent.NotifyError(error);
+            void IObserver<bool>.OnNext(bool value) => Parent.NotifyActive(value);
         }
     }
 }
