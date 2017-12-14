@@ -5,9 +5,11 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Reactive;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reflection;
 using System.Text;
+using Avalonia.Collections;
 
 namespace Avalonia.Styling
 {
@@ -122,13 +124,7 @@ namespace Avalonia.Styling
             {
                 if (subscribe)
                 {
-                    var observable = Observable.FromEventPattern<
-                            NotifyCollectionChangedEventHandler,
-                            NotifyCollectionChangedEventArgs>(
-                        x => control.Classes.CollectionChanged += x,
-                        x => control.Classes.CollectionChanged -= x)
-                        .StartWith((EventPattern<NotifyCollectionChangedEventArgs>)null)
-                        .Select(_ => Matches(control.Classes));
+                    var observable = new ClassObserver(control.Classes, _classes.Value);
                     return new SelectorMatch(observable);
                 }
                 else
@@ -202,6 +198,65 @@ namespace Avalonia.Styling
             }
 
             return builder.ToString();
+        }
+
+        private class ClassObserver : IObservable<bool>
+        {
+            readonly IList<string> _match;
+            readonly List<IObserver<bool>> _observers = new List<IObserver<bool>>();
+            IAvaloniaReadOnlyList<string> _classes;
+
+            public ClassObserver(IAvaloniaReadOnlyList<string> classes, IList<string> match)
+            {
+                _classes = classes;
+                _match = match;
+            }
+
+            public IDisposable Subscribe(IObserver<bool> observer)
+            {
+                if (_observers.Count == 0)
+                {
+                    _classes.CollectionChanged += ClassesChanged;
+                }
+
+                _observers.Add(observer);
+                observer.OnNext(GetResult());
+
+                return Disposable.Create(() =>
+                {
+                    _observers.Remove(observer);
+                    if (_observers.Count == 0)
+                    {
+                        _classes.CollectionChanged -= ClassesChanged;
+                    }
+                });
+            }
+
+            private void ClassesChanged(object sender, NotifyCollectionChangedEventArgs e)
+            {
+                if (e.Action != NotifyCollectionChangedAction.Move)
+                {
+                    foreach (var observer in _observers)
+                    {
+                        observer.OnNext(GetResult());
+                    }
+                }
+            }
+
+            private bool GetResult()
+            {
+                int remaining = _match.Count;
+
+                foreach (var c in _classes)
+                {
+                    if (_match.Contains(c))
+                    {
+                        --remaining;
+                    }
+                }
+
+                return remaining == 0;
+            }
         }
     }
 }
