@@ -24,8 +24,6 @@ namespace Avalonia.Styling
         private List<IObserver<object>> _observers;
         private IDisposable _activatorSubscription;
         private IDisposable _sourceSubscription;
-        private bool? _active;
-        private object _value;
         private object _last = NotSent;
 
         /// <summary>
@@ -59,9 +57,19 @@ namespace Avalonia.Styling
         public string Description { get; }
 
         /// <summary>
+        /// Gets a value indicating whether the observable is active.
+        /// </summary>
+        public bool? IsActive { get; private set; }
+
+        /// <summary>
         /// Gets an observable which produces the <see cref="ActivatedValue"/>.
         /// </summary>
         public IObservable<object> Source { get; }
+
+        /// <summary>
+        /// Gets the value that will be produced when <see cref="IsActive"/> is true.
+        /// </summary>
+        public object Value { get; private set; }
 
         public IDisposable Subscribe(IObserver<object> observer)
         {
@@ -90,7 +98,7 @@ namespace Avalonia.Styling
             });
         }
 
-        private void NotifyCompleted()
+        protected virtual void NotifyCompleted()
         {
             foreach (var observer in _observers)
             {
@@ -100,7 +108,7 @@ namespace Avalonia.Styling
             _observers = null;
         }
 
-        private void NotifyError(Exception error)
+        protected virtual void NotifyError(Exception error)
         {
             foreach (var observer in _observers)
             {
@@ -110,11 +118,23 @@ namespace Avalonia.Styling
             _observers = null;
         }
 
+        protected virtual void NotifyValue(object value)
+        {
+            Value = value;
+            Update();
+        }
+
+        protected virtual void NotifyActive(bool active)
+        {
+            IsActive = active;
+            Update();
+        }
+
         private void Update()
         {
-            if (_active.HasValue)
+            if (IsActive.HasValue)
             {
-                var v = _active.Value ? _value : AvaloniaProperty.UnsetValue;
+                var v = IsActive.Value ? Value : AvaloniaProperty.UnsetValue;
 
                 if (!Equals(v, _last))
                 {
@@ -141,18 +161,8 @@ namespace Avalonia.Styling
             void IObserver<object>.OnCompleted() => _parent.NotifyCompleted();
             void IObserver<bool>.OnError(Exception error) => _parent.NotifyError(error);
             void IObserver<object>.OnError(Exception error) => _parent.NotifyError(error);
-
-            void IObserver<bool>.OnNext(bool value)
-            {
-                _parent._active = value;
-                _parent.Update();
-            }
-
-            void IObserver<object>.OnNext(object value)
-            {
-                _parent._value = value;
-                _parent.Update();
-            }
+            void IObserver<bool>.OnNext(bool value) => _parent.NotifyActive(value);
+            void IObserver<object>.OnNext(object value) => _parent.NotifyValue(value);
         }
     }
 }
