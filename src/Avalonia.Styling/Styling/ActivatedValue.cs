@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reactive.Disposables;
+using Avalonia.Threading;
 
 namespace Avalonia.Styling
 {
@@ -75,6 +76,9 @@ namespace Avalonia.Styling
 
         public virtual IDisposable Subscribe(IObserver<object> observer)
         {
+            Contract.Requires<ArgumentNullException>(observer != null);
+            Dispatcher.UIThread.VerifyAccess();
+
             _observers.Add(observer);
 
             if (_observers.Count == 1)
