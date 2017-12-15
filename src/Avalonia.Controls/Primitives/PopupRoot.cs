@@ -70,7 +70,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Gets the styling parent of the popup root.
         /// </summary>
-        IStyleRoot IStyleHost.StylingParent => Parent;
+        IStyleHost IStyleHost.StylingParent => Parent;
 
         /// <inheritdoc/>
         public void Dispose() => PlatformImpl?.Dispose();
