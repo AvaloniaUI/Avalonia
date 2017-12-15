@@ -111,6 +111,21 @@ namespace Avalonia.Input
             return string.Join(" + ", parts);
         }
 
-        public bool Matches(KeyEventArgs keyEvent) => keyEvent.Key == Key && keyEvent.Modifiers == Modifiers;
+        public bool Matches(KeyEventArgs keyEvent) => ResolveNumPadOperationKey(keyEvent.Key) == Key && keyEvent.Modifiers == Modifiers;
+
+        private Key ResolveNumPadOperationKey(Key key)
+        {
+            switch (key)
+            {
+                case Key.Add:
+                    return Key.OemPlus;
+                case Key.Subtract:
+                    return Key.OemMinus;
+                case Key.Decimal:
+                    return Key.OemPeriod;
+                default:
+                    return key;
+            }
+        }
     }
 }
