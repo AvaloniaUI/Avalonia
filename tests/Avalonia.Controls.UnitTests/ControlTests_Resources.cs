@@ -168,7 +168,7 @@ namespace Avalonia.Controls.UnitTests
             target.Resources.Add("foo", "bar");
 
             Assert.True(raisedOnTarget);
-            Assert.False(raisedOnPresenter);
+            Assert.True(raisedOnPresenter);
             Assert.True(raisedOnChild);
         }
 

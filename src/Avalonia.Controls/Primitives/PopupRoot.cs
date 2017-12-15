@@ -17,7 +17,7 @@ namespace Avalonia.Controls.Primitives
     /// <summary>
     /// The root window of a <see cref="Popup"/>.
     /// </summary>
-    public class PopupRoot : WindowBase, IInteractive, IHostedVisualTreeRoot, IDisposable, IResourceNode
+    public class PopupRoot : WindowBase, IInteractive, IHostedVisualTreeRoot, IDisposable, IStyleHost
     {
         private IDisposable _presenterSubscription;
 
@@ -70,7 +70,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Gets the styling parent of the popup root.
         /// </summary>
-        IResourceNode IResourceNode.ResourceParent => Parent;
+        IStyleRoot IStyleHost.StylingParent => Parent;
 
         /// <inheritdoc/>
         public void Dispose() => PlatformImpl?.Dispose();

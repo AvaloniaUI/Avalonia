@@ -39,7 +39,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
-        public void PopupRoot_ResourceParent_Is_Popup()
+        public void PopupRoot_StylingParent_Is_Popup()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
@@ -53,7 +53,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 target.ApplyTemplate();
                 target.Popup.Open();
 
-                Assert.Equal(target.Popup, ((IResourceNode)target.Popup.PopupRoot).ResourceParent);
+                Assert.Equal(target.Popup, ((IStyleHost)target.Popup.PopupRoot).StylingParent);
             }
         }
 
