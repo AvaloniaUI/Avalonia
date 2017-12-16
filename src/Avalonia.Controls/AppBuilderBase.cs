@@ -209,6 +209,17 @@ namespace Avalonia.Controls
 
         public TAppBuilder UseAvaloniaModules() => AfterSetup(builder => SetupAvaloniaModules());
 
+        private bool CheckSetup { get; set; } = true;
+
+        /// <summary>
+        /// Set this AppBuilder to ignore the setup check. Used for testing purposes.
+        /// </summary>
+        internal TAppBuilder IgnoreSetupCheck()
+        {
+            CheckSetup = false;
+            return Self;
+        }
+
         private void SetupAvaloniaModules()
         {
             var moduleInitializers = from assembly in AvaloniaLocator.Current.GetService<IRuntimePlatform>().GetLoadedAssemblies()
@@ -254,7 +265,7 @@ namespace Avalonia.Controls
                 throw new InvalidOperationException("No rendering system configured.");
             }
 
-            if (s_setupWasAlreadyCalled)
+            if (s_setupWasAlreadyCalled && CheckSetup)
             {
                 throw new InvalidOperationException("Setup was already called on one of AppBuilder instances");
             }
