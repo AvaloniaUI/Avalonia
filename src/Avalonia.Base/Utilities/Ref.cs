@@ -46,7 +46,6 @@ namespace Avalonia.Utilities
         {
             private IDisposable _item;
             private volatile int _refs;
-            private object _lock = new object();
 
             public RefCounter(IDisposable item)
             {
@@ -55,20 +54,39 @@ namespace Avalonia.Utilities
 
             public void AddRef()
             {
-                Interlocked.Increment(ref _refs);
+                var old = _refs;
+                while (true)
+                {
+                    var current = Interlocked.CompareExchange(ref _refs, old + 1, old);
+                    if (current == old)
+                    {
+                        if (current == 0)
+                        {
+                            throw new ObjectDisposedException("Cannot add a reference to a 0-referenced item");
+                        }
+                    }
+                    old = current;
+                }
             }
 
             public void Release()
             {
-                if (Interlocked.Decrement(ref _refs) == 0)
+                var old = _refs;
+                while (true)
                 {
-                    lock (_lock)
-                    {
-                        _item?.Dispose();
-                        _item = null;
-                    }
-                }
+                    var current = Interlocked.CompareExchange(ref _refs, old - 1, old);
 
+                    if (current == old)
+                    {
+                        if (current == 1)
+                        {
+                            _item.Dispose();
+                            _item = null;
+                        }
+                        return;
+                    }
+                    old = current;
+                }
             }
         }
 
@@ -82,7 +100,6 @@ namespace Avalonia.Utilities
             {
                 _item = item;
                 _counter = counter;
-                Thread.MemoryBarrier();
                 _counter.AddRef();
             }
 
@@ -129,12 +146,13 @@ namespace Avalonia.Utilities
             {
                 lock (_lock)
                 {
-                    lock (_lock)
+                    if (_item != null)
                     {
-                        if (_item != null)
-                            return new Ref<TResult>((TResult) (object) _item, _counter);
-                        throw new ObjectDisposedException("Ref<" + typeof(T) + ">");
+                        TResult castItem = null;
+                        Volatile.Write(ref castItem, (TResult)(object)_item);
+                        return new Ref<TResult>(castItem, _counter);
                     }
+                    throw new ObjectDisposedException("Ref<" + typeof(T) + ">");
                 }
             }
         }
