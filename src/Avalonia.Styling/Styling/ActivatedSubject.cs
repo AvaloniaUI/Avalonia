@@ -10,11 +10,9 @@ namespace Avalonia.Styling
     /// A subject which is switched on or off according to an activator observable.
     /// </summary>
     /// <remarks>
-    /// An <see cref="ActivatedSubject"/> has two inputs: an activator observable and either an
-    /// <see cref="ActivatedValue"/> or a <see cref="Source"/> observable which produces the
-    /// activated value. When the activator produces true, the <see cref="ActivatedObservable"/> will
-    /// produce the current activated value. When the activator produces false it will produce
-    /// <see cref="AvaloniaProperty.UnsetValue"/>.
+    /// An <see cref="ActivatedSubject"/> extends <see cref="ActivatedObservable"/> to
+    /// be an <see cref="ISubject{Object}"/>. When the object is active then values
+    /// received via <see cref="OnNext(object)"/> will be passed to the source subject.
     /// </remarks>
     internal class ActivatedSubject : ActivatedObservable, ISubject<object>, IDescription
     {
@@ -63,9 +61,21 @@ namespace Avalonia.Styling
             }
         }
 
-        protected override void NotifyCompleted()
+        protected override void ActiveChanged(bool active)
         {
-            base.NotifyCompleted();
+            bool first = !IsActive.HasValue;
+
+            base.ActiveChanged(active);
+
+            if (!first)
+            {
+                Source.OnNext(active ? _pushValue : AvaloniaProperty.UnsetValue);
+            }
+        }
+
+        protected override void CompletedReceived()
+        {
+            base.CompletedReceived();
 
             if (!_completed)
             {
@@ -74,26 +84,14 @@ namespace Avalonia.Styling
             }
         }
 
-        protected override void NotifyError(Exception error)
+        protected override void ErrorReceived(Exception error)
         {
-            base.NotifyError(error);
+            base.ErrorReceived(error);
 
             if (!_completed)
             {
                 Source.OnError(error);
                 _completed = true;
-            }
-        }
-
-        protected override void NotifyActive(bool active)
-        {
-            bool first = !IsActive.HasValue;
-
-            base.NotifyActive(active);
-
-            if (!first)
-            {
-                Source.OnNext(active ? _pushValue : AvaloniaProperty.UnsetValue);
             }
         }
 

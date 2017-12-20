@@ -2,9 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
-using System.Reactive.Disposables;
-using Avalonia.Threading;
+using Avalonia.Reactive;
 
 namespace Avalonia.Styling
 {
@@ -17,10 +15,9 @@ namespace Avalonia.Styling
     /// <see cref="ActivatedValue"/> will produce the current value. When the activator 
     /// produces false it will produce <see cref="AvaloniaProperty.UnsetValue"/>.
     /// </remarks>
-    internal class ActivatedValue : IObservable<object>, IDescription
+    internal class ActivatedValue : LightweightObservableBase<object>, IDescription
     {
         private static readonly object NotSent = new object();
-        private List<IObserver<object>> _observers = new List<IObserver<object>>();
         private IDisposable _activatorSubscription;
         private object _value;
         private object _last = NotSent;
@@ -74,68 +71,35 @@ namespace Avalonia.Styling
 
         protected ActivatorListener Listener { get; }
 
-        public virtual IDisposable Subscribe(IObserver<object> observer)
+        protected virtual void ActiveChanged(bool active)
         {
-            Contract.Requires<ArgumentNullException>(observer != null);
-            Dispatcher.UIThread.VerifyAccess();
-
-            _observers.Add(observer);
-
-            if (_observers.Count == 1)
-            {
-                Initialize();
-            }
-
-            return Disposable.Create(() =>
-            {
-                _observers.Remove(observer);
-
-                if (_observers.Count == 0)
-                {
-                    Deinitialize();
-                }
-            });
+            IsActive = active;
+            PublishValue();
         }
+
+        protected virtual void CompletedReceived() => PublishCompleted();
 
         protected virtual ActivatorListener CreateListener() => new ActivatorListener(this);
 
-        protected virtual void Deinitialize()
+        protected override void Deinitialize()
         {
             _activatorSubscription.Dispose();
             _activatorSubscription = null;
         }
 
-        protected virtual void Initialize()
+        protected virtual void ErrorReceived(Exception error) => PublishError(error);
+
+        protected override void Initialize()
         {
             _activatorSubscription = Activator.Subscribe(Listener);
         }
 
-        protected virtual void NotifyCompleted()
+        protected override void Subscribed(IObserver<object> observer)
         {
-            foreach (var observer in _observers)
+            if (IsActive == true)
             {
-                observer.OnCompleted();
+                observer.OnNext(Value);
             }
-
-            Deinitialize();
-            _observers = null;
-        }
-
-        protected virtual void NotifyError(Exception error)
-        {
-            foreach (var observer in _observers)
-            {
-                observer.OnError(error);
-            }
-
-            Deinitialize();
-            _observers = null;
-        }
-
-        protected virtual void NotifyActive(bool active)
-        {
-            IsActive = active;
-            PublishValue();
         }
 
         private void PublishValue()
@@ -146,11 +110,7 @@ namespace Avalonia.Styling
 
                 if (!Equals(v, _last))
                 {
-                    foreach (var observer in _observers)
-                    {
-                        observer.OnNext(v);
-                    }
-
+                    PublishNext(v);
                     _last = v;
                 }
             }
@@ -165,9 +125,9 @@ namespace Avalonia.Styling
 
             protected ActivatedValue Parent { get; }
 
-            void IObserver<bool>.OnCompleted() => Parent.NotifyCompleted();
-            void IObserver<bool>.OnError(Exception error) => Parent.NotifyError(error);
-            void IObserver<bool>.OnNext(bool value) => Parent.NotifyActive(value);
+            void IObserver<bool>.OnCompleted() => Parent.CompletedReceived();
+            void IObserver<bool>.OnError(Exception error) => Parent.ErrorReceived(error);
+            void IObserver<bool>.OnNext(bool value) => Parent.ActiveChanged(value);
         }
     }
 }
