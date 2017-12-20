@@ -21,7 +21,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'net461'">
+  <ItemGroup Condition="'$(TargetFramework)' == 'net47'">
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -32,7 +32,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Condition="'$(TargetFramework)' == 'net461'" Include="..\..\src\Avalonia.DotNetFrameworkRuntime\Avalonia.DotNetFrameworkRuntime.csproj" />
+    <ProjectReference Condition="'$(TargetFramework)' == 'net47'" Include="..\..\src\Avalonia.DotNetFrameworkRuntime\Avalonia.DotNetFrameworkRuntime.csproj" />
 	<ProjectReference Condition="'$(TargetFramework)' == 'netcoreapp2.0'" Include="..\..\src\Avalonia.DotNetCoreRuntime\Avalonia.DotNetCoreRuntime.csproj" />
     <ProjectReference Include="..\..\src\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj" />
     <ProjectReference Include="..\..\src\Markup\Avalonia.Markup\Avalonia.Markup.csproj" />
