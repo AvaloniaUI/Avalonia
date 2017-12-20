@@ -29,7 +29,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
                 ElementName = ElementName,
                 Mode = Mode,
                 RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent),
-                Path = Path,
+                Path = Path ?? string.Empty,
                 Priority = Priority,
             };
         }

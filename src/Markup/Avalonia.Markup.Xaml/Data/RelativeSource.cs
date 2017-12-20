@@ -87,5 +87,7 @@ namespace Avalonia.Markup.Xaml.Data
         /// Gets or sets a value that describes the type of relative source lookup.
         /// </summary>
         public RelativeSourceMode Mode { get; set; }
+
+        public TreeType Tree { get; set; } = TreeType.Visual;
     }
 }

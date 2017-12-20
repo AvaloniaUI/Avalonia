@@ -23,7 +23,7 @@ namespace Avalonia.Markup.UnitTests
             {
                 Child = new StackPanel
                 {
-                    Children = new Controls.Controls
+                    Children =
                     {
                         (target = new TextBlock { Name = "target" }),
                         (relativeTo = new TextBlock { Name = "start" }),
@@ -49,7 +49,7 @@ namespace Avalonia.Markup.UnitTests
             {
                 Child = (panel = new StackPanel
                 {
-                    Children = new Controls.Controls
+                    Children =
                     {
                         (relativeTo = new TextBlock
                         {
@@ -84,7 +84,7 @@ namespace Avalonia.Markup.UnitTests
             {
                 Child = panel = new StackPanel
                 {
-                    Children = new Controls.Controls
+                    Children =
                     {
                         (target = new TextBlock { Name = "target" }),
                         (relativeTo = new TextBlock { Name = "start" }),
@@ -114,7 +114,7 @@ namespace Avalonia.Markup.UnitTests
             {
                 Child = new StackPanel
                 {
-                    Children = new Controls.Controls
+                    Children =
                     {
                         (relativeTo = new TextBlock
                         {
@@ -129,7 +129,7 @@ namespace Avalonia.Markup.UnitTests
             {
                 Child = new StackPanel
                 {
-                    Children = new Controls.Controls
+                    Children =
                     {
                         (target2 = new TextBlock { Name = "target" }),
                     }
