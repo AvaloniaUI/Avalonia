@@ -163,7 +163,7 @@ void RunCoreTest(string project, Parameters parameters, bool coreOnly = false)
     DotNetCoreRestore(project);
     var frameworks = new List<string>(){"netcoreapp2.0"};
     if(parameters.IsRunningOnWindows)
-        frameworks.Add("net461");
+        frameworks.Add("net47");
     foreach(var fw in frameworks)
     {
         if(!fw.StartsWith("netcoreapp") && coreOnly)
