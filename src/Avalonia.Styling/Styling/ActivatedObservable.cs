@@ -9,7 +9,7 @@ namespace Avalonia.Styling
     /// An observable which is switched on or off according to an activator observable.
     /// </summary>
     /// <remarks>
-    /// An <see cref="ActivatedObservable"/> has two inputs: an activator observable a 
+    /// An <see cref="ActivatedObservable"/> has two inputs: an activator observable and a 
     /// <see cref="Source"/> observable which produces the activated value. When the activator 
     /// produces true, the <see cref="ActivatedObservable"/> will produce the current activated 
     /// value. When the activator produces false it will produce
@@ -69,8 +69,8 @@ namespace Avalonia.Styling
             }
             protected new ActivatedObservable Parent => (ActivatedObservable)base.Parent;
 
-            void IObserver<object>.OnCompleted() => Parent.NotifyCompleted();
-            void IObserver<object>.OnError(Exception error) => Parent.NotifyError(error);
+            void IObserver<object>.OnCompleted() => Parent.CompletedReceived();
+            void IObserver<object>.OnError(Exception error) => Parent.ErrorReceived(error);
             void IObserver<object>.OnNext(object value) => Parent.NotifyValue(value);
         }
     }
