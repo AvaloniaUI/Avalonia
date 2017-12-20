@@ -97,6 +97,7 @@ namespace Avalonia.Controls
         private UndoRedoHelper<UndoRedoState> _undoRedoHelper;
         private bool _ignoreTextChanges;
         private IEnumerable<Exception> _dataValidationErrors;
+        private static readonly string[] invalidCharacters = new String[1]{"\u007f"};
 
         static TextBox()
         {
@@ -177,6 +178,10 @@ namespace Avalonia.Controls
             {
                 value = CoerceCaretIndex(value);
                 SetAndRaise(SelectionStartProperty, ref _selectionStart, value);
+                if (SelectionStart == SelectionEnd)
+                {
+                    CaretIndex = SelectionStart;
+                }
             }
         }
 
@@ -191,6 +196,10 @@ namespace Avalonia.Controls
             {
                 value = CoerceCaretIndex(value);
                 SetAndRaise(SelectionEndProperty, ref _selectionEnd, value);
+                if (SelectionStart == SelectionEnd)
+                {
+                    CaretIndex = SelectionEnd;
+                }
             }
         }
 
@@ -280,6 +289,7 @@ namespace Avalonia.Controls
         {
             if (!IsReadOnly)
             {
+                input = RemoveInvalidCharacters(input);
                 string text = Text ?? string.Empty;
                 int caretIndex = CaretIndex;
                 if (!string.IsNullOrEmpty(input))
@@ -293,6 +303,16 @@ namespace Avalonia.Controls
                     _undoRedoHelper.DiscardRedo();
                 }
             }
+        }
+
+        public string RemoveInvalidCharacters(string text)
+        {
+            for (var i = 0; i < invalidCharacters.Length; i++)
+            {
+                text = text.Replace(invalidCharacters[i], string.Empty);
+            }
+
+            return text;
         }
 
         private async void Copy()

@@ -275,10 +275,10 @@ namespace Avalonia.Layout.UnitTests
                 {
                     Child = panel = new StackPanel
                     {
-                        Children = new Controls.Controls
-                    {
-                        (border = new Border())
-                    }
+                        Children =
+                        {
+                            (border = new Border())
+                        }
                     }
                 };
 

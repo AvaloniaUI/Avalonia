@@ -55,7 +55,6 @@ namespace Avalonia.Direct2D1.Media
             _finishedCallback = finishedCallback;
             _directWriteFactory = directWriteFactory;
             _imagingFactory = imagingFactory;
-            _swapChain = swapChain;
             _renderTarget.BeginDraw();
         }
 

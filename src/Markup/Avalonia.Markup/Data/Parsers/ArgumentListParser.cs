@@ -51,15 +51,7 @@ namespace Avalonia.Markup.Data.Parsers
                     }
                 }
 
-                if (!r.End)
-                {
-                    r.Take();
-                    return result;
-                }
-                else
-                {
-                    throw new ExpressionParseException(r.Position, "Expected ']'.");
-                }
+                throw new ExpressionParseException(r.Position, "Expected ']'.");
             }
 
             return null;

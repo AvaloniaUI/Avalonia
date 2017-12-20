@@ -18,7 +18,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
             {
                 Child = new StackPanel
                 {
-                    Children = new Controls.Controls
+                    Children =
                     {
                         new TextBlock
                         {
@@ -54,7 +54,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
             {
                 Child = new StackPanel
                 {
-                    Children = new Controls.Controls
+                    Children =
                     {
                         (source = new TextBlock
                         {
@@ -89,7 +89,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
             {
                 Child = stackPanel = new StackPanel
                 {
-                    Children = new Controls.Controls
+                    Children =
                     {
                         (target = new TextBlock
                         {
@@ -126,7 +126,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
             {
                 Child = stackPanel = new StackPanel
                 {
-                    Children = new Controls.Controls
+                    Children =
                     {
                         (target = new ContentControl
                         {

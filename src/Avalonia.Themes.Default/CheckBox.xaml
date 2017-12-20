@@ -31,8 +31,8 @@
             </Panel>
           </Border>
           <ContentPresenter Name="PART_ContentPresenter"
-                            Content="{TemplateBinding Content}"
                             ContentTemplate="{TemplateBinding ContentTemplate}"
+                            Content="{TemplateBinding Content}"
                             Margin="4,0,0,0"
                             VerticalAlignment="Center"
                             Grid.Column="1"/>

@@ -549,7 +549,7 @@ namespace Avalonia.Controls
                         }
                         else
                         {
-                            if (addedDate.HasValue && !(SelectedDates.Count > 0 && SelectedDates[0] == addedDate.Value))
+                            if (!(SelectedDates.Count > 0 && SelectedDates[0] == addedDate.Value))
                             {
                                 foreach (DateTime item in SelectedDates)
                                 {
