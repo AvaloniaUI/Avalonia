@@ -208,6 +208,13 @@ Task("Run-Designer-Unit-Tests")
     .WithCriteria(() => !parameters.SkipTests && parameters.IsRunningOnWindows)
     .Does(() =>
 {
+    var xUnitSettings = new XUnit2Settings 
+    { 
+        ToolPath = toolPath,
+        Parallelism = ParallelismOption.None,
+        ShadowCopy = false,
+    };
+
     XUnit2(GetFiles("./artifacts/designer-tests/Avalonia.DesignerSupport.Tests.csproj"), xUnitSettings);
 });
 
