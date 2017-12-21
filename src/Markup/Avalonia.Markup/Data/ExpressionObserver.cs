@@ -4,18 +4,19 @@
 using System;
 using System.Collections.Generic;
 using System.Reactive;
-using System.Reactive.Disposables;
 using System.Reactive.Linq;
-using System.Reactive.Subjects;
 using Avalonia.Data;
 using Avalonia.Markup.Data.Plugins;
+using Avalonia.Reactive;
 
 namespace Avalonia.Markup.Data
 {
     /// <summary>
     /// Observes and sets the value of an expression on an object.
     /// </summary>
-    public class ExpressionObserver : ObservableBase<object>, IDescription
+    public class ExpressionObserver : LightweightObservableBase<object>,
+        IDescription,
+        IObserver<object>
     {
         /// <summary>
         /// An ordered collection of property accessor plugins that can be used to customize
@@ -54,9 +55,10 @@ namespace Avalonia.Markup.Data
 
         private static readonly object UninitializedValue = new object();
         private readonly ExpressionNode _node;
-        private readonly Subject<Unit> _finished;
-        private readonly object _root;
-        private IObservable<object> _result;
+        private IDisposable _nodeSubscription;
+        private object _root;
+        private IDisposable _rootSubscription;
+        private WeakReference<object> _value;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ExpressionObserver"/> class.
@@ -107,7 +109,6 @@ namespace Avalonia.Markup.Data
             Expression = expression;
             Description = description ?? expression;
             _node = Parse(expression, enableDataValidation);
-            _finished = new Subject<Unit>();
             _root = rootObservable;
         }
 
@@ -135,8 +136,6 @@ namespace Avalonia.Markup.Data
             Expression = expression;
             Description = description ?? expression;
             _node = Parse(expression, enableDataValidation);
-            _finished = new Subject<Unit>();
-
             _node.Target = new WeakReference(rootGetter());
             _root = update.Select(x => rootGetter());
         }
@@ -203,27 +202,42 @@ namespace Avalonia.Markup.Data
             }
         }
 
-        /// <inheritdoc/>
-        protected override IDisposable SubscribeCore(IObserver<object> observer)
+        void IObserver<object>.OnNext(object value)
         {
-            if (_result == null)
+            var broken = BindingNotification.ExtractError(value) as MarkupBindingChainException;
+            broken?.Commit(Description);
+            _value = new WeakReference<object>(value);
+            PublishNext(value);
+        }
+
+        void IObserver<object>.OnCompleted()
+        {
+        }
+
+        void IObserver<object>.OnError(Exception error)
+        {
+        }
+
+        protected override void Initialize()
+        {
+            _value = null;
+            _nodeSubscription = _node.Subscribe(this);
+            StartRoot();
+        }
+
+        protected override void Deinitialize()
+        {
+            _rootSubscription?.Dispose();
+            _nodeSubscription?.Dispose();
+            _rootSubscription = _nodeSubscription = null;
+        }
+
+        protected override void Subscribed(IObserver<object> observer, bool first)
+        {
+            if (!first && _value != null && _value.TryGetTarget(out var value))
             {
-                var source = (IObservable<object>)_node;
-
-                if (_finished != null)
-                {
-                    source = source.TakeUntil(_finished);
-                }
-
-                _result = Observable.Using(StartRoot, _ => source)
-                    .Select(ToWeakReference)
-                    .Publish(UninitializedValue)
-                    .RefCount()
-                    .Where(x => x != UninitializedValue)
-                    .Select(Translate);
+                observer.OnNext(value);
             }
-
-            return _result.Subscribe(observer);
         }
 
         private static ExpressionNode Parse(string expression, bool enableDataValidation)
@@ -238,46 +252,18 @@ namespace Avalonia.Markup.Data
             }
         }
 
-        private static object ToWeakReference(object o)
+        private void StartRoot()
         {
-            return o is BindingNotification ? o : new WeakReference(o);
-        }
-
-        private object Translate(object o)
-        {
-            var weak = o as WeakReference;
-
-            if (weak != null)
+            if (_root is IObservable<object> observable)
             {
-                return weak.Target;
-            }
-            else
-            {
-                var broken = BindingNotification.ExtractError(o) as MarkupBindingChainException;
-
-                if (broken != null)
-                {
-                    broken.Commit(Description);
-                }
-                return o;
-            }
-        }
-
-        private IDisposable StartRoot()
-        {
-            var observable = _root as IObservable<object>;
-
-            if (observable != null)
-            {
-                return observable.Subscribe(
+                _rootSubscription = observable.Subscribe(
                     x => _node.Target = new WeakReference(x != AvaloniaProperty.UnsetValue ? x : null),
-                    _ => _finished.OnNext(Unit.Default),
-                    () => _finished.OnNext(Unit.Default));
+                    x => PublishCompleted(),
+                    () => PublishCompleted());
             }
             else
             {
                 _node.Target = (WeakReference)_root;
-                return Disposable.Empty;
             }
         }
     }

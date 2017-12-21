@@ -94,9 +94,9 @@ namespace Avalonia.Styling
             _activatorSubscription = Activator.Subscribe(Listener);
         }
 
-        protected override void Subscribed(IObserver<object> observer)
+        protected override void Subscribed(IObserver<object> observer, bool first)
         {
-            if (IsActive == true)
+            if (IsActive == true && !first)
             {
                 observer.OnNext(Value);
             }
