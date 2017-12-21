@@ -22,7 +22,7 @@ install:
 before_build:
 - git submodule update --init
 build_script:
-- ps: .\build.ps1 -Target "AppVeyor" -Platform "$env:platform" -Configuration "$env:configuration" -v Diagnostic
+- ps: .\build.ps1 -Target "AppVeyor" -Platform "$env:platform" -Configuration "$env:configuration"
 
 test: off
 artifacts:

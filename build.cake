@@ -143,8 +143,8 @@ Task("Build")
             settings.WithProperty("Platform", "\"" + parameters.Platform + "\"");
             settings.WithProperty("UseRoslynPathHack", "true");
             settings.SetVerbosity(Verbosity.Minimal);
-            settings.WithProperty("Windows", "True");
             settings.UseToolVersion(MSBuildToolVersion.VS2017);
+            settings.WithProperty("Windows", "True");
             settings.SetNodeReuse(false);
         });
     }
@@ -178,8 +178,11 @@ void RunCoreTest(string project, Parameters parameters, bool coreOnly = false)
     }
 }
 
-Task("Run-Net-Core-Unit-Tests")
-    .IsDependentOn("Clean")
+Task("Run-Unit-Tests")
+    .IsDependentOn("Build")
+    .IsDependentOn("Run-Designer-Unit-Tests")
+    .IsDependentOn("Run-Render-Tests")
+    .WithCriteria(() => !parameters.SkipTests)
     .Does(() => {
         RunCoreTest("./tests/Avalonia.Base.UnitTests", parameters, false);
         RunCoreTest("./tests/Avalonia.Controls.UnitTests", parameters, false);
@@ -190,56 +193,22 @@ Task("Run-Net-Core-Unit-Tests")
         RunCoreTest("./tests/Avalonia.Markup.Xaml.UnitTests", parameters, false);
         RunCoreTest("./tests/Avalonia.Styling.UnitTests", parameters, false);
         RunCoreTest("./tests/Avalonia.Visuals.UnitTests", parameters, false);
-        if(parameters.IsRunningOnWindows)
-            RunCoreTest("./tests/Avalonia.RenderTests/Avalonia.Skia.RenderTests.csproj", parameters, true);
     });
 
-Task("Run-Unit-Tests")
-    .IsDependentOn("Run-Net-Core-Unit-Tests")
+Task("Run-Render-Tests")
     .IsDependentOn("Build")
-    //.IsDependentOn("Run-Leak-Tests")
-    .WithCriteria(() => !parameters.SkipTests)
+    .WithCriteria(() => !parameters.SkipTests && parameters.IsRunningOnWindows)
+    .Does(() => {
+        RunCoreTest("./tests/Avalonia.RenderTests/Avalonia.Skia.RenderTests.csproj", parameters, true);
+        RunCoreTest("./tests/Avalonia.RenderTests/Avalonia.Direct2D1.RenderTests.csproj", parameters, true);
+    })
+
+Task("Run-Designer-Unit-Tests")
+    .IsDependentOn("Build")
+    .WithCriteria(() => !parameters.SkipTests && parameters.IsRunningOnWindows)
     .Does(() =>
 {
-    if(!parameters.IsRunningOnWindows)
-       return;
-
-    var unitTests = GetDirectories("./tests/Avalonia.*.UnitTests")
-        .Select(dir => System.IO.Path.GetFileName(dir.FullPath))
-        .Where( name => !name.Contains("Skia")) // Run in the Run-Net-Core-Unit-Tests target
-        .Where(name => parameters.IsRunningOnWindows ? true : !name.Contains("Direct2D"))
-        .Select(name => MakeAbsolute(File("./tests/" + name + "/bin/" + parameters.DirSuffix + "/" + name + ".dll")))
-        .ToList();
-
-    var toolPath = (parameters.IsPlatformAnyCPU || parameters.IsPlatformX86) ? 
-        Context.Tools.Resolve("xunit.console.x86.exe") :
-        Context.Tools.Resolve("xunit.console.exe");
-
-    var xUnitSettings = new XUnit2Settings 
-    { 
-        ToolPath = toolPath,
-        Parallelism = ParallelismOption.None,
-        ShadowCopy = false
-    };
-
-    xUnitSettings.NoAppDomain = !parameters.IsRunningOnWindows;
-
-    foreach(var test in unitTests.Where(testFile => FileExists(testFile)))
-    {
-        CopyDirectory(test.GetDirectory(), parameters.TestsRoot);
-    }
-
-    var testsInDirectoryToRun = new List<FilePath>();
-    if(parameters.IsRunningOnWindows)
-    {
-        testsInDirectoryToRun.AddRange(GetFiles("./artifacts/tests/*Tests.dll"));
-    }
-    else
-    {
-        testsInDirectoryToRun.AddRange(GetFiles("./artifacts/tests/*.UnitTests.dll"));
-    }
-
-    XUnit2(testsInDirectoryToRun, xUnitSettings);
+    XUnit2(GetFiles("./artifacts/designer-tests/Avalonia.DesignerSupport.Tests.csproj"), xUnitSettings);
 });
 
 Task("Copy-Files")
@@ -427,7 +396,7 @@ Task("Default").Does(() =>
     if(parameters.IsRunningOnWindows)
         RunTarget("Package");
     else
-        RunTarget("Run-Net-Core-Unit-Tests");
+        RunTarget("Run-Unit-Tests");
 });
 Task("AppVeyor")
   .IsDependentOn("Zip-Files")
@@ -435,7 +404,7 @@ Task("AppVeyor")
   .IsDependentOn("Publish-NuGet");
 
 Task("Travis")
-  .IsDependentOn("Run-Net-Core-Unit-Tests");
+  .IsDependentOn("Run-Unit-Tests");
 
 ///////////////////////////////////////////////////////////////////////////////
 // EXECUTE
