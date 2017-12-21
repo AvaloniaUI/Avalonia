@@ -93,7 +93,7 @@ Task("Clean")
     CleanDirectory(parameters.NugetRoot);
     CleanDirectory(parameters.ZipRoot);
     CleanDirectory(parameters.BinRoot);
-    CleanDirectory(parameters.TestsRoot);
+    CleanDirectory(parameters.DesignerTestsRoot);
 });
 
 Task("Restore-NuGet-Packages")
