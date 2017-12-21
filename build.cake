@@ -195,7 +195,7 @@ Task("Run-Unit-Tests")
         RunCoreTest("./tests/Avalonia.Visuals.UnitTests", parameters, false);
         if (parameters.IsRunningOnWindows)
         {
-            RunCoreTest("./tests/Avalonia.Direct2D1.UnitTests", parameters, false);
+            RunCoreTest("./tests/Avalonia.Direct2D1.UnitTests", parameters, true);
         }
     });
 
@@ -212,6 +212,10 @@ Task("Run-Designer-Unit-Tests")
     .WithCriteria(() => !parameters.SkipTests && parameters.IsRunningOnWindows)
     .Does(() =>
 {
+    var toolPath = (parameters.IsPlatformAnyCPU || parameters.IsPlatformX86) ? 
+        Context.Tools.Resolve("xunit.console.x86.exe") :
+        Context.Tools.Resolve("xunit.console.exe");
+        
     var xUnitSettings = new XUnit2Settings 
     { 
         ToolPath = toolPath,
