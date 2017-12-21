@@ -124,13 +124,8 @@ Task("Restore-NuGet-Packages")
 
 void DotNetCoreBuild()
 {
-    DotNetCoreRestore("samples\\ControlCatalog.NetCore");
-    DotNetBuild("samples\\ControlCatalog.NetCore");
+    DotNetCoreBuild("samples\\ControlCatalog.NetCore");
 }
-
-Task("DotNetCoreBuild")
-    .IsDependentOn("Clean")
-    .Does(() => DotNetCoreBuild());
 
 Task("Build")
     .IsDependentOn("Restore-NuGet-Packages")
@@ -140,9 +135,9 @@ Task("Build")
     {
         MSBuild(parameters.MSBuildSolution, settings => {
             settings.SetConfiguration(parameters.Configuration);
+            settings.SetVerbosity(Verbosity.Minimal);
             settings.WithProperty("Platform", "\"" + parameters.Platform + "\"");
             settings.WithProperty("UseRoslynPathHack", "true");
-            settings.SetVerbosity(Verbosity.Minimal);
             settings.UseToolVersion(MSBuildToolVersion.VS2017);
             settings.WithProperty("Windows", "True");
             settings.SetNodeReuse(false);
@@ -160,7 +155,6 @@ void RunCoreTest(string project, Parameters parameters, bool coreOnly = false)
     if(!project.EndsWith(".csproj"))
         project = System.IO.Path.Combine(project, System.IO.Path.GetFileName(project)+".csproj");
     Information("Running tests from " + project);
-    DotNetCoreRestore(project);
     var frameworks = new List<string>(){"netcoreapp2.0"};
     if(parameters.IsRunningOnWindows)
         frameworks.Add("net47");
@@ -215,7 +209,7 @@ Task("Run-Designer-Unit-Tests")
     var toolPath = (parameters.IsPlatformAnyCPU || parameters.IsPlatformX86) ? 
         Context.Tools.Resolve("xunit.console.x86.exe") :
         Context.Tools.Resolve("xunit.console.exe");
-        
+
     var xUnitSettings = new XUnit2Settings 
     { 
         ToolPath = toolPath,
@@ -223,7 +217,7 @@ Task("Run-Designer-Unit-Tests")
         ShadowCopy = false,
     };
 
-    XUnit2(GetFiles("./artifacts/designer-tests/Avalonia.DesignerSupport.Tests.csproj"), xUnitSettings);
+    XUnit2("./artifacts/designer-tests/Avalonia.DesignerSupport.Tests.dll", xUnitSettings);
 });
 
 Task("Copy-Files")

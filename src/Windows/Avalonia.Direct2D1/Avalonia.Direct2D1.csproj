@@ -2,6 +2,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\..\Shared\SharedAssemblyInfo.cs">
@@ -25,4 +26,5 @@
   <Import Project="..\..\..\build\SharpDX.props" />
   <Import Project="..\..\Shared\RenderHelpers\RenderHelpers.projitems" Label="Shared" />
   <Import Project="..\..\..\build\JetBrains.Annotations.props" />
+  <Import Project="..\..\..\build\Unsafe.props" />
 </Project>

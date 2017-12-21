@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Runtime.CompilerServices;
 using Avalonia.Win32.Interop;
 using SharpDX.WIC;
 using APixelFormat = Avalonia.Platform.PixelFormat;
@@ -74,8 +75,13 @@ namespace Avalonia.Direct2D1.Media
             {
                 for (var row = 0; row < height; row++)
                 {
-                    UnmanagedMethods.CopyMemory(new IntPtr(l.Data.DataPointer.ToInt64() + row * l.Stride),
-                        new IntPtr(data.ToInt64() + row * stride), (uint) l.Data.Pitch);
+                    unsafe
+                    {
+                        Unsafe.CopyBlock(
+                            (void*)(l.Data.DataPointer + row * l.Stride),
+                            (void*)(data + row * stride),
+                            (uint) l.Data.Pitch);
+                    }
                 }
             }
         }

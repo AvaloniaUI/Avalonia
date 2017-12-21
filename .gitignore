@@ -176,3 +176,5 @@ nuget
 Avalonia.XBuild.sln
 project.lock.json
 .idea/*
+**/obj-Skia/*
+**/obj-Direct2D1/*
