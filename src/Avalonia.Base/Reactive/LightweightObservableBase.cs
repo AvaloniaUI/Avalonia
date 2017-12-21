@@ -39,26 +39,34 @@ namespace Avalonia.Reactive
                 return Disposable.Empty;
             }
 
+            var first = _observers.Count == 0;
+
             lock (_observers)
             {
                 _observers.Add(observer);
             }
 
-            if (_observers.Count == 1)
+            if (first)
             {
                 Initialize();
             }
 
-            Subscribed(observer);
+            Subscribed(observer, first);
 
             return Disposable.Create(() =>
             {
-                _observers?.Remove(observer);
-
-                if (_observers?.Count == 0)
+                if (_observers != null)
                 {
-                    Deinitialize();
-                    _observers.TrimExcess();
+                    lock (_observers)
+                    {
+                        _observers?.Remove(observer);
+
+                        if (_observers?.Count == 0)
+                        {
+                            Deinitialize();
+                            _observers.TrimExcess();
+                        }
+                    }
                 }
             });
         }
@@ -68,9 +76,16 @@ namespace Avalonia.Reactive
 
         protected void PublishNext(T value)
         {
-            lock (_observers)
+            if (_observers != null)
             {
-                foreach (var observer in _observers)
+                IObserver<T>[] observers;
+
+                lock (_observers)
+                {
+                    observers = _observers.ToArray();
+                }
+
+                foreach (var observer in observers)
                 {
                     observer.OnNext(value);
                 }
@@ -79,36 +94,48 @@ namespace Avalonia.Reactive
 
         protected void PublishCompleted()
         {
-            lock (_observers)
+            if (_observers != null)
             {
-                foreach (var observer in _observers)
+                IObserver<T>[] observers;
+
+                lock (_observers)
+                {
+                    observers = _observers.ToArray();
+                    _observers = null;
+                }
+
+                foreach (var observer in observers)
                 {
                     observer.OnCompleted();
                 }
 
-                _observers = null;
+                Deinitialize();
             }
-
-            Deinitialize();
         }
 
         protected void PublishError(Exception error)
         {
-            lock (_observers)
+            if (_observers != null)
             {
-                foreach (var observer in _observers)
+                IObserver<T>[] observers;
+
+                lock (_observers)
+                {
+                    observers = _observers.ToArray();
+                    _observers = null;
+                }
+
+                foreach (var observer in observers)
                 {
                     observer.OnError(error);
                 }
 
-                _observers = null;
+                _error = error;
+                Deinitialize();
             }
-
-            _error = error;
-            Deinitialize();
         }
 
-        protected virtual void Subscribed(IObserver<T> observer)
+        protected virtual void Subscribed(IObserver<T> observer, bool first)
         {
         }
     }
