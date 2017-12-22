@@ -15,6 +15,7 @@ using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Xunit;
+using Avalonia.Input;
 
 namespace Avalonia.Controls.UnitTests.Primitives
 {
@@ -189,12 +190,14 @@ namespace Avalonia.Controls.UnitTests.Primitives
         {
             using (CreateServices())
             {
+                var window = new Window();
                 var target = new Popup();
                 var child = new Control();
 
+                window.Content = target;
                 target.Open();
 
-                Assert.Equal(1, target.PopupRoot.GetVisualChildren().Count());
+                Assert.Single(target.PopupRoot.GetVisualChildren());
 
                 var templatedChild = target.PopupRoot.GetVisualChildren().Single();
                 Assert.IsType<ContentPresenter>(templatedChild);
@@ -214,7 +217,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     {
                         Content = new Border(),
                         Template = new FuncControlTemplate<PopupContentControl>(PopupContentControlTemplate),
-                    }
+                    },
+                    StylingParent = AvaloniaLocator.Current.GetService<IGlobalStyles>()
                 };
 
                 target.ApplyTemplate();
@@ -306,7 +310,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 .Bind<IGlobalStyles>().ToFunc(() => globalStyles.Object)
                 .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformMock())
                 .Bind<IStyler>().ToTransient<Styler>()
-                .Bind<IPlatformRenderInterface>().ToFunc(() => renderInterface.Object);
+                .Bind<IPlatformRenderInterface>().ToFunc(() => renderInterface.Object)
+                .Bind<IInputManager>().ToConstant(new InputManager());
             
             return result;
         }

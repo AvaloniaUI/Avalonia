@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Subjects;
 using Avalonia.Controls;
+using Avalonia.Data;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
@@ -19,28 +21,18 @@ namespace Avalonia.Visuals.UnitTests.Rendering
         [Fact]
         public void First_Frame_Calls_UpdateScene_On_Dispatcher()
         {
-            var loop = new Mock<IRenderLoop>();
             var root = new TestRoot();
 
             var dispatcher = new Mock<IDispatcher>();
             dispatcher.Setup(x => x.InvokeAsync(It.IsAny<Action>(), DispatcherPriority.Render))
                 .Callback<Action, DispatcherPriority>((a, p) => a());
 
-            var target = new DeferredRenderer(
-                root,
-                loop.Object,
-                sceneBuilder: MockSceneBuilder(root).Object,
-                dispatcher: dispatcher.Object);
+            CreateTargetAndRunFrame(root, dispatcher: dispatcher.Object);
 
-            target.Start();
-            RunFrame(loop);
-
-#if !NETCOREAPP1_1 // Delegate.Method is not available in netcoreapp1.1
             dispatcher.Verify(x => 
                 x.InvokeAsync(
                     It.Is<Action>(a => a.Method.Name == "UpdateScene"),
                     DispatcherPriority.Render));
-#endif
         }
 
         [Fact]
@@ -49,15 +41,8 @@ namespace Avalonia.Visuals.UnitTests.Rendering
             var loop = new Mock<IRenderLoop>();
             var root = new TestRoot();
             var sceneBuilder = MockSceneBuilder(root);
-            var dispatcher = new ImmediateDispatcher();
-            var target = new DeferredRenderer(
-                root,
-                loop.Object,
-                sceneBuilder: sceneBuilder.Object,
-                dispatcher: dispatcher);
 
-            target.Start();
-            RunFrame(loop);
+            CreateTargetAndRunFrame(root, sceneBuilder: sceneBuilder.Object);
 
             sceneBuilder.Verify(x => x.UpdateAll(It.IsAny<Scene>()));
         }
@@ -68,12 +53,10 @@ namespace Avalonia.Visuals.UnitTests.Rendering
             var loop = new Mock<IRenderLoop>();
             var root = new TestRoot();
             var sceneBuilder = MockSceneBuilder(root);
-            var dispatcher = new ImmediateDispatcher();
             var target = new DeferredRenderer(
                 root,
                 loop.Object,
-                sceneBuilder: sceneBuilder.Object,
-                dispatcher: dispatcher);
+                sceneBuilder: sceneBuilder.Object);
 
             target.Start();
             IgnoreFirstFrame(loop, sceneBuilder);
@@ -127,12 +110,93 @@ namespace Avalonia.Visuals.UnitTests.Rendering
         }
 
         [Fact]
-        public void Frame_Should_Create_Layer_For_Root()
+        public void Should_Push_Opacity_For_Controls_With_Less_Than_1_Opacity()
+        {
+            var root = new TestRoot
+            {
+                Width = 100,
+                Height = 100,
+                Child = new Border
+                {
+                    Background = Brushes.Red,
+                    Opacity = 0.5,
+                }
+            };
+
+            root.Measure(Size.Infinity);
+            root.Arrange(new Rect(root.DesiredSize));
+
+            var target = CreateTargetAndRunFrame(root);
+            var context = GetLayerContext(target, root);
+            var animation = new BehaviorSubject<double>(0.5);
+
+            context.Verify(x => x.PushOpacity(0.5), Times.Once);
+            context.Verify(x => x.FillRectangle(Brushes.Red, new Rect(0, 0, 100, 100), 0), Times.Once);
+            context.Verify(x => x.PopOpacity(), Times.Once);
+        }
+
+        [Fact]
+        public void Should_Not_Draw_Controls_With_0_Opacity()
+        {
+            var root = new TestRoot
+            {
+                Width = 100,
+                Height = 100,
+                Child = new Border
+                {
+                    Background = Brushes.Red,
+                    Opacity = 0,
+                    Child = new Border
+                    {
+                        Background = Brushes.Green,
+                    }
+                }
+            };
+
+            root.Measure(Size.Infinity);
+            root.Arrange(new Rect(root.DesiredSize));
+
+            var target = CreateTargetAndRunFrame(root);
+            var context = GetLayerContext(target, root);
+            var animation = new BehaviorSubject<double>(0.5);
+
+            context.Verify(x => x.PushOpacity(0.5), Times.Never);
+            context.Verify(x => x.FillRectangle(Brushes.Red, new Rect(0, 0, 100, 100), 0), Times.Never);
+            context.Verify(x => x.PopOpacity(), Times.Never);
+        }
+
+        [Fact]
+        public void Should_Push_Opacity_Mask()
+        {
+            var root = new TestRoot
+            {
+                Width = 100,
+                Height = 100,
+                Child = new Border
+                {
+                    Background = Brushes.Red,
+                    OpacityMask = Brushes.Green,
+                }
+            };
+
+            root.Measure(Size.Infinity);
+            root.Arrange(new Rect(root.DesiredSize));
+
+            var target = CreateTargetAndRunFrame(root);
+            var context = GetLayerContext(target, root);
+            var animation = new BehaviorSubject<double>(0.5);
+
+            context.Verify(x => x.PushOpacityMask(Brushes.Green, new Rect(0, 0, 100, 100)), Times.Once);
+            context.Verify(x => x.FillRectangle(Brushes.Red, new Rect(0, 0, 100, 100), 0), Times.Once);
+            context.Verify(x => x.PopOpacityMask(), Times.Once);
+        }
+
+        [Fact]
+        public void Should_Create_Layer_For_Root()
         {
             var loop = new Mock<IRenderLoop>();
             var root = new TestRoot();
             var rootLayer = new Mock<IRenderTargetBitmapImpl>();
-            var dispatcher = new ImmediateDispatcher();
 
             var sceneBuilder = new Mock<ISceneBuilder>();
             sceneBuilder.Setup(x => x.UpdateAll(It.IsAny<Scene>()))
@@ -143,23 +207,53 @@ namespace Avalonia.Visuals.UnitTests.Rendering
                 });
 
             var renderInterface = new Mock<IPlatformRenderInterface>();
+            var target = CreateTargetAndRunFrame(root, sceneBuilder: sceneBuilder.Object);
 
-            var target = new DeferredRenderer(
-                root,
-                loop.Object,
-                sceneBuilder: sceneBuilder.Object,
-                //layerFactory: layers.Object,
-                dispatcher: dispatcher);
-
-            target.Start();
-            RunFrame(loop);
-
-            var context = Mock.Get(root.CreateRenderTarget().CreateDrawingContext(null));
-            context.Verify(x => x.CreateLayer(root.ClientSize));
+            Assert.Single(target.Layers);
         }
 
         [Fact]
-        public void Should_Create_And_Delete_Layers_For_Transparent_Controls()
+        public void Should_Create_And_Delete_Layers_For_Controls_With_Animated_Opacity()
+        {
+            Border border;
+            var root = new TestRoot
+            {
+                Width = 100,
+                Height = 100,
+                Child = new Border
+                {
+                    Background = Brushes.Red,
+                    Child = border = new Border
+                    {
+                        Background = Brushes.Green,
+                        Child = new Canvas(),
+                        Opacity = 0.9,
+                    }
+                }
+            };
+
+            root.Measure(Size.Infinity);
+            root.Arrange(new Rect(root.DesiredSize));
+
+            var loop = new Mock<IRenderLoop>();
+            var target = CreateTargetAndRunFrame(root, loop: loop);
+
+            Assert.Equal(new[] { root }, target.Layers.Select(x => x.LayerRoot));
+
+            var animation = new BehaviorSubject<double>(0.5);
+            border.Bind(Border.OpacityProperty, animation, BindingPriority.Animation);
+            RunFrame(loop);
+
+            Assert.Equal(new IVisual[] { root, border }, target.Layers.Select(x => x.LayerRoot));
+
+            animation.OnCompleted();
+            RunFrame(loop);
+
+            Assert.Equal(new[] { root }, target.Layers.Select(x => x.LayerRoot));
+        }
+
+        [Fact]
+        public void Should_Not_Create_Layer_For_Childless_Control_With_Animated_Opacity()
         {
             Border border;
             var root = new TestRoot
@@ -176,51 +270,96 @@ namespace Avalonia.Visuals.UnitTests.Rendering
                 }
             };
 
+            var animation = new BehaviorSubject<double>(0.5);
+            border.Bind(Border.OpacityProperty, animation, BindingPriority.Animation);
+
             root.Measure(Size.Infinity);
             root.Arrange(new Rect(root.DesiredSize));
 
-            var rootLayer = CreateLayer();
-            var borderLayer = CreateLayer();
-            var renderTargetContext = Mock.Get(root.CreateRenderTarget().CreateDrawingContext(null));
-            renderTargetContext.SetupSequence(x => x.CreateLayer(It.IsAny<Size>()))
-                .Returns(rootLayer)
-                .Returns(borderLayer);
-
             var loop = new Mock<IRenderLoop>();
+            var target = CreateTargetAndRunFrame(root, loop: loop);
+
+            Assert.Single(target.Layers);
+        }
+
+        [Fact]
+        public void Should_Not_Push_Opacity_For_Transparent_Layer_Root_Control()
+        {
+            Border border;
+            var root = new TestRoot
+            {
+                Width = 100,
+                Height = 100,
+                Child = border = new Border
+                {
+                    Background = Brushes.Red,
+                    Child = new Canvas(),
+                }
+            };
+
+            var animation = new BehaviorSubject<double>(0.5);
+            border.Bind(Border.OpacityProperty, animation, BindingPriority.Animation);
+
+            root.Measure(Size.Infinity);
+            root.Arrange(new Rect(root.DesiredSize));
+
+            var target = CreateTargetAndRunFrame(root);
+            var context = GetLayerContext(target, border);
+
+            context.Verify(x => x.PushOpacity(0.5), Times.Never);
+            context.Verify(x => x.FillRectangle(Brushes.Red, new Rect(0, 0, 100, 100), 0), Times.Once);
+            context.Verify(x => x.PopOpacity(), Times.Never);
+        }
+
+        [Fact]
+        public void Should_Draw_Transparent_Layer_With_Correct_Opacity()
+        {
+            Border border;
+            var root = new TestRoot
+            {
+                Width = 100,
+                Height = 100,
+                Child = border = new Border
+                {
+                    Background = Brushes.Red,
+                    Child = new Canvas(),
+                }
+            };
+
+            var animation = new BehaviorSubject<double>(0.5);
+            border.Bind(Border.OpacityProperty, animation, BindingPriority.Animation);
+
+            root.Measure(Size.Infinity);
+            root.Arrange(new Rect(root.DesiredSize));
+
+            var target = CreateTargetAndRunFrame(root);
+            var context = Mock.Get(target.RenderTarget.CreateDrawingContext(null));
+            var borderLayer = target.Layers[border].Bitmap;
+
+            context.Verify(x => x.DrawImage(borderLayer, 0.5, It.IsAny<Rect>(), It.IsAny<Rect>()));
+        }
+
+        private DeferredRenderer CreateTargetAndRunFrame(
+            TestRoot root,
+            Mock<IRenderLoop> loop = null,
+            ISceneBuilder sceneBuilder = null,
+            IDispatcher dispatcher = null)
+        {
+            loop = loop ?? new Mock<IRenderLoop>();
             var target = new DeferredRenderer(
                 root,
                 loop.Object,
-                dispatcher: new ImmediateDispatcher());
+                sceneBuilder: sceneBuilder,
+                dispatcher: dispatcher ?? new ImmediateDispatcher());
             root.Renderer = target;
-
             target.Start();
             RunFrame(loop);
+            return target;
+        }
 
-            var rootContext = Mock.Get(rootLayer.CreateDrawingContext(null));
-            var borderContext = Mock.Get(borderLayer.CreateDrawingContext(null));
-
-            rootContext.Verify(x => x.FillRectangle(Brushes.Red, new Rect(0, 0, 100, 100), 0), Times.Once);
-            rootContext.Verify(x => x.FillRectangle(Brushes.Green, new Rect(0, 0, 100, 100), 0), Times.Once);
-            borderContext.Verify(x => x.FillRectangle(It.IsAny<IBrush>(), It.IsAny<Rect>(), It.IsAny<float>()), Times.Never);
-
-            rootContext.ResetCalls();
-            borderContext.ResetCalls();
-            border.Opacity = 0.5;
-            RunFrame(loop);
-
-            rootContext.Verify(x => x.FillRectangle(Brushes.Red, new Rect(0, 0, 100, 100), 0), Times.Once);
-            rootContext.Verify(x => x.FillRectangle(Brushes.Green, new Rect(0, 0, 100, 100), 0), Times.Never);
-            borderContext.Verify(x => x.FillRectangle(Brushes.Green, new Rect(0, 0, 100, 100), 0), Times.Once);
-
-            rootContext.ResetCalls();
-            borderContext.ResetCalls();
-            border.Opacity = 1;
-            RunFrame(loop);
-
-            Mock.Get(borderLayer).Verify(x => x.Dispose());
-            rootContext.Verify(x => x.FillRectangle(Brushes.Red, new Rect(0, 0, 100, 100), 0), Times.Once);
-            rootContext.Verify(x => x.FillRectangle(Brushes.Green, new Rect(0, 0, 100, 100), 0), Times.Once);
-            borderContext.Verify(x => x.FillRectangle(It.IsAny<IBrush>(), It.IsAny<Rect>(), It.IsAny<float>()), Times.Never);
+        private Mock<IDrawingContextImpl> GetLayerContext(DeferredRenderer renderer, IControl layerRoot)
+        {
+            return Mock.Get(renderer.Layers[layerRoot].Bitmap.CreateDrawingContext(null));
         }
 
         private void IgnoreFirstFrame(Mock<IRenderLoop> loop, Mock<ISceneBuilder> sceneBuilder)

@@ -190,7 +190,7 @@ namespace Avalonia.Visuals.UnitTests
             root1.Child = child;
 
             Assert.Throws<InvalidOperationException>(() => root2.Child = child);
-            Assert.Equal(0, root2.GetVisualChildren().Count());
+            Assert.Empty(root2.GetVisualChildren());
         }
     }
 }

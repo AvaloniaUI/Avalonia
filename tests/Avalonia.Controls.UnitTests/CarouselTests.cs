@@ -47,7 +47,7 @@ namespace Avalonia.Controls.UnitTests
             target.ApplyTemplate();
             target.Presenter.ApplyTemplate();
 
-            Assert.Equal(1, target.GetLogicalChildren().Count());
+            Assert.Single(target.GetLogicalChildren());
 
             var child = target.GetLogicalChildren().Single();
             
@@ -69,9 +69,9 @@ namespace Avalonia.Controls.UnitTests
             target.ApplyTemplate();
             target.Presenter.ApplyTemplate();
 
-            Assert.Equal(1, target.ItemContainerGenerator.Containers.Count());
+            Assert.Single(target.ItemContainerGenerator.Containers);
             target.SelectedIndex = 1;
-            Assert.Equal(1, target.ItemContainerGenerator.Containers.Count());
+            Assert.Single(target.ItemContainerGenerator.Containers);
         }
 
         [Fact]
@@ -88,7 +88,7 @@ namespace Avalonia.Controls.UnitTests
             target.ApplyTemplate();
             target.Presenter.ApplyTemplate();
 
-            Assert.Equal(1, target.ItemContainerGenerator.Containers.Count());
+            Assert.Single(target.ItemContainerGenerator.Containers);
             target.SelectedIndex = 1;
             Assert.Equal(2, target.ItemContainerGenerator.Containers.Count());
         }

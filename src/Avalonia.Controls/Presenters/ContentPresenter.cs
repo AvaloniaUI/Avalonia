@@ -8,6 +8,7 @@ using Avalonia.Controls.Templates;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
+using Avalonia.Metadata;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Presenters
@@ -139,6 +140,7 @@ namespace Avalonia.Controls.Presenters
         /// <summary>
         /// Gets or sets the content to be displayed by the presenter.
         /// </summary>
+        [DependsOn(nameof(ContentTemplate))]
         public object Content
         {
             get { return GetValue(ContentProperty); }
@@ -255,18 +257,9 @@ namespace Avalonia.Controls.Presenters
                     LogicalChildren.Remove(oldChild);
                 }
 
-                if (newChild.Parent == null)
+                if (newChild.Parent == null && TemplatedParent == null)
                 {
-                    var templatedLogicalParent = TemplatedParent as ILogical;
-
-                    if (templatedLogicalParent != null)
-                    {
-                        ((ISetLogicalParent)newChild).SetParent(templatedLogicalParent);
-                    }
-                    else
-                    {
-                        LogicalChildren.Add(newChild);
-                    }
+                    LogicalChildren.Add(newChild);
                 }
 
                 VisualChildren.Add(newChild);

@@ -179,7 +179,7 @@ namespace Avalonia.Controls
             {
                 ThrowIfPseudoclass(name, "removed");
 
-                if (!Contains(name))
+                if (Contains(name))
                 {
                     c.Add(name);
                 }

@@ -3,11 +3,18 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Reactive.Subjects;
+using System.Threading;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Data;
 using Avalonia.Logging;
+using Avalonia.Platform;
+using Avalonia.Threading;
+using Avalonia.Markup.Xaml.Data;
 using Avalonia.UnitTests;
+using Moq;
 using Xunit;
 
 namespace Avalonia.Base.UnitTests
@@ -208,7 +215,7 @@ namespace Avalonia.Base.UnitTests
         {
             var target = new Class1();
 
-            Assert.Throws<ArgumentException>(() => 
+            Assert.Throws<ArgumentException>(() =>
                 target.SetValue(Class1.BarProperty, "newvalue"));
         }
 
@@ -217,7 +224,7 @@ namespace Avalonia.Base.UnitTests
         {
             var target = new Class1();
 
-            Assert.Throws<ArgumentException>(() => 
+            Assert.Throws<ArgumentException>(() =>
                 target.SetValue((AvaloniaProperty)Class1.BarProperty, "newvalue"));
         }
 
@@ -227,7 +234,7 @@ namespace Avalonia.Base.UnitTests
             var target = new Class1();
             var source = new Subject<string>();
 
-            Assert.Throws<ArgumentException>(() => 
+            Assert.Throws<ArgumentException>(() =>
                 target.Bind(Class1.BarProperty, source));
         }
 
@@ -412,6 +419,28 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
+        public async Task Bind_Executes_On_UIThread()
+        {
+            var target = new Class1();
+            var source = new Subject<object>();
+            var currentThreadId = Thread.CurrentThread.ManagedThreadId;
+
+            var threadingInterfaceMock = new Mock<IPlatformThreadingInterface>();
+            threadingInterfaceMock.SetupGet(mock => mock.CurrentThreadIsLoopThread)
+                .Returns(() => Thread.CurrentThread.ManagedThreadId == currentThreadId);
+
+            var services = new TestServices(
+                threadingInterface: threadingInterfaceMock.Object);
+
+            using (UnitTestApplication.Start(services))
+            {
+                target.Bind(Class1.FooProperty, source);
+
+                await Task.Run(() => source.OnNext("foobar"));
+            }
+        }
+
+        [Fact]
         public void AddOwner_Should_Inherit_DefaultBindingMode()
         {
             var foo = new DirectProperty<Class1, string>(
@@ -439,12 +468,46 @@ namespace Avalonia.Base.UnitTests
             Assert.Equal(BindingMode.OneWayToSource, bar.GetMetadata<Class2>().DefaultBindingMode);
         }
 
+        [Fact]
+        public void SetValue_Should_Not_Cause_StackOverflow_And_Have_Correct_Values()
+        {
+            var viewModel = new TestStackOverflowViewModel()
+            {
+                Value = 50
+            };
+
+            var target = new Class1();
+
+            target.Bind(Class1.DoubleValueProperty, new Binding("Value")
+                                                    {
+                                                        Mode = BindingMode.TwoWay,
+                                                        Source = viewModel
+                                                    });
+
+            var child = new Class1();
+
+            child[!!Class1.DoubleValueProperty] = target[!!Class1.DoubleValueProperty];
+
+            Assert.Equal(1, viewModel.SetterInvokedCount);
+
+            // Issues #855 and #824 were causing a StackOverflowException at this point.
+            target.DoubleValue = 51.001;
+
+            Assert.Equal(2, viewModel.SetterInvokedCount);
+
+            double expected = 51;
+
+            Assert.Equal(expected, viewModel.Value);
+            Assert.Equal(expected, target.DoubleValue);
+            Assert.Equal(expected, child.DoubleValue);
+        }
+
         private class Class1 : AvaloniaObject
         {
             public static readonly DirectProperty<Class1, string> FooProperty =
                 AvaloniaProperty.RegisterDirect<Class1, string>(
-                    "Foo", 
-                    o => o.Foo, 
+                    "Foo",
+                    o => o.Foo,
                     (o, v) => o.Foo = v,
                     unsetValue: "unset");
 
@@ -453,14 +516,21 @@ namespace Avalonia.Base.UnitTests
 
             public static readonly DirectProperty<Class1, int> BazProperty =
                 AvaloniaProperty.RegisterDirect<Class1, int>(
-                    "Bar", 
-                    o => o.Baz, 
-                    (o,v) => o.Baz = v,
+                    "Bar",
+                    o => o.Baz,
+                    (o, v) => o.Baz = v,
                     unsetValue: -1);
+
+            public static readonly DirectProperty<Class1, double> DoubleValueProperty =
+                AvaloniaProperty.RegisterDirect<Class1, double>(
+                    nameof(DoubleValue),
+                    o => o.DoubleValue,
+                    (o, v) => o.DoubleValue = v);
 
             private string _foo = "initial";
             private readonly string _bar = "bar";
             private int _baz = 5;
+            private double _doubleValue;
 
             public string Foo
             {
@@ -477,6 +547,12 @@ namespace Avalonia.Base.UnitTests
             {
                 get { return _baz; }
                 set { SetAndRaise(BazProperty, ref _baz, value); }
+            }
+
+            public double DoubleValue
+            {
+                get { return _doubleValue; }
+                set { SetAndRaise(DoubleValueProperty, ref _doubleValue, value); }
             }
         }
 
@@ -495,6 +571,41 @@ namespace Avalonia.Base.UnitTests
             {
                 get { return _foo; }
                 set { SetAndRaise(FooProperty, ref _foo, value); }
+            }
+        }
+
+        private class TestStackOverflowViewModel : INotifyPropertyChanged
+        {
+            public int SetterInvokedCount { get; private set; }
+
+            public const int MaxInvokedCount = 1000;
+
+            private double _value;
+
+            public event PropertyChangedEventHandler PropertyChanged;
+
+            public double Value
+            {
+                get { return _value; }
+                set
+                {
+                    if (_value != value)
+                    {
+                        SetterInvokedCount++;
+                        if (SetterInvokedCount < MaxInvokedCount)
+                        {
+                            _value = (int)value;
+                            if (_value > 75) _value = 75;
+                            if (_value < 25) _value = 25;
+                        }
+                        else
+                        {
+                            _value = value;
+                        }
+
+                        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Value)));
+                    }
+                }
             }
         }
     }

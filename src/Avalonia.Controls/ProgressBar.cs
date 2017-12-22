@@ -28,9 +28,6 @@ namespace Avalonia.Controls
         {
             ValueProperty.Changed.AddClassHandler<ProgressBar>(x => x.ValueChanged);
 
-            HorizontalAlignmentProperty.OverrideDefaultValue<ProgressBar>(HorizontalAlignment.Left);
-            VerticalAlignmentProperty.OverrideDefaultValue<ProgressBar>(VerticalAlignment.Top);
-
             IsIndeterminateProperty.Changed.AddClassHandler<ProgressBar>(
                 (p, e) => { if (p._indicator != null) p.UpdateIsIndeterminate((bool)e.NewValue); });
             OrientationProperty.Changed.AddClassHandler<ProgressBar>(
@@ -112,8 +109,10 @@ namespace Avalonia.Controls
         private void UpdateIsIndeterminate(bool isIndeterminate)
         {
             if (isIndeterminate)
+            {
                 if (_indeterminateAnimation == null || _indeterminateAnimation.Disposed)
                     _indeterminateAnimation = IndeterminateAnimation.StartAnimation(this);
+            }
             else
                 _indeterminateAnimation?.Dispose();
         }

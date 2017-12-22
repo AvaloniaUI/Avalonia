@@ -11,7 +11,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Debug\Avalonia.Logging.Serilog.XML</DocumentationFile>
+    <DocumentationFile>bin\Debug\Avalonia.Logging.Serilog.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <DebugType>pdbonly</DebugType>
@@ -20,7 +20,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Release\Avalonia.Logging.Serilog.XML</DocumentationFile>
+    <DocumentationFile>bin\Release\Avalonia.Logging.Serilog.xml</DocumentationFile>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
@@ -28,6 +28,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj" />
+    <ProjectReference Include="..\Avalonia.Controls\Avalonia.Controls.csproj" />
   </ItemGroup>
   <Import Project="..\..\build\Serilog.props" />
 </Project>

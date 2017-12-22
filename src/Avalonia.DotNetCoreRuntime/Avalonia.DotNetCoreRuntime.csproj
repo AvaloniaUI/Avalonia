@@ -5,7 +5,7 @@
     <DefineConstants>$(DefineConstants);DOTNETCORE</DefineConstants>
   </PropertyGroup>
   <PropertyGroup>
-    <DocumentationFile>bin\$(Configuration)\Avalonia.DotNetCoreRuntime.XML</DocumentationFile>
+    <DocumentationFile>bin\$(Configuration)\Avalonia.DotNetCoreRuntime.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\Shared\SharedAssemblyInfo.cs">

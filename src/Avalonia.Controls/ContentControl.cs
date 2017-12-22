@@ -51,6 +51,7 @@ namespace Avalonia.Controls
         /// Gets or sets the content to display.
         /// </summary>
         [Content]
+        [DependsOn(nameof(ContentTemplate))]
         public object Content
         {
             get { return GetValue(ContentProperty); }

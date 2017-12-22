@@ -167,7 +167,6 @@ namespace Avalonia.Rendering.SceneGraph
                 using (context.PushPostTransform(m))
                 using (context.PushTransformContainer())
                 {
-                    var startLayer = opacity < 1 || visual.OpacityMask != null;
                     var clipBounds = bounds.TransformToAABB(contextImpl.Transform).Intersect(clip);
 
                     forceRecurse = forceRecurse ||
@@ -179,9 +178,11 @@ namespace Avalonia.Rendering.SceneGraph
                     node.ClipToBounds = clipToBounds;
                     node.GeometryClip = visual.Clip?.PlatformImpl;
                     node.Opacity = opacity;
-                    node.OpacityMask = visual.OpacityMask;
 
-                    if (startLayer)
+                    // TODO: Check equality between node.OpacityMask and visual.OpacityMask before assigning.
+                    node.OpacityMask = visual.OpacityMask?.ToImmutable();
+
+                    if (ShouldStartLayer(visual))
                     {
                         if (node.LayerRoot != visual)
                         {
@@ -192,7 +193,7 @@ namespace Avalonia.Rendering.SceneGraph
                             UpdateLayer(node, scene.Layers[node.LayerRoot]);
                         }
                     }
-                    else if (!startLayer && node.LayerRoot == node.Visual && node.Parent != null)
+                    else if (node.LayerRoot == node.Visual && node.Parent != null)
                     {
                         ClearLayer(scene, node);
                     }
@@ -364,6 +365,14 @@ namespace Avalonia.Rendering.SceneGraph
                     PropagateLayer(child, layer, oldLayer);
                 }
             }
+        }
+
+        private static bool ShouldStartLayer(IVisual visual)
+        {
+            var o = visual as IAvaloniaObject;
+            return visual.VisualChildren.Count > 0 &&
+                o != null &&
+                o.IsAnimating(Visual.OpacityProperty);
         }
 
         private static IGeometryImpl CreateLayerGeometryClip(VisualNode node)

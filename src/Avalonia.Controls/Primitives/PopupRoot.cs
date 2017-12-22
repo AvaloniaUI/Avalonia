@@ -8,6 +8,7 @@ using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform;
+using Avalonia.Styling;
 using Avalonia.VisualTree;
 using JetBrains.Annotations;
 
@@ -16,7 +17,7 @@ namespace Avalonia.Controls.Primitives
     /// <summary>
     /// The root window of a <see cref="Popup"/>.
     /// </summary>
-    public class PopupRoot : WindowBase, IInteractive, IHostedVisualTreeRoot, IDisposable
+    public class PopupRoot : WindowBase, IInteractive, IHostedVisualTreeRoot, IDisposable, IStyleHost
     {
         private IDisposable _presenterSubscription;
 
@@ -66,6 +67,11 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         IVisual IHostedVisualTreeRoot.Host => Parent;
 
+        /// <summary>
+        /// Gets the styling parent of the popup root.
+        /// </summary>
+        IStyleHost IStyleHost.StylingParent => Parent;
+
         /// <inheritdoc/>
         public void Dispose() => PlatformImpl?.Dispose();
 
@@ -90,20 +96,23 @@ namespace Avalonia.Controls.Primitives
 
         private void SetTemplatedParentAndApplyChildTemplates(IControl control)
         {
-            var templatedParent = Parent.TemplatedParent;
-
-            if (control.TemplatedParent == null)
+            if (control != null)
             {
-                control.SetValue(TemplatedParentProperty, templatedParent);
-            }
+                var templatedParent = Parent.TemplatedParent;
 
-            control.ApplyTemplate();
-
-            if (!(control is IPresenter) && control.TemplatedParent == templatedParent)
-            {
-                foreach (IControl child in control.GetVisualChildren())
+                if (control.TemplatedParent == null)
                 {
-                    SetTemplatedParentAndApplyChildTemplates(child);
+                    control.SetValue(TemplatedParentProperty, templatedParent);
+                }
+
+                control.ApplyTemplate();
+
+                if (!(control is IPresenter) && control.TemplatedParent == templatedParent)
+                {
+                    foreach (IControl child in control.GetVisualChildren())
+                    {
+                        SetTemplatedParentAndApplyChildTemplates(child);
+                    }
                 }
             }
         }

@@ -126,7 +126,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
                     {
                         Width = 200,
                         Height = 200,
-                        Children = new Controls.Controls
+                        Children =
                         {
                             new Border
                             {
@@ -171,7 +171,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
                     {
                         Width = 200,
                         Height = 200,
-                        Children = new Controls.Controls
+                        Children =
                         {
                             new Border
                             {
@@ -238,7 +238,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
                         Height = 200,
                         Background = Brushes.Red,
                         ClipToBounds = false,
-                        Children = new Controls.Controls
+                        Children =
                         {
                             new Border
                             {
@@ -287,7 +287,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
                         Width = 100,
                         Height = 200,
                         Background = Brushes.Red,
-                        Children = new Controls.Controls
+                        Children =
                         {
                             new Panel()
                             {
@@ -296,7 +296,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
                                 Background = Brushes.Red,
                                 Margin = new Thickness(0, 100, 0, 0),
                                 ClipToBounds = true,
-                                Children = new Controls.Controls
+                                Children =
                                 {
                                     (target = new Border()
                                     {
@@ -339,7 +339,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
                         Width = 100,
                         Height = 200,
                         Background = Brushes.Red,
-                        Children = new Controls.Controls
+                        Children =
                         {
                             (target = new Border()
                             {
@@ -359,7 +359,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
                                 {
                                     Content = new StackPanel()
                                     {
-                                        Children = new Controls.Controls
+                                        Children =
                                         {
                                             (item1 = new Border()
                                             {
