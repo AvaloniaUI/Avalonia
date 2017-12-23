@@ -120,7 +120,6 @@ public class Packages
         var SharpDXDirect3D11Version = packageVersions["SharpDX.Direct3D11"].FirstOrDefault().Item1;
         var SharpDXDirect3D9Version = packageVersions["SharpDX.Direct3D9"].FirstOrDefault().Item1;
         var SharpDXDXGIVersion = packageVersions["SharpDX.DXGI"].FirstOrDefault().Item1;
-        var UnsafeVersion = packageVersions["System.Runtime.CompilerServices.Unsafe"].FirstOrDefault().Item1;
 
         context.Information("Package: Serilog, version: {0}", SerilogVersion);
         context.Information("Package: Sprache, version: {0}", SpracheVersion);
@@ -395,8 +394,7 @@ public class Packages
                     new NuSpecDependency() { Id = "SharpDX", Version = SharpDXVersion },
                     new NuSpecDependency() { Id = "SharpDX.Direct2D1", Version = SharpDXDirect2D1Version },
                     new NuSpecDependency() { Id = "SharpDX.Direct3D11", Version = SharpDXDirect3D11Version },
-                    new NuSpecDependency() { Id = "SharpDX.DXGI", Version = SharpDXDXGIVersion },
-                    new NuSpecDependency() { Id = "System.Runtime.CompilerServices.Unsafe", Version = UnsafeVersion }
+                    new NuSpecDependency() { Id = "SharpDX.DXGI", Version = SharpDXDXGIVersion }
                 },
                 Files = new []
                 {

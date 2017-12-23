@@ -75,13 +75,10 @@ namespace Avalonia.Direct2D1.Media
             {
                 for (var row = 0; row < height; row++)
                 {
-                    unsafe
-                    {
-                        Unsafe.CopyBlock(
-                            (void*)(l.Data.DataPointer + row * l.Stride),
-                            (void*)(data + row * stride),
-                            (uint) l.Data.Pitch);
-                    }
+                    UnmanagedMethods.CopyMemory(
+                        (l.Data.DataPointer + row * l.Stride),
+                        (data + row * stride),
+                        (UIntPtr) l.Data.Pitch);
                 }
             }
         }

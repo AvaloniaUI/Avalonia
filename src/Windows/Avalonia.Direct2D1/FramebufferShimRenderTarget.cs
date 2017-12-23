@@ -68,13 +68,10 @@ namespace Avalonia.Direct2D1
                     {
                         for (var y = 0; y < _target.Height; y++)
                         {
-                            unsafe
-                            {
-                                Unsafe.CopyBlock(
-                                    (void*)(_target.Address + _target.RowBytes * y),
-                                    (void*)(l.Data.DataPointer + l.Stride * y),
-                                    (uint)Math.Min(l.Stride, _target.RowBytes));
-                            }
+                            UnmanagedMethods.CopyMemory(
+                                (_target.Address + _target.RowBytes * y),
+                                (l.Data.DataPointer + l.Stride * y),
+                                (UIntPtr)Math.Min(l.Stride, _target.RowBytes));
                         }
                     }
                     Dispose();

@@ -947,6 +947,9 @@ namespace Avalonia.Win32.Interop
             uint dwMaximumSizeHigh,
             uint dwMaximumSizeLow,
             string lpName);
+
+        [DllImport("msvcrt.dll", EntryPoint="memcpy", SetLastError = false, CallingConvention=CallingConvention.Cdecl)]
+        public static extern IntPtr CopyMemory(IntPtr dest, IntPtr src, UIntPtr count); 
         
         public enum MONITOR
         {
