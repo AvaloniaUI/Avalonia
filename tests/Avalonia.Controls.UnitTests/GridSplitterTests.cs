@@ -22,14 +22,14 @@ namespace Avalonia.Controls.UnitTests
         {
             var grid = new Grid()
                        {
-                           RowDefinitions = new RowDefinitions("*,Auto,*"),
-                           ColumnDefinitions = new ColumnDefinitions("*,*"),
-                           Children = new Controls()
-                                      {
-                                          new Border { [Grid.RowProperty] = 0 },
-                                          new GridSplitter { [Grid.RowProperty] = 1, Name = "splitter" },
-                                          new Border { [Grid.RowProperty] = 2 }
-                                      }
+                            RowDefinitions = new RowDefinitions("*,Auto,*"),
+                            ColumnDefinitions = new ColumnDefinitions("*,*"),
+                            Children =
+                            {
+                                new Border { [Grid.RowProperty] = 0 },
+                                new GridSplitter { [Grid.RowProperty] = 1, Name = "splitter" },
+                                new Border { [Grid.RowProperty] = 2 }
+                            }
                        };
 
             var root = new TestRoot { Child = grid };
@@ -43,14 +43,14 @@ namespace Avalonia.Controls.UnitTests
         {
             var grid = new Grid()
                        {
-                           ColumnDefinitions = new ColumnDefinitions("*,Auto,*"),
-                           RowDefinitions = new RowDefinitions("*,*"),
-                           Children = new Controls()
-                                      {
-                                          new Border { [Grid.ColumnProperty] = 0 },
-                                          new GridSplitter { [Grid.ColumnProperty] = 1, Name = "splitter" },
-                                          new Border { [Grid.ColumnProperty] = 2 },
-                                      }
+                            ColumnDefinitions = new ColumnDefinitions("*,Auto,*"),
+                            RowDefinitions = new RowDefinitions("*,*"),
+                            Children =
+                            {
+                                new Border { [Grid.ColumnProperty] = 0 },
+                                new GridSplitter { [Grid.ColumnProperty] = 1, Name = "splitter" },
+                                new Border { [Grid.ColumnProperty] = 2 },
+                            }
                        };
 
             var root = new TestRoot { Child = grid };
@@ -64,14 +64,14 @@ namespace Avalonia.Controls.UnitTests
         {
             var grid = new Grid()
                        {
-                           ColumnDefinitions = new ColumnDefinitions("Auto,Auto,Auto"),
-                           RowDefinitions = new RowDefinitions("Auto,Auto"),
-                           Children = new Controls()
-                                      {
-                                          new Border { [Grid.ColumnProperty] = 0 },
-                                          new GridSplitter { [Grid.ColumnProperty] = 1, Name = "splitter" },
-                                          new Border { [Grid.ColumnProperty] = 2 },
-                                      }
+                            ColumnDefinitions = new ColumnDefinitions("Auto,Auto,Auto"),
+                            RowDefinitions = new RowDefinitions("Auto,Auto"),
+                            Children =
+                            {
+                                new Border { [Grid.ColumnProperty] = 0 },
+                                new GridSplitter { [Grid.ColumnProperty] = 1, Name = "splitter" },
+                                new Border { [Grid.ColumnProperty] = 2 },
+                            }
                        };
 
             var root = new TestRoot { Child = grid };
@@ -99,11 +99,11 @@ namespace Avalonia.Controls.UnitTests
 
             var grid = new Grid()
                        {
-                           RowDefinitions = rowDefinitions,
-                           Children = new Controls()
-                                      {
-                                          control1, splitter, control2
-                                      }
+                            RowDefinitions = rowDefinitions,
+                            Children =
+                            {
+                                control1, splitter, control2
+                            }
                        };
 
             var root = new TestRoot { Child = grid };
@@ -131,14 +131,14 @@ namespace Avalonia.Controls.UnitTests
         {
             var grid = new Grid()
                        {
-                           ColumnDefinitions = new ColumnDefinitions("Auto,*,*"),
-                           RowDefinitions = new RowDefinitions("*,*"),
-                           Children = new Controls()
-                                      {
-                                          new GridSplitter { [Grid.ColumnProperty] = 0, Name = "splitter" },
-                                          new Border { [Grid.ColumnProperty] = 1 },
-                                          new Border { [Grid.ColumnProperty] = 2 },
-                                      }
+                            ColumnDefinitions = new ColumnDefinitions("Auto,*,*"),
+                            RowDefinitions = new RowDefinitions("*,*"),
+                            Children =
+                            {
+                                new GridSplitter { [Grid.ColumnProperty] = 0, Name = "splitter" },
+                                new Border { [Grid.ColumnProperty] = 1 },
+                                new Border { [Grid.ColumnProperty] = 2 },
+                            }
                        };
 
             var root = new TestRoot { Child = grid };
@@ -171,11 +171,11 @@ namespace Avalonia.Controls.UnitTests
 
             var grid = new Grid()
                        {
-                           ColumnDefinitions = columnDefinitions,
-                           Children = new Controls()
-                                      {
-                                          control1, splitter, control2
-                                      }
+                            ColumnDefinitions = columnDefinitions,
+                            Children =
+                            {
+                                control1, splitter, control2
+                            }
                        };
 
             var root = new TestRoot { Child = grid };

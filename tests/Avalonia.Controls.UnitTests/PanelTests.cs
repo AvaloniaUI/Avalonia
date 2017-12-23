@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System.Linq;
-using Avalonia.Collections;
 using Avalonia.LogicalTree;
 using Avalonia.VisualTree;
 using Xunit;
@@ -22,18 +21,6 @@ namespace Avalonia.Controls.UnitTests
             Assert.Same(child.Parent, panel);
             Assert.Same(child.GetLogicalParent(), panel);
             Assert.Same(child.GetVisualParent(), panel);
-        }
-
-        [Fact]
-        public void Setting_Controls_Should_Set_Child_Controls_Parent()
-        {
-            var panel = new Panel();
-            var child = new Control();
-
-            panel.Children = new Controls { child };
-
-            Assert.Equal(child.Parent, panel);
-            Assert.Equal(child.GetLogicalParent(), panel);
         }
 
         [Fact]
@@ -60,25 +47,6 @@ namespace Avalonia.Controls.UnitTests
             panel.Children.Add(child1);
             panel.Children.Add(child2);
             panel.Children.Clear();
-
-            Assert.Null(child1.Parent);
-            Assert.Null(child1.GetLogicalParent());
-            Assert.Null(child1.GetVisualParent());
-            Assert.Null(child2.Parent);
-            Assert.Null(child2.GetLogicalParent());
-            Assert.Null(child2.GetVisualParent());
-        }
-
-        [Fact]
-        public void Resetting_Panel_Children_Should_Clear_Child_Controls_Parent()
-        {
-            var panel = new Panel();
-            var child1 = new Control();
-            var child2 = new Control();
-
-            panel.Children.Add(child1);
-            panel.Children.Add(child2);
-            panel.Children = new Controls();
 
             Assert.Null(child1.Parent);
             Assert.Null(child1.GetLogicalParent());
@@ -146,19 +114,6 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Equal(new[] { child2, child1 }, panel.GetLogicalChildren());
             Assert.Equal(new[] { child2, child1 }, panel.GetVisualChildren());
-        }
-
-        [Fact]
-        public void Setting_Children_Should_Make_Controls_Appear_In_Logical_And_Visual_Children()
-        {
-            var panel = new Panel();
-            var child = new Control();
-
-            panel.Children = new Controls { child };
-
-            Assert.Equal(new[] { child }, panel.Children);
-            Assert.Equal(new[] { child }, panel.GetLogicalChildren());
-            Assert.Equal(new[] { child }, panel.GetVisualChildren());
         }
     }
 }

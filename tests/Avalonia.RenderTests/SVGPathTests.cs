@@ -30,7 +30,7 @@ namespace Avalonia.Direct2D1.RenderTests
                 Background = Brushes.Yellow,
                 Width = 76,
                 Height = 76,
-                Children = new Avalonia.Controls.Controls
+                Children =
                 {
                     new Path
                     {
