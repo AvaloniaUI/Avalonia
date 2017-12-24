@@ -41,27 +41,7 @@ namespace Avalonia
             Contract.Requires<ArgumentNullException>(o != null);
             Contract.Requires<ArgumentNullException>(property != null);
 
-            return new AvaloniaObservable<object>(
-                observer =>
-                {
-                    EventHandler<AvaloniaPropertyChangedEventArgs> handler = (s, e) =>
-                    {
-                        if (e.Property == property)
-                        {
-                            observer.OnNext(e.NewValue);
-                        }
-                    };
-
-                    observer.OnNext(o.GetValue(property));
-
-                    o.PropertyChanged += handler;
-
-                    return Disposable.Create(() =>
-                    {
-                        o.PropertyChanged -= handler;
-                    });
-                },
-                GetDescription(o, property));
+            return new AvaloniaPropertyObservable<object>(o, property);
         }
 
         /// <summary>
@@ -79,7 +59,7 @@ namespace Avalonia
             Contract.Requires<ArgumentNullException>(o != null);
             Contract.Requires<ArgumentNullException>(property != null);
 
-            return o.GetObservable((AvaloniaProperty)property).Cast<T>();
+            return new AvaloniaPropertyObservable<T>(o, property);
         }
 
         /// <summary>
@@ -100,25 +80,9 @@ namespace Avalonia
             Contract.Requires<ArgumentNullException>(o != null);
             Contract.Requires<ArgumentNullException>(property != null);
 
-            return new AvaloniaObservable<Tuple<T, T>>(
-                observer =>
-                {
-                    EventHandler<AvaloniaPropertyChangedEventArgs> handler = (s, e) =>
-                    {
-                        if (e.Property == property)
-                        {
-                            observer.OnNext(Tuple.Create((T)e.OldValue, (T)e.NewValue));
-                        }
-                    };
-
-                    o.PropertyChanged += handler;
-
-                    return Disposable.Create(() =>
-                    {
-                        o.PropertyChanged -= handler;
-                    });
-                },
-                GetDescription(o, property));
+            return new AvaloniaPropertyObservable<T>(o, property)
+                .Buffer(2, 1)
+                .Select(x => Tuple.Create(x[0], x[1]));
         }
 
         /// <summary>
