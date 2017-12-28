@@ -1,10 +1,11 @@
 ﻿using System;
+using Avalonia.Utilities;
 
 namespace Avalonia.Reactive
 {
     public class AvaloniaPropertyObservable<T> : LightweightObservableBase<T>, IDescription
     {
-        private readonly IAvaloniaObject _target;
+        private readonly WeakReference<IAvaloniaObject> _target;
         private readonly AvaloniaProperty _property;
         private T _value;
 
@@ -12,7 +13,7 @@ namespace Avalonia.Reactive
             IAvaloniaObject target,
             AvaloniaProperty property)
         {
-            _target = target;
+            _target = new WeakReference<IAvaloniaObject>(target);
             _property = property;
         }
 
@@ -20,13 +21,19 @@ namespace Avalonia.Reactive
 
         protected override void Initialize()
         {
-            _value = (T)_target.GetValue(_property);
-            _target.PropertyChanged += PropertyChanged;
+            if (_target.TryGetTarget(out var target))
+            {
+                _value = (T)target.GetValue(_property);
+                target.PropertyChanged += PropertyChanged;
+            }
         }
 
         protected override void Deinitialize()
         {
-            _target.PropertyChanged -= PropertyChanged;
+            if (_target.TryGetTarget(out var target))
+            {
+                target.PropertyChanged -= PropertyChanged;
+            }
         }
 
         protected override void Subscribed(IObserver<T> observer, bool first)
