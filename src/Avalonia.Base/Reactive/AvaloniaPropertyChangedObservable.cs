@@ -2,13 +2,14 @@
 
 namespace Avalonia.Reactive
 {
-    internal class AvaloniaPropertyObservable<T> : LightweightObservableBase<T>, IDescription
+    internal class AvaloniaPropertyChangedObservable : 
+        LightweightObservableBase<AvaloniaPropertyChangedEventArgs>,
+        IDescription
     {
         private readonly WeakReference<IAvaloniaObject> _target;
         private readonly AvaloniaProperty _property;
-        private T _value;
 
-        public AvaloniaPropertyObservable(
+        public AvaloniaPropertyChangedObservable(
             IAvaloniaObject target,
             AvaloniaProperty property)
         {
@@ -22,7 +23,6 @@ namespace Avalonia.Reactive
         {
             if (_target.TryGetTarget(out var target))
             {
-                _value = (T)target.GetValue(_property);
                 target.PropertyChanged += PropertyChanged;
             }
         }
@@ -35,17 +35,11 @@ namespace Avalonia.Reactive
             }
         }
 
-        protected override void Subscribed(IObserver<T> observer, bool first)
-        {
-            observer.OnNext(_value);
-        }
-
         private void PropertyChanged(object sender, AvaloniaPropertyChangedEventArgs e)
         {
             if (e.Property == _property)
             {
-                _value = (T)e.NewValue;
-                PublishNext(_value);
+                PublishNext(e);
             }
         }
     }
