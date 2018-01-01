@@ -203,6 +203,22 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Setting_SelectionStart_To_SelectionEnd_Sets_CaretPosition_To_SelectionStart()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var textBox = new TextBox
+                {
+                    Text = "0123456789"
+                };
+
+                textBox.SelectionStart = 2;
+                textBox.SelectionEnd = 2;
+                Assert.Equal(2, textBox.CaretIndex);
+            }
+        }
+
+        [Fact]
         public void Setting_Text_Updates_CaretPosition()
         {
             using (UnitTestApplication.Start(Services))

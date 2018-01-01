@@ -16,8 +16,8 @@
             <ContentPresenter Name="PART_ContentPresenter"
                               Grid.Row="1"
                               IsVisible="{TemplateBinding IsExpanded}"
-                              Content="{TemplateBinding Content}"
                               ContentTemplate="{TemplateBinding ContentTemplate}"
+                              Content="{TemplateBinding Content}"
                               HorizontalAlignment="Stretch"
                               VerticalAlignment="Stretch" />
           </Grid>
@@ -34,8 +34,8 @@
             <ContentPresenter Name="PART_ContentPresenter"
                               Grid.Row="0"
                               IsVisible="{TemplateBinding IsExpanded}"
-                              Content="{TemplateBinding Content}"
                               ContentTemplate="{TemplateBinding ContentTemplate}"
+                              Content="{TemplateBinding Content}"
                               HorizontalAlignment="Stretch"
                               VerticalAlignment="Stretch" />
           </Grid>
@@ -52,8 +52,8 @@
             <ContentPresenter Name="PART_ContentPresenter"
                               Grid.Column="1"
                               IsVisible="{TemplateBinding IsExpanded}"
-                              Content="{TemplateBinding Content}"
                               ContentTemplate="{TemplateBinding ContentTemplate}"
+                              Content="{TemplateBinding Content}"
                               HorizontalAlignment="Stretch"
                               VerticalAlignment="Stretch" />
           </Grid>
@@ -70,8 +70,8 @@
             <ContentPresenter Name="PART_ContentPresenter"
                               Grid.Column="0"
                               IsVisible="{TemplateBinding IsExpanded}"
-                              Content="{TemplateBinding Content}"
                               ContentTemplate="{TemplateBinding ContentTemplate}"
+                              Content="{TemplateBinding Content}"
                               HorizontalAlignment="Stretch"
                               VerticalAlignment="Stretch" />
           </Grid>

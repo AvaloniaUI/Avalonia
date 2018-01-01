@@ -487,11 +487,6 @@ namespace Avalonia.Controls
         void ILogical.NotifyResourcesChanged(ResourcesChangedEventArgs e)
         {
             ResourcesChanged?.Invoke(this, new ResourcesChangedEventArgs());
-
-            foreach (var child in LogicalChildren)
-            {
-                child.NotifyResourcesChanged(e);
-            }
         }
 
         /// <inheritdoc/>
@@ -536,6 +531,15 @@ namespace Avalonia.Controls
                 }
 
                 _parent = (IControl)parent;
+
+                if (old != null)
+                {
+                    old.ResourcesChanged -= ThisResourcesChanged; 
+                }
+                if (_parent != null)
+                {
+                    _parent.ResourcesChanged += ThisResourcesChanged; 
+                }
                 ((ILogical)this).NotifyResourcesChanged(new ResourcesChangedEventArgs());
 
                 if (_parent is IStyleRoot || _parent?.IsAttachedToLogicalTree == true || this is IStyleRoot)
@@ -621,7 +625,6 @@ namespace Avalonia.Controls
             Contract.Requires<ArgumentNullException>(property != null);
             Contract.Requires<ArgumentNullException>(selector != null);
             Contract.Requires<ArgumentNullException>(className != null);
-            Contract.Requires<ArgumentNullException>(property != null);
 
             if (string.IsNullOrWhiteSpace(className))
             {

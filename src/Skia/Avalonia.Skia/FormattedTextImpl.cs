@@ -450,7 +450,7 @@ namespace Avalonia.Skia
                 {
                     var match = _foregroundBrushes[bi];
 
-                    len = match.Key.EndIndex - index + 1;
+                    len = match.Key.EndIndex - index;
                     result = match.Value;
 
                     if (len > 0 && len < length)
@@ -641,7 +641,7 @@ namespace Avalonia.Skia
                 Length = length;
             }
 
-            public int EndIndex => StartIndex + Length - 1;
+            public int EndIndex => StartIndex + Length;
 
             public int Length { get; private set; }
 

@@ -65,6 +65,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 ResetModuleLoadStates();
                 AppBuilder.Configure<App>()
+                    .IgnoreSetupCheck()
                     .UseWindowingSubsystem(() => { })
                     .UseRenderingSubsystem(() => { })
                     .UseAvaloniaModules()
@@ -81,6 +82,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 ResetModuleLoadStates();
                 var builder = AppBuilder.Configure<App>()
+                    .IgnoreSetupCheck()
                     .UseWindowingSubsystem(() => { })
                     .UseRenderingSubsystem(() => { }, "Direct2D1");
                 builder.UseAvaloniaModules().SetupWithoutStarting();
@@ -90,6 +92,7 @@ namespace Avalonia.Controls.UnitTests
 
                 ResetModuleLoadStates();
                 builder = AppBuilder.Configure<App>()
+                    .IgnoreSetupCheck()
                     .UseWindowingSubsystem(() => { })
                     .UseRenderingSubsystem(() => { }, "Skia");
                 builder.UseAvaloniaModules().SetupWithoutStarting();
@@ -99,13 +102,14 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
-        [Fact (Skip = "We don't have rendering modules with dependencies right now")]
+        [Fact]
         public void LoadsRenderingModuleWithoutDependenciesWhenNoModuleMatches()
         {
             using (AvaloniaLocator.EnterScope())
             {
                 ResetModuleLoadStates();
                 var builder = AppBuilder.Configure<App>()
+                    .IgnoreSetupCheck()
                     .UseWindowingSubsystem(() => { })
                     .UseRenderingSubsystem(() => { }, "TBD");
                 builder.UseAvaloniaModules().SetupWithoutStarting();

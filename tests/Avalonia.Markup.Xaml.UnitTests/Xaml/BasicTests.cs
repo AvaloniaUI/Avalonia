@@ -868,6 +868,25 @@ do we need it?")]
             }
         }
 
+        [Fact]
+        public void Element_Whitespace_Should_Be_Trimmed()
+        {
+            using (UnitTestApplication.Start(TestServices.MockWindowingPlatform))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'>
+    <TextBlock>
+        Hello World!
+    </TextBlock>
+</Window>";
+
+                var window = AvaloniaXamlLoader.Parse<Window>(xaml);
+                var textBlock = (TextBlock)window.Content;
+
+                Assert.Equal("Hello World!", textBlock.Text);
+            }
+        }
+
         private class SelectedItemsViewModel : INotifyPropertyChanged
         {
             public string[] Items { get; set; }

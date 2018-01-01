@@ -25,11 +25,9 @@ namespace Avalonia.Rendering
         private readonly IRenderLoop _renderLoop;
         private readonly IVisual _root;
         private readonly ISceneBuilder _sceneBuilder;
-        private readonly RenderLayers _layers;
 
         private bool _running;
         private Scene _scene;
-        private IRenderTarget _renderTarget;
         private DirtyVisuals _dirty;
         private IRenderTargetBitmapImpl _overlay;
         private bool _updateQueued;
@@ -56,7 +54,7 @@ namespace Avalonia.Rendering
             _dispatcher = dispatcher ?? Dispatcher.UIThread;
             _root = root;
             _sceneBuilder = sceneBuilder ?? new SceneBuilder();
-            _layers = new RenderLayers();
+            Layers = new RenderLayers();
             _renderLoop = renderLoop;
         }
 
@@ -78,9 +76,9 @@ namespace Avalonia.Rendering
             Contract.Requires<ArgumentNullException>(renderTarget != null);
 
             _root = root;
-            _renderTarget = renderTarget;
+            RenderTarget = renderTarget;
             _sceneBuilder = sceneBuilder ?? new SceneBuilder();
-            _layers = new RenderLayers();
+            Layers = new RenderLayers();
         }
 
         /// <inheritdoc/>
@@ -93,6 +91,16 @@ namespace Avalonia.Rendering
         /// Gets or sets a path to which rendered frame should be rendered for debugging.
         /// </summary>
         public string DebugFramesPath { get; set; }
+
+        /// <summary>
+        /// Gets the render layers.
+        /// </summary>
+        internal RenderLayers Layers { get; }
+
+        /// <summary>
+        /// Gets the current render target.
+        /// </summary>
+        internal IRenderTarget RenderTarget { get; private set; }
 
         /// <inheritdoc/>
         public void AddDirty(IVisual visual)
@@ -173,9 +181,9 @@ namespace Avalonia.Rendering
             bool renderOverlay = DrawDirtyRects || DrawFps;
             bool composite = false;
 
-            if (_renderTarget == null)
+            if (RenderTarget == null)
             {
-                _renderTarget = ((IRenderRoot)_root).CreateRenderTarget();
+                RenderTarget = ((IRenderRoot)_root).CreateRenderTarget();
             }
 
             if (renderOverlay)
@@ -191,8 +199,8 @@ namespace Avalonia.Rendering
 
                     if (scene.Generation != _lastSceneId)
                     {
-                        context = _renderTarget.CreateDrawingContext(this);
-                        _layers.Update(scene, context);
+                        context = RenderTarget.CreateDrawingContext(this);
+                        Layers.Update(scene, context);
 
                         RenderToLayers(scene);
 
@@ -208,13 +216,13 @@ namespace Avalonia.Rendering
 
                     if (renderOverlay)
                     {
-                        context = context ?? _renderTarget.CreateDrawingContext(this);
+                        context = context ?? RenderTarget.CreateDrawingContext(this);
                         RenderOverlay(scene, context);
                         RenderComposite(scene, context);
                     }
                     else if (composite)
                     {
-                        context = context ?? _renderTarget.CreateDrawingContext(this);
+                        context = context ?? RenderTarget.CreateDrawingContext(this);
                         RenderComposite(scene, context);
                     }
 
@@ -224,8 +232,8 @@ namespace Avalonia.Rendering
             catch (RenderTargetCorruptedException ex)
             {
                 Logging.Logger.Information("Renderer", this, "Render target was corrupted. Exception: {0}", ex);
-                _renderTarget?.Dispose();
-                _renderTarget = null;
+                RenderTarget?.Dispose();
+                RenderTarget = null;
             }
         }
 
@@ -235,9 +243,11 @@ namespace Avalonia.Rendering
             {
                 clipBounds = node.ClipBounds.Intersect(clipBounds);
 
-                if (!clipBounds.IsEmpty)
+                if (!clipBounds.IsEmpty && node.Opacity > 0)
                 {
-                    node.BeginRender(context);
+                    var isLayerRoot = node.Visual == layer;
+
+                    node.BeginRender(context, isLayerRoot);
 
                     foreach (var operation in node.DrawOperations)
                     {
@@ -251,7 +261,7 @@ namespace Avalonia.Rendering
                         Render(context, (VisualNode)child, layer, clipBounds);
                     }
 
-                    node.EndRender(context);
+                    node.EndRender(context, isLayerRoot);
                 }
             }
         }
@@ -262,7 +272,7 @@ namespace Avalonia.Rendering
             {
                 foreach (var layer in scene.Layers)
                 {
-                    var renderTarget = _layers[layer.LayerRoot].Bitmap;
+                    var renderTarget = Layers[layer.LayerRoot].Bitmap;
                     var node = (VisualNode)scene.FindNode(layer.LayerRoot);
 
                     if (node != null)
@@ -322,7 +332,7 @@ namespace Avalonia.Rendering
 
             foreach (var layer in scene.Layers)
             {
-                var bitmap = _layers[layer.LayerRoot].Bitmap;
+                var bitmap = Layers[layer.LayerRoot].Bitmap;
                 var sourceRect = new Rect(0, 0, bitmap.PixelWidth, bitmap.PixelHeight);
 
                 if (layer.GeometryClip != null)
@@ -353,7 +363,7 @@ namespace Avalonia.Rendering
 
             if (DrawFps)
             {
-                RenderFps(context, clientRect, true);
+                RenderFps(context, clientRect, scene.Layers.Count);
             }
         }
 
@@ -442,7 +452,7 @@ namespace Avalonia.Rendering
         {
             var index = 0;
 
-            foreach (var layer in _layers)
+            foreach (var layer in Layers)
             {
                 var fileName = Path.Combine(DebugFramesPath, $"frame-{id}-layer-{index++}.png");
                 layer.Bitmap.Save(fileName);

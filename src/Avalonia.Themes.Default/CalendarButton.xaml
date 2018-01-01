@@ -29,8 +29,8 @@
           <!--Focusable="False"-->
           <ContentControl Name="Content"
                           Foreground="#FF333333"
-                          Content="{TemplateBinding Content}"
                           ContentTemplate="{TemplateBinding ContentTemplate}"
+                          Content="{TemplateBinding Content}"
                           HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                           VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                           FontSize="{TemplateBinding FontSize}"

@@ -178,6 +178,10 @@ namespace Avalonia.Controls
             {
                 value = CoerceCaretIndex(value);
                 SetAndRaise(SelectionStartProperty, ref _selectionStart, value);
+                if (SelectionStart == SelectionEnd)
+                {
+                    CaretIndex = SelectionStart;
+                }
             }
         }
 
@@ -192,6 +196,10 @@ namespace Avalonia.Controls
             {
                 value = CoerceCaretIndex(value);
                 SetAndRaise(SelectionEndProperty, ref _selectionEnd, value);
+                if (SelectionStart == SelectionEnd)
+                {
+                    CaretIndex = SelectionEnd;
+                }
             }
         }
 
