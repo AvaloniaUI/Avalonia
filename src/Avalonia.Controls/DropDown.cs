@@ -38,7 +38,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="SelectionBoxItem"/> property.
         /// </summary>
         public static readonly DirectProperty<DropDown, object> SelectionBoxItemProperty =
-            AvaloniaProperty.RegisterDirect<DropDown, object>("SelectionBoxItem", o => o.SelectionBoxItem);
+            AvaloniaProperty.RegisterDirect<DropDown, object>(nameof(SelectionBoxItem), o => o.SelectionBoxItem);
 
         private bool _isDropDownOpen;
         private Popup _popup;

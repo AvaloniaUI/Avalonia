@@ -24,7 +24,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="Transition"/> property.
         /// </summary>
         public static readonly StyledProperty<IPageTransition> TransitionProperty =
-            AvaloniaProperty.Register<Carousel, IPageTransition>("Transition");
+            AvaloniaProperty.Register<Carousel, IPageTransition>(nameof(Transition));
 
         /// <summary>
         /// The default value of <see cref="ItemsControl.ItemsPanelProperty"/> for 

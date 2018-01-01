@@ -170,7 +170,7 @@ namespace Avalonia.Styling.UnitTests
         private class Class1 : Control
         {
             public static readonly StyledProperty<string> FooProperty =
-                AvaloniaProperty.Register<Class1, string>("Foo", "foodefault");
+                AvaloniaProperty.Register<Class1, string>(nameof(Foo), "foodefault");
 
             public string Foo
             {

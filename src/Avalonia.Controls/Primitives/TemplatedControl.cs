@@ -75,7 +75,7 @@ namespace Avalonia.Controls.Primitives
         /// Defines the <see cref="Template"/> property.
         /// </summary>
         public static readonly StyledProperty<IControlTemplate> TemplateProperty =
-            AvaloniaProperty.Register<TemplatedControl, IControlTemplate>("Template");
+            AvaloniaProperty.Register<TemplatedControl, IControlTemplate>(nameof(Template));
 
         /// <summary>
         /// Defines the IsTemplateFocusTarget attached property.
