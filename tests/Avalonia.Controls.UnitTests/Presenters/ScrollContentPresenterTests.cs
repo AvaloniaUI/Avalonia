@@ -202,6 +202,32 @@ namespace Avalonia.Controls.UnitTests.Presenters
         }
 
         [Fact]
+        public void Arrange_Should_Constrain_Child_Width_When_CanScrollHorizontally_False()
+        {
+            var child = new WrapPanel
+            {
+                Children =
+                {
+                    new Border { Width = 40, Height = 50 },
+                    new Border { Width = 40, Height = 50 },
+                    new Border { Width = 40, Height = 50 },
+                }
+            };
+
+            var target = new ScrollContentPresenter
+            {
+                Content = child,
+                CanScrollHorizontally = false,
+            };
+
+            target.UpdateChild();
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(0, 0, 100, 100));
+
+            Assert.Equal(100, child.Bounds.Width);
+        }
+
+        [Fact]
         public void Setting_Offset_Should_Invalidate_Arrange()
         {
             var target = new ScrollContentPresenter

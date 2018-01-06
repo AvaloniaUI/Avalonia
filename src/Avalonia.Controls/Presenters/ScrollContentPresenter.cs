@@ -101,9 +101,13 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <summary>
-        /// Gets a value indicating whether the content can be scrolled horizontally.
+        /// Gets or sets a value indicating whether the content can be scrolled horizontally.
         /// </summary>
-        public bool CanScrollHorizontally => GetValue(CanScrollHorizontallyProperty);
+        public bool CanScrollHorizontally
+        {
+            get => GetValue(CanScrollHorizontallyProperty);
+            set => SetValue(CanScrollHorizontallyProperty, value);
+        }
 
         /// <summary>
         /// Attempts to bring a portion of the target visual into view by scrolling the content.
@@ -213,8 +217,8 @@ namespace Avalonia.Controls.Presenters
                 if (child != null)
                 {
                     var size = new Size(
-                    Math.Max(finalSize.Width, child.DesiredSize.Width),
-                    Math.Max(finalSize.Height, child.DesiredSize.Height));
+                        Math.Max(finalSize.Width, child.DesiredSize.Width),
+                        Math.Max(finalSize.Height, child.DesiredSize.Height));
                     child.Arrange(new Rect((Point)(-Offset), size));
                     return finalSize;
                 }
