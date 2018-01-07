@@ -217,8 +217,11 @@ namespace Avalonia.Controls.Presenters
                 if (child != null)
                 {
                     var size = new Size(
-                        Math.Max(finalSize.Width, child.DesiredSize.Width),
+                        CanScrollHorizontally ?
+                            Math.Max(finalSize.Width, child.DesiredSize.Width) :
+                            Math.Min(finalSize.Width, child.DesiredSize.Width),
                         Math.Max(finalSize.Height, child.DesiredSize.Height));
+
                     child.Arrange(new Rect((Point)(-Offset), size));
                     return finalSize;
                 }
