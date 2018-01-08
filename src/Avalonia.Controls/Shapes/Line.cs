@@ -8,10 +8,10 @@ namespace Avalonia.Controls.Shapes
     public class Line : Shape
     {
         public static readonly StyledProperty<Point> StartPointProperty =
-            AvaloniaProperty.Register<Line, Point>("StartPoint");
+            AvaloniaProperty.Register<Line, Point>(nameof(StartPoint));
 
         public static readonly StyledProperty<Point> EndPointProperty =
-            AvaloniaProperty.Register<Line, Point>("EndPoint");
+            AvaloniaProperty.Register<Line, Point>(nameof(EndPoint));
 
         static Line()
         {

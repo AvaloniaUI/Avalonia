@@ -136,7 +136,7 @@ namespace Avalonia.Markup.UnitTests.Data
         private class Class1 : AvaloniaObject
         {
             public static readonly StyledProperty<Class1> NextProperty =
-                AvaloniaProperty.Register<Class1, Class1>("Next");
+                AvaloniaProperty.Register<Class1, Class1>(nameof(Next));
 
             public Class1 Next
             {
