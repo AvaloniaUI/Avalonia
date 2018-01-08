@@ -21,13 +21,13 @@ namespace Avalonia.Controls
     public class TextBox : TemplatedControl, UndoRedoHelper<TextBox.UndoRedoState>.IUndoRedoHost
     {
         public static readonly StyledProperty<bool> AcceptsReturnProperty =
-            AvaloniaProperty.Register<TextBox, bool>("AcceptsReturn");
+            AvaloniaProperty.Register<TextBox, bool>(nameof(AcceptsReturn));
 
         public static readonly StyledProperty<bool> AcceptsTabProperty =
-            AvaloniaProperty.Register<TextBox, bool>("AcceptsTab");
+            AvaloniaProperty.Register<TextBox, bool>(nameof(AcceptsTab));
 
         public static readonly DirectProperty<TextBox, bool> CanScrollHorizontallyProperty =
-            AvaloniaProperty.RegisterDirect<TextBox, bool>("CanScrollHorizontally", o => o.CanScrollHorizontally);
+            AvaloniaProperty.RegisterDirect<TextBox, bool>(nameof(CanScrollHorizontally), o => o.CanScrollHorizontally);
 
         public static readonly DirectProperty<TextBox, int> CaretIndexProperty =
             AvaloniaProperty.RegisterDirect<TextBox, int>(
@@ -69,10 +69,10 @@ namespace Avalonia.Controls
             TextBlock.TextWrappingProperty.AddOwner<TextBox>();
 
         public static readonly StyledProperty<string> WatermarkProperty =
-            AvaloniaProperty.Register<TextBox, string>("Watermark");
+            AvaloniaProperty.Register<TextBox, string>(nameof(Watermark));
 
         public static readonly StyledProperty<bool> UseFloatingWatermarkProperty =
-            AvaloniaProperty.Register<TextBox, bool>("UseFloatingWatermark");
+            AvaloniaProperty.Register<TextBox, bool>(nameof(UseFloatingWatermark));
 
         struct UndoRedoState : IEquatable<UndoRedoState>
         {

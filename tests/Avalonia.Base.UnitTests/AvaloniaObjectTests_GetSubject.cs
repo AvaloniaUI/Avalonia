@@ -37,7 +37,7 @@ namespace Avalonia.Base.UnitTests
         private class Class1 : AvaloniaObject
         {
             public static readonly StyledProperty<string> FooProperty =
-                AvaloniaProperty.Register<Class1, string>("Foo", "foodefault");
+                AvaloniaProperty.Register<Class1, string>(nameof(Foo), "foodefault");
 
             public string Foo
             {

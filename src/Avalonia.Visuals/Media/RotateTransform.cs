@@ -15,7 +15,7 @@ namespace Avalonia.Media
         /// Defines the <see cref="Angle"/> property.
         /// </summary>
         public static readonly StyledProperty<double> AngleProperty =
-            AvaloniaProperty.Register<RotateTransform, double>("Angle");
+            AvaloniaProperty.Register<RotateTransform, double>(nameof(Angle));
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RotateTransform"/> class.

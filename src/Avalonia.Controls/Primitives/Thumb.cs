@@ -11,13 +11,13 @@ namespace Avalonia.Controls.Primitives
     public class Thumb : TemplatedControl
     {
         public static readonly RoutedEvent<VectorEventArgs> DragStartedEvent =
-            RoutedEvent.Register<Thumb, VectorEventArgs>("DragStarted", RoutingStrategies.Bubble);
+            RoutedEvent.Register<Thumb, VectorEventArgs>(nameof(DragStarted), RoutingStrategies.Bubble);
 
         public static readonly RoutedEvent<VectorEventArgs> DragDeltaEvent =
-            RoutedEvent.Register<Thumb, VectorEventArgs>("DragDelta", RoutingStrategies.Bubble);
+            RoutedEvent.Register<Thumb, VectorEventArgs>(nameof(DragDelta), RoutingStrategies.Bubble);
 
         public static readonly RoutedEvent<VectorEventArgs> DragCompletedEvent =
-            RoutedEvent.Register<Thumb, VectorEventArgs>("DragCompleted", RoutingStrategies.Bubble);
+            RoutedEvent.Register<Thumb, VectorEventArgs>(nameof(DragCompleted), RoutingStrategies.Bubble);
 
         private Point? _lastPoint;
 
