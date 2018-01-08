@@ -14,6 +14,7 @@ namespace Avalonia.Controls.Primitives
                 nameof(IsChecked),
                 o => o.IsChecked,
                 (o, v) => o.IsChecked = v,
+                unsetValue: false,
                 defaultBindingMode: BindingMode.TwoWay);
 
         public static readonly StyledProperty<bool> IsThreeStateProperty =
