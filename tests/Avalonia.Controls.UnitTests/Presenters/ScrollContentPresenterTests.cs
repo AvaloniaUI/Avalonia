@@ -12,16 +12,32 @@ namespace Avalonia.Controls.UnitTests.Presenters
 {
     public class ScrollContentPresenterTests
     {
-        [Fact]
-        public void Content_Can_Be_Left_Aligned()
+        [Theory]
+        [InlineData(HorizontalAlignment.Stretch, VerticalAlignment.Stretch, 10, 10, 80, 80)]
+        [InlineData(HorizontalAlignment.Left, VerticalAlignment.Stretch, 10, 10, 16, 80)]
+        [InlineData(HorizontalAlignment.Right, VerticalAlignment.Stretch, 74, 10, 16, 80)]
+        [InlineData(HorizontalAlignment.Center, VerticalAlignment.Stretch, 42, 10, 16, 80)]
+        [InlineData(HorizontalAlignment.Stretch, VerticalAlignment.Top, 10, 10, 80, 16)]
+        [InlineData(HorizontalAlignment.Stretch, VerticalAlignment.Bottom, 10, 74, 80, 16)]
+        [InlineData(HorizontalAlignment.Stretch, VerticalAlignment.Center, 10, 42, 80, 16)]
+        public void Alignment_And_Padding_Are_Applied_To_Child_Bounds(
+            HorizontalAlignment h,
+            VerticalAlignment v,
+            double expectedX,
+            double expectedY,
+            double expectedWidth,
+            double expectedHeight)
         {
             Border content;
             var target = new ScrollContentPresenter
             {
+                Padding = new Thickness(10),
                 Content = content = new Border
                 {
-                    Padding = new Thickness(8),
-                    HorizontalAlignment = HorizontalAlignment.Left
+                    MinWidth = 16,
+                    MinHeight = 16,
+                    HorizontalAlignment = h,
+                    VerticalAlignment = v,
                 },
             };
 
@@ -29,18 +45,19 @@ namespace Avalonia.Controls.UnitTests.Presenters
             target.Measure(new Size(100, 100));
             target.Arrange(new Rect(0, 0, 100, 100));
 
-            Assert.Equal(new Rect(0, 0, 16, 100), content.Bounds);
+            Assert.Equal(new Rect(expectedX, expectedY, expectedWidth, expectedHeight), content.Bounds);
         }
 
         [Fact]
-        public void Content_Can_Be_Stretched()
+        public void DesiredSize_Is_Content_Size_When_Smaller_Than_AvailableSize()
         {
-            Border content;
             var target = new ScrollContentPresenter
             {
-                Content = content = new Border
+                Padding = new Thickness(10),
+                Content = new Border
                 {
-                    Padding = new Thickness(8),
+                    MinWidth = 16,
+                    MinHeight = 16,
                 },
             };
 
@@ -48,19 +65,19 @@ namespace Avalonia.Controls.UnitTests.Presenters
             target.Measure(new Size(100, 100));
             target.Arrange(new Rect(0, 0, 100, 100));
 
-            Assert.Equal(new Rect(0, 0, 100, 100), content.Bounds);
+            Assert.Equal(new Size(16, 16), target.DesiredSize);
         }
 
         [Fact]
-        public void Content_Can_Be_Right_Aligned()
+        public void DesiredSize_Is_AvailableSize_When_Content_Larger_Than_AvailableSize()
         {
-            Border content;
             var target = new ScrollContentPresenter
             {
-                Content = content = new Border
+                Padding = new Thickness(10),
+                Content = new Border
                 {
-                    Padding = new Thickness(8),
-                    HorizontalAlignment = HorizontalAlignment.Right
+                    MinWidth = 160,
+                    MinHeight = 160,
                 },
             };
 
@@ -68,48 +85,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             target.Measure(new Size(100, 100));
             target.Arrange(new Rect(0, 0, 100, 100));
 
-            Assert.Equal(new Rect(84, 0, 16, 100), content.Bounds);
-        }
-
-        [Fact]
-        public void Content_Can_Be_Bottom_Aligned()
-        {
-            Border content;
-            var target = new ScrollContentPresenter
-            {
-                Content = content = new Border
-                {
-                    Padding = new Thickness(8),
-                    VerticalAlignment = VerticalAlignment.Bottom,
-                },
-            };
-
-            target.UpdateChild();
-            target.Measure(new Size(100, 100));
-            target.Arrange(new Rect(0, 0, 100, 100));
-
-            Assert.Equal(new Rect(0, 84, 100, 16), content.Bounds);
-        }
-
-        [Fact]
-        public void Content_Can_Be_TopRight_Aligned()
-        {
-            Border content;
-            var target = new ScrollContentPresenter
-            {
-                Content = content = new Border
-                {
-                    Padding = new Thickness(8),
-                    HorizontalAlignment = HorizontalAlignment.Right,
-                    VerticalAlignment = VerticalAlignment.Top,
-                },
-            };
-
-            target.UpdateChild();
-            target.Measure(new Size(100, 100));
-            target.Arrange(new Rect(0, 0, 100, 100));
-
-            Assert.Equal(new Rect(84, 0, 16, 16), content.Bounds);
+            Assert.Equal(new Size(100, 100), target.DesiredSize);
         }
 
         [Fact]
@@ -202,6 +178,19 @@ namespace Avalonia.Controls.UnitTests.Presenters
         }
 
         [Fact]
+        public void Should_Correctly_Arrange_Child_Larger_Than_Viewport()
+        {
+            var child = new Canvas { MinWidth = 150, MinHeight = 150 };
+            var target = new ScrollContentPresenter { Content = child, };
+
+            target.UpdateChild();
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(0, 0, 100, 100));
+
+            Assert.Equal(new Size(150, 150), child.Bounds.Size);
+        }
+
+        [Fact]
         public void Arrange_Should_Constrain_Child_Width_When_CanScrollHorizontally_False()
         {
             var child = new WrapPanel
@@ -225,6 +214,32 @@ namespace Avalonia.Controls.UnitTests.Presenters
             target.Arrange(new Rect(0, 0, 100, 100));
 
             Assert.Equal(100, child.Bounds.Width);
+        }
+
+        [Fact]
+        public void Extent_Width_Should_Be_Arrange_Width_When_CanScrollHorizontally_False()
+        {
+            var child = new WrapPanel
+            {
+                Children =
+                {
+                    new Border { Width = 40, Height = 50 },
+                    new Border { Width = 40, Height = 50 },
+                    new Border { Width = 40, Height = 50 },
+                }
+            };
+
+            var target = new ScrollContentPresenter
+            {
+                Content = child,
+                CanScrollHorizontally = false,
+            };
+
+            target.UpdateChild();
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(0, 0, 100, 100));
+
+            Assert.Equal(new Size(100, 100), target.Extent);
         }
 
         [Fact]

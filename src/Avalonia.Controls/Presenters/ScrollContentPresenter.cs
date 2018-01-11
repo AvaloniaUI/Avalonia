@@ -48,7 +48,6 @@ namespace Avalonia.Controls.Presenters
             ScrollViewer.CanScrollHorizontallyProperty.AddOwner<ScrollContentPresenter>();
 
         private Size _extent;
-        private Size _measuredExtent;
         private Vector _offset;
         private IDisposable _logicalScrollSubscription;
         private Size _viewport;
@@ -176,63 +175,36 @@ namespace Avalonia.Controls.Presenters
         /// <inheritdoc/>
         protected override Size MeasureOverride(Size availableSize)
         {
-            var child = Child;
-
-            if (child != null)
+            if (_logicalScrollSubscription != null || Child == null)
             {
-                var measureSize = availableSize;
-
-                if (_logicalScrollSubscription == null)
-                {
-                    measureSize = new Size(double.PositiveInfinity, double.PositiveInfinity);
-
-                    if (!CanScrollHorizontally)
-                    {
-                        measureSize = measureSize.WithWidth(availableSize.Width);
-                    }
-                }
-
-                child.Measure(measureSize);
-                var size = child.DesiredSize;
-                _measuredExtent = size;
-                return size.Constrain(availableSize);
+                return base.MeasureOverride(availableSize);
             }
-            else
-            {
-                return Extent = new Size();
-            }
+
+            var constraint = new Size(
+                CanScrollHorizontally ? double.PositiveInfinity : availableSize.Width,
+                double.PositiveInfinity);
+
+            Child.Measure(constraint);
+            return Child.DesiredSize.Constrain(availableSize);
         }
 
         /// <inheritdoc/>
         protected override Size ArrangeOverride(Size finalSize)
         {
-            var child = this.GetVisualChildren().SingleOrDefault() as ILayoutable;
-            var logicalScroll = _logicalScrollSubscription != null;
-
-            if (!logicalScroll)
+            if (_logicalScrollSubscription != null || Child == null)
             {
-                Viewport = finalSize;
-                Extent = _measuredExtent;
-
-                if (child != null)
-                {
-                    var size = new Size(
-                        CanScrollHorizontally ?
-                            Math.Max(finalSize.Width, child.DesiredSize.Width) :
-                            Math.Min(finalSize.Width, child.DesiredSize.Width),
-                        Math.Max(finalSize.Height, child.DesiredSize.Height));
-
-                    child.Arrange(new Rect((Point)(-Offset), size));
-                    return finalSize;
-                }
-            }
-            else if (child != null)
-            {
-                child.Arrange(new Rect(finalSize));
-                return finalSize;
+                return base.ArrangeOverride(finalSize);
             }
 
-            return new Size();
+            var size = new Size(
+                CanScrollHorizontally ?
+                    Math.Max(Child.DesiredSize.Width, finalSize.Width) :
+                    finalSize.Width,
+                Math.Max(Child.DesiredSize.Height, finalSize.Height));
+            ArrangeOverrideImpl(size, -Offset);
+            Viewport = finalSize;
+            Extent = Child.Bounds.Size;
+            return finalSize;
         }
 
         /// <inheritdoc/>
