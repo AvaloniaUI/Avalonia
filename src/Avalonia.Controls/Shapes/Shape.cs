@@ -61,12 +61,26 @@ namespace Avalonia.Controls.Shapes
         {
             get
             {
-                if (_renderedGeometry == null)
+                if (_renderedGeometry == null && DefiningGeometry != null)
                 {
-                    if (DefiningGeometry != null)
+                    if (_transform == Matrix.Identity)
+                    {
+                        _renderedGeometry = DefiningGeometry;
+                    }
+                    else
                     {
                         _renderedGeometry = DefiningGeometry.Clone();
-                        _renderedGeometry.Transform = new MatrixTransform(_transform);
+
+                        if (_renderedGeometry.Transform == null ||
+                            _renderedGeometry.Transform.Value == Matrix.Identity)
+                        {
+                            _renderedGeometry.Transform = new MatrixTransform(_transform);
+                        }
+                        else
+                        {
+                            _renderedGeometry.Transform = new MatrixTransform(
+                                _renderedGeometry.Transform.Value * _transform);
+                        }
                     }
                 }
 
@@ -193,6 +207,7 @@ namespace Avalonia.Controls.Shapes
 
             return finalSize;
         }
+
         private Size CalculateShapeSizeAndSetTransform(Size availableSize)
         {
             // This should probably use GetRenderBounds(strokeThickness) but then the calculations
