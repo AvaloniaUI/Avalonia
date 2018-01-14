@@ -49,7 +49,7 @@ namespace Avalonia.DesignerSupport.Remote
             // In previewer mode we completely ignore client-side viewport size
             if (obj is ClientViewportAllocatedMessage alloc)
             {
-                Dispatcher.UIThread.InvokeAsync(() => SetDpi(new Vector(alloc.DpiX, alloc.DpiY)));
+                Dispatcher.UIThread.Post(() => SetDpi(new Vector(alloc.DpiX, alloc.DpiY)));
                 return;
             }
             base.OnMessage(transport, obj);

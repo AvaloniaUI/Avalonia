@@ -774,7 +774,7 @@ namespace Avalonia
             }
             else
             {
-                Dispatcher.UIThread.InvokeAsync(Set);
+                Dispatcher.UIThread.Post(Set);
             }
         }
 

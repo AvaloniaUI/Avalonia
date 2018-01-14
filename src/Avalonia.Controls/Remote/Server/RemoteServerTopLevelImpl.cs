@@ -46,16 +46,16 @@ namespace Avalonia.Controls.Remote.Server
                     {
                         _lastReceivedFrame = lastFrame.SequenceId;
                     }
-                    Dispatcher.UIThread.InvokeAsync(RenderIfNeeded);
+                    Dispatcher.UIThread.Post(RenderIfNeeded);
                 }
                 if (obj is ClientSupportedPixelFormatsMessage supportedFormats)
                 {
                     lock (_lock)
                         _supportedFormats = supportedFormats.Formats;
-                    Dispatcher.UIThread.InvokeAsync(RenderIfNeeded);
+                    Dispatcher.UIThread.Post(RenderIfNeeded);
                 }
                 if (obj is MeasureViewportMessage measure)
-                    Dispatcher.UIThread.InvokeAsync(() =>
+                    Dispatcher.UIThread.Post(() =>
                     {
                         var m = Measure(new Size(measure.Width, measure.Height));
                         _transport.Send(new MeasureViewportMessage
@@ -69,7 +69,7 @@ namespace Avalonia.Controls.Remote.Server
                     lock (_lock)
                     {
                         if (_pendingAllocation == null)
-                            Dispatcher.UIThread.InvokeAsync(() =>
+                            Dispatcher.UIThread.Post(() =>
                             {
                                 ClientViewportAllocatedMessage allocation;
                                 lock (_lock)
@@ -168,7 +168,7 @@ namespace Avalonia.Controls.Remote.Server
         public override void Invalidate(Rect rect)
         {
             _invalidated = true;
-            Dispatcher.UIThread.InvokeAsync(RenderIfNeeded);
+            Dispatcher.UIThread.Post(RenderIfNeeded);
         }
 
         public override IMouseDevice MouseDevice { get; } = new MouseDevice();

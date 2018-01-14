@@ -33,7 +33,7 @@ namespace Avalonia.Threading
                 if (!Dispatcher.UIThread.CheckAccess())
                 {
                     var cancellation = new CancellationDisposable();
-                    Dispatcher.UIThread.InvokeAsync(() =>
+                    Dispatcher.UIThread.Post(() =>
                     {
                         if (!cancellation.Token.IsCancellationRequested)
                         {
