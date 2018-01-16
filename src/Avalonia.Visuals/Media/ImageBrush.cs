@@ -14,7 +14,7 @@ namespace Avalonia.Media
         /// Defines the <see cref="Visual"/> property.
         /// </summary>
         public static readonly StyledProperty<IBitmap> SourceProperty =
-            AvaloniaProperty.Register<ImageBrush, IBitmap>("Source");
+            AvaloniaProperty.Register<ImageBrush, IBitmap>(nameof(Source));
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ImageBrush"/> class.
