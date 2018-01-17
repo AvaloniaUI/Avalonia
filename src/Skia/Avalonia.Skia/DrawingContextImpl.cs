@@ -68,7 +68,7 @@ namespace Avalonia.Skia
 
         public void DrawGeometry(IBrush brush, Pen pen, IGeometryImpl geometry)
         {
-            var impl = (StreamGeometryImpl)geometry;
+            var impl = (GeometryImpl)geometry;
             var size = geometry.Bounds.Size;
 
             using (var fill = brush != null ? CreatePaint(brush, size) : default(PaintWrapper))

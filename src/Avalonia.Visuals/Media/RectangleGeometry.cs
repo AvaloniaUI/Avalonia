@@ -16,6 +16,8 @@ namespace Avalonia.Media
         public static readonly StyledProperty<Rect> RectProperty =
             AvaloniaProperty.Register<RectangleGeometry, Rect>(nameof(Rect));
 
+        bool _isDirty = true;
+
         public Rect Rect
         {
             get => GetValue(RectProperty);
@@ -24,7 +26,7 @@ namespace Avalonia.Media
 
         static RectangleGeometry()
         {
-            RectProperty.Changed.AddClassHandler<RectangleGeometry>(x => x.RectChanged);
+            AffectsGeometry(RectProperty);
         }
 
         /// <summary>
@@ -32,36 +34,36 @@ namespace Avalonia.Media
         /// </summary>
         public RectangleGeometry()
         {
-            IPlatformRenderInterface factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
-            PlatformImpl = factory.CreateStreamGeometry();
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RectangleGeometry"/> class.
         /// </summary>
         /// <param name="rect">The rectangle bounds.</param>
-        public RectangleGeometry(Rect rect) : this()
+        public RectangleGeometry(Rect rect)
         {
             Rect = rect;
         }
 
         /// <inheritdoc/>
-        public override Geometry Clone()
-        {
-            return new RectangleGeometry(Rect);
-        }
+        public override Geometry Clone() => new RectangleGeometry(Rect);
 
-        private void RectChanged(AvaloniaPropertyChangedEventArgs e)
+        protected override IGeometryImpl CreateDefiningGeometry()
         {
-            var rect = (Rect)e.NewValue;
-            using (var context = ((IStreamGeometryImpl)PlatformImpl).Open())
+            var factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
+            var geometry = factory.CreateStreamGeometry();
+
+            using (var context = geometry.Open())
             {
+                var rect = Rect;
                 context.BeginFigure(rect.TopLeft, true);
                 context.LineTo(rect.TopRight);
                 context.LineTo(rect.BottomRight);
                 context.LineTo(rect.BottomLeft);
                 context.EndFigure(true);
             }
+
+            return geometry;
         }
     }
 }

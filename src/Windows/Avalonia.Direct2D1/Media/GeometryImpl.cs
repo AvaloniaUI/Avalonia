@@ -23,13 +23,13 @@ namespace Avalonia.Direct2D1.Media
         /// <inheritdoc/>
         public Geometry Geometry { get; }
 
-        /// <inheritdoc/>
-        public virtual Matrix Transform => Matrix.Identity;
+        public void Dispose() => Geometry.Dispose();
 
         /// <inheritdoc/>
-        public Rect GetRenderBounds(double strokeThickness)
+        public Rect GetRenderBounds(Avalonia.Media.Pen pen)
         {
-            return Geometry.GetWidenedBounds((float)strokeThickness).ToAvalonia();
+            var factory = AvaloniaLocator.Current.GetService<Factory>();
+            return Geometry.GetWidenedBounds((float)pen.Thickness).ToAvalonia();
         }
 
         /// <inheritdoc/>
@@ -56,15 +56,15 @@ namespace Avalonia.Direct2D1.Media
             return Geometry.StrokeContainsPoint(point.ToSharpDX(), (float)pen.Thickness);
         }
 
-        /// <inheritdoc/>
-        public IGeometryImpl WithTransform(Matrix transform)
+        public ITransformedGeometryImpl WithTransform(Matrix transform)
         {
             var factory = AvaloniaLocator.Current.GetService<Factory>();
             return new TransformedGeometryImpl(
                 new TransformedGeometry(
                     factory,
                     GetSourceGeometry(),
-                    transform.ToDirect2D()));
+                    transform.ToDirect2D()),
+                this);
         }
 
         protected virtual Geometry GetSourceGeometry() => Geometry;

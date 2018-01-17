@@ -1,45 +1,34 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
 using Avalonia.Media;
 using Avalonia.Platform;
-using Avalonia.RenderHelpers;
 using SkiaSharp;
 
 namespace Avalonia.Skia
 {
-    class StreamGeometryImpl : IStreamGeometryImpl
+    class StreamGeometryImpl : GeometryImpl, IStreamGeometryImpl
     {
+        Rect _bounds;
         SKPath _path;
 
-        private Matrix _transform = Matrix.Identity;
+        public override SKPath EffectivePath => _path;
 
-        public SKPath EffectivePath => _path;
-
-        public Rect GetRenderBounds(double strokeThickness)
+        public override Rect GetRenderBounds(Pen pen)
         {
-            // TODO: Calculate properly.
-            return Bounds.TransformToAABB(Transform).Inflate(strokeThickness);
+            return GetRenderBounds(pen?.Thickness ?? 0);
         }
 
-        public Rect Bounds { get; private set; }
-
-        public Matrix Transform
-        {
-            get { return _transform; }
-        }
+        public override Rect Bounds => _bounds;
 
         public IStreamGeometryImpl Clone()
         {
             return new StreamGeometryImpl
             {
                 _path = _path?.Clone(),
-                _transform = Transform,
-                Bounds = Bounds
+                _bounds = Bounds
             };
         }
+
+        public override void Dispose() => _path.Dispose();
 
         public IStreamGeometryContextImpl Open()
         {
@@ -49,41 +38,34 @@ namespace Avalonia.Skia
             return new StreamContext(this);
         }
 
-        public bool FillContains(Point point)
+        public override bool FillContains(Point point)
         {
             // TODO: Not supported by SkiaSharp yet, so use expanded Rect
             // return EffectivePath.Contains(point.X, point.Y);
             return GetRenderBounds(0).Contains(point);
         }
 
-        public bool StrokeContains(Pen pen, Point point)
+        public override bool StrokeContains(Pen pen, Point point)
         {
             // TODO: Not supported by SkiaSharp yet, so use expanded Rect
             // return EffectivePath.Contains(point.X, point.Y);
             return GetRenderBounds(0).Contains(point);
         }
 
-        public IGeometryImpl Intersect(IGeometryImpl geometry)
+        public override IGeometryImpl Intersect(IGeometryImpl geometry)
         {
             throw new NotImplementedException();
         }
 
-        public IGeometryImpl WithTransform(Matrix transform)
+        public override ITransformedGeometryImpl WithTransform(Matrix transform)
         {
-            var result = (StreamGeometryImpl)Clone();
+            return new TransformedGeometryImpl(this, transform);
+        }
 
-            if (result.Transform != Matrix.Identity)
-            {
-                result._path.Transform(result.Transform.Invert().ToSKMatrix());
-            }
-
-            if (transform != Matrix.Identity)
-            {
-                result._path.Transform(transform.ToSKMatrix());
-            }
-
-            result._transform = transform;
-            return result;
+        private Rect GetRenderBounds(double strokeThickness)
+        {
+            // TODO: Calculate properly.
+            return Bounds.Inflate(strokeThickness);
         }
 
         class StreamContext : IStreamGeometryContextImpl
@@ -102,7 +84,7 @@ namespace Avalonia.Skia
             {
                 SKRect rc;
                 _path.GetBounds(out rc);
-                _geometryImpl.Bounds = rc.ToAvaloniaRect();
+                _geometryImpl._bounds = rc.ToAvaloniaRect();
             }
 
             public void ArcTo(Point point, Size size, double rotationAngle, bool isLargeArc, SweepDirection sweepDirection)

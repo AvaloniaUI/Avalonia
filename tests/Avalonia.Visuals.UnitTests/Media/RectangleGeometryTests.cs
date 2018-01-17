@@ -27,7 +27,7 @@ namespace Avalonia.Visuals.UnitTests.Media
         private TestServices GetServices()
         {
             var context = Mock.Of<IStreamGeometryContextImpl>();
-            var transformedGeometry = new Mock<IGeometryImpl>();
+            var transformedGeometry = new Mock<ITransformedGeometryImpl>();
             var streamGeometry = Mock.Of<IStreamGeometryImpl>(x => 
                 x.Open() == context &&
                 x.WithTransform(It.IsAny<Matrix>()) == transformedGeometry.Object);

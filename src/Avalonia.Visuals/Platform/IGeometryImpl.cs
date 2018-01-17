@@ -1,14 +1,15 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
 using Avalonia.Media;
 
 namespace Avalonia.Platform
 {
     /// <summary>
-    /// Defines the platform-specific interface for <see cref="Avalonia.Media.Geometry"/>.
+    /// Defines the platform-specific interface for a <see cref="Geometry"/>.
     /// </summary>
-    public interface IGeometryImpl
+    public interface IGeometryImpl : IDisposable
     {
         /// <summary>
         /// Gets the geometry's bounding rectangle.
@@ -16,16 +17,11 @@ namespace Avalonia.Platform
         Rect Bounds { get; }
 
         /// <summary>
-        /// Gets the transform to applied to the geometry.
+        /// Gets the geometry's bounding rectangle with the specified pen.
         /// </summary>
-        Matrix Transform { get; }
-
-        /// <summary>
-        /// Gets the geometry's bounding rectangle with the specified stroke thickness.
-        /// </summary>
-        /// <param name="strokeThickness">The stroke thickness.</param>
+        /// <param name="pen">The pen to use. May be null.</param>
         /// <returns>The bounding rectangle.</returns>
-        Rect GetRenderBounds(double strokeThickness);
+        Rect GetRenderBounds(Pen pen);
 
         /// <summary>
         /// Indicates whether the geometry's fill contains the specified point.
@@ -54,6 +50,6 @@ namespace Avalonia.Platform
         /// </summary>
         /// <param name="transform">The transform.</param>
         /// <returns>The cloned geometry.</returns>
-        IGeometryImpl WithTransform(Matrix transform);
+        ITransformedGeometryImpl WithTransform(Matrix transform);
     }
 }
