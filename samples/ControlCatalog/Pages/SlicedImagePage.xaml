@@ -1,0 +1,8 @@
+<UserControl xmlns="https://github.com/avaloniaui">
+  <StackPanel Orientation="Vertical" Gap="4">
+    <TextBlock Classes="h1">Border</TextBlock>
+    <SlicedImage Source="resm:ControlCatalog.Assets.panel_brown.png" Width="500" Height="100" Stretch="Fill" Right="10" Left="10" Top="10" Bottom="10"/>
+    <SlicedImage Source="resm:ControlCatalog.Assets.panel_brown.png" Width="200" Height="50" Stretch="Fill" Right="10" Left="10" Top="10" Bottom="10"/>
+    <SlicedImage Source="resm:ControlCatalog.Assets.panel_brown.png" Width="300" Height="200" Stretch="Fill" Right="10" Left="10" Top="10" Bottom="10"/>
+  </StackPanel>
+</UserControl>
