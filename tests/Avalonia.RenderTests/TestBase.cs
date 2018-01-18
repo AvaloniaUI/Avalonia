@@ -46,7 +46,7 @@ namespace Avalonia.Direct2D1.RenderTests
 
         public TestBase(string outputPath)
         {
-            var testFiles = Path.GetFullPath(@"..\..\..\..\..\TestFiles\");
+            var testFiles = Path.GetFullPath(@"..\..\..\..\TestFiles\");
 #if AVALONIA_SKIA
             var platform = "Skia";
 #else
