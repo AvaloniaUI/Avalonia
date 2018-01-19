@@ -131,7 +131,6 @@ namespace Avalonia.Media
         protected void InvalidateGeometry()
         {
             _isDirty = true;
-            _platformImpl?.Dispose();
             _platformImpl = null;
             Changed?.Invoke(this, EventArgs.Empty);
         }

@@ -23,10 +23,6 @@ namespace Avalonia.Skia
 
         public override Rect Bounds => SourceGeometry.Bounds.TransformToAABB(Transform);
 
-        public override void Dispose()
-        {
-        }
-
         public override bool FillContains(Point point)
         {
             // TODO: Not supported by SkiaSharp yet, so use expanded Rect

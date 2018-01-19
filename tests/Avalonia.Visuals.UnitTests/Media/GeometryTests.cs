@@ -32,17 +32,6 @@ namespace Avalonia.Visuals.UnitTests.Media
         }
 
         [Fact]
-        public void Old_PlatformImpl_Is_Disposed_When_Updated()
-        {
-            var target = new TestGeometry();
-            var platformImpl = target.PlatformImpl;
-
-            target.Foo = true;
-
-            Mock.Get(platformImpl).Verify(x => x.Dispose());
-        }
-
-        [Fact]
         public void Setting_Transform_Causes_Changed_To_Be_Raised()
         {
             var target = new TestGeometry();

@@ -28,8 +28,6 @@ namespace Avalonia.Skia
             };
         }
 
-        public override void Dispose() => _path.Dispose();
-
         public IStreamGeometryContextImpl Open()
         {
             _path = new SKPath();
