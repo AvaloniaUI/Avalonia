@@ -21,6 +21,12 @@
             <TextBox Watermark="Viewport"
                      UseFloatingWatermark="True"
                      Text="{Binding #listBox.Scroll.Viewport, Mode=OneWay}"/>
+            <TextBlock>Horiz. ScrollBar</TextBlock>
+            <DropDown Items="{Binding ScrollBarVisibilities}"
+                      SelectedItem="{Binding HorizontalScrollBarVisibility}"/>
+            <TextBlock>Vert. ScrollBar</TextBlock>
+            <DropDown Items="{Binding ScrollBarVisibilities}"
+                      SelectedItem="{Binding VerticalScrollBarVisibility}"/>
             <TextBox Watermark="Item to Create"
                      UseFloatingWatermark="True"
                      Text="{Binding NewItemString}"/>
@@ -35,7 +41,9 @@
                  Items="{Binding Items}" 
                  SelectedItems="{Binding SelectedItems}"
                  SelectionMode="Multiple"
-                 VirtualizationMode="{Binding VirtualizationMode}">
+                 VirtualizationMode="{Binding VirtualizationMode}"
+                 ScrollViewer.HorizontalScrollBarVisibility="{Binding HorizontalScrollBarVisibility, Mode=TwoWay}"
+                 ScrollViewer.VerticalScrollBarVisibility="{Binding VerticalScrollBarVisibility, Mode=TwoWay}">
             <ListBox.ItemsPanel>
                 <ItemsPanelTemplate>
                     <VirtualizingStackPanel Orientation="{Binding Orientation}"/>
