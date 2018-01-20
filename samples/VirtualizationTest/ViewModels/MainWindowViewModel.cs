@@ -18,8 +18,8 @@ namespace VirtualizationTest.ViewModels
         private int _newItemIndex;
         private IReactiveList<ItemViewModel> _items;
         private string _prefix = "Item";
-        private ScrollBarVisibility _horizontalScrollBarVisibility;
-        private ScrollBarVisibility _verticalScrollBarVisibility;
+        private ScrollBarVisibility _horizontalScrollBarVisibility = ScrollBarVisibility.Auto;
+        private ScrollBarVisibility _verticalScrollBarVisibility = ScrollBarVisibility.Auto;
         private Orientation _orientation = Orientation.Vertical;
         private ItemVirtualizationMode _virtualizationMode = ItemVirtualizationMode.Simple;
 
