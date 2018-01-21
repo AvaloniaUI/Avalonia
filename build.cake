@@ -167,7 +167,9 @@ void RunCoreTest(string project, Parameters parameters, bool coreOnly = false)
         DotNetCoreTest(project,
             new DotNetCoreTestSettings {
                 Configuration = parameters.Configuration,
-                Framework = fw
+                Framework = fw,
+                NoBuild = true,
+                NoRestore = true
             });
     }
 }
