@@ -9,7 +9,7 @@ namespace Avalonia.Platform
     /// <summary>
     /// Defines the platform-specific interface for a <see cref="Geometry"/>.
     /// </summary>
-    public interface IGeometryImpl : IDisposable
+    public interface IGeometryImpl
     {
         /// <summary>
         /// Gets the geometry's bounding rectangle.
