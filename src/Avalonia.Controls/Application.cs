@@ -175,6 +175,15 @@ namespace Avalonia
             closable.Closed += (s, e) => source.Cancel();
             Dispatcher.UIThread.MainLoop(source.Token);
         }
+        
+        /// <summary>
+        /// Runs the application's main loop until the <see cref="CancellationToken"/> is cancelled.
+        /// </summary>
+        /// <param name="token">The token to track</param>
+        public void Run(CancellationToken token)
+        {
+            Dispatcher.UIThread.MainLoop(token);
+        }
 
         /// <summary>
         /// Exits the application

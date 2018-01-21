@@ -12,19 +12,19 @@ namespace Avalonia.Controls.Shapes
     public abstract class Shape : Control
     {
         public static readonly StyledProperty<IBrush> FillProperty =
-            AvaloniaProperty.Register<Shape, IBrush>("Fill");
+            AvaloniaProperty.Register<Shape, IBrush>(nameof(Fill));
 
         public static readonly StyledProperty<Stretch> StretchProperty =
-            AvaloniaProperty.Register<Shape, Stretch>("Stretch");
+            AvaloniaProperty.Register<Shape, Stretch>(nameof(Stretch));
 
         public static readonly StyledProperty<IBrush> StrokeProperty =
-            AvaloniaProperty.Register<Shape, IBrush>("Stroke");
+            AvaloniaProperty.Register<Shape, IBrush>(nameof(Stroke));
 
         public static readonly StyledProperty<AvaloniaList<double>> StrokeDashArrayProperty =
             AvaloniaProperty.Register<Shape, AvaloniaList<double>>("StrokeDashArray");
 
         public static readonly StyledProperty<double> StrokeThicknessProperty =
-            AvaloniaProperty.Register<Shape, double>("StrokeThickness");
+            AvaloniaProperty.Register<Shape, double>(nameof(StrokeThickness));
 
         private Matrix _transform = Matrix.Identity;
         private Geometry _definingGeometry;
@@ -61,12 +61,26 @@ namespace Avalonia.Controls.Shapes
         {
             get
             {
-                if (_renderedGeometry == null)
+                if (_renderedGeometry == null && DefiningGeometry != null)
                 {
-                    if (DefiningGeometry != null)
+                    if (_transform == Matrix.Identity)
+                    {
+                        _renderedGeometry = DefiningGeometry;
+                    }
+                    else
                     {
                         _renderedGeometry = DefiningGeometry.Clone();
-                        _renderedGeometry.Transform = new MatrixTransform(_transform);
+
+                        if (_renderedGeometry.Transform == null ||
+                            _renderedGeometry.Transform.Value == Matrix.Identity)
+                        {
+                            _renderedGeometry.Transform = new MatrixTransform(_transform);
+                        }
+                        else
+                        {
+                            _renderedGeometry.Transform = new MatrixTransform(
+                                _renderedGeometry.Transform.Value * _transform);
+                        }
                     }
                 }
 
@@ -193,6 +207,7 @@ namespace Avalonia.Controls.Shapes
 
             return finalSize;
         }
+
         private Size CalculateShapeSizeAndSetTransform(Size availableSize)
         {
             // This should probably use GetRenderBounds(strokeThickness) but then the calculations

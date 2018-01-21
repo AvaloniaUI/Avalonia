@@ -46,14 +46,14 @@ namespace Avalonia.Direct2D1.RenderTests
 
         public TestBase(string outputPath)
         {
-#if AVALONIA_CAIRO
-            string testFiles = Path.GetFullPath(@"..\..\tests\TestFiles\Cairo");
-#elif AVALONIA_SKIA
-            string testFiles = Path.GetFullPath(@"..\..\..\..\..\TestFiles\Skia");
+            var testPath = GetTestsDirectory();
+            var testFiles = Path.Combine(testPath, "TestFiles");
+#if AVALONIA_SKIA
+            var platform = "Skia";
 #else
-            string testFiles = Path.GetFullPath(@"..\..\tests\TestFiles\Direct2D1");
+            var platform = "Direct2D1";
 #endif
-            OutputPath = Path.Combine(testFiles, outputPath);
+            OutputPath = Path.Combine(testFiles, platform, outputPath);
 
             threadingInterface.MainThread = Thread.CurrentThread;
         }
@@ -141,6 +141,18 @@ namespace Avalonia.Direct2D1.RenderTests
                     Assert.True(false, actualPath + ": Error = " + immediateError);
                 }
             }
+        }
+
+        private string GetTestsDirectory()
+        {
+            var path = Directory.GetCurrentDirectory();
+
+            while (path.Length > 0 && Path.GetFileName(path) != "tests")
+            {
+                path = Path.GetDirectoryName(path);
+            }
+
+            return path;
         }
 
         private class TestThreadingInterface : IPlatformThreadingInterface

@@ -127,7 +127,19 @@ namespace Avalonia.Markup.Xaml
 
             using (var stream = assetLocator.Open(uri, baseUri))
             {
-                return Load(stream, rootInstance, uri);
+                try
+                {
+                    return Load(stream, rootInstance, uri);
+                }
+                catch (Exception e)
+                {
+                    var uriString = uri.ToString();
+                    if (!uri.IsAbsoluteUri)
+                    {
+                        uriString = new Uri(baseUri, uri).AbsoluteUri;
+                    }
+                    throw new XamlLoadException("Error loading xaml at " + uriString, e);
+                }
             }
         }
 

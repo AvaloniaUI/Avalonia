@@ -506,17 +506,17 @@ namespace Avalonia.Base.UnitTests
         {
             public static readonly DirectProperty<Class1, string> FooProperty =
                 AvaloniaProperty.RegisterDirect<Class1, string>(
-                    "Foo",
+                    nameof(Foo),
                     o => o.Foo,
                     (o, v) => o.Foo = v,
                     unsetValue: "unset");
 
             public static readonly DirectProperty<Class1, string> BarProperty =
-                AvaloniaProperty.RegisterDirect<Class1, string>("Bar", o => o.Bar);
+                AvaloniaProperty.RegisterDirect<Class1, string>(nameof(Bar), o => o.Bar);
 
             public static readonly DirectProperty<Class1, int> BazProperty =
                 AvaloniaProperty.RegisterDirect<Class1, int>(
-                    "Bar",
+                    nameof(Baz),
                     o => o.Baz,
                     (o, v) => o.Baz = v,
                     unsetValue: -1);
