@@ -46,7 +46,8 @@ namespace Avalonia.Direct2D1.RenderTests
 
         public TestBase(string outputPath)
         {
-            var testFiles = Path.GetFullPath(@"..\..\..\..\TestFiles\");
+            var testPath = GetTestsDirectory();
+            var testFiles = Path.Combine(testPath, "TestFiles");
 #if AVALONIA_SKIA
             var platform = "Skia";
 #else
@@ -140,6 +141,18 @@ namespace Avalonia.Direct2D1.RenderTests
                     Assert.True(false, actualPath + ": Error = " + immediateError);
                 }
             }
+        }
+
+        private string GetTestsDirectory()
+        {
+            var path = Directory.GetCurrentDirectory();
+
+            while (path.Length > 0 && Path.GetFileName(path) != "tests")
+            {
+                path = Path.GetDirectoryName(path);
+            }
+
+            return path;
         }
 
         private class TestThreadingInterface : IPlatformThreadingInterface
