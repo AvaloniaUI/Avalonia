@@ -9,7 +9,6 @@ namespace Avalonia.Skia
     {
         public abstract Rect Bounds { get; }
         public abstract SKPath EffectivePath { get; }
-        public abstract void Dispose();
         public abstract bool FillContains(Point point);
         public abstract Rect GetRenderBounds(Pen pen);
         public abstract IGeometryImpl Intersect(IGeometryImpl geometry);

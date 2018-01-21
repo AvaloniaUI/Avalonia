@@ -23,8 +23,6 @@ namespace Avalonia.Direct2D1.Media
         /// <inheritdoc/>
         public Geometry Geometry { get; }
 
-        public void Dispose() => Geometry.Dispose();
-
         /// <inheritdoc/>
         public Rect GetRenderBounds(Avalonia.Media.Pen pen)
         {
