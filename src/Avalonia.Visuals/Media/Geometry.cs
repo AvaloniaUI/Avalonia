@@ -89,7 +89,7 @@ namespace Avalonia.Media
         /// <returns><c>true</c> if the geometry contains the point; otherwise, <c>false</c>.</returns>
         public bool FillContains(Point point)
         {
-            return PlatformImpl?.FillContains(point) ?? false;
+            return PlatformImpl?.FillContains(point) == true;
         }
 
         /// <summary>
@@ -100,7 +100,7 @@ namespace Avalonia.Media
         /// <returns><c>true</c> if the geometry contains the point; otherwise, <c>false</c>.</returns>
         public bool StrokeContains(Pen pen, Point point)
         {
-            return PlatformImpl?.StrokeContains(pen, point) ?? false;
+            return PlatformImpl?.StrokeContains(pen, point) == true;
         }
 
         /// <summary>
