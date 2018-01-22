@@ -191,7 +191,7 @@ namespace Avalonia.Controls.Presenters
                     // The measure is currently invalid so there's no point trying to bring the 
                     // current char into view until a measure has been carried out as the scroll
                     // viewer extents may not be up-to-date.
-                    Dispatcher.UIThread.InvokeAsync(
+                    Dispatcher.UIThread.Post(
                         () =>
                         {
                             var rect = FormattedText.HitTestTextPosition(caretIndex);

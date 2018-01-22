@@ -41,7 +41,7 @@ namespace Avalonia.LinuxFramebuffer
             if(_renderQueued)
                 return;
             _renderQueued = true;
-            Dispatcher.UIThread.InvokeAsync(() =>
+            Dispatcher.UIThread.Post(() =>
             {
                 Paint?.Invoke(new Rect(default(Point), ClientSize));
                 _renderQueued = false;
