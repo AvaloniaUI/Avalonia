@@ -124,7 +124,16 @@ Task("Restore-NuGet-Packages")
 
 void DotNetCoreBuild()
 {
-    DotNetCoreBuild("samples\\ControlCatalog.NetCore");
+    var settings = new DotNetCoreBuildSettings 
+    {
+        Configuration = parameters.Configuration,
+        MSBuildSettings = new DotNetCoreMSBuildSettings(),
+    };
+
+    settings.MSBuildSettings.SetConfiguration(parameters.Configuration);
+    settings.MSBuildSettings.WithProperty("Platform", "\"" + parameters.Platform + "\"");
+
+    DotNetCoreBuild(parameters.MSBuildSolution, settings);
 }
 
 Task("Build")
