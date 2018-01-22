@@ -107,7 +107,7 @@ namespace Avalonia.MonoMac
                     if (_nonUiRedrawQueued)
                         return;
                     _nonUiRedrawQueued = true;
-                    Dispatcher.UIThread.InvokeAsync(
+                    Dispatcher.UIThread.Post(
                         () =>
                         {
                             lock (SyncRoot)

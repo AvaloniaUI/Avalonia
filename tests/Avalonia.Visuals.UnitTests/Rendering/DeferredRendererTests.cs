@@ -24,13 +24,13 @@ namespace Avalonia.Visuals.UnitTests.Rendering
             var root = new TestRoot();
 
             var dispatcher = new Mock<IDispatcher>();
-            dispatcher.Setup(x => x.InvokeAsync(It.IsAny<Action>(), DispatcherPriority.Render))
+            dispatcher.Setup(x => x.Post(It.IsAny<Action>(), DispatcherPriority.Render))
                 .Callback<Action, DispatcherPriority>((a, p) => a());
 
             CreateTargetAndRunFrame(root, dispatcher: dispatcher.Object);
 
             dispatcher.Verify(x => 
-                x.InvokeAsync(
+                x.Post(
                     It.Is<Action>(a => a.Method.Name == "UpdateScene"),
                     DispatcherPriority.Render));
         }

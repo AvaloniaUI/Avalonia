@@ -62,7 +62,7 @@ public static class LinuxFramebufferPlatformExtensions
 
         public TokenClosable(CancellationToken token)
         {
-            token.Register(() => Dispatcher.UIThread.InvokeAsync(() => Closed?.Invoke(this, new EventArgs())));
+            token.Register(() => Dispatcher.UIThread.Post(() => Closed?.Invoke(this, new EventArgs())));
         }
     }
 
