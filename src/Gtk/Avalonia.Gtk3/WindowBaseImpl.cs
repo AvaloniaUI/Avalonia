@@ -351,7 +351,7 @@ namespace Avalonia.Gtk3
 
         void OnInput(RawInputEventArgs args)
         {
-            Dispatcher.UIThread.InvokeAsync(() => Input?.Invoke(args), DispatcherPriority.Input);
+            Dispatcher.UIThread.Post(() => Input?.Invoke(args), DispatcherPriority.Input);
         }
 
         public Point PointToClient(Point point)

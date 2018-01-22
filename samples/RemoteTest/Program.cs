@@ -25,7 +25,7 @@ namespace RemoteTest
             var transport = new BsonTcpTransport();
             transport.Listen(IPAddress.Loopback, port, sc =>
             {
-                Dispatcher.UIThread.InvokeAsync(() =>
+                Dispatcher.UIThread.Post(() =>
                 {
                     new RemoteServer(sc).Content = new MainView();
                 });
@@ -34,7 +34,7 @@ namespace RemoteTest
             var cts = new CancellationTokenSource();
             transport.Connect(IPAddress.Loopback, port).ContinueWith(t =>
             {
-                Dispatcher.UIThread.InvokeAsync(() =>
+                Dispatcher.UIThread.Post(() =>
                 {
                     var window = new Window()
                     {

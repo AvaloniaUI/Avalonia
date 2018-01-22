@@ -1,19 +1,10 @@
-﻿<Project>
-  <PropertyGroup>
-    <BaseIntermediateOutputPath>obj-Direct2D1</BaseIntermediateOutputPath>
-  </PropertyGroup>
-  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>netcoreapp2.0</TargetFrameworks>
-    <OutputPath>bin\Direct2D\$(Configuration)</OutputPath>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <EnableDefaultCompileItems>False</EnableDefaultCompileItems>
-    <DefineConstants>$(DefineConstants);AVALONIA_DIRECT2D</DefineConstants>
-    <OutputType>Library</OutputType>
+    <DefineConstants>AVALONIA_SKIA;AVALONIA_SKIA_SKIP_FAIL</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
-    <EmbeddedResource Remove="obj\**" />
-    <None Remove="obj\**" />
+    <Compile Include="..\Avalonia.RenderTests\**\*.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Avalonia.DotNetCoreRuntime\Avalonia.DotNetCoreRuntime.csproj" />
@@ -28,12 +19,11 @@
     <ProjectReference Include="..\..\src\Avalonia.Visuals\Avalonia.Visuals.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Styling\Avalonia.Styling.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Themes.Default\Avalonia.Themes.Default.csproj" />
-    <ProjectReference Include="..\..\src\Windows\Avalonia.Direct2D1\Avalonia.Direct2D1.csproj" />
+    <ProjectReference Include="..\..\src\Skia\Avalonia.Skia\Avalonia.Skia.csproj" />
   </ItemGroup>
   <Import Project="..\..\build\Moq.props" />
   <Import Project="..\..\build\Rx.props" />
   <Import Project="..\..\build\XUnit.props" />
-  <Import Project="Avalonia.RenderTests.projitems" Label="Shared" />
   <Import Project="..\..\build\Magick.NET-Q16-AnyCPU.props" />
-  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+  <Import Project="..\..\build\SkiaSharp.props" />
 </Project>

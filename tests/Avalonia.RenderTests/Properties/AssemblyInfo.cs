@@ -4,7 +4,5 @@
 using System.Reflection;
 using Xunit;
 
-[assembly: AssemblyTitle("Avalonia.Direct2D1.RenderTests")]
-
 // Don't run tests in parallel.
 [assembly: CollectionBehavior(DisableTestParallelization = true)]

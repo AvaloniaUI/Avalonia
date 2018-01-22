@@ -14,12 +14,12 @@ namespace Avalonia.UnitTests
             return true;
         }
 
-        public void InvokeAsync(Action action, DispatcherPriority priority = DispatcherPriority.Normal)
+        public void Post(Action action, DispatcherPriority priority = DispatcherPriority.Normal)
         {
             action();
         }
 
-        public Task InvokeTaskAsync(Action action, DispatcherPriority priority = DispatcherPriority.Normal)
+        public Task InvokeAsync(Action action, DispatcherPriority priority = DispatcherPriority.Normal)
         {
             action();
             return Task.FromResult<object>(null);
