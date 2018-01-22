@@ -197,8 +197,8 @@ Task("Run-Render-Tests")
     .IsDependentOn("Build")
     .WithCriteria(() => !parameters.SkipTests && parameters.IsRunningOnWindows)
     .Does(() => {
-        RunCoreTest("./tests/Avalonia.RenderTests/Avalonia.Skia.RenderTests.csproj", parameters, true);
-        RunCoreTest("./tests/Avalonia.RenderTests/Avalonia.Direct2D1.RenderTests.csproj", parameters, true);
+        RunCoreTest("./tests/Avalonia.Skia.RenderTests/Avalonia.Skia.RenderTests.csproj", parameters, true);
+        RunCoreTest("./tests/Avalonia.Direct2D1.RenderTests/Avalonia.Direct2D1.RenderTests.csproj", parameters, true);
     });
 
 Task("Run-Designer-Unit-Tests")
