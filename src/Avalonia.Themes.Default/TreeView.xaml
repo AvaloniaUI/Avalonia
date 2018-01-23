@@ -7,7 +7,7 @@
     <ControlTemplate>
       <Border BorderBrush="{TemplateBinding BorderBrush}"
               BorderThickness="{TemplateBinding BorderThickness}">
-        <ScrollViewer CanScrollHorizontally="True" Background="{TemplateBinding Background}">
+        <ScrollViewer Background="{TemplateBinding Background}">
           <ItemsPresenter Name="PART_ItemsPresenter"
                           Items="{TemplateBinding Items}"
                           ItemsPanel="{TemplateBinding ItemsPanel}"

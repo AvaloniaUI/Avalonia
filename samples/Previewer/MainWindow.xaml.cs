@@ -39,7 +39,7 @@ namespace Previewer
             }));
             new BsonTcpTransport().Listen(IPAddress.Loopback, 25000, t =>
             {
-                Dispatcher.UIThread.InvokeAsync(() =>
+                Dispatcher.UIThread.Post(() =>
                 {
                     if (_connection != null)
                     {
@@ -61,7 +61,7 @@ namespace Previewer
 
         private void OnMessage(IAvaloniaRemoteTransportConnection transport, object obj)
         {
-            Dispatcher.UIThread.InvokeAsync(() =>
+            Dispatcher.UIThread.Post(() =>
             {
                 if (transport != _connection)
                     return;

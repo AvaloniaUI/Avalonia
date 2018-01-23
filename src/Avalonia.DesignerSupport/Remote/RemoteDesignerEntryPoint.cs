@@ -140,7 +140,7 @@ namespace Avalonia.DesignerSupport.Remote
             };
         }
         
-        private static void OnTransportMessage(IAvaloniaRemoteTransportConnection transport, object obj) => Dispatcher.UIThread.InvokeAsync(() =>
+        private static void OnTransportMessage(IAvaloniaRemoteTransportConnection transport, object obj) => Dispatcher.UIThread.Post(() =>
         {
             if (obj is ClientSupportedPixelFormatsMessage formats)
             {
