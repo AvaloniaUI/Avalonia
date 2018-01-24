@@ -131,6 +131,7 @@ namespace Avalonia.Controls.Presenters
             private set { SetAndRaise(ViewportProperty, ref _viewport, value); }
         }
 
+        /// <summary>
         /// Attempts to bring a portion of the target visual into view by scrolling the content.
         /// </summary>
         /// <param name="target">The target visual.</param>
