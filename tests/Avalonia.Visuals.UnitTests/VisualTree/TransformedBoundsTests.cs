@@ -17,14 +17,13 @@ using Avalonia.Platform;
 
 namespace Avalonia.Visuals.UnitTests.VisualTree
 {
-    public class BoundsTrackerTests
+    public class TransformedBoundsTests
     {
         [Fact]
         public void Should_Track_Bounds()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var target = new BoundsTracker();
                 var control = default(Rectangle);
                 var tree = new Decorator
                 {
@@ -46,7 +45,7 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
                 tree.Arrange(new Rect(0, 0, 100, 100));
                 ImmediateRenderer.Render(tree, context);
 
-                var track = target.Track(control);
+                var track = control.GetObservable(Visual.TransformedBoundsProperty);
                 var results = new List<TransformedBounds?>();
                 track.Subscribe(results.Add);
 

@@ -18,8 +18,6 @@ namespace Avalonia.Controls.Primitives
         private static readonly AttachedProperty<AdornedElementInfo> s_adornedElementInfoProperty =
             AvaloniaProperty.RegisterAttached<AdornerLayer, Visual, AdornedElementInfo>("AdornedElementInfo");
 
-        private readonly BoundsTracker _tracker = new BoundsTracker();
-
         static AdornerLayer()
         {
             AdornedElementProperty.Changed.Subscribe(AdornedElementChanged);
@@ -132,7 +130,7 @@ namespace Avalonia.Controls.Primitives
                     adorner.SetValue(s_adornedElementInfoProperty, info);
                 }
 
-                info.Subscription = _tracker.Track(adorned).Subscribe(x =>
+                info.Subscription = adorned.GetObservable(TransformedBoundsProperty).Subscribe(x =>
                 {
                     info.Bounds = x;
                     InvalidateArrange();

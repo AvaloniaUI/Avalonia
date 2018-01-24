@@ -424,7 +424,7 @@ namespace Avalonia.Rendering
                     if (!_updateQueued && (_dirty == null || _dirty.Count > 0))
                     {
                         _updateQueued = true;
-                        _dispatcher.InvokeAsync(UpdateScene, DispatcherPriority.Render);
+                        _dispatcher.Post(UpdateScene, DispatcherPriority.Render);
                     }
 
                     Scene scene = null;

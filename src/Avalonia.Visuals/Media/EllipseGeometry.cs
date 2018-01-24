@@ -88,7 +88,5 @@ namespace Avalonia.Media
 
             return geometry;
         }
-
-        private void RectChanged(AvaloniaPropertyChangedEventArgs e) => InvalidateGeometry();
     }
 }

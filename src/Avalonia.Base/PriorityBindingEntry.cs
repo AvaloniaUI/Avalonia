@@ -123,7 +123,7 @@ namespace Avalonia
             }
             else
             {
-                Dispatcher.UIThread.InvokeAsync(Signal);
+                Dispatcher.UIThread.Post(Signal);
             }
         }
 
@@ -135,7 +135,7 @@ namespace Avalonia
             }
             else
             {
-                Dispatcher.UIThread.InvokeAsync(() => _owner.Completed(this));
+                Dispatcher.UIThread.Post(() => _owner.Completed(this));
             }
         }
     }

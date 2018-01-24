@@ -281,6 +281,8 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
             var scroller = new TestScroller
             {
+                CanHorizontallyScroll = false,
+                CanVerticallyScroll = true,
                 Content = result = new TestItemsPresenter(useContainers)
                 {
                     Items = items,

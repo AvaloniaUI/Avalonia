@@ -5,8 +5,9 @@ namespace Avalonia.Controls.Primitives
 {
     public enum ScrollBarVisibility
     {
+        Disabled,
         Auto,
-        Visible,
         Hidden,
+        Visible,
     }
 }

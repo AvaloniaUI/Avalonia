@@ -23,8 +23,8 @@ namespace Avalonia.Media
                                  AvaloniaProperty.Register<PathGeometry, FillRule>(nameof(FillRule));
 
         private PathFigures _figures;
-        private IDisposable _figuresObserver = null;
-        private IDisposable _figuresPropertiesObserver = null;
+        private IDisposable _figuresObserver;
+        private IDisposable _figuresPropertiesObserver;
 
         static PathGeometry()
         {

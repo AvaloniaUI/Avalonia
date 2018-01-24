@@ -16,8 +16,6 @@ namespace Avalonia.Media
         public static readonly StyledProperty<Rect> RectProperty =
             AvaloniaProperty.Register<RectangleGeometry, Rect>(nameof(Rect));
 
-        bool _isDirty = true;
-
         public Rect Rect
         {
             get => GetValue(RectProperty);

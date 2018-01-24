@@ -23,6 +23,8 @@ namespace Avalonia.Controls.Presenters
                 defaultValue: ItemVirtualizationMode.None);
 
         private ItemVirtualizer _virtualizer;
+        private bool _canHorizontallyScroll;
+        private bool _canVerticallyScroll;
 
         /// <summary>
         /// Initializes static members of the <see cref="ItemsPresenter"/> class.
@@ -46,6 +48,31 @@ namespace Avalonia.Controls.Presenters
             set { SetValue(VirtualizationModeProperty, value); }
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether the content can be scrolled horizontally.
+        /// </summary>
+        bool ILogicalScrollable.CanHorizontallyScroll
+        {
+            get { return _canHorizontallyScroll; }
+            set
+            {
+                _canHorizontallyScroll = value;
+                InvalidateMeasure();
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the content can be scrolled horizontally.
+        /// </summary>
+        bool ILogicalScrollable.CanVerticallyScroll
+        {
+            get { return _canVerticallyScroll; }
+            set
+            {
+                _canVerticallyScroll = value;
+                InvalidateMeasure();
+            }
+        }
         /// <inheritdoc/>
         bool ILogicalScrollable.IsLogicalScrollEnabled
         {
