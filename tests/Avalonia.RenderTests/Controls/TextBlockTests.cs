@@ -1,6 +1,7 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Media;
@@ -20,7 +21,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
         }
 
         [Fact]
-        public void Wrapping_NoWrap()
+        public async Task Wrapping_NoWrap()
         {
             Decorator target = new Decorator
             {
@@ -38,7 +39,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                 }
             };
 
-            RenderToFile(target);
+            await RenderToFile(target);
             CompareImages();
         }
     }

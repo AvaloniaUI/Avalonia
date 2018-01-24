@@ -372,6 +372,8 @@ namespace Avalonia.Visuals.UnitTests.Rendering
                                 Margin = new Thickness(0, 100, 0, 0),
                                 Child = scroll = new ScrollContentPresenter()
                                 {
+                                    CanHorizontallyScroll = true,
+                                    CanVerticallyScroll = true,
                                     Content = new StackPanel()
                                     {
                                         Children =

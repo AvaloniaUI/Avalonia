@@ -203,7 +203,7 @@ namespace Avalonia.Layout
         {
             if (!_queued && !_running)
             {
-                Dispatcher.UIThread.InvokeAsync(ExecuteLayoutPass, DispatcherPriority.Layout);
+                Dispatcher.UIThread.Post(ExecuteLayoutPass, DispatcherPriority.Layout);
                 _queued = true;
             }
         }

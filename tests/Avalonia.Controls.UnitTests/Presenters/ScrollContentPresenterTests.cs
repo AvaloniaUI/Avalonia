@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Reactive.Linq;
 using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Primitives;
 using Avalonia.Layout;
 using Xunit;
 
@@ -94,6 +95,8 @@ namespace Avalonia.Controls.UnitTests.Presenters
             TestControl content;
             var target = new ScrollContentPresenter
             {
+                CanHorizontallyScroll = true,
+                CanVerticallyScroll = true,
                 Content = content = new TestControl(),
             };
 
@@ -110,6 +113,8 @@ namespace Avalonia.Controls.UnitTests.Presenters
             Border content;
             var target = new ScrollContentPresenter
             {
+                CanHorizontallyScroll = true,
+                CanVerticallyScroll = true,
                 Content = content = new Border
                 {
                     Width = 150,
@@ -131,8 +136,8 @@ namespace Avalonia.Controls.UnitTests.Presenters
             var child = new TestControl();
             var target = new ScrollContentPresenter
             {
+                CanVerticallyScroll = true,
                 Content = child,
-                [ScrollContentPresenter.CanScrollHorizontallyProperty] = false,
             };
 
             target.UpdateChild();
@@ -147,6 +152,8 @@ namespace Avalonia.Controls.UnitTests.Presenters
             var child = new TestControl();
             var target = new ScrollContentPresenter
             {
+                CanHorizontallyScroll = true,
+                CanVerticallyScroll = true,
                 Content = child,
             };
 
@@ -191,7 +198,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
         }
 
         [Fact]
-        public void Arrange_Should_Constrain_Child_Width_When_CanScrollHorizontally_False()
+        public void Arrange_Should_Constrain_Child_Width_When_CanHorizontallyScroll_False()
         {
             var child = new WrapPanel
             {
@@ -206,7 +213,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             var target = new ScrollContentPresenter
             {
                 Content = child,
-                CanScrollHorizontally = false,
+                CanHorizontallyScroll = false,
             };
 
             target.UpdateChild();
@@ -232,7 +239,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             var target = new ScrollContentPresenter
             {
                 Content = child,
-                CanScrollHorizontally = false,
+                CanHorizontallyScroll = false,
             };
 
             target.UpdateChild();
@@ -287,6 +294,8 @@ namespace Avalonia.Controls.UnitTests.Presenters
             Border border;
             var target = new ScrollContentPresenter
             {
+                CanHorizontallyScroll = true,
+                CanVerticallyScroll = true,
                 Width = 100,
                 Height = 100,
                 Content = new Decorator

@@ -8,7 +8,6 @@ using System.Linq;
 using System.Reactive.Linq;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
-using Avalonia.Controls.Templates;
 using Avalonia.Controls.Utils;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -21,13 +20,10 @@ namespace Avalonia.Controls
     public class TextBox : TemplatedControl, UndoRedoHelper<TextBox.UndoRedoState>.IUndoRedoHost
     {
         public static readonly StyledProperty<bool> AcceptsReturnProperty =
-            AvaloniaProperty.Register<TextBox, bool>("AcceptsReturn");
+            AvaloniaProperty.Register<TextBox, bool>(nameof(AcceptsReturn));
 
         public static readonly StyledProperty<bool> AcceptsTabProperty =
-            AvaloniaProperty.Register<TextBox, bool>("AcceptsTab");
-
-        public static readonly DirectProperty<TextBox, bool> CanScrollHorizontallyProperty =
-            AvaloniaProperty.RegisterDirect<TextBox, bool>("CanScrollHorizontally", o => o.CanScrollHorizontally);
+            AvaloniaProperty.Register<TextBox, bool>(nameof(AcceptsTab));
 
         public static readonly DirectProperty<TextBox, int> CaretIndexProperty =
             AvaloniaProperty.RegisterDirect<TextBox, int>(
@@ -69,10 +65,10 @@ namespace Avalonia.Controls
             TextBlock.TextWrappingProperty.AddOwner<TextBox>();
 
         public static readonly StyledProperty<string> WatermarkProperty =
-            AvaloniaProperty.Register<TextBox, string>("Watermark");
+            AvaloniaProperty.Register<TextBox, string>(nameof(Watermark));
 
         public static readonly StyledProperty<bool> UseFloatingWatermarkProperty =
-            AvaloniaProperty.Register<TextBox, bool>("UseFloatingWatermark");
+            AvaloniaProperty.Register<TextBox, bool>(nameof(UseFloatingWatermark));
 
         struct UndoRedoState : IEquatable<UndoRedoState>
         {
@@ -92,7 +88,6 @@ namespace Avalonia.Controls
         private int _caretIndex;
         private int _selectionStart;
         private int _selectionEnd;
-        private bool _canScrollHorizontally;
         private TextPresenter _presenter;
         private UndoRedoHelper<UndoRedoState> _undoRedoHelper;
         private bool _ignoreTextChanges;
@@ -106,12 +101,11 @@ namespace Avalonia.Controls
 
         public TextBox()
         {
-            this.GetObservable(TextWrappingProperty)
-                .Select(x => x == TextWrapping.NoWrap)
-                .Subscribe(x => CanScrollHorizontally = x);
-
-            var horizontalScrollBarVisibility = this.GetObservable(AcceptsReturnProperty)
-                .Select(x => x ? ScrollBarVisibility.Auto : ScrollBarVisibility.Hidden);
+            var horizontalScrollBarVisibility = Observable.CombineLatest(
+                this.GetObservable(AcceptsReturnProperty),
+                this.GetObservable(TextWrappingProperty),
+                (acceptsReturn, wrapping) => acceptsReturn && wrapping == TextWrapping.NoWrap ?
+                    ScrollBarVisibility.Auto : ScrollBarVisibility.Disabled);
 
             Bind(
                 ScrollViewer.HorizontalScrollBarVisibilityProperty,
@@ -130,12 +124,6 @@ namespace Avalonia.Controls
         {
             get { return GetValue(AcceptsTabProperty); }
             set { SetValue(AcceptsTabProperty, value); }
-        }
-
-        public bool CanScrollHorizontally
-        {
-            get { return _canScrollHorizontally; }
-            private set { SetAndRaise(CanScrollHorizontallyProperty, ref _canScrollHorizontally, value); }
         }
 
         public int CaretIndex

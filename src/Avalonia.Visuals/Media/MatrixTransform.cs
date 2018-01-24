@@ -15,7 +15,7 @@ namespace Avalonia.Media
         /// Defines the <see cref="Matrix"/> property.
         /// </summary>
         public static readonly StyledProperty<Matrix> MatrixProperty =
-            AvaloniaProperty.Register<MatrixTransform, Matrix>("Matrix", Matrix.Identity);
+            AvaloniaProperty.Register<MatrixTransform, Matrix>(nameof(Matrix), Matrix.Identity);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MatrixTransform"/> class.

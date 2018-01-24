@@ -15,7 +15,7 @@ namespace Avalonia.Media
         /// Defines the <see cref="Transform"/> property.
         /// </summary>
         public static readonly StyledProperty<Transform> TransformProperty =
-            AvaloniaProperty.Register<Geometry, Transform>("Transform");
+            AvaloniaProperty.Register<Geometry, Transform>(nameof(Transform));
 
         /// <summary>
         /// Initializes static members of the <see cref="Geometry"/> class.
