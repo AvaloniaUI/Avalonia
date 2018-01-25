@@ -165,8 +165,6 @@ void RunCoreTest(string project, Parameters parameters, bool coreOnly = false)
         project = System.IO.Path.Combine(project, System.IO.Path.GetFileName(project)+".csproj");
     Information("Running tests from " + project);
     var frameworks = new List<string>(){"netcoreapp2.0"};
-    if(parameters.IsRunningOnWindows)
-        frameworks.Add("net47");
     foreach(var fw in frameworks)
     {
         if(!fw.StartsWith("netcoreapp") && coreOnly)
