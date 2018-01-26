@@ -79,13 +79,13 @@ namespace Avalonia.Threading
         public void RunJobs(DispatcherPriority minimumPriority) => _jobRunner.RunJobs(minimumPriority);
 
         /// <inheritdoc/>
-        public Task InvokeTaskAsync(Action action, DispatcherPriority priority = DispatcherPriority.Normal)
+        public Task InvokeAsync(Action action, DispatcherPriority priority = DispatcherPriority.Normal)
         {
             return _jobRunner?.InvokeAsync(action, priority);
         }
 
         /// <inheritdoc/>
-        public void InvokeAsync(Action action, DispatcherPriority priority = DispatcherPriority.Normal)
+        public void Post(Action action, DispatcherPriority priority = DispatcherPriority.Normal)
         {
             _jobRunner?.Post(action, priority);
         }

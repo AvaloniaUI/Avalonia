@@ -103,20 +103,22 @@ namespace Avalonia.Markup.UnitTests.Data
         {
             using (var sync = UnitTestSynchronizationContext.Begin())
             {
-                var data = new Class1();
-                var target = new ExpressionObserver(data, "Next^.Foo", true);
+                var data1 = new Class1();
+                var data2 = new Class2("foo");
+                var target = new ExpressionObserver(data1, "Next^.Foo", true);
                 var result = new List<object>();
 
                 var sub = target.Subscribe(x => result.Add(x));
-                data.Next.OnNext(new Class2("foo"));
+                data1.Next.OnNext(data2);
                 sync.ExecutePostedCallbacks();
 
                 Assert.Equal(new[] { new BindingNotification("foo") }, result);
 
                 sub.Dispose();
-                Assert.Equal(0, data.PropertyChangedSubscriptionCount);
+                Assert.Equal(0, data1.PropertyChangedSubscriptionCount);
 
-                GC.KeepAlive(data);
+                GC.KeepAlive(data1);
+                GC.KeepAlive(data2);
             }
         }
 

@@ -99,6 +99,7 @@ namespace Avalonia.Controls.Primitives
                 case ScrollBarVisibility.Visible:
                     return true;
 
+                case ScrollBarVisibility.Disabled:
                 case ScrollBarVisibility.Hidden:
                     return false;
 
