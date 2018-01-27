@@ -1,29 +1,24 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using Avalonia.Input;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
+using System.Reactive.Disposables;
 using System.Runtime.InteropServices;
 using Avalonia.Controls;
-using System.Reactive.Disposables;
+using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
+using Avalonia.Rendering;
 using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
-using Avalonia.Rendering;
-using Avalonia.Threading;
-#if NETSTANDARD
-using Win32Exception = Avalonia.Win32.NetStandard.AvaloniaWin32Exception;
-#endif
 
 namespace Avalonia.Win32
 {
-    class WindowImpl : IWindowImpl
+    public class WindowImpl : IWindowImpl
     {
         private static readonly List<WindowImpl> s_instances = new List<WindowImpl>();
 

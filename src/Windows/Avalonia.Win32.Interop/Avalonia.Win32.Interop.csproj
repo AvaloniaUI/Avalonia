@@ -34,6 +34,7 @@
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xaml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -48,6 +49,9 @@
       <Link>UnmanagedMethods.cs</Link>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="WinForms\WinFormsAvaloniaControlHost.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Wpf\CursorShim.cs" />
     <Compile Include="Wpf\Direct2DImageSurface.cs" />
     <Compile Include="Wpf\IntSize.cs" />
