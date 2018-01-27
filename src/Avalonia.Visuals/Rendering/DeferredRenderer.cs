@@ -243,15 +243,6 @@ namespace Avalonia.Rendering
             {
                 clipBounds = node.ClipBounds.Intersect(clipBounds);
 
-                var np = node.Visual.GetType().GetProperty("Name");
-                var name = (string)np.GetValue(node.Visual);
-
-                if (name == "abcd")
-                {
-                    var clip = (IStreamGeometryImpl)node.GeometryClip;
-                    System.Diagnostics.Debug.WriteLine(clip?.GetRenderBounds(new Pen(Brushes.Black, 1)).ToString() ?? "(null)");
-                }
-
                 if (!clipBounds.IsEmpty && node.Opacity > 0)
                 {
                     var isLayerRoot = node.Visual == layer;
