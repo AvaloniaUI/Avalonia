@@ -124,7 +124,16 @@ Task("Restore-NuGet-Packages")
 
 void DotNetCoreBuild()
 {
-    DotNetCoreBuild("samples\\ControlCatalog.NetCore");
+    var settings = new DotNetCoreBuildSettings 
+    {
+        Configuration = parameters.Configuration,
+        MSBuildSettings = new DotNetCoreMSBuildSettings(),
+    };
+
+    settings.MSBuildSettings.SetConfiguration(parameters.Configuration);
+    settings.MSBuildSettings.WithProperty("Platform", "\"" + parameters.Platform + "\"");
+
+    DotNetCoreBuild(parameters.MSBuildSolution, settings);
 }
 
 Task("Build")
@@ -156,8 +165,6 @@ void RunCoreTest(string project, Parameters parameters, bool coreOnly = false)
         project = System.IO.Path.Combine(project, System.IO.Path.GetFileName(project)+".csproj");
     Information("Running tests from " + project);
     var frameworks = new List<string>(){"netcoreapp2.0"};
-    if(parameters.IsRunningOnWindows)
-        frameworks.Add("net47");
     foreach(var fw in frameworks)
     {
         if(!fw.StartsWith("netcoreapp") && coreOnly)
@@ -167,7 +174,9 @@ void RunCoreTest(string project, Parameters parameters, bool coreOnly = false)
         DotNetCoreTest(project,
             new DotNetCoreTestSettings {
                 Configuration = parameters.Configuration,
-                Framework = fw
+                Framework = fw,
+                NoBuild = true,
+                NoRestore = true
             });
     }
 }
