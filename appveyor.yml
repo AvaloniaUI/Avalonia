@@ -1,6 +1,4 @@
 os: Visual Studio 2017
-platform:
-- Any CPU
 skip_branch_with_pr: true
 configuration:
 - Release
@@ -22,7 +20,7 @@ install:
 before_build:
 - git submodule update --init
 build_script:
-- ps: .\build.ps1 -Target "AppVeyor" -Platform "$env:platform" -Configuration "$env:configuration"
+- ps: .\build.ps1 -Target "AppVeyor" -Configuration "$env:configuration"
 
 test: off
 artifacts:
