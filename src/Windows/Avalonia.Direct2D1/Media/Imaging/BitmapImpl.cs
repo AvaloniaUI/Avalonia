@@ -6,7 +6,7 @@ using D2DBitmap = SharpDX.Direct2D1.Bitmap;
 
 namespace Avalonia.Direct2D1.Media
 {
-    public abstract class BitmapImpl : IBitmapImpl, IDisposable
+    public abstract class BitmapImpl : BitmapImplBase
     {
         public BitmapImpl(ImagingFactory imagingFactory)
         {
@@ -14,12 +14,12 @@ namespace Avalonia.Direct2D1.Media
         }
 
         public ImagingFactory WicImagingFactory { get; }
-        public abstract int PixelWidth { get; }
-        public abstract int PixelHeight { get; }
+        public override abstract int PixelWidth { get; }
+        public override abstract int PixelHeight { get; }
 
         public abstract OptionalDispose<D2DBitmap> GetDirect2DBitmap(SharpDX.Direct2D1.RenderTarget target);
 
-        public void Save(string fileName)
+        public override void Save(string fileName)
         {
             if (Path.GetExtension(fileName) != ".png")
             {
@@ -33,9 +33,9 @@ namespace Avalonia.Direct2D1.Media
             }
         }
 
-        public abstract void Save(Stream stream);
+        public override abstract void Save(Stream stream);
 
-        public virtual void Dispose()
+        protected override void DisposeCore()
         {
         }
     }

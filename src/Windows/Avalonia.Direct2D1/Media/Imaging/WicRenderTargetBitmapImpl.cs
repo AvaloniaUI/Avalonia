@@ -40,10 +40,10 @@ namespace Avalonia.Direct2D1.Media
             _dwriteFactory = dwriteFactory;
         }
 
-        public override void Dispose()
+        protected override void DisposeCore()
         {
             _target.Dispose();
-            base.Dispose();
+            base.DisposeCore();
         }
 
         public virtual IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)

@@ -9,7 +9,7 @@ namespace Avalonia.Rendering.SceneGraph
     /// <summary>
     /// A node in the scene graph which represents an image draw.
     /// </summary>
-    internal class ImageNode : DrawOperation
+    internal class ImageNode : DrawOperation, IDisposable
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ImageNode"/> class.
@@ -27,6 +27,8 @@ namespace Avalonia.Rendering.SceneGraph
             Opacity = opacity;
             SourceRect = sourceRect;
             DestRect = destRect;
+
+            Source.AddReference();
         }
 
         /// <summary>
@@ -87,5 +89,10 @@ namespace Avalonia.Rendering.SceneGraph
 
         /// <inheritdoc/>
         public override bool HitTest(Point p) => Bounds.Contains(p);
+
+        public void Dispose()
+        {
+            Source.Dispose();
+        }
     }
 }

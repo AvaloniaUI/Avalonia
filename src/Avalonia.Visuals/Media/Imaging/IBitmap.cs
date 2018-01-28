@@ -3,13 +3,14 @@
 
 using System.IO;
 using Avalonia.Platform;
+using System;
 
 namespace Avalonia.Media.Imaging
 {
     /// <summary>
     /// Represents a bitmap image.
     /// </summary>
-    public interface IBitmap
+    public interface IBitmap : IDisposable
     {
         /// <summary>
         /// Gets the width of the bitmap, in pixels.

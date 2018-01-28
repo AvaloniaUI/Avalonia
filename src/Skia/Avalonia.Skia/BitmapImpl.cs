@@ -6,7 +6,7 @@ using SkiaSharp;
 
 namespace Avalonia.Skia
 {
-    class BitmapImpl : IRenderTargetBitmapImpl, IWritableBitmapImpl
+    class BitmapImpl : BitmapImplBase, IRenderTargetBitmapImpl, IWritableBitmapImpl
     {
         private Vector _dpi;
 
@@ -52,13 +52,13 @@ namespace Avalonia.Skia
             Bitmap.Erase(SKColor.Empty);
         }
 
-        public void Dispose()
+        protected override void DisposeCore()
         {
             Bitmap.Dispose();
         }
 
-        public int PixelWidth { get; private set; }
-        public int PixelHeight { get; private set; }
+        public override int PixelWidth { get; }
+        public override int PixelHeight { get; }
 
         class BitmapDrawingContext : DrawingContextImpl
         {
@@ -97,7 +97,7 @@ namespace Avalonia.Skia
             return new BitmapDrawingContext(Bitmap, _dpi, visualBrushRenderer);
         }
 
-        public void Save(Stream stream)
+        public override void Save(Stream stream)
         {
             IntPtr length;
             using (var image = SKImage.FromPixels(Bitmap.Info, Bitmap.GetPixels(out length), Bitmap.RowBytes))
@@ -107,7 +107,7 @@ namespace Avalonia.Skia
             }
         }
 
-        public void Save(string fileName)
+        public override void Save(string fileName)
         {
             using (var stream = File.Create(fileName))
                 Save(stream);

@@ -95,7 +95,7 @@ namespace Avalonia.Direct2D1.Media
         /// </summary>
         public override int PixelHeight => WicImpl.Size.Height;
 
-        public override void Dispose()
+        protected override void DisposeCore()
         {
             WicImpl.Dispose();
         }

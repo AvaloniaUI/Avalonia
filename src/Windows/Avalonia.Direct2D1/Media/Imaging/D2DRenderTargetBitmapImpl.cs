@@ -55,7 +55,7 @@ namespace Avalonia.Direct2D1.Media.Imaging
             return CreateCompatible(WicImagingFactory, _dwriteFactory, _target, size);
         }
 
-        public override void Dispose()
+        protected override void DisposeCore()
         {
             _target.Dispose();
         }
