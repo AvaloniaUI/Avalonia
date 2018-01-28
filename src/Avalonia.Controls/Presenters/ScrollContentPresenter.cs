@@ -18,6 +18,24 @@ namespace Avalonia.Controls.Presenters
     public class ScrollContentPresenter : ContentPresenter, IPresenter, IScrollable
     {
         /// <summary>
+        /// Defines the <see cref="CanHorizontallyScroll"/> property.
+        /// </summary>
+        public static readonly DirectProperty<ScrollContentPresenter, bool> CanHorizontallyScrollProperty =
+            AvaloniaProperty.RegisterDirect<ScrollContentPresenter, bool>(
+                nameof(CanHorizontallyScroll),
+                o => o.CanHorizontallyScroll,
+                (o, v) => o.CanHorizontallyScroll = v);
+
+        /// <summary>
+        /// Defines the <see cref="CanVerticallyScroll"/> property.
+        /// </summary>
+        public static readonly DirectProperty<ScrollContentPresenter, bool> CanVerticallyScrollProperty =
+            AvaloniaProperty.RegisterDirect<ScrollContentPresenter, bool>(
+                nameof(CanVerticallyScroll),
+                o => o.CanVerticallyScroll,
+                (o, v) => o.CanVerticallyScroll = v);
+
+        /// <summary>
         /// Defines the <see cref="Extent"/> property.
         /// </summary>
         public static readonly DirectProperty<ScrollContentPresenter, Size> ExtentProperty =
@@ -41,12 +59,8 @@ namespace Avalonia.Controls.Presenters
                 o => o.Viewport,
                 (o, v) => o.Viewport = v);
 
-        /// <summary>
-        /// Defines the <see cref="CanScrollHorizontally"/> property.
-        /// </summary>
-        public static readonly StyledProperty<bool> CanScrollHorizontallyProperty =
-            ScrollViewer.CanScrollHorizontallyProperty.AddOwner<ScrollContentPresenter>();
-
+        private bool _canHorizontallyScroll;
+        private bool _canVerticallyScroll;
         private Size _extent;
         private Size _measuredExtent;
         private Vector _offset;
@@ -71,6 +85,24 @@ namespace Avalonia.Controls.Presenters
             AddHandler(RequestBringIntoViewEvent, BringIntoViewRequested);
 
             this.GetObservable(ChildProperty).Subscribe(UpdateScrollableSubscription);
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the content can be scrolled horizontally.
+        /// </summary>
+        public bool CanHorizontallyScroll
+        {
+            get { return _canHorizontallyScroll; }
+            set { SetAndRaise(CanHorizontallyScrollProperty, ref _canHorizontallyScroll, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the content can be scrolled horizontally.
+        /// </summary>
+        public bool CanVerticallyScroll
+        {
+            get { return _canVerticallyScroll; }
+            set { SetAndRaise(CanVerticallyScrollProperty, ref _canVerticallyScroll, value); }
         }
 
         /// <summary>
@@ -99,11 +131,6 @@ namespace Avalonia.Controls.Presenters
             get { return _viewport; }
             private set { SetAndRaise(ViewportProperty, ref _viewport, value); }
         }
-
-        /// <summary>
-        /// Gets a value indicating whether the content can be scrolled horizontally.
-        /// </summary>
-        public bool CanScrollHorizontally => GetValue(CanScrollHorizontallyProperty);
 
         /// <summary>
         /// Attempts to bring a portion of the target visual into view by scrolling the content.
@@ -182,9 +209,14 @@ namespace Avalonia.Controls.Presenters
                 {
                     measureSize = new Size(double.PositiveInfinity, double.PositiveInfinity);
 
-                    if (!CanScrollHorizontally)
+                    if (!CanHorizontallyScroll)
                     {
                         measureSize = measureSize.WithWidth(availableSize.Width);
+                    }
+
+                    if (!CanVerticallyScroll)
+                    {
+                        measureSize = measureSize.WithHeight(availableSize.Height);
                     }
                 }
 
@@ -289,7 +321,12 @@ namespace Avalonia.Controls.Presenters
                 if (scrollable.IsLogicalScrollEnabled == true)
                 {
                     _logicalScrollSubscription = new CompositeDisposable(
-                        this.GetObservable(OffsetProperty).Skip(1).Subscribe(x => scrollable.Offset = x),
+                        this.GetObservable(CanHorizontallyScrollProperty)
+                            .Subscribe(x => scrollable.CanHorizontallyScroll = x),
+                        this.GetObservable(CanVerticallyScrollProperty)
+                            .Subscribe(x => scrollable.CanVerticallyScroll = x),
+                        this.GetObservable(OffsetProperty)
+                            .Skip(1).Subscribe(x => scrollable.Offset = x),
                         Disposable.Create(() => scrollable.InvalidateScroll = null));
                     UpdateFromScrollable(scrollable);
                 }

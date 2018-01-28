@@ -1,5 +1,8 @@
 ﻿<ProjectConfiguration>
   <Settings>
+    <AdditionalFilesToIncludeForProject>
+      <Value>..\TestFiles\Direct2D1\**.*</Value>
+    </AdditionalFilesToIncludeForProject>
     <DefaultTestTimeout>3000</DefaultTestTimeout>
     <PreviouslyBuiltSuccessfully>True</PreviouslyBuiltSuccessfully>
   </Settings>

@@ -3,11 +3,9 @@
 
 using System;
 using System.Collections.Specialized;
-using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Layout;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {

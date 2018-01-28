@@ -85,7 +85,7 @@ namespace Avalonia.Layout.UnitTests
                     {
                         Width = 200,
                         Height = 200,
-                        CanScrollHorizontally = true,
+                        HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
                         HorizontalAlignment = HorizontalAlignment.Center,
                         VerticalAlignment = VerticalAlignment.Center,
                         Content = textBlock = new TextBlock
