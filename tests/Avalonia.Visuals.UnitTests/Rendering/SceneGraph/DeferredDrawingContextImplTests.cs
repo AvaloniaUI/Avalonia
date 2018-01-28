@@ -104,8 +104,8 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
             }
 
             Assert.Equal(2, node.DrawOperations.Count);
-            Assert.IsType<RectangleNode>(node.DrawOperations[0]);
-            Assert.IsType<RectangleNode>(node.DrawOperations[1]);
+            Assert.IsType<RectangleNode>(node.DrawOperations[0].Item);
+            Assert.IsType<RectangleNode>(node.DrawOperations[1].Item);
         }
 
         [Fact]
@@ -125,9 +125,9 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
             }
 
             Assert.Equal(1, node.DrawOperations.Count);
-            Assert.Same(operation, node.DrawOperations.Single());
+            Assert.Same(operation.Item, node.DrawOperations.Single().Item);
 
-            Assert.IsType<RectangleNode>(node.DrawOperations[0]);
+            Assert.IsType<RectangleNode>(node.DrawOperations[0].Item);
         }
 
         [Fact]
@@ -149,7 +149,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
             Assert.Equal(1, node.DrawOperations.Count);
             Assert.NotSame(operation, node.DrawOperations.Single());
 
-            Assert.IsType<RectangleNode>(node.DrawOperations[0]);
+            Assert.IsType<RectangleNode>(node.DrawOperations[0].Item);
         }
 
         [Fact]

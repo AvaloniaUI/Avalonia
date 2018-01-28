@@ -53,15 +53,15 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 Assert.Equal(1, borderNode.Children.Count);
                 Assert.Equal(1, borderNode.DrawOperations.Count);
 
-                var backgroundNode = (RectangleNode)borderNode.DrawOperations[0];
+                var backgroundNode = (RectangleNode)borderNode.DrawOperations[0].Item;
                 Assert.Equal(Brushes.Red, backgroundNode.Brush);
 
-                var textBlockNode = (VisualNode)borderNode.Children[0];
+                var textBlockNode = borderNode.Children[0];
                 Assert.Same(textBlockNode, result.FindNode(textBlock));
                 Assert.Same(textBlock, textBlockNode.Visual);
                 Assert.Equal(1, textBlockNode.DrawOperations.Count);
 
-                var textNode = (TextNode)textBlockNode.DrawOperations[0];
+                var textNode = (TextNode)textBlockNode.DrawOperations[0].Item;
                 Assert.NotNull(textNode.Text);
             }
         }
@@ -358,15 +358,15 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 var borderNode = (VisualNode)result.Root.Children[0];
                 Assert.Same(border, borderNode.Visual);
 
-                var backgroundNode = (RectangleNode)borderNode.DrawOperations[0];
+                var backgroundNode = (RectangleNode)borderNode.DrawOperations[0].Item;
                 Assert.NotSame(initialBackgroundNode, backgroundNode);
                 Assert.Equal(Brushes.Green, backgroundNode.Brush);
 
                 var textBlockNode = (VisualNode)borderNode.Children[0];
                 Assert.Same(textBlock, textBlockNode.Visual);
 
-                var textNode = (TextNode)textBlockNode.DrawOperations[0];
-                Assert.Same(initialTextNode, textNode);
+                var textNode = (TextNode)textBlockNode.DrawOperations[0].Item;
+                Assert.Same(initialTextNode.Item, textNode);
             }
         }
 
