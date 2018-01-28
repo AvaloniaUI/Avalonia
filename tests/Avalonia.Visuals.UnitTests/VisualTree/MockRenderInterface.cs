@@ -65,22 +65,13 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
                 }
             }
 
-            public Matrix Transform
-            {
-                get
-                {
-                    throw new NotImplementedException();
-                }
-
-                set
-                {
-                    throw new NotImplementedException();
-                }
-            }
-
             public IStreamGeometryImpl Clone()
             {
                 return this;
+            }
+
+            public void Dispose()
+            {
             }
 
             public bool FillContains(Point point)
@@ -88,7 +79,7 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
                 return _impl.FillContains(point);
             }
 
-            public Rect GetRenderBounds(double strokeThickness)
+            public Rect GetRenderBounds(Pen pen)
             {
                 throw new NotImplementedException();
             }
@@ -108,7 +99,7 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
                 throw new NotImplementedException();
             }
 
-            public IGeometryImpl WithTransform(Matrix transform)
+            public ITransformedGeometryImpl WithTransform(Matrix transform)
             {
                 throw new NotImplementedException();
             }

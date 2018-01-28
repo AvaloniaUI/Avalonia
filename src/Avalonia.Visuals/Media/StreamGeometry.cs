@@ -10,22 +10,22 @@ namespace Avalonia.Media
     /// </summary>
     public class StreamGeometry : Geometry
     {
+        IStreamGeometryImpl _impl;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="StreamGeometry"/> class.
         /// </summary>
         public StreamGeometry()
         {
-            IPlatformRenderInterface factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
-            PlatformImpl = factory.CreateStreamGeometry();
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="StreamGeometry"/> class.
         /// </summary>
         /// <param name="impl">The platform-specific implementation.</param>
-        private StreamGeometry(IGeometryImpl impl)
+        private StreamGeometry(IStreamGeometryImpl impl)
         {
-            PlatformImpl = impl;
+            _impl = impl;
         }
 
         /// <summary>
@@ -60,6 +60,18 @@ namespace Avalonia.Media
         public StreamGeometryContext Open()
         {
             return new StreamGeometryContext(((IStreamGeometryImpl)PlatformImpl).Open());
+        }
+
+        /// <inheritdoc/>
+        protected override IGeometryImpl CreateDefiningGeometry()
+        {
+            if (_impl == null)
+            {
+                var factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
+                _impl = factory.CreateStreamGeometry();
+            }
+
+            return _impl;
         }
     }
 }
