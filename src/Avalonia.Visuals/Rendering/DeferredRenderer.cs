@@ -35,7 +35,7 @@ namespace Avalonia.Rendering
         private object _rendering = new object();
         private int _lastSceneId = -1;
         private DisplayDirtyRects _dirtyRectsDisplay = new DisplayDirtyRects();
-        private IDrawOperation _currentDraw;
+        private IRef<IDrawOperation> _currentDraw;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DeferredRenderer"/> class.
@@ -159,13 +159,13 @@ namespace Avalonia.Rendering
         /// <inheritdoc/>
         Size IVisualBrushRenderer.GetRenderTargetSize(IVisualBrush brush)
         {
-            return (_currentDraw as BrushDrawOperation)?.ChildScenes?[brush.Visual]?.Size ?? Size.Empty;
+            return (_currentDraw as IRef<BrushDrawOperation>)?.Item.ChildScenes?[brush.Visual]?.Size ?? Size.Empty;
         }
 
         /// <inheritdoc/>
         void IVisualBrushRenderer.RenderVisualBrush(IDrawingContextImpl context, IVisualBrush brush)
         {
-            var childScene = (_currentDraw as BrushDrawOperation)?.ChildScenes?[brush.Visual];
+            var childScene = (_currentDraw as IRef<BrushDrawOperation>)?.Item.ChildScenes?[brush.Visual];
 
             if (childScene != null)
             {
@@ -253,7 +253,7 @@ namespace Avalonia.Rendering
                     foreach (var operation in node.DrawOperations)
                     {
                         _currentDraw = operation;
-                        operation.Render(context);
+                        operation.Item.Render(context);
                         _currentDraw = null;
                     }
 

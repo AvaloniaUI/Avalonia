@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using Avalonia.Media;
 using Avalonia.Platform;
+using Avalonia.Utilities;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering.SceneGraph
@@ -12,7 +13,7 @@ namespace Avalonia.Rendering.SceneGraph
     /// <summary>
     /// Represents a node in the low-level scene graph representing an <see cref="IVisual"/>.
     /// </summary>
-    public interface IVisualNode
+    public interface IVisualNode : IDisposable
     {
         /// <summary>
         /// Gets the visual to which the node relates.
@@ -66,7 +67,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <summary>
         /// Gets the drawing operations for the visual.
         /// </summary>
-        IReadOnlyList<IDrawOperation> DrawOperations { get; }
+        IReadOnlyList<IRef<IDrawOperation>> DrawOperations { get; }
 
         /// <summary>
         /// Sets up the drawing context for rendering the node's geometry.

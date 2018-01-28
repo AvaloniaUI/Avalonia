@@ -50,6 +50,7 @@ namespace Avalonia.Utilities
             public RefCounter(IDisposable item)
             {
                 _item = item;
+                _refs = 1;
             }
 
             public void AddRef()
@@ -101,8 +102,6 @@ namespace Avalonia.Utilities
             {
                 _item = item;
                 _counter = counter;
-                Interlocked.MemoryBarrier();
-                _counter.AddRef();
             }
 
             public void Dispose()
@@ -139,7 +138,11 @@ namespace Avalonia.Utilities
                 lock (_lock)
                 {
                     if (_item != null)
-                        return new Ref<T>(_item, _counter);
+                    {
+                        var newRef = new Ref<T>(_item, _counter);
+                        _counter.AddRef();
+                        return newRef;
+                    }
                     throw new ObjectDisposedException("Ref<" + typeof(T) + ">");
                 }
             }
@@ -150,7 +153,10 @@ namespace Avalonia.Utilities
                 {
                     if (_item != null)
                     {
-                        return new Ref<TResult>((TResult)(object)_item, _counter);
+                        var castRef = new Ref<TResult>((TResult)(object)_item, _counter);
+                        Interlocked.MemoryBarrier();
+                        _counter.AddRef();
+                        return castRef;
                     }
                     throw new ObjectDisposedException("Ref<" + typeof(T) + ">");
                 }

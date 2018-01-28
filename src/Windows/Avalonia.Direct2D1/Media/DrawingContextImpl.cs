@@ -399,7 +399,7 @@ namespace Avalonia.Direct2D1.Media
                 return new ImageBrushImpl(
                     imageBrush,
                     _renderTarget,
-                    (BitmapImpl)imageBrush.Source.PlatformImpl,
+                    (BitmapImpl)imageBrush.Source.PlatformImpl.Item,
                     destinationSize);
             }
             else if (visualBrush != null)

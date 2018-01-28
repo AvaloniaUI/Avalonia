@@ -38,15 +38,6 @@ namespace Avalonia.Media.Imaging
         public new IRef<IRenderTargetBitmapImpl> PlatformImpl { get; }
 
         /// <summary>
-        /// Disposes of the bitmap.
-        /// </summary>
-        public void Dispose()
-        {
-            PlatformImpl.Dispose();
-            base.Dispose();
-        }
-
-        /// <summary>
         /// Renders a visual to the <see cref="RenderTargetBitmap"/>.
         /// </summary>
         /// <param name="visual">The visual to render.</param>
