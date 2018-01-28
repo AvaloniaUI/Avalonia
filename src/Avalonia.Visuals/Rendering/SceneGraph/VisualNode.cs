@@ -159,10 +159,7 @@ namespace Avalonia.Rendering.SceneGraph
             EnsureDrawOperationsCreated();
             var old = _drawOperations[index];
             _drawOperations[index] = operation.Clone();
-            if (old is IDisposable disposable)
-            {
-                disposable.Dispose();
-            }
+            old.Dispose();
         }
 
         /// <summary>
