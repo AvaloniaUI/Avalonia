@@ -27,14 +27,12 @@ namespace Avalonia.Media
             AvaloniaProperty.Register<PolylineGeometry, bool>(nameof(IsFilled));
 
         private Points _points;
-        private bool _isDirty = true;
         private IDisposable _pointsObserver;
 
         static PolylineGeometry()
         {
-            PointsProperty.Changed.AddClassHandler<PolylineGeometry>((s, e) =>
-                s.OnPointsChanged(e.OldValue as Points, e.NewValue as Points));
-            IsFilledProperty.Changed.AddClassHandler<PolylineGeometry>((s, _) => s.NotifyChanged());
+            AffectsGeometry(IsFilledProperty);
+            PointsProperty.Changed.AddClassHandler<PolylineGeometry>((s, e) => s.OnPointsChanged(e.NewValue as Points));
         }
 
         /// <summary>
@@ -42,9 +40,6 @@ namespace Avalonia.Media
         /// </summary>
         public PolylineGeometry()
         {
-            IPlatformRenderInterface factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
-            PlatformImpl = factory.CreateStreamGeometry();
-
             Points = new Points();
         }
 
@@ -55,29 +50,6 @@ namespace Avalonia.Media
         {
             Points.AddRange(points);
             IsFilled = isFilled;
-        }
-
-        public void PrepareIfNeeded()
-        {
-            if (_isDirty)
-            {
-                _isDirty = false;
-
-                using (var context = ((IStreamGeometryImpl)PlatformImpl).Open())
-                {
-                    var points = Points;
-                    var isFilled = IsFilled;
-                    if (points.Count > 0)
-                    {
-                        context.BeginFigure(points[0], isFilled);
-                        for (int i = 1; i < points.Count; i++)
-                        {
-                            context.LineTo(points[i]);
-                        }
-                        context.EndFigure(isFilled);
-                    }
-                }
-            }
         }
 
         /// <summary>
@@ -99,33 +71,42 @@ namespace Avalonia.Media
             set => SetValue(IsFilledProperty, value);
         }
 
-        public override IGeometryImpl PlatformImpl
-        {
-            get
-            {
-                PrepareIfNeeded();
-                return base.PlatformImpl;
-            }
-            protected set => base.PlatformImpl = value;
-        }
-
         /// <inheritdoc/>
         public override Geometry Clone()
         {
-            PrepareIfNeeded();
             return new PolylineGeometry(Points, IsFilled);
         }
 
-        private void OnPointsChanged(Points oldValue, Points newValue)
+        protected override IGeometryImpl CreateDefiningGeometry()
         {
-            _pointsObserver?.Dispose();
+            var factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
+            var geometry = factory.CreateStreamGeometry();
 
-            _pointsObserver = newValue?.ForEachItem(f => NotifyChanged(), f => NotifyChanged(), () => NotifyChanged());
+            using (var context = geometry.Open())
+            {
+                var points = Points;
+                var isFilled = IsFilled;
+                if (points.Count > 0)
+                {
+                    context.BeginFigure(points[0], isFilled);
+                    for (int i = 1; i < points.Count; i++)
+                    {
+                        context.LineTo(points[i]);
+                    }
+                    context.EndFigure(isFilled);
+                }
+            }
+
+            return geometry;
         }
 
-        internal void NotifyChanged()
+        private void OnPointsChanged(Points newValue)
         {
-            _isDirty = true;
+            _pointsObserver?.Dispose();
+            _pointsObserver = newValue?.ForEachItem(
+                _ => InvalidateGeometry(),
+                _ => InvalidateGeometry(),
+                InvalidateGeometry);
         }
     }
 }

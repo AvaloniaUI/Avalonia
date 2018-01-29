@@ -2,14 +2,12 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Reactive.Linq;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Metadata;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Presenters
 {
@@ -340,71 +338,13 @@ namespace Avalonia.Controls.Presenters
         /// <inheritdoc/>
         protected override Size MeasureOverride(Size availableSize)
         {
-            var child = Child;
-            var padding = Padding + new Thickness(BorderThickness);
-
-            if (child != null)
-            {
-                child.Measure(availableSize.Deflate(padding));
-                return child.DesiredSize.Inflate(padding);
-            }
-            else
-            {
-                return new Size(padding.Left + padding.Right, padding.Bottom + padding.Top);
-            }
+            return Border.MeasureOverrideImpl(availableSize, Child, Padding, BorderThickness);
         }
 
         /// <inheritdoc/>
         protected override Size ArrangeOverride(Size finalSize)
         {
-            var child = Child;
-
-            if (child != null)
-            {
-                var padding = Padding + new Thickness(BorderThickness);
-                var sizeMinusPadding = finalSize.Deflate(padding);
-                var size = sizeMinusPadding;
-                var horizontalAlignment = HorizontalContentAlignment;
-                var verticalAlignment = VerticalContentAlignment;
-                var originX = padding.Left;
-                var originY = padding.Top;
-
-                if (horizontalAlignment != HorizontalAlignment.Stretch)
-                {
-                    size = size.WithWidth(child.DesiredSize.Width);
-                }
-
-                if (verticalAlignment != VerticalAlignment.Stretch)
-                {
-                    size = size.WithHeight(child.DesiredSize.Height);
-                }
-
-                switch (horizontalAlignment)
-                {
-                    case HorizontalAlignment.Stretch:
-                    case HorizontalAlignment.Center:
-                        originX += (sizeMinusPadding.Width - size.Width) / 2;
-                        break;
-                    case HorizontalAlignment.Right:
-                        originX = size.Width - child.DesiredSize.Width;
-                        break;
-                }
-
-                switch (verticalAlignment)
-                {
-                    case VerticalAlignment.Stretch:
-                    case VerticalAlignment.Center:
-                        originY += (sizeMinusPadding.Height - size.Height) / 2;
-                        break;
-                    case VerticalAlignment.Bottom:
-                        originY = size.Height - child.DesiredSize.Height;
-                        break;
-                }
-
-                child.Arrange(new Rect(originX, originY, size.Width, size.Height));
-            }
-
-            return finalSize;
+            return ArrangeOverrideImpl(finalSize, new Vector());
         }
 
         /// <summary>
@@ -428,6 +368,91 @@ namespace Avalonia.Controls.Presenters
             }
 
             InvalidateMeasure();
+        }
+
+        internal Size ArrangeOverrideImpl(Size finalSize, Vector offset)
+        {
+            if (Child != null)
+            {
+                var padding = Padding;
+                var borderThickness = BorderThickness;
+                var horizontalContentAlignment = HorizontalContentAlignment;
+                var verticalContentAlignment = VerticalContentAlignment;
+                var useLayoutRounding = UseLayoutRounding;
+                var availableSizeMinusMargins = new Size(
+                    Math.Max(0, finalSize.Width - padding.Left - padding.Right - borderThickness),
+                    Math.Max(0, finalSize.Height - padding.Top - padding.Bottom - borderThickness));
+                var size = availableSizeMinusMargins;
+                var scale = GetLayoutScale();
+                var originX = offset.X + padding.Left + borderThickness;
+                var originY = offset.Y + padding.Top + borderThickness;
+
+                if (horizontalContentAlignment != HorizontalAlignment.Stretch)
+                {
+                    size = size.WithWidth(Math.Min(size.Width, DesiredSize.Width - padding.Left - padding.Right));
+                }
+
+                if (verticalContentAlignment != VerticalAlignment.Stretch)
+                {
+                    size = size.WithHeight(Math.Min(size.Height, DesiredSize.Height - padding.Top - padding.Bottom));
+                }
+
+                size = LayoutHelper.ApplyLayoutConstraints(Child, size);
+
+                if (useLayoutRounding)
+                {
+                    size = new Size(
+                        Math.Ceiling(size.Width * scale) / scale,
+                        Math.Ceiling(size.Height * scale) / scale);
+                    availableSizeMinusMargins = new Size(
+                        Math.Ceiling(availableSizeMinusMargins.Width * scale) / scale,
+                        Math.Ceiling(availableSizeMinusMargins.Height * scale) / scale);
+                }
+
+                switch (horizontalContentAlignment)
+                {
+                    case HorizontalAlignment.Center:
+                    case HorizontalAlignment.Stretch:
+                        originX += (availableSizeMinusMargins.Width - size.Width) / 2;
+                        break;
+                    case HorizontalAlignment.Right:
+                        originX += availableSizeMinusMargins.Width - size.Width;
+                        break;
+                }
+
+                switch (verticalContentAlignment)
+                {
+                    case VerticalAlignment.Center:
+                    case VerticalAlignment.Stretch:
+                        originY += (availableSizeMinusMargins.Height - size.Height) / 2;
+                        break;
+                    case VerticalAlignment.Bottom:
+                        originY += availableSizeMinusMargins.Height - size.Height;
+                        break;
+                }
+
+                if (useLayoutRounding)
+                {
+                    originX = Math.Floor(originX * scale) / scale;
+                    originY = Math.Floor(originY * scale) / scale;
+                }
+
+                Child.Arrange(new Rect(originX, originY, size.Width, size.Height));
+            }
+
+            return finalSize;
+        }
+
+        private double GetLayoutScale()
+        {
+            var result = (VisualRoot as ILayoutRoot)?.LayoutScaling ?? 1.0;
+
+            if (result == 0 || double.IsNaN(result) || double.IsInfinity(result))
+            {
+                throw new Exception($"Invalid LayoutScaling returned from {VisualRoot.GetType()}");
+            }
+
+            return result;
         }
 
         private void TemplatedParentChanged(AvaloniaPropertyChangedEventArgs e)
