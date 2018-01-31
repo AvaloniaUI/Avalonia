@@ -112,7 +112,12 @@ namespace Avalonia.Rendering
         /// <summary>
         /// Disposes of the renderer and detaches from the render loop.
         /// </summary>
-        public void Dispose() => Stop();
+        public void Dispose()
+        {
+            var scene = Interlocked.Exchange(ref _scene, null);
+            scene.Dispose();
+            Stop();
+        }
 
         /// <inheritdoc/>
         public IEnumerable<IVisual> HitTest(Point p, IVisual root, Func<IVisual, bool> filter)
@@ -391,14 +396,16 @@ namespace Avalonia.Rendering
                         }
                     }
 
-                    Interlocked.Exchange(ref _scene, scene);
+                    var oldScene = Interlocked.Exchange(ref _scene, scene);
+                    oldScene.Dispose();
 
                     _dirty.Clear();
                     (_root as IRenderRoot)?.Invalidate(new Rect(scene.Size));
                 }
                 else
                 {
-                    Interlocked.Exchange(ref _scene, null);
+                    var oldScene = Interlocked.Exchange(ref _scene, null);
+                    oldScene.Dispose();
                 }
             }
             finally

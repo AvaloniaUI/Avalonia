@@ -81,7 +81,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <inheritdoc/>
         public void Dispose()
         {
-            _node?.Dispose();
+            // Nothing to do here since we allocate no unmanaged resources.
         }
 
         /// <summary>
@@ -105,7 +105,7 @@ namespace Avalonia.Rendering.SceneGraph
 
             if (next == null || !next.Item.Equals(Transform, brush, pen, geometry))
             {
-                Add(RefCountable.Create(new GeometryNode(Transform, brush, pen, geometry, CreateChildScene(brush))));
+                Add(new GeometryNode(Transform, brush, pen, geometry, CreateChildScene(brush)));
             }
             else
             {
@@ -120,7 +120,7 @@ namespace Avalonia.Rendering.SceneGraph
 
             if (next == null || !next.Item.Equals(Transform, source, opacity, sourceRect, destRect))
             {
-                Add(RefCountable.Create(new ImageNode(Transform, source, opacity, sourceRect, destRect)));
+                Add(new ImageNode(Transform, source, opacity, sourceRect, destRect));
             }
             else
             {
@@ -142,7 +142,7 @@ namespace Avalonia.Rendering.SceneGraph
 
             if (next == null || !next.Item.Equals(Transform, pen, p1, p2))
             {
-                Add(RefCountable.Create(new LineNode(Transform, pen, p1, p2, CreateChildScene(pen.Brush))));
+                Add(new LineNode(Transform, pen, p1, p2, CreateChildScene(pen.Brush)));
             }
             else
             {
@@ -157,7 +157,7 @@ namespace Avalonia.Rendering.SceneGraph
 
             if (next == null || !next.Item.Equals(Transform, null, pen, rect, cornerRadius))
             {
-                Add(RefCountable.Create(new RectangleNode(Transform, null, pen, rect, cornerRadius, CreateChildScene(pen.Brush))));
+                Add(new RectangleNode(Transform, null, pen, rect, cornerRadius, CreateChildScene(pen.Brush)));
             }
             else
             {
@@ -172,7 +172,7 @@ namespace Avalonia.Rendering.SceneGraph
 
             if (next == null || !next.Item.Equals(Transform, foreground, origin, text))
             {
-                Add(RefCountable.Create(new TextNode(Transform, foreground, origin, text, CreateChildScene(foreground))));
+                Add(new TextNode(Transform, foreground, origin, text, CreateChildScene(foreground)));
             }
             else
             {
@@ -187,7 +187,7 @@ namespace Avalonia.Rendering.SceneGraph
 
             if (next == null || !next.Item.Equals(Transform, brush, null, rect, cornerRadius))
             {
-                Add(RefCountable.Create(new RectangleNode(Transform, brush, null, rect, cornerRadius, CreateChildScene(brush))));
+                Add(new RectangleNode(Transform, brush, null, rect, cornerRadius, CreateChildScene(brush)));
             }
             else
             {
@@ -207,7 +207,7 @@ namespace Avalonia.Rendering.SceneGraph
 
             if (next == null || !next.Item.Equals(null))
             {
-                Add(RefCountable.Create(new ClipNode()));
+                Add(new ClipNode());
             }
             else
             {
@@ -222,7 +222,7 @@ namespace Avalonia.Rendering.SceneGraph
 
             if (next == null || !next.Item.Equals(null))
             {
-                Add(RefCountable.Create((new GeometryClipNode())));
+                Add((new GeometryClipNode()));
             }
             else
             {
@@ -237,7 +237,7 @@ namespace Avalonia.Rendering.SceneGraph
 
             if (next == null || !next.Item.Equals(null))
             {
-                Add(RefCountable.Create(new OpacityNode()));
+                Add(new OpacityNode());
             }
             else
             {
@@ -252,7 +252,7 @@ namespace Avalonia.Rendering.SceneGraph
 
             if (next == null || !next.Item.Equals(null, null))
             {
-                Add(RefCountable.Create(new OpacityMaskNode()));
+                Add(new OpacityMaskNode());
             }
             else
             {
@@ -267,7 +267,7 @@ namespace Avalonia.Rendering.SceneGraph
 
             if (next == null || !next.Item.Equals(clip))
             {
-                Add(RefCountable.Create(new ClipNode(clip)));
+                Add(new ClipNode(clip));
             }
             else
             {
@@ -282,7 +282,7 @@ namespace Avalonia.Rendering.SceneGraph
 
             if (next == null || !next.Item.Equals(clip))
             {
-                Add(RefCountable.Create(new GeometryClipNode(clip)));
+                Add(new GeometryClipNode(clip));
             }
             else
             {
@@ -297,7 +297,7 @@ namespace Avalonia.Rendering.SceneGraph
 
             if (next == null || !next.Item.Equals(opacity))
             {
-                Add(RefCountable.Create(new OpacityNode(opacity)));
+                Add(new OpacityNode(opacity));
             }
             else
             {
@@ -312,7 +312,7 @@ namespace Avalonia.Rendering.SceneGraph
 
             if (next == null || !next.Item.Equals(mask, bounds))
             {
-                Add(RefCountable.Create(new OpacityMaskNode(mask, bounds, CreateChildScene(mask))));
+                Add(new OpacityMaskNode(mask, bounds, CreateChildScene(mask)));
             }
             else
             {
@@ -354,6 +354,13 @@ namespace Avalonia.Rendering.SceneGraph
             public VisualNode Node { get; }
             public int ChildIndex { get; }
             public int DrawOperationIndex { get; }
+        }
+
+        private void Add(IDrawOperation node)
+        {
+            var refCounted = RefCountable.Create(node);
+            Add(refCounted);
+            refCounted.Dispose(); // Dispose our reference
         }
 
         private void Add(IRef<IDrawOperation> node)

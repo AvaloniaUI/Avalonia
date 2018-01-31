@@ -4,22 +4,58 @@ using System.Threading;
 
 namespace Avalonia.Utilities
 {
+    /// <summary>
+    /// A ref-counted wrapper for a disposable object.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public interface IRef<out T> : IDisposable where T : class
     {
+        /// <summary>
+        /// The item that is being ref-counted.
+        /// </summary>
         T Item { get; }
+
+        /// <summary>
+        /// Create another reference to this object and increment the refcount.
+        /// </summary>
+        /// <returns>A new reference to this object.</returns>
         IRef<T> Clone();
+
+        /// <summary>
+        /// Create another reference to the same object, but cast the object to a different type.
+        /// </summary>
+        /// <typeparam name="TResult">The type of the new reference.</typeparam>
+        /// <returns>A reference to the value as the new type but sharing the refcount.</returns>
         IRef<TResult> CloneAs<TResult>() where TResult : class;
+
+
+        /// <summary>
+        /// The current refcount of the object tracked in this reference. For debugging/unit test use only.
+        /// </summary>
+        int RefCount { get; }
     }
 
     
 
     public static class RefCountable
     {
+        /// <summary>
+        /// Create a reference counted object wrapping the given item.
+        /// </summary>
+        /// <typeparam name="T">The type of item.</typeparam>
+        /// <param name="item">The item to refcount.</param>
+        /// <returns>The refcounted reference to the item.</returns>
         public static IRef<T> Create<T>(T item) where T : class, IDisposable
         {
             return new Ref<T>(item, new RefCounter(item));
         }
-
+        
+        /// <summary>
+        /// Create an non-owning non-clonable reference to an item.
+        /// </summary>
+        /// <typeparam name="T">The type of item.</typeparam>
+        /// <param name="item">The item.</param>
+        /// <returns>A temporary reference that cannot be cloned that doesn't own the element.</returns>
         public static IRef<T> CreateUnownedNotClonable<T>(T item) where T : class
             => new TempRef<T>(item);
 
@@ -40,6 +76,8 @@ namespace Avalonia.Utilities
 
             public IRef<TResult> CloneAs<TResult>() where TResult : class
                 => throw new NotSupportedException();
+
+            public int RefCount => 1;
         }
         
         class RefCounter
@@ -90,6 +128,8 @@ namespace Avalonia.Utilities
                     old = current;
                 }
             }
+
+            internal int RefCount => _refs;
         }
 
         class Ref<T> : CriticalFinalizerObject, IRef<T> where T : class
@@ -161,6 +201,8 @@ namespace Avalonia.Utilities
                     throw new ObjectDisposedException("Ref<" + typeof(T) + ">");
                 }
             }
+
+            public int RefCount => _counter.RefCount;
         }
     }
 

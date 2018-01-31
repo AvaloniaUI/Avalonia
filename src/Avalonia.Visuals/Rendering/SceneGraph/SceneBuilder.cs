@@ -271,22 +271,21 @@ namespace Avalonia.Rendering.SceneGraph
 
         private static void Deindex(Scene scene, VisualNode node)
         {
+            foreach (VisualNode child in node.Children)
+            {
+                if (child is VisualNode visual)
+                {
+                    Deindex(scene, visual);
+                }
+            }
             scene.Remove(node);
+
             node.SubTreeUpdated = true;
 
             scene.Layers[node.LayerRoot].Dirty.Add(node.Bounds);
 
             node.Visual.TransformedBounds = null;
 
-            foreach (VisualNode child in node.Children)
-            {
-                var geometry = child as IDrawOperation;
-
-                if (child is VisualNode visual)
-                {
-                    Deindex(scene, visual);
-                }
-            }
 
             if (node.LayerRoot == node.Visual && node.Visual != scene.Root.Visual)
             {

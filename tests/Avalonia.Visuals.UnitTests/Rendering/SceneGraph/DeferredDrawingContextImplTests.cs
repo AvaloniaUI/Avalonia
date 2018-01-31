@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Avalonia.Media;
+using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.UnitTests;
 using Avalonia.Utilities;
@@ -191,6 +192,28 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
             }
 
             Assert.Equal(2, node.DrawOperations.Count);
+        }
+
+        [Fact]
+        public void Trimmed_DrawOperations_Releases_Reference()
+        {
+            var node = new VisualNode(new TestRoot(), null);
+            var operation = RefCountable.Create(new RectangleNode(Matrix.Identity, Brushes.Red, null, new Rect(0, 0, 100, 100), 0));
+            var layers = new SceneLayers(node.Visual);
+            var target = new DeferredDrawingContextImpl(null, layers);
+
+            node.LayerRoot = node.Visual;
+            node.AddDrawOperation(operation);
+            Assert.Equal(2, operation.RefCount);
+
+            using (target.BeginUpdate(node))
+            {
+                target.FillRectangle(Brushes.Green, new Rect(0, 0, 100, 100));
+            }
+
+            Assert.Equal(1, node.DrawOperations.Count);
+            Assert.NotSame(operation, node.DrawOperations.Single());
+            Assert.Equal(1, operation.RefCount);
         }
     }
 }
