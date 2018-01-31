@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Disposables;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Utilities;
@@ -23,6 +24,7 @@ namespace Avalonia.Rendering.SceneGraph
         private double _opacity;
         private List<IVisualNode> _children;
         private List<IRef<IDrawOperation>> _drawOperations;
+        private IRef<IDisposable> _drawOperationsRefCounter;
         private bool _drawOperationsCloned;
         private Matrix transformRestore;
 
@@ -214,6 +216,7 @@ namespace Avalonia.Rendering.SceneGraph
                 _opacity = Opacity,
                 OpacityMask = OpacityMask,
                 _drawOperations = _drawOperations,
+                _drawOperationsRefCounter = _drawOperationsRefCounter?.Clone(),
                 _drawOperationsCloned = true,
                 LayerRoot= LayerRoot,
             };
@@ -315,10 +318,14 @@ namespace Avalonia.Rendering.SceneGraph
             if (_drawOperations == null)
             {
                 _drawOperations = new List<IRef<IDrawOperation>>();
+                _drawOperationsRefCounter = RefCountable.Create(Disposable.Create(DisposeDrawOperations));
+                _drawOperationsCloned = false;
             }
             else if (_drawOperationsCloned)
             {
                 _drawOperations = new List<IRef<IDrawOperation>>(_drawOperations.Select(op => op.Clone()));
+                _drawOperationsRefCounter.Dispose();
+                _drawOperationsRefCounter = RefCountable.Create(Disposable.Create(DisposeDrawOperations));
                 _drawOperationsCloned = false;
             }
         }
@@ -329,12 +336,14 @@ namespace Avalonia.Rendering.SceneGraph
             {
                 child.Dispose();
             }
-            if (!_drawOperationsCloned)
+            _drawOperationsRefCounter?.Dispose();
+        }
+
+        private void DisposeDrawOperations()
+        {
+            foreach (var operation in DrawOperations)
             {
-                foreach (var operation in DrawOperations)
-                {
-                    operation.Dispose();
-                } 
+                operation.Dispose();
             }
         }
     }
