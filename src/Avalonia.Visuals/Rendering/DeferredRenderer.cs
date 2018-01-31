@@ -397,7 +397,7 @@ namespace Avalonia.Rendering
                     }
 
                     var oldScene = Interlocked.Exchange(ref _scene, scene);
-                    oldScene.Dispose();
+                    oldScene?.Dispose();
 
                     _dirty.Clear();
                     (_root as IRenderRoot)?.Invalidate(new Rect(scene.Size));
@@ -405,7 +405,7 @@ namespace Avalonia.Rendering
                 else
                 {
                     var oldScene = Interlocked.Exchange(ref _scene, null);
-                    oldScene.Dispose();
+                    oldScene?.Dispose();
                 }
             }
             finally
