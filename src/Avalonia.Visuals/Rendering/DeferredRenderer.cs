@@ -115,7 +115,7 @@ namespace Avalonia.Rendering
         public void Dispose()
         {
             var scene = Interlocked.Exchange(ref _scene, null);
-            scene.Dispose();
+            scene?.Dispose();
             Stop();
         }
 
