@@ -337,7 +337,7 @@ namespace Avalonia.Controls
             string text = Text ?? string.Empty;
             int caretIndex = CaretIndex;
             bool movement = false;
-            bool handled = true;
+            bool handled = false;
             var modifiers = e.Modifiers;
 
             switch (e.Key)
@@ -346,13 +346,14 @@ namespace Avalonia.Controls
                     if (modifiers == InputModifiers.Control)
                     {
                         SelectAll();
+                        handled = true;
                     }
-
                     break;
                 case Key.C:
                     if (modifiers == InputModifiers.Control)
                     {
                         Copy();
+                        handled = true;
                     }
                     break;
 
@@ -361,6 +362,7 @@ namespace Avalonia.Controls
                     {
                         Copy();
                         DeleteSelection();
+                        handled = true;
                     }
                     break;
 
@@ -368,19 +370,24 @@ namespace Avalonia.Controls
                     if (modifiers == InputModifiers.Control)
                     {
                         Paste();
+                        handled = true;
                     }
 
                     break;
 
                 case Key.Z:
                     if (modifiers == InputModifiers.Control)
+                    {
                         _undoRedoHelper.Undo();
-
+                        handled = true;
+                    }
                     break;
                 case Key.Y:
                     if (modifiers == InputModifiers.Control)
+                    {
                         _undoRedoHelper.Redo();
-
+                        handled = true;
+                    }
                     break;
                 case Key.Left:
                     MoveHorizontal(-1, modifiers);
@@ -393,13 +400,11 @@ namespace Avalonia.Controls
                     break;
 
                 case Key.Up:
-                    MoveVertical(-1, modifiers);
-                    movement = true;
+                    movement = MoveVertical(-1, modifiers);
                     break;
 
                 case Key.Down:
-                    MoveVertical(1, modifiers);
-                    movement = true;
+                    movement = MoveVertical(1, modifiers);
                     break;
 
                 case Key.Home:
@@ -435,7 +440,7 @@ namespace Avalonia.Controls
                         CaretIndex -= removedCharacters;
                         SelectionStart = SelectionEnd = CaretIndex;
                     }
-
+                    handled = true;
                     break;
 
                 case Key.Delete:
@@ -459,13 +464,14 @@ namespace Avalonia.Controls
 
                         SetTextInternal(text.Substring(0, caretIndex) + text.Substring(caretIndex + removedCharacters));
                     }
-
+                    handled = true;
                     break;
 
                 case Key.Enter:
                     if (AcceptsReturn)
                     {
                         HandleTextInput("\r\n");
+                        handled = true;
                     }
 
                     break;
@@ -474,11 +480,11 @@ namespace Avalonia.Controls
                     if (AcceptsTab)
                     {
                         HandleTextInput("\t");
+                        handled = true;
                     }
                     else
                     {
                         base.OnKeyDown(e);
-                        handled = false;
                     }
 
                     break;
@@ -497,7 +503,7 @@ namespace Avalonia.Controls
                 SelectionStart = SelectionEnd = CaretIndex;
             }
 
-            if (handled)
+            if (handled || movement)
             {
                 e.Handled = true;
             }
@@ -674,7 +680,7 @@ namespace Avalonia.Controls
             }
         }
 
-        private void MoveVertical(int count, InputModifiers modifiers)
+        private bool MoveVertical(int count, InputModifiers modifiers)
         {
             var formattedText = _presenter.FormattedText;
             var lines = formattedText.GetLines().ToList();
@@ -689,6 +695,11 @@ namespace Avalonia.Controls
                 var point = new Point(rect.X, y + (count * (line.Height / 2)));
                 var hit = formattedText.HitTestPoint(point);
                 CaretIndex = hit.TextPosition + (hit.IsTrailing ? 1 : 0);
+                return true;
+            }
+            else
+            {
+                return false;
             }
         }
 
