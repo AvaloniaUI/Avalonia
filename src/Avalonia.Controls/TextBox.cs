@@ -30,12 +30,7 @@ namespace Avalonia.Controls
                 nameof(CaretIndex),
                 o => o.CaretIndex,
                 (o, v) => o.CaretIndex = v);
-
-        public static readonly DirectProperty<TextBox, IEnumerable<Exception>> DataValidationErrorsProperty =
-            AvaloniaProperty.RegisterDirect<TextBox, IEnumerable<Exception>>(
-                nameof(DataValidationErrors),
-                o => o.DataValidationErrors);
-
+        
         public static readonly StyledProperty<bool> IsReadOnlyProperty =
             AvaloniaProperty.Register<TextBox, bool>(nameof(IsReadOnly));
 
@@ -91,7 +86,6 @@ namespace Avalonia.Controls
         private TextPresenter _presenter;
         private UndoRedoHelper<UndoRedoState> _undoRedoHelper;
         private bool _ignoreTextChanges;
-        private IEnumerable<Exception> _dataValidationErrors;
         private static readonly string[] invalidCharacters = new String[1]{"\u007f"};
 
         static TextBox()
@@ -142,13 +136,7 @@ namespace Avalonia.Controls
                     _undoRedoHelper.UpdateLastState();
             }
         }
-
-        public IEnumerable<Exception> DataValidationErrors
-        {
-            get { return _dataValidationErrors; }
-            private set { SetAndRaise(DataValidationErrorsProperty, ref _dataValidationErrors, value); }
-        }
-
+        
         public bool IsReadOnly
         {
             get { return GetValue(IsReadOnlyProperty); }
@@ -553,31 +541,10 @@ namespace Avalonia.Controls
         {
             if (property == TextProperty)
             {
-                var classes = (IPseudoClasses)Classes;
-                DataValidationErrors = UnpackException(status.Error);
-                classes.Set(":error", DataValidationErrors != null);
+                DataValidationErrors.SetError(this, status.Error);
             }
         }
-
-        private static IEnumerable<Exception> UnpackException(Exception exception)
-        {
-            if (exception != null)
-            {
-                var aggregate = exception as AggregateException;
-                var exceptions = aggregate == null ?
-                    (IEnumerable<Exception>)new[] { exception } :
-                    aggregate.InnerExceptions;
-                var filtered = exceptions.Where(x => !(x is BindingChainException)).ToList();
-
-                if (filtered.Count > 0)
-                {
-                    return filtered;
-                }
-            }
-
-            return null;
-        }
-
+        
         private int CoerceCaretIndex(int value) => CoerceCaretIndex(value, Text?.Length ?? 0);
 
         private int CoerceCaretIndex(int value, int length)
