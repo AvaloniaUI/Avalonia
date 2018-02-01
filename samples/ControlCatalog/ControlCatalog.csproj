@@ -60,6 +60,9 @@
     <EmbeddedResource Include="Pages\DropDownPage.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <EmbeddedResource Include="Pages\DatePickerPage.xaml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Include="Pages\ExpanderPage.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
@@ -127,6 +130,9 @@
     </Compile>
     <Compile Include="Pages\DropDownPage.xaml.cs">
       <DependentUpon>DropDownPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\DatePickerPage.xaml.cs">
+      <DependentUpon>DatePickerPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Pages\ExpanderPage.xaml.cs">
       <DependentUpon>ExpanderPage.xaml</DependentUpon>
