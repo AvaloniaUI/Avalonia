@@ -1,6 +1,7 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
 using System.IO;
 
 namespace Avalonia.Platform
@@ -31,5 +32,11 @@ namespace Avalonia.Platform
         /// </summary>
         /// <param name="stream">The stream.</param>
         void Save(Stream stream);
+
+        /// <summary>
+        /// Gets a pointer to the pixel data.
+        /// </summary>
+        /// <returns>IntPtr to the pixel data.</returns>
+        IntPtr GetPixels();
     }
 }

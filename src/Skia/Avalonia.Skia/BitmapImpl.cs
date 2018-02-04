@@ -23,6 +23,7 @@ namespace Avalonia.Skia
         static void ReleaseProc(IntPtr address, object ctx)
         {
             ((IUnmanagedBlob) ctx).Dispose();
+            
         }
 
         private static readonly SKBitmapReleaseDelegate ReleaseDelegate = ReleaseProc;
@@ -59,6 +60,11 @@ namespace Avalonia.Skia
 
         public int PixelWidth { get; private set; }
         public int PixelHeight { get; private set; }
+
+        public IntPtr GetPixels()
+        {
+            return Bitmap.GetPixels();
+        }
 
         class BitmapDrawingContext : DrawingContextImpl
         {
