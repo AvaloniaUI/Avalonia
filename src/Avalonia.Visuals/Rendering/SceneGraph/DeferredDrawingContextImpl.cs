@@ -358,9 +358,10 @@ namespace Avalonia.Rendering.SceneGraph
 
         private void Add(IDrawOperation node)
         {
-            var refCounted = RefCountable.Create(node);
-            Add(refCounted);
-            refCounted.Dispose(); // Dispose our reference
+            using (var refCounted = RefCountable.Create(node))
+            {
+                Add(refCounted); 
+            }
         }
 
         private void Add(IRef<IDrawOperation> node)

@@ -175,13 +175,18 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
         public void Should_Trim_DrawOperations()
         {
             var node = new VisualNode(new TestRoot(), null);
-
             node.LayerRoot = node.Visual;
-            node.AddDrawOperation(RefCountable.Create(new RectangleNode(Matrix.Identity, Brushes.Red, null, new Rect(0, 0, 10, 100), 0)));
-            node.AddDrawOperation(RefCountable.Create(new RectangleNode(Matrix.Identity, Brushes.Red, null, new Rect(0, 0, 20, 100), 0)));
-            node.AddDrawOperation(RefCountable.Create(new RectangleNode(Matrix.Identity, Brushes.Red, null, new Rect(0, 0, 30, 100), 0)));
-            node.AddDrawOperation(RefCountable.Create(new RectangleNode(Matrix.Identity, Brushes.Red, null, new Rect(0, 0, 40, 100), 0)));
 
+            for (var i = 0; i < 4; ++i)
+            {
+                var drawOperation = new Mock<IDrawOperation>();
+                using (var r = RefCountable.Create(drawOperation.Object))
+                {
+                    node.AddDrawOperation(r);
+                }
+            }
+
+            var drawOperations = node.DrawOperations.Select(op => op.Item).ToList();
             var layers = new SceneLayers(node.Visual);
             var target = new DeferredDrawingContextImpl(null, layers);
 
@@ -192,6 +197,11 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
             }
 
             Assert.Equal(2, node.DrawOperations.Count);
+
+            foreach (var i in drawOperations)
+            {
+                Mock.Get(i).Verify(x => x.Dispose());
+            }
         }
 
         [Fact]

@@ -192,7 +192,7 @@ namespace Avalonia.Rendering.SceneGraph
             if (first < _drawOperations?.Count)
             {
                 EnsureDrawOperationsCreated();
-                for (int i = first; i < _drawOperations.Count - first; i++)
+                for (int i = first; i < _drawOperations.Count; i++)
                 {
                     _drawOperations[i].Dispose();
                 }
