@@ -1,0 +1,130 @@
+﻿// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Templates;
+using Avalonia.Data;
+using Avalonia.Markup.Xaml.Data;
+using Avalonia.Platform;
+using Avalonia.UnitTests;
+using Moq;
+using Xunit;
+
+namespace Avalonia.Controls.UnitTests
+{
+    public class DatePickerTests
+    {
+        private static bool CompareDates(DateTime first, DateTime second)
+        {
+            return first.Year == second.Year &&
+                first.Month == second.Month &&
+                first.Day == second.Day;
+        }
+
+        [Fact]
+        public void SelectedDateChanged_Should_Fire_When_SelectedDate_Set()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                bool handled = false;
+                DatePicker datePicker = CreateControl();
+                datePicker.SelectedDateChanged += (s,e) =>
+                {
+                    handled = true;
+                };
+                DateTime value = new DateTime(2000, 10, 10);
+                datePicker.SelectedDate = value;
+                Threading.Dispatcher.UIThread.RunJobs();
+                Assert.True(handled);
+            }
+        }
+
+        [Fact]
+        public void Setting_Selected_Date_To_Blackout_Date_Should_Throw()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                DatePicker datePicker = CreateControl();
+                datePicker.BlackoutDates.AddDatesInPast();
+
+                DateTime goodValue = DateTime.Today.AddDays(1);
+                datePicker.SelectedDate = goodValue;
+                Assert.True(CompareDates(datePicker.SelectedDate.Value, goodValue));
+
+                DateTime badValue = DateTime.Today.AddDays(-1);
+                Assert.ThrowsAny<ArgumentOutOfRangeException>(
+                    () => datePicker.SelectedDate = badValue);
+            }
+        }
+
+        [Fact]
+        public void Adding_Blackout_Dates_Containing_Selected_Date_Should_Throw()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                DatePicker datePicker = CreateControl();
+                datePicker.SelectedDate = DateTime.Today.AddDays(5);
+
+                Assert.ThrowsAny<ArgumentOutOfRangeException>(
+                    () => datePicker.BlackoutDates.Add(new CalendarDateRange(DateTime.Today, DateTime.Today.AddDays(10))));
+            }
+        }
+
+        private static TestServices Services => TestServices.MockThreadingInterface.With(
+            standardCursorFactory: Mock.Of<IStandardCursorFactory>());
+
+        private DatePicker CreateControl()
+        {
+            var datePicker =
+                new DatePicker
+                {
+                    Template = CreateTemplate()
+                };
+
+            datePicker.ApplyTemplate();
+            return datePicker;
+        }
+
+        private IControlTemplate CreateTemplate()
+        {
+            return new FuncControlTemplate<DatePicker>(control =>
+            {
+                var textBox = 
+                    new TextBox
+                    {
+                        Name = "PART_TextBox"
+                    };
+                var button =
+                    new Button
+                    {
+                        Name = "PART_Button"
+                    };
+                var calendar =
+                    new Calendar
+                    {
+                        Name = "PART_Calendar"
+                    };
+                var popup =
+                    new Popup
+                    {
+                        Name = "PART_Popup"
+                    };
+
+                var panel = new Panel();
+                panel.Children.Add(textBox);
+                panel.Children.Add(button);
+                panel.Children.Add(popup);
+                panel.Children.Add(calendar);
+
+                return panel;
+            });
+
+        }
+    }
+}
