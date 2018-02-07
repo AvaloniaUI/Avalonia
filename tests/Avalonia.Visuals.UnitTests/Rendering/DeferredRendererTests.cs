@@ -359,7 +359,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
 
         private Mock<IDrawingContextImpl> GetLayerContext(DeferredRenderer renderer, IControl layerRoot)
         {
-            return Mock.Get(renderer.Layers[layerRoot].Bitmap.CreateDrawingContext(null));
+            return Mock.Get(renderer.Layers[layerRoot].Bitmap.Item.CreateDrawingContext(null));
         }
 
         private void IgnoreFirstFrame(Mock<IRenderLoop> loop, Mock<ISceneBuilder> sceneBuilder)

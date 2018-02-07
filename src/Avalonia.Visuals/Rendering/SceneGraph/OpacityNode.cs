@@ -60,5 +60,9 @@ namespace Avalonia.Rendering.SceneGraph
                 context.PopOpacity();
             }
         }
+
+        public void Dispose()
+        {
+        }
     }
 }

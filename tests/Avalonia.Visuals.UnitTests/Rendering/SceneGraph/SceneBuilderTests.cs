@@ -11,6 +11,8 @@ using Moq;
 using Avalonia.Platform;
 using System.Reactive.Subjects;
 using Avalonia.Data;
+using Avalonia.Utilities;
+using Avalonia.Media.Imaging;
 
 namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
 {
@@ -53,15 +55,15 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 Assert.Equal(1, borderNode.Children.Count);
                 Assert.Equal(1, borderNode.DrawOperations.Count);
 
-                var backgroundNode = (RectangleNode)borderNode.DrawOperations[0];
+                var backgroundNode = (RectangleNode)borderNode.DrawOperations[0].Item;
                 Assert.Equal(Brushes.Red, backgroundNode.Brush);
 
-                var textBlockNode = (VisualNode)borderNode.Children[0];
+                var textBlockNode = borderNode.Children[0];
                 Assert.Same(textBlockNode, result.FindNode(textBlock));
                 Assert.Same(textBlock, textBlockNode.Visual);
                 Assert.Equal(1, textBlockNode.DrawOperations.Count);
 
-                var textNode = (TextNode)textBlockNode.DrawOperations[0];
+                var textNode = (TextNode)textBlockNode.DrawOperations[0].Item;
                 Assert.NotNull(textNode.Text);
             }
         }
@@ -358,15 +360,15 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 var borderNode = (VisualNode)result.Root.Children[0];
                 Assert.Same(border, borderNode.Visual);
 
-                var backgroundNode = (RectangleNode)borderNode.DrawOperations[0];
+                var backgroundNode = (RectangleNode)borderNode.DrawOperations[0].Item;
                 Assert.NotSame(initialBackgroundNode, backgroundNode);
                 Assert.Equal(Brushes.Green, backgroundNode.Brush);
 
                 var textBlockNode = (VisualNode)borderNode.Children[0];
                 Assert.Same(textBlock, textBlockNode.Visual);
 
-                var textNode = (TextNode)textBlockNode.DrawOperations[0];
-                Assert.Same(initialTextNode, textNode);
+                var textNode = (TextNode)textBlockNode.DrawOperations[0].Item;
+                Assert.Same(initialTextNode.Item, textNode);
             }
         }
 
@@ -675,6 +677,72 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
 
                 var decoratorNode = scene.FindNode(decorator);
                 Assert.Same(clip.PlatformImpl, decoratorNode.GeometryClip);
+            }
+        }
+
+        [Fact]
+        public void Disposing_Scene_Releases_DrawOperation_References()
+        {
+            using (TestApplication())
+            {
+                var bitmap = RefCountable.Create(Mock.Of<IBitmapImpl>());
+                Image img;
+                var tree = new TestRoot
+                {
+                    Child = img = new Image
+                    {
+                        Source = new Bitmap(bitmap)
+                    }
+                };
+
+                Assert.Equal(2, bitmap.RefCount);
+                IRef<IDrawOperation> operation;
+
+                using (var scene = new Scene(tree))
+                {
+                    var sceneBuilder = new SceneBuilder();
+                    sceneBuilder.UpdateAll(scene);
+                    operation = scene.FindNode(img).DrawOperations[0];
+                    Assert.Equal(1, operation.RefCount);
+
+                    Assert.Equal(3, bitmap.RefCount);
+                }
+                Assert.Equal(0, operation.RefCount);
+                Assert.Equal(2, bitmap.RefCount);
+            }
+        }
+
+        [Fact]
+        public void Replacing_Control_Releases_DrawOperation_Reference()
+        {
+            using (TestApplication())
+            {
+                var bitmap = RefCountable.Create(Mock.Of<IBitmapImpl>());
+                Image img;
+                var tree = new TestRoot
+                {
+                    Child = img = new Image
+                    {
+                        Source = new Bitmap(bitmap)
+                    }
+                };
+
+                var scene = new Scene(tree);
+                var sceneBuilder = new SceneBuilder();
+                sceneBuilder.UpdateAll(scene);
+
+                var operation = scene.FindNode(img).DrawOperations[0];
+
+                tree.Child = new Decorator();
+
+                using (var result = scene.Clone())
+                {
+                    sceneBuilder.Update(result, img);
+                    scene.Dispose();
+
+                    Assert.Equal(0, operation.RefCount);
+                    Assert.Equal(2, bitmap.RefCount);
+                }
             }
         }
 

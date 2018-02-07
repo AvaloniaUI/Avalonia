@@ -6,6 +6,7 @@ using System.Linq;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Utilities;
+using Avalonia.Utilities;
 
 namespace Avalonia.Skia
 {
@@ -39,9 +40,9 @@ namespace Avalonia.Skia
             Canvas.Clear(color.ToSKColor());
         }
 
-        public void DrawImage(IBitmapImpl source, double opacity, Rect sourceRect, Rect destRect)
+        public void DrawImage(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect)
         {
-            var impl = (BitmapImpl)source;
+            var impl = (BitmapImpl)source.Item;
             var s = sourceRect.ToSKRect();
             var d = destRect.ToSKRect();
             using (var paint = new SKPaint()
@@ -51,10 +52,10 @@ namespace Avalonia.Skia
             }
         }
 
-        public void DrawImage(IBitmapImpl source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect)
+        public void DrawImage(IRef<IBitmapImpl> source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect)
         {
             PushOpacityMask(opacityMask, opacityMaskRect);
-            DrawImage(source, 1, new Rect(0, 0, source.PixelWidth, source.PixelHeight), destRect);
+            DrawImage(source, 1, new Rect(0, 0, source.Item.PixelWidth, source.Item.PixelHeight), destRect);
             PopOpacityMask();
         }
 
@@ -237,7 +238,7 @@ namespace Avalonia.Skia
             }
             else
             {
-                tileBrushImage = (BitmapImpl)((tileBrush as IImageBrush)?.Source?.PlatformImpl);
+                tileBrushImage = (BitmapImpl)((tileBrush as IImageBrush)?.Source?.PlatformImpl.Item);
             }
 
             if (tileBrush != null && tileBrushImage != null)
@@ -252,7 +253,7 @@ namespace Avalonia.Skia
                     context.Clear(Colors.Transparent);
                     context.PushClip(calc.IntermediateClip);
                     context.Transform = calc.IntermediateTransform;
-                    context.DrawImage(tileBrushImage, 1, rect, rect);
+                    context.DrawImage(RefCountable.CreateUnownedNotClonable(tileBrushImage), 1, rect, rect);
                     context.PopClip();
                 }
 
