@@ -16,7 +16,7 @@ namespace Avalonia.Controls
     {
         public WindowIcon(IBitmap bitmap)
         {
-            PlatformImpl = AvaloniaLocator.Current.GetService<IPlatformIconLoader>().LoadIcon(bitmap.PlatformImpl);
+            PlatformImpl = AvaloniaLocator.Current.GetService<IPlatformIconLoader>().LoadIcon(bitmap.PlatformImpl.Item);
         }
 
         public WindowIcon(string fileName)

@@ -22,5 +22,9 @@ namespace Avalonia.Rendering.SceneGraph
         public abstract bool HitTest(Point p);
 
         public abstract void Render(IDrawingContextImpl context);
+
+        public virtual void Dispose()
+        {
+        }
     }
 }
