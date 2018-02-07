@@ -5,7 +5,7 @@ using Avalonia.Platform;
 
 namespace Avalonia.UnitTests
 {
-    public class MockStreamGeometryImpl : IStreamGeometryImpl
+    public class MockStreamGeometryImpl : IStreamGeometryImpl, ITransformedGeometryImpl
     {
         private MockStreamGeometryContext _context;
 
@@ -27,6 +27,8 @@ namespace Avalonia.UnitTests
             _context = context;
         }
 
+        public IGeometryImpl SourceGeometry { get; }
+
         public Rect Bounds => _context.CalculateBounds();
 
         public Matrix Transform { get; }
@@ -34,6 +36,10 @@ namespace Avalonia.UnitTests
         public IStreamGeometryImpl Clone()
         {
             return this;
+        }
+
+        public void Dispose()
+        {
         }
 
         public bool FillContains(Point point)
@@ -46,7 +52,7 @@ namespace Avalonia.UnitTests
             return false;
         }
 
-        public Rect GetRenderBounds(double strokeThickness) => Bounds;
+        public Rect GetRenderBounds(Pen pen) => Bounds;
 
         public IGeometryImpl Intersect(IGeometryImpl geometry)
         {
@@ -58,7 +64,7 @@ namespace Avalonia.UnitTests
             return _context;
         }
 
-        public IGeometryImpl WithTransform(Matrix transform)
+        public ITransformedGeometryImpl WithTransform(Matrix transform)
         {
             return new MockStreamGeometryImpl(transform, _context);
         }

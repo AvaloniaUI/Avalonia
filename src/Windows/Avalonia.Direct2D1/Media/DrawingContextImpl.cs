@@ -189,7 +189,7 @@ namespace Avalonia.Direct2D1.Media
 
             if (pen != null)
             {
-                using (var d2dBrush = CreateBrush(pen.Brush, geometry.GetRenderBounds(pen.Thickness).Size))
+                using (var d2dBrush = CreateBrush(pen.Brush, geometry.GetRenderBounds(pen).Size))
                 using (var d2dStroke = pen.ToDirect2DStrokeStyle(_renderTarget))
                 {
                     if (d2dBrush.PlatformBrush != null)

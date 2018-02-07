@@ -373,28 +373,28 @@ namespace Avalonia.Controls
         protected override Size MeasureOverride(Size availableSize)
         {
             var sizeToContent = SizeToContent;
-            var size = ClientSize;
-            var desired = base.MeasureOverride(availableSize.Constrain(_maxPlatformClientSize));
+            var clientSize = ClientSize;
+            Size constraint;
 
             switch (sizeToContent)
             {
                 case SizeToContent.Width:
-                    size = new Size(desired.Width, ClientSize.Height);
+                    constraint = new Size(double.PositiveInfinity, ClientSize.Height);
                     break;
                 case SizeToContent.Height:
-                    size = new Size(ClientSize.Width, desired.Height);
+                    constraint = new Size(ClientSize.Width, double.PositiveInfinity);
                     break;
                 case SizeToContent.WidthAndHeight:
-                    size = new Size(desired.Width, desired.Height);
+                    constraint = Size.Infinity;
                     break;
                 case SizeToContent.Manual:
-                    size = ClientSize;
+                    constraint = ClientSize;
                     break;
                 default:
                     throw new InvalidOperationException("Invalid value for SizeToContent.");
             }
 
-            return size;
+            return base.MeasureOverride(constraint);
         }
 
         protected override void HandleClosed()
