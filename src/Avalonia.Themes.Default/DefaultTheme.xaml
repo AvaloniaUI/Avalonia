@@ -1,6 +1,7 @@
 <Styles xmlns="https://github.com/avaloniaui">
   <!-- Define ToolTip first so its styles can be overriden by other controls (e.g. TextBox) -->
   <StyleInclude Source="resm:Avalonia.Themes.Default.ToolTip.xaml?assembly=Avalonia.Themes.Default"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Default.DataValidationErrors.xaml?assembly=Avalonia.Themes.Default"/>
 
   <StyleInclude Source="resm:Avalonia.Themes.Default.FocusAdorner.xaml?assembly=Avalonia.Themes.Default"/>
   <StyleInclude Source="resm:Avalonia.Themes.Default.Button.xaml?assembly=Avalonia.Themes.Default"/>
