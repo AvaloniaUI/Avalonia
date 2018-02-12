@@ -38,6 +38,9 @@
     <EmbeddedResource Include="Pages\DialogsPage.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <EmbeddedResource Include="Pages\AutoCompleteBoxPage.xaml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Include="Pages\BorderPage.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
@@ -109,6 +112,9 @@
     </Compile>
     <Compile Include="Pages\BorderPage.xaml.cs">
       <DependentUpon>BorderPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\AutoCompleteBoxPage.xaml.cs">
+      <DependentUpon>AutoCompleteBoxPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Pages\ButtonPage.xaml.cs">
       <DependentUpon>ButtonPage.xaml</DependentUpon>
