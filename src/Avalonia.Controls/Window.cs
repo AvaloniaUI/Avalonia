@@ -374,27 +374,31 @@ namespace Avalonia.Controls
         {
             var sizeToContent = SizeToContent;
             var clientSize = ClientSize;
-            Size constraint;
+            Size constraint = clientSize;
 
-            switch (sizeToContent)
+            if ((sizeToContent & SizeToContent.Width) != 0)
             {
-                case SizeToContent.Width:
-                    constraint = new Size(double.PositiveInfinity, ClientSize.Height);
-                    break;
-                case SizeToContent.Height:
-                    constraint = new Size(ClientSize.Width, double.PositiveInfinity);
-                    break;
-                case SizeToContent.WidthAndHeight:
-                    constraint = Size.Infinity;
-                    break;
-                case SizeToContent.Manual:
-                    constraint = ClientSize;
-                    break;
-                default:
-                    throw new InvalidOperationException("Invalid value for SizeToContent.");
+                constraint = constraint.WithWidth(double.PositiveInfinity);
             }
 
-            return base.MeasureOverride(constraint);
+            if ((sizeToContent & SizeToContent.Height) != 0)
+            {
+                constraint = constraint.WithHeight(double.PositiveInfinity);
+            }
+
+            var result = base.MeasureOverride(constraint);
+
+            if ((sizeToContent & SizeToContent.Width) == 0)
+            {
+                result = result.WithWidth(clientSize.Width);
+            }
+
+            if ((sizeToContent & SizeToContent.Height) == 0)
+            {
+                result = result.WithHeight(clientSize.Height);
+            }
+
+            return result;
         }
 
         protected override void HandleClosed()
