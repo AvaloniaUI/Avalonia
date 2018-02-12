@@ -221,17 +221,16 @@ namespace Avalonia.Input.Navigation
                     return parent;
                 }
 
-                var siblings = parent.GetVisualChildren()
+                var allSiblings = parent.GetVisualChildren()
                     .OfType<IInputElement>()
                     .Where(FocusExtensions.CanFocusDescendants);
-                var sibling = direction == NavigationDirection.Next ? 
-                    siblings.SkipWhile(x => x != container).Skip(1).FirstOrDefault() : 
-                    siblings.TakeWhile(x => x != container).LastOrDefault();
+                var siblings = direction == NavigationDirection.Next ?
+                    allSiblings.SkipWhile(x => x != container).Skip(1) :
+                    allSiblings.TakeWhile(x => x != container).Reverse();
 
-                if (sibling != null)
+                foreach (var sibling in siblings)
                 {
                     var customNext = GetCustomNext(sibling, direction);
-
                     if (customNext.handled)
                     {
                         return customNext.next;
@@ -239,13 +238,17 @@ namespace Avalonia.Input.Navigation
 
                     if (sibling.CanFocus())
                     {
-                        next = sibling;
+                        return sibling;
                     }
                     else
                     {
                         next = direction == NavigationDirection.Next ?
                             GetFocusableDescendants(sibling, direction).FirstOrDefault() :
                             GetFocusableDescendants(sibling, direction).LastOrDefault();
+                        if(next != null)
+                        {
+                            return next;
+                        }
                     }
                 }
 
