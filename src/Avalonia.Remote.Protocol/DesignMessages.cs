@@ -1,4 +1,6 @@
-﻿namespace Avalonia.Remote.Protocol.Designer
+﻿using System;
+
+namespace Avalonia.Remote.Protocol.Designer
 {
     [AvaloniaRemoteMessageGuid("9AEC9A2E-6315-4066-B4BA-E9A9EFD0F8CC")]
     public class UpdateXamlMessage
@@ -11,7 +13,13 @@
     public class UpdateXamlResultMessage
     {
         public string Error { get; set; }
+        public string Handle { get; set; }
     }
-    
+
+    [AvaloniaRemoteMessageGuid("854887CF-2694-4EB6-B499-7461B6FB96C7")]
+    public class StartDesignerSessionMessage
+    {
+        public string SessionId { get; set; }
+    }
     
 }
