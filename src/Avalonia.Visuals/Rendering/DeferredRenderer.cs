@@ -426,18 +426,10 @@ namespace Avalonia.Rendering
                         _updateQueued = true;
                         _dispatcher.Post(UpdateScene, DispatcherPriority.Render);
                     }
-
-                    var scene = _scene?.Clone();
-                    if (scene == null)
+                    
+                    using (var scene = _scene?.Clone())
                     {
-                        Render(null);
-                    }
-                    else
-                    {
-                        using (scene)
-                        {
-                            Render(scene.Item);
-                        } 
+                        Render(scene?.Item);
                     }
                 }
                 catch { }
