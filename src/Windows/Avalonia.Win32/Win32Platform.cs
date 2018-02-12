@@ -196,13 +196,9 @@ namespace Avalonia.Win32
 
         public IEmbeddableWindowImpl CreateEmbeddableWindow()
         {
-#if NETSTANDARD
-            throw new NotSupportedException();
-#else
             var embedded = new EmbeddedWindowImpl();
             embedded.Show();
             return embedded;
-#endif
         }
 
         public IPopupImpl CreatePopup()

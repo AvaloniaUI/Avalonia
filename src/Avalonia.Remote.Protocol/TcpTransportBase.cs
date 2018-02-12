@@ -72,7 +72,7 @@ namespace Avalonia.Remote.Protocol
         {
             var c = new TcpClient();
             await c.ConnectAsync(address, port);
-            return CreateTransport(_resolver, c.GetStream(), c.Dispose);
+            return CreateTransport(_resolver, c.GetStream(), ((IDisposable)c).Dispose);
         }
     }
 }
