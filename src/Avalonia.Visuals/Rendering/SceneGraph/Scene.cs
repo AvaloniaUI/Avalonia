@@ -82,7 +82,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// Clones the scene.
         /// </summary>
         /// <returns>The cloned scene.</returns>
-        public Scene Clone()
+        public Scene CloneScene()
         {
             var index = new Dictionary<IVisual, IVisualNode>();
             var root = Clone((VisualNode)Root, null, index);
