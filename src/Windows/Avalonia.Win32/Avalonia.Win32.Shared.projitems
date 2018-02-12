@@ -11,6 +11,7 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)ClipboardImpl.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CursorFactory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)EmbeddedWindowImpl.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)FramebufferManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Input\KeyInterop.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Input\WindowsKeyboardDevice.cs" />
