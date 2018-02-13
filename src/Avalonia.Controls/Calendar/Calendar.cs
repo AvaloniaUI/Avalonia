@@ -5,9 +5,11 @@
 
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
+using Avalonia.Collections;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
+using Avalonia.Threading;
 using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -249,7 +251,6 @@ namespace Avalonia.Controls
         {
             get
             {
-
                 if (Root != null && Root.Children.Count > 0)
                 {
                     return Root.Children[0] as CalendarItem;
@@ -851,6 +852,16 @@ namespace Avalonia.Controls
             }
         }
 
+        private readonly CalendarBlackoutDatesCollectionInternal _blackoutDatesInternal;
+        private CalendarBlackoutDatesCollection _blackoutDates;
+        private IDisposable _blackoutDateSubscription;
+
+        public static readonly DirectProperty<Calendar, CalendarBlackoutDatesCollection> BlackoutDatesProperty =
+            AvaloniaProperty.RegisterDirect<Calendar, CalendarBlackoutDatesCollection>(
+                nameof(BlackoutDates),
+                o => o.BlackoutDates,
+                (o, v) => o.BlackoutDates = v);
+
         /// <summary>
         /// Gets a collection of dates that are marked as not selectable.
         /// </summary>
@@ -873,8 +884,20 @@ namespace Avalonia.Controls
         /// property.
         /// </para>
         /// </remarks>
-        public CalendarBlackoutDatesCollection BlackoutDates { get; private set; }
-
+        public CalendarBlackoutDatesCollection BlackoutDates
+        {
+            get { return _blackoutDates ?? _blackoutDatesInternal; }
+            set
+            {
+                var collection = value;
+                if(object.ReferenceEquals(value, _blackoutDatesInternal))
+                {
+                    collection = null;
+                }
+                SetAndRaise(BlackoutDatesProperty, ref _blackoutDates, collection);
+            }
+        }
+                
         private static DateTime? SelectedDateMin(Calendar cal)
         {
             DateTime selectedDateMin;
@@ -1991,6 +2014,22 @@ namespace Avalonia.Controls
                 _isShiftPressed = false;
             }
         }
+        private void OnBlackoutDatesChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            var collection = (CalendarBlackoutDatesCollection)e.NewValue;
+
+            _blackoutDateSubscription?.Dispose();
+            _blackoutDatesInternal.Clear();
+
+            if (collection != null)
+            {
+                _blackoutDateSubscription =
+                    collection.ForEachItem(
+                        added: r => _blackoutDatesInternal.Add(r),
+                        removed: r => _blackoutDatesInternal.Remove(r),
+                        reset: () => _blackoutDatesInternal.Clear());
+            }
+        }
 
         protected override void OnGotFocus(GotFocusEventArgs e)
         {
@@ -2083,6 +2122,7 @@ namespace Avalonia.Controls
             DisplayDateProperty.Changed.AddClassHandler<Calendar>(x => x.OnDisplayDateChanged);
             DisplayDateStartProperty.Changed.AddClassHandler<Calendar>(x => x.OnDisplayDateStartChanged);
             DisplayDateEndProperty.Changed.AddClassHandler<Calendar>(x => x.OnDisplayDateEndChanged);
+            BlackoutDatesProperty.Changed.AddClassHandler<Calendar>(x => x.OnBlackoutDatesChanged);
         }
 
         /// <summary>
@@ -2092,7 +2132,7 @@ namespace Avalonia.Controls
         public Calendar()
         {
             UpdateDisplayDate(this, this.DisplayDate, DateTime.MinValue);
-            BlackoutDates = new CalendarBlackoutDatesCollection(this);
+            _blackoutDatesInternal = new CalendarBlackoutDatesCollectionInternal(this);
             SelectedDates = new SelectedDatesCollection(this);
             RemovedItems = new Collection<DateTime>();
         }
@@ -2128,5 +2168,124 @@ namespace Avalonia.Controls
             KeyUp += Calendar_KeyUp;
         }
 
+        private sealed class CalendarBlackoutDatesCollectionInternal : CalendarBlackoutDatesCollection
+        {
+            /// <summary>
+            /// The Calendar whose dates this object represents.
+            /// </summary>
+            private Calendar _owner;
+
+            /// <summary>
+            /// Initializes a new instance of the
+            /// <see cref="T:Avalonia.Controls.Primitives.CalendarBlackoutDatesCollection" />
+            /// class.
+            /// </summary>
+            /// <param name="owner">
+            /// The <see cref="T:Avalonia.Controls.Calendar" /> whose dates
+            /// this object represents.
+            /// </param>
+            public CalendarBlackoutDatesCollectionInternal(Calendar owner)
+                : base()
+            {
+                _owner = owner ?? throw new ArgumentNullException(nameof(owner));
+            }
+
+            /// <summary>
+            /// Removes all items from the collection.
+            /// </summary>
+            /// <remarks>
+            /// This implementation raises the CollectionChanged event.
+            /// </remarks>
+            protected override void ClearItems()
+            {
+                EnsureValidThread();
+
+                base.ClearItems();
+                _owner.UpdateMonths();
+            }
+
+            /// <summary>
+            /// Inserts an item into the collection at the specified index.
+            /// </summary>
+            /// <param name="index">
+            /// The zero-based index at which item should be inserted.
+            /// </param>
+            /// <param name="item">The object to insert.</param>
+            /// <remarks>
+            /// This implementation raises the CollectionChanged event.
+            /// </remarks>
+            protected override void InsertItem(int index, CalendarDateRange item)
+            {
+                EnsureValidThread();
+
+                if (!IsValid(item))
+                {
+                    throw new ArgumentOutOfRangeException("Value is not valid.");
+                }
+
+                base.InsertItem(index, item);
+                _owner.UpdateMonths();
+            }
+
+            /// <summary>
+            /// Removes the item at the specified index of the collection.
+            /// </summary>
+            /// <param name="index">
+            /// The zero-based index of the element to remove.
+            /// </param>
+            /// <remarks>
+            /// This implementation raises the CollectionChanged event.
+            /// </remarks>
+            protected override void RemoveItem(int index)
+            {
+                EnsureValidThread();
+
+                base.RemoveItem(index);
+                _owner.UpdateMonths();
+            }
+
+            /// <summary>
+            /// Replaces the element at the specified index.
+            /// </summary>
+            /// <param name="index">
+            /// The zero-based index of the element to replace.
+            /// </param>
+            /// <param name="item">
+            /// The new value for the element at the specified index.
+            /// </param>
+            /// <remarks>
+            /// This implementation raises the CollectionChanged event.
+            /// </remarks>
+            protected override void SetItem(int index, CalendarDateRange item)
+            {
+                EnsureValidThread();
+
+                if (!IsValid(item))
+                {
+                    throw new ArgumentOutOfRangeException("Value is not valid.");
+                }
+
+                base.SetItem(index, item);
+                _owner.UpdateMonths();
+            }
+
+            private bool IsValid(CalendarDateRange item)
+            {
+                foreach (DateTime day in _owner.SelectedDates)
+                {
+                    if (DateTimeHelper.InRange(day, item))
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+
+            private void EnsureValidThread()
+            {
+                Dispatcher.UIThread.VerifyAccess();
+            }
+        }
     }
 }
