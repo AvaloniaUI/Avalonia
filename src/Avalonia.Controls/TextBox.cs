@@ -98,9 +98,19 @@ namespace Avalonia.Controls
             var horizontalScrollBarVisibility = Observable.CombineLatest(
                 this.GetObservable(AcceptsReturnProperty),
                 this.GetObservable(TextWrappingProperty),
-                (acceptsReturn, wrapping) => acceptsReturn && wrapping == TextWrapping.NoWrap ?
-                    ScrollBarVisibility.Auto : ScrollBarVisibility.Disabled);
-
+                (acceptsReturn, wrapping) =>
+                {
+                    if (acceptsReturn)
+                    {
+                        return wrapping == TextWrapping.NoWrap ?
+                            ScrollBarVisibility.Visible :
+                            ScrollBarVisibility.Disabled;
+                    }
+                    else
+                    {
+                        return ScrollBarVisibility.Hidden;
+                    }
+                });
             Bind(
                 ScrollViewer.HorizontalScrollBarVisibilityProperty,
                 horizontalScrollBarVisibility,
