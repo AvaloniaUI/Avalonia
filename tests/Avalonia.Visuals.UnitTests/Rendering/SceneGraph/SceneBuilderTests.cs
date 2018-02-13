@@ -99,7 +99,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 Assert.Equal(new Rect(10, 20, 160, 240), canvasNode.ClipBounds);
 
                 // Initial ClipBounds are correct, make sure they're still correct after updating canvas.
-                result = result.Clone();
+                result = result.CloneScene();
                 Assert.True(sceneBuilder.Update(result, canvas));
 
                 canvasNode = result.FindNode(canvas);
@@ -197,7 +197,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 canvas.Arrange(new Rect(tree.DesiredSize));
 
                 // Initial ClipBounds are correct, make sure they're still correct after updating canvas.
-                scene = scene.Clone();
+                scene = scene.CloneScene();
                 Assert.True(sceneBuilder.Update(scene, canvas));
 
                 borderNode = scene.FindNode(border);
@@ -309,7 +309,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 var borderNode = scene.FindNode(border);
                 Assert.Equal(expectedTransform, borderNode.Transform);
 
-                scene = scene.Clone();
+                scene = scene.CloneScene();
                 Assert.True(sceneBuilder.Update(scene, border));
 
                 borderNode = scene.FindNode(border);
@@ -354,7 +354,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
 
                 border.Background = Brushes.Green;
 
-                var result = initial.Clone();
+                var result = initial.CloneScene();
                 sceneBuilder.Update(result, border);
                 
                 var borderNode = (VisualNode)result.Root.Children[0];
@@ -402,7 +402,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 sceneBuilder.UpdateAll(initial);
 
                 border.Child = decorator;
-                var result = initial.Clone();
+                var result = initial.CloneScene();
 
                 Assert.True(sceneBuilder.Update(result, decorator));
 
@@ -457,7 +457,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 sceneBuilder.UpdateAll(initial);
 
                 border.Child = null;
-                var result = initial.Clone();
+                var result = initial.CloneScene();
 
                 Assert.True(sceneBuilder.Update(result, decorator));
                 Assert.False(sceneBuilder.Update(result, canvas));
@@ -501,7 +501,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 sceneBuilder.UpdateAll(initial);
 
                 border.IsVisible = false;
-                var result = initial.Clone();
+                var result = initial.CloneScene();
 
                 Assert.True(sceneBuilder.Update(result, border));
                 Assert.False(sceneBuilder.Update(result, canvas));
@@ -552,7 +552,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 decorator.Margin = new Thickness(0, 20, 0, 0);
                 layout.ExecuteLayoutPass();
 
-                scene = scene.Clone();
+                scene = scene.CloneScene();
                 sceneBuilder.Update(scene, decorator);
 
                 borderNode = scene.FindNode(border);
@@ -600,7 +600,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 decorator.Margin = new Thickness(0, 20, 0, 0);
                 layout.ExecuteLayoutPass();
 
-                scene = scene.Clone();
+                scene = scene.CloneScene();
 
                 sceneBuilder.Update(scene, decorator);
 
@@ -640,7 +640,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 Assert.Equal(new Size(100, 100), scene.Size);
 
                 tree.ClientSize = new Size(110, 120);
-                scene = scene.Clone();
+                scene = scene.CloneScene();
                 sceneBuilder.Update(scene, tree);
 
                 Assert.Equal(new Size(110, 120), scene.Size);
@@ -735,7 +735,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
 
                 tree.Child = new Decorator();
 
-                using (var result = scene.Clone())
+                using (var result = scene.CloneScene())
                 {
                     sceneBuilder.Update(result, img);
                     scene.Dispose();
