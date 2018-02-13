@@ -497,37 +497,34 @@ namespace Avalonia.Controls
 
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
-            if (e.Source == _presenter)
+            var point = e.GetPosition(_presenter);
+            var index = CaretIndex = _presenter.GetCaretIndex(point);
+            var text = Text;
+
+            if (text != null)
             {
-                var point = e.GetPosition(_presenter);
-                var index = CaretIndex = _presenter.GetCaretIndex(point);
-                var text = Text;
-
-                if (text != null)
+                switch (e.ClickCount)
                 {
-                    switch (e.ClickCount)
-                    {
-                        case 1:
-                            SelectionStart = SelectionEnd = index;
-                            break;
-                        case 2:
-                            if (!StringUtils.IsStartOfWord(text, index))
-                            {
-                                SelectionStart = StringUtils.PreviousWord(text, index);
-                            }
+                    case 1:
+                        SelectionStart = SelectionEnd = index;
+                        break;
+                    case 2:
+                        if (!StringUtils.IsStartOfWord(text, index))
+                        {
+                            SelectionStart = StringUtils.PreviousWord(text, index);
+                        }
 
-                            SelectionEnd = StringUtils.NextWord(text, index);
-                            break;
-                        case 3:
-                            SelectionStart = 0;
-                            SelectionEnd = text.Length;
-                            break;
-                    }
+                        SelectionEnd = StringUtils.NextWord(text, index);
+                        break;
+                    case 3:
+                        SelectionStart = 0;
+                        SelectionEnd = text.Length;
+                        break;
                 }
-
-                e.Device.Capture(_presenter);
-                e.Handled = true;
             }
+
+            e.Device.Capture(_presenter);
+            e.Handled = true;
         }
 
         protected override void OnPointerMoved(PointerEventArgs e)
