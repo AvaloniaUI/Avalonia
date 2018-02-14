@@ -140,6 +140,7 @@ namespace Avalonia.DesignerSupport.Remote
                 BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
             if (builderMethod == null)
                 throw Die($"{entryPoint.DeclaringType.FullName} doesn't have a method named {BuilderMethodName}");
+            Design.IsDesignMode = true;
             Log($"Obtaining AppBuilder instance from {builderMethod.DeclaringType.FullName}.{builderMethod.Name}");
             var appBuilder = builderMethod.Invoke(null, null);
             Log($"Initializing application in design mode");
