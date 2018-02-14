@@ -148,7 +148,10 @@ namespace Avalonia.Rendering.SceneGraph
             EnsureChildrenCreated();
             var old = _children[index];
             _children[index] = node;
-            old.Dispose();
+            if (node != old)
+            {
+                old.Dispose(); 
+            }
         }
 
         /// <summary>
@@ -329,7 +332,7 @@ namespace Avalonia.Rendering.SceneGraph
                 _drawOperationsCloned = false;
             }
         }
-
+        
         public void Dispose()
         {
             foreach (var child in Children)
