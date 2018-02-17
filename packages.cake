@@ -376,8 +376,7 @@ public class Packages
                 },
                 Files = new []
                 {
-                    new NuSpecContent { Source = "Avalonia.Win32/bin/" + parameters.DirSuffix + "/Avalonia.Win32.dll", Target = "lib/net45" },
-                    new NuSpecContent { Source = "Avalonia.Win32.NetStandard/bin/" + parameters.DirSuffix + "/netstandard2.0/Avalonia.Win32.dll", Target = "lib/netstandard2.0" }
+                    new NuSpecContent { Source = "Avalonia.Win32/bin/" + parameters.DirSuffix + "/netstandard2.0/Avalonia.Win32.dll", Target = "lib/netstandard2.0" }
                 },
                 BasePath = context.Directory("./src/Windows"),
                 OutputDirectory = parameters.NugetRoot
