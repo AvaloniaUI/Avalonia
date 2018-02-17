@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net;
 using System.Reflection;
 using Avalonia.Controls;
@@ -22,6 +23,15 @@ namespace Avalonia.DesignerSupport.Remote
         {
             public string AppPath { get; set; }
             public Uri Transport { get; set; }
+            public string Method { get; set; } = Methods.AvaloniaRemote;
+            public string SessionId { get; set; } = Guid.NewGuid().ToString();
+        }
+
+        static class Methods
+        {
+            public const string AvaloniaRemote = "avalonia-remote";
+            public const string Win32 = "win32";
+
         }
 
         static Exception Die(string error)
@@ -35,11 +45,13 @@ namespace Avalonia.DesignerSupport.Remote
             return new Exception("APPEXIT");
         }
 
+        static void Log(string message) => Console.WriteLine(message);
+
         static Exception PrintUsage()
         {
-            Console.Error.WriteLine("Usage: --transport transport_spec app");
+            Console.Error.WriteLine("Usage: --transport transport_spec --session-id sid --method method app");
             Console.Error.WriteLine();
-            Console.Error.WriteLine("Example: --transport tcp-bson://127.0.0.1:30243/ MyApp.exe");
+            Console.Error.WriteLine("Example: --transport tcp-bson://127.0.0.1:30243/ --session-id 123 --method avalonia-remote MyApp.exe");
             Console.Error.Flush();
             return Die(null);
         }
@@ -59,6 +71,10 @@ namespace Avalonia.DesignerSupport.Remote
                     }
                     else if (arg == "--transport")
                         next = a => rv.Transport = new Uri(a, UriKind.Absolute);
+                    else if (arg == "--method")
+                        next = a => rv.Method = a;
+                    else if (arg == "--session-id")
+                        next = a => rv.SessionId = a;
                     else if (rv.AppPath == null)
                         rv.AppPath = arg;
                     else
@@ -84,18 +100,22 @@ namespace Avalonia.DesignerSupport.Remote
             PrintUsage();
             return null;
         }
-
+        
         interface IAppInitializer
         {
-            Application GetConfiguredApp(IAvaloniaRemoteTransportConnection transport, object obj);
+            Application GetConfiguredApp(IAvaloniaRemoteTransportConnection transport, CommandLineArgs args, object obj);
         }
         
         class AppInitializer<T> : IAppInitializer where T : AppBuilderBase<T>, new()
         {
-            public Application GetConfiguredApp(IAvaloniaRemoteTransportConnection transport, object obj)
+            public Application GetConfiguredApp(IAvaloniaRemoteTransportConnection transport,
+                CommandLineArgs args, object obj)
             {
                 var builder = (AppBuilderBase<T>) obj;
-                builder.UseWindowingSubsystem(() => PreviewerWindowingPlatform.Initialize(transport));
+                if (args.Method == Methods.AvaloniaRemote)
+                    builder.UseWindowingSubsystem(() => PreviewerWindowingPlatform.Initialize(transport));
+                if (args.Method == Methods.Win32)
+                    builder.UseWindowingSubsystem("Avalonia.Win32");
                 builder.SetupWithoutStarting();
                 return builder.Instance;
             }
@@ -120,13 +140,17 @@ namespace Avalonia.DesignerSupport.Remote
                 BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
             if (builderMethod == null)
                 throw Die($"{entryPoint.DeclaringType.FullName} doesn't have a method named {BuilderMethodName}");
-
+            Design.IsDesignMode = true;
+            Log($"Obtaining AppBuilder instance from {builderMethod.DeclaringType.FullName}.{builderMethod.Name}");
             var appBuilder = builderMethod.Invoke(null, null);
+            Log($"Initializing application in design mode");
             var initializer =(IAppInitializer)Activator.CreateInstance(typeof(AppInitializer<>).MakeGenericType(appBuilder.GetType()));
-            var app = initializer.GetConfiguredApp(transport, appBuilder);
+            var app = initializer.GetConfiguredApp(transport, args, appBuilder);
             s_transport = transport;
             transport.OnMessage += OnTransportMessage;
             transport.OnException += (t, e) => Die(e.ToString());
+            Log("Sending StartDesignerSessionMessage");
+            transport.Send(new StartDesignerSessionMessage {SessionId = args.SessionId});
             app.Run(new NeverClose());
         }
 
@@ -139,7 +163,8 @@ namespace Avalonia.DesignerSupport.Remote
                 s_viewportAllocatedMessage
             };
         }
-        
+
+        private static Window s_currentWindow;
         private static void OnTransportMessage(IAvaloniaRemoteTransportConnection transport, object obj) => Dispatcher.UIThread.Post(() =>
         {
             if (obj is ClientSupportedPixelFormatsMessage formats)
@@ -156,8 +181,17 @@ namespace Avalonia.DesignerSupport.Remote
             {
                 try
                 {
-                    DesignWindowLoader.LoadDesignerWindow(xaml.Xaml, xaml.AssemblyPath);
-                    s_transport.Send(new UpdateXamlResultMessage());
+                    s_currentWindow?.Close();
+                }
+                catch
+                {
+                    //Ignore
+                }
+                s_currentWindow = null;
+                try
+                {
+                    s_currentWindow = DesignWindowLoader.LoadDesignerWindow(xaml.Xaml, xaml.AssemblyPath);
+                    s_transport.Send(new UpdateXamlResultMessage(){Handle = s_currentWindow.PlatformImpl?.Handle?.Handle.ToString()});
                 }
                 catch (Exception e)
                 {

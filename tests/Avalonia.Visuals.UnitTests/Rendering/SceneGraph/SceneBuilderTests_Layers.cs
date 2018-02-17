@@ -62,7 +62,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 Assert.Empty(scene.Layers.Select(x => x.LayerRoot).Except(new IVisual[] { tree, border }));
 
                 animation.OnCompleted();
-                scene = scene.Clone();
+                scene = scene.CloneScene();
 
                 sceneBuilder.Update(scene, border);
 
@@ -160,7 +160,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 Assert.Equal(3, scene.Layers.Count);
 
                 decorator.Child = null;
-                scene = scene.Clone();
+                scene = scene.CloneScene();
 
                 sceneBuilder.Update(scene, border);
 
@@ -210,7 +210,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 Assert.Equal(3, scene.Layers.Count);
 
                 border.IsVisible = false;
-                scene = scene.Clone();
+                scene = scene.CloneScene();
 
                 sceneBuilder.Update(scene, border);
 

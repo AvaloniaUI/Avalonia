@@ -11,7 +11,7 @@ namespace Avalonia.Rendering.SceneGraph
     /// <summary>
     /// Represents a scene graph used by the <see cref="DeferredRenderer"/>.
     /// </summary>
-    public class Scene
+    public class Scene : IDisposable
     {
         private Dictionary<IVisual, IVisualNode> _index;
 
@@ -82,7 +82,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// Clones the scene.
         /// </summary>
         /// <returns>The cloned scene.</returns>
-        public Scene Clone()
+        public Scene CloneScene()
         {
             var index = new Dictionary<IVisual, IVisualNode>();
             var root = Clone((VisualNode)Root, null, index);
@@ -94,6 +94,11 @@ namespace Avalonia.Rendering.SceneGraph
             };
 
             return result;
+        }
+
+        public void Dispose()
+        {
+            Root.Dispose();
         }
 
         /// <summary>

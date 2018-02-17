@@ -1,6 +1,7 @@
 ﻿using System;
 using Avalonia.Media;
 using Avalonia.Platform;
+using Avalonia.Utilities;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering
@@ -16,13 +17,13 @@ namespace Avalonia.Rendering
             IVisual layerRoot)
         {
             _drawingContext = drawingContext;
-            Bitmap = drawingContext.CreateLayer(size);
+            Bitmap = RefCountable.Create(drawingContext.CreateLayer(size));
             Size = size;
             Scaling = scaling;
             LayerRoot = layerRoot;
         }
 
-        public IRenderTargetBitmapImpl Bitmap { get; private set; }
+        public IRef<IRenderTargetBitmapImpl> Bitmap { get; private set; }
         public double Scaling { get; private set; }
         public Size Size { get; private set; }
         public IVisual LayerRoot { get; }
@@ -31,9 +32,9 @@ namespace Avalonia.Rendering
         {
             if (Size != size || Scaling != scaling)
             {
-                var resized = _drawingContext.CreateLayer(size);
+                var resized = RefCountable.Create(_drawingContext.CreateLayer(size));
 
-                using (var context = resized.CreateDrawingContext(null))
+                using (var context = resized.Item.CreateDrawingContext(null))
                 {
                     context.Clear(Colors.Transparent);
                     context.DrawImage(Bitmap, 1, new Rect(Size), new Rect(Size));

@@ -4,6 +4,7 @@
 using System;
 using Avalonia.Media;
 using Avalonia.Rendering.Utilities;
+using Avalonia.Utilities;
 using SharpDX.Direct2D1;
 
 namespace Avalonia.Direct2D1.Media
@@ -100,7 +101,8 @@ namespace Avalonia.Direct2D1.Media
                 context.Clear(Colors.Transparent);
                 context.PushClip(calc.IntermediateClip);
                 context.Transform = calc.IntermediateTransform;
-                context.DrawImage(bitmap, 1, rect, rect);
+                
+                context.DrawImage(RefCountable.CreateUnownedNotClonable(bitmap), 1, rect, rect);
                 context.PopClip();
             }
 
