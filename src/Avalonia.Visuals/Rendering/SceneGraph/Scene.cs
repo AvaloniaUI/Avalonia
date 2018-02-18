@@ -98,7 +98,10 @@ namespace Avalonia.Rendering.SceneGraph
 
         public void Dispose()
         {
-            Root.Dispose();
+            foreach (var node in _index.Values)
+            {
+                node.Dispose();
+            }
         }
 
         /// <summary>
@@ -137,6 +140,8 @@ namespace Avalonia.Rendering.SceneGraph
             Contract.Requires<ArgumentNullException>(node != null);
 
             _index.Remove(node.Visual);
+
+            node.Dispose();
         }
 
         private VisualNode Clone(VisualNode source, IVisualNode parent, Dictionary<IVisual, IVisualNode> index)
