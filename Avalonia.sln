@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27130.2024
+VisualStudioVersion = 15.0.27130.2027
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Base", "src\Avalonia.Base\Avalonia.Base.csproj", "{B09B78D8-9B26-48B0-9149-D64A2F120F3F}"
 EndProject
@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Layout", "src\Aval
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Windows", "Windows", "{B39A8919-9F95-48FE-AD7B-76E08B509888}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Win32", "src\Windows\Avalonia.Win32\Avalonia.Win32.csproj", "{811A76CF-1CF6-440F-963B-BBE31BD72A82}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Win32", "src\Windows\Avalonia.Win32\Avalonia.Win32.csproj", "{811A76CF-1CF6-440F-963B-BBE31BD72A82}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Direct2D1", "src\Windows\Avalonia.Direct2D1\Avalonia.Direct2D1.csproj", "{3E908F67-5543-4879-A1DC-08EACE79B3CD}"
 EndProject
@@ -362,6 +362,7 @@ Global
 		{811A76CF-1CF6-440F-963B-BBE31BD72A82}.Debug|iPhoneSimulator.ActiveCfg = Debug|Any CPU
 		{811A76CF-1CF6-440F-963B-BBE31BD72A82}.Debug|iPhoneSimulator.Build.0 = Debug|Any CPU
 		{811A76CF-1CF6-440F-963B-BBE31BD72A82}.Debug|NetCoreOnly.ActiveCfg = Debug|Any CPU
+		{811A76CF-1CF6-440F-963B-BBE31BD72A82}.Debug|NetCoreOnly.Build.0 = Debug|Any CPU
 		{811A76CF-1CF6-440F-963B-BBE31BD72A82}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{811A76CF-1CF6-440F-963B-BBE31BD72A82}.Debug|x86.Build.0 = Debug|Any CPU
 		{811A76CF-1CF6-440F-963B-BBE31BD72A82}.Release|Any CPU.ActiveCfg = Release|Any CPU
