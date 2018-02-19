@@ -43,8 +43,8 @@ Contributions are always welcome!
 
 ## Building and Using
 
-See the [build instructions here](http://avaloniaui.net/guidelines/build).
+See the [build instructions here](http://avaloniaui.net/contributing/build).
 
 ## Contributing
 
-Please read the [contribution guidelines](http://avaloniaui.net/guidelines/contributing) before submitting a pull request.
+Please read the [contribution guidelines](http://avaloniaui.net/contributing/contributing) before submitting a pull request.
