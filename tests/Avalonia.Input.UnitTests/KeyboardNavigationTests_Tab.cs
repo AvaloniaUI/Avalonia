@@ -81,7 +81,7 @@ namespace Avalonia.Input.UnitTests
         }
 
         [Fact]
-        public void Next_Skips_Unfocasable_Siblings()
+        public void Next_Skips_Unfocusable_Siblings()
         {
             Button current;
             Button next;
