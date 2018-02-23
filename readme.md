@@ -10,7 +10,7 @@
 
 Avalonia is a WPF-inspired cross-platform XAML-based UI framework providing a flexible styling system and supporting a wide range of OSs: Windows (.NET Framework, .NET Core), Linux (GTK), MacOS, Android and iOS.
 
-<b>Avalonia is now in alpha.</b> This means that framework is now at a stage where you can have a play and hopefully create simple applications. There's still a lot missing, and you *will* find bugs, and the API *will* change, but this represents the first time where we've made it somewhat easy to have a play and experiment with the framework.
+**Avalonia is currently in beta** which means that the framework is generally usable for writing applications, but there may be some bugs and breaking changes as we continue development.
 
 | Control catalog | Desktop platforms | Mobile platforms |
 |---|---|---|
@@ -35,16 +35,16 @@ https://ci.appveyor.com/project/AvaloniaUI/Avalonia/branch/master/artifacts
 
 ## Documentation
 
-As mentioned above, Avalonia is still in alpha and as such there's not much documentation yet. You can take a look at the [getting started page](http://avaloniaui.net/tutorial/gettingstarted) for an overview of how to get started but probably the best thing to do for now is to already know a little bit about WPF/Silverlight/UWP/XAML and ask questions in our [Gitter room](https://gitter.im/AvaloniaUI/Avalonia).
+As mentioned above, Avalonia is still in alpha and as such there's not much documentation yet. You can take a look at the [getting started page](http://avaloniaui.net/guides/quickstart) for an overview of how to get started but probably the best thing to do for now is to already know a little bit about WPF/Silverlight/UWP/XAML and ask questions in our [Gitter room](https://gitter.im/AvaloniaUI/Avalonia).
 
-There's also a high-level [architecture document](http://avaloniaui.net/spec/architecture) that is currently a little bit out of date, and I've also started writing blog posts on Avalonia at http://grokys.github.io/.
+There's also a high-level [architecture document](http://avaloniaui.net/architecture/project-structure) that is currently a little bit out of date, and I've also started writing blog posts on Avalonia at http://grokys.github.io/.
 
 Contributions are always welcome!
 
 ## Building and Using
 
-See the [build instructions here](http://avaloniaui.net/guidelines/build).
+See the [build instructions here](http://avaloniaui.net/contributing/build).
 
 ## Contributing
 
-Please read the [contribution guidelines](http://avaloniaui.net/guidelines/contributing) before submitting a pull request.
+Please read the [contribution guidelines](http://avaloniaui.net/contributing/contributing) before submitting a pull request.
