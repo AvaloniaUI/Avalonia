@@ -93,5 +93,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// to hit test children they must be hit tested manually.
         /// </remarks>
         bool HitTest(Point p);
+
+        bool Disposed { get; }
     }
 }

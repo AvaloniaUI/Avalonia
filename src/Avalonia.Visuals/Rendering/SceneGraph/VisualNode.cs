@@ -113,6 +113,11 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="child">The child to add.</param>
         public void AddChild(IVisualNode child)
         {
+            if (child.Disposed)
+            {
+                throw new ObjectDisposedException("Visual node for {node.Visual}");
+            }
+
             EnsureChildrenCreated();
             _children.Add(child);
         }
@@ -135,7 +140,6 @@ namespace Avalonia.Rendering.SceneGraph
         {
             EnsureChildrenCreated();
             _children.Remove(child);
-            child.Dispose();
         }
 
         /// <summary>
@@ -145,10 +149,13 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="node">The child to add.</param>
         public void ReplaceChild(int index, IVisualNode node)
         {
+            if (node.Disposed)
+            {
+                throw new ObjectDisposedException("Visual node for {node.Visual}");
+            }
+
             EnsureChildrenCreated();
-            var old = _children[index];
             _children[index] = node;
-            old.Dispose();
         }
 
         /// <summary>
@@ -330,12 +337,10 @@ namespace Avalonia.Rendering.SceneGraph
             }
         }
 
+        public bool Disposed { get; }
+        
         public void Dispose()
         {
-            foreach (var child in Children)
-            {
-                child.Dispose();
-            }
             _drawOperationsRefCounter?.Dispose();
         }
 

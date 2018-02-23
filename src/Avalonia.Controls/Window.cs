@@ -19,27 +19,28 @@ namespace Avalonia.Controls
     /// <summary>
     /// Determines how a <see cref="Window"/> will size itself to fit its content.
     /// </summary>
+    [Flags]
     public enum SizeToContent
     {
         /// <summary>
         /// The window will not automatically size itself to fit its content.
         /// </summary>
-        Manual,
+        Manual = 0,
 
         /// <summary>
         /// The window will size itself horizontally to fit its content.
         /// </summary>
-        Width,
+        Width = 1,
 
         /// <summary>
         /// The window will size itself vertically to fit its content.
         /// </summary>
-        Height,
+        Height = 2,
 
         /// <summary>
         /// The window will size itself horizontally and vertically to fit its content.
         /// </summary>
-        WidthAndHeight,
+        WidthAndHeight = 3,
     }
 
     /// <summary>
@@ -374,27 +375,31 @@ namespace Avalonia.Controls
         {
             var sizeToContent = SizeToContent;
             var clientSize = ClientSize;
-            Size constraint;
+            Size constraint = clientSize;
 
-            switch (sizeToContent)
+            if ((sizeToContent & SizeToContent.Width) != 0)
             {
-                case SizeToContent.Width:
-                    constraint = new Size(double.PositiveInfinity, ClientSize.Height);
-                    break;
-                case SizeToContent.Height:
-                    constraint = new Size(ClientSize.Width, double.PositiveInfinity);
-                    break;
-                case SizeToContent.WidthAndHeight:
-                    constraint = Size.Infinity;
-                    break;
-                case SizeToContent.Manual:
-                    constraint = ClientSize;
-                    break;
-                default:
-                    throw new InvalidOperationException("Invalid value for SizeToContent.");
+                constraint = constraint.WithWidth(double.PositiveInfinity);
             }
 
-            return base.MeasureOverride(constraint);
+            if ((sizeToContent & SizeToContent.Height) != 0)
+            {
+                constraint = constraint.WithHeight(double.PositiveInfinity);
+            }
+
+            var result = base.MeasureOverride(constraint);
+
+            if ((sizeToContent & SizeToContent.Width) == 0)
+            {
+                result = result.WithWidth(clientSize.Width);
+            }
+
+            if ((sizeToContent & SizeToContent.Height) == 0)
+            {
+                result = result.WithHeight(clientSize.Height);
+            }
+
+            return result;
         }
 
         protected override void HandleClosed()

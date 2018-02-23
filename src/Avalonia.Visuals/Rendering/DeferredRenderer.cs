@@ -28,7 +28,7 @@ namespace Avalonia.Rendering
         private readonly ISceneBuilder _sceneBuilder;
 
         private bool _running;
-        private Scene _scene;
+        private volatile IRef<Scene> _scene;
         private DirtyVisuals _dirty;
         private IRef<IRenderTargetBitmapImpl> _overlay;
         private bool _updateQueued;
@@ -128,7 +128,7 @@ namespace Avalonia.Rendering
                 UpdateScene();
             }
 
-            return _scene?.HitTest(p, root, filter) ?? Enumerable.Empty<IVisual>();
+            return _scene?.Item.HitTest(p, root, filter) ?? Enumerable.Empty<IVisual>();
         }
 
         /// <inheritdoc/>
@@ -180,7 +180,7 @@ namespace Avalonia.Rendering
 
         internal void UnitTestUpdateScene() => UpdateScene();
 
-        internal void UnitTestRender() => Render(_scene);
+        internal void UnitTestRender() => Render(_scene.Item);
 
         private void Render(Scene scene)
         {
@@ -381,7 +381,8 @@ namespace Avalonia.Rendering
             {
                 if (_root.IsVisible)
                 {
-                    var scene = _scene?.Clone() ?? new Scene(_root);
+                    var sceneRef = RefCountable.Create(_scene?.Item.CloneScene() ?? new Scene(_root));
+                    var scene = sceneRef.Item;
 
                     if (_dirty == null)
                     {
@@ -396,7 +397,7 @@ namespace Avalonia.Rendering
                         }
                     }
 
-                    var oldScene = Interlocked.Exchange(ref _scene, scene);
+                    var oldScene = Interlocked.Exchange(ref _scene, sceneRef);
                     oldScene?.Dispose();
 
                     _dirty.Clear();
@@ -425,10 +426,11 @@ namespace Avalonia.Rendering
                         _updateQueued = true;
                         _dispatcher.Post(UpdateScene, DispatcherPriority.Render);
                     }
-
-                    Scene scene = null;
-                    Interlocked.Exchange(ref scene, _scene);
-                    Render(scene);
+                    
+                    using (var scene = _scene?.Clone())
+                    {
+                        Render(scene?.Item);
+                    }
                 }
                 catch { }
                 finally
