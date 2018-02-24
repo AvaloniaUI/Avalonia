@@ -18,6 +18,24 @@ namespace Avalonia.Controls.Presenters
     public class ScrollContentPresenter : ContentPresenter, IPresenter, IScrollable
     {
         /// <summary>
+        /// Defines the <see cref="CanHorizontallyScroll"/> property.
+        /// </summary>
+        public static readonly DirectProperty<ScrollContentPresenter, bool> CanHorizontallyScrollProperty =
+            AvaloniaProperty.RegisterDirect<ScrollContentPresenter, bool>(
+                nameof(CanHorizontallyScroll),
+                o => o.CanHorizontallyScroll,
+                (o, v) => o.CanHorizontallyScroll = v);
+
+        /// <summary>
+        /// Defines the <see cref="CanVerticallyScroll"/> property.
+        /// </summary>
+        public static readonly DirectProperty<ScrollContentPresenter, bool> CanVerticallyScrollProperty =
+            AvaloniaProperty.RegisterDirect<ScrollContentPresenter, bool>(
+                nameof(CanVerticallyScroll),
+                o => o.CanVerticallyScroll,
+                (o, v) => o.CanVerticallyScroll = v);
+
+        /// <summary>
         /// Defines the <see cref="Extent"/> property.
         /// </summary>
         public static readonly DirectProperty<ScrollContentPresenter, Size> ExtentProperty =
@@ -41,14 +59,9 @@ namespace Avalonia.Controls.Presenters
                 o => o.Viewport,
                 (o, v) => o.Viewport = v);
 
-        /// <summary>
-        /// Defines the <see cref="CanScrollHorizontally"/> property.
-        /// </summary>
-        public static readonly StyledProperty<bool> CanScrollHorizontallyProperty =
-            ScrollViewer.CanScrollHorizontallyProperty.AddOwner<ScrollContentPresenter>();
-
+        private bool _canHorizontallyScroll;
+        private bool _canVerticallyScroll;
         private Size _extent;
-        private Size _measuredExtent;
         private Vector _offset;
         private IDisposable _logicalScrollSubscription;
         private Size _viewport;
@@ -71,6 +84,24 @@ namespace Avalonia.Controls.Presenters
             AddHandler(RequestBringIntoViewEvent, BringIntoViewRequested);
 
             this.GetObservable(ChildProperty).Subscribe(UpdateScrollableSubscription);
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the content can be scrolled horizontally.
+        /// </summary>
+        public bool CanHorizontallyScroll
+        {
+            get { return _canHorizontallyScroll; }
+            set { SetAndRaise(CanHorizontallyScrollProperty, ref _canHorizontallyScroll, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the content can be scrolled horizontally.
+        /// </summary>
+        public bool CanVerticallyScroll
+        {
+            get { return _canVerticallyScroll; }
+            set { SetAndRaise(CanVerticallyScrollProperty, ref _canVerticallyScroll, value); }
         }
 
         /// <summary>
@@ -99,11 +130,6 @@ namespace Avalonia.Controls.Presenters
             get { return _viewport; }
             private set { SetAndRaise(ViewportProperty, ref _viewport, value); }
         }
-
-        /// <summary>
-        /// Gets a value indicating whether the content can be scrolled horizontally.
-        /// </summary>
-        public bool CanScrollHorizontally => GetValue(CanScrollHorizontallyProperty);
 
         /// <summary>
         /// Attempts to bring a portion of the target visual into view by scrolling the content.
@@ -172,60 +198,34 @@ namespace Avalonia.Controls.Presenters
         /// <inheritdoc/>
         protected override Size MeasureOverride(Size availableSize)
         {
-            var child = Child;
-
-            if (child != null)
+            if (_logicalScrollSubscription != null || Child == null)
             {
-                var measureSize = availableSize;
-
-                if (_logicalScrollSubscription == null)
-                {
-                    measureSize = new Size(double.PositiveInfinity, double.PositiveInfinity);
-
-                    if (!CanScrollHorizontally)
-                    {
-                        measureSize = measureSize.WithWidth(availableSize.Width);
-                    }
-                }
-
-                child.Measure(measureSize);
-                var size = child.DesiredSize;
-                _measuredExtent = size;
-                return size.Constrain(availableSize);
+                return base.MeasureOverride(availableSize);
             }
-            else
-            {
-                return Extent = new Size();
-            }
+
+            var constraint = new Size(
+                CanHorizontallyScroll ? double.PositiveInfinity : availableSize.Width,
+                CanVerticallyScroll ? double.PositiveInfinity : availableSize.Height);
+
+            Child.Measure(constraint);
+            return Child.DesiredSize.Constrain(availableSize);
         }
 
         /// <inheritdoc/>
         protected override Size ArrangeOverride(Size finalSize)
         {
-            var child = this.GetVisualChildren().SingleOrDefault() as ILayoutable;
-            var logicalScroll = _logicalScrollSubscription != null;
-
-            if (!logicalScroll)
+            if (_logicalScrollSubscription != null || Child == null)
             {
-                Viewport = finalSize;
-                Extent = _measuredExtent;
-
-                if (child != null)
-                {
-                    var size = new Size(
-                    Math.Max(finalSize.Width, child.DesiredSize.Width),
-                    Math.Max(finalSize.Height, child.DesiredSize.Height));
-                    child.Arrange(new Rect((Point)(-Offset), size));
-                    return finalSize;
-                }
-            }
-            else if (child != null)
-            {
-                child.Arrange(new Rect(finalSize));
-                return finalSize;
+                return base.ArrangeOverride(finalSize);
             }
 
-            return new Size();
+            var size = new Size(
+                CanHorizontallyScroll ? Math.Max(Child.DesiredSize.Width, finalSize.Width) : finalSize.Width,
+                CanVerticallyScroll ? Math.Max(Child.DesiredSize.Height, finalSize.Height) : finalSize.Height);
+            ArrangeOverrideImpl(size, -Offset);
+            Viewport = finalSize;
+            Extent = Child.Bounds.Size;
+            return finalSize;
         }
 
         /// <inheritdoc/>
@@ -289,7 +289,12 @@ namespace Avalonia.Controls.Presenters
                 if (scrollable.IsLogicalScrollEnabled == true)
                 {
                     _logicalScrollSubscription = new CompositeDisposable(
-                        this.GetObservable(OffsetProperty).Skip(1).Subscribe(x => scrollable.Offset = x),
+                        this.GetObservable(CanHorizontallyScrollProperty)
+                            .Subscribe(x => scrollable.CanHorizontallyScroll = x),
+                        this.GetObservable(CanVerticallyScrollProperty)
+                            .Subscribe(x => scrollable.CanVerticallyScroll = x),
+                        this.GetObservable(OffsetProperty)
+                            .Skip(1).Subscribe(x => scrollable.Offset = x),
                         Disposable.Create(() => scrollable.InvalidateScroll = null));
                     UpdateFromScrollable(scrollable);
                 }

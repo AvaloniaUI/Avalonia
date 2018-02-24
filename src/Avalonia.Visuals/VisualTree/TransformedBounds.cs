@@ -24,17 +24,17 @@ namespace Avalonia.VisualTree
         }
 
         /// <summary>
-        /// Gets the control's bounds.
+        /// Gets the control's bounds in its local coordinate space.
         /// </summary>
         public Rect Bounds { get; }
 
         /// <summary>
-        /// Gets the control's clip rectangle.
+        /// Gets the control's clip rectangle in global coordinate space.
         /// </summary>
         public Rect Clip { get; }
 
         /// <summary>
-        /// Gets the control's transform.
+        /// Gets the transform from local to global coordinate space.
         /// </summary>
         public Matrix Transform { get; }
 

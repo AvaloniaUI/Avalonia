@@ -24,13 +24,13 @@ namespace Avalonia.Visuals.UnitTests.Rendering
             var root = new TestRoot();
 
             var dispatcher = new Mock<IDispatcher>();
-            dispatcher.Setup(x => x.InvokeAsync(It.IsAny<Action>(), DispatcherPriority.Render))
+            dispatcher.Setup(x => x.Post(It.IsAny<Action>(), DispatcherPriority.Render))
                 .Callback<Action, DispatcherPriority>((a, p) => a());
 
             CreateTargetAndRunFrame(root, dispatcher: dispatcher.Object);
 
             dispatcher.Verify(x => 
-                x.InvokeAsync(
+                x.Post(
                     It.Is<Action>(a => a.Method.Name == "UpdateScene"),
                     DispatcherPriority.Render));
         }
@@ -359,7 +359,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
 
         private Mock<IDrawingContextImpl> GetLayerContext(DeferredRenderer renderer, IControl layerRoot)
         {
-            return Mock.Get(renderer.Layers[layerRoot].Bitmap.CreateDrawingContext(null));
+            return Mock.Get(renderer.Layers[layerRoot].Bitmap.Item.CreateDrawingContext(null));
         }
 
         private void IgnoreFirstFrame(Mock<IRenderLoop> loop, Mock<ISceneBuilder> sceneBuilder)

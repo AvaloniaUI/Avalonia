@@ -3,8 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reactive.Disposables;
 using Avalonia.Media;
 using Avalonia.Platform;
+using Avalonia.Utilities;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering.SceneGraph
@@ -15,12 +18,13 @@ namespace Avalonia.Rendering.SceneGraph
     internal class VisualNode : IVisualNode
     {
         private static readonly IReadOnlyList<IVisualNode> EmptyChildren = new IVisualNode[0];
-        private static readonly IReadOnlyList<IDrawOperation> EmptyDrawOperations = new IDrawOperation[0];
+        private static readonly IReadOnlyList<IRef<IDrawOperation>> EmptyDrawOperations = new IRef<IDrawOperation>[0];
 
         private Rect? _bounds;
         private double _opacity;
         private List<IVisualNode> _children;
-        private List<IDrawOperation> _drawOperations;
+        private List<IRef<IDrawOperation>> _drawOperations;
+        private IRef<IDisposable> _drawOperationsRefCounter;
         private bool _drawOperationsCloned;
         private Matrix transformRestore;
 
@@ -101,7 +105,7 @@ namespace Avalonia.Rendering.SceneGraph
         public IReadOnlyList<IVisualNode> Children => _children ?? EmptyChildren;
 
         /// <inheritdoc/>
-        public IReadOnlyList<IDrawOperation> DrawOperations => _drawOperations ?? EmptyDrawOperations;
+        public IReadOnlyList<IRef<IDrawOperation>> DrawOperations => _drawOperations ?? EmptyDrawOperations;
 
         /// <summary>
         /// Adds a child to the <see cref="Children"/> collection.
@@ -109,6 +113,11 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="child">The child to add.</param>
         public void AddChild(IVisualNode child)
         {
+            if (child.Disposed)
+            {
+                throw new ObjectDisposedException("Visual node for {node.Visual}");
+            }
+
             EnsureChildrenCreated();
             _children.Add(child);
         }
@@ -117,10 +126,10 @@ namespace Avalonia.Rendering.SceneGraph
         /// Adds an operation to the <see cref="DrawOperations"/> collection.
         /// </summary>
         /// <param name="operation">The operation to add.</param>
-        public void AddDrawOperation(IDrawOperation operation)
+        public void AddDrawOperation(IRef<IDrawOperation> operation)
         {
             EnsureDrawOperationsCreated();
-            _drawOperations.Add(operation);
+            _drawOperations.Add(operation.Clone());
         }
 
         /// <summary>
@@ -140,6 +149,11 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="node">The child to add.</param>
         public void ReplaceChild(int index, IVisualNode node)
         {
+            if (node.Disposed)
+            {
+                throw new ObjectDisposedException("Visual node for {node.Visual}");
+            }
+
             EnsureChildrenCreated();
             _children[index] = node;
         }
@@ -149,10 +163,12 @@ namespace Avalonia.Rendering.SceneGraph
         /// </summary>
         /// <param name="index">The opeation to be replaced.</param>
         /// <param name="operation">The operation to add.</param>
-        public void ReplaceDrawOperation(int index, IDrawOperation operation)
+        public void ReplaceDrawOperation(int index, IRef<IDrawOperation> operation)
         {
             EnsureDrawOperationsCreated();
-            _drawOperations[index] = operation;
+            var old = _drawOperations[index];
+            _drawOperations[index] = operation.Clone();
+            old.Dispose();
         }
 
         /// <summary>
@@ -165,6 +181,10 @@ namespace Avalonia.Rendering.SceneGraph
             if (first < _children?.Count)
             {
                 EnsureChildrenCreated();
+                for (int i = first; i < _children.Count - first; i++)
+                {
+                    _children[i].Dispose();
+                }
                 _children.RemoveRange(first, _children.Count - first);
             }
         }
@@ -179,6 +199,10 @@ namespace Avalonia.Rendering.SceneGraph
             if (first < _drawOperations?.Count)
             {
                 EnsureDrawOperationsCreated();
+                for (int i = first; i < _drawOperations.Count; i++)
+                {
+                    _drawOperations[i].Dispose();
+                }
                 _drawOperations.RemoveRange(first, _drawOperations.Count - first);
             }
         }
@@ -199,6 +223,7 @@ namespace Avalonia.Rendering.SceneGraph
                 _opacity = Opacity,
                 OpacityMask = OpacityMask,
                 _drawOperations = _drawOperations,
+                _drawOperationsRefCounter = _drawOperationsRefCounter?.Clone(),
                 _drawOperationsCloned = true,
                 LayerRoot= LayerRoot,
             };
@@ -209,7 +234,7 @@ namespace Avalonia.Rendering.SceneGraph
         {
             foreach (var operation in DrawOperations)
             {
-                if (operation.HitTest(p) == true)
+                if (operation.Item.HitTest(p) == true)
                 {
                     return true;
                 }
@@ -280,7 +305,7 @@ namespace Avalonia.Rendering.SceneGraph
 
             foreach (var operation in DrawOperations)
             {
-                result = result.Union(operation.Bounds);
+                result = result.Union(operation.Item.Bounds);
             }
 
             _bounds = result;
@@ -299,12 +324,31 @@ namespace Avalonia.Rendering.SceneGraph
         {
             if (_drawOperations == null)
             {
-                _drawOperations = new List<IDrawOperation>();
+                _drawOperations = new List<IRef<IDrawOperation>>();
+                _drawOperationsRefCounter = RefCountable.Create(Disposable.Create(DisposeDrawOperations));
+                _drawOperationsCloned = false;
             }
             else if (_drawOperationsCloned)
             {
-                _drawOperations = new List<IDrawOperation>(_drawOperations);
+                _drawOperations = new List<IRef<IDrawOperation>>(_drawOperations.Select(op => op.Clone()));
+                _drawOperationsRefCounter.Dispose();
+                _drawOperationsRefCounter = RefCountable.Create(Disposable.Create(DisposeDrawOperations));
                 _drawOperationsCloned = false;
+            }
+        }
+
+        public bool Disposed { get; }
+        
+        public void Dispose()
+        {
+            _drawOperationsRefCounter?.Dispose();
+        }
+
+        private void DisposeDrawOperations()
+        {
+            foreach (var operation in DrawOperations)
+            {
+                operation.Dispose();
             }
         }
     }

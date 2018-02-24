@@ -31,8 +31,9 @@ namespace Avalonia.Direct2D1.UnitTests.Media
                 Direct2D1Platform.Initialize();
 
                 var target = StreamGeometry.Parse("M 0 2 L 4 6 L 0 10 Z");
+                var pen = new Pen(Brushes.Black, 2);
 
-                Assert.Equal(new Rect(-1, -0.414, 6.414, 12.828), target.GetRenderBounds(2), Compare);
+                Assert.Equal(new Rect(-1, -0.414, 6.414, 12.828), target.GetRenderBounds(pen), Compare);
             }
         }
     }

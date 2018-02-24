@@ -558,7 +558,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
         private class InheritanceTest : Decorator
         {
             public static readonly StyledProperty<int> BazProperty =
-                AvaloniaProperty.Register<InheritanceTest, int>("Baz", defaultValue: 6, inherits: true);
+                AvaloniaProperty.Register<InheritanceTest, int>(nameof(Baz), defaultValue: 6, inherits: true);
 
             public int Baz
             {

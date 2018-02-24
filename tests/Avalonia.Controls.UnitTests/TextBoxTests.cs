@@ -4,10 +4,12 @@
 using System;
 using System.Reactive.Linq;
 using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml.Data;
+using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.UnitTests;
 using Moq;
@@ -242,6 +244,28 @@ namespace Avalonia.Controls.UnitTests
                 target.Text = "Changed";
 
                 Assert.True(invoked);
+            }
+        }
+
+        [Theory]
+        [InlineData(new object[] { false, TextWrapping.NoWrap, ScrollBarVisibility.Hidden })]
+        [InlineData(new object[] { false, TextWrapping.Wrap, ScrollBarVisibility.Hidden })]
+        [InlineData(new object[] { true, TextWrapping.NoWrap, ScrollBarVisibility.Auto })]
+        [InlineData(new object[] { true, TextWrapping.Wrap, ScrollBarVisibility.Disabled })]
+        public void Has_Correct_Horizontal_ScrollBar_Visibility(
+            bool acceptsReturn,
+            TextWrapping wrapping,
+            ScrollBarVisibility expected)
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    AcceptsReturn = acceptsReturn,
+                    TextWrapping = wrapping,
+                };
+
+                Assert.Equal(expected, ScrollViewer.GetHorizontalScrollBarVisibility(target));
             }
         }
 

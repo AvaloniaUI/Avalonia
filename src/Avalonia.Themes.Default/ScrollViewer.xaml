@@ -6,12 +6,13 @@
       <Grid ColumnDefinitions="*,Auto" RowDefinitions="*,Auto">
         <ScrollContentPresenter Name="PART_ContentPresenter"
                                 Background="{TemplateBinding Background}"
+                                CanHorizontallyScroll="{TemplateBinding CanHorizontallyScroll}"
+                                CanVerticallyScroll="{TemplateBinding CanVerticallyScroll}"
                                 Content="{TemplateBinding Content}"
                                 Extent="{TemplateBinding Path=Extent, Mode=TwoWay}"
                                 Margin="{TemplateBinding Padding}"
                                 Offset="{TemplateBinding Path=Offset, Mode=TwoWay}"
-                                Viewport="{TemplateBinding Path=Viewport, Mode=TwoWay}"
-                                CanScrollHorizontally="{TemplateBinding CanScrollHorizontally}"/>
+                                Viewport="{TemplateBinding Path=Viewport, Mode=TwoWay}"/>
         <ScrollBar Name="horizontalScrollBar"
                    Orientation="Horizontal"
                    Maximum="{TemplateBinding HorizontalScrollBarMaximum}"

@@ -1,14 +1,10 @@
 os: Visual Studio 2017
-platform:
-- Any CPU
 skip_branch_with_pr: true
 configuration:
 - Release
 environment:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
-  NUGET_API_KEY:
-    secure: Xv89dlP2MSBZKhl1nrWSxqcDgCXB0HRhOd4SWQ+jRJ7QoLxQel5mLTipXM++J3G5
   NUGET_API_URL: https://www.nuget.org/api/v2/package
   MYGET_API_KEY:
     secure: OtVfyN3ErqQrDTnWH2HDfJDlCiu/i4/X4wFmK3ZXXP7HmCiXYPSbTjMPwwdOxRaK
@@ -22,7 +18,7 @@ install:
 before_build:
 - git submodule update --init
 build_script:
-- ps: .\build.ps1 -Target "AppVeyor" -Platform "$env:platform" -Configuration "$env:configuration"
+- ps: .\build.ps1 -Target "AppVeyor" -Configuration "$env:configuration"
 
 test: off
 artifacts:

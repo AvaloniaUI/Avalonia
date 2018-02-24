@@ -2,6 +2,8 @@
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
+using Avalonia.Utilities;
+using Moq;
 using Xunit;
 
 namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
@@ -38,6 +40,19 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 Matrix.CreateScale(scaleX, scaleY),
                 penThickness.HasValue ? new Pen(Brushes.Black, penThickness.Value) : null);
             Assert.Equal(new Rect(expectedX, expectedY, expectedWidth, expectedHeight), target.Bounds);
+        }
+
+        [Fact]
+        public void Image_Node_Releases_Reference_To_Bitmap_On_Dispose()
+        {
+            var bitmap = RefCountable.Create(Mock.Of<IBitmapImpl>());
+            var imageNode = new ImageNode(Matrix.Identity, bitmap, 1, new Rect(1,1,1,1), new Rect(1,1,1,1));
+
+            Assert.Equal(2, bitmap.RefCount);
+
+            imageNode.Dispose();
+
+            Assert.Equal(1, bitmap.RefCount);
         }
 
         private class TestDrawOperation : DrawOperation

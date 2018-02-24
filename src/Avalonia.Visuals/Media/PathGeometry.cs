@@ -1,10 +1,10 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
 using Avalonia.Collections;
 using Avalonia.Metadata;
 using Avalonia.Platform;
-using System;
 
 namespace Avalonia.Media
 {
@@ -22,12 +22,14 @@ namespace Avalonia.Media
         public static readonly StyledProperty<FillRule> FillRuleProperty =
                                  AvaloniaProperty.Register<PathGeometry, FillRule>(nameof(FillRule));
 
+        private PathFigures _figures;
+        private IDisposable _figuresObserver;
+        private IDisposable _figuresPropertiesObserver;
+
         static PathGeometry()
         {
-            FiguresProperty.Changed.Subscribe(onNext: v =>
-            {
-                (v.Sender as PathGeometry)?.OnFiguresChanged(v.OldValue as PathFigures, v.NewValue as PathFigures);
-            });
+            FiguresProperty.Changed.AddClassHandler<PathGeometry>((s, e) => 
+                s.OnFiguresChanged(e.NewValue as PathFigures));
         }
 
         /// <summary>
@@ -63,61 +65,33 @@ namespace Avalonia.Media
             set { SetValue(FillRuleProperty, value); }
         }
 
-        public override IGeometryImpl PlatformImpl
+        protected override IGeometryImpl CreateDefiningGeometry()
         {
-            get
+            var factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
+            var geometry = factory.CreateStreamGeometry();
+
+            using (var ctx = new StreamGeometryContext(geometry.Open()))
             {
-                PrepareIfNeeded();
-                return base.PlatformImpl;
-            }
-
-            protected set
-            {
-                base.PlatformImpl = value;
-            }
-        }
-
-        public override Geometry Clone()
-        {
-            PrepareIfNeeded();
-
-            return base.Clone();
-        }
-
-        public void PrepareIfNeeded()
-        {
-            if (_isDirty)
-            {
-                _isDirty = false;
-
-                using (var ctx = Open())
+                ctx.SetFillRule(FillRule);
+                foreach (var f in Figures)
                 {
-                    ctx.SetFillRule(FillRule);
-                    foreach (var f in Figures)
-                    {
-                        f.ApplyTo(ctx);
-                    }
+                    f.ApplyTo(ctx);
                 }
             }
+
+            return geometry;
         }
 
-        internal void NotifyChanged()
-        {
-            _isDirty = true;
-        }
-
-        private PathFigures _figures;
-        private IDisposable _figuresObserver = null;
-        private IDisposable _figuresPropertiesObserver = null;
-        private bool _isDirty = true;
-
-        private void OnFiguresChanged(PathFigures oldValue, PathFigures newValue)
+        private void OnFiguresChanged(PathFigures figures)
         {
             _figuresObserver?.Dispose();
             _figuresPropertiesObserver?.Dispose();
 
-            _figuresObserver = newValue?.ForEachItem(f => NotifyChanged(), f => NotifyChanged(), () => NotifyChanged());
-            _figuresPropertiesObserver = newValue?.TrackItemPropertyChanged(t => NotifyChanged());
+            _figuresObserver = figures?.ForEachItem(
+                _ => InvalidateGeometry(),
+                _ => InvalidateGeometry(),
+                () => InvalidateGeometry());
+            _figuresPropertiesObserver = figures?.TrackItemPropertyChanged(_ => InvalidateGeometry());
         }
     }
 }

@@ -7,11 +7,12 @@
     </TabControl.Transition>
     <TabItem Header="Border"><pages:BorderPage/></TabItem>
     <TabItem Header="Button"><pages:ButtonPage/></TabItem>
-    <TabItem Header="Calendar"><pages:CalendarPage/></TabItem>
+    <TabItem Header="Calendar"><pages:CalendarPage/></TabItem> 
     <TabItem Header="Canvas"><pages:CanvasPage/></TabItem>
     <TabItem Header="Carousel"><pages:CarouselPage/></TabItem>
     <TabItem Header="CheckBox"><pages:CheckBoxPage/></TabItem>
     <TabItem Header="ContextMenu"><pages:ContextMenuPage/></TabItem>
+    <TabItem Header="DatePicker"><pages:DatePickerPage/></TabItem>
     <TabItem Header="DropDown"><pages:DropDownPage/></TabItem>
     <TabItem Header="Expander"><pages:ExpanderPage/></TabItem>
     <TabItem Header="Image"><pages:ImagePage/></TabItem>
