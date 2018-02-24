@@ -11,6 +11,7 @@
                 BorderThickness="{TemplateBinding BorderThickness}">
           <Grid ColumnDefinitions="*,Auto">
             <ContentControl Content="{TemplateBinding SelectionBoxItem}"
+                            ContentTemplate="{TemplateBinding ItemTemplate}"
                             Margin="{TemplateBinding Padding}"
                             HorizontalAlignment="Left"
                             VerticalAlignment="Center"/>
