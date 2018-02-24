@@ -81,6 +81,43 @@ namespace Avalonia.Input.UnitTests
         }
 
         [Fact]
+        public void Next_Skips_Unfocusable_Siblings()
+        {
+            Button current;
+            Button next;
+
+            var top = new StackPanel
+            {
+                Children =
+                {
+                    new StackPanel
+                    {
+                        Children =
+                        {
+                            new Button { Name = "Button1" },
+                            new Button { Name = "Button2" },
+                            new StackPanel
+                            {
+                                Children =
+                                {
+                                    (current = new Button { Name = "Button3" }),
+                                }
+                            },
+                            new TextBlock { Name = "TextBlock" },
+                            (next = new Button { Name = "Button4" }),
+                        }
+                    },
+                    new Button { Name = "Button5" },
+                    new Button { Name = "Button6" },
+                }
+            };
+
+            var result = KeyboardNavigationHandler.GetNext(current, NavigationDirection.Next);
+
+            Assert.Equal(next, result);
+        }
+
+        [Fact]
         public void Next_Continue_Doesnt_Enter_Panel_With_TabNavigation_None()
         {
             Button current;
