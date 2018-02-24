@@ -17,7 +17,7 @@ namespace Avalonia.Markup.Xaml
     /// <summary>
     /// Loads XAML for a avalonia application.
     /// </summary>
-    public class AvaloniaXamlLoaderPortableXaml
+    public class AvaloniaXamlLoader
     {
         private readonly AvaloniaXamlSchemaContext _context = GetContext();
 
@@ -40,7 +40,7 @@ namespace Avalonia.Markup.Xaml
         /// <summary>
         /// Initializes a new instance of the <see cref="AvaloniaXamlLoader"/> class.
         /// </summary>
-        public AvaloniaXamlLoaderPortableXaml()
+        public AvaloniaXamlLoader()
         {
         }
 
@@ -89,7 +89,7 @@ namespace Avalonia.Markup.Xaml
                         initialize?.BeginInit();
                         try
                         {
-                            return Load(stream, rootInstance, uri);
+                            return Load(stream, type.Assembly, rootInstance, uri);
                         }
                         finally
                         {
@@ -125,11 +125,12 @@ namespace Avalonia.Markup.Xaml
                     "Could not create IAssetLoader : maybe Application.RegisterServices() wasn't called?");
             }
 
-            using (var stream = assetLocator.Open(uri, baseUri))
+            var asset = assetLocator.OpenWithAssembly(uri, baseUri);
+            using (var stream = asset.Item2)
             {
                 try
                 {
-                    return Load(stream, rootInstance, uri);
+                    return Load(stream, asset.Item1, rootInstance, uri);
                 }
                 catch (Exception e)
                 {
@@ -147,17 +148,18 @@ namespace Avalonia.Markup.Xaml
         /// Loads XAML from a string.
         /// </summary>
         /// <param name="xaml">The string containing the XAML.</param>
+        /// <param name="localAssembly">Default assembly for clr-namespace:</param>
         /// <param name="rootInstance">
         /// The optional instance into which the XAML should be loaded.
         /// </param>
         /// <returns>The loaded object.</returns>
-        public object Load(string xaml, object rootInstance = null)
+        public object Load(string xaml, Assembly localAssembly, object rootInstance = null)
         {
             Contract.Requires<ArgumentNullException>(xaml != null);
 
             using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(xaml)))
             {
-                return Load(stream, rootInstance);
+                return Load(stream, localAssembly, rootInstance);
             }
         }
 
@@ -165,17 +167,18 @@ namespace Avalonia.Markup.Xaml
         /// Loads XAML from a stream.
         /// </summary>
         /// <param name="stream">The stream containing the XAML.</param>
+        /// <param name="localAssembly">Default assembly for clr-namespace</param>
         /// <param name="rootInstance">
         /// The optional instance into which the XAML should be loaded.
         /// </param>
         /// <param name="uri">The URI of the XAML</param>
         /// <returns>The loaded object.</returns>
-        public object Load(Stream stream, object rootInstance = null, Uri uri = null)
+        public object Load(Stream stream, Assembly localAssembly, object rootInstance = null, Uri uri = null)
         {
             var readerSettings = new XamlXmlReaderSettings()
             {
                 BaseUri = uri,
-                LocalAssembly = rootInstance?.GetType().GetTypeInfo().Assembly
+                LocalAssembly = localAssembly
             };
 
             var reader = new XamlXmlReader(stream, _context, readerSettings);
@@ -223,5 +226,11 @@ namespace Avalonia.Markup.Xaml
             yield return new Uri("resm:" + typeName + ".xaml?assembly=" + asm);
             yield return new Uri("resm:" + typeName + ".paml?assembly=" + asm);
         }
+        
+        public static object Parse(string xaml, Assembly localAssembly = null)
+            => new AvaloniaXamlLoader().Load(xaml, localAssembly);
+
+        public static T Parse<T>(string xaml, Assembly localAssembly)
+            => (T)Parse(xaml, localAssembly);
     }
 }

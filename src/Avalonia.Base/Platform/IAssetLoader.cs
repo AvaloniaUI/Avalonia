@@ -43,5 +43,7 @@ namespace Avalonia.Platform
         /// The resource was not found.
         /// </exception>
         Stream Open(Uri uri, Uri baseUri = null);
+
+        Tuple<Assembly, Stream> OpenWithAssembly(Uri uri, Uri baseUri = null);
     }
 }

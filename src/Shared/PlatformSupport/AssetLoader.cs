@@ -67,7 +67,20 @@ namespace Avalonia.Shared.PlatformSupport
         /// <exception cref="FileNotFoundException">
         /// The resource was not found.
         /// </exception>
-        public Stream Open(Uri uri, Uri baseUri = null)
+        public Stream Open(Uri uri, Uri baseUri = null) => OpenWithAssembly(uri, baseUri).Item2;
+        
+        /// <summary>
+        /// Opens the resource with the requested URI.
+        /// </summary>
+        /// <param name="uri">The URI.</param>
+        /// <param name="baseUri">
+        /// A base URI to use if <paramref name="uri"/> is relative.
+        /// </param>
+        /// <returns>An assembly (optional) and a stream containing the resource contents.</returns>
+        /// <exception cref="FileNotFoundException">
+        /// The resource was not found.
+        /// </exception>
+        public Tuple<Assembly, Stream> OpenWithAssembly(Uri uri, Uri baseUri = null)
         {
             var asset = GetAsset(uri, baseUri);
 
@@ -76,7 +89,7 @@ namespace Avalonia.Shared.PlatformSupport
                 throw new FileNotFoundException($"The resource {uri} could not be found.");
             }
 
-            return asset.GetStream();
+            return Tuple.Create(asset.Assembly, asset.GetStream());
         }
 
         private IAssetDescriptor GetAsset(Uri uri, Uri baseUri)
@@ -162,6 +175,7 @@ namespace Avalonia.Shared.PlatformSupport
         private interface IAssetDescriptor
         {
             Stream GetStream();
+            Assembly Assembly { get; }
         }
 
         private class AssemblyResourceDescriptor : IAssetDescriptor
@@ -179,6 +193,8 @@ namespace Avalonia.Shared.PlatformSupport
             {
                 return _asm.GetManifestResourceStream(_name);
             }
+
+            public Assembly Assembly => _asm;
         }
 
         private class AssemblyDescriptor
