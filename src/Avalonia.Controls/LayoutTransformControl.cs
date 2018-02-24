@@ -15,6 +15,9 @@ using System.Reactive.Linq;
 
 namespace Avalonia.Controls
 {
+    /// <summary>
+    /// Control that implements support for transformations as if applied by LayoutTransform.
+    /// </summary>
     public class LayoutTransformControl : ContentControl
     {
         public static readonly AvaloniaProperty<Transform> LayoutTransformProperty =
@@ -26,6 +29,9 @@ namespace Avalonia.Controls
                 .AddClassHandler<LayoutTransformControl>(x => x.OnLayoutTransformChanged);
         }
 
+        /// <summary>
+        /// Gets or sets a graphics transformation that should apply to this element when layout is performed.
+        /// </summary>
         public Transform LayoutTransform
         {
             get { return GetValue(LayoutTransformProperty); }
@@ -169,7 +175,7 @@ namespace Avalonia.Controls
         /// Transformation matrix corresponding to _matrixTransform.
         /// </summary>
         private Matrix _transformation;
-        private IDisposable _transformChangedEvent = null;
+        private IDisposable _transformChangedEvent;
         private Control _transformRoot;
         /// <summary>
         /// Returns true if Size a is smaller than Size b in either dimension.
@@ -272,7 +278,7 @@ namespace Avalonia.Controls
             double slopeFromWidth = -(maxHeightFromWidth / maxWidthFromWidth);
             double slopeFromHeight = -(maxHeightFromHeight / maxWidthFromHeight);
 
-            if ((0 == arrangeBounds.Width) || (0 == arrangeBounds.Height))
+            if ((NearlyOrigin(arrangeBounds.Width)) || (NearlyOrigin(arrangeBounds.Height)))
             {
                 // Check for empty bounds
                 computedSize = new Size(arrangeBounds.Width, arrangeBounds.Height);
@@ -287,17 +293,17 @@ namespace Avalonia.Controls
                 // Check for singular matrix
                 computedSize = new Size(0, 0);
             }
-            else if ((0 == b) || (0 == c))
+            else if ((NearlyOrigin(b)) || (NearlyOrigin(c)))
             {
                 // Check for 0/180 degree special cases
                 double maxHeight = (infiniteHeight ? double.PositiveInfinity : maxHeightFromHeight);
                 double maxWidth = (infiniteWidth ? double.PositiveInfinity : maxWidthFromWidth);
-                if ((0 == b) && (0 == c))
+                if ((NearlyOrigin(b)) && (NearlyOrigin(c)))
                 {
                     // No constraints
                     computedSize = new Size(maxWidth, maxHeight);
                 }
-                else if (0 == b)
+                else if (NearlyOrigin(b))
                 {
                     // Constrained by width
                     double computedHeight = Math.Min(idealHeightFromWidth, maxHeight);
@@ -305,7 +311,7 @@ namespace Avalonia.Controls
                         maxWidth - Math.Abs((c * computedHeight) / a),
                         computedHeight);
                 }
-                else if (0 == c)
+                else if (NearlyOrigin(c))
                 {
                     // Constrained by height
                     double computedWidth = Math.Min(idealWidthFromHeight, maxWidth);
@@ -314,17 +320,17 @@ namespace Avalonia.Controls
                         maxHeight - Math.Abs((b * computedWidth) / d));
                 }
             }
-            else if ((0 == a) || (0 == d))
+            else if ((NearlyOrigin(a)) || (NearlyOrigin(d)))
             {
                 // Check for 90/270 degree special cases
                 double maxWidth = (infiniteHeight ? double.PositiveInfinity : maxWidthFromHeight);
                 double maxHeight = (infiniteWidth ? double.PositiveInfinity : maxHeightFromWidth);
-                if ((0 == a) && (0 == d))
+                if ((NearlyOrigin(a)) && (NearlyOrigin(d)))
                 {
                     // No constraints
                     computedSize = new Size(maxWidth, maxHeight);
                 }
-                else if (0 == a)
+                else if (NearlyOrigin(a))
                 {
                     // Constrained by width
                     double computedHeight = Math.Min(idealHeightFromHeight, maxHeight);
@@ -332,7 +338,7 @@ namespace Avalonia.Controls
                         maxWidth - Math.Abs((d * computedHeight) / b),
                         computedHeight);
                 }
-                else if (0 == d)
+                else if (NearlyOrigin(d))
                 {
                     // Constrained by height
                     double computedWidth = Math.Min(idealWidthFromWidth, maxWidth);
@@ -384,6 +390,29 @@ namespace Avalonia.Controls
             }
 
             ApplyLayoutTransform();
+        }
+
+        /// <summary>
+        /// Equality comparison of double number is origin number
+        /// </summary>
+        /// <param name="number">the number to be comparison</param>
+        /// <param name="origin">the origin number</param>
+        /// <returns>if the number is equal to origin,return true</returns>
+        private static bool NearlyOrigin(double number, double origin = 0)
+        {
+            return Nearly(origin, number);
+        }
+
+        /// <summary>
+        /// Equality comparison of two double number by nearly.
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <param name="tolerance">the tolerance number of near equality </param>
+        /// <returns>if two number is nearly,return true</returns>
+        private static bool Nearly(double a, double b,double tolerance=0.000001)
+        {
+            return Math.Abs(a - b) < tolerance;
         }
     }
 }
