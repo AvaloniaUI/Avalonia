@@ -81,12 +81,14 @@ namespace Avalonia.Threading
         /// <inheritdoc/>
         public Task InvokeAsync(Action action, DispatcherPriority priority = DispatcherPriority.Normal)
         {
+            Contract.Requires<ArgumentNullException>(action != null);
             return _jobRunner?.InvokeAsync(action, priority);
         }
 
         /// <inheritdoc/>
         public void Post(Action action, DispatcherPriority priority = DispatcherPriority.Normal)
         {
+            Contract.Requires<ArgumentNullException>(action != null);
             _jobRunner?.Post(action, priority);
         }
 
