@@ -2,9 +2,9 @@
 
 # Avalonia
 
-| Gitter Chat | Windows Build Status | Linux/Mac Build Status |
-|---|---|---|
-| [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/AvaloniaUI/Avalonia?utm_campaign=pr-badge&utm_content=badge&utm_medium=badge&utm_source=badge) | [![Build status](https://ci.appveyor.com/api/projects/status/hubk3k0w9idyibfg/branch/master?svg=true)](https://ci.appveyor.com/project/AvaloniaUI/Avalonia/branch/master) | [![Build Status](https://travis-ci.org/AvaloniaUI/Avalonia.svg?branch=master)](https://travis-ci.org/AvaloniaUI/Avalonia) |
+| Gitter Chat | Windows Build Status | Linux/Mac Build Status | Open Collective |
+|---|---|---|---|
+|  [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/AvaloniaUI/Avalonia?utm_campaign=pr-badge&utm_content=badge&utm_medium=badge&utm_source=badge) | [![Build status](https://ci.appveyor.com/api/projects/status/hubk3k0w9idyibfg/branch/master?svg=true)](https://ci.appveyor.com/project/AvaloniaUI/Avalonia/branch/master) | [![Build Status](https://travis-ci.org/AvaloniaUI/Avalonia.svg?branch=master)](https://travis-ci.org/AvaloniaUI/Avalonia) | [![Backers on Open Collective](https://opencollective.com/Avalonia/backers/badge.svg)](#backers) [![Sponsors on Open Collective](https://opencollective.com/Avalonia/sponsors/badge.svg)](#sponsors) |
 
 ## About
 
@@ -48,3 +48,33 @@ See the [build instructions here](http://avaloniaui.net/contributing/build).
 ## Contributing
 
 Please read the [contribution guidelines](http://avaloniaui.net/contributing/contributing) before submitting a pull request.
+
+### Contributors
+
+This project exists thanks to all the people who contribute. [[Contribute](CONTRIBUTING.md)].
+<a href="graphs/contributors"><img src="https://opencollective.com/Avalonia/contributors.svg?width=890&button=false" /></a>
+
+
+### Backers
+
+Thank you to all our backers! 🙏 [[Become a backer](https://opencollective.com/Avalonia#backer)]
+
+<a href="https://opencollective.com/Avalonia#backers" target="_blank"><img src="https://opencollective.com/Avalonia/backers.svg?width=890"></a>
+
+
+### Sponsors
+
+Support this project by becoming a sponsor. Your logo will show up here with a link to your website. [[Become a sponsor](https://opencollective.com/Avalonia#sponsor)]
+
+<a href="https://opencollective.com/Avalonia/sponsor/0/website" target="_blank"><img src="https://opencollective.com/Avalonia/sponsor/0/avatar.svg"></a>
+<a href="https://opencollective.com/Avalonia/sponsor/1/website" target="_blank"><img src="https://opencollective.com/Avalonia/sponsor/1/avatar.svg"></a>
+<a href="https://opencollective.com/Avalonia/sponsor/2/website" target="_blank"><img src="https://opencollective.com/Avalonia/sponsor/2/avatar.svg"></a>
+<a href="https://opencollective.com/Avalonia/sponsor/3/website" target="_blank"><img src="https://opencollective.com/Avalonia/sponsor/3/avatar.svg"></a>
+<a href="https://opencollective.com/Avalonia/sponsor/4/website" target="_blank"><img src="https://opencollective.com/Avalonia/sponsor/4/avatar.svg"></a>
+<a href="https://opencollective.com/Avalonia/sponsor/5/website" target="_blank"><img src="https://opencollective.com/Avalonia/sponsor/5/avatar.svg"></a>
+<a href="https://opencollective.com/Avalonia/sponsor/6/website" target="_blank"><img src="https://opencollective.com/Avalonia/sponsor/6/avatar.svg"></a>
+<a href="https://opencollective.com/Avalonia/sponsor/7/website" target="_blank"><img src="https://opencollective.com/Avalonia/sponsor/7/avatar.svg"></a>
+<a href="https://opencollective.com/Avalonia/sponsor/8/website" target="_blank"><img src="https://opencollective.com/Avalonia/sponsor/8/avatar.svg"></a>
+<a href="https://opencollective.com/Avalonia/sponsor/9/website" target="_blank"><img src="https://opencollective.com/Avalonia/sponsor/9/avatar.svg"></a>
+
+
