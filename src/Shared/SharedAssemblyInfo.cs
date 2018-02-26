@@ -14,6 +14,6 @@ using System.Runtime.CompilerServices;
 [assembly: AssemblyTrademark("")]
 [assembly: NeutralResourcesLanguage("en")]
 
-[assembly: AssemblyVersion("0.6.0")]
-[assembly: AssemblyFileVersion("0.6.0")]
-[assembly: AssemblyInformationalVersion("0.6.0")]
+[assembly: AssemblyVersion("0.6.2")]
+[assembly: AssemblyFileVersion("0.6.2")]
+[assembly: AssemblyInformationalVersion("0.6.2")]
