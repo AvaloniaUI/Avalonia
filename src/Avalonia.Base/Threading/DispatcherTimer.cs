@@ -10,7 +10,7 @@ namespace Avalonia.Threading
     /// <summary>
     /// A timer that uses a <see cref="Dispatcher"/> to fire at a specified interval.
     /// </summary>
-    public class DispatcherTimer
+    public class DispatcherTimer : IDisposable
     {
         private IDisposable _timer;
 
@@ -116,6 +116,11 @@ namespace Avalonia.Threading
             get;
             set;
         }
+
+        /// <summary>
+        /// Stops the timer and disposes of all unmanaged resources.
+        /// </summary>
+        public void Dispose() => _timer?.Dispose();
 
         /// <summary>
         /// Starts a new timer.
