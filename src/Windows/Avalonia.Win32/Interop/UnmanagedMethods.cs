@@ -1098,7 +1098,7 @@ namespace Avalonia.Win32.Interop
             }
         }
 
-        [StructLayout(LayoutKind.Sequential)]
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
         public struct WNDCLASSEX
         {
             public int cbSize;
