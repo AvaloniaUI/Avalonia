@@ -173,10 +173,10 @@ namespace Avalonia.Direct2D1
             return new WritableWicBitmapImpl(s_imagingFactory, width, height, format);
         }
 
-        public IStreamGeometryImpl CreateStreamGeometry()
-        {
-            return new StreamGeometryImpl();
-        }
+        public IEllipseGeometryImpl CreateEllipseGeometry(Rect rect) => new EllipseGeometryImpl(rect);
+        public ILineGeometryImpl CreateLineGeometry(Point p1, Point p2) => new LineGeometryImpl(p1, p2);
+        public IRectangleGeometryImpl CreateRectangleGeometry(Rect rect) => new RectangleGeometryImpl(rect);
+        public IStreamGeometryImpl CreateStreamGeometry() => new StreamGeometryImpl();
 
         public IBitmapImpl LoadBitmap(string fileName)
         {

@@ -9,6 +9,11 @@ namespace Avalonia.UnitTests
 {
     public class MockPlatformRenderInterface : IPlatformRenderInterface
     {
+        public IEllipseGeometryImpl CreateEllipseGeometry(Rect rect)
+        {
+            throw new NotImplementedException();
+        }
+
         public IFormattedTextImpl CreateFormattedText(
             string text,
             Typeface typeface,
@@ -18,6 +23,16 @@ namespace Avalonia.UnitTests
             IReadOnlyList<FormattedTextStyleSpan> spans)
         {
             return Mock.Of<IFormattedTextImpl>();
+        }
+
+        public ILineGeometryImpl CreateLineGeometry(Point p1, Point p2)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IRectangleGeometryImpl CreateRectangleGeometry(Rect rect)
+        {
+            throw new NotImplementedException();
         }
 
         public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)
