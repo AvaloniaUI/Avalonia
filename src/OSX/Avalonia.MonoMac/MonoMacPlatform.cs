@@ -3,6 +3,7 @@ using System.Threading;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using MonoMac.AppKit;
@@ -32,6 +33,7 @@ namespace Avalonia.MonoMac
                 .Bind<IPlatformSettings>().ToConstant(this)
                 .Bind<IWindowingPlatform>().ToConstant(this)
                 .Bind<ISystemDialogImpl>().ToSingleton<SystemDialogsImpl>()
+                .Bind<IClipboard>().ToSingleton<ClipboardImpl>()
                 .Bind<IRenderLoop>().ToConstant(s_renderLoop)
                 .Bind<IPlatformThreadingInterface>().ToConstant(PlatformThreadingInterface.Instance);
         }
