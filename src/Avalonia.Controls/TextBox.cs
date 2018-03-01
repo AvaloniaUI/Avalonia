@@ -788,7 +788,7 @@ namespace Avalonia.Controls
             int pos = 0;
             int i;
 
-            for (i = 0; i < lines.Count; ++i)
+            for (i = 0; i < lines.Count - 1; ++i)
             {
                 var line = lines[i];
                 pos += line.Length;
