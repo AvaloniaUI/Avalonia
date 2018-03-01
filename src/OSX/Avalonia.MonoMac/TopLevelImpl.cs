@@ -5,8 +5,9 @@ using Avalonia.Input.Raw;
 using Avalonia.Platform;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Rendering;
+using Avalonia.Threading;
 using MonoMac.AppKit;
-
+using MonoMac.CoreFoundation;
 using MonoMac.CoreGraphics;
 using MonoMac.Foundation;
 using MonoMac.ObjCRuntime;
@@ -24,6 +25,7 @@ namespace Avalonia.MonoMac
 
         protected virtual void OnInput(RawInputEventArgs args)
         {
+            Dispatcher.UIThread.RunJobs(DispatcherPriority.Input + 1);
             Input?.Invoke(args);
         }
 
@@ -36,6 +38,14 @@ namespace Avalonia.MonoMac
             private readonly IKeyboardDevice _keyboard;
             private NSTrackingArea _area;
             private NSCursor _cursor;
+            private bool _nonUiRedrawQueued;
+
+            public CGSize PixelSize { get; set; }
+
+            public CGSize LogicalSize { get; set; }
+
+            private SavedImage _backBuffer;
+            public object SyncRoot { get; } = new object();
 
             public TopLevelView(TopLevelImpl tl)
             {
@@ -44,17 +54,75 @@ namespace Avalonia.MonoMac
                 _keyboard = AvaloniaLocator.Current.GetService<IKeyboardDevice>();
             }
 
+            protected override void Dispose(bool disposing)
+            {
+                if (disposing)
+                {
+                    _backBuffer?.Dispose();
+                    _backBuffer = null;
+                }
+                base.Dispose(disposing);
+            }
+
             public override bool ConformsToProtocol(IntPtr protocol)
             {
                 var rv = base.ConformsToProtocol(protocol);
                 return rv;
             }
 
+            public override bool IsOpaque => false;
+
             public override void DrawRect(CGRect dirtyRect)
             {
+                lock (SyncRoot)
+                    _nonUiRedrawQueued = false;
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Render);
+                lock (SyncRoot)
+                {
+                    if (_backBuffer != null)
+                    {
+                        using (var context = NSGraphicsContext.CurrentContext.GraphicsPort)
+                        {
+                            context.SetFillColor(255, 255, 255, 255);
+                            context.FillRect(new CGRect(default(CGPoint), LogicalSize));
+                            context.TranslateCTM(0, LogicalSize.Height - _backBuffer.LogicalSize.Height);
+                            context.DrawImage(new CGRect(default(CGPoint), _backBuffer.LogicalSize), _backBuffer.Image);
+                            context.Flush();
+                            NSGraphicsContext.CurrentContext.FlushGraphics();
+                        }
+                    }
+                }
                 _tl.Paint?.Invoke(dirtyRect.ToAvaloniaRect());
             }
 
+            public void SetBackBufferImage(SavedImage image)
+            {
+                lock (SyncRoot)
+                {
+                    _backBuffer?.Dispose();
+                    _backBuffer = image;
+                    if (image == null)
+                        return;
+
+                    if (_nonUiRedrawQueued)
+                        return;
+                    _nonUiRedrawQueued = true;
+                    Dispatcher.UIThread.Post(
+                        () =>
+                        {
+                            lock (SyncRoot)
+                            {
+                                if (!_nonUiRedrawQueued)
+                                    return;
+                                _nonUiRedrawQueued = false;
+                            }
+                            SetNeedsDisplayInRect(Frame);
+                            Display();
+                        }, DispatcherPriority.Render);
+
+                }
+            }
+            
             [Export("viewDidChangeBackingProperties:")]
             public void ViewDidChangeBackingProperties()
             {
@@ -78,7 +146,12 @@ namespace Avalonia.MonoMac
 
             public override void SetFrameSize(CGSize newSize)
             {
-                base.SetFrameSize(newSize);
+                lock (SyncRoot)
+                {
+                    base.SetFrameSize(newSize);
+                    LogicalSize = Frame.Size;
+                    PixelSize = ConvertSizeToBacking(LogicalSize);
+                }
 
                 if (_area != null)
                 {
@@ -92,6 +165,7 @@ namespace Avalonia.MonoMac
                 AddTrackingArea(_area);
                 UpdateCursor();
                 _tl?.Resized?.Invoke(_tl.ClientSize);
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Layout);
             }
 
             InputModifiers GetModifiers(NSEventModifierMask mod)
@@ -348,9 +422,16 @@ namespace Avalonia.MonoMac
             View.Dispose();
         }
 
-        public IRenderer CreateRenderer(IRenderRoot root) => new ImmediateRenderer(root);
+        public IRenderer CreateRenderer(IRenderRoot root) =>
+            MonoMacPlatform.UseDeferredRendering
+                ? new DeferredRenderer(root, AvaloniaLocator.Current.GetService<IRenderLoop>())
+                : (IRenderer) new ImmediateRenderer(root);
 
-        public void Invalidate(Rect rect) => View.SetNeedsDisplayInRect(View.Frame);
+        public void Invalidate(Rect rect)
+        {
+            if (!MonoMacPlatform.UseDeferredRendering)
+                View.SetNeedsDisplayInRect(View.Frame);
+        }
 
         public abstract Point PointToClient(Point point);
 

@@ -170,15 +170,14 @@
       <Name>Avalonia.Themes.Default</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\Skia\Avalonia.Skia\Avalonia.Skia.csproj">
-      <Project>{D2D3083-71DD-4CC9-8907-39A0D86FB322}</Project>
+      <Project>{7d2d3083-71dd-4cc9-8907-39a0d86fb322}</Project>
       <Name>Avalonia.Skia</Name>
-      <IsAppExtension>false</IsAppExtension>
-      <IsWatchApp>false</IsWatchApp>
     </ProjectReference>
     <ProjectReference Include="..\ControlCatalog\ControlCatalog.csproj">
       <Project>{d0a739b9-3c68-4ba6-a328-41606954b6bd}</Project>
       <Name>ControlCatalog</Name>
     </ProjectReference>
   </ItemGroup>
+  <Import Project="..\..\build\Sprache.props" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
 </Project>

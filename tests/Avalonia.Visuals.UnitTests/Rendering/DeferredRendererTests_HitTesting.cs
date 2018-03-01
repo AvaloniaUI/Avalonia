@@ -42,7 +42,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
                 root.Measure(Size.Infinity);
                 root.Arrange(new Rect(root.DesiredSize));
 
-                var result = root.Renderer.HitTest(new Point(100, 100), null);
+                var result = root.Renderer.HitTest(new Point(100, 100), root, null);
 
                 Assert.Equal(new[] { root.Child }, result);
             }
@@ -70,7 +70,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
                 root.Measure(Size.Infinity);
                 root.Arrange(new Rect(root.DesiredSize));
 
-                var result = root.Renderer.HitTest(new Point(100, 100), null);
+                var result = root.Renderer.HitTest(new Point(100, 100), root, null);
 
                 Assert.Empty(result);
             }
@@ -107,7 +107,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
                 root.Measure(Size.Infinity);
                 root.Arrange(new Rect(root.DesiredSize));
 
-                var result = root.Renderer.HitTest(new Point(100, 100), null);
+                var result = root.Renderer.HitTest(new Point(100, 100), root, null);
 
                 Assert.Empty(result);
             }
@@ -136,7 +136,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
                 root.Measure(Size.Infinity);
                 root.Arrange(new Rect(root.DesiredSize));
 
-                var result = root.Renderer.HitTest(new Point(10, 10), null);
+                var result = root.Renderer.HitTest(new Point(10, 10), root, null);
 
                 Assert.Empty(result);
             }
@@ -154,7 +154,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
                     {
                         Width = 200,
                         Height = 200,
-                        Children = new Controls.Controls
+                        Children =
                         {
                             new Border
                             {
@@ -180,7 +180,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
                 root.Measure(Size.Infinity);
                 root.Arrange(new Rect(container.DesiredSize));
 
-                var result = root.Renderer.HitTest(new Point(100, 100), null);
+                var result = root.Renderer.HitTest(new Point(100, 100), root, null);
 
                 Assert.Equal(new[] { container.Children[1], container.Children[0] }, result);
             }
@@ -198,7 +198,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
                     {
                         Width = 200,
                         Height = 200,
-                        Children = new Controls.Controls
+                        Children =
                         {
                             new Border
                             {
@@ -234,7 +234,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
                 root.Measure(Size.Infinity);
                 root.Arrange(new Rect(container.DesiredSize));
 
-                var result = root.Renderer.HitTest(new Point(100, 100), null);
+                var result = root.Renderer.HitTest(new Point(100, 100), root, null);
 
                 Assert.Equal(new[] { container.Children[2], container.Children[0], container.Children[1] }, result);
             }
@@ -255,7 +255,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
                         Height = 200,
                         Background = Brushes.Red,
                         ClipToBounds = false,
-                        Children = new Controls.Controls
+                        Children =
                         {
                             new Border
                             {
@@ -283,7 +283,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
                 container.Measure(Size.Infinity);
                 container.Arrange(new Rect(container.DesiredSize));
 
-                var result = root.Renderer.HitTest(new Point(120, 120), null);
+                var result = root.Renderer.HitTest(new Point(120, 120), root, null);
 
                 Assert.Equal(new IVisual[] { target, container }, result);
             }
@@ -303,7 +303,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
                         Width = 100,
                         Height = 200,
                         Background = Brushes.Red,
-                        Children = new Controls.Controls
+                        Children =
                         {
                             new Panel()
                             {
@@ -312,7 +312,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
                                 Background = Brushes.Red,
                                 Margin = new Thickness(0, 100, 0, 0),
                                 ClipToBounds = true,
-                                Children = new Controls.Controls
+                                Children =
                                 {
                                     (target = new Border()
                                     {
@@ -331,7 +331,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
                 root.Measure(Size.Infinity);
                 root.Arrange(new Rect(container.DesiredSize));
 
-                var result = root.Renderer.HitTest(new Point(50, 50), null);
+                var result = root.Renderer.HitTest(new Point(50, 50), root, null);
 
                 Assert.Equal(new[] { container }, result);
             }
@@ -354,7 +354,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
                         Width = 100,
                         Height = 200,
                         Background = Brushes.Red,
-                        Children = new Controls.Controls
+                        Children =
                         {
                             (target = new Border()
                             {
@@ -372,9 +372,11 @@ namespace Avalonia.Visuals.UnitTests.Rendering
                                 Margin = new Thickness(0, 100, 0, 0),
                                 Child = scroll = new ScrollContentPresenter()
                                 {
+                                    CanHorizontallyScroll = true,
+                                    CanVerticallyScroll = true,
                                     Content = new StackPanel()
                                     {
-                                        Children = new Controls.Controls
+                                        Children =
                                         {
                                             (item1 = new Border()
                                             {
@@ -404,11 +406,11 @@ namespace Avalonia.Visuals.UnitTests.Rendering
                 root.Measure(Size.Infinity);
                 root.Arrange(new Rect(container.DesiredSize));
 
-                var result = root.Renderer.HitTest(new Point(50, 150), null).First();
+                var result = root.Renderer.HitTest(new Point(50, 150), root, null).First();
 
                 Assert.Equal(item1, result);
 
-                result = root.Renderer.HitTest(new Point(50, 50), null).First();
+                result = root.Renderer.HitTest(new Point(50, 50), root, null).First();
 
                 Assert.Equal(target, result);
 
@@ -419,10 +421,10 @@ namespace Avalonia.Visuals.UnitTests.Rendering
                 container.InvalidateArrange();
                 container.Arrange(new Rect(container.DesiredSize));
 
-                result = root.Renderer.HitTest(new Point(50, 150), null).First();
+                result = root.Renderer.HitTest(new Point(50, 150), root, null).First();
                 Assert.Equal(item2, result);
 
-                result = root.Renderer.HitTest(new Point(50, 50), null).First();
+                result = root.Renderer.HitTest(new Point(50, 50), root, null).First();
                 Assert.Equal(target, result);
             }
         }
@@ -452,10 +454,10 @@ namespace Avalonia.Visuals.UnitTests.Rendering
 
                 var context = new DrawingContext(Mock.Of<IDrawingContextImpl>());
 
-                var result = root.Renderer.HitTest(new Point(100, 100), null);
+                var result = root.Renderer.HitTest(new Point(100, 100), root, null);
                 Assert.Equal(new[] { path }, result);
 
-                result = root.Renderer.HitTest(new Point(10, 10), null);
+                result = root.Renderer.HitTest(new Point(10, 10), root, null);
                 Assert.Empty(result);
             }
         }
@@ -492,10 +494,10 @@ namespace Avalonia.Visuals.UnitTests.Rendering
 
                 var context = new DrawingContext(Mock.Of<IDrawingContextImpl>());
 
-                var result = root.Renderer.HitTest(new Point(200, 200), null);
+                var result = root.Renderer.HitTest(new Point(200, 200), root, null);
                 Assert.Equal(new IVisual[] { canvas, border }, result);
 
-                result = root.Renderer.HitTest(new Point(110, 110), null);
+                result = root.Renderer.HitTest(new Point(110, 110), root, null);
                 Assert.Empty(result);
             }
         }

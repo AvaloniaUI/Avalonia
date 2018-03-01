@@ -14,6 +14,15 @@ namespace Avalonia.Platform
         IDisposable StartSystemTimer(TimeSpan interval, Action tick);
         string GetStackTrace();
         RuntimePlatformInfo GetRuntimeInfo();
+        IUnmanagedBlob AllocBlob(int size);
+    }
+
+    public interface IUnmanagedBlob : IDisposable
+    {
+        IntPtr Address { get; }
+        int Size { get; }
+        bool IsDisposed { get; }
+        
     }
 
     public struct RuntimePlatformInfo

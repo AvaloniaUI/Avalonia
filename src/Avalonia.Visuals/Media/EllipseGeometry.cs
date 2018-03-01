@@ -17,15 +17,9 @@ namespace Avalonia.Media
         public static readonly StyledProperty<Rect> RectProperty =
             AvaloniaProperty.Register<EllipseGeometry, Rect>(nameof(Rect));
 
-        public Rect Rect
-        {
-            get => GetValue(RectProperty);
-            set => SetValue(RectProperty, value);
-        }
-
         static EllipseGeometry()
         {
-            RectProperty.Changed.AddClassHandler<EllipseGeometry>(x => x.RectChanged);
+            AffectsGeometry(RectProperty);
         }
 
         /// <summary>
@@ -33,8 +27,6 @@ namespace Avalonia.Media
         /// </summary>
         public EllipseGeometry()
         {
-            IPlatformRenderInterface factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
-            PlatformImpl = factory.CreateStreamGeometry();
         }
 
         /// <summary>
@@ -46,17 +38,30 @@ namespace Avalonia.Media
             Rect = rect;
         }
 
+        /// <summary>
+        /// Gets or sets a rect that defines the bounds of the ellipse.
+        /// </summary>
+        public Rect Rect
+        {
+            get => GetValue(RectProperty);
+            set => SetValue(RectProperty, value);
+        }
+
         /// <inheritdoc/>
         public override Geometry Clone()
         {
             return new EllipseGeometry(Rect);
         }
 
-        private void RectChanged(AvaloniaPropertyChangedEventArgs e)
+        /// <inheritdoc/>
+        protected override IGeometryImpl CreateDefiningGeometry()
         {
-            var rect = (Rect)e.NewValue;
-            using (var ctx = ((IStreamGeometryImpl)PlatformImpl).Open())
+            var factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
+            var geometry = factory.CreateStreamGeometry();
+
+            using (var ctx = geometry.Open())
             {
+                var rect = Rect;
                 double controlPointRatio = (Math.Sqrt(2) - 1) * 4 / 3;
                 var center = rect.Center;
                 var radius = new Vector(rect.Width / 2, rect.Height / 2);
@@ -80,6 +85,8 @@ namespace Avalonia.Media
                 ctx.CubicBezierTo(new Point(x0, y1), new Point(x1, y0), new Point(x2, y0));
                 ctx.EndFigure(true);
             }
+
+            return geometry;
         }
     }
 }

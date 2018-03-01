@@ -30,7 +30,7 @@ public class Parameters
     public DirectoryPath NugetRoot { get; private set; }
     public DirectoryPath ZipRoot { get; private set; }
     public DirectoryPath BinRoot { get; private set; }
-    public DirectoryPath TestsRoot { get; private set; }
+    public DirectoryPath DesignerTestsRoot { get; private set; }
     public string DirSuffix { get; private set; }
     public string DirSuffixIOS { get; private set; }
     public DirectoryPathCollection BuildDirs { get; private set; }
@@ -97,7 +97,7 @@ public class Parameters
             else
             {
                 // Use AssemblyVersion with Build as version
-                Version += "-build" + context.EnvironmentVariable("APPVEYOR_BUILD_NUMBER") + "-alpha";
+                Version += "-build" + context.EnvironmentVariable("APPVEYOR_BUILD_NUMBER") + "-beta";
             }
         }
 
@@ -106,7 +106,7 @@ public class Parameters
         NugetRoot = ArtifactsDir.Combine("nuget");
         ZipRoot = ArtifactsDir.Combine("zip");
         BinRoot = ArtifactsDir.Combine("bin");
-        TestsRoot = ArtifactsDir.Combine("tests");
+        DesignerTestsRoot = ArtifactsDir.Combine("designer-tests");
 
         BuildDirs = context.GetDirectories("**/bin") + context.GetDirectories("**/obj");
 

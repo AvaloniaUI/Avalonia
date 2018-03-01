@@ -4,12 +4,15 @@
 using System;
 using Avalonia.Media;
 using Avalonia.Rendering.Utilities;
+using Avalonia.Utilities;
 using SharpDX.Direct2D1;
 
 namespace Avalonia.Direct2D1.Media
 {
     public sealed class ImageBrushImpl : BrushImpl
     {
+        OptionalDispose<Bitmap> _bitmap;
+
         public ImageBrushImpl(
             ITileBrush brush,
             SharpDX.Direct2D1.RenderTarget target,
@@ -20,9 +23,10 @@ namespace Avalonia.Direct2D1.Media
 
             if (!calc.NeedsIntermediate)
             {
+                _bitmap = bitmap.GetDirect2DBitmap(target);
                 PlatformBrush = new BitmapBrush(
                     target,
-                    bitmap.GetDirect2DBitmap(target),
+                    _bitmap.Value,
                     GetBitmapBrushProperties(brush),
                     GetBrushProperties(brush, calc.DestinationRect));
             }
@@ -41,7 +45,7 @@ namespace Avalonia.Direct2D1.Media
 
         public override void Dispose()
         {
-            ((BitmapBrush)PlatformBrush)?.Bitmap.Dispose();
+            _bitmap.Dispose();
             base.Dispose();
         }
 
@@ -97,7 +101,8 @@ namespace Avalonia.Direct2D1.Media
                 context.Clear(Colors.Transparent);
                 context.PushClip(calc.IntermediateClip);
                 context.Transform = calc.IntermediateTransform;
-                context.DrawImage(bitmap, 1, rect, rect);
+                
+                context.DrawImage(RefCountable.CreateUnownedNotClonable(bitmap), 1, rect, rect);
                 context.PopClip();
             }
 

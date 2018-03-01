@@ -253,8 +253,9 @@ namespace Direct3DInteropSample
 
             public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
             {
-                return new DrawingContextImpl(visualBrushRenderer, _window._d2dRenderTarget,
-                    AvaloniaLocator.Current.GetService<SharpDX.DirectWrite.Factory>());
+                return new DrawingContextImpl(visualBrushRenderer, null, _window._d2dRenderTarget,
+                    AvaloniaLocator.Current.GetService<SharpDX.DirectWrite.Factory>(),
+                    AvaloniaLocator.Current.GetService<ImagingFactory>());
             }
         }
 

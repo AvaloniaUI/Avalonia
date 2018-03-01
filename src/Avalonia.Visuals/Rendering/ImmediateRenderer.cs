@@ -69,7 +69,7 @@ namespace Avalonia.Rendering
 
                     if (DrawFps)
                     {
-                        RenderFps(context.PlatformImpl, _root.Bounds, true);
+                        RenderFps(context.PlatformImpl, _root.Bounds, null);
                     }
                 }
             }
@@ -136,9 +136,9 @@ namespace Avalonia.Rendering
         }
 
         /// <inheritdoc/>
-        public IEnumerable<IVisual> HitTest(Point p, Func<IVisual, bool> filter)
+        public IEnumerable<IVisual> HitTest(Point p, IVisual root, Func<IVisual, bool> filter)
         {
-            return HitTest(_root, p, filter);
+            return HitTest(root, p, filter);
         }
 
         /// <inheritdoc/>
@@ -169,7 +169,7 @@ namespace Avalonia.Rendering
         {
             foreach (var e in visual.GetSelfAndVisualDescendants())
             {
-                BoundsTracker.SetTransformedBounds((Visual)visual, null);
+                visual.TransformedBounds = null;
             }
         }
 
@@ -197,7 +197,7 @@ namespace Avalonia.Rendering
 
             if (filter?.Invoke(visual) != false)
             {
-                bool containsPoint = BoundsTracker.GetTransformedBounds((Visual)visual)?.Contains(p) == true;
+                bool containsPoint = visual.TransformedBounds?.Contains(p) == true;
 
                 if ((containsPoint || !visual.ClipToBounds) && visual.VisualChildren.Count > 0)
                 {
@@ -257,10 +257,7 @@ namespace Avalonia.Rendering
                         new TransformedBounds(bounds, new Rect(), context.CurrentContainerTransform);
 #pragma warning restore 0618
 
-                    if (visual is Visual)
-                    {
-                        BoundsTracker.SetTransformedBounds((Visual)visual, transformed);
-                    }
+                    visual.TransformedBounds = transformed;
 
                     foreach (var child in visual.VisualChildren.OrderBy(x => x, ZIndexComparer.Instance))
                     {

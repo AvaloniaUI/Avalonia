@@ -38,7 +38,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="SelectionBoxItem"/> property.
         /// </summary>
         public static readonly DirectProperty<DropDown, object> SelectionBoxItemProperty =
-            AvaloniaProperty.RegisterDirect<DropDown, object>("SelectionBoxItem", o => o.SelectionBoxItem);
+            AvaloniaProperty.RegisterDirect<DropDown, object>(nameof(SelectionBoxItem), o => o.SelectionBoxItem);
 
         private bool _isDropDownOpen;
         private Popup _popup;
@@ -96,6 +96,16 @@ namespace Avalonia.Controls
             this.UpdateSelectionBoxItem(this.SelectedItem);
         }
 
+        protected override void OnGotFocus(GotFocusEventArgs e)
+        {
+            base.OnGotFocus(e);
+
+            if (!e.Handled && e.NavigationMethod == NavigationMethod.Directional)
+            {
+                e.Handled = UpdateSelectionFromEventSource(e.Source);
+            }
+        }
+
         /// <inheritdoc/>
         protected override void OnKeyDown(KeyEventArgs e)
         {
@@ -104,7 +114,7 @@ namespace Avalonia.Controls
             if (!e.Handled)
             {
                 if (e.Key == Key.F4 ||
-                    (e.Key == Key.Down && ((e.Modifiers & InputModifiers.Alt) != 0)))
+                    ((e.Key == Key.Down || e.Key == Key.Up) && ((e.Modifiers & InputModifiers.Alt) != 0)))
                 {
                     IsDropDownOpen = !IsDropDownOpen;
                     e.Handled = true;
@@ -114,27 +124,48 @@ namespace Avalonia.Controls
                     IsDropDownOpen = false;
                     e.Handled = true;
                 }
+
+                if (!IsDropDownOpen)
+                {
+                    if (e.Key == Key.Down)
+                    {
+                        if (SelectedIndex == -1)
+                            SelectedIndex = 0;
+                        
+                        if (++SelectedIndex >= ItemCount)
+                            SelectedIndex = 0;
+                        
+                        e.Handled = true;
+                    }
+                    else if (e.Key == Key.Up)
+                    {
+                        if (--SelectedIndex < 0)
+                            SelectedIndex = ItemCount - 1;
+                        
+                        e.Handled = true;
+                    }
+                }
             }
         }
 
         /// <inheritdoc/>
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
-            if (!IsDropDownOpen && ((IVisual)e.Source).GetVisualRoot() is PopupRoot)
-            {
-                IsDropDownOpen = true;
-                e.Handled = true;
-            }
-
             if (!e.Handled)
             {
-                if (UpdateSelectionFromEventSource(e.Source))
+                if (((IVisual)e.Source).GetVisualRoot() is PopupRoot)
                 {
-                    _popup?.Close();
-                    e.Handled = true;
+                    if (UpdateSelectionFromEventSource(e.Source))
+                    {
+                        _popup?.Close();
+                        e.Handled = true;
+                    }
+                }
+                else
+                {
+                    IsDropDownOpen = !IsDropDownOpen;
                 }
             }
-
             base.OnPointerPressed(e);
         }
 

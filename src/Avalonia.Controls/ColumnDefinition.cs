@@ -12,19 +12,19 @@ namespace Avalonia.Controls
         /// Defines the <see cref="MaxWidth"/> property.
         /// </summary>
         public static readonly StyledProperty<double> MaxWidthProperty =
-            AvaloniaProperty.Register<ColumnDefinition, double>("MaxWidth", double.PositiveInfinity);
+            AvaloniaProperty.Register<ColumnDefinition, double>(nameof(MaxWidth), double.PositiveInfinity);
 
         /// <summary>
         /// Defines the <see cref="MinWidth"/> property.
         /// </summary>
         public static readonly StyledProperty<double> MinWidthProperty =
-            AvaloniaProperty.Register<ColumnDefinition, double>("MinWidth");
+            AvaloniaProperty.Register<ColumnDefinition, double>(nameof(MinWidth));
 
         /// <summary>
         /// Defines the <see cref="Width"/> property.
         /// </summary>
         public static readonly StyledProperty<GridLength> WidthProperty =
-            AvaloniaProperty.Register<ColumnDefinition, GridLength>("Width", new GridLength(1, GridUnitType.Star));
+            AvaloniaProperty.Register<ColumnDefinition, GridLength>(nameof(Width), new GridLength(1, GridUnitType.Star));
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ColumnDefinition"/> class.

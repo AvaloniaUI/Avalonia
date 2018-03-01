@@ -63,7 +63,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Templates
         {
             var selector = new MemberSelector() { MemberName = "StringValue" };
 
-            Assert.Equal(null, selector.Select(null));
+            Assert.Null(selector.Select(null));
         }
 
         [Fact]
@@ -73,7 +73,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Templates
 
             var data = new Item() { StringValue = "Value1" };
 
-            Assert.Same(null, selector.Select(data));
+            Assert.Null(selector.Select(data));
         }
 
         [Fact]

@@ -48,12 +48,10 @@ namespace Avalonia.Gtk3.Interop
             }
         }
 
-        public static IDisposable StarTimer(uint interval, Action tick)
+        public static IDisposable StartTimer(int priority, uint interval, Action tick)
         {
-            if (interval == 0)
-                throw new ArgumentException("Don't know how to create a timer with zero or negative interval");
             var timer = new Timer ();
-            GlibTimeout.Add(GlibPriority.FromDispatcherPriority(DispatcherPriority.Background), interval,
+            GlibTimeout.Add(priority, interval,
                 () =>
                 {
                     if (timer.Stopped)

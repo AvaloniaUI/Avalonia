@@ -362,5 +362,28 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
             await RenderToFile(target);
             CompareImages();
         }
+
+        [Fact]
+        public async Task Path_With_Rotated_Geometry()
+        {
+            var target = new Border
+            {
+                Width = 200,
+                Height = 200,
+                Background = Brushes.White,
+                Child = new Path
+                {
+                    Fill = Brushes.Red,
+                    Data = new RectangleGeometry
+                    {
+                        Rect = new Rect(50, 50, 100, 100),
+                        Transform = new RotateTransform(45),
+                    }
+                }
+            };
+
+            await RenderToFile(target);
+            CompareImages();
+        }
     }
 }

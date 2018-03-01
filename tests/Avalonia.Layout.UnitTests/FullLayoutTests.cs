@@ -85,7 +85,7 @@ namespace Avalonia.Layout.UnitTests
                     {
                         Width = 200,
                         Height = 200,
-                        CanScrollHorizontally = true,
+                        HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
                         HorizontalAlignment = HorizontalAlignment.Center,
                         VerticalAlignment = VerticalAlignment.Center,
                         Content = textBlock = new TextBlock
@@ -109,7 +109,7 @@ namespace Avalonia.Layout.UnitTests
                 var presenters = scrollViewer.GetTemplateChildren().OfType<ScrollContentPresenter>().ToList();
 
                 Assert.Equal(2, scrollBars.Count);
-                Assert.Equal(1, presenters.Count);
+                Assert.Single(presenters);
 
                 var presenter = presenters[0];
                 Assert.Equal(new Size(190, 190), presenter.Bounds.Size);

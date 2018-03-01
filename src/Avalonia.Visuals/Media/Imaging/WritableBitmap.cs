@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Platform;
+using Avalonia.Utilities;
 
 namespace Avalonia.Media.Imaging
 {
@@ -16,7 +17,7 @@ namespace Avalonia.Media.Imaging
             : base(AvaloniaLocator.Current.GetService<IPlatformRenderInterface>().CreateWritableBitmap(width, height, format))
         {
         }
-
-        public ILockedFramebuffer Lock() => ((IWritableBitmapImpl) PlatformImpl).Lock();
+        
+        public ILockedFramebuffer Lock() => ((IWritableBitmapImpl) PlatformImpl.Item).Lock();
     }
 }

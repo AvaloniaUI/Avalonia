@@ -12,25 +12,16 @@ namespace ControlCatalog
     {
         static void Main(string[] args)
         {
-            InitializeLogging();
-
             // TODO: Make this work with GTK/Skia/Cairo depending on command-line args
             // again.
-            AppBuilder.Configure<App>()
-                .UsePlatformDetect()
-                .Start<MainWindow>();
+            BuildAvaloniaApp().Start<MainWindow>();
         }
 
-        // This will be made into a runtime configuration extension soon!
-        private static void InitializeLogging()
-        {
-#if DEBUG
-            SerilogLogger.Initialize(new LoggerConfiguration()
-                .MinimumLevel.Warning()
-                .WriteTo.Trace(outputTemplate: "{Area}: {Message}")
-                .CreateLogger());
-#endif
-        }
+        /// <summary>
+        /// This method is needed for IDE previewer infrastructure
+        /// </summary>
+        public static AppBuilder BuildAvaloniaApp()
+            => AppBuilder.Configure<App>().LogToDebug().UsePlatformDetect();
 
         private static void ConfigureAssetAssembly(AppBuilder builder)
         {

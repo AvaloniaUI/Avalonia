@@ -108,8 +108,32 @@ namespace Avalonia.Controls
         /// <returns>The desired size of the control.</returns>
         protected override Size MeasureOverride(Size availableSize)
         {
-            var child = Child;
-            var padding = Padding + new Thickness(BorderThickness);
+            return MeasureOverrideImpl(availableSize, Child, Padding, BorderThickness);
+        }
+
+        /// <summary>
+        /// Arranges the control's child.
+        /// </summary>
+        /// <param name="finalSize">The size allocated to the control.</param>
+        /// <returns>The space taken.</returns>
+        protected override Size ArrangeOverride(Size finalSize)
+        {
+            if (Child != null)
+            {
+                var padding = Padding + new Thickness(BorderThickness);
+                Child.Arrange(new Rect(finalSize).Deflate(padding));
+            }
+
+            return finalSize;
+        }
+
+        internal static Size MeasureOverrideImpl(
+            Size availableSize,
+            IControl child,
+            Thickness padding,
+            double borderThickness)
+        {
+            padding += new Thickness(borderThickness);
 
             if (child != null)
             {
@@ -120,24 +144,6 @@ namespace Avalonia.Controls
             {
                 return new Size(padding.Left + padding.Right, padding.Bottom + padding.Top);
             }
-        }
-
-        /// <summary>
-        /// Arranges the control's child.
-        /// </summary>
-        /// <param name="finalSize">The size allocated to the control.</param>
-        /// <returns>The space taken.</returns>
-        protected override Size ArrangeOverride(Size finalSize)
-        {
-            var child = Child;
-
-            if (child != null)
-            {
-                var padding = Padding + new Thickness(BorderThickness);
-                child.Arrange(new Rect(finalSize).Deflate(padding));
-            }
-
-            return finalSize;
         }
     }
 }

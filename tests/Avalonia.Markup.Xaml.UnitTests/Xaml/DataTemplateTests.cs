@@ -17,9 +17,10 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             {
                 var xaml = @"
 <Window xmlns='https://github.com/avaloniaui'
-        xmlns:sys='clr-namespace:System;assembly=mscorlib'>
+        xmlns:sys='clr-namespace:System;assembly=mscorlib'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
     <Window.DataTemplates>
-        <DataTemplate DataType='{Type sys:String}'>
+        <DataTemplate DataType='{x:Type sys:String}'>
             <Canvas Name='foo'/>
         </DataTemplate>
     </Window.DataTemplates>
@@ -43,10 +44,10 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
                 var xaml = @"
-<Window xmlns='https://github.com/avaloniaui'
+<Window xmlns='https://github.com/avaloniaui' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
         xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests;assembly=Avalonia.Markup.Xaml.UnitTests'>
     <Window.DataTemplates>
-        <DataTemplate DataType='{Type local:TestViewModel}'>
+        <DataTemplate DataType='{x:Type local:TestViewModel}'>
             <Canvas Name='foo' DataContext='{Binding Child}'/>
         </DataTemplate>
     </Window.DataTemplates>

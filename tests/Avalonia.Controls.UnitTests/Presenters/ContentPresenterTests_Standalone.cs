@@ -12,6 +12,7 @@ using Moq;
 using System;
 using System.Linq;
 using Xunit;
+using Avalonia.Rendering;
 
 namespace Avalonia.Controls.UnitTests.Presenters
 {
@@ -41,7 +42,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
             var logicalChildren = target.GetLogicalChildren();
 
-            Assert.Equal(1, logicalChildren.Count());
+            Assert.Single(logicalChildren);
             Assert.Equal(content, logicalChildren.First());
         }
 
@@ -56,6 +57,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
             var parentMock = new Mock<Control>();
             parentMock.As<IContentPresenterHost>();
+            parentMock.As<IRenderRoot>();
             parentMock.As<IStyleRoot>();
 
             (target as ISetLogicalParent).SetParent(parentMock.Object);
@@ -100,6 +102,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             };
 
             var parentMock = new Mock<Control>();
+            parentMock.As<IRenderRoot>();
             parentMock.As<IStyleRoot>();
             parentMock.As<ILogical>().SetupGet(l => l.IsAttachedToLogicalTree).Returns(true);
 
@@ -144,6 +147,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
             var parentMock = new Mock<Control>();
             parentMock.As<IContentPresenterHost>();
+            parentMock.As<IRenderRoot>();
             parentMock.As<IStyleRoot>();
 
             (target as ISetLogicalParent).SetParent(parentMock.Object);
@@ -186,16 +190,16 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
             var logicalChildren = target.GetLogicalChildren();
 
-            Assert.Equal(1, logicalChildren.Count());
+            Assert.Single(logicalChildren);
 
             target.Content = "bar";
             target.UpdateChild();
 
-            Assert.Equal(null, foo.Parent);
+            Assert.Null(foo.Parent);
 
             logicalChildren = target.GetLogicalChildren();
 
-            Assert.Equal(1, logicalChildren.Count());
+            Assert.Single(logicalChildren);
             Assert.NotEqual(foo, logicalChildren.First());
         }
 

@@ -12,19 +12,19 @@ namespace Avalonia.Controls
         /// Defines the <see cref="MaxHeight"/> property.
         /// </summary>
         public static readonly StyledProperty<double> MaxHeightProperty =
-            AvaloniaProperty.Register<RowDefinition, double>("MaxHeight", double.PositiveInfinity);
+            AvaloniaProperty.Register<RowDefinition, double>(nameof(MaxHeight), double.PositiveInfinity);
 
         /// <summary>
         /// Defines the <see cref="MinHeight"/> property.
         /// </summary>
         public static readonly StyledProperty<double> MinHeightProperty =
-            AvaloniaProperty.Register<RowDefinition, double>("MinHeight");
+            AvaloniaProperty.Register<RowDefinition, double>(nameof(MinHeight));
 
         /// <summary>
         /// Defines the <see cref="Height"/> property.
         /// </summary>
         public static readonly StyledProperty<GridLength> HeightProperty =
-            AvaloniaProperty.Register<RowDefinition, GridLength>("Height", new GridLength(1, GridUnitType.Star));
+            AvaloniaProperty.Register<RowDefinition, GridLength>(nameof(Height), new GridLength(1, GridUnitType.Star));
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RowDefinition"/> class.

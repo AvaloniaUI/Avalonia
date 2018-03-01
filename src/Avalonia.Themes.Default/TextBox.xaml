@@ -1,4 +1,4 @@
-<Styles xmlns="https://github.com/avaloniaui">
+<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <Style Selector="TextBox">
     <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}"/>
     <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}"/>
@@ -18,45 +18,36 @@
                        Text="{TemplateBinding Watermark}"
                        DockPanel.Dock="Top">
               <TextBlock.IsVisible>
-                <MultiBinding Converter="{Static BoolConverters.And}">
+                <MultiBinding Converter="{x:Static BoolConverters.And}">
                   <Binding RelativeSource="{RelativeSource TemplatedParent}"
                            Path="UseFloatingWatermark"/>
                   <Binding RelativeSource="{RelativeSource TemplatedParent}"
                            Path="Text"
-                           Converter="{Static StringConverters.NotNullOrEmpty}"/>
+                           Converter="{x:Static StringConverters.NotNullOrEmpty}"/>
                 </MultiBinding>
               </TextBlock.IsVisible>
             </TextBlock>
 
-            <DockPanel LastChildFill="True">
-              <Canvas Name="error" DockPanel.Dock="Right" Width="14" Height="14" Margin="4 0 1 0">
-                <ToolTip.Tip>
-                  <ItemsControl Items="{TemplateBinding DataValidationErrors}" MemberSelector="Message"/>
-                </ToolTip.Tip>
-                <Path Data="M14,7 A7,7 0 0,0 0,7 M0,7 A7,7 0 1,0 14,7 M7,3l0,5 M7,9l0,2" Stroke="{DynamicResource ErrorBrush}" StrokeThickness="2"/>
-              </Canvas>
-              
-              <ScrollViewer CanScrollHorizontally="{TemplateBinding CanScrollHorizontally}"
-                            HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
+            <DataValidationErrors>
+              <ScrollViewer HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
                             VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}">
                 
-              <Panel>
-                <TextBlock Name="watermark"
-                           Opacity="0.5"
-                           Text="{TemplateBinding Watermark}"
-                           IsVisible="{TemplateBinding Path=Text, Converter={Static StringConverters.NullOrEmpty}}"/>
-                <TextPresenter Name="PART_TextPresenter"
-                               CaretIndex="{TemplateBinding CaretIndex}"
-                               SelectionStart="{TemplateBinding SelectionStart}"
-                               SelectionEnd="{TemplateBinding SelectionEnd}"
-                               Text="{TemplateBinding Text, Mode=TwoWay}"
-                               TextAlignment="{TemplateBinding TextAlignment}"
-                               TextWrapping="{TemplateBinding TextWrapping}"/>
-              </Panel>
-            </ScrollViewer>
+                <Panel>
+                  <TextBlock Name="watermark"
+                             Opacity="0.5"
+                             Text="{TemplateBinding Watermark}"
+                             IsVisible="{TemplateBinding Path=Text, Converter={x:Static StringConverters.NullOrEmpty}}"/>
+                  <TextPresenter Name="PART_TextPresenter"
+                                 Text="{TemplateBinding Text, Mode=TwoWay}"
+                                 CaretIndex="{TemplateBinding CaretIndex}"
+                                 SelectionStart="{TemplateBinding SelectionStart}"
+                                 SelectionEnd="{TemplateBinding SelectionEnd}"
+                                 TextAlignment="{TemplateBinding TextAlignment}"
+                                 TextWrapping="{TemplateBinding TextWrapping}"/>
+                </Panel>
+              </ScrollViewer>
+            </DataValidationErrors>
           </DockPanel>
-
-        </DockPanel>
         </Border>
       </ControlTemplate>
     </Setter>
@@ -68,16 +59,6 @@
     <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderDarkBrush}"/>
   </Style>
   <Style Selector="TextBox:error /template/ Border#border">
-    <Setter Property="BorderBrush" Value="{DynamicResource ErrorBrush}"/>
-  </Style>
-  <Style Selector="TextBox /template/ Canvas#error">
-    <Setter Property="IsVisible" Value="False"/>
-  </Style>
-  <Style Selector="TextBox:error /template/ Canvas#error">
-    <Setter Property="IsVisible" Value="True"/>
-  </Style>
-  <Style Selector="TextBox /template/ ToolTip">
-    <Setter Property="Background" Value="{DynamicResource ErrorBrushLight}"/>
     <Setter Property="BorderBrush" Value="{DynamicResource ErrorBrush}"/>
   </Style>
 </Styles>

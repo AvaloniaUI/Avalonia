@@ -6,6 +6,7 @@ using System.Linq;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Utilities;
+using Avalonia.Utilities;
 
 namespace Avalonia.Skia
 {
@@ -39,9 +40,9 @@ namespace Avalonia.Skia
             Canvas.Clear(color.ToSKColor());
         }
 
-        public void DrawImage(IBitmapImpl source, double opacity, Rect sourceRect, Rect destRect)
+        public void DrawImage(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect)
         {
-            var impl = (BitmapImpl)source;
+            var impl = (BitmapImpl)source.Item;
             var s = sourceRect.ToSKRect();
             var d = destRect.ToSKRect();
             using (var paint = new SKPaint()
@@ -51,10 +52,10 @@ namespace Avalonia.Skia
             }
         }
 
-        public void DrawImage(IBitmapImpl source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect)
+        public void DrawImage(IRef<IBitmapImpl> source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect)
         {
             PushOpacityMask(opacityMask, opacityMaskRect);
-            DrawImage(source, 1, new Rect(0, 0, source.PixelWidth, source.PixelHeight), destRect);
+            DrawImage(source, 1, new Rect(0, 0, source.Item.PixelWidth, source.Item.PixelHeight), destRect);
             PopOpacityMask();
         }
 
@@ -68,7 +69,7 @@ namespace Avalonia.Skia
 
         public void DrawGeometry(IBrush brush, Pen pen, IGeometryImpl geometry)
         {
-            var impl = (StreamGeometryImpl)geometry;
+            var impl = (GeometryImpl)geometry;
             var size = geometry.Bounds.Size;
 
             using (var fill = brush != null ? CreatePaint(brush, size) : default(PaintWrapper))
@@ -112,6 +113,7 @@ namespace Avalonia.Skia
             public readonly SKPaint Paint;
 
             private IDisposable _disposable1;
+            private IDisposable _disposable2;
 
             public IDisposable ApplyTo(SKPaint paint)
             {
@@ -127,6 +129,8 @@ namespace Avalonia.Skia
             {
                 if (_disposable1 == null)
                     _disposable1 = disposable;
+                else if (_disposable2 == null)
+                    _disposable2 = disposable;
                 else
                     throw new InvalidOperationException();
             }
@@ -135,12 +139,14 @@ namespace Avalonia.Skia
             {
                 Paint = paint;
                 _disposable1 = null;
+                _disposable2 = null;
             }
 
             public void Dispose()
             {
                 Paint?.Dispose();
                 _disposable1?.Dispose();
+                _disposable2?.Dispose();
             }
         }
 
@@ -221,8 +227,8 @@ namespace Avalonia.Skia
                             _visualBrushRenderer.RenderVisualBrush(ctx, visualBrush);
                         }
 
-                        rv.AddDisposable(tileBrushImage);
                         tileBrushImage = intermediate;
+                        rv.AddDisposable(tileBrushImage);
                     }
                 }
                 else
@@ -232,7 +238,7 @@ namespace Avalonia.Skia
             }
             else
             {
-                tileBrushImage = (BitmapImpl)((tileBrush as IImageBrush)?.Source?.PlatformImpl);
+                tileBrushImage = (BitmapImpl)((tileBrush as IImageBrush)?.Source?.PlatformImpl.Item);
             }
 
             if (tileBrush != null && tileBrushImage != null)
@@ -247,7 +253,7 @@ namespace Avalonia.Skia
                     context.Clear(Colors.Transparent);
                     context.PushClip(calc.IntermediateClip);
                     context.Transform = calc.IntermediateTransform;
-                    context.DrawImage(tileBrushImage, 1, rect, rect);
+                    context.DrawImage(RefCountable.CreateUnownedNotClonable(tileBrushImage), 1, rect, rect);
                     context.PopClip();
                 }
 
@@ -347,6 +353,12 @@ namespace Avalonia.Skia
                 var textImpl = (FormattedTextImpl)text;
                 textImpl.Draw(this, Canvas, origin.ToSKPoint(), paint, CanUseLcdRendering);
             }
+        }
+
+        public IRenderTargetBitmapImpl CreateLayer(Size size)
+        {
+            var pixelSize = size * (_dpi / 96);
+            return new BitmapImpl((int)pixelSize.Width, (int)pixelSize.Height, _dpi);
         }
 
         public void PushClip(Rect clip)

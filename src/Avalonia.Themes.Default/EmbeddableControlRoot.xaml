@@ -7,8 +7,8 @@
       <Border Background="{TemplateBinding Background}">
         <AdornerDecorator>
           <ContentPresenter Name="PART_ContentPresenter" 
-                            Content="{TemplateBinding Content}" 
                             ContentTemplate="{TemplateBinding ContentTemplate}"
+                            Content="{TemplateBinding Content}" 
                             Margin="{TemplateBinding Padding}"/>
         </AdornerDecorator>
       </Border>

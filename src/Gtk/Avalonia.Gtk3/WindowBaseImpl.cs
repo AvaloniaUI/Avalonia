@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using Avalonia.Controls;
 using Avalonia.Gtk3.Interop;
 using Avalonia.Input;
@@ -29,7 +30,9 @@ namespace Avalonia.Gtk3
         private GCHandle _gcHandle;
         private object _lock = new object();
         private IDeferredRenderOperation _nextRenderOperation;
-
+        private readonly AutoResetEvent _canSetNextOperation = new AutoResetEvent(true);
+        internal IntPtr? GdkWindowHandle;
+        private bool _overrideRedirect;
         public WindowBaseImpl(GtkWindow gtkWidget)
         {
             
@@ -53,6 +56,7 @@ namespace Avalonia.Gtk3
             ConnectEvent("leave-notify-event", OnLeaveNotifyEvent);
             Connect<Native.D.signal_generic>("destroy", OnDestroy);
             Native.GtkWidgetRealize(gtkWidget);
+            GdkWindowHandle = this.Handle.Handle;
             _lastSize = ClientSize;
             if (Gtk3Platform.UseDeferredRendering)
             {
@@ -66,12 +70,15 @@ namespace Avalonia.Gtk3
         private bool OnConfigured(IntPtr gtkwidget, IntPtr ev, IntPtr userdata)
         {
             int w, h;
-            Native.GtkWindowGetSize(GtkWidget, out w, out h);
-            var size = ClientSize = new Size(w, h);
-            if (_lastSize != size)
+            if (!OverrideRedirect)
             {
-                Resized?.Invoke(size);
-                _lastSize = size;
+                Native.GtkWindowGetSize(GtkWidget, out w, out h);
+                var size = ClientSize = new Size(w, h);
+                if (_lastSize != size)
+                {
+                    Resized?.Invoke(size);
+                    _lastSize = size;
+                }
             }
             var pos = Position;
             if (_lastPosition != pos)
@@ -255,11 +262,19 @@ namespace Avalonia.Gtk3
 
         public void SetNextRenderOperation(IDeferredRenderOperation op)
         {
-            lock (_lock)
+            while (true)
             {
-                _nextRenderOperation?.Dispose();
-                _nextRenderOperation = op;
+                lock (_lock)
+                {
+                    if (_nextRenderOperation == null)
+                    {
+                        _nextRenderOperation = op;
+                        return;
+                    }
+                }
+                _canSetNextOperation.WaitOne();
             }
+            
         }
 
         private void OnRenderTick()
@@ -272,10 +287,11 @@ namespace Avalonia.Gtk3
                     op = _nextRenderOperation;
                     _nextRenderOperation = null;
                 }
+                _canSetNextOperation.Set();
             }
             if (op != null)
             {
-                op?.RenderNow();
+                op?.RenderNow(null);
                 op?.Dispose();
             }
         }
@@ -335,7 +351,7 @@ namespace Avalonia.Gtk3
 
         void OnInput(RawInputEventArgs args)
         {
-            Dispatcher.UIThread.InvokeAsync(() => Input?.Invoke(args), DispatcherPriority.Input);
+            Dispatcher.UIThread.Post(() => Input?.Invoke(args), DispatcherPriority.Input);
         }
 
         public Point PointToClient(Point point)
@@ -394,6 +410,28 @@ namespace Avalonia.Gtk3
             if (GtkWidget.IsClosed)
                 return;
             Native.GtkWindowResize(GtkWidget, (int)value.Width, (int)value.Height);
+            if (OverrideRedirect)
+            {
+                var size = ClientSize = value;
+                if (_lastSize != size)
+                {
+                    Resized?.Invoke(size);
+                    _lastSize = size;
+                }
+            }
+        }
+
+        public bool OverrideRedirect
+        {
+            get => _overrideRedirect;
+            set
+            {
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    Native.GdkWindowSetOverrideRedirect(Native.GtkWidgetGetWindow(GtkWidget), value);
+                    _overrideRedirect = value;
+                }
+            }
         }
         
         public IScreenImpl Screen

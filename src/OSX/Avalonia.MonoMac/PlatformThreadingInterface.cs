@@ -3,20 +3,24 @@ using System.Threading;
 using Avalonia.Platform;
 using Avalonia.Threading;
 using MonoMac.AppKit;
+using MonoMac.CoreFoundation;
 using MonoMac.CoreGraphics;
 using MonoMac.Foundation;
+using MonoMac.ObjCRuntime;
 
 namespace Avalonia.MonoMac
 {
-    class PlatformThreadingInterface : IPlatformThreadingInterface
+    class PlatformThreadingInterface : NSObject, IPlatformThreadingInterface
     {
         private bool _signaled;
+        private const string SignaledSelectorName = "avaloniauiSignaled";
+        private readonly Selector _signaledSelector = new Selector(SignaledSelectorName);
         public static PlatformThreadingInterface Instance { get; } = new PlatformThreadingInterface();
         public bool CurrentThreadIsLoopThread => NSThread.Current.IsMainThread;
 
         public event Action<DispatcherPriority?> Signaled;
 
-        public IDisposable StartTimer(TimeSpan interval, Action tick)
+        public IDisposable StartTimer(DispatcherPriority priority, TimeSpan interval, Action tick)
             => NSTimer.CreateRepeatingScheduledTimer(interval, () => tick());
 
         public void Signal(DispatcherPriority prio)
@@ -27,18 +31,25 @@ namespace Avalonia.MonoMac
                     return;
                 _signaled = true;
             }
-            NSApplication.SharedApplication.BeginInvokeOnMainThread(() =>
-            {
-                lock (this)
+            PerformSelector(_signaledSelector, NSThread.MainThread, this, false,
+                new[]
                 {
-                    if (!_signaled)
-                        return;
-                    _signaled = false;
-                }
-                Signaled?.Invoke(null);
-            });
+                    NSRunLoop.NSDefaultRunLoopMode, NSRunLoop.NSRunLoopEventTracking, NSRunLoop.NSRunLoopModalPanelMode,
+                    NSRunLoop.NSRunLoopCommonModes, NSRunLoop.NSRunLoopConnectionReplyMode
+                });
         }
 
+        [Export(SignaledSelectorName)]
+        public void CallSignaled()
+        {
+            lock (this)
+            {
+                if (!_signaled)
+                    return;
+                _signaled = false;
+            }
+            Signaled?.Invoke(null);
+        }
 
 
         public void RunLoop(CancellationToken cancellationToken)

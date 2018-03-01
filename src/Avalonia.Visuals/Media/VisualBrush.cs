@@ -14,7 +14,7 @@ namespace Avalonia.Media
         /// Defines the <see cref="Visual"/> property.
         /// </summary>
         public static readonly StyledProperty<IVisual> VisualProperty =
-            AvaloniaProperty.Register<VisualBrush, IVisual>("Visual");
+            AvaloniaProperty.Register<VisualBrush, IVisual>(nameof(Visual));
 
         /// <summary>
         /// Initializes a new instance of the <see cref="VisualBrush"/> class.

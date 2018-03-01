@@ -13,7 +13,7 @@ namespace Avalonia.Controls.UnitTests
         {
             var target = new StackPanel
             {
-                Children = new Controls
+                Children =
                 {
                     new Border { Height = 20, Width = 120 },
                     new Border { Height = 30 },
@@ -36,7 +36,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new StackPanel
             {
                 Orientation = Orientation.Horizontal,
-                Children = new Controls
+                Children =
                 {
                     new Border { Width = 20, Height = 120 },
                     new Border { Width = 30 },
@@ -59,7 +59,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new StackPanel
             {
                 Gap = 10,
-                Children = new Controls
+                Children =
                 {
                     new Border { Height = 20, Width = 120 },
                     new Border { Height = 30 },
@@ -70,7 +70,7 @@ namespace Avalonia.Controls.UnitTests
             target.Measure(Size.Infinity);
             target.Arrange(new Rect(target.DesiredSize));
 
-            Assert.Equal(new Size(120, 130), target.Bounds.Size);
+            Assert.Equal(new Size(120, 120), target.Bounds.Size);
             Assert.Equal(new Rect(0, 0, 120, 20), target.Children[0].Bounds);
             Assert.Equal(new Rect(0, 30, 120, 30), target.Children[1].Bounds);
             Assert.Equal(new Rect(0, 70, 120, 50), target.Children[2].Bounds);
@@ -83,7 +83,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 Gap = 10,
                 Orientation = Orientation.Horizontal,
-                Children = new Controls
+                Children =
                 {
                     new Border { Width = 20, Height = 120 },
                     new Border { Width = 30 },
@@ -94,7 +94,7 @@ namespace Avalonia.Controls.UnitTests
             target.Measure(Size.Infinity);
             target.Arrange(new Rect(target.DesiredSize));
 
-            Assert.Equal(new Size(130, 120), target.Bounds.Size);
+            Assert.Equal(new Size(120, 120), target.Bounds.Size);
             Assert.Equal(new Rect(0, 0, 20, 120), target.Children[0].Bounds);
             Assert.Equal(new Rect(30, 0, 30, 120), target.Children[1].Bounds);
             Assert.Equal(new Rect(70, 0, 50, 120), target.Children[2].Bounds);
@@ -106,7 +106,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new StackPanel
             {
                 Height = 60,
-                Children = new Controls
+                Children =
                 {
                     new Border { Height = 20, Width = 120 },
                     new Border { Height = 30 },
@@ -130,7 +130,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 Width = 60,
                 Orientation = Orientation.Horizontal,
-                Children = new Controls
+                Children =
                 {
                     new Border { Width = 20, Height = 120 },
                     new Border { Width = 30 },

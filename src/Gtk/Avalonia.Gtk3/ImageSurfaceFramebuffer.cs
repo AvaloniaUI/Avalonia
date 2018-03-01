@@ -16,7 +16,7 @@ namespace Avalonia.Gtk3
     {
         private readonly WindowBaseImpl _impl;
         private readonly GtkWidget _widget;
-        private CairoSurface _surface;
+        private ManagedCairoSurface _surface;
         private int _factor;
         private object _lock = new object();
         public ImageSurfaceFramebuffer(WindowBaseImpl impl, int width, int height, int factor)
@@ -26,13 +26,13 @@ namespace Avalonia.Gtk3
             _factor = factor;
             width *= _factor;
             height *= _factor;
-            _surface = Native.CairoImageSurfaceCreate(1, width, height);
+            _surface = new ManagedCairoSurface(width, height);
             
             Width = width;
             Height = height;
-            Address = Native.CairoImageSurfaceGetData(_surface);
-            RowBytes = Native.CairoImageSurfaceGetStride(_surface);
-            Native.CairoSurfaceFlush(_surface);
+            Address = _surface.Buffer;
+            RowBytes = _surface.Stride;
+            Native.CairoSurfaceFlush(_surface.Surface);
         }
 
         static void Draw(IntPtr context, CairoSurface surface, double factor)
@@ -83,15 +83,15 @@ namespace Avalonia.Gtk3
         class RenderOp : IDeferredRenderOperation
         {
             private readonly GtkWidget _widget;
-            private CairoSurface _surface;
+            private ManagedCairoSurface _surface;
             private readonly double _factor;
             private readonly int _width;
             private readonly int _height;
 
-            public RenderOp(GtkWidget widget, CairoSurface _surface, double factor, int width, int height)
+            public RenderOp(GtkWidget widget, ManagedCairoSurface surface, double factor, int width, int height)
             {
                 _widget = widget;
-                this._surface = _surface;
+                _surface = surface ?? throw new ArgumentNullException();
                 _factor = factor;
                 _width = width;
                 _height = height;
@@ -103,9 +103,12 @@ namespace Avalonia.Gtk3
                 _surface = null;
             }
 
-            public void RenderNow()
+            public void RenderNow(IntPtr? ctx)
             {
-                DrawToWidget(_widget, _surface, _width, _height, _factor);
+                if(ctx.HasValue)
+                    Draw(ctx.Value, _surface.Surface, _factor);
+                else
+                    DrawToWidget(_widget, _surface.Surface, _width, _height, _factor);
             }
         }
         
@@ -116,9 +119,9 @@ namespace Avalonia.Gtk3
                 if (Dispatcher.UIThread.CheckAccess())
                 {
                     if (_impl.CurrentCairoContext != IntPtr.Zero)
-                        Draw(_impl.CurrentCairoContext, _surface, _factor);
+                        Draw(_impl.CurrentCairoContext, _surface.Surface, _factor);
                     else
-                        DrawToWidget(_widget, _surface, Width, Height, _factor);
+                        DrawToWidget(_widget, _surface.Surface, Width, Height, _factor);
                     _surface.Dispose();
                 }
                 else

@@ -7,14 +7,15 @@ using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Xunit;
 using Avalonia.Layout;
-using Avalonia.Rendering;
+using System.Reactive.Subjects;
+using Avalonia.Data;
 
 namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
 {
     public partial class SceneBuilderTests
     {
         [Fact]
-        public void Control_With_Transparency_Should_Start_New_Layer()
+        public void Control_With_Animated_Opacity_And_Children_Should_Start_New_Layer()
         {
             using (TestApplication())
             {
@@ -31,16 +32,18 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                         Padding = new Thickness(11),
                         Child = border = new Border
                         {
-                            Opacity = 0.5,
                             Background = Brushes.Red,
                             Padding = new Thickness(12),
-                            Child = canvas = new Canvas(),
+                            Child = canvas = new Canvas()
                         }
                     }
                 };
 
                 var layout = AvaloniaLocator.Current.GetService<ILayoutManager>();
                 layout.ExecuteInitialLayoutPass(tree);
+
+                var animation = new BehaviorSubject<double>(0.5);
+                border.Bind(Border.OpacityProperty, animation, BindingPriority.Animation);
 
                 var scene = new Scene(tree);
                 var sceneBuilder = new SceneBuilder();
@@ -58,8 +61,8 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 Assert.Equal(2, scene.Layers.Count());
                 Assert.Empty(scene.Layers.Select(x => x.LayerRoot).Except(new IVisual[] { tree, border }));
 
-                border.Opacity = 1;
-                scene = scene.Clone();
+                animation.OnCompleted();
+                scene = scene.CloneScene();
 
                 sceneBuilder.Update(scene, border);
 
@@ -70,23 +73,22 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 Assert.Same(tree, rootNode.LayerRoot);
                 Assert.Same(tree, borderNode.LayerRoot);
                 Assert.Same(tree, canvasNode.LayerRoot);
-                Assert.Equal(1, scene.Layers.Count());
+                Assert.Single(scene.Layers);
 
                 var rootDirty = scene.Layers[tree].Dirty;
 
-                Assert.Equal(1, rootDirty.Count());
+                Assert.Single(rootDirty);
                 Assert.Equal(new Rect(21, 21, 58, 78), rootDirty.Single());
             }
         }
 
         [Fact]
-        public void Control_With_OpacityMask_Should_Start_New_Layer()
+        public void Control_With_Animated_Opacity_And_No_Children_Should_Not_Start_New_Layer()
         {
             using (TestApplication())
             {
                 Decorator decorator;
                 Border border;
-                Canvas canvas;
                 var tree = new TestRoot
                 {
                     Padding = new Thickness(10),
@@ -97,56 +99,27 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                         Padding = new Thickness(11),
                         Child = border = new Border
                         {
-                            OpacityMask = Brushes.Red,
                             Background = Brushes.Red,
-                            Padding = new Thickness(12),
-                            Child = canvas = new Canvas(),
                         }
                     }
                 };
 
                 var layout = AvaloniaLocator.Current.GetService<ILayoutManager>();
                 layout.ExecuteInitialLayoutPass(tree);
+
+                var animation = new BehaviorSubject<double>(0.5);
+                border.Bind(Border.OpacityProperty, animation, BindingPriority.Animation);
 
                 var scene = new Scene(tree);
                 var sceneBuilder = new SceneBuilder();
                 sceneBuilder.UpdateAll(scene);
 
-                var rootNode = (VisualNode)scene.Root;
-                var borderNode = (VisualNode)scene.FindNode(border);
-                var canvasNode = (VisualNode)scene.FindNode(canvas);
-
-                Assert.Same(tree, rootNode.LayerRoot);
-                Assert.Same(border, borderNode.LayerRoot);
-                Assert.Same(border, canvasNode.LayerRoot);
-                Assert.Equal(Brushes.Red, scene.Layers[border].OpacityMask);
-
-                Assert.Equal(2, scene.Layers.Count());
-                Assert.Empty(scene.Layers.Select(x => x.LayerRoot).Except(new IVisual[] { tree, border }));
-
-                border.OpacityMask = null;
-                scene = scene.Clone();
-
-                sceneBuilder.Update(scene, border);
-
-                rootNode = (VisualNode)scene.Root;
-                borderNode = (VisualNode)scene.FindNode(border);
-                canvasNode = (VisualNode)scene.FindNode(canvas);
-
-                Assert.Same(tree, rootNode.LayerRoot);
-                Assert.Same(tree, borderNode.LayerRoot);
-                Assert.Same(tree, canvasNode.LayerRoot);
-                Assert.Equal(1, scene.Layers.Count());
-
-                var rootDirty = scene.Layers[tree].Dirty;
-
-                Assert.Equal(1, rootDirty.Count());
-                Assert.Equal(new Rect(21, 21, 58, 78), rootDirty.Single());
+                Assert.Single(scene.Layers);
             }
         }
 
         [Fact]
-        public void Removing_Transparent_Control_Should_Remove_Layers()
+        public void Removing_Control_With_Animated_Opacity_Should_Remove_Layers()
         {
             using (TestApplication())
             {
@@ -163,19 +136,22 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                         Padding = new Thickness(11),
                         Child = border = new Border
                         {
-                            Opacity = 0.5,
                             Background = Brushes.Red,
                             Padding = new Thickness(12),
                             Child = canvas = new Canvas
                             {
-                                Opacity = 0.75,
-                            },
+                                Children = { new TextBlock() },
+                            }
                         }
                     }
                 };
 
                 var layout = AvaloniaLocator.Current.GetService<ILayoutManager>();
                 layout.ExecuteInitialLayoutPass(tree);
+
+                var animation = new BehaviorSubject<double>(0.5);
+                border.Bind(Border.OpacityProperty, animation, BindingPriority.Animation);
+                canvas.Bind(Canvas.OpacityProperty, animation, BindingPriority.Animation);
 
                 var scene = new Scene(tree);
                 var sceneBuilder = new SceneBuilder();
@@ -184,7 +160,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 Assert.Equal(3, scene.Layers.Count);
 
                 decorator.Child = null;
-                scene = scene.Clone();
+                scene = scene.CloneScene();
 
                 sceneBuilder.Update(scene, border);
 
@@ -210,19 +186,22 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                         Padding = new Thickness(11),
                         Child = border = new Border
                         {
-                            Opacity = 0.5,
                             Background = Brushes.Red,
                             Padding = new Thickness(12),
                             Child = canvas = new Canvas
                             {
-                                Opacity = 0.75,
-                            },
+                                Children = { new TextBlock() },
+                            }
                         }
                     }
                 };
 
                 var layout = AvaloniaLocator.Current.GetService<ILayoutManager>();
                 layout.ExecuteInitialLayoutPass(tree);
+
+                var animation = new BehaviorSubject<double>(0.5);
+                border.Bind(Border.OpacityProperty, animation, BindingPriority.Animation);
+                canvas.Bind(Canvas.OpacityProperty, animation, BindingPriority.Animation);
 
                 var scene = new Scene(tree);
                 var sceneBuilder = new SceneBuilder();
@@ -231,7 +210,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 Assert.Equal(3, scene.Layers.Count);
 
                 border.IsVisible = false;
-                scene = scene.Clone();
+                scene = scene.CloneScene();
 
                 sceneBuilder.Update(scene, border);
 
@@ -256,12 +235,16 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                         Child = border = new Border
                         {
                             Opacity = 0.5,
+                            Child = new Canvas(),
                         }
                     }
                 };
 
                 var layout = AvaloniaLocator.Current.GetService<ILayoutManager>();
                 layout.ExecuteInitialLayoutPass(tree);
+
+                var animation = new BehaviorSubject<double>(0.5);
+                border.Bind(Border.OpacityProperty, animation, BindingPriority.Animation);
 
                 var scene = new Scene(tree);
                 var sceneBuilder = new SceneBuilder();

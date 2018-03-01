@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering.SceneGraph
@@ -10,7 +11,7 @@ namespace Avalonia.Rendering.SceneGraph
     /// <summary>
     /// Represents a scene graph used by the <see cref="DeferredRenderer"/>.
     /// </summary>
-    public class Scene
+    public class Scene : IDisposable
     {
         private Dictionary<IVisual, IVisualNode> _index;
 
@@ -81,7 +82,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// Clones the scene.
         /// </summary>
         /// <returns>The cloned scene.</returns>
-        public Scene Clone()
+        public Scene CloneScene()
         {
             var index = new Dictionary<IVisual, IVisualNode>();
             var root = Clone((VisualNode)Root, null, index);
@@ -93,6 +94,14 @@ namespace Avalonia.Rendering.SceneGraph
             };
 
             return result;
+        }
+
+        public void Dispose()
+        {
+            foreach (var node in _index.Values)
+            {
+                node.Dispose();
+            }
         }
 
         /// <summary>
@@ -113,11 +122,13 @@ namespace Avalonia.Rendering.SceneGraph
         /// Gets the visuals at a point in the scene.
         /// </summary>
         /// <param name="p">The point.</param>
+        /// <param name="root">The root of the subtree to search.</param>
         /// <param name="filter">A filter. May be null.</param>
         /// <returns>The visuals at the specified point.</returns>
-        public IEnumerable<IVisual> HitTest(Point p, Func<IVisual, bool> filter)
+        public IEnumerable<IVisual> HitTest(Point p, IVisual root, Func<IVisual, bool> filter)
         {
-            return HitTest(Root, p, null, filter);
+            var node = FindNode(root);
+            return (node != null) ? HitTest(node, p, null, filter) : Enumerable.Empty<IVisual>();
         }
 
         /// <summary>
@@ -129,6 +140,8 @@ namespace Avalonia.Rendering.SceneGraph
             Contract.Requires<ArgumentNullException>(node != null);
 
             _index.Remove(node.Visual);
+
+            node.Dispose();
         }
 
         private VisualNode Clone(VisualNode source, IVisualNode parent, Dictionary<IVisual, IVisualNode> index)
@@ -173,7 +186,7 @@ namespace Avalonia.Rendering.SceneGraph
                         }
                     }
 
-                    if (node.HitTest(p))
+                    if (node.HitTest(p) && node.Visual.IsAttachedToVisualTree)
                     {
                         yield return node.Visual;
                     }

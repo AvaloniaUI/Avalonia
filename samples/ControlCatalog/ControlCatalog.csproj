@@ -44,6 +44,9 @@
     <EmbeddedResource Include="Pages\ButtonPage.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <EmbeddedResource Include="Pages\CalendarPage.xaml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Include="Pages\CanvasPage.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
@@ -55,6 +58,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Pages\ContextMenuPage.xaml" />
     <EmbeddedResource Include="Pages\DropDownPage.xaml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pages\DatePickerPage.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Pages\ExpanderPage.xaml">
@@ -107,6 +113,9 @@
     <Compile Include="Pages\ButtonPage.xaml.cs">
       <DependentUpon>ButtonPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Pages\CalendarPage.xaml.cs">
+      <DependentUpon>CalendarPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Pages\CanvasPage.xaml.cs">
       <DependentUpon>CanvasPage.xaml</DependentUpon>
     </Compile>
@@ -121,6 +130,9 @@
     </Compile>
     <Compile Include="Pages\DropDownPage.xaml.cs">
       <DependentUpon>DropDownPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\DatePickerPage.xaml.cs">
+      <DependentUpon>DatePickerPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Pages\ExpanderPage.xaml.cs">
       <DependentUpon>ExpanderPage.xaml</DependentUpon>
