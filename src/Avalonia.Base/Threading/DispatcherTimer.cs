@@ -13,9 +13,7 @@ namespace Avalonia.Threading
     public class DispatcherTimer : IDisposable
     {
         private IDisposable _timer;
-
         private readonly DispatcherPriority _priority;
-
         private TimeSpan _interval;
         
         /// <summary>
@@ -50,13 +48,7 @@ namespace Avalonia.Threading
         /// <summary>
         /// Finalizes an instance of the <see cref="DispatcherTimer"/> class.
         /// </summary>
-        ~DispatcherTimer()
-        {
-            if (_timer != null)
-            {
-                Stop();
-            }
-        }
+        ~DispatcherTimer() => Dispose(false);
 
         /// <summary>
         /// Raised when the timer ticks.
@@ -120,7 +112,7 @@ namespace Avalonia.Threading
         /// <summary>
         /// Stops the timer and disposes of all unmanaged resources.
         /// </summary>
-        public void Dispose() => _timer?.Dispose();
+        public void Dispose() => Dispose(true);
 
         /// <summary>
         /// Starts a new timer.
@@ -205,7 +197,10 @@ namespace Avalonia.Threading
             }
         }
 
-        
+        protected virtual void Dispose(bool disposing)
+        {
+            Stop();
+        }
 
         /// <summary>
         /// Raises the <see cref="Tick"/> event on the dispatcher thread.
