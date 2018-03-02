@@ -51,7 +51,7 @@ Please read the [contribution guidelines](http://avaloniaui.net/contributing/con
 
 ### Contributors
 
-This project exists thanks to all the people who contribute. [[Contribute](CONTRIBUTING.md)].
+This project exists thanks to all the people who contribute. [[Contribute](http://avaloniaui.net/contributing/contributing)].
 <a href="graphs/contributors"><img src="https://opencollective.com/Avalonia/contributors.svg?width=890&button=false" /></a>
 
 
