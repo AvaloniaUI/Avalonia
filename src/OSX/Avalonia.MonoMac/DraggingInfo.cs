@@ -1,11 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Avalonia.Controls.DragDrop;
 using MonoMac.AppKit;
+using MonoMac.Foundation;
 
 namespace Avalonia.MonoMac
 {
     class DraggingInfo : IDragData
-    {
+    { 
         private readonly NSDraggingInfo _info;
 
         public DraggingInfo(NSDraggingInfo info)
@@ -42,22 +45,37 @@ namespace Avalonia.MonoMac
         
         public IEnumerable<string> GetDataFormats()
         {
-            yield break;
+            return _info.DraggingPasteboard.Types.Select(NSTypeToWellknownType);
+        }
+
+        private string NSTypeToWellknownType(string type)
+        {
+            if (type == NSPasteboard.NSStringType)
+                return DataFormats.Text;
+            if (type == NSPasteboard.NSFilenamesType)
+                return DataFormats.FileNames;
+            return type;
         }
 
         public string GetText()
         {
-            return null;
+            return _info.DraggingPasteboard.GetStringForType(NSPasteboard.NSStringType);
         }
 
         public IEnumerable<string> GetFileNames()
         {
-            yield break;
+            using(var fileNames = (NSArray)_info.DraggingPasteboard.GetPropertyListForType(NSPasteboard.NSFilenamesType))
+            {
+                if (fileNames != null)
+                    return NSArray.StringArrayFromHandle(fileNames.Handle);
+            }
+
+            return Enumerable.Empty<string>();
         }
 
         public bool Contains(string dataFormat)
         {
-            return false;
+            return GetDataFormats().Any(f => f == dataFormat);
         }
     }
 }
