@@ -3,7 +3,7 @@
 namespace Avalonia.Controls.DragDrop
 {
     [Flags]
-    public enum DragOperation
+    public enum DragDropEffects
     {
         None = 0,
         Copy = 1,

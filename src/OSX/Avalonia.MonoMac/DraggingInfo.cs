@@ -17,27 +17,27 @@ namespace Avalonia.MonoMac
         }
 
 
-        internal static NSDragOperation ConvertDragOperation(DragOperation d)
+        internal static NSDragOperation ConvertDragOperation(DragDropEffects d)
         {
             NSDragOperation result = NSDragOperation.None;
-            if (d.HasFlag(DragOperation.Copy))
+            if (d.HasFlag(DragDropEffects.Copy))
                 result |= NSDragOperation.Copy;
-            if (d.HasFlag(DragOperation.Link))
+            if (d.HasFlag(DragDropEffects.Link))
                 result |= NSDragOperation.Link;
-            if (d.HasFlag(DragOperation.Move))
+            if (d.HasFlag(DragDropEffects.Move))
                 result |= NSDragOperation.Move;
             return result;
         }
         
-        internal static DragOperation ConvertDragOperation(NSDragOperation d)
+        internal static DragDropEffects ConvertDragOperation(NSDragOperation d)
         {
-            DragOperation result = DragOperation.None;
+            DragDropEffects result = DragDropEffects.None;
             if (d.HasFlag(NSDragOperation.Copy))
-                result |= DragOperation.Copy;
+                result |= DragDropEffects.Copy;
             if (d.HasFlag(NSDragOperation.Link))
-                result |= DragOperation.Link;
+                result |= DragDropEffects.Link;
             if (d.HasFlag(NSDragOperation.Move))
-                result |= DragOperation.Move;
+                result |= DragDropEffects.Move;
             return result;
         }
 

@@ -22,27 +22,27 @@ namespace Avalonia.Win32
             _target = target;
         }
 
-        static DropEffect ConvertDropEffect(DragOperation operation)
+        static DropEffect ConvertDropEffect(DragDropEffects operation)
         {
             DropEffect result = DropEffect.None;
-            if (operation.HasFlag(DragOperation.Copy))
+            if (operation.HasFlag(DragDropEffects.Copy))
                 result |= DropEffect.Copy;
-            if (operation.HasFlag(DragOperation.Move))
+            if (operation.HasFlag(DragDropEffects.Move))
                 result |= DropEffect.Move;
-            if (operation.HasFlag(DragOperation.Link))
+            if (operation.HasFlag(DragDropEffects.Link))
                 result |= DropEffect.Link;
             return result;
         }
 
-        static DragOperation ConvertDropEffect(DropEffect effect)
+        static DragDropEffects ConvertDropEffect(DropEffect effect)
         {
-            DragOperation result = DragOperation.None;
+            DragDropEffects result = DragDropEffects.None;
             if (effect.HasFlag(DropEffect.Copy))
-                result |= DragOperation.Copy;
+                result |= DragDropEffects.Copy;
             if (effect.HasFlag(DropEffect.Move))
-                result |= DragOperation.Move;
+                result |= DragDropEffects.Move;
             if (effect.HasFlag(DropEffect.Link))
-                result |= DragOperation.Link;
+                result |= DragDropEffects.Link;
             return result;
         }
 

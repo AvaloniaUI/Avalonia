@@ -23,37 +23,37 @@ namespace Avalonia.Controls.DragDrop
             return null;
         }
         
-        private DragOperation RaiseDragEvent(Interactive target, RoutedEvent<DragEventArgs> routedEvent, DragOperation operation, IDragData data)
+        private DragDropEffects RaiseDragEvent(Interactive target, RoutedEvent<DragEventArgs> routedEvent, DragDropEffects operation, IDragData data)
         {
             if (target == null)
-                return DragOperation.None;
+                return DragDropEffects.None;
             var args = new DragEventArgs(routedEvent, data)
             {
                 RoutedEvent = routedEvent,
-                DragOperation = operation
+                DragEffects = operation
             };
             target.RaiseEvent(args);
-            return args.DragOperation;
+            return args.DragEffects;
         }
         
-        public DragOperation DragEnter(IInputElement inputRoot, Point point, IDragData data, DragOperation operation)
+        public DragDropEffects DragEnter(IInputElement inputRoot, Point point, IDragData data, DragDropEffects effects)
         {
             _lastTarget = GetTarget(inputRoot, point);
-            return RaiseDragEvent(_lastTarget, DragDrop.DragEnterEvent, operation, data);
+            return RaiseDragEvent(_lastTarget, DragDrop.DragEnterEvent, effects, data);
         }
 
-        public DragOperation DragOver(IInputElement inputRoot, Point point, IDragData data, DragOperation operation)
+        public DragDropEffects DragOver(IInputElement inputRoot, Point point, IDragData data, DragDropEffects effects)
         {
             var target = GetTarget(inputRoot, point);
 
             if (target == _lastTarget)
-                return RaiseDragEvent(target, DragDrop.DragOverEvent, operation, data);
+                return RaiseDragEvent(target, DragDrop.DragOverEvent, effects, data);
             
             try
             {
                 if (_lastTarget != null)
                     _lastTarget.RaiseEvent(new RoutedEventArgs(DragDrop.DragLeaveEvent));
-                return RaiseDragEvent(target, DragDrop.DragEnterEvent, operation, data);
+                return RaiseDragEvent(target, DragDrop.DragEnterEvent, effects, data);
             }
             finally
             {
@@ -75,11 +75,11 @@ namespace Avalonia.Controls.DragDrop
             }
         }
 
-        public DragOperation Drop(IInputElement inputRoot, Point point, IDragData data, DragOperation operation)
+        public DragDropEffects Drop(IInputElement inputRoot, Point point, IDragData data, DragDropEffects effects)
         {
             try
             {
-                return RaiseDragEvent(_lastTarget, DragDrop.DropEvent, operation, data);
+                return RaiseDragEvent(_lastTarget, DragDrop.DropEvent, effects, data);
             }
             finally 
             {
