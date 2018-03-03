@@ -23,7 +23,7 @@ namespace Avalonia.Controls.DragDrop
             return null;
         }
         
-        private DragDropEffects RaiseDragEvent(Interactive target, RoutedEvent<DragEventArgs> routedEvent, DragDropEffects operation, IDragData data)
+        private DragDropEffects RaiseDragEvent(Interactive target, RoutedEvent<DragEventArgs> routedEvent, DragDropEffects operation, IDataObject data)
         {
             if (target == null)
                 return DragDropEffects.None;
@@ -36,13 +36,13 @@ namespace Avalonia.Controls.DragDrop
             return args.DragEffects;
         }
         
-        public DragDropEffects DragEnter(IInputElement inputRoot, Point point, IDragData data, DragDropEffects effects)
+        public DragDropEffects DragEnter(IInputElement inputRoot, Point point, IDataObject data, DragDropEffects effects)
         {
             _lastTarget = GetTarget(inputRoot, point);
             return RaiseDragEvent(_lastTarget, DragDrop.DragEnterEvent, effects, data);
         }
 
-        public DragDropEffects DragOver(IInputElement inputRoot, Point point, IDragData data, DragDropEffects effects)
+        public DragDropEffects DragOver(IInputElement inputRoot, Point point, IDataObject data, DragDropEffects effects)
         {
             var target = GetTarget(inputRoot, point);
 
@@ -75,7 +75,7 @@ namespace Avalonia.Controls.DragDrop
             }
         }
 
-        public DragDropEffects Drop(IInputElement inputRoot, Point point, IDragData data, DragDropEffects effects)
+        public DragDropEffects Drop(IInputElement inputRoot, Point point, IDataObject data, DragDropEffects effects)
         {
             try
             {

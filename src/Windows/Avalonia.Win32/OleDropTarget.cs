@@ -1,11 +1,8 @@
-﻿using System;
-using System.Runtime.InteropServices.ComTypes;
-using Avalonia.Controls;
-using Avalonia.Controls.DragDrop;
+﻿using Avalonia.Controls.DragDrop;
 using Avalonia.Input;
-using Avalonia.Interactivity;
-using Avalonia.VisualTree;
 using Avalonia.Win32.Interop;
+using IDataObject = Avalonia.Controls.DragDrop.IDataObject;
+using IOleDataObject = System.Runtime.InteropServices.ComTypes.IDataObject;
 
 namespace Avalonia.Win32
 {
@@ -14,7 +11,7 @@ namespace Avalonia.Win32
         private readonly IDragDispatcher _dragDispatcher;
         private readonly IInputElement _target;
         
-        private IDragData _currentDrag = null;
+        private IDataObject _currentDrag = null;
 
         public OleDropTarget(IInputElement target)
         {

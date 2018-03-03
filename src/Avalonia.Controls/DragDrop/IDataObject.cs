@@ -2,7 +2,7 @@
 
 namespace Avalonia.Controls.DragDrop
 {
-    public interface IDragData
+    public interface IDataObject
     {
         IEnumerable<string> GetDataFormats();
 

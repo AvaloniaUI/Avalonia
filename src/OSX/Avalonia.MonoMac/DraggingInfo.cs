@@ -7,7 +7,7 @@ using MonoMac.Foundation;
 
 namespace Avalonia.MonoMac
 {
-    class DraggingInfo : IDragData
+    class DraggingInfo : IDataObject
     { 
         private readonly NSDraggingInfo _info;
 

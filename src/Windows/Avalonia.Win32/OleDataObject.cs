@@ -6,14 +6,15 @@ using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using Avalonia.Controls.DragDrop;
 using Avalonia.Win32.Interop;
+using IDataObject = System.Runtime.InteropServices.ComTypes.IDataObject;
 
 namespace Avalonia.Win32
 {
-    class OleDataObject : IDragData
+    class OleDataObject : Avalonia.Controls.DragDrop.IDataObject
     {
-        private IOleDataObject _wrapped;
+        private IDataObject _wrapped;
 
-        public OleDataObject(IOleDataObject wrapped)
+        public OleDataObject(IDataObject wrapped)
         {
             _wrapped = wrapped;
         }

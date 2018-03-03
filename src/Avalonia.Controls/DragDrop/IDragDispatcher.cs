@@ -7,9 +7,9 @@ namespace Avalonia.Controls.DragDrop
     /// </summary>
     public interface IDragDispatcher
     {
-        DragDropEffects DragEnter(IInputElement inputRoot, Point point, IDragData data, DragDropEffects effects);
-        DragDropEffects DragOver(IInputElement inputRoot, Point point, IDragData data, DragDropEffects effects);
+        DragDropEffects DragEnter(IInputElement inputRoot, Point point, IDataObject data, DragDropEffects effects);
+        DragDropEffects DragOver(IInputElement inputRoot, Point point, IDataObject data, DragDropEffects effects);
         void DragLeave(IInputElement inputRoot);
-        DragDropEffects Drop(IInputElement inputRoot, Point point, IDragData data, DragDropEffects effects);
+        DragDropEffects Drop(IInputElement inputRoot, Point point, IDataObject data, DragDropEffects effects);
     }
 }
