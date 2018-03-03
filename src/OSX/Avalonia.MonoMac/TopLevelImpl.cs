@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Avalonia.Controls.DragDrop;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
@@ -36,6 +37,7 @@ namespace Avalonia.MonoMac
             bool _isLeftPressed, _isRightPressed, _isMiddlePressed;
             private readonly IMouseDevice _mouse;
             private readonly IKeyboardDevice _keyboard;
+            private readonly IDragDispatcher _dragDispatcher;
             private NSTrackingArea _area;
             private NSCursor _cursor;
             private bool _nonUiRedrawQueued;
@@ -52,6 +54,11 @@ namespace Avalonia.MonoMac
                 _tl = tl;
                 _mouse = AvaloniaLocator.Current.GetService<IMouseDevice>();
                 _keyboard = AvaloniaLocator.Current.GetService<IKeyboardDevice>();
+                _dragDispatcher = AvaloniaLocator.Current.GetService<IDragDispatcher>();
+                
+                RegisterForDraggedTypes(new string[] {
+                    "public.data" // register for any kind of data.
+                });
             }
 
             protected override void Dispose(bool disposing)
@@ -143,6 +150,75 @@ namespace Avalonia.MonoMac
                 _cursor = cursor ?? ArrowCursor;
                 UpdateCursor();
             }
+
+            public override NSDragOperation DraggingEntered(NSDraggingInfo sender)
+            {
+                IInputRoot root = _tl?.InputRoot;
+                if (root == null || _dragDispatcher == null)
+                    return NSDragOperation.None;
+
+                var dragOp = DraggingInfo.ConvertDragOperation(sender.DraggingSourceOperationMask);
+                DraggingInfo info = new DraggingInfo(sender);
+                var pt = TranslateLocalPoint(info.Location);
+                
+                dragOp = _dragDispatcher.DragEnter(root, pt, info, dragOp);
+                
+                return DraggingInfo.ConvertDragOperation(dragOp);
+            }
+
+            public override NSDragOperation DraggingUpdated(NSDraggingInfo sender)
+            {
+                IInputRoot root = _tl?.InputRoot;
+                if (root == null || _dragDispatcher == null)
+                    return NSDragOperation.None;
+
+                var dragOp = DraggingInfo.ConvertDragOperation(sender.DraggingSourceOperationMask);
+                DraggingInfo info = new DraggingInfo(sender);
+                var pt = TranslateLocalPoint(info.Location);
+                
+                dragOp = _dragDispatcher.DragOver(root, pt, info, dragOp);
+                
+                return DraggingInfo.ConvertDragOperation(dragOp);
+            }
+
+            public override void DraggingExited(NSDraggingInfo sender)
+            {
+                IInputRoot root = _tl?.InputRoot;
+                if (root == null || _dragDispatcher == null)
+                    return;
+                _dragDispatcher.DragLeave(root);
+            }
+
+            public override bool PrepareForDragOperation(NSDraggingInfo sender)
+            {
+                IInputRoot root = _tl?.InputRoot;
+                if (root == null || _dragDispatcher == null)
+                    return false;
+
+                var dragOp = DraggingInfo.ConvertDragOperation(sender.DraggingSourceOperationMask);
+                DraggingInfo info = new DraggingInfo(sender);
+                var pt = TranslateLocalPoint(info.Location);
+                
+                dragOp = _dragDispatcher.DragOver(root, pt, info, dragOp);
+                
+                return DraggingInfo.ConvertDragOperation(dragOp) != DragOperation.None;
+            }
+
+            public override bool PerformDragOperation(NSDraggingInfo sender)
+            {
+                IInputRoot root = _tl?.InputRoot;
+                if (root == null || _dragDispatcher == null)
+                    return false;
+
+                var dragOp = DraggingInfo.ConvertDragOperation(sender.DraggingSourceOperationMask);
+                DraggingInfo info = new DraggingInfo(sender);
+                var pt = TranslateLocalPoint(info.Location);
+                
+                dragOp = _dragDispatcher.Drop(root, pt, info, dragOp);
+                
+                return DraggingInfo.ConvertDragOperation(dragOp) != DragOperation.None;
+            }
+            
 
             public override void SetFrameSize(CGSize newSize)
             {
