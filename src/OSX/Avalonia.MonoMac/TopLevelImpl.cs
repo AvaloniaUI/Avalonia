@@ -201,7 +201,7 @@ namespace Avalonia.MonoMac
                 
                 dragOp = _dragDispatcher.DragOver(root, pt, info, dragOp);
                 
-                return DraggingInfo.ConvertDragOperation(dragOp) != DragOperation.None;
+                return dragOp != DragOperation.None;
             }
 
             public override bool PerformDragOperation(NSDraggingInfo sender)
@@ -216,7 +216,7 @@ namespace Avalonia.MonoMac
                 
                 dragOp = _dragDispatcher.Drop(root, pt, info, dragOp);
                 
-                return DraggingInfo.ConvertDragOperation(dragOp) != DragOperation.None;
+                return dragOp != DragOperation.None;
             }
             
 
