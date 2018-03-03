@@ -2,7 +2,7 @@
 
 namespace Avalonia.Controls.DragDrop
 {
-    public sealed class DragDrop : AvaloniaObject
+    public static class DragDrop
     {
         public static RoutedEvent<DragEventArgs> DragEnterEvent = RoutedEvent.Register<DragEventArgs>("DragEnter", RoutingStrategies.Bubble, typeof(DragDrop));
         public static RoutedEvent<RoutedEventArgs> DragLeaveEvent = RoutedEvent.Register<RoutedEventArgs>("DragLeave", RoutingStrategies.Bubble, typeof(DragDrop));
