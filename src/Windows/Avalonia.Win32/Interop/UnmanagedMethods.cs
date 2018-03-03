@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 
 // ReSharper disable InconsistentNaming
@@ -951,6 +952,28 @@ namespace Avalonia.Win32.Interop
         [DllImport("msvcrt.dll", EntryPoint="memcpy", SetLastError = false, CallingConvention=CallingConvention.Cdecl)]
         public static extern IntPtr CopyMemory(IntPtr dest, IntPtr src, UIntPtr count); 
         
+        [DllImport("ole32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
+        public static extern HRESULT RegisterDragDrop(IntPtr hwnd, IDropTarget target);
+        
+        [DllImport("ole32.dll", EntryPoint = "OleInitialize")]
+        public static extern HRESULT OleInitialize(IntPtr val);
+
+        [DllImport("ole32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
+        internal static extern void ReleaseStgMedium(ref STGMEDIUM medium);
+
+        [DllImport("user32.dll", BestFitMapping = false, CharSet = CharSet.Auto, SetLastError = true)]
+        public static extern int GetClipboardFormatName(int format, StringBuilder lpString, int cchMax);
+
+        [DllImport("user32.dll", BestFitMapping = false, CharSet = CharSet.Auto, SetLastError = true)]
+        public static extern int RegisterClipboardFormat(string format);
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Auto, ExactSpelling = true, SetLastError = true)]
+        public static extern IntPtr GlobalSize(IntPtr hGlobal);
+
+        [DllImport("shell32.dll", BestFitMapping = false, CharSet = CharSet.Auto)]
+        public static extern int DragQueryFile(IntPtr hDrop, int iFile, StringBuilder lpszFile, int cch);
+
+        
         public enum MONITOR
         {
             MONITOR_DEFAULTTONULL = 0x00000000,
@@ -993,7 +1016,8 @@ namespace Avalonia.Win32.Interop
         public enum ClipboardFormat
         {
             CF_TEXT = 1,
-            CF_UNICODETEXT = 13
+            CF_UNICODETEXT = 13,
+            CF_HDROP = 15
         }
 
         public struct MSG
@@ -1299,5 +1323,50 @@ namespace Avalonia.Win32.Interop
         [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
         uint Compare([In, MarshalAs(UnmanagedType.Interface)] IShellItem psi, [In] uint hint, out int piOrder);
         
+    }
+    
+    [Flags]
+    internal enum DropEffect : int
+    {
+        None = 0,
+        Copy = 1,
+        Move = 2,
+        Link = 4,
+        Scroll = -2147483648,
+    }
+    
+    [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    [Guid("0000010E-0000-0000-C000-000000000046")]
+    [ComImport]
+    internal interface IOleDataObject
+    {
+        void GetData([In] ref FORMATETC format, out STGMEDIUM medium);
+        void GetDataHere([In] ref FORMATETC format, ref STGMEDIUM medium);
+        [PreserveSig]
+        int QueryGetData([In] ref FORMATETC format);
+        [PreserveSig]
+        int GetCanonicalFormatEtc([In] ref FORMATETC formatIn, out FORMATETC formatOut);
+        void SetData([In] ref FORMATETC formatIn, [In] ref STGMEDIUM medium, [MarshalAs(UnmanagedType.Bool)] bool release);
+        IEnumFORMATETC EnumFormatEtc(DATADIR direction);
+        [PreserveSig]
+        int DAdvise([In] ref FORMATETC pFormatetc, ADVF advf, IAdviseSink adviseSink, out int connection);
+        void DUnadvise(int connection);
+        [PreserveSig]
+        int EnumDAdvise(out IEnumSTATDATA enumAdvise);
+    }
+    
+    [ComImport]
+    [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    [Guid("00000122-0000-0000-C000-000000000046")]
+    internal interface IDropTarget
+    {
+        [PreserveSig]
+        UnmanagedMethods.HRESULT DragEnter([MarshalAs(UnmanagedType.Interface)] [In] IOleDataObject pDataObj, [MarshalAs(UnmanagedType.U4)] [In] int grfKeyState, [MarshalAs(UnmanagedType.U8)] [In] long pt, [In] [Out] ref DropEffect pdwEffect);
+        [PreserveSig]
+        UnmanagedMethods.HRESULT DragOver([MarshalAs(UnmanagedType.U4)] [In] int grfKeyState, [MarshalAs(UnmanagedType.U8)] [In] long pt, [In] [Out] ref DropEffect pdwEffect);
+        [PreserveSig]
+        UnmanagedMethods.HRESULT DragLeave();
+        [PreserveSig]
+        UnmanagedMethods.HRESULT Drop([MarshalAs(UnmanagedType.Interface)] [In] IOleDataObject pDataObj, [MarshalAs(UnmanagedType.U4)] [In] int grfKeyState, [MarshalAs(UnmanagedType.U8)] [In] long pt, [In] [Out] ref DropEffect pdwEffect);
     }
 }
