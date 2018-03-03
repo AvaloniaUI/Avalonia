@@ -4,7 +4,7 @@ using Avalonia.Platform;
 using Avalonia.Threading;
 using Avalonia.Win32.Interop;
 
-namespace Zippr.UIServices.Avalonia.Windows
+namespace Avalonia.Win32
 {
     class OleContext
     {
