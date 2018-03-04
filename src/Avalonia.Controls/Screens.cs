@@ -39,7 +39,7 @@ namespace Avalonia.Controls
             return currMaxScreen;
         }
         
-        public Screen SceenFromPoint(Point point)
+        public Screen ScreenFromPoint(Point point)
         {
             return All.FirstOrDefault(x=>x.Bounds.Contains(point));        
         }

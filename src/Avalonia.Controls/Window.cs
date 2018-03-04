@@ -85,9 +85,19 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<WindowIcon> IconProperty =
             AvaloniaProperty.Register<Window, WindowIcon>(nameof(Icon));
 
+        /// <summary>
+        /// Defines the <see cref="WindowStartupLocation"/> proeprty.
+        /// </summary>
+        public static readonly DirectProperty<Window, WindowStartupLocation> WindowStartupLocationProperty =
+            AvaloniaProperty.RegisterDirect<Window, WindowStartupLocation>(
+                nameof(WindowStartupLocation),
+                o => o.WindowStartupLocation,
+                (o, v) => o.WindowStartupLocation = v);
+
         private readonly NameScope _nameScope = new NameScope();
         private object _dialogResult;
         private readonly Size _maxPlatformClientSize;
+        private WindowStartupLocation _windowStartupLoction;
 
         /// <summary>
         /// Initializes static members of the <see cref="Window"/> class.
@@ -205,6 +215,15 @@ namespace Avalonia.Controls
             set { SetValue(IconProperty, value); }
         }
 
+        /// <summary>
+        /// Gets or sets the startup location of the window.
+        /// </summary>
+        public WindowStartupLocation WindowStartupLocation
+        {
+            get { return _windowStartupLoction; }
+            set { SetAndRaise(WindowStartupLocationProperty, ref _windowStartupLoction, value); }
+        }
+
         /// <inheritdoc/>
         Size ILayoutRoot.MaxClientSize => _maxPlatformClientSize;
 
@@ -274,6 +293,7 @@ namespace Avalonia.Controls
             s_windows.Add(this);
 
             EnsureInitialized();
+            SetWindowStartupLocation();
             IsVisible = true;
             LayoutManager.Instance.ExecuteInitialLayoutPass(this);
 
@@ -314,6 +334,7 @@ namespace Avalonia.Controls
             s_windows.Add(this);
 
             EnsureInitialized();
+            SetWindowStartupLocation();
             IsVisible = true;
             LayoutManager.Instance.ExecuteInitialLayoutPass(this);
 
@@ -349,6 +370,25 @@ namespace Avalonia.Controls
             foreach (var window in windows)
             {
                 window.IsEnabled = isEnabled;
+            }
+        }
+
+        void SetWindowStartupLocation()
+        {
+            if (WindowStartupLocation == WindowStartupLocation.CenterScreen)
+            {
+                var screen = Screens.ScreenFromPoint(Bounds.Position);
+
+                if (screen != null)
+                    Position = screen.WorkingArea.CenterRect(new Rect(ClientSize)).Position;
+            }
+            else if (WindowStartupLocation == WindowStartupLocation.CenterOwner)
+            {
+                if (Owner != null)
+                {
+                    var positionAsSize = Owner.ClientSize / 2 - ClientSize / 2;
+                    Position = Owner.Position + new Point(positionAsSize.Width, positionAsSize.Height);
+                }
             }
         }
 
