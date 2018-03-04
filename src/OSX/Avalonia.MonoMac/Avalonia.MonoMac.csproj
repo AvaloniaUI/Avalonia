@@ -9,9 +9,6 @@
     <Compile Include="..\..\Shared\WindowResizeDragHelper.cs" Link="WindowResizeDragHelper.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="MonoMac.NetStandard" Version="0.0.3" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\..\Avalonia.Animation\Avalonia.Animation.csproj" />
     <ProjectReference Include="..\..\Avalonia.Base\Avalonia.Base.csproj" />
     <ProjectReference Include="..\..\Avalonia.Controls\Avalonia.Controls.csproj" />

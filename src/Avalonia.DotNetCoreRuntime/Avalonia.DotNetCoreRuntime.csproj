@@ -19,7 +19,7 @@
     <ProjectReference Include="..\Gtk\Avalonia.Gtk3\Avalonia.Gtk3.csproj" />
     <ProjectReference Include="..\OSX\Avalonia.MonoMac\Avalonia.MonoMac.csproj" />
     <ProjectReference Include="..\Skia\Avalonia.Skia\Avalonia.Skia.csproj" />
-    <ProjectReference Include="..\Windows\Avalonia.Win32.NetStandard\Avalonia.Win32.NetStandard.csproj" />
+    <ProjectReference Include="..\Windows\Avalonia.Win32\Avalonia.Win32.csproj" />
   </ItemGroup>
   <Import Project="..\..\build\NetCore.props" />
   <Import Project="..\Shared\PlatformSupport\PlatformSupport.projitems" />
