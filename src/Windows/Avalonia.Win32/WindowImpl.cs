@@ -693,7 +693,7 @@ namespace Avalonia.Win32
 
         private void CreateDropTarget()
         {
-            OleDropTarget odt = new OleDropTarget(_owner);
+            OleDropTarget odt = new OleDropTarget(this, _owner);
             if (OleContext.Current?.RegisterDragDrop(Handle, odt) ?? false)
                 _dropTarget = odt;
         }

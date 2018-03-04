@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Avalonia.Controls.DragDrop;
+using Avalonia.Controls.DragDrop.Raw;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
@@ -19,6 +20,7 @@ namespace Avalonia.MonoMac
     {
         public TopLevelView View { get; }
         private readonly IMouseDevice _mouse = AvaloniaLocator.Current.GetService<IMouseDevice>();
+        private readonly IDragDevice _dragDevice = AvaloniaLocator.Current.GetService<IDragDevice>();
         protected TopLevelImpl()
         {
             View = new TopLevelView(this);
@@ -37,7 +39,6 @@ namespace Avalonia.MonoMac
             bool _isLeftPressed, _isRightPressed, _isMiddlePressed;
             private readonly IMouseDevice _mouse;
             private readonly IKeyboardDevice _keyboard;
-            private readonly IDragDispatcher _dragDispatcher;
             private NSTrackingArea _area;
             private NSCursor _cursor;
             private bool _nonUiRedrawQueued;
@@ -54,7 +55,6 @@ namespace Avalonia.MonoMac
                 _tl = tl;
                 _mouse = AvaloniaLocator.Current.GetService<IMouseDevice>();
                 _keyboard = AvaloniaLocator.Current.GetService<IKeyboardDevice>();
-                _dragDispatcher = AvaloniaLocator.Current.GetService<IDragDispatcher>();
                 
                 RegisterForDraggedTypes(new string[] {
                     "public.data" // register for any kind of data.
@@ -151,72 +151,45 @@ namespace Avalonia.MonoMac
                 UpdateCursor();
             }
 
-            public override NSDragOperation DraggingEntered(NSDraggingInfo sender)
+            private NSDragOperation SendRawDragEvent(NSDraggingInfo sender, RawDragEventType type)
             {
+                Action<RawInputEventArgs> input = _tl.Input;
+                IDragDevice dragDevice = _tl._dragDevice;
                 IInputRoot root = _tl?.InputRoot;
-                if (root == null || _dragDispatcher == null)
+                if (root == null || dragDevice == null || input == null)
                     return NSDragOperation.None;
-
+                
                 var dragOp = DraggingInfo.ConvertDragOperation(sender.DraggingSourceOperationMask);
                 DraggingInfo info = new DraggingInfo(sender);
                 var pt = TranslateLocalPoint(info.Location);
-                
-                dragOp = _dragDispatcher.DragEnter(root, pt, info, dragOp);
-                
-                return DraggingInfo.ConvertDragOperation(dragOp);
+                var args = new RawDragEvent(dragDevice, type, root, pt, info, dragOp);
+                input(args);
+                return DraggingInfo.ConvertDragOperation(args.Effects);
+            }
+
+            public override NSDragOperation DraggingEntered(NSDraggingInfo sender)
+            {
+                return SendRawDragEvent(sender, RawDragEventType.DragEnter);
             }
 
             public override NSDragOperation DraggingUpdated(NSDraggingInfo sender)
             {
-                IInputRoot root = _tl?.InputRoot;
-                if (root == null || _dragDispatcher == null)
-                    return NSDragOperation.None;
-
-                var dragOp = DraggingInfo.ConvertDragOperation(sender.DraggingSourceOperationMask);
-                DraggingInfo info = new DraggingInfo(sender);
-                var pt = TranslateLocalPoint(info.Location);
-                
-                dragOp = _dragDispatcher.DragOver(root, pt, info, dragOp);
-                
-                return DraggingInfo.ConvertDragOperation(dragOp);
+                return SendRawDragEvent(sender, RawDragEventType.DragOver);
             }
 
             public override void DraggingExited(NSDraggingInfo sender)
             {
-                IInputRoot root = _tl?.InputRoot;
-                if (root == null || _dragDispatcher == null)
-                    return;
-                _dragDispatcher.DragLeave(root);
+                SendRawDragEvent(sender, RawDragEventType.DragLeave);
             }
 
             public override bool PrepareForDragOperation(NSDraggingInfo sender)
             {
-                IInputRoot root = _tl?.InputRoot;
-                if (root == null || _dragDispatcher == null)
-                    return false;
-
-                var dragOp = DraggingInfo.ConvertDragOperation(sender.DraggingSourceOperationMask);
-                DraggingInfo info = new DraggingInfo(sender);
-                var pt = TranslateLocalPoint(info.Location);
-                
-                dragOp = _dragDispatcher.DragOver(root, pt, info, dragOp);
-                
-                return dragOp != DragDropEffects.None;
+                return SendRawDragEvent(sender, RawDragEventType.DragOver) != NSDragOperation.None;
             }
 
             public override bool PerformDragOperation(NSDraggingInfo sender)
             {
-                IInputRoot root = _tl?.InputRoot;
-                if (root == null || _dragDispatcher == null)
-                    return false;
-
-                var dragOp = DraggingInfo.ConvertDragOperation(sender.DraggingSourceOperationMask);
-                DraggingInfo info = new DraggingInfo(sender);
-                var pt = TranslateLocalPoint(info.Location);
-                
-                dragOp = _dragDispatcher.Drop(root, pt, info, dragOp);
-                
-                return dragOp != DragDropEffects.None;
+                return SendRawDragEvent(sender, RawDragEventType.Drop) != NSDragOperation.None;
             }
             
 

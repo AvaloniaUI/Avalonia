@@ -2,19 +2,17 @@
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
 using System.Linq;
+using Avalonia.Controls.DragDrop.Raw;
+using Avalonia.Input.Raw;
 
 namespace Avalonia.Controls.DragDrop
 {
-    class DefaultDragDispatcher : IDragDispatcher
+    class DragDevice : IDragDevice
     {
-        public static readonly DefaultDragDispatcher Instance = new DefaultDragDispatcher();
-
+        public static readonly DragDevice Instance = new DragDevice();
+        
         private Interactive _lastTarget = null;
         
-        private DefaultDragDispatcher()
-        {   
-        }
-
         private Interactive GetTarget(IInputElement root, Point local)
         {
             var target = root.InputHitTest(local)?.GetSelfAndVisualAncestors()?.OfType<Interactive>()?.FirstOrDefault();
@@ -36,13 +34,13 @@ namespace Avalonia.Controls.DragDrop
             return args.DragEffects;
         }
         
-        public DragDropEffects DragEnter(IInputElement inputRoot, Point point, IDataObject data, DragDropEffects effects)
+        private DragDropEffects DragEnter(IInputElement inputRoot, Point point, IDataObject data, DragDropEffects effects)
         {
             _lastTarget = GetTarget(inputRoot, point);
             return RaiseDragEvent(_lastTarget, DragDrop.DragEnterEvent, effects, data);
         }
 
-        public DragDropEffects DragOver(IInputElement inputRoot, Point point, IDataObject data, DragDropEffects effects)
+        private DragDropEffects DragOver(IInputElement inputRoot, Point point, IDataObject data, DragDropEffects effects)
         {
             var target = GetTarget(inputRoot, point);
 
@@ -61,7 +59,7 @@ namespace Avalonia.Controls.DragDrop
             }            
         }
 
-        public void DragLeave(IInputElement inputRoot)
+        private void DragLeave(IInputElement inputRoot)
         {
             if (_lastTarget == null)
                 return;
@@ -75,7 +73,7 @@ namespace Avalonia.Controls.DragDrop
             }
         }
 
-        public DragDropEffects Drop(IInputElement inputRoot, Point point, IDataObject data, DragDropEffects effects)
+        private DragDropEffects Drop(IInputElement inputRoot, Point point, IDataObject data, DragDropEffects effects)
         {
             try
             {
@@ -84,6 +82,31 @@ namespace Avalonia.Controls.DragDrop
             finally 
             {
                 _lastTarget = null;
+            }
+        }
+
+        public void ProcessRawEvent(RawInputEventArgs e)
+        {
+            if (!e.Handled && e is RawDragEvent margs)
+                ProcessRawEvent(margs);
+        }
+
+        private void ProcessRawEvent(RawDragEvent e)
+        {
+            switch (e.Type)
+            {
+                case RawDragEventType.DragEnter:
+                    e.Effects = DragEnter(e.InputRoot, e.Location, e.Data, e.Effects);
+                    break;
+                case RawDragEventType.DragOver:
+                    e.Effects = DragOver(e.InputRoot, e.Location, e.Data, e.Effects);
+                    break;
+                case RawDragEventType.DragLeave:
+                    DragLeave(e.InputRoot);
+                    break;
+                case RawDragEventType.Drop:
+                    e.Effects = Drop(e.InputRoot, e.Location, e.Data, e.Effects);
+                    break;
             }
         }
     }
