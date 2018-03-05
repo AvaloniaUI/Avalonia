@@ -29,11 +29,11 @@ namespace Avalonia.Shared.PlatformSupport
         {
             private readonly StandardRuntimePlatform _plat;
             private IntPtr _address;
+            private readonly object _lock = new object();
 #if DEBUG
             private static readonly List<string> Backtraces = new List<string>();
             private static Thread GCThread;
             private readonly string _backtrace;
-            private readonly object _lock = new object();
             private static readonly object _btlock = new object();
 
             class GCThreadDetector
