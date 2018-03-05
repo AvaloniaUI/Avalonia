@@ -347,6 +347,9 @@ namespace Avalonia.Gtk3.Interop
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Glib)]
             public delegate ulong g_free(IntPtr data);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gobject)]
+            public delegate bool g_type_check_instance_is_fundamentally_a(IntPtr instance, IntPtr type);
             
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Glib)]
             public unsafe delegate void g_slist_free(GSList* data);
@@ -433,6 +436,7 @@ namespace Avalonia.Gtk3.Interop
         public static D.g_timeout_add GTimeoutAdd;
         public static D.g_timeout_add_full GTimeoutAddFull;
         public static D.g_free GFree;
+        public static D.g_type_check_instance_is_fundamentally_a GTypeCheckInstanceIsFundamentallyA;
         public static D.g_slist_free GSlistFree;
         public static D.g_memory_input_stream_new_from_data GMemoryInputStreamNewFromData;
         public static D.gtk_widget_set_double_buffered GtkWidgetSetDoubleBuffered;
@@ -498,6 +502,7 @@ namespace Avalonia.Gtk3.Interop
         public static D.cairo_set_font_size CairoSetFontSize;
         public static D.cairo_move_to CairoMoveTo;
         public static D.cairo_destroy CairoDestroy;
+        public const int G_TYPE_OBJECT = 80;
     }
 
     public enum GtkWindowType
