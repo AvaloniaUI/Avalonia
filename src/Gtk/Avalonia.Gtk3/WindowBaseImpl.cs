@@ -33,11 +33,11 @@ namespace Avalonia.Gtk3
         private readonly AutoResetEvent _canSetNextOperation = new AutoResetEvent(true);
         internal IntPtr? GdkWindowHandle;
         private bool _overrideRedirect;
+        private uint? _tickCallback;
         public WindowBaseImpl(GtkWindow gtkWidget)
         {
             
             GtkWidget = gtkWidget;
-            Disposables.Add(gtkWidget);
             _framebuffer = new FramebufferManager(this);
             _imContext = Native.GtkImMulticontextNew();
             Disposables.Add(_imContext);
@@ -62,7 +62,7 @@ namespace Avalonia.Gtk3
             {
                 Native.GtkWidgetSetDoubleBuffered(gtkWidget, false);
                 _gcHandle = GCHandle.Alloc(this);
-                Native.GtkWidgetAddTickCallback(GtkWidget, PinnedStaticCallback, GCHandle.ToIntPtr(_gcHandle), IntPtr.Zero);
+                _tickCallback = Native.GtkWidgetAddTickCallback(GtkWidget, PinnedStaticCallback, GCHandle.ToIntPtr(_gcHandle), IntPtr.Zero);
                 
             }
         }
@@ -103,7 +103,7 @@ namespace Avalonia.Gtk3
 
         private bool OnDestroy(IntPtr gtkwidget, IntPtr userdata)
         {
-            Dispose();
+            DoDispose(true);
             return false;
         }
 
@@ -297,14 +297,28 @@ namespace Avalonia.Gtk3
         }
 
 
-        public void Dispose()
+        public void Dispose() => DoDispose(false);
+        
+        void DoDispose(bool fromDestroy)
         {
+            if (_tickCallback.HasValue)
+            {
+                if (!GtkWidget.IsClosed)
+                    Native.GtkWidgetRemoveTickCallback(GtkWidget, _tickCallback.Value);
+                _tickCallback = null;
+            }
+            
             //We are calling it here, since signal handler will be detached
             if (!GtkWidget.IsClosed)
                 Closed?.Invoke();
             foreach(var d in Disposables.AsEnumerable().Reverse())
                 d.Dispose();
             Disposables.Clear();
+            
+            if (!fromDestroy && !GtkWidget.IsClosed)
+                Native.GtkWindowClose(GtkWidget);
+            GtkWidget.Dispose();
+            
             if (_gcHandle.IsAllocated)
             {
                 _gcHandle.Free();
