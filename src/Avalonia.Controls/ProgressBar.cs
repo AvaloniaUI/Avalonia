@@ -90,16 +90,16 @@ namespace Avalonia.Controls
         {
             if (orientation == Orientation.Horizontal)
             {
-                MinHeight = 14;
-                MinWidth = 200;
+                MinHeight = Math.Min(14, double.IsNaN(Height) ? double.MaxValue : Height);
+                MinWidth = Math.Min(200, double.IsNaN(Width) ? double.MaxValue : Width);
 
                 _indicator.HorizontalAlignment = HorizontalAlignment.Left;
                 _indicator.VerticalAlignment = VerticalAlignment.Stretch;
             }
             else
             {
-                MinHeight = 200;
-                MinWidth = 14;
+                MinHeight = Math.Min(200, double.IsNaN(Height) ? double.MaxValue : Height);
+                MinWidth = Math.Min(14, double.IsNaN(Width) ? double.MaxValue : Width);
 
                 _indicator.HorizontalAlignment = HorizontalAlignment.Stretch;
                 _indicator.VerticalAlignment = VerticalAlignment.Bottom;
