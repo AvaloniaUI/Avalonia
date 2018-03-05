@@ -1,20 +1,38 @@
-<Style xmlns="https://github.com/avaloniaui" Selector="ProgressBar">
-  <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush4}"/>
-  <Setter Property="Foreground" Value="{DynamicResource ThemeAccentBrush}"/>
-  <Setter Property="Template">
-    <ControlTemplate>
-      <Border Background="{TemplateBinding Background}"
-              BorderBrush="{TemplateBinding BorderBrush}"
-              BorderThickness="{TemplateBinding BorderThickness}">
-        <Grid>
-          <Border Name="PART_Track"
-                  BorderThickness="1"
-                  BorderBrush="{TemplateBinding Background}"/>
-          <Border Name="PART_Indicator"
-                  BorderThickness="1"
-                  Background="{TemplateBinding Foreground}"/>
-        </Grid>
-      </Border>
-    </ControlTemplate>
-  </Setter>
-</Style>
+<Styles xmlns="https://github.com/avaloniaui">
+  <Style Selector="ProgressBar">
+    <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush4}"/>
+    <Setter Property="Foreground" Value="{DynamicResource ThemeAccentBrush}"/> 
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}">
+          <Grid>
+            <Border Name="PART_Track"
+                    BorderThickness="1"
+                    BorderBrush="{TemplateBinding Background}"/>
+            <Border Name="PART_Indicator"
+                    BorderThickness="1"
+                    Background="{TemplateBinding Foreground}" />
+          </Grid>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+  <Style Selector="ProgressBar:horizontal /template/ Border#PART_Indicator">
+    <Setter Property="HorizontalAlignment" Value="Left"/>
+    <Setter Property="VerticalAlignment" Value="Stretch"/>
+  </Style>
+  <Style Selector="ProgressBar:vertical /template/ Border#PART_Indicator">
+    <Setter Property="HorizontalAlignment" Value="Stretch"/>
+    <Setter Property="VerticalAlignment" Value="Bottom"/>
+  </Style>
+  <Style Selector="ProgressBar:horizontal">
+    <Setter Property="MinWidth" Value="200"/>
+    <Setter Property="MinHeight" Value="14"/>
+  </Style>
+  <Style Selector="ProgressBar:vertical">
+    <Setter Property="MinWidth" Value="14"/>
+    <Setter Property="MinHeight" Value="200"/>
+  </Style>
+</Styles>
