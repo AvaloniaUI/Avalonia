@@ -358,7 +358,7 @@ namespace Avalonia.Controls
                         modal?.Dispose();
                         SetIsEnabled(affectedWindows, true);
                         activated?.Activate();
-                        result.SetResult((TResult)_dialogResult);
+                        result.SetResult((TResult)(_dialogResult ?? default(TResult)));
                     });
 
                 return result.Task;
