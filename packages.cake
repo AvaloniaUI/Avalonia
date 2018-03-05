@@ -370,10 +370,10 @@ public class Packages
             new NuGetPackSettings()
             {
                 Id = "Avalonia.Win32",
-                Dependencies = new []
+                Dependencies = new DependencyBuilder(this)
                 {
                     new NuSpecDependency() { Id = "Avalonia", Version = parameters.Version }
-                },
+                }.Deps(new string[]{null}, "System.Drawing.Common"),
                 Files = new []
                 {
                     new NuSpecContent { Source = "Avalonia.Win32/bin/" + parameters.DirSuffix + "/netstandard2.0/Avalonia.Win32.dll", Target = "lib/netstandard2.0" }

@@ -10,7 +10,7 @@ namespace Avalonia.Win32
     public class WindowFramebuffer : ILockedFramebuffer
     {
         private readonly IntPtr _handle;
-        private IntPtr _pBitmap;
+        private IUnmanagedBlob _bitmapBlob;
         private UnmanagedMethods.BITMAPINFOHEADER _bmpInfo;
 
         public WindowFramebuffer(IntPtr handle, int width, int height)
@@ -27,7 +27,7 @@ namespace Avalonia.Win32
             _bmpInfo.Init();
             _bmpInfo.biWidth = width;
             _bmpInfo.biHeight = -height;
-            _pBitmap = Marshal.AllocHGlobal(width * height * 4);
+            _bitmapBlob = AvaloniaLocator.Current.GetService<IRuntimePlatform>().AllocBlob(width * height * 4);
         }
 
         ~WindowFramebuffer()
@@ -35,7 +35,7 @@ namespace Avalonia.Win32
             Deallocate();
         }
 
-        public IntPtr Address => _pBitmap;
+        public IntPtr Address => _bitmapBlob.Address;
         public int RowBytes => Width * 4;
         public PixelFormat Format => PixelFormat.Bgra8888;
 
@@ -70,21 +70,18 @@ namespace Avalonia.Win32
         public void DrawToDevice(IntPtr hDC, int destX = 0, int destY = 0, int srcX = 0, int srcY = 0, int width = -1,
             int height = -1)
         {
-            if(_pBitmap == IntPtr.Zero)
-                throw new ObjectDisposedException("Framebuffer");
             if (width == -1)
                 width = Width;
             if (height == -1)
                 height = Height;
             UnmanagedMethods.SetDIBitsToDevice(hDC, destX, destY, (uint) width, (uint) height, srcX, srcY,
-                0, (uint)Height, _pBitmap, ref _bmpInfo, 0);
+                0, (uint)Height, _bitmapBlob.Address, ref _bmpInfo, 0);
         }
 
         public bool DrawToWindow(IntPtr hWnd, int destX = 0, int destY = 0, int srcX = 0, int srcY = 0, int width = -1,
             int height = -1)
         {
-
-            if (_pBitmap == IntPtr.Zero)
+            if (_bitmapBlob.IsDisposed)
                 throw new ObjectDisposedException("Framebuffer");
             if (hWnd == IntPtr.Zero)
                 return false;
@@ -102,13 +99,6 @@ namespace Avalonia.Win32
             DrawToWindow(_handle);
         }
 
-        public void Deallocate()
-        {
-            if (_pBitmap != IntPtr.Zero)
-            {
-                Marshal.FreeHGlobal(_pBitmap);
-                _pBitmap = IntPtr.Zero;
-            }
-        }
+        public void Deallocate() => _bitmapBlob.Dispose();
     }
 }
