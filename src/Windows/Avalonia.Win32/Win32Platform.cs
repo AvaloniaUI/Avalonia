@@ -47,7 +47,6 @@ namespace Avalonia.Win32
         private static uint _uiThread;
         private UnmanagedMethods.WndProc _wndProcDelegate;
         private IntPtr _hwnd;
-        private readonly List<Delegate> _delegates = new List<Delegate>();
 
         public Win32Platform()
         {
@@ -126,14 +125,7 @@ namespace Avalonia.Win32
                 (uint)interval.TotalMilliseconds,
                 timerDelegate);
 
-            // Prevent timerDelegate being garbage collected.
-            _delegates.Add(timerDelegate);
-
-            return Disposable.Create(() =>
-            {
-                _delegates.Remove(timerDelegate);
-                UnmanagedMethods.KillTimer(IntPtr.Zero, handle);
-            });
+            return new TimerHandle(handle, timerDelegate);
         }
 
         private static readonly int SignalW = unchecked((int) 0xdeadbeaf);

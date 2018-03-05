@@ -46,11 +46,6 @@ namespace Avalonia.Threading
         }
 
         /// <summary>
-        /// Finalizes an instance of the <see cref="DispatcherTimer"/> class.
-        /// </summary>
-        ~DispatcherTimer() => Dispose(false);
-
-        /// <summary>
         /// Raised when the timer ticks.
         /// </summary>
         public event EventHandler Tick;
