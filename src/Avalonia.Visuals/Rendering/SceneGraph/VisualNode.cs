@@ -67,9 +67,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <inheritdoc/>
         public bool HasAncestorGeometryClip { get; }
 
-        /// <summary>
-        /// Gets or sets the opacity of the scene graph node.
-        /// </summary>
+        /// <inheritdoc/>
         public double Opacity
         {
             get { return _opacity; }

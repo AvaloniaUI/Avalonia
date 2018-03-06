@@ -657,6 +657,43 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
         }
 
         [Fact]
+        public void Setting_Opacity_Should_Add_Descendent_Bounds_To_DirtyRects()
+        {
+            using (TestApplication())
+            {
+                Decorator decorator;
+                Border border;
+                var tree = new TestRoot
+                {
+                    Child = decorator = new Decorator
+                    {
+                        Child = border = new Border
+                        {
+                            Background = Brushes.Red,
+                            Width = 100,
+                            Height = 100,
+                        }
+                    }
+                };
+
+                tree.Measure(Size.Infinity);
+                tree.Arrange(new Rect(tree.DesiredSize));
+
+                var scene = new Scene(tree);
+                var sceneBuilder = new SceneBuilder();
+                sceneBuilder.UpdateAll(scene);
+
+                decorator.Opacity = 0.5;
+                scene = scene.CloneScene();
+                sceneBuilder.Update(scene, decorator);
+
+                Assert.NotEmpty(scene.Layers.Single().Dirty);
+                var dirty = scene.Layers.Single().Dirty.Single();
+                Assert.Equal(new Rect(0, 0, 100, 100), dirty);
+            }
+        }
+
+        [Fact]
         public void Should_Set_GeometryClip()
         {
             using (TestApplication())
