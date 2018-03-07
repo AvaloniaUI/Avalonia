@@ -237,7 +237,7 @@ namespace Avalonia
                 .Bind<ILayoutManager>().ToSingleton<LayoutManager>()
                 .Bind<IApplicationLifecycle>().ToConstant(this)
                 .Bind<IScheduler>().ToConstant(AvaloniaScheduler.Instance)
-                .Bind<IDragDevice>().ToConstant(DragDevice.Instance);
+                .Bind<IDragDropDevice>().ToConstant(DragDropDevice.Instance);
         }
     }
 }
