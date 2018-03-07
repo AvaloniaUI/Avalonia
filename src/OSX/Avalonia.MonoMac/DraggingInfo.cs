@@ -15,8 +15,7 @@ namespace Avalonia.MonoMac
         {
             _info = info;
         }
-
-
+        
         internal static NSDragOperation ConvertDragOperation(DragDropEffects d)
         {
             NSDragOperation result = NSDragOperation.None;
@@ -76,6 +75,16 @@ namespace Avalonia.MonoMac
         public bool Contains(string dataFormat)
         {
             return GetDataFormats().Any(f => f == dataFormat);
+        }
+
+        public object Get(string dataFormat)
+        {
+            if (dataFormat == DataFormats.Text)
+                return GetText();
+            if (dataFormat == DataFormats.FileNames)
+                return GetFileNames();
+
+            return _info.DraggingPasteboard.GetDataForType(dataFormat).ToArray();
         }
     }
 }

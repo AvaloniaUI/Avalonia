@@ -55,8 +55,9 @@ namespace Avalonia.Win32
                 pdwEffect = DropEffect.None;
                 return UnmanagedMethods.HRESULT.S_OK;
             }
-            
-            _currentDrag = new OleDataObject(pDataObj);
+            _currentDrag = pDataObj as IDataObject;
+            if (_currentDrag == null)
+                _currentDrag = new OleDataObject(pDataObj);
             var args = new RawDragEvent(
                 _dragDevice,
                 RawDragEventType.DragEnter, 
@@ -124,8 +125,10 @@ namespace Avalonia.Win32
                     pdwEffect = DropEffect.None;
                     return UnmanagedMethods.HRESULT.S_OK;
                 }
-            
-                _currentDrag= new OleDataObject(pDataObj);
+
+                _currentDrag = pDataObj as IDataObject;
+                if (_currentDrag == null)
+                    _currentDrag= new OleDataObject(pDataObj);
                 
                 var args = new RawDragEvent(
                     _dragDevice, 

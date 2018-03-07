@@ -10,34 +10,34 @@ namespace Avalonia.Win32
 {   
     static class ClipboardFormats
     {
+        private const int MAX_FORMAT_NAME_LENGTH = 260;
+
         class ClipboardFormat
         {
             public short Format { get; private set; }
             public string Name { get; private set; }
+            public short[] Synthesized { get; private set; }
 
-            public ClipboardFormat(string name, short format)
+            public ClipboardFormat(string name, short format, params short[] synthesized)
             {
                 Format = format;
                 Name = name;
+                Synthesized = synthesized;
             }
         }
 
         private static readonly List<ClipboardFormat> FormatList = new List<ClipboardFormat>()
         {
-            new ClipboardFormat(DataFormats.Text, (short)UnmanagedMethods.ClipboardFormat.CF_UNICODETEXT),
+            new ClipboardFormat(DataFormats.Text, (short)UnmanagedMethods.ClipboardFormat.CF_UNICODETEXT, (short)UnmanagedMethods.ClipboardFormat.CF_TEXT),
             new ClipboardFormat(DataFormats.FileNames, (short)UnmanagedMethods.ClipboardFormat.CF_HDROP),
         };
 
 
         private static string QueryFormatName(short format)
         {
-            int len = UnmanagedMethods.GetClipboardFormatName(format, null, 0);
-            if (len > 0)
-            {
-                StringBuilder sb = new StringBuilder(len);
-                if (UnmanagedMethods.GetClipboardFormatName(format, sb, len) <= len)
-                    return sb.ToString();
-            }
+            StringBuilder sb = new StringBuilder(MAX_FORMAT_NAME_LENGTH);
+            if (UnmanagedMethods.GetClipboardFormatName(format, sb, sb.Capacity) > 0)
+                return sb.ToString();
             return null;
         }
 
@@ -45,7 +45,7 @@ namespace Avalonia.Win32
         {
             lock (FormatList)
             {
-                var pd = FormatList.FirstOrDefault(f => f.Format == format);
+                var pd = FormatList.FirstOrDefault(f => f.Format == format || Array.IndexOf(f.Synthesized, format) >= 0);
                 if (pd == null)
                 {
                     string name = QueryFormatName(format);

@@ -11,5 +11,7 @@ namespace Avalonia.Controls.DragDrop
         string GetText();
 
         IEnumerable<string> GetFileNames();
+        
+        object Get(string dataFormat);
     }
 }

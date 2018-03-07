@@ -973,7 +973,11 @@ namespace Avalonia.Win32.Interop
         [DllImport("shell32.dll", BestFitMapping = false, CharSet = CharSet.Auto)]
         public static extern int DragQueryFile(IntPtr hDrop, int iFile, StringBuilder lpszFile, int cch);
 
-        
+        [DllImport("ole32.dll", CharSet = CharSet.Auto, ExactSpelling = true, PreserveSig = false)]
+        public static extern void DoDragDrop(IDataObject dataObject, IDropSource dropSource, int allowedEffects, int[] finalEffect);
+
+
+
         public enum MONITOR
         {
             MONITOR_DEFAULTTONULL = 0x00000000,
@@ -1013,11 +1017,28 @@ namespace Avalonia.Win32.Interop
             MDT_DEFAULT = MDT_EFFECTIVE_DPI
         } 
 
-        public enum ClipboardFormat
+        public enum ClipboardFormat 
         {
+            /// <summary>
+            /// Text format. Each line ends with a carriage return/linefeed (CR-LF) combination. A null character signals the end of the data. Use this format for ANSI text.
+            /// </summary>
             CF_TEXT = 1,
+            /// <summary>
+            /// A handle to a bitmap
+            /// </summary>
+            CF_BITMAP = 2,
+            /// <summary>
+            /// A memory object containing a BITMAPINFO structure followed by the bitmap bits.
+            /// </summary>
+            CF_DIB = 3,
+            /// <summary>
+            /// Unicode text format. Each line ends with a carriage return/linefeed (CR-LF) combination. A null character signals the end of the data.
+            /// </summary>
             CF_UNICODETEXT = 13,
-            CF_HDROP = 15
+            /// <summary>
+            /// A handle to type HDROP that identifies a list of files. 
+            /// </summary>
+            CF_HDROP = 15,
         }
 
         public struct MSG
@@ -1160,7 +1181,9 @@ namespace Avalonia.Win32.Interop
             S_FALSE = 0x0001,
             S_OK = 0x0000,
             E_INVALIDARG = 0x80070057,
-            E_OUTOFMEMORY = 0x8007000E
+            E_OUTOFMEMORY = 0x8007000E,
+            E_NOTIMPL = 0x80004001,
+            E_UNEXPECTED = 0x8000FFFF,
         }
 
         public enum Icons
@@ -1350,5 +1373,27 @@ namespace Avalonia.Win32.Interop
         UnmanagedMethods.HRESULT DragLeave();
         [PreserveSig]
         UnmanagedMethods.HRESULT Drop([MarshalAs(UnmanagedType.Interface)] [In] IDataObject pDataObj, [MarshalAs(UnmanagedType.U4)] [In] int grfKeyState, [MarshalAs(UnmanagedType.U8)] [In] long pt, [In] [Out] ref DropEffect pdwEffect);
+    }
+
+    [ComImport]
+    [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    [Guid("00000121-0000-0000-C000-000000000046")]
+    internal interface IDropSource
+    {
+        [PreserveSig]
+        int QueryContinueDrag(int fEscapePressed, [MarshalAs(UnmanagedType.U4)] [In] int grfKeyState);
+        [PreserveSig]
+        int GiveFeedback([MarshalAs(UnmanagedType.U4)] [In] int dwEffect);
+    }
+
+
+    [StructLayoutAttribute(LayoutKind.Sequential)]
+    internal struct _DROPFILES
+    {
+        public Int32 pFiles;
+        public Int32 X;
+        public Int32 Y;
+        public bool fNC;
+        public bool fWide;
     }
 }

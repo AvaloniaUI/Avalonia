@@ -39,6 +39,11 @@ namespace Avalonia.Win32
             return GetDataFromOleHGLOBAL(DataFormats.FileNames, DVASPECT.DVASPECT_CONTENT) as IEnumerable<string>;
         }
 
+        public object Get(string dataFormat)
+        {
+            return GetDataFromOleHGLOBAL(dataFormat, DVASPECT.DVASPECT_CONTENT);
+        }
+
         private object GetDataFromOleHGLOBAL(string format, DVASPECT aspect)
         {
             FORMATETC formatEtc = new FORMATETC();
