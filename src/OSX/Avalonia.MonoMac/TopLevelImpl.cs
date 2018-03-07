@@ -133,7 +133,10 @@ namespace Avalonia.MonoMac
             {
                 ResetCursorRects();
                 if (_cursor != null)
+                {
                     AddCursorRect(Frame, _cursor);
+                    _cursor.Set();
+                }
             }
 
             static readonly NSCursor ArrowCursor = NSCursor.ArrowCursor;
