@@ -20,5 +20,15 @@ namespace Avalonia.Controls.DragDrop
         {
             interactive.SetValue(AcceptDragProperty, value);
         }
+
+        /// <summary>
+        /// Starts a dragging operation with the given <see cref="IDataObject"/> and returns the applied drop effect from the target.
+        /// <seealso cref="DataObject"/>
+        /// </summary>
+        public static DragDropEffects DoDragDrop(this Interactive source, IDataObject data, DragDropEffects allowedEffects)
+        {
+
+            return DragDropEffects.None;
+        }
     }
 }
