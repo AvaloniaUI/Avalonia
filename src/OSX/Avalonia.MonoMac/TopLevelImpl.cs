@@ -20,7 +20,7 @@ namespace Avalonia.MonoMac
     {
         public TopLevelView View { get; }
         private readonly IMouseDevice _mouse = AvaloniaLocator.Current.GetService<IMouseDevice>();
-        private readonly IDragDevice _dragDevice = AvaloniaLocator.Current.GetService<IDragDevice>();
+        private readonly IDragDropDevice _dragDevice = AvaloniaLocator.Current.GetService<IDragDropDevice>();
         protected TopLevelImpl()
         {
             View = new TopLevelView(this);
@@ -154,7 +154,7 @@ namespace Avalonia.MonoMac
             private NSDragOperation SendRawDragEvent(NSDraggingInfo sender, RawDragEventType type)
             {
                 Action<RawInputEventArgs> input = _tl.Input;
-                IDragDevice dragDevice = _tl._dragDevice;
+                IDragDropDevice dragDevice = _tl._dragDevice;
                 IInputRoot root = _tl?.InputRoot;
                 if (root == null || dragDevice == null || input == null)
                     return NSDragOperation.None;

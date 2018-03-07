@@ -2,7 +2,7 @@
 
 namespace Avalonia.Controls.DragDrop.Raw
 {
-    public interface IDragDevice : IInputDevice
+    public interface IDragDropDevice : IInputDevice
     {
     }
 }

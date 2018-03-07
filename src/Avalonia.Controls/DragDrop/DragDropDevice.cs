@@ -7,9 +7,9 @@ using Avalonia.Input.Raw;
 
 namespace Avalonia.Controls.DragDrop
 {
-    class DragDevice : IDragDevice
+    class DragDropDevice : IDragDropDevice
     {
-        public static readonly DragDevice Instance = new DragDevice();
+        public static readonly DragDropDevice Instance = new DragDropDevice();
         
         private Interactive _lastTarget = null;
         

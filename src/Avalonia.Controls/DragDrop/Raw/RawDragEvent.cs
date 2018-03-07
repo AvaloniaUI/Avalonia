@@ -12,7 +12,7 @@ namespace Avalonia.Controls.DragDrop.Raw
         public DragDropEffects Effects { get; set; }
         public RawDragEventType Type { get; }
 
-        public RawDragEvent(IDragDevice inputDevice, RawDragEventType type, 
+        public RawDragEvent(IDragDropDevice inputDevice, RawDragEventType type, 
             IInputElement inputRoot, Point location, IDataObject data, DragDropEffects effects)
             :base(inputDevice, GetTimeStamp())
         {

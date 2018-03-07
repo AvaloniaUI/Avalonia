@@ -12,13 +12,13 @@ namespace Avalonia.Win32
     {
         private readonly IInputElement _target;
         private readonly ITopLevelImpl _tl;
-        private readonly IDragDevice _dragDevice;
+        private readonly IDragDropDevice _dragDevice;
         
         private IDataObject _currentDrag = null;
 
         public OleDropTarget(ITopLevelImpl tl, IInputElement target)
         {
-            _dragDevice = AvaloniaLocator.Current.GetService<IDragDevice>();
+            _dragDevice = AvaloniaLocator.Current.GetService<IDragDropDevice>();
             _tl = tl;
             _target = target;
         }
