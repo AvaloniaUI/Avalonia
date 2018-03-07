@@ -84,7 +84,8 @@ namespace Avalonia.Win32
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop(60))
                 .Bind<ISystemDialogImpl>().ToSingleton<SystemDialogImpl>()
                 .Bind<IWindowingPlatform>().ToConstant(s_instance)
-                .Bind<IPlatformIconLoader>().ToConstant(s_instance);
+                .Bind<IPlatformIconLoader>().ToConstant(s_instance)
+                .Bind<IPlatformDragSource>().ToSingleton<DragSource>();
 
             UseDeferredRendering = deferredRendering;
             _uiThread = UnmanagedMethods.GetCurrentThreadId();

@@ -23,7 +23,7 @@ namespace Avalonia.Win32
             _target = target;
         }
 
-        static DropEffect ConvertDropEffect(DragDropEffects operation)
+        public static DropEffect ConvertDropEffect(DragDropEffects operation)
         {
             DropEffect result = DropEffect.None;
             if (operation.HasFlag(DragDropEffects.Copy))
@@ -35,7 +35,7 @@ namespace Avalonia.Win32
             return result;
         }
 
-        static DragDropEffects ConvertDropEffect(DropEffect effect)
+        public static DragDropEffects ConvertDropEffect(DropEffect effect)
         {
             DragDropEffects result = DragDropEffects.None;
             if (effect.HasFlag(DropEffect.Copy))

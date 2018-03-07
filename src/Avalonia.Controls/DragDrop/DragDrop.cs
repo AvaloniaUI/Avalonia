@@ -1,4 +1,6 @@
-﻿using Avalonia.Interactivity;
+﻿using System.Threading.Tasks;
+using Avalonia.Controls.Platform;
+using Avalonia.Interactivity;
 
 namespace Avalonia.Controls.DragDrop
 {
@@ -25,10 +27,10 @@ namespace Avalonia.Controls.DragDrop
         /// Starts a dragging operation with the given <see cref="IDataObject"/> and returns the applied drop effect from the target.
         /// <seealso cref="DataObject"/>
         /// </summary>
-        public static DragDropEffects DoDragDrop(this Interactive source, IDataObject data, DragDropEffects allowedEffects)
+        public static Task<DragDropEffects> DoDragDrop(IDataObject data, DragDropEffects allowedEffects)
         {
-
-            return DragDropEffects.None;
+            var src = AvaloniaLocator.Current.GetService<IPlatformDragSource>();
+            return src?.DoDragDrop(data, allowedEffects) ?? Task.FromResult(DragDropEffects.None);
         }
     }
 }

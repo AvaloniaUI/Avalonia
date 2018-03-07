@@ -33,9 +33,7 @@ namespace Avalonia.Win32
 
         public int GiveFeedback(int dwEffect)
         {
-            if (dwEffect != 0)
-                return DRAGDROP_S_USEDEFAULTCURSORS;
-            return unchecked((int)UnmanagedMethods.HRESULT.S_OK);
+            return DRAGDROP_S_USEDEFAULTCURSORS;
         }
     }
 }

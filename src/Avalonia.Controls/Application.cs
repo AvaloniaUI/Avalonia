@@ -14,6 +14,7 @@ using Avalonia.Threading;
 using System.Reactive.Concurrency;
 using Avalonia.Controls.DragDrop;
 using Avalonia.Controls.DragDrop.Raw;
+using Avalonia.Controls.Platform;
 
 namespace Avalonia
 {
@@ -237,7 +238,8 @@ namespace Avalonia
                 .Bind<ILayoutManager>().ToSingleton<LayoutManager>()
                 .Bind<IApplicationLifecycle>().ToConstant(this)
                 .Bind<IScheduler>().ToConstant(AvaloniaScheduler.Instance)
-                .Bind<IDragDropDevice>().ToConstant(DragDropDevice.Instance);
+                .Bind<IDragDropDevice>().ToConstant(DragDropDevice.Instance)
+                .Bind<IPlatformDragSource>().ToTransient<DragSource>();
         }
     }
 }
