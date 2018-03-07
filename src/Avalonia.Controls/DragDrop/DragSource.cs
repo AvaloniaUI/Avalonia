@@ -23,8 +23,9 @@ namespace Avalonia.Controls.DragDrop
 
         private readonly Subject<DragDropEffects> _result = new Subject<DragDropEffects>();
         private IDataObject _draggedData;
-        private IInputRoot _lastRoot;
+        private IInputElement _lastRoot;
         private InputModifiers? _initialInputModifiers;
+        private object _lastCursor;
 
         public DragSource()
         {
@@ -54,9 +55,48 @@ namespace Avalonia.Controls.DragDrop
             RawDragEvent rawEvent = new RawDragEvent(_dragDrop, type, root, pt, _draggedData, allowedEffects);
             var tl = root.GetSelfAndVisualAncestors().OfType<TopLevel>().FirstOrDefault();
             tl.PlatformImpl.Input(rawEvent);
+            
+            SetCursor(root, rawEvent.Effects);
             return rawEvent.Effects;
         }
 
+        private Cursor GetCursorForDropEffect(DragDropEffects effects)
+        {
+            // Todo. Needs to choose cursor by effect.
+            if (effects == DragDropEffects.None)
+                return new Cursor(StandardCursorType.No);
+            return new Cursor(StandardCursorType.Hand);
+        }
+        
+        private void SetCursor(IInputElement root, DragDropEffects effect)
+        {
+            if (_lastRoot != root)
+            {
+                if (_lastRoot is InputElement ieLast)
+                {
+                    if (_lastCursor == AvaloniaProperty.UnsetValue)
+                        ieLast.ClearValue(InputElement.CursorProperty);
+                    else
+                        ieLast.Cursor = _lastCursor as Cursor;
+                }
+
+                if (root is InputElement ieNew)
+                {
+                    if (!ieNew.IsSet(InputElement.CursorProperty))
+                        _lastCursor = AvaloniaProperty.UnsetValue;
+                    else
+                        _lastCursor = root.Cursor;
+                }
+                else
+                    _lastCursor = null;
+
+                _lastRoot = root;
+            }
+
+            if (root is InputElement ie)
+                ie.Cursor = GetCursorForDropEffect(effect);
+        }
+        
         private void ProcessMouseEvents(RawMouseEventArgs e, DragDropEffects allowedEffects)
         {
             if (!_initialInputModifiers.HasValue)
@@ -66,16 +106,18 @@ namespace Avalonia.Controls.DragDrop
             {
                 if (_lastRoot != null)
                     RaiseDragEvent(RawDragEventType.DragLeave, _lastRoot, _lastRoot.PointToClient(e.Root.PointToScreen(e.Position)), allowedEffects);
+                SetCursor(null, DragDropEffects.None);
                 _result.OnNext(DragDropEffects.None);
                 e.Handled = true;
             }
             void AcceptDragging()
             {
                 var result = RaiseDragEvent(RawDragEventType.Drop, e.Root, e.Position, allowedEffects) & allowedEffects;
+                SetCursor(null, DragDropEffects.None);
                 _result.OnNext(result);
                 e.Handled = true;
             }
-
+            
             switch (e.Type)
             {
                 case RawMouseEventType.LeftButtonDown:
@@ -118,7 +160,6 @@ namespace Avalonia.Controls.DragDrop
                         if (_lastRoot != null)
                             RaiseDragEvent(RawDragEventType.DragLeave, _lastRoot, _lastRoot.PointToClient(e.Root.PointToScreen(e.Position)), allowedEffects);
                         RaiseDragEvent(RawDragEventType.DragEnter, e.Root, e.Position, allowedEffects);
-                        _lastRoot = e.Root;
                     }
                     else
                         RaiseDragEvent(RawDragEventType.DragOver, e.Root, e.Position, allowedEffects);
