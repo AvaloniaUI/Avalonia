@@ -43,6 +43,7 @@ namespace Avalonia.Markup.Xaml.PortableXaml
             { typeof(Selector), typeof(SelectorTypeConverter)},
             { typeof(SolidColorBrush), typeof(BrushTypeConverter) },
             { typeof(Thickness), typeof(ThicknessTypeConverter) },
+            { typeof(CornerRadius), typeof(CornerRadiusTypeConverter) },
             { typeof(TimeSpan), typeof(TimeSpanTypeConverter) },
             //{ typeof(Uri), typeof(Converters.UriTypeConverter) },
             { typeof(Cursor), typeof(CursorTypeConverter) },
