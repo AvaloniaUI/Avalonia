@@ -25,9 +25,13 @@ namespace Avalonia
         public double BottomLeft { get; }
         public bool IsEmpty => TopLeft.Equals(0) && TopRight.Equals(0) && BottomRight.Equals(0) && BottomLeft.Equals(0);
 
-        public bool Equals(CornerRadius cornerRadius)
+        public override bool Equals(object obj)
         {
-            return this == cornerRadius;
+            if (obj is CornerRadius)
+            {
+                return this == (CornerRadius)obj;
+            }
+            return false;
         }
 
         public override int GetHashCode()
