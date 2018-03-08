@@ -39,7 +39,7 @@ namespace Avalonia.UnitTests
             return new MockStreamGeometryImpl();
         }
 
-        public IWritableBitmapImpl CreateWritableBitmap(int width, int height, PixelFormat? format = default(PixelFormat?))
+        public IWriteableBitmapImpl CreateWriteableBitmap(int width, int height, PixelFormat? format = default(PixelFormat?))
         {
             throw new NotImplementedException();
         }
