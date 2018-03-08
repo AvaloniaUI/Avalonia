@@ -151,7 +151,7 @@ namespace Avalonia.Styling.UnitTests
             {
                 Setters = new[]
                 {
-                    new Setter(Border.BorderThicknessProperty, 4),
+                    new Setter(Border.BorderThicknessProperty, new Thickness(4)),
                 }
             };
 
