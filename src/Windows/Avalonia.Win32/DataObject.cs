@@ -8,11 +8,16 @@ using Avalonia.Controls.DragDrop;
 using Avalonia.Win32.Interop;
 using IDataObject = Avalonia.Controls.DragDrop.IDataObject;
 using IOleDataObject = System.Runtime.InteropServices.ComTypes.IDataObject;
+using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace Avalonia.Win32
 {
     class DataObject : IDataObject, IOleDataObject
     {
+        // Compatibility with WinForms + WPF...
+        internal static readonly byte[] SerializedObjectGUID = new Guid("FD9EA796-3B13-4370-A679-56106BB288FB").ToByteArray();
+
         class FormatEnumerator : IEnumFORMATETC
         {
             private FORMATETC[] _formats;
@@ -249,7 +254,51 @@ namespace Avalonia.Win32
                 return WriteStringToHGlobal(ref hGlobal, Convert.ToString(data));
             if (dataFormat == DataFormats.FileNames && data is IEnumerable<string> files)
                 return WriteFileListToHGlobal(ref hGlobal, files);
-            return DV_E_TYMED;
+            if (data is Stream stream)
+            {
+                byte[] buffer = new byte[stream.Length - stream.Position];
+                stream.Read(buffer, 0, buffer.Length);
+                return WriteBytesToHGlobal(ref hGlobal, buffer);
+            }
+            if (data is IEnumerable<byte> bytes)
+            {
+                var byteArr = bytes is byte[] ? (byte[])bytes : bytes.ToArray();
+                return WriteBytesToHGlobal(ref hGlobal, byteArr);
+            }
+            return WriteBytesToHGlobal(ref hGlobal, SerializeObject(data));
+        }
+
+        private byte[] SerializeObject(object data)
+        {
+            using (var ms = new MemoryStream())
+            {
+                ms.Write(SerializedObjectGUID, 0, SerializedObjectGUID.Length);
+                BinaryFormatter binaryFormatter = new BinaryFormatter();
+                binaryFormatter.Serialize(ms, data);
+                return ms.ToArray();
+            }
+        }
+
+        private int WriteBytesToHGlobal(ref IntPtr hGlobal, byte[] data)
+        {
+            int required = data.Length;
+            if (hGlobal == IntPtr.Zero)
+                hGlobal = UnmanagedMethods.GlobalAlloc(GMEM_MOVEABLE | GMEM_ZEROINIT, required);
+
+            long available = UnmanagedMethods.GlobalSize(hGlobal).ToInt64();
+            if (required > available)
+                return STG_E_MEDIUMFULL;
+
+            IntPtr ptr = UnmanagedMethods.GlobalLock(hGlobal);
+            try
+            {
+                Marshal.Copy(data, 0, ptr, data.Length);
+                return unchecked((int)UnmanagedMethods.HRESULT.S_OK);
+            }
+            finally
+            {
+                UnmanagedMethods.GlobalUnlock(hGlobal);
+            }
         }
 
         private int WriteFileListToHGlobal(ref IntPtr hGlobal, IEnumerable<string> files)

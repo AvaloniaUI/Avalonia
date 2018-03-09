@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using Avalonia.Controls.DragDrop;
 using Avalonia.Win32.Interop;
@@ -62,7 +64,19 @@ namespace Avalonia.Win32
                             return ReadStringFromHGlobal(medium.unionmember);
                         if (format == DataFormats.FileNames)
                             return ReadFileNamesFromHGlobal(medium.unionmember);
-                        return ReadBytesFromHGlobal(medium.unionmember);
+
+                        byte[] data = ReadBytesFromHGlobal(medium.unionmember);
+
+                        if (IsSerializedObject(data))
+                        {
+                            using (var ms = new MemoryStream(data))
+                            {
+                                ms.Position = DataObject.SerializedObjectGUID.Length;
+                                BinaryFormatter binaryFormatter = new BinaryFormatter();
+                                return binaryFormatter.Deserialize(ms);
+                            }
+                        }
+                        return data;
                     }
                 }
                 finally
@@ -71,6 +85,16 @@ namespace Avalonia.Win32
                 }
             }
             return null;
+        }
+
+        private bool IsSerializedObject(byte[] data)
+        {
+            if (data.Length < DataObject.SerializedObjectGUID.Length)
+                return false;
+            for (int i = 0; i < DataObject.SerializedObjectGUID.Length; i++)
+                if (data[i] != DataObject.SerializedObjectGUID[i])
+                    return false;
+            return true;
         }
 
         private static IEnumerable<string> ReadFileNamesFromHGlobal(IntPtr hGlobal)
