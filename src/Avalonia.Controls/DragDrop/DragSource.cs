@@ -25,7 +25,8 @@ namespace Avalonia.Controls.DragDrop
         private IDataObject _draggedData;
         private IInputElement _lastRoot;
         private Point _lastPosition;
-        private object _lastCursor;
+        private StandardCursorType _lastCursorType;
+        private object _originalCursor;
         private InputModifiers? _initialInputModifiers;
 
         public DragSource()
@@ -81,15 +82,15 @@ namespace Avalonia.Controls.DragDrop
             return DragDropEffects.Move;
         }
 
-        private Cursor GetCursorForDropEffect(DragDropEffects effects)
+        private StandardCursorType GetCursorForDropEffect(DragDropEffects effects)
         {
             if (effects.HasFlag(DragDropEffects.Copy))
-                return new Cursor(StandardCursorType.DragCopy);
+                return StandardCursorType.DragCopy;
             if (effects.HasFlag(DragDropEffects.Move))
-                return new Cursor(StandardCursorType.DragMove);
+                return StandardCursorType.DragMove;
             if (effects.HasFlag(DragDropEffects.Link))
-                return new Cursor(StandardCursorType.DragLink);
-            return new Cursor(StandardCursorType.No);
+                return StandardCursorType.DragLink;
+            return StandardCursorType.No;
         }
         
         private void UpdateCursor(IInputElement root, DragDropEffects effect)
@@ -98,27 +99,35 @@ namespace Avalonia.Controls.DragDrop
             {
                 if (_lastRoot is InputElement ieLast)
                 {
-                    if (_lastCursor == AvaloniaProperty.UnsetValue)
+                    if (_originalCursor == AvaloniaProperty.UnsetValue)
                         ieLast.ClearValue(InputElement.CursorProperty);
                     else
-                        ieLast.Cursor = _lastCursor as Cursor;
+                        ieLast.Cursor = _originalCursor as Cursor;
                 }
 
                 if (root is InputElement ieNew)
                 {
                     if (!ieNew.IsSet(InputElement.CursorProperty))
-                        _lastCursor = AvaloniaProperty.UnsetValue;
+                        _originalCursor = AvaloniaProperty.UnsetValue;
                     else
-                        _lastCursor = root.Cursor;
+                        _originalCursor = root.Cursor;
                 }
                 else
-                    _lastCursor = null;
+                    _originalCursor = null;
 
+                _lastCursorType = StandardCursorType.Arrow;
                 _lastRoot = root;
             }
 
             if (root is InputElement ie)
-                ie.Cursor = GetCursorForDropEffect(effect);
+            {
+                var ct = GetCursorForDropEffect(effect);
+                if (ct != _lastCursorType)
+                {
+                    _lastCursorType = ct;
+                    ie.Cursor = new Cursor(ct);
+                }
+            }  
         }
 
         private void CancelDragging()
