@@ -6,7 +6,7 @@ using SkiaSharp;
 
 namespace Avalonia.Skia
 {
-    class BitmapImpl : IRenderTargetBitmapImpl, IWritableBitmapImpl
+    class BitmapImpl : IRenderTargetBitmapImpl, IWriteableBitmapImpl
     {
         private Vector _dpi;
 
