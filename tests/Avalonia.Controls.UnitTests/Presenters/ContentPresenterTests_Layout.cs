@@ -185,10 +185,5 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
             Assert.Equal(new Rect(84, 0, 16, 16), content.Bounds);
         }
-
-        [Fact]
-        public void Padding_Is_Applied_To_TopLeft_Aligned_Content()
-        {
-        }
     }
 }
