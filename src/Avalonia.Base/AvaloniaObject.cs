@@ -70,6 +70,8 @@ namespace Avalonia
                     BindingPriority.Unset);
 
                 property.NotifyInitialized(e);
+
+                string s = "test";
             }
         }
 
