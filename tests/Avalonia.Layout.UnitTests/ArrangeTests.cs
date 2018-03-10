@@ -9,6 +9,22 @@ namespace Avalonia.Layout.UnitTests
     public class ArrangeTests
     {
         [Fact]
+        public void Bounds_Should_Not_Include_Margin()
+        {
+            var target = new Decorator
+            {
+                Width = 100,
+                Height = 100,
+                Margin = new Thickness(5),
+            };
+
+            Assert.False(target.IsMeasureValid);
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(target.DesiredSize));
+            Assert.Equal(new Rect(5, 5, 100, 100), target.Bounds);
+        }
+
+        [Fact]
         public void Margin_Should_Be_Subtracted_From_Arrange_FinalSize()
         {
             var target = new TestControl

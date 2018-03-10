@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.UnitTests;
@@ -231,11 +232,23 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
-        private void ClearOpenWindows()
+        [Fact]
+        public async Task ShowDialog_With_ValueType_Returns_Default_When_Closed()
         {
-            // HACK: We really need a decent way to have "statics" that can be scoped to
-            // AvaloniaLocator scopes.
-            ((IList<Window>)Window.OpenWindows).Clear();
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var windowImpl = new Mock<IWindowImpl>();
+                windowImpl.SetupProperty(x => x.Closed);
+                windowImpl.Setup(x => x.Scaling).Returns(1);
+
+                var target = new Window(windowImpl.Object);
+                var task = target.ShowDialog<bool>();
+
+                windowImpl.Object.Closed();
+
+                var result = await task;
+                Assert.False(result);
+            }
         }
 
         [Fact]
@@ -320,6 +333,13 @@ namespace Avalonia.Controls.UnitTests
             return Mock.Of<IWindowImpl>(x =>
                 x.Scaling == 1 &&
                 x.CreateRenderer(It.IsAny<IRenderRoot>()) == renderer.Object);
+        }
+
+        private void ClearOpenWindows()
+        {
+            // HACK: We really need a decent way to have "statics" that can be scoped to
+            // AvaloniaLocator scopes.
+            ((IList<Window>)Window.OpenWindows).Clear();
         }
     }
 }
