@@ -49,7 +49,7 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
             throw new NotImplementedException();
         }
 
-        public IWritableBitmapImpl CreateWritableBitmap(int width, int height, PixelFormat? fmt)
+        public IWriteableBitmapImpl CreateWriteableBitmap(int width, int height, PixelFormat? fmt)
         {
             throw new NotImplementedException();
         }
