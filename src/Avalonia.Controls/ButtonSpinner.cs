@@ -5,6 +5,12 @@ using Avalonia.Interactivity;
 
 namespace Avalonia.Controls
 {
+    public enum Location
+    {
+        Left,
+        Right
+    }
+
     /// <summary>
     /// Represents a spinner control that includes two Buttons.
     /// </summary>
@@ -21,6 +27,12 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<bool> ShowButtonSpinnerProperty =
             AvaloniaProperty.Register<ButtonSpinner, bool>(nameof(ShowButtonSpinner), true);
+
+        /// <summary>
+        /// Defines the <see cref="ButtonSpinnerLocation"/> property.
+        /// </summary>
+        public static readonly StyledProperty<Location> ButtonSpinnerLocationProperty =
+            AvaloniaProperty.Register<ButtonSpinner, Location>(nameof(ButtonSpinnerLocation), Location.Right);
 
         private Button _decreaseButton;
         /// <summary>
@@ -73,6 +85,8 @@ namespace Avalonia.Controls
         static ButtonSpinner()
         {
             AllowSpinProperty.Changed.Subscribe(AllowSpinChanged);
+            PseudoClass(ButtonSpinnerLocationProperty, location => location == Location.Left, ":left");
+            PseudoClass(ButtonSpinnerLocationProperty, location => location == Location.Right, ":right");
         }
 
         /// <summary>
@@ -91,6 +105,15 @@ namespace Avalonia.Controls
         {
             get { return GetValue(ShowButtonSpinnerProperty); }
             set { SetValue(ShowButtonSpinnerProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets current location of the <see cref="ButtonSpinner"/>.
+        /// </summary>
+        public Location ButtonSpinnerLocation
+        {
+            get { return GetValue(ButtonSpinnerLocationProperty); }
+            set { SetValue(ButtonSpinnerLocationProperty, value); }
         }
 
         /// <inheritdoc />

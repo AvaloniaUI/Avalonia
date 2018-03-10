@@ -8,7 +8,12 @@
     <StackPanel Orientation="Vertical" Gap="8" Width="200" Margin="0,20,0,0">
       <CheckBox Name="allowSpinCheck" IsChecked="True">AllowSpin</CheckBox>
       <CheckBox Name="showSpinCheck" IsChecked="True">ShowButtonSpinner</CheckBox>
-      <ButtonSpinner Name="spinner" Spin="OnSpin" Height="30"
+      <ButtonSpinner Spin="OnSpin" Height="30"
+                     AllowSpin="{Binding #allowSpinCheck.IsChecked}"
+                     ShowButtonSpinner="{Binding #showSpinCheck.IsChecked}">
+        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="Everest"/>
+      </ButtonSpinner>
+      <ButtonSpinner Spin="OnSpin" Height="30" ButtonSpinnerLocation="Left"
                      AllowSpin="{Binding #allowSpinCheck.IsChecked}"
                      ShowButtonSpinner="{Binding #showSpinCheck.IsChecked}">
         <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="Everest"/>
