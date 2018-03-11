@@ -1,3 +1,6 @@
+// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
 using System;
 using System.Globalization;
 using System.Linq;
@@ -56,23 +59,24 @@ namespace Avalonia
                     var uniform = double.Parse(parts[0], culture);
                     return new CornerRadius(uniform);
                 case 4:
-                    var left = double.Parse(parts[0], culture);
-                    var top = double.Parse(parts[1], culture);
-                    var right = double.Parse(parts[2], culture);
-                    var bottom = double.Parse(parts[3], culture);
-                    return new CornerRadius(left, top, right, bottom);
+                    var topLeft = double.Parse(parts[0], culture);
+                    var topRight = double.Parse(parts[1], culture);
+                    var bottomRight = double.Parse(parts[2], culture);
+                    var bottomLeft = double.Parse(parts[3], culture);
+                    return new CornerRadius(topLeft, topRight, bottomRight, bottomLeft);
+                default:
+                    {
+                        throw new FormatException("Invalid CornerRadius.");
+                    }
             }
-
-            throw new FormatException("Invalid Thickness.");
         }
 
         public static bool operator ==(CornerRadius cr1, CornerRadius cr2)
         {
             return ((cr1.TopLeft.Equals(cr2.TopLeft) || double.IsNaN(cr1.TopLeft) && double.IsNaN(cr2.TopLeft)))
                    && (cr1.TopRight.Equals(cr2.TopRight) || (double.IsNaN(cr1.TopRight) && double.IsNaN(cr2.TopRight)))
-                   && (cr1.BottomRight.Equals(cr2.BottomRight) || (double.IsNaN(cr1.BottomRight) && double.IsNaN(cr2.BottomRight)))
-                   && (cr1.BottomLeft.Equals(cr2.BottomLeft) || (double.IsNaN(cr1.BottomLeft) && double.IsNaN(cr2.BottomLeft))
-                   );
+                   && (cr1.BottomRight.Equals(cr2.BottomRight) || double.IsNaN(cr1.BottomRight) && double.IsNaN(cr2.BottomRight))
+                   && (cr1.BottomLeft.Equals(cr2.BottomLeft) || double.IsNaN(cr1.BottomLeft) && double.IsNaN(cr2.BottomLeft));
         }
 
         public static bool operator !=(CornerRadius cr1, CornerRadius cr2)
