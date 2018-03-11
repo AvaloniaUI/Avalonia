@@ -51,8 +51,12 @@ namespace Avalonia.MonoMac
         {
             var pasteboardItem = new NSPasteboardItem();
             NSData nsData;
-            if(data is string s)
+            if (data is string s)
+            {
+                if (format == DataFormats.FileNames)
+                    s = new Uri(s).AbsoluteUri; // Ensure file uris...
                 nsData = NSData.FromString(s);
+            }
             else if (data is Stream strm)
                 nsData = NSData.FromStream(strm);
             else if (data is byte[] bytes)
