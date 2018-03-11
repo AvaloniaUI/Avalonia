@@ -71,7 +71,7 @@ namespace Avalonia
 
                 property.NotifyInitialized(e);
 
-                string s = "test";
+                string s = "test" + "123";
             }
         }
 
