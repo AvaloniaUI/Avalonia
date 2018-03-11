@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
@@ -24,6 +25,7 @@ namespace Avalonia.MonoMac
     public class DragSource : NSDraggingSource, IPlatformDragSource
     {
         private const string NSPasteboardTypeString = "public.utf8-plain-text";
+        private const string NSPasteboardTypeFileUrl = "public.file-url";
         
         private readonly Subject<DragDropEffects> _result = new Subject<DragDropEffects>();
         private readonly IInputManager _inputManager;
@@ -39,7 +41,7 @@ namespace Avalonia.MonoMac
         private string DataFormatToUTI(string s)
         {
             if (s == DataFormats.FileNames)
-                throw new NotImplementedException();
+                return NSPasteboardTypeFileUrl;
             if (s == DataFormats.Text)
                 return NSPasteboardTypeString;
             return s;
@@ -47,7 +49,6 @@ namespace Avalonia.MonoMac
         
         private NSDraggingItem CreateDraggingItem(string format, object data)
         {
-            
             var pasteboardItem = new NSPasteboardItem();
             NSData nsData;
             if(data is string s)
@@ -72,6 +73,19 @@ namespace Avalonia.MonoMac
   
             return new NSDraggingItem(writing);
         }
+
+        public IEnumerable<NSDraggingItem> CreateDraggingItems(string format, object data)
+        {
+            if (format == DataFormats.FileNames && data is IEnumerable<string> files)
+            {
+                foreach (var file in files)
+                    yield return CreateDraggingItem(format, file);
+
+                yield break;
+            }
+
+            yield return CreateDraggingItem(format, data);
+        }
         
         
         public async Task<DragDropEffects> DoDragDrop(IDataObject data, DragDropEffects allowedEffects)
@@ -87,7 +101,7 @@ namespace Avalonia.MonoMac
             var ev = NSEvent.MouseEvent(NSEventType.LeftMouseDown, pt, 0, 0, 0, null, 0, 0, 0);
 
             _allowedEffects = allowedEffects;
-            var items = data.GetDataFormats().Select(fmt => CreateDraggingItem(fmt, data.Get(fmt))).ToArray();
+            var items = data.GetDataFormats().SelectMany(fmt => CreateDraggingItems(fmt, data.Get(fmt))).ToArray();
             view.BeginDraggingSession(items ,ev, this);
 
             return await _result;
