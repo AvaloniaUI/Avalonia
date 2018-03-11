@@ -168,9 +168,9 @@ namespace Avalonia.Direct2D1
                 dpiY);
         }
 
-        public IWritableBitmapImpl CreateWritableBitmap(int width, int height, PixelFormat? format = null)
+        public IWriteableBitmapImpl CreateWriteableBitmap(int width, int height, PixelFormat? format = null)
         {
-            return new WritableWicBitmapImpl(s_imagingFactory, width, height, format);
+            return new WriteableWicBitmapImpl(s_imagingFactory, width, height, format);
         }
 
         public IStreamGeometryImpl CreateStreamGeometry()
