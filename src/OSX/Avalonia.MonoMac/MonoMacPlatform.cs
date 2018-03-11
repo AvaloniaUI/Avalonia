@@ -35,7 +35,8 @@ namespace Avalonia.MonoMac
                 .Bind<ISystemDialogImpl>().ToSingleton<SystemDialogsImpl>()
                 .Bind<IClipboard>().ToSingleton<ClipboardImpl>()
                 .Bind<IRenderLoop>().ToConstant(s_renderLoop)
-                .Bind<IPlatformThreadingInterface>().ToConstant(PlatformThreadingInterface.Instance);
+                .Bind<IPlatformThreadingInterface>().ToConstant(PlatformThreadingInterface.Instance)
+                .Bind<IPlatformDragSource>().ToTransient<DragSource>();
         }
 
         public static void Initialize()
