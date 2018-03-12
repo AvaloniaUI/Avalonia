@@ -143,9 +143,9 @@ namespace Avalonia.Controls
             private StreamGeometry _backgroundGeometryCache;
             private StreamGeometry _borderGeometryCache;
 
-            public void Update(Size finalSize, Thickness borders, CornerRadius radii)
+            public void Update(Size finalSize, Thickness borderThickness, CornerRadius cornerRadius)
             {
-                if (borders.IsUniform && radii.IsEmpty || borders.IsEmpty)
+                if (borderThickness.IsUniform && cornerRadius.IsUniform)
                 {
                     _backgroundGeometryCache = null;
                     _borderGeometryCache = null;
@@ -156,8 +156,8 @@ namespace Avalonia.Controls
                     _useComplexRendering = true;
 
                     var boundRect = new Rect(finalSize);
-                    var innerRect = boundRect.Deflate(borders);
-                    var innerRadii = new Radii(radii, borders, false);
+                    var innerRect = boundRect.Deflate(borderThickness);
+                    var innerRadii = new Radii(cornerRadius, borderThickness, false);
 
                     StreamGeometry backgroundGeometry = null;
 
@@ -180,7 +180,7 @@ namespace Avalonia.Controls
 
                     if (!boundRect.Width.Equals(0) && !boundRect.Height.Equals(0))
                     {
-                        var outerRadii = new Radii(radii, borders, true);
+                        var outerRadii = new Radii(cornerRadius, borderThickness, true);
                         var borderGeometry = new StreamGeometry();
 
                         using (var ctx = borderGeometry.Open())

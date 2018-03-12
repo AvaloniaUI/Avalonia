@@ -14,6 +14,11 @@ namespace Avalonia
             TopLeft = TopRight = BottomLeft = BottomRight = uniformRadius;
 
         }
+        public CornerRadius(double top, double bottom)
+        {
+            TopLeft = TopRight = top;
+            BottomLeft = BottomRight = bottom;
+        }
         public CornerRadius(double topLeft, double topRight, double bottomRight, double bottomLeft)
         {
             TopLeft = topLeft;
@@ -26,7 +31,8 @@ namespace Avalonia
         public double TopRight { get; }
         public double BottomRight { get; }
         public double BottomLeft { get; }
-        public bool IsEmpty => TopLeft.Equals(0) && TopRight.Equals(0) && BottomRight.Equals(0) && BottomLeft.Equals(0);
+        public bool IsEmpty => TopLeft.Equals(0) && IsUniform;
+        public bool IsUniform => TopLeft.Equals(TopRight) && BottomLeft.Equals(BottomRight) && TopRight.Equals(BottomRight);
 
         public override bool Equals(object obj)
         {
@@ -58,6 +64,10 @@ namespace Avalonia
                 case 1:
                     var uniform = double.Parse(parts[0], culture);
                     return new CornerRadius(uniform);
+                case 2:
+                    var top = double.Parse(parts[0], culture);
+                    var bottom = double.Parse(parts[1], culture);
+                    return new CornerRadius(top, bottom);
                 case 4:
                     var topLeft = double.Parse(parts[0], culture);
                     var topRight = double.Parse(parts[1], culture);

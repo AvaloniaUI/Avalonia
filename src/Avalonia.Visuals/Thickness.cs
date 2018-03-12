@@ -90,12 +90,12 @@ namespace Avalonia
         /// <summary>
         /// Gets a value indicating whether all sides are set to 0.
         /// </summary>
-        public bool IsEmpty => Left.Equals(0) && Top.Equals(0) && Right.Equals(0) && Bottom.Equals(0);
+        public bool IsEmpty => Left.Equals(0) && IsUniform;
 
         /// <summary>
         /// Gets a value indicating whether all sides are equal.
         /// </summary>
-        public bool IsUniform => Left.Equals(Right) && Bottom.Equals(Top) && Left.Equals(Top);
+        public bool IsUniform => Left.Equals(Right) && Top.Equals(Bottom) && Right.Equals(Bottom);
 
         /// <summary>
         /// Compares two Thicknesses.

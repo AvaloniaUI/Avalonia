@@ -17,6 +17,14 @@ namespace Avalonia.Visuals.UnitTests
         }
 
         [Fact]
+        public void Parse_Parses_Top_Bottom()
+        {
+            var result = CornerRadius.Parse("1.1,2.2", CultureInfo.InvariantCulture);
+
+            Assert.Equal(new CornerRadius(1.1, 2.2), result);
+        }
+
+        [Fact]
         public void Parse_Parses_TopLeft_TopRight_BottomRight_BottomLeft()
         {
             var result = CornerRadius.Parse("1.1,2.2,3.3,4.4", CultureInfo.InvariantCulture);
