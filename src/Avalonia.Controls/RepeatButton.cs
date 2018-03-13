@@ -12,6 +12,12 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<int> DelayProperty =
             AvaloniaProperty.Register<Button, int>(nameof(Delay), 100);
 
+        /// <summary>
+        /// Defines the <see cref="InitialDelay"/> property.
+        /// </summary>
+        public static readonly StyledProperty<int> InitialDelayProperty =
+            AvaloniaProperty.Register<Button, int>(nameof(InitialDelay), 300);
+
         private DispatcherTimer _repeatTimer;
 
         /// <summary>
@@ -23,18 +29,37 @@ namespace Avalonia.Controls
             set { SetValue(DelayProperty, value); }
         }
 
+        /// <summary>
+        /// Gets or sets the amount of time, in milliseconds, to wait before repeating begins.
+        /// </summary>
+        public int InitialDelay
+        {
+            get { return GetValue(InitialDelayProperty); }
+            set { SetValue(InitialDelayProperty, value); }
+        }
+
         private void StartTimer()
         {
             if (_repeatTimer == null)
             {
                 _repeatTimer = new DispatcherTimer();
-                _repeatTimer.Tick += (o, e) => OnClick();
+                _repeatTimer.Tick += RepeatTimerOnTick;
             }
 
             if (_repeatTimer.IsEnabled) return;
 
-            _repeatTimer.Interval = TimeSpan.FromMilliseconds(Delay);
+            _repeatTimer.Interval = TimeSpan.FromMilliseconds(InitialDelay);
             _repeatTimer.Start();
+        }
+
+        private void RepeatTimerOnTick(object sender, EventArgs e)
+        {
+            var interval = TimeSpan.FromMilliseconds(Delay);
+            if (_repeatTimer.Interval != interval)
+            {
+                _repeatTimer.Interval = interval;
+            }
+            OnClick();
         }
 
         private void StopTimer()
