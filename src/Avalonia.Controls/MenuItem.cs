@@ -98,6 +98,7 @@ namespace Avalonia.Controls
             ItemsPanelProperty.OverrideDefaultValue<MenuItem>(DefaultPanel);
             ClickEvent.AddClassHandler<MenuItem>(x => x.OnClick);
             SubmenuOpenedEvent.AddClassHandler<MenuItem>(x => x.OnSubmenuOpened);
+            IsSelectedProperty.Changed.AddClassHandler<MenuItem>(x => x.IsSelectedChanged);
             IsSubMenuOpenProperty.Changed.AddClassHandler<MenuItem>(x => x.SubMenuOpenChanged);
             AccessKeyHandler.AccessKeyPressedEvent.AddClassHandler<MenuItem>(x => x.AccessKeyPressed);
         }
@@ -498,6 +499,21 @@ namespace Avalonia.Controls
         private void PopupClosed(object sender, EventArgs e)
         {
             SelectedItem = null;
+        }
+
+        private void IsSelectedChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine($"'{this}' IsSelected={e.NewValue}");
+
+            if (ToString() == "MenuItem Menu with _Submenu" && (bool)e.NewValue == false)
+            {
+                System.Diagnostics.Debugger.Break();
+            }
+        }
+
+        public override string ToString()
+        {
+            return "MenuItem " + Header;
         }
 
         /// <summary>
