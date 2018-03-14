@@ -28,15 +28,6 @@ using System.Threading.Tasks;
 
 namespace Avalonia.Controls
 {
-    public class CancelableEventArgs : EventArgs
-    {
-        public bool Cancel { get; set; }
-
-        public CancelableEventArgs()
-            : base()
-        { }
-    }
-    
     /// <summary>
     /// Provides data for the
     /// <see cref="E:Avalonia.Controls.AutoCompleteBox.Populated" />
