@@ -159,13 +159,25 @@ namespace Avalonia.Controls
                     var innerRect = new Rect(borderThickness.Left, borderThickness.Top,
                         boundRect.Width - borderThickness.Right, boundRect.Height - borderThickness.Bottom);
 
+                    StreamGeometry backgroundGeometry = null;
+
                     if (!boundRect.Width.Equals(0) && !boundRect.Height.Equals(0))
                     {
-                        var backgroundGeometry = new StreamGeometry();
+                        backgroundGeometry = new StreamGeometry();
 
-                        using (var ctx = backgroundGeometry.Open())
+                        if (cornerRadius.IsEmpty)
                         {
-                            CreateGeometry(ctx, innerRect);
+                            using (var ctx = backgroundGeometry.Open())
+                            {
+                                CreateGeometry(ctx, innerRect);
+                            }
+                        }
+                        else
+                        {
+                            using (var ctx = backgroundGeometry.Open())
+                            {
+                                CreateGeometry(ctx, innerRect, cornerRadius);
+                            }
                         }
 
                         _backgroundGeometryCache = backgroundGeometry;
@@ -184,6 +196,11 @@ namespace Avalonia.Controls
                             using (var ctx = borderGeometry.Open())
                             {
                                 CreateGeometry(ctx, boundRect);
+
+                                if (backgroundGeometry != null)
+                                {
+                                    CreateGeometry(ctx, innerRect);
+                                }
                             }
                         }
                         else
@@ -191,6 +208,12 @@ namespace Avalonia.Controls
                             using (var ctx = borderGeometry.Open())
                             {
                                 CreateGeometry(ctx, boundRect, cornerRadius);
+
+                                if (backgroundGeometry != null)
+                                {
+                                    CreateGeometry(ctx, innerRect, cornerRadius);
+                                }
+
                             }
                         }
 
@@ -205,25 +228,25 @@ namespace Avalonia.Controls
 
             private static void CreateGeometry(StreamGeometryContext context, Rect boundRect)
             {
-                context.BeginFigure(new Point(boundRect.X + 0.5, boundRect.Y + 0.5), true);
-                context.LineTo(new Point(boundRect.Width - 0.5, boundRect.Y + 0.5));
-                context.LineTo(new Point(boundRect.Width - 0.5, boundRect.Height - 0.5));
-                context.LineTo(new Point(boundRect.X + 0.5, boundRect.Height - 0.5));
-                context.LineTo(new Point(boundRect.X + 0.5, boundRect.Y + 0.5));
+                context.BeginFigure(new Point(boundRect.X, boundRect.Y), true);
+                context.LineTo(new Point(boundRect.Width, boundRect.Y));
+                context.LineTo(new Point(boundRect.Width, boundRect.Height));
+                context.LineTo(new Point(boundRect.X, boundRect.Height));
+                context.LineTo(new Point(boundRect.X, boundRect.Y));
                 context.EndFigure(true);
             }
 
             private static void CreateGeometry(StreamGeometryContext context, Rect boundRect, CornerRadius cornerRadius)
             {
-                context.BeginFigure(new Point(0.5 + cornerRadius.TopLeft, 0.5), true);
-                context.LineTo(new Point(boundRect.Width - cornerRadius.TopRight - 0.5, 0.5));
-                context.ArcTo(new Point(boundRect.Width - 0.5, cornerRadius.TopRight + 0.5), new Size(cornerRadius.TopRight, cornerRadius.TopRight), 0, false, SweepDirection.Clockwise);
-                context.LineTo(new Point(boundRect.Width - 0.5, boundRect.Height - cornerRadius.BottomRight - 0.5));
-                context.ArcTo(new Point(boundRect.Width - cornerRadius.BottomRight - 0.5, boundRect.Height - 0.5), new Size(cornerRadius.BottomRight, cornerRadius.BottomRight), 0, false, SweepDirection.Clockwise);
-                context.LineTo(new Point(cornerRadius.BottomLeft + 0.5, boundRect.Height - 0.5));
-                context.ArcTo(new Point(0.5, boundRect.Height - cornerRadius.BottomLeft - 0.5), new Size(cornerRadius.BottomLeft, cornerRadius.BottomLeft), 0, false, SweepDirection.Clockwise);
-                context.LineTo(new Point(0.5, cornerRadius.TopLeft + 0.5));
-                context.ArcTo(new Point(cornerRadius.TopLeft + 0.5, 0.5), new Size(cornerRadius.TopLeft, cornerRadius.TopLeft), 0, false, SweepDirection.Clockwise);
+                context.BeginFigure(new Point(boundRect.X + cornerRadius.TopLeft, boundRect.Y), true);
+                context.LineTo(new Point(boundRect.Width - cornerRadius.TopRight, boundRect.Y));
+                context.ArcTo(new Point(boundRect.Width, boundRect.Y + cornerRadius.TopRight), new Size(cornerRadius.TopRight, cornerRadius.TopRight), 0, false, SweepDirection.Clockwise);
+                context.LineTo(new Point(boundRect.Width, boundRect.Height - cornerRadius.BottomRight));
+                context.ArcTo(new Point(boundRect.Width - cornerRadius.BottomRight, boundRect.Height), new Size(cornerRadius.BottomRight, cornerRadius.BottomRight), 0, false, SweepDirection.Clockwise);
+                context.LineTo(new Point(boundRect.X + cornerRadius.BottomLeft, boundRect.Height));
+                context.ArcTo(new Point(boundRect.X, boundRect.Height - cornerRadius.BottomLeft), new Size(cornerRadius.BottomLeft, cornerRadius.BottomLeft), 0, false, SweepDirection.Clockwise);
+                context.LineTo(new Point(boundRect.X, boundRect.Y + cornerRadius.TopLeft));
+                context.ArcTo(new Point(boundRect.X + cornerRadius.TopLeft, boundRect.Y), new Size(cornerRadius.TopLeft, cornerRadius.TopLeft), 0, false, SweepDirection.Clockwise);
                 context.EndFigure(true);
             }
 
@@ -231,18 +254,17 @@ namespace Avalonia.Controls
             {
                 if (_useComplexRendering)
                 {
-                    IBrush brush;
-                    var borderGeometry = _borderGeometryCache;
-                    if (borderGeometry != null && (brush = borderBrush) != null)
+                    var backgroundGeometry = _backgroundGeometryCache;
+                    if (backgroundGeometry != null)
                     {
-                        context.DrawGeometry(brush, new Pen(brush), borderGeometry);
+                        context.DrawGeometry(background, null, backgroundGeometry);
                     }
 
-                    var backgroundGeometry = _backgroundGeometryCache;
-                    if (backgroundGeometry != null && (brush = background) != null)
+                    var borderGeometry = _borderGeometryCache;
+                    if (borderGeometry != null)
                     {
-                        context.DrawGeometry(brush, new Pen(brush), backgroundGeometry);
-                    }
+                        context.DrawGeometry(borderBrush, null, borderGeometry);
+                    }             
                 }
                 else
                 {
