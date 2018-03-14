@@ -23,6 +23,8 @@ using Avalonia.Utilities;
 using System.Globalization;
 using System.Collections.Specialized;
 using System.Reactive.Disposables;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Avalonia.Controls
 {
@@ -360,6 +362,8 @@ namespace Avalonia.Controls
         private IDisposable _collectionChangeSubscription;
 
         private IMemberSelector _valueMemberSelector;
+        private Func<string, CancellationToken, Task<IEnumerable<object>>> _asyncPopulator;
+        private CancellationTokenSource _populationCancellationTokenSource;
 
         private bool _itemTemplateIsFromValueMemeberBinding = true;
         private bool _settingItemTemplateFromValueMemeberBinding;
@@ -558,6 +562,12 @@ namespace Avalonia.Controls
                 nameof(ValueMemberSelector),
                 o => o.ValueMemberSelector,
                 (o, v) => o.ValueMemberSelector = v);
+
+        public static readonly DirectProperty<AutoCompleteBox, Func<string, CancellationToken, Task<IEnumerable<object>>>> AsyncPopulatorProperty =
+            AvaloniaProperty.RegisterDirect<AutoCompleteBox, Func<string, CancellationToken, Task<IEnumerable<object>>>>(
+                nameof(AsyncPopulator),
+                o => o.AsyncPopulator,
+                (o, v) => o.AsyncPopulator = v);
 
         private static int ValidateMinimumPrefixLength(AutoCompleteBox control, int value)
         {
@@ -1105,6 +1115,12 @@ namespace Avalonia.Controls
         {
             get { return _textFilter; }
             set { SetAndRaise(TextFilterProperty, ref _textFilter, value); }
+        }
+
+        public Func<string, CancellationToken, Task<IEnumerable<object>>> AsyncPopulator
+        {
+            get { return _asyncPopulator; }
+            set { SetAndRaise(AsyncPopulatorProperty, ref _asyncPopulator, value); }
         }
 
         /// <summary>
@@ -1702,6 +1718,11 @@ namespace Avalonia.Controls
             // Update the prefix/search text.
             SearchText = Text;
 
+            if(TryPopulateAsync(SearchText))
+            {
+                return;
+            }
+
             // The Populated event enables advanced, custom filtering. The 
             // client needs to directly update the ItemsSource collection or
             // call the Populate method on the control to continue the 
@@ -1712,6 +1733,55 @@ namespace Avalonia.Controls
             {
                 PopulateComplete();
             }
+        }
+        private bool TryPopulateAsync(string searchText)
+        {
+            _populationCancellationTokenSource?.Cancel(false);
+            _populationCancellationTokenSource?.Dispose();
+            _populationCancellationTokenSource = null;
+
+            if(_asyncPopulator == null)
+            {
+                return false;
+            }
+
+            _populationCancellationTokenSource = new CancellationTokenSource();
+            var task = PopulateAsync(searchText, _populationCancellationTokenSource.Token);
+            if (task.Status == TaskStatus.Created)
+                task.Start();
+
+            return true;
+        }
+        private async Task PopulateAsync(string searchText, CancellationToken cancellationToken)
+        {
+
+            try
+            {
+                IEnumerable<object> result = await _asyncPopulator.Invoke(searchText, cancellationToken);
+                var resultList = result.ToList();
+
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    return;
+                }
+
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    if (!cancellationToken.IsCancellationRequested)
+                    {
+                        Items = resultList;
+                        PopulateComplete();
+                    }
+                });
+            }
+            catch (TaskCanceledException)
+            { }
+            finally
+            {
+                _populationCancellationTokenSource?.Dispose();
+                _populationCancellationTokenSource = null;
+            }
+
         }
 
         /// <summary>
