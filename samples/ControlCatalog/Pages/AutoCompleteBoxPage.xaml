@@ -8,7 +8,6 @@
               HorizontalAlignment="Center"
               Gap="8">
       <StackPanel Orientation="Vertical">
-        
         <TextBlock Text="MinimumPrefixLength: 1"/>
         <AutoCompleteBox Width="200"
                          Margin="0,0,0,8"
@@ -35,6 +34,7 @@
       
 
       <StackPanel Orientation="Vertical">
+        
         <TextBlock Text="ValueMemeberSelector"/>
         <AutoCompleteBox Width="200"
                          Margin="0,0,0,8"
@@ -47,8 +47,12 @@
         <AutoCompleteBox Name="MultiBindingBox"
                          Width="200"
                          Margin="0,0,0,8"
-                         ValueMemberBinding="{Binding Capital}"
                          FilterMode="Contains"/>
+        <TextBlock Text="Async Populate"/>
+        <AutoCompleteBox Name="AsyncBox"
+                         Width="200"
+                         Margin="0,0,0,8"
+                         FilterMode="None"/>
       </StackPanel>
     </StackPanel>
   </StackPanel>

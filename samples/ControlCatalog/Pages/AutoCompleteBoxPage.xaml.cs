@@ -6,6 +6,8 @@ using Avalonia.Markup.Xaml.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace ControlCatalog.Pages
 {
@@ -109,12 +111,28 @@ namespace ControlCatalog.Pages
 
             var multibindingBox = this.FindControl<AutoCompleteBox>("MultiBindingBox");
             multibindingBox.ValueMemberBinding = binding;
+
+            var asyncBox = this.FindControl<AutoCompleteBox>("AsyncBox");
+            asyncBox.AsyncPopulator = PopulateAsync;
         }
         private IEnumerable<AutoCompleteBox> GetAllAutoCompleteBox()
         {
             return
                 this.GetLogicalDescendants()
                     .OfType<AutoCompleteBox>();
+        }
+
+        private bool StringContains(string str, string query)
+        {
+            return str.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+        private async Task<IEnumerable<object>> PopulateAsync(string searchText, CancellationToken cancellationToken)
+        {
+            await Task.Delay(TimeSpan.FromSeconds(1.5), cancellationToken);
+
+            return
+                States.Where(data => StringContains(data.Name, searchText) || StringContains(data.Capital, searchText))
+                      .ToList();
         }
 
         private void InitializeComponent()
