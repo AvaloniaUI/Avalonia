@@ -255,6 +255,16 @@ namespace Avalonia.Controls
                     passStraightToParent = IsTopLevel || !IsSubMenuOpen;
                     break;
 
+                case Key.Down:
+                    if (IsTopLevel && HasSubMenu)
+                    {
+                        SelectedIndex = 0;
+                        IsSubMenuOpen = true;
+                        e.Handled = true;
+                    }
+
+                    break;
+
                 case Key.Enter:
                     if (HasSubMenu)
                     {
