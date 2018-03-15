@@ -244,7 +244,10 @@ namespace Avalonia.Controls.Primitives
             {
                 if (_selectedItems == null)
                 {
-                    _selectedItems = new AvaloniaList<object>();
+                    _selectedItems = new AvaloniaList<object>
+                    {
+                        ResetBehavior = ResetBehavior.Remove
+                    };
                     SubscribeToSelectedItems();
                 }
 
@@ -260,7 +263,10 @@ namespace Avalonia.Controls.Primitives
                 }
 
                 UnsubscribeFromSelectedItems();
-                _selectedItems = value ?? new AvaloniaList<object>();
+                _selectedItems = value ?? new AvaloniaList<object>
+                {
+                    ResetBehavior = ResetBehavior.Remove
+                };
                 SubscribeToSelectedItems();
             }
         }
@@ -764,12 +770,10 @@ namespace Avalonia.Controls.Primitives
                             SelectedIndex = -1;
                         }
                     }
-                    else
+
+                    foreach (var item in e.OldItems)
                     {
-                        foreach (var item in e.OldItems)
-                        {
-                            MarkItemSelected(item, false);
-                        }
+                        MarkItemSelected(item, false);
                     }
 
                     removed = e.OldItems;
