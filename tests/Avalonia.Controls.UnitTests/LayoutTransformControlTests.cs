@@ -31,6 +31,51 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Measure_On_Skew_X_axis_45_degrees_Is_Correct()
+        {
+            TransformMeasureSizeTest(
+                new Size(100, 100),
+                new SkewTransform() { AngleX = 45 },
+                new Size(100, 200));
+        }
+
+        [Fact]
+        public void Measure_On_Skew_Y_axis_45_degrees_Is_Correct()
+        {
+            TransformMeasureSizeTest(
+                new Size(100, 100),
+                new SkewTransform() { AngleY = 45 },
+                new Size(200, 100));
+        }
+
+        [Fact]
+        public void Measure_On_Skew_X_axis_minus_45_degrees_Is_Correct()
+        {
+            TransformMeasureSizeTest(
+                new Size(100, 100),
+                new SkewTransform() { AngleX = -45 },
+                new Size(100, 200));
+        }
+
+        [Fact]
+        public void Measure_On_Skew_Y_axis_minus_45_degrees_Is_Correct()
+        {
+            TransformMeasureSizeTest(
+                new Size(100, 100),
+                new SkewTransform() { AngleY = -45 },
+                new Size(200, 100));
+        }
+
+        [Fact]
+        public void Measure_On_Skew_0_degrees_Is_Correct()
+        {
+            TransformMeasureSizeTest(
+                new Size(100, 100),
+                new SkewTransform() { AngleX = 0, AngleY = 0 },
+                new Size(100, 100));
+        }
+
+        [Fact]
         public void Measure_On_Rotate_90_degrees_Is_Correct()
         {
             TransformMeasureSizeTest(
@@ -123,9 +168,9 @@ namespace Avalonia.Controls.UnitTests
                 new RotateTransform() { Angle = -90 },
                 new Rect(0, 100, 100, 25));
         }
-
+        
         [Fact]
-        public void Should_Generate_RenderTransform_90_degrees()
+        public void Should_Generate_RotateTransform_90_degrees()
         {
             LayoutTransformControl lt = CreateWithChildAndMeasureAndTransform(
                                         100,
@@ -147,7 +192,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Should_Generate_RenderTransform_minus_90_degrees()
+        public void Should_Generate_RotateTransform_minus_90_degrees()
         {
             LayoutTransformControl lt = CreateWithChildAndMeasureAndTransform(
                                         100,
@@ -188,6 +233,52 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(m.M31, res.M31, 3);
             Assert.Equal(m.M32, res.M32, 3);
         }
+
+        [Fact]
+        public void Should_Generate_SkewTransform_45_degrees()
+        {
+            LayoutTransformControl lt = CreateWithChildAndMeasureAndTransform(
+                                        100,
+                                        100,
+                                        new SkewTransform() { AngleX = 45, AngleY = 45 });
+
+            Assert.NotNull(lt.TransformRoot.RenderTransform);
+
+            Matrix m = lt.TransformRoot.RenderTransform.Value;
+
+            Matrix res = Matrix.CreateSkew(Matrix.ToRadians(45), Matrix.ToRadians(45));
+
+            Assert.Equal(m.M11, res.M11, 3);
+            Assert.Equal(m.M12, res.M12, 3);
+            Assert.Equal(m.M21, res.M21, 3);
+            Assert.Equal(m.M22, res.M22, 3);
+            Assert.Equal(m.M31, res.M31, 3);
+            Assert.Equal(m.M32, res.M32, 3);
+        }
+
+        [Fact]
+        public void Should_Generate_SkewTransform_minus_45_degrees()
+        {
+            LayoutTransformControl lt = CreateWithChildAndMeasureAndTransform(
+                                        100,
+                                        100,
+                                        new SkewTransform() { AngleX = -45, AngleY = -45 });
+
+            Assert.NotNull(lt.TransformRoot.RenderTransform);
+
+            Matrix m = lt.TransformRoot.RenderTransform.Value;
+
+            Matrix res = Matrix.CreateSkew(Matrix.ToRadians(-45), Matrix.ToRadians(-45));
+
+            Assert.Equal(m.M11, res.M11, 3);
+            Assert.Equal(m.M12, res.M12, 3);
+            Assert.Equal(m.M21, res.M21, 3);
+            Assert.Equal(m.M22, res.M22, 3);
+            Assert.Equal(m.M31, res.M31, 3);
+            Assert.Equal(m.M32, res.M32, 3);
+        }
+
+
 
         private static void TransformMeasureSizeTest(Size size, Transform transform, Size expectedSize)
         {
