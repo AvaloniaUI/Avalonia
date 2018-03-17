@@ -36,7 +36,8 @@ namespace Avalonia.Controls.UnitTests
             TransformMeasureSizeTest(
                 new Size(100, 100),
                 new SkewTransform() { AngleX = 45 },
-                new Size(100, 200));
+                new Size(200, 100));
+
         }
 
         [Fact]
@@ -45,7 +46,7 @@ namespace Avalonia.Controls.UnitTests
             TransformMeasureSizeTest(
                 new Size(100, 100),
                 new SkewTransform() { AngleY = 45 },
-                new Size(200, 100));
+                new Size(100, 200));
         }
 
         [Fact]
@@ -54,7 +55,7 @@ namespace Avalonia.Controls.UnitTests
             TransformMeasureSizeTest(
                 new Size(100, 100),
                 new SkewTransform() { AngleX = -45 },
-                new Size(100, 200));
+                new Size(200, 100));
         }
 
         [Fact]
@@ -63,7 +64,7 @@ namespace Avalonia.Controls.UnitTests
             TransformMeasureSizeTest(
                 new Size(100, 100),
                 new SkewTransform() { AngleY = -45 },
-                new Size(200, 100));
+                new Size(100, 200));
         }
 
         [Fact]
@@ -168,7 +169,7 @@ namespace Avalonia.Controls.UnitTests
                 new RotateTransform() { Angle = -90 },
                 new Rect(0, 100, 100, 25));
         }
-        
+
         [Fact]
         public void Should_Generate_RotateTransform_90_degrees()
         {
@@ -277,8 +278,6 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(m.M31, res.M31, 3);
             Assert.Equal(m.M32, res.M32, 3);
         }
-
-
 
         private static void TransformMeasureSizeTest(Size size, Transform transform, Size expectedSize)
         {

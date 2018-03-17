@@ -160,7 +160,7 @@ namespace Avalonia
         {
             double tanX = Math.Tan(xAngle);
             double tanY = Math.Tan(yAngle);
-            return new Matrix(1.0, tanX, tanY, 1.0, 0.0, 0.0);
+            return new Matrix(1.0, tanY, tanX, 1.0, 0.0, 0.0);
         }
 
         /// <summary>
