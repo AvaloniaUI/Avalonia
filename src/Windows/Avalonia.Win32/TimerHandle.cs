@@ -4,11 +4,12 @@ using Microsoft.Win32.SafeHandles;
 
 namespace Avalonia.Win32
 {
-    internal class TimerHandle : CriticalHandleZeroOrMinusOneIsInvalid
+    internal class TimerHandle : SafeHandleZeroOrMinusOneIsInvalid
     {
         private UnmanagedMethods.TimerProc _timerProc;
 
         public TimerHandle(IntPtr handle, UnmanagedMethods.TimerProc timerProc)
+            : base(true)
         {
             this.handle = handle;
             _timerProc = timerProc;
