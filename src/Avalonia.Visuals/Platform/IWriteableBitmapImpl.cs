@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 namespace Avalonia.Platform
 {
     /// <summary>
-    /// Defines the platform-specific interface for a <see cref="Avalonia.Media.Imaging.WritableBitmap"/>.
+    /// Defines the platform-specific interface for a <see cref="Avalonia.Media.Imaging.WriteableBitmap"/>.
     /// </summary>
-    public interface IWritableBitmapImpl : IBitmapImpl
+    public interface IWriteableBitmapImpl : IBitmapImpl
     {
         ILockedFramebuffer Lock();
     }

@@ -9,9 +9,9 @@ using PixelFormat = Avalonia.Platform.PixelFormat;
 
 namespace Avalonia.Direct2D1.Media.Imaging
 {
-    class WritableWicBitmapImpl : WicBitmapImpl, IWritableBitmapImpl
+    class WriteableWicBitmapImpl : WicBitmapImpl, IWriteableBitmapImpl
     {
-        public WritableWicBitmapImpl(ImagingFactory factory, int width, int height, PixelFormat? pixelFormat) 
+        public WriteableWicBitmapImpl(ImagingFactory factory, int width, int height, PixelFormat? pixelFormat) 
             : base(factory, width, height, pixelFormat)
         {
         }

@@ -14,7 +14,7 @@ namespace Avalonia.Controls.Remote
     {
         private readonly IAvaloniaRemoteTransportConnection _connection;
         private FrameMessage _lastFrame;
-        private WritableBitmap _bitmap;
+        private WriteableBitmap _bitmap;
         public RemoteWidget(IAvaloniaRemoteTransportConnection connection)
         {
             _connection = connection;
@@ -62,7 +62,7 @@ namespace Avalonia.Controls.Remote
                 var fmt = (PixelFormat) _lastFrame.Format;
                 if (_bitmap == null || _bitmap.PixelWidth != _lastFrame.Width ||
                     _bitmap.PixelHeight != _lastFrame.Height)
-                    _bitmap = new WritableBitmap(_lastFrame.Width, _lastFrame.Height, fmt);
+                    _bitmap = new WriteableBitmap(_lastFrame.Width, _lastFrame.Height, fmt);
                 using (var l = _bitmap.Lock())
                 {
                     var lineLen = (fmt == PixelFormat.Rgb565 ? 2 : 4) * _lastFrame.Width;

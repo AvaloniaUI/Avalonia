@@ -224,7 +224,7 @@ namespace Avalonia.Controls.Presenters
                 CanVerticallyScroll ? Math.Max(Child.DesiredSize.Height, finalSize.Height) : finalSize.Height);
             ArrangeOverrideImpl(size, -Offset);
             Viewport = finalSize;
-            Extent = Child.Bounds.Size;
+            Extent = Child.Bounds.Size.Inflate(Child.Margin);
             return finalSize;
         }
 
