@@ -35,6 +35,9 @@
     <EmbeddedResource Include="DecoratedWindow.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <EmbeddedResource Include="Pages\ButtonSpinnerPage.xaml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Include="Pages\DialogsPage.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
@@ -163,6 +166,9 @@
     </Compile>
     <Compile Include="Pages\ToolTipPage.xaml.cs">
       <DependentUpon>ToolTipPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\ButtonSpinnerPage.xaml.cs">
+      <DependentUpon>ButtonSpinnerPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Pages\ScreenPage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

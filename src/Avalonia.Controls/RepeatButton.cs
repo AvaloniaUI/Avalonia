@@ -7,15 +7,30 @@ namespace Avalonia.Controls
     public class RepeatButton : Button
     {
         /// <summary>
+        /// Defines the <see cref="Interval"/> property.
+        /// </summary>
+        public static readonly StyledProperty<int> IntervalProperty =
+            AvaloniaProperty.Register<Button, int>(nameof(Interval), 100);
+
+        /// <summary>
         /// Defines the <see cref="Delay"/> property.
         /// </summary>
         public static readonly StyledProperty<int> DelayProperty =
-            AvaloniaProperty.Register<Button, int>(nameof(Delay), 100);
+            AvaloniaProperty.Register<Button, int>(nameof(Delay), 300);
 
         private DispatcherTimer _repeatTimer;
 
         /// <summary>
         /// Gets or sets the amount of time, in milliseconds, of repeating clicks.
+        /// </summary>
+        public int Interval
+        {
+            get { return GetValue(IntervalProperty); }
+            set { SetValue(IntervalProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the amount of time, in milliseconds, to wait before repeating begins.
         /// </summary>
         public int Delay
         {
@@ -28,13 +43,23 @@ namespace Avalonia.Controls
             if (_repeatTimer == null)
             {
                 _repeatTimer = new DispatcherTimer();
-                _repeatTimer.Tick += (o, e) => OnClick();
+                _repeatTimer.Tick += RepeatTimerOnTick;
             }
 
             if (_repeatTimer.IsEnabled) return;
 
             _repeatTimer.Interval = TimeSpan.FromMilliseconds(Delay);
             _repeatTimer.Start();
+        }
+
+        private void RepeatTimerOnTick(object sender, EventArgs e)
+        {
+            var interval = TimeSpan.FromMilliseconds(Interval);
+            if (_repeatTimer.Interval != interval)
+            {
+                _repeatTimer.Interval = interval;
+            }
+            OnClick();
         }
 
         private void StopTimer()

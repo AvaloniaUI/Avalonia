@@ -1,0 +1,86 @@
+<Styles xmlns="https://github.com/avaloniaui">
+  <Style Selector="ButtonSpinner">
+    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderLightBrush}"/>
+    <Setter Property="BorderThickness" Value="{DynamicResource ThemeBorderThickness}"/>
+    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+    <Setter Property="VerticalContentAlignment" Value="Center"/>
+  </Style>
+  <Style Selector="ButtonSpinner /template/ RepeatButton">
+    <Setter Property="RepeatButton.Background" Value="Transparent"/>
+    <Setter Property="RepeatButton.BorderBrush" Value="Transparent"/>
+  </Style>
+  <Style Selector="ButtonSpinner /template/ RepeatButton:pointerover">
+    <Setter Property="RepeatButton.Background" Value="{DynamicResource ThemeControlMidBrush}"/>
+    <Setter Property="RepeatButton.BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}"/>
+  </Style>
+  <Style Selector="ButtonSpinner /template/ RepeatButton#PART_IncreaseButton">
+    <Setter Property="Content">
+      <Template>
+        <Path Fill="{DynamicResource ThemeForegroundBrush}"
+              Width="8"
+              Height="4"
+              Stretch="Uniform"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Center"
+              Data="M0,5 L4.5,.5 9,5 6,5 4.5,3.5 3,5 z"/>
+      </Template>
+    </Setter>
+  </Style>
+  <Style Selector="ButtonSpinner /template/ RepeatButton#PART_DecreaseButton">
+    <Setter Property="Content">
+      <Template>
+        <Path Fill="{DynamicResource ThemeForegroundBrush}"
+              Width="8"
+              Height="4"
+              Stretch="Uniform"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Center"
+              Data="M0,0 L3,0 4.5,1.5 6,0 9,0 4.5,4.5 z"/>
+      </Template>
+    </Setter>
+  </Style>
+  <Style Selector="ButtonSpinner:right">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                Margin="{TemplateBinding Padding}"
+                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
+          <Grid ColumnDefinitions="*,Auto">
+            <ContentPresenter Name="PART_ContentPresenter" Grid.Column="0"
+                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                              Content="{TemplateBinding Content}"/>
+            <Grid Grid.Column="1" RowDefinitions="*,*" IsVisible="{TemplateBinding ShowButtonSpinner}">
+              <RepeatButton Grid.Row="0" Name="PART_IncreaseButton"/>
+              <RepeatButton Grid.Row="1" Name="PART_DecreaseButton"/>
+            </Grid>
+          </Grid>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+  <Style Selector="ButtonSpinner:left">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                Margin="{TemplateBinding Padding}"
+                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
+          <Grid ColumnDefinitions="Auto,*">
+            <Grid Grid.Column="0" RowDefinitions="*,*" IsVisible="{TemplateBinding ShowButtonSpinner}">
+              <RepeatButton Grid.Row="0" Name="PART_IncreaseButton"/>
+              <RepeatButton Grid.Row="1" Name="PART_DecreaseButton"/>
+            </Grid>
+            <ContentPresenter Name="PART_ContentPresenter" Grid.Column="1"
+                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                              Content="{TemplateBinding Content}"/>
+          </Grid>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+</Styles>
