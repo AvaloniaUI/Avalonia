@@ -151,6 +151,19 @@ namespace Avalonia
         }
 
         /// <summary>
+        /// Creates a skew matrix from the given axis skew angles in radians.
+        /// </summary>
+        /// <param name="xAngle">The amount of skew along the X-axis, in radians.</param>
+        /// <param name="yAngle">The amount of skew along the Y-axis, in radians.</param>
+        /// <returns>A rotation matrix.</returns>
+        public static Matrix CreateSkew(double xAngle, double yAngle)
+        {
+            double tanX = Math.Tan(xAngle);
+            double tanY = Math.Tan(yAngle);
+            return new Matrix(1.0, tanY, tanX, 1.0, 0.0, 0.0);
+        }
+
+        /// <summary>
         /// Creates a scale matrix from the given X and Y components.
         /// </summary>
         /// <param name="xScale">Value to scale by on the X-axis.</param>
@@ -214,7 +227,6 @@ namespace Avalonia
         {
             return (_m11 * _m22) - (_m12 * _m21);
         }
-
 
         /// <summary>
         /// Returns a boolean indicating whether the matrix is equal to the other given matrix.
