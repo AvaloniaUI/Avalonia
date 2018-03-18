@@ -256,6 +256,8 @@ namespace Avalonia.Controls
             {
                 _presenter?.ShowCaret();
             }
+
+            e.Handled = true;
         }
 
         protected override void OnLostFocus(RoutedEventArgs e)
