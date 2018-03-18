@@ -198,7 +198,11 @@ namespace Avalonia.Controls
                 if (!_ignoreTextChanges)
                 {
                     CaretIndex = CoerceCaretIndex(CaretIndex, value?.Length ?? 0);
-                    SetAndRaise(TextProperty, ref _text, value);
+
+                    if (SetAndRaise(TextProperty, ref _text, value))
+                    {
+                        _undoRedoHelper.Clear();
+                    }
                 }
             }
         }
