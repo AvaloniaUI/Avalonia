@@ -222,16 +222,17 @@ namespace Avalonia.Controls
                 else
                 {
                     var borderThickness = borders.Left;
-                    var rect = new Rect(size).Deflate(borderThickness);
                     var cornerRadius = (float)radii.TopLeft;
+                    var rect = new Rect(size);
+
                     if (background != null)
                     {
-                        context.FillRectangle(background, rect, cornerRadius);
+                        context.FillRectangle(background, rect.Deflate(borders), cornerRadius);
                     }
 
                     if (borderBrush != null && borderThickness > 0)
                     {
-                        context.DrawRectangle(new Pen(borderBrush, borderThickness), rect, cornerRadius);
+                        context.DrawRectangle(new Pen(borderBrush, borderThickness), rect.Deflate(borderThickness), cornerRadius);
                     }
                 }
             }
