@@ -26,6 +26,7 @@ namespace Avalonia.DesignerSupport.Remote
         public Action<Rect> Paint { get; set; }
         public Action<Size> Resized { get; set; }
         public Action<double> ScalingChanged { get; set; }
+        public Func<bool> Closing { get; set; }
         public Action Closed { get; set; }
         public IMouseDevice MouseDevice { get; } = new MouseDevice();
         public Point Position { get; set; }
