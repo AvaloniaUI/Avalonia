@@ -963,11 +963,9 @@ namespace Avalonia.Controls.Primitives
                     Owner.Focus();
                 }
 
-                bool ctrl, shift;
-                CalendarExtensions.GetMetaKeyState(e.InputModifiers, out ctrl, out shift);
-                CalendarDayButton b = sender as CalendarDayButton;
+                KeyboardHelper.GetMetaKeyState(e.InputModifiers, out bool ctrl, out bool shift);
 
-                if (b != null)
+                if (sender is CalendarDayButton b)
                 {
                     _isControlPressed = ctrl;
                     if (b.IsEnabled && !b.IsBlackout)
