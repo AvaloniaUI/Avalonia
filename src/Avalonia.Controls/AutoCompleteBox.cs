@@ -3,28 +3,24 @@
 // Please see http://go.microsoft.com/fwlink/?LinkID=131993 for details.
 // All other rights reserved.
 
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.ComponentModel;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Avalonia.Collections;
 using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Templates;
 using Avalonia.Controls.Utils;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using Avalonia.Media;
-using Avalonia.Collections;
-using System;
-using System.Linq;
-using System.Collections.Generic;
-using System.Collections;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
 using Avalonia.Threading;
-using Avalonia.Controls.Templates;
 using Avalonia.VisualTree;
-using Avalonia.Utilities;
-using System.Globalization;
-using System.Collections.Specialized;
-using System.Reactive.Disposables;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Avalonia.Controls
 {
@@ -63,7 +59,7 @@ namespace Avalonia.Controls
     /// event.
     /// </summary>
     /// <QualityBand>Stable</QualityBand>
-    public class PopulatingEventArgs : CancelableEventArgs
+    public class PopulatingEventArgs : CancelEventArgs
     {
         /// <summary>
         /// Gets the text that is used to determine which items to display in
@@ -1490,7 +1486,7 @@ namespace Avalonia.Controls
         /// <see cref="P:Avalonia.Controls.AutoCompleteBox.IsDropDownOpen" />
         /// property is changing from false to true.
         /// </summary>
-        public event EventHandler<CancelableEventArgs> DropDownOpening;
+        public event EventHandler<CancelEventArgs> DropDownOpening;
 
         /// <summary>
         /// Occurs when the value of the
@@ -1504,7 +1500,7 @@ namespace Avalonia.Controls
         /// <see cref="P:Avalonia.Controls.AutoCompleteBox.IsDropDownOpen" />
         /// property is changing from true to false.
         /// </summary>
-        public event EventHandler<CancelableEventArgs> DropDownClosing;
+        public event EventHandler<CancelEventArgs> DropDownClosing;
 
         /// <summary>
         /// Occurs when the
@@ -1569,9 +1565,9 @@ namespace Avalonia.Controls
         /// event.
         /// </summary>
         /// <param name="e">A
-        /// <see cref="T:Avalonia.Controls.CancelableEventArgs" />
+        /// <see cref="T:Avalonia.Controls.CancelEventArgs" />
         /// that contains the event data.</param>
-        protected virtual void OnDropDownOpening(CancelableEventArgs e)
+        protected virtual void OnDropDownOpening(CancelEventArgs e)
         {
             DropDownOpening?.Invoke(this, e);
         }
@@ -1595,9 +1591,9 @@ namespace Avalonia.Controls
         /// event.
         /// </summary>
         /// <param name="e">A
-        /// <see cref="T:Avalonia.Controls.CancelableEventArgs" />
+        /// <see cref="T:Avalonia.Controls.CancelEventArgs" />
         /// that contains the event data.</param>
-        protected virtual void OnDropDownClosing(CancelableEventArgs e)
+        protected virtual void OnDropDownClosing(CancelEventArgs e)
         {
             DropDownClosing?.Invoke(this, e);
         }
@@ -1633,7 +1629,7 @@ namespace Avalonia.Controls
         /// <param name="oldValue">The original value.</param>
         private void ClosingDropDown(bool oldValue)
         {
-            var args = new CancelableEventArgs();
+            var args = new CancelEventArgs();
             OnDropDownClosing(args);
 
             if (args.Cancel)
@@ -1656,7 +1652,7 @@ namespace Avalonia.Controls
         /// <param name="oldValue">The original value, if needed for a revert.</param>
         private void OpeningDropDown(bool oldValue)
         {
-            var args = new CancelableEventArgs();
+            var args = new CancelEventArgs();
 
             // Opening
             OnDropDownOpening(args);
