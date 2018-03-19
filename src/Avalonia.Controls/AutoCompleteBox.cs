@@ -248,7 +248,7 @@ namespace Avalonia.Controls
         /// Specifies the name of the Popup TemplatePart.
         /// </summary>
         private const string ElementPopup = "PART_Popup";
-        
+
         /// <summary>
         /// The name for the text box part.
         /// </summary>
@@ -262,37 +262,37 @@ namespace Avalonia.Controls
         private List<object> _items;
 
         /// <summary>
-        /// Gets or sets the observable collection that contains references to 
-        /// all of the items in the generated view of data that is provided to 
+        /// Gets or sets the observable collection that contains references to
+        /// all of the items in the generated view of data that is provided to
         /// the selection-style control adapter.
         /// </summary>
         private AvaloniaList<object> _view;
 
         /// <summary>
-        /// Gets or sets a value to ignore a number of pending change handlers. 
-        /// The value is decremented after each use. This is used to reset the 
-        /// value of properties without performing any of the actions in their 
+        /// Gets or sets a value to ignore a number of pending change handlers.
+        /// The value is decremented after each use. This is used to reset the
+        /// value of properties without performing any of the actions in their
         /// change handlers.
         /// </summary>
-        /// <remarks>The int is important as a value because the TextBox 
+        /// <remarks>The int is important as a value because the TextBox
         /// TextChanged event does not immediately fire, and this will allow for
         /// nested property changes to be ignored.</remarks>
         private int _ignoreTextPropertyChange;
 
         /// <summary>
-        /// Gets or sets a value indicating whether to ignore calling a pending 
-        /// change handlers. 
+        /// Gets or sets a value indicating whether to ignore calling a pending
+        /// change handlers.
         /// </summary>
         private bool _ignorePropertyChange;
 
         /// <summary>
-        /// Gets or sets a value indicating whether to ignore the selection 
+        /// Gets or sets a value indicating whether to ignore the selection
         /// changed event.
         /// </summary>
         private bool _ignoreTextSelectionChange;
 
         /// <summary>
-        /// Gets or sets a value indicating whether to skip the text update 
+        /// Gets or sets a value indicating whether to skip the text update
         /// processing when the selected item is updated.
         /// </summary>
         private bool _skipSelectedItemTextUpdate;
@@ -303,7 +303,7 @@ namespace Avalonia.Controls
         private int _textSelectionStart;
 
         /// <summary>
-        /// Gets or sets a value indicating whether the user initiated the 
+        /// Gets or sets a value indicating whether the user initiated the
         /// current populate call.
         /// </summary>
         private bool _userCalledPopulate;
@@ -314,15 +314,15 @@ namespace Avalonia.Controls
         private bool _popupHasOpened;
 
         /// <summary>
-        /// Gets or sets the DispatcherTimer used for the MinimumPopulateDelay 
+        /// Gets or sets the DispatcherTimer used for the MinimumPopulateDelay
         /// condition for auto completion.
         /// </summary>
         private DispatcherTimer _delayTimer;
 
         /// <summary>
-        /// Gets or sets a value indicating whether a read-only dependency 
-        /// property change handler should allow the value to be set.  This is 
-        /// used to ensure that read-only properties cannot be changed via 
+        /// Gets or sets a value indicating whether a read-only dependency
+        /// property change handler should allow the value to be set.  This is
+        /// used to ensure that read-only properties cannot be changed via
         /// SetValue, etc.
         /// </summary>
         private bool _allowWrite;
@@ -394,7 +394,7 @@ namespace Avalonia.Controls
         /// dependency property.</value>
         public static readonly StyledProperty<TimeSpan> MinimumPopulateDelayProperty =
             AvaloniaProperty.Register<AutoCompleteBox, TimeSpan>(
-                nameof(MinimumPopulateDelay), 
+                nameof(MinimumPopulateDelay),
                 TimeSpan.Zero,
                 validate: ValidateMinimumPopulateDelay);
 
@@ -408,7 +408,7 @@ namespace Avalonia.Controls
         /// dependency property.</value>
         public static readonly StyledProperty<double> MaxDropDownHeightProperty =
             AvaloniaProperty.Register<AutoCompleteBox, double>(
-                nameof(MaxDropDownHeight), 
+                nameof(MaxDropDownHeight),
                 double.PositiveInfinity,
                 validate: ValidateMaxDropDownHeight);
 
@@ -576,7 +576,7 @@ namespace Avalonia.Controls
 
             return value;
         }
-                
+
         private static bool IsValidFilterMode(AutoCompleteFilterMode mode)
         {
             switch (mode)
@@ -621,15 +621,15 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// MinimumPopulateDelayProperty property changed handler. Any current 
-        /// dispatcher timer will be stopped. The timer will not be restarted 
+        /// MinimumPopulateDelayProperty property changed handler. Any current
+        /// dispatcher timer will be stopped. The timer will not be restarted
         /// until the next TextUpdate call by the user.
         /// </summary>
         /// <param name="e">Event arguments.</param>
         private void OnMinimumPopulateDelayChanged(AvaloniaPropertyChangedEventArgs e)
         {
             var newValue = (TimeSpan)e.NewValue;
-                        
+
             // Stop any existing timer
             if (_delayTimer != null)
             {
@@ -882,12 +882,12 @@ namespace Avalonia.Controls
         /// <value>The <see cref="T:Avalonia.DataTemplate" /> used to
         /// display each item in the drop-down. The default is null.</value>
         /// <remarks>
-        /// You use the ItemTemplate property to specify the visualization 
-        /// of the data objects in the drop-down portion of the AutoCompleteBox 
-        /// control. If your AutoCompleteBox is bound to a collection and you 
-        /// do not provide specific display instructions by using a 
-        /// DataTemplate, the resulting UI of each item is a string 
-        /// representation of each object in the underlying collection. 
+        /// You use the ItemTemplate property to specify the visualization
+        /// of the data objects in the drop-down portion of the AutoCompleteBox
+        /// control. If your AutoCompleteBox is bound to a collection and you
+        /// do not provide specific display instructions by using a
+        /// DataTemplate, the resulting UI of each item is a string
+        /// representation of each object in the underlying collection.
         /// </remarks>
         public IDataTemplate ItemTemplate
         {
@@ -960,7 +960,7 @@ namespace Avalonia.Controls
                 }
             }
         }
-                
+
         /// <summary>
         /// Gets or sets the MemberSelector that is used to get values for
         /// display in the text portion of the
@@ -974,15 +974,15 @@ namespace Avalonia.Controls
             get { return _valueMemberSelector; }
             set { SetAndRaise(ValueMemberSelectorProperty, ref _valueMemberSelector, value); }
         }
-        
+
         /// <summary>
         /// Gets or sets the selected item in the drop-down.
         /// </summary>
         /// <value>The selected item in the drop-down.</value>
         /// <remarks>
-        /// If the IsTextCompletionEnabled property is true and text typed by 
-        /// the user matches an item in the ItemsSource collection, which is 
-        /// then displayed in the text box, the SelectedItem property will be 
+        /// If the IsTextCompletionEnabled property is true and text typed by
+        /// the user matches an item in the ItemsSource collection, which is
+        /// then displayed in the text box, the SelectedItem property will be
         /// a null reference.
         /// </remarks>
         public object SelectedItem
@@ -1012,8 +1012,8 @@ namespace Avalonia.Controls
         /// <see cref="P:Avalonia.Controls.AutoCompleteBox.ItemsSource" />
         /// item collection.</value>
         /// <remarks>
-        /// The SearchText value is typically the same as the 
-        /// Text property, but is set after the TextChanged event occurs 
+        /// The SearchText value is typically the same as the
+        /// Text property, but is set after the TextChanged event occurs
         /// and before the Populating event.
         /// </remarks>
         public string SearchText
@@ -1047,10 +1047,10 @@ namespace Avalonia.Controls
         /// not a valid
         /// <see cref="T:Avalonia.Controls.AutoCompleteFilterMode" />.</exception>
         /// <remarks>
-        /// Use the FilterMode property to specify how possible matches are 
-        /// filtered. For example, possible matches can be filtered in a 
-        /// predefined or custom way. The search mode is automatically set to 
-        /// Custom if you set the ItemFilter property. 
+        /// Use the FilterMode property to specify how possible matches are
+        /// filtered. For example, possible matches can be filtered in a
+        /// predefined or custom way. The search mode is automatically set to
+        /// Custom if you set the ItemFilter property.
         /// </remarks>
         public AutoCompleteFilterMode FilterMode
         {
@@ -1063,7 +1063,7 @@ namespace Avalonia.Controls
             get { return GetValue(WatermarkProperty); }
             set { SetValue(WatermarkProperty, value); }
         }
-        
+
         /// <summary>
         /// Gets or sets the custom method that uses user-entered text to filter
         /// the items specified by the
@@ -1075,8 +1075,8 @@ namespace Avalonia.Controls
         /// <see cref="P:Avalonia.Controls.AutoCompleteBox.ItemsSource" />
         /// property. The default is null.</value>
         /// <remarks>
-        /// The filter mode is automatically set to Custom if you set the 
-        /// ItemFilter property. 
+        /// The filter mode is automatically set to Custom if you set the
+        /// ItemFilter property.
         /// </remarks>
         public AutoCompleteFilterPredicate<object> ItemFilter
         {
@@ -1095,8 +1095,8 @@ namespace Avalonia.Controls
         /// <see cref="P:Avalonia.Controls.AutoCompleteBox.ItemsSource" />
         /// property in a text-based way for display in the drop-down.</value>
         /// <remarks>
-        /// The search mode is automatically set to Custom if you set the 
-        /// TextFilter property. 
+        /// The search mode is automatically set to Custom if you set the
+        /// TextFilter property.
         /// </remarks>
         public AutoCompleteFilterPredicate<string> TextFilter
         {
@@ -1146,7 +1146,7 @@ namespace Avalonia.Controls
                     _textBoxSubscriptions =
                         _textBox.GetObservable(TextBox.TextProperty)
                                 .Subscribe(_ => OnTextBoxTextChanged());
-                    
+
                     if (Text != null)
                     {
                         UpdateTextValue(Text);
@@ -1191,8 +1191,8 @@ namespace Avalonia.Controls
         /// <value>The selection adapter used to populate the drop-down with a
         /// list of selectable items.</value>
         /// <remarks>
-        /// You can use this property when you create an automation peer to 
-        /// use with AutoCompleteBox or deriving from AutoCompleteBox to 
+        /// You can use this property when you create an automation peer to
+        /// use with AutoCompleteBox or deriving from AutoCompleteBox to
         /// create a custom control.
         /// </remarks>
         protected ISelectionAdapter SelectionAdapter
@@ -1266,7 +1266,7 @@ namespace Avalonia.Controls
                 DropDownPopup = null;
             }
 
-            // Set the template parts. Individual part setters remove and add 
+            // Set the template parts. Individual part setters remove and add
             // any event handlers.
             Popup popup = e.NameScope.Find<Popup>(ElementPopup);
             if (popup != null)
@@ -1277,7 +1277,7 @@ namespace Avalonia.Controls
 
             SelectionAdapter = GetSelectionAdapterPart(e.NameScope);
             TextBox = e.NameScope.Find<TextBox>(ElementTextBox);
-            
+
             // If the drop down property indicates that the popup is open,
             // flip its value to invoke the changed handler.
             if (IsDropDownOpen && DropDownPopup != null && !DropDownPopup.IsOpen)
@@ -1377,7 +1377,7 @@ namespace Avalonia.Controls
             base.OnLostFocus(e);
             FocusChanged(HasFocus());
         }
-        
+
         /// <summary>
         /// Determines whether the text box or drop-down portion of the
         /// <see cref="T:Avalonia.Controls.AutoCompleteBox" /> control has
@@ -1397,7 +1397,7 @@ namespace Avalonia.Controls
                     return true;
                 }
 
-                // This helps deal with popups that may not be in the same 
+                // This helps deal with popups that may not be in the same
                 // visual tree
                 IVisual parent = focused.GetVisualParent();
                 if (parent == null)
@@ -1417,14 +1417,14 @@ namespace Avalonia.Controls
         /// <summary>
         /// Handles the FocusChanged event.
         /// </summary>
-        /// <param name="hasFocus">A value indicating whether the control 
+        /// <param name="hasFocus">A value indicating whether the control
         /// currently has the focus.</param>
         private void FocusChanged(bool hasFocus)
         {
-            // The OnGotFocus & OnLostFocus are asynchronously and cannot 
-            // reliably tell you that have the focus.  All they do is let you 
-            // know that the focus changed sometime in the past.  To determine 
-            // if you currently have the focus you need to do consult the 
+            // The OnGotFocus & OnLostFocus are asynchronously and cannot
+            // reliably tell you that have the focus.  All they do is let you
+            // know that the focus changed sometime in the past.  To determine
+            // if you currently have the focus you need to do consult the
             // FocusManager (see HasFocus()).
 
             bool wasFocused = _isFocused;
@@ -1432,7 +1432,7 @@ namespace Avalonia.Controls
 
             if (hasFocus)
             {
-                
+
                 if (!wasFocused && TextBox != null && TextBoxSelectionLength <= 0)
                 {
                     TextBox.Focus();
@@ -1464,10 +1464,10 @@ namespace Avalonia.Controls
         /// property.
         /// </summary>
         /// <remarks>
-        /// If the event is canceled, by setting the PopulatingEventArgs.Cancel 
-        /// property to true, the AutoCompleteBox will not automatically 
-        /// populate the selection adapter contained in the drop-down. 
-        /// In this case, if you want possible matches to appear, you must 
+        /// If the event is canceled, by setting the PopulatingEventArgs.Cancel
+        /// property to true, the AutoCompleteBox will not automatically
+        /// populate the selection adapter contained in the drop-down.
+        /// In this case, if you want possible matches to appear, you must
         /// provide the logic for populating the selection adapter.
         /// </remarks>
         public event EventHandler<PopulatingEventArgs> Populating;
@@ -1710,9 +1710,9 @@ namespace Avalonia.Controls
                 return;
             }
 
-            // The Populated event enables advanced, custom filtering. The 
+            // The Populated event enables advanced, custom filtering. The
             // client needs to directly update the ItemsSource collection or
-            // call the Populate method on the control to continue the 
+            // call the Populate method on the control to continue the
             // display process if Cancel is set to true.
             PopulatingEventArgs populating = new PopulatingEventArgs(SearchText);
             OnPopulating(populating);
@@ -1772,7 +1772,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Private method that directly opens the popup, checks the expander 
+        /// Private method that directly opens the popup, checks the expander
         /// button, and then fires the Opened event.
         /// </summary>
         private void OpenDropDown()
@@ -1786,7 +1786,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Private method that directly closes the popup, flips the Checked 
+        /// Private method that directly closes the popup, flips the Checked
         /// value, and then fires the Closed event.
         /// </summary>
         private void CloseDropDown()
@@ -1806,7 +1806,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Formats an Item for text comparisons based on Converter 
+        /// Formats an Item for text comparisons based on Converter
         /// and ConverterCulture properties.
         /// </summary>
         /// <param name="value">The object to format.</param>
@@ -1853,8 +1853,8 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Handle the TextChanged event that is directly attached to the 
-        /// TextBox part. This ensures that only user initiated actions will 
+        /// Handle the TextChanged event that is directly attached to the
+        /// TextBox part. This ensures that only user initiated actions will
         /// result in an AutoCompleteBox suggestion and operation.
         /// </summary>
         private void OnTextBoxTextChanged()
@@ -1868,8 +1868,8 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Updates both the text box value and underlying text dependency 
-        /// property value if and when they change. Automatically fires the 
+        /// Updates both the text box value and underlying text dependency
+        /// property value if and when they change. Automatically fires the
         /// text changed events when there is a change.
         /// </summary>
         /// <param name="value">The new string value.</param>
@@ -1879,15 +1879,15 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Updates both the text box value and underlying text dependency 
-        /// property value if and when they change. Automatically fires the 
+        /// Updates both the text box value and underlying text dependency
+        /// property value if and when they change. Automatically fires the
         /// text changed events when there is a change.
         /// </summary>
         /// <param name="value">The new string value.</param>
         /// <param name="userInitiated">A nullable bool value indicating whether
-        /// the action was user initiated. In a user initiated mode, the 
-        /// underlying text dependency property is updated. In a non-user 
-        /// interaction, the text box value is updated. When user initiated is 
+        /// the action was user initiated. In a user initiated mode, the
+        /// underlying text dependency property is updated. In a non-user
+        /// interaction, the text box value is updated. When user initiated is
         /// null, all values are updated.</param>
         private void UpdateTextValue(string value, bool? userInitiated)
         {
@@ -1920,16 +1920,16 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Handle the update of the text for the control from any source, 
+        /// Handle the update of the text for the control from any source,
         /// including the TextBox part and the Text dependency property.
         /// </summary>
         /// <param name="newText">The new text.</param>
-        /// <param name="userInitiated">A value indicating whether the update 
-        /// is a user-initiated action. This should be a True value when the 
+        /// <param name="userInitiated">A value indicating whether the update
+        /// is a user-initiated action. This should be a True value when the
         /// TextUpdated method is called from a TextBox event handler.</param>
         private void TextUpdated(string newText, bool userInitiated)
         {
-            // Only process this event if it is coming from someone outside 
+            // Only process this event if it is coming from someone outside
             // setting the Text dependency property directly.
             if (_ignoreTextPropertyChange > 0)
             {
@@ -1942,8 +1942,8 @@ namespace Avalonia.Controls
                 newText = string.Empty;
             }
 
-            // The TextBox.TextChanged event was not firing immediately and 
-            // was causing an immediate update, even with wrapping. If there is 
+            // The TextBox.TextChanged event was not firing immediately and
+            // was causing an immediate update, even with wrapping. If there is
             // a selection currently, no update should happen.
             if (IsTextCompletionEnabled && TextBox != null && TextBoxSelectionLength > 0 && TextBoxSelectionStart != TextBox.Text.Length)
             {
@@ -1988,7 +1988,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// A simple helper method to clear the view and ensure that a view 
+        /// A simple helper method to clear the view and ensure that a view
         /// object is always present and not null.
         /// </summary>
         private void ClearView()
@@ -2004,7 +2004,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Walks through the items enumeration. Performance is not going to be 
+        /// Walks through the items enumeration. Performance is not going to be
         /// perfect with the current implementation.
         /// </summary>
         private void RefreshView()
@@ -2044,7 +2044,7 @@ namespace Avalonia.Controls
                     if (view_count > view_index && _view[view_index] != item)
                     {
                         // Replace item
-                        // Unfortunately replacing via index throws a fatal 
+                        // Unfortunately replacing via index throws a fatal
                         // exception: View[view_index] = item;
                         // Cost: O(n) vs O(1)
                         _view.RemoveAt(view_index);
@@ -2083,8 +2083,8 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Handle any change to the ItemsSource dependency property, update 
-        /// the underlying ObservableCollection view, and set the selection 
+        /// Handle any change to the ItemsSource dependency property, update
+        /// the underlying ObservableCollection view, and set the selection
         /// adapter's ItemsSource to the view if appropriate.
         /// </summary>
         /// <param name="newValue">The new enumerable reference.</param>
@@ -2176,14 +2176,14 @@ namespace Avalonia.Controls
         /// possible matches in the drop-down.
         /// </summary>
         /// <remarks>
-        /// Call this method when you are providing custom population of 
-        /// the drop-down portion of the AutoCompleteBox, to signal the control 
-        /// that you are done with the population process. 
-        /// Typically, you use PopulateComplete when the population process 
+        /// Call this method when you are providing custom population of
+        /// the drop-down portion of the AutoCompleteBox, to signal the control
+        /// that you are done with the population process.
+        /// Typically, you use PopulateComplete when the population process
         /// is a long-running process and you want to cancel built-in filtering
-        ///  of the ItemsSource items. In this case, you can handle the 
-        /// Populated event and set PopulatingEventArgs.Cancel to true. 
-        /// When the long-running process has completed you call 
+        ///  of the ItemsSource items. In this case, you can handle the
+        /// Populated event and set PopulatingEventArgs.Cancel to true.
+        /// When the long-running process has completed you call
         /// PopulateComplete to indicate the drop-down is populated.
         /// </remarks>
         public void PopulateComplete()
@@ -2223,7 +2223,7 @@ namespace Avalonia.Controls
         /// item values for an exact match. Will update the SelectedItem value.
         /// </summary>
         /// <param name="userInitiated">A value indicating whether the operation
-        /// was user initiated. Text completion will not be performed when not 
+        /// was user initiated. Text completion will not be performed when not
         /// directly initiated by the user.</param>
         private void UpdateTextCompletion(bool userInitiated)
         {
@@ -2231,9 +2231,9 @@ namespace Avalonia.Controls
             object newSelectedItem = null;
             string text = Text;
 
-            // Text search is StartsWith explicit and only when enabled, in 
-            // line with WPF's ComboBox lookup. When in use it will associate 
-            // a Value with the Text if it is found in ItemsSource. This is 
+            // Text search is StartsWith explicit and only when enabled, in
+            // line with WPF's ComboBox lookup. When in use it will associate
+            // a Value with the Text if it is found in ItemsSource. This is
             // only valid when there is data and the user initiated the action.
             if (_view.Count > 0)
             {
@@ -2243,11 +2243,11 @@ namespace Avalonia.Controls
                     int selectionStart = TextBoxSelectionStart;
                     if (selectionStart == text.Length && selectionStart > _textSelectionStart)
                     {
-                        // When the FilterMode dependency property is set to 
-                        // either StartsWith or StartsWithCaseSensitive, the 
-                        // first item in the view is used. This will improve 
-                        // performance on the lookup. It assumes that the 
-                        // FilterMode the user has selected is an acceptable 
+                        // When the FilterMode dependency property is set to
+                        // either StartsWith or StartsWithCaseSensitive, the
+                        // first item in the view is used. This will improve
+                        // performance on the lookup. It assumes that the
+                        // FilterMode the user has selected is an acceptable
                         // case sensitive matching function for their scenario.
                         object top = FilterMode == AutoCompleteFilterMode.StartsWith || FilterMode == AutoCompleteFilterMode.StartsWithCaseSensitive
                             ? _view[0]
@@ -2268,16 +2268,16 @@ namespace Avalonia.Controls
 
                                 // Select the text past the user's caret
                                 TextBox.SelectionStart = currentLength;
-                                TextBox.SelectionEnd = topString.Length;                                
+                                TextBox.SelectionEnd = topString.Length;
                             }
                         }
                     }
                 }
                 else
                 {
-                    // Perform an exact string lookup for the text. This is a 
-                    // design change from the original Toolkit release when the 
-                    // IsTextCompletionEnabled property behaved just like the 
+                    // Perform an exact string lookup for the text. This is a
+                    // design change from the original Toolkit release when the
+                    // IsTextCompletionEnabled property behaved just like the
                     // WPF ComboBox's IsTextSearchEnabled property.
                     //
                     // This change provides the behavior that most people expect
@@ -2306,12 +2306,12 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Attempts to look through the view and locate the specific exact 
+        /// Attempts to look through the view and locate the specific exact
         /// text match.
         /// </summary>
         /// <param name="searchText">The search text.</param>
         /// <param name="view">The view reference.</param>
-        /// <param name="predicate">The predicate to use for the partial or 
+        /// <param name="predicate">The predicate to use for the partial or
         /// exact match.</param>
         /// <returns>Returns the object or null.</returns>
         private object TryGetMatch(string searchText, AvaloniaList<object> view, AutoCompleteFilterPredicate<string> predicate)
@@ -2413,13 +2413,13 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// A predefined set of filter functions for the known, built-in 
+        /// A predefined set of filter functions for the known, built-in
         /// AutoCompleteFilterMode enumeration values.
         /// </summary>
         private static class AutoCompleteSearch
         {
             /// <summary>
-            /// Index function that retrieves the filter for the provided 
+            /// Index function that retrieves the filter for the provided
             /// AutoCompleteFilterMode.
             /// </summary>
             /// <param name="FilterMode">The built-in search mode.</param>
@@ -2472,8 +2472,8 @@ namespace Avalonia.Controls
             }
 
             /// <summary>
-            /// An implementation of the Contains member of string that takes in a 
-            /// string comparison. The traditional .NET string Contains member uses 
+            /// An implementation of the Contains member of string that takes in a
+            /// string comparison. The traditional .NET string Contains member uses
             /// StringComparison.Ordinal.
             /// </summary>
             /// <param name="s">The string.</param>
@@ -2530,7 +2530,7 @@ namespace Avalonia.Controls
             }
 
             /// <summary>
-            /// Check if the prefix is contained in the string value. The current 
+            /// Check if the prefix is contained in the string value. The current
             /// culture's case insensitive string comparison operator is used.
             /// </summary>
             /// <param name="text">The AutoCompleteBox prefix text.</param>
@@ -2647,7 +2647,7 @@ namespace Avalonia.Controls
                 get { return GetValue(ValueProperty); }
                 set { SetValue(ValueProperty, value); }
             }
-            
+
             #endregion public string Value
 
             /// <summary>
@@ -2690,7 +2690,7 @@ namespace Avalonia.Controls
             }
 
             /// <summary>
-            /// Updates the data context of the framework element and returns the 
+            /// Updates the data context of the framework element and returns the
             /// updated binding value.
             /// </summary>
             /// <param name="o">The object to use as the data context.</param>
@@ -2710,7 +2710,7 @@ namespace Avalonia.Controls
             }
 
             /// <summary>
-            /// Updates the data context of the framework element and returns the 
+            /// Updates the data context of the framework element and returns the
             /// updated binding value.
             /// </summary>
             /// <param name="o">The object to use as the data context.</param>
