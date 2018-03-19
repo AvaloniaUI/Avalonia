@@ -4,6 +4,7 @@ using Avalonia.Input.Raw;
 using Avalonia.Platform;
 using MonoMac.AppKit;
 using MonoMac.CoreGraphics;
+using MonoMac.Foundation;
 using MonoMac.ObjCRuntime;
 
 namespace Avalonia.MonoMac
@@ -69,6 +70,12 @@ namespace Avalonia.MonoMac
                 _impl.PositionChanged?.Invoke(_impl.Position);
             }
 
+            public override bool WindowShouldClose(NSObject sender)
+            {
+                bool? preventClose = _impl.Closing?.Invoke();
+                return preventClose != true;
+            }
+
             public override void WillClose(global::MonoMac.Foundation.NSNotification notification)
             {
                 _impl.Window.Dispose();
@@ -107,6 +114,7 @@ namespace Avalonia.MonoMac
         public Action<Point> PositionChanged { get; set; }
         public Action Deactivated { get; set; }
         public Action Activated { get; set; }
+        public Func<bool> Closing { get; set; }
 
         public override Size ClientSize => Window.ContentRectFor(Window.Frame).Size.ToAvaloniaSize();
 

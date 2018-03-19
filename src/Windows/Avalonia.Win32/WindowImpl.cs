@@ -56,6 +56,8 @@ namespace Avalonia.Win32
 
         public Action Activated { get; set; }
 
+        public Func<bool> Closing { get; set; }
+
         public Action Closed { get; set; }
 
         public Action Deactivated { get; set; }
@@ -430,6 +432,14 @@ namespace Avalonia.Win32
                     }
 
                     return IntPtr.Zero;
+
+                case UnmanagedMethods.WindowsMessage.WM_CLOSE:
+                    bool? preventClosing = Closing?.Invoke();
+                    if (preventClosing == true)
+                    {
+                        return IntPtr.Zero;
+                    }
+                    break;
 
                 case UnmanagedMethods.WindowsMessage.WM_DESTROY:
                     //Window doesn't exist anymore
