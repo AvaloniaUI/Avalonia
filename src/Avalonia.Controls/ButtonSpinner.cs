@@ -201,6 +201,11 @@ namespace Avalonia.Controls
             }
         }
 
+        protected override void OnValidSpinDirectionChanged(ValidSpinDirections oldValue, ValidSpinDirections newValue)
+        {
+            SetButtonUsage();
+        }
+
         /// <summary>
         /// Called when the <see cref="AllowSpin"/> property value changed.
         /// </summary>
