@@ -31,7 +31,7 @@ namespace Avalonia.Controls.Presenters
         /// <summary>
         /// Defines the <see cref="BorderThickness"/> property.
         /// </summary>
-        public static readonly StyledProperty<double> BorderThicknessProperty =
+        public static readonly StyledProperty<Thickness> BorderThicknessProperty =
             Border.BorderThicknessProperty.AddOwner<ContentPresenter>();
 
         /// <summary>
@@ -57,7 +57,7 @@ namespace Avalonia.Controls.Presenters
         /// <summary>
         /// Defines the <see cref="CornerRadius"/> property.
         /// </summary>
-        public static readonly StyledProperty<float> CornerRadiusProperty =
+        public static readonly StyledProperty<CornerRadius> CornerRadiusProperty =
             Border.CornerRadiusProperty.AddOwner<ContentPresenter>();
 
         /// <summary>
@@ -81,6 +81,7 @@ namespace Avalonia.Controls.Presenters
         private IControl _child;
         private bool _createdChild;
         private IDataTemplate _dataTemplate;
+        private readonly Border.BorderRenderer _borderRenderer = new Border.BorderRenderer();
 
         /// <summary>
         /// Initializes static members of the <see cref="ContentPresenter"/> class.
@@ -120,7 +121,7 @@ namespace Avalonia.Controls.Presenters
         /// <summary>
         /// Gets or sets the thickness of the border.
         /// </summary>
-        public double BorderThickness
+        public Thickness BorderThickness
         {
             get { return GetValue(BorderThicknessProperty); }
             set { SetValue(BorderThicknessProperty, value); }
@@ -157,7 +158,7 @@ namespace Avalonia.Controls.Presenters
         /// <summary>
         /// Gets or sets the radius of the border rounded corners.
         /// </summary>
-        public float CornerRadius
+        public CornerRadius CornerRadius
         {
             get { return GetValue(CornerRadiusProperty); }
             set { SetValue(CornerRadiusProperty, value); }
@@ -221,7 +222,7 @@ namespace Avalonia.Controls.Presenters
         {
             var content = Content;
             var oldChild = Child;
-            var newChild = CreateChild();            
+            var newChild = CreateChild();
 
             // Remove the old child if we're not recycling it.
             if (oldChild != null && newChild != oldChild)
@@ -277,21 +278,7 @@ namespace Avalonia.Controls.Presenters
         /// <inheritdoc/>
         public override void Render(DrawingContext context)
         {
-            var background = Background;
-            var borderBrush = BorderBrush;
-            var borderThickness = BorderThickness;
-            var cornerRadius = CornerRadius;
-            var rect = new Rect(Bounds.Size).Deflate(BorderThickness);
-
-            if (background != null)
-            {
-                context.FillRectangle(background, rect, cornerRadius);
-            }
-
-            if (borderBrush != null && borderThickness > 0)
-            {
-                context.DrawRectangle(new Pen(borderBrush, borderThickness), rect, cornerRadius);
-            }
+            _borderRenderer.Render(context, Bounds.Size, BorderThickness, CornerRadius, Background, BorderBrush);
         }
 
         /// <summary>
@@ -344,7 +331,11 @@ namespace Avalonia.Controls.Presenters
         /// <inheritdoc/>
         protected override Size ArrangeOverride(Size finalSize)
         {
-            return ArrangeOverrideImpl(finalSize, new Vector());
+            finalSize = ArrangeOverrideImpl(finalSize, new Vector());
+
+            _borderRenderer.Update(finalSize, BorderThickness, CornerRadius);
+
+            return finalSize;
         }
 
         /// <summary>
@@ -372,73 +363,73 @@ namespace Avalonia.Controls.Presenters
 
         internal Size ArrangeOverrideImpl(Size finalSize, Vector offset)
         {
-            if (Child != null)
+            if (Child == null) return finalSize;
+
+            var padding = Padding;
+            var borderThickness = BorderThickness;
+            var horizontalContentAlignment = HorizontalContentAlignment;
+            var verticalContentAlignment = VerticalContentAlignment;
+            var useLayoutRounding = UseLayoutRounding;
+            //Not sure about this part
+            var availableSizeMinusMargins = new Size(
+                Math.Max(0, finalSize.Width - padding.Left - padding.Right - borderThickness.Left - borderThickness.Right),
+                Math.Max(0, finalSize.Height - padding.Top - padding.Bottom - borderThickness.Top - borderThickness.Bottom));
+            var size = availableSizeMinusMargins;
+            var scale = GetLayoutScale();
+            var originX = offset.X + padding.Left + borderThickness.Left;
+            var originY = offset.Y + padding.Top + borderThickness.Top;
+
+            if (horizontalContentAlignment != HorizontalAlignment.Stretch)
             {
-                var padding = Padding;
-                var borderThickness = BorderThickness;
-                var horizontalContentAlignment = HorizontalContentAlignment;
-                var verticalContentAlignment = VerticalContentAlignment;
-                var useLayoutRounding = UseLayoutRounding;
-                var availableSizeMinusMargins = new Size(
-                    Math.Max(0, finalSize.Width - padding.Left - padding.Right - borderThickness),
-                    Math.Max(0, finalSize.Height - padding.Top - padding.Bottom - borderThickness));
-                var size = availableSizeMinusMargins;
-                var scale = GetLayoutScale();
-                var originX = offset.X + padding.Left + borderThickness;
-                var originY = offset.Y + padding.Top + borderThickness;
-
-                if (horizontalContentAlignment != HorizontalAlignment.Stretch)
-                {
-                    size = size.WithWidth(Math.Min(size.Width, DesiredSize.Width - padding.Left - padding.Right));
-                }
-
-                if (verticalContentAlignment != VerticalAlignment.Stretch)
-                {
-                    size = size.WithHeight(Math.Min(size.Height, DesiredSize.Height - padding.Top - padding.Bottom));
-                }
-
-                size = LayoutHelper.ApplyLayoutConstraints(Child, size);
-
-                if (useLayoutRounding)
-                {
-                    size = new Size(
-                        Math.Ceiling(size.Width * scale) / scale,
-                        Math.Ceiling(size.Height * scale) / scale);
-                    availableSizeMinusMargins = new Size(
-                        Math.Ceiling(availableSizeMinusMargins.Width * scale) / scale,
-                        Math.Ceiling(availableSizeMinusMargins.Height * scale) / scale);
-                }
-
-                switch (horizontalContentAlignment)
-                {
-                    case HorizontalAlignment.Center:
-                    case HorizontalAlignment.Stretch:
-                        originX += (availableSizeMinusMargins.Width - size.Width) / 2;
-                        break;
-                    case HorizontalAlignment.Right:
-                        originX += availableSizeMinusMargins.Width - size.Width;
-                        break;
-                }
-
-                switch (verticalContentAlignment)
-                {
-                    case VerticalAlignment.Center:
-                    case VerticalAlignment.Stretch:
-                        originY += (availableSizeMinusMargins.Height - size.Height) / 2;
-                        break;
-                    case VerticalAlignment.Bottom:
-                        originY += availableSizeMinusMargins.Height - size.Height;
-                        break;
-                }
-
-                if (useLayoutRounding)
-                {
-                    originX = Math.Floor(originX * scale) / scale;
-                    originY = Math.Floor(originY * scale) / scale;
-                }
-
-                Child.Arrange(new Rect(originX, originY, size.Width, size.Height));
+                size = size.WithWidth(Math.Min(size.Width, DesiredSize.Width - padding.Left - padding.Right));
             }
+
+            if (verticalContentAlignment != VerticalAlignment.Stretch)
+            {
+                size = size.WithHeight(Math.Min(size.Height, DesiredSize.Height - padding.Top - padding.Bottom));
+            }
+
+            size = LayoutHelper.ApplyLayoutConstraints(Child, size);
+
+            if (useLayoutRounding)
+            {
+                size = new Size(
+                    Math.Ceiling(size.Width * scale) / scale,
+                    Math.Ceiling(size.Height * scale) / scale);
+                availableSizeMinusMargins = new Size(
+                    Math.Ceiling(availableSizeMinusMargins.Width * scale) / scale,
+                    Math.Ceiling(availableSizeMinusMargins.Height * scale) / scale);
+            }
+
+            switch (horizontalContentAlignment)
+            {
+                case HorizontalAlignment.Center:
+                case HorizontalAlignment.Stretch:
+                    originX += (availableSizeMinusMargins.Width - size.Width) / 2;
+                    break;
+                case HorizontalAlignment.Right:
+                    originX += availableSizeMinusMargins.Width - size.Width;
+                    break;
+            }
+
+            switch (verticalContentAlignment)
+            {
+                case VerticalAlignment.Center:
+                case VerticalAlignment.Stretch:
+                    originY += (availableSizeMinusMargins.Height - size.Height) / 2;
+                    break;
+                case VerticalAlignment.Bottom:
+                    originY += availableSizeMinusMargins.Height - size.Height;
+                    break;
+            }
+
+            if (useLayoutRounding)
+            {
+                originX = Math.Floor(originX * scale) / scale;
+                originY = Math.Floor(originY * scale) / scale;
+            }
+
+            Child.Arrange(new Rect(originX, originY, size.Width, size.Height));
 
             return finalSize;
         }
@@ -447,7 +438,7 @@ namespace Avalonia.Controls.Presenters
         {
             var result = (VisualRoot as ILayoutRoot)?.LayoutScaling ?? 1.0;
 
-            if (result == 0 || double.IsNaN(result) || double.IsInfinity(result))
+            if (result.Equals(0) || double.IsNaN(result) || double.IsInfinity(result))
             {
                 throw new Exception($"Invalid LayoutScaling returned from {VisualRoot.GetType()}");
             }
