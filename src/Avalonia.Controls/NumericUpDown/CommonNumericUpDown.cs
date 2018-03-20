@@ -6,7 +6,7 @@ using System.Linq;
 namespace Avalonia.Controls
 {
     /// <summary>
-    /// Base class for controls that represents a TextBox with button spinners that allow incrementing and decrementing numeric values.
+    /// Base class for controls that represents a TextBox with button spinners that allow incrementing and decrementing nullable numeric values.
     /// </summary>
     public abstract class CommonNumericUpDown<T> : NumericUpDown<T?> where T : struct, IFormattable, IComparable<T>
     {
