@@ -78,6 +78,9 @@
     <EmbeddedResource Include="Pages\MenuPage.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <EmbeddedResource Include="Pages\NumbersPage.xaml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Include="Pages\ProgressBarPage.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
@@ -169,6 +172,9 @@
     </Compile>
     <Compile Include="Pages\ButtonSpinnerPage.xaml.cs">
       <DependentUpon>ButtonSpinnerPage.xaml</DependentUpon>
+    </Compile>
+	<Compile Include="Pages\NumbersPage.xaml.cs">
+      <DependentUpon>NumbersPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Pages\ScreenPage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
