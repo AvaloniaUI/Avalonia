@@ -39,6 +39,7 @@ namespace Avalonia.MonoMac
             private NSTrackingArea _area;
             private NSCursor _cursor;
             private bool _nonUiRedrawQueued;
+            private bool _isMouseOver;
 
             public CGSize PixelSize { get; set; }
 
@@ -133,7 +134,11 @@ namespace Avalonia.MonoMac
             {
                 ResetCursorRects();
                 if (_cursor != null)
+                {
                     AddCursorRect(Frame, _cursor);
+                    if (_isMouseOver)
+                        _cursor.Set();
+                }
             }
 
             static readonly NSCursor ArrowCursor = NSCursor.ArrowCursor;
@@ -299,8 +304,15 @@ namespace Avalonia.MonoMac
 
             public override void MouseExited(NSEvent theEvent)
             {
+                _isMouseOver = false;
                 MouseEvent(theEvent, RawMouseEventType.LeaveWindow);
                 base.MouseExited(theEvent);
+            }
+
+            public override void MouseEntered(NSEvent theEvent)
+            {
+                _isMouseOver = true;
+                base.MouseEntered(theEvent);
             }
 
             void KeyboardEvent(RawKeyEventType type, NSEvent ev)

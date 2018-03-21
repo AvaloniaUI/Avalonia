@@ -39,6 +39,7 @@ namespace Avalonia.DesignerSupport.Remote
         public Action<Point> PositionChanged { get; set; }
         public Action Deactivated { get; set; }
         public Action Activated { get; set; }
+        public Func<bool> Closing { get; set; }
         public IPlatformHandle Handle { get; }
         public WindowState WindowState { get; set; }
         public Size MaxClientSize { get; } = new Size(4096, 4096);

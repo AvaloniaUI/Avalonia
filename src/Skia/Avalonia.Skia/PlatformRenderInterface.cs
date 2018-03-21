@@ -92,7 +92,7 @@ namespace Avalonia.Skia
             return new FramebufferRenderTarget(fb);
         }
 
-        public IWritableBitmapImpl CreateWritableBitmap(int width, int height, PixelFormat? format = null)
+        public IWriteableBitmapImpl CreateWriteableBitmap(int width, int height, PixelFormat? format = null)
         {
             return new BitmapImpl(width, height, new Vector(96, 96), format);
         }

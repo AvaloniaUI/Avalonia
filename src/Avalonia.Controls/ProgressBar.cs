@@ -26,12 +26,13 @@ namespace Avalonia.Controls
 
         static ProgressBar()
         {
+            PseudoClass(OrientationProperty, o => o == Avalonia.Controls.Orientation.Vertical, ":vertical");
+            PseudoClass(OrientationProperty, o => o == Avalonia.Controls.Orientation.Horizontal, ":horizontal");
+
             ValueProperty.Changed.AddClassHandler<ProgressBar>(x => x.ValueChanged);
 
             IsIndeterminateProperty.Changed.AddClassHandler<ProgressBar>(
                 (p, e) => { if (p._indicator != null) p.UpdateIsIndeterminate((bool)e.NewValue); });
-            OrientationProperty.Changed.AddClassHandler<ProgressBar>(
-                (p, e) => { if (p._indicator != null) p.UpdateOrientation((Orientation)e.NewValue); });
         }
 
         public bool IsIndeterminate
@@ -59,7 +60,6 @@ namespace Avalonia.Controls
             _indicator = e.NameScope.Get<Border>("PART_Indicator");
 
             UpdateIndicator(Bounds.Size);
-            UpdateOrientation(Orientation);
             UpdateIsIndeterminate(IsIndeterminate);
         }
 
@@ -83,26 +83,6 @@ namespace Avalonia.Controls
                     else
                         _indicator.Height = bounds.Height * percent;
                 }
-            }
-        }
-
-        private void UpdateOrientation(Orientation orientation)
-        {
-            if (orientation == Orientation.Horizontal)
-            {
-                MinHeight = 14;
-                MinWidth = 200;
-
-                _indicator.HorizontalAlignment = HorizontalAlignment.Left;
-                _indicator.VerticalAlignment = VerticalAlignment.Stretch;
-            }
-            else
-            {
-                MinHeight = 200;
-                MinWidth = 14;
-
-                _indicator.HorizontalAlignment = HorizontalAlignment.Stretch;
-                _indicator.VerticalAlignment = VerticalAlignment.Bottom;
             }
         }
 

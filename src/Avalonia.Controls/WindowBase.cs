@@ -29,9 +29,19 @@ namespace Avalonia.Controls
         public static readonly DirectProperty<WindowBase, bool> IsActiveProperty =
             AvaloniaProperty.RegisterDirect<WindowBase, bool>(nameof(IsActive), o => o.IsActive);
 
+        /// <summary>
+        /// Defines the <see cref="Owner"/> property.
+        /// </summary>
+        public static readonly DirectProperty<WindowBase, WindowBase> OwnerProperty =
+            AvaloniaProperty.RegisterDirect<WindowBase, WindowBase>(
+                nameof(Owner),
+                o => o.Owner,
+                (o, v) => o.Owner = v);
+
         private bool _hasExecutedInitialLayoutPass;
         private bool _isActive;
         private bool _ignoreVisibilityChange;
+        private WindowBase _owner;
 
         static WindowBase()
         {
@@ -98,6 +108,15 @@ namespace Avalonia.Controls
         {
             get;
             private set;
+        }
+
+        /// <summary>
+        /// Gets or sets the owner of the window.
+        /// </summary>
+        public WindowBase Owner
+        {
+            get { return _owner; }
+            set { SetAndRaise(OwnerProperty, ref _owner, value); }
         }
 
         /// <summary>
