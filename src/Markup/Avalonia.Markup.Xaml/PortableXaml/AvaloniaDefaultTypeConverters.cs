@@ -12,6 +12,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Collections;
 using Avalonia.Controls.Templates;
+using Avalonia.Animation;
 
 namespace Avalonia.Markup.Xaml.PortableXaml
 {
@@ -47,6 +48,7 @@ namespace Avalonia.Markup.Xaml.PortableXaml
             //{ typeof(Uri), typeof(Converters.UriTypeConverter) },
             { typeof(Cursor), typeof(CursorTypeConverter) },
             { typeof(WindowIcon), typeof(IconTypeConverter) },
+            { typeof(Easing), typeof(EasingTypeConverter) },
             //{ typeof(FontWeight), typeof(FontWeightConverter) },
         };
 

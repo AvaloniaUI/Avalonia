@@ -58,13 +58,13 @@ namespace Avalonia.Animation
 
             if (from != null)
             {
-                tasks.Add(Animate.Property(
-                    (IAvaloniaObject)from,
-                    Visual.OpacityProperty,
-                    from.Opacity,
-                    0,
-                    LinearEasing.For<double>(),
-                    Duration).ToTask());
+                //tasks.Add(Animate.Property(
+                //    (IAvaloniaObject)from,
+                //    Visual.OpacityProperty,
+                //    from.Opacity,
+                //    0,
+                //    LinearEasing.For<double>(),
+                //    Duration).ToTask());
             }
 
             if (to != null)
@@ -72,16 +72,16 @@ namespace Avalonia.Animation
                 to.Opacity = 0;
                 to.IsVisible = true;
 
-                tasks.Add(Animate.Property(
-                    (IAvaloniaObject)to,
-                    Visual.OpacityProperty,
-                    0,
-                    1,
-                    LinearEasing.For<double>(),
-                    Duration).ToTask());
+                //tasks.Add(Animate.Property(
+                //    (IAvaloniaObject)to,
+                //    Visual.OpacityProperty,
+                //    0,
+                //    1,
+                //    LinearEasing.For<double>(),
+                //    Duration).ToTask());
             }
 
-            await Task.WhenAll(tasks.ToArray());
+            //await Task.WhenAll(tasks.ToArray());
 
             if (from != null)
             {

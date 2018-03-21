@@ -11,9 +11,9 @@ using Avalonia.Threading;
 namespace Avalonia.Animation
 {
     /// <summary>
-    /// Utilities for creating animations.
+    /// Provides global timing functions for animations.
     /// </summary>
-    public static class Animate
+    public static class Timing
     {
         /// <summary>
         /// The number of frames per second.
@@ -26,9 +26,9 @@ namespace Avalonia.Animation
         private static readonly TimeSpan Tick = TimeSpan.FromSeconds(1.0 / FramesPerSecond);
 
         /// <summary>
-        /// Initializes static members of the <see cref="Animate"/> class.
+        /// Initializes static members of the <see cref="Timing"/> class.
         /// </summary>
-        static Animate()
+        static Timing()
         {
             Stopwatch = new Stopwatch();
             Stopwatch.Start();
@@ -46,7 +46,8 @@ namespace Avalonia.Animation
         /// </value>
         public static Stopwatch Stopwatch
         {
-            get; }
+            get;
+        }
 
         /// <summary>
         /// Gets the animation timer.
@@ -61,7 +62,8 @@ namespace Avalonia.Animation
         /// </value>
         public static IObservable<TimeSpan> Timer
         {
-            get; }
+            get;
+        }
 
         /// <summary>
         /// Gets a timer that fires every frame for the specified duration.
@@ -86,49 +88,6 @@ namespace Avalonia.Animation
                 .Concat(Observable.Return(1.0));
         }
 
-        /// <summary>
-        /// Animates a <see cref="AvaloniaProperty"/>.
-        /// </summary>
-        /// <param name="target">The target object.</param>
-        /// <param name="property">The target property.</param>
-        /// <param name="start">The value of the property at the start of the animation.</param>
-        /// <param name="finish">The value of the property at the end of the animation.</param>
-        /// <param name="easing">The easing function to use.</param>
-        /// <param name="duration">The duration of the animation.</param>
-        /// <returns>An <see cref="Animation"/> that can be used to track or stop the animation.</returns>
-        public static Animation Property(
-            IAvaloniaObject target,
-            AvaloniaProperty property,
-            object start,
-            object finish,
-            IEasing easing,
-            TimeSpan duration)
-        {
-            var o = GetTimer(duration).Select(progress => easing.Ease(progress, start, finish));
-            return new Animation(o, target.Bind(property, o, BindingPriority.Animation));
-        }
 
-        /// <summary>
-        /// Animates a <see cref="AvaloniaProperty"/>.
-        /// </summary>
-        /// <typeparam name="T">The property type.</typeparam>
-        /// <param name="target">The target object.</param>
-        /// <param name="property">The target property.</param>
-        /// <param name="start">The value of the property at the start of the animation.</param>
-        /// <param name="finish">The value of the property at the end of the animation.</param>
-        /// <param name="easing">The easing function to use.</param>
-        /// <param name="duration">The duration of the animation.</param>
-        /// <returns>An <see cref="Animation"/> that can be used to track or stop the animation.</returns>
-        public static Animation<T> Property<T>(
-            IAvaloniaObject target,
-            AvaloniaProperty<T> property,
-            T start,
-            T finish,
-            IEasing<T> easing,
-            TimeSpan duration)
-        {
-            var o = GetTimer(duration).Select(progress => easing.Ease(progress, start, finish));
-            return new Animation<T>(o, target.Bind(property, o, BindingPriority.Animation));
-        }
     }
 }

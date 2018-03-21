@@ -114,12 +114,12 @@ namespace Avalonia.Controls
             private IndeterminateAnimation(ProgressBar progressBar)
             {
                 _progressBar = new WeakReference<ProgressBar>(progressBar);
-                _startTime = Animate.Stopwatch.Elapsed;
-                _indeterminateBindSubscription = Animate.Timer.TakeWhile(x => (x - _startTime).TotalSeconds <= 4.0)
-                                                              .Select(GetAnimationRect)
-                                                              .Finally(() => _startTime = Animate.Stopwatch.Elapsed)
-                                                              .Repeat()
-                                                              .Subscribe(AnimationTick);
+                //_startTime = Animate.Stopwatch.Elapsed;
+                //_indeterminateBindSubscription = Animate.Timer.TakeWhile(x => (x - _startTime).TotalSeconds <= 4.0)
+                //                                              .Select(GetAnimationRect)
+                //                                              .Finally(() => _startTime = Animate.Stopwatch.Elapsed)
+                //                                              .Repeat()
+                //                                              .Subscribe(AnimationTick);
             }
 
             public static IndeterminateAnimation StartAnimation(ProgressBar progressBar)

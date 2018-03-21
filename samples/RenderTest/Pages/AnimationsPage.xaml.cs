@@ -56,17 +56,17 @@ namespace RenderTest.Pages
                     RenderTransform = new ScaleTransform(),
                 };
 
-                var start = Animate.Stopwatch.Elapsed;
-                var index = i % (Count / 2);
-                var degrees = Animate.Timer
-                    .Select(x => (x - start).TotalSeconds)
-                    .Where(x => (x % Count) >= index && (x % Count) < index + 1)
-                    .Select(x => (x % 1) / 1);
+                //var start = Animate.Stopwatch.Elapsed;
+                //var index = i % (Count / 2);
+                //var degrees = Animate.Timer
+                //    .Select(x => (x - start).TotalSeconds)
+                //    .Where(x => (x % Count) >= index && (x % Count) < index + 1)
+                //    .Select(x => (x % 1) / 1);
 
-                element.RenderTransform.Bind(
-                    ScaleTransform.ScaleXProperty,
-                    degrees,
-                    BindingPriority.Animation);
+                //element.RenderTransform.Bind(
+                //    ScaleTransform.ScaleXProperty,
+                //    degrees,
+                //    BindingPriority.Animation);
 
                 ellipse.PointerEnter += Ellipse_PointerEnter;
                 ellipse.PointerLeave += Ellipse_PointerLeave;

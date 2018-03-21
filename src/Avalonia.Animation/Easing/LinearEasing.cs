@@ -4,13 +4,15 @@
 namespace Avalonia.Animation
 {
     /// <summary>
-    /// Defines the interface for easing classes.
+    /// Linearly eases a <see cref="double"/> value.
     /// </summary>
-    public interface IEasing
+    public class LinearEasing : Easing
     {
-        /// <summary>
-        /// Returns the value of the transition for the specified progress.
-        /// </summary>
-        double Ease(double progress);
+        /// <inheritdoc/>
+        public override double Ease(double progress)
+        {
+            return progress;
+        }
     }
+
 }

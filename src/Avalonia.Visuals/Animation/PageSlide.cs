@@ -78,13 +78,13 @@ namespace Avalonia.Animation
             {
                 var transform = new TranslateTransform();
                 from.RenderTransform = transform;
-                tasks.Add(Animate.Property(
-                    transform,
-                    translateProperty,
-                    0.0,
-                    forward ? -distance : distance,
-                    LinearEasing.For<double>(),
-                    Duration).ToTask());
+                //tasks.Add(Animate.Property(
+                //    transform,
+                //    translateProperty,
+                //    0.0,
+                //    forward ? -distance : distance,
+                //    LinearEasing.For<double>(),
+                //    Duration).ToTask());
             }
 
             if (to != null)
@@ -92,16 +92,16 @@ namespace Avalonia.Animation
                 var transform = new TranslateTransform();
                 to.RenderTransform = transform;
                 to.IsVisible = true;
-                tasks.Add(Animate.Property(
-                    transform,
-                    translateProperty,
-                    forward ? distance : -distance,
-                    0.0,
-                    LinearEasing.For<double>(),
-                    Duration).ToTask());
+                //tasks.Add(Animate.Property(
+                //    transform,
+                //    translateProperty,
+                //    forward ? distance : -distance,
+                //    0.0,
+                //    LinearEasing.For<double>(),
+                //    Duration).ToTask());
             }
 
-            await Task.WhenAll(tasks.ToArray());
+            //await Task.WhenAll(tasks.ToArray());
 
             if (from != null)
             {
