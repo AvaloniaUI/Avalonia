@@ -6,7 +6,7 @@ using Avalonia.Collections;
 namespace Avalonia.Animation
 {
     /// <summary>
-    /// A collection of <see cref="Transition"/> definitions.
+    /// A collection of <see cref="Transition{T}"/> definitions.
     /// </summary>
     public class Transitions : AvaloniaList<ITransition>
     {
