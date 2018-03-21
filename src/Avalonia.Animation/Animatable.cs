@@ -59,16 +59,16 @@ namespace Avalonia.Animation
             }
         }
 
-        /// <summary>
-        /// Animates a <see cref="AvaloniaProperty"/>.
-        /// </summary>
-        /// <param name="target">The target object.</param>
-        /// <param name="property">The target property.</param>
-        /// <param name="start">The value of the property at the start of the animation.</param>
-        /// <param name="finish">The value of the property at the end of the animation.</param>
-        /// <param name="easing">The easing function to use.</param>
-        /// <param name="duration">The duration of the animation.</param>
-        /// <returns>An <see cref="Animation"/> that can be used to track or stop the animation.</returns>
+        ///// <summary>
+        ///// Animates a <see cref="AvaloniaProperty"/>.
+        ///// </summary>
+        ///// <param name="target">The target object.</param>
+        ///// <param name="property">The target property.</param>
+        ///// <param name="start">The value of the property at the start of the animation.</param>
+        ///// <param name="finish">The value of the property at the end of the animation.</param>
+        ///// <param name="easing">The easing function to use.</param>
+        ///// <param name="duration">The duration of the animation.</param>
+        ///// <returns>An <see cref="Animation"/> that can be used to track or stop the animation.</returns>
         //public static Animation BindAnimateProperty(
         //    IAvaloniaObject target,
         //    AvaloniaProperty property,
