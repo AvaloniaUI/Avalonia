@@ -20,7 +20,7 @@
                     MemberSelector="{x:Static TabControl.ContentSelector}"
                     Items="{TemplateBinding Items}"
                     SelectedIndex="{TemplateBinding Path=SelectedIndex}"
-                    Transition="{TemplateBinding Transition}"
+                    PageTransition="{TemplateBinding PageTransition}"
                     Grid.Row="1"/>
         </DockPanel>
       </ControlTemplate>

@@ -2,9 +2,9 @@
         xmlns:pages="clr-namespace:ControlCatalog.Pages;assembly=ControlCatalog"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <TabControl Classes="sidebar" Name="Sidebar">
-    <TabControl.Transition>
+    <TabControl.PageTransition>
       <CrossFade Duration="0.25"/>
-    </TabControl.Transition>
+    </TabControl.PageTransition>
     <TabItem Header="Border"><pages:BorderPage/></TabItem>
     <TabItem Header="Button"><pages:ButtonPage/></TabItem>
     <TabItem Header="ButtonSpinner"><pages:ButtonSpinnerPage/></TabItem>

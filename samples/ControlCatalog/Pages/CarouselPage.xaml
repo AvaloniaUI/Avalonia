@@ -8,9 +8,9 @@
         <Path Data="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" Fill="Black"/>
       </Button>
       <Carousel Name="carousel">
-        <Carousel.Transition>
+        <Carousel.PageTransition>
           <PageSlide Duration="0.25" Orientation="Vertical" />
-        </Carousel.Transition>
+        </Carousel.PageTransition>
         <Image Source="resm:ControlCatalog.Assets.delicate-arch-896885_640.jpg"/>
         <Image Source="resm:ControlCatalog.Assets.hirsch-899118_640.jpg"/>
         <Image Source="resm:ControlCatalog.Assets.maple-leaf-888807_640.jpg"/>
