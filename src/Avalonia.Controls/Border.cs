@@ -136,7 +136,6 @@ namespace Avalonia.Controls
             return new Size(padding.Left + padding.Right, padding.Bottom + padding.Top);
         }
 
-
         internal class BorderRenderer
         {
             private bool _useComplexRendering;
@@ -156,19 +155,28 @@ namespace Avalonia.Controls
                     _useComplexRendering = true;
 
                     var boundRect = new Rect(finalSize);
-                    var innerRect = boundRect.Deflate(borderThickness);
-                    var innerRadii = new Radii(cornerRadius, borderThickness, false);
+                    var innerRect = new Rect(borderThickness.Left, borderThickness.Top,
+                        boundRect.Width - borderThickness.Right, boundRect.Height - borderThickness.Bottom);
 
                     StreamGeometry backgroundGeometry = null;
 
-                    //  calculate border / background rendering geometry
-                    if (!innerRect.Width.Equals(0) && !innerRect.Height.Equals(0))
+                    if (!boundRect.Width.Equals(0) && !boundRect.Height.Equals(0))
                     {
                         backgroundGeometry = new StreamGeometry();
 
-                        using (var ctx = backgroundGeometry.Open())
+                        if (cornerRadius.IsEmpty)
                         {
-                            GenerateGeometry(ctx, innerRect, innerRadii);
+                            using (var ctx = backgroundGeometry.Open())
+                            {
+                                CreateGeometry(ctx, innerRect, cornerRadius);
+                            }
+                        }
+                        else
+                        {
+                            using (var ctx = backgroundGeometry.Open())
+                            {
+                                CreateGeometry(ctx, innerRect, cornerRadius);
+                            }
                         }
 
                         _backgroundGeometryCache = backgroundGeometry;
@@ -180,16 +188,31 @@ namespace Avalonia.Controls
 
                     if (!boundRect.Width.Equals(0) && !boundRect.Height.Equals(0))
                     {
-                        var outerRadii = new Radii(cornerRadius, borderThickness, true);
                         var borderGeometry = new StreamGeometry();
 
-                        using (var ctx = borderGeometry.Open())
+                        if (cornerRadius.IsEmpty)
                         {
-                            GenerateGeometry(ctx, boundRect, outerRadii);
-
-                            if (backgroundGeometry != null)
+                            using (var ctx = borderGeometry.Open())
                             {
-                                GenerateGeometry(ctx, innerRect, innerRadii);
+                                CreateGeometry(ctx, boundRect, cornerRadius);
+
+                                if (backgroundGeometry != null)
+                                {
+                                    CreateGeometry(ctx, innerRect, cornerRadius);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            using (var ctx = borderGeometry.Open())
+                            {
+                                CreateGeometry(ctx, boundRect, cornerRadius);
+
+                                if (backgroundGeometry != null)
+                                {
+                                    CreateGeometry(ctx, innerRect, cornerRadius);
+                                }
+
                             }
                         }
 
@@ -202,21 +225,72 @@ namespace Avalonia.Controls
                 }
             }
 
+            private static void CreateGeometry(StreamGeometryContext context, Rect boundRect, CornerRadius cornerRadius)
+            {
+                var topLeft = new Point(boundRect.X + cornerRadius.TopLeft, boundRect.Y);
+                var topRight = new Point(boundRect.Width - cornerRadius.TopRight, boundRect.Y);
+                var rightTop = new Point(boundRect.Width, boundRect.Y + cornerRadius.TopRight);
+                var rightBottom = new Point(boundRect.Width, boundRect.Height - cornerRadius.BottomRight);
+                var bottomRight = new Point(boundRect.Width - cornerRadius.BottomRight, boundRect.Height);
+                var bottomLeft = new Point(boundRect.X + cornerRadius.BottomLeft, boundRect.Height);
+                var leftBottom = new Point(boundRect.X, boundRect.Height - cornerRadius.BottomLeft);
+                var leftTop = new Point(boundRect.X, boundRect.Y + cornerRadius.TopLeft);
+
+                context.BeginFigure(topLeft, true);
+
+                //Top
+                context.LineTo(topRight);
+
+                //TopRight corner
+                if (topRight != rightTop)
+                {
+                    context.ArcTo(rightTop, new Size(cornerRadius.TopRight, cornerRadius.TopRight), 0, false, SweepDirection.Clockwise);
+                }
+
+                //Right
+                context.LineTo(rightBottom);
+
+                //BottomRight corner
+                if (rightBottom != bottomRight)
+                {
+                    context.ArcTo(bottomRight, new Size(cornerRadius.BottomRight, cornerRadius.BottomRight), 0, false, SweepDirection.Clockwise);
+                }
+
+                //Bottom
+                context.LineTo(bottomLeft);
+
+                //BottomLeft corner
+                if (bottomLeft != leftBottom)
+                {
+                    context.ArcTo(leftBottom, new Size(cornerRadius.BottomLeft, cornerRadius.BottomLeft), 0, false, SweepDirection.Clockwise);
+                }
+
+                //Left
+                context.LineTo(leftTop);
+
+                //TopLeft corner
+                if (leftTop != topLeft)
+                {
+                    context.ArcTo(topLeft, new Size(cornerRadius.TopLeft, cornerRadius.TopLeft), 0, false, SweepDirection.Clockwise);
+                }
+
+                context.EndFigure(true);
+            }
+
             public void Render(DrawingContext context, Size size, Thickness borders, CornerRadius radii, IBrush background, IBrush borderBrush)
             {
                 if (_useComplexRendering)
                 {
-                    IBrush brush;
-                    var borderGeometry = _borderGeometryCache;
-                    if (borderGeometry != null && (brush = borderBrush) != null)
+                    var backgroundGeometry = _backgroundGeometryCache;
+                    if (backgroundGeometry != null)
                     {
-                        context.DrawGeometry(brush, null, borderGeometry);
+                        context.DrawGeometry(background, null, backgroundGeometry);
                     }
 
-                    var backgroundGeometry = _backgroundGeometryCache;
-                    if (backgroundGeometry != null && (brush = background) != null)
+                    var borderGeometry = _borderGeometryCache;
+                    if (borderGeometry != null)
                     {
-                        context.DrawGeometry(brush, null, backgroundGeometry);
+                        context.DrawGeometry(borderBrush, null, borderGeometry);
                     }
                 }
                 else
@@ -235,195 +309,6 @@ namespace Avalonia.Controls
                         context.DrawRectangle(new Pen(borderBrush, borderThickness), rect.Deflate(borderThickness), cornerRadius);
                     }
                 }
-            }
-
-            private static void GenerateGeometry(StreamGeometryContext ctx, Rect rect, Radii radii)
-            {
-                //
-                //  Compute the coordinates of the key points
-                //
-
-                var topLeft = new Point(radii.LeftTop, 0);
-                var topRight = new Point(rect.Width - radii.RightTop, 0);
-                var rightTop = new Point(rect.Width, radii.TopRight);
-                var rightBottom = new Point(rect.Width, rect.Height - radii.BottomRight);
-                var bottomRight = new Point(rect.Width - radii.RightBottom, rect.Height);
-                var bottomLeft = new Point(radii.LeftBottom, rect.Height);
-                var leftBottom = new Point(0, rect.Height - radii.BottomLeft);
-                var leftTop = new Point(0, radii.TopLeft);
-
-                //
-                //  Check keypoints for overlap and resolve by partitioning radii according to
-                //  the percentage of each one.  
-                //
-
-                //  Top edge is handled here
-                if (topLeft.X > topRight.X)
-                {
-                    var x = radii.LeftTop / (radii.LeftTop + radii.RightTop) * rect.Width;
-                    topLeft += new Point(x, 0);
-                    topRight += new Point(x, 0);
-                }
-
-                //  Right edge
-                if (rightTop.Y > rightBottom.Y)
-                {
-                    var y = radii.TopRight / (radii.TopRight + radii.BottomRight) * rect.Height;
-                    rightTop += new Point(0, y);
-                    rightBottom += new Point(0, y);
-                }
-
-                //  Bottom edge
-                if (bottomRight.X < bottomLeft.X)
-                {
-                    var x = radii.LeftBottom / (radii.LeftBottom + radii.RightBottom) * rect.Width;
-                    bottomRight += new Point(x, 0);
-                    bottomLeft += new Point(x, 0);
-                }
-
-                // Left edge
-                if (leftBottom.Y < leftTop.Y)
-                {
-                    var y = radii.TopLeft / (radii.TopLeft + radii.BottomLeft) * rect.Height;
-                    leftBottom += new Point(0, y);
-                    leftTop += new Point(0, y);
-                }
-
-                //
-                //  Add on offsets
-                //
-
-                var offset = new Vector(rect.TopLeft.X, rect.TopLeft.Y);
-                topLeft += offset;
-                topRight += offset;
-                rightTop += offset;
-                rightBottom += offset;
-                bottomRight += offset;
-                bottomLeft += offset;
-                leftBottom += offset;
-                leftTop += offset;
-
-                //
-                //  Create the border geometry
-                //
-                ctx.BeginFigure(topLeft, true);
-
-                // Top
-                ctx.LineTo(topRight);
-
-                // TopRight
-                var radiusX = rect.TopRight.X - topRight.X;
-                var radiusY = rightTop.Y - rect.TopRight.Y;
-                if (!radiusX.Equals(0) || !radiusY.Equals(0))
-                {
-                    ctx.ArcTo(rightTop, new Size(radiusX, radiusY), 0, false, SweepDirection.Clockwise);
-                }
-
-                // Right
-                ctx.LineTo(rightBottom);
-
-                // BottomRight
-                radiusX = rect.BottomRight.X - bottomRight.X;
-                radiusY = rect.BottomRight.Y - rightBottom.Y;
-                if (!radiusX.Equals(0) || !radiusY.Equals(0))
-                {
-                    ctx.ArcTo(bottomRight, new Size(radiusX, radiusY), 0, false, SweepDirection.Clockwise);
-                }
-
-                // Bottom
-                ctx.LineTo(bottomLeft);
-
-                // BottomLeft
-                radiusX = bottomLeft.X - rect.BottomLeft.X;
-                radiusY = rect.BottomLeft.Y - leftBottom.Y;
-                if (!radiusX.Equals(0) || !radiusY.Equals(0))
-                {
-                    ctx.ArcTo(leftBottom, new Size(radiusX, radiusY), 0, false, SweepDirection.Clockwise);
-                }
-
-                // Left
-                ctx.LineTo(leftTop);
-
-                // TopLeft
-                radiusX = topLeft.X - rect.TopLeft.X;
-                radiusY = leftTop.Y - rect.TopLeft.Y;
-                if (!radiusX.Equals(0) || !radiusY.Equals(0))
-                {
-                    ctx.ArcTo(topLeft, new Size(radiusX, radiusY), 0, false, SweepDirection.Clockwise);
-                }
-
-                ctx.EndFigure(true);
-            }
-
-            private struct Radii
-            {
-                internal Radii(CornerRadius radii, Thickness borders, bool outer)
-                {
-                    var left = 0.5 * borders.Left;
-                    var top = 0.5 * borders.Top;
-                    var right = 0.5 * borders.Right;
-                    var bottom = 0.5 * borders.Bottom;
-
-                    if (outer)
-                    {
-                        if (radii.TopLeft.Equals(0))
-                        {
-                            LeftTop = TopLeft = 0.0;
-                        }
-                        else
-                        {
-                            LeftTop = radii.TopLeft + left;
-                            TopLeft = radii.TopLeft + top;
-                        }
-                        if (radii.TopRight.Equals(0))
-                        {
-                            TopRight = RightTop = 0.0;
-                        }
-                        else
-                        {
-                            TopRight = radii.TopRight + top;
-                            RightTop = radii.TopRight + right;
-                        }
-                        if (radii.BottomRight.Equals(0))
-                        {
-                            RightBottom = BottomRight = 0.0;
-                        }
-                        else
-                        {
-                            RightBottom = radii.BottomRight + right;
-                            BottomRight = radii.BottomRight + bottom;
-                        }
-                        if (radii.BottomLeft.Equals(0))
-                        {
-                            BottomLeft = LeftBottom = 0.0;
-                        }
-                        else
-                        {
-                            BottomLeft = radii.BottomLeft + bottom;
-                            LeftBottom = radii.BottomLeft + left;
-                        }
-                    }
-                    else
-                    {
-                        LeftTop = Math.Max(0.0, radii.TopLeft - left);
-                        TopLeft = Math.Max(0.0, radii.TopLeft - top);
-                        TopRight = Math.Max(0.0, radii.TopRight - top);
-                        RightTop = Math.Max(0.0, radii.TopRight - right);
-                        RightBottom = Math.Max(0.0, radii.BottomRight - right);
-                        BottomRight = Math.Max(0.0, radii.BottomRight - bottom);
-                        BottomLeft = Math.Max(0.0, radii.BottomLeft - bottom);
-                        LeftBottom = Math.Max(0.0, radii.BottomLeft - left);
-                    }
-                }
-
-                internal readonly double LeftTop;
-                internal readonly double TopLeft;
-                internal readonly double TopRight;
-                internal readonly double RightTop;
-                internal readonly double RightBottom;
-                internal readonly double BottomRight;
-                internal readonly double BottomLeft;
-                internal readonly double LeftBottom;
             }
         }
     }
