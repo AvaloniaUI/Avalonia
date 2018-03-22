@@ -76,8 +76,8 @@ namespace Avalonia.Animation
 
             if (from != null)
             {
-                var transform = new TranslateTransform();
-                from.RenderTransform = transform;
+                //var transform = new TranslateTransform();
+                //from.RenderTransform = transform;
                 //tasks.Add(Animate.Property(
                 //    transform,
                 //    translateProperty,
@@ -89,8 +89,8 @@ namespace Avalonia.Animation
 
             if (to != null)
             {
-                var transform = new TranslateTransform();
-                to.RenderTransform = transform;
+                //var transform = new TranslateTransform();
+                //to.RenderTransform = transform;
                 to.IsVisible = true;
                 //tasks.Add(Animate.Property(
                 //    transform,

@@ -11,13 +11,14 @@ namespace Avalonia.Animation
         /// <summary>
         /// Applies the transition to the specified <see cref="Animatable"/>.
         /// </summary>
-        /// <param name="control"></param>
-        void Apply(Animatable control);
+        void Apply(Animatable control, object oldValue, object newValue);
 
         /// <summary>
         /// Gets the property to be animated.
         /// </summary>
         AvaloniaProperty Property { get; set; }
+
+
     }
 
     /// <summary>
@@ -29,29 +30,41 @@ namespace Avalonia.Animation
         /// Gets the duration of the animation.
         /// </summary> 
         public TimeSpan Duration { get; set; }
-
-        /// <summary>
-        /// Instantiates the base abstract class <see cref="Transition{T}"/>.
-        /// </summary>
-        public Transition()
-        {
-            if(!(typeof(T) == Property.PropertyType))
-            {
-                throw new InvalidCastException
-                    ($"Invalid property type {typeof(T).Name} for this {this.GetType().Name}");
-            }
-        }
-
+ 
         /// <summary>
         /// Gets the easing class to be used.
         /// </summary>
         public IEasing Easing { get; set; }
 
-        /// <inheritdocs/>
-        public abstract AvaloniaProperty Property { get; set; }
+        private AvaloniaProperty _prop;
 
         /// <inheritdocs/>
-        public abstract void Apply(Animatable control);
+        public AvaloniaProperty Property
+        {
+            get
+            {
+                return _prop;
+            }
+            set
+            {
+                if (!(typeof(T) == value.PropertyType))                
+                    throw new InvalidCastException
+                        ($"Invalid property type {typeof(T).Name} for this {GetType().Name}");
+
+                _prop = value;
+            }
+        }
+
+        /// <summary>
+        /// Apply interpolation to the property.
+        /// </summary>
+        public abstract void DoInterpolation(Animatable control, IObservable<double> progress, T oldValue, T newValue);
+
+        /// <inheritdocs/>
+        public void Apply(Animatable control, object oldValue, object newValue)
+        {
+            DoInterpolation(control, Timing.GetTimer(Duration), (T)oldValue, (T)newValue);
+        }
 
     }
 

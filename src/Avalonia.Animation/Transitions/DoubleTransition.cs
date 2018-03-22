@@ -3,6 +3,7 @@
 
 using Avalonia.Metadata;
 using System;
+using System.Reactive.Linq;
 
 namespace Avalonia.Animation
 {
@@ -12,21 +13,14 @@ namespace Avalonia.Animation
     public class DoubleTransition : Transition<double>
     {
         /// <inheritdocs/>
-        public DoubleTransition() : base()
+        public override void DoInterpolation(Animatable control, IObservable<double> progress, double oldValue, double newValue)
         {
-
-        }
-
-        /// <inheritdocs/>
-        public override AvaloniaProperty Property { get; set; }
-
-        /// <inheritdocs/>
-        public override void Apply(Animatable control)
-        {
-            //throw new NotImplementedException();
-
-
-
+            var delta = newValue - oldValue;
+            var transition = progress.Select(p =>
+            {
+                return Easing.Ease(p) * delta + oldValue;
+            });
+            control.Bind(Property, transition.Select(p=>(object)p), Data.BindingPriority.Animation);
         }
     }
 }
