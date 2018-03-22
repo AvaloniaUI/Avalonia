@@ -105,8 +105,8 @@ namespace Avalonia.Controls
         private class IndeterminateAnimation : IDisposable
         {
             private WeakReference<ProgressBar> _progressBar;
-            private IDisposable _indeterminateBindSubscription;
-            private TimeSpan _startTime;
+            //private IDisposable _indeterminateBindSubscription;
+            //private TimeSpan _startTime;
             private bool _disposed;
 
             public bool Disposed => _disposed;
@@ -129,31 +129,31 @@ namespace Avalonia.Controls
 
             private Rect GetAnimationRect(TimeSpan time)
             {
-                if (_progressBar.TryGetTarget(out var progressBar))
-                {
-                    if (progressBar.Orientation == Orientation.Horizontal)
-                        return new Rect(-progressBar._indicator.Width - 5 + (time - _startTime).TotalSeconds / 4.0 * (progressBar.Bounds.Width + progressBar._indicator.Width + 10), 0, progressBar._indicator.Bounds.Width, progressBar._indicator.Bounds.Height);
-                    else
-                        return new Rect(0, progressBar.Bounds.Height + 5 - (time - _startTime).TotalSeconds / 4.0 * (progressBar.Bounds.Height + progressBar._indicator.Height + 10), progressBar._indicator.Bounds.Width, progressBar._indicator.Bounds.Height);
-                }
-                else
-                {
-                    _indeterminateBindSubscription.Dispose();
-                    return Rect.Empty;
-                }
+                //if (_progressBar.TryGetTarget(out var progressBar))
+                //{
+                //    if (progressBar.Orientation == Orientation.Horizontal)
+                //        return new Rect(-progressBar._indicator.Width - 5 + (time - _startTime).TotalSeconds / 4.0 * (progressBar.Bounds.Width + progressBar._indicator.Width + 10), 0, progressBar._indicator.Bounds.Width, progressBar._indicator.Bounds.Height);
+                //    else
+                //        return new Rect(0, progressBar.Bounds.Height + 5 - (time - _startTime).TotalSeconds / 4.0 * (progressBar.Bounds.Height + progressBar._indicator.Height + 10), progressBar._indicator.Bounds.Width, progressBar._indicator.Bounds.Height);
+                //}
+                //else
+                //{
+                //    _indeterminateBindSubscription.Dispose();
+                return Rect.Empty;
+                //}
             }
 
             private void AnimationTick(Rect rect)
             {
-                if (_progressBar.TryGetTarget(out var progressBar))
-                    progressBar._indicator.Arrange(rect);
-                else
-                    _indeterminateBindSubscription.Dispose();
+                //if (_progressBar.TryGetTarget(out var progressBar))
+                //    progressBar._indicator.Arrange(rect);
+                //else
+                //    _indeterminateBindSubscription.Dispose();
             }
 
             public void Dispose()
             {
-                _indeterminateBindSubscription?.Dispose();
+                //_indeterminateBindSubscription?.Dispose();
                 _disposed = true;
             }
         }

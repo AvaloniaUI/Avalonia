@@ -8,16 +8,16 @@ using System.Reactive.Linq;
 namespace Avalonia.Animation
 {
     /// <summary>
-    /// Transition class that handles <see cref="AvaloniaProperty"/> with <see cref="double"/> types.
+    /// Transition class that handles <see cref="AvaloniaProperty"/> with <see cref="float"/> types.
     /// </summary>  
-    public class DoubleTransition : Transition<double>
+    public class FloatTransition : Transition<float>
     {
         /// <inheritdocs/>
-        public override IObservable<double> DoInterpolation(IObservable<double> progress, double oldValue, double newValue)
+        public override IObservable<float> DoInterpolation(IObservable<double> progress, float oldValue, float newValue)
         {
             var delta = newValue - oldValue;
             return progress
-                .Select(p => Easing.Ease(p) * delta + oldValue);
+                .Select(p => (float)Easing.Ease(p) * delta + oldValue);
         }
     }
 }

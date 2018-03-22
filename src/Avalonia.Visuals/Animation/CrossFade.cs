@@ -83,6 +83,9 @@ namespace Avalonia.Animation
 
             //await Task.WhenAll(tasks.ToArray());
 
+            // FIXME: This is temporary until animations are fixed.
+            await Task.Delay(1);
+
             if (from != null)
             {
                 from.IsVisible = false;

@@ -3,24 +3,10 @@
 
 using Avalonia.Metadata;
 using System;
+using System.Reactive.Linq;
 
 namespace Avalonia.Animation
 {
-    public interface ITransition
-    {
-        /// <summary>
-        /// Applies the transition to the specified <see cref="Animatable"/>.
-        /// </summary>
-        void Apply(Animatable control, object oldValue, object newValue);
-
-        /// <summary>
-        /// Gets the property to be animated.
-        /// </summary>
-        AvaloniaProperty Property { get; set; }
-
-
-    }
-
     /// <summary>
     /// Defines how a property should be animated using a transition.
     /// </summary>
@@ -49,7 +35,7 @@ namespace Avalonia.Animation
             {
                 if (!(typeof(T) == value.PropertyType))                
                     throw new InvalidCastException
-                        ($"Invalid property type {typeof(T).Name} for this {GetType().Name}");
+                        ($"Invalid property type \"{typeof(T).Name}\" for this {GetType().Name} transition.");
 
                 _prop = value;
             }
@@ -58,12 +44,13 @@ namespace Avalonia.Animation
         /// <summary>
         /// Apply interpolation to the property.
         /// </summary>
-        public abstract void DoInterpolation(Animatable control, IObservable<double> progress, T oldValue, T newValue);
+        public abstract IObservable<T> DoInterpolation(IObservable<double> progress, T oldValue, T newValue);
 
         /// <inheritdocs/>
-        public void Apply(Animatable control, object oldValue, object newValue)
+        public IDisposable Apply(Animatable control, object oldValue, object newValue)
         {
-            DoInterpolation(control, Timing.GetTimer(Duration), (T)oldValue, (T)newValue);
+            var transition = DoInterpolation(Timing.GetTimer(Duration), (T)oldValue, (T)newValue).Select(p => (object)p);
+            return control.Bind(Property, transition, Data.BindingPriority.Animation);
         }
 
     }

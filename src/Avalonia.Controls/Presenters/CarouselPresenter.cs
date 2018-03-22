@@ -39,7 +39,7 @@ namespace Avalonia.Controls.Presenters
             Carousel.PageTransitionProperty.AddOwner<CarouselPresenter>();
 
         private int _selectedIndex = -1;
-        private Task _current;
+       // private Task _current;
         private Task _currentTransition;
         private int _queuedTransitionIndex = -1;
 
