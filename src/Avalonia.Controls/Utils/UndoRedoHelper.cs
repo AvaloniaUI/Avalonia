@@ -10,7 +10,6 @@ namespace Avalonia.Controls.Utils
     class UndoRedoHelper<TState> : WeakTimer.IWeakTimerSubscriber where TState : struct, IEquatable<TState>
     {
         private readonly IUndoRedoHost _host;
-        bool _undoRedoing;
 
         public interface IUndoRedoHost
         {
@@ -33,19 +32,10 @@ namespace Avalonia.Controls.Utils
 
         public void Undo()
         {
-            _undoRedoing = true;
-
-            try
+            if (_currentNode?.Previous != null)
             {
-                if (_currentNode?.Previous != null)
-                {
-                    _currentNode = _currentNode.Previous;
-                    _host.UndoRedoState = _currentNode.Value;
-                }
-            }
-            finally
-            {
-                _undoRedoing = false;
+                _currentNode = _currentNode.Previous;
+                _host.UndoRedoState = _currentNode.Value;
             }
         }
 
@@ -80,19 +70,10 @@ namespace Avalonia.Controls.Utils
 
         public void Redo()
         {
-            _undoRedoing = true;
-
-            try
+            if (_currentNode?.Next != null)
             {
-                if (_currentNode?.Next != null)
-                {
-                    _currentNode = _currentNode.Next;
-                    _host.UndoRedoState = _currentNode.Value;
-                }
-            }
-            finally
-            {
-                _undoRedoing = false;
+                _currentNode = _currentNode.Next;
+                _host.UndoRedoState = _currentNode.Value;
             }
         }
 
@@ -112,7 +93,7 @@ namespace Avalonia.Controls.Utils
 
         public void Clear()
         {
-            if (!_undoRedoing) _states.Clear();
+            _states.Clear();
         }
 
         bool WeakTimer.IWeakTimerSubscriber.Tick()
