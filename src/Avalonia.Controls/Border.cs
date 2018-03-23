@@ -156,27 +156,18 @@ namespace Avalonia.Controls
 
                     var boundRect = new Rect(finalSize);
                     var innerRect = new Rect(borderThickness.Left, borderThickness.Top,
-                        boundRect.Width - borderThickness.Right, boundRect.Height - borderThickness.Bottom);
+                        Math.Max(0, boundRect.Width - borderThickness.Right), 
+                        Math.Max(0, boundRect.Height - borderThickness.Bottom));
 
                     StreamGeometry backgroundGeometry = null;
 
-                    if (!boundRect.Width.Equals(0) && !boundRect.Height.Equals(0))
+                    if (!innerRect.Width.Equals(0) && !innerRect.Height.Equals(0))
                     {
                         backgroundGeometry = new StreamGeometry();
 
-                        if (cornerRadius.IsEmpty)
+                        using (var ctx = backgroundGeometry.Open())
                         {
-                            using (var ctx = backgroundGeometry.Open())
-                            {
-                                CreateGeometry(ctx, innerRect, cornerRadius);
-                            }
-                        }
-                        else
-                        {
-                            using (var ctx = backgroundGeometry.Open())
-                            {
-                                CreateGeometry(ctx, innerRect, cornerRadius);
-                            }
+                            CreateGeometry(ctx, innerRect, cornerRadius);
                         }
 
                         _backgroundGeometryCache = backgroundGeometry;
@@ -184,35 +175,19 @@ namespace Avalonia.Controls
                     else
                     {
                         _backgroundGeometryCache = null;
-                    }
+                    }                  
 
-                    if (!boundRect.Width.Equals(0) && !boundRect.Height.Equals(0))
+                    if (!boundRect.Width.Equals(0) && !innerRect.Height.Equals(0))
                     {
                         var borderGeometry = new StreamGeometry();
 
-                        if (cornerRadius.IsEmpty)
+                        using (var ctx = borderGeometry.Open())
                         {
-                            using (var ctx = borderGeometry.Open())
+                            CreateGeometry(ctx, boundRect, cornerRadius);
+
+                            if (backgroundGeometry != null)
                             {
-                                CreateGeometry(ctx, boundRect, cornerRadius);
-
-                                if (backgroundGeometry != null)
-                                {
-                                    CreateGeometry(ctx, innerRect, cornerRadius);
-                                }
-                            }
-                        }
-                        else
-                        {
-                            using (var ctx = borderGeometry.Open())
-                            {
-                                CreateGeometry(ctx, boundRect, cornerRadius);
-
-                                if (backgroundGeometry != null)
-                                {
-                                    CreateGeometry(ctx, innerRect, cornerRadius);
-                                }
-
+                                CreateGeometry(ctx, innerRect, cornerRadius);
                             }
                         }
 
