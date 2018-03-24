@@ -515,7 +515,7 @@ namespace Avalonia.Controls
         /// <param name="baseValue">The value.</param>
         protected virtual double OnCoerceMaximum(double baseValue)
         {
-            return baseValue;
+            return Math.Max(baseValue, Minimum);
         }
 
         /// <summary>
@@ -524,7 +524,7 @@ namespace Avalonia.Controls
         /// <param name="baseValue">The value.</param>
         protected virtual double OnCoerceMinimum(double baseValue)
         {
-            return baseValue;
+            return Math.Min(baseValue, Maximum);
         }
 
         /// <summary>
