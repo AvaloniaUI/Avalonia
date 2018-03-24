@@ -431,7 +431,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="oldValue">The old value.</param>
         /// <param name="newValue">The new value.</param>
-        protected virtual void OnValueChanged(double? oldValue, double? newValue)
+        protected virtual void OnValueChanged(double oldValue, double newValue)
         {
             if (!_internalValueSet && IsInitialized)
             {
@@ -508,7 +508,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="oldValue">The old value.</param>
         /// <param name="newValue">The new value.</param>
-        protected virtual void RaiseValueChangedEvent(double? oldValue, double? newValue)
+        protected virtual void RaiseValueChangedEvent(double oldValue, double newValue)
         {
             var e = new NumericUpDownValueChangedEventArgs(ValueChangedEvent, oldValue, newValue);
             RaiseEvent(e);
@@ -712,8 +712,8 @@ namespace Avalonia.Controls
         {
             if (e.Sender is NumericUpDown upDown)
             {
-                var oldValue = (double?)e.OldValue;
-                var newValue = (double?)e.NewValue;
+                var oldValue = (double)e.OldValue;
+                var newValue = (double)e.NewValue;
                 upDown.OnValueChanged(oldValue, newValue);
             }
         }
