@@ -8,7 +8,7 @@ using System.Reactive.Linq;
 namespace Avalonia.Animation
 {
     /// <summary>
-    /// Interface for <see cref="Transition{T}"/> objects.
+    /// Interface for Property Transition objects.
     /// </summary>
     public interface ITransition
     {

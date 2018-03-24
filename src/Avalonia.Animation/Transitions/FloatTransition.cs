@@ -13,7 +13,7 @@ namespace Avalonia.Animation
     public class FloatTransition : Transition<float>
     {
         /// <inheritdocs/>
-        public override IObservable<float> DoInterpolation(IObservable<double> progress, float oldValue, float newValue)
+        public override IObservable<float> DoTransition(IObservable<double> progress, float oldValue, float newValue)
         {
             var delta = newValue - oldValue;
             return progress
