@@ -27,12 +27,12 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj" />
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="..\Shared\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Avalonia.Animation\Avalonia.Animation.csproj" />
   </ItemGroup>
   <Import Project="..\..\build\Rx.props" />
 </Project>
