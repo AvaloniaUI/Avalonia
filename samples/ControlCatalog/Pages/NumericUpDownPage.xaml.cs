@@ -10,9 +10,9 @@ using ReactiveUI;
 
 namespace ControlCatalog.Pages
 {
-    public class NumbersPage : UserControl
+    public class NumericUpDownPage : UserControl
     {
-        public NumbersPage()
+        public NumericUpDownPage()
         {
             this.InitializeComponent();
             var viewModel = new NumbersPageViewModel();
@@ -31,7 +31,6 @@ namespace ControlCatalog.Pages
         private IList<FormatObject> _formats;
         private FormatObject _selectedFormat;
         private IList<Location> _spinnerLocations;
-        private IList<AllowedSpecialValues> _allowedSpecialValues;
 
         public NumbersPageViewModel()
         {
@@ -79,22 +78,6 @@ namespace ControlCatalog.Pages
             new CultureInfo("zh-CN"),
             new CultureInfo("cs-CZ")
         };
-
-        public IList<AllowedSpecialValues> AllowedSpecialValues
-        {
-            get
-            {
-                if (_allowedSpecialValues == null)
-                {
-                    _allowedSpecialValues = new List<AllowedSpecialValues>();
-                    foreach (AllowedSpecialValues value in Enum.GetValues(typeof(AllowedSpecialValues)))
-                    {
-                        _allowedSpecialValues.Add(value);
-                    }
-                }
-                return _allowedSpecialValues;
-            }
-        }
 
     public FormatObject SelectedFormat
         {

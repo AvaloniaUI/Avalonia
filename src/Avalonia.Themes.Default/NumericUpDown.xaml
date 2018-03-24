@@ -1,5 +1,5 @@
 <Styles xmlns="https://github.com/avaloniaui">
-  <Style Selector=":is(UpDownBase)">
+  <Style Selector="NumericUpDown">
     <Setter Property="TemplatedControl.BorderBrush" Value="{DynamicResource ThemeBorderLightBrush}"/>
     <Setter Property="TemplatedControl.BorderThickness" Value="{DynamicResource ThemeBorderThickness}"/>
     <Setter Property="TemplatedControl.Background" Value="{DynamicResource ThemeBackgroundBrush}" />
