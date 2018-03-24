@@ -7,6 +7,7 @@ using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
+using Avalonia.Utilities;
 
 namespace Avalonia.Controls
 {
@@ -46,18 +47,6 @@ namespace Avalonia.Controls
         public static readonly DirectProperty<NumericUpDown, CultureInfo> CultureInfoProperty =
             AvaloniaProperty.RegisterDirect<NumericUpDown, CultureInfo>(nameof(CultureInfo), o => o.CultureInfo,
                 (o, v) => o.CultureInfo = v, CultureInfo.CurrentCulture);
-
-        /// <summary>
-        /// Defines the <see cref="DefaultValue"/> property.
-        /// </summary>
-        public static readonly StyledProperty<double?> DefaultValueProperty =
-            AvaloniaProperty.Register<NumericUpDown, double?>(nameof(DefaultValue));
-
-        /// <summary>
-        /// Defines the <see cref="DisplayDefaultValueOnEmptyText"/> property.
-        /// </summary>
-        public static readonly StyledProperty<bool> DisplayDefaultValueOnEmptyTextProperty =
-            AvaloniaProperty.Register<NumericUpDown, bool>(nameof(DisplayDefaultValueOnEmptyText));
 
         /// <summary>
         /// Defines the <see cref="FormatString"/> property.
@@ -106,8 +95,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Value"/> property.
         /// </summary>
-        public static readonly DirectProperty<NumericUpDown, double?> ValueProperty =
-            AvaloniaProperty.RegisterDirect<NumericUpDown, double?>(nameof(Value), updown => updown.Value,
+        public static readonly DirectProperty<NumericUpDown, double> ValueProperty =
+            AvaloniaProperty.RegisterDirect<NumericUpDown, double>(nameof(Value), updown => updown.Value,
                 (updown, v) => updown.Value = v, defaultBindingMode: BindingMode.TwoWay);
 
         /// <summary>
@@ -118,7 +107,7 @@ namespace Avalonia.Controls
 
         private IDisposable _textBoxTextChangedSubscription;
 
-        private double? _value;
+        private double _value;
         private string _text;
         private bool _internalValueSet;
         private bool _clipValueToMinMax;
@@ -180,24 +169,6 @@ namespace Avalonia.Controls
         {
             get { return _cultureInfo; }
             set { SetAndRaise(CultureInfoProperty, ref _cultureInfo, value); }
-        }
-
-        /// <summary>
-        /// Gets or sets the value to use when the <see cref="Value"/> is null and an increment/decrement operation is performed.
-        /// </summary>
-        public double? DefaultValue
-        {
-            get { return GetValue(DefaultValueProperty); }
-            set { SetValue(DefaultValueProperty, value); }
-        }
-
-        /// <summary>
-        /// Gets or sets if the defaultValue should be displayed when the Text is empty.
-        /// </summary>
-        public bool DisplayDefaultValueOnEmptyText
-        {
-            get { return GetValue(DisplayDefaultValueOnEmptyTextProperty); }
-            set { SetValue(DisplayDefaultValueOnEmptyTextProperty, value); }
         }
 
         /// <summary>
@@ -266,7 +237,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the value.
         /// </summary>
-        public double? Value
+        public double Value
         {
             get { return _value; }
             set
@@ -307,8 +278,6 @@ namespace Avalonia.Controls
         static NumericUpDown()
         {
             CultureInfoProperty.Changed.Subscribe(OnCultureInfoChanged);
-            DefaultValueProperty.Changed.Subscribe(OnDefaultValueChanged);
-            DisplayDefaultValueOnEmptyTextProperty.Changed.Subscribe(OnDisplayDefaultValueOnEmptyTextChanged);
             FormatStringProperty.Changed.Subscribe(FormatStringChanged);
             IncrementProperty.Changed.Subscribe(IncrementChanged);
             IsReadOnlyProperty.Changed.Subscribe(OnIsReadOnlyChanged);
@@ -375,32 +344,6 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Called when the <see cref="DefaultValue"/> property value changed.
-        /// </summary>
-        /// <param name="oldValue">The old value.</param>
-        /// <param name="newValue">The new value.</param>
-        protected virtual void OnDefaultValueChanged(double oldValue, double newValue)
-        {
-            if (IsInitialized && string.IsNullOrEmpty(Text))
-            {
-                SyncTextAndValueProperties(true, Text);
-            }
-        }
-
-        /// <summary>
-        /// Called when the <see cref="DisplayDefaultValueOnEmptyText"/> property value changed.
-        /// </summary>
-        /// <param name="oldValue">The old value.</param>
-        /// <param name="newValue">The new value.</param>
-        protected virtual void OnDisplayDefaultValueOnEmptyTextChanged(bool oldValue, bool newValue)
-        {
-            if (IsInitialized && string.IsNullOrEmpty(Text))
-            {
-                SyncTextAndValueProperties(false, Text);
-            }
-        }
-
-        /// <summary>
         /// Called when the <see cref="FormatString"/> property value changed.
         /// </summary>
         /// <param name="oldValue">The old value.</param>
@@ -447,9 +390,9 @@ namespace Avalonia.Controls
             {
                 SetValidSpinDirection();
             }
-            if (Value.HasValue && ClipValueToMinMax)
+            if (ClipValueToMinMax)
             {
-                Value = CoerceValueMinMax(Value.Value);
+                Value = MathUtilities.Clamp(Value, Minimum, Maximum);
             }
         }
 
@@ -464,9 +407,9 @@ namespace Avalonia.Controls
             {
                 SetValidSpinDirection();
             }
-            if (Value.HasValue && ClipValueToMinMax)
+            if (ClipValueToMinMax)
             {
-                Value = CoerceValueMinMax(Value.Value);
+                Value = MathUtilities.Clamp(Value, Minimum, Maximum);
             }
         }
 
@@ -531,7 +474,7 @@ namespace Avalonia.Controls
         /// Called when the <see cref="Value"/> property has to be coerced.
         /// </summary>
         /// <param name="baseValue">The value.</param>
-        protected virtual double? OnCoerceValue(double? baseValue)
+        protected virtual double OnCoerceValue(double baseValue)
         {
             return baseValue;
         }
@@ -574,9 +517,9 @@ namespace Avalonia.Controls
         /// <summary>
         /// Converts the formatted text to a value.
         /// </summary>
-        private double? ConvertTextToValue(string text)
+        private double ConvertTextToValue(string text)
         {
-            double? result = null;
+            double result = 0;
 
             if (string.IsNullOrEmpty(text))
             {
@@ -595,10 +538,10 @@ namespace Avalonia.Controls
 
             if (ClipValueToMinMax)
             {
-                return GetClippedMinMaxValue(result);
+                return MathUtilities.Clamp(result, Minimum, Maximum);
             }
 
-            ValidateDefaultMinMax(result);
+            ValidateMinMax(result);
 
             return result;
         }
@@ -609,19 +552,13 @@ namespace Avalonia.Controls
         /// <returns></returns>
         private string ConvertValueToText()
         {
-            if (Value == null)
-            {
-                return string.Empty;
-            }
-
             //Manage FormatString of type "{}{0:N2} °" (in xaml) or "{0:N2} °" in code-behind.
             if (FormatString.Contains("{0"))
             {
-                return string.Format(CultureInfo, FormatString, Value.Value);
+                return string.Format(CultureInfo, FormatString, Value);
             }
 
-            return Value.Value.ToString(FormatString, CultureInfo);
-
+            return Value.ToString(FormatString, CultureInfo);
         }
 
         /// <summary>
@@ -629,11 +566,8 @@ namespace Avalonia.Controls
         /// </summary>
         private void OnIncrement()
         {
-            if (!HandleNullSpin())
-            {
-                var result = Value.Value + Increment;
-                Value = CoerceValueMinMax(result);
-            }
+            var result = Value + Increment;
+            Value = MathUtilities.Clamp(result, Minimum, Maximum);
         }
 
         /// <summary>
@@ -641,11 +575,8 @@ namespace Avalonia.Controls
         /// </summary>
         private void OnDecrement()
         {
-            if (!HandleNullSpin())
-            {
-                var result = Value.Value - Increment;
-                Value = CoerceValueMinMax(result);
-            }
+            var result = Value - Increment;
+            Value = MathUtilities.Clamp(result, Minimum, Maximum);
         }
 
         /// <summary>
@@ -658,12 +589,12 @@ namespace Avalonia.Controls
             // Zero increment always prevents spin.
             if (Increment != 0 && !IsReadOnly)
             {
-                if (IsLowerThan(Value, Maximum) || !Value.HasValue)
+                if (Value < Maximum)
                 {
                     validDirections = validDirections | ValidSpinDirections.Increase;
                 }
 
-                if (IsGreaterThan(Value, Minimum) || !Value.HasValue)
+                if (Value > Minimum)
                 {
                     validDirections = validDirections | ValidSpinDirections.Decrease;
                 }
@@ -686,34 +617,6 @@ namespace Avalonia.Controls
                 var oldValue = (CultureInfo)e.OldValue;
                 var newValue = (CultureInfo)e.NewValue;
                 upDown.OnCultureInfoChanged(oldValue, newValue);
-            }
-        }
-
-        /// <summary>
-        /// Called when the <see cref="DefaultValue"/> property value changed.
-        /// </summary>
-        /// <param name="e">The event args.</param>
-        private static void OnDefaultValueChanged(AvaloniaPropertyChangedEventArgs e)
-        {
-            if (e.Sender is NumericUpDown upDown)
-            {
-                var oldValue = (double)e.OldValue;
-                var newValue = (double)e.NewValue;
-                upDown.OnDefaultValueChanged(oldValue, newValue);
-            }
-        }
-
-        /// <summary>
-        /// Called when the <see cref="DisplayDefaultValueOnEmptyText"/> property value changed.
-        /// </summary>
-        /// <param name="e">The event args.</param>
-        private static void OnDisplayDefaultValueOnEmptyTextChanged(AvaloniaPropertyChangedEventArgs e)
-        {
-            if (e.Sender is NumericUpDown upDown)
-            {
-                var oldValue = (bool) e.OldValue;
-                var newValue = (bool) e.NewValue;
-                upDown.OnDisplayDefaultValueOnEmptyTextChanged(oldValue, newValue);
             }
         }
 
@@ -815,7 +718,7 @@ namespace Avalonia.Controls
             }
         }
 
-        private void SetValueInternal(double? value)
+        private void SetValueInternal(double value)
         {
             _internalValueSet = true;
             try
@@ -947,12 +850,7 @@ namespace Avalonia.Controls
             {
                 if (updateValueFromText)
                 {
-                    if (string.IsNullOrEmpty(text))
-                    {
-                        // An empty input sets the value to the default value.
-                        SetValueInternal(DefaultValue);
-                    }
-                    else
+                    if (!string.IsNullOrEmpty(text))
                     {
                         try
                         {
@@ -972,9 +870,8 @@ namespace Avalonia.Controls
                 // Do not touch the ongoing text input from user.
                 if (!_isTextChangedFromUI)
                 {
-                    // Don't replace the empty Text with the non-empty representation of DefaultValue.
-                    var shouldKeepEmpty = !forceTextUpdate && string.IsNullOrEmpty(Text) && Equals(Value, DefaultValue) && !DisplayDefaultValueOnEmptyText;
-                    if (!shouldKeepEmpty)
+                    var keepEmpty = !forceTextUpdate && string.IsNullOrEmpty(Text);
+                    if (!keepEmpty)
                     {
                         var newText = ConvertValueToText();
                         if (!Equals(Text, newText))
@@ -1011,54 +908,9 @@ namespace Avalonia.Controls
             return parsedTextIsValid;
         }
 
-        private double? CoerceValueMinMax(double? value)
+        private double ConvertTextToValueCore(string currentValueText, string text)
         {
-            if (IsLowerThan(value, Minimum))
-            {
-                return Minimum;
-            }
-            else if (IsGreaterThan(value, Maximum))
-            {
-                return Maximum;
-            }
-            else
-            {
-                return value;
-            }
-        }
-
-        private static bool IsLowerThan(double? value1, double? value2)
-        {
-            if (value1 == null || value2 == null)
-            {
-                return false;
-            }
-            return value1.Value < value2.Value;
-        }
-
-        private static bool IsGreaterThan(double? value1, double? value2)
-        {
-            if (value1 == null || value2 == null)
-            {
-                return false;
-            }
-            return value1.Value > value2.Value;
-        }
-
-        private bool HandleNullSpin()
-        {
-            if (!Value.HasValue)
-            {
-                var forcedValue = DefaultValue ?? default(double);
-                Value = CoerceValueMinMax(forcedValue);
-                return true;
-            }
-            return false;
-        }
-
-        private double? ConvertTextToValueCore(string currentValueText, string text)
-        {
-            double? result;
+            double result;
 
             if (IsPercent(FormatString))
             {
@@ -1102,32 +954,13 @@ namespace Avalonia.Controls
             return result;
         }
 
-        private double? GetClippedMinMaxValue(double? result)
+        private void ValidateMinMax(double value)
         {
-            if (IsGreaterThan(result, Maximum))
-            {
-                return Maximum;
-            }
-            else if (IsLowerThan(result, Minimum))
-            {
-                return Minimum;
-            }
-            return result;
-        }
-
-        private void ValidateDefaultMinMax(double? value)
-        {
-            // DefaultValue is always accepted.
-            if (Equals(value, DefaultValue))
-            {
-                return;
-            }
-
-            if (IsLowerThan(value, Minimum))
+            if (value < Minimum)
             {
                 throw new ArgumentOutOfRangeException(nameof(Minimum), string.Format("Value must be greater than Minimum value of {0}", Minimum));
             }
-            else if (IsGreaterThan(value, Maximum))
+            else if (value > Maximum)
             {
                 throw new ArgumentOutOfRangeException(nameof(Maximum), string.Format("Value must be less than Maximum value of {0}", Maximum));
             }

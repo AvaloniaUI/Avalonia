@@ -19,8 +19,6 @@
         <TextBlock Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Margin="2">ClipValueToMinMax:</TextBlock>
         <CheckBox Grid.Row="3" Grid.Column="1" IsChecked="{Binding #upDown.ClipValueToMinMax}" VerticalAlignment="Center" Margin="2"/>
 
-        <TextBlock Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" Margin="2">DisplayDefaultValueOnEmptyText:</TextBlock>
-        <CheckBox Grid.Row="4" Grid.Column="1" IsChecked="{Binding #upDown.DisplayDefaultValueOnEmptyText}" VerticalAlignment="Center" Margin="2"/>
       </Grid>
       <Grid Grid.Row="0" Grid.Column="1" Margin="10,2,2,2" ColumnDefinitions="Auto, 120" RowDefinitions="35,35,35,35,35">
         <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Margin="2">FormatString:</TextBlock>
@@ -67,10 +65,6 @@
         <TextBlock Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Margin="10,2,2,2">Value:</TextBlock>
         <NumericUpDown Grid.Row="3" Grid.Column="1" Value="{Binding #upDown.Value}" VerticalAlignment="Center"
                        Height="25" Margin="2" Width="70" HorizontalAlignment="Center"/>
-
-        <TextBlock Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" Margin="10,2,2,2">DefaultValue:</TextBlock>
-        <NumericUpDown Grid.Row="4" Grid.Column="1" Value="{Binding #upDown.DefaultValue}"
-                       VerticalAlignment="Center" Height="25" Margin="2" Width="70" HorizontalAlignment="Center"/>
 
       </Grid>
     </Grid>

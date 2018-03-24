@@ -79,7 +79,7 @@ namespace ControlCatalog.Pages
             new CultureInfo("cs-CZ")
         };
 
-    public FormatObject SelectedFormat
+        public FormatObject SelectedFormat
         {
             get { return _selectedFormat; }
             set { this.RaiseAndSetIfChanged(ref _selectedFormat, value); }
