@@ -40,10 +40,9 @@ namespace Avalonia.Animation.Keyframes
                             bool isWithinRange_End = DoubleUtils.AboutEqual(x, 1.0) || x < 1.0;
 
                             if (isWithinRange_Start && isWithinRange_End)
-                            { 
-
+                            {
                                 firstCue = sortedkeyValues.Where(j => j.Key <= x).Last();
-                                lastCue = sortedkeyValues.Where(j=> j.Key >= firstCue.Key).First();
+                                lastCue = sortedkeyValues.Where(j => j.Key >= x).First();
                             }
                             else if (!isWithinRange_Start)
                             {
