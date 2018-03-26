@@ -1,7 +1,6 @@
 <Style xmlns="https://github.com/avaloniaui"
        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-       xmlns:sys="clr-namespace:System;assembly=mscorlib"
-       xmlns:avalonia="clr-namespace:Avalonia;assembly=Avalonia.Visuals">
+       xmlns:sys="clr-namespace:System;assembly=mscorlib">
   <Style.Resources>
     <SolidColorBrush x:Key="ThemeBackgroundBrush">#FFFFFFFF</SolidColorBrush>
     <SolidColorBrush x:Key="ThemeBorderLightBrush">#FFAAAAAA</SolidColorBrush>
@@ -21,7 +20,7 @@
     <SolidColorBrush x:Key="ErrorBrush">Red</SolidColorBrush>
     <SolidColorBrush x:Key="ErrorBrushLight">#10ff0000</SolidColorBrush>
 
-    <avalonia:Thickness x:Key="ThemeBorderThickness">2</avalonia:Thickness>
+    <Thickness x:Key="ThemeBorderThickness">2</Thickness>
     <sys:Double x:Key="ThemeDisabledOpacity">0.5</sys:Double>
 
     <sys:Double x:Key="FontSizeSmall">10</sys:Double>

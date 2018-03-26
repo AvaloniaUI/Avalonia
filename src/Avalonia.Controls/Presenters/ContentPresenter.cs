@@ -4,6 +4,7 @@
 using System;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Controls.Utils;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
@@ -76,12 +77,12 @@ namespace Avalonia.Controls.Presenters
         /// Defines the <see cref="Padding"/> property.
         /// </summary>
         public static readonly StyledProperty<Thickness> PaddingProperty =
-            Border.PaddingProperty.AddOwner<ContentPresenter>();
+            Decorator.PaddingProperty.AddOwner<ContentPresenter>();
 
         private IControl _child;
         private bool _createdChild;
         private IDataTemplate _dataTemplate;
-        private readonly Border.BorderRenderer _borderRenderer = new Border.BorderRenderer();
+        private readonly BorderRenderHelper _borderRenderer = new BorderRenderHelper();
 
         /// <summary>
         /// Initializes static members of the <see cref="ContentPresenter"/> class.
@@ -438,7 +439,7 @@ namespace Avalonia.Controls.Presenters
         {
             var result = (VisualRoot as ILayoutRoot)?.LayoutScaling ?? 1.0;
 
-            if (result.Equals(0) || double.IsNaN(result) || double.IsInfinity(result))
+            if (result == 0 || double.IsNaN(result) || double.IsInfinity(result))
             {
                 throw new Exception($"Invalid LayoutScaling returned from {VisualRoot.GetType()}");
             }

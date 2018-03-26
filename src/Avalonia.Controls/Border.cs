@@ -1,8 +1,8 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using System;
 using Avalonia;
+using Avalonia.Controls.Utils;
 using Avalonia.Media;
 
 namespace Avalonia.Controls
@@ -10,7 +10,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// A control which decorates a child with a border and background.
     /// </summary>
-    public class Border : Decorator
+    public partial class Border : Decorator
     {
         /// <summary>
         /// Defines the <see cref="Background"/> property.
@@ -36,7 +36,7 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<CornerRadius> CornerRadiusProperty =
             AvaloniaProperty.Register<Border, CornerRadius>(nameof(CornerRadius));
 
-        private readonly BorderRenderer _borderRenderer = new BorderRenderer();
+        private readonly BorderRenderHelper _borderRenderHelper = new BorderRenderHelper();
 
         /// <summary>
         /// Initializes static members of the <see cref="Border"/> class.
@@ -88,7 +88,7 @@ namespace Avalonia.Controls
         /// <param name="context">The drawing context.</param>
         public override void Render(DrawingContext context)
         {
-            _borderRenderer.Render(context, Bounds.Size, BorderThickness, CornerRadius, Background, BorderBrush);
+            _borderRenderHelper.Render(context, Bounds.Size, BorderThickness, CornerRadius, Background, BorderBrush);
         }
 
         /// <summary>
@@ -114,7 +114,7 @@ namespace Avalonia.Controls
                 Child.Arrange(new Rect(finalSize).Deflate(padding));
             }
 
-            _borderRenderer.Update(finalSize, BorderThickness, CornerRadius);
+            _borderRenderHelper.Update(finalSize, BorderThickness, CornerRadius);           
 
             return finalSize;
         }
@@ -134,157 +134,6 @@ namespace Avalonia.Controls
             }
 
             return new Size(padding.Left + padding.Right, padding.Bottom + padding.Top);
-        }
-
-        internal class BorderRenderer
-        {
-            private bool _useComplexRendering;
-            private StreamGeometry _backgroundGeometryCache;
-            private StreamGeometry _borderGeometryCache;
-
-            public void Update(Size finalSize, Thickness borderThickness, CornerRadius cornerRadius)
-            {
-                if (borderThickness.IsUniform && cornerRadius.IsUniform)
-                {
-                    _backgroundGeometryCache = null;
-                    _borderGeometryCache = null;
-                    _useComplexRendering = false;
-                }
-                else
-                {
-                    _useComplexRendering = true;
-
-                    var boundRect = new Rect(finalSize);
-                    var innerRect = new Rect(borderThickness.Left, borderThickness.Top,
-                        Math.Max(0, boundRect.Width - borderThickness.Right), 
-                        Math.Max(0, boundRect.Height - borderThickness.Bottom));
-
-                    StreamGeometry backgroundGeometry = null;
-
-                    if (!innerRect.Width.Equals(0) && !innerRect.Height.Equals(0))
-                    {
-                        backgroundGeometry = new StreamGeometry();
-
-                        using (var ctx = backgroundGeometry.Open())
-                        {
-                            CreateGeometry(ctx, innerRect, cornerRadius);
-                        }
-
-                        _backgroundGeometryCache = backgroundGeometry;
-                    }
-                    else
-                    {
-                        _backgroundGeometryCache = null;
-                    }                  
-
-                    if (!boundRect.Width.Equals(0) && !innerRect.Height.Equals(0))
-                    {
-                        var borderGeometry = new StreamGeometry();
-
-                        using (var ctx = borderGeometry.Open())
-                        {
-                            CreateGeometry(ctx, boundRect, cornerRadius);
-
-                            if (backgroundGeometry != null)
-                            {
-                                CreateGeometry(ctx, innerRect, cornerRadius);
-                            }
-                        }
-
-                        _borderGeometryCache = borderGeometry;
-                    }
-                    else
-                    {
-                        _borderGeometryCache = null;
-                    }
-                }
-            }
-
-            private static void CreateGeometry(StreamGeometryContext context, Rect boundRect, CornerRadius cornerRadius)
-            {
-                var topLeft = new Point(boundRect.X + cornerRadius.TopLeft, boundRect.Y);
-                var topRight = new Point(boundRect.Width - cornerRadius.TopRight, boundRect.Y);
-                var rightTop = new Point(boundRect.Width, boundRect.Y + cornerRadius.TopRight);
-                var rightBottom = new Point(boundRect.Width, boundRect.Height - cornerRadius.BottomRight);
-                var bottomRight = new Point(boundRect.Width - cornerRadius.BottomRight, boundRect.Height);
-                var bottomLeft = new Point(boundRect.X + cornerRadius.BottomLeft, boundRect.Height);
-                var leftBottom = new Point(boundRect.X, boundRect.Height - cornerRadius.BottomLeft);
-                var leftTop = new Point(boundRect.X, boundRect.Y + cornerRadius.TopLeft);
-
-                context.BeginFigure(topLeft, true);
-
-                //Top
-                context.LineTo(topRight);
-
-                //TopRight corner
-                if (topRight != rightTop)
-                {
-                    context.ArcTo(rightTop, new Size(cornerRadius.TopRight, cornerRadius.TopRight), 0, false, SweepDirection.Clockwise);
-                }
-
-                //Right
-                context.LineTo(rightBottom);
-
-                //BottomRight corner
-                if (rightBottom != bottomRight)
-                {
-                    context.ArcTo(bottomRight, new Size(cornerRadius.BottomRight, cornerRadius.BottomRight), 0, false, SweepDirection.Clockwise);
-                }
-
-                //Bottom
-                context.LineTo(bottomLeft);
-
-                //BottomLeft corner
-                if (bottomLeft != leftBottom)
-                {
-                    context.ArcTo(leftBottom, new Size(cornerRadius.BottomLeft, cornerRadius.BottomLeft), 0, false, SweepDirection.Clockwise);
-                }
-
-                //Left
-                context.LineTo(leftTop);
-
-                //TopLeft corner
-                if (leftTop != topLeft)
-                {
-                    context.ArcTo(topLeft, new Size(cornerRadius.TopLeft, cornerRadius.TopLeft), 0, false, SweepDirection.Clockwise);
-                }
-
-                context.EndFigure(true);
-            }
-
-            public void Render(DrawingContext context, Size size, Thickness borders, CornerRadius radii, IBrush background, IBrush borderBrush)
-            {
-                if (_useComplexRendering)
-                {
-                    var backgroundGeometry = _backgroundGeometryCache;
-                    if (backgroundGeometry != null)
-                    {
-                        context.DrawGeometry(background, null, backgroundGeometry);
-                    }
-
-                    var borderGeometry = _borderGeometryCache;
-                    if (borderGeometry != null)
-                    {
-                        context.DrawGeometry(borderBrush, null, borderGeometry);
-                    }
-                }
-                else
-                {
-                    var borderThickness = borders.Left;
-                    var cornerRadius = (float)radii.TopLeft;
-                    var rect = new Rect(size);
-
-                    if (background != null)
-                    {
-                        context.FillRectangle(background, rect.Deflate(borders), cornerRadius);
-                    }
-
-                    if (borderBrush != null && borderThickness > 0)
-                    {
-                        context.DrawRectangle(new Pen(borderBrush, borderThickness), rect.Deflate(borderThickness), cornerRadius);
-                    }
-                }
-            }
         }
     }
 }

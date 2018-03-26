@@ -83,15 +83,15 @@ namespace Avalonia
 
         public static bool operator ==(CornerRadius cr1, CornerRadius cr2)
         {
-            return ((cr1.TopLeft.Equals(cr2.TopLeft) || double.IsNaN(cr1.TopLeft) && double.IsNaN(cr2.TopLeft)))
-                   && (cr1.TopRight.Equals(cr2.TopRight) || (double.IsNaN(cr1.TopRight) && double.IsNaN(cr2.TopRight)))
-                   && (cr1.BottomRight.Equals(cr2.BottomRight) || double.IsNaN(cr1.BottomRight) && double.IsNaN(cr2.BottomRight))
-                   && (cr1.BottomLeft.Equals(cr2.BottomLeft) || double.IsNaN(cr1.BottomLeft) && double.IsNaN(cr2.BottomLeft));
+            return cr1.TopLeft.Equals(cr2.TopLeft)
+                   && cr1.TopRight.Equals(cr2.TopRight)
+                   && cr1.BottomRight.Equals(cr2.BottomRight) 
+                   && cr1.BottomLeft.Equals(cr2.BottomLeft);
         }
 
         public static bool operator !=(CornerRadius cr1, CornerRadius cr2)
         {
-            return (!(cr1 == cr2));
+            return !(cr1 == cr2);
         }
     }
 }
