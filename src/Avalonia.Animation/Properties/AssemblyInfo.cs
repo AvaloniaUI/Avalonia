@@ -3,6 +3,11 @@
 
 using Avalonia.Metadata;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 [assembly: AssemblyTitle("Avalonia.Animation")]
+[assembly: InternalsVisibleTo("Avalonia.Visuals")]
 [assembly: XmlnsDefinition("https://github.com/avaloniaui", "Avalonia.Animation")]
+[assembly: XmlnsDefinition("https://github.com/avaloniaui", "Avalonia.Animation.Keyframes")]
+[assembly: XmlnsDefinition("https://github.com/avaloniaui", "Avalonia.Animation.Transitions")]
+[assembly: XmlnsDefinition("https://github.com/avaloniaui", "Avalonia.Animation.Easings")]

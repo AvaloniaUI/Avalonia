@@ -4,8 +4,9 @@
 using Avalonia.Metadata;
 using System;
 using System.Reactive.Linq;
+using Avalonia.Animation.Easings;
 
-namespace Avalonia.Animation
+namespace Avalonia.Animation.Transitions
 {
     /// <summary>
     /// Defines how a property should be animated using a transition.
@@ -13,7 +14,7 @@ namespace Avalonia.Animation
     public abstract class Transition<T> : ITransition
     {
         private AvaloniaProperty _prop;
-        private IEasing _easing;
+        private Easing _easing;
 
         /// <summary>
         /// Gets the duration of the animation.
@@ -23,7 +24,7 @@ namespace Avalonia.Animation
         /// <summary>
         /// Gets the easing class to be used.
         /// </summary>
-        public IEasing Easing
+        public Easing Easing
         {
             get
             {

@@ -5,10 +5,10 @@ using Avalonia.Metadata;
 using System;
 using System.Reactive.Linq;
 
-namespace Avalonia.Animation
+namespace Avalonia.Animation.Transitions
 {
     /// <summary>
-    /// Interface for Property Transition objects.
+    /// Interface for Transition objects.
     /// </summary>
     public interface ITransition
     {

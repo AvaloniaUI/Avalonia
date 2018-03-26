@@ -5,9 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Avalonia.Animation
+namespace Avalonia.Animation.Utils
 {
-    internal static class DoubleHelper
+    internal static class DoubleUtils
     {
         internal static bool AboutEqual(double x, double y)
         {

@@ -13,6 +13,7 @@ using Avalonia.Input;
 using Avalonia.Collections;
 using Avalonia.Controls.Templates;
 using Avalonia.Animation;
+using Avalonia.Animation.Easings;
 
 namespace Avalonia.Markup.Xaml.PortableXaml
 {

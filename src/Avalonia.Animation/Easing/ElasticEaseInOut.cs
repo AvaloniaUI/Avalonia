@@ -2,8 +2,9 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using Avalonia.Animation.Utils;
 
-namespace Avalonia.Animation
+namespace Avalonia.Animation.Easings
 {
     /// <summary>
     /// Eases a <see cref="double"/> value 
@@ -18,11 +19,11 @@ namespace Avalonia.Animation
 
             if (p < 0.5d)
             {
-                return 0.5d * Math.Sin(13d * EasingConstants.HALFPI * (2d * p)) * Math.Pow(2d, 10d * ((2d * p) - 1d));
+                return 0.5d * Math.Sin(13d * EasingUtils.HALFPI * (2d * p)) * Math.Pow(2d, 10d * ((2d * p) - 1d));
             }
             else
             {
-                return 0.5d * (Math.Sin(-13d * EasingConstants.HALFPI * ((2d * p - 1d) + 1d)) * Math.Pow(2d, -10d * (2d * p - 1d)) + 2d);
+                return 0.5d * (Math.Sin(-13d * EasingUtils.HALFPI * ((2d * p - 1d) + 1d)) * Math.Pow(2d, -10d * (2d * p - 1d)) + 2d);
             }            
         }
 

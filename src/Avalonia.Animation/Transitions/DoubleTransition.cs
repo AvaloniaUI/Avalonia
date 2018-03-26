@@ -5,7 +5,7 @@ using Avalonia.Metadata;
 using System;
 using System.Reactive.Linq;
 
-namespace Avalonia.Animation
+namespace Avalonia.Animation.Transitions
 {
     /// <summary>
     /// Transition class that handles <see cref="AvaloniaProperty"/> with <see cref="double"/> types.

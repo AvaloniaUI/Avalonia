@@ -1,55 +1,72 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using Avalonia.Animation.Easings;
+using Avalonia.Animation.Keyframes;
+using Avalonia.Collections;
+using Avalonia.Metadata;
 using System;
+using System.Collections.Generic;
 
 namespace Avalonia.Animation
 {
     /// <summary>
     /// Tracks the progress of an animation.
     /// </summary>
-    public class Animation : IObservable<object>, IDisposable
+    public class Animation : IDisposable, IAnimation
     {
-        /// <summary>
-        /// The animation being tracked.
-        /// </summary>
-        private readonly IObservable<object> _inner;
+        private List<IDisposable>_subscription = new List<IDisposable>();
 
         /// <summary>
-        /// The disposable used to cancel the animation.
+        /// Run time of this animation.
         /// </summary>
-        private readonly IDisposable _subscription;
+        public TimeSpan Duration { get; set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Animation"/> class.
+        /// Delay time for animation.
         /// </summary>
-        /// <param name="inner">The animation observable being tracked.</param>
-        /// <param name="subscription">A disposable used to cancel the animation.</param>
-        public Animation(IObservable<object> inner, IDisposable subscription)
-        {
-            _inner = inner;
-            _subscription = subscription;
-        }
+        public TimeSpan Delay { get; set; }
+
+        /// <summary>
+        /// Easing function to be used.
+        /// </summary> 
+        public Easing Easing { get; set; } = new LinearEasing();
+
+        /// <summary>
+        /// A list of <see cref="IKeyFrames"/> objects.
+        /// </summary>
+        [Content]
+        public AvaloniaList<IKeyFrames> Children { get; set; } = new AvaloniaList<IKeyFrames>();
 
         /// <summary>
         /// Cancels the animation.
         /// </summary>
         public void Dispose()
         {
-            _subscription.Dispose();
+            foreach(var sub in _subscription) sub.Dispose();
         }
 
-        /// <summary>
-        /// Notifies the provider that an observer is to receive notifications.
-        /// </summary>
-        /// <param name="observer">The observer.</param>
-        /// <returns>
-        /// A reference to an interface that allows observers to stop receiving notifications
-        /// before the provider has finished sending them.
-        /// </returns>
-        public IDisposable Subscribe(IObserver<object> observer)
+        /// <inheritdocs/>
+        public IDisposable Apply(Animatable control, IObservable<bool> matchObs)
         {
-            return _inner.Subscribe(observer);
+            foreach (IKeyFrames keyframes in Children)
+            {
+                _subscription.Add(keyframes.Apply(this, control, matchObs));
+            }
+            return this;
         }
+
+        ///// <summary>
+        ///// Notifies the provider that an observer is to receive notifications.
+        ///// </summary>
+        ///// <param name="observer">The observer.</param>
+        ///// <returns>
+        ///// A reference to an interface that allows observers to stop receiving notifications
+        ///// before the provider has finished sending them.
+        ///// </returns>
+        //public IDisposable Subscribe(IObserver<object> observer)
+        //{
+        //    return _inner.Subscribe(observer);
+        //}
     }
 }

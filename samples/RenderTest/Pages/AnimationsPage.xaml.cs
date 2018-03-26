@@ -15,7 +15,7 @@ namespace RenderTest.Pages
         public AnimationsPage()
         {
             this.InitializeComponent();
-            this.CreateAnimations();
+           // this.CreateAnimations();
         }
 
         private void InitializeComponent()

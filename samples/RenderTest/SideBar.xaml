@@ -37,7 +37,7 @@
     <Setter Property="Opacity" Value="0.5"/>
     <Setter Property="Transitions">
       <Transitions>
-        <DoubleTransition Property="Opacity" Easing="CircularEaseIn" Duration="0:0:0.5"/>
+        <DoubleTransition Property="Opacity" Duration="0:0:0.5"/>
       </Transitions>
     </Setter>
   </Style>

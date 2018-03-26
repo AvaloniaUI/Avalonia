@@ -3,7 +3,7 @@
 
 using Avalonia.Collections;
 
-namespace Avalonia.Animation
+namespace Avalonia.Animation.Transitions
 {
     /// <summary>
     /// A collection of <see cref="ITransition"/> definitions.

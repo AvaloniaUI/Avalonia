@@ -5,7 +5,7 @@ namespace RenderTest.ViewModels
 {
     public class MainWindowViewModel : ReactiveObject
     {
-        private bool drawDirtyRects = true;
+        private bool drawDirtyRects = false;
         private bool drawFps = true;
 
         public MainWindowViewModel()

@@ -2,7 +2,9 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 
-namespace Avalonia.Animation
+using Avalonia.Animation.Utils;
+
+namespace Avalonia.Animation.Easings
 {
     /// <summary>
     /// Eases in a <see cref="double"/> value 
@@ -13,7 +15,7 @@ namespace Avalonia.Animation
         /// <inheritdoc/>
         public override double Ease(double progress)
         {
-            return 1 - BounceEaseHelper.Bounce(1 - progress);
+            return 1 - BounceEaseUtils.Bounce(1 - progress);
         }
 
     }

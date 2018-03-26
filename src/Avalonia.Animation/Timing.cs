@@ -88,6 +88,27 @@ namespace Avalonia.Animation
                 .Concat(Observable.Return(1.0));
         }
 
+        /// <summary>
+        /// Gets a timer that fires every frame for the specified duration with delay.
+        /// </summary>
+        /// <returns>
+        /// An observable that notifies the subscriber of the progress along the animation.
+        /// </returns>
+        /// <remarks>
+        /// The parameter passed to the subscriber is the progress along the animation, with
+        /// 0 being the start and 1 being the end. The observable is guaranteed to fire 0
+        /// immediately on subscribe and 1 at the end of the duration.
+        /// </remarks>
+        public static IObservable<double> GetTimer(TimeSpan duration, TimeSpan delay)
+        {
+            var startTime = Stopwatch.Elapsed.Ticks + delay.Ticks;
+            var endTime = startTime + duration.Ticks;
+            return Timer
+                .TakeWhile(x => x.Ticks < endTime)
+                .Select(x => (x.Ticks - startTime) / (double)duration.Ticks)
+                .StartWith(0.0)
+                .Concat(Observable.Return(1.0));
+        }
 
     }
 }

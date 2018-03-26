@@ -6,7 +6,7 @@ using System.Reflection;
 using System.Linq;
 using System.ComponentModel;
 
-namespace Avalonia.Animation
+namespace Avalonia.Animation.Easings
 {
     /// <summary>
     /// Base class for all Easing classes.

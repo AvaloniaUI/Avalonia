@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Avalonia.Animation
+namespace Avalonia.Animation.Easings
 {
     /// <summary>
     /// Eases a <see cref="double"/> value 

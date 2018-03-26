@@ -8,6 +8,8 @@ using Avalonia.Metadata;
 [assembly: AssemblyTitle("Avalonia.Visuals")]
 [assembly: InternalsVisibleTo("Avalonia.Visuals.UnitTests")]
 [assembly: XmlnsDefinition("https://github.com/avaloniaui", "Avalonia.Animation")]
+[assembly: XmlnsDefinition("https://github.com/avaloniaui", "Avalonia.Animation.Transitions")]
+[assembly: XmlnsDefinition("https://github.com/avaloniaui", "Avalonia.Animation.Keyframes")]
 [assembly: XmlnsDefinition("https://github.com/avaloniaui", "Avalonia.Media")]
 
 [assembly: InternalsVisibleTo("Avalonia.Direct2D1.RenderTests")]

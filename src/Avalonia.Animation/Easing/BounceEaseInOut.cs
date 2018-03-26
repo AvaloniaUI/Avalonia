@@ -1,7 +1,9 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-namespace Avalonia.Animation
+using Avalonia.Animation.Utils;
+
+namespace Avalonia.Animation.Easings
 {
     /// <summary>
     /// Eases a <see cref="double"/> value 
@@ -15,11 +17,11 @@ namespace Avalonia.Animation
             double p = progress;
             if (p < 0.5d)
             {
-                return 0.5f * (1 - BounceEaseHelper.Bounce(1 - (p * 2)));
+                return 0.5f * (1 - BounceEaseUtils.Bounce(1 - (p * 2)));
             }
             else
             {
-                return 0.5f * BounceEaseHelper.Bounce(p * 2 - 1) + 0.5f;
+                return 0.5f * BounceEaseUtils.Bounce(p * 2 - 1) + 0.5f;
             }
         }
 

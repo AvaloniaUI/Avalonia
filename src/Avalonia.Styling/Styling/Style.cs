@@ -7,6 +7,7 @@ using System.Collections.Specialized;
 using System.Reactive.Linq;
 using Avalonia.Controls;
 using Avalonia.Metadata;
+using Avalonia.Animation;
 
 namespace Avalonia.Styling
 {
@@ -19,6 +20,8 @@ namespace Avalonia.Styling
             new Dictionary<IStyleable, List<IDisposable>>();
         private IResourceNode _parent;
         private IResourceDictionary _resources;
+
+        private IList<IAnimation> _animations;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Style"/> class.
@@ -78,6 +81,17 @@ namespace Avalonia.Styling
         [Content]
         public IList<ISetter> Setters { get; set; } = new List<ISetter>();
 
+        public IList<IAnimation> Animations
+        {
+            get
+            {
+                return _animations ?? (_animations = new List<IAnimation>());
+            }
+            set
+            {
+                _animations = value;
+            }
+        }
         /// <inheritdoc/>
         IResourceNode IResourceNode.ResourceParent => _parent;
 
@@ -91,7 +105,7 @@ namespace Avalonia.Styling
         /// <param name="container">
         /// The control that contains this style. May be null.
         /// </param>
-        public void Attach(IStyleable control, IStyleHost container)
+        void IStyle.Attach(IStyleable control, IStyleHost container)
         {
             if (Selector != null)
             {
@@ -100,6 +114,11 @@ namespace Avalonia.Styling
                 if (match.ImmediateResult != false)
                 {
                     var subs = GetSubscriptions(control);
+
+                    foreach (var animation in Animations)
+                    {
+                        subs.Add(animation.Apply((Animatable)control, match.ObservableResult));
+                    }
 
                     foreach (var setter in Setters)
                     {

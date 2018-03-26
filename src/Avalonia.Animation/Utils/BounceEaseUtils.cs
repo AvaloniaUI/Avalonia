@@ -1,12 +1,12 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-namespace Avalonia.Animation
+namespace Avalonia.Animation.Utils
 {
     /// <summary>
     /// Helper static class for BounceEase classes.
     /// </summary>
-    internal static class BounceEaseHelper
+    internal static class BounceEaseUtils
     {
         /// <summary>
         /// Returns the consequent <see cref="double"/> value of

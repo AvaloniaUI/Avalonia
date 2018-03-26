@@ -5,10 +5,10 @@ using Avalonia.Metadata;
 using System;
 using System.Reactive.Linq;
 
-namespace Avalonia.Animation
+namespace Avalonia.Animation.Transitions
 {
     /// <summary>
-    /// Transition class that handles <see cref="AvaloniaProperty"/> with <see cref="Point"/> types.
+    /// Transition class that handles <see cref="AvaloniaProperty"/> with <see cref="Point"/> type.
     /// </summary>  
     public class PointTransition : Transition<Point>
     {
