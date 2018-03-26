@@ -105,7 +105,7 @@ namespace Avalonia.Styling
         /// <param name="container">
         /// The control that contains this style. May be null.
         /// </param>
-        void IStyle.Attach(IStyleable control, IStyleHost container)
+        public void Attach(IStyleable control, IStyleHost container)
         {
             if (Selector != null)
             {
