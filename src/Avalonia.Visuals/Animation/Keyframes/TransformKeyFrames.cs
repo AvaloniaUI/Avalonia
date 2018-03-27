@@ -69,9 +69,9 @@ namespace Avalonia.Animation.Keyframes
         }
 
         /// <inheritdocs/>
-        public override IDisposable DoInterpolation(Animation animation, Animatable control, Dictionary<double, double> keyValues)
+        public override IObservable<double> DoInterpolation(Animation animation, Animatable control)
         {
-            return Timing.GetTimer(animation.Duration, animation.Delay).Subscribe();
+            return null;
         }
     }
 }

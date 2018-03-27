@@ -6,6 +6,7 @@ using System.ComponentModel;
 using Avalonia.Animation.Utils;
 using System.Reactive.Linq;
 using System.Linq;
+using Avalonia.Data;
 
 namespace Avalonia.Animation.Keyframes
 {
@@ -20,42 +21,89 @@ namespace Avalonia.Animation.Keyframes
         /// </summary>
         public AvaloniaProperty Property { get; set; }
 
-        /// Enable if the derived class will do the verification of  
-        /// its keyframes.
-        internal bool IsVerfifiedAndConverted;
+        /// <summary>
+        /// List of type-converted keyframes.
+        /// </summary>
+        public Dictionary<double, T> ConvertedKeyframes = new Dictionary<double, T>();
 
+        private bool IsVerfifiedAndConverted;
+        
         /// <inheritdoc/>
         public virtual IDisposable Apply(Animation animation, Animatable control, IObservable<bool> obsMatch)
         {
-            if(obsMatch == null) return null;
-            
             if (!IsVerfifiedAndConverted)
-                VerifyKeyFrames(animation, typeof(T));
+                VerifyConvertKeyFrames(animation, typeof(T));
 
             return obsMatch
                 .Where(p => p == true)
-                .Subscribe(_ => DoInterpolation(animation, control, ConvertedValues));
+                .Subscribe(_ =>
+                {
+                    var interp = DoInterpolation(animation, control)
+                                .Select(p => (object)p);
+                    control.Bind(Property, interp, BindingPriority.Animation);
+                });
+        }
+
+        /// <summary>
+        /// Get the nearest pair of cue-time ordered keyframes 
+        /// according to the given time parameter.  
+        /// </summary>
+        public (KeyValuePair<double, T> firstKF, KeyValuePair<double, T> lastKF) GetKeyFramePairByTime(double t)
+        {
+            KeyValuePair<double, T> firstCue, lastCue;
+            int kvCount = ConvertedKeyframes.Count();
+            if (kvCount > 2)
+            {
+                if (DoubleUtils.AboutEqual(t, 0.0) || t < 0.0)
+                {
+                    firstCue = ConvertedKeyframes.First();
+                    lastCue = ConvertedKeyframes.Skip(1).First();
+                }
+                else if (DoubleUtils.AboutEqual(t, 1.0) || t > 1.0)
+                {
+                    firstCue = ConvertedKeyframes.Skip(kvCount - 2).First();
+                    lastCue = ConvertedKeyframes.Last();
+                }
+                else
+                {
+                    firstCue = ConvertedKeyframes.Where(j => j.Key <= t).Last();
+                    lastCue = ConvertedKeyframes.Where(j => j.Key >= t).First();
+                }
+            }
+            else
+            {
+                firstCue = ConvertedKeyframes.First();
+                lastCue = ConvertedKeyframes.Last();
+            }
+            return (firstCue, lastCue);
         }
 
 
         /// <summary>
-        /// Interpolates the given keyframes to the control.
+        /// Returns an observable timer with the specific Animation
+        /// duration and delay and applies the Animation's easing function.
         /// </summary>
-        public abstract IDisposable DoInterpolation(Animation animation,
-                                                    Animatable control,
-                                                    Dictionary<double, T> keyValues);
-
-        internal Dictionary<double, T> ConvertedValues = new Dictionary<double, T>();
+        public IObservable<double> GetKeyFramesTimer(Animation animation) => 
+                        Timing.GetTimer(animation.Duration, animation.Delay)
+                              .Select(t => animation.Easing.Ease(t));
 
         /// <summary>
-        /// Verifies keyframe value types.
+        /// Interpolates the given keyframes to the control.
         /// </summary>
-        private void VerifyKeyFrames(Animation animation, Type type)
+        public abstract IObservable<T> DoInterpolation(Animation animation,
+                                                       Animatable control);
+
+
+        /// <summary>
+        /// Verifies and converts keyframe values according to this class type parameter.
+        /// </summary>
+        private void VerifyConvertKeyFrames(Animation animation, Type type)
         {
             var typeConv = TypeDescriptor.GetConverter(type);
 
             foreach (KeyFrame k in this)
             {
+
                 if (k.Value == null)
                 {
                     throw new ArgumentNullException($"KeyFrame value can't be null.");
@@ -74,30 +122,23 @@ namespace Avalonia.Animation.Keyframes
                     _normalizedCue = new Cue(k.KeyTime.Ticks / animation.Duration.Ticks);
                 }
 
-                ConvertedValues.Add(_normalizedCue.CueValue, convertedValue);
+                ConvertedKeyframes.Add(_normalizedCue.CueValue, convertedValue);
 
             }
 
-            // This can be optional if we ever try to make
-            // the default start and end values to be the
-            // property's prior value.
-            SortKeyFrameCues(ConvertedValues);
-
+            SortKeyFrameCues(ConvertedKeyframes);
             IsVerfifiedAndConverted = true;
 
         }
 
         private void SortKeyFrameCues(Dictionary<double, T> convertedValues)
         {
-            SortKeyFrameCues(convertedValues.ToDictionary((k) => k.Key, (v) => (object)v.Value));
-        }
-
-        internal void SortKeyFrameCues(Dictionary<double, object> convertedValues)
-        {
             bool hasStartKey, hasEndKey;
             hasStartKey = hasEndKey = false;
 
-            foreach (var converted in ConvertedValues.Keys)
+            // this can be optional later, by making the default start/end keyframes
+            // to have a neutral value (a.k.a. the value prior to the animation).
+            foreach (var converted in ConvertedKeyframes.Keys)
             {
                 if (DoubleUtils.AboutEqual(converted, 0.0))
                 {
@@ -108,15 +149,15 @@ namespace Avalonia.Animation.Keyframes
                     hasEndKey = true;
                 }
             }
-
+            
             if (!hasStartKey && !hasEndKey)
                 throw new InvalidOperationException
                     ($"{this.GetType().Name} must have a starting (0% cue) and ending (100% cue) keyframe.");
 
             // Sort Cues, in case they don't order it by themselves.
-            ConvertedValues = ConvertedValues.OrderBy(p => p.Key)
-                                             .ToDictionary((k) => k.Key, (v) => v.Value);
-
+            ConvertedKeyframes = ConvertedKeyframes.OrderBy(p => p.Key)
+                                                   .ToDictionary((k) => k.Key, (v) => v.Value);
         }
+
     }
 }
