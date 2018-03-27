@@ -30,43 +30,56 @@ namespace Avalonia.Animation.Keyframes
                         // Get a pair of keyframes to make the interpolation.
                         KeyValuePair<double, double> firstCue, lastCue;
 
-                        firstCue = sortedkeyValues.First();
-                        lastCue = sortedkeyValues.Last();
+
 
                         // This should be changed later for a much more efficient one 
                         if (sortedkeyValues.Count() > 2)
                         {
-                            bool isWithinRange_Start = DoubleUtils.AboutEqual(x, 0.0) || x > 0.0;
-                            bool isWithinRange_End = DoubleUtils.AboutEqual(x, 1.0) || x < 1.0;
+                            bool OutsideRange_Start = DoubleUtils.AboutEqual(x, 0.0) || x < 0.0;
+                            bool OutsideRange_End = DoubleUtils.AboutEqual(x, 1.0) || x > 1.0;
+                            var kyF = sortedkeyValues.ToArray();
 
-                            if (isWithinRange_Start && isWithinRange_End)
+                            if (OutsideRange_Start)
+                            {
+                                firstCue = kyF[0];
+                                lastCue = kyF[1];
+                            }
+                            else if (OutsideRange_End)
+                            {
+                                var count = kyF.Count();
+                                firstCue = kyF[count - 2];
+                                lastCue = kyF[count - 1];
+                            }
+                            else
                             {
                                 firstCue = sortedkeyValues.Where(j => j.Key <= x).Last();
                                 lastCue = sortedkeyValues.Where(j => j.Key >= x).First();
                             }
-                            else if (!isWithinRange_Start)
-                            {
-                                firstCue = sortedkeyValues.First();
-                                lastCue = sortedkeyValues.Skip(1).First();
-                            }
-                            else if (!isWithinRange_End)
-                            {
-                                firstCue = sortedkeyValues.Skip(sortedkeyValues.Count() - 1).First();
-                                lastCue = sortedkeyValues.Last();
-                            }
-                            else
-                            {
-                                throw new InvalidOperationException
-                                    ($"Can't find KeyFrames within the specified Easing time {x}");
-                            }
+                        }
+                        else
+                        {
+                            firstCue = sortedkeyValues.First();
+                            lastCue = sortedkeyValues.Last();
                         }
 
-                        // Piecewise Linear interpolation, courtesy of wikipedia
-                        var y0 = firstCue.Value;
-                        var x0 = firstCue.Key;
-                        var y1 = lastCue.Value;
-                        var x1 = lastCue.Key;
-                        var y = ((y0 * (x1 - x)) + (y1 * (x - x0))) / x1 - x0;
+                        double x0, y0, x1, y1;
+
+                        // Swap interpolants if its descending
+                        // if (firstCue.Value > lastCue.Value)
+                        // // {
+                        //     y1 = firstCue.Value;
+                        //     x1 = firstCue.Key;
+                        //     y0 = lastCue.Value;
+                        //     x0 = lastCue.Key;
+                        // }
+                        // else
+                        // {
+                        y0 = firstCue.Value;
+                        x0 = firstCue.Key;
+                        y1 = lastCue.Value;
+                        x1 = lastCue.Key;
+                        
+                        var y = y0 + ((x - x0)/(x1 - x0)) * (y1-y0);
 
                         return y;
                     }

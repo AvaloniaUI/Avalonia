@@ -7,7 +7,6 @@
           <Setter Property="Width" Value="100"/>
           <Setter Property="Height" Value="100"/>
         </Style>
-
         <Style Selector="Rectangle.Rect1:pointerover">
           <Style.Animations>
             <Animation Duration="0:0:2.5" Easing="BounceEaseInOut">
@@ -18,7 +17,6 @@
             </Animation>
           </Style.Animations>
         </Style>
-
         <Style Selector="Rectangle.Rect2:pointerover">
           <Style.Animations>
             <Animation Duration="0:0:0.5" Easing="SineEaseInOut">
@@ -33,21 +31,17 @@
             </Animation>
           </Style.Animations>
         </Style>
-
         <Style Selector="Rectangle.Rect3:pointerover">
           <Style.Animations>
             <Animation Duration="0:0:3" Easing="BounceEaseInOut">
               <TransformKeyFrames Property="TranslateTransform.Y">
                 <KeyFrame Cue="0%" Value="0"/>
                 <KeyFrame Cue="48%" Value="-100"/>
-                <KeyFrame Cue="52%" Value="-100"/>
                 <KeyFrame Cue="100%" Value="0"/>
               </TransformKeyFrames>
             </Animation>
           </Style.Animations>
         </Style>
-
-
         <Style Selector="Rectangle.Rect4:pointerover">
           <Style.Animations>
             <Animation Duration="0:0:3" Easing="CircularEaseInOut">
@@ -60,12 +54,14 @@
             </Animation>
           </Style.Animations>
         </Style>
-
       </Styles>
     </Grid.Styles>
-    <StackPanel VerticalAlignment="Center"
-                HorizontalAlignment="Center">
-      <TextBlock HorizontalAlignment="Center">Hover to activate Transform Keyframe Animations.</TextBlock>
+    <StackPanel VerticalAlignment="Center" 
+                HorizontalAlignment="Center"
+                ClipToBounds="False">
+      <TextBlock HorizontalAlignment="Center">
+        Hover to activate Transform Keyframe Animations.
+      </TextBlock>
       <StackPanel Orientation="Horizontal"
           ClipToBounds="False">
         <Rectangle Classes="Test Rect1" Fill="DarkRed">
