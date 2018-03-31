@@ -16,7 +16,7 @@ namespace Avalonia.Animation.Keyframes
     public class TransformKeyFrames : KeyFrames<double>
     {
         DoubleKeyFrames childKeyFrames;
-        
+
         /// <inheritdoc/>
         public override IDisposable Apply(Animation animation, Animatable control, IObservable<bool> obsMatch)
         {
@@ -27,45 +27,52 @@ namespace Avalonia.Animation.Keyframes
             {
                 var renderTransformType = ctrl.RenderTransform.GetType();
 
+                if (childKeyFrames == null)
+                {
+                    InitializeInternalDoubleKeyFrames();
+                }
+
                 // It's only 1 transform object so let's target that.
                 if (renderTransformType == Property.OwnerType)
                 {
-                    var targetTransform = Convert.ChangeType(ctrl.RenderTransform, Property.OwnerType);
-
-                    if (childKeyFrames == null)
-                    {
-                        childKeyFrames = new DoubleKeyFrames();
-
-                        foreach (KeyFrame k in this)
-                        {
-                            childKeyFrames.Add(k);
-                        }
-
-                        childKeyFrames.Property = Property;
-                    }
-
                     return childKeyFrames.Apply(animation, ctrl.RenderTransform, obsMatch);
                 }
+                // TODO: Selection within TransformGroup is not working
                 if (renderTransformType == typeof(TransformGroup))
                 {
-                    foreach (Transform t in ((TransformGroup)ctrl.RenderTransform).Children)
+                    foreach (Transform transform in ((TransformGroup)ctrl.RenderTransform).Children)
                     {
-                        if (renderTransformType == Property.OwnerType)
+                        if (transform.GetType() == Property.OwnerType)
                         {
-
+                             return childKeyFrames.Apply(animation, transform, obsMatch);
                         }
                     }
-
-                    // not existing in the transform
-
                 }
+
+                return null;
+
+                // // Throw exception when there is no appropriate transform object found.
+                // throw new Exception
+                //     ($"TransformKeyFrame hasn't found an appropriate Transform object with type {Property.OwnerType} in target {control}.");
+
+
             }
             else
             {
-                throw new InvalidProgramException($"Unsupported property {Property}");
+                throw new Exception($"Unsupported property {Property}");
+            }
+        }
+
+        void InitializeInternalDoubleKeyFrames()
+        {
+            childKeyFrames = new DoubleKeyFrames();
+
+            foreach (KeyFrame keyframe in this)
+            {
+                childKeyFrames.Add(keyframe);
             }
 
-            return null;
+            childKeyFrames.Property = Property;
         }
 
         /// <inheritdocs/>

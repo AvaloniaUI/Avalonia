@@ -1,7 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui">
-  <Grid>
-    <Grid.Styles>
-      <Styles>
+  <UserControl.Styles>
+        <Styles>
         <Style Selector="Rectangle.Test">
           <Setter Property="Margin" Value="15"/>
           <Setter Property="Width" Value="100"/>
@@ -55,7 +54,8 @@
           </Style.Animations>
         </Style>
       </Styles>
-    </Grid.Styles>
+  </UserControl.Styles>
+  <Grid> 
     <StackPanel VerticalAlignment="Center" 
                 HorizontalAlignment="Center"
                 ClipToBounds="False">

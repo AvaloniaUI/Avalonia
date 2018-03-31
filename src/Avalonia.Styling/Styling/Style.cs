@@ -8,6 +8,7 @@ using System.Reactive.Linq;
 using Avalonia.Controls;
 using Avalonia.Metadata;
 using Avalonia.Animation;
+using System.Diagnostics;
 
 namespace Avalonia.Styling
 {
@@ -117,7 +118,18 @@ namespace Avalonia.Styling
 
                     foreach (var animation in Animations)
                     {
-                        subs.Add(animation.Apply((Animatable)control, match.ObservableResult));
+                        // TODO: Needs more work in passing the appropriate
+                        //       observable.
+                        IObservable<bool> obsMatch = match.ObservableResult;
+
+                        if (match.ImmediateResult == true)
+                        {
+                            obsMatch = Observable.Return(true);
+                        } 
+
+                        var sub = animation.Apply((Animatable)control, obsMatch);
+                        subs.Add(sub);
+
                     }
 
                     foreach (var setter in Setters)
