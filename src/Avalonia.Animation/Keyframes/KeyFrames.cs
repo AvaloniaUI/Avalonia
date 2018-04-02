@@ -113,9 +113,10 @@ namespace Avalonia.Animation.Keyframes
         /// Returns an observable timer with the specific Animation
         /// duration and delay and applies the Animation's easing function.
         /// </summary>
-        public IObservable<double> GetKeyFramesTimer(Animation animation) =>
-                        Timing.GetTimer(animation.Duration, animation.Delay)
-                              .Select(t => animation.Easing.Ease(t));
+        public IObservable<(double Time, Animatable Target)> 
+            SetupAnimation(Animation animation, Animatable control) =>
+                        Timing.GetTimer(control, animation.Duration, animation.Delay)
+                              .Select(t => (animation.Easing.Ease(t), control));
 
         /// <summary>
         /// Interpolates the given keyframes to the control.

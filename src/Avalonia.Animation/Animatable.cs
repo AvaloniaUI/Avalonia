@@ -11,10 +11,43 @@ using Avalonia.Animation.Transitions;
 namespace Avalonia.Animation
 {
     /// <summary>
+    /// 
+    /// </summary>
+    public enum AnimationPlayState
+    {
+        /// <summary>
+        /// 
+        /// </summary>
+        Running,
+
+        /// <summary>
+        /// 
+        /// </summary>
+        Paused
+    }
+
+    /// <summary>
     /// Base class for control which can have property transitions.
     /// </summary>
     public class Animatable : AvaloniaObject
     {
+
+        /// <summary>
+        /// Defines the <see cref="AnimationPlayState"/> property.
+        /// </summary>
+        public static readonly StyledProperty<AnimationPlayState> AnimationPlayStateProperty =
+                AvaloniaProperty.Register<Animatable, AnimationPlayState>(nameof(AnimationPlayState));
+
+        /// <summary>
+        /// Gets or sets the state of the animation for this
+        /// control.
+        /// </summary>
+        public AnimationPlayState AnimationPlayState
+        {
+            get { return GetValue(AnimationPlayStateProperty); }
+            set { SetValue(AnimationPlayStateProperty, value); }
+        }
+
         /// <summary>
         /// Defines the <see cref="Transitions"/> property.
         /// </summary>
