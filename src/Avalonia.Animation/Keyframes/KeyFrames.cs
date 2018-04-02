@@ -11,7 +11,7 @@ using Avalonia.Data;
 namespace Avalonia.Animation.Keyframes
 {
     /// <summary>
-    /// Base class for KeyFrames 
+    /// Base class for KeyFrames objects
     /// </summary>
     public abstract class KeyFrames<T> : AvaloniaList<KeyFrame>, IKeyFrames
     {
@@ -27,7 +27,7 @@ namespace Avalonia.Animation.Keyframes
         public Dictionary<double, T> ConvertedKeyframes = new Dictionary<double, T>();
 
         private bool IsVerfifiedAndConverted;
-        
+
         /// <inheritdoc/>
         public virtual IDisposable Apply(Animation animation, Animatable control, IObservable<bool> obsMatch)
         {
@@ -45,10 +45,40 @@ namespace Avalonia.Animation.Keyframes
         }
 
         /// <summary>
+        /// Represents a pair of keyframe, usually the
+        /// Start and End keyframes of a <see cref="KeyFrames{T}"/> object.
+        /// </summary>
+        public struct KeyFramePair
+        { 
+
+            /// <summary>
+            /// Initializes this <see cref="KeyFramePair"/>
+            /// </summary>
+            /// <param name="FirstKeyFrame"></param>
+            /// <param name="LastKeyFrame"></param>
+            public KeyFramePair(KeyValuePair<double, T> FirstKeyFrame, KeyValuePair<double, T> LastKeyFrame) : this()
+            {
+                this.FirstKeyFrame = FirstKeyFrame;
+                this.SecondKeyFrame = LastKeyFrame;
+            }
+
+            /// <summary>
+            /// First <see cref="KeyFrame"/> object.
+            /// </summary>
+            public KeyValuePair<double, T> FirstKeyFrame { get; private set; }
+
+            /// <summary>
+            /// Second <see cref="KeyFrame"/> object.
+            /// </summary>
+            public KeyValuePair<double, T> SecondKeyFrame { get; private set; }
+
+        }
+
+        /// <summary>
         /// Get the nearest pair of cue-time ordered keyframes 
         /// according to the given time parameter.  
         /// </summary>
-        public (KeyValuePair<double, T> firstKF, KeyValuePair<double, T> lastKF) GetKeyFramePairByTime(double t)
+        public KeyFramePair GetKeyFramePairByTime(double t)
         {
             KeyValuePair<double, T> firstCue, lastCue;
             int kvCount = ConvertedKeyframes.Count();
@@ -75,7 +105,7 @@ namespace Avalonia.Animation.Keyframes
                 firstCue = ConvertedKeyframes.First();
                 lastCue = ConvertedKeyframes.Last();
             }
-            return (firstCue, lastCue);
+            return new KeyFramePair(firstCue, lastCue);
         }
 
 
@@ -83,7 +113,7 @@ namespace Avalonia.Animation.Keyframes
         /// Returns an observable timer with the specific Animation
         /// duration and delay and applies the Animation's easing function.
         /// </summary>
-        public IObservable<double> GetKeyFramesTimer(Animation animation) => 
+        public IObservable<double> GetKeyFramesTimer(Animation animation) =>
                         Timing.GetTimer(animation.Duration, animation.Delay)
                               .Select(t => animation.Easing.Ease(t));
 
@@ -149,7 +179,7 @@ namespace Avalonia.Animation.Keyframes
                     hasEndKey = true;
                 }
             }
-            
+
             if (!hasStartKey && !hasEndKey)
                 throw new InvalidOperationException
                     ($"{this.GetType().Name} must have a starting (0% cue) and ending (100% cue) keyframe.");

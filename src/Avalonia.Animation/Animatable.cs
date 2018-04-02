@@ -16,7 +16,7 @@ namespace Avalonia.Animation
     public class Animatable : AvaloniaObject
     {
         /// <summary>
-        /// 
+        /// Defines the <see cref="Transitions"/> property.
         /// </summary>
         public static readonly StyledProperty<Transitions.Transitions> TransitionsProperty =
                 AvaloniaProperty.Register<Animatable, Transitions.Transitions>(nameof(Transitions));

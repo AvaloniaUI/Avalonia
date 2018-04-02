@@ -25,7 +25,6 @@ namespace Avalonia.Animation.Keyframes
         {
             get
             {
-
                 return _ktimeSpan;
             }
             set
@@ -47,7 +46,6 @@ namespace Avalonia.Animation.Keyframes
         {
             get
             {
-
                 return _kCue;
             }
             set
@@ -61,17 +59,10 @@ namespace Avalonia.Animation.Keyframes
             }
         }
 
-
+        /// <summary>
+        /// The keyframe's target value.
+        /// </summary>
         public object Value { get; set; }
-
-        
-        ///// <summary>
-        ///// Initializes a new instance of the <see cref="KeyFrame"/> class.
-        ///// </summary>
-        //public KeyFrame()
-        //{
-
-        //}
 
     }
 
