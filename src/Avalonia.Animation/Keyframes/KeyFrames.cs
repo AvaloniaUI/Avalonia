@@ -7,6 +7,7 @@ using Avalonia.Animation.Utils;
 using System.Reactive.Linq;
 using System.Linq;
 using Avalonia.Data;
+using System.Reactive.Disposables;
 
 namespace Avalonia.Animation.Keyframes
 {
@@ -36,8 +37,11 @@ namespace Avalonia.Animation.Keyframes
 
             return obsMatch
                 .Where(p => p == true)
+                .Where(p=> Timing.GetGlobalPlayState() != AnimationPlayState.Paused)
                 .Subscribe(_ =>
                 {
+ 
+
                     var interp = DoInterpolation(animation, control)
                                 .Select(p => (object)p);
                     control.Bind(Property, interp, BindingPriority.Animation);
@@ -115,7 +119,7 @@ namespace Avalonia.Animation.Keyframes
         /// </summary>
         public IObservable<(double Time, Animatable Target)> 
             SetupAnimation(Animation animation, Animatable control) =>
-                        Timing.GetTimer(control, animation.Duration, animation.Delay)
+                        Timing.GetAnimationsTimer(control, animation.Duration, animation.Delay)
                               .Select(t => (animation.Easing.Ease(t), control));
 
         /// <summary>

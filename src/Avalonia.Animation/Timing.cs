@@ -15,6 +15,9 @@ namespace Avalonia.Animation
     /// </summary>
     public static class Timing
     {
+        static ulong _animationsFrameCount, _transitionsFrameCount;
+        static AnimationPlayState _globalState = AnimationPlayState.Running;
+
         /// <summary>
         /// The number of frames per second.
         /// </summary>
@@ -25,55 +28,89 @@ namespace Avalonia.Animation
         /// </summary>
         private static readonly TimeSpan Tick = TimeSpan.FromSeconds(1.0 / FramesPerSecond);
 
-        static ulong _frameCount = 0;
-
         /// <summary>
         /// Initializes static members of the <see cref="Timing"/> class.
         /// </summary>
         static Timing()
         {
-            Stopwatch = new Stopwatch();
-            Stopwatch.Start();
-            Timer = Observable.Interval(Tick, AvaloniaScheduler.Instance)
+            AnimationTimer = Observable.Interval(Tick, AvaloniaScheduler.Instance)
                 .Select(_ =>
                 {
-                    _frameCount += 1;
-                    return _frameCount;
+                    switch (_globalState)
+                    {
+                        case AnimationPlayState.Paused:
+                            break;
+                        default:
+                            _animationsFrameCount += 1;
+                            break;
+                    }
+                    return _animationsFrameCount;
                 })
                 .Publish()
                 .RefCount();
+
+            TransitionsTimer = Observable.Interval(Tick, AvaloniaScheduler.Instance)
+                               .Select(p => _transitionsFrameCount += 1)
+                               .Publish()
+                               .RefCount();
+        }
+
+
+        /// <summary>
+        /// Sets the animation play state for all animations
+        /// </summary>
+        public static void SetGlobalPlayState(AnimationPlayState playState)
+        {
+            Dispatcher.UIThread.VerifyAccess();
+            _globalState = playState;
         }
 
         /// <summary>
-        /// The stopwatch used to track time.
+        /// Gets the animation play state for all animations
         /// </summary>
-        /// <value>
-        /// The stopwatch used to track time.
-        /// </value>
-        public static Stopwatch Stopwatch
+        public static AnimationPlayState GetGlobalPlayState()
         {
-            get;
+            Dispatcher.UIThread.VerifyAccess();
+            return _globalState;
         }
 
         /// <summary>
         /// Gets the animation timer.
         /// </summary>
         /// <remarks>
-        /// The animation timer ticks <see cref="FramesPerSecond"/> times per second. The
-        /// parameter passed to a subsciber is the number of frames since the animation system was
+        /// The animation timer increments usually 60 times per second as
+        /// defined in <see cref="FramesPerSecond"/>.
+        /// The parameter passed to a subsciber is the number of frames since the animation system was
         /// initialized.
         /// </remarks>
         /// <value>
         /// The animation timer.
         /// </value>
-        public static IObservable<ulong> Timer
+        public static IObservable<ulong> AnimationTimer
         {
             get;
         }
 
+        /// <summary>
+        /// Gets the transitions timer.
+        /// </summary>
+        /// <remarks>
+        /// The transitions timer increments usually 60 times per second as
+        /// defined in <see cref="FramesPerSecond"/>.
+        /// The parameter passed to a subsciber is the number of frames since the animation system was
+        /// initialized.
+        /// </remarks>
+        /// <value>
+        /// The animation timer.
+        /// </value>
+        public static IObservable<ulong> TransitionsTimer
+        {
+            get;
+        }
 
         /// <summary>
         /// Gets a timer that fires every frame for the specified duration with delay.
+        /// This timer's running state can be changed via <see cref="SetGlobalPlayState"/> method.
         /// </summary>
         /// <returns>
         /// An observable that notifies the subscriber of the progress along the animation.
@@ -83,12 +120,36 @@ namespace Avalonia.Animation
         /// 0 being the start and 1 being the end. The observable is guaranteed to fire 0
         /// immediately on subscribe and 1 at the end of the duration.
         /// </remarks>
-        public static IObservable<double> GetTimer(Animatable control, TimeSpan duration, TimeSpan delay)
+        public static IObservable<double> GetAnimationsTimer(Animatable control, TimeSpan duration, TimeSpan delay)
         {
-            var startTime = _frameCount;
+            var startTime = _animationsFrameCount;
             var _duration = (ulong)(duration.Ticks/Tick.Ticks);
             var endTime = startTime + _duration;
-            return Timer
+            return AnimationTimer
+                .TakeWhile(x => x < endTime)
+                .Select(x => (double)(x - startTime) / _duration)
+                .StartWith(0.0)
+                .Concat(Observable.Return(1.0));
+        }
+
+        /// <summary>
+        /// Gets a timer that fires every frame for the specified duration with delay.
+        /// </summary>
+        /// <returns>
+        /// An observable that notifies the subscriber of the progress along the transition.
+        /// </returns>
+        /// <remarks>
+        /// The parameter passed to the subscriber is the progress along the transition, with
+        /// 0 being the start and 1 being the end. The observable is guaranteed to fire 0
+        /// immediately on subscribe and 1 at the end of the duration.
+        /// </remarks>
+        public static IObservable<double> GetTransitionsTimer(Animatable control, TimeSpan duration, TimeSpan delay)
+        {
+            var startTime = _transitionsFrameCount;
+            var _duration = (ulong)(duration.Ticks / Tick.Ticks);
+            var endTime = startTime + _duration;
+
+            return TransitionsTimer
                 .TakeWhile(x => x < endTime)
                 .Select(x => (double)(x - startTime) / _duration)
                 .StartWith(0.0)

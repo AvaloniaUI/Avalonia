@@ -7,6 +7,7 @@ using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
+using RenderTest.ViewModels;
 
 namespace RenderTest.Pages
 {
@@ -15,6 +16,7 @@ namespace RenderTest.Pages
         public AnimationsPage()
         {
             InitializeComponent();
+            this.DataContext = new AnimationsPageViewModel();
         }
 
         private void InitializeComponent()

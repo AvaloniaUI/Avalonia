@@ -31,6 +31,13 @@ namespace Avalonia.Animation
     /// </summary>
     public class Animatable : AvaloniaObject
     {
+        /// <summary>
+        /// Initializes this <see cref="Animatable"/> object.
+        /// </summary>
+        public Animatable()
+        {
+            Transitions = new Transitions.Transitions();
+        }
 
         /// <summary>
         /// Defines the <see cref="AnimationPlayState"/> property.
@@ -61,7 +68,7 @@ namespace Avalonia.Animation
         {
             get { return GetValue(TransitionsProperty); }
             set { SetValue(TransitionsProperty, value); }
-        }
+        } 
 
         /// <summary>
         /// Reacts to a change in a <see cref="AvaloniaProperty"/> value in 

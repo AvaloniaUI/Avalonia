@@ -1,97 +1,310 @@
-<UserControl xmlns="https://github.com/avaloniaui">
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <UserControl.Styles>
-        <Styles>
-          <Style Selector="Rectangle.Test">
-            <Setter Property="Margin" Value="15"/>
-            <Setter Property="Width" Value="100"/>
-            <Setter Property="Height" Value="100"/>
-          </Style>
-          <Style Selector="Border.Test">
-            <Setter Property="Margin" Value="15"/>
-            <Setter Property="Width" Value="100"/>
-            <Setter Property="Height" Value="100"/>
-          </Style>
-        <Style Selector="Rectangle.Rect1:pointerover">
-          <Style.Animations>
-            <Animation Duration="0:0:2.5" Easing="BounceEaseInOut">
-              <TransformKeyFrames Property="RotateTransform.Angle">
-                <KeyFrame Cue="0%" Value="0"/>
-                <KeyFrame Cue="100%" Value="360"/>
-              </TransformKeyFrames>
-            </Animation>
-          </Style.Animations>
-        </Style>
-        <Style Selector="Rectangle.Rect2:pointerover">
-          <Style.Animations>
-            <Animation Duration="0:0:0.5" Easing="SineEaseInOut">
-              <TransformKeyFrames Property="ScaleTransform.ScaleX">
-                <KeyFrame Cue="0%" Value="0.8"/>
-                <KeyFrame Cue="100%" Value="1"/>
-              </TransformKeyFrames>
-              <TransformKeyFrames Property="ScaleTransform.ScaleY">
-                <KeyFrame Cue="0%" Value="0.8"/>
-                <KeyFrame Cue="100%" Value="1"/>
-              </TransformKeyFrames>
-            </Animation>
-          </Style.Animations>
-        </Style>
-        <Style Selector="Rectangle.Rect3:pointerover">
-          <Style.Animations>
-            <Animation Duration="0:0:3" Easing="BounceEaseInOut">
-              <TransformKeyFrames Property="TranslateTransform.Y">
-                <KeyFrame Cue="0%" Value="0"/>
-                <KeyFrame Cue="48%" Value="-100"/>
-                <KeyFrame Cue="100%" Value="0"/>
-              </TransformKeyFrames>
-            </Animation>
-          </Style.Animations>
-        </Style>
-        <Style Selector="Border.Rect4:pointerover">
-          <Style.Animations>
-            <Animation Duration="0:0:3" Easing="CircularEaseInOut">
-              <TransformKeyFrames Property="SkewTransform.AngleX">
-                <KeyFrame Cue="0%" Value="0"/>
-                <KeyFrame Cue="25%" Value="-20"/>
-                <KeyFrame Cue="75%" Value="20"/>
-                <KeyFrame Cue="100%" Value="0"/>
-              </TransformKeyFrames>
-            </Animation>
-          </Style.Animations>
-        </Style>
-      </Styles>
+    <Styles>
+      <Styles.Resources>
+        <Template x:Key="Acorn">
+          <Path Fill="White" Stretch="Uniform" Data="F1 M 16.6309,18.6563C 17.1309,8.15625 29.8809,14.1563 29.8809,14.1563C 30.8809,11.1563 34.1308,11.4063 34.1308,11.4063C 33.5,12 34.6309,13.1563 34.6309,13.1563C 32.1309,13.1562 31.1309,14.9062 31.1309,14.9062C 41.1309,23.9062 32.6309,27.9063 32.6309,27.9062C 24.6309,24.9063 21.1309,22.1562 16.6309,18.6563 Z M 16.6309,19.9063C 21.6309,24.1563 25.1309,26.1562 31.6309,28.6562C 31.6309,28.6562 26.3809,39.1562 18.3809,36.1563C 18.3809,36.1563 18,38 16.3809,36.9063C 15,36 16.3809,34.9063 16.3809,34.9063C 16.3809,34.9063 10.1309,30.9062 16.6309,19.9063 Z"/>
+        </Template>        
+      </Styles.Resources>
+      <Style Selector="Border.Test">
+        <Setter Property="Margin" Value="15"/>
+        <Setter Property="Width" Value="100"/>
+        <Setter Property="Height" Value="100"/>
+        <Setter Property="Child" Value="{StaticResource Acorn}"/>
+      </Style>
+      <Style Selector="Border.Test">
+        <Setter Property="Margin" Value="15"/>
+        <Setter Property="Width" Value="100"/>
+        <Setter Property="Height" Value="100"/>
+      </Style>
+      <Style Selector="Border.Rect1:pointerover">
+        <Style.Animations>
+          <Animation Duration="0:0:2.5" Easing="QuinticEaseInOut">
+            <TransformKeyFrames Property="RotateTransform.Angle">
+              <KeyFrame Cue="0%" Value="0"/>
+              <KeyFrame Cue="100%" Value="360"/>
+            </TransformKeyFrames>
+          </Animation>
+        </Style.Animations>
+      </Style>
+      <Style Selector="Border.Rect2:pointerover">
+        <Style.Animations>
+          <Animation Duration="0:0:0.5" Easing="SineEaseInOut">
+            <TransformKeyFrames Property="ScaleTransform.ScaleX">
+              <KeyFrame Cue="0%" Value="0.8"/>
+              <KeyFrame Cue="100%" Value="1"/>
+            </TransformKeyFrames>
+            <TransformKeyFrames Property="ScaleTransform.ScaleY">
+              <KeyFrame Cue="0%" Value="0.8"/>
+              <KeyFrame Cue="100%" Value="1"/>
+            </TransformKeyFrames>
+          </Animation>
+        </Style.Animations>
+      </Style>
+      <Style Selector="Border.Rect3:pointerover">
+        <Style.Animations>
+          <Animation Duration="0:0:3" Easing="BounceEaseInOut">
+            <TransformKeyFrames Property="TranslateTransform.Y">
+              <KeyFrame Cue="0%" Value="0"/>
+              <KeyFrame Cue="48%" Value="-100"/>
+              <KeyFrame Cue="100%" Value="0"/>
+            </TransformKeyFrames>
+          </Animation>
+        </Style.Animations>
+      </Style>
+      <Style Selector="Border.Rect4:pointerover">
+        <Style.Animations>
+          <Animation Duration="0:0:3" Easing="CircularEaseInOut">
+            <TransformKeyFrames Property="SkewTransform.AngleX">
+              <KeyFrame Cue="0%" Value="0"/>
+              <KeyFrame Cue="25%" Value="-20"/>
+              <KeyFrame Cue="75%" Value="20"/>
+              <KeyFrame Cue="100%" Value="0"/>
+            </TransformKeyFrames>
+          </Animation>
+        </Style.Animations>
+      </Style>
+    </Styles>
   </UserControl.Styles>
-  <Grid> 
-    <StackPanel VerticalAlignment="Center" 
-                HorizontalAlignment="Center"
-                ClipToBounds="False">
-      <TextBlock HorizontalAlignment="Center">
-        Hover to activate Transform Keyframe Animations.
-      </TextBlock>
-      <StackPanel Orientation="Horizontal"
-          ClipToBounds="False">
-        <Rectangle Classes="Test Rect1" Fill="DarkRed">
-          <Rectangle.RenderTransform>
+  <Grid>
+    <StackPanel>
+      <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+        <TextBlock VerticalAlignment="Center">
+          Hover to activate Transform Keyframe Animations.
+        </TextBlock>
+        <Button Content="{Binding PlayStateText}" Command="{Binding ToggleGlobalPlayState}"/>
+       </StackPanel>
+      <WrapPanel>
+        <Border Classes="Test Rect1" Background="DarkRed">
+          <Border.RenderTransform>
             <RotateTransform/>
-          </Rectangle.RenderTransform>
-        </Rectangle>
-        <Rectangle Classes="Test Rect2" Fill="DarkMagenta">
-          <Rectangle.RenderTransform>
+          </Border.RenderTransform>
+         </Border>
+        <Border Classes="Test Rect2" Background="DarkMagenta">
+          <Border.RenderTransform>
             <ScaleTransform ScaleX="0.8" ScaleY="0.8"/>
-          </Rectangle.RenderTransform>
-        </Rectangle>
-        <Rectangle Classes="Test Rect3" Fill="Navy">
-          <Rectangle.RenderTransform>
+          </Border.RenderTransform>
+        </Border>
+        <Border Classes="Test Rect3" Background="Navy" >
+          <Border.RenderTransform>
             <TranslateTransform/>
-          </Rectangle.RenderTransform>
-        </Rectangle>
+          </Border.RenderTransform>
+        </Border>
         <Border Classes="Test Rect4" Background="SeaGreen">
           <Border.RenderTransform>
             <SkewTransform/>
           </Border.RenderTransform>
-            <Path Fill="White" Stretch="Uniform" Data="F1 M 16.6309,18.6563C 17.1309,8.15625 29.8809,14.1563 29.8809,14.1563C 30.8809,11.1563 34.1308,11.4063 34.1308,11.4063C 33.5,12 34.6309,13.1563 34.6309,13.1563C 32.1309,13.1562 31.1309,14.9062 31.1309,14.9062C 41.1309,23.9062 32.6309,27.9063 32.6309,27.9062C 24.6309,24.9063 21.1309,22.1562 16.6309,18.6563 Z M 16.6309,19.9063C 21.6309,24.1563 25.1309,26.1562 31.6309,28.6562C 31.6309,28.6562 26.3809,39.1562 18.3809,36.1563C 18.3809,36.1563 18,38 16.3809,36.9063C 15,36 16.3809,34.9063 16.3809,34.9063C 16.3809,34.9063 10.1309,30.9062 16.6309,19.9063 Z"/>          
-         </Border>
-      </StackPanel>
+        </Border>
+        <Border Classes="Test Rect1" Background="DarkRed">
+          <Border.RenderTransform>
+            <RotateTransform/>
+          </Border.RenderTransform>
+        </Border>
+        <Border Classes="Test Rect2" Background="DarkMagenta">
+          <Border.RenderTransform>
+            <ScaleTransform ScaleX="0.8" ScaleY="0.8"/>
+          </Border.RenderTransform>
+        </Border>
+        <Border Classes="Test Rect3" Background="Navy" >
+          <Border.RenderTransform>
+            <TranslateTransform/>
+          </Border.RenderTransform>
+        </Border>
+        <Border Classes="Test Rect4" Background="SeaGreen">
+          <Border.RenderTransform>
+            <SkewTransform/>
+          </Border.RenderTransform>
+        </Border>
+        <Border Classes="Test Rect1" Background="DarkRed">
+          <Border.RenderTransform>
+            <RotateTransform/>
+          </Border.RenderTransform>
+        </Border>
+        <Border Classes="Test Rect2" Background="DarkMagenta">
+          <Border.RenderTransform>
+            <ScaleTransform ScaleX="0.8" ScaleY="0.8"/>
+          </Border.RenderTransform>
+        </Border>
+        <Border Classes="Test Rect3" Background="Navy" >
+          <Border.RenderTransform>
+            <TranslateTransform/>
+          </Border.RenderTransform>
+        </Border>
+        <Border Classes="Test Rect4" Background="SeaGreen">
+          <Border.RenderTransform>
+            <SkewTransform/>
+          </Border.RenderTransform>
+        </Border>
 
+        <Border Classes="Test Rect1" Background="DarkRed">
+          <Border.RenderTransform>
+            <RotateTransform/>
+          </Border.RenderTransform>
+        </Border>
+        <Border Classes="Test Rect2" Background="DarkMagenta">
+          <Border.RenderTransform>
+            <ScaleTransform ScaleX="0.8" ScaleY="0.8"/>
+          </Border.RenderTransform>
+        </Border>
+        <Border Classes="Test Rect3" Background="Navy" >
+          <Border.RenderTransform>
+            <TranslateTransform/>
+          </Border.RenderTransform>
+        </Border>
+        <Border Classes="Test Rect4" Background="SeaGreen">
+          <Border.RenderTransform>
+            <SkewTransform/>
+          </Border.RenderTransform>
+        </Border>
+
+        <Border Classes="Test Rect1" Background="DarkRed">
+          <Border.RenderTransform>
+            <RotateTransform/>
+          </Border.RenderTransform>
+        </Border>
+        <Border Classes="Test Rect2" Background="DarkMagenta">
+          <Border.RenderTransform>
+            <ScaleTransform ScaleX="0.8" ScaleY="0.8"/>
+          </Border.RenderTransform>
+        </Border>
+        <Border Classes="Test Rect3" Background="Navy" >
+          <Border.RenderTransform>
+            <TranslateTransform/>
+          </Border.RenderTransform>
+        </Border>
+        <Border Classes="Test Rect4" Background="SeaGreen">
+          <Border.RenderTransform>
+            <SkewTransform/>
+          </Border.RenderTransform>
+        </Border>
+        <Border Classes="Test Rect1" Background="DarkRed">
+          <Border.RenderTransform>
+            <RotateTransform/>
+          </Border.RenderTransform>
+        </Border>
+        <Border Classes="Test Rect2" Background="DarkMagenta">
+          <Border.RenderTransform>
+            <ScaleTransform ScaleX="0.8" ScaleY="0.8"/>
+          </Border.RenderTransform>
+        </Border>
+        <Border Classes="Test Rect3" Background="Navy" >
+          <Border.RenderTransform>
+            <TranslateTransform/>
+          </Border.RenderTransform>
+        </Border>
+        <Border Classes="Test Rect4" Background="SeaGreen">
+          <Border.RenderTransform>
+            <SkewTransform/>
+          </Border.RenderTransform>
+        </Border>
+
+        <Border Classes="Test Rect1" Background="DarkRed">
+          <Border.RenderTransform>
+            <RotateTransform/>
+          </Border.RenderTransform>
+        </Border>
+        <Border Classes="Test Rect2" Background="DarkMagenta">
+          <Border.RenderTransform>
+            <ScaleTransform ScaleX="0.8" ScaleY="0.8"/>
+          </Border.RenderTransform>
+        </Border>
+        <Border Classes="Test Rect3" Background="Navy" >
+          <Border.RenderTransform>
+            <TranslateTransform/>
+          </Border.RenderTransform>
+        </Border>
+        <Border Classes="Test Rect4" Background="SeaGreen">
+          <Border.RenderTransform>
+            <SkewTransform/>
+          </Border.RenderTransform>
+        </Border>
+        <Border Classes="Test Rect1" Background="DarkRed">
+          <Border.RenderTransform>
+            <RotateTransform/>
+          </Border.RenderTransform>
+        </Border>
+        <Border Classes="Test Rect2" Background="DarkMagenta">
+          <Border.RenderTransform>
+            <ScaleTransform ScaleX="0.8" ScaleY="0.8"/>
+          </Border.RenderTransform>
+        </Border>
+        <Border Classes="Test Rect3" Background="Navy" >
+          <Border.RenderTransform>
+            <TranslateTransform/>
+          </Border.RenderTransform>
+        </Border>
+        <Border Classes="Test Rect4" Background="SeaGreen">
+          <Border.RenderTransform>
+            <SkewTransform/>
+          </Border.RenderTransform>
+        </Border>
+        <Border Classes="Test Rect1" Background="DarkRed">
+          <Border.RenderTransform>
+            <RotateTransform/>
+          </Border.RenderTransform>
+        </Border>
+        <Border Classes="Test Rect2" Background="DarkMagenta">
+          <Border.RenderTransform>
+            <ScaleTransform ScaleX="0.8" ScaleY="0.8"/>
+          </Border.RenderTransform>
+        </Border>
+        <Border Classes="Test Rect3" Background="Navy" >
+          <Border.RenderTransform>
+            <TranslateTransform/>
+          </Border.RenderTransform>
+        </Border>
+        <Border Classes="Test Rect4" Background="SeaGreen">
+          <Border.RenderTransform>
+            <SkewTransform/>
+          </Border.RenderTransform>
+        </Border>
+        <Border Classes="Test Rect1" Background="DarkRed">
+          <Border.RenderTransform>
+            <RotateTransform/>
+          </Border.RenderTransform>
+        </Border>
+        <Border Classes="Test Rect2" Background="DarkMagenta">
+          <Border.RenderTransform>
+            <ScaleTransform ScaleX="0.8" ScaleY="0.8"/>
+          </Border.RenderTransform>
+        </Border>
+        <Border Classes="Test Rect3" Background="Navy" >
+          <Border.RenderTransform>
+            <TranslateTransform/>
+          </Border.RenderTransform>
+        </Border>
+        <Border Classes="Test Rect4" Background="SeaGreen">
+          <Border.RenderTransform>
+            <SkewTransform/>
+          </Border.RenderTransform>
+        </Border>
+        <Border Classes="Test Rect1" Background="DarkRed">
+          <Border.RenderTransform>
+            <RotateTransform/>
+          </Border.RenderTransform>
+        </Border>
+        <Border Classes="Test Rect2" Background="DarkMagenta">
+          <Border.RenderTransform>
+            <ScaleTransform ScaleX="0.8" ScaleY="0.8"/>
+          </Border.RenderTransform>
+        </Border>
+        <Border Classes="Test Rect3" Background="Navy" >
+          <Border.RenderTransform>
+            <TranslateTransform/>
+          </Border.RenderTransform>
+        </Border>
+        <Border Classes="Test Rect4" Background="SeaGreen">
+          <Border.RenderTransform>
+            <SkewTransform/>
+          </Border.RenderTransform>
+        </Border>
+        <Border Classes="Test Rect1" Background="DarkRed">
+          <Border.RenderTransform>
+            <RotateTransform/>
+          </Border.RenderTransform>
+        </Border>
+      </WrapPanel>
     </StackPanel>
   </Grid>
 </UserControl>
