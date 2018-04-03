@@ -59,6 +59,46 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
         }
 
         [Fact]
+        public async Task Border_Uniform_CornerRadius()
+        {
+            Decorator target = new Decorator
+            {
+                Padding = new Thickness(8),
+                Width = 200,
+                Height = 200,
+                Child = new Border
+                {
+                    BorderBrush = Brushes.Black,
+                    BorderThickness = new Thickness(2),
+                    CornerRadius = new CornerRadius(16),
+                }
+            };
+
+            await RenderToFile(target);
+            CompareImages();
+        }
+
+        [Fact]
+        public async Task Border_NonUniform_CornerRadius()
+        {
+            Decorator target = new Decorator
+            {
+                Padding = new Thickness(8),
+                Width = 200,
+                Height = 200,
+                Child = new Border
+                {
+                    BorderBrush = Brushes.Black,
+                    BorderThickness = new Thickness(2),
+                    CornerRadius = new CornerRadius(16, 4, 7, 10),
+                }
+            };
+
+            await RenderToFile(target);
+            CompareImages();
+        }
+
+        [Fact]
         public async Task Border_Fill()
         {
             Decorator target = new Decorator
