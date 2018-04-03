@@ -40,8 +40,6 @@ namespace Avalonia.Animation.Keyframes
                 .Where(p=> Timing.GetGlobalPlayState() != AnimationPlayState.Paused)
                 .Subscribe(_ =>
                 {
- 
-
                     var interp = DoInterpolation(animation, control)
                                 .Select(p => (object)p);
                     control.Bind(Property, interp, BindingPriority.Animation);

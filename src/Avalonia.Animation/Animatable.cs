@@ -7,6 +7,7 @@ using System;
 using System.Reactive.Linq;
 using Avalonia.Collections;
 using Avalonia.Animation.Transitions;
+using System.Collections.Generic;
 
 namespace Avalonia.Animation
 {
@@ -58,17 +59,23 @@ namespace Avalonia.Animation
         /// <summary>
         /// Defines the <see cref="Transitions"/> property.
         /// </summary>
-        public static readonly StyledProperty<Transitions.Transitions> TransitionsProperty =
-                AvaloniaProperty.Register<Animatable, Transitions.Transitions>(nameof(Transitions));
+        public static readonly DirectProperty<Animatable, IEnumerable<ITransition>> TransitionsProperty =
+            AvaloniaProperty.RegisterDirect<Animatable, IEnumerable<ITransition>>(
+                nameof(Transitions),
+                o => o.Transitions,
+                (o, v) => o.Transitions = v);
+
+        private IEnumerable<ITransition> _transitions = new AvaloniaList<ITransition>();
 
         /// <summary>
         /// Gets or sets the property transitions for the control.
         /// </summary>
-        public Transitions.Transitions Transitions
+        public IEnumerable<ITransition> Transitions
         {
-            get { return GetValue(TransitionsProperty); }
-            set { SetValue(TransitionsProperty, value); }
-        } 
+            get { return _transitions; }
+            set { SetAndRaise(TransitionsProperty, ref _transitions, value); }
+        }
+
 
         /// <summary>
         /// Reacts to a change in a <see cref="AvaloniaProperty"/> value in 
