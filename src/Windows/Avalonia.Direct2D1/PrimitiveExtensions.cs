@@ -132,7 +132,7 @@ namespace Avalonia.Direct2D1
             {
                 properties.DashStyle = DashStyle.Custom;
                 properties.DashOffset = (float)pen.DashStyle.Offset;
-                dashes = pen.DashStyle?.Dashes.Select(x => (float)x).ToArray();
+                dashes = pen.DashStyle.Dashes.Select(x => (float)x).ToArray();
             }
             return new StrokeStyle(factory, properties, dashes);
         }
