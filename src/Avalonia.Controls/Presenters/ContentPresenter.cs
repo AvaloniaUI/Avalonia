@@ -371,7 +371,6 @@ namespace Avalonia.Controls.Presenters
             var horizontalContentAlignment = HorizontalContentAlignment;
             var verticalContentAlignment = VerticalContentAlignment;
             var useLayoutRounding = UseLayoutRounding;
-            //Not sure about this part
             var availableSizeMinusMargins = new Size(
                 Math.Max(0, finalSize.Width - padding.Left - padding.Right - borderThickness.Left - borderThickness.Right),
                 Math.Max(0, finalSize.Height - padding.Top - padding.Bottom - borderThickness.Top - borderThickness.Bottom));
