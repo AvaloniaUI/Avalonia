@@ -22,7 +22,7 @@ namespace Avalonia.Media
         /// Defines the <see cref="GradientStops"/> property.
         /// </summary>
         public static readonly StyledProperty<IList<GradientStop>> GradientStopsProperty =
-            AvaloniaProperty.Register<GradientBrush, IList<GradientStop>>(nameof(Opacity));
+            AvaloniaProperty.Register<GradientBrush, IList<GradientStop>>(nameof(GradientStops));
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GradientBrush"/> class.
