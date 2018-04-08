@@ -261,6 +261,8 @@ namespace Avalonia.Controls
             {
                 _presenter?.ShowCaret();
             }
+
+            e.Handled = true;
         }
 
         protected override void OnLostFocus(RoutedEventArgs e)
@@ -274,6 +276,7 @@ namespace Avalonia.Controls
         protected override void OnTextInput(TextInputEventArgs e)
         {
             HandleTextInput(e.Text);
+            e.Handled = true;
         }
 
         private void HandleTextInput(string input)

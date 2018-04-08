@@ -133,4 +133,8 @@
   <Style Selector="MenuItem:empty /template/ Path#rightArrow">
     <Setter Property="IsVisible" Value="False"/>
   </Style>
+
+  <Style Selector="MenuItem:disabled">
+    <Setter Property="Opacity" Value="{DynamicResource ThemeDisabledOpacity}"/>
+  </Style>
 </Styles>
