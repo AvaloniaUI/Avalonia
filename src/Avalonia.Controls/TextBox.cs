@@ -85,6 +85,7 @@ namespace Avalonia.Controls
         private int _selectionEnd;
         private TextPresenter _presenter;
         private UndoRedoHelper<UndoRedoState> _undoRedoHelper;
+        private bool _isUndoingRedoing;
         private bool _ignoreTextChanges;
         private static readonly string[] invalidCharacters = new String[1]{"\u007f"};
 
@@ -198,7 +199,11 @@ namespace Avalonia.Controls
                 if (!_ignoreTextChanges)
                 {
                     CaretIndex = CoerceCaretIndex(CaretIndex, value?.Length ?? 0);
-                    SetAndRaise(TextProperty, ref _text, value);
+
+                    if (SetAndRaise(TextProperty, ref _text, value) && !_isUndoingRedoing)
+                    {
+                        _undoRedoHelper.Clear();
+                    }
                 }
             }
         }
@@ -367,14 +372,30 @@ namespace Avalonia.Controls
                 case Key.Z:
                     if (modifiers == InputModifiers.Control)
                     {
-                        _undoRedoHelper.Undo();
+                        try
+                        {
+                            _isUndoingRedoing = true;
+                            _undoRedoHelper.Undo();
+                        }
+                        finally
+                        {
+                            _isUndoingRedoing = false;
+                        }
                         handled = true;
                     }
                     break;
                 case Key.Y:
                     if (modifiers == InputModifiers.Control)
                     {
-                        _undoRedoHelper.Redo();
+                        try
+                        {
+                            _isUndoingRedoing = true;
+                            _undoRedoHelper.Redo();
+                        }
+                        finally
+                        {
+                            _isUndoingRedoing = false;
+                        }
                         handled = true;
                     }
                     break;
