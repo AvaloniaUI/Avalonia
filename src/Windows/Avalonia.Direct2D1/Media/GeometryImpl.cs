@@ -24,7 +24,6 @@ namespace Avalonia.Direct2D1.Media
         /// <inheritdoc/>
         public Rect GetRenderBounds(Avalonia.Media.Pen pen)
         {
-            var factory = AvaloniaLocator.Current.GetService<Factory>();
             return Geometry.GetWidenedBounds((float)(pen?.Thickness ?? 0)).ToAvalonia();
         }
 
