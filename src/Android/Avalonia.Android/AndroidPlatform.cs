@@ -19,8 +19,10 @@ namespace Avalonia
 {
     public static class AndroidApplicationExtensions
     {
-        public static T UseAndroid<T>(this T builder) where T : AppBuilderBase<T>, new()
+        public static T UseAndroid<T>(this T builder, bool? useDeferredRendering = null) where T : AppBuilderBase<T>, new()
         {
+            if (useDeferredRendering.HasValue)
+                Android.AndroidPlatform.UseDeferredRendering = useDeferredRendering.Value;
             builder.UseWindowingSubsystem(() => Android.AndroidPlatform.Initialize(builder.Instance), "Android");
             builder.UseSkia();
             return builder;
@@ -33,6 +35,7 @@ namespace Avalonia.Android
     class AndroidPlatform : IPlatformSettings, IWindowingPlatform
     {
         public static readonly AndroidPlatform Instance = new AndroidPlatform();
+        public static bool UseDeferredRendering { get; set; } = true;
         public Size DoubleClickSize => new Size(4, 4);
         public TimeSpan DoubleClickTime => TimeSpan.FromMilliseconds(200);
         public double RenderScalingFactor => _scalingFactor;

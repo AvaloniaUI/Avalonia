@@ -13,12 +13,13 @@ using Avalonia;
 
 namespace ControlCatalog.Android
 {
-    [Activity(Label = "ControlCatalog.Android", MainLauncher = true, Icon = "@drawable/icon", LaunchMode = LaunchMode.SingleInstance)]
+    [Activity(Label = "ControlCatalog.Android", MainLauncher = true, Icon = "@drawable/icon",
+              LaunchMode = LaunchMode.SingleInstance, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.ScreenLayout | ConfigChanges.LayoutDirection | ConfigChanges.Orientation)]
     public class MainActivity : AvaloniaActivity
     {
         protected override void OnCreate(Bundle savedInstanceState)
         {
-            if (Avalonia.Application.Current == null)           
+            if (Avalonia.Application.Current == null)
             {
                 AppBuilder.Configure(new App())
                     .UseAndroid()

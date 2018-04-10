@@ -17,8 +17,7 @@ using Avalonia.Rendering;
 
 namespace Avalonia.Android.Platform.SkiaPlatform
 {
-    class TopLevelImpl : IAndroidView, ITopLevelImpl,  IFramebufferPlatformSurface
-
+    class TopLevelImpl : IAndroidView, ITopLevelImpl, IFramebufferPlatformSurface
     {
         private readonly AndroidKeyboardEventsHelper<TopLevelImpl> _keyboardHelper;
         private readonly AndroidTouchEventsHelper<TopLevelImpl> _touchHelper;
@@ -87,10 +86,10 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public IEnumerable<object> Surfaces => new object[] {this};
 
-        public IRenderer CreateRenderer(IRenderRoot root)
-        {
-            return new ImmediateRenderer(root);
-        }
+        public IRenderer CreateRenderer(IRenderRoot root) =>
+            AndroidPlatform.UseDeferredRendering
+               ? new DeferredRenderer(root, AvaloniaLocator.Current.GetService<IRenderLoop>())
+               : (IRenderer) new ImmediateRenderer(root);
 
         public virtual void Hide()
         {

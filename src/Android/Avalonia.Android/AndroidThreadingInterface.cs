@@ -77,7 +77,13 @@ namespace Avalonia.Android
             });
         }
 
-        private void EnsureInvokeOnMainThread(Action action) => _handler.Post(action);
+        private void EnsureInvokeOnMainThread(Action action) 
+        {
+            //if (CurrentThreadIsLoopThread) does not work - touch events dont render new pages then ...
+            //    action();
+            //else
+            _handler.Post(action);
+        }
 
         public void Signal(DispatcherPriority prio)
         {
