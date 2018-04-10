@@ -22,36 +22,35 @@ namespace Avalonia.Animation.Keyframes
         {
             var ctrl = (Visual)control;
 
-            // Check if the AvaloniaProperty is Transform derived.
-            if (typeof(Transform).IsAssignableFrom(Property.OwnerType))
+            // Check if the Target Property is Transform derived.
+            if (typeof(Transform).IsAssignableFrom(Property.OwnerType) && ctrl.RenderTransform != null)
             {
                 var renderTransformType = ctrl.RenderTransform.GetType();
-
+                
                 if (childKeyFrames == null)
                 {
                     InitializeInternalDoubleKeyFrames();
                 }
 
-                if(ctrl.RenderTransform != null)
+                // It's only 1 transform object so let's target that.
+                if (renderTransformType == Property.OwnerType)
                 {
-                    // It's only 1 transform object so let's target that.
-                    if (renderTransformType == Property.OwnerType)
+                    return childKeyFrames.Apply(animation, ctrl.RenderTransform, obsMatch);
+                }
+                // Try if the control's RenderTransform is a TransformGroup and find 
+                // the target there.
+                else if (renderTransformType == typeof(TransformGroup))
+                {
+                    foreach (Transform transform in ((TransformGroup)ctrl.RenderTransform).Children)
                     {
-                        return childKeyFrames.Apply(animation, ctrl.RenderTransform, obsMatch);
-                    }
-                    else if (renderTransformType == typeof(TransformGroup))
-                    {
-                        foreach (Transform transform in ((TransformGroup)ctrl.RenderTransform).Children)
+                        if (transform.GetType() == Property.OwnerType)
                         {
-                            if (transform.GetType() == Property.OwnerType)
-                            {
-                                return childKeyFrames.Apply(animation, transform, obsMatch);
-                            }
+                            return childKeyFrames.Apply(animation, transform, obsMatch);
                         }
                     }
-
-                    //throw new InvalidOperationException($"TransformKeyFrame hasn't found an appropriate Transform object with type {Property.OwnerType} in target {control}.");
                 }
+
+                //throw new InvalidOperationException($"TransformKeyFrame hasn't found an appropriate Transform object with type {Property.OwnerType} in target {control}.");
 
                 return null;
 
