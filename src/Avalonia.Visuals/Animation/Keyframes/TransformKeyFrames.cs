@@ -32,29 +32,28 @@ namespace Avalonia.Animation.Keyframes
                     InitializeInternalDoubleKeyFrames();
                 }
 
-                // It's only 1 transform object so let's target that.
-                if (renderTransformType == Property.OwnerType)
+                if(ctrl.RenderTransform != null)
                 {
-                    return childKeyFrames.Apply(animation, ctrl.RenderTransform, obsMatch);
-                }
-                // TODO: Selection within TransformGroup is not working
-                if (renderTransformType == typeof(TransformGroup))
-                {
-                    foreach (Transform transform in ((TransformGroup)ctrl.RenderTransform).Children)
+                    // It's only 1 transform object so let's target that.
+                    if (renderTransformType == Property.OwnerType)
                     {
-                        if (transform.GetType() == Property.OwnerType)
+                        return childKeyFrames.Apply(animation, ctrl.RenderTransform, obsMatch);
+                    }
+                    else if (renderTransformType == typeof(TransformGroup))
+                    {
+                        foreach (Transform transform in ((TransformGroup)ctrl.RenderTransform).Children)
                         {
-                             return childKeyFrames.Apply(animation, transform, obsMatch);
+                            if (transform.GetType() == Property.OwnerType)
+                            {
+                                return childKeyFrames.Apply(animation, transform, obsMatch);
+                            }
                         }
                     }
+
+                    //throw new InvalidOperationException($"TransformKeyFrame hasn't found an appropriate Transform object with type {Property.OwnerType} in target {control}.");
                 }
 
                 return null;
-
-                // // Throw exception when there is no appropriate transform object found.
-                // throw new Exception
-                //     ($"TransformKeyFrame hasn't found an appropriate Transform object with type {Property.OwnerType} in target {control}.");
-
 
             }
             else

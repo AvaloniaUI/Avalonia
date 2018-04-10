@@ -56,17 +56,5 @@ namespace Avalonia.Animation
             return this;
         }
 
-        ///// <summary>
-        ///// Notifies the provider that an observer is to receive notifications.
-        ///// </summary>
-        ///// <param name="observer">The observer.</param>
-        ///// <returns>
-        ///// A reference to an interface that allows observers to stop receiving notifications
-        ///// before the provider has finished sending them.
-        ///// </returns>
-        //public IDisposable Subscribe(IObserver<object> observer)
-        //{
-        //    return _inner.Subscribe(observer);
-        //}
     }
 }

@@ -3,6 +3,7 @@
 
 using Avalonia.Collections;
 using Avalonia.Metadata;
+using System.Collections.Specialized;
 
 namespace Avalonia.Media
 {
@@ -17,6 +18,29 @@ namespace Avalonia.Media
         public TransformGroup()
         {
             Children = new Transforms();
+            Children.CollectionChanged += (_, e) =>
+            {
+                switch (e.Action)
+                {
+                    case NotifyCollectionChangedAction.Add:
+                        foreach (Transform tr in e.NewItems)
+                        {
+                            tr.Changed += ChildTransform_Changed;
+                        }
+                        break;
+                    case NotifyCollectionChangedAction.Remove:
+                        foreach (Transform tr in e.OldItems)
+                        {
+                            tr.Changed -= ChildTransform_Changed;
+                        }
+                        break;
+                }
+            };
+        }
+
+        private void ChildTransform_Changed(object sender, System.EventArgs e)
+        {
+            this.RaiseChanged();
         }
 
         /// <summary>

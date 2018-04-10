@@ -12,22 +12,6 @@ using System.Collections.Generic;
 namespace Avalonia.Animation
 {
     /// <summary>
-    /// 
-    /// </summary>
-    public enum AnimationPlayState
-    {
-        /// <summary>
-        /// 
-        /// </summary>
-        Running,
-
-        /// <summary>
-        /// 
-        /// </summary>
-        Paused
-    }
-
-    /// <summary>
     /// Base class for control which can have property transitions.
     /// </summary>
     public class Animatable : AvaloniaObject
@@ -75,7 +59,6 @@ namespace Avalonia.Animation
             get { return _transitions; }
             set { SetAndRaise(TransitionsProperty, ref _transitions, value); }
         }
-
 
         /// <summary>
         /// Reacts to a change in a <see cref="AvaloniaProperty"/> value in 
