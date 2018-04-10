@@ -5,10 +5,11 @@
     <TabControl.Transition>
       <CrossFade Duration="0.25"/>
     </TabControl.Transition>
+    <TabItem Header="AutoCompleteBox"><pages:AutoCompleteBoxPage/></TabItem>
     <TabItem Header="Border"><pages:BorderPage/></TabItem>
     <TabItem Header="Button"><pages:ButtonPage/></TabItem>
     <TabItem Header="ButtonSpinner"><pages:ButtonSpinnerPage/></TabItem>
-    <TabItem Header="Calendar"><pages:CalendarPage/></TabItem> 
+    <TabItem Header="Calendar"><pages:CalendarPage/></TabItem>
     <TabItem Header="Canvas"><pages:CanvasPage/></TabItem>
     <TabItem Header="Carousel"><pages:CarouselPage/></TabItem>
     <TabItem Header="CheckBox"><pages:CheckBoxPage/></TabItem>
