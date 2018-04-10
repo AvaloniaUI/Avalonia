@@ -221,7 +221,7 @@ namespace Avalonia.Controls.Presenters
         {
             var content = Content;
             var oldChild = Child;
-            var newChild = CreateChild();            
+            var newChild = CreateChild();
 
             // Remove the old child if we're not recycling it.
             if (oldChild != null && newChild != oldChild)
@@ -397,8 +397,6 @@ namespace Avalonia.Controls.Presenters
                     size = size.WithHeight(Math.Min(size.Height, DesiredSize.Height - padding.Top - padding.Bottom));
                 }
 
-                size = LayoutHelper.ApplyLayoutConstraints(Child, size);
-
                 if (useLayoutRounding)
                 {
                     size = new Size(
@@ -412,7 +410,6 @@ namespace Avalonia.Controls.Presenters
                 switch (horizontalContentAlignment)
                 {
                     case HorizontalAlignment.Center:
-                    case HorizontalAlignment.Stretch:
                         originX += (availableSizeMinusMargins.Width - size.Width) / 2;
                         break;
                     case HorizontalAlignment.Right:
@@ -423,7 +420,6 @@ namespace Avalonia.Controls.Presenters
                 switch (verticalContentAlignment)
                 {
                     case VerticalAlignment.Center:
-                    case VerticalAlignment.Stretch:
                         originY += (availableSizeMinusMargins.Height - size.Height) / 2;
                         break;
                     case VerticalAlignment.Bottom:
