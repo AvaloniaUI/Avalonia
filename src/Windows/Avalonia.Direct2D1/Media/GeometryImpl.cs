@@ -27,7 +27,7 @@ namespace Avalonia.Direct2D1.Media
         public Rect GetRenderBounds(Avalonia.Media.Pen pen)
         {
             var factory = AvaloniaLocator.Current.GetService<Factory>();
-            return Geometry.GetWidenedBounds((float)pen.Thickness).ToAvalonia();
+            return Geometry.GetWidenedBounds((float)(pen?.Thickness ?? 0)).ToAvalonia();
         }
 
         /// <inheritdoc/>
@@ -51,7 +51,7 @@ namespace Avalonia.Direct2D1.Media
         /// <inheritdoc/>
         public bool StrokeContains(Avalonia.Media.Pen pen, Point point)
         {
-            return Geometry.StrokeContainsPoint(point.ToSharpDX(), (float)pen.Thickness);
+            return Geometry.StrokeContainsPoint(point.ToSharpDX(), (float)(pen?.Thickness ?? 0));
         }
 
         public ITransformedGeometryImpl WithTransform(Matrix transform)
