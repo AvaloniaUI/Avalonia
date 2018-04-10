@@ -316,7 +316,7 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
                 Child = new Border
                 {
                     BorderBrush = Brushes.Red,
-                    BorderThickness = 1,
+                    BorderThickness = new Thickness(1),
                     HorizontalAlignment = HorizontalAlignment.Center,
                     VerticalAlignment = VerticalAlignment.Center,
                     Child = new Path

@@ -13,7 +13,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new Border
             {
                 Padding = new Thickness(6),
-                BorderThickness = 4,
+                BorderThickness = new Thickness(4)
             };
 
             target.Measure(new Size(100, 100));
