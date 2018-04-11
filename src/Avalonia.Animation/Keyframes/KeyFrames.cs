@@ -37,6 +37,7 @@ namespace Avalonia.Animation.Keyframes
 
             return obsMatch
                 .Where(p => p == true)
+                // Ignore triggers when global timers are paused.
                 .Where(p=> Timing.GetGlobalPlayState() != AnimationPlayState.Paused)
                 .Subscribe(_ =>
                 {

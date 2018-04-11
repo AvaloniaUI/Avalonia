@@ -4,6 +4,7 @@
 using System;
 using System.Globalization;
 using System.Linq;
+using System.Numerics;
 using System.Reflection;
 
 namespace Avalonia.Media
@@ -81,6 +82,32 @@ namespace Avalonia.Media
             );
         }
 
+        /// <summary>
+        /// Creates a <see cref="Color"/> from a <see cref="Vector4"/>.
+        /// </summary>
+        /// <param name="value">The <see cref="Vector4"/> value.</param>
+        /// <param name="normalized">True if the color vector is normalized floats, false if it's bytes (0-255)</param>
+        /// <returns>The color.</returns>
+        public static Color FromVector4(Vector4 value, bool normalized)
+        {
+            if (normalized)
+            {
+                return new Color(
+                    (byte)(value.W * 255),
+                    (byte)(value.X * 255),
+                    (byte)(value.Y * 255),
+                    (byte)(value.Z * 255)
+                );
+            } else {
+                return new Color(
+                    (byte)(value.W),
+                    (byte)(value.X),
+                    (byte)(value.Y),
+                    (byte)(value.Z)
+                );
+            }
+
+        }
         /// <summary>
         /// Parses a color string.
         /// </summary>

@@ -27,18 +27,24 @@ namespace Avalonia.Animation
         /// <summary>
         /// Defines the <see cref="AnimationPlayState"/> property.
         /// </summary>
-        public static readonly StyledProperty<AnimationPlayState> AnimationPlayStateProperty =
-                AvaloniaProperty.Register<Animatable, AnimationPlayState>(nameof(AnimationPlayState));
+        public static readonly DirectProperty<Animatable, AnimationPlayState> AnimationPlayStateProperty =
+            AvaloniaProperty.RegisterDirect<Animatable, AnimationPlayState>(
+                nameof(AnimationPlayState),
+                o => o.AnimationPlayState,
+                (o, v) => o.AnimationPlayState = v);
 
         /// <summary>
         /// Gets or sets the state of the animation for this
         /// control.
         /// </summary>
         public AnimationPlayState AnimationPlayState
-        {
-            get { return GetValue(AnimationPlayStateProperty); }
-            set { SetValue(AnimationPlayStateProperty, value); }
+        { 
+            get { return _animationPlayState; }
+            set { SetAndRaise(AnimationPlayStateProperty, ref _animationPlayState, value); }
+        
         }
+
+        private AnimationPlayState _animationPlayState;
 
         /// <summary>
         /// Defines the <see cref="Transitions"/> property.

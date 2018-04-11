@@ -11,7 +11,7 @@ namespace Avalonia.Animation.Transitions
     /// <summary>
     /// Defines how a property should be animated using a transition.
     /// </summary>
-    public abstract class Transition<T> : ITransition
+    public abstract class Transition<T> : AvaloniaObject, ITransition
     {
         private AvaloniaProperty _prop;
         private Easing _easing;
@@ -59,7 +59,7 @@ namespace Avalonia.Animation.Transitions
         public abstract IObservable<T> DoTransition(IObservable<double> progress, T oldValue, T newValue);
 
         /// <inheritdocs/>
-        public IDisposable Apply(Animatable control, object oldValue, object newValue)
+        public virtual IDisposable Apply(Animatable control, object oldValue, object newValue)
         {
             var transition = DoTransition(Timing.GetTransitionsTimer(control, Duration, TimeSpan.Zero), (T)oldValue, (T)newValue).Select(p => (object)p);
             return control.Bind(Property, transition, Data.BindingPriority.Animation);

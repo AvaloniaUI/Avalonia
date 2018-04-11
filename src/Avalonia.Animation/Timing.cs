@@ -143,7 +143,7 @@ namespace Avalonia.Animation
         /// 0 being the start and 1 being the end. The observable is guaranteed to fire 0
         /// immediately on subscribe and 1 at the end of the duration.
         /// </remarks>
-        public static IObservable<double> GetTransitionsTimer(Animatable control, TimeSpan duration, TimeSpan delay)
+        public static IObservable<double> GetTransitionsTimer(Animatable control, TimeSpan duration, TimeSpan delay = default(TimeSpan))
         {
             var startTime = _transitionsFrameCount;
             var _duration = (ulong)(duration.Ticks / Tick.Ticks);
