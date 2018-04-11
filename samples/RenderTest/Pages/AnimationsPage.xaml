@@ -1,5 +1,6 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+<UserControl 
+  xmlns="https://github.com/avaloniaui" 
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <UserControl.Styles>
     <Styles>
       <Styles.Resources>
@@ -14,7 +15,6 @@
         <Setter Property="Background" Value="Cyan"/>
         <Setter Property="Child" Value="{StaticResource Acorn}"/>
       </Style>
-
       <Style Selector="Border.Rect1">
         <Setter Property="Transitions">
           <Transitions>
@@ -22,10 +22,8 @@
           </Transitions>
         </Setter>
       </Style>
-
       <Style Selector="Border.Rect1:pointerover">
         <Setter Property="Background" Value="Red"/>
-  
         <Style.Animations>
           <Animation Duration="0:0:2.5" Easing="SineEaseInOut">
             <TransformKeyFrames Property="RotateTransform.Angle">
@@ -78,34 +76,32 @@
             </TransformKeyFrames>
           </Animation>
         </Style.Animations>
-      </Style> 
+      </Style>
     </Styles>
   </UserControl.Styles>
   <Grid>
-    <StackPanel  HorizontalAlignment="Center" VerticalAlignment="Center" ClipToBounds="False">
+    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" ClipToBounds="False">
       <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-        <TextBlock VerticalAlignment="Center">
-          Hover to activate Transform Keyframe Animations.
+        <TextBlock VerticalAlignment="Center">        
+          Hover to activate Transform Keyframe Animations.  
         </TextBlock>
         <Button Content="{Binding PlayStateText}" Command="{Binding ToggleGlobalPlayState}"/>
       </StackPanel>
       <WrapPanel ClipToBounds="False">
         <Border Classes="Test Rect1">
-            <Border.RenderTransform>
-             <TransformGroup>
-                         <RotateTransform/>
-
-                         <ScaleTransform/>
-
-             </TransformGroup>
-           </Border.RenderTransform>
+          <Border.RenderTransform>
+            <TransformGroup>
+              <RotateTransform/>
+              <ScaleTransform/>
+            </TransformGroup>
+          </Border.RenderTransform>
         </Border>
-         <Border Classes="Test Rect2" Background="DarkMagenta">
+        <Border Classes="Test Rect2" Background="DarkMagenta">
           <Border.RenderTransform>
             <ScaleTransform/>
           </Border.RenderTransform>
         </Border>
-        <Border Classes="Test Rect3" Background="Navy" >
+        <Border Classes="Test Rect3" Background="Navy">
           <Border.RenderTransform>
             <TranslateTransform/>
           </Border.RenderTransform>
@@ -114,8 +110,7 @@
           <Border.RenderTransform>
             <SkewTransform/>
           </Border.RenderTransform>
-        </Border> 
-
+        </Border>
       </WrapPanel>
     </StackPanel>
   </Grid>
