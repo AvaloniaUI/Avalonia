@@ -11,14 +11,21 @@
         <Setter Property="Margin" Value="15"/>
         <Setter Property="Width" Value="100"/>
         <Setter Property="Height" Value="100"/>
+        <Setter Property="Background" Value="Cyan"/>
         <Setter Property="Child" Value="{StaticResource Acorn}"/>
       </Style>
-      <Style Selector="Border.Test">
-        <Setter Property="Margin" Value="15"/>
-        <Setter Property="Width" Value="100"/>
-        <Setter Property="Height" Value="100"/>
+
+      <Style Selector="Border.Rect1">
+        <Setter Property="Transitions">
+          <Transitions>
+            <ColorTransition Property="Background" Duration="0:0:1" />
+          </Transitions>
+        </Setter>
       </Style>
+
       <Style Selector="Border.Rect1:pointerover">
+        <Setter Property="Background" Value="Red"/>
+  
         <Style.Animations>
           <Animation Duration="0:0:2.5" Easing="SineEaseInOut">
             <TransformKeyFrames Property="RotateTransform.Angle">
@@ -71,7 +78,7 @@
             </TransformKeyFrames>
           </Animation>
         </Style.Animations>
-      </Style>
+      </Style> 
     </Styles>
   </UserControl.Styles>
   <Grid>
@@ -83,15 +90,17 @@
         <Button Content="{Binding PlayStateText}" Command="{Binding ToggleGlobalPlayState}"/>
       </StackPanel>
       <WrapPanel ClipToBounds="False">
-        <Border Classes="Test Rect1" Background="DarkRed">
-          <Border.RenderTransform>
-            <TransformGroup>
-              <RotateTransform/>
-              <ScaleTransform/>
-            </TransformGroup>
-          </Border.RenderTransform>
+        <Border Classes="Test Rect1">
+            <Border.RenderTransform>
+             <TransformGroup>
+                         <RotateTransform/>
+
+                         <ScaleTransform/>
+
+             </TransformGroup>
+           </Border.RenderTransform>
         </Border>
-        <Border Classes="Test Rect2" Background="DarkMagenta">
+         <Border Classes="Test Rect2" Background="DarkMagenta">
           <Border.RenderTransform>
             <ScaleTransform/>
           </Border.RenderTransform>
@@ -105,7 +114,7 @@
           <Border.RenderTransform>
             <SkewTransform/>
           </Border.RenderTransform>
-        </Border>
+        </Border> 
 
       </WrapPanel>
     </StackPanel>

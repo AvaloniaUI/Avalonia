@@ -8,7 +8,6 @@ namespace Avalonia.Animation
     {
         /// <summary>
         /// Premultiply the alpha component and interpolate from RGB color space.
-        /// Fast but relatively accurate, perception-wise.
         /// </summary>
         PremultipliedRGB,
 

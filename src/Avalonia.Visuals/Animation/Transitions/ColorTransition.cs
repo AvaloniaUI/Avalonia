@@ -36,11 +36,12 @@ namespace Avalonia.Animation.Transitions
         }
 
         private ColorInterpolationMode _interpolationMode;
-  
+
         public override IObservable<SolidColorBrush> DoTransition(IObservable<double> progress, SolidColorBrush oldValue, SolidColorBrush newValue)
         {
-            var oldColor = new Vector4(oldValue.Color.A, oldValue.Color.R, oldValue.Color.G, oldValue.Color.B);
-            var newColor = new Vector4(newValue.Color.A, newValue.Color.R, newValue.Color.G, newValue.Color.B);
+
+            var oldColor = new Vector4(oldValue.Color.R, oldValue.Color.G, oldValue.Color.B, oldValue.Color.A);
+            var newColor = new Vector4(newValue.Color.R, newValue.Color.G, newValue.Color.B, oldValue.Color.A);
             oldColor = oldColor / 255f;
             newColor = newColor / 255f;
             var deltaColor = newColor - oldColor;
@@ -48,10 +49,10 @@ namespace Avalonia.Animation.Transitions
             switch (InterpolationMode)
             {
                 case ColorInterpolationMode.PremultipliedRGB:
-                    
-                    var premultOV = new Vector4(1, oldColor.W, oldColor.W, oldColor.W);
-                    var premultNV = new Vector4(1, newColor.W, newColor.W, newColor.W);
-                    
+
+                    var premultOV = new Vector4(oldColor.W, oldColor.W, oldColor.W, 1);
+                    var premultNV = new Vector4(newColor.W, newColor.W, newColor.W, 1);
+
                     oldColor *= premultOV;
                     newColor *= premultNV;
 
@@ -72,10 +73,11 @@ namespace Avalonia.Animation.Transitions
                         return new SolidColorBrush(Color.FromVector4(interpolatedColor, true));
                     });
                 default:
-                    throw new NotImplementedException($"{Enum.GetName(typeof(ColorInterpolationMode), InterpolationMode)} color interpolation is not supported.");
+                    throw new NotImplementedException($"'{Enum.GetName(typeof(ColorInterpolationMode), InterpolationMode)}' color interpolation is not supported.");
             }
 
+
         }
- 
+
     }
 }

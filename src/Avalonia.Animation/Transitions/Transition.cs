@@ -45,7 +45,7 @@ namespace Avalonia.Animation.Transitions
             }
             set
             {
-                if (!(typeof(T) == value.PropertyType))
+                if (!(value.PropertyType.IsAssignableFrom(typeof(T))))
                     throw new InvalidCastException
                         ($"Invalid property type \"{typeof(T).Name}\" for this {GetType().Name} transition.");
 
