@@ -47,7 +47,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 _keyboardHelper.HandleEvents = _handleEvents;
             }
         }
-        
+
         public virtual Point GetAvaloniaPointFromEvent(MotionEvent e) => new Point(e.GetX(), e.GetY());
 
         public IInputRoot InputRoot { get; private set; }
@@ -62,7 +62,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             }
             set
             {
-                
+
             }
         }
 
@@ -84,18 +84,18 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public IPlatformHandle Handle => _view;
 
-        public IEnumerable<object> Surfaces => new object[] {this};
+        public IEnumerable<object> Surfaces => new object[] { this };
 
         public IRenderer CreateRenderer(IRenderRoot root) =>
             AndroidPlatform.UseDeferredRendering
                ? new DeferredRenderer(root, AvaloniaLocator.Current.GetService<IRenderLoop>())
-               : (IRenderer) new ImmediateRenderer(root);
+               : (IRenderer)new ImmediateRenderer(root);
 
         public virtual void Hide()
         {
             _view.Visibility = ViewStates.Invisible;
         }
-        
+
         public void Invalidate(Rect rect)
         {
             if (_view.Holder?.Surface?.IsValid == true) _view.Invalidate();
@@ -120,7 +120,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         {
             InputRoot = inputRoot;
         }
-        
+
         public virtual void Show()
         {
             _view.Visibility = ViewStates.Visible;
@@ -132,7 +132,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         {
             Paint?.Invoke(new Rect(new Point(0, 0), ClientSize));
         }
-        
+
         public virtual void Dispose()
         {
             _view.Dispose();
@@ -148,7 +148,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         {
             private readonly TopLevelImpl _tl;
             private Size _oldSize;
-            public ViewImpl(Context context,  TopLevelImpl tl, bool placeOnTop) : base(context)
+            public ViewImpl(Context context, TopLevelImpl tl, bool placeOnTop) : base(context)
             {
                 _tl = tl;
                 if (placeOnTop)
@@ -193,6 +193,6 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             }
         }
 
-        ILockedFramebuffer IFramebufferPlatformSurface.Lock()=>new AndroidFramebuffer(_view.Holder.Surface);
+        ILockedFramebuffer IFramebufferPlatformSurface.Lock() => new AndroidFramebuffer(_view.Holder.Surface);
     }
 }

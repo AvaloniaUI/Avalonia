@@ -12,6 +12,7 @@ using Android.Views;
 using Android.Widget;
 using Avalonia.Controls;
 using Avalonia.Platform;
+using Avalonia.Rendering;
 
 namespace Avalonia.Android.Platform.SkiaPlatform
 {
@@ -58,7 +59,8 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             X = (int) _position.X,
             Y = (int) _position.Y,
             Width = Math.Max(1, (int) _clientSize.Width),
-            Height = Math.Max(1, (int) _clientSize.Height)
+            Height = Math.Max(1, (int) _clientSize.Height),
+            Type = WindowManagerTypes.ApplicationSubPanel
         };
 
         void UpdateParams()
@@ -72,6 +74,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             if (_isAdded)
                 return;
             ActivityTracker.Current.WindowManager.AddView(View, CreateParams());
+            (InputRoot as TopLevel)?.Renderer?.Start();
             _isAdded = true;
         }
 
@@ -79,6 +82,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         {
             if (_isAdded)
             {
+                (InputRoot as TopLevel)?.Renderer?.Stop();
                 var wm = View.Context.ApplicationContext.GetSystemService(Context.WindowService)
                     .JavaCast<IWindowManager>();
                 wm.RemoveView(View);
@@ -106,7 +110,5 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         {
             //Not supported
         }
-        
-
     }
 }

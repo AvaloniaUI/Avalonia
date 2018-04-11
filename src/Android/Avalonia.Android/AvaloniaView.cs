@@ -26,9 +26,19 @@ namespace Avalonia.Android
             _view = new ViewImpl(context);
             AddView(_view.View);
             _root = new EmbeddableControlRoot(_view);
-            _root.Prepare();
+            _root.Prepare();            
+        }
+
+        public void StartRenderer()
+        {
             if (AndroidPlatform.UseDeferredRendering)
                 _root.Renderer.Start();
+        }
+
+        public void StopRenderer()
+        {
+            if (AndroidPlatform.UseDeferredRendering)
+                _root.Renderer.Stop();
         }
 
         public object Content

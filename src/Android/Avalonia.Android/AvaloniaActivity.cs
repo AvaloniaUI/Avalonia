@@ -26,7 +26,19 @@ namespace Avalonia.Android
                 View.Content = _content;
             SetContentView(View);
             TakeKeyEvents(true);
-            base.OnCreate(savedInstanceState);
+            base.OnCreate(savedInstanceState);            
+        }
+
+        protected override void OnStart()
+        {
+            base.OnStart();
+            View.StartRenderer();
+        }
+
+        protected override void OnStop()
+        {
+            View.StopRenderer();
+            base.OnStop();
         }
 
         public object Content
