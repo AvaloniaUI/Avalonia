@@ -1,0 +1,41 @@
+<Styles xmlns="https://github.com/avaloniaui">
+  <Style Selector="NumericUpDown">
+    <Setter Property="TemplatedControl.BorderBrush" Value="{DynamicResource ThemeBorderLightBrush}"/>
+    <Setter Property="TemplatedControl.BorderThickness" Value="{DynamicResource ThemeBorderThickness}"/>
+    <Setter Property="TemplatedControl.Background" Value="{DynamicResource ThemeBackgroundBrush}" />
+    <Setter Property="TemplatedControl.Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
+    <Setter Property="TemplatedControl.Template">
+      <ControlTemplate>
+        <ButtonSpinner Name="PART_Spinner"
+                       Background="{TemplateBinding Background}"
+                       BorderThickness="{TemplateBinding BorderThickness}"
+                       BorderBrush="{TemplateBinding BorderBrush}"
+                       HorizontalContentAlignment="Stretch"
+                       VerticalContentAlignment="Stretch"
+                       AllowSpin="{TemplateBinding AllowSpin}"
+                       ShowButtonSpinner="{TemplateBinding ShowButtonSpinner}"
+                       ButtonSpinnerLocation="{TemplateBinding ButtonSpinnerLocation}">
+          <TextBox Name="PART_TextBox"
+                   BorderThickness="0"
+                   Background="Transparent"
+                   ContextMenu="{TemplateBinding ContextMenu}"
+                   FontFamily="{TemplateBinding FontFamily}"
+                   FontSize="{TemplateBinding FontSize}"
+                   FontStyle="{TemplateBinding FontStyle}"
+                   FontWeight="{TemplateBinding FontWeight}"
+                   Foreground="{TemplateBinding Foreground}"
+                   Watermark="{TemplateBinding Watermark}"
+                   IsReadOnly="{TemplateBinding IsReadOnly}"
+                   Text="{TemplateBinding Text}"
+                   Padding="{TemplateBinding Padding}"
+                   TextAlignment="Left"
+                   Margin="1"
+                   MinWidth="20"
+                   AcceptsReturn="False"
+                   TextWrapping="NoWrap">
+          </TextBox>
+        </ButtonSpinner>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+</Styles>
