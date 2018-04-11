@@ -54,6 +54,7 @@ namespace Avalonia.Gtk3
             ConnectEvent("key-press-event", OnKeyEvent);
             ConnectEvent("key-release-event", OnKeyEvent);
             ConnectEvent("leave-notify-event", OnLeaveNotifyEvent);
+            ConnectEvent("delete-event", OnClosingEvent);
             Connect<Native.D.signal_generic>("destroy", OnDestroy);
             Native.GtkWidgetRealize(gtkWidget);
             GdkWindowHandle = this.Handle.Handle;
@@ -123,6 +124,12 @@ namespace Avalonia.Gtk3
             if (state.HasFlag(GdkModifierType.Button3Mask))
                 rv |= InputModifiers.MiddleMouseButton;
             return rv;
+        }
+
+        private unsafe bool OnClosingEvent(IntPtr w, IntPtr ev, IntPtr userdata)
+        {
+            bool? preventClosing = Closing?.Invoke();
+            return preventClosing ?? false;
         }
 
         private unsafe bool OnButton(IntPtr w, IntPtr ev, IntPtr userdata)
@@ -343,6 +350,7 @@ namespace Avalonia.Gtk3
         string IPlatformHandle.HandleDescriptor => "HWND";
 
         public Action Activated { get; set; }
+        public Func<bool> Closing { get; set; }
         public Action Closed { get; set; }
         public Action Deactivated { get; set; }
         public Action<RawInputEventArgs> Input { get; set; }

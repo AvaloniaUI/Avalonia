@@ -151,8 +151,8 @@ namespace Avalonia.Gtk.Common
             { GdkKey.R2, Key.F22 },
             { GdkKey.F23, Key.F23 },
             { GdkKey.R4, Key.F24 },
-            //{ GdkKey.?, Key.NumLock }
-            //{ GdkKey.?, Key.Scroll }
+            { GdkKey.Num_Lock, Key.NumLock },
+            { GdkKey.Scroll_Lock, Key.Scroll },
             //{ GdkKey.?, Key.LeftShift }
             //{ GdkKey.?, Key.RightShift }
             //{ GdkKey.?, Key.LeftCtrl }
@@ -177,12 +177,12 @@ namespace Avalonia.Gtk.Common
             //{ GdkKey.?, Key.SelectMedia }
             //{ GdkKey.?, Key.LaunchApplication1 }
             //{ GdkKey.?, Key.LaunchApplication2 }
-            //{ GdkKey.?, Key.OemSemicolon }
-            //{ GdkKey.?, Key.OemPlus }
-            //{ GdkKey.?, Key.OemComma }
-            //{ GdkKey.?, Key.OemMinus }
-            //{ GdkKey.?, Key.OemPeriod }
-            //{ GdkKey.?, Key.Oem2 }
+            { GdkKey.semicolon, Key.OemSemicolon },
+            { GdkKey.plus, Key.OemPlus },
+            { GdkKey.comma, Key.OemComma },
+            { GdkKey.minus, Key.OemMinus },
+            { GdkKey.period, Key.OemPeriod },
+            { GdkKey.slash, Key.Oem2 }
             //{ GdkKey.?, Key.OemTilde }
             //{ GdkKey.?, Key.AbntC1 }
             //{ GdkKey.?, Key.AbntC2 }

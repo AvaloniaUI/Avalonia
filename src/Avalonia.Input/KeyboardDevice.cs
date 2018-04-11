@@ -46,13 +46,13 @@ namespace Avalonia.Input
             if (element != FocusedElement)
             {
                 var interactive = FocusedElement as IInteractive;
+                FocusedElement = element;
 
                 interactive?.RaiseEvent(new RoutedEventArgs
                 {
                     RoutedEvent = InputElement.LostFocusEvent,
                 });
 
-                FocusedElement = element;
                 interactive = element as IInteractive;
 
                 interactive?.RaiseEvent(new GotFocusEventArgs

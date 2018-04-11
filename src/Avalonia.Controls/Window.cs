@@ -13,6 +13,7 @@ using Avalonia.Styling;
 using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
+using System.ComponentModel;
 
 namespace Avalonia.Controls
 {
@@ -129,6 +130,7 @@ namespace Avalonia.Controls
         public Window(IWindowImpl impl)
             : base(impl)
         {
+            impl.Closing = HandleClosing;
             _maxPlatformClientSize = PlatformImpl?.MaxClientSize ?? default(Size);
             Screens = new Screens(PlatformImpl?.Screen);
         }
@@ -231,19 +233,22 @@ namespace Avalonia.Controls
         Type IStyleable.StyleKey => typeof(Window);
 
         /// <summary>
+        /// Fired before a window is closed.
+        /// </summary>
+        public event EventHandler<CancelEventArgs> Closing;
+
+        /// <summary>
         /// Closes the window.
         /// </summary>
         public void Close()
         {
-            s_windows.Remove(this);
-            PlatformImpl?.Dispose();
-            IsVisible = false;
+            Close(false);
         }
 
         protected override void HandleApplicationExiting()
         {
             base.HandleApplicationExiting();
-            Close();
+            Close(true);
         }
 
         /// <summary>
@@ -258,7 +263,35 @@ namespace Avalonia.Controls
         public void Close(object dialogResult)
         {
             _dialogResult = dialogResult;
-            Close();
+            Close(false);
+        }
+
+        internal void Close(bool ignoreCancel)
+        {
+            var cancelClosing = false;
+            try
+            {
+                cancelClosing = HandleClosing();
+            }
+            finally
+            {
+                if (ignoreCancel || !cancelClosing)
+                {
+                    s_windows.Remove(this);
+                    PlatformImpl?.Dispose();
+                    IsVisible = false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles a closing notification from <see cref="IWindowImpl.Closing"/>.
+        /// </summary>
+        protected virtual bool HandleClosing()
+        {
+            var args = new CancelEventArgs();
+            Closing?.Invoke(this, args);
+            return args.Cancel;
         }
 
         /// <summary>

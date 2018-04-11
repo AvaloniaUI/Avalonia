@@ -85,6 +85,7 @@ namespace Avalonia.Controls
         private int _selectionEnd;
         private TextPresenter _presenter;
         private UndoRedoHelper<UndoRedoState> _undoRedoHelper;
+        private bool _isUndoingRedoing;
         private bool _ignoreTextChanges;
         private static readonly string[] invalidCharacters = new String[1]{"\u007f"};
 
@@ -198,7 +199,11 @@ namespace Avalonia.Controls
                 if (!_ignoreTextChanges)
                 {
                     CaretIndex = CoerceCaretIndex(CaretIndex, value?.Length ?? 0);
-                    SetAndRaise(TextProperty, ref _text, value);
+
+                    if (SetAndRaise(TextProperty, ref _text, value) && !_isUndoingRedoing)
+                    {
+                        _undoRedoHelper.Clear();
+                    }
                 }
             }
         }
@@ -256,6 +261,8 @@ namespace Avalonia.Controls
             {
                 _presenter?.ShowCaret();
             }
+
+            e.Handled = true;
         }
 
         protected override void OnLostFocus(RoutedEventArgs e)
@@ -269,6 +276,7 @@ namespace Avalonia.Controls
         protected override void OnTextInput(TextInputEventArgs e)
         {
             HandleTextInput(e.Text);
+            e.Handled = true;
         }
 
         private void HandleTextInput(string input)
@@ -364,14 +372,30 @@ namespace Avalonia.Controls
                 case Key.Z:
                     if (modifiers == InputModifiers.Control)
                     {
-                        _undoRedoHelper.Undo();
+                        try
+                        {
+                            _isUndoingRedoing = true;
+                            _undoRedoHelper.Undo();
+                        }
+                        finally
+                        {
+                            _isUndoingRedoing = false;
+                        }
                         handled = true;
                     }
                     break;
                 case Key.Y:
                     if (modifiers == InputModifiers.Control)
                     {
-                        _undoRedoHelper.Redo();
+                        try
+                        {
+                            _isUndoingRedoing = true;
+                            _undoRedoHelper.Redo();
+                        }
+                        finally
+                        {
+                            _isUndoingRedoing = false;
+                        }
                         handled = true;
                     }
                     break;
@@ -788,7 +812,7 @@ namespace Avalonia.Controls
             int pos = 0;
             int i;
 
-            for (i = 0; i < lines.Count; ++i)
+            for (i = 0; i < lines.Count - 1; ++i)
             {
                 var line = lines[i];
                 pos += line.Length;
