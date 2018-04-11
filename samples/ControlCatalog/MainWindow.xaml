@@ -21,7 +21,6 @@
                     <Setter Property="FontSize" Value="12"/>
                     <Setter Property="IsVisible" Value="{Binding IsVisible}" />
                     <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
-                    <Setter Property="ZIndex" Value="10" />
                 </Style>
                 <Style Selector="TabStripItem:pointerover">
                     <Setter Property="Background" Value="{DynamicResource ThemeControlDarkBrush}" />
