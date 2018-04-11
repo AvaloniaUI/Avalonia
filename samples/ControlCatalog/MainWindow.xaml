@@ -1,6 +1,52 @@
-﻿<Window xmlns="https://github.com/avaloniaui" MinWidth="500" MinHeight="300"
-        Title="Avalonia Control Gallery"
-        Icon="resm:ControlCatalog.Assets.test_icon.ico?assembly=ControlCatalog"
-        xmlns:local="clr-namespace:ControlCatalog;assembly=ControlCatalog">
-    <local:MainView/>
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="AvaloniaNETCoreApp123" Width="200" Height="500">
+    <DockPanel Margin="10">
+        <TabStrip Name="toolStrip" DockPanel.Dock="Bottom" ClipToBounds="False" Focusable="false" ZIndex="1">
+            <TabStrip.Styles>
+                <Style Selector="TabStrip">
+                    <Setter Property="ItemsPanel">
+                        <ItemsPanelTemplate>
+                            <WrapPanel ClipToBounds="False" />
+                        </ItemsPanelTemplate>
+                    </Setter>
+                </Style>
+                <Style Selector="TabStripItem">
+                    <Setter Property="Height" Value="20" />
+                    <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderDarkBrush}" />
+                    <Setter Property="BorderThickness" Value="0" />
+                    <Setter Property="Margin" Value="0" />
+                    <Setter Property="Padding" Value="4 0 4 0" />
+                    <Setter Property="FontSize" Value="12"/>
+                    <Setter Property="IsVisible" Value="{Binding IsVisible}" />
+                    <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
+                    <Setter Property="ZIndex" Value="10" />
+                </Style>
+                <Style Selector="TabStripItem:pointerover">
+                    <Setter Property="Background" Value="{DynamicResource ThemeControlDarkBrush}" />
+                    <Setter Property="Foreground" Value="{DynamicResource ApplicationAccentBrush}" />
+                </Style>
+                <Style Selector="TabStripItem:selected">
+                    <Setter Property="Background" Value="#AA0000" />
+                    <Setter Property="Foreground" Value="{DynamicResource ApplicationAccentBrushLight}" />
+                    <Setter Property="BorderThickness" Value="1 0 1 1" />
+                    <Setter Property="Margin" Value="0 -1 0 0" />
+                </Style>
+            </TabStrip.Styles>
+
+            <TabStrip.Items>
+                <TabStripItem>
+                    <TextBlock Text="Item1" />
+                </TabStripItem>
+                <TabStripItem>
+                    <TextBlock Text="Item2" />
+                </TabStripItem>
+            </TabStrip.Items>
+        </TabStrip>
+
+        <Border  BorderThickness="1" BorderBrush="Black">
+            <Grid Background="#AA0000" />
+        </Border>
+    </DockPanel>
 </Window>
