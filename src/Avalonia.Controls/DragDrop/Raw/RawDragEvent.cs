@@ -14,18 +14,13 @@ namespace Avalonia.Controls.DragDrop.Raw
 
         public RawDragEvent(IDragDropDevice inputDevice, RawDragEventType type, 
             IInputElement inputRoot, Point location, IDataObject data, DragDropEffects effects)
-            :base(inputDevice, GetTimeStamp())
+            :base(inputDevice, 0)
         {
             Type = type;
             InputRoot = inputRoot;
             Location = location;
             Data = data;
             Effects = effects;
-        }
-
-        private static uint GetTimeStamp()
-        {
-            return (uint)0;
         }
     }
 }
