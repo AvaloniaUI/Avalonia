@@ -2,7 +2,7 @@
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 
-namespace Avalonia.Controls.DragDrop.Raw
+namespace Avalonia.Input.DragDrop.Raw
 {
     public class RawDragEvent : RawInputEventArgs
     {

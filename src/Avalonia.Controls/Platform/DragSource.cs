@@ -2,17 +2,17 @@
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Text;
 using System.Threading.Tasks;
-using Avalonia.Controls.DragDrop.Raw;
-using Avalonia.Controls.Platform;
+using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Input.DragDrop;
+using Avalonia.Input.DragDrop.Raw;
+using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
-using Avalonia.Interactivity;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 
-namespace Avalonia.Controls.DragDrop
+namespace Avalonia.Platform
 {
     class DragSource : IPlatformDragSource
     {

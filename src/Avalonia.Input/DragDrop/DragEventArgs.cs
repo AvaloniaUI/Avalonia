@@ -1,6 +1,6 @@
 ﻿using Avalonia.Interactivity;
 
-namespace Avalonia.Controls.DragDrop
+namespace Avalonia.Input.DragDrop
 {
     public class DragEventArgs : RoutedEventArgs
     {

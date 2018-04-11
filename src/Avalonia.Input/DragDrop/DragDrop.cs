@@ -1,8 +1,8 @@
 ﻿using System.Threading.Tasks;
-using Avalonia.Controls.Platform;
 using Avalonia.Interactivity;
+using Avalonia.Input.Platform;
 
-namespace Avalonia.Controls.DragDrop
+namespace Avalonia.Input.DragDrop
 {
     public static class DragDrop
     {

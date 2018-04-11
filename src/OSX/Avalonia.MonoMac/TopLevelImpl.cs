@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using Avalonia.Controls.DragDrop;
-using Avalonia.Controls.DragDrop.Raw;
+using Avalonia.Input.DragDrop;
+using Avalonia.Input.DragDrop.Raw;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
-using Avalonia.Controls.DragDrop;
+using Avalonia.Input.DragDrop;
 using Avalonia.Win32.Interop;
 
 namespace Avalonia.Win32

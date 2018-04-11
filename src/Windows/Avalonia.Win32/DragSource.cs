@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
-using Avalonia.Controls.DragDrop;
-using Avalonia.Controls.Platform;
-using Avalonia.Interactivity;
+using Avalonia.Input.DragDrop;
+using Avalonia.Input.Platform;
 using Avalonia.Threading;
 using Avalonia.Win32.Interop;
 

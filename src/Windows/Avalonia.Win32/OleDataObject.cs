@@ -6,13 +6,13 @@ using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
-using Avalonia.Controls.DragDrop;
+using Avalonia.Input.DragDrop;
 using Avalonia.Win32.Interop;
 using IDataObject = System.Runtime.InteropServices.ComTypes.IDataObject;
 
 namespace Avalonia.Win32
 {
-    class OleDataObject : Avalonia.Controls.DragDrop.IDataObject
+    class OleDataObject : Avalonia.Input.DragDrop.IDataObject
     {
         private IDataObject _wrapped;
 

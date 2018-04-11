@@ -1,13 +1,12 @@
-﻿using Avalonia.Input;
-using Avalonia.Interactivity;
+﻿using Avalonia.Interactivity;
 using Avalonia.VisualTree;
 using System.Linq;
-using Avalonia.Controls.DragDrop.Raw;
+using Avalonia.Input.DragDrop.Raw;
 using Avalonia.Input.Raw;
 
-namespace Avalonia.Controls.DragDrop
+namespace Avalonia.Input.DragDrop
 {
-    class DragDropDevice : IDragDropDevice
+    public class DragDropDevice : IDragDropDevice
     {
         public static readonly DragDropDevice Instance = new DragDropDevice();
         

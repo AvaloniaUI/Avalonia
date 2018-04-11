@@ -1,6 +1,6 @@
 ﻿using Avalonia.Input;
 
-namespace Avalonia.Controls.DragDrop.Raw
+namespace Avalonia.Input.DragDrop.Raw
 {
     public interface IDragDropDevice : IInputDevice
     {

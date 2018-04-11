@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Avalonia.Controls.DragDrop
+namespace Avalonia.Input.DragDrop
 {
     public class DataObject : IDataObject
     {

@@ -12,9 +12,10 @@ using Avalonia.Rendering;
 using Avalonia.Styling;
 using Avalonia.Threading;
 using System.Reactive.Concurrency;
-using Avalonia.Controls.DragDrop;
-using Avalonia.Controls.DragDrop.Raw;
+using Avalonia.Input.DragDrop.Raw;
 using Avalonia.Controls.Platform;
+using Avalonia.Platform;
+using Avalonia.Input.DragDrop;
 
 namespace Avalonia
 {

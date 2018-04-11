@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Avalonia.Controls.DragDrop
+namespace Avalonia.Input.DragDrop
 {
     public interface IDataObject
     {

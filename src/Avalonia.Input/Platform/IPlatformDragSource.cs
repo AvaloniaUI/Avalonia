@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
-using Avalonia.Controls.DragDrop;
+using Avalonia.Input.DragDrop;
 using Avalonia.Interactivity;
 
-namespace Avalonia.Controls.Platform
+namespace Avalonia.Input.Platform
 {
     public interface IPlatformDragSource
     {
