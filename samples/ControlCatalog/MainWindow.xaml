@@ -14,7 +14,7 @@
                 <Style Selector="TabStripItem">
                     <Setter Property="Height" Value="20" />
                     <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}" />
-                    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderDarkBrush}" />
+                    <Setter Property="BorderBrush" Value="Blue" />
                     <Setter Property="BorderThickness" Value="0" />
                     <Setter Property="Margin" Value="0" />
                     <Setter Property="Padding" Value="4 0 4 0" />
