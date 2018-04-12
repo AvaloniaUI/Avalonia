@@ -91,6 +91,11 @@ namespace Avalonia.Controls.Utils
             }
         }
 
+        public void Clear()
+        {
+            _states.Clear();
+        }
+
         bool WeakTimer.IWeakTimerSubscriber.Tick()
         {
             Snapshot();

@@ -81,6 +81,31 @@ namespace Avalonia.Controls.UnitTests.Presenters
         }
 
         [Fact]
+        public void Should_Correctly_Align_Child_With_Fixed_Size()
+        {
+            Border content;
+            var target = new ContentPresenter
+            {
+                HorizontalContentAlignment = HorizontalAlignment.Stretch,
+                VerticalContentAlignment = VerticalAlignment.Stretch,
+                Content = content = new Border
+                {
+                    HorizontalAlignment = HorizontalAlignment.Left,
+                    VerticalAlignment = VerticalAlignment.Bottom,
+                    Width = 16,
+                    Height = 16,
+                },
+            };
+
+            target.UpdateChild();
+            target.Measure(new Size(100, 100));
+            target.Arrange(new Rect(0, 0, 100, 100));
+
+            // Check correct result for Issue #1447.
+            Assert.Equal(new Rect(0, 84, 16, 16), content.Bounds);
+        }
+
+        [Fact]
         public void Content_Can_Be_Stretched()
         {
             Border content;
