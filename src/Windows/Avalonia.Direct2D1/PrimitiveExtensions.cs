@@ -132,7 +132,6 @@ namespace Avalonia.Direct2D1
             {
                 properties.DashStyle = DashStyle.Custom;
                 properties.DashOffset = (float) pen.DashStyle.Offset;
-                //for `pen.DashStyle?.Dashes != null` that you shouldnt add `?` in `pen.DashStyle.Dashes`
                 dashes = pen.DashStyle.Dashes.Select(x => (float)x).ToArray();
             }
 
