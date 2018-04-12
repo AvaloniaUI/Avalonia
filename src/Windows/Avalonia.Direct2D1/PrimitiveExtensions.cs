@@ -136,10 +136,7 @@ namespace Avalonia.Direct2D1
             }
 
             //If we don't enter the code above that it is null. We should set it a default value to solve the null exception.
-            if (dashes == null)
-            {
-                dashes = new float[0];
-            }
+            dashes = dashes ?? Array.Empty<float>();
 
             return new StrokeStyle(factory, properties, dashes);
         }
