@@ -43,7 +43,8 @@ namespace Avalonia.Controls
         /// </summary>
         static Border()
         {
-            AffectsRender(BackgroundProperty, BorderBrushProperty);
+            AffectsRender(BackgroundProperty, BorderBrushProperty, BorderThicknessProperty, CornerRadiusProperty);
+            AffectsMeasure(BorderThicknessProperty);
         }
 
         /// <summary>
