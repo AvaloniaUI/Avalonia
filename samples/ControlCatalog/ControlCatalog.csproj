@@ -23,6 +23,8 @@
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Pages\ContextMenuPage.xaml" />
+    <None Remove="Pages\DragAndDropPage.cs" />
+    <None Remove="Pages\DragAndDropPage.xaml" />
   </ItemGroup>
   <ItemGroup>
     <!-- A reference to the entire .NET Framework is automatically included -->
@@ -33,6 +35,9 @@
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="DecoratedWindow.xaml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pages\DragAndDropPage.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Pages\ButtonSpinnerPage.xaml">
@@ -139,6 +144,9 @@
     </Compile>
     <Compile Include="Pages\CheckBoxPage.xaml.cs">
       <DependentUpon>CheckBoxPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\DragAndDropPage.cs">
+      <DependentUpon>DragAndDropPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Pages\DropDownPage.xaml.cs">
       <DependentUpon>DropDownPage.xaml</DependentUpon>
