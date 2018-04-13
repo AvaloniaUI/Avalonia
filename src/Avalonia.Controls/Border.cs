@@ -115,7 +115,7 @@ namespace Avalonia.Controls
                 Child.Arrange(new Rect(finalSize).Deflate(padding));
             }
 
-            _borderRenderHelper.Update(finalSize, BorderThickness, CornerRadius);           
+            _borderRenderHelper.Update(finalSize, BorderThickness, CornerRadius);
 
             return finalSize;
         }
