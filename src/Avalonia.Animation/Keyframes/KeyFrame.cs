@@ -13,7 +13,6 @@ namespace Avalonia.Animation.Keyframes
     public class KeyFrame
     {
         internal bool timeSpanSet, cueSet;
-
         private TimeSpan _ktimeSpan;
         private Cue _kCue;
 

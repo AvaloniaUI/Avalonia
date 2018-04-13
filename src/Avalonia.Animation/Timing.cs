@@ -16,7 +16,7 @@ namespace Avalonia.Animation
     public static class Timing
     {
         static ulong _animationsFrameCount, _transitionsFrameCount;
-        static PlayState _globalState = PlayState.Running;
+        static PlayState _globalState = PlayState.Run;
 
         /// <summary>
         /// The number of frames per second.
@@ -35,18 +35,10 @@ namespace Avalonia.Animation
         {
             var globalTimer = Observable.Interval(Tick, AvaloniaScheduler.Instance);
 
-            AnimationTimer = globalTimer
+            AnimationStateTimer = globalTimer
                 .Select(_ =>
                 {
-                    switch (_globalState)
-                    {
-                        case PlayState.Paused:
-                            break;
-                        default:
-                            _animationsFrameCount ++;
-                            break;
-                    }
-                    return _animationsFrameCount;
+                    return _globalState;
                 })
                 .Publish()
                 .RefCount();
@@ -85,10 +77,7 @@ namespace Avalonia.Animation
         /// The parameter passed to a subsciber is the number of frames since the animation system was
         /// initialized.
         /// </remarks>
-        /// <value>
-        /// The animation timer.
-        /// </value>
-        public static IObservable<ulong> AnimationTimer
+        internal static IObservable<PlayState> AnimationStateTimer
         {
             get;
         }
@@ -102,9 +91,6 @@ namespace Avalonia.Animation
         /// The parameter passed to a subsciber is the number of frames since the animation system was
         /// initialized.
         /// </remarks>
-        /// <value>
-        /// The animation timer.
-        /// </value>
         public static IObservable<ulong> TransitionsTimer
         {
             get;
@@ -124,10 +110,10 @@ namespace Avalonia.Animation
         /// </remarks>
         public static IObservable<double> GetAnimationsTimer(Animatable control, TimeSpan duration, TimeSpan delay)
         {
-            var startTime = _animationsFrameCount;
-            var _duration = (ulong)(duration.Ticks/Tick.Ticks);
+            var startTime = control._animationTime;
+            var _duration = (ulong)(duration.Ticks / Tick.Ticks);
             var endTime = startTime + _duration;
-            return AnimationTimer
+            return control.AnimatableTimer
                 .TakeWhile(x => x < endTime)
                 .Select(x => (double)(x - startTime) / _duration)
                 .StartWith(0.0)

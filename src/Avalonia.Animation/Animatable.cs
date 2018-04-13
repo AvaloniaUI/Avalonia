@@ -8,6 +8,8 @@ using System.Reactive.Linq;
 using Avalonia.Collections;
 using Avalonia.Animation.Transitions;
 using System.Collections.Generic;
+using System.Threading;
+using System.Collections.Concurrent;
 
 namespace Avalonia.Animation
 {
@@ -22,29 +24,69 @@ namespace Avalonia.Animation
         public Animatable()
         {
             Transitions = new Transitions.Transitions();
+            AnimatableTimer = Timing.AnimationStateTimer
+                         .Select(p =>
+                         {
+                             if (p == PlayState.Run
+                              && this._playState == PlayState.Run)
+                                 return _animationTime++;
+                             else
+                                 return _animationTime;
+                         })
+                         .Publish()
+                         .RefCount();
         }
 
         /// <summary>
-        /// Defines the <see cref="AnimationPlayState"/> property.
+        /// The specific animations timer for this control.
         /// </summary>
-        public static readonly DirectProperty<Animatable, PlayState> AnimationPlayStateProperty =
+        /// <returns></returns>
+        public IObservable<ulong> AnimatableTimer;
+
+        internal void PrepareAnimatableForAnimation()
+        {
+            if (!_animationsInitialized)
+            {
+
+
+                _animationsInitialized = true;
+            }
+        }
+
+        bool _animationsInitialized = false;
+
+        // internal ConcurrentDictionary<int, (int repeatCount, int direction)> _animationStates;
+
+        internal ulong _animationTime;
+        
+        // internal int _iterationTokenCounter;
+
+        // internal uint GetIterationToken()
+        // {
+        //     return (uint)Interlocked.Increment(ref _iterationTokenCounter);
+        // }
+
+        /// <summary>
+        /// Defines the <see cref="PlayState"/> property.
+        /// </summary>
+        public static readonly DirectProperty<Animatable, PlayState> PlayStateProperty =
             AvaloniaProperty.RegisterDirect<Animatable, PlayState>(
-                nameof(AnimationPlayState),
-                o => o.AnimationPlayState,
-                (o, v) => o.AnimationPlayState = v);
+                nameof(PlayState),
+                o => o.PlayState,
+                (o, v) => o.PlayState = v);
 
         /// <summary>
         /// Gets or sets the state of the animation for this
         /// control.
         /// </summary>
-        public PlayState AnimationPlayState
-        { 
-            get { return _animationPlayState; }
-            set { SetAndRaise(AnimationPlayStateProperty, ref _animationPlayState, value); }
-        
+        public PlayState PlayState
+        {
+            get { return _playState; }
+            set { SetAndRaise(PlayStateProperty, ref _playState, value); }
+
         }
 
-        private PlayState _animationPlayState;
+        private PlayState _playState = PlayState.Run;
 
         /// <summary>
         /// Defines the <see cref="Transitions"/> property.

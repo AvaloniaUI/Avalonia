@@ -29,6 +29,7 @@ namespace Avalonia.Animation.Keyframes
 
         private bool IsVerfifiedAndConverted;
 
+
         /// <inheritdoc/>
         public virtual IDisposable Apply(Animation animation, Animatable control, IObservable<bool> obsMatch)
         {
@@ -38,11 +39,12 @@ namespace Avalonia.Animation.Keyframes
             return obsMatch
                 .Where(p => p == true)
                 // Ignore triggers when global timers are paused.
-                .Where(p=> Timing.GetGlobalPlayState() != PlayState.Paused)
+                .Where(p=> Timing.GetGlobalPlayState() == PlayState.Run)
                 .Subscribe(_ =>
                 {
                     var interp = DoInterpolation(animation, control)
                                 .Select(p => (object)p);
+
                     control.Bind(Property, interp, BindingPriority.Animation);
                 });
         }

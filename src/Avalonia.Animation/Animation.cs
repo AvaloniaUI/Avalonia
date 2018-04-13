@@ -64,6 +64,8 @@ namespace Avalonia.Animation
         /// <inheritdocs/>
         public IDisposable Apply(Animatable control, IObservable<bool> matchObs)
         {
+            control.PrepareAnimatableForAnimation();
+            
             foreach (IKeyFrames keyframes in Children)
             {
                 _subscription.Add(keyframes.Apply(this, control, matchObs));

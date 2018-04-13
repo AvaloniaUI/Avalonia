@@ -17,14 +17,14 @@ namespace RenderTest.ViewModels
         {
             switch (Timing.GetGlobalPlayState())
             {
-                case PlayState.Running:
+                case PlayState.Run:
                     PlayStateText = "Resume all animations";
-                    Timing.SetGlobalPlayState(PlayState.Paused);
+                    Timing.SetGlobalPlayState(PlayState.Pause);
                     break;
 
-                case PlayState.Paused:
+                case PlayState.Pause:
                     PlayStateText = "Pause all animations";
-                    Timing.SetGlobalPlayState(PlayState.Running);
+                    Timing.SetGlobalPlayState(PlayState.Run);
                     break;
             }
         }
