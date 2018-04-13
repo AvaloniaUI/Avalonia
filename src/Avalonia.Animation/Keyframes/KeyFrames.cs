@@ -47,8 +47,6 @@ namespace Avalonia.Animation.Keyframes
                 });
         }
 
-
-
         /// <summary>
         /// Get the nearest pair of cue-time ordered keyframes 
         /// according to the given time parameter.  

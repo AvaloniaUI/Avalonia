@@ -33,7 +33,9 @@ namespace Avalonia.Animation
         /// </summary>
         static Timing()
         {
-            AnimationTimer = Observable.Interval(Tick, AvaloniaScheduler.Instance)
+            var globalTimer = Observable.Interval(Tick, AvaloniaScheduler.Instance);
+            
+            AnimationTimer = globalTimer
                 .Select(_ =>
                 {
                     switch (_globalState)
@@ -49,7 +51,7 @@ namespace Avalonia.Animation
                 .Publish()
                 .RefCount();
 
-            TransitionsTimer = Observable.Interval(Tick, AvaloniaScheduler.Instance)
+            TransitionsTimer = globalTimer
                                .Select(p => _transitionsFrameCount += 1)
                                .Publish()
                                .RefCount();
