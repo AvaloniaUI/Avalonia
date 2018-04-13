@@ -43,6 +43,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
                 Mode = Mode,
                 Path = pathInfo.Path,
                 Priority = Priority,
+                Source = Source,
                 RelativeSource = pathInfo.RelativeSource ?? RelativeSource,
                 DefaultAnchor = new WeakReference(GetDefaultAnchor((ITypeDescriptorContext)serviceProvider))
             };

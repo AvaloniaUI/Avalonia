@@ -83,6 +83,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                         Margin = new Thickness(10, 20, 30, 40),
                         Child = canvas = new Canvas
                         {
+                            ClipToBounds = true,
                             Background = Brushes.AliceBlue,
                         }
                     }
@@ -129,6 +130,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                             (border = new Border
                             {
                                 Background = Brushes.AliceBlue,
+                                ClipToBounds = true,
                                 Width = 100,
                                 Height = 100,
                                 [Canvas.LeftProperty] = 50,
@@ -173,6 +175,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                             (border = new Border
                             {
                                 Background = Brushes.AliceBlue,
+                                ClipToBounds = true,
                                 Width = 100,
                                 Height = 100,
                                 [Canvas.LeftProperty] = 50,
@@ -254,6 +257,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                         Margin = new Thickness(24, 26),
                         Child = target = new Border
                         {
+                            ClipToBounds = true,
                             Margin = new Thickness(26, 24),
                             Width = 100,
                             Height = 100,
@@ -512,6 +516,50 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 Assert.Null(result.FindNode(border));
                 Assert.Null(result.FindNode(canvas));
                 Assert.Equal(new Rect(0, 0, 100, 100), result.Layers.Single().Dirty.Single());
+            }
+        }
+
+        [Fact]
+        public void Should_Update_ClipBounds_For_Negative_Margin()
+        {
+            using (TestApplication())
+            {
+                Decorator decorator;
+                Border border;
+                var tree = new TestRoot
+                {
+                    Width = 100,
+                    Height = 100,
+                    Child = decorator = new Decorator
+                    {
+                        Margin = new Thickness(0, 10, 0, 0),
+                        Child = border = new Border
+                        {
+                            Background = Brushes.Red,
+                            ClipToBounds = true,
+                            Margin = new Thickness(0, -5, 0, 0),
+                        }
+                    }
+                };
+
+                var layout = AvaloniaLocator.Current.GetService<ILayoutManager>();
+                layout.ExecuteInitialLayoutPass(tree);
+
+                var scene = new Scene(tree);
+                var sceneBuilder = new SceneBuilder();
+                sceneBuilder.UpdateAll(scene);
+
+                var borderNode = scene.FindNode(border);
+                Assert.Equal(new Rect(0, 5, 100, 95), borderNode.ClipBounds);
+
+                border.Margin = new Thickness(0, -8, 0, 0);
+                layout.ExecuteLayoutPass();
+
+                scene = scene.CloneScene();
+                sceneBuilder.Update(scene, border);
+
+                borderNode = scene.FindNode(border);
+                Assert.Equal(new Rect(0, 2, 100, 98), borderNode.ClipBounds);
             }
         }
 
