@@ -127,15 +127,14 @@ namespace Avalonia.Direct2D1
                 EndCap = pen.EndLineCap.ToDirect2D(),
                 DashCap = pen.DashCap.ToDirect2D()
             };
-            float[] dashes = null;//If we new an array first that we may waste it when we use `dashes = pen.DashStyle.Dashes.Select(x => (float)x).ToArray()`. As a frequently used code I think this optimize is necessary.
+            float[] dashes = null;
             if (pen.DashStyle?.Dashes != null && pen.DashStyle.Dashes.Count > 0)
             {
                 properties.DashStyle = DashStyle.Custom;
-                properties.DashOffset = (float) pen.DashStyle.Offset;
+                properties.DashOffset = (float)pen.DashStyle.Offset;
                 dashes = pen.DashStyle.Dashes.Select(x => (float)x).ToArray();
             }
 
-            //If we don't enter the code above that it is null. We should set it a default value to solve the null exception.
             dashes = dashes ?? Array.Empty<float>();
 
             return new StrokeStyle(factory, properties, dashes);
