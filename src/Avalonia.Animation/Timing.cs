@@ -16,7 +16,7 @@ namespace Avalonia.Animation
     public static class Timing
     {
         static ulong _animationsFrameCount, _transitionsFrameCount;
-        static AnimationPlayState _globalState = AnimationPlayState.Running;
+        static PlayState _globalState = PlayState.Running;
 
         /// <summary>
         /// The number of frames per second.
@@ -38,7 +38,7 @@ namespace Avalonia.Animation
                 {
                     switch (_globalState)
                     {
-                        case AnimationPlayState.Paused:
+                        case PlayState.Paused:
                             break;
                         default:
                             _animationsFrameCount += 1;
@@ -59,7 +59,7 @@ namespace Avalonia.Animation
         /// <summary>
         /// Sets the animation play state for all animations
         /// </summary>
-        public static void SetGlobalPlayState(AnimationPlayState playState)
+        public static void SetGlobalPlayState(PlayState playState)
         {
             Dispatcher.UIThread.VerifyAccess();
             _globalState = playState;
@@ -68,7 +68,7 @@ namespace Avalonia.Animation
         /// <summary>
         /// Gets the animation play state for all animations
         /// </summary>
-        public static AnimationPlayState GetGlobalPlayState()
+        public static PlayState GetGlobalPlayState()
         {
             Dispatcher.UIThread.VerifyAccess();
             return _globalState;

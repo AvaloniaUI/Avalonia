@@ -15,7 +15,7 @@ namespace Avalonia.Animation
     /// </summary>
     public class Animation : IDisposable, IAnimation
     {
-        private List<IDisposable>_subscription = new List<IDisposable>();
+        private List<IDisposable> _subscription = new List<IDisposable>();
 
         /// <summary>
         /// Run time of this animation.
@@ -23,9 +23,24 @@ namespace Avalonia.Animation
         public TimeSpan Duration { get; set; }
 
         /// <summary>
-        /// Delay time for animation.
+        /// Delay time for this animation.
         /// </summary>
         public TimeSpan Delay { get; set; }
+
+        /// <summary>
+        /// The repeat behavor for this animation.
+        /// </summary>
+        public RepeatBehavior RepeatBehavior { get; set; }
+
+        /// <summary>
+        /// The playback direction for this animation.
+        /// </summary>
+        public Direction Direction { get; set; }
+
+        /// <summary>
+        /// Number of repeat iteration for this animation.
+        /// </summary>
+        public int? RepeatCount { get; set; }
 
         /// <summary>
         /// Easing function to be used.
@@ -43,7 +58,7 @@ namespace Avalonia.Animation
         /// </summary>
         public void Dispose()
         {
-            foreach(var sub in _subscription) sub.Dispose();
+            foreach (var sub in _subscription) sub.Dispose();
         }
 
         /// <inheritdocs/>

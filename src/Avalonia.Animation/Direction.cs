@@ -1,0 +1,32 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace Avalonia.Animation
+{
+    /// <summary>
+    /// Determines the playback direction of an animation.
+    /// </summary>
+    public enum Direction
+    {
+        /// <summary>
+        /// The animation is played normally.
+        /// </summary>
+        Normal,
+
+        /// <summary>
+        /// The animation is played in reverse direction.
+        /// </summary>
+        Reverse,
+
+        /// <summary>
+        /// The animation is played forwards first, then backwards.
+        /// </summary>
+        Alternate,
+
+        /// <summary>
+        /// The animation is played backwards first, then forwards.
+        /// </summary>
+        AlternateReverse
+    }
+}

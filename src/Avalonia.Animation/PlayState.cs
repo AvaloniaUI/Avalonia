@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Avalonia.Animation
 {
-    public enum AnimationPlayState
+    public enum PlayState
     {
         Running,
         Paused

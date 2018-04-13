@@ -38,7 +38,7 @@ namespace Avalonia.Animation.Keyframes
             return obsMatch
                 .Where(p => p == true)
                 // Ignore triggers when global timers are paused.
-                .Where(p=> Timing.GetGlobalPlayState() != AnimationPlayState.Paused)
+                .Where(p=> Timing.GetGlobalPlayState() != PlayState.Paused)
                 .Subscribe(_ =>
                 {
                     var interp = DoInterpolation(animation, control)
@@ -47,41 +47,13 @@ namespace Avalonia.Animation.Keyframes
                 });
         }
 
-        /// <summary>
-        /// Represents a pair of keyframe, usually the
-        /// Start and End keyframes of a <see cref="KeyFrames{T}"/> object.
-        /// </summary>
-        public struct KeyFramePair
-        { 
 
-            /// <summary>
-            /// Initializes this <see cref="KeyFramePair"/>
-            /// </summary>
-            /// <param name="FirstKeyFrame"></param>
-            /// <param name="LastKeyFrame"></param>
-            public KeyFramePair(KeyValuePair<double, T> FirstKeyFrame, KeyValuePair<double, T> LastKeyFrame) : this()
-            {
-                this.FirstKeyFrame = FirstKeyFrame;
-                this.SecondKeyFrame = LastKeyFrame;
-            }
-
-            /// <summary>
-            /// First <see cref="KeyFrame"/> object.
-            /// </summary>
-            public KeyValuePair<double, T> FirstKeyFrame { get; private set; }
-
-            /// <summary>
-            /// Second <see cref="KeyFrame"/> object.
-            /// </summary>
-            public KeyValuePair<double, T> SecondKeyFrame { get; private set; }
-
-        }
 
         /// <summary>
         /// Get the nearest pair of cue-time ordered keyframes 
         /// according to the given time parameter.  
         /// </summary>
-        public KeyFramePair GetKeyFramePairByTime(double t)
+        public KeyFramePair<T> GetKeyFramePairByTime(double t)
         {
             KeyValuePair<double, T> firstCue, lastCue;
             int kvCount = ConvertedKeyframes.Count();
@@ -108,7 +80,7 @@ namespace Avalonia.Animation.Keyframes
                 firstCue = ConvertedKeyframes.First();
                 lastCue = ConvertedKeyframes.Last();
             }
-            return new KeyFramePair(firstCue, lastCue);
+            return new KeyFramePair<T>(firstCue, lastCue);
         }
 
 
