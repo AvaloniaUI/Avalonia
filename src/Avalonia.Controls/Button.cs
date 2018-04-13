@@ -245,7 +245,7 @@ namespace Avalonia.Controls
         {
             base.OnPointerReleased(e);
 
-            if (e.MouseButton == MouseButton.Left)
+            if (IsPressed && e.MouseButton == MouseButton.Left)
             {
                 e.Device.Capture(null);
                 IsPressed = false;
