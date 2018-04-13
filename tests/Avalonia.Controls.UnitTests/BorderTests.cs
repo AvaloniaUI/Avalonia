@@ -31,17 +31,16 @@ namespace Avalonia.Controls.UnitTests
                 Padding = new Thickness(6),
                 MaxHeight = 12,
                 MaxWidth = 12,
-                Content = content = new Border
+                Child = content = new Border
                 {
                      Height = 0,
                      Width = 0
                 }
             };
-
-            target.Measure(new Size(100, 100));
+            
             target.Arrange(new Rect(0, 0, 100, 100));
 
-            Assert.Equal(new Rect(0, 0, 0, 0), content.Bounds);
+            Assert.Equal(new Rect(6, 6, 0, 0), content.Bounds);
         }
     }
 }

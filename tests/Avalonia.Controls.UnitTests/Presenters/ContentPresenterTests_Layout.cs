@@ -217,21 +217,23 @@ namespace Avalonia.Controls.UnitTests.Presenters
             Border content;
             var target = new ContentPresenter
             {
-                Padding = 32,
+                Padding = new Thickness(32),
                 MaxHeight = 32,
                 MaxWidth = 32,
+                HorizontalContentAlignment = HorizontalAlignment.Center,
+                VerticalContentAlignment = VerticalAlignment.Center,
                 Content = content = new Border
                 {
-                    MinWidth = 16,
-                    MinHeight = 16,                    
+                    Height = 0,
+                    Width = 0,
                 },
             };
 
             target.UpdateChild();
-            target.Measure(new Size(100, 100));
+
             target.Arrange(new Rect(0, 0, 100, 100));
 
-            Assert.Equal(new Rect(0, 0, 0, 0), content.Bounds);
+            Assert.Equal(new Rect(48, 48, 0, 0), content.Bounds);
         }
     }
 }

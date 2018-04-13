@@ -110,9 +110,8 @@ namespace Avalonia.Controls
         {
             if (Child != null)
             {
-                var padding = Padding + BorderThickness;
-                var arrangeRect = new Rect(finalSize).Deflate(padding);
-                Child.Arrange(new Rect(arrangeRect.X, arrangeRect.Y, Math.Max(0, arrangeRect.Width), Math.Max(0, arrangeRect.Height)));                            
+                var padding = Padding + BorderThickness;                
+                Child.Arrange(new Rect(finalSize).Deflate(padding));
             }
 
             _borderRenderHelper.Update(finalSize, BorderThickness, CornerRadius);           
