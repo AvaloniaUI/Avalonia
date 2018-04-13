@@ -240,7 +240,7 @@ namespace Avalonia
                 .Bind<IApplicationLifecycle>().ToConstant(this)
                 .Bind<IScheduler>().ToConstant(AvaloniaScheduler.Instance)
                 .Bind<IDragDropDevice>().ToConstant(DragDropDevice.Instance)
-                .Bind<IPlatformDragSource>().ToTransient<DragSource>();
+                .Bind<IPlatformDragSource>().ToTransient<InProcessDragSource>();
         }
     }
 }

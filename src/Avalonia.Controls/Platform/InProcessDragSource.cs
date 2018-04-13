@@ -14,7 +14,7 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Platform
 {
-    class DragSource : IPlatformDragSource
+    class InProcessDragSource : IPlatformDragSource
     {
         private const InputModifiers MOUSE_INPUTMODIFIERS = InputModifiers.LeftMouseButton|InputModifiers.MiddleMouseButton|InputModifiers.RightMouseButton;
         private readonly IDragDropDevice _dragDrop;
@@ -29,7 +29,7 @@ namespace Avalonia.Platform
         private object _originalCursor;
         private InputModifiers? _initialInputModifiers;
 
-        public DragSource()
+        public InProcessDragSource()
         {
             _inputManager = AvaloniaLocator.Current.GetService<IInputManager>();
             _dragDrop = AvaloniaLocator.Current.GetService<IDragDropDevice>();
