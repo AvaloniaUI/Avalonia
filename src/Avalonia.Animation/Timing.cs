@@ -34,7 +34,7 @@ namespace Avalonia.Animation
         static Timing()
         {
             var globalTimer = Observable.Interval(Tick, AvaloniaScheduler.Instance);
-            
+
             AnimationTimer = globalTimer
                 .Select(_ =>
                 {
@@ -43,7 +43,7 @@ namespace Avalonia.Animation
                         case PlayState.Paused:
                             break;
                         default:
-                            _animationsFrameCount += 1;
+                            _animationsFrameCount ++;
                             break;
                     }
                     return _animationsFrameCount;
@@ -52,7 +52,7 @@ namespace Avalonia.Animation
                 .RefCount();
 
             TransitionsTimer = globalTimer
-                               .Select(p => _transitionsFrameCount += 1)
+                               .Select(p => _transitionsFrameCount++)
                                .Publish()
                                .RefCount();
         }
