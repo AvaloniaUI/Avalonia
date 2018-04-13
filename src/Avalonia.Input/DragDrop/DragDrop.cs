@@ -6,21 +6,39 @@ namespace Avalonia.Input.DragDrop
 {
     public static class DragDrop
     {
+        /// <summary>
+        /// Event which is raised, when a drag-and-drop operation enters the element.
+        /// </summary>
         public static RoutedEvent<DragEventArgs> DragEnterEvent = RoutedEvent.Register<DragEventArgs>("DragEnter", RoutingStrategies.Bubble, typeof(DragDrop));
+        /// <summary>
+        /// Event which is raised, when a drag-and-drop operation leaves the element.
+        /// </summary>
         public static RoutedEvent<RoutedEventArgs> DragLeaveEvent = RoutedEvent.Register<RoutedEventArgs>("DragLeave", RoutingStrategies.Bubble, typeof(DragDrop));
+        /// <summary>
+        /// Event which is raised, when a drag-and-drop operation is updated while over the element.
+        /// </summary>
         public static RoutedEvent<DragEventArgs> DragOverEvent = RoutedEvent.Register<DragEventArgs>("DragOver", RoutingStrategies.Bubble, typeof(DragDrop));
+        /// <summary>
+        /// Event which is raised, when a drag-and-drop operation should complete over the element.
+        /// </summary>
         public static RoutedEvent<DragEventArgs> DropEvent = RoutedEvent.Register<DragEventArgs>("Drop", RoutingStrategies.Bubble, typeof(DragDrop));
 
-        public static AvaloniaProperty<bool> AcceptDragProperty = AvaloniaProperty.RegisterAttached<Interactive, bool>("AcceptDrag", typeof(DragDrop), inherits: true);
+        public static AvaloniaProperty<bool> AllowDropProperty = AvaloniaProperty.RegisterAttached<Interactive, bool>("AllowDrop", typeof(DragDrop), inherits: true);
 
-        public static bool GetAcceptDrag(Interactive interactive)
+        /// <summary>
+        /// Gets a value indicating whether the given element can be used as the target of a drag-and-drop operation. 
+        /// </summary>
+        public static bool GetAllowDrop(Interactive interactive)
         {
-            return interactive.GetValue(AcceptDragProperty);
+            return interactive.GetValue(AllowDropProperty);
         }
-        
-        public static void SetAcceptDrag(Interactive interactive, bool value)
+
+        /// <summary>
+        /// Sets a value indicating whether the given interactive can be used as the target of a drag-and-drop operation. 
+        /// </summary>
+        public static void SetAllowDrop(Interactive interactive, bool value)
         {
-            interactive.SetValue(AcceptDragProperty, value);
+            interactive.SetValue(AllowDropProperty, value);
         }
 
         /// <summary>

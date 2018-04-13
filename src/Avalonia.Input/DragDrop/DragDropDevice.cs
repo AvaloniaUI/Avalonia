@@ -15,7 +15,7 @@ namespace Avalonia.Input.DragDrop
         private Interactive GetTarget(IInputElement root, Point local)
         {
             var target = root.InputHitTest(local)?.GetSelfAndVisualAncestors()?.OfType<Interactive>()?.FirstOrDefault();
-            if (target != null && DragDrop.GetAcceptDrag(target))
+            if (target != null && DragDrop.GetAllowDrop(target))
                 return target;
             return null;
         }
