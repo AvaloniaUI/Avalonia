@@ -210,5 +210,28 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
             Assert.Equal(new Rect(84, 0, 16, 16), content.Bounds);
         }
+
+        [Fact]
+        public void Child_Arrange_With_Zero_Height_When_Padding_Height_Greater_Than_Child_Height()
+        {
+            Border content;
+            var target = new ContentPresenter
+            {
+                Padding = 32,
+                MaxHeight = 32,
+                MaxWidth = 32,
+                Content = content = new Border
+                {
+                    MinWidth = 16,
+                    MinHeight = 16,                    
+                },
+            };
+
+            target.UpdateChild();
+            target.Measure(new Size(100, 100));
+            target.Arrange(new Rect(0, 0, 100, 100));
+
+            Assert.Equal(new Rect(0, 0, 0, 0), content.Bounds);
+        }
     }
 }
