@@ -386,7 +386,7 @@ namespace Avalonia.Controls.Presenters
             
             if (verticalContentAlignment != VerticalAlignment.Stretch)
             {
-                size = size.WithHeight(Math.Min(size.Height, DesiredSize.Height - padding.Top - padding.Bottom));
+                size = size.WithHeight(Math.Min(size.Height, DesiredSize.Height - padding.Top - padding.Bottom));                
             }
 
             if (useLayoutRounding)
@@ -425,7 +425,7 @@ namespace Avalonia.Controls.Presenters
                 originY = Math.Floor(originY * scale) / scale;
             }
 
-            Child.Arrange(new Rect(originX, originY, size.Width, size.Height));
+            Child.Arrange(new Rect(originX, originY, Math.Max(0, size.Width), Math.Max(0, size.Height)));
 
             return finalSize;
         }
