@@ -110,11 +110,11 @@ namespace Avalonia.Controls
         {
             if (Child != null)
             {
-                var padding = Padding + BorderThickness;                
+                var padding = Padding + BorderThickness;
                 Child.Arrange(new Rect(finalSize).Deflate(padding));
             }
 
-            _borderRenderHelper.Update(finalSize, BorderThickness, CornerRadius);           
+            _borderRenderHelper.Update(finalSize, BorderThickness, CornerRadius);
 
             return finalSize;
         }

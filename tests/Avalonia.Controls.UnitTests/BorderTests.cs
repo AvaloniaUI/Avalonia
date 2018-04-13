@@ -33,11 +33,11 @@ namespace Avalonia.Controls.UnitTests
                 MaxWidth = 12,
                 Child = content = new Border
                 {
-                     Height = 0,
-                     Width = 0
+                    Height = 0,
+                    Width = 0
                 }
             };
-            
+
             target.Arrange(new Rect(0, 0, 100, 100));
 
             Assert.Equal(new Rect(6, 6, 0, 0), content.Bounds);
