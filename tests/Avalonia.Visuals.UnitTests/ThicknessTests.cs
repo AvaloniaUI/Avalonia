@@ -4,7 +4,7 @@
 using System.Globalization;
 using Xunit;
 
-namespace Avalonia.Visuals.UnitTests.Media
+namespace Avalonia.Visuals.UnitTests
 {
     public class ThicknessTests
     {
