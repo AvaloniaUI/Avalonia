@@ -82,7 +82,10 @@ namespace Avalonia.Animation.Keyframes
                     break;
             }
 
-            _currentState = KeyFramesStates.DO_RUN;
+            if (_durationTotalFrameCount > 0)
+                _currentState = KeyFramesStates.DO_DELAY;
+            else
+                _currentState = KeyFramesStates.DO_RUN;
         }
 
         public double Step(PlayState _playState, Func<double, T> Interpolator)
@@ -106,9 +109,10 @@ namespace Avalonia.Animation.Keyframes
             switch (_currentState)
             {
                 case KeyFramesStates.DO_DELAY:
-                    if (_delayFrameCount >= _delayTotalFrameCount)
+                    if (_delayFrameCount > _delayTotalFrameCount)
                     {
                         _currentState = KeyFramesStates.DO_RUN;
+                        goto checkstate;
                     }
                     _delayFrameCount++;
                     return 0d;

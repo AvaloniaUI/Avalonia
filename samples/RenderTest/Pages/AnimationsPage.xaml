@@ -18,7 +18,7 @@
       <Style Selector="Border.Rect1:pointerover">
         <Setter Property="Opacity" Value="0.5"/>
         <Style.Animations>
-          <Animation Duration="0:0:2.5" Easing="SineEaseInOut">
+          <Animation Duration="0:0:2.5" Easing="SineEaseInOut" Delay="0:0:5">
             <TransformKeyFrames Property="RotateTransform.Angle">
               <KeyFrame Cue="0%" Value="0"/>
               <KeyFrame Cue="100%" Value="360"/>
