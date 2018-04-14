@@ -10,8 +10,6 @@ namespace Avalonia.Base.UnitTests
 {
     public class AvaloniaPropertyRegistryTests
     {
-        ITestOutputHelper s;
-
         public AvaloniaPropertyRegistryTests(ITestOutputHelper s)
         {
             // Ensure properties are registered.
