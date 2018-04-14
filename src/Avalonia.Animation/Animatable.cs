@@ -24,6 +24,7 @@ namespace Avalonia.Animation
         public Animatable()
         {
             Transitions = new Transitions.Transitions();
+            _animationStates = new Dictionary<ulong, AnimationStatus>();
             AnimatableTimer = Timing.AnimationStateTimer
                          .Select(p =>
                          {
@@ -37,34 +38,40 @@ namespace Avalonia.Animation
                          .RefCount();
         }
 
+
         /// <summary>
         /// The specific animations timer for this control.
         /// </summary>
         /// <returns></returns>
         public IObservable<ulong> AnimatableTimer;
 
-        internal void PrepareAnimatableForAnimation()
+        internal class AnimationStatus
         {
-            if (!_animationsInitialized)
-            {
+            public int RepeatCount { get; set; }
+            public int IterationDirection { get; set; }
+            public int CurrentIteration { get; set; }
+            public int TotalIteration { get; set; }
+        }
 
+        internal Dictionary<ulong, AnimationStatus> _animationStates;
 
-                _animationsInitialized = true;
-            }
+        internal ulong PrepareAnimatableForAnimation()
+        {
+            var iterToken = GetIterationToken();
+            _animationStates.Add(iterToken, new AnimationStatus());
+            return iterToken;
         }
 
         bool _animationsInitialized = false;
 
-        // internal ConcurrentDictionary<int, (int repeatCount, int direction)> _animationStates;
-
         internal ulong _animationTime;
-        
-        // internal int _iterationTokenCounter;
 
-        // internal uint GetIterationToken()
-        // {
-        //     return (uint)Interlocked.Increment(ref _iterationTokenCounter);
-        // }
+        internal ulong _iterationTokenCounter;
+
+        internal ulong GetIterationToken()
+        {
+            return _iterationTokenCounter++;
+        }
 
         /// <summary>
         /// Defines the <see cref="PlayState"/> property.
@@ -74,6 +81,8 @@ namespace Avalonia.Animation
                 nameof(PlayState),
                 o => o.PlayState,
                 (o, v) => o.PlayState = v);
+
+        private PlayState _playState = PlayState.Run;
 
         /// <summary>
         /// Gets or sets the state of the animation for this
@@ -86,7 +95,6 @@ namespace Avalonia.Animation
 
         }
 
-        private PlayState _playState = PlayState.Run;
 
         /// <summary>
         /// Defines the <see cref="Transitions"/> property.

@@ -18,7 +18,7 @@ namespace Avalonia.Animation.Keyframes
         DoubleKeyFrames childKeyFrames;
 
         /// <inheritdoc/>
-        public override IDisposable Apply(Animation animation, Animatable control, IObservable<bool> obsMatch)
+        public override IDisposable Apply(Animation animation, Animatable control, ulong IterationToken, IObservable<bool> obsMatch)
         {
             var ctrl = (Visual)control;
 
@@ -26,26 +26,25 @@ namespace Avalonia.Animation.Keyframes
             if (typeof(Transform).IsAssignableFrom(Property.OwnerType) && ctrl.RenderTransform != null)
             {
                 var renderTransformType = ctrl.RenderTransform.GetType();
-                
+
                 if (childKeyFrames == null)
                 {
                     InitializeInternalDoubleKeyFrames();
                 }
 
-                // It's only 1 transform object so let's target that.
+                // It's a transform object so let's target that.
                 if (renderTransformType == Property.OwnerType)
                 {
-                    return childKeyFrames.Apply(animation, ctrl.RenderTransform, obsMatch);
+                    return childKeyFrames.Apply(animation, ctrl.RenderTransform, IterationToken, obsMatch);
                 }
-                // Try if the control's RenderTransform is a TransformGroup and find 
-                // the target there.
+                // It's a TransformGroup and try finding the target there.
                 else if (renderTransformType == typeof(TransformGroup))
                 {
                     foreach (Transform transform in ((TransformGroup)ctrl.RenderTransform).Children)
                     {
                         if (transform.GetType() == Property.OwnerType)
                         {
-                            return childKeyFrames.Apply(animation, transform, obsMatch);
+                            return childKeyFrames.Apply(animation, transform, IterationToken, obsMatch);
                         }
                     }
                 }
@@ -74,9 +73,8 @@ namespace Avalonia.Animation.Keyframes
         }
 
         /// <inheritdocs/>
-        public override IObservable<double> DoInterpolation(Animation animation, Animatable control)
-        {
-            return null;
-        }
+        public override IObservable<double> DoInterpolation(IObservable<double> timer, Animation animation, Animatable control) => null;
+
+        
     }
 }

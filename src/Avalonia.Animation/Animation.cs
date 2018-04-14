@@ -64,11 +64,11 @@ namespace Avalonia.Animation
         /// <inheritdocs/>
         public IDisposable Apply(Animatable control, IObservable<bool> matchObs)
         {
-            control.PrepareAnimatableForAnimation();
-            
+            var iterToken = control.PrepareAnimatableForAnimation();
+
             foreach (IKeyFrames keyframes in Children)
             {
-                _subscription.Add(keyframes.Apply(this, control, matchObs));
+                _subscription.Add(keyframes.Apply(this, control, iterToken, matchObs));
             }
             return this;
         }

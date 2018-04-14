@@ -31,7 +31,7 @@ namespace Avalonia.Animation.Keyframes
 
 
         /// <inheritdoc/>
-        public virtual IDisposable Apply(Animation animation, Animatable control, IObservable<bool> obsMatch)
+        public virtual IDisposable Apply(Animation animation, Animatable control, ulong IterationToken, IObservable<bool> obsMatch)
         {
             if (!IsVerfifiedAndConverted)
                 VerifyConvertKeyFrames(animation, typeof(T));
@@ -39,10 +39,11 @@ namespace Avalonia.Animation.Keyframes
             return obsMatch
                 .Where(p => p == true)
                 // Ignore triggers when global timers are paused.
-                .Where(p=> Timing.GetGlobalPlayState() == PlayState.Run)
+                .Where(p => Timing.GetGlobalPlayState() == PlayState.Run)
                 .Subscribe(_ =>
                 {
-                    var interp = DoInterpolation(animation, control)
+                    var timerObs = SetupAnimation(animation, control);
+                    var interp = DoInterpolation(timerObs, animation, control)
                                 .Select(p => (object)p);
 
                     control.Bind(Property, interp, BindingPriority.Animation);
@@ -88,15 +89,17 @@ namespace Avalonia.Animation.Keyframes
         /// Returns an observable timer with the specific Animation
         /// duration and delay and applies the Animation's easing function.
         /// </summary>
-        public IObservable<(double Time, Animatable Target)> 
-            SetupAnimation(Animation animation, Animatable control) =>
-                        Timing.GetAnimationsTimer(control, animation.Duration, animation.Delay)
-                              .Select(t => (animation.Easing.Ease(t), control));
+        public IObservable<double> SetupAnimation(Animation animation, Animatable control)
+        {
+            var newTimer = Timing.GetAnimationsTimer(control, animation.Duration, animation.Delay);
+            return newTimer.Select(t => animation.Easing.Ease(t));
+        }
+
 
         /// <summary>
         /// Interpolates the given keyframes to the control.
         /// </summary>
-        public abstract IObservable<T> DoInterpolation(Animation animation,
+        public abstract IObservable<T> DoInterpolation(IObservable<double> timer, Animation animation,
                                                        Animatable control);
 
 
