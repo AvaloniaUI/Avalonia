@@ -88,9 +88,10 @@ namespace Avalonia.Animation.Keyframes
                 _currentState = KeyFramesStates.DO_RUN;
         }
 
-        public double Step(PlayState _playState, Func<double, T> Interpolator)
+        public void Step(PlayState _playState, Func<double, T> Interpolator)
         {
-            if (_currentState == KeyFramesStates.DISPOSED) throw new InvalidProgramException("This KeyFrames Animation is already disposed.");
+            if (_currentState == KeyFramesStates.DISPOSED)
+                throw new InvalidProgramException("This KeyFrames Animation is already disposed.");
 
             if (_playState == PlayState.Stop) _currentState = KeyFramesStates.STOP;
 
@@ -115,7 +116,7 @@ namespace Avalonia.Animation.Keyframes
                         goto checkstate;
                     }
                     _delayFrameCount++;
-                    return 0d;
+                    break;
 
                 case KeyFramesStates.DO_RUN:
                     // temporary stuff.
@@ -132,6 +133,7 @@ namespace Avalonia.Animation.Keyframes
                     var tmp1 = (double)_durationFrameCount / _durationTotalFrameCount;
                     var easedTime = parentAnimation.Easing.Ease(tmp1);
                     _durationFrameCount++;
+                    
                     targetObserver.OnNext(Interpolator(easedTime));
                     break;
 
@@ -142,11 +144,10 @@ namespace Avalonia.Animation.Keyframes
                 // break;
 
                 case KeyFramesStates.STOP:
-                    targetObserver.OnCompleted();
-                    _unsubscribe = true;
+                    this.Dispose();
                     break;
             }
-            return 0;
+
         }
 
         public IDisposable Subscribe(IObserver<object> observer)
@@ -157,9 +158,10 @@ namespace Avalonia.Animation.Keyframes
 
         public void Dispose()
         {
+            targetObserver.OnCompleted();
             _unsubscribe = true;
             _currentState = KeyFramesStates.DISPOSED;
-            targetObserver = null;
+
         }
     }
 }
