@@ -48,9 +48,13 @@ namespace Avalonia.Animation.Keyframes
 
         /// <summary>
         /// Get the nearest pair of cue-time ordered keyframes 
-        /// according to the given time parameter.  
+        /// according to the given time parameter that is relative to
+        /// total animation time and the normalized intra-keyframe pair time 
+        /// (i.e., the normalized time between the selected keyframes, relative to the
+        /// give time parameter).
         /// </summary>
-        public KeyFramePair<T> GetKeyFramePairByTime(double t)
+        /// <param name="t">The time parameter, relative to the total animation time</param>
+        public (double IntraKFTime, KeyFramePair<T> KFPair) GetKFPairAndIntraKFTime(double t)
         {
             KeyValuePair<double, T> firstCue, lastCue;
             int kvCount = ConvertedKeyframes.Count();
@@ -77,7 +81,11 @@ namespace Avalonia.Animation.Keyframes
                 firstCue = ConvertedKeyframes.First();
                 lastCue = ConvertedKeyframes.Last();
             }
-            return new KeyFramePair<T>(firstCue, lastCue);
+
+            double t0 = firstCue.Key;
+            double t1 = lastCue.Key;
+            var intraframeTime = (t - t0) / (t1 - t0);
+            return (intraframeTime, new KeyFramePair<T>(firstCue, lastCue));
         }
 
 
@@ -87,14 +95,14 @@ namespace Avalonia.Animation.Keyframes
         public IDisposable RunKeyFrames(Animation animation, Animatable control)
         {
             var _kfStateMach = new KeyFramesStateMachine<T>();
-            _kfStateMach.Start(animation);
+            _kfStateMach.Initialize(animation, control);
 
             Timing.AnimationStateTimer
-                         .TakeWhile(_ => !_kfStateMach._unsubscribe)
-                         .Subscribe(p =>
-                         {
-                             _kfStateMach.Step(p, DoInterpolation);
-                         });
+                        .TakeWhile(_ => !_kfStateMach._unsubscribe)
+                        .Subscribe(p =>
+                        {
+                            _kfStateMach.Step(p, DoInterpolation);
+                        });
 
             return control.Bind(Property, _kfStateMach, BindingPriority.Animation);
         }
@@ -110,7 +118,7 @@ namespace Avalonia.Animation.Keyframes
 
 
         /// <summary>
-        /// Verifies and converts keyframe values according to this class's type parameter.
+        /// Verifies and converts keyframe values according to this class's target type.
         /// </summary>
         private void VerifyConvertKeyFrames(Animation animation, Type type)
         {
@@ -169,7 +177,7 @@ namespace Avalonia.Animation.Keyframes
                 throw new InvalidOperationException
                     ($"{this.GetType().Name} must have a starting (0% cue) and ending (100% cue) keyframe.");
 
-            // Sort Cues, in case they don't order it by themselves.
+            // Sort Cues, in case users don't order it by themselves.
             ConvertedKeyframes = ConvertedKeyframes.OrderBy(p => p.Key)
                                                    .ToDictionary((k) => k.Key, (v) => v.Value);
         }

@@ -18,15 +18,12 @@ namespace Avalonia.Animation.Keyframes
         /// <inheritdocs/>
         public override double DoInterpolation(double t)
         {
-            var pair = GetKeyFramePairByTime(t);
-
-            double y0 = pair.FirstKeyFrame.Value;
-            double t0 = pair.FirstKeyFrame.Key;
-            double y1 = pair.SecondKeyFrame.Value;
-            double t1 = pair.SecondKeyFrame.Key;
+            var pair = GetKFPairAndIntraKFTime(t);
+            double y0 = pair.KFPair.FirstKeyFrame.Value;
+            double y1 = pair.KFPair.SecondKeyFrame.Value;
 
             // Do linear parametric interpolation 
-            return y0 + ((t - t0) / (t1 - t0)) * (y1 - y0);
+            return y0 + (pair.IntraKFTime) * (y1 - y0);
         }
     }
 }
