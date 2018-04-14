@@ -27,7 +27,7 @@ namespace Avalonia.Base.UnitTests
         private class Class1 : AvaloniaObject
         {
             public static readonly AttachedProperty<string> FooProperty =
-                AvaloniaProperty.RegisterAttached<Class1, AvaloniaObject, string>(
+                AvaloniaProperty.RegisterAttached<Class1, Class2, string>(
                     "Foo",
                     "foodefault",
                     validate: ValidateFoo);
