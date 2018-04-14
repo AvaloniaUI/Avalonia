@@ -73,8 +73,6 @@ namespace Avalonia.Animation.Keyframes
         }
 
         /// <inheritdocs/>
-        public override IObservable<double> DoInterpolation(IObservable<double> timer, Animation animation, Animatable control) => null;
-
-        
+        public override double DoInterpolation(double time) => 0;
     }
 }

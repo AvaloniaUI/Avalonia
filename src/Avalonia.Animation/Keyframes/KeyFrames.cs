@@ -39,14 +39,10 @@ namespace Avalonia.Animation.Keyframes
             return obsMatch
                 .Where(p => p == true)
                 // Ignore triggers when global timers are paused.
-                .Where(p => Timing.GetGlobalPlayState() == PlayState.Run)
+                .Where(p => Timing.GetGlobalPlayState() != PlayState.Pause)
                 .Subscribe(_ =>
                 {
-                    var timerObs = SetupAnimation(animation, control);
-                    var interp = DoInterpolation(timerObs, animation, control)
-                                .Select(p => (object)p);
-
-                    control.Bind(Property, interp, BindingPriority.Animation);
+                    var timerObs = RunKeyFrames(animation, control);
                 });
         }
 
@@ -86,33 +82,35 @@ namespace Avalonia.Animation.Keyframes
 
 
         /// <summary>
-        /// Returns an observable timer with the specific Animation
-        /// duration and delay and applies the Animation's easing function.
+        /// Runs the KeyFrames Animation.
         /// </summary>
-        public IObservable<double> SetupAnimation(Animation animation, Animatable control)
+        public IDisposable RunKeyFrames(Animation animation, Animatable control)
         {
-            var newStateMachine = new KeyFramesStateMachine();
-            newStateMachine.Start(animation, control);
-            var playStateObs = Timing.AnimationStateTimer
-                                     .TakeWhile(p => !newStateMachine._unsubscribe)
-                                     .Select(p =>
-                                     {
-                                         return newStateMachine.Step(p);
-                                     });
-            // var newTimer = Timing.GetAnimationsTimer(animation, control, animation.Duration, animation.Delay);
-            return playStateObs.Select(t => animation.Easing.Ease(t));
+            var _kfStateMach = new KeyFramesStateMachine<T>();
+            _kfStateMach.Start(animation);
+
+            Timing.AnimationStateTimer
+                         .TakeWhile(_ => !_kfStateMach._unsubscribe)
+                         .Subscribe(p =>
+                         {
+                             _kfStateMach.Step(p, DoInterpolation);
+                         });
+
+            return control.Bind(Property, _kfStateMach, BindingPriority.Animation);
         }
 
-
         /// <summary>
-        /// Interpolates the given keyframes to the control.
+        /// Interpolates a value given the desired time.
         /// </summary>
-        public abstract IObservable<T> DoInterpolation(IObservable<double> timer, Animation animation,
-                                                       Animatable control);
+        public abstract T DoInterpolation(double time);
+
+
+        // public abstract IObservable<T> DoInterpolation(IObservable<double> timer, Animation animation,
+        //                                                Animatable control);
 
 
         /// <summary>
-        /// Verifies and converts keyframe values according to this class type parameter.
+        /// Verifies and converts keyframe values according to this class's type parameter.
         /// </summary>
         private void VerifyConvertKeyFrames(Animation animation, Type type)
         {

@@ -14,21 +14,19 @@ namespace Avalonia.Animation.Keyframes
     /// </summary>
     public class DoubleKeyFrames : KeyFrames<double>
     {
+
         /// <inheritdocs/>
-        public override IObservable<double> DoInterpolation(IObservable<double> timer, Animation animation, Animatable control)
-          => timer.Select(t =>
-             {
-                  // Get a pair of keyframes to make the interpolation.
-                  var pair = GetKeyFramePairByTime(t);
+        public override double DoInterpolation(double t)
+        {
+            var pair = GetKeyFramePairByTime(t);
 
-                 double y0 = pair.FirstKeyFrame.Value;
-                 double t0 = pair.FirstKeyFrame.Key;
-                 double y1 = pair.SecondKeyFrame.Value;
-                 double t1 = pair.SecondKeyFrame.Key;
+            double y0 = pair.FirstKeyFrame.Value;
+            double t0 = pair.FirstKeyFrame.Key;
+            double y1 = pair.SecondKeyFrame.Value;
+            double t1 = pair.SecondKeyFrame.Key;
 
-                  // Do linear parametric interpolation 
-                  return y0 + ((t - t0) / (t1 - t0)) * (y1 - y0);
-             });
-
+            // Do linear parametric interpolation 
+            return y0 + ((t - t0) / (t1 - t0)) * (y1 - y0);
+        }
     }
 }
