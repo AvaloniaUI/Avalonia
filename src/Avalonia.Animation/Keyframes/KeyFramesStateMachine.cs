@@ -17,7 +17,7 @@ namespace Avalonia.Animation.Keyframes
             _totalIteration;
 
         bool _isLooping, _isRepeating, _isReversed;
-        private Direction _animationDirection;
+        private PlaybackDirection _animationDirection;
         KeyFramesStates _currentState;
 
         internal bool _unsubscribe = false;
@@ -78,7 +78,19 @@ namespace Avalonia.Animation.Keyframes
                     }
                     break;
             }
-            this._animationDirection = animation.PlaybackDirection;
+            _animationDirection = animation.PlaybackDirection;
+            
+            switch (_animationDirection)
+            {
+                case PlaybackDirection.Reverse:
+                case PlaybackDirection.AlternateReverse:
+                    SetInitialPlaybackDirection(true);
+                    break;
+                default:
+                    SetInitialPlaybackDirection(false);
+                    break;
+            }
+
             _currentState = KeyFramesStates.DO_RUN;
         }
 
@@ -108,7 +120,7 @@ namespace Avalonia.Animation.Keyframes
                     return 0d;
 
                 case KeyFramesStates.DO_RUN:
-                    
+
                     break;
 
                 case KeyFramesStates.RUN_FORWARDS:
