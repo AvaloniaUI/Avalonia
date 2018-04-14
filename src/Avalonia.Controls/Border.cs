@@ -43,7 +43,8 @@ namespace Avalonia.Controls
         /// </summary>
         static Border()
         {
-            AffectsRender(BackgroundProperty, BorderBrushProperty);
+            AffectsRender(BackgroundProperty, BorderBrushProperty, BorderThicknessProperty, CornerRadiusProperty);
+            AffectsMeasure(BorderThicknessProperty);
         }
 
         /// <summary>
@@ -114,7 +115,7 @@ namespace Avalonia.Controls
                 Child.Arrange(new Rect(finalSize).Deflate(padding));
             }
 
-            _borderRenderHelper.Update(finalSize, BorderThickness, CornerRadius);           
+            _borderRenderHelper.Update(finalSize, BorderThickness, CornerRadius);
 
             return finalSize;
         }
