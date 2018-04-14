@@ -35,7 +35,7 @@ namespace Avalonia.Animation
         /// <summary>
         /// The playback direction for this animation.
         /// </summary>
-        public Direction PlaybackDirection { get; set; }
+        public PlaybackDirection PlaybackDirection { get; set; }
 
         /// <summary>
         /// Number of repeat iteration for this animation.

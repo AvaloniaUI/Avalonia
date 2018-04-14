@@ -7,7 +7,7 @@ namespace Avalonia.Animation
     /// <summary>
     /// Determines the playback direction of an animation.
     /// </summary>
-    public enum Direction
+    public enum PlaybackDirection
     {
         /// <summary>
         /// The animation is played normally.
