@@ -24,54 +24,24 @@ namespace Avalonia.Animation
         public Animatable()
         {
             Transitions = new Transitions.Transitions();
-            _animationStates = new Dictionary<ulong, AnimationStatus>();
             AnimatableTimer = Timing.AnimationStateTimer
-                         .Select(p =>
-                         {
-                             if (p == PlayState.Run
-                              && this._playState == PlayState.Run)
-                                 return _animationTime++;
-                             else
-                                 return _animationTime;
-                         })
-                         .Publish()
-                         .RefCount();
+                                .Select(p =>
+                                {
+                                    if (this._playState == PlayState.Pause)
+                                    {
+                                        return PlayState.Pause;
+                                    }
+                                    else return p;
+                                })
+                                .Publish()
+                                .RefCount();
         }
-
 
         /// <summary>
         /// The specific animations timer for this control.
         /// </summary>
         /// <returns></returns>
-        public IObservable<ulong> AnimatableTimer;
-
-        internal class AnimationStatus
-        {
-            public int RepeatCount { get; set; }
-            public int IterationDirection { get; set; }
-            public int CurrentIteration { get; set; }
-            public int TotalIteration { get; set; }
-        }
-
-        internal Dictionary<ulong, AnimationStatus> _animationStates;
-
-        internal ulong PrepareAnimatableForAnimation()
-        {
-            var iterToken = GetIterationToken();
-            _animationStates.Add(iterToken, new AnimationStatus());
-            return iterToken;
-        }
-
-        bool _animationsInitialized = false;
-
-        internal ulong _animationTime;
-
-        internal ulong _iterationTokenCounter;
-
-        internal ulong GetIterationToken()
-        {
-            return _iterationTokenCounter++;
-        }
+        public IObservable<PlayState> AnimatableTimer;
 
         /// <summary>
         /// Defines the <see cref="PlayState"/> property.

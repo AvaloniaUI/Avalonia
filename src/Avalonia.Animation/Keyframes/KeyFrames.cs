@@ -31,7 +31,7 @@ namespace Avalonia.Animation.Keyframes
 
 
         /// <inheritdoc/>
-        public virtual IDisposable Apply(Animation animation, Animatable control, ulong IterationToken, IObservable<bool> obsMatch)
+        public virtual IDisposable Apply(Animation animation, Animatable control, IObservable<bool> obsMatch)
         {
             if (!IsVerfifiedAndConverted)
                 VerifyConvertKeyFrames(animation, typeof(T));
@@ -91,8 +91,16 @@ namespace Avalonia.Animation.Keyframes
         /// </summary>
         public IObservable<double> SetupAnimation(Animation animation, Animatable control)
         {
-            var newTimer = Timing.GetAnimationsTimer(control, animation.Duration, animation.Delay);
-            return newTimer.Select(t => animation.Easing.Ease(t));
+            var newStateMachine = new KeyFramesStateMachine();
+            newStateMachine.Start(animation, control);
+            var playStateObs = Timing.AnimationStateTimer
+                                     .TakeWhile(p => !newStateMachine._unsubscribe)
+                                     .Select(p =>
+                                     {
+                                         return newStateMachine.Step(p);
+                                     });
+            // var newTimer = Timing.GetAnimationsTimer(animation, control, animation.Duration, animation.Delay);
+            return playStateObs.Select(t => animation.Easing.Ease(t));
         }
 
 

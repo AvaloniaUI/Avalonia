@@ -35,12 +35,12 @@ namespace Avalonia.Animation
         /// <summary>
         /// The playback direction for this animation.
         /// </summary>
-        public Direction Direction { get; set; }
+        public Direction PlaybackDirection { get; set; }
 
         /// <summary>
         /// Number of repeat iteration for this animation.
         /// </summary>
-        public int? RepeatCount { get; set; }
+        public ulong? RepeatCount { get; set; }
 
         /// <summary>
         /// Easing function to be used.
@@ -64,11 +64,9 @@ namespace Avalonia.Animation
         /// <inheritdocs/>
         public IDisposable Apply(Animatable control, IObservable<bool> matchObs)
         {
-            var iterToken = control.PrepareAnimatableForAnimation();
-
             foreach (IKeyFrames keyframes in Children)
             {
-                _subscription.Add(keyframes.Apply(this, control, iterToken, matchObs));
+                _subscription.Add(keyframes.Apply(this, control, matchObs));
             }
             return this;
         }

@@ -7,6 +7,7 @@ namespace Avalonia.Animation
     public enum PlayState
     {
         Run,
-        Pause
+        Pause,
+        Stop
     }
 }

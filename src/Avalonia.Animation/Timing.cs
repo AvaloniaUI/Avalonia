@@ -26,14 +26,14 @@ namespace Avalonia.Animation
         /// <summary>
         /// The time span of each frame.
         /// </summary>
-        private static readonly TimeSpan Tick = TimeSpan.FromSeconds(1.0 / FramesPerSecond);
+        internal static readonly TimeSpan FrameTick = TimeSpan.FromSeconds(1.0 / FramesPerSecond);
 
         /// <summary>
         /// Initializes static members of the <see cref="Timing"/> class.
         /// </summary>
         static Timing()
         {
-            var globalTimer = Observable.Interval(Tick, AvaloniaScheduler.Instance);
+            var globalTimer = Observable.Interval(FrameTick, AvaloniaScheduler.Instance);
 
             AnimationStateTimer = globalTimer
                 .Select(_ =>
@@ -72,10 +72,9 @@ namespace Avalonia.Animation
         /// Gets the animation timer.
         /// </summary>
         /// <remarks>
-        /// The animation timer increments usually 60 times per second as
+        /// The animation timer triggers usually at 60 times per second or as
         /// defined in <see cref="FramesPerSecond"/>.
-        /// The parameter passed to a subsciber is the number of frames since the animation system was
-        /// initialized.
+        /// The parameter passed to a subsciber is the current playstate of the animation.
         /// </remarks>
         internal static IObservable<PlayState> AnimationStateTimer
         {
@@ -98,30 +97,6 @@ namespace Avalonia.Animation
 
         /// <summary>
         /// Gets a timer that fires every frame for the specified duration with delay.
-        /// This timer's running state can be changed via <see cref="SetGlobalPlayState"/> method.
-        /// </summary>
-        /// <returns>
-        /// An observable that notifies the subscriber of the progress along the animation.
-        /// </returns>
-        /// <remarks>
-        /// The parameter passed to the subscriber is the progress along the animation, with
-        /// 0 being the start and 1 being the end. The observable is guaranteed to fire 0
-        /// immediately on subscribe and 1 at the end of the duration.
-        /// </remarks>
-        public static IObservable<double> GetAnimationsTimer(Animatable control, TimeSpan duration, TimeSpan delay)
-        {
-            var startTime = control._animationTime;
-            var _duration = (ulong)(duration.Ticks / Tick.Ticks);
-            var endTime = startTime + _duration;
-            return control.AnimatableTimer
-                .TakeWhile(x => x < endTime)
-                .Select(x => (double)(x - startTime) / _duration)
-                .StartWith(0.0)
-                .Concat(Observable.Return(1.0));
-        }
-
-        /// <summary>
-        /// Gets a timer that fires every frame for the specified duration with delay.
         /// </summary>
         /// <returns>
         /// An observable that notifies the subscriber of the progress along the transition.
@@ -134,7 +109,7 @@ namespace Avalonia.Animation
         public static IObservable<double> GetTransitionsTimer(Animatable control, TimeSpan duration, TimeSpan delay = default(TimeSpan))
         {
             var startTime = _transitionsFrameCount;
-            var _duration = (ulong)(duration.Ticks / Tick.Ticks);
+            var _duration = (ulong)(duration.Ticks / FrameTick.Ticks);
             var endTime = startTime + _duration;
 
             return TransitionsTimer

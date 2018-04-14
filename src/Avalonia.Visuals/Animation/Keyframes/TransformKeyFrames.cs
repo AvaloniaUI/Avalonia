@@ -18,7 +18,7 @@ namespace Avalonia.Animation.Keyframes
         DoubleKeyFrames childKeyFrames;
 
         /// <inheritdoc/>
-        public override IDisposable Apply(Animation animation, Animatable control, ulong IterationToken, IObservable<bool> obsMatch)
+        public override IDisposable Apply(Animation animation, Animatable control,  IObservable<bool> obsMatch)
         {
             var ctrl = (Visual)control;
 
@@ -35,7 +35,7 @@ namespace Avalonia.Animation.Keyframes
                 // It's a transform object so let's target that.
                 if (renderTransformType == Property.OwnerType)
                 {
-                    return childKeyFrames.Apply(animation, ctrl.RenderTransform, IterationToken, obsMatch);
+                    return childKeyFrames.Apply(animation, ctrl.RenderTransform,  obsMatch);
                 }
                 // It's a TransformGroup and try finding the target there.
                 else if (renderTransformType == typeof(TransformGroup))
@@ -44,7 +44,7 @@ namespace Avalonia.Animation.Keyframes
                     {
                         if (transform.GetType() == Property.OwnerType)
                         {
-                            return childKeyFrames.Apply(animation, transform, IterationToken, obsMatch);
+                            return childKeyFrames.Apply(animation, transform,  obsMatch);
                         }
                     }
                 }
