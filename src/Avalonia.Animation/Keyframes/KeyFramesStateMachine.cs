@@ -39,14 +39,10 @@ namespace Avalonia.Animation.Keyframes
         public void Start(Animation animation)
         {
             parentAnimation = animation;
+
             _delayTotalFrameCount = (ulong)(animation.Delay.Ticks / Timing.FrameTick.Ticks);
             _durationTotalFrameCount = (ulong)(animation.Duration.Ticks / Timing.FrameTick.Ticks);
-
-            if (_delayTotalFrameCount > 0)
-            {
-                _currentState = KeyFramesStates.DO_DELAY;
-            }
-
+ 
             switch (animation.RepeatBehavior)
             {
                 case RepeatBehavior.Loop:
@@ -93,7 +89,8 @@ namespace Avalonia.Animation.Keyframes
             if (_currentState == KeyFramesStates.DISPOSED)
                 throw new InvalidProgramException("This KeyFrames Animation is already disposed.");
 
-            if (_playState == PlayState.Stop) _currentState = KeyFramesStates.STOP;
+            if (_playState == PlayState.Stop)
+                _currentState = KeyFramesStates.STOP;
 
             // Save state and pause the machine
             if (_playState == PlayState.Pause && _currentState != KeyFramesStates.PAUSE)
@@ -133,7 +130,7 @@ namespace Avalonia.Animation.Keyframes
                     var tmp1 = (double)_durationFrameCount / _durationTotalFrameCount;
                     var easedTime = parentAnimation.Easing.Ease(tmp1);
                     _durationFrameCount++;
-                    
+
                     targetObserver.OnNext(Interpolator(easedTime));
                     break;
 
