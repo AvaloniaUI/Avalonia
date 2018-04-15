@@ -30,7 +30,6 @@ namespace Avalonia.Animation.Keyframes
         private Animation _targetAnimation;
         private Animatable _targetControl;
         internal bool _unsubscribe = false;
-        double _outputTime = 0d;
         private IObserver<object> _targetObserver;
 
         private enum KeyFramesStates

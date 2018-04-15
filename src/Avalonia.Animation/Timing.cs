@@ -15,7 +15,7 @@ namespace Avalonia.Animation
     /// </summary>
     public static class Timing
     {
-        static ulong _animationsFrameCount, _transitionsFrameCount;
+        static ulong _transitionsFrameCount;
         static PlayState _globalState = PlayState.Run;
 
         /// <summary>
