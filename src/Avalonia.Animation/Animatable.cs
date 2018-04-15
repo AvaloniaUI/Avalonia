@@ -27,7 +27,7 @@ namespace Avalonia.Animation
             AnimatableTimer = Timing.AnimationStateTimer
                                 .Select(p =>
                                 {
-                                    if (this._playState == PlayState.Pause)
+                                    if (PlayState == PlayState.Pause)
                                     {
                                         return PlayState.Pause;
                                     }
@@ -46,44 +46,31 @@ namespace Avalonia.Animation
         /// <summary>
         /// Defines the <see cref="PlayState"/> property.
         /// </summary>
-        public static readonly DirectProperty<Animatable, PlayState> PlayStateProperty =
-            AvaloniaProperty.RegisterDirect<Animatable, PlayState>(
-                nameof(PlayState),
-                o => o.PlayState,
-                (o, v) => o.PlayState = v);
-
-        private PlayState _playState = PlayState.Run;
+        public static readonly StyledProperty<PlayState> PlayStateProperty =
+            AvaloniaProperty.Register<Animatable, PlayState>(nameof(PlayState), PlayState.Run);
 
         /// <summary>
-        /// Gets or sets the state of the animation for this
-        /// control.
+        /// Gets or sets the property transitions for the control.
         /// </summary>
         public PlayState PlayState
         {
-            get { return _playState; }
-            set { SetAndRaise(PlayStateProperty, ref _playState, value); }
-
+            get { return GetValue(PlayStateProperty); }
+            set { SetValue(PlayStateProperty, value); }
         }
-
 
         /// <summary>
         /// Defines the <see cref="Transitions"/> property.
-        /// </summary>
-        public static readonly DirectProperty<Animatable, IEnumerable<ITransition>> TransitionsProperty =
-            AvaloniaProperty.RegisterDirect<Animatable, IEnumerable<ITransition>>(
-                nameof(Transitions),
-                o => o.Transitions,
-                (o, v) => o.Transitions = v);
-
-        private IEnumerable<ITransition> _transitions = new AvaloniaList<ITransition>();
+        /// </summary>  
+        public static readonly StyledProperty<IEnumerable<ITransition>> TransitionsProperty =
+            AvaloniaProperty.Register<Animatable, IEnumerable<ITransition>>(nameof(Transitions));
 
         /// <summary>
         /// Gets or sets the property transitions for the control.
         /// </summary>
         public IEnumerable<ITransition> Transitions
         {
-            get { return _transitions; }
-            set { SetAndRaise(TransitionsProperty, ref _transitions, value); }
+            get { return GetValue(TransitionsProperty); }
+            set { SetValue(TransitionsProperty, value); }
         }
 
         /// <summary>

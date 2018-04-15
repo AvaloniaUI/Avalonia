@@ -38,6 +38,11 @@ namespace Avalonia.Animation
         public PlaybackDirection PlaybackDirection { get; set; }
 
         /// <summary>
+        /// The value fill mode for this animation.
+        /// </summary>
+        public FillMode FillMode { get; set; }
+
+        /// <summary>
         /// Number of repeat iteration for this animation.
         /// </summary>
         public ulong? RepeatCount { get; set; }

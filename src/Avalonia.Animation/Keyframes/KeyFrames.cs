@@ -51,7 +51,7 @@ namespace Avalonia.Animation.Keyframes
         /// according to the given time parameter that is relative to
         /// total animation time and the normalized intra-keyframe pair time 
         /// (i.e., the normalized time between the selected keyframes, relative to the
-        /// give time parameter).
+        /// time parameter).
         /// </summary>
         /// <param name="t">The time parameter, relative to the total animation time</param>
         public (double IntraKFTime, KeyFramePair<T> KFPair) GetKFPairAndIntraKFTime(double t)
@@ -95,7 +95,7 @@ namespace Avalonia.Animation.Keyframes
         public IDisposable RunKeyFrames(Animation animation, Animatable control)
         {
             var _kfStateMach = new KeyFramesStateMachine<T>();
-            _kfStateMach.Initialize(animation, control);
+            _kfStateMach.Initialize(animation, control, this);
 
             Timing.AnimationStateTimer
                         .TakeWhile(_ => !_kfStateMach._unsubscribe)

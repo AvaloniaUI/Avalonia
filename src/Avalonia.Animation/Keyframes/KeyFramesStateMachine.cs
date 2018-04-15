@@ -1,4 +1,6 @@
 using System;
+using System.Linq;
+using Avalonia.Data;
 
 namespace Avalonia.Animation.Keyframes
 {
@@ -7,9 +9,8 @@ namespace Avalonia.Animation.Keyframes
     /// </summary>
     internal class KeyFramesStateMachine<T> : IObservable<object>, IDisposable
     {
-        
         T _lastInterpValue = default(T);
-
+        T _firstKFValue = default(T);
         private ulong _delayTotalFrameCount,
             _durationTotalFrameCount,
             _delayFrameCount,
@@ -17,10 +18,16 @@ namespace Avalonia.Animation.Keyframes
             _repeatCount,
             _currentIteration;
 
-        private bool _isLooping, _isRepeating, _isReversed, _checkLoopAndRepeat;
+        private bool _isLooping,
+                     _isRepeating,
+                     _isReversed,
+                     _checkLoopAndRepeat,
+                     _gotFirstKFValue;
+        private FillMode _fillMode;
         private PlaybackDirection _animationDirection;
-        KeyFramesStates _currentState, _savedState;
-        private Animation _parentAnimation;
+        private KeyFramesStates _currentState, _savedState;
+        private KeyFrames<T> _parent;
+        private Animation _targetAnimation;
         private Animatable _targetControl;
         internal bool _unsubscribe = false;
         double _outputTime = 0d;
@@ -40,9 +47,10 @@ namespace Avalonia.Animation.Keyframes
             DISPOSED
         }
 
-        public void Initialize(Animation animation, Animatable control)
+        public void Initialize(Animation animation, Animatable control, KeyFrames<T> keyframes)
         {
-            _parentAnimation = animation;
+            _parent = keyframes;
+            _targetAnimation = animation;
             _targetControl = control;
 
             _delayTotalFrameCount = (ulong)(animation.Delay.Ticks / Timing.FrameTick.Ticks);
@@ -85,14 +93,14 @@ namespace Avalonia.Animation.Keyframes
                     break;
             }
 
-            _animationDirection = _parentAnimation.PlaybackDirection;
+            _animationDirection = _targetAnimation.PlaybackDirection;
+            _fillMode = _targetAnimation.FillMode;
 
             if (_durationTotalFrameCount > 0)
                 _currentState = KeyFramesStates.DO_DELAY;
             else
                 _currentState = KeyFramesStates.DO_RUN;
 
-             
         }
 
         public void Step(PlayState _playState, Func<double, T> Interpolator)
@@ -109,6 +117,13 @@ namespace Avalonia.Animation.Keyframes
 
         private void InternalStep(PlayState _playState, Func<double, T> Interpolator)
         {
+
+            if (!_gotFirstKFValue)
+            {
+                _firstKFValue = (T)_parent.First().Value;
+                _gotFirstKFValue = true;
+            }
+
             if (_currentState == KeyFramesStates.DISPOSED)
                 throw new InvalidProgramException("This KeyFrames Animation is already disposed.");
 
@@ -132,22 +147,34 @@ namespace Avalonia.Animation.Keyframes
             switch (_currentState)
             {
                 case KeyFramesStates.DO_DELAY:
+
+                    if (_currentIteration == 0
+                     && _fillMode == FillMode.Backward
+                     || _fillMode == FillMode.Both)
+                    {
+                        _targetObserver.OnNext(_firstKFValue);
+                    }
+
                     if (_delayFrameCount > _delayTotalFrameCount)
                     {
                         _currentState = KeyFramesStates.DO_RUN;
                         goto checkstate;
                     }
                     _delayFrameCount++;
+
                     break;
 
                 case KeyFramesStates.DO_RUN:
+                    
                     if (_isReversed)
                         _currentState = KeyFramesStates.RUN_BACKWARDS;
                     else
                         _currentState = KeyFramesStates.RUN_FORWARDS;
+
                     goto checkstate;
 
                 case KeyFramesStates.RUN_FORWARDS:
+
                     if (_durationFrameCount > _durationTotalFrameCount)
                     {
                         _currentState = KeyFramesStates.RUN_COMPLETE;
@@ -160,6 +187,7 @@ namespace Avalonia.Animation.Keyframes
                     goto checkstate;
 
                 case KeyFramesStates.RUN_BACKWARDS:
+                
                     if (_durationFrameCount > _durationTotalFrameCount)
                     {
                         _currentState = KeyFramesStates.RUN_COMPLETE;
@@ -173,7 +201,7 @@ namespace Avalonia.Animation.Keyframes
 
                 case KeyFramesStates.RUN_APPLYVALUE:
 
-                    _easedTime = _parentAnimation.Easing.Ease(_tempDuration);
+                    _easedTime = _targetAnimation.Easing.Ease(_tempDuration);
 
                     _durationFrameCount++;
                     _lastInterpValue = Interpolator(_easedTime);
@@ -217,6 +245,11 @@ namespace Avalonia.Animation.Keyframes
                     goto checkstate;
 
                 case KeyFramesStates.STOP:
+                    if (_fillMode == FillMode.Forward
+                     || _fillMode == FillMode.Both)
+                    {
+                        _targetControl.SetValue(_parent.Property, _lastInterpValue, BindingPriority.Animation);
+                    }
                     _targetObserver.OnCompleted();
                     break;
             }
