@@ -11,6 +11,7 @@ namespace Avalonia.Animation.Easings
     /// <summary>
     /// Base class for all Easing classes.
     /// </summary>
+    [TypeConverter(typeof(EasingTypeConverter))]
     public abstract class Easing : IEasing
     {
         /// <inheritdoc/>

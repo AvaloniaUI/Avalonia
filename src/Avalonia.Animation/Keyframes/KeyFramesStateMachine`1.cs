@@ -11,6 +11,7 @@ namespace Avalonia.Animation.Keyframes
     {
         object _lastInterpValue;
         object _firstKFValue;
+        
         private ulong _delayTotalFrameCount,
             _durationTotalFrameCount,
             _delayFrameCount,

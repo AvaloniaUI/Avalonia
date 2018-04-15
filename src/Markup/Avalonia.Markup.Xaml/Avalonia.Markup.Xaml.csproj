@@ -31,7 +31,6 @@
         </Compile>
         <Compile Include="AvaloniaXamlLoaderPortableXaml.cs" />
         <Compile Include="AvaloniaXamlLoader.cs" />
-        <Compile Include="Converters\EasingTypeConverter.cs" />
         <Compile Include="Converters\CornerRadiusTypeConverter.cs" />
         <Compile Include="Converters\MatrixTypeConverter.cs" />
         <Compile Include="Converters\RectTypeConverter.cs" />

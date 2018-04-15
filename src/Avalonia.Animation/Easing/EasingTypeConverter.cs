@@ -6,7 +6,7 @@ using System;
 using System.ComponentModel;
 using System.Globalization;
 
-namespace Avalonia.Markup.Xaml.Converters
+namespace Avalonia.Animation.Easings
 {
 
     public class EasingTypeConverter : TypeConverter
