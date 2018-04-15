@@ -36,6 +36,13 @@ namespace Avalonia.Controls.Presenters
             Border.BorderThicknessProperty.AddOwner<ContentPresenter>();
 
         /// <summary>
+        /// Defines the <see cref="CornerRadius"/> property.
+        /// </summary>
+        public static readonly StyledProperty<CornerRadius> CornerRadiusProperty =
+            Border.CornerRadiusProperty.AddOwner<ContentPresenter>();
+
+
+        /// <summary>
         /// Defines the <see cref="Child"/> property.
         /// </summary>
         public static readonly DirectProperty<ContentPresenter, IControl> ChildProperty =
@@ -54,12 +61,6 @@ namespace Avalonia.Controls.Presenters
         /// </summary>
         public static readonly StyledProperty<IDataTemplate> ContentTemplateProperty =
             ContentControl.ContentTemplateProperty.AddOwner<ContentPresenter>();
-
-        /// <summary>
-        /// Defines the <see cref="CornerRadius"/> property.
-        /// </summary>
-        public static readonly StyledProperty<CornerRadius> CornerRadiusProperty =
-            Border.CornerRadiusProperty.AddOwner<ContentPresenter>();
 
         /// <summary>
         /// Defines the <see cref="HorizontalContentAlignment"/> property.
@@ -97,13 +98,6 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ContentPresenter"/> class.
-        /// </summary>
-        public ContentPresenter()
-        {
-        }
-
-        /// <summary>
         /// Gets or sets a brush with which to paint the background.
         /// </summary>
         public IBrush Background
@@ -128,6 +122,15 @@ namespace Avalonia.Controls.Presenters
         {
             get { return GetValue(BorderThicknessProperty); }
             set { SetValue(BorderThicknessProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the radius of the border rounded corners.
+        /// </summary>
+        public CornerRadius CornerRadius
+        {
+            get { return GetValue(CornerRadiusProperty); }
+            set { SetValue(CornerRadiusProperty, value); }
         }
 
         /// <summary>
@@ -159,16 +162,7 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <summary>
-        /// Gets or sets the radius of the border rounded corners.
-        /// </summary>
-        public CornerRadius CornerRadius
-        {
-            get { return GetValue(CornerRadiusProperty); }
-            set { SetValue(CornerRadiusProperty, value); }
-        }
-
-        /// <summary>
-        /// Gets or sets the horizontal alignment of the content within the control.
+        /// Gets or sets the horizontal alignment of the content within the border the control.
         /// </summary>
         public HorizontalAlignment HorizontalContentAlignment
         {
@@ -177,7 +171,7 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <summary>
-        /// Gets or sets the vertical alignment of the content within the control.
+        /// Gets or sets the vertical alignment of the content within the border of the control.
         /// </summary>
         public VerticalAlignment VerticalContentAlignment
         {
@@ -186,7 +180,7 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <summary>
-        /// Gets or sets the padding to place around the <see cref="Child"/> control.
+        /// Gets or sets the space between the border and the <see cref="Child"/> control.
         /// </summary>
         public Thickness Padding
         {
@@ -195,7 +189,7 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <inheritdoc/>
-        public override sealed void ApplyTemplate()
+        public sealed override void ApplyTemplate()
         {
             if (!_createdChild && ((ILogical)this).IsAttachedToLogicalTree)
             {
@@ -328,67 +322,41 @@ namespace Avalonia.Controls.Presenters
         /// <inheritdoc/>
         protected override Size MeasureOverride(Size availableSize)
         {
-            return Border.MeasureOverrideImpl(availableSize, Child, Padding, BorderThickness);
+            return LayoutHelper.MeasureChild(Child, availableSize, Padding, BorderThickness);
         }
 
         /// <inheritdoc/>
         protected override Size ArrangeOverride(Size finalSize)
         {
-            finalSize = ArrangeOverrideImpl(finalSize, new Vector());
-
             _borderRenderer.Update(finalSize, BorderThickness, CornerRadius);
 
-            return finalSize;
-        }
-
-        /// <summary>
-        /// Called when the <see cref="Content"/> property changes.
-        /// </summary>
-        /// <param name="e">The event args.</param>
-        private void ContentChanged(AvaloniaPropertyChangedEventArgs e)
-        {
-            _createdChild = false;
-
-            if (((ILogical)this).IsAttachedToLogicalTree)
-            {
-                UpdateChild();
-            }
-            else if (Child != null)
-            {
-                VisualChildren.Remove(Child);
-                LogicalChildren.Remove(Child);
-                Child = null;
-                _dataTemplate = null;
-            }
-
-            InvalidateMeasure();
+            return ArrangeOverrideImpl(finalSize, new Vector());
         }
 
         internal Size ArrangeOverrideImpl(Size finalSize, Vector offset)
         {
             if (Child == null) return finalSize;
 
-            var padding = Padding;
-            var borderThickness = BorderThickness;
+            var padding = Padding + BorderThickness;
             var horizontalContentAlignment = HorizontalContentAlignment;
             var verticalContentAlignment = VerticalContentAlignment;
             var useLayoutRounding = UseLayoutRounding;
             var availableSizeMinusMargins = new Size(
-                Math.Max(0, finalSize.Width - padding.Left - padding.Right - borderThickness.Left - borderThickness.Right),
-                Math.Max(0, finalSize.Height - padding.Top - padding.Bottom - borderThickness.Top - borderThickness.Bottom));
+                Math.Max(0, finalSize.Width),
+                Math.Max(0, finalSize.Height));
             var size = availableSizeMinusMargins;
             var scale = GetLayoutScale();
-            var originX = offset.X + padding.Left + borderThickness.Left;
-            var originY = offset.Y + padding.Top + borderThickness.Top;
+            var originX = offset.X;
+            var originY = offset.Y;
 
             if (horizontalContentAlignment != HorizontalAlignment.Stretch)
             {
-                size = size.WithWidth(Math.Min(size.Width, DesiredSize.Width - padding.Left - padding.Right));
+                size = size.WithWidth(Math.Min(size.Width, DesiredSize.Width));
             }
 
             if (verticalContentAlignment != VerticalAlignment.Stretch)
             {
-                size = size.WithHeight(Math.Min(size.Height, DesiredSize.Height - padding.Top - padding.Bottom));
+                size = size.WithHeight(Math.Min(size.Height, DesiredSize.Height));
             }
 
             if (useLayoutRounding)
@@ -427,9 +395,35 @@ namespace Avalonia.Controls.Presenters
                 originY = Math.Floor(originY * scale) / scale;
             }
 
-            Child.Arrange(new Rect(originX, originY, Math.Max(0, size.Width), Math.Max(0, size.Height)));
+            var boundsForChild =
+                new Rect(originX, originY, Math.Max(0, size.Width), Math.Max(0, size.Height)).Deflate(padding);
+
+            Child.Arrange(boundsForChild);
 
             return finalSize;
+        }
+
+        /// <summary>
+        /// Called when the <see cref="Content"/> property changes.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        private void ContentChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            _createdChild = false;
+
+            if (((ILogical)this).IsAttachedToLogicalTree)
+            {
+                UpdateChild();
+            }
+            else if (Child != null)
+            {
+                VisualChildren.Remove(Child);
+                LogicalChildren.Remove(Child);
+                Child = null;
+                _dataTemplate = null;
+            }
+
+            InvalidateMeasure();
         }
 
         private double GetLayoutScale()
