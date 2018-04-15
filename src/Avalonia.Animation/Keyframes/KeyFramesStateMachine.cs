@@ -9,8 +9,8 @@ namespace Avalonia.Animation.Keyframes
     /// </summary>
     internal class KeyFramesStateMachine<T> : IObservable<object>, IDisposable
     {
-        T _lastInterpValue = default(T);
-        T _firstKFValue = default(T);
+        object _lastInterpValue;
+        object _firstKFValue;
         private ulong _delayTotalFrameCount,
             _durationTotalFrameCount,
             _delayFrameCount,
@@ -120,7 +120,7 @@ namespace Avalonia.Animation.Keyframes
 
             if (!_gotFirstKFValue)
             {
-                _firstKFValue = (T)_parent.First().Value;
+                _firstKFValue = _parent.First().Value;
                 _gotFirstKFValue = true;
             }
 
@@ -148,11 +148,17 @@ namespace Avalonia.Animation.Keyframes
             {
                 case KeyFramesStates.DO_DELAY:
 
-                    if (_currentIteration == 0
-                     && _fillMode == FillMode.Backward
+                    if (_fillMode == FillMode.Backward
                      || _fillMode == FillMode.Both)
                     {
-                        _targetObserver.OnNext(_firstKFValue);
+                        if (_currentIteration == 0)
+                        {
+                            _targetObserver.OnNext(_firstKFValue);
+                        }
+                        else
+                        {
+                            _targetObserver.OnNext(_lastInterpValue);
+                        }
                     }
 
                     if (_delayFrameCount > _delayTotalFrameCount)
@@ -165,7 +171,7 @@ namespace Avalonia.Animation.Keyframes
                     break;
 
                 case KeyFramesStates.DO_RUN:
-                    
+
                     if (_isReversed)
                         _currentState = KeyFramesStates.RUN_BACKWARDS;
                     else
@@ -187,7 +193,7 @@ namespace Avalonia.Animation.Keyframes
                     goto checkstate;
 
                 case KeyFramesStates.RUN_BACKWARDS:
-                
+
                     if (_durationFrameCount > _durationTotalFrameCount)
                     {
                         _currentState = KeyFramesStates.RUN_COMPLETE;
