@@ -341,29 +341,27 @@ namespace Avalonia.Controls.Presenters
             var horizontalContentAlignment = HorizontalContentAlignment;
             var verticalContentAlignment = VerticalContentAlignment;
             var useLayoutRounding = UseLayoutRounding;
-            var availableSizeMinusMargins = new Size(
-                Math.Max(0, finalSize.Width),
-                Math.Max(0, finalSize.Height));
-            var size = availableSizeMinusMargins;
+            var availableSizeMinusMargins = finalSize;
+            var sizeForChild = availableSizeMinusMargins;
             var scale = GetLayoutScale();
             var originX = offset.X;
             var originY = offset.Y;
 
             if (horizontalContentAlignment != HorizontalAlignment.Stretch)
             {
-                size = size.WithWidth(Math.Min(size.Width, DesiredSize.Width));
+                sizeForChild = sizeForChild.WithWidth(Math.Min(sizeForChild.Width, DesiredSize.Width));
             }
 
             if (verticalContentAlignment != VerticalAlignment.Stretch)
             {
-                size = size.WithHeight(Math.Min(size.Height, DesiredSize.Height));
+                sizeForChild = sizeForChild.WithHeight(Math.Min(sizeForChild.Height, DesiredSize.Height));
             }
 
             if (useLayoutRounding)
             {
-                size = new Size(
-                    Math.Ceiling(size.Width * scale) / scale,
-                    Math.Ceiling(size.Height * scale) / scale);
+                sizeForChild = new Size(
+                    Math.Ceiling(sizeForChild.Width * scale) / scale,
+                    Math.Ceiling(sizeForChild.Height * scale) / scale);
                 availableSizeMinusMargins = new Size(
                     Math.Ceiling(availableSizeMinusMargins.Width * scale) / scale,
                     Math.Ceiling(availableSizeMinusMargins.Height * scale) / scale);
@@ -372,20 +370,20 @@ namespace Avalonia.Controls.Presenters
             switch (horizontalContentAlignment)
             {
                 case HorizontalAlignment.Center:
-                    originX += (availableSizeMinusMargins.Width - size.Width) / 2;
+                    originX += (availableSizeMinusMargins.Width - sizeForChild.Width) / 2;
                     break;
                 case HorizontalAlignment.Right:
-                    originX += availableSizeMinusMargins.Width - size.Width;
+                    originX += availableSizeMinusMargins.Width - sizeForChild.Width;
                     break;
             }
 
             switch (verticalContentAlignment)
             {
                 case VerticalAlignment.Center:
-                    originY += (availableSizeMinusMargins.Height - size.Height) / 2;
+                    originY += (availableSizeMinusMargins.Height - sizeForChild.Height) / 2;
                     break;
                 case VerticalAlignment.Bottom:
-                    originY += availableSizeMinusMargins.Height - size.Height;
+                    originY += availableSizeMinusMargins.Height - sizeForChild.Height;
                     break;
             }
 
@@ -396,7 +394,7 @@ namespace Avalonia.Controls.Presenters
             }
 
             var boundsForChild =
-                new Rect(originX, originY, Math.Max(0, size.Width), Math.Max(0, size.Height)).Deflate(padding);
+                new Rect(originX, originY, sizeForChild.Width, sizeForChild.Height).Deflate(padding);
 
             Child.Arrange(boundsForChild);
 
