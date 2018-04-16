@@ -365,13 +365,20 @@ namespace Avalonia.Controls
         /// </summary>
         protected void InvalidateFormattedText()
         {
+            ClearFormattedText();
+            InvalidateMeasure();
+        }
+
+        /// <summary>
+        /// Invalidates <see cref="FormattedText"/>.
+        /// </summary>
+        protected void ClearFormattedText()
+        {
             if (_formattedText != null)
             {
                 _constraint = _formattedText.Constraint;
                 _formattedText = null;
             }
-
-            InvalidateMeasure();
         }
 
         /// <summary>

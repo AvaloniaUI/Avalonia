@@ -43,7 +43,7 @@ namespace Avalonia.Controls.Presenters
             Observable.Merge(
                 this.GetObservable(SelectionStartProperty),
                 this.GetObservable(SelectionEndProperty))
-                .Subscribe(_ => InvalidateFormattedText());
+                .Subscribe(_ => ClearFormattedText());
 
             this.GetObservable(CaretIndexProperty)
                 .Subscribe(CaretIndexChanged);
