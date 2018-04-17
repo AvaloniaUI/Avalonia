@@ -164,6 +164,7 @@ namespace Avalonia.Controls
                 else
                 {
                     IsDropDownOpen = !IsDropDownOpen;
+                    e.Handled = true;
                 }
             }
             base.OnPointerPressed(e);
