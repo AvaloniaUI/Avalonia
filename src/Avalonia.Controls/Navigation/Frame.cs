@@ -8,7 +8,8 @@ namespace Avalonia.Controls {
     /// <summary>
     /// Control allow execute navigation wihtin itself.
     /// </summary>
-    public class Frame : Panel {
+    public class Frame : Panel
+    {
 
         private const int MaxHistorySize = 15;
 
@@ -35,28 +36,30 @@ namespace Avalonia.Controls {
 
         private bool _isStack = false;
 
-        private Type _CurrentView;
+        private Type _currentView;
 
-        private HistoryItem _CurrentState;
+        private HistoryItem _currentState;
 
-        private List<HistoryItem> _History = new List<HistoryItem> ();
+        private List<HistoryItem> _history = new List<HistoryItem> ();
 
-        private IViewResolver _ViewResolver = new SimpleViewResolver ();
+        private IViewResolver _viewResolver = new SimpleViewResolver ();
 
-        private void AddNewItemToHistory ( HistoryItem historyItem , int insertPosition = -1 ) {
-            if ( _History.Count == MaxHistorySize ) _History.RemoveAt ( 0 );
+        private void AddNewItemToHistory ( HistoryItem historyItem , int insertPosition = -1 )
+        {
+            if ( _history.Count == MaxHistorySize ) _history.RemoveAt ( 0 );
 
             if ( IsStack ) {
-                _History.Add ( historyItem );
+                _history.Add ( historyItem );
             }
             else {
-                if ( insertPosition > -1 && insertPosition < _History.Count - 1 ) _History = _History.GetRange ( 0 , insertPosition + 1 );
+                if ( insertPosition > -1 && insertPosition < _history.Count - 1 ) _history = _history.GetRange ( 0 , insertPosition + 1 );
 
-                _History.Add ( historyItem );
+                _history.Add ( historyItem );
             }
         }
 
-        private void ChangeContent ( HistoryItem historyItem , HistoryItem oldHistoryItem , NavigationMode mode ) {
+        private void ChangeContent ( HistoryItem historyItem , HistoryItem oldHistoryItem , NavigationMode mode )
+        {
             if ( Children.Count > 0 ) {
                 if ( Children.First () is Page currentPage ) {
                     currentPage.Frame = null;
@@ -71,7 +74,7 @@ namespace Avalonia.Controls {
                 Children.Clear ();
             }
 
-            var control = _ViewResolver.Resolve ( historyItem.Type );
+            var control = _viewResolver.Resolve ( historyItem.Type );
             var page = control as Page;
             if ( page != null ) {
                 page.Frame = this;
@@ -87,9 +90,10 @@ namespace Avalonia.Controls {
             Children.Add ( page );
         }
 
-        private void RaiseStateProperties ( HistoryItem newElement ) {
-            _CurrentState = newElement;
-            _CurrentView = newElement.Type;
+        private void RaiseStateProperties ( HistoryItem newElement )
+        {
+            _currentState = newElement;
+            _currentView = newElement.Type;
             RaisePropertyChanged ( CurrentStateProperty , CurrentState , newElement );
             RaisePropertyChanged ( CurrentViewProperty , CurrentView , newElement.Type );
         }
@@ -97,14 +101,15 @@ namespace Avalonia.Controls {
         /// <summary>
         /// Go back from history.
         /// </summary>
-        public void GoBack () {
+        public void GoBack ()
+        {
             if ( !CanGoBack () ) return;
 
-            var currentItemIndex = _History.IndexOf ( CurrentState );
-            var newElement = _History.ElementAt ( currentItemIndex - 1 );
+            var currentItemIndex = _history.IndexOf ( CurrentState );
+            var newElement = _history.ElementAt ( currentItemIndex - 1 );
 
             //stack mode when we delete history record immediatly after going back.
-            if ( IsStack ) _History = _History.GetRange ( 0 , _History.Count - ( _History.Count - currentItemIndex ) );
+            if ( IsStack ) _history = _history.GetRange ( 0 , _history.Count - ( _history.Count - currentItemIndex ) );
 
             ChangeContent ( newElement , CurrentState , NavigationMode.Back );
 
@@ -114,13 +119,14 @@ namespace Avalonia.Controls {
         /// <summary>
         /// Go forward for one step.
         /// </summary>
-        public void GoForward () {
+        public void GoForward ()
+        {
             if ( !CanGoForward () ) return;
 
-            var currentIndex = _History.IndexOf ( CurrentState );
-            if ( currentIndex == _History.Count () - 1 ) return;
+            var currentIndex = _history.IndexOf ( CurrentState );
+            if ( currentIndex == _history.Count () - 1 ) return;
 
-            var newElement = _History.ElementAt ( currentIndex + 1 );
+            var newElement = _history.ElementAt ( currentIndex + 1 );
 
             ChangeContent ( newElement , CurrentState , NavigationMode.Forward );
 
@@ -131,13 +137,13 @@ namespace Avalonia.Controls {
         /// Is it possible to go back to the page?
         /// </summary>
         /// <returns></returns>
-        public bool CanGoBack () => _History.IndexOf ( CurrentState ) > 0;
+        public bool CanGoBack () => _history.IndexOf ( CurrentState ) > 0;
 
         /// <summary>
         /// Is it possible to go to the front page?
         /// </summary>
         /// <returns></returns>
-        public bool CanGoForward () => _History.IndexOf ( CurrentState ) < _History.Count - 1;
+        public bool CanGoForward () => _history.IndexOf ( CurrentState ) < _history.Count - 1;
 
         /// <summary>
         /// Current state of history.
@@ -146,13 +152,13 @@ namespace Avalonia.Controls {
         {
             get
             {
-                return _CurrentState;
+                return _currentState;
             }
             set
             {
-                var selectedIndex = _History.IndexOf ( _CurrentState );
+                var selectedIndex = _history.IndexOf ( _currentState );
 
-                SetAndRaise ( CurrentStateProperty , ref _CurrentState , value );
+                SetAndRaise ( CurrentStateProperty , ref _currentState , value );
 
                 if ( value == null ) return;
 
@@ -160,7 +166,7 @@ namespace Avalonia.Controls {
 
                 ChangeContent ( value , null , NavigationMode.New );
 
-                _CurrentView = value.Type;
+                _currentView = value.Type;
                 RaisePropertyChanged ( CurrentViewProperty , CurrentView , value.Type );
             }
         }
@@ -172,13 +178,13 @@ namespace Avalonia.Controls {
         {
             get
             {
-                return _CurrentView;
+                return _currentView;
             }
             set
             {
-                var selectedIndex = _History.IndexOf ( _CurrentState );
+                var selectedIndex = _history.IndexOf ( _currentState );
 
-                SetAndRaise ( CurrentViewProperty , ref _CurrentView , value );
+                SetAndRaise ( CurrentViewProperty , ref _currentView , value );
 
                 if ( value == null ) return;
 
@@ -191,7 +197,7 @@ namespace Avalonia.Controls {
 
                 ChangeContent ( historyItem , null , NavigationMode.New );
 
-                _CurrentState = historyItem;
+                _currentState = historyItem;
                 RaisePropertyChanged ( CurrentStateProperty , CurrentState , historyItem );
             }
         }
@@ -216,7 +222,8 @@ namespace Avalonia.Controls {
         /// </summary>
         /// <param name="type">The type of page that will be displayed in the frame.</param>
         /// <param name="parameters">Parameters wiil be passed to </param>
-        public void Navigate ( Type type , params object[] parameters ) {
+        public void Navigate ( Type type , params object[] parameters )
+        {
             CurrentState = new HistoryItem {
                 Type = type ,
                 Parameters = parameters
@@ -227,39 +234,42 @@ namespace Avalonia.Controls {
         /// Set class that will be resolve view types.
         /// </summary>
         /// <param name="viewResolver"></param>
-        public void SetViewResolver ( IViewResolver viewResolver ) {
-            _ViewResolver = viewResolver;
+        public void SetViewResolver ( IViewResolver viewResolver )
+        {
+            _viewResolver = viewResolver;
         }
 
         /// <summary>
         /// Export history.
         /// </summary>
-        public Task Export ( IHistoryExport historyExport ) {
+        public Task Export ( IHistoryExport historyExport )
+        {
             if ( historyExport == null ) throw new ArgumentNullException ( nameof ( historyExport ) );
 
             return historyExport.Export (
-                _History.Select (
+                _history.Select (
                     a =>
                         new HistoryItem {
                             Type = a.Type ,
                             Parameters = a.Parameters.ToArray ()
                         }
                     ) ,
-                    _History.IndexOf ( CurrentState )
+                    _history.IndexOf ( CurrentState )
                 );
         }
 
         /// <summary>
         /// Import history.
         /// </summary>
-        public async Task Import ( IHistoryImport historyImport ) {
+        public async Task Import ( IHistoryImport historyImport )
+        {
             if ( historyImport == null ) throw new ArgumentNullException ( nameof ( historyImport ) );
 
-            _History.Clear ();
+            _history.Clear ();
 
             var (historyItems, selected) = await historyImport.Import ();
 
-            _History.AddRange (
+            _history.AddRange (
                 historyItems.Select (
                     a => new HistoryItem {
                         Type = a.Type ,
@@ -270,7 +280,7 @@ namespace Avalonia.Controls {
 
             if ( selected < 0 ) throw new ArgumentOutOfRangeException ( nameof ( selected ) );
 
-            var selectedItem = _History.ElementAt ( selected );
+            var selectedItem = _history.ElementAt ( selected );
             ChangeContent ( selectedItem , null , NavigationMode.New );
             RaiseStateProperties ( selectedItem );
         }

@@ -1,6 +1,7 @@
 namespace Avalonia.Controls {
 
-    public enum NavigationMode {
+    public enum NavigationMode
+    {
 
         Back = 1,
 

@@ -3,25 +3,14 @@ using System.Collections.Generic;
 
 namespace Avalonia.Controls {
 
-    public sealed class NavigationEventArgs : EventArgs {
+    public sealed class NavigationEventArgs : EventArgs
+    {
 
-        public IEnumerable<object> Parameters
-        {
-            get;
-            set;
-        }
+        public IEnumerable<object> Parameters { get; set; }
 
-        public Type Type
-        {
-            get;
-            set;
-        }
+        public Type Type { get; set; }
 
-        public NavigationMode Mode
-        {
-            get;
-            set;
-        }
+        public NavigationMode Mode { get; set; }
 
     }
 

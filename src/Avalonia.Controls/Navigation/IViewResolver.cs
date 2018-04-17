@@ -2,7 +2,8 @@ using System;
 
 namespace Avalonia.Controls {
 
-    public interface IViewResolver {
+    public interface IViewResolver
+    {
 
         /// <summary>
         /// Resolve type and it dependencies.
