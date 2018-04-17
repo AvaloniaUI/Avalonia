@@ -78,6 +78,14 @@ namespace Avalonia.DesignerSupport.Remote
 
         public IScreenImpl Screen { get; } = new ScreenStub();
 
+        public double MinWidth { get; set; }
+
+        public double MaxWidth { get; set; }
+
+        public double MinHeight { get; set; }
+
+        public double MaxHeight { get; set; }
+
         public void SetTitle(string title)
         {
         }

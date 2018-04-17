@@ -197,7 +197,14 @@ namespace Avalonia.Controls
         {
             using (BeginAutoSizing())
             {
-                PlatformImpl?.Resize(finalSize);
+                if (PlatformImpl != null)
+                {
+                    PlatformImpl.MinHeight = MinHeight;
+                    PlatformImpl.MaxHeight = MaxHeight;
+                    PlatformImpl.MinWidth = MinWidth;
+                    PlatformImpl.MaxWidth = MaxWidth;
+                    PlatformImpl.Resize(finalSize);
+                }
             }
 
             return base.ArrangeOverride(PlatformImpl?.ClientSize ?? default(Size));

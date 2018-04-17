@@ -615,6 +615,16 @@ namespace Avalonia.Win32.Interop
             public uint[] cols;
         }
 
+        [StructLayout(LayoutKind.Sequential)]
+        public struct MINMAXINFO
+        {
+            public POINT ptReserved;
+            public POINT ptMaxSize;
+            public POINT ptMaxPosition;
+            public POINT ptMinTrackSize;
+            public POINT ptMaxTrackSize;
+        }
+
         public const int SizeOf_BITMAPINFOHEADER = 40;
 
         [DllImport("user32.dll")]

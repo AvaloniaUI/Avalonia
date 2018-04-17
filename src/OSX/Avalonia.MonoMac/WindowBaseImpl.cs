@@ -161,6 +161,14 @@ namespace Avalonia.MonoMac
             Position = pos;
         }
 
+        public double MinWidth { get; set; }
+
+        public double MaxWidth { get; set; }
+
+        public double MinHeight { get; set; }
+
+        public double MaxHeight { get; set; }
+
         public IScreenImpl Screen
         {
             get;

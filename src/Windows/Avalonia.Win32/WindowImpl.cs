@@ -102,6 +102,14 @@ namespace Avalonia.Win32
             }
         }
 
+        public double MinWidth { get; set; }
+
+        public double MaxWidth { get; set; }
+
+        public double MinHeight { get; set; }
+
+        public double MaxHeight { get; set; }
+
         public IScreenImpl Screen
         {
             get;
@@ -611,7 +619,26 @@ namespace Avalonia.Win32
                 case UnmanagedMethods.WindowsMessage.WM_MOVE:
                     PositionChanged?.Invoke(new Point((short)(ToInt32(lParam) & 0xffff), (short)(ToInt32(lParam) >> 16)));
                     return IntPtr.Zero;
-                    
+
+                case UnmanagedMethods.WindowsMessage.WM_GETMINMAXINFO:
+
+                    MINMAXINFO mmi = Marshal.PtrToStructure<UnmanagedMethods.MINMAXINFO>(lParam);
+
+                    if  (MinWidth > 0)
+                        mmi.ptMinTrackSize.X = (int)((MinWidth * Scaling) + BorderThickness.Left + BorderThickness.Right);
+
+                    if (MinHeight > 0)
+                        mmi.ptMinTrackSize.Y = (int)((MinHeight * Scaling) + BorderThickness.Top + BorderThickness.Bottom);
+
+                    if (!Double.IsInfinity(MaxWidth) && MaxWidth > 0)
+                        mmi.ptMaxTrackSize.X = (int)((MaxWidth * Scaling) + BorderThickness.Left + BorderThickness.Right);
+
+                    if (!Double.IsInfinity(MaxHeight) && MaxHeight > 0)
+                        mmi.ptMaxTrackSize.Y = (int)((MaxHeight * Scaling) + BorderThickness.Top + BorderThickness.Bottom);
+
+                    Marshal.StructureToPtr(mmi, lParam, true);
+                    return IntPtr.Zero;
+
                 case UnmanagedMethods.WindowsMessage.WM_DISPLAYCHANGE:
                     (Screen as ScreenImpl)?.InvalidateScreensCache();
                     return IntPtr.Zero;
