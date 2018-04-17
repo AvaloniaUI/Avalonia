@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,16 +23,32 @@ namespace Avalonia.Gtk3
         internal static readonly MouseDevice Mouse = new MouseDevice();
         internal static readonly KeyboardDevice Keyboard = new KeyboardDevice();
         internal static IntPtr App { get; set; }
+        internal static string DisplayClassName;
         public static bool UseDeferredRendering = true;
+        private static bool s_gtkInitialized;
         public static void Initialize()
         {
-            Resolver.Resolve();
-            Native.GtkInit(0, IntPtr.Zero);
-            using (var utf = new Utf8Buffer("avalonia.app." + Guid.NewGuid()))
-                App = Native.GtkApplicationNew(utf, 0);
-            //Mark current thread as UI thread
-            s_tlsMarker = true;
+            if (!s_gtkInitialized)
+            {
+                try
+                {
+                    X11.XInitThreads();
+                }catch{}
+                Resolver.Resolve();
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                    using (var backends = new Utf8Buffer("x11"))
+                        Native.GdkSetAllowedBackends?.Invoke(backends);
+                Native.GtkInit(0, IntPtr.Zero);
+                var disp = Native.GdkGetDefaultDisplay();
+                DisplayClassName =
+                    Utf8Buffer.StringFromPtr(Native.GTypeName(Marshal.ReadIntPtr(Marshal.ReadIntPtr(disp))));
 
+                using (var utf = new Utf8Buffer("avalonia.app." + Guid.NewGuid()))
+                    App = Native.GtkApplicationNew(utf, 0);
+                //Mark current thread as UI thread
+                s_tlsMarker = true;
+                s_gtkInitialized = true;
+            }
             AvaloniaLocator.CurrentMutable.Bind<IWindowingPlatform>().ToConstant(Instance)
                 .Bind<IClipboard>().ToSingleton<ClipboardImpl>()
                 .Bind<IStandardCursorFactory>().ToConstant(new CursorFactory())
@@ -65,15 +82,13 @@ namespace Avalonia.Gtk3
                 Native.GtkMainIteration();
         }
 
-        public IDisposable StartTimer(TimeSpan interval, Action tick)
+        public IDisposable StartTimer(DispatcherPriority priority, TimeSpan interval, Action tick)
         {
             var msec = interval.TotalMilliseconds;
-            if (msec <= 0)
-                throw new ArgumentException("Don't know how to create a timer with zero or negative interval");
             var imsec = (uint) msec;
             if (imsec == 0)
                 imsec = 1;
-            return GlibTimeout.StarTimer(imsec, tick);
+            return GlibTimeout.StartTimer(GlibPriority.FromDispatcherPriority(priority), imsec, tick);
         }
 
         private bool[] _signaled = new bool[(int) DispatcherPriority.MaxValue + 1];

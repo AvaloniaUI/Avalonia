@@ -25,7 +25,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
             scene.Layers[tree].Dirty.Add(new Rect(0, 0, 100, 100));
             scene.Layers[decorator].Dirty.Add(new Rect(0, 0, 50, 100));
 
-            scene = scene.Clone();
+            scene = scene.CloneScene();
             Assert.Equal(2, scene.Layers.Count());
             Assert.Empty(scene.Layers[0].Dirty);
             Assert.Empty(scene.Layers[1].Dirty);

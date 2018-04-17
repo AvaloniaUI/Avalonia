@@ -167,18 +167,25 @@ namespace Avalonia.Rendering.SceneGraph
                 using (context.PushPostTransform(m))
                 using (context.PushTransformContainer())
                 {
-                    var startLayer = opacity < 1 || visual.OpacityMask != null;
+                    var clipBounds = clipToBounds ?
+                        bounds.TransformToAABB(contextImpl.Transform).Intersect(clip) :
+                        clip;
 
-                    forceRecurse = forceRecurse || node.Transform != contextImpl.Transform;
+                    forceRecurse = forceRecurse ||
+                        node.ClipBounds != clipBounds ||
+                        node.Opacity != opacity ||
+                        node.Transform != contextImpl.Transform;
 
                     node.Transform = contextImpl.Transform;
-                    node.ClipBounds = bounds.TransformToAABB(node.Transform).Intersect(clip);
+                    node.ClipBounds = clipBounds;
                     node.ClipToBounds = clipToBounds;
                     node.GeometryClip = visual.Clip?.PlatformImpl;
                     node.Opacity = opacity;
-                    node.OpacityMask = visual.OpacityMask;
 
-                    if (startLayer)
+                    // TODO: Check equality between node.OpacityMask and visual.OpacityMask before assigning.
+                    node.OpacityMask = visual.OpacityMask?.ToImmutable();
+
+                    if (ShouldStartLayer(visual))
                     {
                         if (node.LayerRoot != visual)
                         {
@@ -189,7 +196,7 @@ namespace Avalonia.Rendering.SceneGraph
                             UpdateLayer(node, scene.Layers[node.LayerRoot]);
                         }
                     }
-                    else if (!startLayer && node.LayerRoot == node.Visual && node.Parent != null)
+                    else if (node.LayerRoot == node.Visual && node.Parent != null)
                     {
                         ClearLayer(scene, node);
                     }
@@ -205,11 +212,8 @@ namespace Avalonia.Rendering.SceneGraph
                     }
                     catch { }
 
-                    if (visual is Visual)
-                    {
-                        var transformed = new TransformedBounds(new Rect(visual.Bounds.Size), clip, node.Transform);
-                        BoundsTracker.SetTransformedBounds((Visual)visual, transformed);
-                    }
+                    var transformed = new TransformedBounds(new Rect(visual.Bounds.Size), clip, node.Transform);
+                    visual.TransformedBounds = transformed;
 
                     if (forceRecurse)
                     {
@@ -270,25 +274,21 @@ namespace Avalonia.Rendering.SceneGraph
 
         private static void Deindex(Scene scene, VisualNode node)
         {
-            scene.Remove(node);
-            node.SubTreeUpdated = true;
-
-            scene.Layers[node.LayerRoot].Dirty.Add(node.Bounds);
-
-            if (node.Visual is Visual v)
-            {
-                BoundsTracker.SetTransformedBounds(v, null);
-            }
-
             foreach (VisualNode child in node.Children)
             {
-                var geometry = child as IDrawOperation;
-
                 if (child is VisualNode visual)
                 {
                     Deindex(scene, visual);
                 }
             }
+            scene.Remove(node);
+
+            node.SubTreeUpdated = true;
+
+            scene.Layers[node.LayerRoot].Dirty.Add(node.Bounds);
+
+            node.Visual.TransformedBounds = null;
+
 
             if (node.LayerRoot == node.Visual && node.Visual != scene.Root.Visual)
             {
@@ -361,6 +361,14 @@ namespace Avalonia.Rendering.SceneGraph
                     PropagateLayer(child, layer, oldLayer);
                 }
             }
+        }
+
+        private static bool ShouldStartLayer(IVisual visual)
+        {
+            var o = visual as IAvaloniaObject;
+            return visual.VisualChildren.Count > 0 &&
+                o != null &&
+                o.IsAnimating(Visual.OpacityProperty);
         }
 
         private static IGeometryImpl CreateLayerGeometryClip(VisualNode node)

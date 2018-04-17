@@ -16,6 +16,7 @@ using Avalonia.Win32.Interop;
 using Avalonia.Controls;
 using Avalonia.Rendering;
 using Avalonia.Threading;
+using System.IO;
 #if NETSTANDARD
 using Win32Exception = Avalonia.Win32.NetStandard.AvaloniaWin32Exception;
 #else
@@ -40,7 +41,7 @@ namespace Avalonia
 
 namespace Avalonia.Win32
 {
-    partial class Win32Platform : IPlatformThreadingInterface, IPlatformSettings, IWindowingPlatform, IPlatformIconLoader
+    class Win32Platform : IPlatformThreadingInterface, IPlatformSettings, IWindowingPlatform, IPlatformIconLoader
     {
         private static readonly Win32Platform s_instance = new Win32Platform();
         private static uint _uiThread;
@@ -85,6 +86,9 @@ namespace Avalonia.Win32
                 .Bind<IWindowingPlatform>().ToConstant(s_instance)
                 .Bind<IPlatformIconLoader>().ToConstant(s_instance);
 
+            if (OleContext.Current != null)
+                AvaloniaLocator.CurrentMutable.Bind<IPlatformDragSource>().ToSingleton<DragSource>();
+
             UseDeferredRendering = deferredRendering;
             _uiThread = UnmanagedMethods.GetCurrentThreadId();
         }
@@ -114,7 +118,7 @@ namespace Avalonia.Win32
             }
         }
 
-        public IDisposable StartTimer(TimeSpan interval, Action callback)
+        public IDisposable StartTimer(DispatcherPriority priority, TimeSpan interval, Action callback)
         {
             UnmanagedMethods.TimerProc timerDelegate =
                 (hWnd, uMsg, nIDEvent, dwTime) => callback();
@@ -196,18 +200,49 @@ namespace Avalonia.Win32
 
         public IEmbeddableWindowImpl CreateEmbeddableWindow()
         {
-#if NETSTANDARD
-            throw new NotSupportedException();
-#else
             var embedded = new EmbeddedWindowImpl();
             embedded.Show();
             return embedded;
-#endif
         }
 
         public IPopupImpl CreatePopup()
         {
             return new PopupImpl();
         }
+
+        public IWindowIconImpl LoadIcon(string fileName)
+        {
+            using (var stream = File.OpenRead(fileName))
+            {
+                return CreateIconImpl(stream);
+            }
+        }
+
+        public IWindowIconImpl LoadIcon(Stream stream)
+        {
+            return CreateIconImpl(stream);
+        }
+
+        public IWindowIconImpl LoadIcon(IBitmapImpl bitmap)
+        {
+            using (var memoryStream = new MemoryStream())
+            {
+                bitmap.Save(memoryStream);
+                return new IconImpl(new System.Drawing.Bitmap(memoryStream));
+            }
+        }
+
+        private static IconImpl CreateIconImpl(Stream stream)
+        {
+            try
+            {
+                return new IconImpl(new System.Drawing.Icon(stream));
+            }
+            catch (ArgumentException)
+            {
+                return new IconImpl(new System.Drawing.Bitmap(stream));
+            }
+        }
+
     }
 }

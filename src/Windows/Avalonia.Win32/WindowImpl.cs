@@ -1,29 +1,24 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using Avalonia.Input;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
+using System.Reactive.Disposables;
 using System.Runtime.InteropServices;
 using Avalonia.Controls;
-using System.Reactive.Disposables;
+using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
+using Avalonia.Rendering;
 using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
-using Avalonia.Rendering;
-using Avalonia.Threading;
-#if NETSTANDARD
-using Win32Exception = Avalonia.Win32.NetStandard.AvaloniaWin32Exception;
-#endif
 
 namespace Avalonia.Win32
 {
-    class WindowImpl : IWindowImpl
+    public class WindowImpl : IWindowImpl
     {
         private static readonly List<WindowImpl> s_instances = new List<WindowImpl>();
 
@@ -39,6 +34,7 @@ namespace Avalonia.Win32
         private double _scaling = 1;
         private WindowState _showWindowState;
         private FramebufferManager _framebuffer;
+        private OleDropTarget _dropTarget;
 #if USE_MANAGED_DRAG
         private readonly ManagedWindowResizeDragHelper _managedDrag;
 #endif
@@ -60,6 +56,8 @@ namespace Avalonia.Win32
         }
 
         public Action Activated { get; set; }
+
+        public Func<bool> Closing { get; set; }
 
         public Action Closed { get; set; }
 
@@ -313,6 +311,7 @@ namespace Avalonia.Win32
         public void SetInputRoot(IInputRoot inputRoot)
         {
             _owner = inputRoot;
+            CreateDropTarget();
         }
 
         public void SetTitle(string title)
@@ -435,6 +434,14 @@ namespace Avalonia.Win32
                     }
 
                     return IntPtr.Zero;
+
+                case UnmanagedMethods.WindowsMessage.WM_CLOSE:
+                    bool? preventClosing = Closing?.Invoke();
+                    if (preventClosing == true)
+                    {
+                        return IntPtr.Zero;
+                    }
+                    break;
 
                 case UnmanagedMethods.WindowsMessage.WM_DESTROY:
                     //Window doesn't exist anymore
@@ -646,7 +653,7 @@ namespace Avalonia.Win32
             // Ensure that the delegate doesn't get garbage collected by storing it as a field.
             _wndProcDelegate = new UnmanagedMethods.WndProc(WndProc);
 
-            _className = Guid.NewGuid().ToString();
+            _className = "Avalonia-" + Guid.NewGuid();
 
             UnmanagedMethods.WNDCLASSEX wndClassEx = new UnmanagedMethods.WNDCLASSEX
             {
@@ -692,6 +699,13 @@ namespace Avalonia.Win32
                     _scaling = dpix / 96.0;
                 }
             }
+        }
+
+        private void CreateDropTarget()
+        {
+            OleDropTarget odt = new OleDropTarget(this, _owner);
+            if (OleContext.Current?.RegisterDragDrop(Handle, odt) ?? false)
+                _dropTarget = odt;
         }
 
         private Point DipFromLParam(IntPtr lParam)

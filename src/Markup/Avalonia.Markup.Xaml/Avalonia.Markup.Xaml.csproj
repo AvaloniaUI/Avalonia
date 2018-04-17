@@ -22,7 +22,7 @@
     <DefineConstants>NETSTANDARD1_3;PCL;NETSTANDARD</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Release\Avalonia.Markup.Xaml.XML</DocumentationFile>
+    <DocumentationFile>bin\Release\Avalonia.Markup.Xaml.xml</DocumentationFile>
     <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
     <ItemGroup>
@@ -31,6 +31,7 @@
         </Compile>
         <Compile Include="AvaloniaXamlLoaderPortableXaml.cs" />
         <Compile Include="AvaloniaXamlLoader.cs" />
+        <Compile Include="Converters\CornerRadiusTypeConverter.cs" />
         <Compile Include="Converters\MatrixTypeConverter.cs" />
         <Compile Include="Converters\RectTypeConverter.cs" />
         <Compile Include="Converters\SetterValueTypeConverter.cs" />
@@ -39,7 +40,6 @@
         <Compile Include="MarkupExtensions\StaticResourceExtension.cs" />
         <Compile Include="MarkupExtensions\StyleIncludeExtension.cs" />
         <Compile Include="PortableXaml\AvaloniaXamlContext.cs" />
-        <Compile Include="PortableXaml\XamlBinding.cs" />
         <Compile Include="PortableXaml\AttributeExtensions.cs" />
         <Compile Include="PortableXaml\AvaloniaMemberAttributeProvider.cs" />
         <Compile Include="PortableXaml\AvaloniaNameScope.cs" />
@@ -73,13 +73,9 @@
         <Compile Include="Data\DelayedBinding.cs" />
         <Compile Include="Data\MultiBinding.cs" />
         <Compile Include="Data\RelativeSource.cs" />
-        <Compile Include="Data\StyleResourceBinding.cs" />
-        <Compile Include="MarkupExtensions\StyleResourceExtension.cs" />
         <Compile Include="MarkupExtensions\BindingExtension.cs" />
         <Compile Include="MarkupExtensions\RelativeSourceExtension.cs" />
-        <Compile Include="MarkupExtensions\StaticExtension.cs" />
         <Compile Include="MarkupExtensions\TemplateBindingExtension.cs" />
-        <Compile Include="MarkupExtensions\TypeExtension.cs" />
         <Compile Include="Parsers\SelectorGrammar.cs" />
         <Compile Include="Parsers\SelectorParser.cs" />
         <Compile Include="PortableXaml\AvaloniaTypeAttributeProvider.cs" />
@@ -96,6 +92,7 @@
         <Compile Include="Templates\TemplateContent.cs" />
         <Compile Include="Templates\TemplateLoader.cs" />
         <Compile Include="Templates\TreeDataTemplate.cs" />
+        <Compile Include="XamlLoadException.cs" />
         <Compile Include="PortableXaml\portable.xaml.github\src\Portable.Xaml\**\*.cs" Exclude="PortableXaml\portable.xaml.github\src\Portable.Xaml\Assembly\**\*.cs" />
         <Compile Remove="**\UriTypeConverter.cs" />
     </ItemGroup>

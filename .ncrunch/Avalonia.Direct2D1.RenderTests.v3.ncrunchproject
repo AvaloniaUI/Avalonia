@@ -1,7 +1,9 @@
 ﻿<ProjectConfiguration>
   <Settings>
-    <DefaultTestTimeout>1000</DefaultTestTimeout>
-    <IgnoreThisComponentCompletely>True</IgnoreThisComponentCompletely>
+    <AdditionalFilesToIncludeForProject>
+      <Value>..\TestFiles\Direct2D1\**.*</Value>
+    </AdditionalFilesToIncludeForProject>
+    <DefaultTestTimeout>3000</DefaultTestTimeout>
     <PreviouslyBuiltSuccessfully>True</PreviouslyBuiltSuccessfully>
   </Settings>
 </ProjectConfiguration>

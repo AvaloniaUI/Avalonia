@@ -17,7 +17,9 @@
       <None Remove="MiniCube.fx" />
     </ItemGroup>
     <ItemGroup>
-      <EmbeddedResource Include="MiniCube.fx" />
+      <EmbeddedResource Include="MiniCube.fx">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\..\..\src\Avalonia.DesignerSupport\Avalonia.DesignerSupport.csproj" />
@@ -28,7 +30,5 @@
         <ProjectReference Include="..\..\..\src\Windows\Avalonia.Win32\Avalonia.Win32.csproj" />
     </ItemGroup>
     <Import Project="..\..\..\build\Serilog.props" />
-    <Import Project="..\..\..\build\Serilog.Sinks.Trace.props" />
-    <Import Project="..\..\..\build\Splat.props" />
     <Import Project="..\..\..\build\Rx.props" />
 </Project>

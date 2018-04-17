@@ -1,6 +1,7 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -11,6 +12,7 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Controls.Utils;
+using Avalonia.Input;
 using Avalonia.LogicalTree;
 using Avalonia.Metadata;
 
@@ -53,6 +55,7 @@ namespace Avalonia.Controls
 
         private IEnumerable _items = new AvaloniaList<object>();
         private IItemContainerGenerator _itemContainerGenerator;
+        private IDisposable _itemsCollectionChangedSubscription;
 
         /// <summary>
         /// Initializes static members of the <see cref="ItemsControl"/> class.
@@ -104,6 +107,12 @@ namespace Avalonia.Controls
         {
             get { return _items; }
             set { SetAndRaise(ItemsProperty, ref _items, value); }
+        }
+
+        public int ItemCount
+        {
+            get;
+            private set;
         }
 
         /// <summary>
@@ -319,12 +328,8 @@ namespace Avalonia.Controls
         /// <param name="e">The event args.</param>
         protected virtual void ItemsChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            var incc = e.OldValue as INotifyCollectionChanged;
-
-            if (incc != null)
-            {
-                incc.CollectionChanged -= ItemsCollectionChanged;
-            }
+            _itemsCollectionChangedSubscription?.Dispose();
+            _itemsCollectionChangedSubscription = null;
 
             var oldValue = e.OldValue as IEnumerable;
             var newValue = e.NewValue as IEnumerable;
@@ -352,6 +357,10 @@ namespace Avalonia.Controls
                     RemoveControlItemsFromLogicalChildren(e.OldItems);
                     break;
             }
+            
+            int? count = (Items as IList)?.Count;
+            if (count != null)
+                ItemCount = (int)count;
 
             var collection = sender as ICollection;
             PseudoClasses.Set(":empty", collection == null || collection.Count == 0);
@@ -417,7 +426,7 @@ namespace Avalonia.Controls
 
             if (incc != null)
             {
-                incc.CollectionChanged += ItemsCollectionChanged;
+                _itemsCollectionChangedSubscription = incc.WeakSubscribe(ItemsCollectionChanged);
             }
         }
 

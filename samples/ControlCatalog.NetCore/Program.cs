@@ -9,8 +9,10 @@ namespace ControlCatalog.NetCore
 {
     static class Program
     {
+        
         static void Main(string[] args)
         {
+            Thread.CurrentThread.TrySetApartmentState(ApartmentState.STA);
             if (args.Contains("--wait-for-attach"))
             {
                 Console.WriteLine("Attach debugger and use 'Set next statement'");
@@ -28,19 +30,14 @@ namespace ControlCatalog.NetCore
                     System.Threading.ThreadPool.QueueUserWorkItem(_ => ConsoleSilencer());
                 });
             else
-                AppBuilder.Configure<App>()
-                    .CustomPlatformDetect()
-                    .UseReactiveUI()
-                    .Start<MainWindow>();
+                BuildAvaloniaApp().Start<MainWindow>();
         }
 
-        static AppBuilder CustomPlatformDetect(this AppBuilder builder)
-        {
-            //This is needed because we still aren't ready to have MonoMac backend as default one
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                return builder.UseSkia().UseMonoMac();
-            return builder.UsePlatformDetect();
-        }
+        /// <summary>
+        /// This method is needed for IDE previewer infrastructure
+        /// </summary>
+        public static AppBuilder BuildAvaloniaApp()
+            => AppBuilder.Configure<App>().UsePlatformDetect().UseReactiveUI();
 
         static void ConsoleSilencer()
         {

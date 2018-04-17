@@ -12,6 +12,10 @@ using Avalonia.Rendering;
 using Avalonia.Styling;
 using Avalonia.Threading;
 using System.Reactive.Concurrency;
+using Avalonia.Input.DragDrop.Raw;
+using Avalonia.Controls.Platform;
+using Avalonia.Platform;
+using Avalonia.Input.DragDrop;
 
 namespace Avalonia
 {
@@ -175,6 +179,15 @@ namespace Avalonia
             closable.Closed += (s, e) => source.Cancel();
             Dispatcher.UIThread.MainLoop(source.Token);
         }
+        
+        /// <summary>
+        /// Runs the application's main loop until the <see cref="CancellationToken"/> is cancelled.
+        /// </summary>
+        /// <param name="token">The token to track</param>
+        public void Run(CancellationToken token)
+        {
+            Dispatcher.UIThread.MainLoop(token);
+        }
 
         /// <summary>
         /// Exits the application
@@ -225,7 +238,9 @@ namespace Avalonia
                 .Bind<IStyler>().ToConstant(_styler)
                 .Bind<ILayoutManager>().ToSingleton<LayoutManager>()
                 .Bind<IApplicationLifecycle>().ToConstant(this)
-                .Bind<IScheduler>().ToConstant(AvaloniaScheduler.Instance);
+                .Bind<IScheduler>().ToConstant(AvaloniaScheduler.Instance)
+                .Bind<IDragDropDevice>().ToConstant(DragDropDevice.Instance)
+                .Bind<IPlatformDragSource>().ToTransient<InProcessDragSource>();
         }
     }
 }

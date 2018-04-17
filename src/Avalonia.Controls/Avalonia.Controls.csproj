@@ -11,8 +11,8 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Debug\Avalonia.Controls.XML</DocumentationFile>
-    <NoWarn>CS1591</NoWarn>
+    <DocumentationFile>bin\Debug\Avalonia.Controls.xml</DocumentationFile>
+    <NoWarn>CS1591;CS0067</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <DebugType>pdbonly</DebugType>
@@ -21,7 +21,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Release\Avalonia.Controls.XML</DocumentationFile>
+    <DocumentationFile>bin\Release\Avalonia.Controls.xml</DocumentationFile>
     <NoWarn>CS1591</NoWarn>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
@@ -37,6 +37,7 @@
     <ProjectReference Include="..\Avalonia.Input\Avalonia.Input.csproj" />
     <ProjectReference Include="..\Avalonia.Interactivity\Avalonia.Interactivity.csproj" />
     <ProjectReference Include="..\Avalonia.Layout\Avalonia.Layout.csproj" />
+    <ProjectReference Include="..\Avalonia.Remote.Protocol\Avalonia.Remote.Protocol.csproj" />
     <ProjectReference Include="..\Avalonia.Visuals\Avalonia.Visuals.csproj" />
     <ProjectReference Include="..\Avalonia.Styling\Avalonia.Styling.csproj" />
   </ItemGroup>

@@ -29,7 +29,7 @@ namespace Avalonia.Direct2D1.RenderTests
                 Clip = StreamGeometry.Parse("F1 M 0,0  H 76 V 76 Z"),
                 Width = 76,
                 Height = 76,
-                Children = new Avalonia.Controls.Controls
+                Children =
                 {
                     new Path
                     {

@@ -74,29 +74,29 @@ namespace Avalonia.Controls.Html
         protected Point _lastScrollOffset;
 
         public static readonly AvaloniaProperty AvoidImagesLateLoadingProperty = 
-            PropertyHelper.Register<HtmlControl, bool>("AvoidImagesLateLoading", false, OnAvaloniaProperty_valueChanged);
+            PropertyHelper.Register<HtmlControl, bool>(nameof(AvoidImagesLateLoading), false, OnAvaloniaProperty_valueChanged);
         public static readonly AvaloniaProperty IsSelectionEnabledProperty =
-            PropertyHelper.Register<HtmlControl, bool>("IsSelectionEnabled", true, OnAvaloniaProperty_valueChanged);
+            PropertyHelper.Register<HtmlControl, bool>(nameof(IsSelectionEnabled), true, OnAvaloniaProperty_valueChanged);
         public static readonly AvaloniaProperty IsContextMenuEnabledProperty =
-            PropertyHelper.Register<HtmlControl, bool>("IsContextMenuEnabled", true, OnAvaloniaProperty_valueChanged);
+            PropertyHelper.Register<HtmlControl, bool>(nameof(IsContextMenuEnabled), true, OnAvaloniaProperty_valueChanged);
 
         public static readonly AvaloniaProperty BaseStylesheetProperty =
-            PropertyHelper.Register<HtmlControl, string>("BaseStylesheet", null, OnAvaloniaProperty_valueChanged);
+            PropertyHelper.Register<HtmlControl, string>(nameof(BaseStylesheet), null, OnAvaloniaProperty_valueChanged);
 
         public static readonly AvaloniaProperty TextProperty =
-            PropertyHelper.Register<HtmlControl, string>("Text", null, OnAvaloniaProperty_valueChanged);
+            PropertyHelper.Register<HtmlControl, string>(nameof(Text), null, OnAvaloniaProperty_valueChanged);
 
         public static readonly StyledProperty<IBrush> BackgroundProperty =
             Border.BackgroundProperty.AddOwner<HtmlControl>();
 
         public static readonly AvaloniaProperty BorderThicknessProperty =
-            AvaloniaProperty.Register<HtmlControl, Thickness>("BorderThickness", new Thickness(0));
+            AvaloniaProperty.Register<HtmlControl, Thickness>(nameof(BorderThickness), new Thickness(0));
 
         public static readonly AvaloniaProperty BorderBrushProperty =
-    AvaloniaProperty.Register<HtmlControl, IBrush>("BorderBrush");
+    AvaloniaProperty.Register<HtmlControl, IBrush>(nameof(BorderBrush));
 
         public static readonly AvaloniaProperty PaddingProperty =
-            AvaloniaProperty.Register<HtmlControl, Thickness>("Padding", new Thickness(0));
+            AvaloniaProperty.Register<HtmlControl, Thickness>(nameof(Padding), new Thickness(0));
 
         public static readonly RoutedEvent LoadCompleteEvent =
             RoutedEvent.Register<RoutedEventArgs>("LoadComplete",  RoutingStrategies.Bubble, typeof(HtmlControl));

@@ -56,7 +56,7 @@ namespace Avalonia.AndroidTestApplication
                 {
                     Margin = new Thickness(30),
                     Background = Brushes.Yellow,
-                    Children = new Avalonia.Controls.Controls
+                    Children =
                     {
                         new TextBlock
                         {

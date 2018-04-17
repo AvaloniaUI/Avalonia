@@ -1,11 +1,11 @@
-<Styles xmlns="https://github.com/avaloniaui">
+<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <Style Selector="TabControl.sidebar">
     <Setter Property="Template">
       <ControlTemplate>
         <DockPanel>
           <ScrollViewer MinWidth="190" Background="{DynamicResource ThemeAccentBrush}" DockPanel.Dock="Left">
             <TabStrip Name="PART_TabStrip"
-                      MemberSelector="{Static TabControl.HeaderSelector}"
+                      MemberSelector="{x:Static TabControl.HeaderSelector}"
                       Items="{TemplateBinding Items}"
                       SelectedIndex="{TemplateBinding Path=SelectedIndex, Mode=TwoWay}">
               <TabStrip.ItemsPanel>
@@ -17,7 +17,7 @@
           </ScrollViewer>
           <Carousel Name="PART_Content"
                     Margin="8 0 0 0"
-                    MemberSelector="{Static TabControl.ContentSelector}"
+                    MemberSelector="{x:Static TabControl.ContentSelector}"
                     Items="{TemplateBinding Items}"
                     SelectedIndex="{TemplateBinding Path=SelectedIndex}"
                     Transition="{TemplateBinding Transition}"

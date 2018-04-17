@@ -145,7 +145,9 @@ namespace Avalonia.Direct2D1
                     return new HwndRenderTarget(nativeWindow);
                 }
                 if (s is IExternalDirect2DRenderTargetSurface external)
-                    return new ExternalRenderTarget(external, s_dwfactory);
+                    return new ExternalRenderTarget(external, s_dwfactory, s_imagingFactory);
+                if (s is IFramebufferPlatformSurface fb)
+                    return new FramebufferShimRenderTarget(fb, s_imagingFactory, s_d2D1Factory, s_dwfactory);
             }
             throw new NotSupportedException("Don't know how to create a Direct2D1 renderer from any of provided surfaces");
         }
@@ -156,7 +158,7 @@ namespace Avalonia.Direct2D1
             double dpiX,
             double dpiY)
         {
-            return new RenderTargetBitmapImpl(
+            return new WicRenderTargetBitmapImpl(
                 s_imagingFactory,
                 s_d2D1Factory,
                 s_dwfactory,
@@ -166,9 +168,9 @@ namespace Avalonia.Direct2D1
                 dpiY);
         }
 
-        public IWritableBitmapImpl CreateWritableBitmap(int width, int height, PixelFormat? format = null)
+        public IWriteableBitmapImpl CreateWriteableBitmap(int width, int height, PixelFormat? format = null)
         {
-            return new WritableWicBitmapImpl(s_imagingFactory, width, height, format);
+            return new WriteableWicBitmapImpl(s_imagingFactory, width, height, format);
         }
 
         public IStreamGeometryImpl CreateStreamGeometry()

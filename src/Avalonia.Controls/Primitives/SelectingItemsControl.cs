@@ -151,15 +151,23 @@ namespace Avalonia.Controls.Primitives
             {
                 if (_updateCount == 0)
                 {
-                    var old = SelectedIndex;
-                    var effective = (value >= 0 && value < Items?.Cast<object>().Count()) ? value : -1;
-
-                    if (old != effective)
+                    SetAndRaise(SelectedIndexProperty, ref _selectedIndex, (int val, ref int backing, Action<Action> notifyWrapper) =>
                     {
-                        _selectedIndex = effective;
-                        RaisePropertyChanged(SelectedIndexProperty, old, effective, BindingPriority.LocalValue);
-                        SelectedItem = ElementAt(Items, effective);
-                    }
+                        var old = backing;
+                        var effective = (val >= 0 && val < Items?.Cast<object>().Count()) ? val : -1;
+
+                        if (old != effective)
+                        {
+                            backing = effective;
+                            notifyWrapper(() =>
+                                RaisePropertyChanged(
+                                    SelectedIndexProperty,
+                                    old,
+                                    effective,
+                                    BindingPriority.LocalValue));
+                            SelectedItem = ElementAt(Items, effective);
+                        }
+                    }, value);
                 }
                 else
                 {
@@ -183,31 +191,41 @@ namespace Avalonia.Controls.Primitives
             {
                 if (_updateCount == 0)
                 {
-                    var old = SelectedItem;
-                    var index = IndexOf(Items, value);
-                    var effective = index != -1 ? value : null;
-
-                    if (!object.Equals(effective, old))
+                    SetAndRaise(SelectedItemProperty, ref _selectedItem, (object val, ref object backing, Action<Action> notifyWrapper) =>
                     {
-                        _selectedItem = effective;
-                        RaisePropertyChanged(SelectedItemProperty, old, effective, BindingPriority.LocalValue);
-                        SelectedIndex = index;
+                        var old = backing;
+                        var index = IndexOf(Items, val);
+                        var effective = index != -1 ? val : null;
 
-                        if (effective != null)
+                        if (!object.Equals(effective, old))
                         {
-                            if (SelectedItems.Count != 1 || SelectedItems[0] != effective)
+                            backing = effective;
+
+                            notifyWrapper(() =>
+                                RaisePropertyChanged(
+                                    SelectedItemProperty,
+                                    old,
+                                    effective,
+                                    BindingPriority.LocalValue));
+
+                            SelectedIndex = index;
+
+                            if (effective != null)
                             {
-                                _syncingSelectedItems = true;
+                                if (SelectedItems.Count != 1 || SelectedItems[0] != effective)
+                                {
+                                    _syncingSelectedItems = true;
+                                    SelectedItems.Clear();
+                                    SelectedItems.Add(effective);
+                                    _syncingSelectedItems = false;
+                                }
+                            }
+                            else if (SelectedItems.Count > 0)
+                            {
                                 SelectedItems.Clear();
-                                SelectedItems.Add(effective);
-                                _syncingSelectedItems = false;
                             }
                         }
-                        else if (SelectedItems.Count > 0)
-                        {
-                            SelectedItems.Clear();
-                        }
-                    }
+                    }, value);
                 }
                 else
                 {
@@ -297,7 +315,7 @@ namespace Avalonia.Controls.Primitives
                 .OfType<IControl>()
                 .FirstOrDefault(x => x.LogicalParent == this && ItemContainerGenerator?.IndexFromContainer(x) != -1);
 
-            return item as IControl;
+            return item;
         }
 
         /// <inheritdoc/>
@@ -414,16 +432,16 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <inheritdoc/>
-        protected override void OnDataContextChanging()
+        protected override void OnDataContextBeginUpdate()
         {
-            base.OnDataContextChanging();
+            base.OnDataContextBeginUpdate();
             ++_updateCount;
         }
 
         /// <inheritdoc/>
-        protected override void OnDataContextChanged()
+        protected override void OnDataContextEndUpdate()
         {
-            base.OnDataContextChanged();
+            base.OnDataContextEndUpdate();
 
             if (--_updateCount == 0)
             {

@@ -24,7 +24,7 @@ namespace Avalonia.Controls.UnitTests
                     new RowDefinition(GridLength.Auto),
                     new RowDefinition(GridLength.Auto),
                 },
-                Children = new Controls
+                Children =
                 {
                     new Border
                     {

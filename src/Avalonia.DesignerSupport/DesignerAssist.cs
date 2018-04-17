@@ -86,67 +86,11 @@ namespace Avalonia.DesignerSupport
         private static void UpdateXaml2(Dictionary<string, object> dic)
         {
             var xamlInfo = new DesignerApiXamlFileInfo(dic);
-            Window window;
-            Control control;
-
-            using (PlatformManager.DesignerMode())
-            {
-                var loader = new AvaloniaXamlLoader();
-                var stream = new MemoryStream(Encoding.UTF8.GetBytes(xamlInfo.Xaml));
-
-
-                
-                Uri baseUri = null;
-                if (xamlInfo.AssemblyPath != null)
-                {
-                    //Fabricate fake Uri
-                    baseUri =
-                        new Uri("resm:Fake.xaml?assembly=" + Path.GetFileNameWithoutExtension(xamlInfo.AssemblyPath));
-                }
-
-                var loaded = loader.Load(stream, null, baseUri);
-                var styles = loaded as Styles;
-                if (styles != null)
-                {
-                    var substitute = Design.GetPreviewWith(styles) ??
-                                     styles.Select(Design.GetPreviewWith).FirstOrDefault(s => s != null);
-                    if (substitute != null)
-                    {
-                        substitute.Styles.AddRange(styles);
-                        control = substitute;
-                    }
-                    else
-                        control = new StackPanel
-                        {
-                            Children =
-                            {
-                                new TextBlock {Text = "Styles can't be previewed without Design.PreviewWith. Add"},
-                                new TextBlock {Text = "<Design.PreviewWith>"},
-                                new TextBlock {Text = "    <Border Padding=20><!-- YOUR CONTROL FOR PREVIEW HERE--></Border>"},
-                                new TextBlock {Text = "<Design.PreviewWith>"},
-                                new TextBlock {Text = "before setters in your first Style"}
-                            }
-                        };
-                }
-                if (loaded is Application)
-                    control = new TextBlock {Text = "Application can't be previewed in design view"};
-                else
-                    control = (Control) loaded;
-
-                window = control as Window;
-                if (window == null)
-                {
-                    window = new Window() {Content = (Control)control};
-                }
-
-                if (!window.IsSet(Window.SizeToContentProperty))
-                    window.SizeToContent = SizeToContent.WidthAndHeight;
-            }
+            Window window = DesignWindowLoader.LoadDesignerWindow(xamlInfo.Xaml, xamlInfo.AssemblyPath);
 
             s_currentWindow?.Close();
             s_currentWindow = window;
-            window.Show();
-            Design.ApplyDesignerProperties(window, control);
+            
             // ReSharper disable once PossibleNullReferenceException
             // Always not null at this point
             Api.OnWindowCreated?.Invoke(window.PlatformImpl.Handle.Handle);

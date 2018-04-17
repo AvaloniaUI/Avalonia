@@ -32,6 +32,11 @@ namespace Avalonia
         public static readonly DirectProperty<Visual, Rect> BoundsProperty =
             AvaloniaProperty.RegisterDirect<Visual, Rect>(nameof(Bounds), o => o.Bounds);
 
+        public static readonly DirectProperty<Visual, TransformedBounds?> TransformedBoundsProperty =
+            AvaloniaProperty.RegisterDirect<Visual, TransformedBounds?>(
+                nameof(TransformedBounds),
+                o => o.TransformedBounds);
+
         /// <summary>
         /// Defines the <see cref="ClipToBounds"/> property.
         /// </summary>
@@ -87,6 +92,7 @@ namespace Avalonia
             AvaloniaProperty.Register<Visual, int>(nameof(ZIndex));
 
         private Rect _bounds;
+        private TransformedBounds? _transformedBounds;
         private IRenderRoot _visualRoot;
         private IVisual _visualParent;
 
@@ -134,6 +140,11 @@ namespace Avalonia
             get { return _bounds; }
             protected set { SetAndRaise(BoundsProperty, ref _bounds, value); }
         }
+
+        /// <summary>
+        /// Gets the bounds of the control relative to the window, accounting for rendering transforms.
+        /// </summary>
+        public TransformedBounds? TransformedBounds => _transformedBounds;
 
         /// <summary>
         /// Gets a value indicating whether the control should be clipped to its bounds.
@@ -253,6 +264,12 @@ namespace Avalonia
         /// Gets the root of the visual tree, if the control is attached to a visual tree.
         /// </summary>
         IRenderRoot IVisual.VisualRoot => VisualRoot;
+        
+        TransformedBounds? IVisual.TransformedBounds
+        {
+            get { return _transformedBounds; }
+            set { SetAndRaise(TransformedBoundsProperty, ref _transformedBounds, value); }
+        }
 
         /// <summary>
         /// Invalidates the visual and queues a repaint.
@@ -329,6 +346,7 @@ namespace Avalonia
             }
 
             OnAttachedToVisualTree(e);
+            AttachedToVisualTree?.Invoke(this, e);
             InvalidateVisual();
 
             if (VisualChildren != null)
@@ -357,6 +375,7 @@ namespace Avalonia
             }
 
             OnDetachedFromVisualTree(e);
+            DetachedFromVisualTree?.Invoke(this, e);
             e.Root?.Renderer?.AddDirty(this);
 
             if (VisualChildren != null)
@@ -374,7 +393,6 @@ namespace Avalonia
         /// <param name="e">The event args.</param>
         protected virtual void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
-            AttachedToVisualTree?.Invoke(this, e);
         }
 
         /// <summary>
@@ -383,7 +401,6 @@ namespace Avalonia
         /// <param name="e">The event args.</param>
         protected virtual void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
-            DetachedFromVisualTree?.Invoke(this, e);
         }
 
         /// <summary>
@@ -535,6 +552,19 @@ namespace Avalonia
                     foreach (Visual v in e.OldItems)
                     {
                         v.SetVisualParent(null);
+                    }
+
+                    break;
+
+                case NotifyCollectionChangedAction.Replace:
+                    foreach (Visual v in e.OldItems)
+                    {
+                        v.SetVisualParent(null);
+                    }
+
+                    foreach (Visual v in e.NewItems)
+                    {
+                        v.SetVisualParent(this);
                     }
 
                     break;

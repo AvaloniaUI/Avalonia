@@ -51,11 +51,27 @@ namespace Avalonia
         /// </summary>
         private EventHandler<AvaloniaPropertyChangedEventArgs> _propertyChanged;
 
+        private DeferredSetter<AvaloniaProperty, object> _directDeferredSetter;
+
+        /// <summary>
+        /// Delayed setter helper for direct properties. Used to fix #855.
+        /// </summary>
+        private DeferredSetter<AvaloniaProperty, object> DirectPropertyDeferredSetter
+        {
+            get
+            {
+                return _directDeferredSetter ??
+                    (_directDeferredSetter = new DeferredSetter<AvaloniaProperty, object>());
+            }
+        }
+
+
         /// <summary>
         /// Initializes a new instance of the <see cref="AvaloniaObject"/> class.
         /// </summary>
         public AvaloniaObject()
         {
+            VerifyAccess();
             foreach (var property in AvaloniaPropertyRegistry.Instance.GetRegistered(this))
             {
                 object value = property.IsDirect ?
@@ -225,6 +241,19 @@ namespace Avalonia
         }
 
         /// <summary>
+        /// Checks whether a <see cref="AvaloniaProperty"/> is animating.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <returns>True if the property is animating, otherwise false.</returns>
+        public bool IsAnimating(AvaloniaProperty property)
+        {
+            Contract.Requires<ArgumentNullException>(property != null);
+            VerifyAccess();
+
+            return _values.TryGetValue(property, out PriorityValue value) ? value.IsAnimating : false;
+        }
+
+        /// <summary>
         /// Checks whether a <see cref="AvaloniaProperty"/> is set on this object.
         /// </summary>
         /// <param name="property">The property.</param>
@@ -309,9 +338,6 @@ namespace Avalonia
             VerifyAccess();
 
             var description = GetDescription(source);
-
-            var scheduler = AvaloniaLocator.Current.GetService<IScheduler>() ?? ImmediateScheduler.Instance;
-            source = source.ObserveOn(scheduler); 
 
             if (property.IsDirect)
             {
@@ -539,6 +565,45 @@ namespace Avalonia
         }
 
         /// <summary>
+        /// A callback type for encapsulating complex logic for setting direct properties.
+        /// </summary>
+        /// <typeparam name="T">The type of the property.</typeparam>
+        /// <param name="value">The value to which to set the property.</param>
+        /// <param name="field">The backing field for the property.</param>
+        /// <param name="notifyWrapper">A wrapper for the property-changed notification.</param>
+        protected delegate void SetAndRaiseCallback<T>(T value, ref T field, Action<Action> notifyWrapper);
+
+        /// <summary>
+        /// Sets the backing field for a direct avalonia property, raising the 
+        /// <see cref="PropertyChanged"/> event if the value has changed.
+        /// </summary>
+        /// <typeparam name="T">The type of the property.</typeparam>
+        /// <param name="property">The property.</param>
+        /// <param name="field">The backing field.</param>
+        /// <param name="setterCallback">A callback called to actually set the value to the backing field.</param>
+        /// <param name="value">The value.</param>
+        /// <returns>
+        /// True if the value changed, otherwise false.
+        /// </returns>
+        protected bool SetAndRaise<T>(
+            AvaloniaProperty<T> property,
+            ref T field,
+            SetAndRaiseCallback<T> setterCallback,
+            T value)
+        {
+            Contract.Requires<ArgumentNullException>(setterCallback != null);
+            return DirectPropertyDeferredSetter.SetAndNotify(
+                property,
+                ref field,
+                (object val, ref T backing, Action<Action> notify) =>
+                {
+                    setterCallback((T)val, ref backing, notify);
+                    return true;
+                },
+                value);
+        }
+
+        /// <summary>
         /// Sets the backing field for a direct avalonia property, raising the 
         /// <see cref="PropertyChanged"/> event if the value has changed.
         /// </summary>
@@ -552,17 +617,32 @@ namespace Avalonia
         protected bool SetAndRaise<T>(AvaloniaProperty<T> property, ref T field, T value)
         {
             VerifyAccess();
-            if (!object.Equals(field, value))
-            {
-                var old = field;
-                field = value;
-                RaisePropertyChanged(property, old, value, BindingPriority.LocalValue);
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            return SetAndRaise(
+                property,
+                ref field,
+                (T val, ref T backing, Action<Action> notifyWrapper)
+                    => SetAndRaiseCore(property, ref backing, val, notifyWrapper),
+                value);
+        }
+
+        /// <summary>
+        /// Default assignment logic for SetAndRaise.
+        /// </summary>
+        /// <typeparam name="T">The type of the property.</typeparam>
+        /// <param name="property">The property.</param>
+        /// <param name="field">The backing field.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="notifyWrapper">A wrapper for the property-changed notification.</param>
+        /// <returns>
+        /// True if the value changed, otherwise false.
+        /// </returns>
+        private bool SetAndRaiseCore<T>(AvaloniaProperty property, ref T field, T value, Action<Action> notifyWrapper)
+        {
+            var old = field;
+            field = value;
+
+            notifyWrapper(() => RaisePropertyChanged(property, old, value, BindingPriority.LocalValue));
+            return true;
         }
 
         /// <summary>
@@ -660,29 +740,41 @@ namespace Avalonia
         /// <param name="value">The value.</param>
         private void SetDirectValue(AvaloniaProperty property, object value)
         {
-            var notification = value as BindingNotification;
-
-            if (notification != null)
+            void Set()
             {
-                notification.LogIfError(this, property);
-                value = notification.Value;
+                var notification = value as BindingNotification;
+
+                if (notification != null)
+                {
+                    notification.LogIfError(this, property);
+                    value = notification.Value;
+                }
+
+                if (notification == null || notification.ErrorType == BindingErrorType.Error || notification.HasValue)
+                {
+                    var metadata = (IDirectPropertyMetadata)property.GetMetadata(GetType());
+                    var accessor = (IDirectPropertyAccessor)GetRegistered(property);
+                    var finalValue = value == AvaloniaProperty.UnsetValue ?
+                        metadata.UnsetValue : value;
+
+                    LogPropertySet(property, value, BindingPriority.LocalValue);
+
+                    accessor.SetValue(this, finalValue);
+                }
+
+                if (notification != null)
+                {
+                    UpdateDataValidation(property, notification);
+                }
             }
 
-            if (notification == null || notification.ErrorType == BindingErrorType.Error || notification.HasValue)
+            if (Dispatcher.UIThread.CheckAccess())
             {
-                var metadata = (IDirectPropertyMetadata)property.GetMetadata(GetType());
-                var accessor = (IDirectPropertyAccessor)GetRegistered(property);
-                var finalValue = value == AvaloniaProperty.UnsetValue ? 
-                    metadata.UnsetValue : value;
-
-                LogPropertySet(property, value, BindingPriority.LocalValue);
-
-                accessor.SetValue(this, finalValue);
+                Set();
             }
-
-            if (notification != null)
+            else
             {
-                UpdateDataValidation(property, notification);
+                Dispatcher.UIThread.Post(Set);
             }
         }
 

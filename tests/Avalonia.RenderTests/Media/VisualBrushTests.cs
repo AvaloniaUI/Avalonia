@@ -33,7 +33,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             {
                 return new Panel
                 {
-                    Children = new Avalonia.Controls.Controls
+                    Children =
                     {
                         new Image
                         {
@@ -42,7 +42,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                         new Border
                         {
                             BorderBrush = Brushes.Blue,
-                            BorderThickness = 2,
+                            BorderThickness = new Thickness(2),
                             HorizontalAlignment = HorizontalAlignment.Center,
                             VerticalAlignment = VerticalAlignment.Center,
                             Child = new TextBlock

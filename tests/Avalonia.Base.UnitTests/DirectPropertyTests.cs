@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Reactive.Subjects;
 using Avalonia.Data;
 using Xunit;
 
@@ -70,10 +71,21 @@ namespace Avalonia.Base.UnitTests
             Assert.Same(p1.Initialized, p2.Initialized);
         }
 
+        [Fact]
+        public void IsAnimating_On_DirectProperty_With_Binding_Returns_False()
+        {
+            var target = new Class1();
+            var source = new BehaviorSubject<string>("foo");
+
+            target.Bind(Class1.FooProperty, source, BindingPriority.Animation);
+
+            Assert.False(target.IsAnimating(Class1.FooProperty));
+        }
+
         private class Class1 : AvaloniaObject
         {
             public static readonly DirectProperty<Class1, string> FooProperty =
-                AvaloniaProperty.RegisterDirect<Class1, string>("Foo", o => o.Foo, (o, v) => o.Foo = v);
+                AvaloniaProperty.RegisterDirect<Class1, string>(nameof(Foo), o => o.Foo, (o, v) => o.Foo = v);
 
             private string _foo = "foo";
 

@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Linq;
 using Avalonia.Media;
+using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.UnitTests;
+using Avalonia.Utilities;
 using Avalonia.VisualTree;
 using Moq;
 using Xunit;
@@ -103,15 +105,15 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
             }
 
             Assert.Equal(2, node.DrawOperations.Count);
-            Assert.IsType<RectangleNode>(node.DrawOperations[0]);
-            Assert.IsType<RectangleNode>(node.DrawOperations[1]);
+            Assert.IsType<RectangleNode>(node.DrawOperations[0].Item);
+            Assert.IsType<RectangleNode>(node.DrawOperations[1].Item);
         }
 
         [Fact]
         public void Should_Not_Replace_Identical_DrawOperation()
         {
             var node = new VisualNode(new TestRoot(), null);
-            var operation = new RectangleNode(Matrix.Identity, Brushes.Red, null, new Rect(0, 0, 100, 100), 0);
+            var operation = RefCountable.Create(new RectangleNode(Matrix.Identity, Brushes.Red, null, new Rect(0, 0, 100, 100), 0));
             var layers = new SceneLayers(node.Visual);
             var target = new DeferredDrawingContextImpl(null, layers);
 
@@ -124,16 +126,16 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
             }
 
             Assert.Equal(1, node.DrawOperations.Count);
-            Assert.Same(operation, node.DrawOperations.Single());
+            Assert.Same(operation.Item, node.DrawOperations.Single().Item);
 
-            Assert.IsType<RectangleNode>(node.DrawOperations[0]);
+            Assert.IsType<RectangleNode>(node.DrawOperations[0].Item);
         }
 
         [Fact]
         public void Should_Replace_Different_DrawOperation()
         {
             var node = new VisualNode(new TestRoot(), null);
-            var operation = new RectangleNode(Matrix.Identity, Brushes.Red, null, new Rect(0, 0, 100, 100), 0);
+            var operation = RefCountable.Create(new RectangleNode(Matrix.Identity, Brushes.Red, null, new Rect(0, 0, 100, 100), 0));
             var layers = new SceneLayers(node.Visual);
             var target = new DeferredDrawingContextImpl(null, layers);
 
@@ -148,7 +150,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
             Assert.Equal(1, node.DrawOperations.Count);
             Assert.NotSame(operation, node.DrawOperations.Single());
 
-            Assert.IsType<RectangleNode>(node.DrawOperations[0]);
+            Assert.IsType<RectangleNode>(node.DrawOperations[0].Item);
         }
 
         [Fact]
@@ -173,13 +175,18 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
         public void Should_Trim_DrawOperations()
         {
             var node = new VisualNode(new TestRoot(), null);
-
             node.LayerRoot = node.Visual;
-            node.AddDrawOperation(new RectangleNode(Matrix.Identity, Brushes.Red, null, new Rect(0, 0, 10, 100), 0));
-            node.AddDrawOperation(new RectangleNode(Matrix.Identity, Brushes.Red, null, new Rect(0, 0, 20, 100), 0));
-            node.AddDrawOperation(new RectangleNode(Matrix.Identity, Brushes.Red, null, new Rect(0, 0, 30, 100), 0));
-            node.AddDrawOperation(new RectangleNode(Matrix.Identity, Brushes.Red, null, new Rect(0, 0, 40, 100), 0));
 
+            for (var i = 0; i < 4; ++i)
+            {
+                var drawOperation = new Mock<IDrawOperation>();
+                using (var r = RefCountable.Create(drawOperation.Object))
+                {
+                    node.AddDrawOperation(r);
+                }
+            }
+
+            var drawOperations = node.DrawOperations.Select(op => op.Item).ToList();
             var layers = new SceneLayers(node.Visual);
             var target = new DeferredDrawingContextImpl(null, layers);
 
@@ -190,6 +197,33 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
             }
 
             Assert.Equal(2, node.DrawOperations.Count);
+
+            foreach (var i in drawOperations)
+            {
+                Mock.Get(i).Verify(x => x.Dispose());
+            }
+        }
+
+        [Fact]
+        public void Trimmed_DrawOperations_Releases_Reference()
+        {
+            var node = new VisualNode(new TestRoot(), null);
+            var operation = RefCountable.Create(new RectangleNode(Matrix.Identity, Brushes.Red, null, new Rect(0, 0, 100, 100), 0));
+            var layers = new SceneLayers(node.Visual);
+            var target = new DeferredDrawingContextImpl(null, layers);
+
+            node.LayerRoot = node.Visual;
+            node.AddDrawOperation(operation);
+            Assert.Equal(2, operation.RefCount);
+
+            using (target.BeginUpdate(node))
+            {
+                target.FillRectangle(Brushes.Green, new Rect(0, 0, 100, 100));
+            }
+
+            Assert.Equal(1, node.DrawOperations.Count);
+            Assert.NotSame(operation, node.DrawOperations.Single());
+            Assert.Equal(1, operation.RefCount);
         }
     }
 }

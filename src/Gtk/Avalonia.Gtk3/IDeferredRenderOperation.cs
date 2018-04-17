@@ -4,6 +4,6 @@ namespace Avalonia.Gtk3
 {
     public interface IDeferredRenderOperation : IDisposable
     {
-        void RenderNow();
+        void RenderNow(IntPtr? ctx);
     }
 }

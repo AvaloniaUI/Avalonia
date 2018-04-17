@@ -13,33 +13,35 @@ using Avalonia.Styling;
 using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
+using System.ComponentModel;
 
 namespace Avalonia.Controls
 {
     /// <summary>
     /// Determines how a <see cref="Window"/> will size itself to fit its content.
     /// </summary>
+    [Flags]
     public enum SizeToContent
     {
         /// <summary>
         /// The window will not automatically size itself to fit its content.
         /// </summary>
-        Manual,
+        Manual = 0,
 
         /// <summary>
         /// The window will size itself horizontally to fit its content.
         /// </summary>
-        Width,
+        Width = 1,
 
         /// <summary>
         /// The window will size itself vertically to fit its content.
         /// </summary>
-        Height,
+        Height = 2,
 
         /// <summary>
         /// The window will size itself horizontally and vertically to fit its content.
         /// </summary>
-        WidthAndHeight,
+        WidthAndHeight = 3,
     }
 
     /// <summary>
@@ -84,9 +86,19 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<WindowIcon> IconProperty =
             AvaloniaProperty.Register<Window, WindowIcon>(nameof(Icon));
 
+        /// <summary>
+        /// Defines the <see cref="WindowStartupLocation"/> proeprty.
+        /// </summary>
+        public static readonly DirectProperty<Window, WindowStartupLocation> WindowStartupLocationProperty =
+            AvaloniaProperty.RegisterDirect<Window, WindowStartupLocation>(
+                nameof(WindowStartupLocation),
+                o => o.WindowStartupLocation,
+                (o, v) => o.WindowStartupLocation = v);
+
         private readonly NameScope _nameScope = new NameScope();
         private object _dialogResult;
         private readonly Size _maxPlatformClientSize;
+        private WindowStartupLocation _windowStartupLoction;
 
         /// <summary>
         /// Initializes static members of the <see cref="Window"/> class.
@@ -118,6 +130,7 @@ namespace Avalonia.Controls
         public Window(IWindowImpl impl)
             : base(impl)
         {
+            impl.Closing = HandleClosing;
             _maxPlatformClientSize = PlatformImpl?.MaxClientSize ?? default(Size);
             Screens = new Screens(PlatformImpl?.Screen);
         }
@@ -204,6 +217,15 @@ namespace Avalonia.Controls
             set { SetValue(IconProperty, value); }
         }
 
+        /// <summary>
+        /// Gets or sets the startup location of the window.
+        /// </summary>
+        public WindowStartupLocation WindowStartupLocation
+        {
+            get { return _windowStartupLoction; }
+            set { SetAndRaise(WindowStartupLocationProperty, ref _windowStartupLoction, value); }
+        }
+
         /// <inheritdoc/>
         Size ILayoutRoot.MaxClientSize => _maxPlatformClientSize;
 
@@ -211,19 +233,22 @@ namespace Avalonia.Controls
         Type IStyleable.StyleKey => typeof(Window);
 
         /// <summary>
+        /// Fired before a window is closed.
+        /// </summary>
+        public event EventHandler<CancelEventArgs> Closing;
+
+        /// <summary>
         /// Closes the window.
         /// </summary>
         public void Close()
         {
-            s_windows.Remove(this);
-            PlatformImpl?.Dispose();
-            IsVisible = false;
+            Close(false);
         }
 
         protected override void HandleApplicationExiting()
         {
             base.HandleApplicationExiting();
-            Close();
+            Close(true);
         }
 
         /// <summary>
@@ -238,7 +263,35 @@ namespace Avalonia.Controls
         public void Close(object dialogResult)
         {
             _dialogResult = dialogResult;
-            Close();
+            Close(false);
+        }
+
+        internal void Close(bool ignoreCancel)
+        {
+            var cancelClosing = false;
+            try
+            {
+                cancelClosing = HandleClosing();
+            }
+            finally
+            {
+                if (ignoreCancel || !cancelClosing)
+                {
+                    s_windows.Remove(this);
+                    PlatformImpl?.Dispose();
+                    IsVisible = false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles a closing notification from <see cref="IWindowImpl.Closing"/>.
+        /// </summary>
+        protected virtual bool HandleClosing()
+        {
+            var args = new CancelEventArgs();
+            Closing?.Invoke(this, args);
+            return args.Cancel;
         }
 
         /// <summary>
@@ -273,6 +326,7 @@ namespace Avalonia.Controls
             s_windows.Add(this);
 
             EnsureInitialized();
+            SetWindowStartupLocation();
             IsVisible = true;
             LayoutManager.Instance.ExecuteInitialLayoutPass(this);
 
@@ -313,6 +367,7 @@ namespace Avalonia.Controls
             s_windows.Add(this);
 
             EnsureInitialized();
+            SetWindowStartupLocation();
             IsVisible = true;
             LayoutManager.Instance.ExecuteInitialLayoutPass(this);
 
@@ -336,7 +391,7 @@ namespace Avalonia.Controls
                         modal?.Dispose();
                         SetIsEnabled(affectedWindows, true);
                         activated?.Activate();
-                        result.SetResult((TResult)_dialogResult);
+                        result.SetResult((TResult)(_dialogResult ?? default(TResult)));
                     });
 
                 return result.Task;
@@ -348,6 +403,25 @@ namespace Avalonia.Controls
             foreach (var window in windows)
             {
                 window.IsEnabled = isEnabled;
+            }
+        }
+
+        void SetWindowStartupLocation()
+        {
+            if (WindowStartupLocation == WindowStartupLocation.CenterScreen)
+            {
+                var screen = Screens.ScreenFromPoint(Bounds.Position);
+
+                if (screen != null)
+                    Position = screen.WorkingArea.CenterRect(new Rect(ClientSize)).Position;
+            }
+            else if (WindowStartupLocation == WindowStartupLocation.CenterOwner)
+            {
+                if (Owner != null)
+                {
+                    var positionAsSize = Owner.ClientSize / 2 - ClientSize / 2;
+                    Position = Owner.Position + new Point(positionAsSize.Width, positionAsSize.Height);
+                }
             }
         }
 
@@ -373,28 +447,32 @@ namespace Avalonia.Controls
         protected override Size MeasureOverride(Size availableSize)
         {
             var sizeToContent = SizeToContent;
-            var size = ClientSize;
-            var desired = base.MeasureOverride(availableSize.Constrain(_maxPlatformClientSize));
+            var clientSize = ClientSize;
+            Size constraint = clientSize;
 
-            switch (sizeToContent)
+            if ((sizeToContent & SizeToContent.Width) != 0)
             {
-                case SizeToContent.Width:
-                    size = new Size(desired.Width, ClientSize.Height);
-                    break;
-                case SizeToContent.Height:
-                    size = new Size(ClientSize.Width, desired.Height);
-                    break;
-                case SizeToContent.WidthAndHeight:
-                    size = new Size(desired.Width, desired.Height);
-                    break;
-                case SizeToContent.Manual:
-                    size = ClientSize;
-                    break;
-                default:
-                    throw new InvalidOperationException("Invalid value for SizeToContent.");
+                constraint = constraint.WithWidth(double.PositiveInfinity);
             }
 
-            return size;
+            if ((sizeToContent & SizeToContent.Height) != 0)
+            {
+                constraint = constraint.WithHeight(double.PositiveInfinity);
+            }
+
+            var result = base.MeasureOverride(constraint);
+
+            if ((sizeToContent & SizeToContent.Width) == 0)
+            {
+                result = result.WithWidth(clientSize.Width);
+            }
+
+            if ((sizeToContent & SizeToContent.Height) == 0)
+            {
+                result = result.WithHeight(clientSize.Height);
+            }
+
+            return result;
         }
 
         protected override void HandleClosed()

@@ -176,10 +176,7 @@ namespace Avalonia.Controls
 
                 SelectedItem = item;
 
-                if (SelectedItem != null)
-                {
-                    MarkContainerSelected(container, true);
-                }
+                MarkContainerSelected(container, true);
             }
         }
 
@@ -253,9 +250,7 @@ namespace Avalonia.Controls
 
                         if (AutoScrollToSelectedItem)
                         {
-                            DispatcherTimer.RunOnce(
-                                container.ContainerControl.BringIntoView,
-                                TimeSpan.Zero);
+                            Dispatcher.UIThread.Post(container.ContainerControl.BringIntoView);
                         }
 
                         break;

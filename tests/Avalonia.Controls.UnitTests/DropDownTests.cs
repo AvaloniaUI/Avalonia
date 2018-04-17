@@ -1,21 +1,43 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using System.Linq;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
+using Avalonia.Input;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.UnitTests;
-using Avalonia.VisualTree;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
     public class DropDownTests
     {
+        [Fact]
+        public void Clicking_On_Control_Toggles_IsDropDownOpen()
+        {
+            var target = new DropDown
+            {
+                Items = new[] { "Foo", "Bar" },
+            };
+
+            target.RaiseEvent(new PointerPressedEventArgs
+            {
+                RoutedEvent = InputElement.PointerPressedEvent,
+            });
+
+            Assert.True(target.IsDropDownOpen);
+
+            target.RaiseEvent(new PointerPressedEventArgs
+            {
+                RoutedEvent = InputElement.PointerPressedEvent,
+            });
+
+            Assert.False(target.IsDropDownOpen);
+        }
+
         [Fact]
         public void SelectionBoxItem_Is_Rectangle_With_VisualBrush_When_Selection_Is_Control()
         {
@@ -67,7 +89,7 @@ namespace Avalonia.Controls.UnitTests
                 return new Panel
                 {
                     Name = "container",
-                    Children = new Controls
+                    Children =
                     {
                         new ContentControl
                         {

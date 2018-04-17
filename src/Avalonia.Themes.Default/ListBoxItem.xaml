@@ -7,8 +7,8 @@
                           Background="{TemplateBinding Background}"
                           BorderBrush="{TemplateBinding BorderBrush}"
                           BorderThickness="{TemplateBinding BorderThickness}"
-                          Content="{TemplateBinding Content}"
                           ContentTemplate="{TemplateBinding ContentTemplate}"
+                          Content="{TemplateBinding Content}"
                           Padding="{TemplateBinding Padding}"/>
       </ControlTemplate>
     </Setter>

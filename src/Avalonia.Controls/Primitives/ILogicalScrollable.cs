@@ -20,6 +20,16 @@ namespace Avalonia.Controls.Primitives
     public interface ILogicalScrollable : IScrollable
     {
         /// <summary>
+        /// Gets or sets a value indicating whether the content can be scrolled horizontally.
+        /// </summary>
+        bool CanHorizontallyScroll { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the content can be scrolled horizontally.
+        /// </summary>
+        bool CanVerticallyScroll { get; set; }
+
+        /// <summary>
         /// Gets a value indicating whether logical scrolling is enabled on the control.
         /// </summary>
         bool IsLogicalScrollEnabled { get; }

@@ -316,7 +316,7 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
                 Child = new Border
                 {
                     BorderBrush = Brushes.Red,
-                    BorderThickness = 1,
+                    BorderThickness = new Thickness(1),
                     HorizontalAlignment = HorizontalAlignment.Center,
                     VerticalAlignment = VerticalAlignment.Center,
                     Child = new Path
@@ -356,6 +356,29 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
                     StrokeStartLineCap = PenLineCap.Round,
                     StrokeEndLineCap = PenLineCap.Square,
                     Data = StreamGeometry.Parse("M 20,20 L 180,180"),
+                }
+            };
+
+            await RenderToFile(target);
+            CompareImages();
+        }
+
+        [Fact]
+        public async Task Path_With_Rotated_Geometry()
+        {
+            var target = new Border
+            {
+                Width = 200,
+                Height = 200,
+                Background = Brushes.White,
+                Child = new Path
+                {
+                    Fill = Brushes.Red,
+                    Data = new RectangleGeometry
+                    {
+                        Rect = new Rect(50, 50, 100, 100),
+                        Transform = new RotateTransform(45),
+                    }
                 }
             };
 

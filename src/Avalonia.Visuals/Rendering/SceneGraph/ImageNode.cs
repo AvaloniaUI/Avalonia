@@ -3,13 +3,14 @@
 
 using System;
 using Avalonia.Platform;
+using Avalonia.Utilities;
 
 namespace Avalonia.Rendering.SceneGraph
 {
     /// <summary>
     /// A node in the scene graph which represents an image draw.
     /// </summary>
-    internal class ImageNode : IDrawOperation
+    internal class ImageNode : DrawOperation
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ImageNode"/> class.
@@ -19,18 +20,15 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="opacity">The draw opacity.</param>
         /// <param name="sourceRect">The source rect.</param>
         /// <param name="destRect">The destination rect.</param>
-        public ImageNode(Matrix transform, IBitmapImpl source, double opacity, Rect sourceRect, Rect destRect)
+        public ImageNode(Matrix transform, IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect)
+            : base(destRect, transform, null)
         {
-            Bounds = destRect.TransformToAABB(transform);
             Transform = transform;
-            Source = source;
+            Source = source.Clone();
             Opacity = opacity;
             SourceRect = sourceRect;
             DestRect = destRect;
         }
-
-        /// <inheritdoc/>
-        public Rect Bounds { get; }
 
         /// <summary>
         /// Gets the transform with which the node will be drawn.
@@ -40,7 +38,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <summary>
         /// Gets the image to draw.
         /// </summary>
-        public IBitmapImpl Source { get; }
+        public IRef<IBitmapImpl> Source { get; }
 
         /// <summary>
         /// Gets the draw opacity.
@@ -70,17 +68,17 @@ namespace Avalonia.Rendering.SceneGraph
         /// The properties of the other draw operation are passed in as arguments to prevent
         /// allocation of a not-yet-constructed draw operation object.
         /// </remarks>
-        public bool Equals(Matrix transform, IBitmapImpl source, double opacity, Rect sourceRect, Rect destRect)
+        public bool Equals(Matrix transform, IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect)
         {
             return transform == Transform &&
-                Equals(source, Source) &&
+                Equals(source.Item, Source.Item) &&
                 opacity == Opacity &&
                 sourceRect == SourceRect &&
                 destRect == DestRect;
         }
 
         /// <inheritdoc/>
-        public void Render(IDrawingContextImpl context)
+        public override void Render(IDrawingContextImpl context)
         {
             // TODO: Probably need to introduce some kind of locking mechanism in the case of
             // WriteableBitmap.
@@ -89,6 +87,11 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <inheritdoc/>
-        public bool HitTest(Point p) => Bounds.Contains(p);
+        public override bool HitTest(Point p) => Bounds.Contains(p);
+
+        public override void Dispose()
+        {
+            Source?.Dispose();
+        }
     }
 }

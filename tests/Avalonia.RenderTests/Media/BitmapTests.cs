@@ -64,13 +64,13 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             public void Deallocate() => Marshal.FreeHGlobal(Address);
         }
 
-
-#if AVALONIA_SKIA
+        
         [Theory]
-#else
-        [Theory(Skip = "Framebuffer not supported")]
+        [InlineData(PixelFormat.Rgba8888), InlineData(PixelFormat.Bgra8888),
+#if SKIA
+             InlineData(PixelFormat.Rgb565)
 #endif
-        [InlineData(PixelFormat.Rgba8888), InlineData(PixelFormat.Bgra8888), InlineData(PixelFormat.Rgb565)]
+            ]
         public void FramebufferRenderResultsShouldBeUsableAsBitmap(PixelFormat fmt)
         {
             var testName = nameof(FramebufferRenderResultsShouldBeUsableAsBitmap) + "_" + fmt;
@@ -84,6 +84,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 ctx.FillRectangle(Brushes.Chartreuse, new Rect(0, 0, 20, 100));
                 ctx.FillRectangle(Brushes.Crimson, new Rect(20, 0, 20, 100));
                 ctx.FillRectangle(Brushes.Gold, new Rect(40, 0, 20, 100));
+                ctx.PopOpacity();
             }
 
             var bmp = new Bitmap(fmt, fb.Address, fb.Width, fb.Height, fb.RowBytes);
@@ -105,9 +106,9 @@ namespace Avalonia.Direct2D1.RenderTests.Media
 
         [Theory]
         [InlineData(PixelFormat.Bgra8888), InlineData(PixelFormat.Rgba8888)]
-        public void WritableBitmapShouldBeUsable(PixelFormat fmt)
+        public void WriteableBitmapShouldBeUsable(PixelFormat fmt)
         {
-            var writableBitmap = new WritableBitmap(256, 256, fmt);
+            var writeableBitmap = new WriteableBitmap(256, 256, fmt);
 
             var data = new int[256 * 256];
             for (int y = 0; y < 256; y++)
@@ -115,7 +116,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                     data[y * 256 + x] =(int)((uint)(x + (y << 8)) | 0xFF000000u);
 
 
-            using (var l = writableBitmap.Lock())
+            using (var l = writeableBitmap.Lock())
             {
                 for(var r = 0; r<256; r++)
                 {
@@ -124,9 +125,9 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             }
 
 
-            var name = nameof(WritableBitmapShouldBeUsable) + "_" + fmt;
+            var name = nameof(WriteableBitmapShouldBeUsable) + "_" + fmt;
 
-            writableBitmap.Save(System.IO.Path.Combine(OutputPath, name + ".out.png"));
+            writeableBitmap.Save(System.IO.Path.Combine(OutputPath, name + ".out.png"));
             CompareImagesNoRenderer(name);
 
         }

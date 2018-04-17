@@ -204,7 +204,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             scroll.Arrange(new Rect(0, 0, 100, 100));
 
             Assert.Equal(20, target.Panel.Children.Count);
-            Assert.Equal(new Size(10, 200), scroll.Extent);
+            Assert.Equal(new Size(100, 200), scroll.Extent);
             Assert.Equal(new Size(100, 100), scroll.Viewport);
 
             target.VirtualizationMode = ItemVirtualizationMode.Simple;
@@ -266,7 +266,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             scroll.Arrange(new Rect(0, 0, 100, 100));
 
             Assert.Equal(20, target.Panel.Children.Count);
-            Assert.Equal(new Size(10, 200), scroll.Extent);
+            Assert.Equal(new Size(100, 200), scroll.Extent);
             Assert.Equal(new Size(100, 100), scroll.Viewport);
         }
 
@@ -281,6 +281,8 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
             var scroller = new TestScroller
             {
+                CanHorizontallyScroll = false,
+                CanVerticallyScroll = true,
                 Content = result = new TestItemsPresenter(useContainers)
                 {
                     Items = items,

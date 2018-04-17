@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using Avalonia.Input.DragDrop;
+using Avalonia.Input.DragDrop.Raw;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Rendering;
+using Avalonia.Threading;
 using MonoMac.AppKit;
-
+using MonoMac.CoreFoundation;
 using MonoMac.CoreGraphics;
 using MonoMac.Foundation;
 using MonoMac.ObjCRuntime;
@@ -17,6 +20,7 @@ namespace Avalonia.MonoMac
     {
         public TopLevelView View { get; }
         private readonly IMouseDevice _mouse = AvaloniaLocator.Current.GetService<IMouseDevice>();
+        private readonly IDragDropDevice _dragDevice = AvaloniaLocator.Current.GetService<IDragDropDevice>();
         protected TopLevelImpl()
         {
             View = new TopLevelView(this);
@@ -24,6 +28,7 @@ namespace Avalonia.MonoMac
 
         protected virtual void OnInput(RawInputEventArgs args)
         {
+            Dispatcher.UIThread.RunJobs(DispatcherPriority.Input + 1);
             Input?.Invoke(args);
         }
 
@@ -36,12 +41,35 @@ namespace Avalonia.MonoMac
             private readonly IKeyboardDevice _keyboard;
             private NSTrackingArea _area;
             private NSCursor _cursor;
+            private bool _nonUiRedrawQueued;
+            private bool _isMouseOver;
+
+            public CGSize PixelSize { get; set; }
+
+            public CGSize LogicalSize { get; set; }
+
+            private SavedImage _backBuffer;
+            public object SyncRoot { get; } = new object();
 
             public TopLevelView(TopLevelImpl tl)
             {
                 _tl = tl;
                 _mouse = AvaloniaLocator.Current.GetService<IMouseDevice>();
                 _keyboard = AvaloniaLocator.Current.GetService<IKeyboardDevice>();
+                
+                RegisterForDraggedTypes(new string[] {
+                    "public.data" // register for any kind of data.
+                });
+            }
+
+            protected override void Dispose(bool disposing)
+            {
+                if (disposing)
+                {
+                    _backBuffer?.Dispose();
+                    _backBuffer = null;
+                }
+                base.Dispose(disposing);
             }
 
             public override bool ConformsToProtocol(IntPtr protocol)
@@ -50,11 +78,59 @@ namespace Avalonia.MonoMac
                 return rv;
             }
 
+            public override bool IsOpaque => false;
+
             public override void DrawRect(CGRect dirtyRect)
             {
+                lock (SyncRoot)
+                    _nonUiRedrawQueued = false;
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Render);
+                lock (SyncRoot)
+                {
+                    if (_backBuffer != null)
+                    {
+                        using (var context = NSGraphicsContext.CurrentContext.GraphicsPort)
+                        {
+                            context.SetFillColor(255, 255, 255, 255);
+                            context.FillRect(new CGRect(default(CGPoint), LogicalSize));
+                            context.TranslateCTM(0, LogicalSize.Height - _backBuffer.LogicalSize.Height);
+                            context.DrawImage(new CGRect(default(CGPoint), _backBuffer.LogicalSize), _backBuffer.Image);
+                            context.Flush();
+                            NSGraphicsContext.CurrentContext.FlushGraphics();
+                        }
+                    }
+                }
                 _tl.Paint?.Invoke(dirtyRect.ToAvaloniaRect());
             }
 
+            public void SetBackBufferImage(SavedImage image)
+            {
+                lock (SyncRoot)
+                {
+                    _backBuffer?.Dispose();
+                    _backBuffer = image;
+                    if (image == null)
+                        return;
+
+                    if (_nonUiRedrawQueued)
+                        return;
+                    _nonUiRedrawQueued = true;
+                    Dispatcher.UIThread.Post(
+                        () =>
+                        {
+                            lock (SyncRoot)
+                            {
+                                if (!_nonUiRedrawQueued)
+                                    return;
+                                _nonUiRedrawQueued = false;
+                            }
+                            SetNeedsDisplayInRect(Frame);
+                            Display();
+                        }, DispatcherPriority.Render);
+
+                }
+            }
+            
             [Export("viewDidChangeBackingProperties:")]
             public void ViewDidChangeBackingProperties()
             {
@@ -65,7 +141,11 @@ namespace Avalonia.MonoMac
             {
                 ResetCursorRects();
                 if (_cursor != null)
+                {
                     AddCursorRect(Frame, _cursor);
+                    if (_isMouseOver)
+                        _cursor.Set();
+                }
             }
 
             static readonly NSCursor ArrowCursor = NSCursor.ArrowCursor;
@@ -76,9 +156,56 @@ namespace Avalonia.MonoMac
                 UpdateCursor();
             }
 
+            private NSDragOperation SendRawDragEvent(NSDraggingInfo sender, RawDragEventType type)
+            {
+                Action<RawInputEventArgs> input = _tl.Input;
+                IDragDropDevice dragDevice = _tl._dragDevice;
+                IInputRoot root = _tl?.InputRoot;
+                if (root == null || dragDevice == null || input == null)
+                    return NSDragOperation.None;
+                
+                var dragOp = DraggingInfo.ConvertDragOperation(sender.DraggingSourceOperationMask);
+                DraggingInfo info = new DraggingInfo(sender);
+                var pt = TranslateLocalPoint(info.Location);
+                var args = new RawDragEvent(dragDevice, type, root, pt, info, dragOp);
+                input(args);
+                return DraggingInfo.ConvertDragOperation(args.Effects);
+            }
+
+            public override NSDragOperation DraggingEntered(NSDraggingInfo sender)
+            {
+                return SendRawDragEvent(sender, RawDragEventType.DragEnter);
+            }
+
+            public override NSDragOperation DraggingUpdated(NSDraggingInfo sender)
+            {
+                return SendRawDragEvent(sender, RawDragEventType.DragOver);
+            }
+
+            public override void DraggingExited(NSDraggingInfo sender)
+            {
+                SendRawDragEvent(sender, RawDragEventType.DragLeave);
+            }
+
+            public override bool PrepareForDragOperation(NSDraggingInfo sender)
+            {
+                return SendRawDragEvent(sender, RawDragEventType.DragOver) != NSDragOperation.None;
+            }
+
+            public override bool PerformDragOperation(NSDraggingInfo sender)
+            {
+                return SendRawDragEvent(sender, RawDragEventType.Drop) != NSDragOperation.None;
+            }
+            
+
             public override void SetFrameSize(CGSize newSize)
             {
-                base.SetFrameSize(newSize);
+                lock (SyncRoot)
+                {
+                    base.SetFrameSize(newSize);
+                    LogicalSize = Frame.Size;
+                    PixelSize = ConvertSizeToBacking(LogicalSize);
+                }
 
                 if (_area != null)
                 {
@@ -92,6 +219,7 @@ namespace Avalonia.MonoMac
                 AddTrackingArea(_area);
                 UpdateCursor();
                 _tl?.Resized?.Invoke(_tl.ClientSize);
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Layout);
             }
 
             InputModifiers GetModifiers(NSEventModifierMask mod)
@@ -225,8 +353,15 @@ namespace Avalonia.MonoMac
 
             public override void MouseExited(NSEvent theEvent)
             {
+                _isMouseOver = false;
                 MouseEvent(theEvent, RawMouseEventType.LeaveWindow);
                 base.MouseExited(theEvent);
+            }
+
+            public override void MouseEntered(NSEvent theEvent)
+            {
+                _isMouseOver = true;
+                base.MouseEntered(theEvent);
             }
 
             void KeyboardEvent(RawKeyEventType type, NSEvent ev)
@@ -348,9 +483,16 @@ namespace Avalonia.MonoMac
             View.Dispose();
         }
 
-        public IRenderer CreateRenderer(IRenderRoot root) => new ImmediateRenderer(root);
+        public IRenderer CreateRenderer(IRenderRoot root) =>
+            MonoMacPlatform.UseDeferredRendering
+                ? new DeferredRenderer(root, AvaloniaLocator.Current.GetService<IRenderLoop>())
+                : (IRenderer) new ImmediateRenderer(root);
 
-        public void Invalidate(Rect rect) => View.SetNeedsDisplayInRect(View.Frame);
+        public void Invalidate(Rect rect)
+        {
+            if (!MonoMacPlatform.UseDeferredRendering)
+                View.SetNeedsDisplayInRect(View.Frame);
+        }
 
         public abstract Point PointToClient(Point point);
 

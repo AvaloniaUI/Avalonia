@@ -12,23 +12,25 @@ namespace Avalonia.Controls.Shapes
     public abstract class Shape : Control
     {
         public static readonly StyledProperty<IBrush> FillProperty =
-            AvaloniaProperty.Register<Shape, IBrush>("Fill");
+            AvaloniaProperty.Register<Shape, IBrush>(nameof(Fill));
 
         public static readonly StyledProperty<Stretch> StretchProperty =
-            AvaloniaProperty.Register<Shape, Stretch>("Stretch");
+            AvaloniaProperty.Register<Shape, Stretch>(nameof(Stretch));
 
         public static readonly StyledProperty<IBrush> StrokeProperty =
-            AvaloniaProperty.Register<Shape, IBrush>("Stroke");
+            AvaloniaProperty.Register<Shape, IBrush>(nameof(Stroke));
 
         public static readonly StyledProperty<AvaloniaList<double>> StrokeDashArrayProperty =
             AvaloniaProperty.Register<Shape, AvaloniaList<double>>("StrokeDashArray");
 
         public static readonly StyledProperty<double> StrokeThicknessProperty =
-            AvaloniaProperty.Register<Shape, double>("StrokeThickness");
+            AvaloniaProperty.Register<Shape, double>(nameof(StrokeThickness));
 
         private Matrix _transform = Matrix.Identity;
         private Geometry _definingGeometry;
         private Geometry _renderedGeometry;
+        bool _calculateTransformOnArrange = false;
+
 
         static Shape()
         {
@@ -59,12 +61,26 @@ namespace Avalonia.Controls.Shapes
         {
             get
             {
-                if (_renderedGeometry == null)
+                if (_renderedGeometry == null && DefiningGeometry != null)
                 {
-                    if (DefiningGeometry != null)
+                    if (_transform == Matrix.Identity)
+                    {
+                        _renderedGeometry = DefiningGeometry;
+                    }
+                    else
                     {
                         _renderedGeometry = DefiningGeometry.Clone();
-                        _renderedGeometry.Transform = new MatrixTransform(_transform);
+
+                        if (_renderedGeometry.Transform == null ||
+                            _renderedGeometry.Transform.Value == Matrix.Identity)
+                        {
+                            _renderedGeometry.Transform = new MatrixTransform(_transform);
+                        }
+                        else
+                        {
+                            _renderedGeometry.Transform = new MatrixTransform(
+                                _renderedGeometry.Transform.Value * _transform);
+                        }
                     }
                 }
 
@@ -150,13 +166,54 @@ namespace Avalonia.Controls.Shapes
             this._definingGeometry = null;
             InvalidateMeasure();
         }
-
+        
         protected override Size MeasureOverride(Size availableSize)
+        {
+            bool deferCalculateTransform;
+            switch (Stretch)
+            {
+                case Stretch.Fill:
+                case Stretch.UniformToFill:
+                    deferCalculateTransform = double.IsInfinity(availableSize.Width) || double.IsInfinity(availableSize.Height);
+                    break;
+                case Stretch.Uniform:
+                    deferCalculateTransform = double.IsInfinity(availableSize.Width) && double.IsInfinity(availableSize.Height);
+                    break;
+                case Stretch.None:
+                default:
+                    deferCalculateTransform = false;
+                    break;
+            }
+
+            if (deferCalculateTransform)
+            {
+                _calculateTransformOnArrange = true;
+                return DefiningGeometry.Bounds.Size;
+            }
+            else
+            {
+                _calculateTransformOnArrange = false;
+                return CalculateShapeSizeAndSetTransform(availableSize);
+            }
+        }
+        
+        protected override Size ArrangeOverride(Size finalSize)
+        {
+            if(_calculateTransformOnArrange)
+            {
+                _calculateTransformOnArrange = false;
+                CalculateShapeSizeAndSetTransform(finalSize);
+            }
+
+            return finalSize;
+        }
+
+        private Size CalculateShapeSizeAndSetTransform(Size availableSize)
         {
             // This should probably use GetRenderBounds(strokeThickness) but then the calculations
             // will multiply the stroke thickness as well, which isn't correct.
             var (size, transform) = CalculateSizeAndTransform(availableSize, DefiningGeometry.Bounds, Stretch);
-            
+
             if (_transform != transform)
             {
                 _transform = transform;

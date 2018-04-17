@@ -14,7 +14,7 @@ namespace Avalonia.Diagnostics.Views
     internal class ControlDetailsView : UserControl
     {
         private static readonly StyledProperty<ControlDetailsViewModel> ViewModelProperty =
-            AvaloniaProperty.Register<ControlDetailsView, ControlDetailsViewModel>("ViewModel");
+            AvaloniaProperty.Register<ControlDetailsView, ControlDetailsViewModel>(nameof(ViewModel));
         private SimpleGrid _grid;
 
         public ControlDetailsView()
