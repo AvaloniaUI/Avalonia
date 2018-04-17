@@ -27,6 +27,5 @@
     <TabItem Header="TextBox"><pages:TextBoxPage/></TabItem>
     <TabItem Header="ToolTip"><pages:ToolTipPage/></TabItem>
     <TabItem Header="TreeView"><pages:TreeViewPage/></TabItem>
-    <TabItem Header="Popup"><pages:PopupPage/></TabItem>
   </TabControl>
 </UserControl>

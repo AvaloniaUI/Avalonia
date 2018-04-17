@@ -23,8 +23,6 @@
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Pages\ContextMenuPage.xaml" />
-    <None Remove="Pages\PopupPage.xaml" />
-    <None Remove="Pages\PopupPage.xaml.cs" />
   </ItemGroup>
   <ItemGroup>
     <!-- A reference to the entire .NET Framework is automatically included -->
@@ -86,7 +84,6 @@
     <EmbeddedResource Include="Pages\NumericUpDownPage.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="Pages\PopupPage.xaml" />
     <EmbeddedResource Include="Pages\ProgressBarPage.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
@@ -161,7 +158,6 @@
     <Compile Include="Pages\MenuPage.xaml.cs">
       <DependentUpon>MenuPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Pages\PopupPage.xaml.cs" />
     <Compile Include="Pages\ProgressBarPage.xaml.cs">
       <DependentUpon>ProgressBarPage.xaml</DependentUpon>
     </Compile>
