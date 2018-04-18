@@ -157,8 +157,8 @@ namespace Avalonia
             using (var tokenizer = new StringTokenizer(s, culture, exceptionMessage: "Invalid Size"))
             {
                 return new Size(
-                    tokenizer.NextDoubleRequired(),
-                    tokenizer.NextDoubleRequired());
+                    tokenizer.ReadDouble(),
+                    tokenizer.ReadDouble());
             }
         }
 

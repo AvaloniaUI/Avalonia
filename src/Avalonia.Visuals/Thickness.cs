@@ -171,13 +171,13 @@ namespace Avalonia
         {
             using (var tokenizer = new StringTokenizer(s, culture, exceptionMessage: "Invalid Thickness"))
             {
-                var a = tokenizer.NextDoubleRequired();
+                var a = tokenizer.ReadDouble();
 
-                if (tokenizer.NextDouble(out var b))
+                if (tokenizer.TryReadDouble(out var b))
                 {
-                    if (tokenizer.NextDouble(out var c))
+                    if (tokenizer.TryReadDouble(out var c))
                     {
-                        return new Thickness(a, b, c, tokenizer.NextDoubleRequired());
+                        return new Thickness(a, b, c, tokenizer.ReadDouble());
                     }
 
                     return new Thickness(a, b);

@@ -160,8 +160,8 @@ namespace Avalonia
         {
             using (var tokenizer = new StringTokenizer(s, culture, exceptionMessage: "Invalid RelativePoint"))
             {
-                var x = tokenizer.NextStringRequired();
-                var y = tokenizer.NextStringRequired();
+                var x = tokenizer.ReadString();
+                var y = tokenizer.ReadString();
 
                 var unit = RelativeUnit.Absolute;
                 var scale = 1.0;

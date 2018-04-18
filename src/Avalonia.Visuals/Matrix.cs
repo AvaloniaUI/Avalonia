@@ -321,12 +321,12 @@ namespace Avalonia
             using (var tokenizer = new StringTokenizer(s, culture, exceptionMessage: "Invalid Matrix"))
             {
                 return new Matrix(
-                    tokenizer.NextDoubleRequired(),
-                    tokenizer.NextDoubleRequired(),
-                    tokenizer.NextDoubleRequired(),
-                    tokenizer.NextDoubleRequired(),
-                    tokenizer.NextDoubleRequired(),
-                    tokenizer.NextDoubleRequired()
+                    tokenizer.ReadDouble(),
+                    tokenizer.ReadDouble(),
+                    tokenizer.ReadDouble(),
+                    tokenizer.ReadDouble(),
+                    tokenizer.ReadDouble(),
+                    tokenizer.ReadDouble()
                 );
             }
         }

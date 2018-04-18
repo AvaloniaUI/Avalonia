@@ -173,10 +173,10 @@ namespace Avalonia
         {
             using (var tokenizer = new StringTokenizer(s, culture, exceptionMessage: "Invalid RelativeRect"))
             {
-                var x = tokenizer.NextStringRequired();
-                var y = tokenizer.NextStringRequired();
-                var width = tokenizer.NextStringRequired();
-                var height = tokenizer.NextStringRequired();
+                var x = tokenizer.ReadString();
+                var y = tokenizer.ReadString();
+                var width = tokenizer.ReadString();
+                var height = tokenizer.ReadString();
 
                 var unit = RelativeUnit.Absolute;
                 var scale = 1.0;

@@ -213,7 +213,7 @@ namespace Avalonia.Controls
         {
             using (var tokenizer = new StringTokenizer(s, culture))
             {
-                while (tokenizer.NextString(out var item))
+                while (tokenizer.TryReadString(out var item))
                 {
                     yield return Parse(item, culture);
                 }

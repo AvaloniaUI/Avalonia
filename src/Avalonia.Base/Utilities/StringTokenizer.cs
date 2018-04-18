@@ -50,16 +50,16 @@ namespace Avalonia.Utilities
             }
         }
 
-        public bool NextInt32(out Int32 result, char? separator = null)
+        public bool TryReadInt32(out Int32 result, char? separator = null)
         {
-            var success = NextString(out var stringResult, separator);
+            var success = TryReadString(out var stringResult, separator);
             result = success ? int.Parse(stringResult, _formatProvider) : 0;
             return success;
         }
 
-        public int NextInt32Required(char? separator = null)
+        public int ReadInt32(char? separator = null)
         {
-            if (!NextInt32(out var result, separator))
+            if (!TryReadInt32(out var result, separator))
             {
                 throw GetFormatException();
             }
@@ -67,16 +67,16 @@ namespace Avalonia.Utilities
             return result;
         }
 
-        public bool NextDouble(out double result, char? separator = null)
+        public bool TryReadDouble(out double result, char? separator = null)
         {
-            var success = NextString(out var stringResult, separator);
+            var success = TryReadString(out var stringResult, separator);
             result = success ? double.Parse(stringResult, _formatProvider) : 0;
             return success;
         }
 
-        public double NextDoubleRequired(char? separator = null)
+        public double ReadDouble(char? separator = null)
         {
-            if (!NextDouble(out var result, separator))
+            if (!TryReadDouble(out var result, separator))
             {
                 throw GetFormatException();
             }
@@ -84,16 +84,16 @@ namespace Avalonia.Utilities
             return result;
         }
 
-        public bool NextString(out string result, char? separator = null)
+        public bool TryReadString(out string result, char? separator = null)
         {
-            var success = NextToken(separator ?? _separator);
+            var success = TryReadToken(separator ?? _separator);
             result = CurrentToken;
             return success;
         }
 
-        public string NextStringRequired(char? separator = null)
+        public string ReadString(char? separator = null)
         {
-            if (!NextString(out var result, separator))
+            if (!TryReadString(out var result, separator))
             {
                 throw GetFormatException();
             }
@@ -101,7 +101,7 @@ namespace Avalonia.Utilities
             return result;
         }
 
-        private bool NextToken(char separator)
+        private bool TryReadToken(char separator)
         {
             _tokenIndex = -1;
 
