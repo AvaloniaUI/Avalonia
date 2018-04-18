@@ -2,20 +2,17 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Reactive.Concurrency;
 using System.Threading;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
+using Avalonia.Input.Raw;
 using Avalonia.Layout;
-using Avalonia.Rendering;
+using Avalonia.Platform;
 using Avalonia.Styling;
 using Avalonia.Threading;
-using System.Reactive.Concurrency;
-using Avalonia.Input.DragDrop.Raw;
-using Avalonia.Controls.Platform;
-using Avalonia.Platform;
-using Avalonia.Input.DragDrop;
 
 namespace Avalonia
 {

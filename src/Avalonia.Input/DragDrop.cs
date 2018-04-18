@@ -2,7 +2,7 @@
 using Avalonia.Interactivity;
 using Avalonia.Input.Platform;
 
-namespace Avalonia.Input.DragDrop
+namespace Avalonia.Input
 {
     public static class DragDrop
     {

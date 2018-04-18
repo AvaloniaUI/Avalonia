@@ -5,8 +5,6 @@ using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Input;
-using Avalonia.Input.DragDrop;
-using Avalonia.Input.DragDrop.Raw;
 using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
 using Avalonia.Threading;

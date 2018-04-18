@@ -1,4 +1,4 @@
-﻿namespace Avalonia.Input.DragDrop.Raw
+﻿namespace Avalonia.Input.Raw
 {
     public enum RawDragEventType
     {

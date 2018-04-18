@@ -1,10 +1,9 @@
 ﻿using Avalonia.Interactivity;
 using Avalonia.VisualTree;
 using System.Linq;
-using Avalonia.Input.DragDrop.Raw;
 using Avalonia.Input.Raw;
 
-namespace Avalonia.Input.DragDrop
+namespace Avalonia.Input
 {
     public class DragDropDevice : IDragDropDevice
     {
