@@ -26,17 +26,17 @@ namespace Avalonia.Controls.Utils
 
                 var boundRect = new Rect(finalSize);
                 var innerRect = boundRect.Deflate(borderThickness);
-                var innerCoordinates = GeometryCoordinates.CreateBackgroundCoordinates(cornerRadius, borderThickness);
-
+                BorderGeometryKeypoints backgroundKeypoints = null;
                 StreamGeometry backgroundGeometry = null;
 
                 if (innerRect.Width != 0 && innerRect.Height != 0)
                 {
                     backgroundGeometry = new StreamGeometry();
+                    backgroundKeypoints = new BorderGeometryKeypoints(innerRect, borderThickness, cornerRadius, true);
 
                     using (var ctx = backgroundGeometry.Open())
                     {
-                        CreateGeometry(ctx, innerRect, innerCoordinates);
+                        CreateGeometry(ctx, innerRect, backgroundKeypoints);
                     }
 
                     _backgroundGeometryCache = backgroundGeometry;
@@ -48,16 +48,16 @@ namespace Avalonia.Controls.Utils
 
                 if (boundRect.Width != 0 && innerRect.Height != 0)
                 {
-                    var outerCoordinates = GeometryCoordinates.CreateBorderCoordinates(cornerRadius, borderThickness);
+                    var borderGeometryKeypoints = new BorderGeometryKeypoints(boundRect, borderThickness, cornerRadius, false);
                     var borderGeometry = new StreamGeometry();
 
                     using (var ctx = borderGeometry.Open())
                     {
-                        CreateGeometry(ctx, boundRect, outerCoordinates);
+                        CreateGeometry(ctx, boundRect, borderGeometryKeypoints);
 
                         if (backgroundGeometry != null)
                         {
-                            CreateGeometry(ctx, innerRect, innerCoordinates);
+                            CreateGeometry(ctx, innerRect, backgroundKeypoints);
                         }
                     }
 
@@ -104,188 +104,156 @@ namespace Avalonia.Controls.Utils
             }
         }
 
-        private static void CreateGeometry(StreamGeometryContext context, Rect boundRect, GeometryCoordinates geometryCoordinates)
+        private class BorderGeometryKeypoints
+        {           
+            internal BorderGeometryKeypoints(Rect boundRect, Thickness borderThickness, CornerRadius cornerRadius, bool inner)
+            {
+                var left = 0.5 * borderThickness.Left;
+                var top = 0.5 * borderThickness.Top;
+                var right = 0.5 * borderThickness.Right;
+                var bottom = 0.5 * borderThickness.Bottom;
+
+                double leftTopY;
+                double topLeftX;
+                double topRightX;
+                double rightTopY;
+                double rightBottomY;
+                double bottomRightX;
+                double bottomLeftX;
+                double leftBottomY;
+
+                if (inner)
+                {
+                    leftTopY = Math.Max(0, cornerRadius.TopLeft - top) + boundRect.TopLeft.Y;
+                    topLeftX = Math.Max(0, cornerRadius.TopLeft - left) + boundRect.TopLeft.X;
+                    topRightX = boundRect.Width - Math.Max(0, cornerRadius.TopRight - top) + boundRect.TopLeft.X;
+                    rightTopY = Math.Max(0, cornerRadius.TopRight - right) + boundRect.TopLeft.Y;
+                    rightBottomY = boundRect.Height - Math.Max(0, cornerRadius.BottomRight - bottom) + boundRect.TopLeft.Y;
+                    bottomRightX = boundRect.Width - Math.Max(0, cornerRadius.BottomRight - right) + boundRect.TopLeft.X;
+                    bottomLeftX = Math.Max(0, cornerRadius.BottomLeft - left) + boundRect.TopLeft.X;
+                    leftBottomY = boundRect.Height - Math.Max(0, cornerRadius.BottomLeft - bottom) + boundRect.TopLeft.Y;
+                }
+                else
+                {
+                   
+                    leftTopY = cornerRadius.TopLeft + top + boundRect.TopLeft.Y;
+                    topLeftX = cornerRadius.TopLeft + left + boundRect.TopLeft.X;                   
+                    topRightX = boundRect.Width - (cornerRadius.TopRight + right) + boundRect.TopLeft.X;
+                    rightTopY = cornerRadius.TopRight + top + boundRect.TopLeft.Y;                                   
+                    rightBottomY = boundRect.Height - (cornerRadius.BottomRight + bottom) + boundRect.TopLeft.Y;
+                    bottomRightX = boundRect.Width - (cornerRadius.BottomRight + right) + boundRect.TopLeft.X;                
+                    bottomLeftX = cornerRadius.BottomLeft + left + boundRect.TopLeft.X;               
+                    leftBottomY = boundRect.Height - (cornerRadius.BottomLeft + bottom) + boundRect.TopLeft.Y;
+                }              
+
+                var leftTopX = boundRect.TopLeft.X;               
+                var topLeftY = boundRect.TopLeft.Y;              
+                var topRightY = boundRect.TopLeft.Y;
+                var rightTopX = boundRect.Width + boundRect.TopLeft.X;              
+                var rightBottomX = boundRect.Width + boundRect.TopLeft.X;                             
+                var bottomRightY = boundRect.Height + boundRect.TopLeft.Y;            
+                var bottomLeftY = boundRect.Height + boundRect.TopLeft.Y;
+                var leftBottomX = boundRect.TopLeft.X;           
+
+                LeftTop = new Point(leftTopX, leftTopY);
+                TopLeft = new Point(topLeftX, topLeftY);
+                TopRight = new Point(topRightX, topRightY);
+                RightTop = new Point(rightTopX, rightTopY);
+                RightBottom = new Point(rightBottomX, rightBottomY);
+                BottomRight = new Point(bottomRightX, bottomRightY);
+                BottomLeft = new Point(bottomLeftX, bottomLeftY);
+                LeftBottom = new Point(leftBottomX, leftBottomY);
+
+                //Fix overlap
+                if (TopLeft.X > TopRight.X)
+                {
+                    var scaledX = topLeftX / (topLeftX + topRightX) * boundRect.Width;
+                    TopLeft = new Point(scaledX, TopLeft.Y);
+                    TopRight = new Point(scaledX, TopRight.Y);
+                }
+
+                if (RightTop.Y > RightBottom.Y)
+                {
+                    var scaledY = rightBottomY / (rightTopY + rightBottomY) * boundRect.Height;
+                    RightTop = new Point(RightTop.X, scaledY);
+                    RightBottom = new Point(RightBottom.X, scaledY);
+                }
+
+                if (BottomRight.X < BottomLeft.X)
+                {
+                    var scaledX = bottomLeftX / (bottomLeftX + bottomRightX) * boundRect.Width;
+                    BottomRight = new Point(scaledX, BottomRight.Y);
+                    BottomLeft = new Point(scaledX, BottomLeft.Y);
+                }
+
+                if (LeftBottom.Y < LeftTop.Y)
+                {
+                    var scaledY = leftTopY / (leftTopY + leftBottomY) * boundRect.Height;
+                    LeftBottom = new Point(LeftBottom.X, scaledY);
+                    LeftTop = new Point(LeftTop.X, scaledY);
+                }
+            }
+
+            internal Point LeftTop { get; private set; }
+            internal Point TopLeft { get; private set; }
+            internal Point TopRight { get; private set; }
+            internal Point RightTop { get; private set; }
+            internal Point RightBottom { get; private set; }
+            internal Point BottomRight { get; private set; }
+            internal Point BottomLeft { get; private set; }
+            internal Point LeftBottom { get; private set; }
+        }
+
+        private static void CreateGeometry(StreamGeometryContext context, Rect boundRect, BorderGeometryKeypoints keypoints)
         {
-            var topLeft = new Point(geometryCoordinates.LeftTop, 0);
-            var topRight = new Point(boundRect.Width - geometryCoordinates.RightTop, 0);
-            var rightTop = new Point(boundRect.Width, geometryCoordinates.TopRight);
-            var rightBottom = new Point(boundRect.Width, boundRect.Height - geometryCoordinates.BottomRight);
-            var bottomRight = new Point(boundRect.Width - geometryCoordinates.RightBottom, boundRect.Height);
-            var bottomLeft = new Point(geometryCoordinates.LeftBottom, boundRect.Height);
-            var leftBottom = new Point(0, boundRect.Height - geometryCoordinates.BottomLeft);
-            var leftTop = new Point(0, geometryCoordinates.TopLeft);
-
-            if (topLeft.X > topRight.X)
-            {
-                var scaledX = geometryCoordinates.LeftTop / (geometryCoordinates.LeftTop + geometryCoordinates.RightTop) * boundRect.Width;
-                topLeft = new Point(scaledX, topLeft.Y);
-                topRight = new Point(scaledX, topRight.Y);
-            }
-
-            if (rightTop.Y > rightBottom.Y)
-            {
-                var scaledY = geometryCoordinates.TopRight / (geometryCoordinates.TopRight + geometryCoordinates.BottomRight) * boundRect.Height;
-                rightTop = new Point(rightTop.X, scaledY);
-                rightBottom = new Point(rightBottom.X, scaledY);
-            }
-
-            if (bottomRight.X < bottomLeft.X)
-            {
-                var scaledX = geometryCoordinates.LeftBottom / (geometryCoordinates.LeftBottom + geometryCoordinates.RightBottom) * boundRect.Width;
-                bottomRight = new Point(scaledX, bottomRight.Y);
-                bottomLeft = new Point(scaledX, bottomLeft.Y);
-            }
-
-            if (leftBottom.Y < leftTop.Y)
-            {
-                var scaledY = geometryCoordinates.TopLeft / (geometryCoordinates.TopLeft + geometryCoordinates.BottomLeft) * boundRect.Height;
-                leftBottom = new Point(leftBottom.X, scaledY);
-                leftTop = new Point(leftTop.X, scaledY);
-            }
-
-            var offset = new Vector(boundRect.TopLeft.X, boundRect.TopLeft.Y);
-            topLeft += offset;
-            topRight += offset;
-            rightTop += offset;
-            rightBottom += offset;
-            bottomRight += offset;
-            bottomLeft += offset;
-            leftBottom += offset;
-            leftTop += offset;
-
-            context.BeginFigure(topLeft, true);
+            context.BeginFigure(keypoints.TopLeft, true);
 
             //Top
-            context.LineTo(topRight);
+            context.LineTo(keypoints.TopRight);
 
             //TopRight corner
-            var radiusX = boundRect.TopRight.X - topRight.X;
-            var radiusY = rightTop.Y - boundRect.TopRight.Y;
+            var radiusX = boundRect.TopRight.X - keypoints.TopRight.X;
+            var radiusY = keypoints.RightTop.Y - boundRect.TopRight.Y;
             if (radiusX != 0 || radiusY != 0)
             {
-                context.ArcTo(rightTop, new Size(radiusY, radiusY), 0, false, SweepDirection.Clockwise);
+                context.ArcTo(keypoints.RightTop, new Size(radiusY, radiusY), 0, false, SweepDirection.Clockwise);
             }
 
             //Right
-            context.LineTo(rightBottom);
+            context.LineTo(keypoints.RightBottom);
 
             //BottomRight corner
-            radiusX = boundRect.BottomRight.X - bottomRight.X;
-            radiusY = boundRect.BottomRight.Y - rightBottom.Y;
+            radiusX = boundRect.BottomRight.X - keypoints.BottomRight.X;
+            radiusY = boundRect.BottomRight.Y - keypoints.RightBottom.Y;
             if (radiusX != 0 || radiusY != 0)
             {
-                context.ArcTo(bottomRight, new Size(radiusX, radiusY), 0, false, SweepDirection.Clockwise);
+                context.ArcTo(keypoints.BottomRight, new Size(radiusX, radiusY), 0, false, SweepDirection.Clockwise);
             }
 
             //Bottom
-            context.LineTo(bottomLeft);
+            context.LineTo(keypoints.BottomLeft);
 
             //BottomLeft corner
-            radiusX = bottomLeft.X - boundRect.BottomLeft.X;
-            radiusY = boundRect.BottomLeft.Y - leftBottom.Y;
+            radiusX = keypoints.BottomLeft.X - boundRect.BottomLeft.X;
+            radiusY = boundRect.BottomLeft.Y - keypoints.LeftBottom.Y;
             if (radiusX != 0 || radiusY != 0)
             {
-                context.ArcTo(leftBottom, new Size(radiusX, radiusY), 0, false, SweepDirection.Clockwise);
+                context.ArcTo(keypoints.LeftBottom, new Size(radiusX, radiusY), 0, false, SweepDirection.Clockwise);
             }
 
             //Left
-            context.LineTo(leftTop);
+            context.LineTo(keypoints.LeftTop);
 
             //TopLeft corner
-            radiusX = topLeft.X - boundRect.TopLeft.X;
-            radiusY = leftTop.Y - boundRect.TopLeft.Y;
+            radiusX = keypoints.TopLeft.X - boundRect.TopLeft.X;
+            radiusY = keypoints.LeftTop.Y - boundRect.TopLeft.Y;
 
             if (radiusX != 0 || radiusY != 0)
             {
-                context.ArcTo(topLeft, new Size(radiusX, radiusY), 0, false, SweepDirection.Clockwise);
+                context.ArcTo(keypoints.TopLeft, new Size(radiusX, radiusY), 0, false, SweepDirection.Clockwise);
             }
 
             context.EndFigure(true);
         }
-
-        private struct GeometryCoordinates
-        {
-            internal static GeometryCoordinates CreateBorderCoordinates(CornerRadius cornerRadius, Thickness borderThickness)
-            {
-                var left = 0.5 * borderThickness.Left;
-                var top = 0.5 * borderThickness.Top;
-                var right = 0.5 * borderThickness.Right;
-                var bottom = 0.5 * borderThickness.Bottom;
-
-                var leftTop = 0.0;
-                var topLeft = 0.0;
-                if (cornerRadius.TopLeft != 0)
-                {
-                    leftTop = cornerRadius.TopLeft + left;
-                    topLeft = cornerRadius.TopLeft + top;
-                }
-
-                var topRight = 0.0;
-                var rightTop = 0.0;
-                if (cornerRadius.TopRight != 0)
-                {
-                    topRight = cornerRadius.TopRight + top;
-                    rightTop = cornerRadius.TopRight + right;
-                }
-
-                var rightBottom = 0.0;
-                var bottomRight = 0.0;
-                if (cornerRadius.BottomRight != 0)
-                {
-                    rightBottom = cornerRadius.BottomRight + right;
-                    bottomRight = cornerRadius.BottomRight + bottom;
-                }
-
-                var bottomLeft = 0.0;
-                var leftBottom = 0.0;
-                if (cornerRadius.BottomLeft != 0)
-                {
-                    bottomLeft = cornerRadius.BottomLeft + bottom;
-                    leftBottom = cornerRadius.BottomLeft + left;
-                }
-
-                return new GeometryCoordinates
-                {
-                    LeftTop = leftTop,
-                    TopLeft = topLeft,
-                    TopRight = topRight,
-                    RightTop = rightTop,
-                    RightBottom = rightBottom,
-                    BottomRight = bottomRight,
-                    BottomLeft = bottomLeft,
-                    LeftBottom = leftBottom,
-                };
-            }
-
-            internal static GeometryCoordinates CreateBackgroundCoordinates(CornerRadius cornerRadius, Thickness borderThickness)
-            {
-                var left = 0.5 * borderThickness.Left;
-                var top = 0.5 * borderThickness.Top;
-                var right = 0.5 * borderThickness.Right;
-                var bottom = 0.5 * borderThickness.Bottom;
-
-                return new GeometryCoordinates
-                {
-                    LeftTop = Math.Max(0, cornerRadius.TopLeft - left),
-                    TopLeft = Math.Max(0, cornerRadius.TopLeft - top),
-                    TopRight = Math.Max(0, cornerRadius.TopRight - top),
-                    RightTop = Math.Max(0, cornerRadius.TopRight - right),
-                    RightBottom = Math.Max(0, cornerRadius.BottomRight - right),
-                    BottomRight = Math.Max(0, cornerRadius.BottomRight - bottom),
-                    BottomLeft = Math.Max(0, cornerRadius.BottomLeft - bottom),
-                    LeftBottom = Math.Max(0, cornerRadius.BottomLeft - left),
-                };
-            }
-
-            internal double LeftTop { get; private set; }
-            internal double TopLeft { get; private set; }
-            internal double TopRight { get; private set; }
-            internal double RightTop { get; private set; }
-            internal double RightBottom { get; private set; }
-            internal double BottomRight { get; private set; }
-            internal double BottomLeft { get; private set; }
-            internal double LeftBottom { get; private set; }
-        }
-
     }
 }

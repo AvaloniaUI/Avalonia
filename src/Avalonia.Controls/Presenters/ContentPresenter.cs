@@ -341,8 +341,8 @@ namespace Avalonia.Controls.Presenters
             var horizontalContentAlignment = HorizontalContentAlignment;
             var verticalContentAlignment = VerticalContentAlignment;
             var useLayoutRounding = UseLayoutRounding;
-            var availableSizeMinusMargins = finalSize;
-            var sizeForChild = availableSizeMinusMargins;
+            var availableSize = finalSize;
+            var sizeForChild = availableSize;
             var scale = GetLayoutScale();
             var originX = offset.X;
             var originY = offset.Y;
@@ -362,28 +362,28 @@ namespace Avalonia.Controls.Presenters
                 sizeForChild = new Size(
                     Math.Ceiling(sizeForChild.Width * scale) / scale,
                     Math.Ceiling(sizeForChild.Height * scale) / scale);
-                availableSizeMinusMargins = new Size(
-                    Math.Ceiling(availableSizeMinusMargins.Width * scale) / scale,
-                    Math.Ceiling(availableSizeMinusMargins.Height * scale) / scale);
+                availableSize = new Size(
+                    Math.Ceiling(availableSize.Width * scale) / scale,
+                    Math.Ceiling(availableSize.Height * scale) / scale);
             }
 
             switch (horizontalContentAlignment)
             {
                 case HorizontalAlignment.Center:
-                    originX += (availableSizeMinusMargins.Width - sizeForChild.Width) / 2;
+                    originX += (availableSize.Width - sizeForChild.Width) / 2;
                     break;
                 case HorizontalAlignment.Right:
-                    originX += availableSizeMinusMargins.Width - sizeForChild.Width;
+                    originX += availableSize.Width - sizeForChild.Width;
                     break;
             }
 
             switch (verticalContentAlignment)
             {
                 case VerticalAlignment.Center:
-                    originY += (availableSizeMinusMargins.Height - sizeForChild.Height) / 2;
+                    originY += (availableSize.Height - sizeForChild.Height) / 2;
                     break;
                 case VerticalAlignment.Bottom:
-                    originY += availableSizeMinusMargins.Height - sizeForChild.Height;
+                    originY += availableSize.Height - sizeForChild.Height;
                     break;
             }
 
