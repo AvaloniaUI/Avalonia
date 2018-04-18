@@ -86,6 +86,9 @@ namespace Avalonia.Win32
                 .Bind<IWindowingPlatform>().ToConstant(s_instance)
                 .Bind<IPlatformIconLoader>().ToConstant(s_instance);
 
+            if (OleContext.Current != null)
+                AvaloniaLocator.CurrentMutable.Bind<IPlatformDragSource>().ToSingleton<DragSource>();
+
             UseDeferredRendering = deferredRendering;
             _uiThread = UnmanagedMethods.GetCurrentThreadId();
         }
