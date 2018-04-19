@@ -34,26 +34,21 @@ namespace Avalonia.Media
         /// <returns>The <see cref="Color"/>.</returns>
         public static IBrush Parse(string s)
         {
+            Contract.Requires<ArgumentNullException>(s != null);
+            Contract.Requires<FormatException>(s.Length > 0);
+
             if (s[0] == '#')
             {
                 return new SolidColorBrush(Color.Parse(s));
             }
-            else
-            {
-                var upper = s.ToUpperInvariant();
-                var member = typeof(Brushes).GetTypeInfo().DeclaredProperties
-                    .FirstOrDefault(x => x.Name.ToUpperInvariant() == upper);
 
-                if (member != null)
-                {
-                    var brush = (ISolidColorBrush)member.GetValue(null);
-                    return new SolidColorBrush(brush.Color, brush.Opacity);
-                }
-                else
-                {
-                    throw new FormatException($"Invalid brush string: '{s}'.");
-                }
+            var brush = KnownColors.GetKnownBrush(s);
+            if (brush != null)
+            {
+                return brush;
             }
+
+            throw new FormatException($"Invalid brush string: '{s}'.");
         }
     }
 }

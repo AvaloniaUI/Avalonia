@@ -32,7 +32,10 @@ namespace Avalonia.Gtk3
             {StandardCursorType.TopLeftCorner, CursorType.TopLeftCorner},
             {StandardCursorType.TopRightCorner, CursorType.TopRightCorner},
             {StandardCursorType.BottomLeftCorner, CursorType.BottomLeftCorner},
-            {StandardCursorType.BottomRightCorner, CursorType.BottomRightCorner}
+            {StandardCursorType.BottomRightCorner, CursorType.BottomRightCorner},
+            {StandardCursorType.DragCopy, CursorType.CenterPtr},
+            {StandardCursorType.DragMove, CursorType.Fleur},
+            {StandardCursorType.DragLink, CursorType.Cross},
         };
 
         private static readonly Dictionary<StandardCursorType, IPlatformHandle> Cache =
