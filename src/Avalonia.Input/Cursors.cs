@@ -38,7 +38,10 @@ namespace Avalonia.Input
         TopLeftCorner,
         TopRightCorner,
         BottomLeftCorner,
-        BottomRightCorner
+        BottomRightCorner,
+        DragMove,
+        DragCopy,
+        DragLink,
 
         // Not available in GTK directly, see http://www.pixelbeat.org/programming/x_cursors/ 
         // We might enable them later, preferably, by loading pixmax direclty from theme with fallback image
