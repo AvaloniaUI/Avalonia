@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Disposables;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
@@ -35,7 +36,7 @@ namespace Avalonia.Utilities
 
             sub.Add(new WeakReference<IWeakSubscriber<TEventArgs>>(subscriber));
         }
-
+        
         /// <summary>
         /// Unsubscribes from an event.
         /// </summary>
@@ -57,6 +58,15 @@ namespace Avalonia.Utilities
                     sub.Remove(subscriber);
                 }
             }
+        }
+
+        public static IDisposable Subscribe<TTarget, TEventArgs>(TTarget target, string eventName, Action<object, TEventArgs> action)
+            where TEventArgs : EventArgs
+        {
+            var subscriber = new FuncWeakSubscriber<TEventArgs>(action);
+
+            Subscribe(target, eventName, subscriber);
+            return Disposable.Create(() => Unsubscribe(target, eventName, subscriber));
         }
 
         private static class SubscriptionTypeStorage<T>
@@ -191,6 +201,21 @@ namespace Avalonia.Utilities
                 if (needCompact)
                     Compact();
             }
+        }
+    }
+
+    public class FuncWeakSubscriber<T> : IWeakSubscriber<T>
+        where T : EventArgs
+    {
+        private readonly Action<object, T> _action;
+        public FuncWeakSubscriber(Action<object, T> action)
+        {
+            _action = action;
+        }
+
+        public void OnEvent(object sender, T e)
+        {
+            _action?.Invoke(sender, e);
         }
     }
 }
