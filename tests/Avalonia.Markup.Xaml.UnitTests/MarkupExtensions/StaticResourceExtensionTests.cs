@@ -323,7 +323,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             Assert.Equal(0xff506070, brush.Color.ToUint32());
         }
 
-        [Fact(Skip = "Not yet supported by Portable.Xaml")]
+        [Fact(/*Skip = "Not yet supported by Portable.Xaml"*/)]
         public void StaticResource_Can_Be_Assigned_To_Property_In_ControlTemplate_In_Styles_File()
         {
             var styleXaml = @"
@@ -413,6 +413,40 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 window.DataContext = "foo";
                 window.ApplyTemplate();
 
+                Assert.Equal("foobar", textBlock.Text);
+            }
+        }
+
+        [Fact]
+        public void StaticResource_Can_Be_Assigned_To_Converter_In_DataTemplate()
+        {
+            using (StyledWindow())
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+             xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'>
+    <Window.Resources>
+        <local:TestValueConverter x:Key='converter' Append='bar'/>
+        <DataTemplate x:Key='PurpleData'>
+          <TextBlock Name='textBlock' Text='{Binding Converter={StaticResource converter}}' Background='Purple'/>
+        </DataTemplate>
+    </Window.Resources>
+
+    <ContentPresenter Name='presenter' Content='foo' ContentTemplate='{StaticResource PurpleData}'/>
+</Window>";
+
+                var loader = new AvaloniaXamlLoader();
+                var window = (Window)loader.Load(xaml);
+
+                window.DataContext = "foo";
+                var presenter = window.FindControl<ContentPresenter>("presenter");
+
+                window.Show();
+
+                var textBlock = (TextBlock)presenter.GetVisualChildren().Single();
+
+                Assert.NotNull(textBlock);
                 Assert.Equal("foobar", textBlock.Text);
             }
         }
