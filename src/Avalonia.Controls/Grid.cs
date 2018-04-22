@@ -726,6 +726,7 @@ namespace Avalonia.Controls
                     double newsize = segmentSize;
                     newsize += contribution * (type == GridUnitType.Star ? matrix[i, i].Stars : 1);
                     newsize = Math.Min(newsize, matrix[i, i].Max);
+                    newsize = Math.Max(newsize, matrix[i, i].Min);
                     assigned |= newsize > segmentSize;
                     size -= newsize - segmentSize;
 
