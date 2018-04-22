@@ -857,15 +857,48 @@ namespace Avalonia.Controls
             }
         }
 
+        /// <summary>
+        /// Stores the layout values of of <see cref="RowDefinitions"/> of <see cref="ColumnDefinitions"/>.
+        /// </summary>
         private struct Segment
         {
+            /// <summary>
+            /// Gets or sets the base size of this segment.
+            /// The value is from the user's code or from the stored measuring values.
+            /// </summary>
             public double OriginalSize;
-            public double Max;
-            public double Min;
+
+            /// <summary>
+            /// Gets the maximum size of this segment.
+            /// The value is from the user's code.
+            /// </summary>
+            public readonly double Max;
+
+            /// <summary>
+            /// Gets the minimum size of this segment.
+            /// The value is from the user's code.
+            /// </summary>
+            public readonly double Min;
+
+            /// <summary>
+            /// Gets or sets the row/column partial desired size of the <see cref="Grid"/>.
+            /// </summary>
             public double DesiredSize;
+
+            /// <summary>
+            /// Gets or sets the row/column offered size that will be used to measure the children.
+            /// </summary>
             public double OfferedSize;
+
+            /// <summary>
+            /// Gets or sets the star unit size if the <see cref="Type"/> is <see cref="GridUnitType.Star"/>.
+            /// </summary>
             public double Stars;
-            public GridUnitType Type;
+
+            /// <summary>
+            /// Gets the segment size unit type.
+            /// </summary>
+            public readonly GridUnitType Type;
 
             public Segment(double offeredSize, double min, double max, GridUnitType type)
             {
