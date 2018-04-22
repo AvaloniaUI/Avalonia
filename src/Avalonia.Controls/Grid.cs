@@ -235,6 +235,9 @@ namespace Avalonia.Controls
                     }
                     else if (height.GridUnitType == GridUnitType.Star)
                     {
+                        _rowMatrix[i, i].OfferedSize = Clamp(0, _rowMatrix[i, i].Min, _rowMatrix[i, i].Max);
+                        _rowMatrix[i, i].DesiredSize = _rowMatrix[i, i].OfferedSize;
+
                         _rowMatrix[i, i].Stars = height.Value;
                         totalStarsY += height.Value;
                     }
@@ -270,6 +273,9 @@ namespace Avalonia.Controls
                     }
                     else if (width.GridUnitType == GridUnitType.Star)
                     {
+                        _colMatrix[i, i].OfferedSize = Clamp(0, _colMatrix[i, i].Min, _colMatrix[i, i].Max);
+                        _colMatrix[i, i].DesiredSize = _colMatrix[i, i].OfferedSize;
+
                         _colMatrix[i, i].Stars = width.Value;
                         totalStarsX += width.Value;
                     }
@@ -725,9 +731,10 @@ namespace Avalonia.Controls
 
                     double newsize = segmentSize;
                     newsize += contribution * (type == GridUnitType.Star ? matrix[i, i].Stars : 1);
+                    double newSizeIgnoringMinMax = newsize;
                     newsize = Math.Min(newsize, matrix[i, i].Max);
                     newsize = Math.Max(newsize, matrix[i, i].Min);
-                    assigned |= newsize > segmentSize;
+                    assigned |= !Equals(newsize, newSizeIgnoringMinMax);
                     size -= newsize - segmentSize;
 
                     if (desiredSize)
