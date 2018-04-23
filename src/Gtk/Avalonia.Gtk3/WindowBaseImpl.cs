@@ -439,6 +439,15 @@ namespace Avalonia.Gtk3
         {
             if (GtkWidget.IsClosed)
                 return;
+
+            GdkGeometry geometry = new GdkGeometry();
+            geometry.min_width = MinWidth > 0 ? (int)MinWidth : -1;
+            geometry.min_height = MinHeight > 0 ? (int)MinHeight : -1;
+            geometry.max_width = !Double.IsInfinity(MaxWidth) && MaxWidth > 0 ? (int)MaxWidth : 999999;
+            geometry.max_height = !Double.IsInfinity(MaxHeight) && MaxHeight > 0 ? (int)MaxHeight : 999999;
+            
+            Native.GtkWindowSetGeometryHints(GtkWidget, IntPtr.Zero, ref geometry, GdkWindowHints.GDK_HINT_MIN_SIZE | GdkWindowHints.GDK_HINT_MAX_SIZE);                
+
             Native.GtkWindowResize(GtkWidget, (int)value.Width, (int)value.Height);
             if (OverrideRedirect)
             {
