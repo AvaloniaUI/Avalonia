@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Avalonia.Input.DragDrop
+namespace Avalonia.Input
 {
     /// <summary>
     /// Interface to access information about the data of a drag-and-drop operation.

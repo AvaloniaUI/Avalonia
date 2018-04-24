@@ -1,6 +1,7 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
 using System.Globalization;
 using Xunit;
 
@@ -24,6 +25,13 @@ namespace Avalonia.Visuals.UnitTests
             var result = RelativeRect.Parse("10%, 20%, 40%, 70%", CultureInfo.InvariantCulture);
 
             Assert.Equal(new RelativeRect(0.1, 0.2, 0.4, 0.7, RelativeUnit.Relative), result, Compare);
+        }
+
+        [Fact]
+        public void Parse_Should_Throw_Mixed_Values()
+        {
+            Assert.Throws<FormatException>(() =>
+                RelativeRect.Parse("10%, 20%, 40, 70%", CultureInfo.InvariantCulture));
         }
     }
 }

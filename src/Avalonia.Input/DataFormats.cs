@@ -1,4 +1,4 @@
-﻿namespace Avalonia.Input.DragDrop
+﻿namespace Avalonia.Input
 {
     public static class DataFormats
     {

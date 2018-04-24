@@ -1,9 +1,8 @@
-﻿using Avalonia.Input.DragDrop;
-using Avalonia.Input.DragDrop.Raw;
-using Avalonia.Input;
+﻿using Avalonia.Input;
+using Avalonia.Input.Raw;
 using Avalonia.Platform;
 using Avalonia.Win32.Interop;
-using IDataObject = Avalonia.Input.DragDrop.IDataObject;
+using IDataObject = Avalonia.Input.IDataObject;
 using IOleDataObject = System.Runtime.InteropServices.ComTypes.IDataObject;
 
 namespace Avalonia.Win32

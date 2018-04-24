@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Avalonia.Input.DragDrop
+namespace Avalonia.Input
 {
     [Flags]
     public enum DragDropEffects
