@@ -35,6 +35,9 @@ namespace Avalonia.Win32
         private WindowState _showWindowState;
         private FramebufferManager _framebuffer;
         private OleDropTarget _dropTarget;
+        private Size _minSize;
+        private Size _maxSize;
+
 #if USE_MANAGED_DRAG
         private readonly ManagedWindowResizeDragHelper _managedDrag;
 #endif
@@ -102,13 +105,11 @@ namespace Avalonia.Win32
             }
         }
 
-        public double MinWidth { get; set; }
-
-        public double MaxWidth { get; set; }
-
-        public double MinHeight { get; set; }
-
-        public double MaxHeight { get; set; }
+        public void SetMinMaxSize(Size minSize, Size maxSize)
+        {
+            _minSize = minSize;
+            _maxSize = maxSize;
+        }
 
         public IScreenImpl Screen
         {
@@ -624,17 +625,17 @@ namespace Avalonia.Win32
 
                     MINMAXINFO mmi = Marshal.PtrToStructure<UnmanagedMethods.MINMAXINFO>(lParam);
 
-                    if  (MinWidth > 0)
-                        mmi.ptMinTrackSize.X = (int)((MinWidth * Scaling) + BorderThickness.Left + BorderThickness.Right);
+                    if  (_minSize.Width > 0)
+                        mmi.ptMinTrackSize.X = (int)((_minSize.Width * Scaling) + BorderThickness.Left + BorderThickness.Right);
 
-                    if (MinHeight > 0)
-                        mmi.ptMinTrackSize.Y = (int)((MinHeight * Scaling) + BorderThickness.Top + BorderThickness.Bottom);
+                    if (_minSize.Height > 0)
+                        mmi.ptMinTrackSize.Y = (int)((_minSize.Height * Scaling) + BorderThickness.Top + BorderThickness.Bottom);
 
-                    if (!Double.IsInfinity(MaxWidth) && MaxWidth > 0)
-                        mmi.ptMaxTrackSize.X = (int)((MaxWidth * Scaling) + BorderThickness.Left + BorderThickness.Right);
+                    if (!Double.IsInfinity(_maxSize.Width) && _maxSize.Width > 0)
+                        mmi.ptMaxTrackSize.X = (int)((_maxSize.Width * Scaling) + BorderThickness.Left + BorderThickness.Right);
 
-                    if (!Double.IsInfinity(MaxHeight) && MaxHeight > 0)
-                        mmi.ptMaxTrackSize.Y = (int)((MaxHeight * Scaling) + BorderThickness.Top + BorderThickness.Bottom);
+                    if (!Double.IsInfinity(_maxSize.Height) && _maxSize.Height > 0)
+                        mmi.ptMaxTrackSize.Y = (int)((_maxSize.Height * Scaling) + BorderThickness.Top + BorderThickness.Bottom);
 
                     Marshal.StructureToPtr(mmi, lParam, true);
                     return IntPtr.Zero;

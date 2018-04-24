@@ -69,22 +69,8 @@ namespace Avalonia.Platform
         /// <summary>
         /// Minimum width of the window.
         /// </summary>
-        double MinWidth { get; set; }
-
-        /// <summary>
-        /// Maximum width of the window.
-        /// </summary>
-        double MaxWidth { get; set; }
-
-        /// <summary>
-        /// Minimum height of the window.
-        /// </summary>
-        double MinHeight { get; set; }
-
-        /// <summary>
-        /// Maximum height of the window.
-        /// </summary>
-        double MaxHeight { get; set; }
+        /// 
+        void SetMinMaxSize(Size minSize, Size maxSize);
 
         /// <summary>
         /// Gets platform specific display information
