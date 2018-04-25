@@ -48,6 +48,7 @@ namespace Avalonia.Markup.Xaml.PortableXaml
             //{ typeof(Uri), typeof(Converters.UriTypeConverter) },
             { typeof(Cursor), typeof(CursorTypeConverter) },
             { typeof(WindowIcon), typeof(IconTypeConverter) },
+            { typeof(DataGridLength), typeof(DataGridLengthConverter) }
             //{ typeof(FontWeight), typeof(FontWeightConverter) },
         };
 
