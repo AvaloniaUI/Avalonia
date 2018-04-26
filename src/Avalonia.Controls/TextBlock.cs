@@ -120,6 +120,7 @@ namespace Avalonia.Controls
                 .Subscribe(_ =>
                 {
                     InvalidateFormattedText();
+                    InvalidateMeasure();
                 });
         }
 
@@ -370,8 +371,6 @@ namespace Avalonia.Controls
                 _constraint = _formattedText.Constraint;
                 _formattedText = null;
             }
-
-            InvalidateMeasure();
         }
 
         /// <summary>
@@ -402,6 +401,7 @@ namespace Avalonia.Controls
         {
             base.OnAttachedToLogicalTree(e);
             InvalidateFormattedText();
+            InvalidateMeasure();
         }
     }
 }
