@@ -215,7 +215,17 @@ namespace Avalonia.Controls.Primitives
             {
                 var window = _topLevel as Window;
                 if (window != null)
-                    window.Deactivated += WindowDeactivated;
+                {
+                    window.Deactivated += WindowDeactivated;                  
+                }
+                else
+                {
+                    var parentPopuproot = _topLevel as PopupRoot;
+                    if(parentPopuproot != null && parentPopuproot.Parent!=null)
+                    {
+                        ((Popup)(parentPopuproot.Parent)).Closed += ParentClosed;
+                    }
+                }
                 _topLevel.AddHandler(PointerPressedEvent, PointerPressedOutside, RoutingStrategies.Tunnel);
                 _nonClientListener = InputManager.Instance.Process.Subscribe(ListenForNonClientClick);
             }
@@ -230,7 +240,7 @@ namespace Avalonia.Controls.Primitives
 
             Opened?.Invoke(this, EventArgs.Empty);
         }
-
+        
         /// <summary>
         /// Closes the popup.
         /// </summary>
@@ -244,6 +254,14 @@ namespace Avalonia.Controls.Primitives
                     var window = _topLevel as Window;
                     if (window != null)
                         window.Deactivated -= WindowDeactivated;
+                    else
+                    {
+                        var parentPopuproot = _topLevel as PopupRoot;
+                        if (parentPopuproot != null && parentPopuproot.Parent != null)
+                        {
+                            ((Popup)parentPopuproot.Parent).Closed -= ParentClosed;
+                        }
+                    }
                     _nonClientListener?.Dispose();
                     _nonClientListener = null;
                 }
@@ -381,17 +399,34 @@ namespace Avalonia.Controls.Primitives
         {
             if (!StaysOpen)
             {
-                var root = ((IVisual)e.Source).GetVisualRoot();
-
-                if (root != this.PopupRoot)
-                {
+                if(!IsChildOrThis((IVisual)e.Source))
+                {                     
                     Close();
                     e.Handled = true;
                 }
             }
         }
 
+        private bool IsChildOrThis(IVisual child)
+        {
+            IVisual root = child.GetVisualRoot();
+            while (root is PopupRoot)
+            {
+                if (root == PopupRoot) return true;              
+                root = ((PopupRoot)root).Parent.GetVisualRoot();
+            }
+            return false;
+        }
+        
         private void WindowDeactivated(object sender, EventArgs e)
+        {
+            if (!StaysOpen)
+            {
+                Close();
+            }
+        }
+
+        private void ParentClosed(object sender, EventArgs e)
         {
             if (!StaysOpen)
             {
