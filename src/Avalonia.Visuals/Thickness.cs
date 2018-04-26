@@ -1,6 +1,7 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using Avalonia.Utilities;
 using System;
 using System.Globalization;
 using System.Linq;
@@ -90,7 +91,12 @@ namespace Avalonia
         /// <summary>
         /// Gets a value indicating whether all sides are set to 0.
         /// </summary>
-        public bool IsEmpty => Left == 0 && Top == 0 && Right == 0 && Bottom == 0;
+        public bool IsEmpty => Left.Equals(0) && IsUniform;
+
+        /// <summary>
+        /// Gets a value indicating whether all sides are equal.
+        /// </summary>
+        public bool IsUniform => Left.Equals(Right) && Top.Equals(Bottom) && Right.Equals(Bottom);
 
         /// <summary>
         /// Compares two Thicknesses.
@@ -163,28 +169,22 @@ namespace Avalonia
         /// <returns>The <see cref="Thickness"/>.</returns>
         public static Thickness Parse(string s, CultureInfo culture)
         {
-            var parts = s.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries)
-                .Select(x => x.Trim())
-                .ToList();
-
-            switch (parts.Count)
+            using (var tokenizer = new StringTokenizer(s, culture, exceptionMessage: "Invalid Thickness"))
             {
-                case 1:
-                    var uniform = double.Parse(parts[0], culture);
-                    return new Thickness(uniform);
-                case 2:
-                    var horizontal = double.Parse(parts[0], culture);
-                    var vertical = double.Parse(parts[1], culture);
-                    return new Thickness(horizontal, vertical);
-                case 4:
-                    var left = double.Parse(parts[0], culture);
-                    var top = double.Parse(parts[1], culture);
-                    var right = double.Parse(parts[2], culture);
-                    var bottom = double.Parse(parts[3], culture);
-                    return new Thickness(left, top, right, bottom);
-            }
+                var a = tokenizer.ReadDouble();
 
-            throw new FormatException("Invalid Thickness.");
+                if (tokenizer.TryReadDouble(out var b))
+                {
+                    if (tokenizer.TryReadDouble(out var c))
+                    {
+                        return new Thickness(a, b, c, tokenizer.ReadDouble());
+                    }
+
+                    return new Thickness(a, b);
+                }
+                
+                return new Thickness(a);
+            }
         }
 
         /// <summary>

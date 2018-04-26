@@ -34,6 +34,7 @@ namespace Avalonia.Win32
         private double _scaling = 1;
         private WindowState _showWindowState;
         private FramebufferManager _framebuffer;
+        private OleDropTarget _dropTarget;
 #if USE_MANAGED_DRAG
         private readonly ManagedWindowResizeDragHelper _managedDrag;
 #endif
@@ -310,6 +311,7 @@ namespace Avalonia.Win32
         public void SetInputRoot(IInputRoot inputRoot)
         {
             _owner = inputRoot;
+            CreateDropTarget();
         }
 
         public void SetTitle(string title)
@@ -697,6 +699,13 @@ namespace Avalonia.Win32
                     _scaling = dpix / 96.0;
                 }
             }
+        }
+
+        private void CreateDropTarget()
+        {
+            OleDropTarget odt = new OleDropTarget(this, _owner);
+            if (OleContext.Current?.RegisterDragDrop(Handle, odt) ?? false)
+                _dropTarget = odt;
         }
 
         private Point DipFromLParam(IntPtr lParam)

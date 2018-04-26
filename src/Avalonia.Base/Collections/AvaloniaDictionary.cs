@@ -117,7 +117,7 @@ namespace Avalonia.Collections
             _inner = new Dictionary<TKey, TValue>();
 
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Count"));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs($"Item[]"));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Item[]"));
             
 
             if (CollectionChanged != null)

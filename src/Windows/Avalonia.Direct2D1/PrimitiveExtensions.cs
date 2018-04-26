@@ -103,7 +103,7 @@ namespace Avalonia.Direct2D1
         /// Converts a pen to a Direct2D stroke style.
         /// </summary>
         /// <param name="pen">The pen to convert.</param>
-        /// <param name="target">The render target.</param>
+        /// <param name="renderTarget">The render target.</param>
         /// <returns>The Direct2D brush.</returns>
         public static StrokeStyle ToDirect2DStrokeStyle(this Avalonia.Media.Pen pen, SharpDX.Direct2D1.RenderTarget renderTarget)
         {
@@ -114,7 +114,7 @@ namespace Avalonia.Direct2D1
         /// Converts a pen to a Direct2D stroke style.
         /// </summary>
         /// <param name="pen">The pen to convert.</param>
-        /// <param name="target">The render target.</param>
+        /// <param name="factory">The factory associated with this resource.</param>
         /// <returns>The Direct2D brush.</returns>
         public static StrokeStyle ToDirect2DStrokeStyle(this Avalonia.Media.Pen pen, Factory factory)
         {
@@ -127,13 +127,16 @@ namespace Avalonia.Direct2D1
                 EndCap = pen.EndLineCap.ToDirect2D(),
                 DashCap = pen.DashCap.ToDirect2D()
             };
-            var dashes = new float[0];
+            float[] dashes = null;
             if (pen.DashStyle?.Dashes != null && pen.DashStyle.Dashes.Count > 0)
             {
                 properties.DashStyle = DashStyle.Custom;
                 properties.DashOffset = (float)pen.DashStyle.Offset;
-                dashes = pen.DashStyle?.Dashes.Select(x => (float)x).ToArray();
+                dashes = pen.DashStyle.Dashes.Select(x => (float)x).ToArray();
             }
+
+            dashes = dashes ?? Array.Empty<float>();
+
             return new StrokeStyle(factory, properties, dashes);
         }
 

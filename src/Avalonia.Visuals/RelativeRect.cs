@@ -1,6 +1,7 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using Avalonia.Utilities;
 using System;
 using System.Globalization;
 using System.Linq;
@@ -12,6 +13,8 @@ namespace Avalonia
     /// </summary>
     public struct RelativeRect : IEquatable<RelativeRect>
     {
+        private static readonly char[] PercentChar = { '%' };
+
         /// <summary>
         /// A rectangle that represents 100% of an area.
         /// </summary>
@@ -159,7 +162,7 @@ namespace Avalonia
                     Rect.Width * size.Width,
                     Rect.Height * size.Height);
         }
-
+        
         /// <summary>
         /// Parses a <see cref="RelativeRect"/> string.
         /// </summary>
@@ -168,42 +171,42 @@ namespace Avalonia
         /// <returns>The parsed <see cref="RelativeRect"/>.</returns>
         public static RelativeRect Parse(string s, CultureInfo culture)
         {
-            var parts = s.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries)
-                .Select(x => x.Trim())
-                .ToList();
-
-            if (parts.Count == 4)
+            using (var tokenizer = new StringTokenizer(s, culture, exceptionMessage: "Invalid RelativeRect"))
             {
+                var x = tokenizer.ReadString();
+                var y = tokenizer.ReadString();
+                var width = tokenizer.ReadString();
+                var height = tokenizer.ReadString();
+
                 var unit = RelativeUnit.Absolute;
                 var scale = 1.0;
 
-                if (parts[0].EndsWith("%"))
-                {
-                    if (!parts[1].EndsWith("%") 
-                        || !parts[2].EndsWith("%")
-                        || !parts[3].EndsWith("%"))
-                    {
-                        throw new FormatException("If one coordinate is relative, all other must be too.");
-                    }
+                var xRelative = x.EndsWith("%", StringComparison.Ordinal);
+                var yRelative = y.EndsWith("%", StringComparison.Ordinal);
+                var widthRelative = width.EndsWith("%", StringComparison.Ordinal);
+                var heightRelative = height.EndsWith("%", StringComparison.Ordinal);
 
-                    parts[0] = parts[0].TrimEnd('%');
-                    parts[1] = parts[1].TrimEnd('%');
-                    parts[2] = parts[2].TrimEnd('%');
-                    parts[3] = parts[3].TrimEnd('%');
+                if (xRelative && yRelative && widthRelative && heightRelative)
+                {
+                    x = x.TrimEnd(PercentChar);
+                    y = y.TrimEnd(PercentChar);
+                    width = width.TrimEnd(PercentChar);
+                    height = height.TrimEnd(PercentChar);
+
                     unit = RelativeUnit.Relative;
                     scale = 0.01;
                 }
+                else if (xRelative || yRelative || widthRelative || heightRelative)
+                {
+                    throw new FormatException("If one coordinate is relative, all must be.");
+                }
 
                 return new RelativeRect(
-                    double.Parse(parts[0], culture) * scale,
-                    double.Parse(parts[1], culture) * scale,
-                    double.Parse(parts[2], culture) * scale,
-                    double.Parse(parts[3], culture) * scale,
+                    double.Parse(x, culture) * scale,
+                    double.Parse(y, culture) * scale,
+                    double.Parse(width, culture) * scale,
+                    double.Parse(height, culture) * scale,
                     unit);
-            }
-            else
-            {
-                throw new FormatException("Invalid RelativeRect.");
             }
         }
     }

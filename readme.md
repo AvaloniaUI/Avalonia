@@ -35,7 +35,7 @@ https://ci.appveyor.com/project/AvaloniaUI/Avalonia/branch/master/artifacts
 
 ## Documentation
 
-As mentioned above, Avalonia is still in alpha and as such there's not much documentation yet. You can take a look at the [getting started page](http://avaloniaui.net/guides/quickstart) for an overview of how to get started but probably the best thing to do for now is to already know a little bit about WPF/Silverlight/UWP/XAML and ask questions in our [Gitter room](https://gitter.im/AvaloniaUI/Avalonia).
+As mentioned above, Avalonia is still in beta and as such there's not much documentation yet. You can take a look at the [getting started page](http://avaloniaui.net/docs/quickstart/) for an overview of how to get started but probably the best thing to do for now is to already know a little bit about WPF/Silverlight/UWP/XAML and ask questions in our [Gitter room](https://gitter.im/AvaloniaUI/Avalonia).
 
 There's also a high-level [architecture document](http://avaloniaui.net/architecture/project-structure) that is currently a little bit out of date, and I've also started writing blog posts on Avalonia at http://grokys.github.io/.
 
