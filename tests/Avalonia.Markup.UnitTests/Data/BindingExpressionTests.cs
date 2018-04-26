@@ -58,7 +58,7 @@ namespace Avalonia.Markup.UnitTests.Data
         [Fact]
         public async Task Should_Convert_Get_String_To_Double()
         {
-            var data = new Class1 { StringValue = 5.6.ToString(CultureInfo.CurrentCulture) };
+            var data = new Class1 { StringValue = "5.6" };
             var target = new BindingExpression(new ExpressionObserver(data, "StringValue"), typeof(double));
             var result = await target.Take(1);
 
@@ -94,12 +94,12 @@ namespace Avalonia.Markup.UnitTests.Data
         [Fact]
         public void Should_Convert_Set_String_To_Double()
         {
-            var data = new Class1 { StringValue = 5.6.ToString(CultureInfo.CurrentCulture) };
+            var data = new Class1 { StringValue = (5.6).ToString() };
             var target = new BindingExpression(new ExpressionObserver(data, "StringValue"), typeof(double));
 
             target.OnNext(6.7);
 
-            Assert.Equal(6.7.ToString(CultureInfo.CurrentCulture), data.StringValue);
+            Assert.Equal((6.7).ToString(), data.StringValue);
 
             GC.KeepAlive(data);
         }
@@ -111,7 +111,7 @@ namespace Avalonia.Markup.UnitTests.Data
             var target = new BindingExpression(new ExpressionObserver(data, "DoubleValue"), typeof(string));
             var result = await target.Take(1);
 
-            Assert.Equal((5.6).ToString(CultureInfo.CurrentCulture), result);
+            Assert.Equal((5.6).ToString(), result);
 
             GC.KeepAlive(data);
         }
@@ -122,7 +122,7 @@ namespace Avalonia.Markup.UnitTests.Data
             var data = new Class1 { DoubleValue = 5.6 };
             var target = new BindingExpression(new ExpressionObserver(data, "DoubleValue"), typeof(string));
 
-            target.OnNext(6.7.ToString(CultureInfo.CurrentCulture));
+            target.OnNext("6.7");
 
             Assert.Equal(6.7, data.DoubleValue);
 
@@ -318,15 +318,15 @@ namespace Avalonia.Markup.UnitTests.Data
 
             target.Subscribe(x => result.Add(x));
             target.OnNext(1.2);
-            target.OnNext(3.4.ToString(CultureInfo.CurrentCulture));
+            target.OnNext("3.4");
             target.OnNext("bar");
 
             Assert.Equal(
                 new[]
                 {
-                    new BindingNotification(5.6.ToString(CultureInfo.CurrentCulture)),
-                    new BindingNotification(1.2.ToString(CultureInfo.CurrentCulture)),
-                    new BindingNotification(3.4.ToString(CultureInfo.CurrentCulture)),
+                    new BindingNotification("5.6"),
+                    new BindingNotification("1.2"),
+                    new BindingNotification("3.4"),
                     new BindingNotification(
                         new InvalidCastException("'bar' is not a valid number."),
                         BindingErrorType.Error)
