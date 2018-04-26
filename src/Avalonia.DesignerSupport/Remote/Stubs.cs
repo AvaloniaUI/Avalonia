@@ -95,6 +95,10 @@ namespace Avalonia.DesignerSupport.Remote
         public void ShowTaskbarIcon(bool value)
         {
         }
+
+        public void CanResize(bool value)
+        {
+        }
     }
 
     class ClipboardStub : IClipboard
