@@ -40,6 +40,9 @@ namespace Avalonia.Controls.Primitives
         public static readonly StyledProperty<PlacementMode> PlacementModeProperty =
             AvaloniaProperty.Register<Popup, PlacementMode>(nameof(PlacementMode), defaultValue: PlacementMode.Bottom);
 
+        public static readonly StyledProperty<bool> ObeyScreenEdgesProperty =
+            AvaloniaProperty.Register<Popup, bool>(nameof(ObeyScreenEdges));
+
         /// <summary>
         /// Defines the <see cref="HorizontalOffset"/> property.
         /// </summary>
@@ -134,6 +137,12 @@ namespace Avalonia.Controls.Primitives
         {
             get { return GetValue(PlacementModeProperty); }
             set { SetValue(PlacementModeProperty, value); }
+        }
+
+        public bool ObeyScreenEdges
+        {
+            get => GetValue(ObeyScreenEdgesProperty);
+            set => SetValue(ObeyScreenEdgesProperty, value);
         }
 
         /// <summary>
@@ -233,6 +242,11 @@ namespace Avalonia.Controls.Primitives
             PopupRootCreated?.Invoke(this, EventArgs.Empty);
 
             _popupRoot.Show();
+
+            if (ObeyScreenEdges)
+            {
+                _popupRoot.SnapInsideScreenEdges();
+            }
 
             _ignoreIsOpenChanged = true;
             IsOpen = true;
@@ -346,8 +360,10 @@ namespace Avalonia.Controls.Primitives
         /// <returns>The popup's position in screen coordinates.</returns>
         protected virtual Point GetPosition()
         {
-            return GetPosition(PlacementTarget ?? this.GetVisualParent<Control>(), PlacementMode, PopupRoot, 
+            var result = GetPosition(PlacementTarget ?? this.GetVisualParent<Control>(), PlacementMode, PopupRoot, 
                 HorizontalOffset, VerticalOffset);
+
+            return result;
         }
 
         internal static Point GetPosition(Control target, PlacementMode placement, PopupRoot popupRoot, double horizontalOffset, double verticalOffset)
