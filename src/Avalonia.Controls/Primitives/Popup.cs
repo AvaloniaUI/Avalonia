@@ -39,7 +39,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public static readonly StyledProperty<PlacementMode> PlacementModeProperty =
             AvaloniaProperty.Register<Popup, PlacementMode>(nameof(PlacementMode), defaultValue: PlacementMode.Bottom);
-        
+
         /// <summary>
         /// Degines the <see cref="ObeyScreenEdges"/> property.
         /// </summary>
@@ -232,12 +232,12 @@ namespace Avalonia.Controls.Primitives
                 var window = _topLevel as Window;
                 if (window != null)
                 {
-                    window.Deactivated += WindowDeactivated;                  
+                    window.Deactivated += WindowDeactivated;
                 }
                 else
                 {
                     var parentPopuproot = _topLevel as PopupRoot;
-                    if(parentPopuproot != null && parentPopuproot.Parent!=null)
+                    if (parentPopuproot != null && parentPopuproot.Parent != null)
                     {
                         ((Popup)(parentPopuproot.Parent)).Closed += ParentClosed;
                     }
@@ -261,7 +261,7 @@ namespace Avalonia.Controls.Primitives
 
             Opened?.Invoke(this, EventArgs.Empty);
         }
-        
+
         /// <summary>
         /// Closes the popup.
         /// </summary>
@@ -367,7 +367,7 @@ namespace Avalonia.Controls.Primitives
         /// <returns>The popup's position in screen coordinates.</returns>
         protected virtual Point GetPosition()
         {
-            var result = GetPosition(PlacementTarget ?? this.GetVisualParent<Control>(), PlacementMode, PopupRoot, 
+            var result = GetPosition(PlacementTarget ?? this.GetVisualParent<Control>(), PlacementMode, PopupRoot,
                 HorizontalOffset, VerticalOffset);
 
             return result;
@@ -422,8 +422,8 @@ namespace Avalonia.Controls.Primitives
         {
             if (!StaysOpen)
             {
-                if(!IsChildOrThis((IVisual)e.Source))
-                {                     
+                if (!IsChildOrThis((IVisual)e.Source))
+                {
                     Close();
                     e.Handled = true;
                 }
@@ -435,12 +435,12 @@ namespace Avalonia.Controls.Primitives
             IVisual root = child.GetVisualRoot();
             while (root is PopupRoot)
             {
-                if (root == PopupRoot) return true;              
+                if (root == PopupRoot) return true;
                 root = ((PopupRoot)root).Parent.GetVisualRoot();
             }
             return false;
         }
-        
+
         private void WindowDeactivated(object sender, EventArgs e)
         {
             if (!StaysOpen)
