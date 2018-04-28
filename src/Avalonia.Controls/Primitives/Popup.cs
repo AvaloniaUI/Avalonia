@@ -39,7 +39,10 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public static readonly StyledProperty<PlacementMode> PlacementModeProperty =
             AvaloniaProperty.Register<Popup, PlacementMode>(nameof(PlacementMode), defaultValue: PlacementMode.Bottom);
-
+        
+        /// <summary>
+        /// Degines the <see cref="ObeyScreenEdges"/> property.
+        /// </summary>
         public static readonly StyledProperty<bool> ObeyScreenEdgesProperty =
             AvaloniaProperty.Register<Popup, bool>(nameof(ObeyScreenEdges));
 
@@ -139,6 +142,10 @@ namespace Avalonia.Controls.Primitives
             set { SetValue(PlacementModeProperty, value); }
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether the popup positions itself within the nearest screen boundary
+        /// when its opened at a position where it would otherwise overlap the screen edge.
+        /// </summary>
         public bool ObeyScreenEdges
         {
             get => GetValue(ObeyScreenEdgesProperty);
