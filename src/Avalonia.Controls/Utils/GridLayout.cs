@@ -117,6 +117,9 @@ namespace Avalonia.Controls.Utils
 
             public static implicit operator LengthDefinitions(RowDefinitions rows)
                 => new LengthDefinitions(rows.Select(x => (LengthDefinition) x));
+
+            public static implicit operator LengthDefinitions(ColumnDefinitions rows)
+                => new LengthDefinitions(rows.Select(x => (LengthDefinition)x));
         }
 
         internal class LengthDefinition
@@ -134,6 +137,9 @@ namespace Avalonia.Controls.Utils
 
             public static implicit operator LengthDefinition(RowDefinition row)
                 => new LengthDefinition(row.Height, row.MinHeight, row.MaxHeight);
+
+            public static implicit operator LengthDefinition(ColumnDefinition row)
+                => new LengthDefinition(row.Width, row.MinWidth, row.MaxWidth);
 
             public void Update(double pixel)
             {
