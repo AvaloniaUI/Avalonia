@@ -102,5 +102,27 @@ namespace Avalonia.Controls.UnitTests
             GridAssert.ChildrenHeight(rowGrid, 150, 300, 150);
             GridAssert.ChildrenWidth(columnGrid, 150, 300, 150);
         }
+
+        [Fact]
+        public void Layout_StarRowColumnWithMinLength_BoundsCorrect()
+        {
+            // Arrange & Action
+            var rowGrid = GridMock.New(new RowDefinitions
+            {
+                new RowDefinition(1, GridUnitType.Star) { MinHeight = 200 },
+                new RowDefinition(1, GridUnitType.Star),
+                new RowDefinition(1, GridUnitType.Star),
+            }, arrange: 300);
+            var columnGrid = GridMock.New(new ColumnDefinitions
+            {
+                new ColumnDefinition(1, GridUnitType.Star) { MinWidth = 200 },
+                new ColumnDefinition(1, GridUnitType.Star),
+                new ColumnDefinition(1, GridUnitType.Star),
+            }, arrange: 300);
+
+            // Assert
+            GridAssert.ChildrenHeight(rowGrid, 200, 50, 50);
+            GridAssert.ChildrenWidth(columnGrid, 200, 50, 50);
+        }
     }
 }
