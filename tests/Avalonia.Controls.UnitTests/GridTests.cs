@@ -1,8 +1,12 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Linq;
 using Avalonia.Controls;
 using Xunit;
 
@@ -123,6 +127,28 @@ namespace Avalonia.Controls.UnitTests
             // Assert
             GridAssert.ChildrenHeight(rowGrid, 200, 50, 50);
             GridAssert.ChildrenWidth(columnGrid, 200, 50, 50);
+        }
+
+        [Fact]
+        public void Layout_StarRowColumnWithMaxLength_BoundsCorrect()
+        {
+            // Arrange & Action
+            var rowGrid = GridMock.New(new RowDefinitions
+            {
+                new RowDefinition(1, GridUnitType.Star) { MaxHeight = 200 },
+                new RowDefinition(1, GridUnitType.Star),
+                new RowDefinition(1, GridUnitType.Star),
+            }, arrange: 800);
+            var columnGrid = GridMock.New(new ColumnDefinitions
+            {
+                new ColumnDefinition(1, GridUnitType.Star) { MaxWidth = 200 },
+                new ColumnDefinition(1, GridUnitType.Star),
+                new ColumnDefinition(1, GridUnitType.Star),
+            }, arrange: 800);
+
+            // Assert
+            GridAssert.ChildrenHeight(rowGrid, 200, 300, 300);
+            GridAssert.ChildrenWidth(columnGrid, 200, 300, 300);
         }
     }
 }
