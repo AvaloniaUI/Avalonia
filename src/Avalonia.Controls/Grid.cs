@@ -211,10 +211,8 @@ namespace Avalonia.Controls
             {
                 var (column, columnSpan) = safeColumns[child];
                 var (row, rowSpan) = safeRows[child];
-                var width = Enumerable.Range(column, columnSpan)
-                    .Select(x => columnResult.LengthList[x].Length.Value).Sum();
-                var height = Enumerable.Range(row, rowSpan)
-                    .Select(x => rowResult.LengthList[x].Length.Value).Sum();
+                var width = Enumerable.Range(column, columnSpan).Select(x => columnResult.LengthList[x]).Sum();
+                var height = Enumerable.Range(row, rowSpan).Select(x => rowResult.LengthList[x]).Sum();
 
                 MeasureOnce(child, new Size(width, height));
             }
@@ -256,10 +254,8 @@ namespace Avalonia.Controls
             {
                 var (column, columnSpan) = safeColumns[child];
                 var (row, rowSpan) = safeRows[child];
-                var width = Enumerable.Range(column, columnSpan)
-                    .Select(x => columnResult.LengthList[x].Length.Value).Sum();
-                var height = Enumerable.Range(row, rowSpan)
-                    .Select(x => rowResult.LengthList[x].Length.Value).Sum();
+                var width = Enumerable.Range(column, columnSpan).Select(x => columnResult.LengthList[x]).Sum();
+                var height = Enumerable.Range(row, rowSpan).Select(x => rowResult.LengthList[x]).Sum();
 
                 child.Arrange(new Rect(0, 0, width, height));
             }

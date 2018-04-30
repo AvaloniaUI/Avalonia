@@ -9,6 +9,8 @@ namespace Avalonia.Controls.UnitTests
     {
         [Theory]
         [InlineData("100, 200, 300", 800d, 600d, new[] { 100d, 200d, 300d })]
+        [InlineData("100, 200, 300", 600d, 600d, new[] { 100d, 200d, 300d })]
+        [InlineData("100, 200, 300", 400d, 400d, new[] { 100d, 200d, 100d })]
         public void MeasureArrange_AllPixelLength_Correct(string length, double containerLength,
             double expectedDesiredLength, IList<double> expectedLengthList)
         {
@@ -53,19 +55,6 @@ namespace Avalonia.Controls.UnitTests
             double expectedDesiredLength, IList<double> expectedLengthList)
         {
             TestRowDefinitionsOnly(length, containerLength, expectedDesiredLength, expectedLengthList);
-        }
-
-        [Fact]
-        public void MeasureArrange_AllPixelLengthButNotEnough_Correct()
-        {
-            // Arrange
-            var layout = new GridLayout(new RowDefinitions("100,200,300"));
-
-            // Measure - Action & Assert
-            var measure = layout.Measure(400);
-            Assert.Equal(new[] { 100d, 200d, 300d }, measure.LengthList);
-
-            // Arrange - Action & Assert
         }
 
         [SuppressMessage("ReSharper", "ParameterOnlyUsedForPreconditionCheck.Local")]

@@ -176,9 +176,11 @@ namespace Avalonia.Controls.Utils
 
             // M6/6. Expand all the left stars. These stars have no conventions or only have max value so they can be expanded from zero to constrant.
             var dynamicConvention = ExpandStars(conventions, containerLength);
+            Clip(dynamicConvention, containerLength);
 
-            // Stores the measure result.
-            return new MeasureResult(containerLength, desiredLength, greedyDesiredLength, conventions, dynamicConvention);
+            // Stores the measuring result.
+            return new MeasureResult(containerLength, desiredLength, greedyDesiredLength,
+                conventions, dynamicConvention);
         }
 
         public ArrangeResult Arrange(double finalLength, MeasureResult measure)
@@ -201,7 +203,7 @@ namespace Avalonia.Controls.Utils
         }
 
         [Pure]
-        private static List<LengthConvention> ExpandStars(IEnumerable<LengthConvention> conventions, double constraint)
+        private static List<double> ExpandStars(IEnumerable<LengthConvention> conventions, double constraint)
         {
             // Initial.
             var dynamicConvention = conventions.Select(x => x.Clone()).ToList();
@@ -244,7 +246,25 @@ namespace Avalonia.Controls.Utils
 
             Debug.Assert(dynamicConvention.All(x => x.Length.IsAbsolute));
 
-            return dynamicConvention;
+            return dynamicConvention.Select(x => x.Length.Value).ToList();
+        }
+
+        private static void Clip(IList<double> lengthList, double constraint)
+        {
+            var measureLength = 0.0;
+            for (var i = 0; i < lengthList.Count; i++)
+            {
+                var length = lengthList[i];
+                if (constraint - measureLength > length)
+                {
+                    measureLength += length;
+                }
+                else
+                {
+                    lengthList[i] = constraint - measureLength;
+                    measureLength = constraint;
+                }
+            }
         }
 
         internal class LengthConvention : ICloneable
@@ -299,13 +319,13 @@ namespace Avalonia.Controls.Utils
         internal class MeasureResult
         {
             internal MeasureResult(double containerLength, double desiredLength, double greedyDesiredLength,
-                IReadOnlyList<LengthConvention> leanConventions, IReadOnlyList<LengthConvention> expandedConventions)
+                IReadOnlyList<LengthConvention> leanConventions, IReadOnlyList<double> expandedConventions)
             {
                 ContainerLength = containerLength;
                 DesiredLength = desiredLength;
                 GreedyDesiredLength = greedyDesiredLength;
                 LeanLengthList = leanConventions;
-                LengthList = expandedConventions.Select(x => x.Length.Value).ToList();
+                LengthList = expandedConventions;
             }
 
             public double ContainerLength { get; }
