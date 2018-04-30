@@ -7,6 +7,7 @@ using Avalonia.Controls.Platform;
 using Avalonia.Controls.Presenters;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
+using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Styling;
@@ -82,8 +83,9 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public void SnapInsideScreenEdges()
         {
-            var mainWindow = Window.OpenWindows.First();
-            var screen = mainWindow.Screens.ScreenFromPoint(Position);
+            var window = this.GetSelfAndLogicalAncestors().OfType<Window>().First();
+            
+            var screen = window.Screens.ScreenFromPoint(Position);
 
             var screenX = Position.X + Bounds.Width - screen.Bounds.X;
             var screenY = Position.Y + Bounds.Height - screen.Bounds.Y;
