@@ -70,8 +70,15 @@ namespace Avalonia.Utilities
         public bool TryReadDouble(out double result, char? separator = null)
         {
             var success = TryReadString(out var stringResult, separator);
-            result = success ? double.Parse(stringResult, _formatProvider) : 0;
-            return success;
+
+            if (success)
+            {
+                success = double.TryParse(stringResult, NumberStyles.Float, _formatProvider, out result);
+                return success;
+            }
+
+            result = default(double);
+            return false;
         }
 
         public double ReadDouble(char? separator = null)
