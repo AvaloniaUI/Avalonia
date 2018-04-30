@@ -84,11 +84,22 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Layout_NoRowColumn_BoundsCorrect()
+        {
+            // Arrange & Action
+            var grid = GridMock.New(arrange: new Size(600, 200));
+
+            // Assert
+            GridAssert.ChildrenHeight(grid, 600);
+            GridAssert.ChildrenWidth(grid, 200);
+        }
+
+        [Fact]
         public void Layout_StarRowColumn_BoundsCorrect()
         {
             // Arrange & Action
-            var rowGrid = GridMock.New(new RowDefinitions("1*,2*,3*"), arrange: 600);
-            var columnGrid = GridMock.New(new ColumnDefinitions("*,*,2*"), arrange: 600);
+            var rowGrid = GridMock.New(new RowDefinitions("1*,2*,3*"), 600);
+            var columnGrid = GridMock.New(new ColumnDefinitions("*,*,2*"), 600);
 
             // Assert
             GridAssert.ChildrenHeight(rowGrid, 100, 200, 300);
@@ -99,8 +110,8 @@ namespace Avalonia.Controls.UnitTests
         public void Layout_MixPixelStarRowColumn_BoundsCorrect()
         {
             // Arrange & Action
-            var rowGrid = GridMock.New(new RowDefinitions("1*,2*,150"), arrange: 600);
-            var columnGrid = GridMock.New(new ColumnDefinitions("1*,2*,150"), arrange: 600);
+            var rowGrid = GridMock.New(new RowDefinitions("1*,2*,150"), 600);
+            var columnGrid = GridMock.New(new ColumnDefinitions("1*,2*,150"), 600);
 
             // Assert
             GridAssert.ChildrenHeight(rowGrid, 150, 300, 150);
@@ -116,13 +127,13 @@ namespace Avalonia.Controls.UnitTests
                 new RowDefinition(1, GridUnitType.Star) { MinHeight = 200 },
                 new RowDefinition(1, GridUnitType.Star),
                 new RowDefinition(1, GridUnitType.Star),
-            }, arrange: 300);
+            }, 300);
             var columnGrid = GridMock.New(new ColumnDefinitions
             {
                 new ColumnDefinition(1, GridUnitType.Star) { MinWidth = 200 },
                 new ColumnDefinition(1, GridUnitType.Star),
                 new ColumnDefinition(1, GridUnitType.Star),
-            }, arrange: 300);
+            }, 300);
 
             // Assert
             GridAssert.ChildrenHeight(rowGrid, 200, 50, 50);
@@ -138,13 +149,13 @@ namespace Avalonia.Controls.UnitTests
                 new RowDefinition(1, GridUnitType.Star) { MaxHeight = 200 },
                 new RowDefinition(1, GridUnitType.Star),
                 new RowDefinition(1, GridUnitType.Star),
-            }, arrange: 800);
+            }, 800);
             var columnGrid = GridMock.New(new ColumnDefinitions
             {
                 new ColumnDefinition(1, GridUnitType.Star) { MaxWidth = 200 },
                 new ColumnDefinition(1, GridUnitType.Star),
                 new ColumnDefinition(1, GridUnitType.Star),
-            }, arrange: 800);
+            }, 800);
 
             // Assert
             GridAssert.ChildrenHeight(rowGrid, 200, 300, 300);

@@ -68,7 +68,7 @@ namespace Avalonia.Controls.Utils
             {
                 var index = i;
                 var convention = _conventions[index];
-                if (convention.Length.IsAuto)
+                if (convention.Length.IsAuto || convention.Length.IsStar)
                 {
                     foreach (var pair in source.Where(x =>
                         x.Value.index <= index && index < x.Value.index + x.Value.span))
@@ -99,10 +99,10 @@ namespace Avalonia.Controls.Utils
             var aggregatedLength = 0.0;
             double starUnitLength;
 
-            // M2/6. Exclude all the pixel lengths, so that we can calculate the star lengths.
+            // M2/7. Exclude all the pixel lengths, so that we can calculate the star lengths.
             aggregatedLength += conventions.Where(x => x.Length.IsAbsolute).Sum(x => x.Length.Value);
 
-            // M3/6. Exclude all the * lengths that have reached min value.
+            // M3/7. Exclude all the * lengths that have reached min value.
             var shouldTestStarMin = true;
             while (shouldTestStarMin)
             {
@@ -126,7 +126,7 @@ namespace Avalonia.Controls.Utils
                 shouldTestStarMin = @fixed;
             }
 
-            // M4/6. Exclude all the Auto lengths that have not-zero desired size.
+            // M4/7. Exclude all the Auto lengths that have not-zero desired size.
             var shouldTestAuto = true;
             while (shouldTestAuto)
             {
@@ -140,26 +140,7 @@ namespace Avalonia.Controls.Utils
                         continue;
                     }
 
-                    var index = i;
-                    var more = 0.0;
-                    foreach (var additional in _additionalConventions)
-                    {
-                        // If the additional conventions contains the Auto column/row, try to determine the Auto column/row length.
-                        if (additional.Index <= index && index < additional.Index + additional.Span)
-                        {
-                            var starUnit = starUnitLength;
-                            var min = Enumerable.Range(additional.Index, additional.Span)
-                                .Select(x =>
-                                {
-                                    var c = conventions[x];
-                                    if (c.Length.IsAbsolute) return c.Length.Value;
-                                    if (c.Length.IsStar) return c.Length.Value * starUnit;
-                                    return 0.0;
-                                }).Sum();
-                            more = Math.Max(additional.Min - min, more);
-                        }
-                    }
-
+                    var more = ApplyAdditionalConventionsForAuto(conventions, i, starUnitLength);
                     convention.Fix(more);
                     aggregatedLength += more;
                     @fixed = true;
@@ -169,12 +150,17 @@ namespace Avalonia.Controls.Utils
                 shouldTestAuto = @fixed;
             }
 
-            // M5/6. Determine the desired length of the grid for current contaienr length. Its value stores in desiredLength.
+            // M5/7. Expand the stars according to the additional conventions (usually the child desired length).
+            var desiredStarMin = AggregateAdditionalConventionsForStars(conventions);
+            aggregatedLength += desiredStarMin;
+            
+
+            // M6/7. Determine the desired length of the grid for current contaienr length. Its value stores in desiredLength.
             // But if the container has infinite length, the grid desired length is stored in greedyDesiredLength.
             var desiredLength = containerLength - aggregatedLength >= 0.0 ? aggregatedLength : containerLength;
             var greedyDesiredLength = aggregatedLength;
 
-            // M6/6. Expand all the left stars. These stars have no conventions or only have max value so they can be expanded from zero to constrant.
+            // M7/7. Expand all the left stars. These stars have no conventions or only have max value so they can be expanded from zero to constrant.
             var dynamicConvention = ExpandStars(conventions, containerLength);
             Clip(dynamicConvention, containerLength);
 
@@ -200,6 +186,51 @@ namespace Avalonia.Controls.Utils
             }
 
             return new ArrangeResult(measure.LengthList);
+        }
+
+        [Pure]
+        private double ApplyAdditionalConventionsForAuto(IReadOnlyList<LengthConvention> conventions,
+            int index, double starUnitLength)
+        {
+            var more = 0.0;
+            foreach (var additional in _additionalConventions)
+            {
+                // If the additional conventions contains the Auto column/row, try to determine the Auto column/row length.
+                if (additional.Index <= index && index < additional.Index + additional.Span)
+                {
+                    var min = Enumerable.Range(additional.Index, additional.Span)
+                        .Select(x =>
+                        {
+                            var c = conventions[x];
+                            if (c.Length.IsAbsolute) return c.Length.Value;
+                            if (c.Length.IsStar) return c.Length.Value * starUnitLength;
+                            return 0.0;
+                        }).Sum();
+                    more = Math.Max(additional.Min - min, more);
+                }
+            }
+
+            return more;
+        }
+
+        [Pure]
+        private double AggregateAdditionalConventionsForStars(
+            IReadOnlyList<LengthConvention> conventions)
+        {
+            // +-----------------------------------------------------------+
+            // |  *  |  P  |  *  |  P  |  P  |  *  |  P  |     *     |  *  |
+            // +-----------------------------------------------------------+
+            // |<-      x      ->|                 |<-         z         ->|
+            //       |<-         y         ->|
+            // conveniences 是上面看到的那个列表，所有能够确定的 A、P 和 * 都已经转换成了 P；剩下的 * 只有 Max 是没确定的。
+            // _additionalConventions 是上面的 x、y、z…… 集合，只有最小值是可用的。
+            // 需要返回所有标记为 * 的方格的累加和的最小值。
+
+            var additionalConventions = _additionalConventions;
+
+            // TODO Calculate the min length of all the desired size.
+
+            return 150;
         }
 
         [Pure]

@@ -10,6 +10,21 @@ namespace Avalonia.Controls.UnitTests
         /// Create a mock grid to test its row layout.
         /// This method contains Arrange (`new Grid()`) and Action (`Measure()`/`Arrange()`).
         /// </summary>
+        /// <param name="measure">The measure height of this grid. PositiveInfinity by default.</param>
+        /// <param name="arrange">The arrange height of this grid. DesiredSize.Height by default.</param>
+        /// <returns>The mock grid that its children bounds will be tested.</returns>
+        internal static Grid New(Size measure = default, Size arrange = default)
+        {
+            var grid = new Grid();
+            grid.Measure(measure == default ? new Size(double.PositiveInfinity, double.PositiveInfinity) : measure);
+            grid.Arrange(new Rect(default, arrange == default ? grid.DesiredSize : arrange));
+            return grid;
+        }
+
+        /// <summary>
+        /// Create a mock grid to test its row layout.
+        /// This method contains Arrange (`new Grid()`) and Action (`Measure()`/`Arrange()`).
+        /// </summary>
         /// <param name="rows">The row definitions of this mock grid.</param>
         /// <param name="measure">The measure height of this grid. PositiveInfinity by default.</param>
         /// <param name="arrange">The arrange height of this grid. DesiredSize.Height by default.</param>
@@ -25,7 +40,12 @@ namespace Avalonia.Controls.UnitTests
             }
 
             grid.Measure(new Size(double.PositiveInfinity, measure == default ? double.PositiveInfinity : measure));
-            grid.Arrange(new Rect(0, 0, 0, arrange == default ? grid.DesiredSize.Width : arrange));
+            if (arrange == default)
+            {
+                arrange = measure == default ? grid.DesiredSize.Width : measure;
+            }
+
+            grid.Arrange(new Rect(0, 0, 0, arrange));
 
             return grid;
         }
@@ -49,7 +69,12 @@ namespace Avalonia.Controls.UnitTests
             }
 
             grid.Measure(new Size(measure == default ? double.PositiveInfinity : measure, double.PositiveInfinity));
-            grid.Arrange(new Rect(0, 0, arrange == default ? grid.DesiredSize.Width : arrange, 0));
+            if (arrange == default)
+            {
+                arrange = measure == default ? grid.DesiredSize.Width : measure;
+            }
+
+            grid.Arrange(new Rect(0, 0, arrange, 0));
 
             return grid;
         }
