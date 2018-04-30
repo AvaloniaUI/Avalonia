@@ -194,7 +194,7 @@ namespace Avalonia.Controls.Utils
             else if (finalLength - measure.ContainerLength < -LayoutTolerance)
             {
                 // If the final length is smaller, we measure the M6/6 procedure only.
-                var dynamicConvention = ExpandStars(measure.LeanLengthList, measure.ContainerLength);
+                var dynamicConvention = ExpandStars(measure.LeanLengthList, finalLength);
                 measure = new MeasureResult(finalLength, measure.DesiredLength, measure.GreedyDesiredLength,
                     measure.LeanLengthList, dynamicConvention);
             }
@@ -240,23 +240,28 @@ namespace Avalonia.Controls.Utils
                 }
             }
 
-            if (double.IsInfinity(starUnitLength))
+            Debug.Assert(dynamicConvention.All(x => !x.Length.IsAuto));
+
+            var starUnit = starUnitLength;
+            var result = dynamicConvention.Select(x =>
             {
-                starUnitLength = 0.0;
-            }
+                if (x.Length.IsStar)
+                {
+                    return double.IsInfinity(starUnit) ? double.PositiveInfinity : starUnit * x.Length.Value;
+                }
 
-            foreach (var convention in dynamicConvention.Where(x => x.Length.IsStar))
-            {
-                convention.Fix(starUnitLength * convention.Length.Value);
-            }
+                return x.Length.Value;
+            }).ToList();
 
-            Debug.Assert(dynamicConvention.All(x => x.Length.IsAbsolute));
-
-            return dynamicConvention.Select(x => x.Length.Value).ToList();
+            return result;
         }
 
         private static void Clip(IList<double> lengthList, double constraint)
         {
+            if (double.IsInfinity(constraint))
+            {
+                return;
+            }
             var measureLength = 0.0;
             for (var i = 0; i < lengthList.Count; i++)
             {
